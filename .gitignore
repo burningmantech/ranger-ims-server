@@ -1,0 +1,11 @@
+*.pyc
+*.pyo
+#*#
+.#*
+/.develop/
+/_trial_temp/
+/MANIFEST
+/cached/
+/data/
+/ims/version.py
+/log/

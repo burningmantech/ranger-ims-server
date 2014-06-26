@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
+  <head>
+    <title t:render="title" />
+    <link t:render="icon" />
+<!--
+    <link t:render="stylesheet" />
+ -->
+    <script type="text/javascript" src="/jquery.js" />
+    <script type="text/javascript" src="/tidy.js" />
+    <script type="text/javascript" src="/flot/jquery.flot.min.js"></script>
+    <!--<script type="text/javascript" src="/flot/jquery.flot.time.min.js"></script>-->
+    <script type="text/javascript">
+      $(document).ready(function() {
+        var tableColumns = <t:transparent t:render="chartColumns" />;
+        var tableData = <t:transparent t:render="chartData" />;
+
+    //<![CDATA[
+
+        var chartData = [];
+        for (var i=0; i < tableData.length; i++) {
+          var sourceLabel = tableData[i][0];
+          var sourceData = tableData[i].slice(1);
+          for (var j=0; j < sourceData.length; j++) {
+            sourceData[j] = [j, sourceData[j]];
+          }
+
+          var chartYAxis = 1;
+          var lineWidth = 2;
+          if (sourceLabel == "Total") {
+            chartYAxis = 2;
+            lineWidth = 6;
+          }
+
+          chartData.push({
+            label: sourceLabel,
+            data: sourceData,
+            yaxis: chartYAxis,
+            lines: { lineWidth: lineWidth },
+          });
+        }
+
+        var xTicks = []
+        for (var i=0; i < tableColumns.length-1; i++) {
+          xTicks.push([i, tableColumns[i+1]]);
+        }
+
+        var chartOptions = {
+          xaxis: {
+            ticks: xTicks,
+            axisLabel: "Date",
+          },
+          yaxes: [
+            {
+              min: 0,
+              position: "left",
+              minTickSize: 1,
+              tickDecimals: 0,
+              axisLabel: "# Incidents",
+            },
+            {
+              min: 0,
+              position: "right",
+              minTickSize: 1,
+              tickDecimals: 0,
+              axisLabel: "# Incidents (Total)",
+            },
+          ]
+        };
+
+        $.plot($("#LineGraph"), chartData, chartOptions);
+
+    //]]>
+
+      });
+    </script>
+  </head>
+  <body>
+    <h1 t:render="title" />
+
+    <div id="DailyStats" />
+
+    <div id="LineGraph" style="width:100%;height:600px" />
+
+  </body>
+</html>

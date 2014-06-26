@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
+  <head>
+    <title t:render="title" />
+    <link t:render="icon" />
+    <link t:render="stylesheet" />
+  </head>
+  <body>
+    <h1 t:render="title" />
+
+    <h2>Client Applications</h2>
+
+    <p>This service hosts the Ranger Incident Management System (IMS).  Use of
+    this service requires a client application:</p>
+
+    <ul>
+      <li>
+        <a href="https://github.com/burningmantech/ranger-ims/releases">
+          Incidents for Mac OS X
+        </a>
+      </li>
+    </ul>
+
+    <h2>Reports</h2>
+
+    <ul>
+      <li>
+        <a href="/queue">Dispatch Queue</a>
+      </li>
+      <li>Daily Incident Summary</li>
+      <ul>
+        <li>
+          <a href="/reports/daily">Table</a>
+        </li>
+        <li>
+          <a href="/charts/daily">Chart</a>
+        </li>
+      </ul>
+      <li>
+        <a href="/reports/shift">Shift Summary</a>
+      </li>
+    </ul>
+
+    <h2>Documentation</h2>
+
+    <ul>
+      <li>
+        <a href="/docs/priorities.xhtml">Using Priorities</a>
+      </li>
+    </ul>
+
+  </body>
+</html>

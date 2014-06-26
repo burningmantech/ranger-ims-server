@@ -1,0 +1,54 @@
+#!/bin/sh
+##
+# See the file COPYRIGHT for copyright information.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+##
+
+set -e
+set -u
+
+wd="$(cd "$(dirname "$0")/.." && pwd)";
+
+cd "${wd}";
+
+. "${wd}/test/util.sh";
+
+upload () {
+    app_data="${HOME}/Library/Application Support/com.burningman.Incidents/Dispatch Queue";
+
+    echo "*** UPLOADING CONTENT ***";
+    for n in 1 2 3; do
+
+        echo "NO CONTENT" > "/tmp/${n}.html";
+        cat "${app_data}/${n}" \
+            | curl -o "/tmp/${n}.html" -X "PUT" -d @- "http://localhost:8080/incidents/${n}";
+        echo "";
+        
+    done;
+}
+
+wrap_server upload;
+
+echo "*** CHECKING RESULTS ***";
+for n in 1 2 3; do
+
+  open -a Safari "/tmp/${n}.html";
+
+  json_tool "${wd}/data/${n}" > "/tmp/${n}a";
+  json_tool "${app_data}/${n}" > "/tmp/${n}b";
+  opendiff "/tmp/${n}a" "/tmp/${n}b";
+
+done;
+
+ls -al "${wd}/data";
