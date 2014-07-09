@@ -18,7 +18,7 @@
 find_cmd () {
   local cmd="$1"; shift;
 
-  local path="$(type "${cmd}" 2>/dev/null | sed "s|^${cmd} is \(a tracked alias for \)\{0,1\}||")";
+  local path="$(type "${cmd}" | sed "s|^${cmd} is \(a tracked alias for \)\{0,1\}||")" 2> /dev/null;
 
   if [ -z "${cmd}" ]; then
     return 1;
