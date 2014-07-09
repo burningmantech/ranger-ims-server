@@ -111,7 +111,7 @@ init_build () {
     dep_packages="${TWEXT_PKG_CACHE}";
   fi;
 
-  project="$(setup_print name)";
+  project="$(setup_print name)" || project="<unknown>";
 
   # Find some hashing commands
   # sha1() = sha1 hash, if available
@@ -160,7 +160,7 @@ init_build () {
 setup_print () {
   what="$1"; shift;
 
-  PYTHONPATH="${wd}:${PYTHONPATH:-}" "${bootstrap_python}" - 2>/dev/null << EOF || true
+  PYTHONPATH="${wd}:${PYTHONPATH:-}" "${bootstrap_python}" - 2>/dev/null << EOF
 from __future__ import print_function
 import setup
 print(setup.${what})
@@ -556,9 +556,9 @@ bootstrap_virtualenv () {
   mkdir -p "${py_ve_tools}/junk";
 
   for pkg in             \
+      setuptools-5.4.1   \
       pip-1.5.6          \
       virtualenv-1.11.6  \
-      setuptools-5.4.1   \
   ; do
          name="${pkg%-*}";
       version="${pkg#*-}";
