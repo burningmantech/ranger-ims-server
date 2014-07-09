@@ -516,9 +516,8 @@ py_dependencies () {
     rm -rf "${py_virtualenv}";
   fi;
 
-  bootstrap_virtualenv;
-
   if [ ! -d "${py_virtualenv}" ]; then
+    bootstrap_virtualenv;
     "${bootstrap_python}" -m virtualenv --system-site-packages "${py_virtualenv}";
   fi;
 
