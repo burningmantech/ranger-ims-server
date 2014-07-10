@@ -41,7 +41,9 @@ from .element.queue import DispatchQueueElement
 from .element.incident import IncidentElement
 # from .element.report_daily import DailyReportElement
 # from .element.report_shift import ShiftReportElement
-from .element.util import incidents_from_query
+from .element.util import (
+    terms_from_query, show_closed_from_query, since_from_query
+)
 from .util import http_download
 
 
@@ -142,15 +144,24 @@ class IncidentManagementSystem(object):
     @app.route("/incidents/", methods=("GET",))
     @http_sauce
     def list_incidents(self, request):
-        d = self.data_incidents(request)
+        if request.args:
+            incidents = self.storage.search_incidents(
+                terms=terms_from_query(request),
+                show_closed=show_closed_from_query(request),
+                since=since_from_query(request),
+            )
+        else:
+            incidents = self.storage.list_incidents()
+
+        d = self.data_incidents(incidents)
         d.addCallback(self.add_headers, request=request)
         return d
 
 
-    def data_incidents(self, request):
+    def data_incidents(self, incidents):
         return succeed((
             json_as_text(sorted(
-                incidents_from_query(self, request),
+                incidents,
                 cmp=lambda a, b: cmp(a[0], b[0]), reverse=True,
             )),
             None
@@ -160,34 +171,36 @@ class IncidentManagementSystem(object):
     @app.route("/incidents/<number>", methods=("GET",))
     @http_sauce
     def get_incident(self, request, number):
-        # FIXME: For debugging
-        #import time
-        #time.sleep(0.3)
+        # # For simulating slow connections
+        # import time
+        # time.sleep(0.3)
 
         number = int(number)
 
-        set_response_header(
-            request, HeaderName.etag,
-            self.storage.etag_for_incident_with_number(number)
-        )
-        set_response_header(
-            request, HeaderName.contentType, ContentType.JSON
-        )
+        d = self.data_incident(number)
+        d.addCallback(self.add_headers, request=request)
+        return d
 
+
+    def data_incident(self, number):
         if False:
             #
             # This is faster, but doesn't benefit from any cleanup or
             # validation code, so it's only OK if we know all data in the
             # store is clean by this server version's standards.
             #
-            return self.storage.read_incident_with_number_raw(number)
+            entity = self.storage.read_incident_with_number_raw(number)
         else:
             #
             # This parses the data from the store, validates it, then
             # re-serializes it.
             #
             incident = self.storage.read_incident_with_number(number)
-            return json_as_text(incident_as_json(incident))
+            entity = json_as_text(incident_as_json(incident))
+
+        etag = self.storage.etag_for_incident_with_number(number)
+
+        return succeed((entity, etag))
 
 
     @app.route("/incidents/<number>", methods=("POST",))
