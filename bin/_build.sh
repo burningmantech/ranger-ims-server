@@ -472,11 +472,11 @@ c_dependencies () {
       using_system "libffi";
     fi;
   else
-    local v="3.0.13";
+    local v="3.1";
     local n="libffi";
     local p="${n}-${v}";
 
-    c_dependency -m "45f3b6dbc9ee7c7dfbbbc5feba571529" \
+    c_dependency -m "f5898b29bbfd70502831a212d9249d10" \
       "libffi" "${p}" \
       "ftp://sourceware.org/pub/libffi/${p}.tar.gz"
   fi;
