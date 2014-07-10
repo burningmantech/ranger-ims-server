@@ -23,7 +23,7 @@ __all__ = [
 ]
 
 from twisted.python.zippath import ZipArchive
-from twisted.internet.defer import Deferred
+from twisted.internet.defer import Deferred, succeed
 from twisted.web import http
 from twisted.web.static import File
 
@@ -66,18 +66,34 @@ class IncidentManagementSystem(object):
     # JSON endpoints
     #
 
+    @staticmethod
+    def add_headers(data, request):
+        entity, etag = data
+
+        if etag is not None:
+            set_response_header(
+                request, HeaderName.etag, etag
+            )
+
+        set_response_header(
+            request, HeaderName.contentType, ContentType.JSON
+        )
+
+        return entity
+
+
     @app.route("/ping", methods=("GET",))
     @app.route("/ping/", methods=("GET",))
     @http_sauce
     def ping(self, request):
+        d = self.data_ping()
+        d.addCallback(self.add_headers, request=request)
+        return d
+
+
+    def data_ping(self):
         ack = b"ack"
-        set_response_header(
-            request, HeaderName.etag, ack
-        )
-        set_response_header(
-            request, HeaderName.contentType, ContentType.JSON
-        )
-        return json_as_text(ack)
+        return succeed((json_as_text(ack), hash(ack)))
 
 
     @app.route("/rangers", methods=("GET",))
@@ -85,46 +101,59 @@ class IncidentManagementSystem(object):
     @app.route("/personnel", methods=("GET",))
     @app.route("/personnel/", methods=("GET",))
     @http_sauce
-    def list_rangers(self, request):
-        def gotPersonnel(personnel):
-            set_response_header(
-                request, HeaderName.contentType, ContentType.JSON
-            )
-            set_response_header(
-                request, HeaderName.etag, hash(personnel)
-            )
-            return json_as_text([
-                ranger_as_json(ranger)
-                for ranger in personnel
-            ])
-
-        d = self.dms.personnel()
-        d.addCallback(gotPersonnel)
+    def list_personnel(self, request):
+        d = self.data_personnel()
+        d.addCallback(self.add_headers, request=request)
         return d
+
+
+    def data_personnel(self):
+            def gotPersonnel(personnel):
+                return (
+                    json_as_text([
+                        ranger_as_json(ranger)
+                        for ranger in personnel
+                    ]),
+                    hash(personnel)
+                )
+
+            d = self.dms.personnel()
+            d.addCallback(gotPersonnel)
+            return d
 
 
     @app.route("/incident_types", methods=("GET",))
     @app.route("/incident_types/", methods=("GET",))
     @http_sauce
     def list_incident_types(self, request):
-        set_response_header(
-            request, HeaderName.contentType, ContentType.JSON
-        )
-        set_response_header(
-            request, HeaderName.etag, hash(self.config.IncidentTypesJSON)
-        )
-        return self.config.IncidentTypesJSON
+        d = self.data_incident_types()
+        d.addCallback(self.add_headers, request=request)
+        return d
+
+
+    def data_incident_types(self):
+        return succeed((
+            self.config.IncidentTypesJSON,
+            hash(self.config.IncidentTypesJSON)
+        ))
 
 
     @app.route("/incidents", methods=("GET",))
     @app.route("/incidents/", methods=("GET",))
     @http_sauce
     def list_incidents(self, request):
-        #set_response_header(request, HeaderName.etag, "*") # FIXME
-        set_response_header(request, HeaderName.contentType, ContentType.JSON)
-        return json_as_text(sorted(
-            incidents_from_query(self, request),
-            cmp=lambda a, b: cmp(a[0], b[0]), reverse=True,
+        d = self.data_incidents(request)
+        d.addCallback(self.add_headers, request=request)
+        return d
+
+
+    def data_incidents(self, request):
+        return succeed((
+            json_as_text(sorted(
+                incidents_from_query(self, request),
+                cmp=lambda a, b: cmp(a[0], b[0]), reverse=True,
+            )),
+            None
         ))
 
 
