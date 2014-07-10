@@ -69,8 +69,17 @@ class IncidentManagementSystem(object):
     #
 
     @staticmethod
-    def add_headers(data, request):
-        entity, etag = data
+    def read_only(request):
+        set_response_header(
+            request, HeaderName.contentType, ContentType.plain
+        )
+        request.setResponseCode(http.FORBIDDEN)
+        return b"Server is in read-only mode."
+
+
+    @staticmethod
+    def add_headers(data, request, status=http.OK):
+        entity, etag = [x.encode("utf-8") for x in data]
 
         if etag is not None:
             set_response_header(
@@ -80,6 +89,8 @@ class IncidentManagementSystem(object):
         set_response_header(
             request, HeaderName.contentType, ContentType.JSON
         )
+
+        request.setResponseCode(status)
 
         return entity
 
@@ -110,18 +121,18 @@ class IncidentManagementSystem(object):
 
 
     def data_personnel(self):
-            def gotPersonnel(personnel):
-                return (
-                    json_as_text([
-                        ranger_as_json(ranger)
-                        for ranger in personnel
-                    ]),
-                    hash(personnel)
-                )
+        def gotPersonnel(personnel):
+            return (
+                json_as_text([
+                    ranger_as_json(ranger)
+                    for ranger in personnel
+                ]),
+                hash(personnel)
+            )
 
-            d = self.dms.personnel()
-            d.addCallback(gotPersonnel)
-            return d
+        d = self.dms.personnel()
+        d.addCallback(gotPersonnel)
+        return d
 
 
     @app.route("/incident_types", methods=("GET",))
@@ -207,19 +218,22 @@ class IncidentManagementSystem(object):
     @http_sauce
     def edit_incident(self, request, number):
         if self.config.ReadOnly:
-            set_response_header(
-                request, HeaderName.contentType, ContentType.plain
-            )
-            request.setResponseCode(http.FORBIDDEN)
-            return b"Server is in read-only mode."
+            return self.read_only(request)
 
         number = int(number)
+
+        d = self.data_incident_edit(number, request.content)
+        d.addCallback(self.add_headers, request=request)
+        return d
+
+
+    def data_incident_edit(self, number, edits_text):
         incident = self.storage.read_incident_with_number(number)
 
         #
         # Apply the changes requested by the client
         #
-        edits_json = json_from_file(request.content)
+        edits_json = json_from_file(edits_text)
         edits = incident_from_json(edits_json, number=number, validate=False)
         edit_incident(incident, edits, self.avatarId.decode("utf-8"))
 
@@ -228,13 +242,7 @@ class IncidentManagementSystem(object):
         #
         self.storage.write_incident(incident)
 
-        #
-        # Respond
-        #
-        set_response_header(request, HeaderName.contentType, ContentType.JSON)
-        request.setResponseCode(http.OK)
-
-        return b""
+        return succeed((b"", None))
 
 
     @app.route("/incidents", methods=("POST",))
@@ -242,13 +250,27 @@ class IncidentManagementSystem(object):
     @http_sauce
     def new_incident(self, request):
         if self.config.ReadOnly:
-            set_response_header(
-                request, HeaderName.contentType, ContentType.plain
-            )
-            request.setResponseCode(http.FORBIDDEN)
-            return b"Server is in read-only mode."
+            return self.read_only(request)
 
-        json = json_from_text(request.content)
+        number = self.storage.next_incident_number()
+
+        def add_location_headers(response):
+            request.setHeader(HeaderName.incidentNumber.value, number)
+            request.setHeader(
+                HeaderName.location.value,
+                url_for(request, "get_incident", {"number": number})
+            )
+
+            return response
+
+        d = self.data_incident_new(number, request.content)
+        d.addCallback(self.add_headers, request=request, status=http.CREATED)
+        d.addCallback(add_location_headers)
+        return d
+
+
+    def data_incident_new(self, number, json_text):
+        json = json_from_text(json_text)
         incident = incident_from_json(
             json, number=self.storage.next_incident_number()
         )
@@ -259,18 +281,7 @@ class IncidentManagementSystem(object):
 
         self.storage.write_incident(incident)
 
-        request.setResponseCode(http.CREATED)
-
-        request.setHeader(
-            HeaderName.incidentNumber.value,
-            incident.number
-        )
-        request.setHeader(
-            HeaderName.location.value,
-            url_for(request, "get_incident", {"number": incident.number})
-        )
-
-        return b""
+        return succeed((b"", None))
 
 
     # #
