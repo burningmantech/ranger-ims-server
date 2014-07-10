@@ -34,11 +34,12 @@ usage ()
 
     if [ "${1--}" != "-" ]; then echo "$@"; echo; fi;
 
-    echo "Usage: ${program} [-hkX]";
+    echo "Usage: ${program} [-hkX] [-s port]";
     echo "Options:";
     echo "        -h Print this help and exit";
     echo "        -k Kill the server";
     echo "        -X Do not daemonize";
+    echo "        -s Use given SSL port";
 
     if [ "${1-}" == "-" ]; then return 0; fi;
     exit 64;
@@ -48,8 +49,8 @@ while getopts 'hXks' option; do
     case "${option}" in
         '?') usage; ;;
         'h') usage -; exit 0; ;;
-        'X') opt_nodaemon="--nodaemon"; ;;
         'k') kill="true"; ;;
+        'X') opt_nodaemon="--nodaemon"; ;;
         's') opt_ssl="--port=ssl:8443"; ;;
     esac;
 done;
