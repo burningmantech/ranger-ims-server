@@ -29,9 +29,8 @@ from twisted.web.static import File
 
 from klein import Klein
 
-from .json import JSON, json_as_text, json_from_file
+from .json import JSON, json_as_text, json_from_file, json_from_text
 from .json import ranger_as_json, incident_as_json, incident_from_json
-from .data import Incident
 from .edit import edit_incident
 from .sauce import url_for, set_response_header
 from .sauce import http_sauce
@@ -53,7 +52,7 @@ class IncidentManagementSystem(object):
     """
     app = Klein()
 
-    protocol_version = "0.0"
+    # protocol_version = "0.0"
 
 
     def __init__(self, config):
@@ -71,7 +70,7 @@ class IncidentManagementSystem(object):
     @app.route("/ping/", methods=("GET",))
     @http_sauce
     def ping(self, request):
-        ack = "ack"
+        ack = b"ack"
         set_response_header(
             request, HeaderName.etag, ack
         )
@@ -170,7 +169,7 @@ class IncidentManagementSystem(object):
                 request, HeaderName.contentType, ContentType.plain
             )
             request.setResponseCode(http.FORBIDDEN)
-            return "Server is in read-only mode."
+            return b"Server is in read-only mode."
 
         number = int(number)
         incident = self.storage.read_incident_with_number(number)
@@ -193,7 +192,7 @@ class IncidentManagementSystem(object):
         set_response_header(request, HeaderName.contentType, ContentType.JSON)
         request.setResponseCode(http.OK)
 
-        return ""
+        return b""
 
 
     @app.route("/incidents", methods=("POST",))
@@ -205,10 +204,11 @@ class IncidentManagementSystem(object):
                 request, HeaderName.contentType, ContentType.plain
             )
             request.setResponseCode(http.FORBIDDEN)
-            return "Server is in read-only mode."
+            return b"Server is in read-only mode."
 
-        incident = Incident.from_json_io(
-            request.content, number=self.storage.next_incident_number()
+        json = json_from_text(request.content)
+        incident = incident_from_json(
+            json, number=self.storage.next_incident_number()
         )
 
         # Edit report entrys to add author
@@ -228,7 +228,7 @@ class IncidentManagementSystem(object):
             url_for(request, "get_incident", {"number": incident.number})
         )
 
-        return ""
+        return b""
 
 
     # #
@@ -305,7 +305,7 @@ class IncidentManagementSystem(object):
         set_response_header(
             request, HeaderName.contentType, ContentType.plain
         )
-        return "Not found."
+        return b"Not found."
 
 
     # #
@@ -484,7 +484,7 @@ class IncidentManagementSystem(object):
             set_response_header(
                 request, HeaderName.contentType, ContentType.plain
             )
-            return "Not found."
+            return b"Not found."
 
         d.addCallback(readFromArchive)
         d.addErrback(notFoundHandler)
