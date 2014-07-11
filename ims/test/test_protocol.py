@@ -18,6 +18,11 @@
 Tests for L{ims.protocol}.
 """
 
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
+
 from twisted.python.filepath import FilePath
 import twisted.trial.unittest
 from twisted.internet.defer import inlineCallbacks
@@ -66,6 +71,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         if data is not None:
             config.storage = self.storage(data=data)
         ims = IncidentManagementSystem(config)
+        ims.avatarId = u"Tool"
         return ims
 
 
@@ -175,3 +181,26 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
             self.assertEquals(
                 etag, ims.storage.etag_for_incident_with_number(number)
             )
+
+
+    @inlineCallbacks
+    def test_data_incident_edit(self):
+        ims = self.ims(data=test_incidents)
+
+        number = 1
+
+        # Unedited incident has priority = 5
+        assert ims.storage.read_incident_with_number(number).priority == 5
+
+        edits_file = StringIO(u'{"priority":2}')
+
+        (entity, etag) = yield ims.data_incident_edit(number, edits_file)
+
+        # Response is empty
+        self.assertEquals(entity, u"")
+        self.assertIdentical(etag, None)
+
+        # Verify that the edit happened; edited incident has priority = 2
+        self.assertEquals(
+            ims.storage.read_incident_with_number(number).priority, 2
+        )
