@@ -29,7 +29,7 @@ from twisted.web.static import File
 
 from klein import Klein
 
-from .json import JSON, json_as_text, json_from_file, json_from_text
+from .json import JSON, json_as_text, json_from_file
 from .json import ranger_as_json, incident_as_json, incident_from_json
 from .edit import edit_incident
 from .sauce import url_for, set_response_header
@@ -79,7 +79,7 @@ class IncidentManagementSystem(object):
 
     @staticmethod
     def add_headers(data, request, status=http.OK):
-        entity, etag = [x.encode("utf-8") for x in data]
+        entity, etag = [unicode(x).encode("utf-8") for x in data]
 
         if etag is not None:
             set_response_header(
