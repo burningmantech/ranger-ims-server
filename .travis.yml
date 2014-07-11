@@ -9,7 +9,8 @@ before_install:
  - sudo apt-get install -qq libssl0.9.8
 
 install:
-  - ./bin/develop
+  - pip install -r requirements-dev.txt --allow-external mysql-connector-python
 
 script:
-  - ./bin/test
+  - pyflakes ims
+  - trial ims
