@@ -227,22 +227,22 @@ class IncidentManagementSystem(object):
         return d
 
 
-    def data_incident_edit(self, number, edits_text):
+    def data_incident_edit(self, number, edits_file):
         incident = self.storage.read_incident_with_number(number)
 
         #
         # Apply the changes requested by the client
         #
-        edits_json = json_from_file(edits_text)
+        edits_json = json_from_file(edits_file)
         edits = incident_from_json(edits_json, number=number, validate=False)
-        edit_incident(incident, edits, self.avatarId.decode("utf-8"))
+        edited = edit_incident(incident, edits, self.avatarId.decode("utf-8"))
 
         #
         # Write to disk
         #
-        self.storage.write_incident(incident)
+        self.storage.write_incident(edited)
 
-        return succeed((b"", None))
+        return succeed((u"", None))
 
 
     @app.route("/incidents", methods=("POST",))
@@ -281,7 +281,7 @@ class IncidentManagementSystem(object):
 
         self.storage.write_incident(incident)
 
-        return succeed((b"", None))
+        return succeed((u"", None))
 
 
     # #
