@@ -230,7 +230,9 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
             }
         """)
 
-        (entity, etag) = yield ims.data_incident_new(number, json_file)
+        (entity, etag) = yield ims.data_incident_new(
+            number, json_file, u"Tool"
+        )
 
         # Response is empty
         self.assertEquals(entity, u"")
@@ -242,3 +244,4 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         self.assertEquals(incident.incident_types, frozenset())
         self.assertEquals(incident.rangers, frozenset())
         self.assertEquals(len(incident.report_entries), 1)
+        self.assertEquals(incident.report_entries[-1].author, u"Tool")

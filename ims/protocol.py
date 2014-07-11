@@ -269,21 +269,26 @@ class IncidentManagementSystem(object):
 
             return response
 
-        d = self.data_incident_new(number, request.content)
+        d = self.data_incident_new(
+            number, request.content, self.avatarId.decode("utf-8")
+        )
         d.addCallback(self.add_headers, request=request, status=http.CREATED)
         d.addCallback(add_location_headers)
         return d
 
 
-    def data_incident_new(self, number, json_file):
+    def data_incident_new(self, number, json_file, author):
         json = json_from_file(json_file)
         incident = incident_from_json(json, number=number)
 
         # Edit report entrys to add author
         for entry in incident.report_entries:
-            entry.author = self.avatarId.decode("utf-8")
+            entry.author = author
 
         self.storage.write_incident(incident)
+
+        log.msg(u"User {} created new incident #{}".format(author, number))
+        # log.msg(unicode(json))
 
         return succeed((u"", None))
 
