@@ -204,3 +204,39 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         self.assertEquals(
             ims.storage.read_incident_with_number(number).priority, 2
         )
+
+
+    @inlineCallbacks
+    def test_data_incident_new(self):
+        ims = self.ims(data=test_incidents)
+
+        number = ims.storage.next_incident_number()
+
+        json_file = StringIO(u"""
+            {
+                "priority": 3,
+                "report_entries": [
+                    {
+                        "author": "Splinter",
+                        "text": "Hello!",
+                        "created": "2013-08-31T21:00:00Z",
+                        "system_entry": false
+                    }
+                ],
+                "incident_types": [],
+                "ranger_handles": []
+            }
+        """)
+
+        (entity, etag) = yield ims.data_incident_new(number, json_file)
+
+        # Response is empty
+        self.assertEquals(entity, u"")
+        self.assertIdentical(etag, None)
+
+        # Verify that the new incident was created
+        incident = ims.storage.read_incident_with_number(number)
+        self.assertEquals(incident.number, number)
+        self.assertEquals(incident.incident_types, frozenset())
+        self.assertEquals(incident.rangers, frozenset())
+        self.assertEquals(len(incident.report_entries), 1)
