@@ -9,8 +9,7 @@ before_install:
  - sudo apt-get install -qq libssl0.9.8
 
 install:
-  - pip install -r requirements-dev.txt
+  - ./bin/develop
 
 script:
-  - pyflakes ims
-  - trial ims
+  - ./bin/test
