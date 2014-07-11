@@ -269,11 +269,9 @@ class IncidentManagementSystem(object):
         return d
 
 
-    def data_incident_new(self, number, json_text):
-        json = json_from_text(json_text)
-        incident = incident_from_json(
-            json, number=self.storage.next_incident_number()
-        )
+    def data_incident_new(self, number, json_file):
+        json = json_from_file(json_file)
+        incident = incident_from_json(json, number=number)
 
         # Edit report entrys to add author
         for entry in incident.report_entries:
