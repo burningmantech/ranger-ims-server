@@ -22,6 +22,7 @@ __all__ = [
     "IncidentManagementSystem",
 ]
 
+from twisted.python import log
 from twisted.python.zippath import ZipArchive
 from twisted.internet.defer import Deferred, succeed
 from twisted.web import http
@@ -222,12 +223,14 @@ class IncidentManagementSystem(object):
 
         number = int(number)
 
-        d = self.data_incident_edit(number, request.content)
+        d = self.data_incident_edit(
+            number, request.content, self.avatarId.decode("utf-8")
+        )
         d.addCallback(self.add_headers, request=request)
         return d
 
 
-    def data_incident_edit(self, number, edits_file):
+    def data_incident_edit(self, number, edits_file, author):
         incident = self.storage.read_incident_with_number(number)
 
         #
@@ -235,12 +238,15 @@ class IncidentManagementSystem(object):
         #
         edits_json = json_from_file(edits_file)
         edits = incident_from_json(edits_json, number=number, validate=False)
-        edited = edit_incident(incident, edits, self.avatarId.decode("utf-8"))
+        edited = edit_incident(incident, edits, author)
 
         #
         # Write to disk
         #
         self.storage.write_incident(edited)
+
+        log.msg(u"User {} edited incident #{}".format(author, number))
+        # log.msg(unicode(edits_json))
 
         return succeed((u"", None))
 

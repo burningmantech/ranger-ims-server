@@ -71,7 +71,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         if data is not None:
             config.storage = self.storage(data=data)
         ims = IncidentManagementSystem(config)
-        ims.avatarId = u"Tool"
+        ims.avatarId = u"Test"
         return ims
 
 
@@ -194,16 +194,18 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
 
         edits_file = StringIO(u'{"priority":2}')
 
-        (entity, etag) = yield ims.data_incident_edit(number, edits_file)
+        (entity, etag) = yield ims.data_incident_edit(
+            number, edits_file, u"Tool"
+        )
 
         # Response is empty
         self.assertEquals(entity, u"")
         self.assertIdentical(etag, None)
 
         # Verify that the edit happened; edited incident has priority = 2
-        self.assertEquals(
-            ims.storage.read_incident_with_number(number).priority, 2
-        )
+        incident = ims.storage.read_incident_with_number(number)
+        self.assertEquals(incident.priority, 2)
+        self.assertEquals(incident.report_entries[-1].author, u"Tool")
 
 
     @inlineCallbacks
