@@ -24,10 +24,11 @@ from twisted.internet.defer import inlineCallbacks
 
 from ims.config import Configuration
 from ims.store import Storage
-from ims.json import json_from_text
+from ims.json import json_from_text, incident_from_json
 from ims.protocol import IncidentManagementSystem
 
 from ims.test.test_config import emptyConfigFile
+from ims.test.test_store import test_incidents, test_incident_etags
 
 
 
@@ -60,9 +61,10 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         return store
 
 
-    def ims(self):
+    def ims(self, data=None):
         config = Configuration(emptyConfigFile)
-        # config.storage = self.storage()
+        if data is not None:
+            config.storage = self.storage(data=data)
         ims = IncidentManagementSystem(config)
         return ims
 
@@ -131,3 +133,45 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         (entity, etag) = yield ims.data_incident_types()
         self.assertEquals(entity, ims.config.IncidentTypesJSON)
         self.assertEquals(etag, hash(ims.config.IncidentTypesJSON))
+
+
+    @inlineCallbacks
+    def test_data_incidents_none(self):
+        ims = self.ims()
+
+        (entity, etag) = yield ims.data_incidents(ims.storage.list_incidents())
+
+        self.assertEquals(entity, u"[]")
+        self.assertIdentical(etag, None)
+
+
+    @inlineCallbacks
+    def test_data_incidents_some(self):
+        ims = self.ims(data=test_incidents)
+
+        (entity, etag) = yield ims.data_incidents(ims.storage.list_incidents())
+        json = json_from_text(entity)
+
+        self.assertEquals(
+            json,
+            list(reversed(
+                [[n, e] for n, e in test_incident_etags.iteritems()]
+            ))
+        )
+        self.assertIdentical(etag, None)
+
+
+    @inlineCallbacks
+    def test_data_incident(self):
+        ims = self.ims(data=test_incidents)
+
+        for number in test_incident_etags.iterkeys():
+            (entity, etag) = yield ims.data_incident(number)
+            incident = incident_from_json(json_from_text(entity), number)
+
+            self.assertEquals(
+                incident, ims.storage.read_incident_with_number(number)
+            )
+            self.assertEquals(
+                etag, ims.storage.etag_for_incident_with_number(number)
+            )
