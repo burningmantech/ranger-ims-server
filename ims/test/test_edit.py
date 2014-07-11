@@ -20,7 +20,7 @@ Tests for L{ims.edit}.
 
 from datetime import datetime as DateTime
 
-from ..data import IncidentState, Incident, Ranger, Location
+from ..data import IncidentState, Incident, Ranger, Location, ReportEntry
 from ..json import datetime_as_rfc3339
 from ..edit import edit_incident, EditNotAllowedError
 
@@ -139,7 +139,7 @@ class EditingTests(unittest.TestCase):
 
         self.assertEquals(edited.location.name, u"Berlin")
         self.assertEquals(edited.location.address, u"9 & C")
-        self.assertReportEntryAdded(edited, before, after, report_text)
+        self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
     def test_edit_location_changed_address(self):
@@ -156,7 +156,7 @@ class EditingTests(unittest.TestCase):
 
         self.assertEquals(edited.location.name, u"Tokyo")
         self.assertEquals(edited.location.address, u"3 & C")
-        self.assertReportEntryAdded(edited, before, after, report_text)
+        self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
     def test_edit_location_changed_name_address(self):
@@ -176,7 +176,7 @@ class EditingTests(unittest.TestCase):
 
         self.assertEquals(edited.location.name, u"Berlin")
         self.assertEquals(edited.location.address, u"3 & C")
-        self.assertReportEntryAdded(edited, before, after, report_text)
+        self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
     def test_edit_rangers_none(self):
@@ -308,7 +308,31 @@ class EditingTests(unittest.TestCase):
             )
 
             self.assertChanged(edited, state.name, now)
-            self.assertReportEntryAdded(edited, before, after, report_text)
+            self.assertSystemReportEntryAdded(
+                edited, before, after, report_text
+            )
+
+
+    def test_edit_report_entry(self):
+        """
+        Edit report entries appends to (and does not replace) existing report
+        entries.
+        """
+        (edited, before, after) = self.edit_incident(
+            "report_entries",
+            [ReportEntry(u"Splinter", u"Hello!")],
+            [ReportEntry(u"Tool", u"Bye!")]
+        )
+
+        self.assertEquals(2, len(edited.report_entries))
+
+        self.assertEquals(u"Splinter", edited.report_entries[0].author)
+        self.assertEquals(u"Hello!", edited.report_entries[0].text)
+
+        self.assertEquals(u"Tool", edited.report_entries[1].author)
+        self.assertEquals(u"Bye!", edited.report_entries[1].text)
+
+    # test_edit_report_entry.todo = "unimplemented"
 
 
     def assertEditValueNoop(self, attribute, old_value, new_value):
@@ -362,7 +386,7 @@ class EditingTests(unittest.TestCase):
         )
 
         self.assertChanged(edited, attribute, new_value)
-        self.assertReportEntryAdded(edited, before, after, report_text)
+        self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
     def assertEditSetChanged(
@@ -389,7 +413,7 @@ class EditingTests(unittest.TestCase):
         )
 
         self.assertChanged(edited, attribute, new_values)
-        self.assertReportEntryAdded(edited, before, after, report_text)
+        self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
     def assertChanged(self, edited, attribute, new):
@@ -400,8 +424,10 @@ class EditingTests(unittest.TestCase):
         self.assertEquals(new, getattr(edited, attribute))
 
 
-    def assertReportEntryAdded(self, edited, before, after, report_text):
-        # Verify that the expected report entry was added
+    def assertSystemReportEntryAdded(self, edited, before, after, report_text):
+        """
+        Verify that a report entry was added.
+        """
         self.assertEquals(1, len(edited.report_entries))
 
         last_entry = edited.report_entries[-1]

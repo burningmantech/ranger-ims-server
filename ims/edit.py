@@ -222,10 +222,16 @@ def edit_incident(incident, edits, author):
 
 
     #
-    # Add system report entries, then user report entries
+    # Add report entries
     #
     report_entries = []
 
+    # First, keep all existing report entries from the original incident.
+    if incident.report_entries is not None:
+        for report_entry in incident.report_entries:
+            report_entries.append(report_entry)
+
+    # Next, add new system report entries
     if system_messages:
         report_entries.append(
             ReportEntry(
@@ -235,8 +241,15 @@ def edit_incident(incident, edits, author):
             )
         )
 
-    # FIXME: Add user report entries
+    # Finally, add new use report entries
+    if edits.report_entries is not None:
+        for report_entry in edits.report_entries:
+            report_entries.append(report_entry)
 
+
+    #
+    # Build and return the edited incident.
+    #
     return Incident(
         number,
         priority=priority,
