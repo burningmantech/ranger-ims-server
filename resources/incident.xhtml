@@ -47,21 +47,19 @@
 
         <label id="incident_state">
           <select name="state">
-            <option value="created"    t:render="state_selected">New       </option>
-            <option value="dispatched" t:render="state_selected">Dispatched</option>
-            <option value="on_scene"   t:render="state_selected">On Scene  </option>
-            <option value="closed"     t:render="state_selected">Closed    </option>
+            <option value="created"    t:render="state_option">New       </option>
+            <option value="dispatched" t:render="state_option">Dispatched</option>
+            <option value="on_scene"   t:render="state_option">On Scene  </option>
+            <option value="closed"     t:render="state_option">Closed    </option>
           </select>
         </label>
 
         <label id="incident_priority">
           Priority:
           <select name="priority">
-            <option value="1" t:render="priority_selected">1</option>
-            <option value="2" t:render="priority_selected">2</option>
-            <option value="3" t:render="priority_selected">3</option>
-            <option value="4" t:render="priority_selected">4</option>
-            <option value="5" t:render="priority_selected">5</option>
+            <option value="1" t:render="priority_option">High  </option>
+            <option value="3" t:render="priority_option">Normal</option>
+            <option value="5" t:render="priority_option">Low   </option>
           </select>
         </label>
 
@@ -70,18 +68,18 @@
       <fieldset id="incident_summary_fields">
         <label id="incident_summary">
           Summary:
-          <input type="text" name="summary" placeholder="Summary..." t:render="summary_value" disabled="" />
+          <input type="text" name="summary" placeholder="Summary..." t:render="summary" />
         </label>
       </fieldset>
 
       <fieldset id="incident_tags">
         <label id="incident_rangers">
           Rangers<br />
-          <select name="rangers" multiple="" t:render="rangers_options" disabled="" />
+          <select name="rangers" multiple="" t:render="rangers_options" />
         </label>
         <label id="incident_types">
           Incident Types<br />
-          <select name="rangers" multiple="" t:render="types_options" disabled="" />
+          <select name="rangers" multiple="" t:render="types_options" />
         </label>
       </fieldset> <!-- id="incident_tags" -->
 
@@ -89,17 +87,17 @@
         <legend>Location</legend>
         <label id="incident_location_name">
           Name:
-          <input type="text" name="location_name" placeholder="Name of location..." size="100" t:render="location_name_value" disabled="" />
+          <input type="text" name="location_name" placeholder="Name of location..." size="100" t:render="location_name" />
         </label>
         <label id="incident_location_address">
           Address:
-          <input type="text" name="location_address" placeholder="Address of location..." size="100" t:render="location_address_value" disabled="" />
+          <input type="text" name="location_address" placeholder="Address of location..." size="100" t:render="location_address" disabled="" />
         </label>
       </fieldset> <!-- id="incident_location" -->
 
       <fieldset id="incident_report">
         <legend>Incident Report</legend>
-        <div id="incident_report_text" t:render="incident_report" />
+        <div id="incident_report_text" t:render="incident_report_text" />
         <!-- <textarea id="incident_report_input" /> -->
       </fieldset> <!-- id="incident_report -->
 

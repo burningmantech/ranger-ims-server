@@ -30,6 +30,9 @@ from ..json import datetime_as_rfc3339
 
 
 class IncidentElement(BaseElement):
+    edit_enabled = False
+
+
     def __init__(self, ims, number):
         BaseElement.__init__(
             self, ims, "incident",
@@ -53,8 +56,13 @@ class IncidentElement(BaseElement):
             setattr(self, attr_name, render_attr)
 
 
+    def apply_disabled(self, attrs):
+        if not self.edit_enabled:
+            attrs["disabled"] = u"disabled"
+
+
     @renderer
-    def state_selected(self, request, tag):
+    def state_option(self, request, tag):
         for state, name in (
             (self.incident.closed, "closed"),
             (self.incident.on_scene, "on_scene"),
@@ -69,7 +77,7 @@ class IncidentElement(BaseElement):
 
 
     @renderer
-    def priority_selected(self, request, tag):
+    def priority_option(self, request, tag):
         if int(tag.attributes["value"]) == self.incident.priority:
             return tag(selected="")
         else:
@@ -77,45 +85,62 @@ class IncidentElement(BaseElement):
 
 
     @renderer
-    def summary_value(self, request, tag):
-        return tag(value=u"{0}".format(self.incident.summary))
+    def summary(self, request, tag):
+        attrs = dict(value=u"{0}".format(self.incident.summary))
+        self.apply_disabled(attrs)
+        return tag(**attrs)
 
 
     @renderer
     def rangers_options(self, request, tag):
+        attrs = dict()
+        self.apply_disabled(attrs)
         return tag(
-            tags.option(
-                u"{ranger.handle} ({ranger.name})".format(ranger=ranger),
-                value=ranger.handle
-            )
-            for ranger in self.incident.rangers
+            (
+                tags.option(
+                    u"{ranger.handle} ({ranger.name})".format(ranger=ranger),
+                    value=ranger.handle
+                )
+                for ranger in self.incident.rangers
+            ),
+            **attrs
         )
 
 
     @renderer
     def types_options(self, request, tag):
+        attrs = dict()
+        self.apply_disabled(attrs)
         return tag(
-            tags.option(
-                type,
-                value=type
-            )
-            for type in self.incident.incident_types
+            (
+                tags.option(
+                    type,
+                    value=type
+                )
+                for type in self.incident.incident_types
+            ),
+            **attrs
         )
 
 
     @renderer
-    def location_name_value(self, request, tag):
+    def location_name(self, request, tag):
+        attrs = dict()
+        self.apply_disabled(attrs)
+
         if (
             self.incident.location is None or
             self.incident.location.name is None
         ):
-            return tag(value=u"")
+            attrs["value"] = u""
+        else:
+            attrs["value"] = u"{0}".format(self.incident.location.name)
 
-        return tag(value=u"{0}".format(self.incident.location.name))
+        return tag(**attrs)
 
 
     @renderer
-    def location_address_value(self, request, tag):
+    def location_address(self, request, tag):
         if (
             self.incident.location is None or
             self.incident.location.address is None
@@ -126,7 +151,7 @@ class IncidentElement(BaseElement):
 
 
     @renderer
-    def incident_report(self, request, tag):
+    def incident_report_text(self, request, tag):
         attrs_entry_system = {"class": "incident_entry_system"}
         attrs_entry_user = {"class": "incident_entry_user"}
         attrs_timestamp = {"class": "incident_entry_timestamp"}
