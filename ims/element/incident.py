@@ -85,7 +85,7 @@ class IncidentElement(BaseElement):
 
 
     @renderer
-    def summary(self, request, tag):
+    def incident_summary_input(self, request, tag):
         attrs = dict(value=u"{0}".format(self.incident.summary))
         self.apply_disabled(attrs)
         return tag(**attrs)
@@ -124,7 +124,7 @@ class IncidentElement(BaseElement):
 
 
     @renderer
-    def location_name(self, request, tag):
+    def location_name_input(self, request, tag):
         attrs = dict()
         self.apply_disabled(attrs)
 
@@ -140,7 +140,7 @@ class IncidentElement(BaseElement):
 
 
     @renderer
-    def location_address(self, request, tag):
+    def location_address_input(self, request, tag):
         attrs = dict()
         self.apply_disabled(attrs)
 
@@ -193,7 +193,7 @@ class IncidentElement(BaseElement):
         return tag(*entries_rendered())
 
     @renderer
-    def incident_report_input(self, request, tag):
+    def incident_report_textarea(self, request, tag):
         if self.edit_enabled:
             return tag
         else:
