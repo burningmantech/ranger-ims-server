@@ -171,7 +171,9 @@ def incidents_as_table(incidents, caption=None, id=None):
                     u"{0}".format(incident.number), **attrs_number
                 ),
                 tags.td(
-                    u"{0}".format(incident.priority), **attrs_priority
+                    u"{0}".format(
+                        priority_name(incident.priority), **attrs_priority
+                    )
                 ),
                 tags.td(u"{0}".format(
                     u", ".join(ranger.handle for ranger in incident.rangers)
@@ -203,3 +205,27 @@ def incidents_as_table(incidents, caption=None, id=None):
         incidents_as_rows(incidents),
         **attrs_table
     )
+
+
+def normalize_priority(priority):
+    """
+    Normalize priority 1, 2, 3, 4 or 5 to 1, 3 or 5.
+    """
+    return {
+        1: 1,
+        2: 1,
+        3: 3,
+        4: 5,
+        5: 5,
+    }[priority]
+
+
+def priority_name(priority):
+    """
+    Return a string label for a priority.
+    """
+    return {
+        1: "High",
+        3: "Normal",
+        5: "Low",
+    }[normalize_priority(priority)]

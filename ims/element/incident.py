@@ -24,13 +24,15 @@ __all__ = [
 
 from twisted.web.template import renderer, tags
 
-from .base import BaseElement
 from ..json import datetime_as_rfc3339
+
+from .base import BaseElement
+from .util import normalize_priority
 
 
 
 class IncidentElement(BaseElement):
-    edit_enabled = False
+    edit_enabled = True
 
 
     def __init__(self, ims, number):
@@ -78,7 +80,9 @@ class IncidentElement(BaseElement):
 
     @renderer
     def priority_option(self, request, tag):
-        if int(tag.attributes["value"]) == self.incident.priority:
+        priority = normalize_priority(self.incident.priority)
+
+        if int(tag.attributes["value"]) == priority:
             return tag(selected="")
         else:
             return tag
