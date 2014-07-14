@@ -91,14 +91,14 @@
         </label>
         <label id="incident_location_address">
           Address:
-          <input type="text" name="location_address" placeholder="Address of location..." size="100" t:render="location_address" disabled="" />
+          <input type="text" name="location_address" placeholder="Address of location..." size="100" t:render="location_address" />
         </label>
       </fieldset> <!-- id="incident_location" -->
 
       <fieldset id="incident_report">
         <legend>Incident Report</legend>
         <div id="incident_report_text" t:render="incident_report_text" />
-        <!-- <textarea id="incident_report_input" /> -->
+        <textarea id="incident_report_input" t:render="incident_report_input" />
       </fieldset> <!-- id="incident_report -->
 
     </form> <!-- id="incident_form" -->

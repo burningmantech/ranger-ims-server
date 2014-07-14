@@ -141,13 +141,18 @@ class IncidentElement(BaseElement):
 
     @renderer
     def location_address(self, request, tag):
+        attrs = dict()
+        self.apply_disabled(attrs)
+
         if (
             self.incident.location is None or
             self.incident.location.address is None
         ):
-            return tag(value=u"")
+            attrs["value"] = u""
+        else:
+            attrs["value"] = u"{0}".format(self.incident.location.address)
 
-        return tag(value=u"{0}".format(self.incident.location.address))
+        return tag(**attrs)
 
 
     @renderer
@@ -186,3 +191,10 @@ class IncidentElement(BaseElement):
                 yield entry_rendered(entry)
 
         return tag(*entries_rendered())
+
+    @renderer
+    def incident_report_input(self, request, tag):
+        if self.edit_enabled:
+            return tag
+        else:
+            return u""
