@@ -151,7 +151,7 @@ class HeaderName (Values):
 
 
 class ContentType (Values):
-    HTML  = ValueConstant("text/html")
+    HTML  = ValueConstant("text/html; charset=utf-8")
     JSON  = ValueConstant("application/json")
     XHTML = ValueConstant("application/xhtml+xml")
-    plain = ValueConstant("text/plain")
+    plain = ValueConstant("text/plain; charset=utf-8")
