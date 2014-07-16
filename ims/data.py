@@ -44,9 +44,30 @@ class IncidentState(Values):
     Incident states.  Values are corresponding L{Incident} attribute names.
     """
     created    = ValueConstant("created")
+    on_hold    = ValueConstant("on_hold")
     dispatched = ValueConstant("dispatched")
     on_scene   = ValueConstant("on_scene")
     closed     = ValueConstant("closed")
+
+
+    @classmethod
+    def describe(cls, value):
+        """
+        Describe a constant as a human-readable string.
+
+        @param value: An L{IncidentState} constant.
+        @type constant: L{ValueConstant}
+
+        @return: A string description of C{value}.
+        @rtype: L{unicode}
+        """
+        return {
+            cls.created: u"New",
+            cls.on_hold: u"On Hold",
+            cls.dispatched: u"Dispatched",
+            cls.on_scene: u"On Scene",
+            cls.closed: u"Closed",
+        }[value]
 
 
     @classmethod
@@ -114,8 +135,7 @@ class Incident(object):
         rangers=None,
         incident_types=None,
         report_entries=None,
-        created=None, dispatched=None, on_scene=None, closed=None,
-        _lenient=False
+        created=None, state=None,
     ):
         """
         @param number: The incident's identifying number.
@@ -142,14 +162,8 @@ class Incident(object):
         @param created: The created time for the incident.
         @type created: L{DateTime}
 
-        @param dispatched: The dispatch time for the incident.
-        @type dispatched: L{DateTime}
-
-        @param on_scene: The on scene time for the incident.
-        @type on_scene: L{DateTime}
-
-        @param closed: The closed time for the incident.
-        @type closed: L{DateTime}
+        @param state: The state of the incident.
+        @type state: L{IncidentState}
         """
 
         if type(number) is not int:
@@ -173,43 +187,6 @@ class Incident(object):
         if report_entries is not None:
             report_entries = tuple(sorted(report_entries))
 
-        if not _lenient:
-            if dispatched is not None:
-                if created is not None and created > dispatched:
-                    raise InvalidDataError(
-                        "dispatched ({d}) must be >= created ({c})"
-                        .format(d=dispatched, c=created)
-                    )
-
-            if on_scene is not None:
-                if created is not None and created > on_scene:
-                    raise InvalidDataError(
-                        "on_scene ({o}) must be >= created ({c})"
-                        .format(c=created, o=on_scene)
-                    )
-                if dispatched is not None and dispatched > on_scene:
-                    raise InvalidDataError(
-                        "on_scene ({o}) must be > dispatched ({d})"
-                        .format(o=on_scene, d=dispatched)
-                    )
-
-            if closed is not None:
-                if created is not None and created > closed:
-                    raise InvalidDataError(
-                        "closed ({k}) must be >= created ({c})"
-                        .format(k=closed, c=created)
-                    )
-                if dispatched is not None and dispatched > closed:
-                    raise InvalidDataError(
-                        "closed ({k}) must be > dispatched ({d})"
-                        .format(k=closed, d=dispatched)
-                    )
-                if on_scene is not None and on_scene > closed:
-                    raise InvalidDataError(
-                        "closed ({k}) must be >= on_scene ({o})"
-                        .format(k=closed, o=on_scene)
-                    )
-
         self.number         = number
         self.priority       = priority
         self.summary        = summary
@@ -218,9 +195,7 @@ class Incident(object):
         self.incident_types = incident_types
         self.report_entries = report_entries
         self.created        = created
-        self.dispatched     = dispatched
-        self.on_scene       = on_scene
-        self.closed         = closed
+        self.state          = state
 
 
     def __str__(self):
@@ -241,9 +216,7 @@ class Incident(object):
             "summary={self.summary!r},"
             "report_entries={self.report_entries!r},"
             "created={self.created!r},"
-            "dispatched={self.dispatched!r},"
-            "on_scene={self.on_scene!r},"
-            "closed={self.closed!r},"
+            "state={self.state!r},"
             "priority={self.priority!r})"
             .format(self=self)
         )
@@ -263,9 +236,7 @@ class Incident(object):
                 self.summary == other.summary and
                 self.report_entries == other.report_entries and
                 self.created == other.created and
-                self.dispatched == other.dispatched and
-                self.on_scene == other.on_scene and
-                self.closed == other.closed and
+                self.state == other.state and
                 self.priority == other.priority
             )
         return NotImplemented
@@ -342,30 +313,12 @@ class Incident(object):
             )
 
         if (
-            self.dispatched is not None and
-            type(self.dispatched) is not DateTime
+            self.state is not None and
+            self.state not in IncidentState.iterconstants()
         ):
             raise InvalidDataError(
-                "Incident dispatched date must be a DateTime, not {0!r}"
-                .format(self.dispatched)
-            )
-
-        if (
-            self.on_scene is not None and
-            type(self.on_scene) is not DateTime
-        ):
-            raise InvalidDataError(
-                "Incident on_scene date must be a DateTime, not {0!r}"
-                .format(self.on_scene)
-            )
-
-        if (
-            self.closed is not None and
-            type(self.closed) is not DateTime
-        ):
-            raise InvalidDataError(
-                "Incident closed date must be a DateTime, not {0!r}"
-                .format(self.closed)
+                "Incident state date must be an IncidentState, not {0!r}"
+                .format(self.state)
             )
 
         if type(self.priority) is not int:

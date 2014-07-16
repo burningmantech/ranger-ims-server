@@ -64,7 +64,7 @@ def edit_incident(incident, edits, author):
         return old, new
 
 
-    def edit_value(old_value, new_value, name):
+    def edit_value(old_value, new_value, name, describe=None):
         """
         Edit a single value.
         """
@@ -76,23 +76,26 @@ def edit_incident(incident, edits, author):
             # The given edit doesn't change the value
             return old_value
 
+        if describe is None:
+            describe = lambda x: x
+
         system_messages.append(
             u"Changed {attribute} to: {value}".format(
                 attribute=name.replace(u"_", u" "),
-                value=(new_value if new_value else u"<no value>")
+                value=(describe(new_value) if new_value else u"<no value>")
             )
         )
 
         return new_value
 
 
-    def edit_attribute_value(attribute):
+    def edit_attribute_value(attribute, describe=None):
         """
         Edit the single value of an incident attribute.
         """
         old_value, new_value = old_new(attribute)
 
-        return edit_value(old_value, new_value, attribute)
+        return edit_value(old_value, new_value, attribute, describe=describe)
 
 
     def edit_attribute_set(attribute):
@@ -152,42 +155,18 @@ def edit_incident(incident, edits, author):
 
 
     #
-    # Ensure that if a state is None, that the following states are also None.
-    #
-
-    for state in IncidentState.iterconstants():
-        old = getattr(incident, state.name)
-        new = getattr(edits, state.name)
-        if new is None:
-            if old is None:
-                for following_state in IncidentState.states_following(state):
-                    following_old = getattr(incident, following_state.name)
-                    following_new = getattr(edits, following_state.name)
-                    if following_new is not None and following_old is None:
-                        raise EditNotAllowedError(
-                            "{following} time may not be edited "
-                            "if {prior} was not edited."
-                            .format(
-                                following=following_state,
-                                prior=state
-                            )
-                        )
-        elif new != old:
-            system_messages.append(
-                u"Changed {state} timestamp to: {value}".format(
-                    state=state.name,
-                    value=(datetime_as_rfc3339(new) if new else u"<no value>")
-                )
-            )
-
-
-    #
     # Set resulting values
     #
 
     priority = edit_attribute_value("priority")
     summary  = edit_attribute_value("summary")
+    created  = edit_attribute_value("created", describe=datetime_as_rfc3339)
+    state    = edit_attribute_value("state", describe=IncidentState.describe)
 
+    rangers        = edit_attribute_set("rangers")
+    incident_types = edit_attribute_set("incident_types")
+
+    # Location has to be unpacked
     old_location, new_location = old_new("location")
 
     if new_location is None:
@@ -200,26 +179,6 @@ def edit_incident(incident, edits, author):
             old_location.address, new_location.address, "location address"
         )
         location = Location(location_name, location_address)
-
-    rangers        = edit_attribute_set("rangers")
-    incident_types = edit_attribute_set("incident_types")
-
-    # Walk through states in reversed order and if we find an edit for a state,
-    # then apply edits to that state and prior states.
-    for state in reversed(tuple(IncidentState.iterconstants())):
-        state_edit = getattr(edits, state.name)
-        if state_edit is not None:
-            state_timestamps = edit_timestamp(
-                frozenset(IncidentState.states_prior_to(state)) |
-                frozenset((state,))
-            )
-            break
-    else:
-        # Having found no state edits, this will leave things as they were.
-        state_timestamps = edit_timestamp(
-            frozenset(IncidentState.iterconstants())
-        )
-
 
     #
     # Add report entries
@@ -258,8 +217,6 @@ def edit_incident(incident, edits, author):
         rangers=rangers,
         incident_types=incident_types,
         report_entries=report_entries,
-        created=state_timestamps[IncidentState.created],
-        dispatched=state_timestamps[IncidentState.dispatched],
-        on_scene=state_timestamps[IncidentState.on_scene],
-        closed=state_timestamps[IncidentState.closed],
+        created=created,
+        state=state,
     )

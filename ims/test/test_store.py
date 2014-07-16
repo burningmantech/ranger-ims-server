@@ -24,7 +24,7 @@ import twisted.trial.unittest
 from twisted.python.filepath import FilePath
 
 from ims.json import incident_from_json, json_from_text
-from ims.data import Incident, ReportEntry
+from ims.data import IncidentState, Incident, ReportEntry
 from ims.store import (
     StorageError, ReadOnlyStorage, Storage, NoSuchIncidentError
 )
@@ -409,7 +409,7 @@ def test_incidents(store):
             report_entries=(
                 ReportEntry(u"da Mongolian", u"Fire!", time2),
             ),
-            created=time1, dispatched=time2, on_scene=time3, closed=time3,
+            created=time1, state=IncidentState.closed,
         ),
     )
 
@@ -418,7 +418,7 @@ test_incident_etags = {
     1: "d17eaaec34f4706c376cf40a85d665591be3c651",
     2: "99daa32cd576990efeff8c69bb3a2c366c9316e2",
     3: "713e9665610741ea7ab9c27b631ed8763ee7da46",
-    4: "7ed08ec6e5245c95eca4cc6857255d39617f89f4",
+    4: "10ed878004f93cd9578e24bab24743ed6e384620",
 }
 
 

@@ -24,7 +24,7 @@ Tests for L{ims.json}.
 from twisted.trial import unittest
 
 from ..data import (
-    InvalidDataError,
+    InvalidDataError, IncidentState,
     Incident, ReportEntry, Ranger, Location,
 )
 from ..json import (
@@ -34,39 +34,7 @@ from ..json import (
     ranger_as_json,
 )
 
-from .test_store import time1, time2, time3
-
-
-class ConstantTests(unittest.TestCase):
-    """
-    Tests for constants in L{ims.json}.
-    """
-
-    def test_JSON_states(self):
-        """
-        L{JSON.states} returns incident state names.
-        """
-        self.assertEquals(
-            set(JSON.states()),
-            set(
-                (
-                    JSON.created,
-                    JSON.dispatched,
-                    JSON.on_scene,
-                    JSON.closed,
-                )
-            ),
-        )
-
-
-    def test_JSON_states_sorting(self):
-        """
-        Comparison of states implies the correct order.
-        """
-        states = list(JSON.states())
-
-        self.assertEquals(states, sorted(reversed(states)))
-
+from .test_store import time1, time2
 
 
 class IncidentDeserializationTests(unittest.TestCase):
@@ -306,15 +274,31 @@ class IncidentDeserializationTests(unittest.TestCase):
         self.assertEquals(
             Incident(
                 number=1,
-                created=time1, dispatched=time1, on_scene=time2, closed=time3,
+                created=time1,
             ),
             incident_from_json(
                 {
                     JSON.number.value: 1,
                     JSON.created.value: datetime_as_rfc3339(time1),
-                    JSON.dispatched.value: datetime_as_rfc3339(time1),
-                    JSON.on_scene.value: datetime_as_rfc3339(time2),
-                    JSON.closed.value: datetime_as_rfc3339(time3),
+                },
+                number=1, validate=None
+            )
+        )
+
+
+    def test_incident_from_json_state(self):
+        """
+        Deserialize with state.
+        """
+        self.assertEquals(
+            Incident(
+                number=1,
+                state=IncidentState.on_scene,
+            ),
+            incident_from_json(
+                {
+                    JSON.number.value: 1,
+                    JSON.state.value: JSON.state_on_scene.value,
                 },
                 number=1, validate=None
             )
@@ -531,17 +515,29 @@ class IncidentSerializationTests(unittest.TestCase):
             {
                 JSON.number.value: 1,
                 JSON.created.value: datetime_as_rfc3339(time1),
-                JSON.dispatched.value: datetime_as_rfc3339(time1),
-                JSON.on_scene.value: datetime_as_rfc3339(time2),
-                JSON.closed.value: datetime_as_rfc3339(time3),
             },
             incident_as_json(
                 Incident(
                     number=1,
                     created=time1,
-                    dispatched=time1,
-                    on_scene=time2,
-                    closed=time3,
+                )
+            )
+        )
+
+
+    def test_incident_as_json_state(self):
+        """
+        Serialize with state.
+        """
+        self.assertEquals(
+            {
+                JSON.number.value: 1,
+                JSON.state.value: JSON.state_on_scene.value,
+            },
+            incident_as_json(
+                Incident(
+                    number=1,
+                    state=IncidentState.on_scene,
                 )
             )
         )

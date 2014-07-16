@@ -106,9 +106,7 @@ class IncidentTests(unittest.TestCase):
         self.assertIdentical(incident.summary, None)
         self.assertEquals(incident.report_entries, None)
         self.assertIdentical(incident.created, None)
-        self.assertIdentical(incident.dispatched, None)
-        self.assertIdentical(incident.on_scene, None)
-        self.assertIdentical(incident.closed, None)
+        self.assertIdentical(incident.state, None)
         self.assertEquals(incident.priority, None)
 
 
@@ -124,45 +122,6 @@ class IncidentTests(unittest.TestCase):
         L{Incident.__init__} with non-whole C{number}.
         """
         self.assertRaises(InvalidDataError, Incident, number=-1)
-
-
-    def test_init_createBeforeDispatched(self):
-        """
-        L{Incident.dispatched} must follow L{Incident.created}.
-        """
-        self.assertRaises(
-            InvalidDataError,
-            Incident,
-            number=1,
-            created=DateTime(1972, 06, 29, 12, 0, 4),
-            dispatched=DateTime(1972, 06, 29, 12, 0, 3),
-        )
-
-
-    def test_init_dispatchedBeforeOnScene(self):
-        """
-        L{Incident.on_scene} must follow L{Incident.dispatched}.
-        """
-        self.assertRaises(
-            InvalidDataError,
-            Incident,
-            number=1,
-            dispatched=DateTime(1972, 06, 29, 12, 0, 2),
-            on_scene=DateTime(1972, 06, 29, 12, 0, 1),
-        )
-
-
-    def test_init_onSceneBeforeClosed(self):
-        """
-        L{Incident.closed} must follow L{Incident.on_scene}.
-        """
-        self.assertRaises(
-            InvalidDataError,
-            Incident,
-            number=1,
-            on_scene=DateTime(1972, 06, 29, 12, 0, 2),
-            closed=DateTime(1972, 06, 29, 12, 0, 1),
-        )
 
 
     def test_init_sorted_entries(self):
@@ -208,9 +167,7 @@ class IncidentTests(unittest.TestCase):
             "summary={i.summary!r},"
             "report_entries={i.report_entries!r},"
             "created={i.created!r},"
-            "dispatched={i.dispatched!r},"
-            "on_scene={i.on_scene!r},"
-            "closed={i.closed!r},"
+            "state={i.state!r},"
             "priority={i.priority!r})"
             .format(i=incident)
         )
@@ -316,62 +273,19 @@ class IncidentTests(unittest.TestCase):
         self.assertRaises(InvalidDataError, incident.validate)
 
 
-    def test_validate_dispatched(self):
+    def test_validate_state(self):
         """
-        L{Incident.validate} of incident with valid dispatched time.
+        L{Incident.validate} of incident with valid state.
         """
-        incident = newIncident(
-            created=DateTime.now(), dispatched=DateTime.now()
-        )
+        incident = newIncident(state=IncidentState.dispatched)
         incident.validate()
 
 
-    def test_validate_dispatched_notDateTime(self):
+    def test_validate_state_invalid(self):
         """
-        L{Incident.validate} of incident with non-DateTime dispatched time.
+        L{Incident.validate} of incident with invalid state.
         """
-        incident = newIncident(dispatched=0)
-        self.assertRaises(InvalidDataError, incident.validate)
-
-
-    def test_validate_onScene(self):
-        """
-        L{Incident.validate} of incident with valid on scene time.
-        """
-        incident = newIncident(
-            created=DateTime.now(),
-            dispatched=DateTime.now(),
-            on_scene=DateTime.now(),
-        )
-        incident.validate()
-
-
-    def test_validate_onScene_notDateTime(self):
-        """
-        L{Incident.validate} of incident with non-DateTime on scene time.
-        """
-        incident = newIncident(on_scene=0)
-        self.assertRaises(InvalidDataError, incident.validate)
-
-
-    def test_validate_closed(self):
-        """
-        L{Incident.validate} of incident with valid closed time.
-        """
-        incident = newIncident(
-            created=DateTime.now(),
-            dispatched=DateTime.now(),
-            on_scene=DateTime.now(),
-            closed=DateTime.now(),
-        )
-        incident.validate()
-
-
-    def test_validate_closed_notDateTime(self):
-        """
-        L{Incident.validate} of incident with non-DateTime closed time.
-        """
-        incident = newIncident(closed=0)
+        incident = newIncident(state="dispatched")
         self.assertRaises(InvalidDataError, incident.validate)
 
 
@@ -868,7 +782,8 @@ def newIncident(
     rangers=(),
     incident_types=(),
     report_entries=(),
-    created=None, dispatched=None, on_scene=None, closed=None,
+    created=None,
+    state=None,
 ):
     return Incident(
         number,
@@ -879,9 +794,7 @@ def newIncident(
         incident_types=incident_types,
         report_entries=report_entries,
         created=created,
-        dispatched=dispatched,
-        on_scene=on_scene,
-        closed=closed,
+        state=state,
     )
 
 

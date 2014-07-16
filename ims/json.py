@@ -42,7 +42,7 @@ from twisted.python.constants import (
 )
 
 from .data import (
-    InvalidDataError, Incident, ReportEntry, Ranger, Location
+    InvalidDataError, IncidentState, Incident, ReportEntry, Ranger, Location
 )
 
 rfc3339_datetime_format = "%Y-%m-%dT%H:%M:%SZ"
@@ -93,9 +93,11 @@ class JSON(Values):
     text             = ValueConstant("text")
     system_entry     = ValueConstant("system_entry")
     created          = ValueConstant("created")
-    dispatched       = ValueConstant("dispatched")
-    on_scene         = ValueConstant("on_scene")
-    closed           = ValueConstant("closed")
+    state            = ValueConstant("state")
+    state_created    = ValueConstant("created")
+    state_dispatched = ValueConstant("dispatched")
+    state_on_scene   = ValueConstant("on_scene")
+    state_closed     = ValueConstant("closed")
     name             = ValueConstant("name")
     url              = ValueConstant("url")
 
@@ -103,48 +105,6 @@ class JSON(Values):
     ranger_handle = ValueConstant("handle")
     ranger_name   = ValueConstant("name")
     ranger_status = ValueConstant("status")
-
-
-    @classmethod
-    def states(cls):
-        """
-        List the constants that are states names.
-
-        @return: All incident state names.
-        @rtype: iterable of L{ValueConstant}
-        """
-        if not hasattr(cls, "_states"):
-            cls._states = (
-                cls.created,
-                cls.dispatched,
-                cls.on_scene,
-                cls.closed,
-            )
-        return cls._states
-
-
-    @classmethod
-    def cmpStates(cls, a, b):
-        """
-        Compare two states for ordering purposes.
-
-        @param a: A JSON state name.
-        @type a: L{ValueConstant}
-
-        @param b: A JSON state name.
-        @type b: L{ValueConstant}
-
-        @return: An number that is negative if C{a < b}, zero if C{a == b}, and
-            positive if C{a > b}.
-        @rtype: L{int}
-        """
-        assert isinstance(a, ValueConstant), "a"
-        assert isinstance(b, ValueConstant), "b"
-
-        if not hasattr(cls, "_stateIndexes"):
-            states = cls.states()
-            cls._stateIndexes = dict(zip(states, xrange(0, len(states))))
-        return cmp(cls._stateIndexes[a], cls._stateIndexes[b])
 
 
     @classmethod
@@ -164,7 +124,7 @@ class JSON(Values):
 
 
 
-def incident_from_json(root, number, validate=True, _lenient=False):
+def incident_from_json(root, number, validate=True):
     """
     Create an incident from JSON data.
 
@@ -185,6 +145,12 @@ def incident_from_json(root, number, validate=True, _lenient=False):
     """
     if number is None:
         raise TypeError("Incident number may not be null")
+
+    for attribute in root:
+        try:
+            JSON.lookupByValue(attribute)
+        except Exception:
+            raise RuntimeError("ARGH! Evil Death!")
 
     json_number = root.get(JSON.number.value, None)
 
@@ -234,6 +200,13 @@ def incident_from_json(root, number, validate=True, _lenient=False):
             for entry in json_entries
         ]
 
+    json_state = root.get(JSON.state.value, None)
+
+    if json_state is None:
+        state = None
+    else:
+        state = IncidentState.lookupByName(json_state)
+
     incident = Incident(
         number=number,
         priority=root.get(JSON.priority.value, None),
@@ -243,10 +216,7 @@ def incident_from_json(root, number, validate=True, _lenient=False):
         incident_types=root.get(JSON.incident_types.value, None),
         report_entries=report_entries,
         created=rfc3339_as_datetime(root.get(JSON.created.value, None)),
-        dispatched=rfc3339_as_datetime(root.get(JSON.dispatched.value, None)),
-        on_scene=rfc3339_as_datetime(root.get(JSON.on_scene.value, None)),
-        closed=rfc3339_as_datetime(root.get(JSON.closed.value, None)),
-        _lenient=_lenient,
+        state=state,
     )
 
     if validate:
@@ -303,14 +273,10 @@ def incident_as_json(incident):
     if incident.created is not None:
         root[JSON.created.value] = datetime_as_rfc3339(incident.created)
 
-    if incident.dispatched is not None:
-        root[JSON.dispatched.value] = datetime_as_rfc3339(incident.dispatched)
-
-    if incident.on_scene is not None:
-        root[JSON.on_scene.value] = datetime_as_rfc3339(incident.on_scene)
-
-    if incident.closed is not None:
-        root[JSON.closed.value] = datetime_as_rfc3339(incident.closed)
+    if incident.state is not None:
+        root[JSON.state.value] = JSON.lookupByName(
+            "state_{}".format(incident.state.name)
+        ).value
 
     return root
 

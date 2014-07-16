@@ -29,6 +29,7 @@ from hashlib import sha1 as etag_hash
 
 from twisted.python import log
 from twisted.python.filepath import UnlistableError
+from .data import IncidentState
 from .json import (
     incident_as_json, incident_from_json, json_as_text, json_from_file
 )
@@ -86,7 +87,7 @@ class ReadOnlyStorage(object):
         handle = self._open_incident(number, "r")
         try:
             json = json_from_file(handle)
-            return incident_from_json(json, number=number, _lenient=True)
+            return incident_from_json(json, number=number)
         finally:
             handle.close()
 
@@ -229,7 +230,7 @@ class ReadOnlyStorage(object):
             #
             # Filter out closed incidents if appropriate
             #
-            if not show_closed and incident.closed:
+            if not show_closed and incident.state == IncidentState.closed:
                 continue
 
             #

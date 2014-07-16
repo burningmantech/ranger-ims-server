@@ -21,8 +21,9 @@ Tests for L{ims.edit}.
 from datetime import datetime as DateTime
 
 from ..data import IncidentState, Incident, Ranger, Location, ReportEntry
-from ..json import datetime_as_rfc3339
 from ..edit import edit_incident, EditNotAllowedError
+
+from .test_store import time1, time2
 
 from twisted.trial import unittest
 
@@ -237,80 +238,46 @@ class EditingTests(unittest.TestCase):
         )
 
 
-    def test_edit_state_follow_none(self):
+    def test_edit_created_same(self):
         """
-        If a state timestamp is C{None} and not edited, then no following
-        state timestamps may be edited.
+        Edit incident created timestamp to same value is a no-op.
         """
-        for state in IncidentState.iterconstants():
-            original = dict(
-                (prior.name, DateTime.utcnow())
-                for prior in IncidentState.states_prior_to(state)
-            )
-
-            for following in IncidentState.states_following(state):
-                self.assertRaises(
-                    EditNotAllowedError,
-                    edit_incident,
-                    Incident(number=1, **original),
-                    Incident(number=1, **{following.name: DateTime.utcnow()}),
-                    u"Tool"
-                )
+        self.assertEditValueNoop("created", time1, time1)
 
 
-    def test_edit_state_follow_set(self):
+    def test_edit_created_changed(self):
         """
-        If a state timestamp is edited and the following state timestamps are
-        not edited, the following state timestamps should be set to C{None}.
+        Edit incident created timestamp to a new value.
         """
-        for state in IncidentState.iterconstants():
-            edited = edit_incident(
-                Incident(
-                    number=1,
-                    created=DateTime.utcnow(),
-                    dispatched=DateTime.utcnow(),
-                    on_scene=DateTime.utcnow(),
-                    closed=DateTime.utcnow(),
-                ),
-                Incident(number=1, **{state.name: DateTime.utcnow()}),
-                u"Tool"
-            )
+        (edited, before, after) = self.edit_incident("created", time1, time2)
 
-            for state in IncidentState.states_following(state):
-                self.assertIdentical(None, getattr(edited, state.name))
+        report_text = u"Changed created to: 2013-08-31T21:00:00Z"
+
+        self.assertEquals(edited.created, time2)
+        self.assertSystemReportEntryAdded(edited, before, after, report_text)
+
+
+    def test_edit_state_same(self):
+        """
+        Edit incident state to same value is a no-op.
+        """
+        self.assertEditValueNoop(
+            "state", IncidentState.on_scene, IncidentState.on_scene
+        )
 
 
     def test_edit_state_changed(self):
         """
-        Edit incident created date to a new value.
+        Edit incident state to a new value.
         """
-        for state in IncidentState.iterconstants():
-            before = DateTime.utcnow()
+        (edited, before, after) = self.edit_incident(
+            "state", IncidentState.dispatched, IncidentState.on_scene
+        )
 
-            state_attrs = dict(
-                (s.name, DateTime.utcnow())
-                for s in IncidentState.states_prior_to(state)
-            )
+        report_text = u"Changed state to: On Scene"
 
-            now = DateTime.utcnow()
-
-            edited = edit_incident(
-                Incident(number=1, **state_attrs),
-                Incident(number=1, **{state.name: now}),
-                u"Tool"
-            )
-
-            after = DateTime.utcnow()
-
-            report_text = u"Changed {attribute} timestamp to: {value}".format(
-                attribute=state.name,
-                value=datetime_as_rfc3339(now)
-            )
-
-            self.assertChanged(edited, state.name, now)
-            self.assertSystemReportEntryAdded(
-                edited, before, after, report_text
-            )
+        self.assertEquals(edited.state, IncidentState.on_scene)
+        self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
     def test_edit_report_entry(self):
@@ -331,8 +298,6 @@ class EditingTests(unittest.TestCase):
 
         self.assertEquals(u"Tool", edited.report_entries[1].author)
         self.assertEquals(u"Bye!", edited.report_entries[1].text)
-
-    # test_edit_report_entry.todo = "unimplemented"
 
 
     def assertEditValueNoop(self, attribute, old_value, new_value):
