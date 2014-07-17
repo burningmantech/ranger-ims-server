@@ -412,7 +412,7 @@ class IncidentManagementSystem(object):
         #set_response_header(request, HeaderName.etag, ????)
         set_response_header(request, HeaderName.contentType, ContentType.JSON)
         return json_as_text([
-            {JSON.name.value: name, JSON.url.value: value}
+            {JSON.page_url.value: name, JSON.page_url.value: value}
             for name, value in (
                 ("Home page", "/"),
                 ("Dispatch Queue", "/queue"),

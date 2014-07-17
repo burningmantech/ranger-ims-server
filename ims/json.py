@@ -81,30 +81,43 @@ def rfc3339_as_datetime(rfc3339):
 
 class JSON(Values):
     # Incident attribute keys
-    number           = ValueConstant("number")
-    priority         = ValueConstant("priority")
-    summary          = ValueConstant("summary")
-    location_name    = ValueConstant("location_name")
-    location_address = ValueConstant("location_address")
-    ranger_handles   = ValueConstant("ranger_handles")
-    incident_types   = ValueConstant("incident_types")
-    report_entries   = ValueConstant("report_entries")
-    author           = ValueConstant("author")
-    text             = ValueConstant("text")
-    system_entry     = ValueConstant("system_entry")
-    created          = ValueConstant("created")
-    state            = ValueConstant("state")
-    state_created    = ValueConstant("created")
-    state_dispatched = ValueConstant("dispatched")
-    state_on_scene   = ValueConstant("on_scene")
-    state_closed     = ValueConstant("closed")
-    name             = ValueConstant("name")
-    url              = ValueConstant("url")
+    incident_created  = ValueConstant("timestamp")
+    incident_number   = ValueConstant("number")
+    incident_priority = ValueConstant("priority")
+    incident_state    = ValueConstant("state")
+    incident_summary  = ValueConstant("summary")
+    location_name     = ValueConstant("location_name")
+    location_address  = ValueConstant("location_address")
+    ranger_handles    = ValueConstant("ranger_handles")
+    incident_types    = ValueConstant("incident_types")
+    report_entries    = ValueConstant("report_entries")
+
+    # State attribute values
+    state_new         = ValueConstant("new")
+    state_dispatched  = ValueConstant("dispatched")
+    state_on_scene    = ValueConstant("on_scene")
+    state_closed      = ValueConstant("closed")
+
+    # Obsolete legacy state attribute keys
+    _created          = ValueConstant("created")
+    _dispatched       = ValueConstant("dispatched")
+    _on_scene         = ValueConstant("on_scene")
+    _closed           = ValueConstant("closed")
 
     # Ranger attribute keys
     ranger_handle = ValueConstant("handle")
     ranger_name   = ValueConstant("name")
     ranger_status = ValueConstant("status")
+
+    # Report entry attribute keys
+    entry_author      = ValueConstant("author")
+    entry_text        = ValueConstant("text")
+    entry_system      = ValueConstant("system_entry")
+    entry_created     = ValueConstant("created")
+
+    # Web page reference keys
+    page_name = ValueConstant("name")
+    page_url  = ValueConstant("url")
 
 
     @classmethod
@@ -118,9 +131,7 @@ class JSON(Values):
         @return: A string description of C{value}.
         @rtype: L{unicode}
         """
-        return {
-            cls.created: u"new",
-        }.get(value, value.name.replace("_", " ").decode("utf-8"))
+        value.name.replace("_", " ").decode("utf-8")
 
 
 
@@ -152,7 +163,7 @@ def incident_from_json(root, number, validate=True):
         except Exception:
             raise RuntimeError("ARGH! Evil Death!")
 
-    json_number = root.get(JSON.number.value, None)
+    json_number = root.get(JSON.incident_number.value, None)
 
     if json_number is not None:
         if json_number != number:
@@ -161,7 +172,7 @@ def incident_from_json(root, number, validate=True):
                 .format(json_number, number)
             )
 
-        root[JSON.number.value] = number
+        root[JSON.incident_number.value] = number
 
     if type(root) is not dict:
         raise InvalidDataError("JSON incident must be a dict")
@@ -190,17 +201,17 @@ def incident_from_json(root, number, validate=True):
     else:
         report_entries = [
             ReportEntry(
-                author=entry.get(JSON.author.value, u"<unknown>"),
-                text=entry.get(JSON.text.value, None),
+                author=entry.get(JSON.entry_author.value, u"<unknown>"),
+                text=entry.get(JSON.entry_text.value, None),
                 created=rfc3339_as_datetime(
-                    entry.get(JSON.created.value, None)
+                    entry.get(JSON.entry_created.value, None)
                 ),
-                system_entry=entry.get(JSON.system_entry.value, False),
+                system_entry=entry.get(JSON.entry_system.value, False),
             )
             for entry in json_entries
         ]
 
-    json_state = root.get(JSON.state.value, None)
+    json_state = root.get(JSON.incident_state.value, None)
 
     if json_state is None:
         state = None
@@ -209,15 +220,17 @@ def incident_from_json(root, number, validate=True):
     else:
         state = IncidentState.lookupByName(json_state)
 
+    created = rfc3339_as_datetime(root.get(JSON.incident_created.value, None))
+
     incident = Incident(
         number=number,
-        priority=root.get(JSON.priority.value, None),
-        summary=root.get(JSON.summary.value, None),
+        priority=root.get(JSON.incident_priority.value, None),
+        summary=root.get(JSON.incident_summary.value, None),
         location=location,
         rangers=rangers,
         incident_types=root.get(JSON.incident_types.value, None),
         report_entries=report_entries,
-        created=rfc3339_as_datetime(root.get(JSON.created.value, None)),
+        created=created,
         state=state,
     )
 
@@ -241,13 +254,13 @@ def incident_as_json(incident):
 
     root = {}
 
-    root[JSON.number.value] = incident.number
+    root[JSON.incident_number.value] = incident.number
 
     if incident.priority is not None:
-        root[JSON.priority.value] = incident.priority
+        root[JSON.incident_priority.value] = incident.priority
 
     if incident.summary is not None:
-        root[JSON.summary.value] = incident.summary
+        root[JSON.incident_summary.value] = incident.summary
 
     if incident.location is not None:
         root[JSON.location_name.value] = incident.location.name
@@ -264,19 +277,21 @@ def incident_as_json(incident):
     if incident.report_entries is not None:
         root[JSON.report_entries.value] = [
             {
-                JSON.author.value: entry.author,
-                JSON.text.value: entry.text,
-                JSON.created.value: datetime_as_rfc3339(entry.created),
-                JSON.system_entry.value: entry.system_entry,
+                JSON.entry_author.value: entry.author,
+                JSON.entry_text.value: entry.text,
+                JSON.entry_created.value: datetime_as_rfc3339(entry.created),
+                JSON.entry_system.value: entry.system_entry,
             }
             for entry in incident.report_entries
         ]
 
     if incident.created is not None:
-        root[JSON.created.value] = datetime_as_rfc3339(incident.created)
+        root[JSON.incident_created.value] = (
+            datetime_as_rfc3339(incident.created)
+        )
 
     if incident.state is not None:
-        root[JSON.state.value] = JSON.lookupByName(
+        root[JSON.incident_state.value] = JSON.lookupByName(
             "state_{}".format(incident.state.name)
         ).value
 

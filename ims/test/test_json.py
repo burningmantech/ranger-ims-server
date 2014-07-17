@@ -48,7 +48,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         self.assertEquals(
             Incident(number=1),
-            incident_from_json({JSON.number.value: 1}, number=1, validate=None)
+            incident_from_json(
+                {JSON.incident_number.value: 1}, number=1, validate=None
+            )
         )
 
 
@@ -69,7 +71,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         self.assertRaises(
             InvalidDataError,
-            incident_from_json, {JSON.number.value: 1}, number=2
+            incident_from_json, {JSON.incident_number.value: 1}, number=2
         )
 
 
@@ -81,8 +83,8 @@ class IncidentDeserializationTests(unittest.TestCase):
             Incident(number=1, priority=2),
             incident_from_json(
                 {
-                    JSON.number.value: 1,
-                    JSON.priority.value: 2,
+                    JSON.incident_number.value: 1,
+                    JSON.incident_priority.value: 2,
                 },
                 number=1, validate=None
             )
@@ -97,8 +99,8 @@ class IncidentDeserializationTests(unittest.TestCase):
             Incident(number=1, summary=u"A B C"),
             incident_from_json(
                 {
-                    JSON.number.value: 1,
-                    JSON.summary.value: u"A B C",
+                    JSON.incident_number.value: 1,
+                    JSON.incident_summary.value: u"A B C",
                 },
                 number=1, validate=None
             )
@@ -116,7 +118,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             ),
             incident_from_json(
                 {
-                    JSON.number.value: 1,
+                    JSON.incident_number.value: 1,
                     JSON.location_name.value: u"Tokyo",
                     JSON.location_address.value: u"9:00 & C",
                 },
@@ -136,7 +138,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             ),
             incident_from_json(
                 {
-                    JSON.number.value: 1,
+                    JSON.incident_number.value: 1,
                     JSON.location_name.value: None,
                     JSON.location_address.value: None,
                 },
@@ -159,7 +161,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             ),
             incident_from_json(
                 {
-                    JSON.number.value: 1,
+                    JSON.incident_number.value: 1,
                     JSON.ranger_handles.value: (u"Tool", u"Tulsa"),
                 },
                 number=1, validate=None
@@ -175,7 +177,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             Incident(number=1, rangers=()),
             incident_from_json(
                 {
-                    JSON.number.value: 1,
+                    JSON.incident_number.value: 1,
                     JSON.ranger_handles.value: (),
                 },
                 number=1, validate=None
@@ -194,7 +196,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             ),
             incident_from_json(
                 {
-                    JSON.number.value: 1,
+                    JSON.incident_number.value: 1,
                     JSON.incident_types.value: (u"Footsie", u"Jacks"),
                 },
                 number=1, validate=None
@@ -210,7 +212,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             Incident(number=1, incident_types=()),
             incident_from_json(
                 {
-                    JSON.number.value: 1,
+                    JSON.incident_number.value: 1,
                     JSON.incident_types.value: (),
                 },
                 number=1, validate=None
@@ -232,17 +234,21 @@ class IncidentDeserializationTests(unittest.TestCase):
             ),
             incident_from_json(
                 {
-                    JSON.number.value: 1,
+                    JSON.incident_number.value: 1,
                     JSON.report_entries.value: (
                         {
-                            JSON.author.value: u"Tool",
-                            JSON.text.value: u"1 2 3",
-                            JSON.created.value: datetime_as_rfc3339(time1),
+                            JSON.entry_author.value: u"Tool",
+                            JSON.entry_text.value: u"1 2 3",
+                            JSON.entry_created.value: (
+                                datetime_as_rfc3339(time1)
+                            ),
                         },
                         {
-                            JSON.author.value: u"Tulsa",
-                            JSON.text.value: u"A B C",
-                            JSON.created.value: datetime_as_rfc3339(time2),
+                            JSON.entry_author.value: u"Tulsa",
+                            JSON.entry_text.value: u"A B C",
+                            JSON.entry_created.value: (
+                                datetime_as_rfc3339(time2)
+                            ),
                         },
                     ),
                 },
@@ -259,7 +265,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             Incident(number=1, report_entries=()),
             incident_from_json(
                 {
-                    JSON.number.value: 1,
+                    JSON.incident_number.value: 1,
                     JSON.report_entries.value: (),
                 },
                 number=1, validate=None
@@ -278,8 +284,8 @@ class IncidentDeserializationTests(unittest.TestCase):
             ),
             incident_from_json(
                 {
-                    JSON.number.value: 1,
-                    JSON.created.value: datetime_as_rfc3339(time1),
+                    JSON.incident_number.value: 1,
+                    JSON.incident_created.value: datetime_as_rfc3339(time1),
                 },
                 number=1, validate=None
             )
@@ -297,8 +303,8 @@ class IncidentDeserializationTests(unittest.TestCase):
             ),
             incident_from_json(
                 {
-                    JSON.number.value: 1,
-                    JSON.state.value: JSON.state_on_scene.value,
+                    JSON.incident_number.value: 1,
+                    JSON.incident_state.value: JSON.state_on_scene.value,
                 },
                 number=1, validate=None
             )
@@ -316,7 +322,7 @@ class IncidentSerializationTests(unittest.TestCase):
         Serialize with incident number.
         """
         self.assertEquals(
-            {JSON.number.value: 1},
+            {JSON.incident_number.value: 1},
             incident_as_json(Incident(number=1))
         )
 
@@ -327,8 +333,8 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.number.value: 1,
-                JSON.priority.value: 2,
+                JSON.incident_number.value: 1,
+                JSON.incident_priority.value: 2,
             },
             incident_as_json(Incident(number=1, priority=2))
         )
@@ -340,8 +346,8 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.number.value: 1,
-                JSON.summary.value: u"A B C",
+                JSON.incident_number.value: 1,
+                JSON.incident_summary.value: u"A B C",
             },
             incident_as_json(Incident(number=1, summary=u"A B C"))
         )
@@ -353,7 +359,7 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.number.value: 1,
+                JSON.incident_number.value: 1,
                 JSON.location_name.value: u"Tokyo",
                 JSON.location_address.value: u"9:00 & C",
             },
@@ -372,7 +378,7 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.number.value: 1,
+                JSON.incident_number.value: 1,
                 JSON.location_name.value: None,
                 JSON.location_address.value: None,
             },
@@ -391,7 +397,7 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.number.value: 1,
+                JSON.incident_number.value: 1,
                 JSON.ranger_handles.value: [u"Tool", u"Tulsa"],
             },
             incident_as_json(
@@ -412,7 +418,7 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.number.value: 1,
+                JSON.incident_number.value: 1,
                 JSON.ranger_handles.value: [],
             },
             incident_as_json(Incident(number=1, rangers=()))
@@ -432,9 +438,9 @@ class IncidentSerializationTests(unittest.TestCase):
 
         self.assertEquals(
             frozenset(result.keys()),
-            frozenset((JSON.number.value, JSON.incident_types.value))
+            frozenset((JSON.incident_number.value, JSON.incident_types.value))
         )
-        self.assertEquals(result[JSON.number.value], 1)
+        self.assertEquals(result[JSON.incident_number.value], 1)
         self.assertEquals(
             frozenset(result[JSON.incident_types.value]),
             frozenset((u"Footsie", u"Jacks"))
@@ -447,7 +453,7 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.number.value: 1,
+                JSON.incident_number.value: 1,
                 JSON.incident_types.value: (),
             },
             incident_as_json(Incident(number=1, incident_types=()))
@@ -460,19 +466,19 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.number.value: 1,
+                JSON.incident_number.value: 1,
                 JSON.report_entries.value: [
                     {
-                        JSON.author.value: u"Tool",
-                        JSON.text.value: u"1 2 3",
-                        JSON.created.value: datetime_as_rfc3339(time1),
-                        JSON.system_entry.value: False,
+                        JSON.entry_author.value: u"Tool",
+                        JSON.entry_text.value: u"1 2 3",
+                        JSON.entry_created.value: datetime_as_rfc3339(time1),
+                        JSON.entry_system.value: False,
                     },
                     {
-                        JSON.author.value: u"Tulsa",
-                        JSON.text.value: u"A B C",
-                        JSON.created.value: datetime_as_rfc3339(time2),
-                        JSON.system_entry.value: False,
+                        JSON.entry_author.value: u"Tulsa",
+                        JSON.entry_text.value: u"A B C",
+                        JSON.entry_created.value: datetime_as_rfc3339(time2),
+                        JSON.entry_system.value: False,
                     },
                 ],
             },
@@ -498,7 +504,7 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.number.value: 1,
+                JSON.incident_number.value: 1,
                 JSON.report_entries.value: [],
             },
             incident_as_json(
@@ -513,8 +519,8 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.number.value: 1,
-                JSON.created.value: datetime_as_rfc3339(time1),
+                JSON.incident_number.value: 1,
+                JSON.incident_created.value: datetime_as_rfc3339(time1),
             },
             incident_as_json(
                 Incident(
@@ -531,8 +537,8 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.number.value: 1,
-                JSON.state.value: JSON.state_on_scene.value,
+                JSON.incident_number.value: 1,
+                JSON.incident_state.value: JSON.state_on_scene.value,
             },
             incident_as_json(
                 Incident(
