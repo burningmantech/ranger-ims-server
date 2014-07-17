@@ -204,6 +204,8 @@ def incident_from_json(root, number, validate=True):
 
     if json_state is None:
         state = None
+
+        raise NotImplementedError("Need to check for legacy state attributes")
     else:
         state = IncidentState.lookupByName(json_state)
 
