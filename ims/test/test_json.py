@@ -315,9 +315,22 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize with legacy state data.
         """
-        raise NotImplementedError()
-
-    test_incident_from_json_state_legacy.todo = "unimplemented"
+        for (state, json_key) in (
+            (IncidentState.new, JSON._created.value),
+            (IncidentState.dispatched, JSON._dispatched.value),
+            (IncidentState.on_scene, JSON._on_scene.value),
+            (IncidentState.closed, JSON._closed.value),
+        ):
+            self.assertEquals(
+                Incident(number=1, state=state),
+                incident_from_json(
+                    {
+                        JSON.incident_number.value: 1,
+                        json_key: time1,
+                    },
+                    number=1, validate=None
+                )
+            )
 
 
 
