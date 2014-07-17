@@ -311,6 +311,15 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
+    def test_incident_from_json_state_legacy(self):
+        """
+        Deserialize with legacy state data.
+        """
+        raise NotImplementedError()
+
+    test_incident_from_json_state_legacy.todo = "unimplemented"
+
+
 
 class IncidentSerializationTests(unittest.TestCase):
     """
