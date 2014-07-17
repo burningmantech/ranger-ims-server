@@ -31,7 +31,9 @@ __all__ = [
 from functools import total_ordering
 from datetime import datetime as DateTime  # , timedelta as TimeDelta
 
-from twisted.python.constants import Values, ValueConstant
+from twisted.python.constants import (
+    Names, NamedConstant, Values, ValueConstant
+)
 
 
 
@@ -39,15 +41,15 @@ from twisted.python.constants import Values, ValueConstant
 # Constants
 #
 
-class IncidentState(Values):
+class IncidentState(Names):
     """
     Incident states.  Values are corresponding L{Incident} attribute names.
     """
-    created    = ValueConstant("created")
-    on_hold    = ValueConstant("on_hold")
-    dispatched = ValueConstant("dispatched")
-    on_scene   = ValueConstant("on_scene")
-    closed     = ValueConstant("closed")
+    new        = NamedConstant()
+    on_hold    = NamedConstant()
+    dispatched = NamedConstant()
+    on_scene   = NamedConstant()
+    closed     = NamedConstant()
 
 
     @classmethod
@@ -56,13 +58,13 @@ class IncidentState(Values):
         Describe a constant as a human-readable string.
 
         @param value: An L{IncidentState} constant.
-        @type constant: L{ValueConstant}
+        @type constant: L{NamedConstant}
 
         @return: A string description of C{value}.
         @rtype: L{unicode}
         """
         return {
-            cls.created: u"New",
+            cls.new: u"New",
             cls.on_hold: u"On Hold",
             cls.dispatched: u"Dispatched",
             cls.on_scene: u"On Scene",
