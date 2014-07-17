@@ -214,16 +214,16 @@ def incident_from_json(root, number, validate=True):
     json_state = root.get(JSON.incident_state.value, None)
 
     if json_state is None:
-        if root.get(JSON._closed, None) is not None:
+        if root.get(JSON._closed.value, None) is not None:
             state = IncidentState.closed
 
-        elif root.get(JSON._on_scene, None) is not None:
+        elif root.get(JSON._on_scene.value, None) is not None:
             state = IncidentState.on_scene
 
-        elif root.get(JSON._dispatched, None) is not None:
+        elif root.get(JSON._dispatched.value, None) is not None:
             state = IncidentState.dispatched
 
-        elif root.get(JSON._created, None) is not None:
+        elif root.get(JSON._created.value, None) is not None:
             state = IncidentState.new
 
         else:
