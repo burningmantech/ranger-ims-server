@@ -54,7 +54,8 @@
 
         <label id="incident_state">
           <select name="state">
-            <option value="created"    t:render="state_option">New       </option>
+            <option value="new"        t:render="state_option">New       </option>
+            <option value="on_hold"    t:render="state_option">On Hold   </option>
             <option value="dispatched" t:render="state_option">Dispatched</option>
             <option value="on_scene"   t:render="state_option">On Scene  </option>
             <option value="closed"     t:render="state_option">Closed    </option>

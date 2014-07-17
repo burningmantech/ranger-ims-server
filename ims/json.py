@@ -94,6 +94,7 @@ class JSON(Values):
 
     # State attribute values
     state_new         = ValueConstant("new")
+    state_on_hold     = ValueConstant("on_hold")
     state_dispatched  = ValueConstant("dispatched")
     state_on_scene    = ValueConstant("on_scene")
     state_closed      = ValueConstant("closed")
