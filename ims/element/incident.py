@@ -67,18 +67,6 @@ class IncidentElement(BaseElement):
         else:
             return tag
 
-        # for state, name in (
-        #     (self.incident.closed, "closed"),
-        #     (self.incident.on_scene, "on_scene"),
-        #     (self.incident.dispatched, "dispatched"),
-        #     (self.incident.created, "created"),
-        # ):
-        #     if state:
-        #         if tag.attributes["value"] == name:
-        #             return tag(selected="")
-        #         else:
-        #             return tag
-
 
     @renderer
     def priority_option(self, request, tag):
