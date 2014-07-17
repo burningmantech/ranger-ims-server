@@ -81,8 +81,8 @@ def rfc3339_as_datetime(rfc3339):
 
 class JSON(Values):
     # Incident attribute keys
-    incident_created  = ValueConstant("timestamp")
     incident_number   = ValueConstant("number")
+    incident_created  = ValueConstant("timestamp")
     incident_priority = ValueConstant("priority")
     incident_state    = ValueConstant("state")
     incident_summary  = ValueConstant("summary")
@@ -214,9 +214,21 @@ def incident_from_json(root, number, validate=True):
     json_state = root.get(JSON.incident_state.value, None)
 
     if json_state is None:
-        state = None
+        if root.get(JSON._closed, None) is not None:
+            state = IncidentState.closed
 
-        raise NotImplementedError("Need to check for legacy state attributes")
+        elif root.get(JSON._on_scene, None) is not None:
+            state = IncidentState.on_scene
+
+        elif root.get(JSON._dispatched, None) is not None:
+            state = IncidentState.dispatched
+
+        elif root.get(JSON._created, None) is not None:
+            state = IncidentState.new
+
+        else:
+            state = None
+
     else:
         state = IncidentState.lookupByName(json_state)
 
