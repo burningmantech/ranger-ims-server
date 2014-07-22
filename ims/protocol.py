@@ -246,7 +246,10 @@ class IncidentManagementSystem(object):
         self.storage.write_incident(edited)
 
         log.msg(u"User {} edited incident #{}".format(author, number))
-        # log.msg(unicode(edits_json))
+        if self.config.Debug:
+            log.msg(u"Original: {}".format(incident_as_json(incident)))
+            log.msg(u"Changes: {}".format(edits_json))
+            log.msg(u"Edited: {}".format(incident_as_json(edited)))
 
         return succeed((u"", None))
 
@@ -288,7 +291,8 @@ class IncidentManagementSystem(object):
         self.storage.write_incident(incident)
 
         log.msg(u"User {} created new incident #{}".format(author, number))
-        # log.msg(unicode(json))
+        if self.config.Debug:
+            log.msg(u"New: {}".format(incident_as_json(incident)))
 
         return succeed((u"", None))
 
