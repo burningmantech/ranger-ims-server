@@ -200,7 +200,7 @@ def edit_incident(incident, edits, author):
             )
         )
 
-    # Finally, add new use report entries
+    # Finally, add new user report entries
     if edits.report_entries is not None:
         for report_entry in edits.report_entries:
             report_entries.append(report_entry)
