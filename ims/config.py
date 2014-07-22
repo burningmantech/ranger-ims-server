@@ -27,13 +27,26 @@ from re import compile as regex_compile
 
 from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 
-from twisted.python import log
+from twisted.python import log as txlog
 from twisted.python.filepath import FilePath
 
 from .data import IncidentType
 from .json import json_as_text
 from .dms import DutyManagementSystem
 from .store import Storage, ReadOnlyStorage
+
+
+
+class PrintLogger(object):
+    def msg(self, text):
+        print(text)
+        txlog.msg(text)
+
+    def err(self, text):
+        print(text)
+        txlog.err(text)
+
+log = PrintLogger()
 
 
 
