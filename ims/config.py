@@ -14,6 +14,8 @@
 # limitations under the License.
 ##
 
+from __future__ import print_function
+
 """
 Server
 """
@@ -68,6 +70,7 @@ class Configuration (object):
             "Core.CachedResources: {self.CachedResources}\n"
             "Core.RejectClients: {self.RejectClients}\n"
             "Core.ReadOnly: {self.ReadOnly}\n"
+            "Core.Debug: {self.Debug}\n"
             "\n"
             "DMS.Hostname: {self.DMSHost}\n"
             "DMS.Database: {self.DMSDatabase}\n"
@@ -169,6 +172,12 @@ class Configuration (object):
         self.ReadOnly = (
             valueFromConfig("Core", "ReadOnly", "false") == "true"
         )
+        log.msg("ReadOnly: {0}".format(self.ReadOnly))
+
+        self.Debug = (
+            valueFromConfig("Core", "Debug", "false") == "true"
+        )
+        log.msg("Debug: {0}".format(self.Debug))
 
         self.DMSHost     = valueFromConfig("DMS", "Hostname", None)
         self.DMSDatabase = valueFromConfig("DMS", "Database", None)
