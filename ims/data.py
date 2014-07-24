@@ -420,7 +420,19 @@ class ReportEntry(object):
 
     def __lt__(self, other):
         if isinstance(other, self.__class__):
-            return self.created < other.created
+            if self.created < other.created:
+                return True
+
+            if self.system_entry and not other.system_entry:
+                return True
+
+            if self.author < other.author:
+                return True
+
+            if self.text < other.text:
+                return True
+
+            return False
 
         return NotImplemented
 
