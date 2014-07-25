@@ -39,17 +39,19 @@ from .store import Storage, ReadOnlyStorage
 
 
 
-class PrintLogger(object):
-    def msg(self, text):
-        print(text)
-        txlog.msg(text)
+if False:
+    class PrintLogger(object):
+        def msg(self, text):
+            print(text)
+            txlog.msg(text)
 
-    def err(self, text):
-        print(text)
-        txlog.err(text)
+        def err(self, text):
+            print(text)
+            txlog.err(text)
 
-log = PrintLogger()
-
+    log = PrintLogger()
+else:
+    log = txlog
 
 
 class Configuration (object):
