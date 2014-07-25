@@ -229,7 +229,7 @@ class Incident(object):
 
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
+        if isinstance(other, Incident):
             return (
                 self.number == other.number and
                 self.rangers == other.rangers and
@@ -245,9 +245,10 @@ class Incident(object):
 
 
     def __lt__(self, other):
-        if not isinstance(other, Incident):
-            return NotImplemented
-        return self.number < other.number
+        if isinstance(other, Incident):
+            return self.number < other.number
+
+        return NotImplemented
 
 
     def summaryFromReport(self):
@@ -364,6 +365,8 @@ class ReportEntry(object):
         if created is None:
             created = DateTime.utcnow()
 
+        assert text is not None, "ReportEntry text may not be None"
+
         self.author       = author
         self.text         = text
         self.created      = created
@@ -408,31 +411,29 @@ class ReportEntry(object):
 
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
+        if isinstance(other, ReportEntry):
             return (
-                self.author == other.author and
-                self.text == other.text and
                 self.created == other.created and
-                self.system_entry == other.system_entry
+                self.system_entry == other.system_entry and
+                self.author == other.author and
+                self.text == other.text
             )
+
         return NotImplemented
 
 
     def __lt__(self, other):
-        if isinstance(other, self.__class__):
-            if self.created < other.created:
-                return True
+        if isinstance(other, ReportEntry):
+            if self.created != other.created:
+                return self.created < other.created
 
-            if self.system_entry and not other.system_entry:
-                return True
+            if self.system_entry:
+                return not other.system_entry
 
-            if self.author < other.author:
-                return True
+            if self.author != other.author:
+                return self.author < other.author
 
-            if self.text < other.text:
-                return True
-
-            return False
+            return self.text < other.text
 
         return NotImplemented
 
@@ -511,17 +512,17 @@ class Ranger(object):
 
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
+        if isinstance(other, Ranger):
             return self.handle == other.handle
-        else:
-            return NotImplemented
+
+        return NotImplemented
 
 
     def __lt__(self, other):
-        if isinstance(other, self.__class__):
+        if isinstance(other, Ranger):
             return self.handle < other.handle
-        else:
-            return NotImplemented
+
+        return NotImplemented
 
 
     def validate(self):
@@ -608,11 +609,12 @@ class Location(object):
 
 
     def __lt__(self, other):
-        if isinstance(other, self.__class__):
+        if isinstance(other, Location):
             if self.name != other.name:
                 return self.name < other.name
             if self.address != other.address:
                 return self.address < other.address
+
         return NotImplemented
 
 

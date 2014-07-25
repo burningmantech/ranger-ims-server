@@ -422,8 +422,8 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry} implements ordering correctly.
         """
-        # Define r2 first so we notice if sort order is (incorrectly) defined
-        # by object id (which is the default)
+        # Define r2 first so we might notice if sort order is (incorrectly)
+        # defined by object id (which seems to be the default in CPython)
         r2 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 2))
         r1 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 1))
         r3 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 3))

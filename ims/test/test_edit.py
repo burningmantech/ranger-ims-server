@@ -285,10 +285,11 @@ class EditingTests(unittest.TestCase):
         Edit report entries appends to (and does not replace) existing report
         entries.
         """
-        (edited, before, after) = self.edit_incident(
-            "report_entries",
-            [ReportEntry(u"Splinter", u"Hello!")],
-            [ReportEntry(u"Tool", u"Bye!")]
+        r1 = ReportEntry(u"Splinter", u"Hello!")
+        r2 = ReportEntry(u"Tool", u"Bye!")
+
+        (edited, before, after) = (
+            self.edit_incident("report_entries", [r1], [r2])
         )
 
         self.assertEquals(2, len(edited.report_entries))
