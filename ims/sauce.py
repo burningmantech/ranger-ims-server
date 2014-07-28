@@ -30,6 +30,7 @@ from functools import wraps
 
 from twisted.python import log
 from twisted.python.constants import Values, ValueConstant
+from twisted.internet.defer import maybeDeferred
 from twisted.web import http
 
 from klein.interfaces import IKleinRequest
@@ -102,39 +103,40 @@ def http_sauce(f):
         # Store user name
         request.user = self.avatarId
 
-        try:
-            return f(self, request, *args, **kwargs)
+        def error(f):
+            if isinstance(f.value, NoSuchIncidentError):
+                request.setResponseCode(http.NOT_FOUND)
+                set_response_header(
+                    request, HeaderName.contentType, ContentType.plain
+                )
+                return "No such incident.\n"
 
-        except NoSuchIncidentError as e:
-            request.setResponseCode(http.NOT_FOUND)
-            set_response_header(
-                request, HeaderName.contentType, ContentType.plain
-            )
-            return "No such incident: {0}\n".format(e)
+            if isinstance(f.value, InvalidDataError):
+                log.msg(f)
+                request.setResponseCode(http.BAD_REQUEST)
+                set_response_header(
+                    request, HeaderName.contentType, ContentType.plain
+                )
+                return "Invalid data: {0}\n".format(f.getErrorMessage())
 
-        except InvalidDataError as e:
-            log.err(e)
-            request.setResponseCode(http.BAD_REQUEST)
-            set_response_header(
-                request, HeaderName.contentType, ContentType.plain
-            )
-            return "Invalid data: {0}\n".format(e)
+            if isinstance(f.value, DatabaseError):
+                log.msg(f)
+                request.setResponseCode(http.INTERNAL_SERVER_ERROR)
+                set_response_header(
+                    request, HeaderName.contentType, ContentType.plain
+                )
+                return "Database error."
 
-        except DatabaseError as e:
-            log.err(e)
-            request.setResponseCode(http.INTERNAL_SERVER_ERROR)
-            set_response_header(
-                request, HeaderName.contentType, ContentType.plain
-            )
-            return "Database error."
-
-        except Exception as e:
-            log.err(e)
+            log.err(f)
             request.setResponseCode(http.INTERNAL_SERVER_ERROR)
             set_response_header(
                 request, HeaderName.contentType, ContentType.plain
             )
             return "Server error.\n"
+
+        d = maybeDeferred(f, self, request, *args, **kwargs)
+        d.addErrback(error)
+        return d
 
     return wrapper
 
