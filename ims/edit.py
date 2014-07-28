@@ -169,7 +169,9 @@ def edit_incident(incident, edits, author):
     # Location has to be unpacked
     old_location, new_location = old_new("location")
 
-    if new_location is None:
+    if old_location is None:
+        location = new_location
+    elif new_location is None:
         location = old_location
     else:
         location_name = edit_value(
