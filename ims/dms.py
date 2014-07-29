@@ -106,11 +106,12 @@ class DutyManagementSystem(object):
         self.password = password
 
         self._personnel_updated = 0
+        self._dbpool = None
 
 
     @property
     def dbpool(self):
-        if not hasattr(self, "_dbpool"):
+        if self._dbpool is None:
             if (
                 self.host is None and
                 self.database is None and
