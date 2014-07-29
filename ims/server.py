@@ -27,8 +27,13 @@ if __name__ == "__main__":
     import os
     sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
+from zope.interface import provider
+
 from twisted.python.filepath import FilePath
 from twisted.cred.checkers import FilePasswordDB
+from twisted.web.iweb import IAccessLogFormatter
+from twisted.web.http import _escape
+import twisted.web.http
 
 from .config import Configuration
 from .auth import guard
@@ -54,38 +59,44 @@ def Resource():
     )
 
 
-# # Monkey patch twisted.web logging, which annoyingly doesn't let you log the
-# # username.
-# def logAccess(self, request):
-#     if hasattr(self, "logFile"):
-#         if hasattr(request, "user") and request.user:
-#             user = self._escape(request.user)
-#         else:
-#             user = "-"
 
-#         line = (
-#             '{ip} {user} - {time} '
-#             '"{method} {uri} {proto}" '
-#             '{status} {length} '
-#             '"{referer}" "{agent}"'
-#             '\n'
-#         ).format(
-#             ip=request.getClientIP(),
-#             user=user,
-#             time=self._logDateTime,
-#             method=self._escape(request.method),
-#             uri=self._escape(request.uri),
-#             proto=self._escape(request.clientproto),
-#             status=request.code,
-#             length=request.sentLength or "-",
-#             referer=self._escape(request.getHeader("referer") or "-"),
-#             agent=self._escape(request.getHeader("user-agent") or "-"),
-#         )
-#         self.logFile.write(line)
+#
+# Monkey patch twisted.web logging, which annoyingly doesn't let you log the
+# username.
+#
+@provider(IAccessLogFormatter)
+def combinedLogFormatter(timestamp, request):
+    """
+    @return: A combined log formatted log line for the given request.
 
-# import twisted.web.http
-# twisted.web.http.HTTPFactory.log = logAccess
+    @see: L{IAccessLogFormatter}
+    """
+    referrer = _escape(request.getHeader(b"referer") or b"-")
+    agent = _escape(request.getHeader(b"user-agent") or b"-")
 
+    if hasattr(request, b"user") and request.user:
+        user = _escape(request.user)
+    else:
+        user = b"-"
+
+    line = (
+        u'"%(ip)s" %(user)s - %(timestamp)s "%(method)s %(uri)s %(protocol)s" '
+        u'%(code)d %(length)s "%(referrer)s" "%(agent)s"' % dict(
+            ip=_escape(request.getClientIP() or b"-"),
+            timestamp=timestamp,
+            method=_escape(request.method),
+            uri=_escape(request.uri),
+            protocol=_escape(request.clientproto),
+            code=request.code,
+            length=request.sentLength or u"-",
+            referrer=referrer,
+            agent=agent,
+            user=user,
+        )
+    )
+    return line
+
+twisted.web.http.combinedLogFormatter = combinedLogFormatter
 
 
 if __name__ == "__main__":
