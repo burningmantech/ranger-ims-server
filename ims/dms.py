@@ -118,16 +118,21 @@ class DutyManagementSystem(object):
                 self.password is None
             ):
                 from .test.test_dms import DummyConnectionPool
-                self._dbpool = DummyConnectionPool("Dummy")
+                dbpool = DummyConnectionPool("Dummy")
 
             else:
-                self._dbpool = adbapi.ConnectionPool(
+                dbpool = adbapi.ConnectionPool(
                     "mysql.connector",
                     host=self.host,
                     database=self.database,
                     user=self.username,
                     password=self.password,
                 )
+
+            if dbpool is None:
+                raise DatabaseError("Unable to set up database pool.")
+
+            self._dbpool = dbpool
 
         return self._dbpool
 
