@@ -10,6 +10,7 @@ p, dd {
  margin-bottom: 0.5em;
 }
 
+form { display: inline; }
 label, select, input, textarea { display: inline-block; box-sizing: border-box; }
 
 label { font-weight: bold; }

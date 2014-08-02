@@ -5,7 +5,7 @@
     <link t:render="icon" />
     <link t:render="stylesheet" />
     <style>
-      #incident_form {
+      #incident_edit {
         border: 1px solid #c6c9cc;
         border-radius: 1em;
         padding: 1em;
@@ -13,7 +13,7 @@
 
       #incident_number, #incident_state, #incident_priority { width: 33%; }
 
-      #incident_header_fields, #incident_summary_fields { text-align: center; }
+      #incident_summary_form { text-align: center; }
 
       #incident_number   { text-align: left  ; }
       #incident_state    { text-align: center; }
@@ -25,9 +25,13 @@
 
       #incident_summary input { display: inline-block; }
 
-      #incident_tags { text-align: center; }
-      #incident_tags label        { width:  49%; }
-      #incident_tags label select { width: 100%; }
+      #incident_rangers_form { text-align: center; }
+      #incident_rangers_form label        { width:  49%; }
+      #incident_rangers_form label select { width: 100%; }
+
+      #incident_types_form { text-align: center; }
+      #incident_types_form label        { width:  49%; }
+      #incident_types_form label select { width: 100%; }
 
       #incident_report_text { border: 1px solid #c6c9cc; }
 
@@ -35,7 +39,8 @@
         border: 1px solid #c6c9cc;
         width: 100%;
         margin-top: 0.5em;
-        resize: none;
+        resize: vertical;
+        autofocus: true;
       }
 
       .incident_entry_user, .incident_entry_system { margin-bottom: 1.5em; }
@@ -44,14 +49,15 @@
     </style>
   </head>
   <body>
-    <form id="incident_form">
+    <div id="incident_edit">
 
-      <fieldset id="incident_header_fields">
-
+      <form id="incident_number_form">
         <label id="incident_number">
           Incident #: <span t:render="number" />
         </label>
+      </form>
 
+      <form id="incident_state_form">
         <label id="incident_state">
           <select name="state">
             <option value="new"        t:render="state_option">New       </option>
@@ -61,7 +67,9 @@
             <option value="closed"     t:render="state_option">Closed    </option>
           </select>
         </label>
- 
+      </form>
+
+      <form id="incident_priority_form">
         <label id="incident_priority">
           Priority:
           <select name="priority">
@@ -70,46 +78,52 @@
             <option value="5" t:render="priority_option">Low   </option>
           </select>
         </label>
+      </form>
 
-      </fieldset> <!-- id="incident_header_fields" -->
-
-      <fieldset id="incident_summary_fields">
+      <form id="incident_summary_form">
         <label id="incident_summary">
           Summary:
           <input type="text" name="summary" placeholder="Summary..." inputmode="latin-prose" t:render="incident_summary_input" />
         </label>
-      </fieldset>
+      </form>
 
-      <fieldset id="incident_tags">
+      <form id="incident_rangers_form">
         <label id="incident_rangers">
           Rangers<br />
           <select name="rangers" multiple="" t:render="rangers_options" />
         </label>
+      </form>
+
+      <form id="incident_types_form">
         <label id="incident_types">
           Incident Types<br />
           <select name="rangers" multiple="" t:render="types_options" />
         </label>
-      </fieldset> <!-- id="incident_tags" -->
+      </form>
 
-      <fieldset id="incident_location" class="boxed">
-        <legend>Location</legend>
-        <label id="incident_location_name">
-          Name:
-          <input type="text" name="location_name" placeholder="Name of location..." inputmode="latin" t:render="location_name_input" />
-        </label>
-        <label id="incident_location_address">
-          Address:
-          <input type="text" name="location_address" placeholder="Address of location..." inputmode="verbatim" t:render="location_address_input" />
-        </label>
-      </fieldset> <!-- id="incident_location" -->
+      <form id="incident_location_form">
+        <fieldset id="incident_location" class="boxed">
+          <legend>Location</legend>
+          <label id="incident_location_name">
+            Name:
+            <input type="text" name="location_name" placeholder="Name of location..." inputmode="latin" t:render="location_name_input" />
+          </label>
+          <label id="incident_location_address">
+            Address:
+            <input type="text" name="location_address" placeholder="Address of location..." inputmode="verbatim" t:render="location_address_input" />
+          </label>
+        </fieldset>
+      </form>
 
-      <fieldset id="incident_report">
-        <legend>Incident Report</legend>
-        <div id="incident_report_text" t:render="incident_report_text" />
-        <textarea id="incident_report_input" autofocus="true" placeholder="Additional report text..." t:render="incident_report_textarea" />
-      </fieldset> <!-- id="incident_report -->
+      <form id="incident_report_form">
+        <fieldset id="incident_report">
+          <legend>Incident Report</legend>
+          <div id="incident_report_text" t:render="incident_report_text" />
+          <textarea id="incident_report_input" name="report_text" autofocus="true" placeholder="Additional report text..." t:render="incident_report_textarea" />
+          <input type="submit" value="Add Entry" />
+        </fieldset>
+      </form>
 
-    </form> <!-- id="incident_form" -->
-
+    </div>
   </body>
 </html>
