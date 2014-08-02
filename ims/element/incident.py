@@ -164,11 +164,19 @@ class IncidentElement(BaseElement):
 
             when = datetime_as_rfc3339(entry.created)
 
+            author = entry.author
+            if author is None:
+                author = u"(unknown)"
+
+            text = entry.text
+            if text is None:
+                text = u"(*** ERROR: no text? ***)"
+
             return tags.div(
                 tags.span(
                     tags.time(when, datetime=when),
                     u", ",
-                    entry.author,
+                    author,
                     **attrs_timestamp
                 ),
                 ":",
