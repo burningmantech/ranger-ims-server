@@ -47,6 +47,10 @@ def edit_incident(incident, edits, author):
     @rtype: L{Incident}
     """
 
+    # Author is required
+    if author is None:
+        raise EditNotAllowedError("Author may not be None when editing.")
+
     # Incident number is not editable
     if incident.number != edits.number:
         raise EditNotAllowedError("Incident number may not be edited.")
