@@ -25,8 +25,11 @@ set -u
 wd="$(cd "$(dirname "$0")/.." && pwd)";
 
 opt_nodaemon="";
-opt_ssl="";
-kill="false";
+     opt_ssl="";
+        kill="false";
+      logdir="${wd}/log";
+     logfile="${logdir}/imsd.log";
+     pidfile="${logdir}/imsd.pid";
 
 usage ()
 {
@@ -50,7 +53,7 @@ while getopts 'hXks' option; do
         '?') usage; ;;
         'h') usage -; exit 0; ;;
         'k') kill="true"; ;;
-        'X') opt_nodaemon="--nodaemon"; ;;
+        'X') opt_nodaemon="--nodaemon"; logfile="/dev/stdout"; ;;
         's') opt_ssl="--port=ssl:8443"; ;;
     esac;
 done;
@@ -75,8 +78,8 @@ mkdir -p "${wd}/log";
 
 exec "${wd}/bin/twistd"             \
   --rundir="${wd}"                  \
-  --pidfile="${wd}/log/imsd.pid"    \
-  --logfile="${wd}/log/imsd.log"    \
+  --pidfile="${pidfile}"            \
+  --logfile="${logfile}"            \
   ${opt_nodaemon} web               \
   --notracebacks                    \
   --logfile="${wd}/log/access.log"  \
