@@ -19,6 +19,7 @@ IMS data model
 """
 
 __all__ = [
+    "IncidentState",
     "IncidentType",
     "InvalidDataError",
     "Incident",
