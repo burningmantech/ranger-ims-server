@@ -117,22 +117,33 @@ def edits_from_query(author, number, request):
     if not request.args:
         return None
 
+    priority = summary = location = rangers = None
+    incident_types = report_entries = state = None
+
+    priority, location, rangers, incident_types, state
+
+    for summary in request.args.get("summary", []):
+        summary = unicode(summary)
+
     report_entries = []
 
-    text = "\n".join(request.args.get("report_text", []))
-    if text:
+    for text in request.args.get("report_text", []):
         report_entries = (
             ReportEntry(
                 author=author,
                 text=text.replace("\r\n", "\n").decode("utf-8"),
             ),
         )
-    else:
-        report_entries = ()
 
     return Incident(
         number,
+        priority=priority,
+        summary=summary,
+        location=location,
+        rangers=rangers,
+        incident_types=incident_types,
         report_entries=report_entries,
+        state=state,
     )
 
 
