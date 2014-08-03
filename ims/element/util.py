@@ -35,7 +35,7 @@ from datetime import datetime as DateTime, timedelta as TimeDelta
 
 from twisted.web.template import tags
 
-from ..data import IncidentType, Incident, ReportEntry
+from ..data import IncidentState, IncidentType, Incident, ReportEntry
 
 
 
@@ -120,7 +120,21 @@ def edits_from_query(author, number, request):
     priority = summary = location = rangers = None
     incident_types = report_entries = state = None
 
-    priority, location, rangers, incident_types, state
+    for priority in request.args.get("priority", []):
+        priority = int(priority)
+
+    # FIXME:
+    location
+
+    # FIXME:
+    rangers
+
+    # FIXME:
+    incident_types
+
+    # FIXME:
+    for state in request.args.get("state", []):
+        state = IncidentState.lookupByName(state)
 
     for summary in request.args.get("summary", []):
         summary = unicode(summary)

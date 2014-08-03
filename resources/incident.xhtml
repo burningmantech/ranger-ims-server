@@ -59,7 +59,7 @@
 
       <form id="incident_state_form">
         <label id="incident_state">
-          <select name="state">
+          <select name="state" onchange="this.form.submit()">
             <option value="new"        t:render="state_option">New       </option>
             <option value="on_hold"    t:render="state_option">On Hold   </option>
             <option value="dispatched" t:render="state_option">Dispatched</option>
@@ -72,7 +72,7 @@
       <form id="incident_priority_form">
         <label id="incident_priority">
           Priority:
-          <select name="priority">
+          <select name="priority" onchange="this.form.submit()">
             <option value="1" t:render="priority_option">High  </option>
             <option value="3" t:render="priority_option">Normal</option>
             <option value="5" t:render="priority_option">Low   </option>
@@ -83,7 +83,7 @@
       <form id="incident_summary_form">
         <label id="incident_summary">
           Summary:
-          <input type="text" name="summary" placeholder="Summary..." inputmode="latin-prose" t:render="incident_summary_input" />
+          <input type="text" name="summary" placeholder="Summary..." inputmode="latin-prose" t:render="incident_summary_input" onchange="this.form.submit()" />
         </label>
       </form>
 
@@ -106,11 +106,11 @@
           <legend>Location</legend>
           <label id="incident_location_name">
             Name:
-            <input type="text" name="location_name" placeholder="Name of location..." inputmode="latin" t:render="location_name_input" />
+            <input type="text" name="location_name" placeholder="Name of location..." inputmode="latin" t:render="location_name_input" onchange="this.form.submit()" />
           </label>
           <label id="incident_location_address">
             Address:
-            <input type="text" name="location_address" placeholder="Address of location..." inputmode="verbatim" t:render="location_address_input" />
+            <input type="text" name="location_address" placeholder="Address of location..." inputmode="verbatim" t:render="location_address_input" onchange="this.form.submit()" />
           </label>
         </fieldset>
       </form>
@@ -119,7 +119,7 @@
         <fieldset id="incident_report">
           <legend>Incident Report</legend>
           <div id="incident_report_text" t:render="incident_report_text" />
-          <textarea id="incident_report_input" name="report_text" autofocus="true" placeholder="Additional report text..." t:render="incident_report_textarea" />
+          <textarea id="incident_report_input" name="report_text" autofocus="true" placeholder="Additional report text..." t:render="incident_report_textarea"  onchange="this.form.submit()" />
           <input type="submit" value="Add Entry" />
         </fieldset>
       </form>
