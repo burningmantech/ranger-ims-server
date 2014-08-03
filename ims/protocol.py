@@ -43,7 +43,8 @@ from .element.incident import IncidentElement
 # from .element.report_daily import DailyReportElement
 # from .element.report_shift import ShiftReportElement
 from .element.util import (
-    terms_from_query, show_closed_from_query, since_from_query
+    terms_from_query, show_closed_from_query, since_from_query,
+    edits_from_query,
 )
 from .util import http_download
 
@@ -64,6 +65,12 @@ class IncidentManagementSystem(object):
         self.storage = config.storage
         self.dms = config.dms
 
+
+    @property
+    def user(self):
+        if self.avatarId is None:
+            raise RuntimeError("No avatar ID?")
+        return self.avatarId.decode("utf-8")
 
     #
     # JSON endpoints
@@ -223,9 +230,7 @@ class IncidentManagementSystem(object):
 
         number = int(number)
 
-        d = self.data_incident_edit(
-            number, request.content, self.avatarId.decode("utf-8")
-        )
+        d = self.data_incident_edit(number, request.content, self.user)
         d.addCallback(self.add_headers, request=request)
         return d
 
@@ -245,7 +250,10 @@ class IncidentManagementSystem(object):
         #
         self.storage.write_incident(edited)
 
-        log.msg(u"User {} edited incident #{}".format(author, number))
+        log.msg(
+            u"User {} edited incident #{} via JSON"
+            .format(author, number)
+        )
         if self.config.Debug:
             log.msg(u"Original: {}".format(incident_as_json(incident)))
             log.msg(u"Changes: {}".format(edits_json))
@@ -272,9 +280,7 @@ class IncidentManagementSystem(object):
 
             return response
 
-        d = self.data_incident_new(
-            number, request.content, self.avatarId.decode("utf-8")
-        )
+        d = self.data_incident_new(number, request.content, self.user)
         d.addCallback(self.add_headers, request=request, status=http.CREATED)
         d.addCallback(add_location_headers)
         return d
@@ -290,7 +296,10 @@ class IncidentManagementSystem(object):
 
         self.storage.write_incident(incident)
 
-        log.msg(u"User {} created new incident #{}".format(author, number))
+        log.msg(
+            u"User {} created new incident #{} via JSON"
+            .format(author, number)
+        )
         if self.config.Debug:
             log.msg(u"New: {}".format(incident_as_json(incident)))
 
@@ -321,6 +330,25 @@ class IncidentManagementSystem(object):
             request, HeaderName.contentType, ContentType.HTML
         )
         number = int(number)
+        author = self.user
+
+        edits = edits_from_query(author, number, request)
+
+        if edits:
+            incident = self.storage.read_incident_with_number(number)
+            edited = edit_incident(incident, edits, author)
+
+            log.msg(
+                u"User {} edited incident #{} via web"
+                .format(author, number)
+            )
+            if self.config.Debug:
+                log.msg(u"Original: {}".format(incident_as_json(incident)))
+                log.msg(u"Changes: {}".format(incident_as_json(edits)))
+                log.msg(u"Edited: {}".format(incident_as_json(edited)))
+
+            self.storage.write_incident(edited)
+
         return IncidentElement(self, number)
 
 

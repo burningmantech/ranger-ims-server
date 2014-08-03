@@ -35,7 +35,7 @@ from datetime import datetime as DateTime, timedelta as TimeDelta
 
 from twisted.web.template import tags
 
-from ..data import IncidentType
+from ..data import IncidentType, Incident, ReportEntry
 
 
 
@@ -111,6 +111,29 @@ def since_from_query(request):
 
 def num_shifts_from_query(request):
     return query_value(request, "num_shifts", "1")
+
+
+def edits_from_query(author, number, request):
+    if not request.args:
+        return None
+
+    report_entries = []
+
+    text = "\n".join(request.args.get("report_text", []))
+    if text:
+        report_entries = (
+            ReportEntry(
+                author=author,
+                text=text.replace("\r\n", "\n").decode("utf-8"),
+            ),
+        )
+    else:
+        report_entries = ()
+
+    return Incident(
+        number,
+        report_entries=report_entries,
+    )
 
 
 def query_value(request, key, default, no_args_default=None):
