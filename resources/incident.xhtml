@@ -3,6 +3,7 @@
   <head>
     <title t:render="title" />
     <link t:render="icon" />
+    <link rel="stylesheet" href="/jquery-ui-theme/" />  <!-- blitzer -->
     <link t:render="stylesheet" />
     <style>
       #incident_edit {
@@ -11,19 +12,19 @@
         padding: 1em;
       }
 
-      #incident_number, #incident_state, #incident_priority { width: 33%; }
+      #incident_number_label, #incident_state_label, #incident_priority_label { width: 33%; }
 
       #incident_summary_form { text-align: center; }
 
-      #incident_number   { text-align: left  ; }
-      #incident_state    { text-align: center; }
-      #incident_priority { text-align: right ; }
+      #incident_number_label   { text-align: left  ; }
+      #incident_state_label    { text-align: center; }
+      #incident_priority_label { text-align: right ; }
 
-      #incident_number {}
-      #incident_state {}
-      #incident_priority {}
+      #incident_number_label {}
+      #incident_state_label {}
+      #incident_priority_label {}
 
-      #incident_summary input { display: inline-block; }
+      #incident_summary_label input { display: inline-block; }
 
       #incident_rangers_form { text-align: center; }
       #incident_rangers_form label        { width:  49%; }
@@ -47,18 +48,39 @@
       .incident_entry_system { text-align: center; font-size: 80%; color: gray; }
       .incident_entry_timestamp { font-weight: bold; }
     </style>
+    <script src="/jquery.js" />
+    <script src="/jquery-ui.js" />
+    <script type="text/javascript">
+      //<![CDATA[  </head>
+        $(document).ready(function() {
+          $.getJSON(
+            "/locations/",
+            function(data) {
+              names=data;
+            }
+          );
+
+          $("#incident_location_name").autocomplete({
+            source: function(request, response) {
+              var exp = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
+              response($.grep(names, function(i) { return exp.test(i); }));
+            }
+          });
+        });
+      //]]>
+    </script>
   </head>
   <body>
     <div id="incident_edit">
 
       <form id="incident_number_form">
-        <label id="incident_number">
+        <label id="incident_number_label">
           Incident #: <span t:render="number" />
         </label>
       </form>
 
       <form id="incident_state_form">
-        <label id="incident_state">
+        <label id="incident_state_label">
           <select name="state" onchange="this.form.submit()">
             <option value="new"        t:render="state_option">New       </option>
             <option value="on_hold"    t:render="state_option">On Hold   </option>
@@ -70,7 +92,7 @@
       </form>
 
       <form id="incident_priority_form">
-        <label id="incident_priority">
+        <label id="incident_priority_label">
           Priority:
           <select name="priority" onchange="this.form.submit()">
             <option value="1" t:render="priority_option">High  </option>
@@ -81,21 +103,21 @@
       </form>
 
       <form id="incident_summary_form">
-        <label id="incident_summary">
+        <label id="incident_summary_label">
           Summary:
           <input type="text" name="summary" placeholder="Summary..." inputmode="latin-prose" t:render="incident_summary_input" onchange="this.form.submit()" />
         </label>
       </form>
 
       <form id="incident_rangers_form">
-        <label id="incident_rangers">
+        <label id="incident_rangers_label">
           Rangers<br />
           <select name="rangers" multiple="" t:render="rangers_options" />
         </label>
       </form>
 
       <form id="incident_types_form">
-        <label id="incident_types">
+        <label id="incident_types_label">
           Incident Types<br />
           <select name="rangers" multiple="" t:render="types_options" />
         </label>
@@ -104,13 +126,13 @@
       <form id="incident_location_form">
         <fieldset id="incident_location" class="boxed">
           <legend>Location</legend>
-          <label id="incident_location_name">
+          <label id="incident_location_name_label">
             Name:
-            <input type="text" name="location_name" placeholder="Name of location..." inputmode="latin" t:render="location_name_input" onchange="this.form.submit()" />
+            <input id="incident_location_name" type="text" name="location_name" placeholder="Name of location..." inputmode="latin" t:render="location_name_input" onchange="this.form.submit()" />
           </label>
-          <label id="incident_location_address">
+          <label id="incident_location_address_label">
             Address:
-            <input type="text" name="location_address" placeholder="Address of location..." inputmode="verbatim" t:render="location_address_input" onchange="this.form.submit()" />
+            <input id="incident_location_address" type="text" name="location_address" placeholder="Address of location..." inputmode="verbatim" t:render="location_address_input" onchange="this.form.submit()" />
           </label>
         </fieldset>
       </form>
