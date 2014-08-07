@@ -323,7 +323,23 @@ def ranger_as_json(ranger):
     @rtype: L{dict}
     """
     return {
-        "handle": ranger.handle,
-        "name": ranger.name,
-        "status": ranger.status,
+        JSON.ranger_handle.value: ranger.handle,
+        JSON.ranger_name.value: ranger.name,
+        JSON.ranger_status.value: ranger.status,
+    }
+
+
+def location_as_json(location):
+    """
+    Generate JSON data from a location.
+
+    @param location: A location to serialize.
+    @type location: L{Location}
+
+    @return: C{location}, serialized as JSON data.
+    @rtype: L{dict}
+    """
+    return {
+        "name": location.name,
+        "address": location.address,
     }

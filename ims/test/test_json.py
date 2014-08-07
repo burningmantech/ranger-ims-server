@@ -31,7 +31,7 @@ from ..json import (
     JSON,
     datetime_as_rfc3339,
     incident_from_json, incident_as_json,
-    ranger_as_json,
+    ranger_as_json, location_as_json,
 )
 
 from .test_store import time1, time2
@@ -593,7 +593,7 @@ class RangerSerializationTests(unittest.TestCase):
 
     def test_ranger_as_json_name_status(self):
         """
-        Serialize with handle.
+        Serialize with handle, name, status.
         """
         self.assertEquals(
             {
@@ -604,4 +604,35 @@ class RangerSerializationTests(unittest.TestCase):
             ranger_as_json(Ranger(
                 handle=u"Tool", name=u"Wilfredo S\xe1nchez", status=u"vintage"
             ))
+        )
+
+
+
+class LocationSerializationTests(unittest.TestCase):
+    """
+    Tests for L{location_as_json}.
+    """
+
+    def test_location_as_json_name(self):
+        """
+        Serialize with name.
+        """
+        self.assertEquals(
+            {
+                "name": u"Ranger Outpost Tokyo",
+                "address": None,
+            },
+            location_as_json(Location(name=u"Ranger Outpost Tokyo"))
+        )
+
+    def test_location_as_json_address(self):
+        """
+        Serialize with name.
+        """
+        self.assertEquals(
+            {
+                "name": None,
+                "address": u"9::00 & C",
+            },
+            location_as_json(Location(address=u"9::00 & C"))
         )
