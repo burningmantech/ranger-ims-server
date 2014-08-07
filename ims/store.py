@@ -58,6 +58,7 @@ class ReadOnlyStorage(object):
     def __init__(self, path):
         self.path = path
         self._incident_etags = {}
+        self._locations = None
         log.msg("New data store: {0}".format(self))
 
 
@@ -165,6 +166,26 @@ class ReadOnlyStorage(object):
     def _max_incident_number(self, value):
         assert value > self._max_incident_number
         self._max_incident_number_ = value
+
+
+    def locations(self):
+        """
+        @return: all known locations.
+        @rtype: iterable of L{Location}
+        """
+        if self._locations is None:
+            locations = set()
+
+            for (number, etag) in self.list_incidents():
+                incident = self.read_incident_with_number(number)
+                location = incident.location
+
+                if location is not None:
+                    locations.add(location)
+
+            self._locations = locations
+
+        return self._locations
 
 
     def search_incidents(
@@ -305,6 +326,8 @@ class Storage(ReadOnlyStorage):
 
         if hasattr(self, "_incidents"):
             self._incidents[number] = None
+
+        self._locations = None
 
         if number > self._max_incident_number:
             raise AssertionError("Unallocated incident number?")

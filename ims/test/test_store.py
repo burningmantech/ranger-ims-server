@@ -24,7 +24,7 @@ import twisted.trial.unittest
 from twisted.python.filepath import FilePath
 
 from ims.json import incident_from_json, json_from_text
-from ims.data import IncidentState, Incident, ReportEntry
+from ims.data import IncidentState, Incident, ReportEntry, Location
 from ims.store import (
     StorageError, ReadOnlyStorage, Storage, NoSuchIncidentError
 )
@@ -207,6 +207,20 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         self.assertEquals(store._max_incident_number, 10)
 
 
+    def test_locations(self):
+        """
+        L{ReadOnlyStorage.locations} yields all locations.
+        """
+        store = self.storage(data=test_incidents)
+        self.assertEquals(
+            set(store.locations()),
+            set((
+                Location(u"Ranger HQ", u"Esplanade & 5:45"),
+                Location(u"Ranger HQ", u"Rod's Road & 2:00"),
+                Location(u"Ranger Outpost Tokyo", u"9:00 & C"),
+            ))
+        )
+
     def test_search_no_terms(self):
         """
         Search with no terms yields all open incidents.
@@ -388,6 +402,7 @@ def test_incidents(store):
                 ReportEntry(u"Tool", u"Man overboard!", time1),
                 ReportEntry(u"Splinter", u"What?", time2),
             ),
+            location=Location(u"Ranger Outpost Tokyo", u"9:00 & C"),
         ),
         Incident(
             number=store.next_incident_number(),
@@ -395,6 +410,7 @@ def test_incidents(store):
             report_entries=(
                 ReportEntry(u"El Weso", u"Does this work?", time3),
             ),
+            location=Location(u"Ranger HQ", u"Esplanade & 5:45"),
         ),
         Incident(
             number=store.next_incident_number(),
@@ -402,6 +418,7 @@ def test_incidents(store):
             report_entries=(
                 ReportEntry(u"Librarian", u"Go read something.", time2),
             ),
+            location=Location(u"Ranger HQ", u"Rod's Road & 2:00"),
         ),
         Incident(
             number=store.next_incident_number(),
@@ -415,9 +432,9 @@ def test_incidents(store):
 
 
 test_incident_etags = {
-    1: "d17eaaec34f4706c376cf40a85d665591be3c651",
-    2: "99daa32cd576990efeff8c69bb3a2c366c9316e2",
-    3: "713e9665610741ea7ab9c27b631ed8763ee7da46",
+    1: "1f34c73f6c43da43082f5557fc5ae352b011799d",
+    2: "e40915263b3dc21d2d198d3899d37300efbfd6d7",
+    3: "51db101bc75e19f00450e95cbe68315d76f06ee2",
     4: "a1bfe51a1fb342c256f710896bb160875aa73460",
 }
 
