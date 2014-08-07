@@ -363,9 +363,9 @@ class IncidentManagementSystem(object):
         return File(self.config.Resources.path)
 
 
-    # #
-    # # Documentation
-    # #
+    #
+    # Documentation
+    #
 
     @app.route("/", methods=("GET",))
     @http_sauce
@@ -474,20 +474,58 @@ class IncidentManagementSystem(object):
     # JQuery resources
     #
 
-    # @app.route("/jquery.js", methods=("GET",))
-    # @http_sauce
-    # def jquery(self, request):
-    #     version = "jquery-1.10.2.min.js"
-    #     url = "http://code.jquery.com/" + version
-    #     return self.cachedResource(version, url)
+    @app.route("/jquery.js", methods=("GET",))
+    @http_sauce
+    def jquery(self, request):
+        version = "jquery-2.1.1.min.js"
+        url = "http://code.jquery.com/" + version
+        return self.cachedResource(version, url)
 
 
-    # @app.route("/jquery-1.10.2.min.map", methods=("GET",))
-    # @http_sauce
-    # def jquery_map(self, request):
-    #     name = "jquery-1.10.2.min.map"
-    #     url = "http://code.jquery.com/" + name
-    #     return self.cachedResource(name, url)
+    @app.route("/jquery-2.1.1.min.map", methods=("GET",))
+    @http_sauce
+    def jquery_map(self, request):
+        name = "jquery-2.1.1.min.map"
+        url = "http://code.jquery.com/" + name
+        return self.cachedResource(name, url)
+
+
+    @app.route("/jquery-ui.js", methods=("GET",))
+    @http_sauce
+    def jquery_ui(self, request):
+        name = "jquery-ui-1.11.0"
+        return self.cachedZipResource(
+            request=request,
+            name=name,
+            url="http://jqueryui.com/resources/download/{}.zip".format(name),
+            segments=(name, "jquery-ui.js")
+        )
+
+
+    @app.route("/jquery-ui-theme/images/<image>", methods=("GET",))
+    @http_sauce
+    def jquery_ui_theme_image(self, request, image):
+        which = "jquery-ui-themes-1.11.0"
+        theme = "blitzer"
+        return self.cachedZipResource(
+            request=request,
+            name=which,
+            url="http://jqueryui.com/resources/download/{}.zip".format(which),
+            segments=(which, "themes", theme, "images", image)
+        )
+
+
+    @app.route("/jquery-ui-theme/", methods=("GET",))
+    @http_sauce
+    def jquery_ui_theme(self, request):
+        which = "jquery-ui-themes-1.11.0"
+        theme = "blitzer"
+        return self.cachedZipResource(
+            request=request,
+            name=which,
+            url="http://jqueryui.com/resources/download/{}.zip".format(which),
+            segments=(which, "themes", theme, "jquery-ui.min.css")
+        )
 
 
     # _tidy_base_url = "https://raw.github.com/nuxy/Tidy-Table/v1.4/"
