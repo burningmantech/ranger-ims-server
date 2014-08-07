@@ -159,6 +159,22 @@ class IncidentManagementSystem(object):
         ))
 
 
+    @app.route("/locations", methods=("GET",))
+    @app.route("/locations/", methods=("GET",))
+    @http_sauce
+    def list_locations(self, request):
+        d = self.data_locations()
+        d.addCallback(self.add_headers, request=request)
+        return d
+
+
+    def data_locations(self):
+        return succeed((
+            [],
+            None
+        ))
+
+
     @app.route("/incidents", methods=("GET",))
     @app.route("/incidents/", methods=("GET",))
     @http_sauce
