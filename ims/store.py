@@ -174,16 +174,15 @@ class ReadOnlyStorage(object):
         @rtype: iterable of L{Location}
         """
         if self._locations is None:
-            locations = set()
+            def locations():
+                for (number, etag) in self.list_incidents():
+                    incident = self.read_incident_with_number(number)
+                    location = incident.location
 
-            for (number, etag) in self.list_incidents():
-                incident = self.read_incident_with_number(number)
-                location = incident.location
+                    if location is not None:
+                        yield location
 
-                if location is not None:
-                    locations.add(location)
-
-            self._locations = locations
+            self._locations = frozenset(locations())
 
         return self._locations
 
