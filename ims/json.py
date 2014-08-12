@@ -35,12 +35,15 @@ __all__ = [
 ]
 
 from json import dumps, load as json_from_file, loads as json_from_text
-from datetime import datetime as DateTime
+from datetime import (
+    datetime as DateTime,  # timedelta as TimeDelta, tzinfo as TZInfo
+)
 
 from twisted.python.constants import (
     Values, ValueConstant
 )
 
+from .tz import utc
 from .data import (
     InvalidDataError, IncidentState, Incident, ReportEntry, Ranger, Location
 )
@@ -75,7 +78,8 @@ def rfc3339_as_datetime(rfc3339):
     if not rfc3339:
         return None
     else:
-        return DateTime.strptime(rfc3339, rfc3339_datetime_format)
+        datetime = DateTime.strptime(rfc3339, rfc3339_datetime_format)
+        return datetime.replace(tzinfo=utc)
 
 
 
@@ -327,6 +331,7 @@ def ranger_as_json(ranger):
         JSON.ranger_name.value: ranger.name,
         JSON.ranger_status.value: ranger.status,
     }
+
 
 
 def location_as_json(location):

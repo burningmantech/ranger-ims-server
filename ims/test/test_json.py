@@ -18,8 +18,7 @@
 Tests for L{ims.json}.
 """
 
-# from cStringIO import StringIO
-# from datetime import datetime
+from datetime import datetime as DateTime
 
 from twisted.trial import unittest
 
@@ -27,14 +26,70 @@ from ..data import (
     InvalidDataError, IncidentState,
     Incident, ReportEntry, Ranger, Location,
 )
+from ..tz import utc
 from ..json import (
     JSON,
-    datetime_as_rfc3339,
+    datetime_as_rfc3339, rfc3339_as_datetime,
     incident_from_json, incident_as_json,
     ranger_as_json, location_as_json,
 )
 
 from .test_store import time1, time2
+
+
+
+class TimeSerializationTests(unittest.TestCase):
+    """
+    Tests for time serialization and deserialization.
+    """
+
+    def test_datetime_as_rfc3339_naive(self):
+        """
+        L{datetime_as_rfc3339} returns a proper RFC 3339 string for the given
+        naive L{DateTime}, which is assumed to be UTC.
+        """
+        self.assertEquals(
+            datetime_as_rfc3339(DateTime(1971, 4, 20, 16, 20, 4, tzinfo=None)),
+            "1971-04-20T16:20:04Z"
+        )
+
+
+    def test_datetime_as_rfc3339_utc(self):
+        """
+        L{datetime_as_rfc3339} returns a proper RFC 3339 string for the given
+        UTC L{DateTime}.
+        """
+        self.assertEquals(
+            datetime_as_rfc3339(DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)),
+            "1971-04-20T16:20:04Z"
+        )
+
+
+    def test_datetime_as_rfc3339_other(self):
+        """
+        L{datetime_as_rfc3339} returns a proper RFC 3339 string for the given
+        non-UTC L{DateTime}.
+        """
+        tz = NotImplemented
+
+        self.assertEquals(
+            datetime_as_rfc3339(DateTime(1971, 4, 20, 16, 20, 4, tzinfo=tz)),
+            "1971-04-20T16:20:04Z"
+        )
+
+    test_datetime_as_rfc3339_other.todo = "unimplemented"
+
+
+    def test_rfc3339_as_datetime(self):
+        """
+        L{rfc3339_as_datetime} returns a proper UTC L{DateTime} for the given
+        RFC 3339 string.
+        """
+        self.assertEquals(
+            rfc3339_as_datetime("1971-04-20T16:20:04Z"),
+            DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)
+        )
+
 
 
 class IncidentDeserializationTests(unittest.TestCase):
