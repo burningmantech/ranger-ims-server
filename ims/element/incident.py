@@ -30,15 +30,14 @@ from .util import normalize_priority
 
 
 class IncidentElement(BaseElement):
-    edit_enabled = True
-
-
     def __init__(self, ims, number):
         BaseElement.__init__(
             self, ims, "incident",
             "Incident #{0}".format(number)
         )
         self.incident = self.ims.storage.read_incident_with_number(number)
+
+        self.edit_enabled = not self.ims.config.ReadOnly
 
         for attr_name in (
             "number",
