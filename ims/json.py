@@ -67,16 +67,34 @@ def json_as_text(obj):
 
 
 def datetime_as_rfc3339(datetime):
+    """
+    Convert a date-time object into an RFC 3339 formatted date-time string.
+
+    @param datetime: A non-naive date-time object to convert.
+    @type datetime: L{DateTime}
+
+    @return: An RFC 3339 formatted date-time string corresponding to
+        C{datetime} (converted to UTC).
+    @rtype: L{str}
+    """
     if not datetime:
         return None
     else:
-        if datetime.tzinfo is not None:
-            datetime = datetime.astimezone(utc)
+        datetime = datetime.astimezone(utc)
         return datetime.strftime(rfc3339_datetime_format)
 
 
 
 def rfc3339_as_datetime(rfc3339):
+    """
+    Convert an RFC 3339 formatted string to a date-time object.
+
+    @param rfc3339: An RFC 3339 formatted string.
+    @type rfc3339: L{str}
+
+    @return: An date-time object (in UTC) corresponding to C{rfc3339}.
+    @rtype: L{DateTime}
+    """
     if not rfc3339:
         return None
     else:

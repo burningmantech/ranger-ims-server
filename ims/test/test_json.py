@@ -48,9 +48,9 @@ class TimeSerializationTests(unittest.TestCase):
         L{datetime_as_rfc3339} returns a proper RFC 3339 string for the given
         naive L{DateTime}, which is assumed to be UTC.
         """
-        self.assertEquals(
-            datetime_as_rfc3339(DateTime(1971, 4, 20, 16, 20, 4, tzinfo=None)),
-            "1971-04-20T16:20:04Z"
+        self.assertRaises(
+            ValueError,
+            datetime_as_rfc3339, DateTime(1971, 4, 20, 16, 20, 4, tzinfo=None)
         )
 
 
