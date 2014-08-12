@@ -40,6 +40,11 @@ class DispatchQueueElement(BaseElement):
 
 
     @renderer
+    def user(self, request, tag):
+        return tag(self.ims.user)
+
+
+    @renderer
     def data(self, request, tag):
         def format_date(d):
             if d is None:
