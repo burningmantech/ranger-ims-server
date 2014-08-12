@@ -58,6 +58,14 @@ class IncidentElement(BaseElement):
 
 
     @renderer
+    def editable(self, request, tag):
+        if self.edit_enabled:
+            return tag
+        else:
+            return u""
+
+
+    @renderer
     def state_option(self, request, tag):
         if tag.attributes["value"] == self.incident.state.name:
             return tag(selected="")
