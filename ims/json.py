@@ -70,6 +70,8 @@ def datetime_as_rfc3339(datetime):
     if not datetime:
         return None
     else:
+        if datetime.tzinfo is not None:
+            datetime = datetime.astimezone(utc)
         return datetime.strftime(rfc3339_datetime_format)
 
 

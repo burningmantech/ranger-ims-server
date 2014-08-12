@@ -26,7 +26,7 @@ from ..data import (
     InvalidDataError, IncidentState,
     Incident, ReportEntry, Ranger, Location,
 )
-from ..tz import utc
+from ..tz import utc, FixedOffsetTimeZone
 from ..json import (
     JSON,
     datetime_as_rfc3339, rfc3339_as_datetime,
@@ -70,14 +70,12 @@ class TimeSerializationTests(unittest.TestCase):
         L{datetime_as_rfc3339} returns a proper RFC 3339 string for the given
         non-UTC L{DateTime}.
         """
-        tz = NotImplemented
+        tz = FixedOffsetTimeZone.fromSignHoursMinutes("+", 4, 20)
 
         self.assertEquals(
-            datetime_as_rfc3339(DateTime(1971, 4, 20, 16, 20, 4, tzinfo=tz)),
+            datetime_as_rfc3339(DateTime(1971, 4, 20, 20, 40, 4, tzinfo=tz)),
             "1971-04-20T16:20:04Z"
         )
-
-    test_datetime_as_rfc3339_other.todo = "unimplemented"
 
 
     def test_rfc3339_as_datetime(self):
