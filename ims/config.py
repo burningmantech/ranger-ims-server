@@ -185,7 +185,7 @@ class Configuration (object):
         self.TimeZone = FixedOffsetTimeZone.fromLocalTimeStamp(time())
 
         self.ReadOnly = (
-            valueFromConfig("Core", "TimeZone", "false")
+            valueFromConfig("Core", "TimeZone", "false") == "true"
         )
         log.msg("ReadOnly: {0}".format(self.ReadOnly))
 
