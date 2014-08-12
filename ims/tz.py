@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, tzinfo
 __all__ = [
     "FixedOffsetTimeZone",
     "utc",
+    "utcNow",
 ]
 
 
@@ -117,3 +118,8 @@ class FixedOffsetTimeZone(tzinfo):
 
 
 utc = FixedOffsetTimeZone.fromSignHoursMinutes("+", 0, 0)
+
+
+
+def utcNow():
+    return datetime.utcnow().replace(tzinfo=utc)

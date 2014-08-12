@@ -18,8 +18,7 @@
 Tests for L{ims.edit}.
 """
 
-from datetime import datetime as DateTime
-
+from ..tz import utcNow
 from ..data import IncidentState, Incident, Ranger, Location, ReportEntry
 from ..edit import edit_incident, EditNotAllowedError
 
@@ -405,7 +404,7 @@ class EditingTests(unittest.TestCase):
 
 
     def edit_incident(self, attribute, old, new):
-        before = DateTime.utcnow()
+        before = utcNow()
 
         edited = edit_incident(
             Incident(number=1, **{attribute: old}),
@@ -413,6 +412,6 @@ class EditingTests(unittest.TestCase):
             u"Tool"
         )
 
-        after = DateTime.utcnow()
+        after = utcNow()
 
         return (edited, before, after)

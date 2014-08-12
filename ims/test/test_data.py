@@ -22,7 +22,8 @@ from datetime import datetime as DateTime
 
 from twisted.trial import unittest
 
-from ims.data import (
+from ..tz import utcNow
+from ..data import (
     InvalidDataError,
     IncidentState,
     Incident,
@@ -326,9 +327,9 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.__init__} with default values.
         """
-        dt1 = DateTime.utcnow()
+        dt1 = utcNow()
         entry = ReportEntry(author=u"Tool", text=u"xyzzy")
-        dt2 = DateTime.utcnow()
+        dt2 = utcNow()
 
         self.assertEquals(entry.author, u"Tool")
         self.assertEquals(entry.text, u"xyzzy")

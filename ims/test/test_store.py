@@ -23,6 +23,7 @@ from datetime import datetime as DateTime
 import twisted.trial.unittest
 from twisted.python.filepath import FilePath
 
+from ..tz import utc
 from ims.json import incident_from_json, json_from_text
 from ims.data import IncidentState, Incident, ReportEntry, Location
 from ims.store import (
@@ -443,6 +444,6 @@ def list_incidents(numbers=test_incident_etags):
     return ((i, test_incident_etags[i]) for i in numbers)
 
 
-time1 = DateTime(2012, 9, 1, 21, 0)
-time2 = DateTime(2013, 8, 31, 21, 0)
-time3 = DateTime(2014, 8, 23, 21, 0)
+time1 = DateTime(2012, 9, 1, 21, 0, tzinfo=utc)
+time2 = DateTime(2013, 8, 31, 21, 0, tzinfo=utc)
+time3 = DateTime(2014, 8, 23, 21, 0, tzinfo=utc)

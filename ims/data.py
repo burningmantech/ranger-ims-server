@@ -32,6 +32,8 @@ __all__ = [
 from functools import total_ordering
 from datetime import datetime as DateTime  # , timedelta as TimeDelta
 
+from .tz import utcNow
+
 from twisted.python.constants import (
     Names, NamedConstant, Values, ValueConstant
 )
@@ -364,7 +366,7 @@ class ReportEntry(object):
         @type system_entry: L{bool}
         """
         if created is None:
-            created = DateTime.utcnow()
+            created = utcNow()
 
         assert text is not None, "ReportEntry text may not be None"
 

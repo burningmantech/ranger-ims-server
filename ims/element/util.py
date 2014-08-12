@@ -31,10 +31,11 @@ __all__ = [
     "query_value",
 ]
 
-from datetime import datetime as DateTime, timedelta as TimeDelta
+from datetime import timedelta as TimeDelta
 
 from twisted.web.template import tags
 
+from ..tz import utcNow
 from ..data import IncidentState, IncidentType, Incident, ReportEntry
 
 
@@ -106,7 +107,7 @@ def since_from_query(request):
     if not days:
         return None
 
-    return DateTime.utcnow() - TimeDelta(days=days)
+    return utcNow() - TimeDelta(days=days)
 
 
 def num_shifts_from_query(request):
