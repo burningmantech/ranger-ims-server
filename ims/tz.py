@@ -41,6 +41,10 @@ class FixedOffsetTimeZone(tzinfo):
         self.name = name
 
 
+    def __str__(self):
+        return self.tzname(None)
+
+
     @classmethod
     def fromSignHoursMinutes(cls, sign, hours, minutes):
         """

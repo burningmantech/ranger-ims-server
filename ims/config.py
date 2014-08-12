@@ -24,14 +24,17 @@ __all__ = [
     "Configuration",
 ]
 
-import os.path
+from os import environ
+from os.path import sep as pathsep
 from re import compile as regex_compile
+from time import tzset, time
 
 from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 
 from twisted.python import log as txlog
 from twisted.python.filepath import FilePath
 
+from .tz import FixedOffsetTimeZone
 from .data import IncidentType
 from .json import json_as_text
 from .dms import DutyManagementSystem
@@ -71,6 +74,7 @@ class Configuration (object):
             "Core.Resources: {self.Resources}\n"
             "Core.CachedResources: {self.CachedResources}\n"
             "Core.RejectClients: {self.RejectClients}\n"
+            "Core.TimeZone: {self.TimeZone}\n"
             "Core.ReadOnly: {self.ReadOnly}\n"
             "Core.Debug: {self.Debug}\n"
             "\n"
@@ -118,7 +122,7 @@ class Configuration (object):
 
             else:
                 fp = root
-                for segment in path.split(os.path.sep):
+                for segment in path.split(pathsep):
                     fp = fp.child(segment)
 
             return fp
@@ -171,8 +175,17 @@ class Configuration (object):
         ])
         log.msg("RejectClients: {0}".format(self.RejectClients))
 
+        timeZoneName = valueFromConfig(
+            "Core", "TimeZone", "America/Los_Angeles"
+        )
+
+        environ["TZ"] = timeZoneName
+        tzset()
+
+        self.TimeZone = FixedOffsetTimeZone.fromLocalTimeStamp(time())
+
         self.ReadOnly = (
-            valueFromConfig("Core", "ReadOnly", "false") == "true"
+            valueFromConfig("Core", "TimeZone", "false")
         )
         log.msg("ReadOnly: {0}".format(self.ReadOnly))
 

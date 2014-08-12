@@ -24,8 +24,6 @@ __all__ = [
 
 from twisted.web.template import renderer, tags
 
-from ..json import datetime_as_rfc3339
-
 from .base import BaseElement
 from .util import normalize_priority
 
@@ -149,6 +147,11 @@ class IncidentElement(BaseElement):
         return tag(**attrs)
 
 
+    def formatTime(self, datetime):
+        datetime = datetime.astimezone(self.ims.config.TimeZone)
+        return datetime.strftime("%Y-%m-%d %H:%M:%S")
+
+
     @renderer
     def incident_report_text(self, request, tag):
         attrs_entry_system = {"class": "incident_entry_system"}
@@ -162,7 +165,7 @@ class IncidentElement(BaseElement):
             else:
                 attrs_entry = attrs_entry_user
 
-            when = datetime_as_rfc3339(entry.created)
+            when = self.formatTime(entry.created)
 
             author = entry.author
             if author is None:
