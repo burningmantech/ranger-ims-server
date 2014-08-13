@@ -6,6 +6,8 @@
     <link t:render="stylesheet" />
   </head>
   <body>
+    <div id="login_info">Logged in as: <a href="/logout" id="user" t:render="user" /></div>
+
     <h1 t:render="title" />
 
     <h2>Client Applications</h2>
@@ -50,6 +52,8 @@
         <a href="/docs/priorities.xhtml">Using Priorities</a>
       </li>
     </ul>
+
+    <div id="login_info">Logged in as: <a href="/logout" id="user" t:render="user" /></div>
 
   </body>
 </html>

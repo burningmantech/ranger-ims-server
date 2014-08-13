@@ -41,5 +41,10 @@ class BaseElement(FileElement):
 
 
     @renderer
+    def user(self, request, tag):
+        return tag(self.ims.user)
+
+
+    @renderer
     def title(self, request, tag):
         return tag(self._title)

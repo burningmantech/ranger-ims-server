@@ -4,15 +4,11 @@
     <title t:render="title" />
     <link t:render="icon" />
     <link t:render="stylesheet" />
-    <style>
-      #login_info { text-align: right; }
-      #user { font-size: 200%; font-weight: bold; }
-    </style>
   </head>
   <body>
-    <h1 t:render="title" />
+    <div id="login_info">Logged in as: <a href="/logout" id="user" t:render="user" /></div>
 
-    <div id="login_info">Logged in as: <span id="user" t:render="user" /></div>
+    <h1 t:render="title" />
 
     <form action="" method="get">
       <input type="hidden" name="show_closed" t:render="show_closed_value" />

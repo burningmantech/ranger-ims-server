@@ -105,6 +105,32 @@ class IncidentManagementSystem(object):
         return entity
 
 
+    @app.route("/logout", methods=("GET",))
+    @http_sauce
+    def logout(self, request):
+        def redirect(entity):
+            urlPath = request.URLPath()
+            url = "{url.scheme}://:logout@{url.netloc}/".format(
+                url=urlPath
+            )
+            set_response_header(
+                request, HeaderName.location, url
+            )
+            return entity
+
+        d = self.data_logout()
+        d.addCallback(
+            self.add_headers, request=request, status=http.TEMPORARY_REDIRECT
+        )
+        d.addCallback(redirect)
+        return d
+
+
+    def data_logout(self):
+        ack = b"bye!"
+        return succeed((json_as_text(ack), hash(ack)))
+
+
     @app.route("/ping", methods=("GET",))
     @app.route("/ping/", methods=("GET",))
     @http_sauce
