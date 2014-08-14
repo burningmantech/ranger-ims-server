@@ -192,6 +192,10 @@ class Incident(object):
         if report_entries is not None:
             report_entries = tuple(sorted(report_entries))
 
+        if created is None:
+            for report_entry in report_entries:
+                created = report_entry.created
+
         self.number         = number
         self.priority       = priority
         self.summary        = summary
