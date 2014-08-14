@@ -41,9 +41,10 @@ tbody.incident_activity { border: 1px solid black; }
 
 tr.incident:hover { background-color: #FFFF00; }
 
-th.incident_number   { width:  4em; }
-th.incident_priority { width:  4em; }
-th.incident_state    { width:  4em; }
+th.incident_number   { width:  2em; }
+th.incident_priority { width:  3em; }
+th.incident_created  { width:  4em; }
+th.incident_state    { width:  5em; }
 th.incident_rangers  { width:  8em; }
 th.incident_location { width: 16em; }
 th.incident_types    { width:  8em; }

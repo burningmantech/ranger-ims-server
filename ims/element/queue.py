@@ -80,14 +80,17 @@ class DispatchQueueElement(BaseElement):
 
     @renderer
     def queue(self, request, tag):
-        return tag(incidents_as_table(
-            (
-                self.ims.storage.read_incident_with_number(number)
-                for number, etag in incidents_from_query(self.ims, request)
-            ),
-            caption="Dispatch Queue",
-            id="dispatch_queue",
-        ))
+        return tag(
+            incidents_as_table(
+                (
+                    self.ims.storage.read_incident_with_number(number)
+                    for number, etag in incidents_from_query(self.ims, request)
+                ),
+                tz=self.ims.config.TimeZone,
+                caption="Dispatch Queue",
+                id="dispatch_queue",
+            )
+        )
 
 
     @renderer

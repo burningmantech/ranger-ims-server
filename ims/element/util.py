@@ -184,7 +184,7 @@ def query_value(request, key, default, no_args_default=None):
     return getattr(request, attr_name)
 
 
-def incidents_as_table(incidents, caption=None, id=None):
+def incidents_as_table(incidents, tz, caption=None, id=None):
     attrs_activity = {"class": "incident_activity"}
 
     if caption:
@@ -196,6 +196,8 @@ def incidents_as_table(incidents, caption=None, id=None):
         attrs_incident = {"class": "incident"}
         attrs_number = {"class": "incident_number"}
         attrs_priority = {"class": "incident_priority"}
+        attrs_created = {"class": "incident_created"}
+        attrs_state = {"class": "incident_state"}
         attrs_rangers = {"class": "incident_rangers"}
         attrs_location = {"class": "incident_location"}
         attrs_types = {"class": "incident_types"}
@@ -205,6 +207,8 @@ def incidents_as_table(incidents, caption=None, id=None):
             tags.tr(
                 tags.th(u"#", **attrs_number),
                 tags.th(u"Priority", **attrs_priority),
+                tags.th(u"Created", **attrs_created),
+                tags.th(u"State", **attrs_state),
                 tags.th(u"Rangers", **attrs_rangers),
                 tags.th(u"Location", **attrs_location),
                 tags.th(u"Types", **attrs_types),
@@ -217,27 +221,45 @@ def incidents_as_table(incidents, caption=None, id=None):
         yield tags.tbody(
             tags.tr(
                 tags.td(
-                    u"{0}".format(incident.number), **attrs_number
+                    u"{0}".format(incident.number),
+                    **attrs_number
+                ),
+                tags.td(
+                    u"{0}".format(priority_name(incident.priority)),
+                    **attrs_priority
+                ),
+                tags.td(
+                    u"{0}".format(formatTime(
+                        incident.created, tz=tz, format=u"%d/%H:%M"
+                    )),
+                    **attrs_number
+                ),
+                tags.td(
+                    u"{0}".format(IncidentState.describe(incident.state)),
+                    **attrs_number
                 ),
                 tags.td(
                     u"{0}".format(
-                        priority_name(incident.priority), **attrs_priority
-                    )
+                        u", ".join(
+                            ranger.handle for ranger in incident.rangers
+                        )
+                    ),
+                    **attrs_rangers
                 ),
-                tags.td(u"{0}".format(
-                    u", ".join(ranger.handle for ranger in incident.rangers)
-                ), **attrs_rangers),
-                tags.td(u"{0}".format(
-                    str(incident.location).decode("utf-8")
-                ), **attrs_location),
-                tags.td(u"{0}".format(
-                    u", ".join(incident.incident_types)
-                ), **attrs_types),
-                tags.td(u"{0}".format(
-                    incident.summaryFromReport()
-                ), **attrs_summary),
+                tags.td(
+                    u"{0}".format(str(incident.location).decode("utf-8")),
+                    **attrs_location
+                ),
+                tags.td(
+                    u"{0}".format(u", ".join(incident.incident_types)),
+                    **attrs_types
+                ),
+                tags.td(
+                    u"{0}".format(incident.summaryFromReport()),
+                    **attrs_summary
+                ),
                 onclick=(
-                    'window.open("/queue/incidents/{0}");'
+                    u'window.open("/queue/incidents/{0}");'
                     .format(incident.number)
                 ),
                 **attrs_incident
@@ -247,7 +269,7 @@ def incidents_as_table(incidents, caption=None, id=None):
 
     attrs_table = dict(attrs_activity)
     if id is not None:
-        attrs_table["id"] = id
+        attrs_table[u"id"] = id
 
     return tags.table(
         captionElement,
@@ -274,7 +296,15 @@ def priority_name(priority):
     Return a string label for a priority.
     """
     return {
-        1: "High",
-        3: "Normal",
-        5: "Low",
+        1: u"High",
+        3: u"Normal",
+        5: u"Low",
     }[normalize_priority(priority)]
+
+
+def formatTime(datetime, tz, format=u"%Y-%m-%d %H:%M:%S"):
+    if datetime is None:
+        return u""
+
+    datetime = datetime.astimezone(tz)
+    return datetime.strftime(format)

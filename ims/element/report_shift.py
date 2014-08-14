@@ -180,6 +180,7 @@ class ShiftActivityElement(BaseElement):
             if incidents:
                 return incidents_as_table(
                     incidents,
+                    tz=self.ims.config.TimeZone,
                     caption=caption,
                     id="activity:{0}:{1}".format(
                         hash(self.shift), hash(caption)
