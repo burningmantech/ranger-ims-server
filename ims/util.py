@@ -49,7 +49,7 @@ def http_download(destination, url):
             else:
                 self.fin.errback(reason)
 
-    log.msg("Downloading jquery from {0}".format(url))
+    log.msg("Downloading from {0} to {1}".format(url, destination))
 
     agent = Agent(reactor)
 

@@ -105,7 +105,7 @@ class DailyReportElement(BaseElement):
 
 
     @renderer
-    def tableColumns(self, request, tag):
+    def columnTitles(self, request, tag):
         return json_as_text(
             ["Type"] +
             [
@@ -117,7 +117,7 @@ class DailyReportElement(BaseElement):
 
 
     @renderer
-    def tableData(self, request, tag):
+    def columnValues(self, request, tag):
         return self.data(labels=True, totals=True)
 
 

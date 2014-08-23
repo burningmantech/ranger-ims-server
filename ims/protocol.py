@@ -42,7 +42,7 @@ from .element.file import FileElement
 from .element.home import HomePageElement
 from .element.queue import DispatchQueueElement
 from .element.incident import IncidentElement
-# from .element.report_daily import DailyReportElement
+from .element.report_daily import DailyReportElement
 # from .element.report_shift import ShiftReportElement
 from .element.util import (
     terms_from_query, show_closed_from_query, since_from_query,
@@ -451,13 +451,13 @@ class IncidentManagementSystem(object):
     # # Reports
     # #
 
-    # @app.route("/reports/daily", methods=("GET",))
-    # @http_sauce
-    # def daily_report(self, request):
-    #     set_response_header(
-    #         request, HeaderName.contentType, ContentType.HTML
-    #     )
-    #     return DailyReportElement(self)
+    @app.route("/reports/daily", methods=("GET",))
+    @http_sauce
+    def daily_report(self, request):
+        set_response_header(
+            request, HeaderName.contentType, ContentType.HTML
+        )
+        return DailyReportElement(self)
 
 
     # @app.route("/charts/daily", methods=("GET",))
@@ -573,38 +573,40 @@ class IncidentManagementSystem(object):
         )
 
 
-    # _tidy_base_url = "https://raw.github.com/nuxy/Tidy-Table/v1.4/"
-
-    # @app.route("/tidy.js", methods=("GET",))
-    # @http_sauce
-    # def tidy(self, request):
-    #     name = "tidy.js"
-    #     url = self._tidy_base_url + "jquery.tidy.table.min.js"
-    #     return self.cachedResource(name, url)
+    # _tidy_base_url = "https://raw.github.com/nuxy/Tidy-Table/v1.7/"
+    _tidy_base_url = "https://raw.githubusercontent.com/nuxy/Tidy-Table/v1.7/"
 
 
-    # @app.route("/tidy.css", methods=("GET",))
-    # @http_sauce
-    # def tidy_css(self, request):
-    #     name = "tidy.css"
-    #     url = self._tidy_base_url + "jquery.tidy.table.min.css"
-    #     return self.cachedResource(name, url)
+    @app.route("/tidy.js", methods=("GET",))
+    @http_sauce
+    def tidy(self, request):
+        name = "tidy.js"
+        url = self._tidy_base_url + "jquery.tidy.table.min.js"
+        return self.cachedResource(name, url)
 
 
-    # @app.route("/images/arrow_asc.gif", methods=("GET",))
-    # @http_sauce
-    # def tidy_asc(self, request):
-    #     name = "tidy-asc.gif"
-    #     url = self._tidy_base_url + "images/arrow_asc.gif"
-    #     return self.cachedResource(name, url)
+    @app.route("/tidy.css", methods=("GET",))
+    @http_sauce
+    def tidy_css(self, request):
+        name = "tidy.css"
+        url = self._tidy_base_url + "jquery.tidy.table.min.css"
+        return self.cachedResource(name, url)
 
 
-    # @app.route("/images/arrow_desc.gif", methods=("GET",))
-    # @http_sauce
-    # def tidy_desc(self, request):
-    #     name = "tidy-desc.gif"
-    #     url = self._tidy_base_url + "images/arrow_desc.gif"
-    #     return self.cachedResource(name, url)
+    @app.route("/images/arrow_asc.gif", methods=("GET",))
+    @http_sauce
+    def tidy_asc(self, request):
+        name = "tidy-asc.gif"
+        url = self._tidy_base_url + "images/arrow_asc.gif"
+        return self.cachedResource(name, url)
+
+
+    @app.route("/images/arrow_desc.gif", methods=("GET",))
+    @http_sauce
+    def tidy_desc(self, request):
+        name = "tidy-desc.gif"
+        url = self._tidy_base_url + "images/arrow_desc.gif"
+        return self.cachedResource(name, url)
 
 
     #
@@ -629,7 +631,6 @@ class IncidentManagementSystem(object):
     #
 
     def cachedResource(self, name, url):
-        name = "_{0}".format(name)
         filePath = self.config.CachedResources.child(name)
 
         if filePath.exists():

@@ -9,8 +9,8 @@
     <script type="text/javascript" src="/tidy.js" />
     <script type="text/javascript">
       $(document).ready(function() {
-        var tableColumns = <t:transparent t:render="tableColumns" />;
-        var tableData = <t:transparent t:render="tableData" />;
+        var columnTitles = <t:transparent t:render="columnTitles" />;
+        var columnValues = <t:transparent t:render="columnValues" />;
 
         $('#DailyStats').TidyTable(
           {
@@ -20,8 +20,8 @@
           },
           {
             // Data
-            columnTitles: tableColumns,
-            columnValues: tableData,
+            columnTitles: columnTitles,
+            columnValues: columnValues,
           }
         );
       });
