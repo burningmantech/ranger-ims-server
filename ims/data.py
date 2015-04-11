@@ -369,10 +369,12 @@ class ReportEntry(object):
             IMS software (as opposed to by a user).
         @type system_entry: L{bool}
         """
+        # FIXME: raise instead?
         if created is None:
             created = utcNow()
 
-        assert text is not None, "ReportEntry text may not be None"
+        if text is None:
+            raise InvalidDataError("ReportEntry text may not be None")
 
         self.author       = author
         self.text         = text
