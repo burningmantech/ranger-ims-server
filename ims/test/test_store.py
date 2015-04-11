@@ -46,6 +46,9 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
 
             if data is not None:
                 for incident in data(rw_store):
+                    # Make sure that the incident numbers vended by data()
+                    # match the next_incident_number() implementation.
+                    assert incident.number == rw_store.next_incident_number()
                     rw_store.write_incident(incident)
 
         store = ReadOnlyStorage(fp)
@@ -326,6 +329,9 @@ class StorageTests(twisted.trial.unittest.TestCase):
 
             if data is not None:
                 for incident in data(store):
+                    # Make sure that the incident numbers vended by data()
+                    # match the next_incident_number() implementation.
+                    assert incident.number == store.next_incident_number()
                     store.write_incident(incident)
 
         # Make sure provisioning is correct
@@ -371,6 +377,9 @@ class StorageTests(twisted.trial.unittest.TestCase):
         incidents = frozenset(test_incidents(store))
 
         for incident in incidents:
+            # Make sure that the incident numbers vended by data()
+            # match the next_incident_number() implementation.
+            assert incident.number == store.next_incident_number()
             store.write_incident(incident)
             self.assertEquals(
                 incident, store.read_incident_with_number(incident.number)
@@ -395,9 +404,15 @@ class StorageTests(twisted.trial.unittest.TestCase):
 # This is a function just to ensure that the test data aren't mutated.
 def test_incidents(store):
     # Need to include time stamps below or etags will vary.
+
+    def next_number():
+        number_container[0] += 1
+        return number_container[0]
+    number_container = [0]
+
     return (
         Incident(
-            number=store.next_incident_number(),
+            number=next_number(),
             rangers=(), incident_types=(), priority=5,
             report_entries=(
                 ReportEntry(u"Tool", u"Man overboard!", time1),
@@ -406,7 +421,7 @@ def test_incidents(store):
             location=Location(u"Ranger Outpost Tokyo", u"9:00 & C"),
         ),
         Incident(
-            number=store.next_incident_number(),
+            number=next_number(),
             rangers=(), incident_types=(), priority=5,
             report_entries=(
                 ReportEntry(u"El Weso", u"Does this work?", time3),
@@ -414,7 +429,7 @@ def test_incidents(store):
             location=Location(u"Ranger HQ", u"Esplanade & 5:45"),
         ),
         Incident(
-            number=store.next_incident_number(),
+            number=next_number(),
             rangers=(), incident_types=(), priority=5,
             report_entries=(
                 ReportEntry(u"Librarian", u"Go read something.", time2),
@@ -422,7 +437,7 @@ def test_incidents(store):
             location=Location(u"Ranger HQ", u"Rod's Road & 2:00"),
         ),
         Incident(
-            number=store.next_incident_number(),
+            number=next_number(),
             rangers=(), incident_types=(), priority=5,
             report_entries=(
                 ReportEntry(u"da Mongolian", u"Fire!", time2),

@@ -329,7 +329,10 @@ class Storage(ReadOnlyStorage):
         self._locations = None
 
         if number > self._max_incident_number:
-            raise AssertionError("Unallocated incident number?")
+            raise AssertionError(
+                "Unallocated incident number: {} > {}"
+                .format(number, self._max_incident_number)
+            )
             self._max_incident_number = number
 
 
