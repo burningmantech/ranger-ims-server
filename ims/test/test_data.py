@@ -449,6 +449,14 @@ class ReportEntryTests(unittest.TestCase):
         entry.validate()
 
 
+    def test_validate_author_none(self):
+        """
+        L{ReportEntry.validate} of entry with L{None} author.
+        """
+        entry = ReportEntry(author=None, text=u"")
+        self.assertRaises(InvalidDataError, entry.validate)
+
+
     def test_validate_author_nonUnicode(self):
         """
         L{ReportEntry.validate} of entry with non-unicode author.

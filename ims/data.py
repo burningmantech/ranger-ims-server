@@ -451,7 +451,7 @@ class ReportEntry(object):
 
         @raise: L{InvalidDataError} if the report entry does not validate.
         """
-        if self.author is not None and type(self.author) is not unicode:
+        if type(self.author) is not unicode:
             raise InvalidDataError(
                 "Report entry author must be unicode, not {0!r}"
                 .format(self.author)
