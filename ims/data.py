@@ -192,7 +192,7 @@ class Incident(object):
         if report_entries is not None:
             report_entries = tuple(sorted(report_entries))
 
-        if created is None:
+        if created is None and report_entries is not None:
             for report_entry in report_entries:
                 created = report_entry.created
 
