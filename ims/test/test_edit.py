@@ -246,14 +246,12 @@ class EditingTests(unittest.TestCase):
 
     def test_edit_created_changed(self):
         """
-        Edit incident created timestamp to a new value.
+        Editing incident created timestamp to a new value is ignored.
         """
-        (edited, before, after) = self.edit_incident("created", time1, time2)
-
-        report_text = u"Changed created to: 2013-08-31T21:00:00Z"
-
-        self.assertEquals(edited.created, time2)
-        self.assertSystemReportEntryAdded(edited, before, after, report_text)
+        self.assertRaises(
+            EditNotAllowedError,
+            self.edit_incident, "created", time1, time2,
+        )
 
 
     def test_edit_state_same(self):
