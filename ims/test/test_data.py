@@ -218,14 +218,6 @@ class IncidentTests(unittest.TestCase):
         incident.validate()
 
 
-    def test_validate_rangers_none(self):
-        """
-        L{Incident.validate} of incident with C{None} Rangers.
-        """
-        incident = newIncident(rangers=None)
-        self.assertRaises(InvalidDataError, incident.validate)
-
-
     def test_validate_types(self):
         """
         L{Incident.validate} of incident with valid incident types.

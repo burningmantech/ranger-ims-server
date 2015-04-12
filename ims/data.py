@@ -279,11 +279,9 @@ class Incident(object):
 
         @raise: L{InvalidDataError} if the incident does not validate.
         """
-        if self.rangers is None:
-            raise InvalidDataError("Rangers may not be None.")
-
-        for ranger in self.rangers:
-            ranger.validate()
+        if self.rangers is not None:
+            for ranger in self.rangers:
+                ranger.validate()
 
         if self.location is not None:
             self.location.validate()
