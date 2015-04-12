@@ -88,9 +88,16 @@ class ReadOnlyStorage(object):
         handle = self._open_incident(number, "r")
         try:
             json = json_from_file(handle)
-            return incident_from_json(json, number=number)
+            incident = incident_from_json(json, number=number, validate=False)
         finally:
             handle.close()
+
+        # Do pre-validation cleanup here, for compatibility with older data.
+        # ims2014Cleanup(incident)
+
+        incident.validate()
+
+        return incident
 
 
     def etag_for_incident_with_number(self, number):
