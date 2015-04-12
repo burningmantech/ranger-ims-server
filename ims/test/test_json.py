@@ -34,7 +34,7 @@ from ..json import (
     ranger_as_json, location_as_json,
 )
 
-from .test_store import time1, time2
+from .test_store import time1, time2, time3
 
 
 
@@ -542,17 +542,18 @@ class IncidentSerializationTests(unittest.TestCase):
         self.assertEquals(
             {
                 JSON.incident_number.value: 1,
+                JSON.incident_created.value: datetime_as_rfc3339(time1),
                 JSON.report_entries.value: [
                     {
                         JSON.entry_author.value: u"Tool",
                         JSON.entry_text.value: u"1 2 3",
-                        JSON.entry_created.value: datetime_as_rfc3339(time1),
+                        JSON.entry_created.value: datetime_as_rfc3339(time2),
                         JSON.entry_system.value: False,
                     },
                     {
                         JSON.entry_author.value: u"Tulsa",
                         JSON.entry_text.value: u"A B C",
-                        JSON.entry_created.value: datetime_as_rfc3339(time2),
+                        JSON.entry_created.value: datetime_as_rfc3339(time3),
                         JSON.entry_system.value: False,
                     },
                 ],
@@ -560,12 +561,13 @@ class IncidentSerializationTests(unittest.TestCase):
             incident_as_json(
                 Incident(
                     number=1,
+                    created=time1,  # Use a non-derived value
                     report_entries=(
                         ReportEntry(
-                            author=u"Tool", text=u"1 2 3", created=time1
+                            author=u"Tool", text=u"1 2 3", created=time2
                         ),
                         ReportEntry(
-                            author=u"Tulsa", text=u"A B C", created=time2
+                            author=u"Tulsa", text=u"A B C", created=time3
                         ),
                     ),
                 )
