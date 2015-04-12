@@ -32,6 +32,8 @@ from ..data import (
     Location,
 )
 
+from .test_store import time1, time2
+
 
 
 class IncidentStateTests(unittest.TestCase):
@@ -125,7 +127,7 @@ class IncidentTests(unittest.TestCase):
         self.assertRaises(InvalidDataError, Incident, number=-1)
 
 
-    def test_init_sorted_entries(self):
+    def test_init_sortedEntries(self):
         """
         L{Incident.report_entries} is sorted.
         """
@@ -135,6 +137,24 @@ class IncidentTests(unittest.TestCase):
         for entries in ((r1, r2), (r2, r1)):
             incident = newIncident(report_entries=entries)
             self.assertEquals((r1, r2), incident.report_entries)
+
+
+    def test_init_noCreatedUseFirstReportEntry(self):
+        """
+        L{Incident.__init__} with no created time and no report entries.
+        """
+        incident = Incident(
+            number=1,
+            report_entries=(
+                ReportEntry(
+                    author=u"Tool", text=u"1 2 3", created=time1
+                ),
+                ReportEntry(
+                    author=u"Tulsa", text=u"A B C", created=time2
+                ),
+            ),
+        )
+        self.assertEquals(incident.created, time1)
 
 
     def test_str(self):

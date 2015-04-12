@@ -195,6 +195,7 @@ class Incident(object):
         if created is None and report_entries is not None:
             for report_entry in report_entries:
                 created = report_entry.created
+                break
 
         self.number         = number
         self.priority       = priority
