@@ -93,7 +93,7 @@ class ReadOnlyStorage(object):
             handle.close()
 
         # Do pre-validation cleanup here, for compatibility with older data.
-        # ims2014Cleanup(incident)
+        ims2014Cleanup(incident)
 
         incident.validate()
 
@@ -352,3 +352,16 @@ class Storage(ReadOnlyStorage):
         self.provision()
         self._max_incident_number += 1
         return self._max_incident_number
+
+
+
+def ims2014Cleanup(incident):
+    """
+    Clean up 2014 data for compliance with current requirements.
+    """
+    report_entries = list(incident.report_entries)
+    for report_entry in report_entries:
+        if report_entry.author is None:
+            report_entry.author = u"<unknown>"
+
+    return incident

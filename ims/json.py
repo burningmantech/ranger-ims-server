@@ -226,7 +226,7 @@ def incident_from_json(root, number, validate=True):
     else:
         report_entries = [
             ReportEntry(
-                author=entry.get(JSON.entry_author.value, u"<unknown>"),
+                author=entry.get(JSON.entry_author.value, None),
                 text=entry.get(JSON.entry_text.value, None),
                 created=rfc3339_as_datetime(
                     entry.get(JSON.entry_created.value, None)

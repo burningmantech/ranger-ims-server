@@ -59,6 +59,21 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         return store
 
 
+    def storageWithSourceData(self, source):
+        fp = FilePath(self.mktemp())
+
+        rw_store = Storage(fp)
+        rw_store.provision()
+
+        # Write out some test data.
+        number = 0
+        for text in source:
+            number += 1
+            rw_store._write_incident_text(number, text)
+
+        return ReadOnlyStorage(fp)
+
+
     def test_read_raw(self):
         """
         L{ReadOnlyStorage.read_incident_with_number_raw} returns JSON text for
@@ -105,6 +120,31 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
             NoSuchIncidentError,
             store.read_incident_with_number, 1
         )
+
+
+    def test_read_2014_reportEntry_authorNone(self):
+        """
+        2014 data has report entries with no author because bugs.  :-(
+        """
+        source = [
+            """
+            {
+                "number": 1, "priority": 1,
+                "report_entries": [
+                    {
+                        "text": "Hi!",
+                        "created":"2014-08-23T21:19:00Z"
+                    }
+                ]
+            }
+            """
+        ]
+
+        store = self.storageWithSourceData(source)
+
+        for number, etag in store.list_incidents():
+            incident = store.read_incident_with_number(number)
+            incident.validate()
 
 
     def test_etag(self):
