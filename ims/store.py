@@ -305,19 +305,24 @@ class Storage(ReadOnlyStorage):
         self._provisioned = True
 
 
+    def _write_incident_text(self, number, text):
+        incident_fh = self._open_incident(number, "w")
+        try:
+            incident_fh.write(text)
+        finally:
+            incident_fh.close()
+
+
     def write_incident(self, incident):
         incident.validate()
 
         self.provision()
 
         number = incident.number
+        json = incident_as_json(incident)
+        text = json_as_text(json)
 
-        incident_fh = self._open_incident(number, "w")
-        try:
-            json = incident_as_json(incident)
-            incident_fh.write(json_as_text(json))
-        finally:
-            incident_fh.close()
+        self._write_incident_text(number, text)
 
         # Clear the cached etag
         if number in self._incident_etags:
