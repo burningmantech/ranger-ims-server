@@ -213,7 +213,7 @@ class ReadOnlyStorage(object):
         @return: number and etag for each incident in the store.
         @rtype: iterable of (L{int}, L{bytes})
         """
-        #log.msg("Searching for {0!r}, closed={1}".format(terms, show_closed))
+        # log.msg("Searching for {0!r}, closed={1}".format(terms, show_closed))
 
         #
         # Brute force implementation for now.
