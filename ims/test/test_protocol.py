@@ -61,6 +61,9 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
 
         if data is not None:
             for incident in data(store):
+                # Make sure that the incident numbers vended by data()
+                # match the next_incident_number() implementation.
+                assert incident.number == store.next_incident_number()
                 store.write_incident(incident)
 
         return store
