@@ -330,13 +330,6 @@ class ReportEntryTests(unittest.TestCase):
         self.assertIdentical(entry.system_entry, False)
 
 
-    def test_init_text_none(self):
-        """
-        L{ReportEntry.__init__} with L{None} text.
-        """
-        self.assertRaises(InvalidDataError, ReportEntry, author=u"", text=None)
-
-
     def test_str(self):
         """
         L{ReportEntry.__str__}
