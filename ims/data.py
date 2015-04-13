@@ -121,6 +121,27 @@ class InvalidDataError(ValueError):
 # Data Model
 #
 
+def _validateIsInstance(name, obj, typeSpec, optional=False, recurse=False):
+    if obj is None:
+        if optional:
+            return
+        else:
+            raise InvalidDataError("{} is required".format(name))
+
+    if isinstance(obj, typeSpec):
+        if recurse:
+            obj.validate()
+        return
+
+    raise InvalidDataError(
+        "{} must be a {}, not {!r}".format(name, typeSpec, obj)
+    )
+
+
+# def _validateIsContant(obj, container, optional=False):
+
+
+
 @total_ordering
 class Incident(object):
     """
@@ -281,68 +302,40 @@ class Incident(object):
         """
         if self.rangers is not None:
             for ranger in self.rangers:
-                if not isinstance(ranger, Ranger):
-                    raise InvalidDataError(
-                        "Ranger must be a Ranger, not {0!r}"
-                        .format(ranger)
-                    )
-                ranger.validate()
+                _validateIsInstance("Ranger", ranger, Ranger, recurse=True)
 
-        if self.location is not None:
-            if not isinstance(self.location, Location):
-                raise InvalidDataError(
-                    "Location must be a Location, not {0!r}"
-                    .format(self.location)
-                )
-            self.location.validate()
+        _validateIsInstance(
+            "location", self.location, Location, optional=True, recurse=True
+        )
 
         if self.incident_types is not None:
             for incident_type in self.incident_types:
-                if type(incident_type) is not unicode:
-                    raise InvalidDataError(
-                        "Incident type must be a unicode, not {0!r}"
-                        .format(incident_type)
-                    )
+                _validateIsInstance("incident type", incident_type, unicode)
 
-        if self.summary is not None and type(self.summary) is not unicode:
-            raise InvalidDataError(
-                "Incident summary must be a unicode, not {0!r}"
-                .format(self.summary)
-            )
+        _validateIsInstance("summary", self.summary, unicode, optional=True)
 
         if self.report_entries is not None:
             for report_entry in self.report_entries:
-                if not isinstance(report_entry, ReportEntry):
-                    raise InvalidDataError(
-                        "Report entry must be a ReportEntry, not {0!r}"
-                        .format(report_entry)
-                    )
-                report_entry.validate()
+                _validateIsInstance(
+                    "report entry", report_entry, ReportEntry, recurse=True
+                )
 
-        if self.created is not None and not isinstance(self.created, DateTime):
-            raise InvalidDataError(
-                "Incident created date must be a DateTime, not {0!r}"
-                .format(self.created)
-            )
+        _validateIsInstance("created", self.created, DateTime, optional=True)
 
         if (
             self.state is not None and
             self.state not in IncidentState.iterconstants()
         ):
             raise InvalidDataError(
-                "Incident state date must be an IncidentState, not {0!r}"
-                .format(self.state)
+                "state must be a {}, not {!r}"
+                .format(IncidentState, self.state)
             )
 
-        if type(self.priority) is not int:
-            raise InvalidDataError(
-                "Incident priority must be an int, not {0!r}"
-                .format(self.priority)
-            )
+        _validateIsInstance("priority", self.priority, int)
 
-        if not (type(self.priority) is int and 1 <= self.priority <= 5):
+        if not 1 <= self.priority <= 5:
             raise InvalidDataError(
-                "Incident priority must be an int from 1 to 5, not {0!r}"
+                "priority must be an int from 1 to 5, not {!r}"
                 .format(self.priority)
             )
 
@@ -453,23 +446,9 @@ class ReportEntry(object):
 
         @raise: L{InvalidDataError} if the report entry does not validate.
         """
-        if type(self.author) is not unicode:
-            raise InvalidDataError(
-                "Report entry author must be unicode, not {0!r}"
-                .format(self.author)
-            )
-
-        if type(self.text) is not unicode:
-            raise InvalidDataError(
-                "Report entry text must be unicode, not {0!r}"
-                .format(self.text)
-            )
-
-        if type(self.created) is not DateTime:
-            raise InvalidDataError(
-                "Report entry created date must be a DateTime, not {0!r}"
-                .format(self.created)
-            )
+        _validateIsInstance("author", self.author, unicode)
+        _validateIsInstance("text", self.text, unicode)
+        _validateIsInstance("created", self.created, DateTime)
 
 
 
@@ -536,25 +515,13 @@ class Ranger(object):
 
         @raise: L{InvalidDataError} if the Ranger does not validate.
         """
-        if type(self.handle) is not unicode:
-            raise InvalidDataError(
-                "Ranger handle must be a unicode, not {0!r}"
-                .format(self.handle)
-            )
+        _validateIsInstance("handle", self.handle, unicode)
 
         if not self.handle:
             raise InvalidDataError("Ranger handle may not be empty")
 
-        if self.name is not None and type(self.name) is not unicode:
-            raise InvalidDataError(
-                "Ranger name must be a unicode, not {0!r}".format(self.name)
-            )
-
-        if self.status is not None and type(self.status) is not unicode:
-            raise InvalidDataError(
-                "Ranger status must be a unicode, not {0!r}"
-                .format(self.status)
-            )
+        _validateIsInstance("name", self.name, unicode, optional=True)
+        _validateIsInstance("status", self.status, unicode, optional=True)
 
 
 
@@ -635,18 +602,10 @@ class Location(object):
 
         @raise: L{InvalidDataError} if the location does not validate.
         """
-        if self.name is not None and type(self.name) is not unicode:
-            raise InvalidDataError(
-                "Location name must be unicode, not {0!r}"
-                .format(self.name)
-            )
+        _validateIsInstance("name", self.name, unicode, optional=True)
 
         if self.address is not None:
-            if type(self.address) is not unicode:
-                raise InvalidDataError(
-                    "Location address must be Address, not {0!r}"
-                    .format(self.address)
-                )
+            _validateIsInstance("address", self.address, unicode)
             # self.address.validate()
 
 
@@ -696,7 +655,7 @@ class Location(object):
 #             name = position.lookupByValue(time)
 #         elif name.value != time:
 #             raise ValueError(
-#                 "time and name do not match: {0} != {1}"
+#                 "time and name do not match: {} != {}"
 #                 .format(time, name)
 #             )
 

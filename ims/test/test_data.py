@@ -429,15 +429,7 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of valid entry.
         """
-        entry = ReportEntry(author=u"", text=u"")
-        entry.validate()
-
-
-    def test_validate_author(self):
-        """
-        L{ReportEntry.validate} of entry with valid author.
-        """
-        entry = ReportEntry(author=u"Tool", text=u"")
+        entry = ReportEntry(author=u"Tool", text=u"Something happened!")
         entry.validate()
 
 
@@ -445,15 +437,23 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of entry with L{None} author.
         """
-        entry = ReportEntry(author=None, text=u"")
+        entry = ReportEntry(author=None, text=u"Something happened!")
         self.assertRaises(InvalidDataError, entry.validate)
+
+
+    # def test_validate_author_empty(self):
+    #     """
+    #     L{ReportEntry.validate} of entry with empty author.
+    #     """
+    #     entry = ReportEntry(author=u"", text=u"Something happened!")
+    #     self.assertRaises(InvalidDataError, entry.validate)
 
 
     def test_validate_author_nonUnicode(self):
         """
         L{ReportEntry.validate} of entry with non-unicode author.
         """
-        entry = ReportEntry(author=b"Tool", text=u"")
+        entry = ReportEntry(author=b"Tool", text=u"Something happened!")
         self.assertRaises(InvalidDataError, entry.validate)
 
 
@@ -461,8 +461,24 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of entry with valid text.
         """
-        entry = ReportEntry(author=u"", text=u"Something happened!")
+        entry = ReportEntry(author=u"Tool", text=u"Something happened!")
         entry.validate()
+
+
+    def test_validate_text_none(self):
+        """
+        L{ReportEntry.validate} of entry with L{None} text.
+        """
+        entry = ReportEntry(author=u"Tool", text=None)
+        self.assertRaises(InvalidDataError, entry.validate)
+
+
+    # def test_validate_text_empty(self):
+    #     """
+    #     L{ReportEntry.validate} of entry with empty text.
+    #     """
+    #     entry = ReportEntry(author=u"Tool", text=u"")
+    #     self.assertRaises(InvalidDataError, entry.validate)
 
 
     def test_validate_text_nonUnicode(self):
@@ -506,17 +522,6 @@ class RangerTests(unittest.TestCase):
         self.assertEquals(ranger.handle, u"Tool")
         self.assertEquals(ranger.name, u"Wilfredo S\xe1nchez Vega")
         self.assertEquals(ranger.status, u"vintage")
-
-
-    def test_init_noHandle(self):
-        """
-        L{Ranger.__init__} with no handle.
-        """
-        self.assertRaises(
-            InvalidDataError,
-            Ranger,
-            handle=u"", name=u"Wilfredo S\xe1nchez Vega", status=u"vintage"
-        )
 
 
     def test_str(self):
@@ -578,14 +583,6 @@ class RangerTests(unittest.TestCase):
         L{Ranger.validate} of valid ranger.
         """
         ranger_tool.validate()
-
-
-    def test_validate_handle(self):
-        """
-        L{Ranger.validate} of Ranger with non-unicode handle.
-        """
-        ranger = Ranger(handle=u"Tool", name=u"", status=u"")
-        ranger.validate()
 
 
     def test_validate_handle_nonUnicode(self):
