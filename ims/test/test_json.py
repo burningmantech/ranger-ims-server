@@ -43,7 +43,7 @@ class TimeSerializationTests(unittest.TestCase):
     Tests for time serialization and deserialization.
     """
 
-    def test_datetime_as_rfc3339_naive(self):
+    def test_datetimeAsRFC3339Naive(self):
         """
         L{datetime_as_rfc3339} returns a proper RFC 3339 string for the given
         naive L{DateTime}, which is assumed to be UTC.
@@ -54,7 +54,7 @@ class TimeSerializationTests(unittest.TestCase):
         )
 
 
-    def test_datetime_as_rfc3339_utc(self):
+    def test_datetimeAsRFC3339UTC(self):
         """
         L{datetime_as_rfc3339} returns a proper RFC 3339 string for the given
         UTC L{DateTime}.
@@ -65,7 +65,7 @@ class TimeSerializationTests(unittest.TestCase):
         )
 
 
-    def test_datetime_as_rfc3339_other(self):
+    def test_datetimeAsRFC3339Other(self):
         """
         L{datetime_as_rfc3339} returns a proper RFC 3339 string for the given
         non-UTC L{DateTime}.
@@ -78,7 +78,7 @@ class TimeSerializationTests(unittest.TestCase):
         )
 
 
-    def test_rfc3339_as_datetime(self):
+    def test_rfc3339AsDatetime(self):
         """
         L{rfc3339_as_datetime} returns a proper UTC L{DateTime} for the given
         RFC 3339 string.
@@ -95,9 +95,9 @@ class IncidentDeserializationTests(unittest.TestCase):
     Tests for L{incident_from_json}.
     """
 
-    def test_incident_from_json_number(self):
+    def test_incidentFromJSONNumber(self):
         """
-        Deserialize with incident number.
+        Deserialize an incident number from JSON data.
         """
         self.assertEquals(
             Incident(number=1),
@@ -107,9 +107,10 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_number_none(self):
+    def test_incidentFromJSONNumberNone(self):
         """
-        Deserialize without incident number.
+        Deserializing without an incident number from JSON data uses the number
+        passed in as an argument.
         """
         self.assertEquals(
             Incident(number=1),
@@ -117,10 +118,10 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_number_wrong(self):
+    def test_incidentFromJSONNumberWrong(self):
         """
-        Deserialize with incident number while providing the wrong incident
-        number as an argument.
+        Deserializing a incident number from JSON data while providing a
+        different incident number as an argument raises L{InvalidDataError}.
         """
         self.assertRaises(
             InvalidDataError,
@@ -128,9 +129,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_priority(self):
+    def test_incidentFromJSONPriority(self):
         """
-        Deserialize with priority.
+        Deserialize an incident priority from JSON data.
         """
         self.assertEquals(
             Incident(number=1, priority=2),
@@ -144,9 +145,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_summary(self):
+    def test_incidentFromJSONSummary(self):
         """
-        Deserialize with summary.
+        Deserialize an incident summary from JSON data.
         """
         self.assertEquals(
             Incident(number=1, summary=u"A B C"),
@@ -160,9 +161,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_location(self):
+    def test_incidentFromJSONLocation(self):
         """
-        Deserialize with location.
+        Deserialize a location from JSON data.
         """
         self.assertEquals(
             Incident(
@@ -180,9 +181,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_location_none_values(self):
+    def test_incidentFromJSONLocationNoneValues(self):
         """
-        Deserialize with location with None name and/or address.
+        Deserialize a location from JSON data with C{None} name and/or address.
         """
         self.assertEquals(
             Incident(
@@ -200,9 +201,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_rangers(self):
+    def test_incidentFromJSONRangers(self):
         """
-        Deserialize with some Rangers.
+        Deserialize Rangers from JSON data.
         """
         self.assertEquals(
             Incident(
@@ -222,9 +223,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_rangers_empty(self):
+    def test_incidentFromJSONRangersEmpty(self):
         """
-        Deserialize with no Rangers.
+        Deserialize an incident with no Rangers from JSON data.
         """
         self.assertEquals(
             Incident(number=1, rangers=()),
@@ -238,9 +239,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_types(self):
+    def test_incidentFromJSONTypes(self):
         """
-        Deserialize with some incident types.
+        Deserialize incident types from JSON data.
         """
         self.assertEquals(
             Incident(
@@ -257,9 +258,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_types_empty(self):
+    def test_incidentFromJSONTypesEmpty(self):
         """
-        Deserialize with no incident types.
+        Deserialize an incident with no incident types from JSON data.
         """
         self.assertEquals(
             Incident(number=1, incident_types=()),
@@ -273,9 +274,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_entries(self):
+    def test_incidentFromJSONEntries(self):
         """
-        Deserialize with some report entries.
+        Deserialize report entries from JSON data.
         """
         self.assertEquals(
             Incident(
@@ -310,9 +311,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_entries_empty(self):
+    def test_incidentFromJSONEntriesEmpty(self):
         """
-        Deserialize with no report entries.
+        Deserialize an incident with no report entries from JSON data.
         """
         self.assertEquals(
             Incident(number=1, report_entries=()),
@@ -326,9 +327,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_created(self):
+    def test_incidentFromJSONCreated(self):
         """
-        Deserialize with created.
+        Deserialize an incident created time from JSON data.
         """
         self.assertEquals(
             Incident(
@@ -345,9 +346,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_state(self):
+    def test_incidentFromJSONState(self):
         """
-        Deserialize with state.
+        Deserialize an incident created state from JSON data.
         """
         self.assertEquals(
             Incident(
@@ -364,9 +365,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_from_json_state_legacy(self):
+    def test_incidentFromJSONStateLegacy(self):
         """
-        Deserialize with legacy state data.
+        Deserialize an incident created state from legacy JSON data.
         """
         for (state, json_key) in (
             (IncidentState.new, JSON._created.value),
@@ -392,7 +393,7 @@ class IncidentSerializationTests(unittest.TestCase):
     Tests for L{incident_as_json}.
     """
 
-    def test_incident_as_json_number(self):
+    def test_incidentAsJSONNumber(self):
         """
         Serialize with incident number.
         """
@@ -402,7 +403,7 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_as_json_priority(self):
+    def test_incidentAsJSONPriority(self):
         """
         Serialize with priority.
         """
@@ -415,7 +416,7 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_as_json_summary(self):
+    def test_incidentAsJSONSummary(self):
         """
         Serialize with summary.
         """
@@ -428,7 +429,7 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_as_json_location(self):
+    def test_incidentAsJSONLocation(self):
         """
         Serialize with location.
         """
@@ -447,7 +448,7 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_as_json_location_none_values(self):
+    def test_incidentAsJSONLocationNoneValues(self):
         """
         Serialize with location with None name and/or address.
         """
@@ -466,7 +467,7 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_as_json_rangers(self):
+    def test_incidentAsJSONRangers(self):
         """
         Serialize with some Rangers.
         """
@@ -487,7 +488,7 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_as_json_rangers_empty(self):
+    def test_incidentAsJSONRangersEmpty(self):
         """
         Serialize with no Rangers.
         """
@@ -500,7 +501,7 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_as_json_types(self):
+    def test_incidentAsJSONTypes(self):
         """
         Serialize with some incident types.
         """
@@ -522,7 +523,7 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_as_json_types_empty(self):
+    def test_incidentAsJSONTypesEmpty(self):
         """
         Serialize with no incident types.
         """
@@ -535,7 +536,7 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_as_json_entries(self):
+    def test_incidentAsJSONEntries(self):
         """
         Serialize with some report entries.
         """
@@ -573,7 +574,7 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_as_json_entries_empty(self):
+    def test_incidentAsJSONEntriesEmpty(self):
         """
         Serialize with no report entries.
         """
@@ -588,7 +589,7 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_as_json_created(self):
+    def test_incidentAsJSONCreated(self):
         """
         Serialize with created.
         """
@@ -606,7 +607,7 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incident_as_json_state(self):
+    def test_incidentAsJSONState(self):
         """
         Serialize with state.
         """
@@ -630,7 +631,7 @@ class RangerSerializationTests(unittest.TestCase):
     Tests for L{ranger_as_json}.
     """
 
-    def test_ranger_as_json_handle(self):
+    def test_rangerAsJSONHandle(self):
         """
         Serialize with handle.
         """
@@ -644,7 +645,7 @@ class RangerSerializationTests(unittest.TestCase):
         )
 
 
-    def test_ranger_as_json_name_status(self):
+    def test_rangerAsJSONHandleNameStatus(self):
         """
         Serialize with handle, name, status.
         """
@@ -666,7 +667,7 @@ class LocationSerializationTests(unittest.TestCase):
     Tests for L{location_as_json}.
     """
 
-    def test_location_as_json_name(self):
+    def test_locationAsJSONName(self):
         """
         Serialize with name.
         """
@@ -678,7 +679,7 @@ class LocationSerializationTests(unittest.TestCase):
             location_as_json(Location(name=u"Ranger Outpost Tokyo"))
         )
 
-    def test_location_as_json_address(self):
+    def test_locationAsJSONAddress(self):
         """
         Serialize with name.
         """
