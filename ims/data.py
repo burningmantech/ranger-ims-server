@@ -603,10 +603,194 @@ class Location(object):
         @raise: L{InvalidDataError} if the location does not validate.
         """
         _validateIsInstance("name", self.name, unicode, optional=True)
+        _validateIsInstance(
+            "address", self.address, Address, optional=True, recurse=True
+        )
 
-        if self.address is not None:
-            _validateIsInstance("address", self.address, unicode)
-            # self.address.validate()
+
+
+class Address(object):
+    """
+    Location address
+    """
+
+
+
+class TextOnlyAddress(Address):
+    """
+    Address described by free-form text.
+    """
+    def __init__(self, description=None):
+        """
+        @param description: The address' radial minute.
+        @type description: L{unicode}
+        """
+        self.description = description
+
+
+    def __str__(self):
+        return self.description.encode("utf-8")
+
+
+    def __repr__(self):
+        return (
+            "{self.__class__.__name__}(description={self.description!r})"
+            .format(self=self)
+        )
+
+
+    def __hash__(self):
+        return hash(self.description)
+
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.description == other.description
+        elif other is None:
+            return self.description is None
+
+        return NotImplemented
+
+
+    def __lt__(self, other):
+        if isinstance(other, Location):
+            if self.description != other.description:
+                return self.description < other.description
+
+        return NotImplemented
+
+
+    def validate(self):
+        """
+        Validate this location.
+
+        @raise: L{InvalidDataError} if the location does not validate.
+        """
+        _validateIsInstance("description", self.description, unicode)
+
+
+
+class RodGarettAddress(Address):
+    """
+    Address at concentric and radial streets, as per Rod Garett's design for
+    Black Rock City.
+    """
+
+    def __init__(
+        self,
+        concentric=None, radialHour=None, radialMinute=None,
+        description=None,
+    ):
+        """
+        @param concentric: The address' concentric street number, starting
+            from C{0}.
+        @type concentric: L{int}
+
+        @param radialHour: The address' radial hour.
+        @type radialHour: L{int}
+
+        @param radialMinute: The address' radial minute.
+        @type radialMinute: L{int}
+
+        @param description: The address' radial minute.
+        @type description: L{unicode}
+        """
+        if concentric is not None and concentric < 0:
+            raise ValueError("Concentric street number may not be negative")
+
+        if radialHour is not None:
+            if not 2 <= radialHour <= 10:
+                raise ValueError("Radial hour must be 2-10")
+
+        if radialMinute is not None:
+            if not 0 <= radialMinute < 60:
+                raise ValueError("Radial minute must be 0-59")
+
+        self.concentric   = concentric
+        self.radialHour   = radialHour
+        self.radialMinute = radialMinute
+        self.description  = description
+
+
+    def __str__(self):
+        return (
+            u"{self.concentric}@{self.radialHour}:{self.radialMinute} "
+            "{self.description}"
+            .format(self=self).encode("utf-8")
+        )
+
+
+    def __repr__(self):
+        return (
+            "{self.__class__.__name__}("
+            "concentric={self.concentric!r},"
+            "radialHour={self.radialHour!r})"
+            "radialMinute={self.radialMinute!r})"
+            "description={self.description!r})"
+            .format(self=self)
+        )
+
+
+    def __hash__(self):
+        return hash((
+            self.concentric,
+            self.radialHour,
+            self.radialMinute,
+            self.description,
+        ))
+
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return (
+                self.concentric   == other.concentric and
+                self.radialHour   == other.radialHour and
+                self.radialMinute == other.radialMinute and
+                self.description  == other.description
+            )
+        elif other is None:
+            return (
+                self.concentric is None and
+                self.radialHour is None and
+                self.radialMinute is None and
+                self.description
+            )
+
+        return NotImplemented
+
+
+    def __lt__(self, other):
+        if isinstance(other, Location):
+            if self.concentric != other.concentric:
+                return self.concentric < other.concentric
+            if self.radialHour != other.radialHour:
+                return self.radialHour < other.radialHour
+            if self.radialMinute != other.radialMinute:
+                return self.radialMinute < other.radialMinute
+            if self.description != other.description:
+                return self.description < other.description
+
+        return NotImplemented
+
+
+    def validate(self):
+        """
+        Validate this location.
+
+        @raise: L{InvalidDataError} if the location does not validate.
+        """
+        _validateIsInstance(
+            "concentric", self.concentric, int, optional=True
+        )
+        _validateIsInstance(
+            "radialHour", self.radialHour, int, optional=True
+        )
+        _validateIsInstance(
+            "radialMinute", self.radialMinute, int, optional=True
+        )
+        _validateIsInstance(
+            "description", self.description, unicode, optional=True
+        )
 
 
 
