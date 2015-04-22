@@ -95,27 +95,73 @@ class IncidentDeserializationTests(unittest.TestCase):
     Tests for L{incident_from_json}.
     """
 
+    def test_numberArgumentRequired(self):
+        """
+        Raise L{TypeError} if passed-in C{number} is C{None}.
+        """
+        self.assertRaises(
+            TypeError,
+            incident_from_json, {}, number=None, validate=False,
+        )
+
+
+    def test_jsonMustBeDict(self):
+        """
+        Raise L{InvalidDataError} if passed-in JSON C{root} is not a C{dict}.
+        """
+        self.assertRaises(
+            InvalidDataError,
+            incident_from_json, u"", number=1, validate=False,
+        )
+
+
+    def test_jsonUnknownKeys(self):
+        """
+        Raise L{InvalidDataError} if JSON data contains an unknown top-level
+        key.
+        """
+        self.assertRaises(
+            InvalidDataError,
+            incident_from_json, {u"xyzzy": u"foo"}, number=1, validate=False,
+        )
+
+
+    def incidentWithJSONStuff(attributes):
+        """
+        Make a new incident object with incident number C{1}, and the specified
+        additional attributes.  The incident is not validated.
+        """
+        json = dict(number=1)
+        json.update(attributes)
+        incident_from_json(json, number=1, validate=False)
+
+
+    def test_incidentFromJSONEmpty(self):
+        """
+        Deserializing from empty JSON data produces an almost-empty incident;
+        only the incident number is inserted.
+        """
+        incident = incident_from_json({}, number=1, validate=False)
+        self.assertEquals(incident, Incident(number=1))
+
+
     def test_incidentFromJSONNumber(self):
         """
         Deserialize an incident number from JSON data.
         """
-        self.assertEquals(
-            Incident(number=1),
-            incident_from_json(
-                {JSON.incident_number.value: 1}, number=1, validate=None
-            )
+        incident = incident_from_json(
+            {JSON.incident_number.value: 1}, number=1, validate=False
         )
+        self.assertEquals(incident.number, 1)
 
 
-    def test_incidentFromJSONNumberNone(self):
+    def test_incidentFromJSONNumberMissing(self):
         """
         Deserializing without an incident number from JSON data uses the number
         passed in as an argument.
         """
-        self.assertEquals(
-            Incident(number=1),
-            incident_from_json({}, number=1, validate=None)
-        )
+        incident = incident_from_json({}, number=1, validate=False)
+        self.assertEquals(incident.number, 1)
 
 
     def test_incidentFromJSONNumberWrong(self):
@@ -133,144 +179,159 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize an incident priority from JSON data.
         """
-        self.assertEquals(
-            Incident(number=1, priority=2),
-            incident_from_json(
-                {
-                    JSON.incident_number.value: 1,
-                    JSON.incident_priority.value: 2,
-                },
-                number=1, validate=None
-            )
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.incident_priority.value: 2,
+            },
+            number=1, validate=False
         )
+        self.assertEquals(incident.priority, 2)
 
 
     def test_incidentFromJSONSummary(self):
         """
         Deserialize an incident summary from JSON data.
         """
-        self.assertEquals(
-            Incident(number=1, summary=u"A B C"),
-            incident_from_json(
-                {
-                    JSON.incident_number.value: 1,
-                    JSON.incident_summary.value: u"A B C",
-                },
-                number=1, validate=None
-            )
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.incident_summary.value: u"A B C",
+            },
+            number=1, validate=False
         )
+        self.assertEquals(incident.summary, u"A B C")
 
 
     def test_incidentFromJSONLocation(self):
         """
         Deserialize a location from JSON data.
         """
-        self.assertEquals(
-            Incident(
-                number=1,
-                location=Location(name=u"Tokyo", address=u"9:00 & C"),
-            ),
-            incident_from_json(
-                {
-                    JSON.incident_number.value: 1,
-                    JSON.location_name.value: u"Tokyo",
-                    JSON.location_address.value: u"9:00 & C",
-                },
-                number=1, validate=None
-            )
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.location_name.value: u"Tokyo",
+                JSON.location_address.value: u"9:00 & C",
+            },
+            number=1, validate=False
         )
+        self.assertEquals(
+            incident.location,
+            Location(name=u"Tokyo", address=u"9:00 & C")
+        )
+
+
+    def test_incidentFromJSONLocationMissing(self):
+        """
+        Deserialize from JSON data with no location.
+        """
+        incident = incident_from_json(
+            {JSON.incident_number.value: 1},
+            number=1, validate=False
+        )
+        self.assertEquals(incident.location, None)
 
 
     def test_incidentFromJSONLocationNoneValues(self):
         """
         Deserialize a location from JSON data with C{None} name and/or address.
         """
-        self.assertEquals(
-            Incident(
-                number=1,
-                location=Location(name=None, address=None),
-            ),
-            incident_from_json(
-                {
-                    JSON.incident_number.value: 1,
-                    JSON.location_name.value: None,
-                    JSON.location_address.value: None,
-                },
-                number=1, validate=None
-            )
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.location_name.value: None,
+                JSON.location_address.value: None,
+            },
+            number=1, validate=False
         )
+        self.assertEquals(incident.location, None)
 
 
     def test_incidentFromJSONRangers(self):
         """
         Deserialize Rangers from JSON data.
         """
-        self.assertEquals(
-            Incident(
-                number=1,
-                rangers=(
-                    Ranger(u"Tool", None, None),
-                    Ranger(u"Tulsa", None, None),
-                ),
-            ),
-            incident_from_json(
-                {
-                    JSON.incident_number.value: 1,
-                    JSON.ranger_handles.value: (u"Tool", u"Tulsa"),
-                },
-                number=1, validate=None
-            )
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.ranger_handles.value: (u"Tool", u"Tulsa"),
+            },
+            number=1, validate=False
         )
+        self.assertEquals(
+            incident.rangers,
+            frozenset((
+                Ranger(u"Tool", None, None),
+                Ranger(u"Tulsa", None, None),
+            ))
+        )
+
+
+    def test_incidentFromJSONRangersMissing(self):
+        """
+        Deserialize an incident with no Rangers from JSON data.
+        """
+        incident = incident_from_json(
+            {JSON.incident_number.value: 1},
+            number=1, validate=False
+        )
+        self.assertEquals(incident.rangers, None)
 
 
     def test_incidentFromJSONRangersEmpty(self):
         """
-        Deserialize an incident with no Rangers from JSON data.
+        Deserialize an incident with empty Rangers from JSON data.
         """
-        self.assertEquals(
-            Incident(number=1, rangers=()),
-            incident_from_json(
-                {
-                    JSON.incident_number.value: 1,
-                    JSON.ranger_handles.value: (),
-                },
-                number=1, validate=None
-            )
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.ranger_handles.value: (),
+            },
+            number=1, validate=False
         )
+        self.assertEquals(incident.rangers, frozenset())
 
 
     def test_incidentFromJSONTypes(self):
         """
         Deserialize incident types from JSON data.
         """
-        self.assertEquals(
-            Incident(
-                number=1,
-                incident_types=(u"Footsie", u"Jacks"),
-            ),
-            incident_from_json(
-                {
-                    JSON.incident_number.value: 1,
-                    JSON.incident_types.value: (u"Footsie", u"Jacks"),
-                },
-                number=1, validate=None
-            )
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.incident_types.value: (u"Footsie", u"Jacks"),
+            },
+            number=1, validate=False
         )
+        self.assertEquals(
+            incident.incident_types, frozenset((u"Footsie", u"Jacks"))
+        )
+
+
+    def test_incidentFromJSONTypesMissing(self):
+        """
+        Deserialize an incident with no incident types from JSON data.
+        """
+        incident = incident_from_json(
+            {JSON.incident_number.value: 1},
+            number=1, validate=False
+        )
+        self.assertEquals(incident.incident_types, None)
 
 
     def test_incidentFromJSONTypesEmpty(self):
         """
-        Deserialize an incident with no incident types from JSON data.
+        Deserialize an incident with empty incident types from JSON data.
         """
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.incident_types.value: (),
+            },
+            number=1, validate=False
+        )
         self.assertEquals(
-            Incident(number=1, incident_types=()),
-            incident_from_json(
-                {
-                    JSON.incident_number.value: 1,
-                    JSON.incident_types.value: (),
-                },
-                number=1, validate=None
-            )
+            incident.incident_types, frozenset()
         )
 
 
@@ -278,91 +339,110 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize report entries from JSON data.
         """
-        self.assertEquals(
-            Incident(
-                number=1,
-                report_entries=(
-                    ReportEntry(author=u"Tool", text=u"1 2 3", created=time1),
-                    ReportEntry(author=u"Tulsa", text=u"A B C", created=time2),
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.report_entries.value: (
+                    {
+                        JSON.entry_author.value: u"Tool",
+                        JSON.entry_text.value: u"1 2 3",
+                        JSON.entry_created.value: (
+                            datetime_as_rfc3339(time1)
+                        ),
+                    },
+                    {
+                        JSON.entry_author.value: u"Tulsa",
+                        JSON.entry_text.value: u"A B C",
+                        JSON.entry_created.value: (
+                            datetime_as_rfc3339(time2)
+                        ),
+                    },
                 ),
-            ),
-            incident_from_json(
-                {
-                    JSON.incident_number.value: 1,
-                    JSON.report_entries.value: (
-                        {
-                            JSON.entry_author.value: u"Tool",
-                            JSON.entry_text.value: u"1 2 3",
-                            JSON.entry_created.value: (
-                                datetime_as_rfc3339(time1)
-                            ),
-                        },
-                        {
-                            JSON.entry_author.value: u"Tulsa",
-                            JSON.entry_text.value: u"A B C",
-                            JSON.entry_created.value: (
-                                datetime_as_rfc3339(time2)
-                            ),
-                        },
-                    ),
-                },
-                number=1, validate=None
+            },
+            number=1, validate=False
+        )
+        self.assertEquals(
+            incident.report_entries,
+            (
+                ReportEntry(author=u"Tool", text=u"1 2 3", created=time1),
+                ReportEntry(author=u"Tulsa", text=u"A B C", created=time2),
             )
         )
+
+
+    def test_incidentFromJSONEntriesMissing(self):
+        """
+        Deserialize an incident with no report entries from JSON data.
+        """
+        incident = incident_from_json(
+            {JSON.incident_number.value: 1},
+            number=1, validate=False
+        )
+        self.assertEquals(incident.report_entries, None)
 
 
     def test_incidentFromJSONEntriesEmpty(self):
         """
-        Deserialize an incident with no report entries from JSON data.
+        Deserialize an incident with empty report entries from JSON data.
         """
-        self.assertEquals(
-            Incident(number=1, report_entries=()),
-            incident_from_json(
-                {
-                    JSON.incident_number.value: 1,
-                    JSON.report_entries.value: (),
-                },
-                number=1, validate=None
-            )
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.report_entries.value: (),
+            },
+            number=1, validate=False
         )
+        self.assertEquals(incident.report_entries, ())
 
 
     def test_incidentFromJSONCreated(self):
         """
         Deserialize an incident created time from JSON data.
         """
-        self.assertEquals(
-            Incident(
-                number=1,
-                created=time1,
-            ),
-            incident_from_json(
-                {
-                    JSON.incident_number.value: 1,
-                    JSON.incident_created.value: datetime_as_rfc3339(time1),
-                },
-                number=1, validate=None
-            )
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.incident_created.value: datetime_as_rfc3339(time1),
+            },
+            number=1, validate=False
         )
+        self.assertEquals(incident.created, time1)
+
+
+    def test_incidentFromJSONCreatedMissing(self):
+        """
+        Deserialize with no incident created time from JSON data.
+        """
+        incident = incident_from_json(
+            {JSON.incident_number.value: 1},
+            number=1, validate=False
+        )
+        self.assertEquals(incident.created, None)
 
 
     def test_incidentFromJSONState(self):
         """
         Deserialize an incident created state from JSON data.
         """
-        self.assertEquals(
-            Incident(
-                number=1,
-                state=IncidentState.on_scene,
-            ),
-            incident_from_json(
-                {
-                    JSON.incident_number.value: 1,
-                    JSON.incident_state.value: JSON.state_on_scene.value,
-                },
-                number=1, validate=None
-            )
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.incident_state.value: JSON.state_on_scene.value,
+            },
+            number=1, validate=False
         )
+        self.assertEquals(incident.state, IncidentState.on_scene)
+
+
+    def test_incidentFromJSONStateMissing(self):
+        """
+        Deserialize with incident state from JSON data.
+        """
+        incident = incident_from_json(
+            {JSON.incident_number.value: 1},
+            number=1, validate=False
+        )
+        self.assertEquals(incident.state, None)
 
 
     def test_incidentFromJSONStateLegacy(self):
@@ -375,16 +455,14 @@ class IncidentDeserializationTests(unittest.TestCase):
             (IncidentState.on_scene, JSON._on_scene.value),
             (IncidentState.closed, JSON._closed.value),
         ):
-            self.assertEquals(
-                Incident(number=1, state=state),
-                incident_from_json(
-                    {
-                        JSON.incident_number.value: 1,
-                        json_key: time1,
-                    },
-                    number=1, validate=None
-                )
+            incident = incident_from_json(
+                {
+                    JSON.incident_number.value: 1,
+                    json_key: time1,
+                },
+                number=1, validate=False
             )
+            self.assertEquals(incident.state, state)
 
 
 

@@ -182,11 +182,14 @@ def incident_from_json(root, number, validate=True):
     if number is None:
         raise TypeError("Incident number may not be null")
 
+    if not isinstance(root, dict):
+        raise InvalidDataError("JSON incident must be a dict")
+
     for attribute in root:
         try:
             JSON.lookupByValue(attribute)
         except Exception:
-            raise RuntimeError("ARGH! Evil Death!")
+            raise InvalidDataError("ARGH! Evil Death!")
 
     json_number = root.get(JSON.incident_number.value, None)
 
@@ -199,8 +202,9 @@ def incident_from_json(root, number, validate=True):
 
         root[JSON.incident_number.value] = number
 
-    if type(root) is not dict:
-        raise InvalidDataError("JSON incident must be a dict")
+    priority = root.get(JSON.incident_priority.value, None)
+
+    summary = root.get(JSON.incident_summary.value, None)
 
     location_name = root.get(JSON.location_name.value, None)
     location_address = root.get(JSON.location_address.value, None)
@@ -214,10 +218,12 @@ def incident_from_json(root, number, validate=True):
     if ranger_handles is None:
         rangers = None
     else:
-        rangers = [
+        rangers = frozenset(
             Ranger(handle, None, None)
             for handle in ranger_handles
-        ]
+        )
+
+    incident_types = root.get(JSON.incident_types.value, None)
 
     json_entries = root.get(JSON.report_entries.value, None)
 
@@ -235,6 +241,8 @@ def incident_from_json(root, number, validate=True):
             )
             for entry in json_entries
         ]
+
+    created = rfc3339_as_datetime(root.get(JSON.incident_created.value, None))
 
     json_state = root.get(JSON.incident_state.value, None)
 
@@ -257,15 +265,13 @@ def incident_from_json(root, number, validate=True):
     else:
         state = IncidentState.lookupByName(json_state)
 
-    created = rfc3339_as_datetime(root.get(JSON.incident_created.value, None))
-
     incident = Incident(
         number=number,
-        priority=root.get(JSON.incident_priority.value, None),
-        summary=root.get(JSON.incident_summary.value, None),
+        priority=priority,
+        summary=summary,
         location=location,
         rangers=rangers,
-        incident_types=root.get(JSON.incident_types.value, None),
+        incident_types=incident_types,
         report_entries=report_entries,
         created=created,
         state=state,
