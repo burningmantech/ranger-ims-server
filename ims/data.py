@@ -616,10 +616,12 @@ class Address(object):
 
 
 
+@total_ordering
 class TextOnlyAddress(Address):
     """
     Address described by free-form text.
     """
+
     def __init__(self, description=None):
         """
         @param description: The address' radial minute.
@@ -629,6 +631,8 @@ class TextOnlyAddress(Address):
 
 
     def __str__(self):
+        if self.description is None:
+            return ""
         return self.description.encode("utf-8")
 
 
@@ -670,6 +674,7 @@ class TextOnlyAddress(Address):
 
 
 
+@total_ordering
 class RodGarettAddress(Address):
     """
     Address at concentric and radial streets, as per Rod Garett's design for
