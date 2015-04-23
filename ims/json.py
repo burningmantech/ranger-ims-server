@@ -17,7 +17,35 @@
 from __future__ import absolute_import
 
 """
-JSON bindings for IMS data
+JSON bindings for IMS data.
+
+
+2014 JSON schema:
+
+    {
+        "number": 101,                              // int >= 0
+        "priority": 3,                              // int {1,3,5}
+        "summary": "Diapers, please",               // one line
+        "location_address": "8:15 & K",             // one line
+        "location_name": "Camp Fishes",             // one line
+        "ranger_handles": [
+            "Santa Cruz"                            // handle in Clubhouse
+        ],
+        "incident_types": [
+            "Law Enforcement"                       // from list in config
+        ],
+        "report_entries": [
+            {
+                "author": "Hot Yogi",               // handle in Clubhouse
+                "created": "2014-08-30T21:12:50Z",  // RFC 3339, Zulu
+                "system_entry": false,              // boolean
+                "text": "Need diapers\nPronto"      // multi-line
+            }
+        ],
+        "timestamp": "2014-08-30T21:38:11Z"         // RFC 3339, Zulu
+        "state": "closed",                          // from JSON.state_*
+    }
+
 """
 
 __all__ = [
