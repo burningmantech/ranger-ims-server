@@ -30,6 +30,9 @@ from ..data import (
     ReportEntry,
     Ranger,
     Location,
+    # Address,
+    TextOnlyAddress,
+    RodGarettAddress,
 )
 
 
@@ -687,21 +690,27 @@ class LocationTests(unittest.TestCase):
         L{Location.__repr__}
         """
         self.assertEquals(
-            repr(location_hq),
-            "Location(name=u'Ranger HQ',address=u'5:45 & Esplanade')"
+            repr(location_zero),
+            (
+                "Location("
+                "name=u'Ranger Outpost Zero',"
+                "address=TextOnlyAddress("
+                "description=u'Halfway between the Man and the Temple'"
+                "))"
+            )
         )
 
 
     def test_eq_different(self):
         """
-        L{Location.__eq__} between two different entries.
+        L{Location.__eq__} between two different locations.
         """
-        self.assertNotEquals(location_hq, location_man)
+        self.assertNotEquals(location_zero, location_man)
 
 
     def test_eq_equal(self):
         """
-        L{Location.__eq__} between equal entries.
+        L{Location.__eq__} between equal locations.
         """
         location1a = Location(
             name=u"Ranger HQ",
@@ -718,9 +727,9 @@ class LocationTests(unittest.TestCase):
 
     def test_eq_none(self):
         """
-        L{Location.__eq__} between location and None.
+        L{Location.__eq__} between location and C{None}.
         """
-        self.assertNotEquals(location_hq, None)
+        self.assertNotEquals(location_zero, None)
         self.assertEquals(Location(), None)
         self.assertEquals(None, Location())
 
@@ -729,14 +738,14 @@ class LocationTests(unittest.TestCase):
         """
         L{Location.__eq__} between location and other type.
         """
-        self.assertNotEquals(location_hq, object())
+        self.assertNotEquals(location_zero, object())
 
 
     def test_validate(self):
         """
         L{Location.validate} of valid location.
         """
-        location_hq.validate()
+        location_zero.validate()
 
 
     def test_validate_name(self):
@@ -759,16 +768,97 @@ class LocationTests(unittest.TestCase):
         """
         L{Location.validate} of location with valid address.
         """
-        location = Location(address=u"5:45 & Esplanade")
+        location = Location(address=address_man)
         location.validate()
 
 
-    def test_validate_address_nonUnicode(self):
+    def test_validate_address_nonAddress(self):
         """
         L{Location.validate} of location with non-unicode address.
         """
-        location = Location(address=b"5:45 & Esplanade")
+        location = Location(address=u"5:45 & Esplanade")
         self.assertRaises(InvalidDataError, location.validate)
+
+
+
+# class AddressTests(unittest.TestCase):
+#     """
+#     Tests for L{Address}
+#     """
+
+
+
+class TextOnlyAddressTests(unittest.TestCase):
+    """
+    Tests for L{TextOnlyAddress}
+    """
+
+    def test_init_defaults(self):
+        """
+        L{TextOnlyAddressTests.__init__} with default values.
+        """
+        address = TextOnlyAddress()
+
+        self.assertIdentical(address.description, None)
+
+
+    def test_str_withDescription(self):
+        """
+        L{TextOnlyAddress.__str__} with description.
+        """
+        self.assertEquals(str(address_man.description), u"The Man")
+
+
+    def test_str_withoutDescription(self):
+        """
+        L{TextOnlyAddress.__str__} with no description.
+        """
+        address = TextOnlyAddress()
+        self.assertEquals(str(address), "")
+
+
+    def test_repr(self):
+        """
+        L{TextOnlyAddress.__repr__}
+        """
+        self.assertEquals(
+            repr(address_man),
+            "TextOnlyAddress(description=u'The Man')"
+        )
+
+
+    def test_eq_different(self):
+        """
+        L{TextOnlyAddress.__eq__} between two different addresses.
+        """
+        self.assertNotEquals(location_zero, location_man)
+
+
+    def test_eq_equal(self):
+        """
+        L{Location.__eq__} between equal addresses.
+        """
+        address1a = TextOnlyAddress(u"12:00 at the fence")
+        address1b = TextOnlyAddress(u"12:00 at the fence")
+
+        self.assertEquals(address1a, address1b)
+        self.assertEquals(address1b, address1a)
+
+
+    def test_eq_none(self):
+        """
+        L{Location.__eq__} between address and C{None}.
+        """
+        self.assertNotEquals(address_zero, None)
+        self.assertEquals(TextOnlyAddress(), None)
+        self.assertEquals(None, TextOnlyAddress())
+
+
+    def test_eq_other(self):
+        """
+        L{Location.__eq__} between address and other type.
+        """
+        self.assertNotEquals(address_man, object())
 
 
 
@@ -806,12 +896,14 @@ ranger_tulsa = Ranger(
 )
 
 
-location_hq = Location(
-    name=u"Ranger HQ",
-    address=u"5:45 & Esplanade",
+address_tokyo = RodGarettAddress(
+    concentric=3, radialHour=8, radialMinute=55,
+    description=u"Behind 9:00 Plaza, look for Ranger logo on corner.",
 )
+location_tokyo = Location(u"Ranger Outpost Tokyo", address_tokyo)
 
-location_man = Location(
-    name=u"The Man",
-    address=u"The Man",
-)
+address_man = TextOnlyAddress(u"The Man")
+location_man = Location(u"The Man", address_man)
+
+address_zero = TextOnlyAddress(u"Halfway between the Man and the Temple")
+location_zero = Location(u"Ranger Outpost Zero", address_zero)
