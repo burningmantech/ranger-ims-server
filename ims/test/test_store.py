@@ -29,6 +29,7 @@ from ims.data import IncidentState, Incident, ReportEntry, Location
 from ims.store import (
     StorageError, ReadOnlyStorage, Storage, NoSuchIncidentError
 )
+from .test_data import location_tokyo, location_man, location_zero
 
 
 
@@ -458,7 +459,7 @@ def test_incidents(store):
                 ReportEntry(u"Tool", u"Man overboard!", time1),
                 ReportEntry(u"Splinter", u"What?", time2),
             ),
-            location=Location(u"Ranger Outpost Tokyo", u"9:00 & C"),
+            location=location_tokyo,
         ),
         Incident(
             number=next_number(),
@@ -466,7 +467,7 @@ def test_incidents(store):
             report_entries=(
                 ReportEntry(u"El Weso", u"Does this work?", time3),
             ),
-            location=Location(u"Ranger HQ", u"Esplanade & 5:45"),
+            location=location_zero,
         ),
         Incident(
             number=next_number(),
@@ -474,7 +475,7 @@ def test_incidents(store):
             report_entries=(
                 ReportEntry(u"Librarian", u"Go read something.", time2),
             ),
-            location=Location(u"Ranger HQ", u"Rod's Road & 2:00"),
+            location=location_man,
         ),
         Incident(
             number=next_number(),
