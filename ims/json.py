@@ -19,6 +19,34 @@ from __future__ import absolute_import
 """
 JSON bindings for IMS data.
 
+2015 JSON incident schema replaces top-level location attributes with a
+dictionary.
+
+    {
+        "number": 101,                              // int >= 0
+        "priority": 3,                              // int {1,3,5}
+        "summary": "Diapers, please",               // one line
+        "location": {
+            ...
+        }
+        "ranger_handles": [
+            "Santa Cruz"                            // handle in Clubhouse
+        ],
+        "incident_types": [
+            "Law Enforcement"                       // from list in config
+        ],
+        "report_entries": [
+            {
+                "author": "Hot Yogi",               // handle in Clubhouse
+                "created": "2014-08-30T21:12:50Z",  // RFC 3339, Zulu
+                "system_entry": false,              // boolean
+                "text": "Need diapers\nPronto"      // multi-line
+            }
+        ],
+        "timestamp": "2014-08-30T21:38:11Z"         // RFC 3339, Zulu
+        "state": "closed",                          // from JSON.state_*
+    }
+
 2014 JSON incident schema replaces per-state time stamp attributes with a
 created time stamp plus a state attribute:
 
@@ -100,7 +128,8 @@ from twisted.python.constants import (
 
 from .tz import utc
 from .data import (
-    InvalidDataError, IncidentState, Incident, ReportEntry, Ranger, Location
+    InvalidDataError, IncidentState, Incident, ReportEntry, Ranger,
+    Location, TextOnlyAddress
 )
 
 rfc3339_datetime_format = "%Y-%m-%dT%H:%M:%SZ"
@@ -165,11 +194,14 @@ class JSON(Values):
     incident_priority = ValueConstant("priority")
     incident_state    = ValueConstant("state")
     incident_summary  = ValueConstant("summary")
-    location_name     = ValueConstant("location_name")
-    location_address  = ValueConstant("location_address")
+    incident_location = ValueConstant("location")
     ranger_handles    = ValueConstant("ranger_handles")
     incident_types    = ValueConstant("incident_types")
     report_entries    = ValueConstant("report_entries")
+
+    # Obsolete incident attribute keys
+    _location_name    = ValueConstant("location_name")
+    _location_address = ValueConstant("location_address")
 
     # State attribute values
     state_new         = ValueConstant("new")
@@ -261,13 +293,22 @@ def incident_from_json(root, number, validate=True):
 
     summary = root.get(JSON.incident_summary.value, None)
 
-    location_name = root.get(JSON.location_name.value, None)
-    location_address = root.get(JSON.location_address.value, None)
+    location = root.get(JSON.incident_location.value, None)
 
-    if location_name is None and location_address is None:
-        location = None
+    if location is None:
+        # Try obsolete attributes
+        location_name = root.get(JSON._location_name.value, None)
+        location_address = root.get(JSON._location_address.value, None)
+
+        if location_name is None and location_address is None:
+            location = None
+        else:
+            location = Location(
+                name=location_name,
+                address=TextOnlyAddress(location_address),
+            )
     else:
-        location = Location(name=location_name, address=location_address)
+        raise NotImplementedError("Need to handle new location schema")
 
     ranger_handles = root.get(JSON.ranger_handles.value, None)
     if ranger_handles is None:
@@ -302,6 +343,7 @@ def incident_from_json(root, number, validate=True):
     json_state = root.get(JSON.incident_state.value, None)
 
     if json_state is None:
+        # Try obsolete attributes
         if root.get(JSON._closed.value, None) is not None:
             state = IncidentState.closed
 
@@ -361,8 +403,17 @@ def incident_as_json(incident):
         root[JSON.incident_summary.value] = incident.summary
 
     if incident.location is not None:
-        root[JSON.location_name.value] = incident.location.name
-        root[JSON.location_address.value] = incident.location.address
+        root[JSON._location_name.value] = incident.location.name
+
+        address = incident.location.address
+        if address is None:
+            root[JSON._location_address.value] = None
+        elif isinstance(address, TextOnlyAddress):
+            root[JSON._location_address.value] = (
+                address.description
+            )
+        else:
+            raise NotImplementedError("Unknown addresses type")
 
     if incident.rangers is not None:
         root[JSON.ranger_handles.value] = [

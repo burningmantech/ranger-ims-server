@@ -24,7 +24,7 @@ from twisted.trial import unittest
 
 from ..data import (
     InvalidDataError, IncidentState,
-    Incident, ReportEntry, Ranger, Location,
+    Incident, ReportEntry, Ranger, Location, TextOnlyAddress,
 )
 from ..tz import utc, FixedOffsetTimeZone
 from ..json import (
@@ -203,22 +203,37 @@ class IncidentDeserializationTests(unittest.TestCase):
         self.assertEquals(incident.summary, u"A B C")
 
 
-    def test_incidentFromJSONLocation(self):
+    def test_incidentFromJSONLocationLegacy(self):
         """
-        Deserialize a location from JSON data.
+        Deserialize a location from legacy JSON data.
         """
         incident = incident_from_json(
             {
                 JSON.incident_number.value: 1,
-                JSON.location_name.value: u"Tokyo",
-                JSON.location_address.value: u"9:00 & C",
+                JSON._location_name.value: u"Tokyo",
+                JSON._location_address.value: u"9:00 & C",
             },
             number=1, validate=False
         )
         self.assertEquals(
             incident.location,
-            Location(name=u"Tokyo", address=u"9:00 & C")
+            Location(name=u"Tokyo", address=TextOnlyAddress(u"9:00 & C"))
         )
+
+
+    def test_incidentFromJSONLocationLegacyNoneValues(self):
+        """
+        Deserialize a location from JSON data with C{None} name and/or address.
+        """
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON._location_name.value: None,
+                JSON._location_address.value: None,
+            },
+            number=1, validate=False
+        )
+        self.assertEquals(incident.location, None)
 
 
     def test_incidentFromJSONLocationMissing(self):
@@ -227,21 +242,6 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         incident = incident_from_json(
             {JSON.incident_number.value: 1},
-            number=1, validate=False
-        )
-        self.assertEquals(incident.location, None)
-
-
-    def test_incidentFromJSONLocationNoneValues(self):
-        """
-        Deserialize a location from JSON data with C{None} name and/or address.
-        """
-        incident = incident_from_json(
-            {
-                JSON.incident_number.value: 1,
-                JSON.location_name.value: None,
-                JSON.location_address.value: None,
-            },
             number=1, validate=False
         )
         self.assertEquals(incident.location, None)
@@ -514,13 +514,16 @@ class IncidentSerializationTests(unittest.TestCase):
         self.assertEquals(
             {
                 JSON.incident_number.value: 1,
-                JSON.location_name.value: u"Tokyo",
-                JSON.location_address.value: u"9:00 & C",
+                JSON._location_name.value: u"Tokyo",
+                JSON._location_address.value: u"9:00 & C",
             },
             incident_as_json(
                 Incident(
                     number=1,
-                    location=Location(name=u"Tokyo", address=u"9:00 & C"),
+                    location=Location(
+                        name=u"Tokyo",
+                        address=TextOnlyAddress(u"9:00 & C")
+                    ),
                 )
             )
         )
@@ -533,8 +536,8 @@ class IncidentSerializationTests(unittest.TestCase):
         self.assertEquals(
             {
                 JSON.incident_number.value: 1,
-                JSON.location_name.value: None,
-                JSON.location_address.value: None,
+                JSON._location_name.value: None,
+                JSON._location_address.value: None,
             },
             incident_as_json(
                 Incident(
