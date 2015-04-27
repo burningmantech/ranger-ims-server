@@ -204,9 +204,68 @@ class IncidentDeserializationTests(unittest.TestCase):
         self.assertEquals(incident.summary, u"A B C")
 
 
-    def test_incidentFromJSONLocationLegacy(self):
+    def test_incidentFromJSONGarettLocation(self):
         """
-        Deserialize a location from legacy JSON data.
+        Deserialize a Rod Garett location from JSON data.
+        """
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.incident_location.value: {
+                    JSON.location_type.value: JSON.location_type_garett.value,
+                    JSON.location_name.value: u"Tokyo",
+                    JSON.location_garett_concentric.value: 3,  # 3 == C
+                    JSON.location_garett_radial_hour.value: 9,
+                    JSON.location_garett_radial_minute.value: 0,
+                    JSON.location_garett_description.value: "Opposite ESD",
+                },
+            },
+            number=1, validate=False
+        )
+        self.assertEquals(
+            incident.location,
+            Location(
+                name=u"Tokyo",
+                address=RodGarettAddress(
+                    concentric=3,
+                    radialHour=9,
+                    radialMinute=0,
+                    description="Opposite ESD",
+                ),
+            )
+        )
+
+
+    def test_incidentFromJSONGarettLocationNoneValues(self):
+        """
+        Deserialize a Rod Garett location from JSON data with C{None} values.
+        """
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.incident_location.value: {
+                    JSON.location_type.value: JSON.location_type_garett.value,
+                    JSON.location_name.value: u"Tokyo",
+                    JSON.location_garett_concentric.value: None,
+                    JSON.location_garett_radial_hour.value: None,
+                    JSON.location_garett_radial_minute.value: None,
+                    JSON.location_garett_description.value: None,
+                },
+            },
+            number=1, validate=False
+        )
+        self.assertEquals(
+            incident.location,
+            Location(
+                name=u"Tokyo",
+                address=None,
+            )
+        )
+
+
+    def test_incidentFromJSONLegacyLocation(self):
+        """
+        Deserialize a location from pre-2015 JSON data.
         """
         incident = incident_from_json(
             {
@@ -222,9 +281,10 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
 
 
-    def test_incidentFromJSONLocationLegacyNoneValues(self):
+    def test_incidentFromJSONLegacyLocationNoneValues(self):
         """
-        Deserialize a location from JSON data with C{None} name and/or address.
+        Deserialize a location from pre-2015 JSON data with C{None} name and/or
+        address.
         """
         incident = incident_from_json(
             {

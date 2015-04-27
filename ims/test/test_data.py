@@ -898,7 +898,7 @@ ranger_tulsa = Ranger(
 
 address_tokyo = RodGarettAddress(
     concentric=3, radialHour=8, radialMinute=55,
-    description=u"Behind 9:00 Plaza, look for Ranger logo on corner.",
+    description=u"Behind 9:00 Plaza, opposite medical.",
 )
 location_tokyo = Location(u"Ranger Outpost Tokyo", address_tokyo)
 

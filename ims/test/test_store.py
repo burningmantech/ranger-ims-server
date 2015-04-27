@@ -25,7 +25,7 @@ from twisted.python.filepath import FilePath
 
 from ..tz import utc
 from ims.json import incident_from_json, json_from_text
-from ims.data import IncidentState, Incident, ReportEntry, Location
+from ims.data import IncidentState, Incident, ReportEntry
 from ims.store import (
     StorageError, ReadOnlyStorage, Storage, NoSuchIncidentError
 )
@@ -259,11 +259,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         store = self.storage(data=test_incidents)
         self.assertEquals(
             set(store.locations()),
-            set((
-                Location(u"Ranger HQ", u"Esplanade & 5:45"),
-                Location(u"Ranger HQ", u"Rod's Road & 2:00"),
-                Location(u"Ranger Outpost Tokyo", u"9:00 & C"),
-            ))
+            set((location_tokyo, location_man, location_zero)),
         )
 
     def test_search_no_terms(self):
@@ -489,7 +485,7 @@ def test_incidents(store):
 
 
 test_incident_etags = {
-    1: "d6fade6617c510038a3a9b7f188a9b46b96c58fc",
+    1: "c32356bf60ac69d469675186ca9b13ae88daa03d",
     2: "f69dddb896ba6c06c3f5c4dd03811dbc9fb2dd4f",
     3: "22912adbadb7bd95b6672189166fdc8bcc44d0fd",
     4: "a1bfe51a1fb342c256f710896bb160875aa73460",

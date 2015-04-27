@@ -318,7 +318,7 @@ def incident_from_json(root, number, validate=True):
     location = root.get(JSON.incident_location.value, None)
 
     if location is None:
-        # Try obsolete attributes
+        # Try pre-2015 attributes
         location_name = root.get(JSON._location_name.value, None)
         location_address = root.get(JSON._location_address.value, None)
 
@@ -330,7 +330,50 @@ def incident_from_json(root, number, validate=True):
                 address=TextOnlyAddress(location_address),
             )
     else:
-        raise NotImplementedError("Need to handle new location schema")
+        location_type = location.get(JSON.location_type.value, None)
+
+        if location_type == JSON.location_type_text.value:
+            raise NotImplementedError(
+                "Need to handle text-only location schema"
+            )
+
+        elif location_type == JSON.location_type_garett.value:
+            location_name = location.get(JSON.location_name.value, None)
+
+            location_concentric = location.get(
+                JSON.location_garett_concentric.value, None
+            )
+            location_hour = location.get(
+                JSON.location_garett_radial_hour.value, None
+            )
+            location_minute = location.get(
+                JSON.location_garett_radial_minute.value, None
+            )
+            location_description = location.get(
+                JSON.location_garett_description.value, None
+            )
+
+            if (
+                location_concentric is None and
+                location_hour is None and
+                location_minute is None and
+                location_description is None
+            ):
+                address = None
+            else:
+                address = RodGarettAddress(
+                    concentric=location_concentric,
+                    radialHour=location_hour,
+                    radialMinute=location_minute,
+                    description=location_description,
+                )
+
+            location = Location(name=location_name, address=address)
+
+        else:
+            raise InvalidDataError(
+                "Unknown location type: {}".format(location_type)
+            )
 
     ranger_handles = root.get(JSON.ranger_handles.value, None)
     if ranger_handles is None:
