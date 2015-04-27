@@ -24,7 +24,8 @@ from twisted.trial import unittest
 
 from ..data import (
     InvalidDataError, IncidentState,
-    Incident, ReportEntry, Ranger, Location, TextOnlyAddress,
+    Incident, ReportEntry, Ranger,
+    Location, TextOnlyAddress, RodGarettAddress,
 )
 from ..tz import utc, FixedOffsetTimeZone
 from ..json import (
@@ -507,9 +508,9 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incidentAsJSONLocation(self):
+    def test_incidentAsJSONLocationWithTextAddress(self):
         """
-        Serialize with location.
+        Serialize with a location, with a text-only address.
         """
         self.assertEquals(
             {
@@ -529,9 +530,10 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
-    def test_incidentAsJSONLocationNoneValues(self):
+    def test_incidentAsJSONLocationWithTextAddressNoneValues(self):
         """
-        Serialize with location with None name and/or address.
+        Serialize with a location, with a text-only address, with C{None} name
+        and address.
         """
         self.assertEquals(
             {
@@ -543,6 +545,41 @@ class IncidentSerializationTests(unittest.TestCase):
                 Incident(
                     number=1,
                     location=Location(name=None, address=None),
+                )
+            )
+        )
+
+
+    def test_incidentAsJSONLocationWithGarettAddress(self):
+        """
+        Serialize with a location, with a Rod Garett address.
+        """
+        self.assertEquals(
+            {
+                JSON.incident_number.value: 1,
+                JSON.incident_location.value: {
+                    JSON.location_name.value: u"Tokyo",
+                    JSON.location_type.value: JSON.location_type_garett.value,
+                    JSON.location_garett_concentric.value: 3,  # 3 == C
+                    JSON.location_garett_radial_hour.value: 9,
+                    JSON.location_garett_radial_minute.value: 0,
+                    JSON.location_garett_description.value: (
+                        "Back of 9:00 plaza, opposite Medical"
+                    ),
+                }
+            },
+            incident_as_json(
+                Incident(
+                    number=1,
+                    location=Location(
+                        name=u"Tokyo",
+                        address=RodGarettAddress(
+                            concentric=3,  # 3 == C
+                            radialHour=9,
+                            radialMinute=0,
+                            description="Back of 9:00 plaza, opposite Medical",
+                        )
+                    ),
                 )
             )
         )

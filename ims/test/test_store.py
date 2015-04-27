@@ -489,9 +489,9 @@ def test_incidents(store):
 
 
 test_incident_etags = {
-    1: "1f34c73f6c43da43082f5557fc5ae352b011799d",
-    2: "e40915263b3dc21d2d198d3899d37300efbfd6d7",
-    3: "51db101bc75e19f00450e95cbe68315d76f06ee2",
+    1: "d6fade6617c510038a3a9b7f188a9b46b96c58fc",
+    2: "f69dddb896ba6c06c3f5c4dd03811dbc9fb2dd4f",
+    3: "22912adbadb7bd95b6672189166fdc8bcc44d0fd",
     4: "a1bfe51a1fb342c256f710896bb160875aa73460",
 }
 

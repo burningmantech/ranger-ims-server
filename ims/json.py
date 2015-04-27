@@ -27,7 +27,12 @@ dictionary.
         "priority": 3,                              // int {1,3,5}
         "summary": "Diapers, please",               // one line
         "location": {
-            ...
+            "name": "Camp Fishes",                  // one line
+            "type": "garett",                       // {"text","garett"}
+            "concentric": 11,                       // int >= 0 (garett)
+            "radial_hour": 8,                       // int 2-10 (garett)
+            "radial_minute": 15,                    // int 0-59 (garett)
+            "description: "Large dome, red flags"   // one line (garett,text)
         }
         "ranger_handles": [
             "Santa Cruz"                            // handle in Clubhouse
@@ -52,7 +57,7 @@ created time stamp plus a state attribute:
 
     {
         "number": 101,                              // int >= 0
-        "priority": 3,                              // int {1,3,5}
+        "priority": 3,                              // {1,3,5}
         "summary": "Diapers, please",               // one line
         "location_address": "8:15 & K",             // one line
         "location_name": "Camp Fishes",             // one line
@@ -78,7 +83,7 @@ created time stamp plus a state attribute:
 
     {
         "number": 101,                              // int >= 0
-        "priority": 3,                              // int {1,3,5}
+        "priority": 3,                              // {1,2,3,4,5}
         "summary": "Diapers, please",               // one line
         "location_address": "8:15 & K",             // one line
         "location_name": "Camp Fishes",             // one line
@@ -129,7 +134,7 @@ from twisted.python.constants import (
 from .tz import utc
 from .data import (
     InvalidDataError, IncidentState, Incident, ReportEntry, Ranger,
-    Location, TextOnlyAddress
+    Location, TextOnlyAddress, RodGarettAddress,
 )
 
 rfc3339_datetime_format = "%Y-%m-%dT%H:%M:%SZ"
@@ -203,18 +208,35 @@ class JSON(Values):
     _location_name    = ValueConstant("location_name")
     _location_address = ValueConstant("location_address")
 
+    # Location attribute subkeys
+    location_name = ValueConstant("name")
+    location_type = ValueConstant("type")
+
+    # Location type values
+    location_type_text   = ValueConstant("text")
+    location_type_garett = ValueConstant("garett")
+
+    # Text location type subkeys
+    location_text_description = ValueConstant("description")
+
+    # Garett location type subkeys
+    location_garett_concentric    = ValueConstant("concentric")
+    location_garett_radial_hour   = ValueConstant("radial_hour")
+    location_garett_radial_minute = ValueConstant("radial_minute")
+    location_garett_description   = ValueConstant("description")
+
     # State attribute values
-    state_new         = ValueConstant("new")
-    state_on_hold     = ValueConstant("on_hold")
-    state_dispatched  = ValueConstant("dispatched")
-    state_on_scene    = ValueConstant("on_scene")
-    state_closed      = ValueConstant("closed")
+    state_new        = ValueConstant("new")
+    state_on_hold    = ValueConstant("on_hold")
+    state_dispatched = ValueConstant("dispatched")
+    state_on_scene   = ValueConstant("on_scene")
+    state_closed     = ValueConstant("closed")
 
     # Obsolete legacy state attribute keys
-    _created          = ValueConstant("created")
-    _dispatched       = ValueConstant("dispatched")
-    _on_scene         = ValueConstant("on_scene")
-    _closed           = ValueConstant("closed")
+    _created    = ValueConstant("created")
+    _dispatched = ValueConstant("dispatched")
+    _on_scene   = ValueConstant("on_scene")
+    _closed     = ValueConstant("closed")
 
     # Ranger attribute keys
     ranger_handle = ValueConstant("handle")
@@ -222,10 +244,10 @@ class JSON(Values):
     ranger_status = ValueConstant("status")
 
     # Report entry attribute keys
-    entry_author      = ValueConstant("author")
-    entry_text        = ValueConstant("text")
-    entry_system      = ValueConstant("system_entry")
-    entry_created     = ValueConstant("created")
+    entry_author  = ValueConstant("author")
+    entry_text    = ValueConstant("text")
+    entry_system  = ValueConstant("system_entry")
+    entry_created = ValueConstant("created")
 
     # Web page reference keys
     page_name = ValueConstant("name")
@@ -403,15 +425,24 @@ def incident_as_json(incident):
         root[JSON.incident_summary.value] = incident.summary
 
     if incident.location is not None:
-        root[JSON._location_name.value] = incident.location.name
-
         address = incident.location.address
         if address is None:
+            root[JSON._location_name.value] = None
             root[JSON._location_address.value] = None
         elif isinstance(address, TextOnlyAddress):
+            root[JSON._location_name.value] = incident.location.name
             root[JSON._location_address.value] = (
                 address.description
             )
+        elif isinstance(address, RodGarettAddress):
+            root[JSON.incident_location.value] = {
+                JSON.location_name.value: incident.location.name,
+                JSON.location_type.value: JSON.location_type_garett.value,
+                JSON.location_garett_concentric.value: address.concentric,
+                JSON.location_garett_radial_hour.value: address.radialHour,
+                JSON.location_garett_radial_minute.value: address.radialMinute,
+                JSON.location_garett_description.value: address.description,
+            }
         else:
             raise NotImplementedError("Unknown addresses type")
 
