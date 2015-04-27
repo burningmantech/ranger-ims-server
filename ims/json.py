@@ -331,15 +331,19 @@ def incident_from_json(root, number, validate=True):
             )
     else:
         location_type = location.get(JSON.location_type.value, None)
+        location_name = location.get(JSON.location_name.value, None)
 
         if location_type == JSON.location_type_text.value:
-            raise NotImplementedError(
-                "Need to handle text-only location schema"
+            location_description = location.get(
+                JSON.location_garett_description.value, None
             )
 
-        elif location_type == JSON.location_type_garett.value:
-            location_name = location.get(JSON.location_name.value, None)
+            if location_description is None:
+                address = None
+            else:
+                address = TextOnlyAddress(description=location_description)
 
+        elif location_type == JSON.location_type_garett.value:
             location_concentric = location.get(
                 JSON.location_garett_concentric.value, None
             )
@@ -368,12 +372,12 @@ def incident_from_json(root, number, validate=True):
                     description=location_description,
                 )
 
-            location = Location(name=location_name, address=address)
-
         else:
             raise InvalidDataError(
                 "Unknown location type: {}".format(location_type)
             )
+
+        location = Location(name=location_name, address=address)
 
     ranger_handles = root.get(JSON.ranger_handles.value, None)
     if ranger_handles is None:

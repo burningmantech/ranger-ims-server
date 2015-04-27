@@ -204,6 +204,56 @@ class IncidentDeserializationTests(unittest.TestCase):
         self.assertEquals(incident.summary, u"A B C")
 
 
+    def test_incidentFromJSONTextOnlyLocation(self):
+        """
+        Deserialize a text only location from JSON data.
+        """
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.incident_location.value: {
+                    JSON.location_type.value: JSON.location_type_text.value,
+                    JSON.location_name.value: u"Ranger Outpost Zero",
+                    JSON.location_garett_description.value: (
+                        u"Halfway between the Man and the Temple"
+                    ),
+                },
+            },
+            number=1, validate=False
+        )
+        self.assertEquals(
+            incident.location,
+            Location(
+                name=u"Ranger Outpost Zero",
+                address=TextOnlyAddress(
+                    description=u"Halfway between the Man and the Temple",
+                ),
+            )
+        )
+
+
+    def test_incidentFromJSONTextOnlyLocationNoneDescription(self):
+        """
+        Deserialize a text only location from JSON data with C{None}
+        description.
+        """
+        incident = incident_from_json(
+            {
+                JSON.incident_number.value: 1,
+                JSON.incident_location.value: {
+                    JSON.location_type.value: JSON.location_type_text.value,
+                    JSON.location_name.value: u"Ranger Outpost Zero",
+                    JSON.location_garett_description.value: None,
+                },
+            },
+            number=1, validate=False
+        )
+        self.assertEquals(
+            incident.location,
+            Location(name=u"Ranger Outpost Zero", address=None)
+        )
+
+
     def test_incidentFromJSONGarettLocation(self):
         """
         Deserialize a Rod Garett location from JSON data.
@@ -217,7 +267,7 @@ class IncidentDeserializationTests(unittest.TestCase):
                     JSON.location_garett_concentric.value: 3,  # 3 == C
                     JSON.location_garett_radial_hour.value: 9,
                     JSON.location_garett_radial_minute.value: 0,
-                    JSON.location_garett_description.value: "Opposite ESD",
+                    JSON.location_garett_description.value: u"Opposite ESD",
                 },
             },
             number=1, validate=False
@@ -227,10 +277,8 @@ class IncidentDeserializationTests(unittest.TestCase):
             Location(
                 name=u"Tokyo",
                 address=RodGarettAddress(
-                    concentric=3,
-                    radialHour=9,
-                    radialMinute=0,
-                    description="Opposite ESD",
+                    concentric=3, radialHour=9, radialMinute=0,
+                    description=u"Opposite ESD",
                 ),
             )
         )
@@ -256,10 +304,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
         self.assertEquals(
             incident.location,
-            Location(
-                name=u"Tokyo",
-                address=None,
-            )
+            Location(name=u"Tokyo", address=None)
         )
 
 
@@ -656,9 +701,7 @@ class IncidentSerializationTests(unittest.TestCase):
                     location=Location(
                         name=u"Tokyo",
                         address=RodGarettAddress(
-                            concentric=3,  # 3 == C
-                            radialHour=9,
-                            radialMinute=0,
+                            concentric=3, radialHour=9, radialMinute=0,
                             description="Back of 9:00 plaza, opposite Medical",
                         ),
                     ),
