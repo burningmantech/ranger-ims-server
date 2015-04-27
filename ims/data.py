@@ -729,8 +729,8 @@ class RodGarettAddress(Address):
         return (
             "{self.__class__.__name__}("
             "concentric={self.concentric!r},"
-            "radialHour={self.radialHour!r})"
-            "radialMinute={self.radialMinute!r})"
+            "radialHour={self.radialHour!r},"
+            "radialMinute={self.radialMinute!r},"
             "description={self.description!r})"
             .format(self=self)
         )
