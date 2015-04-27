@@ -427,7 +427,7 @@ def incident_as_json(incident):
     if incident.location is not None:
         address = incident.location.address
         if address is None:
-            root[JSON._location_name.value] = None
+            root[JSON._location_name.value] = incident.location.name
             root[JSON._location_address.value] = None
         elif isinstance(address, TextOnlyAddress):
             root[JSON._location_name.value] = incident.location.name

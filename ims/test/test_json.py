@@ -508,6 +508,28 @@ class IncidentSerializationTests(unittest.TestCase):
         )
 
 
+    def test_incidentAsJSONLocationWithNoneAddress(self):
+        """
+        Serialize with a location, with a text-only address.
+        """
+        self.assertEquals(
+            {
+                JSON.incident_number.value: 1,
+                JSON._location_name.value: u"Tokyo",
+                JSON._location_address.value: None,
+            },
+            incident_as_json(
+                Incident(
+                    number=1,
+                    location=Location(
+                        name=u"Tokyo",
+                        address=None,
+                    ),
+                )
+            )
+        )
+
+
     def test_incidentAsJSONLocationWithTextAddress(self):
         """
         Serialize with a location, with a text-only address.
@@ -578,7 +600,41 @@ class IncidentSerializationTests(unittest.TestCase):
                             radialHour=9,
                             radialMinute=0,
                             description="Back of 9:00 plaza, opposite Medical",
-                        )
+                        ),
+                    ),
+                )
+            )
+        )
+
+
+    def test_incidentAsJSONLocationWithGarettAddressNoneValues(self):
+        """
+        Serialize with a location, with a Rod Garett address, with C{None}
+        address values.
+        """
+        self.assertEquals(
+            {
+                JSON.incident_number.value: 1,
+                JSON.incident_location.value: {
+                    JSON.location_name.value: u"Tokyo",
+                    JSON.location_type.value: JSON.location_type_garett.value,
+                    JSON.location_garett_concentric.value: None,
+                    JSON.location_garett_radial_hour.value: None,
+                    JSON.location_garett_radial_minute.value: None,
+                    JSON.location_garett_description.value: None,
+                }
+            },
+            incident_as_json(
+                Incident(
+                    number=1,
+                    location=Location(
+                        name=u"Tokyo",
+                        address=RodGarettAddress(
+                            concentric=None,
+                            radialHour=None,
+                            radialMinute=None,
+                            description=None,
+                        ),
                     ),
                 )
             )
