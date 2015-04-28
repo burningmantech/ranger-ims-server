@@ -615,7 +615,7 @@ class IncidentSerializationTests(unittest.TestCase):
 
     def test_incidentAsJSONLocationWithNoneAddress(self):
         """
-        Serialize with a location, with a text-only address.
+        Serialize with a location with a C{None} address.
         """
         self.assertEquals(
             {
@@ -626,10 +626,26 @@ class IncidentSerializationTests(unittest.TestCase):
             incident_as_json(
                 Incident(
                     number=1,
-                    location=Location(
-                        name=u"Tokyo",
-                        address=None,
-                    ),
+                    location=Location(name=u"Tokyo", address=None),
+                )
+            )
+        )
+
+
+    def test_incidentAsJSONLocationWithNoneValues(self):
+        """
+        Serialize with a location with C{None} name and address.
+        """
+        self.assertEquals(
+            {
+                JSON.incident_number.value: 1,
+                JSON._location_name.value: None,
+                JSON._location_address.value: None,
+            },
+            incident_as_json(
+                Incident(
+                    number=1,
+                    location=Location(name=None, address=None),
                 )
             )
         )
@@ -642,36 +658,50 @@ class IncidentSerializationTests(unittest.TestCase):
         self.assertEquals(
             {
                 JSON.incident_number.value: 1,
-                JSON._location_name.value: u"Tokyo",
-                JSON._location_address.value: u"9:00 & C",
+                JSON.incident_location.value: {
+                    JSON.location_name.value: u"Ranger Outpost Zero",
+                    JSON.location_type.value: JSON.location_type_text.value,
+                    JSON.location_text_description.value: (
+                        u"Halfway between the Man and the Temple"
+                    ),
+                },
             },
             incident_as_json(
                 Incident(
                     number=1,
                     location=Location(
-                        name=u"Tokyo",
-                        address=TextOnlyAddress(u"9:00 & C")
+                        name=u"Ranger Outpost Zero",
+                        address=TextOnlyAddress(
+                            description=(
+                                u"Halfway between the Man and the Temple"
+                            )
+                        ),
                     ),
                 )
             )
         )
 
 
-    def test_incidentAsJSONLocationWithTextAddressNoneValues(self):
+    def test_incidentAsJSONLocationWithTextAddressNoneDescription(self):
         """
-        Serialize with a location, with a text-only address, with C{None} name
-        and address.
+        Serialize with a location, with a text-only address.
         """
         self.assertEquals(
             {
                 JSON.incident_number.value: 1,
-                JSON._location_name.value: None,
-                JSON._location_address.value: None,
+                JSON.incident_location.value: {
+                    JSON.location_name.value: u"Ranger Outpost Zero",
+                    JSON.location_type.value: JSON.location_type_text.value,
+                    JSON.location_text_description.value: None,
+                },
             },
             incident_as_json(
                 Incident(
                     number=1,
-                    location=Location(name=None, address=None),
+                    location=Location(
+                        name=u"Ranger Outpost Zero",
+                        address=TextOnlyAddress(description=None),
+                    ),
                 )
             )
         )
