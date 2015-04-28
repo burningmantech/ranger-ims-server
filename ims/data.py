@@ -226,9 +226,10 @@ class Incident(object):
 
     def __str__(self):
         return (
-            u"{self.number}: {summary}"
-            .format(self=self, summary=self.summaryFromReport())
-            .encode("utf-8")
+            "{self.number}: {summary}".format(
+                self=self,
+                summary=self.summaryFromReport().encode("utf-8"),
+            )
         )
 
 
@@ -377,14 +378,14 @@ class ReportEntry(object):
 
     def __str__(self):
         if self.system_entry:
-            prefix = u"*"
+            prefix = "*"
         else:
-            prefix = u""
+            prefix = ""
 
         return (
-            u"{prefix}{self.author}@{self.created}: {self.text}"
-            .format(self=self, prefix=prefix)
-            .encode("utf-8")
+            "{prefix}{self.author}@{self.created}: {self.text}".format(
+                self=self, prefix=prefix
+            )
         )
 
 
@@ -476,8 +477,7 @@ class Ranger(object):
 
     def __str__(self):
         return (
-            u"{self.handle} ({self.name})"
-            .format(self=self).encode("utf-8")
+            u"{self.handle} ({self.name})".format(self=self).encode("utf-8")
         )
 
 
@@ -546,14 +546,16 @@ class Location(object):
         if self.name:
             if self.address:
                 return (
-                    u"{self.name} ({self.address})"
-                    .format(self=self).encode("utf-8")
+                    "{name} ({self.address})".format(
+                        self=self,
+                        name=self.name.encode("utf-8"),
+                    )
                 )
             else:
-                return u"{self.name}".format(self=self).encode("utf-8")
+                return self.name.encode("utf-8")
         else:
             if self.address:
-                return u"({self.address})".format(self=self).encode("utf-8")
+                return "({self.address})".format(self=self)
             else:
                 return ""
 
@@ -720,7 +722,7 @@ class RodGarettAddress(Address):
     def __str__(self):
         return (
             u"{self.concentric}@{self.radialHour}:{self.radialMinute} "
-            "{self.description}"
+            u"{self.description}"
             .format(self=self).encode("utf-8")
         )
 
