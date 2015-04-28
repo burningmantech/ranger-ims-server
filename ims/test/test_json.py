@@ -620,8 +620,11 @@ class IncidentSerializationTests(unittest.TestCase):
         self.assertEquals(
             {
                 JSON.incident_number.value: 1,
-                JSON._location_name.value: u"Tokyo",
-                JSON._location_address.value: None,
+                JSON.incident_location.value: {
+                    JSON.location_name.value: u"Tokyo",
+                    JSON.location_type.value: JSON.location_type_text.value,
+                    JSON.location_text_description.value: None,
+                },
             },
             incident_as_json(
                 Incident(
@@ -639,8 +642,11 @@ class IncidentSerializationTests(unittest.TestCase):
         self.assertEquals(
             {
                 JSON.incident_number.value: 1,
-                JSON._location_name.value: None,
-                JSON._location_address.value: None,
+                JSON.incident_location.value: {
+                    JSON.location_name.value: None,
+                    JSON.location_type.value: JSON.location_type_text.value,
+                    JSON.location_text_description.value: None,
+                },
             },
             incident_as_json(
                 Incident(

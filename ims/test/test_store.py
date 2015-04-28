@@ -485,10 +485,10 @@ def test_incidents(store):
 
 
 test_incident_etags = {
-    1: "c32356bf60ac69d469675186ca9b13ae88daa03d",
-    2: "f69dddb896ba6c06c3f5c4dd03811dbc9fb2dd4f",
-    3: "22912adbadb7bd95b6672189166fdc8bcc44d0fd",
-    4: "a1bfe51a1fb342c256f710896bb160875aa73460",
+    1: u"c32356bf60ac69d469675186ca9b13ae88daa03d",
+    2: u"cddf951ca5bb40ba9c63ca443736a0a945c66041",
+    3: u"b3046a3d367d60675c175a32759a847e791ce6d9",
+    4: u"a1bfe51a1fb342c256f710896bb160875aa73460",
 }
 
 
