@@ -33,6 +33,7 @@ __all__ = [
 
 from datetime import timedelta as TimeDelta
 
+from twisted.python import log
 from twisted.web.template import tags
 
 from ..tz import utcNow
@@ -218,54 +219,86 @@ def incidents_as_table(incidents, tz, caption=None, id=None):
             **attrs_activity
         )
 
-        yield tags.tbody(
-            tags.tr(
-                tags.td(
-                    u"{0}".format(incident.number),
-                    **attrs_number
-                ),
-                tags.td(
-                    u"{0}".format(priority_name(incident.priority)),
-                    **attrs_priority
-                ),
-                tags.td(
-                    u"{0}".format(formatTime(
-                        incident.created, tz=tz, format=u"%d/%H:%M"
-                    )),
-                    **attrs_number
-                ),
-                tags.td(
-                    u"{0}".format(IncidentState.describe(incident.state)),
-                    **attrs_number
-                ),
-                tags.td(
-                    u"{0}".format(
-                        u", ".join(
-                            ranger.handle for ranger in incident.rangers
-                        )
-                    ),
-                    **attrs_rangers
-                ),
-                tags.td(
-                    u"{0}".format(str(incident.location).decode("utf-8")),
-                    **attrs_location
-                ),
-                tags.td(
-                    u"{0}".format(u", ".join(incident.incident_types)),
-                    **attrs_types
-                ),
-                tags.td(
-                    u"{0}".format(incident.summaryFromReport()),
-                    **attrs_summary
-                ),
-                onclick=(
-                    u'window.open("/queue/incidents/{0}");'
-                    .format(incident.number)
-                ),
-                **attrs_incident
-            )
-            for incident in sorted(incidents)
-        )
+        def rows():
+            for incident in sorted(incidents):
+                try:
+                    yield tags.tr(
+                        tags.td(
+                            u"{0}".format(incident.number),
+                            **attrs_number
+                        ),
+                        tags.td(
+                            u"{0}".format(priority_name(incident.priority)),
+                            **attrs_priority
+                        ),
+                        tags.td(
+                            u"{0}".format(formatTime(
+                                incident.created, tz=tz, format=u"%d/%H:%M"
+                            )),
+                            **attrs_number
+                        ),
+                        tags.td(
+                            u"{0}".format(
+                                IncidentState.describe(incident.state)
+                            ),
+                            **attrs_number
+                        ),
+                        tags.td(
+                            u"{0}".format(
+                                u", ".join(
+                                    ranger.handle
+                                    for ranger in incident.rangers
+                                )
+                            ),
+                            **attrs_rangers
+                        ),
+                        tags.td(
+                            u"{0}".format(
+                                str(incident.location).decode("utf-8")
+                            ),
+                            **attrs_location
+                        ),
+                        tags.td(
+                            u"{0}".format(
+                                u", ".join(incident.incident_types)
+                            ),
+                            **attrs_types
+                        ),
+                        tags.td(
+                            u"{0}".format(incident.summaryFromReport()),
+                            **attrs_summary
+                        ),
+                        onclick=(
+                            u'window.open("/queue/incidents/{0}");'
+                            .format(incident.number)
+                        ),
+                        **attrs_incident
+                    )
+                except Exception as e:
+                    log.msg(
+                        "Unable to render incident #{} in dispatch queue: {}"
+                        .format(incident.number, e)
+                    )
+                    log.err()
+                    yield tags.tr(
+                        tags.td(
+                            u"{0}".format(incident.number), **attrs_number
+                        ),
+                        tags.td(u"", **attrs_priority),
+                        tags.td(u"", **attrs_number),
+                        tags.td(u"", **attrs_number),
+                        tags.td(u"", **attrs_rangers),
+                        tags.td(u"", **attrs_location),
+                        tags.td(u"", **attrs_types),
+                        tags.td(u"", **attrs_summary),
+                        onclick=(
+                            u'window.open("/queue/incidents/{0}");'
+                            .format(incident.number)
+                        ),
+                        **attrs_incident
+                    )
+
+        yield tags.tbody(rows())
 
     attrs_table = dict(attrs_activity)
     if id is not None:
