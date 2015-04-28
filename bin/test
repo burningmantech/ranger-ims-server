@@ -152,29 +152,3 @@ if [ -s "${tmp}" ]; then
   exit 1;
 fi;
 rm -f "${tmp}";
-
-
-
-#
-# Empty files
-#
-
-echo "";
-echo "Checking for empty files...";
-tmp="$(mktemp -t "twext_test_empty.XXXXX")";
-
-find "${wd}"                                             \
-  '!' '('                                                \
-    -type d                                              \
-    '(' -path '*/.*' -or -name data -or -name build ')'  \
-    -prune                                               \
-  ')'                                                    \
-  -type f -size 0                                        \
-  > "${tmp}";
-
-if [ -s "${tmp}" ]; then
-    echo "**** Empty files: ****";
-    cat "${tmp}";
-    exit 1;
-fi;
-rm -f "${tmp}";
