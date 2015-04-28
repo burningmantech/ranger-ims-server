@@ -474,6 +474,7 @@ def incident_as_json(incident):
     if incident.location is not None:
         address = incident.location.address
         if address is None:
+            # Location should always have a type
             root[JSON.incident_location.value] = {
                 JSON.location_name.value: incident.location.name,
                 JSON.location_type.value: JSON.location_type_text.value,
