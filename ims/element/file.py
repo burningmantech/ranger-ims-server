@@ -47,7 +47,6 @@ class FileElement(Element):
         return tags.link(
             rel="stylesheet",
             media="screen",
-            #href="/baseline/compressed/baseline.compress.css",
             href="/resources/style.css",
             type="text/css",
         )

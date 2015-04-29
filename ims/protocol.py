@@ -368,7 +368,7 @@ class IncidentManagementSystem(object):
         return DispatchQueueElement(self)
 
 
-    @app.route("/queue/incidents/<number>", methods=("GET",))
+    @app.route("/queue/incidents/<number>", methods=("GET", "POST"))
     @http_sauce
     def queue_incident(self, request, number):
         set_response_header(

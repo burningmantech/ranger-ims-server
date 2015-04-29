@@ -27,6 +27,8 @@ from twisted.web.template import renderer, tags
 from .base import BaseElement
 from .util import normalize_priority, formatTime
 
+from ..data import RodGarettAddress
+
 
 
 class IncidentElement(BaseElement):
@@ -139,17 +141,62 @@ class IncidentElement(BaseElement):
 
 
     @renderer
-    def location_address_input(self, request, tag):
+    def location_radial_input(self, request, tag):
         attrs = dict()
         self.apply_disabled(attrs)
 
-        if (
-            self.incident.location is None or
-            self.incident.location.address is None
-        ):
-            attrs["value"] = u""
-        else:
-            attrs["value"] = u"{0}".format(self.incident.location.address)
+        location = self.incident.location
+
+        attrs["value"] = u""
+
+        if location is not None:
+            address = location.address
+
+            if address is not None:
+                if isinstance(address, RodGarettAddress):
+                    hour   = address.radialHour
+                    minute = address.radialMinute
+
+                    if hour is not None or minute is not None:
+                        if hour is None:
+                            hour = u""
+                        else:
+                            hour = u"{:d}".format(hour)
+
+                        if minute is None:
+                            minute = u""
+                        else:
+                            minute = u"{:02d}".format(minute)
+
+                        attrs["value"] = u"{}:{}".format(hour, minute)
+
+        return tag(**attrs)
+
+
+    @renderer
+    def location_concentric_option(self, request, tag):
+        attrs = dict()
+        self.apply_disabled(attrs)
+
+        location = self.incident.location
+
+        if location is not None:
+            address = location.address
+
+            if address is not None:
+                if isinstance(address, RodGarettAddress):
+                    concentric = address.concentric
+
+                    if tag.attributes["value"] == concentric:
+                        attrs["selected"] = u""
+
+        return tag(**attrs)
+
+
+    @renderer
+    def location_description_input(self, request, tag):
+        attrs = dict()
+        self.apply_disabled(attrs)
 
         return tag(**attrs)
 
