@@ -198,6 +198,17 @@ class IncidentElement(BaseElement):
         attrs = dict()
         self.apply_disabled(attrs)
 
+        location = self.incident.location
+
+        attrs["value"] = u""
+
+        if location is not None:
+            address = location.address
+
+            if address is not None:
+                if address.description is not None:
+                    attrs["value"] = address.description
+
         return tag(**attrs)
 
 
