@@ -37,7 +37,9 @@ from twisted.python import log
 from twisted.web.template import tags
 
 from ..tz import utcNow
-from ..data import IncidentState, IncidentType, Incident, ReportEntry
+from ..data import (
+    IncidentState, IncidentType, Incident, ReportEntry, Location
+)
 
 
 
@@ -122,24 +124,27 @@ def edits_from_query(author, number, request):
     priority = summary = location = rangers = None
     incident_types = report_entries = state = None
 
-    for priority in request.args.get("priority", []):
-        priority = int(priority)
+    def get(key, cast):
+        for value in request.args.get(key, []):
+            return cast(value)
+        return None
 
-    # FIXME:
-    location
+    priority = get("priority", int)
+    state = get("state", IncidentState.lookupByName)
+    summary = get("summary", unicode)
+
+    location_name = get("location_name", unicode)
+
+    if location_name is not None:
+        location = Location(name=location_name)
+
+    # FIXME: location address
 
     # FIXME:
     rangers
 
     # FIXME:
     incident_types
-
-    # FIXME:
-    for state in request.args.get("state", []):
-        state = IncidentState.lookupByName(state)
-
-    for summary in request.args.get("summary", []):
-        summary = unicode(summary)
 
     report_entries = []
 
