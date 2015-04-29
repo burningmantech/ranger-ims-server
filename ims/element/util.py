@@ -38,7 +38,8 @@ from twisted.web.template import tags
 
 from ..tz import utcNow
 from ..data import (
-    IncidentState, IncidentType, Incident, ReportEntry, Location
+    IncidentState, IncidentType, Incident, ReportEntry,
+    Location, RodGarettAddress,
 )
 
 
@@ -121,24 +122,53 @@ def edits_from_query(author, number, request):
     if not request.args:
         return None
 
-    priority = summary = location = rangers = None
+    priority = summary = location = address = rangers = None
     incident_types = report_entries = state = None
 
-    def get(key, cast):
-        for value in request.args.get(key, []):
+    def get(key, cast, defaultArgs=[]):
+        for value in request.args.get(key, defaultArgs):
             return cast(value)
         return None
+
+    def radialHourMinute(radial):
+        if radial:
+            hour, minute = radial.split(":")
+            print "GOT", hour, minute
+            return (int(hour), int(minute))
+        else:
+            return (None, None)
+
+    def concentric(n):
+        if n:
+            return int(n)
+        else:
+            return None
 
     priority = get("priority", int)
     state = get("state", IncidentState.lookupByName)
     summary = get("summary", unicode)
 
     location_name = get("location_name", unicode)
+    location_hour, location_minute = get(
+        "location_radial", radialHourMinute, [""]
+    )
+    location_concentric = get("location_concentric", concentric)
+    location_description = get("location_description", unicode)
 
-    if location_name is not None:
-        location = Location(name=location_name)
+    if (
+        location_hour is not None or
+        location_minute is not None or
+        location_concentric is not None or
+        location_description is not None
+    ):
+        address = RodGarettAddress(
+            radialHour=location_hour,
+            radialMinute=location_minute,
+            concentric=location_concentric,
+            description=location_description,
+        )
 
-    # FIXME: location address
+    location = Location(name=location_name, address=address)
 
     # FIXME:
     rangers
