@@ -359,9 +359,17 @@ def ims2014Cleanup(incident):
     """
     Clean up 2014 data for compliance with current requirements.
     """
-    report_entries = list(incident.report_entries)
-    for report_entry in report_entries:
-        if report_entry.author is None:
-            report_entry.author = u"<unknown>"
+    # 2014 data contains some bugs:
+    # * incidents with no created timestamp
+    # * report entries with no author
+
+    if incident.report_entries is not None:
+        if incident.created is None:
+            for report_entry in sorted(incident.report_entries):
+                incident.created = report_entry.created
+
+        for report_entry in incident.report_entries:
+            if report_entry.author is None:
+                report_entry.author = u"<unknown>"
 
     return incident

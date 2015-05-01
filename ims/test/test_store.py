@@ -123,14 +123,43 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         )
 
 
+    def test_read_2014_reportEntry_createdNoneUseFirstReportEntry(self):
+        """
+        2014 data has report entries with no created timestamp because bugs.
+        C{:-(}
+        """
+        source = [
+            """
+            {
+                "number": 1,
+                "priority": 1,
+                "report_entries": [
+                    {
+                        "author": "Tool",
+                        "text": "Hi!",
+                        "created":"2012-09-01T21:00:00Z"
+                    }
+                ]
+            }
+            """
+        ]
+
+        store = self.storageWithSourceData(source)
+
+        for number, etag in store.list_incidents():
+            incident = store.read_incident_with_number(number)
+            self.assertEquals(incident.created, time1)
+
+
     def test_read_2014_reportEntry_authorNone(self):
         """
-        2014 data has report entries with no author because bugs.  :-(
+        2014 data has report entries with no author because bugs.  C{:-(}
         """
         source = [
             """
             {
                 "number": 1, "priority": 1,
+                "timestamp": "2014-08-30T21:38:11Z",
                 "report_entries": [
                     {
                         "text": "Hi!",
