@@ -481,6 +481,7 @@ def test_incidents(store):
         Incident(
             number=next_number(),
             rangers=(), incident_types=(), priority=5,
+            created=time1,
             report_entries=(
                 ReportEntry(u"Tool", u"Man overboard!", time1),
                 ReportEntry(u"Splinter", u"What?", time2),
@@ -490,6 +491,7 @@ def test_incidents(store):
         Incident(
             number=next_number(),
             rangers=(), incident_types=(), priority=5,
+            created=time3,
             report_entries=(
                 ReportEntry(u"El Weso", u"Does this work?", time3),
             ),
@@ -498,6 +500,7 @@ def test_incidents(store):
         Incident(
             number=next_number(),
             rangers=(), incident_types=(), priority=5,
+            created=time2,
             report_entries=(
                 ReportEntry(u"Librarian", u"Go read something.", time2),
             ),
@@ -506,18 +509,18 @@ def test_incidents(store):
         Incident(
             number=next_number(),
             rangers=(), incident_types=(), priority=5,
+            created=time1, state=IncidentState.closed,
             report_entries=(
                 ReportEntry(u"da Mongolian", u"Fire!", time2),
             ),
-            created=time1, state=IncidentState.closed,
         ),
     )
 
 
 test_incident_etags = {
-    1: u"c32356bf60ac69d469675186ca9b13ae88daa03d",
-    2: u"cddf951ca5bb40ba9c63ca443736a0a945c66041",
-    3: u"b3046a3d367d60675c175a32759a847e791ce6d9",
+    1: u"bbf50b1c73a5462e2ec45f789b16e4c2d7cfb0ea",
+    2: u"e130c7cba55c1271ba855c1273fbc8974be2b559",
+    3: u"f32749ad84344959dbdf001f976881f9b336d170",
     4: u"a1bfe51a1fb342c256f710896bb160875aa73460",
 }
 
@@ -526,6 +529,6 @@ def list_incidents(numbers=test_incident_etags):
     return ((i, test_incident_etags[i]) for i in numbers)
 
 
-time1 = DateTime(2012, 9, 1, 21, 0, tzinfo=utc)
-time2 = DateTime(2013, 8, 31, 21, 0, tzinfo=utc)
-time3 = DateTime(2014, 8, 23, 21, 0, tzinfo=utc)
+time1 = DateTime(2012, 9, 1, 21, 0, 0, tzinfo=utc)
+time2 = DateTime(2013, 8, 31, 21, 0, 0, tzinfo=utc)
+time3 = DateTime(2014, 8, 23, 21, 0, 0, tzinfo=utc)
