@@ -917,7 +917,7 @@ def newIncident(
     rangers=(),
     incident_types=(),
     report_entries=(),
-    created=None,
+    created=DateTime(2006, 4, 5, 16, 30, 0),
     state=None,
 ):
     return Incident(
