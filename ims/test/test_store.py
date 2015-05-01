@@ -174,7 +174,8 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
 
         for number, etag in store.list_incidents():
             incident = store.read_incident_with_number(number)
-            incident.validate()
+            for entry in incident.report_entries:
+                self.assertEquals(entry.author, u"<unknown>")
 
 
     def test_etag(self):
