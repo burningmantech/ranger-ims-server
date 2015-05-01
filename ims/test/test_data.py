@@ -132,8 +132,8 @@ class IncidentTests(unittest.TestCase):
         """
         L{Incident.report_entries} is sorted.
         """
-        r1 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 1))
-        r2 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 2))
+        r1 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 1))
+        r2 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 2))
 
         for entries in ((r1, r2), (r2, r1)):
             incident = newIncident(report_entries=entries)
@@ -387,7 +387,7 @@ class ReportEntryTests(unittest.TestCase):
         entry = ReportEntry(
             author=u"Tool",
             text=u"Something happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertEquals(
             str(entry),
@@ -402,7 +402,7 @@ class ReportEntryTests(unittest.TestCase):
         entry = ReportEntry(
             author=u"Tool",
             text=u"Something happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertEquals(
             repr(entry),
@@ -421,12 +421,12 @@ class ReportEntryTests(unittest.TestCase):
         entry1 = ReportEntry(
             author=u"Tool",
             text=u"Something happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         entry2 = ReportEntry(
             author=u"Tool",
             text=u"Something else happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertNotEquals(entry1, entry2)
 
@@ -438,12 +438,12 @@ class ReportEntryTests(unittest.TestCase):
         entry1a = ReportEntry(
             author=u"Tool",
             text=u"Something happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         entry1b = ReportEntry(
             author=u"Tool",
             text=u"Something happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertEquals(entry1a, entry1a)
         self.assertEquals(entry1a, entry1b)
@@ -456,7 +456,7 @@ class ReportEntryTests(unittest.TestCase):
         entry = ReportEntry(
             author=u"Tool",
             text=u"Something happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertNotEquals(entry, object())
 
@@ -467,9 +467,9 @@ class ReportEntryTests(unittest.TestCase):
         """
         # Define r2 first so we might notice if sort order is (incorrectly)
         # defined by object id (which seems to be the default in CPython)
-        r2 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 2))
-        r1 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 1))
-        r3 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 3))
+        r2 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 2))
+        r1 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 1))
+        r3 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 3))
 
         for entries in ((r1, r2, r3), (r3, r2, r1)):
             self.assertEquals(sorted(entries), [r1, r2, r3])
