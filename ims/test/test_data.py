@@ -213,6 +213,27 @@ class IncidentTests(unittest.TestCase):
         incident.validate()
 
 
+    def test_validate_location(self):
+        """
+        L{Incident.validate} incident with valid location.
+        """
+        incident = newIncident(
+            location=Location(
+                name=u"Name",
+                address=TextOnlyAddress(u"Address"),
+            )
+        )
+        incident.validate()
+
+
+    def test_validate_locationInvalid(self):
+        """
+        L{Incident.validate} incident with invalid location.
+        """
+        incident = newIncident(location=Location(name=0))
+        self.assertRaises(InvalidDataError, incident.validate)
+
+
     def test_validate_rangers(self):
         """
         L{Incident.validate} of incident with valid Rangers.
@@ -250,6 +271,32 @@ class IncidentTests(unittest.TestCase):
         L{Incident.validate} of incident with non-unicode summary.
         """
         incident = newIncident(summary=b"some bytes")
+        self.assertRaises(InvalidDataError, incident.validate)
+
+
+    def test_validate_reportEntry(self):
+        """
+        L{Incident.validate} incident with valid report entry.
+        """
+        incident = newIncident(
+            report_entries=[
+                ReportEntry(
+                    author=u"Tool",
+                    text=u"All out of no. 2 pencils. Need air drop stat.",
+                    created=DateTime.now(),
+                ),
+            ]
+        )
+        incident.validate()
+
+
+    def test_validate_reportEntryInvalid(self):
+        """
+        L{Incident.validate} incident with invalid report entry.
+        """
+        incident = newIncident(
+            report_entries=[ReportEntry(author=None, text=None)],
+        )
         self.assertRaises(InvalidDataError, incident.validate)
 
 
