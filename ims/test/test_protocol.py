@@ -28,8 +28,9 @@ import twisted.trial.unittest
 from twisted.internet.defer import inlineCallbacks
 
 from ims.config import Configuration
-from ims.store import Storage
+from ims.data import InvalidDataError
 from ims.json import json_from_text, incident_from_json
+from ims.store import Storage
 from ims.protocol import IncidentManagementSystem
 
 from ims.test.test_config import emptyConfigFile
@@ -270,9 +271,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
                         "created": "2013-08-31T21:00:00Z",
                         "system_entry": false
                     }
-                ],
-                "incident_types": [],
-                "ranger_handles": []
+                ]
             }
         """)
 
@@ -283,3 +282,21 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         incident = ims.storage.read_incident_with_number(number)
         self.assertEquals(incident.number, number)
         self.assertEquals(incident.created, time2)
+
+
+    def test_data_incident_new_createdFuture(self):
+        ims = self.ims(data=test_incidents)
+
+        number = ims.storage.next_incident_number()
+
+        json_file = StringIO(u"""
+            {
+                "priority": 3,
+                "timestamp": "9999-09-01T21:00:00Z"
+            }
+        """)
+
+        self.assertRaises(
+            InvalidDataError,
+            ims.data_incident_new, number, json_file, u"Tool"
+        )
