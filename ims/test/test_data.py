@@ -316,6 +316,14 @@ class IncidentTests(unittest.TestCase):
         self.assertRaises(InvalidDataError, incident.validate)
 
 
+    def test_validate_created_none(self):
+        """
+        L{Incident.validate} of incident C{None} created time.
+        """
+        incident = newIncident(created=None)
+        self.assertRaises(InvalidDataError, incident.validate)
+
+
     def test_validate_state(self):
         """
         L{Incident.validate} of incident with valid state.

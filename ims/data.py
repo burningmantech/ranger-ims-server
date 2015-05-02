@@ -321,7 +321,7 @@ class Incident(object):
                     "report entry", report_entry, ReportEntry, recurse=True
                 )
 
-        _validateIsInstance("created", self.created, DateTime, optional=True)
+        _validateIsInstance("created", self.created, DateTime, optional=False)
 
         if (
             self.state is not None and
