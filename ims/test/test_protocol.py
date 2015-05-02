@@ -33,7 +33,9 @@ from ims.json import json_from_text, incident_from_json
 from ims.protocol import IncidentManagementSystem
 
 from ims.test.test_config import emptyConfigFile
-from ims.test.test_store import test_incidents, test_incident_etags
+from ims.test.test_store import (
+    test_incidents, test_incident_etags, time1, time2
+)
 
 
 
@@ -220,6 +222,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         json_file = StringIO(u"""
             {
                 "priority": 3,
+                "timestamp": "2012-09-01T21:00:00Z",
                 "report_entries": [
                     {
                         "author": "Splinter",
@@ -246,5 +249,37 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         self.assertEquals(incident.number, number)
         self.assertEquals(incident.incident_types, frozenset())
         self.assertEquals(incident.rangers, frozenset())
+        self.assertEquals(incident.created, time1)
         self.assertEquals(len(incident.report_entries), 1)
         self.assertEquals(incident.report_entries[-1].author, u"Tool")
+
+
+    @inlineCallbacks
+    def test_data_incident_new_noCreated(self):
+        ims = self.ims(data=test_incidents)
+
+        number = ims.storage.next_incident_number()
+
+        json_file = StringIO(u"""
+            {
+                "priority": 3,
+                "report_entries": [
+                    {
+                        "author": "Splinter",
+                        "text": "Hello!",
+                        "created": "2013-08-31T21:00:00Z",
+                        "system_entry": false
+                    }
+                ],
+                "incident_types": [],
+                "ranger_handles": []
+            }
+        """)
+
+        (entity, etag) = yield ims.data_incident_new(
+            number, json_file, u"Tool"
+        )
+
+        incident = ims.storage.read_incident_with_number(number)
+        self.assertEquals(incident.number, number)
+        self.assertEquals(incident.created, time2)
