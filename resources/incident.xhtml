@@ -12,9 +12,10 @@
         padding: 1em;
       }
 
-      #incident_number_label, #incident_state_label, #incident_priority_label { width: 33%; }
-
-      #incident_summary_form { text-align: center; }
+      #incident_number_label, #incident_state_label, #incident_priority_label {
+        display: inline-block;
+        width: 33%;
+      }
 
       #incident_number_label   { text-align: left  ; }
       #incident_state_label    { text-align: center; }
@@ -26,13 +27,13 @@
 
       #incident_summary_label input { display: inline-block; }
 
-      #incident_rangers_form { text-align: center; }
-      #incident_rangers_form label        { width:  49%; }
-      #incident_rangers_form label select { width: 100%; }
-
-      #incident_types_form { text-align: center; }
-      #incident_types_form label        { width:  49%; }
-      #incident_types_form label select { width: 100%; }
+      #incident_rangers_label, #incident_types_label {
+        text-align: center;
+        width: 49%;
+      }
+      #incident_rangers_label select, #incident_types_label select {
+        width: 100%;
+      }
 
       #incident_report_text { border: 1px solid #c6c9cc; }
 
@@ -73,79 +74,91 @@
   <body>
     <div id="incident_edit">
 
-      <form id="incident_number_form">
-        <label id="incident_number_label">
-          Incident #: <span t:render="number" />
-        </label>
-      </form>
+      <form method="POST" id="incident_state_form"></form>
+      <form method="POST" id="incident_priority_form"></form>
+      <label id="incident_number_label">
+        Incident #: <span t:render="number" />
+      </label>
+      <label id="incident_state_label">
+        <select name="state" form="incident_state_form" onchange="this.form.submit()">
+          <option value="new"        t:render="state_option">New       </option>
+          <option value="on_hold"    t:render="state_option">On Hold   </option>
+          <option value="dispatched" t:render="state_option">Dispatched</option>
+          <option value="on_scene"   t:render="state_option">On Scene  </option>
+          <option value="closed"     t:render="state_option">Closed    </option>
+        </select>
+      </label>
+      <label id="incident_priority_label">
+        Priority:
+        <select name="priority" form="incident_priority_form" onchange="this.form.submit()">
+          <option value="1" t:render="priority_option">High  </option>
+          <option value="3" t:render="priority_option">Normal</option>
+          <option value="5" t:render="priority_option">Low   </option>
+        </select>
+      </label>
 
-      <form id="incident_state_form">
-        <label id="incident_state_label">
-          <select name="state" onchange="this.form.submit()">
-            <option value="new"        t:render="state_option">New       </option>
-            <option value="on_hold"    t:render="state_option">On Hold   </option>
-            <option value="dispatched" t:render="state_option">Dispatched</option>
-            <option value="on_scene"   t:render="state_option">On Scene  </option>
-            <option value="closed"     t:render="state_option">Closed    </option>
+      <form method="POST" id="incident_summary_form"></form>
+      <label id="incident_summary_label">
+        Summary:
+        <input type="text" name="summary" placeholder="Summary..." inputmode="latin-prose" t:render="incident_summary_input" form="incident_summary_form" onchange="this.form.submit()" />
+      </label>
+
+      <form method="POST" id="incident_rangers_form"></form>
+      <form method="POST" id="incident_types_form"></form>
+      <label id="incident_rangers_label">
+        Rangers<br />
+        <select name="rangers" multiple="" t:render="rangers_options" form="incident_rangers_form" />
+      </label>
+      <label id="incident_types_label">
+        Incident Types<br />
+        <select name="rangers" multiple="" t:render="types_options" />
+      </label>
+
+      <form method="POST" id="incident_location_name_form"></form>
+      <form method="POST" id="incident_location_radial_form"></form>
+      <form method="POST" id="incident_location_concentric_form"></form>
+      <form method="POST" id="incident_location_description_form"></form>
+      <fieldset id="incident_location" class="boxed">
+        <legend>Location</legend>
+        <label id="incident_location_name_label">
+          Name:
+          <input id="incident_location_name" type="text" name="location_name" placeholder="Name of location..." inputmode="latin" t:render="location_name_input" form="incident_location_name_form" onchange="this.form.submit()" />
+        </label>
+        <label id="incident_location_address_label">
+          Address:
+          <input id="incident_location_radial" type="time" name="location_radial" size="5" min="2:00" max="10:00" form="incident_location_radial_form" onchange="this.form.submit()" />
+          @
+          <select id="incident_location_concentric" name="location_concentric" form="incident_location_concentric_form" onchange="this.form.submit()">
+            <option value=""   t:render="location_concentric_option">         </option>
+            <option value="0"  t:render="location_concentric_option">Esplanade</option>
+            <option value="1"  t:render="location_concentric_option">A Street </option>
+            <option value="2"  t:render="location_concentric_option">B Street </option>
+            <option value="3"  t:render="location_concentric_option">C Street </option>
+            <option value="4"  t:render="location_concentric_option">D Street </option>
+            <option value="5"  t:render="location_concentric_option">E Street </option>
+            <option value="6"  t:render="location_concentric_option">F Street </option>
+            <option value="7"  t:render="location_concentric_option">G Street </option>
+            <option value="8"  t:render="location_concentric_option">H Street </option>
+            <option value="9"  t:render="location_concentric_option">I Street </option>
+            <option value="10" t:render="location_concentric_option">J Street </option>
+            <option value="11" t:render="location_concentric_option">K Street </option>
+            <option value="12" t:render="location_concentric_option">L Street </option>
+            <option value="13" t:render="location_concentric_option">M Street </option>
+            <option value="14" t:render="location_concentric_option">N Street </option>
           </select>
+
+          <input id="incident_location_description" type="text" name="location_description" placeholder="Description... eg: red flags, yurts" inputmode="latin" t:render="location_description_input" form="incident_location_description_form" onchange="this.form.submit()" />
         </label>
-      </form>
+      </fieldset>
 
-      <form id="incident_priority_form">
-        <label id="incident_priority_label">
-          Priority:
-          <select name="priority" onchange="this.form.submit()">
-            <option value="1" t:render="priority_option">High  </option>
-            <option value="3" t:render="priority_option">Normal</option>
-            <option value="5" t:render="priority_option">Low   </option>
-          </select>
-        </label>
-      </form>
-
-      <form id="incident_summary_form">
-        <label id="incident_summary_label">
-          Summary:
-          <input type="text" name="summary" placeholder="Summary..." inputmode="latin-prose" t:render="incident_summary_input" onchange="this.form.submit()" />
-        </label>
-      </form>
-
-      <form id="incident_rangers_form">
-        <label id="incident_rangers_label">
-          Rangers<br />
-          <select name="rangers" multiple="" t:render="rangers_options" />
-        </label>
-      </form>
-
-      <form id="incident_types_form">
-        <label id="incident_types_label">
-          Incident Types<br />
-          <select name="rangers" multiple="" t:render="types_options" />
-        </label>
-      </form>
-
-      <form id="incident_location_form">
-        <fieldset id="incident_location" class="boxed">
-          <legend>Location</legend>
-          <label id="incident_location_name_label">
-            Name:
-            <input id="incident_location_name" type="text" name="location_name" placeholder="Name of location..." inputmode="latin" t:render="location_name_input" onchange="this.form.submit()" />
-          </label>
-          <label id="incident_location_address_label">
-            Address:
-            <input id="incident_location_address" type="text" name="location_address" placeholder="Address of location..." inputmode="verbatim" t:render="location_address_input" onchange="this.form.submit()" />
-          </label>
-        </fieldset>
-      </form>
-
-      <form id="incident_report_form">
-        <fieldset id="incident_report">
-          <legend>Incident Report</legend>
-          <div id="incident_report_text" t:render="incident_report_text" />
-          <textarea id="incident_report_input" name="report_text" autofocus="true" placeholder="Additional report text..." t:render="incident_report_textarea"  onchange="this.form.submit()" />
-          <div id="login_info">Logged in as: <a href="/logout" id="user" t:render="user" /></div>
-          <input type="submit" value="Add Entry" t:render="editable" />
-        </fieldset>
-      </form>
+      <form method="POST" id="incident_report_form"></form>
+      <fieldset id="incident_report">
+        <legend>Incident Report</legend>
+        <div id="incident_report_text" t:render="incident_report_text" />
+        <textarea id="incident_report_input" name="report_text" placeholder="Additional report text..." t:render="incident_report_textarea" form="incident_report_form" />
+        <div id="login_info">Logged in as: <a href="/logout" id="user" t:render="user" /></div>
+        <input type="submit" value="Add Entry" t:render="editable" form="incident_report_form" />
+      </fieldset>
 
     </div>
 

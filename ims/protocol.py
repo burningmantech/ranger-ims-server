@@ -30,6 +30,7 @@ from twisted.web.static import File
 
 from klein import Klein
 
+from .data import InvalidDataError
 from .json import JSON, json_as_text, json_from_file
 from .json import (
     ranger_as_json, location_as_json, incident_as_json, incident_from_json
@@ -49,6 +50,7 @@ from .element.util import (
     edits_from_query,
 )
 from .util import http_download
+from .tz import utcNow
 
 
 
@@ -333,9 +335,31 @@ class IncidentManagementSystem(object):
 
     def data_incident_new(self, number, json_file, author):
         json = json_from_file(json_file)
-        incident = incident_from_json(json, number=number)
+        incident = incident_from_json(json, number=number, validate=False)
 
-        # Edit report entrys to add author
+        now = utcNow()
+
+        if incident.created is None:
+            # No timestamp provided; add one.
+
+            # Right now is a decent default, but if there's a report entry
+            # that's older than now, that's a better pick.
+            created = now
+            if incident.report_entries is not None:
+                for entry in incident.report_entries:
+                    if entry.created < created:
+                        created = entry.created
+
+            incident.created = created
+            log.msg(incident.created)
+        else:
+            if incident.created > now:
+                raise InvalidDataError(
+                    "Created time {} is in the future. Current time is {}."
+                    .format(incident.created, now)
+                )
+
+        # Edit report entries to add author
         for entry in incident.report_entries:
             entry.author = author
 
@@ -368,7 +392,7 @@ class IncidentManagementSystem(object):
         return DispatchQueueElement(self)
 
 
-    @app.route("/queue/incidents/<number>", methods=("GET",))
+    @app.route("/queue/incidents/<number>", methods=("GET", "POST"))
     @http_sauce
     def queue_incident(self, request, number):
         set_response_header(
@@ -486,7 +510,7 @@ class IncidentManagementSystem(object):
     @app.route("/links/", methods=("GET",))
     @http_sauce
     def links(self, request):
-        #set_response_header(request, HeaderName.etag, ????)
+        # set_response_header(request, HeaderName.etag, ????)
         set_response_header(request, HeaderName.contentType, ContentType.JSON)
         return json_as_text([
             {JSON.page_url.value: name, JSON.page_url.value: value}

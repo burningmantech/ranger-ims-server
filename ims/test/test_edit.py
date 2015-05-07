@@ -244,6 +244,13 @@ class EditingTests(unittest.TestCase):
         self.assertEditValueNoop("created", time1, time1)
 
 
+    def test_edit_created_noEdit(self):
+        """
+        Edit incident created timestamp to C{None} is a no-op.
+        """
+        self.assertEditValueNoop("created", time1, None)
+
+
     def test_edit_created_changed(self):
         """
         Editing incident created timestamp to a new value is ignored.

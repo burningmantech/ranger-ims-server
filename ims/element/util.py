@@ -37,7 +37,10 @@ from twisted.python import log
 from twisted.web.template import tags
 
 from ..tz import utcNow
-from ..data import IncidentState, IncidentType, Incident, ReportEntry
+from ..data import (
+    IncidentState, IncidentType, Incident, ReportEntry,
+    Location, RodGarettAddress,
+)
 
 
 
@@ -119,27 +122,59 @@ def edits_from_query(author, number, request):
     if not request.args:
         return None
 
-    priority = summary = location = rangers = None
+    priority = summary = location = address = rangers = None
     incident_types = report_entries = state = None
 
-    for priority in request.args.get("priority", []):
-        priority = int(priority)
+    def get(key, cast, defaultArgs=[]):
+        for value in request.args.get(key, defaultArgs):
+            return cast(value)
+        return None
 
-    # FIXME:
-    location
+    def radialHourMinute(radial):
+        if radial:
+            hour, minute = radial.split(":")
+            print "GOT", hour, minute
+            return (int(hour), int(minute))
+        else:
+            return (None, None)
+
+    def concentric(n):
+        if n:
+            return int(n)
+        else:
+            return None
+
+    priority = get("priority", int)
+    state = get("state", IncidentState.lookupByName)
+    summary = get("summary", unicode)
+
+    location_name = get("location_name", unicode)
+    location_hour, location_minute = get(
+        "location_radial", radialHourMinute, [""]
+    )
+    location_concentric = get("location_concentric", concentric)
+    location_description = get("location_description", unicode)
+
+    if (
+        location_hour is not None or
+        location_minute is not None or
+        location_concentric is not None or
+        location_description is not None
+    ):
+        address = RodGarettAddress(
+            radialHour=location_hour,
+            radialMinute=location_minute,
+            concentric=location_concentric,
+            description=location_description,
+        )
+
+    location = Location(name=location_name, address=address)
 
     # FIXME:
     rangers
 
     # FIXME:
     incident_types
-
-    # FIXME:
-    for state in request.args.get("state", []):
-        state = IncidentState.lookupByName(state)
-
-    for summary in request.args.get("summary", []):
-        summary = unicode(summary)
 
     report_entries = []
 

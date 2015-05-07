@@ -72,10 +72,6 @@ def edit_incident(incident, edits, author):
         """
         Edit a single value.
         """
-        if name == "created" and old_value != new_value:
-            # Created time should not change
-            raise EditNotAllowedError("Created time may not change.")
-
         if new_value is None:
             # No edit given for this attribute
             return old_value
@@ -83,6 +79,10 @@ def edit_incident(incident, edits, author):
         if new_value == old_value:
             # The given edit doesn't change the value
             return old_value
+
+        if name == "created" and old_value != new_value:
+            # Created time should not change
+            raise EditNotAllowedError("Created time may not change.")
 
         if describe is None:
             describe = lambda x: x

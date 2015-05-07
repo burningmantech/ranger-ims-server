@@ -132,8 +132,8 @@ class IncidentTests(unittest.TestCase):
         """
         L{Incident.report_entries} is sorted.
         """
-        r1 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 1))
-        r2 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 2))
+        r1 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 1))
+        r2 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 2))
 
         for entries in ((r1, r2), (r2, r1)):
             incident = newIncident(report_entries=entries)
@@ -213,6 +213,27 @@ class IncidentTests(unittest.TestCase):
         incident.validate()
 
 
+    def test_validate_location(self):
+        """
+        L{Incident.validate} incident with valid location.
+        """
+        incident = newIncident(
+            location=Location(
+                name=u"Name",
+                address=TextOnlyAddress(u"Address"),
+            )
+        )
+        incident.validate()
+
+
+    def test_validate_locationInvalid(self):
+        """
+        L{Incident.validate} incident with invalid location.
+        """
+        incident = newIncident(location=Location(name=0))
+        self.assertRaises(InvalidDataError, incident.validate)
+
+
     def test_validate_rangers(self):
         """
         L{Incident.validate} of incident with valid Rangers.
@@ -253,6 +274,32 @@ class IncidentTests(unittest.TestCase):
         self.assertRaises(InvalidDataError, incident.validate)
 
 
+    def test_validate_reportEntry(self):
+        """
+        L{Incident.validate} incident with valid report entry.
+        """
+        incident = newIncident(
+            report_entries=[
+                ReportEntry(
+                    author=u"Tool",
+                    text=u"All out of no. 2 pencils. Need air drop stat.",
+                    created=DateTime.now(),
+                ),
+            ]
+        )
+        incident.validate()
+
+
+    def test_validate_reportEntryInvalid(self):
+        """
+        L{Incident.validate} incident with invalid report entry.
+        """
+        incident = newIncident(
+            report_entries=[ReportEntry(author=None, text=None)],
+        )
+        self.assertRaises(InvalidDataError, incident.validate)
+
+
     def test_validate_created(self):
         """
         L{Incident.validate} of incident with valid created time.
@@ -266,6 +313,14 @@ class IncidentTests(unittest.TestCase):
         L{Incident.validate} of incident with non-DateTime created time.
         """
         incident = newIncident(created=0)
+        self.assertRaises(InvalidDataError, incident.validate)
+
+
+    def test_validate_created_none(self):
+        """
+        L{Incident.validate} of incident C{None} created time.
+        """
+        incident = newIncident(created=None)
         self.assertRaises(InvalidDataError, incident.validate)
 
 
@@ -340,7 +395,7 @@ class ReportEntryTests(unittest.TestCase):
         entry = ReportEntry(
             author=u"Tool",
             text=u"Something happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertEquals(
             str(entry),
@@ -355,7 +410,7 @@ class ReportEntryTests(unittest.TestCase):
         entry = ReportEntry(
             author=u"Tool",
             text=u"Something happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertEquals(
             repr(entry),
@@ -374,12 +429,12 @@ class ReportEntryTests(unittest.TestCase):
         entry1 = ReportEntry(
             author=u"Tool",
             text=u"Something happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         entry2 = ReportEntry(
             author=u"Tool",
             text=u"Something else happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertNotEquals(entry1, entry2)
 
@@ -391,12 +446,12 @@ class ReportEntryTests(unittest.TestCase):
         entry1a = ReportEntry(
             author=u"Tool",
             text=u"Something happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         entry1b = ReportEntry(
             author=u"Tool",
             text=u"Something happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertEquals(entry1a, entry1a)
         self.assertEquals(entry1a, entry1b)
@@ -409,7 +464,7 @@ class ReportEntryTests(unittest.TestCase):
         entry = ReportEntry(
             author=u"Tool",
             text=u"Something happened!",
-            created=DateTime(1972, 06, 29, 12, 0, 0),
+            created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertNotEquals(entry, object())
 
@@ -420,9 +475,9 @@ class ReportEntryTests(unittest.TestCase):
         """
         # Define r2 first so we might notice if sort order is (incorrectly)
         # defined by object id (which seems to be the default in CPython)
-        r2 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 2))
-        r1 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 1))
-        r3 = ReportEntry(u"", u"", created=DateTime(1972, 06, 29, 12, 0, 3))
+        r2 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 2))
+        r1 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 1))
+        r3 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 3))
 
         for entries in ((r1, r2, r3), (r3, r2, r1)):
             self.assertEquals(sorted(entries), [r1, r2, r3])
@@ -870,7 +925,7 @@ def newIncident(
     rangers=(),
     incident_types=(),
     report_entries=(),
-    created=None,
+    created=DateTime(2006, 4, 5, 16, 30, 0),
     state=None,
 ):
     return Incident(
