@@ -29,7 +29,7 @@ from hashlib import sha1 as etag_hash
 
 from twisted.python import log
 from twisted.python.filepath import UnlistableError
-from .data import IncidentState
+from .data import IncidentState, InvalidDataError
 from .json import (
     incident_as_json, incident_from_json, json_as_text, json_from_file
 )
@@ -95,7 +95,11 @@ class ReadOnlyStorage(object):
         # Do pre-validation cleanup here, for compatibility with older data.
         ims2014Cleanup(incident)
 
-        incident.validate()
+        try:
+            incident.validate()
+        except InvalidDataError as e:
+            log.err("Unable to read incident #{}: {}".format(number, e))
+            raise
 
         return incident
 
