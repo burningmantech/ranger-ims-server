@@ -409,6 +409,11 @@ def incident_from_json(root, number, validate=True):
 
     created = rfc3339_as_datetime(root.get(JSON.incident_created.value, None))
 
+    # 2013 format did not have a true created timestamp, but it did have a
+    # created state timestamp, which will have to do
+    if created is None:
+        created = rfc3339_as_datetime(root.get(JSON._created.value, None))
+
     json_state = root.get(JSON.incident_state.value, None)
 
     if json_state is None:
