@@ -1,6 +1,6 @@
 # -*- sh-basic-offset: 2 -*-
 ##
-# Copyright (c) 2005-2014 Apple Inc. All rights reserved.
+# Copyright (c) 2005-2015 Apple Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ find_cmd () {
 
   local path="$(type "${cmd}" 2>/dev/null | sed "s|^${cmd} is \(a tracked alias for \)\{0,1\}||")";
 
-  if [ -z "${cmd}" ]; then
+  if [ -z "${path}" ]; then
     return 1;
   fi;
 
@@ -61,27 +61,17 @@ try_python () {
 # Detect which version of Python to use, then print out which one was detected.
 #
 # This will prefer the python interpreter in the PYTHON environment variable.
-# If that's not found, it will check for "python2.7", "python2.6" and "python",
-# looking for each in your PATH and, failing that, in a number of well-known
-# locations.
+# If that's not found, it will check for "python2.7" and "python", looking for
+# each in your PATH.
 #
 detect_python_version () {
   local v;
   local p;
-  for v in "2.7" "2.6" ""
+  for v in "2.7" ""
   do
-    for p in                                                            \
-      "${PYTHON:=}"                                                     \
-      "python${v}"                                                      \
-      "/usr/local/bin/python${v}"                                       \
-      "/usr/local/python/bin/python${v}"                                \
-      "/usr/local/python${v}/bin/python${v}"                            \
-      "/opt/bin/python${v}"                                             \
-      "/opt/python/bin/python${v}"                                      \
-      "/opt/python${v}/bin/python${v}"                                  \
-      "/Library/Frameworks/Python.framework/Versions/${v}/bin/python"   \
-      "/opt/local/bin/python${v}"                                       \
-      "/sw/bin/python${v}"                                              \
+    for p in         \
+      "${PYTHON:=}"  \
+      "python${v}"   \
       ;
     do
       if p="$(find_cmd "${p}")"; then

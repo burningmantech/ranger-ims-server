@@ -1,6 +1,6 @@
 # -*- sh-basic-offset: 2 -*-
 ##
-# Copyright (c) 2005-2014 Apple Inc. All rights reserved.
+# Copyright (c) 2005-2015 Apple Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -123,7 +123,8 @@ init_build () {
 
   if find_cmd openssl > /dev/null; then
     if [ -z "${hash}" ]; then hash="md5"; fi;
-    md5 () { "$(find_cmd openssl)" dgst -md5 "$@"; }
+    # remove "(stdin)= " from the front which openssl emits on some platforms
+    md5 () { "$(find_cmd openssl)" dgst -md5 "$@" | sed 's/^.* //'; }
   elif find_cmd md5 > /dev/null; then
     if [ -z "${hash}" ]; then hash="md5"; fi;
     md5 () { "$(find_cmd md5)" "$@"; }
@@ -158,7 +159,7 @@ init_build () {
 
 
 setup_print () {
-  what="$1"; shift;
+  local what="$1"; shift;
 
   PYTHONPATH="${wd}:${PYTHONPATH:-}" "${bootstrap_python}" - 2>/dev/null << EOF
 from __future__ import print_function
@@ -175,7 +176,7 @@ www_get () {
   local  md5="";
   local sha1="";
 
-  OPTIND=1;
+  local OPTIND=1;
   while getopts "m:s:" option; do
     case "${option}" in
       'm')  md5="${OPTARG}"; ;;
@@ -193,9 +194,11 @@ www_get () {
   fi;
   if [ ! -d "${path}" ]; then
     local ext="$(echo "${url}" | sed 's|^.*\.\([^.]*\)$|\1|')";
+    local decompress="";
+    local unpack="";
 
     untar () { tar -xvf -; }
-    unzipstream () { tmp="$(mktemp -t ccsXXXXX)"; cat > "${tmp}"; unzip "${tmp}"; rm "${tmp}"; }
+    unzipstream () { local tmp="$(mktemp -t ccsXXXXX)"; cat > "${tmp}"; unzip "${tmp}"; rm "${tmp}"; }
     case "${ext}" in
       gz|tgz) decompress="gzip -d -c"; unpack="untar"; ;;
       bz2)    decompress="bzip2 -d -c"; unpack="untar"; ;;
@@ -320,6 +323,8 @@ www_get () {
 # Run 'make' with the given command line, prepending a -j option appropriate to
 # the number of CPUs on the current machine, if that can be determined.
 jmake () {
+  local ncpu="";
+
   case "$(uname -s)" in
     Darwin|Linux)
       ncpu="$(getconf _NPROCESSORS_ONLN)";
@@ -349,7 +354,7 @@ c_dependency () {
   local build_cmd="jmake"; 
   local install_cmd="make install";
 
-  OPTIND=1;
+  local OPTIND=1;
   while getopts "m:s:c:p:b:" option; do
     case "${option}" in
       'm') f_hash="-m ${OPTARG}"; ;;
@@ -369,8 +374,7 @@ c_dependency () {
 
   mkdir -p "${dep_sources}";
 
-  srcdir="${dep_sources}/${path}";
-  # local dstroot="${srcdir}/_root";
+  local srcdir="${dep_sources}/${path}";
   local dstroot="${dev_roots}/${name}";
 
   www_get ${f_hash} "${name}" "${srcdir}" "${uri}";
@@ -381,7 +385,7 @@ c_dependency () {
   export          CPPFLAGS="-I${dstroot}/include ${CPPFLAGS:-} ";
   export           LDFLAGS="-L${dstroot}/lib -L${dstroot}/lib64 ${LDFLAGS:-} ";
   export DYLD_LIBRARY_PATH="${dstroot}/lib:${dstroot}/lib64:${DYLD_LIBRARY_PATH:-}";
-  export PKG_CONFIG_PATH="${dstroot}/lib/pkgconfig:${PKG_CONFIG_PATH:-}";
+  export   PKG_CONFIG_PATH="${dstroot}/lib/pkgconfig:${PKG_CONFIG_PATH:-}";
 
   if "${do_setup}"; then
     if "${force_setup}"; then
@@ -440,7 +444,7 @@ c_dependencies () {
   # value of OPENSSL_VERSION_NUBMER for use in inequality comparison.
   ruler;
 
-  local min_ssl_version="9470367";  # OpenSSL 0.9.8y
+  local min_ssl_version="9470463";  # OpenSSL 0.9.8zf
 
   local ssl_version="$(c_macro openssl/ssl.h OPENSSL_VERSION_NUMBER)";
   if [ -z "${ssl_version}" ]; then ssl_version="0x0"; fi;
@@ -449,13 +453,13 @@ c_dependencies () {
   if [ "${ssl_version}" -ge "${min_ssl_version}" ]; then
     using_system "OpenSSL";
   else
-    local v="0.9.8y";
+    local v="0.9.8zf";
     local n="openssl";
     local p="${n}-${v}";
 
     # use 'config' instead of 'configure'; 'make' instead of 'jmake'.
     # also pass 'shared' to config to build shared libs.
-    c_dependency -c "config" -m "47c7fb37f78c970f1d30aa2f9e9e26d8" \
+    c_dependency -c "config" -m "c69a4a679233f7df189e1ad6659511ec" \
       -p "make depend" -b "make" \
       "openssl" "${p}" \
       "http://www.openssl.org/source/${p}.tar.gz" "shared";
@@ -472,15 +476,14 @@ c_dependencies () {
       using_system "libffi";
     fi;
   else
-    local v="3.1";
+    local v="3.0.13";
     local n="libffi";
     local p="${n}-${v}";
 
-    c_dependency -m "f5898b29bbfd70502831a212d9249d10" \
+    c_dependency -m "45f3b6dbc9ee7c7dfbbbc5feba571529" \
       "libffi" "${p}" \
       "ftp://sourceware.org/pub/libffi/${p}.tar.gz"
   fi;
-
 
 }
 
@@ -518,7 +521,10 @@ py_dependencies () {
 
   if [ ! -d "${py_virtualenv}" ]; then
     bootstrap_virtualenv;
-    "${bootstrap_python}" -m virtualenv --system-site-packages "${py_virtualenv}";
+    "${bootstrap_python}" -m virtualenv  \
+      --system-site-packages             \
+      --no-setuptools                    \
+      "${py_virtualenv}";
   fi;
 
   cd "${wd}";
@@ -555,18 +561,18 @@ bootstrap_virtualenv () {
   mkdir -p "${py_ve_tools}/junk";
 
   for pkg in             \
-      setuptools-5.4.1   \
-      pip-1.5.6          \
-      virtualenv-1.11.6  \
+      setuptools-17.0    \
+      pip-7.0.3          \
+      virtualenv-13.0.3  \
   ; do
-         name="${pkg%-*}";
-      version="${pkg#*-}";
-       first="$(echo "${name}" | sed 's|^\(.\).*$|\1|')";
-         url="https://pypi.python.org/packages/source/${first}/${name}/${pkg}.tar.gz";
+      local    name="${pkg%-*}";
+      local version="${pkg#*-}";
+      local  first="$(echo "${name}" | sed 's|^\(.\).*$|\1|')";
+      local    url="https://pypi.python.org/packages/source/${first}/${name}/${pkg}.tar.gz";
 
       ruler "Downloading ${pkg}";
 
-      tmp="$(mktemp -d -t ccsXXXXX)";
+      local tmp="$(mktemp -d -t ccsXXXXX)";
 
       curl -L "${url}" | tar -C "${tmp}" -xvzf -;
 
@@ -590,8 +596,10 @@ pip_download () {
   mkdir -p "${dev_home}/pip_downloads";
 
   "${python}" -m pip install               \
+    --disable-pip-version-check            \
     --download="${dev_home}/pip_downloads" \
     --pre --allow-all-external             \
+    --no-cache-dir                         \
     --log-file="${dev_home}/pip.log"       \
     "$@";
 }
@@ -599,8 +607,10 @@ pip_download () {
 
 pip_install_from_cache () {
   "${python}" -m pip install                 \
+    --disable-pip-version-check              \
     --pre --allow-all-external               \
     --no-index                               \
+    --no-cache-dir                           \
     --find-links="${dev_home}/pip_downloads" \
     --log-file="${dev_home}/pip.log"         \
     "$@";
@@ -609,8 +619,9 @@ pip_install_from_cache () {
 
 pip_download_and_install () {
   "${python}" -m pip install                 \
+    --disable-pip-version-check              \
     --pre --allow-all-external               \
-    --download-cache="${dev_home}/pip_cache" \
+    --no-cache-dir                           \
     --log-file="${dev_home}/pip.log"         \
     "$@";
 }
@@ -623,4 +634,21 @@ develop () {
   init_build;
   c_dependencies;
   py_dependencies;
+}
+
+
+develop_clean () {
+  init_build;
+
+  # Clean
+  rm -rf "${dev_roots}";
+  rm -rf "${py_virtualenv}";
+}
+
+
+develop_distclean () {
+  init_build;
+
+  # Clean
+  rm -rf "${dev_home}";
 }
