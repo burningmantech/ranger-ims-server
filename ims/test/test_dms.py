@@ -186,7 +186,7 @@ cannedPersonnel = (
     ("Easy E", "Eric", "P", "Grant", "active"),
     ("El Weso", "Wes", "", "Johnson", "active"),
     ("SciFi", "Fred", "", "McCord", "active"),
-    ("Slumber", "Sleepy", "T", "Drarf", "inactive"),
+    ("Slumber", "Sleepy", "T", "Dwarf", "inactive"),
     ("Tool", "Wilfredo", "", "Sanchez", "vintage"),
     ("Tulsa", "Curtis", "", "Kline", "vintage"),
 )
