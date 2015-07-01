@@ -117,7 +117,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
                 },
                 {
                     "handle": "Slumber",
-                    "name": "Sleepy T. Drarf",
+                    "name": "Sleepy T. Dwarf",
                     "status": "inactive",
                 },
                 {
