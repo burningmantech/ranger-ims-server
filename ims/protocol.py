@@ -73,7 +73,7 @@ class IncidentManagementSystem(object):
     @property
     def user(self):
         if self.avatarId is None:
-            raise RuntimeError("No avatar ID?")
+            return u"-"
         return self.avatarId.decode("utf-8")
 
     #
