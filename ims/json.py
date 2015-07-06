@@ -477,31 +477,9 @@ def incident_as_json(incident):
         root[JSON.incident_summary.value] = incident.summary
 
     if incident.location is not None:
-        address = incident.location.address
-        if address is None:
-            # Location should always have a type
-            root[JSON.incident_location.value] = {
-                JSON.location_name.value: incident.location.name,
-                JSON.location_type.value: JSON.location_type_text.value,
-                JSON.location_text_description.value: None,
-            }
-        elif isinstance(address, TextOnlyAddress):
-            root[JSON.incident_location.value] = {
-                JSON.location_name.value: incident.location.name,
-                JSON.location_type.value: JSON.location_type_text.value,
-                JSON.location_text_description.value: address.description,
-            }
-        elif isinstance(address, RodGarettAddress):
-            root[JSON.incident_location.value] = {
-                JSON.location_name.value: incident.location.name,
-                JSON.location_type.value: JSON.location_type_garett.value,
-                JSON.location_garett_concentric.value: address.concentric,
-                JSON.location_garett_radial_hour.value: address.radialHour,
-                JSON.location_garett_radial_minute.value: address.radialMinute,
-                JSON.location_garett_description.value: address.description,
-            }
-        else:
-            raise InvalidDataError("Unknown addresses type")
+        root[JSON.incident_location.value] = (
+            location_as_json(incident.location)
+        )
 
     if incident.rangers is not None:
         root[JSON.ranger_handles.value] = [
