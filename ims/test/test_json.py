@@ -1005,3 +1005,6 @@ class LocationSerializationTests(unittest.TestCase):
             },
             location_as_json(Location(address=TextOnlyAddress(u"The Temple")))
         )
+
+    # FIXME: more complete testing of location_as_json() is in serialization
+    # tests above; move that testing here.
