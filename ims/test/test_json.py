@@ -564,7 +564,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             incident = incident_from_json(
                 {
                     JSON.incident_number.value: 1,
-                    json_key: time1,
+                    json_key: "2012-09-01T21:00:00Z",
                 },
                 number=1, validate=False
             )
