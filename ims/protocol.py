@@ -201,7 +201,9 @@ class IncidentManagementSystem(object):
     def data_locations(self):
         locations = self.storage.locations()
         return succeed((
-            [location_as_json(location) for location in locations],
+            json_as_text(
+                [location_as_json(location) for location in locations]
+            ),
             hash(locations)
         ))
 
