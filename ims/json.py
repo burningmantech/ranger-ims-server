@@ -564,7 +564,31 @@ def location_as_json(location):
     @return: C{location}, serialized as JSON data.
     @rtype: L{dict}
     """
-    return {
-        "name": location.name,
-        "address": location.address,
-    }
+    if location is None:
+        return None
+
+    address = location.address
+    if address is None:
+        # Location should always have a type
+        return {
+            JSON.location_name.value: location.name,
+            JSON.location_type.value: JSON.location_type_text.value,
+            JSON.location_text_description.value: None,
+        }
+    elif isinstance(address, TextOnlyAddress):
+        return {
+            JSON.location_name.value: location.name,
+            JSON.location_type.value: JSON.location_type_text.value,
+            JSON.location_text_description.value: address.description,
+        }
+    elif isinstance(address, RodGarettAddress):
+        return {
+            JSON.location_name.value: location.name,
+            JSON.location_type.value: JSON.location_type_garett.value,
+            JSON.location_garett_concentric.value: address.concentric,
+            JSON.location_garett_radial_hour.value: address.radialHour,
+            JSON.location_garett_radial_minute.value: address.radialMinute,
+            JSON.location_garett_description.value: address.description,
+        }
+    else:
+        raise InvalidDataError("Unknown addresses type: {}".format(address))

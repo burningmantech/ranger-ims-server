@@ -986,20 +986,22 @@ class LocationSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
+                "type": "text",
                 "name": u"Ranger Outpost Tokyo",
-                "address": None,
+                "description": None,
             },
             location_as_json(Location(name=u"Ranger Outpost Tokyo"))
         )
 
-    def test_locationAsJSONAddress(self):
+    def test_locationAsJSONTextOnlyAddress(self):
         """
-        Serialize with name.
+        Serialize with address.
         """
         self.assertEquals(
             {
+                "type": "text",
                 "name": None,
-                "address": u"9::00 & C",
+                "description": u"The Temple",
             },
-            location_as_json(Location(address=u"9::00 & C"))
+            location_as_json(Location(address=TextOnlyAddress(u"The Temple")))
         )
