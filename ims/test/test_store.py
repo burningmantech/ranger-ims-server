@@ -137,7 +137,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
                     {
                         "author": "Tool",
                         "text": "Hi!",
-                        "created":"2012-09-01T21:00:00Z"
+                        "created": "2012-09-01T21:00:00Z"
                     }
                 ]
             }
@@ -163,7 +163,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
                 "report_entries": [
                     {
                         "text": "Hi!",
-                        "created":"2014-08-23T21:19:00Z"
+                        "created": "2014-08-23T21:19:00Z"
                     }
                 ]
             }
