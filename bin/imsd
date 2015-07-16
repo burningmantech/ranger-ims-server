@@ -37,12 +37,12 @@ usage ()
 
     if [ "${1--}" != "-" ]; then echo "$@"; echo; fi;
 
-    echo "Usage: ${program} [-hkX] [-s port]";
+    echo "Usage: ${program} [-hkXs]";
     echo "Options:";
     echo "        -h Print this help and exit";
     echo "        -k Kill the server";
     echo "        -X Do not daemonize";
-    echo "        -s Use given SSL port";
+    echo "        -s Use SSL";
 
     if [ "${1-}" == "-" ]; then return 0; fi;
     exit 64;
