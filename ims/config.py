@@ -202,6 +202,7 @@ class Configuration (object):
         self.IncidentTypes = (
             u"Art",
             u"Assault",
+            u"Courtesy Notice",
             u"Commerce",
             u"Echelon",
             u"Eviction",
@@ -213,6 +214,7 @@ class Configuration (object):
             u"Lost Child",
             u"Medical",
             u"Mental Health",
+            u"Missing Person",
             u"MOOP",
             u"SITE",
             u"Staff",
