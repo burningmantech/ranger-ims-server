@@ -362,8 +362,9 @@ class IncidentManagementSystem(object):
                 )
 
         # Edit report entries to add author
-        for entry in incident.report_entries:
-            entry.author = author
+        if incident.report_entries is not None:
+            for entry in incident.report_entries:
+                entry.author = author
 
         self.storage.write_incident(incident)
 
