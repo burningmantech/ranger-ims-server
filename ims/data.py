@@ -709,8 +709,8 @@ class RodGarettAddress(Address):
             raise ValueError("Concentric street number may not be negative")
 
         if radialHour is not None:
-            if not 2 <= radialHour <= 10:
-                raise ValueError("Radial hour must be 2-10")
+            if not 1 <= radialHour <= 12:
+                raise ValueError("Radial hour must be 1-12")
 
         if radialMinute is not None:
             if not 0 <= radialMinute < 60:
