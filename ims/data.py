@@ -723,10 +723,44 @@ class RodGarettAddress(Address):
 
 
     def __str__(self):
+        if self.concentric is None:
+            concentric = u""
+        else:
+            concentric = self.concentric
+
+        if self.radialHour is None and self.radialMinute is None:
+            radial = u""
+        else:
+            if self.radialHour is None:
+                radialHour = u"?"
+            else:
+                radialHour = self.radialHour
+
+            if self.radialMinute is None:
+                radialMinute = u"?"
+            else:
+                radialMinute = self.radialMinute
+            radial = u"{}:{}".format(radialHour, radialMinute)
+
+        if not concentric or not radial:
+            at = u""
+        else:
+            at = u"@"
+
+        if self.description is None:
+            description = u""
+        else:
+            description = u", {}".format(self.description)
+
         return (
-            u"{self.concentric}@{self.radialHour}:{self.radialMinute} "
-            u"{self.description}"
-            .format(self=self).encode("utf-8")
+            u"{concentric}{at}{radial}{description}"
+            .format(
+                self=self,
+                concentric=concentric,
+                at=at,
+                radial=radial,
+                description=description,
+            ).encode("utf-8")
         )
 
 
