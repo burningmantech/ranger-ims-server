@@ -33,7 +33,7 @@ from klein import Klein
 from .data import Incident, InvalidDataError
 from .json import JSON, json_as_text, json_from_file
 from .json import (
-    ranger_as_json, location_as_json, incident_as_json, incident_from_json
+    ranger_as_json, incident_as_json, incident_from_json
 )
 from .edit import edit_incident
 from .sauce import url_for, set_response_header
@@ -199,13 +199,8 @@ class IncidentManagementSystem(object):
 
 
     def data_locations(self):
-        locations = self.storage.locations()
-        return succeed((
-            json_as_text(
-                [location_as_json(location) for location in locations]
-            ),
-            hash(locations)
-        ))
+        text = self.config.locationsJSONText
+        return succeed((text, hash(text)))
 
 
     @app.route("/incidents", methods=("GET",))
