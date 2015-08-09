@@ -16,6 +16,7 @@
 
 from __future__ import print_function
 
+import sys
 from csv import reader as CSVReader
 
 from ims.data import Location, RodGarettAddress
@@ -23,9 +24,35 @@ from ims.json import location_as_json, json_as_text
 
 
 
+concentricStreetToNumberMap = {
+    u"Esplanade"        : 0,
+    u"A"                : 1,
+    u"B"                : 2,
+    u"C"                : 3,
+    u"D"                : 4,
+    u"E"                : 5,
+    u"F"                : 6,
+    u"G"                : 7,
+    u"H"                : 8,
+    u"I"                : 9,
+    u"J"                : 10,
+    u"K"                : 11,
+    u"L"                : 12,
+    u"3:00 Plaza"       : 300,
+    u"3:00 Public Plaza": 305,
+    u"4:30 Plaza"       : 430,
+    u"Center Camp Plaza": 600,
+    u"Rte 66"           : 601,
+    u"Rod's Road"       : 602,
+    u"6:00 Public Plaza": 605,
+    u"7:30 Plaza"       : 730,
+    u"9:00 Plaza"       : 900,
+    u"9:00 Public Plaza": 905,
+}
+
+
 def parseLocations(inStream):
     reader = CSVReader(inStream)
-    encoding = "macroman"
 
     for (
         category,
@@ -35,83 +62,95 @@ def parseLocations(inStream):
         crossStreet,
         dimensions
     ) in reader:
-        if category == b"Category" and campName == b"Camp Name":  # Header row
+        if category == b"Category" and campName == b"Camp Name":
+            # Header row
             continue
 
-        category        = category.decode(encoding)
-        campName        = campName.decode(encoding)
-        textAddress     = textAddress.decode(encoding)
-        frontageAddress = frontageAddress.decode(encoding)
-        crossStreet     = crossStreet.decode(encoding)
-        dimensions      = dimensions.decode(encoding)
-
-        # print(campName)
-        concentric   = None
-        radialHour   = None
-        radialMinute = None
-
-        for streetAddress in (frontageAddress, crossStreet):
-            if not streetAddress:
-                continue
-            try:
-                radialHour, radialMinute, plaza = parseRadialStreetAddress(
-                    streetAddress
-                )
-            except RadialStreetAddressParseError:
-                try:
-                    concentric = parseConcentricStreetAddress(streetAddress)
-                except ConcentricStreetAddressParseError:
-                    print(
-                        "WARNING: unable to parse street address: {!r}"
-                        .format(streetAddress)
-                    )
-
-        if category == u"Camp within a Village":
-            description = textAddress
-        elif category == u"Burning Man Department":
-            description = u"Burning Man Department"
-        else:
-            description = u"{} {}".format(
-                category, dimensions.replace(u" ", u"")
-            )
-
-        if plaza:
-            description = u"[{}] {}".format(plaza, description)
-
-        address = RodGarettAddress(
-            concentric=concentric,
-            radialHour=radialHour, radialMinute=radialMinute,
-            description=description,
+        yield parseLocation(
+            category=category,
+            campName=campName,
+            textAddress=textAddress,
+            frontageAddress=frontageAddress,
+            crossStreet=crossStreet,
+            dimensions=dimensions,
         )
 
-        location = Location(name=campName, address=address)
 
-        yield location
+def parseLocation(
+    category,
+    campName,
+    textAddress,
+    frontageAddress,
+    crossStreet,
+    dimensions,
+):
+    encoding = "macroman"
+
+    category        = category.decode(encoding)
+    campName        = campName.decode(encoding)
+    textAddress     = textAddress.decode(encoding)
+    frontageAddress = frontageAddress.decode(encoding)
+    crossStreet     = crossStreet.decode(encoding)
+    dimensions      = dimensions.decode(encoding)
+
+    # print(campName)
+    concentric   = None
+    radialHour   = None
+    radialMinute = None
+    plaza        = None
+
+    for streetAddress in (frontageAddress, crossStreet):
+        if not streetAddress:
+            continue
+        try:
+            radialHour, radialMinute, plaza = parseRadialStreetAddress(
+                streetAddress
+            )
+        except RadialStreetAddressParseError:
+            try:
+                concentric = parseConcentricStreetAddress(streetAddress)
+            except ConcentricStreetAddressParseError:
+                sys.stderr.write(
+                    "WARNING: unable to parse street address: {!r}\n"
+                    .format(streetAddress)
+                )
+
+    if category == u"Camp within a Village":
+        description = textAddress
+    elif category == u"Burning Man Department":
+        description = u"Burning Man Department"
+    else:
+        description = category
+
+    if dimensions:
+        description = u"{} {}".format(
+            description, dimensions.replace(u" ", u"")
+        )
+
+    if plaza:
+        # print(
+        #     "{}: {!r} @ {!r}\n -> {}:{}@{} - {!r}".format(
+        #         campName, frontageAddress, crossStreet,
+        #         radialHour, radialMinute, concentric, plaza
+        #     )
+        # )
+        description = u"{}, {}".format(plaza, description)
+
+    address = RodGarettAddress(
+        concentric=concentric,
+        radialHour=radialHour, radialMinute=radialMinute,
+        description=description,
+    )
+
+    return Location(name=campName, address=address)
 
 
 def parseConcentricStreetAddress(address):
-    number = {
-        u"Esplanade"        : 0,
-        u"A"                : 1,
-        u"B"                : 2,
-        u"C"                : 3,
-        u"D"                : 4,
-        u"E"                : 5,
-        u"F"                : 6,
-        u"G"                : 7,
-        u"H"                : 8,
-        u"I"                : 9,
-        u"J"                : 10,
-        u"K"                : 11,
-        u"L"                : 12,
-        u"Center Camp Plaza": 100,
-        u"Rte 66"           : 101,
-        u"Rod's Road"       : 102,
-    }.get(address, None)
+    number = concentricStreetToNumberMap.get(address, None)
 
     if number is None:
         if address.startswith(u"Rte 66 Qrtr "):
-            number = 101
+            number = concentricStreetToNumberMap["Rte 66"]
         else:
             raise ConcentricStreetAddressParseError()
 
@@ -128,6 +167,12 @@ def parseRadialStreetAddress(address):
         minute, plaza = minute.split(" ", 1)
     except ValueError:
         plaza = None
+
+    if plaza in ("Plaza", "Public Plaza"):
+        # Plazas are "concentric" streets, not radials
+        raise RadialStreetAddressParseError()
+    elif plaza:
+        plaza = address
 
     try:
         minute = int(minute)
@@ -151,8 +196,6 @@ class RadialStreetAddressParseError(StreetAddressParseError):
 
 
 if __name__ == "__main__":
-    import sys
-
     with open(sys.argv[1], "rU") as inStream:
         locations = parseLocations(inStream)
         json = [location_as_json(location) for location in locations]
