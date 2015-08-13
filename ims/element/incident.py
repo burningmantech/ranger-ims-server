@@ -94,15 +94,20 @@ class IncidentElement(BaseElement):
 
     @renderer
     def rangers_options(self, request, tag):
+        rangers = self.incident.rangers
+        if rangers is None:
+            rangers = ()
+
         attrs = dict()
         self.apply_disabled(attrs)
+
         return tag(
             (
                 tags.option(
                     u"{ranger.handle} ({ranger.name})".format(ranger=ranger),
                     value=ranger.handle
                 )
-                for ranger in self.incident.rangers
+                for ranger in rangers
             ),
             **attrs
         )
@@ -110,15 +115,20 @@ class IncidentElement(BaseElement):
 
     @renderer
     def types_options(self, request, tag):
+        incident_types = self.incident.incident_types
+        if incident_types is None:
+            incident_types = ()
+
         attrs = dict()
         self.apply_disabled(attrs)
+
         return tag(
             (
                 tags.option(
                     type,
                     value=type
                 )
-                for type in self.incident.incident_types
+                for type in incident_types
             ),
             **attrs
         )
