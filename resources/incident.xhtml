@@ -27,13 +27,22 @@
 
       #incident_summary_label input { display: inline-block; }
 
-      #incident_rangers_label, #incident_types_label {
-        text-align: center;
+      table.list {
+        display: inline-block;
         width: 49%;
+        /*float: left;*/
+        border: solid 1px #c6c9cc;
+        margin: 4px;
       }
-      #incident_rangers_label select, #incident_types_label select {
-        width: 100%;
+      caption.list {
+        margin: 4px;
+        text-align: center;
       }
+      th.list, td.list {
+        padding: 4px;
+        border: 0px;
+      }
+      tr.list:hover { background-color: #FFFF00; }
 
       #incident_report_text { border: 1px solid #c6c9cc; }
 
@@ -103,16 +112,17 @@
         <input type="text" name="summary" placeholder="Summary..." inputmode="latin-prose" t:render="incident_summary_input" form="incident_summary_form" onchange="this.form.submit()" />
       </label>
 
-      <form method="POST" id="incident_rangers_form"></form>
-      <form method="POST" id="incident_types_form"></form>
-      <label id="incident_rangers_label">
-        Rangers<br />
-        <select name="rangers" multiple="" t:render="rangers_options" form="incident_rangers_form" />
-      </label>
-      <label id="incident_types_label">
-        Incident Types<br />
-        <select name="rangers" multiple="" t:render="types_options" />
-      </label>
+      <div class="lists">
+        <table class="list" id="incident_rangers_table">
+          <caption class="list">Rangers</caption>
+          <tr class="list" t:render="ranger_row"><td class="list"><t:slot name="ranger" /></td></tr>
+        </table>
+
+        <table class="list" id="incident_types_table">
+          <caption class="list">Incident Types</caption>
+          <tr class="list" t:render="incident_type_row"><td class="list"><t:slot name="incident_type" /></td></tr>
+        </table>
+      </div>
 
       <form method="POST" id="incident_location_name_form"></form>
       <form method="POST" id="incident_location_radial_form"></form>

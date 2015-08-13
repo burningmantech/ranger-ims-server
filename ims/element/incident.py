@@ -93,45 +93,21 @@ class IncidentElement(BaseElement):
 
 
     @renderer
-    def rangers_options(self, request, tag):
-        rangers = self.incident.rangers
-        if rangers is None:
-            rangers = ()
+    def ranger_row(self, request, tag):
+        if self.incident.rangers is None:
+            return
 
-        attrs = dict()
-        self.apply_disabled(attrs)
-
-        return tag(
-            (
-                tags.option(
-                    u"{ranger.handle} ({ranger.name})".format(ranger=ranger),
-                    value=ranger.handle
-                )
-                for ranger in rangers
-            ),
-            **attrs
-        )
+        for ranger in self.incident.rangers:
+            yield tag.clone().fillSlots(ranger=ranger.handle)
 
 
     @renderer
-    def types_options(self, request, tag):
-        incident_types = self.incident.incident_types
-        if incident_types is None:
-            incident_types = ()
+    def incident_type_row(self, request, tag):
+        if self.incident.incident_types is None:
+            return
 
-        attrs = dict()
-        self.apply_disabled(attrs)
-
-        return tag(
-            (
-                tags.option(
-                    type,
-                    value=type
-                )
-                for type in incident_types
-            ),
-            **attrs
-        )
+        for incident_type in self.incident.incident_types:
+            yield tag.clone().fillSlots(incident_type=incident_type)
 
 
     @renderer
