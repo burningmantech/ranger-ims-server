@@ -253,3 +253,5 @@ class Configuration (object):
             with locationsFile.open() as jsonStrem:
                 json = json_from_file(jsonStrem)
             self.locationsJSONText = json_as_text(json)
+        else:
+            self.locationsJSONText = json_as_text([])
