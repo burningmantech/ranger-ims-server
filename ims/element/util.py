@@ -258,6 +258,16 @@ def incidents_as_table(incidents, tz, caption=None, id=None):
 
         def rows():
             for incident in sorted(incidents):
+                if incident.rangers is None:
+                    rangers = []
+                else:
+                    rangers = incident.rangers
+
+                if incident.incident_types is None:
+                    incident_types = []
+                else:
+                    incident_types = incident.incident_types
+
                 try:
                     yield tags.tr(
                         tags.td(
@@ -284,7 +294,7 @@ def incidents_as_table(incidents, tz, caption=None, id=None):
                             u"{0}".format(
                                 u", ".join(
                                     ranger.handle
-                                    for ranger in incident.rangers
+                                    for ranger in rangers
                                 )
                             ),
                             **attrs_rangers
@@ -297,7 +307,7 @@ def incidents_as_table(incidents, tz, caption=None, id=None):
                         ),
                         tags.td(
                             u"{0}".format(
-                                u", ".join(incident.incident_types)
+                                u", ".join(incident_types)
                             ),
                             **attrs_types
                         ),
