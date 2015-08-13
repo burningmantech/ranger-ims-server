@@ -24,6 +24,7 @@ __all__ = [
 
 from twisted.python import log
 from twisted.python.zippath import ZipArchive
+from zipfile import BadZipfile
 from twisted.internet.defer import Deferred, succeed
 from twisted.web import http
 from twisted.web.static import File
@@ -680,7 +681,11 @@ class IncidentManagementSystem(object):
             d = http_download(archivePath, url)
 
         def readFromArchive(_):
-            filePath = ZipArchive(archivePath.path)
+            try:
+                filePath = ZipArchive(archivePath.path)
+            except BadZipfile:
+                log.msg("Unable to open zip archive: {archive.path}".format(archive=archivePath))
+                return None
             for segment in segments:
                 filePath = filePath.child(segment)
             return filePath.getContent()
