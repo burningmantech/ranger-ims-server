@@ -539,7 +539,7 @@ class IncidentManagementSystem(object):
         return self.cachedZipResource(
             request=request,
             name="baseline",
-            url="http://baselinecss.com/download/baseline.zip",
+            url="http://stephanecurzi.me/baselinecss.2009/download/baseline.zip",
             segments=("baseline.0.5.3", "css", container, name)
         )
 
