@@ -709,8 +709,8 @@ class RodGarettAddress(Address):
             raise ValueError("Concentric street number may not be negative")
 
         if radialHour is not None:
-            if not 2 <= radialHour <= 10:
-                raise ValueError("Radial hour must be 2-10")
+            if not 1 <= radialHour <= 12:
+                raise ValueError("Radial hour must be 1-12")
 
         if radialMinute is not None:
             if not 0 <= radialMinute < 60:
@@ -723,10 +723,44 @@ class RodGarettAddress(Address):
 
 
     def __str__(self):
+        if self.concentric is None:
+            concentric = u""
+        else:
+            concentric = self.concentric
+
+        if self.radialHour is None and self.radialMinute is None:
+            radial = u""
+        else:
+            if self.radialHour is None:
+                radialHour = u"?"
+            else:
+                radialHour = self.radialHour
+
+            if self.radialMinute is None:
+                radialMinute = u"?"
+            else:
+                radialMinute = self.radialMinute
+            radial = u"{}:{}".format(radialHour, radialMinute)
+
+        if not concentric or not radial:
+            at = u""
+        else:
+            at = u"@"
+
+        if self.description is None:
+            description = u""
+        else:
+            description = u", {}".format(self.description)
+
         return (
-            u"{self.concentric}@{self.radialHour}:{self.radialMinute} "
-            u"{self.description}"
-            .format(self=self).encode("utf-8")
+            u"{concentric}{at}{radial}{description}"
+            .format(
+                self=self,
+                concentric=concentric,
+                at=at,
+                radial=radial,
+                description=description,
+            ).encode("utf-8")
         )
 
 

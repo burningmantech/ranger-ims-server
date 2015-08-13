@@ -112,6 +112,9 @@ def edit_incident(incident, edits, author):
         """
         old_values, new_values = old_new(attribute)
 
+        if old_values is None:
+            old_values = frozenset()
+
         if new_values is None:
             # No edit given for this attribute
             return old_values

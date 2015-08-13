@@ -30,10 +30,10 @@ from twisted.web.static import File
 
 from klein import Klein
 
-from .data import InvalidDataError
+from .data import Incident, InvalidDataError
 from .json import JSON, json_as_text, json_from_file
 from .json import (
-    ranger_as_json, location_as_json, incident_as_json, incident_from_json
+    ranger_as_json, incident_as_json, incident_from_json
 )
 from .edit import edit_incident
 from .sauce import url_for, set_response_header
@@ -199,13 +199,8 @@ class IncidentManagementSystem(object):
 
 
     def data_locations(self):
-        locations = self.storage.locations()
-        return succeed((
-            json_as_text(
-                [location_as_json(location) for location in locations]
-            ),
-            hash(locations)
-        ))
+        text = self.config.locationsJSONText
+        return succeed((text, hash(text)))
 
 
     @app.route("/incidents", methods=("GET",))
@@ -361,10 +356,17 @@ class IncidentManagementSystem(object):
                     .format(incident.created, now)
                 )
 
-        # Edit report entries to add author
-        if incident.report_entries is not None:
-            for entry in incident.report_entries:
-                entry.author = author
+        # Apply this new incident as changes to an empty incident so that
+        # system report entries get added.
+        # It also adds the author, so we don't need to do it here.
+        incident = edit_incident(
+            Incident(
+                number=incident.number,    # Must match
+                created=incident.created,  # Must match
+            ),
+            incident,
+            author
+        )
 
         self.storage.write_incident(incident)
 

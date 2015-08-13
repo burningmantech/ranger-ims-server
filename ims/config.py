@@ -36,7 +36,7 @@ from twisted.python.filepath import FilePath
 
 from .tz import FixedOffsetTimeZone
 from .data import IncidentType
-from .json import json_as_text
+from .json import json_as_text, json_from_file
 from .dms import DutyManagementSystem
 from .store import Storage, ReadOnlyStorage
 
@@ -245,3 +245,11 @@ class Configuration (object):
         self.storage = storage
 
         self.IncidentTypesJSON = json_as_text(self.IncidentTypes)
+
+
+        locationsFile = self.configFile.sibling("locations.json")
+
+        if locationsFile.isfile():
+            with locationsFile.open() as jsonStrem:
+                json = json_from_file(jsonStrem)
+            self.locationsJSONText = json_as_text(json)
