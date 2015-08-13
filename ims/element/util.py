@@ -132,8 +132,10 @@ def edits_from_query(author, number, request):
 
     def radialHourMinute(radial):
         if radial:
-            hour, minute = radial.split(":")
-            print "GOT", hour, minute
+            try:
+                hour, minute = radial.split(":")
+            except ValueError:
+                return (None, None)
             return (int(hour), int(minute))
         else:
             return (None, None)
