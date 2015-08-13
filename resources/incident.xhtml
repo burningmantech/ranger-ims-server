@@ -139,22 +139,30 @@
           <input id="incident_location_radial" type="time" name="location_radial" size="5" min="2:00" max="10:00" form="incident_location_radial_form" onchange="this.form.submit()" />
           @
           <select id="incident_location_concentric" name="location_concentric" form="incident_location_concentric_form" onchange="this.form.submit()">
-            <option value=""   t:render="location_concentric_option">         </option>
-            <option value="0"  t:render="location_concentric_option">Esplanade</option>
-            <option value="1"  t:render="location_concentric_option">A Street </option>
-            <option value="2"  t:render="location_concentric_option">B Street </option>
-            <option value="3"  t:render="location_concentric_option">C Street </option>
-            <option value="4"  t:render="location_concentric_option">D Street </option>
-            <option value="5"  t:render="location_concentric_option">E Street </option>
-            <option value="6"  t:render="location_concentric_option">F Street </option>
-            <option value="7"  t:render="location_concentric_option">G Street </option>
-            <option value="8"  t:render="location_concentric_option">H Street </option>
-            <option value="9"  t:render="location_concentric_option">I Street </option>
-            <option value="10" t:render="location_concentric_option">J Street </option>
-            <option value="11" t:render="location_concentric_option">K Street </option>
-            <option value="12" t:render="location_concentric_option">L Street </option>
-            <option value="13" t:render="location_concentric_option">M Street </option>
-            <option value="14" t:render="location_concentric_option">N Street </option>
+            <option value=""    t:render="location_concentric_option">                  </option>
+            <option value="0"   t:render="location_concentric_option">Esplanade         </option>
+            <option value="1"   t:render="location_concentric_option">Arcade            </option>
+            <option value="2"   t:render="location_concentric_option">Ballyhoo          </option>
+            <option value="3"   t:render="location_concentric_option">Carny             </option>
+            <option value="4"   t:render="location_concentric_option">Donniker          </option>
+            <option value="5"   t:render="location_concentric_option">Ersatz            </option>
+            <option value="6"   t:render="location_concentric_option">Freak Show        </option>
+            <option value="7"   t:render="location_concentric_option">Geek              </option>
+            <option value="8"   t:render="location_concentric_option">Hanky Panky       </option>
+            <option value="9"   t:render="location_concentric_option">Illusion          </option>
+            <option value="10"  t:render="location_concentric_option">Jolly             </option>
+            <option value="11"  t:render="location_concentric_option">Kook              </option>
+            <option value="12"  t:render="location_concentric_option">Laffing Sal       </option>
+            <option value="300" t:render="location_concentric_option">3:00 Plaza        </option>
+            <option value="305" t:render="location_concentric_option">3:00 Public Plaza </option>
+            <option value="430" t:render="location_concentric_option">4:30 Plaza        </option>
+            <option value="600" t:render="location_concentric_option">Center Camp Plaza </option>
+            <option value="601" t:render="location_concentric_option">Route 66          </option>
+            <option value="602" t:render="location_concentric_option">Rod's Road        </option>
+            <option value="605" t:render="location_concentric_option">6:00 Public Plaza </option>
+            <option value="730" t:render="location_concentric_option">7:30 Plaza        </option>
+            <option value="900" t:render="location_concentric_option">9:00 Plaza        </option>
+            <option value="905" t:render="location_concentric_option">9:00 Public Plaza </option>
           </select>
 
           <input id="incident_location_description" type="text" name="location_description" placeholder="Description... eg: red flags, yurts" inputmode="latin" t:render="location_description_input" form="incident_location_description_form" onchange="this.form.submit()" />
