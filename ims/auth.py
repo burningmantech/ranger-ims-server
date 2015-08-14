@@ -31,11 +31,15 @@ from twisted.cred.credentials import Anonymous as AnonymousCredentials
 from twisted.cred.error import (
     LoginFailed as LoginFailedError, Unauthorized as UnauthorizedError
 )
+from twisted.web.iweb import IRequest
 from twisted.web.http import UNAUTHORIZED
-from twisted.web.server import Session
+from twisted.web.server import Session, NOT_DONE_YET
 from twisted.web.resource import IResource, Resource, ErrorPage
 from twisted.web.guard import DigestCredentialFactory
 from twisted.web.util import DeferredResource
+from twisted.web.template import flattenString
+
+from ims.element.login import LoginPageElement
 
 
 
@@ -43,18 +47,31 @@ class HTMLFormLoginResource(Resource):
 
     isLeaf = True
 
-    def __init__(self):
+    def __init__(self, ims):
         Resource.__init__(self)
-        self._didLogIn = False
+        self._ims = ims
+        self._didFinish = False
 
 
     def _requestFinished(self, reason):
-        self._didLogIn = True
+        self._didFinish = True
 
 
     def render(self, request):
+        request.notifyFinish().addErrback(self._requestFinished)
+
+        if self._didFinish:
+            return None
+
         if request.method == b"GET":
-            return "Log In!"
+            def write(body):
+                request.write(body)
+                request.finish()
+
+            d = flattenString(request, LoginPageElement(self._ims))
+            d.addCallback(write)
+
+            return NOT_DONE_YET
 
         if request.method == b"POST":
             return "Authenticate!"
@@ -84,11 +101,13 @@ class HTMLFormSessionWrapper(object):
             return session.avatar
         else:
             credentials = AnonymousCredentials()
-            if request.method == b"POST":
-                for credentialFactory in self._credentialFactories:
-                    if IHTMLFormCredentialFactory.implementedBy(credentialFactory):
-                        credentials = credentialFactory.decode(request)
-                        break
+            # if request.method == b"POST":
+            #     for credentialFactory in self._credentialFactories:
+            #         if IHTMLFormCredentialFactory.implementedBy(
+            #             credentialFactory
+            #         ):
+            #             credentials = credentialFactory.decode(request)
+            #             break
             return DeferredResource(self._login(credentials, request))
 
 
@@ -98,12 +117,13 @@ class HTMLFormSessionWrapper(object):
 
         def loginFailed(f):
             if f.check(UnauthorizedError, LoginFailedError):
-                return HTMLFormLoginResource()
+                return HTMLFormLoginResource(self._portal.realm.ims)
             else:
-                log.failure("Authentication error", failure=f)
+                self.log.failure("Authentication error", failure=f)
                 return ErrorPage(500, "Internal authentication error", None)
 
-        d = self._portal.login(credentials, request, IResource)  # Pass request as mind
+        # Pass request along as mind
+        d = self._portal.login(credentials, request, IResource)
         d.addCallbacks(loginSucceeded, loginFailed)
         return d
 
@@ -125,34 +145,45 @@ class HTMLFormSessionWrapper(object):
 @implementer(IRealm)
 class Realm(object):
 
-    def __init__(self, kleinFactory, timeout=Session.sessionTimeout, logout=lambda: None):
+    def __init__(
+        self, kleinFactory, timeout=Session.sessionTimeout, logout=lambda: None
+    ):
         self._kleinFactory = kleinFactory
         self._timeout = timeout
         self._logout = logout
 
 
+    @property
+    def ims(self):
+        if not hasattr(self, "_ims"):
+            self._ims = self._kleinFactory()
+        return self._ims
+
+
     def requestAvatar(self, avatarId, mind, *interfaces):
-        if IResource in interfaces:
-            request = IRequest(mind)
-            session = request.getSession()
+        if IResource not in interfaces:
+            raise NotImplementedError(
+                "No known interfaces in {}".format(interfaces)
+            )
 
-            if avatarId is ANONYMOUS:
-                return (IResource, self.anonymousRoot(), self._logout)
-            else:
-                if not hasattr(session, "avatar"):
-                    kleinContainer = self._kleinFactory()
-                    kleinContainer.avatarId = avatarId
-                    session.sessionTimeout = self._timeout
-                    session.avatar = kleinContainer.app.resource()
+        request = IRequest(mind)
+        session = request.getSession()
 
-                    def expired():
-                        del(session.avatar)
+        if avatarId is ANONYMOUS:
+            return (IResource, self.anonymousRoot(), self._logout)
+        else:
+            if not hasattr(session, "avatar"):
+                kleinContainer = self.ims
+                kleinContainer.avatarId = avatarId
+                session.sessionTimeout = self._timeout
+                session.avatar = kleinContainer.app.resource()
 
-                    session.notifyOnExpire(expired)
+                def expired():
+                    del(session.avatar)
 
-                return (IResource, session.avatar, self._logout)
+                session.notifyOnExpire(expired)
 
-        raise NotImplementedError("No known interfaces: {}".format(interfaces))
+            return (IResource, session.avatar, self._logout)
 
 
 
@@ -160,7 +191,7 @@ def guard(kleinFactory, realmName, checkers):
     portal = Portal(Realm(kleinFactory), checkers)
 
     wrapper = HTMLFormSessionWrapper(
-        portal, DigestCredentialFactory("md5", realmName)
+        portal, (DigestCredentialFactory("md5", realmName),)
     )
 
     return wrapper
