@@ -22,9 +22,10 @@ __all__ = [
     "IncidentManagementSystem",
 ]
 
-from twisted.python import log
-from twisted.python.zippath import ZipArchive
 from zipfile import BadZipfile
+
+from twisted.logger import Logger
+from twisted.python.zippath import ZipArchive
 from twisted.internet.defer import Deferred, succeed
 from twisted.web import http
 from twisted.web.static import File
@@ -59,6 +60,7 @@ class IncidentManagementSystem(object):
     """
     Incident Management System
     """
+    log = Logger()
     app = Klein()
 
     # protocol_version = "0.0"
@@ -295,14 +297,13 @@ class IncidentManagementSystem(object):
         #
         self.storage.write_incident(edited)
 
-        log.msg(
-            u"User {} edited incident #{} via JSON"
-            .format(author, number)
+        self.log.info(
+            u"User {author} edited incident #{number} via JSON",
+            author=author, number=number
         )
-        if self.config.Debug:
-            log.msg(u"Original: {}".format(incident_as_json(incident)))
-            log.msg(u"Changes: {}".format(edits_json))
-            log.msg(u"Edited: {}".format(incident_as_json(edited)))
+        self.log.debug(u"Original: {json}", json=incident_as_json(incident))
+        self.log.debug(u"Changes: {json}", json=edits_json)
+        self.log.debug(u"Edited: {json}", json=incident_as_json(edited))
 
         return succeed((u"", None))
 
@@ -349,7 +350,10 @@ class IncidentManagementSystem(object):
                         created = entry.created
 
             incident.created = created
-            log.msg(incident.created)
+            self.log.info(
+                "Adding created time {created} to new incident #{number}",
+                created=incident.created, number=number
+            )
         else:
             if incident.created > now:
                 raise InvalidDataError(
@@ -371,12 +375,11 @@ class IncidentManagementSystem(object):
 
         self.storage.write_incident(incident)
 
-        log.msg(
-            u"User {} created new incident #{} via JSON"
-            .format(author, number)
+        self.log.info(
+            u"User {author} created new incident #{number} via JSON",
+            author=author, number=number
         )
-        if self.config.Debug:
-            log.msg(u"New: {}".format(incident_as_json(incident)))
+        self.log.debug(u"New: {json}", json=incident_as_json(incident))
 
         return succeed((u"", None))
 
@@ -413,14 +416,15 @@ class IncidentManagementSystem(object):
             incident = self.storage.read_incident_with_number(number)
             edited = edit_incident(incident, edits, author)
 
-            log.msg(
-                u"User {} edited incident #{} via web"
-                .format(author, number)
+            self.log.info(
+                u"User {author} edited incident #{number} via web",
+                author=author, number=number
             )
-            if self.config.Debug:
-                log.msg(u"Original: {}".format(incident_as_json(incident)))
-                log.msg(u"Changes: {}".format(incident_as_json(edits)))
-                log.msg(u"Edited: {}".format(incident_as_json(edited)))
+            self.log.debug(
+                u"Original: {json}", json=incident_as_json(incident)
+            )
+            self.log.debug(u"Changes: {json}", json=incident_as_json(edits))
+            self.log.debug(u"Edited: {json}", json=incident_as_json(edited))
 
             self.storage.write_incident(edited)
 
@@ -540,7 +544,10 @@ class IncidentManagementSystem(object):
         return self.cachedZipResource(
             request=request,
             name="baseline",
-            url="http://stephanecurzi.me/baselinecss.2009/download/baseline.zip",
+            url=(
+                "http://stephanecurzi.me/"
+                "baselinecss.2009/download/baseline.zip"
+            ),
             segments=("baseline.0.5.3", "css", container, name)
         )
 
@@ -684,7 +691,10 @@ class IncidentManagementSystem(object):
             try:
                 filePath = ZipArchive(archivePath.path)
             except BadZipfile:
-                log.msg("Unable to open zip archive: {archive.path}".format(archive=archivePath))
+                self.log.info(
+                    "Unable to open zip archive: {archive.path}",
+                    archive=archivePath
+                )
                 return None
             for segment in segments:
                 filePath = filePath.child(segment)

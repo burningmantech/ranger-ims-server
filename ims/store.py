@@ -27,7 +27,7 @@ __all__ = [
 
 from hashlib import sha1 as etag_hash
 
-from twisted.python import log
+from twisted.logger import Logger
 from twisted.python.filepath import UnlistableError
 from .data import IncidentState, InvalidDataError
 from .json import (
@@ -54,12 +54,14 @@ class ReadOnlyStorage(object):
     """
     Back-end storage
     """
+    log = Logger()
+
 
     def __init__(self, path):
         self.path = path
         self._incident_etags = {}
         self._locations = None
-        log.msg("New data store: {0}".format(self))
+        self.log.info("New data store: {store}", store=self)
 
 
     def __repr__(self):
@@ -98,7 +100,10 @@ class ReadOnlyStorage(object):
         try:
             incident.validate()
         except InvalidDataError as e:
-            log.err("Unable to read incident #{}: {}".format(number, e))
+            self.log.error(
+                "Unable to read incident #{number}: {error}",
+                number=number, error=e
+            )
             raise
 
         return incident
@@ -129,9 +134,9 @@ class ReadOnlyStorage(object):
                 try:
                     number = int(name)
                 except ValueError:
-                    log.err(
-                        "Invalid filename in data store: {0}"
-                        .format(name)
+                    self.log.error(
+                        "Invalid filename in data store: {name}",
+                        name=name
                     )
                     continue
 
@@ -295,14 +300,15 @@ class ReadOnlyStorage(object):
 
 
 class Storage(ReadOnlyStorage):
+    log = Logger()
+
     def provision(self):
         if hasattr(self, "_provisioned"):
             return
 
         if not self.path.exists():
-            log.msg(
-                "Creating storage directory: {0}"
-                .format(self.path)
+            self.log.info(
+                "Creating storage directory: {path}", path=self.path.path
             )
             self.path.createDirectory()
             self.path.restat()

@@ -31,8 +31,8 @@ from time import tzset, time
 
 from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 
-from twisted.python import log as txlog
 from twisted.python.filepath import FilePath
+from twisted.logger import Logger
 
 from .tz import FixedOffsetTimeZone
 from .data import IncidentType
@@ -42,22 +42,10 @@ from .store import Storage, ReadOnlyStorage
 
 
 
-if False:
-    class PrintLogger(object):
-        def msg(self, text):
-            print(text)
-            txlog.msg(text)
-
-        def err(self, text):
-            print(text)
-            txlog.err(text)
-
-    log = PrintLogger()
-else:
-    log = txlog
-
-
 class Configuration (object):
+    log = Logger()
+
+
     def __init__(self, configFile):
         self.configFile = configFile
         self.load()
@@ -92,9 +80,12 @@ class Configuration (object):
 
         def readConfig(configFile):
             for okFile in configParser.read((configFile.path,)):
-                log.msg("Read configuration file: {0}".format(configFile.path))
+                self.log.info(
+                    "Read configuration file: {configFile.path}",
+                    configFile=configFile
+                )
             else:
-                log.msg("No configuration file read.")
+                self.log.info("No configuration file read.")
 
         def valueFromConfig(section, option, default):
             try:
@@ -130,40 +121,45 @@ class Configuration (object):
         readConfig(self.configFile)
 
         self.ServerRoot = filePathFromConfig(
-            "Core", "ServerRoot",
-            self.configFile.parent().parent(), ()
+            "Core", "ServerRoot", self.configFile.parent().parent(), ()
         )
-        log.msg("Server root: {0}".format(self.ServerRoot.path))
+        self.log.info(
+            "Server root: {serverRoot.path}", serverRoot=self.ServerRoot
+        )
 
         self.ConfigRoot = filePathFromConfig(
-            "Core", "ConfigRoot",
-            self.ServerRoot, ("conf",)
+            "Core", "ConfigRoot", self.ServerRoot, ("conf",)
         )
-        log.msg("Config root: {0}".format(self.ConfigRoot.path))
+        self.log.info(
+            "Config root: {configRoot.path}", configRoot=self.ConfigRoot
+        )
 
         self.UserDB = filePathFromConfig(
-            "Core", "UserDB",
-            self.ConfigRoot, ("users.pwdb",)
+            "Core", "UserDB", self.ConfigRoot, ("users.pwdb",)
         )
-        log.msg("User DB: {0}".format(self.UserDB.path))
+        self.log.info("User DB: {userDB.path}", userDB=self.UserDB)
 
         self.DataRoot = filePathFromConfig(
-            "Core", "DataRoot",
-            self.ServerRoot, ("data",)
+            "Core", "DataRoot", self.ServerRoot, ("data",)
         )
-        log.msg("Data root: {0}".format(self.DataRoot.path))
+        self.log.info(
+            "Data root: {dataRoot.path}", dataRoot=self.DataRoot
+        )
 
         self.Resources = filePathFromConfig(
-            "Core", "Resources",
-            self.ServerRoot, ("resources",)
+            "Core", "Resources", self.ServerRoot, ("resources",)
         )
-        log.msg("Resources: {0}".format(self.Resources.path))
+        self.log.info(
+            "Resources: {resources.path}", resources=self.Resources
+        )
 
         self.CachedResources = filePathFromConfig(
-            "Core", "CachedResources",
-            self.ServerRoot, ("cached",)
+            "Core", "CachedResources", self.ServerRoot, ("cached",)
         )
-        log.msg("CachedResources: {0}".format(self.CachedResources.path))
+        self.log.info(
+            "CachedResources: {cachedResources.path}",
+            cachedResources=self.CachedResources
+        )
 
         rejectClients = valueFromConfig("Core", "RejectClients", "")
         rejectClients = tuple([e for e in rejectClients.split("\n") if e])
@@ -173,7 +169,9 @@ class Configuration (object):
             regex_compile(e)
             for e in rejectClients
         ])
-        log.msg("RejectClients: {0}".format(self.RejectClients))
+        self.log.info(
+            "RejectClients: {rejectClients}", rejectClients=self.RejectClients
+        )
 
         timeZoneName = valueFromConfig(
             "Core", "TimeZone", "America/Los_Angeles"
@@ -187,12 +185,12 @@ class Configuration (object):
         self.ReadOnly = (
             valueFromConfig("Core", "ReadOnly", "false") == "true"
         )
-        log.msg("ReadOnly: {0}".format(self.ReadOnly))
+        self.log.info("ReadOnly: {readOnly}", readOnly=self.ReadOnly)
 
         self.Debug = (
             valueFromConfig("Core", "Debug", "false") == "true"
         )
-        log.msg("Debug: {0}".format(self.Debug))
+        self.log.info("Debug: {debug}", debug=self.Debug)
 
         self.DMSHost     = valueFromConfig("DMS", "Hostname", None)
         self.DMSDatabase = valueFromConfig("DMS", "Database", None)

@@ -22,11 +22,13 @@ __all__ = [
     "http_download",
 ]
 
-from twisted.python import log
+from twisted.logger import Logger
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 from twisted.internet.protocol import Protocol
 from twisted.web.client import Agent, ResponseDone
+
+log = Logger()
 
 
 
@@ -49,7 +51,10 @@ def http_download(destination, url):
             else:
                 self.fin.errback(reason)
 
-    log.msg("Downloading from {0} to {1}".format(url, destination))
+    log.info(
+        "Downloading from {url} to {destination}",
+        url=url, destination=destination
+    )
 
     agent = Agent(reactor)
 

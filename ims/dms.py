@@ -29,7 +29,7 @@ from time import time
 # from datetime import time as Time
 
 # from twisted.python.constants import Values, ValueConstant
-from twisted.python import log
+from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.enterprise import adbapi
 
@@ -83,6 +83,8 @@ class DutyManagementSystem(object):
 
     This class connects to an external system to get data.
     """
+    log = Logger()
+
     personnel_cache_interval = 60 * 60 * 1  # 1 hour
 
 
@@ -151,9 +153,10 @@ class DutyManagementSystem(object):
                 #
                 # Ask the database for a list of personnel.
                 #
-                log.msg(
-                    "{0} Retrieving personnel from Duty Management System..."
-                    .format(self)
+                self.log.info(
+                    "{dms} retrieving personnel from "
+                    "Duty Management System...",
+                    dms=self
                 )
 
                 results = yield self.dbpool.runQuery(

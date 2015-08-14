@@ -24,7 +24,7 @@ __all__ = [
 
 from datetime import timedelta as TimeDelta
 
-from twisted.python import log
+from twisted.logger import Logger
 from twisted.web.template import renderer
 
 from ..json import json_as_text
@@ -35,6 +35,9 @@ from .util import ignore_incident, ignore_entry
 
 
 class DailyReportElement(BaseElement):
+    log = Logger()
+
+
     def __init__(self, ims, template_name="report_daily"):
         BaseElement.__init__(self, ims, template_name, "Daily Report")
 
@@ -66,9 +69,9 @@ class DailyReportElement(BaseElement):
                         add_date(entry.created)
 
                 add_date(incident.created)
-                #add_date(incident.dispatched)
-                #add_date(incident.on_scene)
-                #add_date(incident.closed)
+                # add_date(incident.dispatched)
+                # add_date(incident.on_scene)
+                # add_date(incident.closed)
 
                 return dates
 
@@ -176,9 +179,9 @@ class DailyReportElement(BaseElement):
             unseen = incidents_by_type[incident_type] - seen
 
             if unseen:
-                log.msg(
-                    "ERROR: No date for some {0} incidents (!?): {1}"
-                    .format(incident_type, unseen)
+                self.log.error(
+                    "No date for some {incident_type} incidents: {unseen}",
+                    incident_type=incident_type, unseen=unseen
                 )
 
             rows.append(row)

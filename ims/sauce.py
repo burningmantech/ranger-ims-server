@@ -28,7 +28,7 @@ __all__ = [
 
 from functools import wraps
 
-from twisted.python import log
+from twisted.logger import Logger
 from twisted.python.constants import Values, ValueConstant
 from twisted.internet.defer import maybeDeferred
 from twisted.web import http
@@ -38,6 +38,8 @@ from klein.interfaces import IKleinRequest
 from .data import InvalidDataError
 from .store import NoSuchIncidentError
 from .dms import DatabaseError
+
+log = Logger()
 
 
 
@@ -112,7 +114,7 @@ def http_sauce(f):
                 return "No such incident.\n"
 
             if isinstance(f.value, InvalidDataError):
-                log.msg(f)
+                log.info("Bad request: {f}", failure=f, request=request)
                 request.setResponseCode(http.BAD_REQUEST)
                 set_response_header(
                     request, HeaderName.contentType, ContentType.plain
@@ -120,14 +122,14 @@ def http_sauce(f):
                 return "Invalid data: {0}\n".format(f.getErrorMessage())
 
             if isinstance(f.value, DatabaseError):
-                log.msg(f)
+                log.info("Database error: {f}", failure=f, request=request)
                 request.setResponseCode(http.INTERNAL_SERVER_ERROR)
                 set_response_header(
                     request, HeaderName.contentType, ContentType.plain
                 )
                 return "Database error."
 
-            log.err(f)
+            log.failure("Internal error", failure=f)
             request.setResponseCode(http.INTERNAL_SERVER_ERROR)
             set_response_header(
                 request, HeaderName.contentType, ContentType.plain

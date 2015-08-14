@@ -33,7 +33,7 @@ __all__ = [
 
 from datetime import timedelta as TimeDelta
 
-from twisted.python import log
+from twisted.logger import Logger
 from twisted.web.template import tags
 
 from ..tz import utcNow
@@ -41,6 +41,8 @@ from ..data import (
     IncidentState, IncidentType, Incident, ReportEntry,
     Location, RodGarettAddress,
 )
+
+log = Logger()
 
 
 
@@ -321,12 +323,11 @@ def incidents_as_table(incidents, tz, caption=None, id=None):
                         ),
                         **attrs_incident
                     )
-                except Exception as e:
-                    log.msg(
-                        "Unable to render incident #{} in dispatch queue: {}"
-                        .format(incident.number, e)
+                except Exception:
+                    log.failure(
+                        "Unable to render incident #{incident.number} "
+                        "in dispatch queue", incident=incident
                     )
-                    log.err()
                     yield tags.tr(
                         tags.td(
                             u"{0}".format(incident.number), **attrs_number
