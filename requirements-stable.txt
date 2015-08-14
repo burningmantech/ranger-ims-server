@@ -1,23 +1,23 @@
 # Klein
-Werkzeug==0.9.6
-klein==0.2.3
+Werkzeug==0.10.4
+klein==15.0.0
 
 # Twisted
-zope.interface==4.1.1
-Twisted==14.0.0
+zope.interface==4.1.2
+Twisted==15.3.0
 
 # SSL
-pyOpenSSL==0.14
-six==1.7.2
-cryptography==0.4
-cffi==0.8.2
-pycparser==2.10
+pyOpenSSL==0.15.1
+six==1.9.0
+cryptography==1.0
+cffi==1.1.2
+pycparser==2.14
 
 # SSL that works
-service_identity==1.0.0
-pyasn1==0.1.7
-pyasn1-modules==0.0.5
-characteristic==0.1.0
+service_identity==14.0.0
+pyasn1==0.1.8
+pyasn1-modules==0.0.7
+characteristic==14.3.0
 
 # MySQL
-mysql-connector-python==1.2.2
+mysql-connector-python==1.2.3  # 2.0.4
