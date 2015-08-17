@@ -57,6 +57,10 @@ class HTMLFormLoginResource(Resource):
         self._didFinish = True
 
 
+    def getAuthToken(self, username, password):
+        return None
+
+
     def render(self, request):
         request.notifyFinish().addErrback(self._requestFinished)
 
@@ -74,11 +78,20 @@ class HTMLFormLoginResource(Resource):
             return NOT_DONE_YET
 
         if request.method == b"POST":
-            return "Authenticate!"
+            try:
+                token = self.getAuthToken(
+                    request.args["username"],
+                    request.args["password"],
+                )
+            except KeyError:
+                token = None
+
+            if token is not None:
+                raise NotImplementedError()
 
         request.setResponseCode(UNAUTHORIZED)
 
-        return ""
+        return "Unauthorized"
 
 
 
