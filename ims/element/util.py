@@ -260,6 +260,16 @@ def incidents_as_table(incidents, tz, caption=None, id=None):
 
         def rows():
             for incident in sorted(incidents):
+                if incident.state is None:
+                    state = IncidentState.new
+                else:
+                    state = incident.state
+
+                if incident.priority is None:
+                    priority = 3
+                else:
+                    priority = incident.priority
+
                 if incident.rangers is None:
                     rangers = []
                 else:
@@ -277,7 +287,7 @@ def incidents_as_table(incidents, tz, caption=None, id=None):
                             **attrs_number
                         ),
                         tags.td(
-                            u"{0}".format(priority_name(incident.priority)),
+                            u"{0}".format(priority_name(priority)),
                             **attrs_priority
                         ),
                         tags.td(
@@ -288,7 +298,7 @@ def incidents_as_table(incidents, tz, caption=None, id=None):
                         ),
                         tags.td(
                             u"{0}".format(
-                                IncidentState.describe(incident.state)
+                                IncidentState.describe(state)
                             ),
                             **attrs_number
                         ),
