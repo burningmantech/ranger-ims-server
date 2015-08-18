@@ -41,7 +41,12 @@ from twisted.web.resource import IResource, Resource, ErrorPage
 from twisted.web.util import DeferredResource
 from twisted.web.template import flattenString
 
-from ims.element.login import LoginPageElement
+from .protocol import(
+    NoAccessIncidentManagementSystem,
+    # ReadOnlyIncidentManagementSystem,
+    ReadWriteIncidentManagementSystem,
+)
+from .element.login import LoginPageElement
 
 
 
@@ -137,7 +142,9 @@ class HTMLFormSessionWrapper(object):
 
         def loginFailed(f):
             if f.check(UnauthorizedError, LoginFailedError):
-                return HTMLFormLoginResource(self._portal.realm.ims)
+                config = self._portal.realm.config
+                ims = NoAccessIncidentManagementSystem(config)
+                return HTMLFormLoginResource(ims)
             else:
                 self.log.failure("Authentication error", failure=f)
                 return ErrorPage(500, "Internal authentication error", None)
@@ -166,18 +173,11 @@ class HTMLFormSessionWrapper(object):
 class Realm(object):
 
     def __init__(
-        self, kleinFactory, timeout=Session.sessionTimeout, logout=lambda: None
+        self, config, timeout=Session.sessionTimeout, logout=lambda: None
     ):
-        self._kleinFactory = kleinFactory
-        self._timeout = timeout
-        self._logout = logout
-
-
-    @property
-    def ims(self):
-        if not hasattr(self, "_ims"):
-            self._ims = self._kleinFactory()
-        return self._ims
+        self.config  = config
+        self.timeout = timeout
+        self.logout  = logout
 
 
     def requestAvatar(self, avatarId, mind, *interfaces):
@@ -196,10 +196,10 @@ class Realm(object):
             return (IResource, self.anonymousRoot(), logout)
         else:
             if not hasattr(session, "avatar"):
-                kleinContainer = self.ims
-                kleinContainer.avatarId = avatarId
-                session.sessionTimeout = self._timeout
-                session.avatar = kleinContainer.app.resource()
+                ims = ReadWriteIncidentManagementSystem(self.config)
+                ims.avatarId = avatarId
+                session.sessionTimeout = self.timeout
+                session.avatar = ims.app.resource()
 
                 def expired():
                     del(session.avatar)
@@ -210,6 +210,6 @@ class Realm(object):
 
 
 
-def guard(kleinFactory, realmName, checkers):
-    portal = Portal(Realm(kleinFactory), checkers)
+def guard(config, realmName, checkers):
+    portal = Portal(Realm(config), checkers)
     return HTMLFormSessionWrapper(portal, (HTMLFormCredentialFactory(),))
