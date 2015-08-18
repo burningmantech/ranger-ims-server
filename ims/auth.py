@@ -41,6 +41,7 @@ from twisted.web.resource import IResource, Resource, ErrorPage
 from twisted.web.util import DeferredResource
 from twisted.web.template import flattenString
 
+from .json import json_from_text
 from .protocol import(
     NoAccessIncidentManagementSystem,
     # ReadOnlyIncidentManagementSystem,
@@ -59,13 +60,37 @@ class IHTMLFormCredentialFactory(Interface):
 @implementer(IHTMLFormCredentialFactory)
 class HTMLFormCredentialFactory(object):
     def credentials(self, request):
-        try:
-            username = request.args["username"][0]
-            password = request.args["password"][0]
-        except (KeyError, IndexError):
-            raise LoginFailedError("No credentials")
+        for contentType in request.requestHeaders.getRawHeaders(
+            "content-type", []
+        ):
+            break
+        else:
+            contentType = None
 
-        return UsernamePasswordCredentials(username, password)
+        if contentType == "application/x-www-form-urlencoded":
+            try:
+                username = request.args["username"][0]
+                password = request.args["password"][0]
+            except (KeyError, IndexError):
+                username = password = None
+
+        elif contentType == "application/json":
+            body = request.content.read()
+            json = json_from_text(body)
+            print json
+            try:
+                username = json["username"]
+                password = json["password"]
+            except (KeyError, IndexError):
+                username = password = None
+
+        else:
+            username = password = None
+
+        if username is not None and password is not None:
+            return UsernamePasswordCredentials(username, password)
+        else:
+            return AnonymousCredentials()
 
 
 
@@ -91,6 +116,7 @@ class HTMLFormLoginResource(Resource):
 
         if request.method == b"GET":
             def write(body):
+                request.setHeader("x-form-auth-required", "username-password")
                 request.write(body)
                 request.finish()
 
