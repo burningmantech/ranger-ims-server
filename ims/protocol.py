@@ -116,21 +116,10 @@ class IncidentManagementSystem(object):
     @app.route("/logout", methods=("GET",))
     @http_sauce
     def logout(self, request):
-        def redirect(entity):
-            urlPath = request.URLPath()
-            url = "{url.scheme}://:logout@{url.netloc}/".format(
-                url=urlPath
-            )
-            set_response_header(
-                request, HeaderName.location, url
-            )
-            return entity
+        request.getSession().expire()
 
         d = self.data_logout()
-        d.addCallback(
-            self.add_headers, request=request, status=http.TEMPORARY_REDIRECT
-        )
-        d.addCallback(redirect)
+        d.addCallback(self.add_headers, request=request)
         return d
 
 
@@ -387,9 +376,9 @@ class IncidentManagementSystem(object):
         return succeed((u"", None))
 
 
-    # #
-    # # Web UI
-    # #
+    #
+    # Web UI
+    #
 
     @app.route("/queue", methods=("GET",))
     @app.route("/queue/", methods=("GET",))
