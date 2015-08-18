@@ -22,12 +22,15 @@ __all__ = [
     "guard",
 ]
 
-from zope.interface import implementer
+from zope.interface import implementer, Interface
 
 from twisted.logger import Logger
 from twisted.cred.portal import IRealm, Portal
 from twisted.cred.checkers import ANONYMOUS
-from twisted.cred.credentials import Anonymous as AnonymousCredentials
+from twisted.cred.credentials import (
+    Anonymous as AnonymousCredentials,
+    UsernamePassword as UsernamePasswordCredentials,
+)
 from twisted.cred.error import (
     LoginFailed as LoginFailedError, Unauthorized as UnauthorizedError
 )
@@ -35,11 +38,29 @@ from twisted.web.iweb import IRequest
 from twisted.web.http import UNAUTHORIZED
 from twisted.web.server import Session, NOT_DONE_YET
 from twisted.web.resource import IResource, Resource, ErrorPage
-from twisted.web.guard import DigestCredentialFactory
 from twisted.web.util import DeferredResource
 from twisted.web.template import flattenString
 
 from ims.element.login import LoginPageElement
+
+
+
+class IHTMLFormCredentialFactory(Interface):
+    def credentials(request):
+        pass
+
+
+
+@implementer(IHTMLFormCredentialFactory)
+class HTMLFormCredentialFactory(object):
+    def credentials(self, request):
+        try:
+            username = request.args["username"][0]
+            password = request.args["password"][0]
+        except (KeyError, IndexError):
+            raise LoginFailedError("No credentials")
+
+        return UsernamePasswordCredentials(username, password)
 
 
 
@@ -57,10 +78,6 @@ class HTMLFormLoginResource(Resource):
         self._didFinish = True
 
 
-    def getAuthToken(self, username, password):
-        return None
-
-
     def render(self, request):
         request.notifyFinish().addErrback(self._requestFinished)
 
@@ -76,18 +93,6 @@ class HTMLFormLoginResource(Resource):
             d.addCallback(write)
 
             return NOT_DONE_YET
-
-        if request.method == b"POST":
-            try:
-                token = self.getAuthToken(
-                    request.args["username"],
-                    request.args["password"],
-                )
-            except KeyError:
-                token = None
-
-            if token is not None:
-                raise NotImplementedError()
 
         request.setResponseCode(UNAUTHORIZED)
 
@@ -114,13 +119,15 @@ class HTMLFormSessionWrapper(object):
             return session.avatar
         else:
             credentials = AnonymousCredentials()
-            # if request.method == b"POST":
-            #     for credentialFactory in self._credentialFactories:
-            #         if IHTMLFormCredentialFactory.implementedBy(
-            #             credentialFactory
-            #         ):
-            #             credentials = credentialFactory.decode(request)
-            #             break
+            if request.method == b"POST":
+                for credentialFactory in self._credentialFactories:
+                    if IHTMLFormCredentialFactory.providedBy(
+                        credentialFactory
+                    ):
+                        credentials = credentialFactory.credentials(request)
+                        break
+
+            request.method = "GET"
             return DeferredResource(self._login(credentials, request))
 
 
@@ -202,30 +209,4 @@ class Realm(object):
 
 def guard(kleinFactory, realmName, checkers):
     portal = Portal(Realm(kleinFactory), checkers)
-
-    wrapper = HTMLFormSessionWrapper(
-        portal, (DigestCredentialFactory("md5", realmName),)
-    )
-
-    return wrapper
-
-    # class Realm(object):
-    #     implements(IRealm)
-
-    #     def requestAvatar(self, avatarId, mind, *interfaces):
-    #         if IResource not in interfaces:
-    #             raise NotImplementedError()
-
-    #         kleinContainer = kleinFactory()
-    #         kleinContainer.avatarId = avatarId
-
-    #         return (IResource, kleinContainer.app.resource(), lambda: None)
-
-    # portal = Portal(Realm(), checkers)
-
-    # return HTTPAuthSessionWrapper(
-    #     portal,
-    #     (
-    #         DigestCredentialFactory("md5", realmName),
-    #     )
-    # )
+    return HTMLFormSessionWrapper(portal, (HTMLFormCredentialFactory(),))
