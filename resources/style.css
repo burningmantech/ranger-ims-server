@@ -49,5 +49,5 @@ th.incident_location { width: 16em; }
 th.incident_types    { width:  8em; }
 th.incident_summary  {}
 
-#login_info { float:right; padding: 0.5em; }
-#user { font-size: 200%; font-weight: bold; }
+/*#login_info { float:right; padding: 0.5em; }*/
+#user { font-weight: bold; }

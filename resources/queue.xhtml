@@ -6,8 +6,6 @@
     <link t:render="stylesheet" />
   </head>
   <body>
-    <div id="login_info">Logged in as: <a href="/logout" id="user" t:render="user" /></div>
-
     <h1 t:render="title" />
 
     <form action="" method="get">
@@ -35,6 +33,12 @@
         </select>
       </label>
     </form>
+
+    <div id="login_info">
+      <hr />
+      Logged in as: <span id="user" t:render="user" /> —
+      <a id="logout" href="/logout">log out</a>
+    </div>
 
   </body>
 </html>

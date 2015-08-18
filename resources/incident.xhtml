@@ -174,10 +174,15 @@
         <legend>Incident Report</legend>
         <div id="incident_report_text" t:render="incident_report_text" />
         <textarea id="incident_report_input" name="report_text" placeholder="Additional report text..." t:render="incident_report_textarea" form="incident_report_form" />
-        <div id="login_info">Logged in as: <a href="/logout" id="user" t:render="user" /></div>
         <input type="submit" value="Add Entry" t:render="editable" form="incident_report_form" />
       </fieldset>
 
+    </div>
+
+    <div id="login_info">
+      <hr />
+      Logged in as: <span id="user" t:render="user" /> —
+      <a id="logout" href="/logout">log out</a>
     </div>
 
   </body>
