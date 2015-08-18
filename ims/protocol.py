@@ -77,7 +77,10 @@ class IncidentManagementSystem(object):
     def user(self):
         if self.avatarId is None:
             return u"-"
-        return self.avatarId.decode("utf-8")
+        try:
+            return self.avatarId.decode("utf-8")
+        except Exception:
+            return u"?"
 
     #
     # JSON endpoints

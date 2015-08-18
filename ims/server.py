@@ -75,7 +75,10 @@ def combinedLogFormatter(timestamp, request):
     agent = _escape(request.getHeader(b"user-agent") or b"-")
 
     if hasattr(request, b"user") and request.user:
-        user = _escape(request.user)
+        try:
+            user = _escape(request.user)
+        except Exception:
+            user = _escape(repr(request.user))
     else:
         user = b"-"
 
