@@ -251,7 +251,16 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         self.assertEquals(incident.incident_types, frozenset())
         self.assertEquals(incident.rangers, frozenset())
         self.assertEquals(incident.created, time1)
-        self.assertEquals(len(incident.report_entries), 1)
+
+        # We should get a system entry
+        self.assertEquals(
+            len([e for e in incident.report_entries if e.system_entry]), 1
+        )
+
+        # We should get the provided user entry
+        self.assertEquals(
+            len([e for e in incident.report_entries if not e.system_entry]), 1
+        )
         self.assertEquals(incident.report_entries[-1].author, u"Tool")
 
 
