@@ -19,7 +19,9 @@ Protocol bits
 """
 
 __all__ = [
-    "IncidentManagementSystem",
+    "NoAccessIncidentManagementSystem",
+    "ReadOnlyIncidentManagementSystem",
+    "ReadWriteIncidentManagementSystem",
 ]
 
 from zipfile import BadZipfile
@@ -45,7 +47,7 @@ from .element.file import FileElement
 from .element.home import HomePageElement
 from .element.queue import DispatchQueueElement
 from .element.incident import IncidentElement
-from .element.report_daily import DailyReportElement
+# from .element.report_daily import DailyReportElement
 # from .element.report_shift import ShiftReportElement
 from .element.util import (
     terms_from_query, show_closed_from_query, since_from_query,
@@ -56,14 +58,12 @@ from .tz import utcNow
 
 
 
-class IncidentManagementSystem(object):
+class NoAccessIncidentManagementSystem(object):
     """
-    Incident Management System
+    No-Access Incident Management System
     """
     log = Logger()
     app = Klein()
-
-    # protocol_version = "0.0"
 
 
     def __init__(self, config):
@@ -73,6 +73,10 @@ class IncidentManagementSystem(object):
         self.dms = config.dms
 
 
+    #
+    # Utilities
+    #
+
     @property
     def user(self):
         if self.avatarId is None:
@@ -81,18 +85,6 @@ class IncidentManagementSystem(object):
             return self.avatarId.decode("utf-8")
         except Exception:
             return u"?"
-
-    #
-    # JSON endpoints
-    #
-
-    @staticmethod
-    def read_only(request):
-        set_response_header(
-            request, HeaderName.contentType, ContentType.plain
-        )
-        request.setResponseCode(http.FORBIDDEN)
-        return b"Server is in read-only mode."
 
 
     @staticmethod
@@ -113,20 +105,9 @@ class IncidentManagementSystem(object):
         return entity
 
 
-    @app.route("/logout", methods=("GET",))
-    @http_sauce
-    def logout(self, request):
-        request.getSession().expire()
-
-        d = self.data_logout()
-        d.addCallback(self.add_headers, request=request)
-        return d
-
-
-    def data_logout(self):
-        ack = b"bye!"
-        return succeed((json_as_text(ack), hash(ack)))
-
+    #
+    # JSON endpoints
+    #
 
     @app.route("/ping", methods=("GET",))
     @app.route("/ping/", methods=("GET",))
@@ -139,6 +120,151 @@ class IncidentManagementSystem(object):
 
     def data_ping(self):
         ack = b"ack"
+        return succeed((json_as_text(ack), hash(ack)))
+
+
+    #
+    # Static resources
+    #
+
+    @app.route("/resources", methods=("GET",))
+    @app.route("/resources/", methods=("GET",), branch=True)
+    @http_sauce
+    def favicon(self, request):
+        return File(self.config.Resources.path)
+
+
+    #
+    # Documentation
+    #
+
+    @app.route("/", methods=("GET",))
+    @http_sauce
+    def root(self, request):
+        set_response_header(
+            request, HeaderName.contentType, ContentType.HTML
+        )
+        return HomePageElement(self)
+
+
+    @app.route("/docs", methods=("GET",))
+    @app.route("/docs/", methods=("GET",))
+    @http_sauce
+    def doc_index(self, request):
+        return self.doc_with_name(request, "index.xhtml")
+
+
+    @app.route("/docs/<name>", methods=("GET",))
+    @http_sauce
+    def doc_with_name(self, request, name):
+        filePath = self.config.Resources.child("docs").child(name)
+
+        if filePath.exists():
+            if name.endswith(".xhtml"):
+                set_response_header(
+                    request, HeaderName.contentType, ContentType.HTML
+                )
+                return FileElement(filePath)
+
+        request.setResponseCode(http.NOT_FOUND)
+        set_response_header(
+            request, HeaderName.contentType, ContentType.plain
+        )
+        return b"Not found."
+
+
+    #
+    # Baseline
+    #
+
+    @app.route("/baseline/<container>/<name>", methods=("GET",))
+    @http_sauce
+    def baseline(self, request, container, name):
+        # See http://baselinecss.com/
+        return self.cachedZipResource(
+            request=request,
+            name="baseline",
+            url=(
+                "http://stephanecurzi.me/"
+                "baselinecss.2009/download/baseline.zip"
+            ),
+            segments=("baseline.0.5.3", "css", container, name)
+        )
+
+
+    #
+    # Utilities
+    #
+
+    def cachedResource(self, name, url):
+        filePath = self.config.CachedResources.child(name)
+
+        if filePath.exists():
+            return File(filePath.path)
+
+        d = http_download(filePath, url)
+        d.addCallback(lambda _: File(filePath.path))
+        return d
+
+
+    def cachedZipResource(self, request, name, url, segments):
+        archivePath = self.config.CachedResources.child("{0}.zip".format(name))
+
+        if archivePath.exists():
+            d = Deferred()
+            d.callback(None)
+        else:
+            d = http_download(archivePath, url)
+
+        def readFromArchive(_):
+            try:
+                filePath = ZipArchive(archivePath.path)
+            except BadZipfile:
+                self.log.info(
+                    "Unable to open zip archive: {archive.path}",
+                    archive=archivePath
+                )
+                return None
+            for segment in segments:
+                filePath = filePath.child(segment)
+            return filePath.getContent()
+
+        def notFoundHandler(f):
+            f.trap(KeyError)
+            request.setResponseCode(http.NOT_FOUND)
+            set_response_header(
+                request, HeaderName.contentType, ContentType.plain
+            )
+            return b"Not found."
+
+        d.addCallback(readFromArchive)
+        d.addErrback(notFoundHandler)
+        return d
+
+
+
+class ReadOnlyIncidentManagementSystem(NoAccessIncidentManagementSystem):
+    """
+    Read-Only Incident Management System
+    """
+    app = NoAccessIncidentManagementSystem.app
+
+    #
+    # JSON endpoints
+    #
+
+    @app.route("/logout", methods=("GET",))
+    @http_sauce
+    def logout(self, request):
+        request.getSession().expire()
+
+        d = self.data_logout()
+        d.addCallback(self.add_headers, request=request)
+        return d
+
+
+    def data_logout(self):
+        ack = b"bye!"
         return succeed((json_as_text(ack), hash(ack)))
 
 
@@ -260,6 +386,193 @@ class IncidentManagementSystem(object):
 
         return succeed((entity, etag))
 
+
+    #
+    # Reports
+    #
+
+    # @app.route("/reports/daily", methods=("GET",))
+    # @http_sauce
+    # def daily_report(self, request):
+    #     set_response_header(
+    #         request, HeaderName.contentType, ContentType.HTML
+    #     )
+    #     return DailyReportElement(self)
+
+
+    # @app.route("/charts/daily", methods=("GET",))
+    # @http_sauce
+    # def daily_chart(self, request):
+    #     set_response_header(
+    #         request, HeaderName.contentType, ContentType.HTML
+    #     )
+    #     return DailyReportElement(self, template_name="chart_daily")
+
+
+    # @app.route("/reports/shift", methods=("GET",))
+    # @http_sauce
+    # def shift_report(self, request):
+    #     set_response_header(
+    #         request, HeaderName.contentType, ContentType.HTML
+    #     )
+    #     return ShiftReportElement(self)
+
+
+    #
+    # Links
+    #
+
+    @app.route("/links", methods=("GET",))
+    @app.route("/links/", methods=("GET",))
+    @http_sauce
+    def links(self, request):
+        # set_response_header(request, HeaderName.etag, ????)
+        set_response_header(request, HeaderName.contentType, ContentType.JSON)
+        return json_as_text([
+            {JSON.page_url.value: name, JSON.page_url.value: value}
+            for name, value in (
+                ("Home page", "/"),
+                ("Dispatch Queue", "/queue"),
+                ("Daily Incident Summary (Table)", "/reports/daily"),
+                ("Daily Incident Summary (Chart)", "/charts/daily"),
+            )
+        ])
+
+
+    #
+    # JQuery resources
+    #
+
+    @app.route("/jquery.js", methods=("GET",))
+    @http_sauce
+    def jquery(self, request):
+        version = "jquery-2.1.1.min.js"
+        url = "http://code.jquery.com/" + version
+        return self.cachedResource(version, url)
+
+
+    @app.route("/jquery-2.1.1.min.map", methods=("GET",))
+    @http_sauce
+    def jquery_map(self, request):
+        name = "jquery-2.1.1.min.map"
+        url = "http://code.jquery.com/" + name
+        return self.cachedResource(name, url)
+
+
+    @app.route("/jquery-ui.js", methods=("GET",))
+    @http_sauce
+    def jquery_ui(self, request):
+        name = "jquery-ui-1.11.0"
+        return self.cachedZipResource(
+            request=request,
+            name=name,
+            url="http://jqueryui.com/resources/download/{}.zip".format(name),
+            segments=(name, "jquery-ui.js")
+        )
+
+
+    @app.route("/jquery-ui-theme/images/<image>", methods=("GET",))
+    @http_sauce
+    def jquery_ui_theme_image(self, request, image):
+        which = "jquery-ui-themes-1.11.0"
+        theme = "blitzer"
+        return self.cachedZipResource(
+            request=request,
+            name=which,
+            url="http://jqueryui.com/resources/download/{}.zip".format(which),
+            segments=(which, "themes", theme, "images", image)
+        )
+
+
+    @app.route("/jquery-ui-theme/", methods=("GET",))
+    @http_sauce
+    def jquery_ui_theme(self, request):
+        which = "jquery-ui-themes-1.11.0"
+        theme = "blitzer"
+        return self.cachedZipResource(
+            request=request,
+            name=which,
+            url="http://jqueryui.com/resources/download/{}.zip".format(which),
+            segments=(which, "themes", theme, "jquery-ui.min.css")
+        )
+
+
+    # _tidy_base_url = "https://raw.github.com/nuxy/Tidy-Table/v1.7/"
+    _tidy_base_url = "https://raw.githubusercontent.com/nuxy/Tidy-Table/v1.7/"
+
+
+    @app.route("/tidy.js", methods=("GET",))
+    @http_sauce
+    def tidy(self, request):
+        name = "tidy.js"
+        url = self._tidy_base_url + "jquery.tidy.table.min.js"
+        return self.cachedResource(name, url)
+
+
+    @app.route("/tidy.css", methods=("GET",))
+    @http_sauce
+    def tidy_css(self, request):
+        name = "tidy.css"
+        url = self._tidy_base_url + "jquery.tidy.table.min.css"
+        return self.cachedResource(name, url)
+
+
+    @app.route("/images/arrow_asc.gif", methods=("GET",))
+    @http_sauce
+    def tidy_asc(self, request):
+        name = "tidy-asc.gif"
+        url = self._tidy_base_url + "images/arrow_asc.gif"
+        return self.cachedResource(name, url)
+
+
+    @app.route("/images/arrow_desc.gif", methods=("GET",))
+    @http_sauce
+    def tidy_desc(self, request):
+        name = "tidy-desc.gif"
+        url = self._tidy_base_url + "images/arrow_desc.gif"
+        return self.cachedResource(name, url)
+
+
+    #
+    # Flot
+    #
+
+    # @app.route("/flot/<name>", methods=("GET",))
+    # @http_sauce
+    # def flot(self, request, name):
+    #     # See http://www.flotcharts.org/
+    #     which = "flot-0.8.1"
+    #     return self.cachedZipResource(
+    #         request=request,
+    #         name=which,
+    #         url="http://www.flotcharts.org/downloads/{0}.zip".format(which),
+    #         segments=("flot", name)
+    #     )
+
+
+
+class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
+    """
+    Read-Write Incident Management System
+    """
+    app = ReadOnlyIncidentManagementSystem.app
+
+    #
+    # Utilities
+    #
+
+    @staticmethod
+    def read_only(request):
+        set_response_header(
+            request, HeaderName.contentType, ContentType.plain
+        )
+        request.setResponseCode(http.FORBIDDEN)
+        return b"Server is in read-only mode."
+
+
+    #
+    # JSON endpoints
+    #
 
     @app.route("/incidents/<number>", methods=("POST",))
     @http_sauce
@@ -421,285 +734,3 @@ class IncidentManagementSystem(object):
             self.storage.write_incident(edited)
 
         return IncidentElement(self, number)
-
-
-    #
-    # Static resources
-    #
-
-    @app.route("/resources", methods=("GET",))
-    @app.route("/resources/", methods=("GET",), branch=True)
-    @http_sauce
-    def favicon(self, request):
-        return File(self.config.Resources.path)
-
-
-    #
-    # Documentation
-    #
-
-    @app.route("/", methods=("GET",))
-    @http_sauce
-    def root(self, request):
-        set_response_header(
-            request, HeaderName.contentType, ContentType.HTML
-        )
-        return HomePageElement(self)
-
-
-    @app.route("/docs", methods=("GET",))
-    @app.route("/docs/", methods=("GET",))
-    @http_sauce
-    def doc_index(self, request):
-        return self.doc_with_name(request, "index.xhtml")
-
-
-    @app.route("/docs/<name>", methods=("GET",))
-    @http_sauce
-    def doc_with_name(self, request, name):
-        filePath = self.config.Resources.child("docs").child(name)
-
-        if filePath.exists():
-            if name.endswith(".xhtml"):
-                set_response_header(
-                    request, HeaderName.contentType, ContentType.HTML
-                )
-                return FileElement(filePath)
-
-        request.setResponseCode(http.NOT_FOUND)
-        set_response_header(
-            request, HeaderName.contentType, ContentType.plain
-        )
-        return b"Not found."
-
-
-    # #
-    # # Reports
-    # #
-
-    @app.route("/reports/daily", methods=("GET",))
-    @http_sauce
-    def daily_report(self, request):
-        set_response_header(
-            request, HeaderName.contentType, ContentType.HTML
-        )
-        return DailyReportElement(self)
-
-
-    # @app.route("/charts/daily", methods=("GET",))
-    # @http_sauce
-    # def daily_chart(self, request):
-    #     set_response_header(
-    #         request, HeaderName.contentType, ContentType.HTML
-    #     )
-    #     return DailyReportElement(self, template_name="chart_daily")
-
-
-    # @app.route("/reports/shift", methods=("GET",))
-    # @http_sauce
-    # def shift_report(self, request):
-    #     set_response_header(
-    #         request, HeaderName.contentType, ContentType.HTML
-    #     )
-    #     return ShiftReportElement(self)
-
-
-    #
-    # Links
-    #
-
-    @app.route("/links", methods=("GET",))
-    @app.route("/links/", methods=("GET",))
-    @http_sauce
-    def links(self, request):
-        # set_response_header(request, HeaderName.etag, ????)
-        set_response_header(request, HeaderName.contentType, ContentType.JSON)
-        return json_as_text([
-            {JSON.page_url.value: name, JSON.page_url.value: value}
-            for name, value in (
-                ("Home page", "/"),
-                ("Dispatch Queue", "/queue"),
-                ("Daily Incident Summary (Table)", "/reports/daily"),
-                ("Daily Incident Summary (Chart)", "/charts/daily"),
-            )
-        ])
-
-
-    #
-    # Baseline
-    #
-
-    @app.route("/baseline/<container>/<name>", methods=("GET",))
-    @http_sauce
-    def baseline(self, request, container, name):
-        # See http://baselinecss.com/
-        return self.cachedZipResource(
-            request=request,
-            name="baseline",
-            url=(
-                "http://stephanecurzi.me/"
-                "baselinecss.2009/download/baseline.zip"
-            ),
-            segments=("baseline.0.5.3", "css", container, name)
-        )
-
-
-    #
-    # JQuery resources
-    #
-
-    @app.route("/jquery.js", methods=("GET",))
-    @http_sauce
-    def jquery(self, request):
-        version = "jquery-2.1.1.min.js"
-        url = "http://code.jquery.com/" + version
-        return self.cachedResource(version, url)
-
-
-    @app.route("/jquery-2.1.1.min.map", methods=("GET",))
-    @http_sauce
-    def jquery_map(self, request):
-        name = "jquery-2.1.1.min.map"
-        url = "http://code.jquery.com/" + name
-        return self.cachedResource(name, url)
-
-
-    @app.route("/jquery-ui.js", methods=("GET",))
-    @http_sauce
-    def jquery_ui(self, request):
-        name = "jquery-ui-1.11.0"
-        return self.cachedZipResource(
-            request=request,
-            name=name,
-            url="http://jqueryui.com/resources/download/{}.zip".format(name),
-            segments=(name, "jquery-ui.js")
-        )
-
-
-    @app.route("/jquery-ui-theme/images/<image>", methods=("GET",))
-    @http_sauce
-    def jquery_ui_theme_image(self, request, image):
-        which = "jquery-ui-themes-1.11.0"
-        theme = "blitzer"
-        return self.cachedZipResource(
-            request=request,
-            name=which,
-            url="http://jqueryui.com/resources/download/{}.zip".format(which),
-            segments=(which, "themes", theme, "images", image)
-        )
-
-
-    @app.route("/jquery-ui-theme/", methods=("GET",))
-    @http_sauce
-    def jquery_ui_theme(self, request):
-        which = "jquery-ui-themes-1.11.0"
-        theme = "blitzer"
-        return self.cachedZipResource(
-            request=request,
-            name=which,
-            url="http://jqueryui.com/resources/download/{}.zip".format(which),
-            segments=(which, "themes", theme, "jquery-ui.min.css")
-        )
-
-
-    # _tidy_base_url = "https://raw.github.com/nuxy/Tidy-Table/v1.7/"
-    _tidy_base_url = "https://raw.githubusercontent.com/nuxy/Tidy-Table/v1.7/"
-
-
-    @app.route("/tidy.js", methods=("GET",))
-    @http_sauce
-    def tidy(self, request):
-        name = "tidy.js"
-        url = self._tidy_base_url + "jquery.tidy.table.min.js"
-        return self.cachedResource(name, url)
-
-
-    @app.route("/tidy.css", methods=("GET",))
-    @http_sauce
-    def tidy_css(self, request):
-        name = "tidy.css"
-        url = self._tidy_base_url + "jquery.tidy.table.min.css"
-        return self.cachedResource(name, url)
-
-
-    @app.route("/images/arrow_asc.gif", methods=("GET",))
-    @http_sauce
-    def tidy_asc(self, request):
-        name = "tidy-asc.gif"
-        url = self._tidy_base_url + "images/arrow_asc.gif"
-        return self.cachedResource(name, url)
-
-
-    @app.route("/images/arrow_desc.gif", methods=("GET",))
-    @http_sauce
-    def tidy_desc(self, request):
-        name = "tidy-desc.gif"
-        url = self._tidy_base_url + "images/arrow_desc.gif"
-        return self.cachedResource(name, url)
-
-
-    #
-    # Flot
-    #
-
-    # @app.route("/flot/<name>", methods=("GET",))
-    # @http_sauce
-    # def flot(self, request, name):
-    #     # See http://www.flotcharts.org/
-    #     which = "flot-0.8.1"
-    #     return self.cachedZipResource(
-    #         request=request,
-    #         name=which,
-    #         url="http://www.flotcharts.org/downloads/{0}.zip".format(which),
-    #         segments=("flot", name)
-    #     )
-
-
-    #
-    # Utilities
-    #
-
-    def cachedResource(self, name, url):
-        filePath = self.config.CachedResources.child(name)
-
-        if filePath.exists():
-            return File(filePath.path)
-
-        d = http_download(filePath, url)
-        d.addCallback(lambda _: File(filePath.path))
-        return d
-
-
-    def cachedZipResource(self, request, name, url, segments):
-        archivePath = self.config.CachedResources.child("{0}.zip".format(name))
-
-        if archivePath.exists():
-            d = Deferred()
-            d.callback(None)
-        else:
-            d = http_download(archivePath, url)
-
-        def readFromArchive(_):
-            try:
-                filePath = ZipArchive(archivePath.path)
-            except BadZipfile:
-                self.log.info(
-                    "Unable to open zip archive: {archive.path}",
-                    archive=archivePath
-                )
-                return None
-            for segment in segments:
-                filePath = filePath.child(segment)
-            return filePath.getContent()
-
-        def notFoundHandler(f):
-            f.trap(KeyError)
-            request.setResponseCode(http.NOT_FOUND)
-            set_response_header(
-                request, HeaderName.contentType, ContentType.plain
-            )
-            return b"Not found."
-
-        d.addCallback(readFromArchive)
-        d.addErrback(notFoundHandler)
-        return d

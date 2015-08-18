@@ -37,7 +37,7 @@ import twisted.web.http
 
 from .config import Configuration
 from .auth import guard
-from .protocol import IncidentManagementSystem
+from .protocol import ReadWriteIncidentManagementSystem
 
 
 
@@ -51,7 +51,7 @@ def loadConfig():
 def Resource():
     config = loadConfig()
     return guard(
-        lambda: IncidentManagementSystem(config),
+        lambda: ReadWriteIncidentManagementSystem(config),
         "Ranger Incident Management System",
         (
             FilePasswordDB(config.UserDB.path),

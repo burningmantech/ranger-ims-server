@@ -31,7 +31,7 @@ from ims.config import Configuration
 from ims.data import InvalidDataError
 from ims.json import json_from_text, incident_from_json
 from ims.store import Storage
-from ims.protocol import IncidentManagementSystem
+from ims.protocol import ReadWriteIncidentManagementSystem
 
 from ims.test.test_config import emptyConfigFile
 from ims.test.test_store import (
@@ -42,7 +42,7 @@ from ims.test.test_store import (
 
 class IncidentManagementSystemHTTPTests(twisted.trial.unittest.TestCase):
     """
-    Tests for L{IncidentManagementSystem} HTTP front-end.
+    Tests for L{ReadWriteIncidentManagementSystem} HTTP front-end.
     """
 
     def test_http(self):
@@ -54,7 +54,7 @@ class IncidentManagementSystemHTTPTests(twisted.trial.unittest.TestCase):
 
 class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
     """
-    Tests for L{IncidentManagementSystem} JSON back-end.
+    Tests for L{ReadWriteIncidentManagementSystem} JSON back-end.
     """
 
     def storage(self, data=None):
@@ -76,7 +76,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         config = Configuration(emptyConfigFile)
         if data is not None:
             config.storage = self.storage(data=data)
-        ims = IncidentManagementSystem(config)
+        ims = ReadWriteIncidentManagementSystem(config)
         ims.avatarId = u"Test"
         return ims
 
