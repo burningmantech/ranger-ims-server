@@ -189,8 +189,11 @@ class Realm(object):
         request = IRequest(mind)
         session = request.getSession()
 
+        def logout():
+            request.getSession().expire()
+
         if avatarId is ANONYMOUS:
-            return (IResource, self.anonymousRoot(), self._logout)
+            return (IResource, self.anonymousRoot(), logout)
         else:
             if not hasattr(session, "avatar"):
                 kleinContainer = self.ims
@@ -203,7 +206,7 @@ class Realm(object):
 
                 session.notifyOnExpire(expired)
 
-            return (IResource, session.avatar, self._logout)
+            return (IResource, session.avatar, logout)
 
 
 
