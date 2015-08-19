@@ -196,11 +196,10 @@ class HTMLFormSessionWrapper(object):
 class Realm(object):
 
     def __init__(
-        self, config, timeout=Session.sessionTimeout, logout=lambda: None
+        self, config, timeout=Session.sessionTimeout
     ):
         self.config  = config
         self.timeout = timeout
-        self.logout  = logout
 
 
     def requestAvatar(self, avatarId, mind, *interfaces):
