@@ -34,7 +34,6 @@ from twisted.cred.credentials import (
 from twisted.cred.error import (
     LoginFailed as LoginFailedError, Unauthorized as UnauthorizedError
 )
-from twisted.web.iweb import IRequest
 from twisted.web.http import UNAUTHORIZED
 from twisted.web.server import Session, NOT_DONE_YET
 from twisted.web.resource import IResource, Resource, ErrorPage
@@ -77,7 +76,6 @@ class HTMLFormCredentialFactory(object):
         elif contentType == "application/json":
             body = request.content.read()
             json = json_from_text(body)
-            print json
             try:
                 username = json["username"]
                 password = json["password"]
@@ -175,8 +173,7 @@ class HTMLFormSessionWrapper(object):
                 self.log.failure("Authentication error", failure=f)
                 return ErrorPage(500, "Internal authentication error", None)
 
-        # Pass request along as mind
-        d = self._portal.login(credentials, request, IResource)
+        d = self._portal.login(credentials, request.getSession(), IResource)
         d.addCallbacks(loginSucceeded, loginFailed)
         return d
 
@@ -212,11 +209,10 @@ class Realm(object):
                 "No known interfaces in {}".format(interfaces)
             )
 
-        request = IRequest(mind)
-        session = request.getSession()
+        session = mind
 
         def logout():
-            request.getSession().expire()
+            session.expire()
 
         if avatarId is ANONYMOUS:
             return (IResource, self.anonymousRoot(), logout)
