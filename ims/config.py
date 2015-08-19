@@ -24,6 +24,7 @@ __all__ = [
     "Configuration",
 ]
 
+import sys
 from os import environ
 from os.path import sep as pathsep
 from re import compile as regex_compile
@@ -32,7 +33,7 @@ from time import tzset, time
 from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 
 from twisted.python.filepath import FilePath
-from twisted.logger import Logger
+from twisted.logger import Logger, textFileLogObserver
 
 from .tz import FixedOffsetTimeZone
 from .data import IncidentType
@@ -43,7 +44,7 @@ from .store import Storage, ReadOnlyStorage
 
 
 class Configuration (object):
-    log = Logger()
+    log = Logger(observer=textFileLogObserver(sys.stdout))
 
 
     def __init__(self, configFile):
@@ -197,6 +198,11 @@ class Configuration (object):
         self.DMSUsername = valueFromConfig("DMS", "Username", None)
         self.DMSPassword = valueFromConfig("DMS", "Password", None)
 
+        self.log.info(
+            "Database: {user}@{host}/{db}",
+            user=self.DMSUsername, host=self.DMSHost, db=self.DMSDatabase,
+        )
+
         self.IncidentTypes = (
             u"Art",
             u"Assault",
@@ -221,6 +227,11 @@ class Configuration (object):
 
             IncidentType.Admin.value,
             IncidentType.Junk.value,
+        )
+
+        self.log.info(
+            "{count} incident types",
+            incident_types=self.IncidentTypes, count=len(self.IncidentTypes),
         )
 
         #
@@ -250,6 +261,8 @@ class Configuration (object):
         if locationsFile.isfile():
             with locationsFile.open() as jsonStrem:
                 json = json_from_file(jsonStrem)
+            self.log.info("{count} locations", count=len(json))
             self.locationsJSONText = json_as_text(json)
         else:
+            self.log.info("No locations file: {file.path}", file=locationsFile)
             self.locationsJSONText = json_as_text([])
