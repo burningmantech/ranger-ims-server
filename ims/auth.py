@@ -195,9 +195,7 @@ class HTMLFormSessionWrapper(object):
 @implementer(IRealm)
 class Realm(object):
 
-    def __init__(
-        self, config, timeout=Session.sessionTimeout
-    ):
+    def __init__(self, config, timeout=Session.sessionTimeout):
         self.config  = config
         self.timeout = timeout
 
