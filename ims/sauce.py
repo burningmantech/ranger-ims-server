@@ -95,7 +95,10 @@ def http_sauce(f):
         # Reject requests with disallowed User-Agent strings
         for expression in self.config.RejectClientsRegex:
             if expression.match(request.userAgent):
-                log.msg("Rejected user agent: {0}".format(request.userAgent))
+                log.info(
+                    "Rejected user agent: {agent}",
+                    agent=request.userAgent
+                )
                 request.setResponseCode(http.FORBIDDEN)
                 set_response_header(
                     request, HeaderName.contentType, ContentType.plain
@@ -122,7 +125,10 @@ def http_sauce(f):
                 return "Invalid data: {0}\n".format(f.getErrorMessage())
 
             if isinstance(f.value, DatabaseError):
-                log.info("Database error: {failure}", failure=f, request=request)
+                log.info(
+                    "Database error: {failure}",
+                    failure=f, request=request
+                )
                 request.setResponseCode(http.INTERNAL_SERVER_ERROR)
                 set_response_header(
                     request, HeaderName.contentType, ContentType.plain
