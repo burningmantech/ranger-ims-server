@@ -189,6 +189,6 @@ class DutyManagementSystem(object):
 def fullName(first, middle, last):
     values = dict(first=first, middle=middle, last=last)
     if middle:
-        return "{first} {middle}. {last}".format(**values)
+        return u"{first} {middle}. {last}".format(**values)
     else:
-        return "{first} {last}".format(**values)
+        return u"{first} {last}".format(**values)
