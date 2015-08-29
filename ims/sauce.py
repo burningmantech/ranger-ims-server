@@ -122,7 +122,7 @@ def http_sauce(f):
                 return "Invalid data: {0}\n".format(f.getErrorMessage())
 
             if isinstance(f.value, DatabaseError):
-                log.info("Database error: {f}", failure=f, request=request)
+                log.info("Database error: {failure}", failure=f, request=request)
                 request.setResponseCode(http.INTERNAL_SERVER_ERROR)
                 set_response_header(
                     request, HeaderName.contentType, ContentType.plain
