@@ -216,7 +216,9 @@ def edit_incident(incident, edits, author):
     # Finally, add new user report entries
     if edits.report_entries is not None:
         for report_entry in edits.report_entries:
-            report_entries.append(report_entry)
+            # Work-around for clients that resubmit the same entry >1 time
+            if report_entry not in report_entries:
+                report_entries.append(report_entry)
 
 
     #
