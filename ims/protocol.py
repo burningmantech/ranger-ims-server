@@ -602,10 +602,10 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
         #
         self.storage.write_incident(edited)
 
-        self.log.info(
-            u"User {author} edited incident #{number} via JSON",
-            author=author, number=number
-        )
+        # self.log.info(
+        #     u"User {author} edited incident #{number} via JSON",
+        #     author=author, number=number
+        # )
         # self.log.debug(u"Original: {json}", json=incident_as_json(incident))
         # self.log.debug(u"Changes: {json}", json=edits_json)
         # self.log.debug(u"Edited: {json}", json=incident_as_json(edited))
