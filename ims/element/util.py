@@ -294,13 +294,13 @@ def incidents_as_table(incidents, tz, caption=None, id=None):
                             u"{0}".format(formatTime(
                                 incident.created, tz=tz, format=u"%d/%H:%M"
                             )),
-                            **attrs_number
+                            **attrs_created
                         ),
                         tags.td(
                             u"{0}".format(
                                 IncidentState.describe(state)
                             ),
-                            **attrs_number
+                            **attrs_state
                         ),
                         tags.td(
                             u"{0}".format(
@@ -343,8 +343,8 @@ def incidents_as_table(incidents, tz, caption=None, id=None):
                             u"{0}".format(incident.number), **attrs_number
                         ),
                         tags.td(u"", **attrs_priority),
-                        tags.td(u"", **attrs_number),
-                        tags.td(u"", **attrs_number),
+                        tags.td(u"", **attrs_created),
+                        tags.td(u"", **attrs_state),
                         tags.td(u"", **attrs_rangers),
                         tags.td(u"", **attrs_location),
                         tags.td(u"", **attrs_types),
