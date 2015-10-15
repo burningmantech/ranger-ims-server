@@ -42,6 +42,9 @@ class HomePageElement(BaseElement):
         events = [event for event in self.ims.storage]
 
         if events:
-            return tag(tags.a(e, href="/{}/queue".format(e)) for e in events)
+            return (
+                tag.clone()(tags.a(event, href="/{}/queue".format(event)))
+                for event in events
+            )
         else:
             return tag("No events found.")
