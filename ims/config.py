@@ -39,7 +39,7 @@ from .tz import FixedOffsetTimeZone
 from .data import IncidentType
 from .json import json_as_text, json_from_file
 from .dms import DutyManagementSystem
-from .store import Storage, ReadOnlyStorage
+from .store import MultiStorage
 
 
 
@@ -247,13 +247,7 @@ class Configuration (object):
             password=self.DMSPassword,
         )
 
-        if self.ReadOnly:
-            storageClass = ReadOnlyStorage
-        else:
-            storageClass = Storage
-
-        storage = storageClass(self.DataRoot)
-        self.storage = storage
+        self.storage = MultiStorage(self.DataRoot, self.ReadOnly)
 
         self.IncidentTypesJSON = json_as_text(self.IncidentTypes)
 

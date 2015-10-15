@@ -62,16 +62,16 @@ def ignore_entry(entry):
     return False
 
 
-def incidents_from_query(ims, request):
+def incidents_from_query(storage, request):
     if not hasattr(request, "ims_incidents"):
         if request.args:
-            request.ims_incidents = ims.storage.search_incidents(
+            request.ims_incidents = storage.search_incidents(
                 terms=terms_from_query(request),
                 show_closed=show_closed_from_query(request),
                 since=since_from_query(request),
             )
         else:
-            request.ims_incidents = ims.storage.list_incidents()
+            request.ims_incidents = storage.list_incidents()
 
     return request.ims_incidents
 
@@ -224,7 +224,7 @@ def query_value(request, key, default, no_args_default=None):
     return getattr(request, attr_name)
 
 
-def incidents_as_table(incidents, tz, caption=None, id=None):
+def incidents_as_table(event, incidents, tz, caption=None, id=None):
     attrs_activity = {"class": "incident_activity"}
 
     if caption:
@@ -328,8 +328,8 @@ def incidents_as_table(incidents, tz, caption=None, id=None):
                             **attrs_summary
                         ),
                         onclick=(
-                            u'window.open("/queue/incidents/{0}");'
-                            .format(incident.number)
+                            u'window.open("/{0}/queue/incidents/{1}");'
+                            .format(event, incident.number)
                         ),
                         **attrs_incident
                     )
@@ -350,8 +350,8 @@ def incidents_as_table(incidents, tz, caption=None, id=None):
                         tags.td(u"", **attrs_types),
                         tags.td(u"", **attrs_summary),
                         onclick=(
-                            u'window.open("/queue/incidents/{0}");'
-                            .format(incident.number)
+                            u'window.open("/{0}/queue/incidents/{1}");'
+                            .format(event, incident.number)
                         ),
                         **attrs_incident
                     )

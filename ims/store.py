@@ -365,6 +365,68 @@ class Storage(ReadOnlyStorage):
 
 
 
+class MultiStorage(object):
+    """
+    Container for multiple storages.
+    """
+
+    def __init__(self, path, readOnly):
+        self.path = path
+        self.readOnly = readOnly
+        self.stores = {}
+
+
+    def __getitem__(self, name):
+        try:
+            # Try returning cached value
+            return self.stores[name]
+
+        except KeyError:
+            if not name.startswith("."):
+                # Try opening the named storage
+                child = self.path.child(unicode(name))
+                if child.isdir:
+                    if self.readOnly:
+                        store = ReadOnlyStorage(child)
+                    else:
+                        store = Storage(child)
+                    self.stores[child] = store
+                    return store
+
+        raise KeyError(name)
+
+
+    def __contains__(self, name):
+        return name in self._events()
+
+
+    def __len__(self):
+        return len(self._events())
+
+
+    def __iter__(self):
+        return iter(self._events())
+
+
+    iterkeys = __iter__
+
+
+    def _events(self):
+        events = []
+        for child in self.path.children():
+            name = child.basename()
+
+            if name.startswith("."):
+                continue
+            if not child.isdir():
+                continue
+
+            events.append(name)
+
+        return events
+
+
+
 def ims2014Cleanup(incident):
     """
     Clean up 2014 data for compliance with current requirements.

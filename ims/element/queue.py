@@ -35,8 +35,10 @@ from .util import incidents_as_table
 
 
 class DispatchQueueElement(BaseElement):
-    def __init__(self, ims):
+    def __init__(self, ims, storage, event):
         BaseElement.__init__(self, ims, "queue", "Dispatch Queue")
+        self.storage = storage
+        self.event = event
 
 
     @renderer
@@ -47,10 +49,11 @@ class DispatchQueueElement(BaseElement):
             else:
                 return d.strftime("%a.%H:%M")
 
+        storage = self.storage
         data = []
 
-        for number, etag in incidents_from_query(self.ims, request):
-            incident = self.ims.storage.read_incident_with_number(number)
+        for number, etag in incidents_from_query(storage, request):
+            incident = storage.read_incident_with_number(number)
 
             if incident.summary:
                 summary = incident.summary
@@ -80,11 +83,13 @@ class DispatchQueueElement(BaseElement):
 
     @renderer
     def queue(self, request, tag):
+        storage = self.storage
         return tag(
             incidents_as_table(
+                self.event,
                 (
-                    self.ims.storage.read_incident_with_number(number)
-                    for number, etag in incidents_from_query(self.ims, request)
+                    storage.read_incident_with_number(number)
+                    for number, etag in incidents_from_query(storage, request)
                 ),
                 tz=self.ims.config.TimeZone,
                 caption="Dispatch Queue",

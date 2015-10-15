@@ -22,13 +22,26 @@ __all__ = [
     "HomePageElement",
 ]
 
+from twisted.web.template import renderer, tags
+
 from .base import BaseElement
 
 
 
 class HomePageElement(BaseElement):
+
     def __init__(self, ims):
         BaseElement.__init__(
             self, ims, "home",
             "Ranger Incident Management System"
         )
+
+
+    @renderer
+    def events(self, request, tag):
+        events = [event for event in self.ims.storage]
+
+        if events:
+            return tag(tags.a(e, href="/{}/queue".format(e)) for e in events)
+        else:
+            return tag("No events found.")

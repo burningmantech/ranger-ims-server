@@ -32,12 +32,12 @@ from ..data import RodGarettAddress
 
 
 class IncidentElement(BaseElement):
-    def __init__(self, ims, number):
+    def __init__(self, ims, storage, number):
         BaseElement.__init__(
             self, ims, "incident",
             "Incident #{0}".format(number)
         )
-        self.incident = self.ims.storage.read_incident_with_number(number)
+        self.incident = storage.read_incident_with_number(number)
 
         self.edit_enabled = not self.ims.config.ReadOnly
 

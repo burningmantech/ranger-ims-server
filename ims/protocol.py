@@ -268,12 +268,10 @@ class ReadOnlyIncidentManagementSystem(NoAccessIncidentManagementSystem):
         return succeed((json_as_text(ack), hash(ack)))
 
 
-    @app.route("/rangers", methods=("GET",))
-    @app.route("/rangers/", methods=("GET",))
-    @app.route("/personnel", methods=("GET",))
-    @app.route("/personnel/", methods=("GET",))
+    @app.route("/<event>/personnel", methods=("GET",))
+    @app.route("/<event>/personnel/", methods=("GET",))
     @http_sauce
-    def list_personnel(self, request):
+    def list_personnel(self, request, event):
         d = self.data_personnel()
         d.addCallback(self.add_headers, request=request)
         return d
@@ -294,10 +292,10 @@ class ReadOnlyIncidentManagementSystem(NoAccessIncidentManagementSystem):
         return d
 
 
-    @app.route("/incident_types", methods=("GET",))
-    @app.route("/incident_types/", methods=("GET",))
+    @app.route("/<event>/incident_types", methods=("GET",))
+    @app.route("/<event>/incident_types/", methods=("GET",))
     @http_sauce
-    def list_incident_types(self, request):
+    def list_incident_types(self, request, event):
         d = self.data_incident_types()
         d.addCallback(self.add_headers, request=request)
         return d
@@ -310,32 +308,32 @@ class ReadOnlyIncidentManagementSystem(NoAccessIncidentManagementSystem):
         ))
 
 
-    @app.route("/locations", methods=("GET",))
-    @app.route("/locations/", methods=("GET",))
+    @app.route("/<event>/locations", methods=("GET",))
+    @app.route("/<event>/locations/", methods=("GET",))
     @http_sauce
-    def list_locations(self, request):
-        d = self.data_locations()
+    def list_locations(self, request, event):
+        d = self.data_locations(event)
         d.addCallback(self.add_headers, request=request)
         return d
 
 
-    def data_locations(self):
+    def data_locations(self, event):
         text = self.config.locationsJSONText
         return succeed((text, hash(text)))
 
 
-    @app.route("/incidents", methods=("GET",))
-    @app.route("/incidents/", methods=("GET",))
+    @app.route("/<event>/incidents", methods=("GET",))
+    @app.route("/<event>/incidents/", methods=("GET",))
     @http_sauce
-    def list_incidents(self, request):
+    def list_incidents(self, request, event):
         if request.args:
-            incidents = self.storage.search_incidents(
+            incidents = self.storage[event].search_incidents(
                 terms=terms_from_query(request),
                 show_closed=show_closed_from_query(request),
                 since=since_from_query(request),
             )
         else:
-            incidents = self.storage.list_incidents()
+            incidents = self.storage[event].list_incidents()
 
         d = self.data_incidents(incidents)
         d.addCallback(self.add_headers, request=request)
@@ -352,37 +350,37 @@ class ReadOnlyIncidentManagementSystem(NoAccessIncidentManagementSystem):
         ))
 
 
-    @app.route("/incidents/<number>", methods=("GET",))
+    @app.route("/<event>/incidents/<number>", methods=("GET",))
     @http_sauce
-    def get_incident(self, request, number):
+    def get_incident(self, request, event, number):
         # # For simulating slow connections
         # import time
         # time.sleep(0.3)
 
         number = int(number)
 
-        d = self.data_incident(number)
+        d = self.data_incident(event, number)
         d.addCallback(self.add_headers, request=request)
         return d
 
 
-    def data_incident(self, number):
+    def data_incident(self, event, number):
         if False:
             #
             # This is faster, but doesn't benefit from any cleanup or
             # validation code, so it's only OK if we know all data in the
             # store is clean by this server version's standards.
             #
-            entity = self.storage.read_incident_with_number_raw(number)
+            entity = self.storage[event].read_incident_with_number_raw(number)
         else:
             #
             # This parses the data from the store, validates it, then
             # re-serializes it.
             #
-            incident = self.storage.read_incident_with_number(number)
+            incident = self.storage[event].read_incident_with_number(number)
             entity = json_as_text(incident_as_json(incident))
 
-        etag = self.storage.etag_for_incident_with_number(number)
+        etag = self.storage[event].etag_for_incident_with_number(number)
 
         return succeed((entity, etag))
 
@@ -574,21 +572,21 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
     # JSON endpoints
     #
 
-    @app.route("/incidents/<number>", methods=("POST",))
+    @app.route("/<event>/incidents/<number>", methods=("POST",))
     @http_sauce
-    def edit_incident(self, request, number):
+    def edit_incident(self, request, event, number):
         if self.config.ReadOnly:
             return self.read_only(request)
 
         number = int(number)
 
-        d = self.data_incident_edit(number, request.content, self.user)
+        d = self.data_incident_edit(event, number, request.content, self.user)
         d.addCallback(self.add_headers, request=request)
         return d
 
 
-    def data_incident_edit(self, number, edits_file, author):
-        incident = self.storage.read_incident_with_number(number)
+    def data_incident_edit(self, event, number, edits_file, author):
+        incident = self.storage[event].read_incident_with_number(number)
 
         #
         # Apply the changes requested by the client
@@ -600,27 +598,27 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
         #
         # Write to disk
         #
-        self.storage.write_incident(edited)
+        self.storage[event].write_incident(edited)
 
         # self.log.info(
         #     u"User {author} edited incident #{number} via JSON",
         #     author=author, number=number
         # )
         # self.log.debug(u"Original: {json}", json=incident_as_json(incident))
-        # self.log.debug(u"Changes: {json}", json=edits_json)
+        self.log.debug(u"Changes: {json}", json=edits_json)
         # self.log.debug(u"Edited: {json}", json=incident_as_json(edited))
 
         return succeed((u"", None))
 
 
-    @app.route("/incidents", methods=("POST",))
-    @app.route("/incidents/", methods=("POST",))
+    @app.route("/<event>/incidents", methods=("POST",))
+    @app.route("/<event>/incidents/", methods=("POST",))
     @http_sauce
-    def new_incident(self, request):
+    def new_incident(self, request, event):
         if self.config.ReadOnly:
             return self.read_only(request)
 
-        number = self.storage.next_incident_number()
+        number = self.storage[event].next_incident_number()
 
         def add_location_headers(response):
             request.setHeader(HeaderName.incidentNumber.value, number)
@@ -631,13 +629,13 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
 
             return response
 
-        d = self.data_incident_new(number, request.content, self.user)
+        d = self.data_incident_new(event, number, request.content, self.user)
         d.addCallback(self.add_headers, request=request, status=http.CREATED)
         d.addCallback(add_location_headers)
         return d
 
 
-    def data_incident_new(self, number, json_file, author):
+    def data_incident_new(self, event, number, json_file, author):
         json = json_from_file(json_file)
         incident = incident_from_json(json, number=number, validate=False)
 
@@ -678,7 +676,7 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
             author
         )
 
-        self.storage.write_incident(incident)
+        self.storage[event].write_incident(incident)
 
         self.log.info(
             u"User {author} created new incident #{number} via JSON",
@@ -693,22 +691,22 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
     # Web UI
     #
 
-    @app.route("/queue", methods=("GET",))
-    @app.route("/queue/", methods=("GET",))
+    @app.route("/<event>/queue", methods=("GET",))
+    @app.route("/<event>/queue/", methods=("GET",))
     @http_sauce
-    def dispatchQueue(self, request):
+    def dispatchQueue(self, request, event):
         if not request.args:
             request.args["show_closed"] = ["false"]
 
         set_response_header(
             request, HeaderName.contentType, ContentType.HTML
         )
-        return DispatchQueueElement(self)
+        return DispatchQueueElement(self, self.storage[event], event)
 
 
-    @app.route("/queue/incidents/<number>", methods=("GET", "POST"))
+    @app.route("/<event>/queue/incidents/<number>", methods=("GET", "POST"))
     @http_sauce
-    def queue_incident(self, request, number):
+    def queue_incident(self, request, event, number):
         set_response_header(
             request, HeaderName.contentType, ContentType.HTML
         )
@@ -717,20 +715,22 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
 
         edits = edits_from_query(author, number, request)
 
+        storage = self.storage[event]
+
         if edits:
-            incident = self.storage.read_incident_with_number(number)
+            incident = storage.read_incident_with_number(number)
             edited = edit_incident(incident, edits, author)
 
             self.log.info(
                 u"User {author} edited incident #{number} via web",
                 author=author, number=number
             )
-            self.log.debug(
-                u"Original: {json}", json=incident_as_json(incident)
-            )
+            # self.log.debug(
+            #     u"Original: {json}", json=incident_as_json(incident)
+            # )
             self.log.debug(u"Changes: {json}", json=incident_as_json(edits))
-            self.log.debug(u"Edited: {json}", json=incident_as_json(edited))
+            # self.log.debug(u"Edited: {json}", json=incident_as_json(edited))
 
-            self.storage.write_incident(edited)
+            storage.write_incident(edited)
 
-        return IncidentElement(self, number)
+        return IncidentElement(self, storage, number)
