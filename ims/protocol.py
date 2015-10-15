@@ -109,10 +109,10 @@ class NoAccessIncidentManagementSystem(object):
     # JSON endpoints
     #
 
-    @app.route("/ping", methods=("GET",))
-    @app.route("/ping/", methods=("GET",))
+    @app.route("/<event>/ping", methods=("GET",))
+    @app.route("/<event>/ping/", methods=("GET",))
     @http_sauce
-    def ping(self, request):
+    def ping(self, request, event):
         d = self.data_ping()
         d.addCallback(self.add_headers, request=request)
         return d
