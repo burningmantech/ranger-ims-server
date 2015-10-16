@@ -29,7 +29,7 @@ if ack="$(curl                    \
     --data ""                     \
     "http://localhost:8080/ping/" \
 | python -m json.tool 2>/dev/null)"; then
-  if [ "${ack}" == '"ack"' ]; then
+  if [ "${ack}" = '"ack"' ]; then
     echo "OK";
     exit 0;
   fi;
