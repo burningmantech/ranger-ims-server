@@ -107,6 +107,7 @@ class DutyManagementSystem(object):
         self.username = username
         self.password = password
 
+        self._personnel = ()
         self._personnel_updated = 0
         self._dbpool = None
 
