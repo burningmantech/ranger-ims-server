@@ -391,7 +391,7 @@ class MultiStorage(object):
                         store = ReadOnlyStorage(child)
                     else:
                         store = Storage(child)
-                    self.stores[child] = store
+                    self.stores[name] = store
                     return store
 
         raise KeyError(name)
