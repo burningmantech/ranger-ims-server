@@ -31,7 +31,8 @@ from twisted.logger import Logger
 from twisted.python.filepath import UnlistableError
 from .data import IncidentState, InvalidDataError
 from .json import (
-    incident_as_json, incident_from_json, json_as_text, json_from_file
+    incident_as_json, incident_from_json, json_as_text, json_from_file,
+    rfc3339_as_datetime
 )
 
 
@@ -443,5 +444,10 @@ def ims2014Cleanup(incident):
         for report_entry in incident.report_entries:
             if report_entry.author is None:
                 report_entry.author = u"<unknown>"
+
+    if incident.created is None:
+        # Wow MAJOR HAXXOR SKILLZ
+        if incident.number == 1158:
+            incident.created = rfc3339_as_datetime("2014-09-01T01:06:06Z")
 
     return incident
