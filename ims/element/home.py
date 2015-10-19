@@ -39,7 +39,7 @@ class HomePageElement(BaseElement):
 
     @renderer
     def events(self, request, tag):
-        events = [event for event in self.ims.storage]
+        events = sorted(event for event in self.ims.storage)
 
         if events:
             return (
