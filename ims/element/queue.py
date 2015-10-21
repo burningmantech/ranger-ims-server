@@ -53,7 +53,7 @@ class DispatchQueueElement(BaseElement):
         data = []
 
         for number, etag in incidents_from_query(storage, request):
-            incident = storage.read_incident_with_number(number)
+            incident = storage.readIncidentWithNumber(number)
 
             if incident.summary:
                 summary = incident.summary
@@ -88,7 +88,7 @@ class DispatchQueueElement(BaseElement):
             incidents_as_table(
                 self.event,
                 (
-                    storage.read_incident_with_number(number)
+                    storage.readIncidentWithNumber(number)
                     for number, etag in incidents_from_query(storage, request)
                 ),
                 tz=self.ims.config.TimeZone,

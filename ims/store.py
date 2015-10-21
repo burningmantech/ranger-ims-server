@@ -60,7 +60,7 @@ class ReadOnlyStorage(object):
 
     def __init__(self, path):
         self.path = path
-        self._incident_etags = {}
+        self._incidentETags = {}
         self._locations = None
         self.log.info("New data store: {store}", store=self)
 
@@ -69,7 +69,7 @@ class ReadOnlyStorage(object):
         return "{self.__class__.__name__}({self.path})".format(self=self)
 
 
-    def _open_incident(self, number, mode):
+    def _openIncident(self, number, mode):
         incident_fp = self.path.child(unicode(number))
         try:
             incident_fh = incident_fp.open(mode)
@@ -78,8 +78,8 @@ class ReadOnlyStorage(object):
         return incident_fh
 
 
-    def read_incident_with_number_raw(self, number):
-        handle = self._open_incident(number, "r")
+    def readIncidentWithNumberRaw(self, number):
+        handle = self._openIncident(number, "r")
         try:
             jsonText = handle.read()
         finally:
@@ -87,8 +87,8 @@ class ReadOnlyStorage(object):
         return jsonText
 
 
-    def read_incident_with_number(self, number):
-        handle = self._open_incident(number, "r")
+    def readIncidentWithNumber(self, number):
+        handle = self._openIncident(number, "r")
         try:
             json = json_from_file(handle)
             incident = incident_from_json(json, number=number, validate=False)
@@ -110,15 +110,15 @@ class ReadOnlyStorage(object):
         return incident
 
 
-    def etag_for_incident_with_number(self, number):
-        if number in self._incident_etags:
-            return self._incident_etags[number]
+    def etagForIncidentWithNumber(self, number):
+        if number in self._incidentETags:
+            return self._incidentETags[number]
 
-        data = self.read_incident_with_number_raw(number)
+        data = self.readIncidentWithNumberRaw(number)
         etag = etag_hash(data).hexdigest()
 
         if etag:
-            self._incident_etags[number] = etag
+            self._incidentETags[number] = etag
             return etag
         else:
             raise StorageError(
@@ -126,7 +126,7 @@ class ReadOnlyStorage(object):
             )
 
 
-    def _list_incidents(self):
+    def _listIncidents(self):
         try:
             for child in self.path.children():
                 name = child.basename()
@@ -146,43 +146,43 @@ class ReadOnlyStorage(object):
             pass
 
 
-    def list_incidents(self):
+    def listIncidents(self):
         """
         @return: number and etag for each incident in the store.
         @rtype: iterable of (L{int}, L{bytes})
         """
         if not hasattr(self, "_incidents"):
             incidents = {}
-            for number in self._list_incidents():
+            for number in self._listIncidents():
                 # Here we cache that the number exists, but not the incident
                 # itself.
                 incidents[number] = None
             self._incidents = incidents
 
         for number in self._incidents:
-            yield (number, self.etag_for_incident_with_number(number))
+            yield (number, self.etagForIncidentWithNumber(number))
 
 
     @property
-    def _max_incident_number(self):
+    def _maxIncidentNumber(self):
         """
         @return: the maximum incident number.
         @rtype: iterable of (L{str}, L{str})
         """
-        if not hasattr(self, "_max_incident_number_"):
+        if not hasattr(self, "_maxIncidentNumber_"):
             max = 0
-            for number, etag in self.list_incidents():
+            for number, etag in self.listIncidents():
                 if number > max:
                     max = number
-            self._max_incident_number_ = max
+            self._maxIncidentNumber_ = max
 
-        return self._max_incident_number_
+        return self._maxIncidentNumber_
 
 
-    @_max_incident_number.setter
-    def _max_incident_number(self, value):
-        assert value > self._max_incident_number
-        self._max_incident_number_ = value
+    @_maxIncidentNumber.setter
+    def _maxIncidentNumber(self, value):
+        assert value > self._maxIncidentNumber
+        self._maxIncidentNumber_ = value
 
 
     def locations(self):
@@ -192,8 +192,8 @@ class ReadOnlyStorage(object):
         """
         if self._locations is None:
             def locations():
-                for (number, etag) in self.list_incidents():
-                    incident = self.read_incident_with_number(number)
+                for (number, etag) in self.listIncidents():
+                    incident = self.readIncidentWithNumber(number)
                     location = incident.location
 
                     if location is not None:
@@ -204,10 +204,10 @@ class ReadOnlyStorage(object):
         return self._locations
 
 
-    def search_incidents(
+    def searchIncidents(
         self,
         terms=(),
-        show_closed=False,
+        showClosed=False,
         since=None,
         until=None,
     ):
@@ -218,8 +218,8 @@ class ReadOnlyStorage(object):
             Filter out incidents that do not match every given search term.
         @type terms: iterable of L{unicode}
 
-        @param show_closed: Whether to include closed incidents in result.
-        @type show_closed: L{bool}
+        @param showClosed: Whether to include closed incidents in result.
+        @type showClosed: L{bool}
 
         @param since: Filter out incidents not edited after a given time.
         @type since: L{datetime.datetime}
@@ -230,13 +230,13 @@ class ReadOnlyStorage(object):
         @return: number and etag for each incident in the store.
         @rtype: iterable of (L{int}, L{bytes})
         """
-        # log.msg("Searching for {0!r}, closed={1}".format(terms, show_closed))
+        # log.msg("Searching for {0!r}, closed={1}".format(terms, showClosed))
 
         #
         # Brute force implementation for now.
         #
 
-        def search_strings_from_incident(incident):
+        def searchStringsFromIncident(incident):
             yield str(incident.number)
 
             #
@@ -254,20 +254,20 @@ class ReadOnlyStorage(object):
             for entry in incident.report_entries:
                 yield entry.text
 
-        def in_time_bounds(when):
+        def inTimeBounds(when):
             if since is not None and when < since:
                 return False
             if until is not None and when > until:
                 return False
             return True
 
-        for (number, etag) in self.list_incidents():
-            incident = self.read_incident_with_number(number)
+        for (number, etag) in self.listIncidents():
+            incident = self.readIncidentWithNumber(number)
 
             #
             # Filter out closed incidents if appropriate
             #
-            if not show_closed and incident.state == IncidentState.closed:
+            if not showClosed and incident.state == IncidentState.closed:
                 continue
 
             #
@@ -275,7 +275,7 @@ class ReadOnlyStorage(object):
             #
             if since is not None or until is not None:
                 for entry in incident.report_entries:
-                    if in_time_bounds(entry.created):
+                    if inTimeBounds(entry.created):
                         break
                 else:
                     continue
@@ -285,7 +285,7 @@ class ReadOnlyStorage(object):
             #
 
             for term in terms:
-                for string in search_strings_from_incident(incident):
+                for string in searchStringsFromIncident(incident):
                     if string is None:
                         continue
                     if term.lower() in string.lower():
@@ -323,15 +323,15 @@ class Storage(ReadOnlyStorage):
         self._provisioned = True
 
 
-    def _write_incident_text(self, number, text):
-        incident_fh = self._open_incident(number, "w")
+    def _writeIncidentText(self, number, text):
+        incident_fh = self._openIncident(number, "w")
         try:
             incident_fh.write(text)
         finally:
             incident_fh.close()
 
 
-    def write_incident(self, incident):
+    def writeIncident(self, incident):
         incident.validate()
 
         self.provision()
@@ -340,29 +340,29 @@ class Storage(ReadOnlyStorage):
         json = incident_as_json(incident)
         text = json_as_text(json)
 
-        self._write_incident_text(number, text)
+        self._writeIncidentText(number, text)
 
         # Clear the cached etag
-        if number in self._incident_etags:
-            del self._incident_etags[number]
+        if number in self._incidentETags:
+            del self._incidentETags[number]
 
         if hasattr(self, "_incidents"):
             self._incidents[number] = None
 
         self._locations = None
 
-        if number > self._max_incident_number:
+        if number > self._maxIncidentNumber:
             raise AssertionError(
                 "Unallocated incident number: {} > {}"
-                .format(number, self._max_incident_number)
+                .format(number, self._maxIncidentNumber)
             )
-            self._max_incident_number = number
+            self._maxIncidentNumber = number
 
 
     def next_incident_number(self):
         self.provision()
-        self._max_incident_number += 1
-        return self._max_incident_number
+        self._maxIncidentNumber += 1
+        return self._maxIncidentNumber
 
 
 
@@ -438,12 +438,12 @@ def ims2014Cleanup(incident):
 
     if incident.report_entries is not None:
         if incident.created is None:
-            for report_entry in sorted(incident.report_entries):
-                incident.created = report_entry.created
+            for reportEntry in sorted(incident.report_entries):
+                incident.created = reportEntry.created
 
-        for report_entry in incident.report_entries:
-            if report_entry.author is None:
-                report_entry.author = u"<unknown>"
+        for reportEntry in incident.report_entries:
+            if reportEntry.author is None:
+                reportEntry.author = u"<unknown>"
 
     if incident.created is None:
         # Wow MAJOR HAXXOR SKILLZ

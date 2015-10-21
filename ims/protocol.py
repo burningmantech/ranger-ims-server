@@ -327,13 +327,13 @@ class ReadOnlyIncidentManagementSystem(NoAccessIncidentManagementSystem):
     @http_sauce
     def list_incidents(self, request, event):
         if request.args:
-            incidents = self.storage[event].search_incidents(
+            incidents = self.storage[event].searchIncidents(
                 terms=terms_from_query(request),
-                show_closed=show_closed_from_query(request),
+                showClosed=show_closed_from_query(request),
                 since=since_from_query(request),
             )
         else:
-            incidents = self.storage[event].list_incidents()
+            incidents = self.storage[event].listIncidents()
 
         d = self.data_incidents(incidents)
         d.addCallback(self.add_headers, request=request)
@@ -371,16 +371,16 @@ class ReadOnlyIncidentManagementSystem(NoAccessIncidentManagementSystem):
             # validation code, so it's only OK if we know all data in the
             # store is clean by this server version's standards.
             #
-            entity = self.storage[event].read_incident_with_number_raw(number)
+            entity = self.storage[event].readIncidentWithNumberRaw(number)
         else:
             #
             # This parses the data from the store, validates it, then
             # re-serializes it.
             #
-            incident = self.storage[event].read_incident_with_number(number)
+            incident = self.storage[event].readIncidentWithNumber(number)
             entity = json_as_text(incident_as_json(incident))
 
-        etag = self.storage[event].etag_for_incident_with_number(number)
+        etag = self.storage[event].etagForIncidentWithNumber(number)
 
         return succeed((entity, etag))
 
@@ -586,7 +586,7 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
 
 
     def data_incident_edit(self, event, number, edits_file, author):
-        incident = self.storage[event].read_incident_with_number(number)
+        incident = self.storage[event].readIncidentWithNumber(number)
 
         #
         # Apply the changes requested by the client
@@ -598,7 +598,7 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
         #
         # Write to disk
         #
-        self.storage[event].write_incident(edited)
+        self.storage[event].writeIncident(edited)
 
         # self.log.info(
         #     u"User {author} edited incident #{number} via JSON",
@@ -676,7 +676,7 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
             author
         )
 
-        self.storage[event].write_incident(incident)
+        self.storage[event].writeIncident(incident)
 
         self.log.info(
             u"User {author} created new incident #{number} via JSON",
@@ -718,7 +718,7 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
         storage = self.storage[event]
 
         if edits:
-            incident = storage.read_incident_with_number(number)
+            incident = storage.readIncidentWithNumber(number)
             edited = edit_incident(incident, edits, author)
 
             self.log.info(
@@ -731,6 +731,6 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
             self.log.debug(u"Changes: {json}", json=incident_as_json(edits))
             # self.log.debug(u"Edited: {json}", json=incident_as_json(edited))
 
-            storage.write_incident(edited)
+            storage.writeIncident(edited)
 
         return IncidentElement(self, storage, number)

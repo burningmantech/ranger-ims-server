@@ -75,8 +75,8 @@ class DailyReportElement(BaseElement):
 
                 return dates
 
-            for number, etag in storage.list_incidents():
-                incident = storage.read_incident_with_number(number)
+            for number, etag in storage.listIncidents():
+                incident = storage.readIncidentWithNumber(number)
 
                 if ignore_incident(incident):
                     continue

@@ -67,7 +67,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
                 # Make sure that the incident numbers vended by data()
                 # match the next_incident_number() implementation.
                 assert incident.number == store.next_incident_number()
-                store.write_incident(incident)
+                store.writeIncident(incident)
 
         return store
 
@@ -151,7 +151,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
     def test_data_incidents_none(self):
         ims = self.ims()
 
-        (entity, etag) = yield ims.data_incidents(ims.storage.list_incidents())
+        (entity, etag) = yield ims.data_incidents(ims.storage.listIncidents())
 
         self.assertEquals(entity, u"[]")
         self.assertIdentical(etag, None)
@@ -161,7 +161,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
     def test_data_incidents_some(self):
         ims = self.ims(data=test_incidents)
 
-        (entity, etag) = yield ims.data_incidents(ims.storage.list_incidents())
+        (entity, etag) = yield ims.data_incidents(ims.storage.listIncidents())
         json = json_from_text(entity)
 
         self.assertEquals(
@@ -182,10 +182,10 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
             incident = incident_from_json(json_from_text(entity), number)
 
             self.assertEquals(
-                incident, ims.storage.read_incident_with_number(number)
+                incident, ims.storage.readIncidentWithNumber(number)
             )
             self.assertEquals(
-                etag, ims.storage.etag_for_incident_with_number(number)
+                etag, ims.storage.etagForIncidentWithNumber(number)
             )
 
 
@@ -196,7 +196,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         number = 1
 
         # Unedited incident has priority = 5
-        assert ims.storage.read_incident_with_number(number).priority == 5
+        assert ims.storage.readIncidentWithNumber(number).priority == 5
 
         edits_file = StringIO(u'{"priority":2}')
 
@@ -209,7 +209,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         self.assertIdentical(etag, None)
 
         # Verify that the edit happened; edited incident has priority = 2
-        incident = ims.storage.read_incident_with_number(number)
+        incident = ims.storage.readIncidentWithNumber(number)
         self.assertEquals(incident.priority, 2)
         self.assertEquals(incident.report_entries[-1].author, u"Tool")
 
@@ -246,7 +246,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         self.assertIdentical(etag, None)
 
         # Verify that the new incident was created
-        incident = ims.storage.read_incident_with_number(number)
+        incident = ims.storage.readIncidentWithNumber(number)
         self.assertEquals(incident.number, number)
         self.assertEquals(incident.incident_types, frozenset())
         self.assertEquals(incident.rangers, frozenset())
@@ -288,7 +288,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
             number, json_file, u"Tool"
         )
 
-        incident = ims.storage.read_incident_with_number(number)
+        incident = ims.storage.readIncidentWithNumber(number)
         self.assertEquals(incident.number, number)
         self.assertEquals(incident.created, time2)
 

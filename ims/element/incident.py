@@ -37,7 +37,7 @@ class IncidentElement(BaseElement):
             self, ims, "incident",
             "Incident #{0}".format(number)
         )
-        self.incident = storage.read_incident_with_number(number)
+        self.incident = storage.readIncidentWithNumber(number)
 
         self.edit_enabled = not self.ims.config.ReadOnly
 

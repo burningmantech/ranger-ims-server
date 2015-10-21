@@ -50,7 +50,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
                     # Make sure that the incident numbers vended by data()
                     # match the next_incident_number() implementation.
                     assert incident.number == rw_store.next_incident_number()
-                    rw_store.write_incident(incident)
+                    rw_store.writeIncident(incident)
 
         store = ReadOnlyStorage(fp)
 
@@ -70,19 +70,19 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         number = 0
         for text in source:
             number += 1
-            rw_store._write_incident_text(number, text)
+            rw_store._writeIncidentText(number, text)
 
         return ReadOnlyStorage(fp)
 
 
     def test_read_raw(self):
         """
-        L{ReadOnlyStorage.read_incident_with_number_raw} returns JSON text for
+        L{ReadOnlyStorage.readIncidentWithNumberRaw} returns JSON text for
         the incident with the given number.
         """
         store = self.storage(data=test_incidents)
         for number in test_incident_etags:
-            jsonText = store.read_incident_with_number_raw(number)
+            jsonText = store.readIncidentWithNumberRaw(number)
             json = json_from_text(jsonText)
             incident = incident_from_json(json, number=number)
             self.assertEquals(incident.number, number)
@@ -90,36 +90,36 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
 
     def test_read_raw_not_found(self):
         """
-        L{ReadOnlyStorage.read_incident_with_number_raw} raises
+        L{ReadOnlyStorage.readIncidentWithNumberRaw} raises
         L{NoSuchIncidentError} if there is no incident with the given number.
         """
         store = self.storage(provisioned=False)
         self.assertRaises(
             NoSuchIncidentError,
-            store.read_incident_with_number_raw, 1
+            store.readIncidentWithNumberRaw, 1
         )
 
 
     def test_read(self):
         """
-        L{ReadOnlyStorage.read_incident_with_number} returns the incident with
+        L{ReadOnlyStorage.readIncidentWithNumber} returns the incident with
         the given number.
         """
         store = self.storage(data=test_incidents)
         for number in test_incident_etags:
-            incident = store.read_incident_with_number(number)
+            incident = store.readIncidentWithNumber(number)
             self.assertEquals(incident.number, number)
 
 
     def test_read_not_found(self):
         """
-        L{ReadOnlyStorage.read_incident_with_number} raises
+        L{ReadOnlyStorage.readIncidentWithNumber} raises
         L{NoSuchIncidentError} if there is no incident with the given number.
         """
         store = self.storage(provisioned=False)
         self.assertRaises(
             NoSuchIncidentError,
-            store.read_incident_with_number, 1
+            store.readIncidentWithNumber, 1
         )
 
 
@@ -146,8 +146,8 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
 
         store = self.storageWithSourceData(source)
 
-        for number, etag in store.list_incidents():
-            incident = store.read_incident_with_number(number)
+        for number, etag in store.listIncidents():
+            incident = store.readIncidentWithNumber(number)
             self.assertEquals(incident.created, time1)
 
 
@@ -172,114 +172,114 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
 
         store = self.storageWithSourceData(source)
 
-        for number, etag in store.list_incidents():
-            incident = store.read_incident_with_number(number)
+        for number, etag in store.listIncidents():
+            incident = store.readIncidentWithNumber(number)
             for entry in incident.report_entries:
                 self.assertEquals(entry.author, u"<unknown>")
 
 
     def test_etag(self):
         """
-        L{ReadOnlyStorage.etag_for_incident_with_number} returns the ETag for
+        L{ReadOnlyStorage.etagForIncidentWithNumber} returns the ETag for
         the incident with the given number.
         """
         store = self.storage(data=test_incidents)
         for number, etag in test_incident_etags.iteritems():
             self.assertEquals(
-                etag, store.etag_for_incident_with_number(number)
+                etag, store.etagForIncidentWithNumber(number)
             )
 
 
     def test_list_new(self):
         """
-        L{ReadOnlyStorage.list_incidents} returns no results for an
+        L{ReadOnlyStorage.listIncidents} returns no results for an
         unprovisioned store.
         """
         store = self.storage(provisioned=False)
-        self.assertEquals(set(store.list_incidents()), set())
+        self.assertEquals(set(store.listIncidents()), set())
 
 
     def test_list_empty(self):
         """
-        L{ReadOnlyStorage.list_incidents} returns no results for a provisioned
+        L{ReadOnlyStorage.listIncidents} returns no results for a provisioned
         but empty store.
         """
         store = self.storage()
-        self.assertEquals(set(store.list_incidents()), set())
+        self.assertEquals(set(store.listIncidents()), set())
 
 
     def test_list_with_data_numbers(self):
         """
-        L{ReadOnlyStorage.list_incidents} returns the correct numbers for a
+        L{ReadOnlyStorage.listIncidents} returns the correct numbers for a
         store with data.
         """
         store = self.storage(data=test_incidents)
         self.assertEquals(
-            set(number for number, etag in store.list_incidents()),
+            set(number for number, etag in store.listIncidents()),
             set(test_incident_etags.iterkeys())
         )
 
 
     def test_list_with_data_etags(self):
         """
-        L{ReadOnlyStorage.list_incidents} returns the correct ETags for a
+        L{ReadOnlyStorage.listIncidents} returns the correct ETags for a
         store with data.
         """
         store = self.storage(data=test_incidents)
         self.assertEquals(
-            set(etag for number, etag in store.list_incidents()),
+            set(etag for number, etag in store.listIncidents()),
             set(test_incident_etags.itervalues())
         )
 
 
     def test_max_new(self):
         """
-        L{ReadOnlyStorage._max_incident_number} is C{0} for an unprovisioned
+        L{ReadOnlyStorage._maxIncidentNumber} is C{0} for an unprovisioned
         store.
         """
         store = self.storage(provisioned=False)
-        self.assertEquals(store._max_incident_number, 0)
+        self.assertEquals(store._maxIncidentNumber, 0)
 
 
     def test_max_empty(self):
         """
-        L{ReadOnlyStorage._max_incident_number} is C{0} for an empty store.
+        L{ReadOnlyStorage._maxIncidentNumber} is C{0} for an empty store.
         """
         store = self.storage()
-        self.assertEquals(store._max_incident_number, 0)
+        self.assertEquals(store._maxIncidentNumber, 0)
 
 
     def test_max_with_data(self):
         """
-        L{ReadOnlyStorage._max_incident_number} reflects the highest incident
+        L{ReadOnlyStorage._maxIncidentNumber} reflects the highest incident
         number in a store with data.
         """
         store = self.storage(data=test_incidents)
-        self.assertEquals(store._max_incident_number, len(test_incident_etags))
+        self.assertEquals(store._maxIncidentNumber, len(test_incident_etags))
 
 
     def test_max_set(self):
         """
-        Setting L{ReadOnlyStorage._max_incident_number} and then getting it
+        Setting L{ReadOnlyStorage._maxIncidentNumber} and then getting it
         gives you the same value.
         """
         store = self.storage(provisioned=False)
-        store._max_incident_number = 10
-        self.assertEquals(store._max_incident_number, 10)
+        store._maxIncidentNumber = 10
+        self.assertEquals(store._maxIncidentNumber, 10)
 
 
     def test_max_set_less_than(self):
         """
-        Setting L{ReadOnlyStorage._max_incident_number} to a value lower than
+        Setting L{ReadOnlyStorage._maxIncidentNumber} to a value lower than
         the current value raises an AssertionError.
         """
         store = self.storage(provisioned=False)
-        store._max_incident_number = 10
+        store._maxIncidentNumber = 10
         self.assertRaises(
             AssertionError,
-            setattr, store, "_max_incident_number", 5
+            setattr, store, "_maxIncidentNumber", 5
         )
-        self.assertEquals(store._max_incident_number, 10)
+        self.assertEquals(store._maxIncidentNumber, 10)
 
 
     def test_locations(self):
@@ -298,8 +298,8 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         """
         store = self.storage(data=test_incidents)
         self.assertEquals(
-            set(store.search_incidents()),
-            set(list_incidents((1, 2, 3)))
+            set(store.searchIncidents()),
+            set(listIncidents((1, 2, 3)))
         )
 
 
@@ -309,8 +309,8 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         """
         store = self.storage(data=test_incidents)
         self.assertEquals(
-            set(store.search_incidents("overboard")),
-            set(list_incidents((1,)))
+            set(store.searchIncidents("overboard")),
+            set(listIncidents((1,)))
         )
 
 
@@ -321,8 +321,8 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         store = self.storage(data=test_incidents)
 
         self.assertEquals(
-            set(store.search_incidents(show_closed=True)),
-            set(list_incidents())
+            set(store.searchIncidents(showClosed=True)),
+            set(listIncidents())
         )
 
 
@@ -334,48 +334,48 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         store = self.storage(data=test_incidents)
 
         self.assertEquals(
-            set(store.search_incidents(since=time1)),
-            set(list_incidents((1, 2, 3)))
+            set(store.searchIncidents(since=time1)),
+            set(listIncidents((1, 2, 3)))
         )
 
         self.assertEquals(
-            set(store.search_incidents(since=time2)),
-            set(list_incidents((1, 2, 3)))
+            set(store.searchIncidents(since=time2)),
+            set(listIncidents((1, 2, 3)))
         )
 
         self.assertEquals(
-            set(store.search_incidents(since=time3)),
-            set(list_incidents((2,)))
+            set(store.searchIncidents(since=time3)),
+            set(listIncidents((2,)))
         )
 
         self.assertEquals(
-            set(store.search_incidents(until=time1)),
-            set(list_incidents((1,)))
+            set(store.searchIncidents(until=time1)),
+            set(listIncidents((1,)))
         )
 
         self.assertEquals(
-            set(store.search_incidents(until=time2)),
-            set(list_incidents((1, 3)))
+            set(store.searchIncidents(until=time2)),
+            set(listIncidents((1, 3)))
         )
 
         self.assertEquals(
-            set(store.search_incidents(until=time3)),
-            set(list_incidents((1, 2, 3)))
+            set(store.searchIncidents(until=time3)),
+            set(listIncidents((1, 2, 3)))
         )
 
         self.assertEquals(
-            set(store.search_incidents(since=time1, until=time3)),
-            set(list_incidents((1, 2, 3)))
+            set(store.searchIncidents(since=time1, until=time3)),
+            set(listIncidents((1, 2, 3)))
         )
 
         self.assertEquals(
-            set(store.search_incidents(since=time1, until=time2)),
-            set(list_incidents((1, 3)))
+            set(store.searchIncidents(since=time1, until=time2)),
+            set(listIncidents((1, 3)))
         )
 
         self.assertEquals(
-            set(store.search_incidents(since=time1, until=time1)),
-            set(list_incidents((1,)))
+            set(store.searchIncidents(since=time1, until=time1)),
+            set(listIncidents((1,)))
         )
 
 
@@ -399,7 +399,7 @@ class StorageTests(twisted.trial.unittest.TestCase):
                     # Make sure that the incident numbers vended by data()
                     # match the next_incident_number() implementation.
                     assert incident.number == store.next_incident_number()
-                    store.write_incident(incident)
+                    store.writeIncident(incident)
 
         # Make sure provisioning is correct
         assert bool(store.path.exists()) == bool(provisioned)
@@ -436,9 +436,9 @@ class StorageTests(twisted.trial.unittest.TestCase):
         self.assertRaises(StorageError, store.provision)
 
 
-    def test_write_incident_new(self):
+    def test_writeIncident_new(self):
         """
-        L{Storage.write_incident} on an unprovisioned store stores an incident.
+        L{Storage.writeIncident} on an unprovisioned store stores an incident.
         """
         store = self.storage(provisioned=False)
         incidents = frozenset(test_incidents(store))
@@ -447,9 +447,9 @@ class StorageTests(twisted.trial.unittest.TestCase):
             # Make sure that the incident numbers vended by data()
             # match the next_incident_number() implementation.
             assert incident.number == store.next_incident_number()
-            store.write_incident(incident)
+            store.writeIncident(incident)
             self.assertEquals(
-                incident, store.read_incident_with_number(incident.number)
+                incident, store.readIncidentWithNumber(incident.number)
             )
 
 
@@ -458,12 +458,12 @@ class StorageTests(twisted.trial.unittest.TestCase):
         L{Storage.next_incident_number} returns the next available number.
         """
         store = self.storage(provisioned=False)
-        last = store._max_incident_number
+        last = store._maxIncidentNumber
         next = store.next_incident_number()
         self.assertEquals(next, last + 1)
         self.assertRaises(
             NoSuchIncidentError,
-            store.read_incident_with_number_raw, next
+            store.readIncidentWithNumberRaw, next
         )
 
 
@@ -525,7 +525,7 @@ test_incident_etags = {
 }
 
 
-def list_incidents(numbers=test_incident_etags):
+def listIncidents(numbers=test_incident_etags):
     return ((i, test_incident_etags[i]) for i in numbers)
 
 

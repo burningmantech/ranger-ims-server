@@ -65,13 +65,13 @@ def ignore_entry(entry):
 def incidents_from_query(storage, request):
     if not hasattr(request, "ims_incidents"):
         if request.args:
-            request.ims_incidents = storage.search_incidents(
+            request.ims_incidents = storage.searchIncidents(
                 terms=terms_from_query(request),
-                show_closed=show_closed_from_query(request),
+                showClosed=show_closed_from_query(request),
                 since=since_from_query(request),
             )
         else:
-            request.ims_incidents = storage.list_incidents()
+            request.ims_incidents = storage.listIncidents()
 
     return request.ims_incidents
 
