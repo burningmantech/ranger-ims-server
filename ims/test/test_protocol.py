@@ -75,7 +75,8 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
     def ims(self, data=None):
         config = Configuration(emptyConfigFile)
         if data is not None:
-            config.storage = self.storage(data=data)
+            storage = self.storage(data=data)
+            config.storage = dict(event=storage)
         ims = ReadWriteIncidentManagementSystem(config)
         ims.avatarId = u"Test"
         return ims
@@ -151,7 +152,9 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
     def test_data_incidents_none(self):
         ims = self.ims()
 
-        (entity, etag) = yield ims.data_incidents(ims.storage.listIncidents())
+        (entity, etag) = yield ims.data_incidents(
+            ims.storage["event"].listIncidents()
+        )
 
         self.assertEquals(entity, u"[]")
         self.assertIdentical(etag, None)
@@ -161,7 +164,9 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
     def test_data_incidents_some(self):
         ims = self.ims(data=test_incidents)
 
-        (entity, etag) = yield ims.data_incidents(ims.storage.listIncidents())
+        (entity, etag) = yield ims.data_incidents(
+            ims.storage["event"].listIncidents()
+        )
         json = json_from_text(entity)
 
         self.assertEquals(
@@ -178,14 +183,14 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         ims = self.ims(data=test_incidents)
 
         for number in test_incident_etags.iterkeys():
-            (entity, etag) = yield ims.data_incident(number)
+            (entity, etag) = yield ims.data_incident("event", number)
             incident = incident_from_json(json_from_text(entity), number)
 
             self.assertEquals(
-                incident, ims.storage.readIncidentWithNumber(number)
+                incident, ims.storage["event"].readIncidentWithNumber(number)
             )
             self.assertEquals(
-                etag, ims.storage.etagForIncidentWithNumber(number)
+                etag, ims.storage["event"].etagForIncidentWithNumber(number)
             )
 
 
@@ -196,12 +201,14 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         number = 1
 
         # Unedited incident has priority = 5
-        assert ims.storage.readIncidentWithNumber(number).priority == 5
+        assert (
+            ims.storage["event"].readIncidentWithNumber(number).priority == 5
+        )
 
         edits_file = StringIO(u'{"priority":2}')
 
         (entity, etag) = yield ims.data_incident_edit(
-            number, edits_file, u"Tool"
+            "event", number, edits_file, u"Tool"
         )
 
         # Response is empty
@@ -209,7 +216,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         self.assertIdentical(etag, None)
 
         # Verify that the edit happened; edited incident has priority = 2
-        incident = ims.storage.readIncidentWithNumber(number)
+        incident = ims.storage["event"].readIncidentWithNumber(number)
         self.assertEquals(incident.priority, 2)
         self.assertEquals(incident.report_entries[-1].author, u"Tool")
 
@@ -218,7 +225,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
     def test_data_incident_new(self):
         ims = self.ims(data=test_incidents)
 
-        number = ims.storage.next_incident_number()
+        number = ims.storage["event"].next_incident_number()
 
         json_file = StringIO(u"""
             {
@@ -238,7 +245,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         """)
 
         (entity, etag) = yield ims.data_incident_new(
-            number, json_file, u"Tool"
+            "event", number, json_file, u"Tool"
         )
 
         # Response is empty
@@ -246,7 +253,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         self.assertIdentical(etag, None)
 
         # Verify that the new incident was created
-        incident = ims.storage.readIncidentWithNumber(number)
+        incident = ims.storage["event"].readIncidentWithNumber(number)
         self.assertEquals(incident.number, number)
         self.assertEquals(incident.incident_types, frozenset())
         self.assertEquals(incident.rangers, frozenset())
@@ -268,7 +275,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
     def test_data_incident_new_noCreated(self):
         ims = self.ims(data=test_incidents)
 
-        number = ims.storage.next_incident_number()
+        number = ims.storage["event"].next_incident_number()
 
         json_file = StringIO(u"""
             {
@@ -285,10 +292,10 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         """)
 
         (entity, etag) = yield ims.data_incident_new(
-            number, json_file, u"Tool"
+            "event", number, json_file, u"Tool"
         )
 
-        incident = ims.storage.readIncidentWithNumber(number)
+        incident = ims.storage["event"].readIncidentWithNumber(number)
         self.assertEquals(incident.number, number)
         self.assertEquals(incident.created, time2)
 
@@ -296,7 +303,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
     def test_data_incident_new_createdFuture(self):
         ims = self.ims(data=test_incidents)
 
-        number = ims.storage.next_incident_number()
+        number = ims.storage["event"].next_incident_number()
 
         json_file = StringIO(u"""
             {
@@ -307,5 +314,5 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
 
         self.assertRaises(
             InvalidDataError,
-            ims.data_incident_new, number, json_file, u"Tool"
+            ims.data_incident_new, "event", number, json_file, u"Tool"
         )
