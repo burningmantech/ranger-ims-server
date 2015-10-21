@@ -23,6 +23,7 @@ __all__ = [
     "NoSuchIncidentError",
     "ReadOnlyStorage",
     "Storage",
+    "MultiStorage",
 ]
 
 from hashlib import sha1 as etag_hash
