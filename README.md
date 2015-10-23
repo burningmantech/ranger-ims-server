@@ -1,6 +1,8 @@
 Ranger Incident Management System
 =================================
 
+[![Testing Status](https://travis-ci.org/burningmantech/ranger-ims-server.svg?branch=master)](https://travis-ci.org/burningmantech/ranger-ims-server.svg?branch=master)
+
 [![Requirements Status](https://requires.io/github/burningmantech/ranger-ims-server/requirements.svg?branch=master)](https://requires.io/github/burningmantech/ranger-ims-server/requirements/?branch=master)
 
 This software package implements software to provide logging for incidents as they occur and to aid in the dispatch of resources to respond to those incidents.
