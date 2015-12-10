@@ -24,10 +24,12 @@ import twisted.trial.unittest
 from twisted.python.filepath import FilePath
 
 from ..tz import utc
-from ims.json import incident_from_json, json_from_text
+from ims.json import (
+    incident_from_json, incident_as_json, json_from_text, json_as_text
+)
 from ims.data import IncidentState, Incident, ReportEntry
 from ims.store import (
-    StorageError, ReadOnlyStorage, Storage, NoSuchIncidentError
+    StorageError, ReadOnlyStorage, Storage, NoSuchIncidentError, etag_hash
 )
 from .test_data import location_tokyo, location_man, location_zero
 
@@ -46,9 +48,10 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
             rw_store.provision()
 
             if data is not None:
-                for incident in data(rw_store):
-                    # Make sure that the incident numbers vended by data()
-                    # match the next_incident_number() implementation.
+                for incident in data():
+                    # Make sure that the incident numbers vended by
+                    # data() match the next_incident_number()
+                    # implementation.
                     assert incident.number == rw_store.next_incident_number()
                     rw_store.writeIncident(incident)
 
@@ -441,7 +444,7 @@ class StorageTests(twisted.trial.unittest.TestCase):
         L{Storage.writeIncident} on an unprovisioned store stores an incident.
         """
         store = self.storage(provisioned=False)
-        incidents = frozenset(test_incidents(store))
+        incidents = frozenset(test_incidents())
 
         for incident in incidents:
             # Make sure that the incident numbers vended by data()
@@ -468,8 +471,13 @@ class StorageTests(twisted.trial.unittest.TestCase):
 
 
 
+time1 = DateTime(2012, 9, 1, 21, 0, 0, tzinfo=utc)
+time2 = DateTime(2013, 8, 31, 21, 0, 0, tzinfo=utc)
+time3 = DateTime(2014, 8, 23, 21, 0, 0, tzinfo=utc)
+
+
 # This is a function just to ensure that the test data aren't mutated.
-def test_incidents(store):
+def test_incidents():
     # Need to include time stamps below or etags will vary.
 
     def next_number():
@@ -477,7 +485,7 @@ def test_incidents(store):
         return number_container[0]
     number_container = [0]
 
-    return (
+    incidents = (
         Incident(
             number=next_number(),
             rangers=(), incident_types=(), priority=5,
@@ -516,19 +524,21 @@ def test_incidents(store):
         ),
     )
 
+    return incidents
 
-test_incident_etags = {
-    1: u"bbf50b1c73a5462e2ec45f789b16e4c2d7cfb0ea",
-    2: u"e130c7cba55c1271ba855c1273fbc8974be2b559",
-    3: u"f32749ad84344959dbdf001f976881f9b336d170",
-    4: u"a1bfe51a1fb342c256f710896bb160875aa73460",
-}
+
+def expectedETagForIncident(incident):
+    json = incident_as_json(incident)
+    text = json_as_text(json)
+
+    return etag_hash(text).hexdigest()
+
+
+test_incident_etags = dict((
+    (incident.number, expectedETagForIncident(incident))
+    for incident in test_incidents()
+))
 
 
 def listIncidents(numbers=test_incident_etags):
     return ((i, test_incident_etags[i]) for i in numbers)
-
-
-time1 = DateTime(2012, 9, 1, 21, 0, 0, tzinfo=utc)
-time2 = DateTime(2013, 8, 31, 21, 0, 0, tzinfo=utc)
-time3 = DateTime(2014, 8, 23, 21, 0, 0, tzinfo=utc)
