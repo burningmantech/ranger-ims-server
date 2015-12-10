@@ -843,7 +843,7 @@ class IncidentSerializationTests(unittest.TestCase):
         self.assertEquals(
             {
                 JSON.incident_number.value: 1,
-                JSON.incident_types.value: (),
+                JSON.incident_types.value: [],
             },
             incident_as_json(Incident(number=1, incident_types=()))
         )

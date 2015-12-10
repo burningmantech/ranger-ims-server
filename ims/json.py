@@ -487,7 +487,7 @@ def incident_as_json(incident):
         ]
 
     if incident.incident_types is not None:
-        root[JSON.incident_types.value] = tuple(incident.incident_types)
+        root[JSON.incident_types.value] = list(incident.incident_types)
 
     if incident.report_entries is not None:
         root[JSON.report_entries.value] = [
