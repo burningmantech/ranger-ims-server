@@ -1,9 +1,11 @@
 *.pyc
 *.pyo
+*.egg-info/
 #*#
 .#*
 /.develop/
 /_trial_temp/
+/.tox/
 /MANIFEST
 /cached/
 /data/
