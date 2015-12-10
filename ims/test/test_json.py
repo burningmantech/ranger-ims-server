@@ -796,11 +796,11 @@ class IncidentSerializationTests(unittest.TestCase):
 
         self.assertEquals(
             frozenset(result.keys()),
-            frozenset((JSON.incident_number.value, JSON.rangers.value))
+            frozenset((JSON.incident_number.value, JSON.ranger_handles.value))
         )
         self.assertEquals(result[JSON.incident_number.value], 1)
         self.assertEquals(
-            frozenset(result[JSON.rangers.value]),
+            frozenset(result[JSON.ranger_handles.value]),
             frozenset((u"Tool", u"Tulsa"))
         )
 
