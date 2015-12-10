@@ -784,20 +784,24 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         Serialize with some Rangers.
         """
-        self.assertEquals(
-            {
-                JSON.incident_number.value: 1,
-                JSON.ranger_handles.value: [u"Tool", u"Tulsa"],
-            },
-            incident_as_json(
-                Incident(
-                    number=1,
-                    rangers=(
-                        Ranger(u"Tool", None, None),
-                        Ranger(u"Tulsa", None, None),
-                    ),
-                )
+        result = incident_as_json(
+            Incident(
+                number=1,
+                rangers=(
+                    Ranger(u"Tool", None, None),
+                    Ranger(u"Tulsa", None, None),
+                ),
             )
+        )
+
+        self.assertEquals(
+            frozenset(result.keys()),
+            frozenset((JSON.incident_number.value, JSON.rangers.value))
+        )
+        self.assertEquals(result[JSON.incident_number.value], 1)
+        self.assertEquals(
+            frozenset(result[JSON.rangers.value]),
+            frozenset((u"Tool", u"Tulsa"))
         )
 
 
