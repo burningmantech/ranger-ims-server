@@ -20,4 +20,4 @@ pyasn1-modules==0.0.8
 characteristic==14.3.0
 
 # MySQL
-mysql-connector-python-rf==2.0.4
+--allow-external mysql-connector-python-rf==2.0.4
