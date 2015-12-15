@@ -14,7 +14,7 @@ install:
 
 script:
   - pyflakes ims
-  - trial ims
+  - trial --coverage --random=0 ims
 
 after_success:
   - codecov
