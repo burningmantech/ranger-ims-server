@@ -39,7 +39,7 @@ init_build > /dev/null;
 do_setup="false";
   do_get="false";
 
-    random="--random=$(date "+%s")";
+    random="--random=0";
   no_color="";
 until_fail="";
   coverage="";
