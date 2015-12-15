@@ -2,4 +2,4 @@
 -r requirements-stable.txt
 
 # Additional dependencies for development and testing
-pyflakes
+flake8

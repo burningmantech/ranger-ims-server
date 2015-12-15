@@ -28,8 +28,8 @@ do_setup="false";
 develop > /dev/null;
 
 if [ $# -eq 0 ]; then
-  set - calendarserver contrib twisted twistedcaldav txdav txweb2;
+  set - ims;
 fi;
 
 echo "Checking modules:" "$@";
-exec "${python}" -m pyflakes "$@";
+exec "${python}" -m flake8 "$@";
