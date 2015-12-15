@@ -130,7 +130,7 @@ def doSetup():
 
     try:
         version_file.write(
-            'version = "{0}"\n\n'.format(version_string)
+            'version = "{0}"\n'.format(version_string)
         )
     finally:
         version_file.close()
