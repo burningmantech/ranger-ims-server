@@ -2,7 +2,7 @@
 # -*- sh-basic-offset: 2 -*-
 
 ##
-# Copyright (c) 2005-2014 Apple Inc. All rights reserved.
+# See the file COPYRIGHT for copyright information.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,24 +31,12 @@ wd="$(cd "$(dirname "$0")/.." && pwd -L)";
 init_build > /dev/null;
 
 
-
 #
 # Options
 #
 
 do_setup="false";
   do_get="false";
-
-    random="--random=0";
-  no_color="";
-until_fail="";
-  coverage="";
-   numjobs="";
-   reactor="";
-
-if [ "$(uname -s)" = "Darwin" ]; then
-  reactor="--reactor=kqueue";
-fi;
 
 usage ()
 {
@@ -59,96 +47,30 @@ usage ()
   echo "Usage: ${program} [options]";
   echo "Options:";
   echo "        -h  Print this help and exit";
-  echo "        -n  Do not use color";
-  echo "        -o  Do not run tests in random order.";
-  echo "        -r<num>  Use specified seed to determine order.";
   echo "        -u  Run until the tests fail.";
-  echo "        -c  Generate coverage reports.";
 
   if [ "${1-}" = "-" ]; then return 0; fi;
   exit 64;
 }
 
-while getopts "nhoucr:j:" option; do
+while getopts "h" option; do
   case "${option}" in
     '?') usage; ;;
     'h') usage -; exit 0; ;;
-    'o')     random=""; ;;
-    'r')     random="--random=$OPTARG"; ;;
-    'n')  no_color="--reporter=bwverbose"; ;;
-    'u') until_fail="--until-failure"; ;;
-    'c')   coverage="--coverage"; ;;
-    'j')    numjobs="-j $OPTARG"; ;;
   esac;
 done;
 shift $((${OPTIND} - 1));
 
-if [ $# -eq 0 ]; then
-  lint="true";
-  set - ims;
-else
-  lint="false";
-fi;
-
-
 
 #
+# Do The Right Thing
+#
+
 # Dependencies
-#
-
 develop > /dev/null "${dev_home}/setup.log";
 
-
-
-#
 # Clean up
-#
-
 find "${wd}" -name \*.pyc -print0 | xargs -0 rm;
 
-
-
-#
-# Unit tests
-#
-
-for module in "$@"; do
-  if [ -f "${module}" ]; then
-    module="--testmodule=${module}";
-  fi;
-
-  cd "${wd}" &&                                       \
-    "${wd}/bin/trial"                                 \
-    --temp-directory="${dev_home}/trial"              \
-    --rterrors                                        \
-    ${reactor}                                        \
-    ${random}                                         \
-    ${until_fail}                                     \
-    ${no_color}                                       \
-    ${coverage}                                       \
-    ${numjobs}                                        \
-    "${module}";
-done;
-
-
-if ! "${lint}"; then
-  exit 0;
-fi;
-
-
-
-#
-# Linting
-#
-
-echo "";
-echo "Running pyflakes...";
-
-"${python}" -m pip install pyflakes --upgrade >> "${dev_home}/setup.log";
-tmp="$(mktemp -t "twext_flakes.XXXXX")";
-cd "${wd}" && "${python}" -m pyflakes "$@" | tee "${tmp}" 2>&1;
-if [ -s "${tmp}" ]; then
-  echo "**** Pyflakes says you have some code to clean up. ****";
-  exit 1;
-fi;
-rm -f "${tmp}";
+# Tests
+python -m tox "$@";
