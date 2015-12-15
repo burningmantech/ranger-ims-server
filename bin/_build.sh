@@ -561,9 +561,9 @@ bootstrap_virtualenv () {
   mkdir -p "${py_ve_tools}/junk";
 
   for pkg in             \
-      setuptools-17.0    \
-      pip-7.0.3          \
-      virtualenv-13.0.3  \
+      setuptools-18.5    \
+      pip-7.1.2          \
+      virtualenv-13.1.2  \
   ; do
       local    name="${pkg%-*}";
       local version="${pkg#*-}";
