@@ -3,6 +3,7 @@
 *.egg-info/
 #*#
 .#*
+*.sublime-workspace
 /.develop/
 /_trial_temp/
 /.tox/
