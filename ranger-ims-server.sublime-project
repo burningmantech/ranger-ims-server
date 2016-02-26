@@ -34,6 +34,7 @@
             "E302",  // Missing 2 blank lines.
             "E303",  // Extra blank lines.
             "E402",  // Import at top of file
+            "E731",  // Assignment of a lambda
         ],
 
         "pyflakes_ignore_import_*": false,

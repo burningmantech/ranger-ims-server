@@ -33,6 +33,9 @@ log = Logger()
 
 
 def http_download(destination, url):
+    """
+    Download via HTTP.
+    """
     class FileWriter(Protocol):
         def __init__(self, fp, fin):
             self.fp = fp

@@ -56,6 +56,7 @@ class ReadOnlyStorage(object):
     """
     Back-end storage
     """
+
     log = Logger()
 
 

@@ -230,5 +230,8 @@ class Realm(object):
 
 
 def guard(config, realmName, checkers):
+    """
+    Set up a L{twisted.cred} guard.
+    """
     portal = Portal(Realm(config), checkers)
     return HTMLFormSessionWrapper(portal, (HTMLFormCredentialFactory(),))

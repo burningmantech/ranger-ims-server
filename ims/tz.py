@@ -126,4 +126,7 @@ utc = FixedOffsetTimeZone.fromSignHoursMinutes("+", 0, 0)
 
 
 def utcNow():
+    """
+    Compute current time in UTC timezone.
+    """
     return datetime.utcnow().replace(tzinfo=utc)

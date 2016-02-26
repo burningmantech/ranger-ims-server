@@ -21,6 +21,7 @@ Protocol utilities
 __all__ = [
     "url_for",
     "set_response_header",
+    "set_user_agent",
     "http_sauce",
     "HeaderName",
     "ContentType",
@@ -44,17 +45,26 @@ log = Logger()
 
 
 def url_for(request, endpoint, *args, **kwargs):
+    """
+    Compute the URL for an endpoint.
+    """
     kwargs["force_external"] = True
     return IKleinRequest(request).url_for(endpoint, *args, **kwargs)
 
 
 def set_response_header(request, name, value):
+    """
+    Set a response header.
+    """
     if isinstance(value, ValueConstant):
         value = value.value
     request.setHeader(name.value, value)
 
 
 def set_user_agent(request):
+    """
+    Set C{user-agent} header.
+    """
     # Get User-Agent
     values = request.requestHeaders.getRawHeaders(
         HeaderName.userAgent.value, []
@@ -68,6 +78,9 @@ def set_user_agent(request):
 
 
 def set_accepts(request):
+    """
+    Set C{accept} header
+    """
     # Get accept header
     accepts = []
     values = request.requestHeaders.getRawHeaders(
@@ -87,6 +100,9 @@ def set_accepts(request):
 
 
 def http_sauce(f):
+    """
+    Add HTTP sauce.
+    """
     @wraps(f)
     def wrapper(self, request, *args, **kwargs):
         set_user_agent(request)
@@ -151,6 +167,10 @@ def http_sauce(f):
 
 
 class HeaderName (Values):
+    """
+    Header names
+    """
+
     contentType    = ValueConstant("Content-Type")
     etag           = ValueConstant("ETag")
     incidentNumber = ValueConstant("Incident-Number")
@@ -161,6 +181,10 @@ class HeaderName (Values):
 
 
 class ContentType (Values):
+    """
+    Content types
+    """
+
     HTML  = ValueConstant("text/html; charset=utf-8")
     JSON  = ValueConstant("application/json")
     XHTML = ValueConstant("application/xhtml+xml")

@@ -193,6 +193,10 @@ def rfc3339_as_datetime(rfc3339):
 
 
 class JSON(Values):
+    """
+    JSON keys
+    """
+
     # Incident attribute keys
     incident_number   = ValueConstant("number")
     incident_created  = ValueConstant("timestamp")
@@ -465,7 +469,6 @@ def incident_as_json(incident):
     @return: C{incident}, serialized as JSON data.
     @rtype: L{dict}
     """
-
     root = {}
 
     root[JSON.incident_number.value] = incident.number

@@ -48,6 +48,9 @@ def loadConfig():
 
 
 def Resource():
+    """
+    Root resource
+    """
     config = loadConfig()
     return guard(
         config,

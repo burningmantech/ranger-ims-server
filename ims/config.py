@@ -14,11 +14,11 @@
 # limitations under the License.
 ##
 
-from __future__ import print_function
-
 """
 Server
 """
+
+from __future__ import print_function
 
 __all__ = [
     "Configuration",
@@ -44,6 +44,10 @@ from .store import MultiStorage
 
 
 class Configuration (object):
+    """
+    Configuration
+    """
+
     log = Logger(observer=textFileLogObserver(sys.stdout))
 
 

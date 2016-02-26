@@ -51,6 +51,7 @@ class IncidentState(Names):
     """
     Incident states.  Values are corresponding L{Incident} attribute names.
     """
+
     new        = NamedConstant()
     on_hold    = NamedConstant()
     dispatched = NamedConstant()

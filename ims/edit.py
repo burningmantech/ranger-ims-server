@@ -32,7 +32,7 @@ class EditNotAllowedError(Exception):
 
 def edit_incident(incident, edits, author):
     """
-    Applies edits to an incident and returns the edited incident.
+    Apply edits to an incident and return the edited incident.
 
     @param incident: The incident to edit.
     @type incident: L{Incident}
@@ -46,7 +46,6 @@ def edit_incident(incident, edits, author):
     @return: A new incident which reflects C{edits} applied to C{incident}.
     @rtype: L{Incident}
     """
-
     # Author is required
     if author is None:
         raise EditNotAllowedError("Author may not be None when editing.")

@@ -60,8 +60,9 @@ from .tz import utcNow
 
 class NoAccessIncidentManagementSystem(object):
     """
-    No-Access Incident Management System
+    No-access Incident Management System
     """
+
     log = Logger()
     app = Klein()
 
