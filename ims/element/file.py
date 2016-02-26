@@ -15,7 +15,7 @@
 ##
 
 """
-File Elements
+File element
 """
 
 __all__ = [
@@ -28,6 +28,10 @@ from twisted.web.template import XMLFile
 
 
 class FileElement(Element):
+    """
+    File element
+    """
+
     def __init__(self, filePath):
         self.filePath = filePath
         self.loader = XMLFile(filePath)

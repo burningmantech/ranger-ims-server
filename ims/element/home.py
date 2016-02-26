@@ -15,7 +15,7 @@
 ##
 
 """
-Home Page Element
+Home page element
 """
 
 __all__ = [
@@ -29,6 +29,9 @@ from .base import BaseElement
 
 
 class HomePageElement(BaseElement):
+    """
+    Home page element
+    """
 
     def __init__(self, ims):
         BaseElement.__init__(

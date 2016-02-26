@@ -15,7 +15,7 @@
 ##
 
 """
-Login Page Element
+Login page element
 """
 
 __all__ = [
@@ -27,5 +27,9 @@ from .base import BaseElement
 
 
 class LoginPageElement(BaseElement):
+    """
+    Login page element
+    """
+
     def __init__(self, ims):
         BaseElement.__init__(self, ims, "login", "Log In")

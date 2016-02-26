@@ -15,7 +15,7 @@
 ##
 
 """
-Daily Report Element
+Daily report element
 """
 
 __all__ = [
@@ -35,6 +35,10 @@ from .util import ignore_incident, ignore_entry
 
 
 class DailyReportElement(BaseElement):
+    """
+    Daily report element
+    """
+
     log = Logger()
 
 

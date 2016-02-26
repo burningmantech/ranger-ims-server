@@ -15,7 +15,7 @@
 ##
 
 """
-Shift Report Element
+Shift report element
 """
 
 __all__ = [
@@ -43,6 +43,10 @@ class Activity(Names):
 
 
 class ShiftReportElement(BaseElement):
+    """
+    Shift report element
+    """
+
     def __init__(self, ims, template_name="report_shift"):
         BaseElement.__init__(self, ims, template_name, "Shift Summary")
 

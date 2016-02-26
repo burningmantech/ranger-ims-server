@@ -15,7 +15,7 @@
 ##
 
 """
-Dispatch Queue Element
+Dispatch queue element
 """
 
 __all__ = [
@@ -35,6 +35,10 @@ from .util import incidents_as_table
 
 
 class DispatchQueueElement(BaseElement):
+    """
+    Dispatch queue element
+    """
+
     def __init__(self, ims, storage, event):
         BaseElement.__init__(self, ims, "queue", "Dispatch Queue")
         self.storage = storage

@@ -15,7 +15,7 @@
 ##
 
 """
-Element Utilities
+Element utilities
 """
 
 __all__ = [
@@ -51,18 +51,27 @@ incident_types_to_ignore = set((IncidentType.Junk.value,))
 
 
 def ignore_incident(incident):
+    """
+    Determine whether to ignore an incident by default in reports.
+    """
     if incident_types_to_ignore & set(incident.incident_types):
         return True
     return False
 
 
 def ignore_entry(entry):
+    """
+    Determine whether to ignore an incident entry by default in reports.
+    """
     if entry.system_entry:
         return True
     return False
 
 
 def incidents_from_query(storage, request):
+    """
+    Find incidents matching a request query.
+    """
     if not hasattr(request, "ims_incidents"):
         if request.args:
             request.ims_incidents = storage.searchIncidents(
@@ -77,6 +86,9 @@ def incidents_from_query(storage, request):
 
 
 def terms_from_query(request):
+    """
+    Compute query terms from a request.
+    """
     if not hasattr(request, "ims_terms"):
         if request.args:
             terms = set()
@@ -97,14 +109,26 @@ def terms_from_query(request):
 
 
 def show_closed_from_query(request):
+    """
+    Determine whether a request query indicates that we should display closed
+    incidents.
+    """
     return query_value(request, "show_closed", "false", "true") == "true"
 
 
 def since_days_ago_from_query(request):
+    """
+    Determine how many days back a request query indicates that we should
+    display incidents for.
+    """
     return query_value(request, "since_days_ago", "0")
 
 
 def since_from_query(request):
+    """
+    Determine what start time a request query indicates that we should display
+    incidents for.
+    """
     try:
         days = int(since_days_ago_from_query(request))
     except ValueError:
@@ -117,6 +141,10 @@ def since_from_query(request):
 
 
 def num_shifts_from_query(request):
+    """
+    Determine the number of shifts a request query indicates that we should
+    display incidents for.
+    """
     return query_value(request, "num_shifts", "1")
 
 
@@ -203,6 +231,9 @@ def edits_from_query(author, number, request):
 
 
 def query_value(request, key, default, no_args_default=None):
+    """
+    Determine the value for a query argument from a request.
+    """
     attr_name = "ims_qv_{0}".format(key)
 
     if not hasattr(request, attr_name):

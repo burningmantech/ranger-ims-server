@@ -15,7 +15,7 @@
 ##
 
 """
-Incident Element
+Incident element
 """
 
 __all__ = [
@@ -32,6 +32,10 @@ from ..data import RodGarettAddress
 
 
 class IncidentElement(BaseElement):
+    """
+    Incident element
+    """
+
     def __init__(self, ims, storage, number):
         BaseElement.__init__(
             self, ims, "incident",

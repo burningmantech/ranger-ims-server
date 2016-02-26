@@ -15,7 +15,7 @@
 ##
 
 """
-Base Element
+Base element
 """
 
 __all__ = [
@@ -29,6 +29,10 @@ from .file import FileElement
 
 
 class BaseElement(FileElement):
+    """
+    Base element
+    """
+
     def __init__(self, ims, template_name, title):
         FileElement.__init__(
             self,
