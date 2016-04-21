@@ -16,6 +16,10 @@
 # limitations under the License.
 ##
 
+"""
+Distutils setup.
+"""
+
 from __future__ import print_function
 
 from os.path import dirname, join as joinpath
@@ -31,7 +35,6 @@ def version():
     """
     Compute the version number.
     """
-
     base_version = "0.2b"
 
     full_version = base_version
@@ -123,6 +126,9 @@ extensions = []
 #
 
 def doSetup():
+    """
+    Run L{setup}.
+    """
     # Write version file
     version_string = version()
     version_filename = joinpath(dirname(__file__), "ims", "version.py")

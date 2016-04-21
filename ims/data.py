@@ -105,6 +105,7 @@ class IncidentType(Values):
     Non-exhautive set of constants for incident types; only incident types
     known to (that is: used by) the software need to be here.
     """
+
     Admin = ValueConstant(u"Admin")
     Junk  = ValueConstant(u"Junk")
 
@@ -195,7 +196,6 @@ class Incident(object):
         @param state: The state of the incident.
         @type state: L{IncidentState}
         """
-
         if type(number) is not int:
             raise InvalidDataError(
                 "Incident number must be an int, not "

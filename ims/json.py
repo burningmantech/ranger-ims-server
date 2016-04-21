@@ -14,8 +14,6 @@
 # limitations under the License.
 ##
 
-from __future__ import absolute_import
-
 """
 JSON bindings for IMS data.
 
@@ -107,6 +105,8 @@ created time stamp plus a state attribute:
         "closed": "2014-08-30T21:58:01Z"            // RFC 3339, Zulu
     }
 """
+
+from __future__ import absolute_import
 
 __all__ = [
     "json_from_file",

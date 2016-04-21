@@ -54,7 +54,7 @@ class NoSuchIncidentError(StorageError):
 
 class ReadOnlyStorage(object):
     """
-    Back-end storage
+    Back-end storage (read-only).
     """
 
     log = Logger()
@@ -303,6 +303,10 @@ class ReadOnlyStorage(object):
 
 
 class Storage(ReadOnlyStorage):
+    """
+    Back-end storage (read-write).
+    """
+
     log = Logger()
 
     def provision(self):
