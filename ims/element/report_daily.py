@@ -27,7 +27,7 @@ from datetime import timedelta as TimeDelta
 from twisted.logger import Logger
 from twisted.web.template import renderer
 
-from ..json import json_as_text
+from ..json import textFromJSON
 from ..data import IncidentType
 from .base import BaseElement
 from .util import ignore_incident, ignore_entry
@@ -113,7 +113,7 @@ class DailyReportElement(BaseElement):
 
     @renderer
     def columnTitles(self, request, tag):
-        return json_as_text(
+        return textFromJSON(
             ["Type"] +
             [
                 date.strftime("%a %m/%d")
@@ -130,7 +130,7 @@ class DailyReportElement(BaseElement):
 
     @renderer
     def chartColumns(self, request, tag):
-        return json_as_text(
+        return textFromJSON(
             ["Type"] +
             [
                 date.strftime("%a %m/%d")
@@ -202,4 +202,4 @@ class DailyReportElement(BaseElement):
 
         rows.append(row)
 
-        return json_as_text(rows)
+        return textFromJSON(rows)

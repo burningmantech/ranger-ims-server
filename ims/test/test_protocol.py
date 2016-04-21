@@ -29,7 +29,7 @@ from twisted.internet.defer import inlineCallbacks
 
 from ims.config import Configuration
 from ims.data import InvalidDataError
-from ims.json import json_from_text, incident_from_json
+from ims.json import jsonFromText, incidentFromJSON
 from ims.store import Storage
 from ims.protocol import ReadWriteIncidentManagementSystem
 
@@ -96,7 +96,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         ims = self.ims()
 
         (entity, etag) = yield ims.data_personnel()
-        json = json_from_text(entity)
+        json = jsonFromText(entity)
 
         self.assertEquals(
             json,
@@ -167,7 +167,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
         (entity, etag) = yield ims.data_incidents(
             ims.storage["event"].listIncidents()
         )
-        json = json_from_text(entity)
+        json = jsonFromText(entity)
 
         self.assertEquals(
             json,
@@ -184,7 +184,7 @@ class IncidentManagementSystemJSONTests(twisted.trial.unittest.TestCase):
 
         for number in test_incident_etags.iterkeys():
             (entity, etag) = yield ims.data_incident("event", number)
-            incident = incident_from_json(json_from_text(entity), number)
+            incident = incidentFromJSON(jsonFromText(entity), number)
 
             self.assertEquals(
                 incident, ims.storage["event"].readIncidentWithNumber(number)

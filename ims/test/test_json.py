@@ -30,9 +30,8 @@ from ..data import (
 from ..tz import utc, FixedOffsetTimeZone
 from ..json import (
     JSON,
-    datetime_as_rfc3339, rfc3339_as_datetime,
-    incident_from_json, incident_as_json,
-    ranger_as_json, location_as_json,
+    datetimeAsRFC3339, rfc3339AsDateTime,
+    incidentFromJSON, incidentAsJSON, rangerAsJSON, locationAsJSON,
 )
 
 from .test_store import time1, time2
@@ -46,46 +45,46 @@ class TimeSerializationTests(unittest.TestCase):
 
     def test_datetimeAsRFC3339Naive(self):
         """
-        L{datetime_as_rfc3339} returns a proper RFC 3339 string for the given
+        L{datetimeAsRFC3339} returns a proper RFC 3339 string for the given
         naive L{DateTime}, which is assumed to be UTC.
         """
         self.assertRaises(
             ValueError,
-            datetime_as_rfc3339, DateTime(1971, 4, 20, 16, 20, 4, tzinfo=None)
+            datetimeAsRFC3339, DateTime(1971, 4, 20, 16, 20, 4, tzinfo=None)
         )
 
 
     def test_datetimeAsRFC3339UTC(self):
         """
-        L{datetime_as_rfc3339} returns a proper RFC 3339 string for the given
+        L{datetimeAsRFC3339} returns a proper RFC 3339 string for the given
         UTC L{DateTime}.
         """
         self.assertEquals(
-            datetime_as_rfc3339(DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)),
+            datetimeAsRFC3339(DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)),
             "1971-04-20T16:20:04Z"
         )
 
 
     def test_datetimeAsRFC3339Other(self):
         """
-        L{datetime_as_rfc3339} returns a proper RFC 3339 string for the given
+        L{datetimeAsRFC3339} returns a proper RFC 3339 string for the given
         non-UTC L{DateTime}.
         """
         tz = FixedOffsetTimeZone.fromSignHoursMinutes("+", 4, 20)
 
         self.assertEquals(
-            datetime_as_rfc3339(DateTime(1971, 4, 20, 20, 40, 4, tzinfo=tz)),
+            datetimeAsRFC3339(DateTime(1971, 4, 20, 20, 40, 4, tzinfo=tz)),
             "1971-04-20T16:20:04Z"
         )
 
 
     def test_rfc3339AsDatetime(self):
         """
-        L{rfc3339_as_datetime} returns a proper UTC L{DateTime} for the given
+        L{rfc3339AsDateTime} returns a proper UTC L{DateTime} for the given
         RFC 3339 string.
         """
         self.assertEquals(
-            rfc3339_as_datetime("1971-04-20T16:20:04Z"),
+            rfc3339AsDateTime("1971-04-20T16:20:04Z"),
             DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)
         )
 
@@ -93,7 +92,7 @@ class TimeSerializationTests(unittest.TestCase):
 
 class IncidentDeserializationTests(unittest.TestCase):
     """
-    Tests for L{incident_from_json}.
+    Tests for L{incidentFromJSON}.
     """
 
     def test_numberArgumentRequired(self):
@@ -102,7 +101,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         self.assertRaises(
             TypeError,
-            incident_from_json, {}, number=None, validate=False,
+            incidentFromJSON, {}, number=None, validate=False,
         )
 
 
@@ -112,7 +111,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         self.assertRaises(
             InvalidDataError,
-            incident_from_json, u"", number=1, validate=False,
+            incidentFromJSON, u"", number=1, validate=False,
         )
 
 
@@ -123,7 +122,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         self.assertRaises(
             InvalidDataError,
-            incident_from_json, {u"xyzzy": u"foo"}, number=1, validate=False,
+            incidentFromJSON, {u"xyzzy": u"foo"}, number=1, validate=False,
         )
 
 
@@ -134,7 +133,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         json = dict(number=1)
         json.update(attributes)
-        incident_from_json(json, number=1, validate=False)
+        incidentFromJSON(json, number=1, validate=False)
 
 
     def test_incidentFromJSONEmpty(self):
@@ -142,7 +141,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         Deserializing from empty JSON data produces an almost-empty incident;
         only the incident number is inserted.
         """
-        incident = incident_from_json({}, number=1, validate=False)
+        incident = incidentFromJSON({}, number=1, validate=False)
         self.assertEquals(incident, Incident(number=1))
 
 
@@ -150,7 +149,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize an incident number from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {JSON.incident_number.value: 1}, number=1, validate=False
         )
         self.assertEquals(incident.number, 1)
@@ -161,7 +160,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         Deserializing without an incident number from JSON data uses the number
         passed in as an argument.
         """
-        incident = incident_from_json({}, number=1, validate=False)
+        incident = incidentFromJSON({}, number=1, validate=False)
         self.assertEquals(incident.number, 1)
 
 
@@ -172,7 +171,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         self.assertRaises(
             InvalidDataError,
-            incident_from_json, {JSON.incident_number.value: 1}, number=2
+            incidentFromJSON, {JSON.incident_number.value: 1}, number=2
         )
 
 
@@ -180,7 +179,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize an incident priority from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_priority.value: 2,
@@ -194,7 +193,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize an incident summary from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_summary.value: u"A B C",
@@ -208,7 +207,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize a text only location from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
@@ -237,7 +236,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         Deserialize a text only location from JSON data with C{None}
         description.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
@@ -258,7 +257,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize a Rod Garett location from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
@@ -288,7 +287,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize a Rod Garett location from JSON data with C{None} values.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
@@ -312,7 +311,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize a location from pre-2015 JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON._location_name.value: u"Tokyo",
@@ -331,7 +330,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         Deserialize a location from pre-2015 JSON data with C{None} name and/or
         address.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON._location_name.value: None,
@@ -346,7 +345,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize from JSON data with no location.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {JSON.incident_number.value: 1},
             number=1, validate=False
         )
@@ -357,7 +356,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize Rangers from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.ranger_handles.value: (u"Tool", u"Tulsa"),
@@ -377,7 +376,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize an incident with no Rangers from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {JSON.incident_number.value: 1},
             number=1, validate=False
         )
@@ -388,7 +387,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize an incident with empty Rangers from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.ranger_handles.value: (),
@@ -402,7 +401,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize incident types from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_types.value: (u"Footsie", u"Jacks"),
@@ -418,7 +417,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize an incident with no incident types from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {JSON.incident_number.value: 1},
             number=1, validate=False
         )
@@ -429,7 +428,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize an incident with empty incident types from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_types.value: (),
@@ -445,7 +444,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize report entries from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.report_entries.value: (
@@ -453,14 +452,14 @@ class IncidentDeserializationTests(unittest.TestCase):
                         JSON.entry_author.value: u"Tool",
                         JSON.entry_text.value: u"1 2 3",
                         JSON.entry_created.value: (
-                            datetime_as_rfc3339(time1)
+                            datetimeAsRFC3339(time1)
                         ),
                     },
                     {
                         JSON.entry_author.value: u"Tulsa",
                         JSON.entry_text.value: u"A B C",
                         JSON.entry_created.value: (
-                            datetime_as_rfc3339(time2)
+                            datetimeAsRFC3339(time2)
                         ),
                     },
                 ),
@@ -480,7 +479,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize an incident with no report entries from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {JSON.incident_number.value: 1},
             number=1, validate=False
         )
@@ -491,7 +490,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize an incident with empty report entries from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.report_entries.value: (),
@@ -505,10 +504,10 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize an incident created time from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
-                JSON.incident_created.value: datetime_as_rfc3339(time1),
+                JSON.incident_created.value: datetimeAsRFC3339(time1),
             },
             number=1, validate=False
         )
@@ -519,7 +518,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize with no incident created time from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {JSON.incident_number.value: 1},
             number=1, validate=False
         )
@@ -530,7 +529,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize an incident created state from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_state.value: JSON.state_on_scene.value,
@@ -544,7 +543,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         Deserialize with incident state from JSON data.
         """
-        incident = incident_from_json(
+        incident = incidentFromJSON(
             {JSON.incident_number.value: 1},
             number=1, validate=False
         )
@@ -561,7 +560,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             (IncidentState.on_scene, JSON._on_scene.value),
             (IncidentState.closed, JSON._closed.value),
         ):
-            incident = incident_from_json(
+            incident = incidentFromJSON(
                 {
                     JSON.incident_number.value: 1,
                     json_key: "2012-09-01T21:00:00Z",
@@ -574,7 +573,7 @@ class IncidentDeserializationTests(unittest.TestCase):
 
 class IncidentSerializationTests(unittest.TestCase):
     """
-    Tests for L{incident_as_json}.
+    Tests for L{incidentAsJSON}.
     """
 
     def test_incidentAsJSONNumber(self):
@@ -583,7 +582,7 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {JSON.incident_number.value: 1},
-            incident_as_json(Incident(number=1))
+            incidentAsJSON(Incident(number=1))
         )
 
 
@@ -596,7 +595,7 @@ class IncidentSerializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.incident_priority.value: 2,
             },
-            incident_as_json(Incident(number=1, priority=2))
+            incidentAsJSON(Incident(number=1, priority=2))
         )
 
 
@@ -609,7 +608,7 @@ class IncidentSerializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.incident_summary.value: u"A B C",
             },
-            incident_as_json(Incident(number=1, summary=u"A B C"))
+            incidentAsJSON(Incident(number=1, summary=u"A B C"))
         )
 
 
@@ -626,7 +625,7 @@ class IncidentSerializationTests(unittest.TestCase):
                     JSON.location_text_description.value: None,
                 },
             },
-            incident_as_json(
+            incidentAsJSON(
                 Incident(
                     number=1,
                     location=Location(name=u"Tokyo", address=None),
@@ -648,7 +647,7 @@ class IncidentSerializationTests(unittest.TestCase):
                     JSON.location_text_description.value: None,
                 },
             },
-            incident_as_json(
+            incidentAsJSON(
                 Incident(
                     number=1,
                     location=Location(name=None, address=None),
@@ -672,7 +671,7 @@ class IncidentSerializationTests(unittest.TestCase):
                     ),
                 },
             },
-            incident_as_json(
+            incidentAsJSON(
                 Incident(
                     number=1,
                     location=Location(
@@ -701,7 +700,7 @@ class IncidentSerializationTests(unittest.TestCase):
                     JSON.location_text_description.value: None,
                 },
             },
-            incident_as_json(
+            incidentAsJSON(
                 Incident(
                     number=1,
                     location=Location(
@@ -731,7 +730,7 @@ class IncidentSerializationTests(unittest.TestCase):
                     ),
                 }
             },
-            incident_as_json(
+            incidentAsJSON(
                 Incident(
                     number=1,
                     location=Location(
@@ -763,7 +762,7 @@ class IncidentSerializationTests(unittest.TestCase):
                     JSON.location_garett_description.value: None,
                 }
             },
-            incident_as_json(
+            incidentAsJSON(
                 Incident(
                     number=1,
                     location=Location(
@@ -784,7 +783,7 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         Serialize with some Rangers.
         """
-        result = incident_as_json(
+        result = incidentAsJSON(
             Incident(
                 number=1,
                 rangers=(
@@ -814,7 +813,7 @@ class IncidentSerializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.ranger_handles.value: [],
             },
-            incident_as_json(Incident(number=1, rangers=()))
+            incidentAsJSON(Incident(number=1, rangers=()))
         )
 
 
@@ -822,7 +821,7 @@ class IncidentSerializationTests(unittest.TestCase):
         """
         Serialize with some incident types.
         """
-        result = incident_as_json(
+        result = incidentAsJSON(
             Incident(
                 number=1,
                 incident_types=(u"Footsie", u"Jacks"),
@@ -849,7 +848,7 @@ class IncidentSerializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.incident_types.value: [],
             },
-            incident_as_json(Incident(number=1, incident_types=()))
+            incidentAsJSON(Incident(number=1, incident_types=()))
         )
 
 
@@ -864,18 +863,18 @@ class IncidentSerializationTests(unittest.TestCase):
                     {
                         JSON.entry_author.value: u"Tool",
                         JSON.entry_text.value: u"1 2 3",
-                        JSON.entry_created.value: datetime_as_rfc3339(time1),
+                        JSON.entry_created.value: datetimeAsRFC3339(time1),
                         JSON.entry_system.value: False,
                     },
                     {
                         JSON.entry_author.value: u"Tulsa",
                         JSON.entry_text.value: u"A B C",
-                        JSON.entry_created.value: datetime_as_rfc3339(time2),
+                        JSON.entry_created.value: datetimeAsRFC3339(time2),
                         JSON.entry_system.value: False,
                     },
                 ],
             },
-            incident_as_json(
+            incidentAsJSON(
                 Incident(
                     number=1,
                     report_entries=(
@@ -900,7 +899,7 @@ class IncidentSerializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.report_entries.value: [],
             },
-            incident_as_json(
+            incidentAsJSON(
                 Incident(number=1, report_entries=())
             )
         )
@@ -913,9 +912,9 @@ class IncidentSerializationTests(unittest.TestCase):
         self.assertEquals(
             {
                 JSON.incident_number.value: 1,
-                JSON.incident_created.value: datetime_as_rfc3339(time1),
+                JSON.incident_created.value: datetimeAsRFC3339(time1),
             },
-            incident_as_json(
+            incidentAsJSON(
                 Incident(
                     number=1,
                     created=time1,
@@ -933,7 +932,7 @@ class IncidentSerializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.incident_state.value: JSON.state_on_scene.value,
             },
-            incident_as_json(
+            incidentAsJSON(
                 Incident(
                     number=1,
                     state=IncidentState.on_scene,
@@ -945,7 +944,7 @@ class IncidentSerializationTests(unittest.TestCase):
 
 class RangerSerializationTests(unittest.TestCase):
     """
-    Tests for L{ranger_as_json}.
+    Tests for L{rangerAsJSON}.
     """
 
     def test_rangerAsJSONHandle(self):
@@ -958,7 +957,7 @@ class RangerSerializationTests(unittest.TestCase):
                 JSON.ranger_name.value: None,
                 JSON.ranger_status.value: None,
             },
-            ranger_as_json(Ranger(handle=u"Tool", name=None, status=None))
+            rangerAsJSON(Ranger(handle=u"Tool", name=None, status=None))
         )
 
 
@@ -972,7 +971,7 @@ class RangerSerializationTests(unittest.TestCase):
                 JSON.ranger_name.value: u"Wilfredo S\xe1nchez",
                 JSON.ranger_status.value: u"vintage",
             },
-            ranger_as_json(Ranger(
+            rangerAsJSON(Ranger(
                 handle=u"Tool", name=u"Wilfredo S\xe1nchez", status=u"vintage"
             ))
         )
@@ -981,7 +980,7 @@ class RangerSerializationTests(unittest.TestCase):
 
 class LocationSerializationTests(unittest.TestCase):
     """
-    Tests for L{location_as_json}.
+    Tests for L{locationAsJSON}.
     """
 
     def test_locationAsJSONName(self):
@@ -994,7 +993,7 @@ class LocationSerializationTests(unittest.TestCase):
                 "name": u"Ranger Outpost Tokyo",
                 "description": None,
             },
-            location_as_json(Location(name=u"Ranger Outpost Tokyo"))
+            locationAsJSON(Location(name=u"Ranger Outpost Tokyo"))
         )
 
     def test_locationAsJSONTextOnlyAddress(self):
@@ -1007,8 +1006,8 @@ class LocationSerializationTests(unittest.TestCase):
                 "name": None,
                 "description": u"The Temple",
             },
-            location_as_json(Location(address=TextOnlyAddress(u"The Temple")))
+            locationAsJSON(Location(address=TextOnlyAddress(u"The Temple")))
         )
 
-    # FIXME: more complete testing of location_as_json() is in serialization
+    # FIXME: more complete testing of locationAsJSON() is in serialization
     # tests above; move that testing here.

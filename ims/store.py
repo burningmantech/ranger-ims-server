@@ -32,8 +32,8 @@ from twisted.logger import Logger
 from twisted.python.filepath import UnlistableError
 from .data import IncidentState, InvalidDataError
 from .json import (
-    incident_as_json, incident_from_json, json_as_text, json_from_file,
-    rfc3339_as_datetime
+    incidentAsJSON, incidentFromJSON, textFromJSON, jsonFromFile,
+    rfc3339AsDateTime
 )
 
 
@@ -92,8 +92,8 @@ class ReadOnlyStorage(object):
     def readIncidentWithNumber(self, number):
         handle = self._openIncident(number, "r")
         try:
-            json = json_from_file(handle)
-            incident = incident_from_json(json, number=number, validate=False)
+            json = jsonFromFile(handle)
+            incident = incidentFromJSON(json, number=number, validate=False)
         finally:
             handle.close()
 
@@ -343,8 +343,8 @@ class Storage(ReadOnlyStorage):
         self.provision()
 
         number = incident.number
-        json = incident_as_json(incident)
-        text = json_as_text(json)
+        json = incidentAsJSON(incident)
+        text = textFromJSON(json)
 
         self._writeIncidentText(number, text)
 
@@ -454,6 +454,6 @@ def ims2014Cleanup(incident):
     if incident.created is None:
         # Wow MAJOR HAXXOR SKILLZ
         if incident.number == 1158:
-            incident.created = rfc3339_as_datetime("2014-09-01T01:06:06Z")
+            incident.created = rfc3339AsDateTime("2014-09-01T01:06:06Z")
 
     return incident

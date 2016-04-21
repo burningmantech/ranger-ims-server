@@ -35,10 +35,8 @@ from twisted.web.static import File
 from klein import Klein
 
 from .data import Incident, InvalidDataError
-from .json import JSON, json_as_text, json_from_file
-from .json import (
-    ranger_as_json, incident_as_json, incident_from_json
-)
+from .json import JSON, textFromJSON, jsonFromFile
+from .json import rangerAsJSON, incidentAsJSON, incidentFromJSON
 from .edit import edit_incident
 from .sauce import url_for, set_response_header
 from .sauce import http_sauce
@@ -121,7 +119,7 @@ class NoAccessIncidentManagementSystem(object):
 
     def data_ping(self):
         ack = b"ack"
-        return succeed((json_as_text(ack), hash(ack)))
+        return succeed((textFromJSON(ack), hash(ack)))
 
 
     #
@@ -266,7 +264,7 @@ class ReadOnlyIncidentManagementSystem(NoAccessIncidentManagementSystem):
 
     def data_logout(self):
         ack = b"bye!"
-        return succeed((json_as_text(ack), hash(ack)))
+        return succeed((textFromJSON(ack), hash(ack)))
 
 
     @app.route("/<event>/personnel", methods=("GET",))
@@ -281,8 +279,8 @@ class ReadOnlyIncidentManagementSystem(NoAccessIncidentManagementSystem):
     def data_personnel(self):
         def gotPersonnel(personnel):
             return (
-                json_as_text([
-                    ranger_as_json(ranger)
+                textFromJSON([
+                    rangerAsJSON(ranger)
                     for ranger in personnel
                 ]),
                 hash(personnel)
@@ -343,7 +341,7 @@ class ReadOnlyIncidentManagementSystem(NoAccessIncidentManagementSystem):
 
     def data_incidents(self, incidents):
         return succeed((
-            json_as_text(sorted(
+            textFromJSON(sorted(
                 incidents,
                 cmp=lambda a, b: cmp(a[0], b[0]), reverse=True,
             )),
@@ -379,7 +377,7 @@ class ReadOnlyIncidentManagementSystem(NoAccessIncidentManagementSystem):
             # re-serializes it.
             #
             incident = self.storage[event].readIncidentWithNumber(number)
-            entity = json_as_text(incident_as_json(incident))
+            entity = textFromJSON(incidentAsJSON(incident))
 
         etag = self.storage[event].etagForIncidentWithNumber(number)
 
@@ -427,7 +425,7 @@ class ReadOnlyIncidentManagementSystem(NoAccessIncidentManagementSystem):
     def links(self, request):
         # set_response_header(request, HeaderName.etag, ????)
         set_response_header(request, HeaderName.contentType, ContentType.JSON)
-        return json_as_text([
+        return textFromJSON([
             {JSON.page_url.value: name, JSON.page_url.value: value}
             for name, value in (
                 ("Home page", "/"),
@@ -592,8 +590,8 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
         #
         # Apply the changes requested by the client
         #
-        edits_json = json_from_file(edits_file)
-        edits = incident_from_json(edits_json, number=number, validate=False)
+        edits_json = jsonFromFile(edits_file)
+        edits = incidentFromJSON(edits_json, number=number, validate=False)
         edited = edit_incident(incident, edits, author)
 
         #
@@ -605,9 +603,9 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
         #     u"User {author} edited incident #{number} via JSON",
         #     author=author, number=number
         # )
-        # self.log.debug(u"Original: {json}", json=incident_as_json(incident))
+        # self.log.debug(u"Original: {json}", json=incidentAsJSON(incident))
         self.log.debug(u"Changes: {json}", json=edits_json)
-        # self.log.debug(u"Edited: {json}", json=incident_as_json(edited))
+        # self.log.debug(u"Edited: {json}", json=incidentAsJSON(edited))
 
         return succeed((u"", None))
 
@@ -637,8 +635,8 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
 
 
     def data_incident_new(self, event, number, json_file, author):
-        json = json_from_file(json_file)
-        incident = incident_from_json(json, number=number, validate=False)
+        json = jsonFromFile(json_file)
+        incident = incidentFromJSON(json, number=number, validate=False)
 
         now = utcNow()
 
@@ -683,7 +681,7 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
             u"User {author} created new incident #{number} via JSON",
             author=author, number=number
         )
-        self.log.debug(u"New: {json}", json=incident_as_json(incident))
+        self.log.debug(u"New: {json}", json=incidentAsJSON(incident))
 
         return succeed((u"", None))
 
@@ -727,10 +725,10 @@ class ReadWriteIncidentManagementSystem(ReadOnlyIncidentManagementSystem):
                 author=author, number=number
             )
             # self.log.debug(
-            #     u"Original: {json}", json=incident_as_json(incident)
+            #     u"Original: {json}", json=incidentAsJSON(incident)
             # )
-            self.log.debug(u"Changes: {json}", json=incident_as_json(edits))
-            # self.log.debug(u"Edited: {json}", json=incident_as_json(edited))
+            self.log.debug(u"Changes: {json}", json=incidentAsJSON(edits))
+            # self.log.debug(u"Edited: {json}", json=incidentAsJSON(edited))
 
             storage.writeIncident(edited)
 

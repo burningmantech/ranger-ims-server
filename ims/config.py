@@ -37,7 +37,7 @@ from twisted.logger import Logger, textFileLogObserver
 
 from .tz import FixedOffsetTimeZone
 from .data import IncidentType
-from .json import json_as_text, json_from_file
+from .json import textFromJSON, jsonFromFile
 from .dms import DutyManagementSystem
 from .store import MultiStorage
 
@@ -253,16 +253,16 @@ class Configuration (object):
 
         self.storage = MultiStorage(self.DataRoot, self.ReadOnly)
 
-        self.IncidentTypesJSON = json_as_text(self.IncidentTypes)
+        self.IncidentTypesJSON = textFromJSON(self.IncidentTypes)
 
 
         locationsFile = self.configFile.sibling("locations.json")
 
         if locationsFile.isfile():
             with locationsFile.open() as jsonStrem:
-                json = json_from_file(jsonStrem)
+                json = jsonFromFile(jsonStrem)
             self.log.info("{count} locations", count=len(json))
-            self.locationsJSONText = json_as_text(json)
+            self.locationsJSONText = textFromJSON(json)
         else:
             self.log.info("No locations file: {file.path}", file=locationsFile)
-            self.locationsJSONText = json_as_text([])
+            self.locationsJSONText = textFromJSON([])

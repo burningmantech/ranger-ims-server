@@ -25,7 +25,7 @@ from twisted.python.filepath import FilePath
 
 from ..tz import utc
 from ims.json import (
-    incident_from_json, incident_as_json, json_from_text, json_as_text
+    incidentFromJSON, incidentAsJSON, jsonFromText, textFromJSON
 )
 from ims.data import IncidentState, Incident, ReportEntry
 from ims.store import (
@@ -86,8 +86,8 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         store = self.storage(data=test_incidents)
         for number in test_incident_etags:
             jsonText = store.readIncidentWithNumberRaw(number)
-            json = json_from_text(jsonText)
-            incident = incident_from_json(json, number=number)
+            json = jsonFromText(jsonText)
+            incident = incidentFromJSON(json, number=number)
             self.assertEquals(incident.number, number)
 
 
@@ -528,8 +528,8 @@ def test_incidents():
 
 
 def expectedETagForIncident(incident):
-    json = incident_as_json(incident)
-    text = json_as_text(json)
+    json = incidentAsJSON(incident)
+    text = textFromJSON(json)
 
     return etag_hash(text).hexdigest()
 

@@ -109,23 +109,23 @@ created time stamp plus a state attribute:
 from __future__ import absolute_import
 
 __all__ = [
-    "json_from_file",
-    "json_from_text",
-    "json_as_text",
+    "jsonFromFile",
+    "jsonFromText",
+    "textFromJSON",
 
-    "datetime_as_rfc3339",
-    "rfc3339_as_datetime",
+    "datetimeAsRFC3339",
+    "rfc3339AsDateTime",
 
     "JSON",
 
-    "incident_from_json",
-    "incident_as_json",
+    "incidentFromJSON",
+    "incidentAsJSON",
+    "rangerAsJSON",
+    "locationAsJSON",
 ]
 
-from json import dumps, load as json_from_file, loads as json_from_text
-from datetime import (
-    datetime as DateTime,  # timedelta as TimeDelta, tzinfo as TZInfo
-)
+from json import dumps, load as jsonFromFile, loads as jsonFromText, JSONEncoder
+from datetime import datetime as DateTime
 
 from twisted.python.constants import (
     Values, ValueConstant
@@ -141,7 +141,17 @@ rfc3339_datetime_format = "%Y-%m-%dT%H:%M:%SZ"
 
 
 
-def json_as_text(obj):
+class Encoder(JSONEncoder):
+    def default(self, obj):
+        iterate = getattr(obj, "__iter__", None)
+        if iterate is not None:
+            return list(iterate())
+
+        return JSONEncoder.default(self, obj)
+
+
+
+def textFromJSON(obj, pretty=False):
     """
     Convert an object into JSON text.
 
@@ -151,11 +161,26 @@ def json_as_text(obj):
     @return: JSON text.
     @rtype: L{unicode}
     """
-    return dumps(obj, separators=(',', ':')).decode("UTF-8")
+    if pretty:
+        separators = (",", ": ")
+        indent = 2
+        sort_keys = True
+    else:
+        separators = (",", ":")
+        indent = None
+        sort_keys = False
+
+    return dumps(
+        obj,
+        separators=separators,
+        indent=indent,
+        sort_keys=sort_keys,
+        cls=Encoder,
+    ).decode("UTF-8")
 
 
 
-def datetime_as_rfc3339(datetime):
+def datetimeAsRFC3339(datetime):
     """
     Convert a date-time object into an RFC 3339 formatted date-time string.
 
@@ -174,7 +199,7 @@ def datetime_as_rfc3339(datetime):
 
 
 
-def rfc3339_as_datetime(rfc3339):
+def rfc3339AsDateTime(rfc3339):
     """
     Convert an RFC 3339 formatted string to a date-time object.
 
@@ -273,7 +298,7 @@ class JSON(Values):
 
 
 
-def incident_from_json(root, number, validate=True):
+def incidentFromJSON(root, number, validate=True):
     """
     Create an incident from JSON data.
 
@@ -403,7 +428,7 @@ def incident_from_json(root, number, validate=True):
             ReportEntry(
                 author=entry.get(JSON.entry_author.value, None),
                 text=entry.get(JSON.entry_text.value, None),
-                created=rfc3339_as_datetime(
+                created=rfc3339AsDateTime(
                     entry.get(JSON.entry_created.value, None)
                 ),
                 system_entry=entry.get(JSON.entry_system.value, False),
@@ -411,12 +436,12 @@ def incident_from_json(root, number, validate=True):
             for entry in json_entries
         ]
 
-    created = rfc3339_as_datetime(root.get(JSON.incident_created.value, None))
+    created = rfc3339AsDateTime(root.get(JSON.incident_created.value, None))
 
     # 2013 format did not have a true created timestamp, but it did have a
     # created state timestamp, which will have to do
     if created is None:
-        created = rfc3339_as_datetime(root.get(JSON._created.value, None))
+        created = rfc3339AsDateTime(root.get(JSON._created.value, None))
 
     json_state = root.get(JSON.incident_state.value, None)
 
@@ -459,7 +484,7 @@ def incident_from_json(root, number, validate=True):
 
 
 
-def incident_as_json(incident):
+def incidentAsJSON(incident):
     """
     Generate JSON data from an incident.
 
@@ -481,7 +506,7 @@ def incident_as_json(incident):
 
     if incident.location is not None:
         root[JSON.incident_location.value] = (
-            location_as_json(incident.location)
+            locationAsJSON(incident.location)
         )
 
     if incident.rangers is not None:
@@ -497,7 +522,7 @@ def incident_as_json(incident):
             {
                 JSON.entry_author.value: entry.author,
                 JSON.entry_text.value: entry.text,
-                JSON.entry_created.value: datetime_as_rfc3339(entry.created),
+                JSON.entry_created.value: datetimeAsRFC3339(entry.created),
                 JSON.entry_system.value: entry.system_entry,
             }
             for entry in incident.report_entries
@@ -505,7 +530,7 @@ def incident_as_json(incident):
 
     if incident.created is not None:
         root[JSON.incident_created.value] = (
-            datetime_as_rfc3339(incident.created)
+            datetimeAsRFC3339(incident.created)
         )
 
     if incident.state is not None:
@@ -517,7 +542,7 @@ def incident_as_json(incident):
 
 
 
-def ranger_as_json(ranger):
+def rangerAsJSON(ranger):
     """
     Generate JSON data from a Ranger.
 
@@ -535,7 +560,7 @@ def ranger_as_json(ranger):
 
 
 
-def location_as_json(location):
+def locationAsJSON(location):
     """
     Generate JSON data from a location.
 

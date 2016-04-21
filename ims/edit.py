@@ -19,7 +19,7 @@ Incident editing.
 """
 
 from .data import IncidentState, Incident, Location, ReportEntry
-from .json import datetime_as_rfc3339
+from .json import datetimeAsRFC3339
 
 
 
@@ -170,7 +170,7 @@ def edit_incident(incident, edits, author):
 
     priority = edit_attribute_value("priority")
     summary  = edit_attribute_value("summary")
-    created  = edit_attribute_value("created", describe=datetime_as_rfc3339)
+    created  = edit_attribute_value("created", describe=datetimeAsRFC3339)
     state    = edit_attribute_value("state", describe=IncidentState.describe)
 
     rangers        = edit_attribute_set("rangers")

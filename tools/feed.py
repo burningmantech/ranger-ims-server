@@ -20,7 +20,7 @@ import sys
 from csv import reader as CSVReader
 
 from ims.data import Location, RodGarettAddress
-from ims.json import location_as_json, json_as_text
+from ims.json import locationAsJSON, textFromJSON
 
 
 
@@ -198,6 +198,6 @@ class RadialStreetAddressParseError(StreetAddressParseError):
 if __name__ == "__main__":
     with open(sys.argv[1], "rU") as inStream:
         locations = parseLocations(inStream)
-        json = [location_as_json(location) for location in locations]
+        json = [locationAsJSON(location) for location in locations]
 
-    sys.stdout.write(json_as_text(json))
+    sys.stdout.write(textFromJSON(json))

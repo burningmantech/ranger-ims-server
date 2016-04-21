@@ -40,7 +40,7 @@ from twisted.web.resource import IResource, Resource, ErrorPage
 from twisted.web.util import DeferredResource
 from twisted.web.template import flattenString
 
-from .json import json_from_text
+from .json import jsonFromText
 from .protocol import(
     NoAccessIncidentManagementSystem,
     # ReadOnlyIncidentManagementSystem,
@@ -75,7 +75,7 @@ class HTMLFormCredentialFactory(object):
 
         elif contentType == "application/json":
             body = request.content.read()
-            json = json_from_text(body)
+            json = jsonFromText(body)
             try:
                 username = json["username"]
                 password = json["password"]

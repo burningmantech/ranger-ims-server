@@ -24,7 +24,7 @@ __all__ = [
 
 from twisted.web.template import renderer
 
-from ..json import json_as_text
+from ..json import textFromJSON
 from .base import BaseElement
 from .util import incidents_from_query
 from .util import show_closed_from_query
@@ -82,7 +82,7 @@ class DispatchQueueElement(BaseElement):
                 summary,
             ])
 
-        return json_as_text(data)
+        return textFromJSON(data)
 
 
     @renderer
