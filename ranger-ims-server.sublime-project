@@ -45,6 +45,7 @@
             "D105",  // Missing doc string in magic method
             "D200",  // One-line doc strings
             "D203",  // One blank line before class doc string
+            "D204",  // One blank line after class doc string
             "D205",  // Blank line between summary line and description
             "D400",  // First line should end with a period
         ],
