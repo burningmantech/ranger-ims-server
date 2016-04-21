@@ -51,7 +51,10 @@ name = "ranger-ims"
 
 description = "Ranger Incident Management System"
 
-long_description = file(joinpath(dirname(__file__), "README.md")).read()
+try:
+    long_description = file(joinpath(dirname(__file__), "README.md")).read()
+except IOError:
+    long_description = None
 
 url = "https://github.com/burningmantech/ranger-ims"
 
