@@ -38,7 +38,7 @@ from twext.who.idirectory import RecordType
 from klein import Klein
 
 from ..json import textFromJSON
-from ..json import rangerAsJSON  # , incidentAsJSON, incidentFromJSON
+from ..json import rangerAsJSON, incidentAsJSON  # , incidentFromJSON
 from ..element.redirect import RedirectPage
 from ..element.root import RootPage
 from ..element.login import LoginPage
@@ -57,21 +57,22 @@ class WebService(object):
 
     sessionTimeout = Session.sessionTimeout
 
-    prefixURL        = URL.fromText(u"/ims")
-    styleSheetURL    = prefixURL.child(u"style.css")
-    favIconURL       = prefixURL.child(u"favicon.ico")
-    logoURL          = prefixURL.child(u"logo.png")
-    loginURL         = prefixURL.child(u"login")
-    logoutURL        = prefixURL.child(u"logout")
-    jqueryURL        = prefixURL.child(u"jquery")
-    bootstrapURL     = prefixURL.child(u"bootstrap")
-    datatablesURL    = prefixURL.child(u"datatables")
-    eventURL         = prefixURL.child(u"<event>")
-    pingURL          = eventURL.child(u"ping")
-    personnelURL     = eventURL.child(u"personnel")
-    incidentTypesURL = eventURL.child(u"incident_types")
-    locationsURL     = eventURL.child(u"locations")
-    incidentsURL     = eventURL.child(u"incidents")
+    prefixURL         = URL.fromText(u"/ims")
+    styleSheetURL     = prefixURL.child(u"style.css")
+    favIconURL        = prefixURL.child(u"favicon.ico")
+    logoURL           = prefixURL.child(u"logo.png")
+    loginURL          = prefixURL.child(u"login")
+    logoutURL         = prefixURL.child(u"logout")
+    jqueryURL         = prefixURL.child(u"jquery")
+    bootstrapURL      = prefixURL.child(u"bootstrap")
+    datatablesURL     = prefixURL.child(u"datatables")
+    eventURL          = prefixURL.child(u"<event>")
+    pingURL           = eventURL.child(u"ping")
+    personnelURL      = eventURL.child(u"personnel")
+    incidentTypesURL  = eventURL.child(u"incident_types")
+    locationsURL      = eventURL.child(u"locations")
+    incidentsURL      = eventURL.child(u"incidents")
+    incidentNumberURL = eventURL.child(u"incident").child(u"<number>")
 
     bootstrapVersionNumber  = u"3.3.6"
     jqueryVersionNumber     = u"2.2.3"
@@ -243,6 +244,13 @@ class WebService(object):
         if etag is not None:
             request.setHeader("ETag", etag)
         return textFromJSON(json)
+
+
+    def jsonBytes(self, request, data, etag=None):
+        request.setHeader("Content-Type", "application/json")
+        if etag is not None:
+            request.setHeader("ETag", etag)
+        return data
 
 
     def jsonStream(self, request, jsonStream, etag=None):
@@ -518,8 +526,8 @@ class WebService(object):
     @app.route(pingURL.asText() + u"/")
     @authenticated()
     def pingResource(self, request, event):
-        ack = b"ack"
-        return self.jsonData(request, ack, bytes(hash(ack)))
+        ack = b'"ack"'
+        return self.jsonBytes(request, ack, bytes(hash(ack)))
 
 
     @app.route(personnelURL.asText())
@@ -547,16 +555,16 @@ class WebService(object):
     @app.route(incidentTypesURL.asText() + u"/")
     @authorized(Authorization.readIncidents)
     def incidentTypesResource(self, request, event):
-        json = self.config.IncidentTypesJSONBytes
-        return self.jsonStream(request, (json,), bytes(hash(json)))
+        data = self.config.IncidentTypesJSONBytes
+        return self.jsonBytes(request, data, bytes(hash(data)))
 
 
     @app.route(locationsURL.asText())
     @app.route(locationsURL.asText() + u"/")
     @authorized(Authorization.readIncidents)
     def locationsResource(self, request, event):
-        json = self.config.locationsJSONBytes
-        return self.jsonStream(request, (json,), bytes(hash(json)))
+        data = self.config.locationsJSONBytes
+        return self.jsonBytes(request, data, bytes(hash(data)))
 
 
     @app.route(incidentsURL.asText())
@@ -585,3 +593,35 @@ class WebService(object):
         )
 
         return self.jsonStream(request, stream, None)
+
+
+    @app.route(incidentNumberURL.asText())
+    @authorized(Authorization.readIncidents)
+    def readIncidentResource(self, request, event, number):
+        # # For simulating slow connections
+        # import time
+        # time.sleep(0.3)
+
+        try:
+            number = int(number)
+        except ValueError:
+            return self.notFoundResource(request)
+
+        if False:
+            #
+            # This is faster, but doesn't benefit from any cleanup or
+            # validation code, so it's only OK if we know all data in the
+            # store is clean by this server version's standards.
+            #
+            text = self.storage[event].readIncidentWithNumberRaw(number)
+        else:
+            #
+            # This parses the data from the store, validates it, then
+            # re-serializes it.
+            #
+            incident = self.storage[event].readIncidentWithNumber(number)
+            text = textFromJSON(incidentAsJSON(incident))
+
+        etag = self.storage[event].etagForIncidentWithNumber(number)
+
+        return self.jsonBytes(request, text.encode("utf-8"), etag)
