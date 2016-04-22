@@ -33,7 +33,7 @@ class RootPage(Element):
 
     def __init__(self, service):
         Element.__init__(
-            self, u"home", service,
+            self, u"root", service,
             title=u"Ranger Incident Management System",
         )
 
