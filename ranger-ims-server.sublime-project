@@ -15,6 +15,9 @@
                 ".git",
                 ".develop",
                 "*.egg-info",
+                "cached",
+                "data",
+                "log",
             ],
 		},
         {
