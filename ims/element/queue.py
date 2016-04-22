@@ -25,11 +25,11 @@ __all__ = [
 from twisted.web.template import renderer
 
 from ..json import textFromJSON
+from ..service.query import (
+    incidentsFromQuery, showClosedFromQuery, termsFromQuery,
+    sinceDaysAgoFromQuery,
+)
 from .base import BaseElement
-from .util import incidents_from_query
-from .util import show_closed_from_query
-from .util import terms_from_query
-from .util import since_days_ago_from_query
 from .util import incidents_as_table
 
 
@@ -56,7 +56,7 @@ class DispatchQueueElement(BaseElement):
         storage = self.storage
         data = []
 
-        for number, etag in incidents_from_query(storage, request):
+        for number, etag in incidentsFromQuery(storage, request):
             incident = storage.readIncidentWithNumber(number)
 
             if incident.summary:
@@ -93,7 +93,7 @@ class DispatchQueueElement(BaseElement):
                 self.event,
                 (
                     storage.readIncidentWithNumber(number)
-                    for number, etag in incidents_from_query(storage, request)
+                    for number, etag in incidentsFromQuery(storage, request)
                 ),
                 tz=self.ims.config.TimeZone,
                 caption="Dispatch Queue",
@@ -104,7 +104,7 @@ class DispatchQueueElement(BaseElement):
 
     @renderer
     def hide_closed_column(self, request, tag):
-        if show_closed_from_query(request):
+        if showClosedFromQuery(request):
             return tag
         else:
             return "$('td:nth-child(6),th:nth-child(6)').hide();"
@@ -112,7 +112,7 @@ class DispatchQueueElement(BaseElement):
 
     @renderer
     def search_value(self, request, tag):
-        terms = terms_from_query(request)
+        terms = termsFromQuery(request)
         if terms:
             return tag(value=" ".join(terms))
         else:
@@ -121,7 +121,7 @@ class DispatchQueueElement(BaseElement):
 
     @renderer
     def show_closed_value(self, request, tag):
-        if show_closed_from_query(request):
+        if showClosedFromQuery(request):
             return tag(value="true")
         else:
             return tag(value="false")
@@ -129,7 +129,7 @@ class DispatchQueueElement(BaseElement):
 
     @renderer
     def show_closed_checked(self, request, tag):
-        if show_closed_from_query(request):
+        if showClosedFromQuery(request):
             return tag(checked="")
         else:
             return tag
@@ -137,12 +137,12 @@ class DispatchQueueElement(BaseElement):
 
     @renderer
     def since_days_ago_value(self, request, tag):
-        return tag(value=since_days_ago_from_query(request))
+        return tag(value=sinceDaysAgoFromQuery(request))
 
 
     @renderer
     def since_days_ago_selected(self, request, tag):
-        if tag.attributes["value"] == since_days_ago_from_query(request):
+        if tag.attributes["value"] == sinceDaysAgoFromQuery(request):
             return tag(selected="")
         else:
             return tag

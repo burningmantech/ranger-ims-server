@@ -27,9 +27,9 @@ from twisted.web.template import renderer, tags
 
 from ..dms import DirtShift
 from ..data import Shift
+from ..service.query import numShiftsFromQuery
 from .base import BaseElement
 from .util import ignore_incident, ignore_entry
-from .util import num_shifts_from_query
 from .util import incidents_as_table
 
 
@@ -132,7 +132,7 @@ class ShiftReportElement(BaseElement):
     @renderer
     def report(self, request, tag):
         shift_elements = []
-        max = int(num_shifts_from_query(request))
+        max = int(numShiftsFromQuery(request))
         count = 0
 
         for shift in sorted(self.incidents_by_shift, reverse=True):
@@ -151,7 +151,7 @@ class ShiftReportElement(BaseElement):
 
     @renderer
     def num_shifts_selected(self, request, tag):
-        if tag.attributes["value"] == num_shifts_from_query(request):
+        if tag.attributes["value"] == numShiftsFromQuery(request):
             return tag(selected="")
         else:
             return tag
