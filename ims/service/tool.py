@@ -23,11 +23,14 @@ __all__ = [
 ]
 
 from twisted.python.filepath import FilePath
-from twext.python.usage import Executable, Options as BaseOptions
+from twext.python.usage import (
+    Executable, Options as BaseOptions, exit, ExitStatus
+)
 from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks
 from twisted.web.server import Site
 
+from .config import Configuration
 from .service import WebService
 
 
@@ -48,22 +51,37 @@ class WebTool(Executable):
         ]
 
 
-        def opt_config(self, path):
-            """
-            Location of configuration file.
-            """
-            self["ConfigFile"] = FilePath(path)
-
-
         def getSynopsis(self):
             return "{}".format(
                 BaseOptions.getSynopsis(self)
             )
 
 
+        def opt_config(self, path):
+            """
+            Location of configuration file.
+            """
+            self["configFile"] = FilePath(path)
+
+
+        def parseArgs(self):
+            BaseOptions.parseArgs(self)
+
+            configFile = self.get("configFile")
+            if configFile is None:
+                configuration = Configuration(None)
+            else:
+                if not configFile.isfile():
+                    exit(ExitStatus.EX_CONFIG, "Config file not found.")
+                configuration = Configuration(configFile)
+
+            self["configuration"] = configuration
+
+
+
     @inlineCallbacks
     def whenRunning(self):
-        service = WebService()
+        service = WebService(self.options["configuration"])
 
         host = self.options.get("host", "localhost")
         port = int(self.options["port"])
