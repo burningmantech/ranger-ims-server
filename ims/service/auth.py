@@ -62,7 +62,7 @@ def authenticated(optional=False):
     return decorator
 
 
-def authorized(f, authorization):
+def authorized(authorization):
     """
     Decorator enabling authorization for a Klein route method.
 
