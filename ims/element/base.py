@@ -162,20 +162,6 @@ class Element(BaseElement):
 
     @renderer
     def root(self, request, tag):
-        graph = self.service.graph
-
-        updated = getattr(graph, "updated", None)
-        if updated is None:
-            updated = u"(unknown)"
-        else:
-            updated = unicode(updated)
-
-        version = getattr(graph, "version", None)
-        if version is None:
-            version = u"(unknown)"
-        else:
-            version = unicode(version)
-
         def safe(obj):
             if obj is None:
                 return u"* NONE *"
