@@ -26,6 +26,9 @@ from twisted.python.filepath import FilePath
 from twext.python.usage import Executable, Options as BaseOptions
 from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks
+from twisted.web.server import Site
+
+from .service import WebService
 
 
 
@@ -60,4 +63,18 @@ class WebTool(Executable):
 
     @inlineCallbacks
     def whenRunning(self):
+        service = WebService()
+
+        host = self.options.get("host", "localhost")
+        port = int(self.options["port"])
+
+        self.log.info(
+            "Setting up web service at http://{host}:{port}/",
+            host=host, port=port,
+        )
+
+        from twisted.internet import reactor
+        reactor.listenTCP(
+            port, Site(service.resource()), interface=host
+        )
         yield
