@@ -176,22 +176,36 @@ class Element(BaseElement):
 
         def redirectBack(url):
             # Set origin for redirect back to current page
-            return url.set(u"o", request.uri.decode("utf-8"))
+            return url.set(u"o", request.uri.decode("utf-8")).asText()
+
+        def url(url):
+            return url.asText()
+
+        def eventURL(url):
+            # FIXME: replace <event>
+            return url.asText()
+
+        service = self.service
 
         tag.fillSlots(
             title=safe(self.elementTitle),
 
             user=safe(getattr(request, "user", u"(anonymous user)")),
 
-            prefix_url=self.service.prefixURL.asText(),
-            stylesheet_url=self.service.styleSheetURL.asText(),
-            favicon_url=self.service.favIconURL.asText(),
-            logo_url=self.service.logoURL.asText(),
-            login_url=redirectBack(self.service.loginURL).asText(),
-            logout_url=redirectBack(self.service.logoutURL).asText(),
-            jquery_url=self.service.jqueryURL.asText(),
-            bootstrap_url=self.service.bootstrapURL.asText(),
-            datatables_url=self.service.datatablesURL.asText(),
+            login_url=redirectBack(service.loginURL),
+            logout_url=redirectBack(service.logoutURL),
+
+            prefix_url=url(service.prefixURL),
+            stylesheet_url=url(service.styleSheetURL),
+            favicon_url=url(service.favIconURL),
+            logo_url=url(service.logoURL),
+            jquery_url=url(service.jqueryURL),
+            bootstrap_url=url(service.bootstrapURL),
+            datatables_url=url(service.datatablesURL),
+
+            event_url=eventURL(service.eventURL),
+            ping_url=eventURL(service.pingURL),
+            personnel_url=eventURL(service.personnelURL),
         )
 
         return tag

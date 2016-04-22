@@ -38,6 +38,7 @@ from twext.who.idirectory import RecordType
 from klein import Klein
 
 from ..json import textFromJSON
+from ..json import rangerAsJSON  # , incidentAsJSON, incidentFromJSON
 from ..element.redirect import RedirectPage
 from ..element.root import RootPage
 from ..element.login import LoginPage
@@ -55,15 +56,18 @@ class WebService(object):
 
     sessionTimeout = Session.sessionTimeout
 
-    prefixURL     = URL.fromText(u"/ims")
-    styleSheetURL = prefixURL.child(u"style.css")
-    favIconURL    = prefixURL.child(u"favicon.ico")
-    logoURL       = prefixURL.child(u"logo.png")
-    loginURL      = prefixURL.child(u"login")
-    logoutURL     = prefixURL.child(u"logout")
-    jqueryURL     = prefixURL.child(u"jquery")
-    bootstrapURL  = prefixURL.child(u"bootstrap")
-    datatablesURL = prefixURL.child(u"datatables")
+    prefixURL        = URL.fromText(u"/ims")
+    styleSheetURL    = prefixURL.child(u"style.css")
+    favIconURL       = prefixURL.child(u"favicon.ico")
+    logoURL          = prefixURL.child(u"logo.png")
+    loginURL         = prefixURL.child(u"login")
+    logoutURL        = prefixURL.child(u"logout")
+    jqueryURL        = prefixURL.child(u"jquery")
+    bootstrapURL     = prefixURL.child(u"bootstrap")
+    datatablesURL    = prefixURL.child(u"datatables")
+    eventURL         = prefixURL.child(u"<event>")
+    pingURL          = eventURL.child(u"ping")
+    personnelURL     = eventURL.child(u"personnel")
 
     bootstrapVersionNumber  = u"3.3.6"
     jqueryVersionNumber     = u"2.2.3"
@@ -220,29 +224,30 @@ class WebService(object):
         return self.builtInResource(request, name, *names)
 
 
-    def javaScript(self, request, name, *names):
-        request.setHeader("Content-Type", "application/javascript")
-        return self.builtInResource(request, name, *names)
+    # def javaScript(self, request, name, *names):
+    #     request.setHeader("Content-Type", "application/javascript")
+    #     return self.builtInResource(request, name, *names)
 
 
-    def javaScripSourceMap(self, request, name, *names):
+    # def javaScripSourceMap(self, request, name, *names):
+    #     request.setHeader("Content-Type", "application/json")
+    #     return self.builtInResource(request, name, *names)
+
+
+    # def jsonData(self, request, json):
+    #     request.setHeader("Content-Type", "application/json")
+    #     return textFromJSON(json)
+
+
+    def jsonStream(self, request, jsonStream, etag=None):
         request.setHeader("Content-Type", "application/json")
-        return self.builtInResource(request, name, *names)
-
-
-    def jsonData(self, request, json):
-        request.setHeader("Content-Type", "application/json")
-        return textFromJSON(json)
-
-
-    def jsonStream(self, request, jsonStream):
-        request.setHeader("Content-Type", "application/json")
+        request.setHeader("ETag", etag.encode("utf-8"))
         for line in jsonStream:
             request.write(line)
 
 
     @staticmethod
-    def _buildJSONArray(items):
+    def buildJSONArray(items):
         first = True
 
         yield b'['
@@ -262,16 +267,23 @@ class WebService(object):
     # Error resources
     #
 
+    def textResource(self, request, message):
+        message = message
+        request.setHeader("Content-Type", "text/plain")
+        request.setHeader("ETag", bytes(hash(message)))
+        return message.encode("utf-8")
+
+
     def notFoundResource(self, request):
         request.setResponseCode(http.NOT_FOUND)
-        request.setHeader("Content-Type", "text/plain")
-        return b"Not found."
+        return self.textResource(request, "Not found.")
 
 
     def invalidQueryResource(self, request, arg, value):
         request.setResponseCode(http.BAD_REQUEST)
-        request.setHeader("Content-Type", "text/plain")
-        return b"Invalid query: {}={}".format(arg, value)
+        return self.textResource(
+            request, "Invalid query: {}={}".format(arg, value)
+        )
 
 
     #
@@ -478,13 +490,47 @@ class WebService(object):
     #
 
     @app.route(u"/")
-    @authenticated(optional=True)
-    def root(self, request):
-        return RootPage(self)
+    def rootResource(self, request):
+        return self.redirect(request, self.prefixURL)
 
 
     @app.route(prefixURL.asText())
     @app.route(prefixURL.asText() + u"/")
     @authorized(Authorization.readIncidents)
-    def application(self, request):
+    def homeResource(self, request):
         return RootPage(self)
+
+
+    @app.route(eventURL.asText())
+    @app.route(eventURL.asText() + u"/")
+    def eventResource(self, request, event):
+        return self.redirect(request, URL.fromText(u"queue"))
+
+
+    @app.route(pingURL.asText())
+    @app.route(pingURL.asText() + u"/")
+    @authenticated()
+    def pingResource(self, request, event):
+        ack = b"ack"
+        return self.jsonStream(request, [ack], unicode(ack))
+
+
+    @app.route(personnelURL.asText())
+    @app.route(personnelURL.asText() + u"/")
+    @authorized(Authorization.readIncidents)
+    @inlineCallbacks
+    def personnelResource(self, request, event):
+        stream, etag = yield self.personnelData()
+        returnValue(self.jsonStream(request, stream, etag))
+
+
+    @inlineCallbacks
+    def personnelData(self):
+        personnel = yield self.dms.personnel()
+        returnValue((
+            self.buildJSONArray(
+                textFromJSON(rangerAsJSON(ranger)).encode("utf-8")
+                for ranger in personnel
+            ),
+            unicode(hash(personnel)),
+        ))
