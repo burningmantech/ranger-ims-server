@@ -40,7 +40,7 @@ class RootPage(Element):
 
     @renderer
     def events(self, request, tag):
-        events = sorted(event for event in self.ims.storage)
+        events = sorted(event for event in self.service.storage)
 
         if events:
             return (
