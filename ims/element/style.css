@@ -1,0 +1,21 @@
+body, h1, h2, h3, h4, h5, h6, p, p+p {
+  font-family: "Helvetica Neue", "Helvetica", Helvetica, sans-serif;
+  font-weight: 300;
+}
+
+code {
+  font-family: "Courier New", "Courier", monospace;
+}
+
+.table-hover > tbody > tr:hover {
+  background-color: #FFFF00;
+}
+
+footer {
+    float: left;
+}
+
+a.navbar-brand>img {
+    width: 20px;
+    height: 20px;
+}
