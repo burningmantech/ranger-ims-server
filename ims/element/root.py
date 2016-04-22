@@ -15,28 +15,26 @@
 ##
 
 """
-Home page element
+Server root page.
 """
 
 __all__ = [
-    "HomePageElement",
+    "RootPage",
 ]
 
-from twisted.web.template import renderer, tags
-
-from .base import BaseElement
+from .base import Element, renderer, tags
 
 
 
-class HomePageElement(BaseElement):
+class RootPage(Element):
     """
     Home page element
     """
 
-    def __init__(self, ims):
-        BaseElement.__init__(
-            self, ims, "home",
-            "Ranger Incident Management System"
+    def __init__(self, service):
+        Element.__init__(
+            self, u"home", service,
+            title=u"Ranger Incident Management System",
         )
 
 

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
+
+  <head><div t:render="head_common" /></head>
+
+  <body><div t:render="container">
+
+    <form method="POST" id="login_form" class="form-horizontal">
+
+      <button t:render="if_authn_failed" type="button" class="btn btn-block btn-danger">Authentication Failed</button>
+      <button t:render="if_authz_failed" type="button" class="btn btn-block btn-danger">Authorization Failed for <code><t:slot name="user" /></code></button>
+
+      <p>
+        Please provide your Ranger Secret Clubhouse credentials.
+      </p>
+
+      <div class="form-group">
+        <label for="username_input" class="col-sm-1 control-label">User name:</label>
+        <div class="col-sm-2">
+          <input type="text" name="username" inputmode="latin-name" class="form-control" id="username_input" placeholder="user" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password_input" class="col-sm-1 control-label">Password:</label>
+        <div class="col-sm-2">
+          <input type="password" name="password" inputmode="latin-prose" class="form-control" id="password_input" placeholder="password" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-offset-1 col-sm-2">
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </div>
+
+    </form>
+
+  </div></body>
+
+</html>

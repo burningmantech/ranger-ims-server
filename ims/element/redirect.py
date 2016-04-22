@@ -15,46 +15,27 @@
 ##
 
 """
-Login page.
+Redirect page.
 """
 
 __all__ = [
-    "LoginPage"
+    "RedirectPage"
 ]
 
 from .base import Element, renderer
 
 
 
-class LoginPage(Element):
+class RedirectPage(Element):
     """
-    Login page.
+    Redirect page.
     """
 
-    def __init__(self, service, failed=False):
-        Element.__init__(self, u"login", service, title=u"Log In")
-        self.failed = failed
+    def __init__(self, service, location):
+        Element.__init__(self, u"redirect", service, title=u"Redirect")
+        self.location = location
 
 
     @renderer
-    def if_authn_failed(self, request, tag):
-        if self.failed:
-            return tag
-        else:
-            return ()
-
-
-    @renderer
-    def if_authz_failed(self, request, tag):
-        if self.failed:
-            # authn failed, not authz
-            return ()
-
-        session = request.getSession()
-        user = getattr(session, "user", None)
-
-        if user is None:
-            return ()
-
-        # We have a user but still got sent to login page
-        return tag
+    def destination(self, request, tag):
+        return tag.fillSlots(destination_url=self.location.asText())
