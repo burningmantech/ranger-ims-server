@@ -25,7 +25,7 @@ __all__ = [
 ]
 
 import sys
-from os import environ
+from os import environ, getcwd
 from os.path import sep as pathsep
 from re import compile as regex_compile
 from time import tzset, time
@@ -35,11 +35,11 @@ from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger, textFileLogObserver
 
-from .tz import FixedOffsetTimeZone
-from .data import IncidentType
-from .json import textFromJSON, jsonFromFile
-from .dms import DutyManagementSystem
-from .store import MultiStorage
+from ..tz import FixedOffsetTimeZone
+from ..data import IncidentType
+from ..json import textFromJSON, jsonFromFile
+from ..dms import DutyManagementSystem
+from ..store import MultiStorage
 
 
 
@@ -52,13 +52,13 @@ class Configuration (object):
 
 
     def __init__(self, configFile):
-        self.configFile = configFile
+        self.ConfigFile = configFile
         self.load()
 
 
     def __str__(self):
         return (
-            "Configuration file: {self.configFile}\n"
+            "Configuration file: {self.ConfigFile}\n"
             "\n"
             "Core.ServerRoot: {self.ServerRoot}\n"
             "Core.ConfigRoot: {self.ConfigRoot}\n"
@@ -84,13 +84,22 @@ class Configuration (object):
         configParser = SafeConfigParser()
 
         def readConfig(configFile):
-            for okFile in configParser.read((configFile.path,)):
+            if configFile is None:
+                self.log.info("No configuration file specified.")
+                return
+
+            okFile = None
+
+            for okFile in configParser.read(configFile.path,):
                 self.log.info(
                     "Read configuration file: {configFile.path}",
                     configFile=configFile
                 )
-            else:
-                self.log.info("No configuration file read.")
+
+            self.log.error(
+                "Unable to read configuration file: {file.path}",
+                file=configFile
+            )
 
         def valueFromConfig(section, option, default):
             try:
@@ -123,10 +132,15 @@ class Configuration (object):
 
             return fp
 
-        readConfig(self.configFile)
+        readConfig(self.ConfigFile)
+
+        if self.ConfigFile is None:
+            defaultRoot = FilePath(getcwd())
+        else:
+            defaultRoot = self.ConfigFile.parent().parent()
 
         self.ServerRoot = filePathFromConfig(
-            "Core", "ServerRoot", self.configFile.parent().parent(), ()
+            "Core", "ServerRoot", defaultRoot, ()
         )
         self.log.info(
             "Server root: {serverRoot.path}", serverRoot=self.ServerRoot
@@ -256,7 +270,7 @@ class Configuration (object):
         self.IncidentTypesJSON = textFromJSON(self.IncidentTypes)
 
 
-        locationsFile = self.configFile.sibling("locations.json")
+        locationsFile = self.ConfigRoot.sibling("locations.json")
 
         if locationsFile.isfile():
             with locationsFile.open() as jsonStrem:
