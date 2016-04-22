@@ -69,6 +69,7 @@ class WebService(object):
     pingURL          = eventURL.child(u"ping")
     personnelURL     = eventURL.child(u"personnel")
     incidentTypesURL = eventURL.child(u"incident_types")
+    locationsURL     = eventURL.child(u"locations")
 
     bootstrapVersionNumber  = u"3.3.6"
     jqueryVersionNumber     = u"2.2.3"
@@ -519,14 +520,6 @@ class WebService(object):
         return self.jsonData(request, ack, bytes(hash(ack)))
 
 
-    @app.route(incidentTypesURL.asText())
-    @app.route(incidentTypesURL.asText() + u"/")
-    @authorized(Authorization.readIncidents)
-    def incidentTypesResource(self, request, event):
-        json = self.config.IncidentTypesJSONBytes
-        return self.jsonStream(request, (json,), bytes(hash(json)))
-
-
     @app.route(personnelURL.asText())
     @app.route(personnelURL.asText() + u"/")
     @authorized(Authorization.readIncidents)
@@ -546,3 +539,19 @@ class WebService(object):
             ),
             bytes(hash(personnel)),
         ))
+
+
+    @app.route(incidentTypesURL.asText())
+    @app.route(incidentTypesURL.asText() + u"/")
+    @authorized(Authorization.readIncidents)
+    def incidentTypesResource(self, request, event):
+        json = self.config.IncidentTypesJSONBytes
+        return self.jsonStream(request, (json,), bytes(hash(json)))
+
+
+    @app.route(locationsURL.asText())
+    @app.route(locationsURL.asText() + u"/")
+    @authorized(Authorization.readIncidents)
+    def locationsResource(self, request, event):
+        json = self.config.locationsJSONBytes
+        return self.jsonStream(request, (json,), bytes(hash(json)))
