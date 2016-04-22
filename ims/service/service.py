@@ -43,6 +43,7 @@ from ..element.redirect import RedirectPage
 from ..element.root import RootPage
 from ..element.login import LoginPage
 from .auth import authenticated, authorized, Authorization
+from .query import termsFromQuery, showClosedFromQuery, sinceFromQuery
 
 
 
@@ -70,6 +71,7 @@ class WebService(object):
     personnelURL     = eventURL.child(u"personnel")
     incidentTypesURL = eventURL.child(u"incident_types")
     locationsURL     = eventURL.child(u"locations")
+    incidentsURL     = eventURL.child(u"incidents")
 
     bootstrapVersionNumber  = u"3.3.6"
     jqueryVersionNumber     = u"2.2.3"
@@ -555,3 +557,31 @@ class WebService(object):
     def locationsResource(self, request, event):
         json = self.config.locationsJSONBytes
         return self.jsonStream(request, (json,), bytes(hash(json)))
+
+
+    @app.route(incidentsURL.asText())
+    @app.route(incidentsURL.asText() + u"/")
+    @authorized(Authorization.readIncidents)
+    def listIncidentsResource(self, request, event):
+        if request.args:
+            incidents = self.storage[event].searchIncidents(
+                terms=termsFromQuery(request),
+                showClosed=showClosedFromQuery(request),
+                since=sinceFromQuery(request),
+            )
+        else:
+            incidents = self.storage[event].listIncidents()
+
+        # Reverse order here because we generally want the clients to load the
+        # more recent incidents first.
+        # FIXME: Probably that should just be client-side logic.
+        incidents = sorted(
+            incidents, cmp=lambda a, b: cmp(a[0], b[0]), reverse=True
+        )
+
+        stream = self.buildJSONArray(
+            textFromJSON(incident).encode("utf-8")
+            for incident in incidents
+        )
+
+        return self.jsonStream(request, stream, None)
