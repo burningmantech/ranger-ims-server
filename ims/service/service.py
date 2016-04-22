@@ -238,14 +238,14 @@ class WebService(object):
     def jsonData(self, request, json, etag=None):
         request.setHeader("Content-Type", "application/json")
         if etag is not None:
-            request.setHeader("ETag", etag.encode("utf-8"))
+            request.setHeader("ETag", etag)
         return textFromJSON(json)
 
 
     def jsonStream(self, request, jsonStream, etag=None):
         request.setHeader("Content-Type", "application/json")
         if etag is not None:
-            request.setHeader("ETag", etag.encode("utf-8"))
+            request.setHeader("ETag", etag)
         for line in jsonStream:
             request.write(line)
 
@@ -516,15 +516,15 @@ class WebService(object):
     @authenticated()
     def pingResource(self, request, event):
         ack = b"ack"
-        return self.jsonData(request, ack, unicode(hash(ack)))
+        return self.jsonData(request, ack, bytes(hash(ack)))
 
 
     @app.route(incidentTypesURL.asText())
     @app.route(incidentTypesURL.asText() + u"/")
     @authorized(Authorization.readIncidents)
     def incidentTypesResource(self, request, event):
-        json = self.config.IncidentTypesJSON.encode("utf-8")
-        return self.jsonStream(request, (json,), unicode(hash(json)))
+        json = self.config.IncidentTypesJSONBytes
+        return self.jsonStream(request, (json,), bytes(hash(json)))
 
 
     @app.route(personnelURL.asText())
@@ -544,5 +544,5 @@ class WebService(object):
                 textFromJSON(rangerAsJSON(ranger)).encode("utf-8")
                 for ranger in personnel
             ),
-            unicode(hash(personnel)),
+            bytes(hash(personnel)),
         ))

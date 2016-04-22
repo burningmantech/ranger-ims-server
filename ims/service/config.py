@@ -267,8 +267,9 @@ class Configuration (object):
 
         self.storage = MultiStorage(self.DataRoot, self.ReadOnly)
 
-        self.IncidentTypesJSON = textFromJSON(self.IncidentTypes)
-
+        self.IncidentTypesJSONBytes = (
+            textFromJSON(self.IncidentTypes).encode("utf-8")
+        )
 
         locationsFile = self.ConfigRoot.sibling("locations.json")
 
@@ -276,7 +277,7 @@ class Configuration (object):
             with locationsFile.open() as jsonStrem:
                 json = jsonFromFile(jsonStrem)
             self.log.info("{count} locations", count=len(json))
-            self.locationsJSONText = textFromJSON(json)
+            self.locationsJSONBytes = textFromJSON(json).encode("utf-8")
         else:
             self.log.info("No locations file: {file.path}", file=locationsFile)
-            self.locationsJSONText = textFromJSON([])
+            self.locationsJSONBytes = textFromJSON([]).encode("utf-8")
