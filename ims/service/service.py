@@ -304,7 +304,7 @@ class WebService(object):
     # File access
     #
 
-    _elementsRoot = FilePath(__file__).parent().child("element")
+    _elementsRoot = FilePath(__file__).parent().parent().child("element")
 
     def builtInResource(self, name, *names):
         resource = self._elementsRoot.child(name)
