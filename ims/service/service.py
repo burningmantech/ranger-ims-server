@@ -36,11 +36,11 @@ from twext.who.idirectory import RecordType
 
 from klein import Klein
 
-from .auth import authenticated, authorized, Authorization
 from ..json import textFromJSON
 from ..element.redirect import RedirectPage
-from ..element.home import RootPage
+from ..element.root import RootPage
 from ..element.login import LoginPage
+from .auth import authenticated, authorized, Authorization
 
 
 
