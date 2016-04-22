@@ -69,7 +69,10 @@ class WebService(object):
     dataTablesVersion = u"DataTables-1.10.10"
 
 
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
+        self.storage = config.storage
+        self.dms = config.dms
         self.directory = None
 
 
