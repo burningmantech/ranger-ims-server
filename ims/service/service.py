@@ -31,6 +31,7 @@ from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.web import http
 from twisted.web.server import Session
+from twisted.web.client import downloadPage
 
 from twext.who.idirectory import RecordType
 
@@ -64,9 +65,38 @@ class WebService(object):
     bootstrapURL  = prefixURL.child(u"bootstrap")
     datatablesURL = prefixURL.child(u"datatables")
 
-    bootstrapVersion  = u"bootstrap-3.3.6-dist"
-    jqueryVersion     = u"jquery-2.2.0"
-    dataTablesVersion = u"DataTables-1.10.10"
+    bootstrapVersionNumber  = u"3.3.6"
+    jqueryVersionNumber     = u"2.2.3"
+    dataTablesVersionNumber = u"1.10.11"
+
+    bootstrapVersion  = u"bootstrap-{}-dist".format(bootstrapVersionNumber)
+    jqueryVersion     = u"jquery-{}".format(jqueryVersionNumber)
+    dataTablesVersion = u"jquery.dataTables-{}".format(dataTablesVersionNumber)
+
+    bootstrapSourceURL = URL.fromText(
+        u"https://github.com/twbs/bootstrap/releases/download/v{n}/{v}.zip"
+        .format(n=bootstrapVersionNumber, v=bootstrapVersion)
+    )
+
+    jqueryJSSourceURL = URL.fromText(
+        u"https://code.jquery.com/{v}.min.js"
+        .format(n=jqueryVersionNumber, v=jqueryVersion)
+    )
+
+    jqueryMapSourceURL = URL.fromText(
+        u"https://code.jquery.com/{v}.min.map"
+        .format(n=jqueryVersionNumber, v=jqueryVersion)
+    )
+
+    dataTablesJSSourceURL = URL.fromText(
+        u"https://cdn.datatables.net/{n}/js/jquery.dataTables.min.js"
+        .format(n=dataTablesVersionNumber, v=dataTablesVersion)
+    )
+
+    dataTablesCSSSourceURL = URL.fromText(
+        u"https://cdn.datatables.net/{n}/css/jquery.dataTables.min.css"
+        .format(n=dataTablesVersionNumber, v=dataTablesVersion)
+    )
 
 
     def __init__(self, config):
@@ -187,17 +217,17 @@ class WebService(object):
 
     def styleSheet(self, request, name, *names):
         request.setHeader("Content-Type", "text/css")
-        return self.builtInResource(name, *names)
+        return self.builtInResource(request, name, *names)
 
 
     def javaScript(self, request, name, *names):
         request.setHeader("Content-Type", "application/javascript")
-        return self.builtInResource(name, *names)
+        return self.builtInResource(request, name, *names)
 
 
     def javaScripSourceMap(self, request, name, *names):
         request.setHeader("Content-Type", "application/json")
-        return self.builtInResource(name, *names)
+        return self.builtInResource(request, name, *names)
 
 
     def jsonData(self, request, json):
@@ -256,51 +286,63 @@ class WebService(object):
     @app.route(favIconURL.asText())
     def favIcon(self, request):
         request.setHeader("Content-Type", "image/x-icon")
-        return self.builtInResource("favicon.ico")
+        return self.builtInResource(request, "favicon.ico")
 
 
     @app.route(logoURL.asText())
     def logo(self, request):
         request.setHeader("Content-Type", "image/png")
-        return self.builtInResource("logo.png")
+        return self.builtInResource(request, "logo.png")
 
 
     @app.route(bootstrapURL.asText(), branch=True)
     def bootstrap(self, request):
-        url = URL.fromText(request.uri.rstrip("/"))
+        requestURL = URL.fromText(request.uri.rstrip("/"))
 
         # Remove URL prefix, add file prefix
-        segments = url.path[len(self.bootstrapURL.path):]
-        segments = (self.bootstrapVersion,) + segments
+        names = requestURL.path[len(self.bootstrapURL.path):]
 
         request.setHeader("Content-Type", "text/css")
-        return self.zippedResource(request, self.bootstrapVersion, segments)
+        return self.cachedZippedResource(
+            request, self.bootstrapSourceURL, self.bootstrapVersion,
+            self.bootstrapVersion, *names
+        )
 
 
     @app.route(jqueryURL.child(u"jquery.min.js").asText())
     def jqueryJS(self, request):
-        return self.javaScript(
-            request, "jquery", "{}.min.js".format(self.jqueryVersion)
+        request.setHeader("Content-Type", "application/javascript")
+        return self.cachedResource(
+            request, self.jqueryJSSourceURL,
+            "{}.min.js".format(self.jqueryVersion),
         )
 
 
     @app.route(jqueryURL.child(u"jquery.min.map").asText())
     def jqueryMap(self, request):
-        return self.javaScripSourceMap(
-            request, "jquery", "{}.min.map".format(self.jqueryVersion)
+        request.setHeader("Content-Type", "application/json")
+        return self.cachedResource(
+            request, self.jqueryMapSourceURL,
+            "{}.min.map".format(self.jqueryVersion),
         )
 
 
-    @app.route(datatablesURL.asText(), branch=True)
-    def datatables(self, request):
-        url = URL.fromText(request.uri.rstrip("/"))
+    @app.route(datatablesURL.child(u"jquery.dataTables.min.js").asText())
+    def datatablesJS(self, request):
+        request.setHeader("Content-Type", "application/javascript")
+        return self.cachedResource(
+            request, self.dataTablesJSSourceURL,
+            "{}.min.js".format(self.dataTablesVersion),
+        )
 
-        # Remove URL prefix, add file prefix
-        segments = url.path[len(self.datatablesURL.path):]
-        segments = (self.dataTablesVersion, "media") + segments
 
+    @app.route(datatablesURL.child(u"jquery.dataTables.min.css").asText())
+    def datatablesCSS(self, request):
         request.setHeader("Content-Type", "text/css")
-        return self.zippedResource(request, self.dataTablesVersion, segments)
+        return self.cachedResource(
+            request, self.dataTablesCSSSourceURL,
+            "{}.min.css".format(self.dataTablesVersion),
+        )
 
 
     #
@@ -309,21 +351,29 @@ class WebService(object):
 
     _elementsRoot = FilePath(__file__).parent().parent().child("element")
 
-    def builtInResource(self, name, *names):
-        resource = self._elementsRoot.child(name)
+    def builtInResource(self, request, name, *names):
+        filePath = self._elementsRoot.child(name)
+
         for name in names:
-            resource = resource.child(name)
-        return resource.getContent()
+            filePath = filePath.child(name)
+
+        try:
+            return filePath.getContent()
+        except IOError:
+            self.log.error(
+                "File not found: {filePath.path}", filePath=filePath
+            )
+            return self.notFoundResource(request)
 
 
-    def zippedResource(self, request, name, segments):
-        archivePath = self._elementsRoot.child("{0}.zip".format(name))
+    def zippedResource(self, request, archiveName, name, *names):
+        archivePath = self._elementsRoot.child("{0}.zip".format(archiveName))
 
         try:
             filePath = ZipArchive(archivePath.path)
         except IOError:
             self.log.error(
-                "Missing zip archive: {archive.path}", archive=archivePath
+                "Zip archive not found: {archive.path}", archive=archivePath
             )
             return self.notFoundResource(request)
         except BadZipfile:
@@ -332,18 +382,95 @@ class WebService(object):
             )
             return self.notFoundResource(request)
 
-        for segment in segments:
-            filePath = filePath.child(segment)
+        filePath = filePath.child(name)
+        for name in names:
+            filePath = filePath.child(name)
 
         try:
             return filePath.getContent()
         except KeyError:
             self.log.error(
-                "Not found in ZIP archive: {filePath.path}",
+                "File not found in ZIP archive: {filePath.path}",
                 filePath=filePath,
                 archive=archivePath,
             )
             return self.notFoundResource(request)
+
+
+    @inlineCallbacks
+    def cacheFromURL(self, url, name):
+        destination = self.config.CachedResources.child(name)
+
+        if not destination.exists():
+            tmp = destination.temporarySibling(extension=".tmp")
+            try:
+                yield downloadPage(
+                    url.asText().encode("utf-8"), tmp.open("w")
+                )
+            except:
+                self.log.failure("Download failed for {url}", url=url)
+                try:
+                    tmp.remove()
+                except (OSError, IOError):
+                    pass
+            else:
+                tmp.moveTo(destination)
+
+        returnValue(destination)
+
+
+    @inlineCallbacks
+    def cachedResource(self, request, url, name):
+        filePath = yield self.cacheFromURL(url, name)
+
+        try:
+            returnValue(filePath.getContent())
+        except (OSError, IOError) as e:
+            self.log.error(
+                "Unable to open file {filePath.path}: {error}",
+                filePath=filePath, error=e,
+            )
+            returnValue(self.notFoundResource(request))
+
+
+    @inlineCallbacks
+    def cachedZippedResource(self, request, url, archiveName, name, *names):
+        archivePath = yield self.cacheFromURL(
+            url, "{0}.zip".format(archiveName)
+        )
+
+        try:
+            filePath = ZipArchive(archivePath.path)
+        except BadZipfile as e:
+            self.log.error(
+                "Corrupt zip archive {archive.path}: {error}",
+                archive=archivePath, error=e,
+            )
+            try:
+                archivePath.remove()
+            except (OSError, IOError):
+                pass
+            returnValue(self.notFoundResource(request))
+        except (OSError, IOError) as e:
+            self.log.error(
+                "Unable to open zip archive {archive.path}: {error}",
+                archive=archivePath, error=e,
+            )
+            returnValue(self.notFoundResource(request))
+
+        filePath = filePath.child(name)
+        for name in names:
+            filePath = filePath.child(name)
+
+        try:
+            returnValue(filePath.getContent())
+        except KeyError:
+            self.log.error(
+                "File not found in ZIP archive: {filePath.path}",
+                filePath=filePath,
+                archive=archivePath,
+            )
+            returnValue(self.notFoundResource(request))
 
 
     #
