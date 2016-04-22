@@ -17,29 +17,13 @@
 ##
 
 """
-Distutils setup.
+Distutils config
 """
 
 from __future__ import print_function
 
 from os.path import dirname, join as joinpath
-from setuptools import setup, find_packages as find_packages
-
-
-
-#
-# Utilities
-#
-
-def version():
-    """
-    Compute the version number.
-    """
-    base_version = "0.2b"
-
-    full_version = base_version
-
-    return full_version
+from setuptools import setup, find_packages
 
 
 
@@ -48,6 +32,8 @@ def version():
 #
 
 name = "ranger-ims"
+
+from ims import __version__ as version_string
 
 description = "Ranger Incident Management System"
 
@@ -72,7 +58,7 @@ classifiers = [
 
 author = "Wilfredo S\xe1nchez Vega"
 
-author_email = "tool@burningman.com"
+author_email = "tool@burningman.org"
 
 license = "Apache License, Version 2.0"
 
@@ -89,11 +75,12 @@ entry_points = {
 }
 
 script_entry_points = {
+    "web" : ("ims.service.tool", "WebTool.main"),
 }
 
-for n, (m, f) in script_entry_points.iteritems():
+for tool, (module, function) in script_entry_points.iteritems():
     entry_points["console_scripts"].append(
-        "calendarserver_{} = {}:{}".format(n, m, f)
+        "ims_{} = {}:{}".format(tool, module, function)
     )
 
 
@@ -111,8 +98,7 @@ install_requirements = [
     "mysql-connector-python-rf",
 ]
 
-extras_requirements = {
-}
+extras_requirements = {}
 
 
 
@@ -132,18 +118,6 @@ def doSetup():
     """
     Run L{setup}.
     """
-    # Write version file
-    version_string = version()
-    version_filename = joinpath(dirname(__file__), "ims", "version.py")
-    version_file = file(version_filename, "w")
-
-    try:
-        version_file.write(
-            'version = "{0}"\n'.format(version_string)
-        )
-    finally:
-        version_file.close()
-
     setup(
         name=name,
         version=version_string,
@@ -158,7 +132,7 @@ def doSetup():
         packages=find_packages(),
         package_data={},
         entry_points=entry_points,
-        scripts=["bin/imsd"],
+        scripts=[],
         data_files=[],
         ext_modules=extensions,
         py_modules=[],

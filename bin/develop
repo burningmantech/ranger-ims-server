@@ -27,3 +27,31 @@ fi;
 . "${wd}/bin/_build.sh";
 
 develop;
+
+cd "${wd}";
+
+
+#
+# Link to scripts for convenience
+#
+find .develop/virtualenv/bin -type f -name "ims_*" | {
+  while read source; do
+    target="${wd}/bin/$(basename ${source})";
+
+    rm -f "${target}";
+    cat << __END__ > "${target}"
+#!/bin/sh
+
+export PATH="${wd}/bin:${PATH:-}";
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}";
+export DYLD_LIBRARY_PATH="${DYLD_LIBRARY_PATH:-}";
+
+exec "\$(dirname \$0)/../${source}" "\$@";
+__END__
+    chmod +x "${target}";
+
+  done;
+}
+
+
+echo "Dependency setup complete."
