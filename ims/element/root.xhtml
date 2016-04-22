@@ -5,8 +5,6 @@
 
   <body><div t:render="container">
 
-    <h1 t:render="title" />
-
     <p>This service hosts the Ranger Incident Management System (IMS).</p>
 
     <h2>Web Interface</h2>
@@ -24,19 +22,6 @@
       </li>
     </ul>
 
-<!--
-    <h2>Reports</h2>
-
-    <ul>
-      <li>Daily Incident Summary</li>
-      <ul>
-        <li><a href="/reports/daily">Table</a></li>
-        <li><a href="/charts/daily" >Chart</a></li>
-      </ul>
-      <li><a href="/reports/shift">Shift Summary</a></li>
-    </ul>
- -->
-
     <h2>Documentation</h2>
 
     <ul>
@@ -44,12 +29,6 @@
         <a href="/docs/priorities.xhtml">Using Priorities</a>
       </li>
     </ul>
-
-    <div id="login_info">
-      <hr />
-      Logged in as: <span id="user" t:render="user" /> —
-      <a id="logout" href="/logout">log out</a>
-    </div>
 
   </div></body>
 
