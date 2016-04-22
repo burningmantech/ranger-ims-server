@@ -206,6 +206,7 @@ class Element(BaseElement):
             event_url=eventURL(service.eventURL),
             ping_url=eventURL(service.pingURL),
             personnel_url=eventURL(service.personnelURL),
+            incident_types_url=eventURL(service.incidentTypesURL),
         )
 
         return tag

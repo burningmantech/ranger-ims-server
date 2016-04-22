@@ -68,6 +68,7 @@ class WebService(object):
     eventURL         = prefixURL.child(u"<event>")
     pingURL          = eventURL.child(u"ping")
     personnelURL     = eventURL.child(u"personnel")
+    incidentTypesURL = eventURL.child(u"incident_types")
 
     bootstrapVersionNumber  = u"3.3.6"
     jqueryVersionNumber     = u"2.2.3"
@@ -234,14 +235,17 @@ class WebService(object):
     #     return self.builtInResource(request, name, *names)
 
 
-    # def jsonData(self, request, json):
-    #     request.setHeader("Content-Type", "application/json")
-    #     return textFromJSON(json)
+    def jsonData(self, request, json, etag=None):
+        request.setHeader("Content-Type", "application/json")
+        if etag is not None:
+            request.setHeader("ETag", etag.encode("utf-8"))
+        return textFromJSON(json)
 
 
     def jsonStream(self, request, jsonStream, etag=None):
         request.setHeader("Content-Type", "application/json")
-        request.setHeader("ETag", etag.encode("utf-8"))
+        if etag is not None:
+            request.setHeader("ETag", etag.encode("utf-8"))
         for line in jsonStream:
             request.write(line)
 
@@ -512,7 +516,15 @@ class WebService(object):
     @authenticated()
     def pingResource(self, request, event):
         ack = b"ack"
-        return self.jsonStream(request, [ack], unicode(ack))
+        return self.jsonData(request, ack, unicode(hash(ack)))
+
+
+    @app.route(incidentTypesURL.asText())
+    @app.route(incidentTypesURL.asText() + u"/")
+    @authorized(Authorization.readIncidents)
+    def incidentTypesResource(self, request, event):
+        json = self.config.IncidentTypesJSON.encode("utf-8")
+        return self.jsonStream(request, (json,), unicode(hash(json)))
 
 
     @app.route(personnelURL.asText())
