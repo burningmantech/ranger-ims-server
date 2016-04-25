@@ -38,8 +38,9 @@ from twext.who.idirectory import RecordType
 
 from klein import Klein
 
-from ..json import textFromJSON
-from ..json import rangerAsJSON, incidentAsJSON  # , incidentFromJSON
+from ..json import textFromJSON, jsonFromFile
+from ..json import rangerAsJSON, incidentAsJSON, incidentFromJSON
+from ..edit import editIncident
 from ..element.redirect import RedirectPage
 from ..element.root import RootPage
 from ..element.login import LoginPage
@@ -287,6 +288,12 @@ class WebService(object):
     # Error resources
     #
 
+    def noContentResource(self, request, etag=None):
+        request.setResponseCode(http.NO_CONTENT)
+        request.setHeader(HeaderName.etag.value, etag)
+        return b""
+
+
     def textResource(self, request, message):
         message = message
         request.setHeader(HeaderName.contentType.value, ContentType.text.value)
@@ -304,6 +311,13 @@ class WebService(object):
         return self.textResource(
             request, "Invalid query: {}={}".format(arg, value)
         )
+
+
+    def badRequestResource(self, request, message=None):
+        request.setResponseCode(http.BAD_REQUEST)
+        if message is None:
+            message = "Bad request."
+        return self.textResource(request, message)
 
 
     #
@@ -604,6 +618,69 @@ class WebService(object):
         return self.jsonStream(request, stream, None)
 
 
+    @app.route(incidentsURL.asText(), methods=("POST",))
+    @app.route(incidentsURL.asText() + u"/", methods=("POST",))
+    @authorized(Authorization.readIncidents)
+    def newIncidentResource(self, request, event):
+        number = self.storage[event].nextIncidentNumber()
+
+        json = jsonFromFile(request.content)
+        incident = incidentFromJSON(json, number=number, validate=False)
+
+        now = utcNow()
+
+        if incident.created is None:
+            # No timestamp provided; add one.
+
+            # Right now is a decent default, but if there's a report entry
+            # that's older than now, that's a better pick.
+            created = now
+            if incident.report_entries is not None:
+                for entry in incident.report_entries:
+                    if entry.created < created:
+                        created = entry.created
+
+            incident.created = created
+            self.log.info(
+                "Adding created time {created} to new incident #{number}",
+                created=incident.created, number=number
+            )
+        else:
+            if incident.created > now:
+                return self.badRequestResource(
+                    "Created time {} is in the future. Current time is {}."
+                    .format(incident.created, now)
+                )
+
+        author = request.user
+
+        # Apply this new incident as changes to an empty incident so that
+        # system report entries get added.
+        # It also adds the author, so we don't need to do it here.
+        incident = editIncident(
+            Incident(
+                number=incident.number,    # Must match
+                created=incident.created,  # Must match
+            ),
+            incident,
+            author
+        )
+
+        self.storage[event].writeIncident(incident)
+
+        self.log.info(
+            u"User {author} created new incident #{number} via JSON",
+            author=author, number=number
+        )
+        self.log.debug(u"New: {json}", json=incidentAsJSON(incident))
+
+        request.setHeader(HeaderName.incidentNumber.value, number)
+        request.setHeader(
+            HeaderName.location.value,
+            urlForEndpoint(request, "get_incident", {"number": number})
+        )
+
+
     @app.route(incidentNumberURL.asText())
     @authorized(Authorization.readIncidents)
     def readIncidentResource(self, request, event, number):
@@ -636,6 +713,45 @@ class WebService(object):
         return self.jsonBytes(request, text.encode("utf-8"), etag)
 
 
+    @app.route(incidentNumberURL.asText())
+    @authorized(Authorization.readIncidents, methods=("POST",))
+    def editIncidentResource(self, request, event, number):
+        try:
+            number = int(number)
+        except ValueError:
+            return self.notFoundResource(request)
+
+        author = request.user
+
+        storage = self.storage[event]
+
+        incident = storage.readIncidentWithNumber(number)
+
+        #
+        # Apply the changes requested by the client
+        #
+        jsonEdits = jsonFromFile(request.content)
+        edits = incidentFromJSON(jsonEdits, number=number, validate=False)
+        edited = editIncident(incident, edits, author)
+
+        #
+        # Write to disk
+        #
+        storage.writeIncident(edited)
+
+        self.log.debug(
+            u"User {author} edited incident #{number} via JSON",
+            author=author, number=number
+        )
+        # self.log.debug(u"Original: {json}", json=incidentAsJSON(incident))
+        self.log.debug(u"Changes: {json}", json=jsonEdits)
+        # self.log.debug(u"Edited: {json}", json=incidentAsJSON(edited))
+
+        etag = storage.etagForIncidentWithNumber(number)
+
+        return self.noContentResource(request, etag)
+
+
 
 class HeaderName (Values):
     """
@@ -665,3 +781,12 @@ class ContentType (Values):
 
     PNG        = ValueConstant("image/png")
     ICO        = ValueConstant("image/x-icon")
+
+
+
+def urlForEndpoint(request, endpoint, *args, **kwargs):
+    """
+    Compute the URL for a Klein endpoint.
+    """
+    kwargs["force_external"] = True
+    return IKleinRequest(request).url_for(endpoint, *args, **kwargs)
