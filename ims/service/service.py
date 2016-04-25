@@ -73,7 +73,7 @@ class WebService(object):
     incidentTypesURL  = eventURL.child(u"incident_types")
     locationsURL      = eventURL.child(u"locations")
     incidentsURL      = eventURL.child(u"incidents")
-    incidentNumberURL = eventURL.child(u"incidents").child(u"<number>")
+    incidentNumberURL = incidentsURL.child(u"<number>")
 
     bootstrapVersionNumber  = u"3.3.6"
     jqueryVersionNumber     = u"2.2.3"
