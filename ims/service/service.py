@@ -24,6 +24,7 @@ __all__ = [
 
 from zipfile import BadZipfile
 
+from twisted.python.constants import Values, ValueConstant
 from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.python.url import URL
@@ -125,8 +126,8 @@ class WebService(object):
 
         url = location.asText().encode("utf-8")
 
-        request.setHeader("Content-Type", "text/html")
-        request.setHeader("Location", url)
+        request.setHeader(HeaderName.contentType.value, ContentType.HTML.value)
+        request.setHeader(HeaderName.location.value, url)
         request.setResponseCode(http.FOUND)
 
         return RedirectPage(self, location)
@@ -225,38 +226,42 @@ class WebService(object):
     #
 
     def styleSheet(self, request, name, *names):
-        request.setHeader("Content-Type", "text/css")
+        request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.builtInResource(request, name, *names)
 
 
     # def javaScript(self, request, name, *names):
-    #     request.setHeader("Content-Type", "application/javascript")
+    #     request.setHeader(
+    #         HeaderName.contentType.value, ContentType.JavaScript.value
+    #     )
     #     return self.builtInResource(request, name, *names)
 
 
     # def javaScripSourceMap(self, request, name, *names):
-    #     request.setHeader("Content-Type", "application/json")
+    #     request.setHeader(
+    #         HeaderName.contentType.value, ContentType.JSON.value
+    #     )
     #     return self.builtInResource(request, name, *names)
 
 
     def jsonData(self, request, json, etag=None):
-        request.setHeader("Content-Type", "application/json")
+        request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
         if etag is not None:
-            request.setHeader("ETag", etag)
+            request.setHeader(HeaderName.etag.value, etag)
         return textFromJSON(json)
 
 
     def jsonBytes(self, request, data, etag=None):
-        request.setHeader("Content-Type", "application/json")
+        request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
         if etag is not None:
-            request.setHeader("ETag", etag)
+            request.setHeader(HeaderName.etag.value, etag)
         return data
 
 
     def jsonStream(self, request, jsonStream, etag=None):
-        request.setHeader("Content-Type", "application/json")
+        request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
         if etag is not None:
-            request.setHeader("ETag", etag)
+            request.setHeader(HeaderName.etag.value, etag)
         for line in jsonStream:
             request.write(line)
 
@@ -284,8 +289,8 @@ class WebService(object):
 
     def textResource(self, request, message):
         message = message
-        request.setHeader("Content-Type", "text/plain")
-        request.setHeader("ETag", bytes(hash(message)))
+        request.setHeader(HeaderName.contentType.value, ContentType.text.value)
+        request.setHeader(HeaderName.etag.value, bytes(hash(message)))
         return message.encode("utf-8")
 
 
@@ -312,13 +317,13 @@ class WebService(object):
 
     @app.route(favIconURL.asText())
     def favIcon(self, request):
-        request.setHeader("Content-Type", "image/x-icon")
+        request.setHeader(HeaderName.contentType.value, ContentType.ICO.value)
         return self.builtInResource(request, "favicon.ico")
 
 
     @app.route(logoURL.asText())
     def logo(self, request):
-        request.setHeader("Content-Type", "image/png")
+        request.setHeader(HeaderName.contentType.value, ContentType.PNG.value)
         return self.builtInResource(request, "logo.png")
 
 
@@ -329,7 +334,7 @@ class WebService(object):
         # Remove URL prefix, add file prefix
         names = requestURL.path[len(self.bootstrapURL.path):]
 
-        request.setHeader("Content-Type", "text/css")
+        request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.cachedZippedResource(
             request, self.bootstrapSourceURL, self.bootstrapVersion,
             self.bootstrapVersion, *names
@@ -338,7 +343,9 @@ class WebService(object):
 
     @app.route(jqueryURL.child(u"jquery.min.js").asText())
     def jqueryJS(self, request):
-        request.setHeader("Content-Type", "application/javascript")
+        request.setHeader(
+            HeaderName.contentType.value, ContentType.JavaScript.value
+        )
         return self.cachedResource(
             request, self.jqueryJSSourceURL,
             "{}.min.js".format(self.jqueryVersion),
@@ -347,7 +354,7 @@ class WebService(object):
 
     @app.route(jqueryURL.child(u"jquery.min.map").asText())
     def jqueryMap(self, request):
-        request.setHeader("Content-Type", "application/json")
+        request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
         return self.cachedResource(
             request, self.jqueryMapSourceURL,
             "{}.min.map".format(self.jqueryVersion),
@@ -356,7 +363,9 @@ class WebService(object):
 
     @app.route(datatablesURL.child(u"jquery.dataTables.min.js").asText())
     def datatablesJS(self, request):
-        request.setHeader("Content-Type", "application/javascript")
+        request.setHeader(
+            HeaderName.contentType.value, ContentType.JavaScript.value
+        )
         return self.cachedResource(
             request, self.dataTablesJSSourceURL,
             "{}.min.js".format(self.dataTablesVersion),
@@ -365,7 +374,7 @@ class WebService(object):
 
     @app.route(datatablesURL.child(u"jquery.dataTables.min.css").asText())
     def datatablesCSS(self, request):
-        request.setHeader("Content-Type", "text/css")
+        request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.cachedResource(
             request, self.dataTablesCSSSourceURL,
             "{}.min.css".format(self.dataTablesVersion),
@@ -625,3 +634,34 @@ class WebService(object):
         etag = self.storage[event].etagForIncidentWithNumber(number)
 
         return self.jsonBytes(request, text.encode("utf-8"), etag)
+
+
+
+class HeaderName (Values):
+    """
+    Header names
+    """
+
+    contentType    = ValueConstant("Content-Type")
+    etag           = ValueConstant("ETag")
+    incidentNumber = ValueConstant("Incident-Number")
+    location       = ValueConstant("Location")
+
+
+
+class ContentType (Values):
+    """
+    Content types
+    """
+
+    HTML       = ValueConstant("text/html; charset=utf-8")
+    XHTML      = ValueConstant("application/xhtml+xml")
+    CSS        = ValueConstant("text/css")
+    JavaScript = ValueConstant("application/javascript")
+
+    JSON       = ValueConstant(ContentType.JSON.value)
+
+    text       = ValueConstant("text/plain; charset=utf-8")
+
+    PNG        = ValueConstant("image/png")
+    ICO        = ValueConstant("image/x-icon")
