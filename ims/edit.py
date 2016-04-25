@@ -202,8 +202,8 @@ def editIncident(incident, edits, author):
     reportEntries = []
 
     # First, keep all existing report entries from the original incident.
-    if incident.reportEntries is not None:
-        for reportEntry in incident.reportEntries:
+    if incident.report_entries is not None:
+        for reportEntry in incident.report_entries:
             reportEntries.append(reportEntry)
 
     # Next, add new system report entries
@@ -217,8 +217,8 @@ def editIncident(incident, edits, author):
         )
 
     # Finally, add new user report entries
-    if edits.reportEntries is not None:
-        for reportEntry in edits.reportEntries:
+    if edits.report_entries is not None:
+        for reportEntry in edits.report_entries:
             # Work-around for clients that resubmit the same entry >1 time
             if reportEntry not in reportEntries:
                 reportEntries.append(reportEntry)

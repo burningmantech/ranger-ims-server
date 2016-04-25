@@ -38,7 +38,7 @@ from twisted.logger import Logger, textFileLogObserver
 from ..tz import FixedOffsetTimeZone
 from ..data import IncidentType
 from ..json import textFromJSON, jsonFromFile
-from ..dms import DutyManagementSystem
+from ..dms.dms import DutyManagementSystem
 from ..store import MultiStorage
 
 

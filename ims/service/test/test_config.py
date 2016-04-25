@@ -21,11 +21,11 @@ Tests for L{ims.config}.
 from twisted.python.filepath import FilePath
 import twisted.trial.unittest
 
-from ims.config import Configuration
+from ..config import Configuration
 
 
 
-sourceRoot = FilePath(__file__).parent().parent().parent()
+sourceRoot = FilePath(__file__).parent().parent().parent().parent()
 
 emptyConfigFile  = FilePath("/dev/null")
 sampleConfigFile = sourceRoot.child("conf").child("imsd-sample.conf")

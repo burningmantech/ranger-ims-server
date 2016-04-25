@@ -15,14 +15,14 @@
 ##
 
 """
-Tests for L{ims.edit}.
+Tests for L{ims.service.edit}.
 """
 
-from ..tz import utcNow
-from ..data import IncidentState, Incident, Ranger, Location, ReportEntry
-from ..edit import edit_incident, EditNotAllowedError
+from ...tz import utcNow
+from ...data import IncidentState, Incident, Ranger, Location, ReportEntry
+from ...edit import editIncident, EditNotAllowedError
 
-from .test_store import time1, time2
+from ...test.test_store import time1, time2
 
 from twisted.trial import unittest
 
@@ -30,62 +30,62 @@ from twisted.trial import unittest
 
 class EditingTests(unittest.TestCase):
     """
-    Tests for editing of L{Incident}s.
+    Tests for L{ims.service.edit}.
     """
 
-    def test_edit_number_changed(self):
+    def test_numberChanged(self):
         """
         Editing of an incident's number is not allowed.
         """
         self.assertRaises(
             EditNotAllowedError,
-            edit_incident, Incident(number=1), Incident(number=2), u"Tool"
+            editIncident, Incident(number=1), Incident(number=2), u"Tool"
         )
 
 
-    def test_edit_priority_none(self):
+    def test_priorityNone(self):
         """
         Edit incident priority to C{None} is a no-op.
         """
         self.assertEditValueNoop("priority", 2, None)
 
 
-    def test_edit_priority_same(self):
+    def test_prioritySame(self):
         """
         Edit incident priority to same value is a no-op.
         """
         self.assertEditValueNoop("priority", 2, 2)
 
 
-    def test_edit_priority_changed(self):
+    def test_priorityChanged(self):
         """
         Edit incident priority to a new value.
         """
         self.assertEditValueChanged("priority", 2, 4)
 
 
-    def test_edit_summary_none(self):
+    def test_summaryNone(self):
         """
         Edit incident summary to C{None} is a no-op.
         """
         self.assertEditValueNoop("summary", u"Hello", None)
 
 
-    def test_edit_summary_same(self):
+    def test_summarySame(self):
         """
         Edit incident summary to same value is a no-op.
         """
         self.assertEditValueNoop("summary", u"Hello", u"Hello")
 
 
-    def test_edit_summary_changed(self):
+    def test_summaryChanged(self):
         """
         Edit incident summary to a new value.
         """
         self.assertEditValueChanged("summary", u"Hello", u"Goodbye")
 
 
-    def test_edit_location_noop(self):
+    def test_locationNoop(self):
         """
         Edit incident location to C{None} is a no-op.
         """
@@ -95,7 +95,7 @@ class EditingTests(unittest.TestCase):
         )
 
 
-    def test_edit_location_noop_name(self):
+    def test_locationNoopName(self):
         """
         Edit incident location name to C{None} is a no-op.
         """
@@ -105,7 +105,7 @@ class EditingTests(unittest.TestCase):
         )
 
 
-    def test_edit_location_noop_address(self):
+    def test_locationNoopAddress(self):
         """
         Edit incident location address to C{None} is a no-op.
         """
@@ -115,7 +115,7 @@ class EditingTests(unittest.TestCase):
         )
 
 
-    def test_edit_location_same(self):
+    def test_locationSame(self):
         """
         Edit incident location to same value is a no-op.
         """
@@ -125,11 +125,11 @@ class EditingTests(unittest.TestCase):
         )
 
 
-    def test_edit_location_changed_name(self):
+    def test_locationChangedName(self):
         """
         Edit incident location name to a new value.
         """
-        (edited, before, after) = self.edit_incident(
+        (edited, before, after) = self.editIncident(
             "location",
             Location(u"Tokyo", u"9 & C"),
             Location(u"Berlin", None)
@@ -142,11 +142,11 @@ class EditingTests(unittest.TestCase):
         self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
-    def test_edit_location_changed_address(self):
+    def test_locationChangedAddress(self):
         """
         Edit incident location address to a new value.
         """
-        (edited, before, after) = self.edit_incident(
+        (edited, before, after) = self.editIncident(
             "location",
             Location(u"Tokyo", u"9 & C"),
             Location(None, u"3 & C")
@@ -159,11 +159,11 @@ class EditingTests(unittest.TestCase):
         self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
-    def test_edit_location_changed_name_address(self):
+    def test_locationChangedNameAddress(self):
         """
         Edit incident location name and address to a new value.
         """
-        (edited, before, after) = self.edit_incident(
+        (edited, before, after) = self.editIncident(
             "location",
             Location(u"Tokyo", u"9 & C"),
             Location(u"Berlin", u"3 & C")
@@ -179,7 +179,7 @@ class EditingTests(unittest.TestCase):
         self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
-    def test_edit_rangers_none(self):
+    def test_rangersNone(self):
         """
         Edit incident personnel to C{None} is a no-op.
         """
@@ -190,7 +190,7 @@ class EditingTests(unittest.TestCase):
         )
 
 
-    def test_edit_rangers_same(self):
+    def test_rangersSame(self):
         """
         Edit incident personnel to same value is a no-op.
         """
@@ -201,7 +201,7 @@ class EditingTests(unittest.TestCase):
         )
 
 
-    def test_edit_rangers_changed(self):
+    def test_rangersChanged(self):
         """
         Edit incident personnel to a new value.
         """
@@ -214,21 +214,21 @@ class EditingTests(unittest.TestCase):
         )
 
 
-    def test_edit_types_none(self):
+    def test_typesNone(self):
         """
         Edit incident types to C{None} is a no-op.
         """
         self.assertEditSetNoop("incident_types", (u"A", u"B"), None)
 
 
-    def test_edit_types_same(self):
+    def test_typesSame(self):
         """
         Edit incident types to same value is a no-op.
         """
         self.assertEditSetNoop("incident_types", (u"A", u"B"), (u"A", u"B"))
 
 
-    def test_edit_types_changed(self):
+    def test_typesChanged(self):
         """
         Edit incident types to a new value.
         """
@@ -237,31 +237,31 @@ class EditingTests(unittest.TestCase):
         )
 
 
-    def test_edit_created_same(self):
+    def test_createdSame(self):
         """
         Edit incident created timestamp to same value is a no-op.
         """
         self.assertEditValueNoop("created", time1, time1)
 
 
-    def test_edit_created_noEdit(self):
+    def test_createdNoEdit(self):
         """
         Edit incident created timestamp to C{None} is a no-op.
         """
         self.assertEditValueNoop("created", time1, None)
 
 
-    def test_edit_created_changed(self):
+    def test_createdChanged(self):
         """
         Editing incident created timestamp to a new value is ignored.
         """
         self.assertRaises(
             EditNotAllowedError,
-            self.edit_incident, "created", time1, time2,
+            self.editIncident, "created", time1, time2,
         )
 
 
-    def test_edit_state_same(self):
+    def test_stateSame(self):
         """
         Edit incident state to same value is a no-op.
         """
@@ -270,11 +270,11 @@ class EditingTests(unittest.TestCase):
         )
 
 
-    def test_edit_state_changed(self):
+    def test_stateChanged(self):
         """
         Edit incident state to a new value.
         """
-        (edited, before, after) = self.edit_incident(
+        (edited, before, after) = self.editIncident(
             "state", IncidentState.dispatched, IncidentState.on_scene
         )
 
@@ -284,7 +284,7 @@ class EditingTests(unittest.TestCase):
         self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
-    def test_edit_report_entry(self):
+    def test_reportEntry(self):
         """
         Edit report entries appends to (and does not replace) existing report
         entries.
@@ -293,7 +293,7 @@ class EditingTests(unittest.TestCase):
         r2 = ReportEntry(u"Tool", u"Bye!")
 
         (edited, before, after) = (
-            self.edit_incident("report_entries", [r1], [r2])
+            self.editIncident("report_entries", [r1], [r2])
         )
 
         self.assertEquals(2, len(edited.report_entries))
@@ -309,7 +309,7 @@ class EditingTests(unittest.TestCase):
         """
         Assert that the value of an attribute did not change.
         """
-        (edited, before, after) = self.edit_incident(
+        (edited, before, after) = self.editIncident(
             attribute, old_value, new_value
         )
 
@@ -320,7 +320,7 @@ class EditingTests(unittest.TestCase):
         """
         Assert that the set of values of an attribute did not change.
         """
-        (edited, before, after) = self.edit_incident(
+        (edited, before, after) = self.editIncident(
             attribute, old_values, new_values
         )
 
@@ -346,7 +346,7 @@ class EditingTests(unittest.TestCase):
         Assert editing of the value of an attribute updates the value and adds
         the expected report entry.
         """
-        (edited, before, after) = self.edit_incident(
+        (edited, before, after) = self.editIncident(
             attribute, old_value, new_value
         )
 
@@ -366,7 +366,7 @@ class EditingTests(unittest.TestCase):
         Assert editing of a set of values of an attribute updates the values
         and adds the expected report entry.
         """
-        (edited, before, after) = self.edit_incident(
+        (edited, before, after) = self.editIncident(
             attribute, old_values, new_values
         )
 
@@ -408,10 +408,10 @@ class EditingTests(unittest.TestCase):
         self.assertEquals(report_text, last_entry.text)
 
 
-    def edit_incident(self, attribute, old, new):
+    def editIncident(self, attribute, old, new):
         before = utcNow()
 
-        edited = edit_incident(
+        edited = editIncident(
             Incident(number=1, **{attribute: old}),
             Incident(number=1, **{attribute: new}),
             u"Tool"

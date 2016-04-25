@@ -23,14 +23,13 @@ from twisted.trial import unittest
 from twisted.internet.defer import succeed, fail
 from twisted.internet.defer import inlineCallbacks
 
-import ims.dms
-from ims.dms import DutyManagementSystem, fullName
+from ..dms import DutyManagementSystem, fullName
 
 
 
 class DutyManagementSystemTests(unittest.TestCase):
     """
-    Tests for L{ims.dms.DutyManagementSystem}
+    Tests for L{ims.dms.DutyManagementSystem}.
     """
 
     def setUp(self):
@@ -38,7 +37,9 @@ class DutyManagementSystemTests(unittest.TestCase):
         Patch adbapi module.
         """
         self.dummyADBAPI = DummyADBAPI()
-        self.patch(ims.dms, "adbapi", self.dummyADBAPI)
+
+        import ims.dms.dms
+        self.patch(ims.dms.dms, "adbapi", self.dummyADBAPI)
 
 
     def dms(self):
@@ -105,7 +106,7 @@ class DutyManagementSystemTests(unittest.TestCase):
 
 class UtilTests(unittest.TestCase):
     """
-    Tests for L{ims.dms}
+    Tests for L{ims.dms}.
     """
 
     def test_fullName(self):

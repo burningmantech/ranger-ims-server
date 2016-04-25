@@ -15,11 +15,10 @@
 ##
 
 """
-Duty Management System integration.
+Duty Management System.
 """
 
 __all__ = [
-    # "DirtShift",
     "DMSError",
     "DatabaseError",
     "DutyManagementSystem",
@@ -33,7 +32,7 @@ from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.enterprise import adbapi
 
-from .data import Ranger
+from ..data import Ranger
 
 
 
@@ -48,32 +47,6 @@ class DatabaseError(DMSError):
     """
     Database error.
     """
-
-
-
-# class DirtShift(Values):
-#     length = 6
-
-#     Grave     = ValueConstant(Time(hour=length * 0))
-#     Morning   = ValueConstant(Time(hour=length * 1))
-#     Afternoon = ValueConstant(Time(hour=length * 2))
-#     Swing     = ValueConstant(Time(hour=length * 3))
-
-
-#     @classmethod
-#     def shiftForTime(cls, time):
-#         if time.hour >= 24:
-#             raise ValueError("Hour may not be >= 24: {0!r}".format(time))
-#         elif time.hour >= cls.Swing.value.hour:
-#             return cls.Swing
-#         elif time.hour >= cls.Afternoon.value.hour:
-#             return cls.Afternoon
-#         elif time.hour >= cls.Morning.value.hour:
-#             return cls.Morning
-#         elif time.hour >= cls.Grave.value.hour:
-#             return cls.Grave
-#         else:
-#             raise ValueError("Hour must be >= 0: {0!r}".format(time.hour))
 
 
 
@@ -185,6 +158,7 @@ class DutyManagementSystem(object):
                 raise DatabaseError(e)
 
         returnValue(self._personnel)
+
 
 
 def fullName(first, middle, last):
