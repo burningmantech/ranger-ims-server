@@ -31,6 +31,7 @@ from twisted.web.template import (
     Element as BaseElement, XMLFile, renderer, tags
 )
 from twisted.python.filepath import FilePath
+from twext.python.types import MappingProxyType
 
 
 
@@ -72,23 +73,15 @@ class Element(BaseElement):
             ),
             tags.link(
                 type="text/css", rel="stylesheet", media="screen",
-                href=self.service.bootstrapURL.child(
-                    u"css", u"bootstrap.min.css"
-                ).asText(),
+                href=self.service.bootstrapCSSURL.asText(),
             ),
             tags.link(
                 type="text/css", rel="stylesheet", media="screen",
                 href=self.service.styleSheetURL.asText(),
             ),
+            tags.script(src=self.service.jqueryJSURL.asText()),
+            tags.script(src=self.service.bootstrapJSURL.asText()),
             self.title(request, tags.title),
-            tags.script(dedent(
-                """
-                var prefixURL = "{prefixURL}";
-                """
-                .format(
-                    prefixURL=self.service.prefixURL.asText(),
-                )
-            )),
         )
 
 
@@ -111,14 +104,6 @@ class Element(BaseElement):
     def bottom(self, request, tag=None):
         return (
             self.footer(request),
-            tags.script(
-                src=self.service.jqueryURL.child(u"jquery.min.js").asText(),
-            ),
-            tags.script(
-                src=self.service.bootstrapURL.child(
-                    u"js", u"bootstrap.min.js"
-                ).asText(),
-            ),
         )
 
 
@@ -162,53 +147,71 @@ class Element(BaseElement):
 
     @renderer
     def root(self, request, tag):
-        def safe(obj):
-            if obj is None:
-                return u"* NONE *"
-            else:
-                try:
-                    return unicode(obj)
-                except:
-                    try:
-                        return repr(obj).decode("utf-8")
-                    except:
-                        return u"* ERROR *"
+        service = self.service
 
         def redirectBack(url):
             # Set origin for redirect back to current page
             return url.set(u"o", request.uri.decode("utf-8")).asText()
 
-        def url(url):
-            return url.asText()
+        slots = dict(self.fixedSlots)
 
-        def eventURL(url):
-            # FIXME: replace <event>
-            return url.asText()
-
-        service = self.service
-
-        tag.fillSlots(
-            title=safe(self.elementTitle),
-
-            user=safe(getattr(request, "user", u"(anonymous user)")),
+        slots.update(dict(
+            user=objectAsUnicode(getattr(request, "user", u"(anonymous user)")),
 
             login_url=redirectBack(service.loginURL),
             logout_url=redirectBack(service.logoutURL),
+        ))
 
-            prefix_url=url(service.prefixURL),
-            stylesheet_url=url(service.styleSheetURL),
-            favicon_url=url(service.favIconURL),
-            logo_url=url(service.logoURL),
-            jquery_url=url(service.jqueryURL),
-            bootstrap_url=url(service.bootstrapURL),
-            datatables_url=url(service.datatablesURL),
-
-            event_url=eventURL(service.eventURL),
-            ping_url=eventURL(service.pingURL),
-            personnel_url=eventURL(service.personnelURL),
-            incident_types_url=eventURL(service.incidentTypesURL),
-            locations_url=eventURL(service.locationsURL),
-            incidents_url=eventURL(service.incidentsURL),
-        )
+        tag.fillSlots(**slots)
 
         return tag
+
+
+    @property
+    def fixedSlots(self):
+        if not hasattr(self, "_fixedSlots"):
+            service = self.service
+
+            def url(url):
+                return url.asText()
+
+            def eventURL(url):
+                # FIXME: replace <event>
+                return url.asText()
+
+            self._fixedSlots = MappingProxyType(dict(
+                title=objectAsUnicode(self.elementTitle),
+
+                prefix_url=url(service.prefixURL),
+                stylesheet_url=url(service.styleSheetURL),
+                favicon_url=url(service.favIconURL),
+                logo_url=url(service.logoURL),
+                jquery_base_url=url(service.jqueryBaseURL),
+                jquery_js_url=url(service.jqueryJSURL),
+                jquery_map_url=url(service.jqueryMapURL),
+                bootstrap_base_url=url(service.bootstrapBaseURL),
+                datatables_base_url=url(service.datatablesBaseURL),
+
+                event_url=eventURL(service.eventURL),
+                ping_url=eventURL(service.pingURL),
+                personnel_url=eventURL(service.personnelURL),
+                incident_types_url=eventURL(service.incidentTypesURL),
+                locations_url=eventURL(service.locationsURL),
+                incidents_url=eventURL(service.incidentsURL),
+            ))
+
+        return self._fixedSlots
+
+
+
+def objectAsUnicode(obj):
+    if obj is None:
+        return u"* NONE *"
+    else:
+        try:
+            return unicode(obj)
+        except:
+            try:
+                return repr(obj).decode("utf-8")
+            except:
+                return u"* ERROR *"

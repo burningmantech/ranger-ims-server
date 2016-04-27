@@ -63,22 +63,35 @@ class WebService(object):
 
     sessionTimeout = Session.sessionTimeout
 
-    prefixURL         = URL.fromText(u"/ims")
-    styleSheetURL     = prefixURL.child(u"style.css")
-    favIconURL        = prefixURL.child(u"favicon.ico")
-    logoURL           = prefixURL.child(u"logo.png")
-    loginURL          = prefixURL.child(u"login")
-    logoutURL         = prefixURL.child(u"logout")
-    jqueryURL         = prefixURL.child(u"jquery")
-    bootstrapURL      = prefixURL.child(u"bootstrap")
-    datatablesURL     = prefixURL.child(u"datatables")
-    eventURL          = prefixURL.child(u"<event>")
-    pingURL           = eventURL.child(u"ping")
-    personnelURL      = eventURL.child(u"personnel")
-    incidentTypesURL  = eventURL.child(u"incident_types")
-    locationsURL      = eventURL.child(u"locations")
-    incidentsURL      = eventURL.child(u"incidents")
-    incidentNumberURL = incidentsURL.child(u"<number>")
+    prefixURL = URL.fromText(u"/ims")
+
+    styleSheetURL = prefixURL.child(u"style.css")
+
+    favIconURL = prefixURL.child(u"favicon.ico")
+    logoURL    = prefixURL.child(u"logo.png")
+
+    loginURL  = prefixURL.child(u"login")
+    logoutURL = prefixURL.child(u"logout")
+
+    jqueryBaseURL = prefixURL.child(u"jquery")
+    jqueryJSURL   = jqueryBaseURL.child(u"jquery.min.js")
+    jqueryMapURL  = jqueryBaseURL.child(u"jquery.min.map")
+
+    bootstrapBaseURL = prefixURL.child(u"bootstrap")
+    bootstrapCSSURL  = bootstrapBaseURL.child(u"css", u"bootstrap.min.css")
+    bootstrapJSURL   = bootstrapBaseURL.child(u"js", u"bootstrap.min.js")
+
+    datatablesBaseURL = prefixURL.child(u"datatables")
+    datatablesJSURL   = datatablesBaseURL.child(u"jquery.dataTables.min.js")
+    datatablesCSSURL  = datatablesBaseURL.child(u"jquery.dataTables.min.css")
+
+    eventURL                 = prefixURL.child(u"<event>")
+    pingURL                  = eventURL.child(u"ping")
+    personnelURL             = eventURL.child(u"personnel")
+    incidentTypesURL         = eventURL.child(u"incident_types")
+    locationsURL             = eventURL.child(u"locations")
+    incidentsURL             = eventURL.child(u"incidents")
+    incidentNumberURL        = incidentsURL.child(u"<number>")
 
     bootstrapVersionNumber  = u"3.3.6"
     jqueryVersionNumber     = u"2.2.3"
@@ -345,12 +358,12 @@ class WebService(object):
         return self.builtInResource(request, "logo.png")
 
 
-    @app.route(bootstrapURL.asText(), methods=("HEAD", "GET"), branch=True)
+    @app.route(bootstrapBaseURL.asText(), methods=("HEAD", "GET"), branch=True)
     def bootstrap(self, request):
         requestURL = URL.fromText(request.uri.rstrip("/"))
 
         # Remove URL prefix, add file prefix
-        names = requestURL.path[len(self.bootstrapURL.path):]
+        names = requestURL.path[len(self.bootstrapBaseURL.path):]
 
         request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.cachedZippedResource(
@@ -359,9 +372,7 @@ class WebService(object):
         )
 
 
-    @app.route(
-        jqueryURL.child(u"jquery.min.js").asText(), methods=("HEAD", "GET")
-    )
+    @app.route(jqueryJSURL.asText(), methods=("HEAD", "GET"))
     def jqueryJS(self, request):
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value
@@ -372,9 +383,7 @@ class WebService(object):
         )
 
 
-    @app.route(
-        jqueryURL.child(u"jquery.min.map").asText(), methods=("HEAD", "GET")
-    )
+    @app.route(jqueryMapURL.asText(), methods=("HEAD", "GET"))
     def jqueryMap(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
         return self.cachedResource(
@@ -383,10 +392,7 @@ class WebService(object):
         )
 
 
-    @app.route(
-        datatablesURL.child(u"jquery.dataTables.min.js").asText(),
-        methods=("HEAD", "GET"),
-    )
+    @app.route(datatablesJSURL.asText(), methods=("HEAD", "GET"))
     def datatablesJS(self, request):
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value
@@ -397,10 +403,7 @@ class WebService(object):
         )
 
 
-    @app.route(
-        datatablesURL.child(u"jquery.dataTables.min.css").asText(),
-        methods=("HEAD", "GET"),
-    )
+    @app.route(datatablesCSSURL.asText(), methods=("HEAD", "GET"))
     def datatablesCSS(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.cachedResource(
