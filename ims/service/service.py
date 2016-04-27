@@ -18,6 +18,8 @@
 Incident Management System web service.
 """
 
+from __future__ import print_function
+
 __all__ = [
     "WebService",
 ]
@@ -813,3 +815,15 @@ class ContentType (Values):
 
 
 
+if __name__ == "__main__":
+    from .config import Configuration
+
+    config = Configuration(None)
+    service = WebService(config)
+
+    for rule in service.app.url_map.iter_rules():
+        methods = list(rule.methods)
+        print(
+            "{rule.rule} {methods} -> {rule.endpoint}"
+            .format(rule=rule, methods=methods)
+        )
