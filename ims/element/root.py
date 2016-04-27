@@ -43,8 +43,13 @@ class RootPage(Element):
         events = sorted(event for event in self.service.storage)
 
         if events:
+            prefix = self.service.prefixURL.asText()
             return (
-                tag.clone()(tags.a(event, href="/{}/queue".format(event)))
+                tag.clone()(
+                    tags.a(
+                        event, href="{}/{}/queue".format(prefix, event)
+                    )
+                )
                 for event in events
             )
         else:
