@@ -25,8 +25,6 @@ __all__ = [
     "tags",
 ]
 
-from textwrap import dedent
-
 from twisted.web.template import (
     Element as BaseElement, XMLFile, renderer, tags
 )
