@@ -48,7 +48,7 @@ class Configuration (object):
     Configuration
     """
 
-    log = Logger(observer=textFileLogObserver(sys.stdout))
+    log = Logger()
 
 
     def __init__(self, configFile):
