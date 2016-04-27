@@ -202,13 +202,13 @@ class WebService(object):
         returnValue(self.login(request, failed=True))
 
 
-    @app.route(loginURL.asText())
+    @app.route(loginURL.asText(), methods=("HEAD", "GET"))
     @authenticated(optional=True)
     def login(self, request, failed=False):
         return LoginPage(self, failed=failed)
 
 
-    @app.route(logoutURL.asText())
+    @app.route(logoutURL.asText(), methods=("HEAD", "GET"))
     def logout(self, request):
         session = request.getSession()
         session.expire()
@@ -324,24 +324,24 @@ class WebService(object):
     # Static content
     #
 
-    @app.route(styleSheetURL.asText())
+    @app.route(styleSheetURL.asText(), methods=("HEAD", "GET"))
     def style(self, request):
         return self.styleSheet(request, "style.css")
 
 
-    @app.route(favIconURL.asText())
+    @app.route(favIconURL.asText(), methods=("HEAD", "GET"))
     def favIcon(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.ICO.value)
         return self.builtInResource(request, "favicon.ico")
 
 
-    @app.route(logoURL.asText())
+    @app.route(logoURL.asText(), methods=("HEAD", "GET"))
     def logo(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.PNG.value)
         return self.builtInResource(request, "logo.png")
 
 
-    @app.route(bootstrapURL.asText(), branch=True)
+    @app.route(bootstrapURL.asText(), methods=("HEAD", "GET"), branch=True)
     def bootstrap(self, request):
         requestURL = URL.fromText(request.uri.rstrip("/"))
 
@@ -355,7 +355,9 @@ class WebService(object):
         )
 
 
-    @app.route(jqueryURL.child(u"jquery.min.js").asText())
+    @app.route(
+        jqueryURL.child(u"jquery.min.js").asText(), methods=("HEAD", "GET")
+    )
     def jqueryJS(self, request):
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value
@@ -366,7 +368,9 @@ class WebService(object):
         )
 
 
-    @app.route(jqueryURL.child(u"jquery.min.map").asText())
+    @app.route(
+        jqueryURL.child(u"jquery.min.map").asText(), methods=("HEAD", "GET")
+    )
     def jqueryMap(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
         return self.cachedResource(
@@ -375,7 +379,10 @@ class WebService(object):
         )
 
 
-    @app.route(datatablesURL.child(u"jquery.dataTables.min.js").asText())
+    @app.route(
+        datatablesURL.child(u"jquery.dataTables.min.js").asText(),
+        methods=("HEAD", "GET"),
+    )
     def datatablesJS(self, request):
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value
@@ -386,7 +393,10 @@ class WebService(object):
         )
 
 
-    @app.route(datatablesURL.child(u"jquery.dataTables.min.css").asText())
+    @app.route(
+        datatablesURL.child(u"jquery.dataTables.min.css").asText(),
+        methods=("HEAD", "GET"),
+    )
     def datatablesCSS(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.cachedResource(
@@ -527,7 +537,7 @@ class WebService(object):
     # Basic resources
     #
 
-    @app.route(u"/")
+    @app.route(u"/", methods=("HEAD", "GET"))
     def rootResource(self, request):
         """
         Server root page.
@@ -537,8 +547,8 @@ class WebService(object):
         return self.redirect(request, self.prefixURL)
 
 
-    @app.route(prefixURL.asText())
-    @app.route(prefixURL.asText() + u"/")
+    @app.route(prefixURL.asText(), methods=("HEAD", "GET"))
+    @app.route(prefixURL.asText() + u"/", methods=("HEAD", "GET"))
     @authorized(Authorization.readIncidents)
     def applicationRootResource(self, request):
         """
@@ -549,8 +559,8 @@ class WebService(object):
 
     # Event root page; redirect to event dispatch queue
 
-    @app.route(eventURL.asText())
-    @app.route(eventURL.asText() + u"/")
+    @app.route(eventURL.asText(), methods=("HEAD", "GET"))
+    @app.route(eventURL.asText() + u"/", methods=("HEAD", "GET"))
     def eventRootResource(self, request, event):
         """
         Event root page.
@@ -564,16 +574,16 @@ class WebService(object):
     # JSON API endpoints
     #
 
-    @app.route(pingURL.asText())
-    @app.route(pingURL.asText() + u"/")
+    @app.route(pingURL.asText(), methods=("HEAD", "GET"))
+    @app.route(pingURL.asText() + u"/", methods=("HEAD", "GET"))
     @authenticated()
     def pingResource(self, request, event):
         ack = b'"ack"'
         return self.jsonBytes(request, ack, bytes(hash(ack)))
 
 
-    @app.route(personnelURL.asText())
-    @app.route(personnelURL.asText() + u"/")
+    @app.route(personnelURL.asText(), methods=("HEAD", "GET"))
+    @app.route(personnelURL.asText() + u"/", methods=("HEAD", "GET"))
     @authorized(Authorization.readIncidents)
     @inlineCallbacks
     def personnelResource(self, request, event):
@@ -593,24 +603,24 @@ class WebService(object):
         ))
 
 
-    @app.route(incidentTypesURL.asText())
-    @app.route(incidentTypesURL.asText() + u"/")
+    @app.route(incidentTypesURL.asText(), methods=("HEAD", "GET"))
+    @app.route(incidentTypesURL.asText() + u"/", methods=("HEAD", "GET"))
     @authorized(Authorization.readIncidents)
     def incidentTypesResource(self, request, event):
         data = self.config.IncidentTypesJSONBytes
         return self.jsonBytes(request, data, bytes(hash(data)))
 
 
-    @app.route(locationsURL.asText())
-    @app.route(locationsURL.asText() + u"/")
+    @app.route(locationsURL.asText(), methods=("HEAD", "GET"))
+    @app.route(locationsURL.asText() + u"/", methods=("HEAD", "GET"))
     @authorized(Authorization.readIncidents)
     def locationsResource(self, request, event):
         data = self.config.locationsJSONBytes
         return self.jsonBytes(request, data, bytes(hash(data)))
 
 
-    @app.route(incidentsURL.asText())
-    @app.route(incidentsURL.asText() + u"/")
+    @app.route(incidentsURL.asText(), methods=("HEAD", "GET"))
+    @app.route(incidentsURL.asText() + u"/", methods=("HEAD", "GET"))
     @authorized(Authorization.readIncidents)
     def listIncidentsResource(self, request, event):
         if request.args:
@@ -700,7 +710,7 @@ class WebService(object):
         )
 
 
-    @app.route(incidentNumberURL.asText())
+    @app.route(incidentNumberURL.asText(), methods=("HEAD", "GET"))
     @authorized(Authorization.readIncidents)
     def readIncidentResource(self, request, event, number):
         # # For simulating slow connections
