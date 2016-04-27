@@ -713,8 +713,8 @@ class WebService(object):
         return self.jsonBytes(request, text.encode("utf-8"), etag)
 
 
-    @app.route(incidentNumberURL.asText())
-    @authorized(Authorization.readIncidents, methods=("POST",))
+    @app.route(incidentNumberURL.asText(), methods=("POST",))
+    @authorized(Authorization.readIncidents)
     def editIncidentResource(self, request, event, number):
         try:
             number = int(number)
