@@ -775,7 +775,7 @@ class ContentType (Values):
     CSS        = ValueConstant("text/css")
     JavaScript = ValueConstant("application/javascript")
 
-    JSON       = ValueConstant(ContentType.JSON.value)
+    JSON       = ValueConstant("application/json")
 
     text       = ValueConstant("text/plain; charset=utf-8")
 
