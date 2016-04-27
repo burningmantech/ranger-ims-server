@@ -40,9 +40,11 @@ from twext.who.idirectory import RecordType
 
 from klein import Klein
 
+from ..data import Incident
 from ..json import textFromJSON, jsonFromFile
 from ..json import rangerAsJSON, incidentAsJSON, incidentFromJSON
 from ..edit import editIncident
+from ..tz import utcNow
 from ..element.redirect import RedirectPage
 from ..element.root import RootPage
 from ..element.login import LoginPage
@@ -708,7 +710,7 @@ class WebService(object):
         request.setHeader(HeaderName.incidentNumber.value, number)
         request.setHeader(
             HeaderName.location.value,
-            incidentNumberURL.asText() + u"/" + number
+            self.incidentNumberURL.asText() + u"/" + number
         )
 
 
