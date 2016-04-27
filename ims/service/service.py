@@ -524,26 +524,45 @@ class WebService(object):
 
 
     #
-    # Web interface
+    # Basic resources
     #
 
     @app.route(u"/")
     def rootResource(self, request):
+        """
+        Server root page.
+
+        This redirects to the application root page.
+        """
         return self.redirect(request, self.prefixURL)
 
 
     @app.route(prefixURL.asText())
     @app.route(prefixURL.asText() + u"/")
     @authorized(Authorization.readIncidents)
-    def homeResource(self, request):
+    def applicationRootResource(self, request):
+        """
+        Application root page.
+        """
         return RootPage(self)
 
 
+    # Event root page; redirect to event dispatch queue
+
     @app.route(eventURL.asText())
     @app.route(eventURL.asText() + u"/")
-    def eventResource(self, request, event):
-        return self.redirect(request, URL.fromText(u"queue"))
+    def eventRootResource(self, request, event):
+        """
+        Event root page.
 
+        This redirects to the event's dispatch queue page.
+        """
+        return self.redirect(request, self.dispatchQueueRelativeURL)
+
+
+    #
+    # JSON API endpoints
+    #
 
     @app.route(pingURL.asText())
     @app.route(pingURL.asText() + u"/")
