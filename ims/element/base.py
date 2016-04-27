@@ -188,7 +188,11 @@ class Element(BaseElement):
                 jquery_js_url=url(service.jqueryJSURL),
                 jquery_map_url=url(service.jqueryMapURL),
                 bootstrap_base_url=url(service.bootstrapBaseURL),
-                datatables_base_url=url(service.datatablesBaseURL),
+                bootstrap_css_url=url(service.bootstrapCSSURL),
+                bootstrap_js_url=url(service.bootstrapJSURL),
+                datatables_base_url=url(service.dataTablesBaseURL),
+                datatables_js_url=url(service.dataTablesJSURL),
+                datatables_css_url=url(service.dataTablesCSSURL),
 
                 event_url=eventURL(service.eventURL),
                 ping_url=eventURL(service.pingURL),

@@ -81,9 +81,13 @@ class WebService(object):
     bootstrapCSSURL  = bootstrapBaseURL.child(u"css", u"bootstrap.min.css")
     bootstrapJSURL   = bootstrapBaseURL.child(u"js", u"bootstrap.min.js")
 
-    datatablesBaseURL = prefixURL.child(u"datatables")
-    datatablesJSURL   = datatablesBaseURL.child(u"jquery.dataTables.min.js")
-    datatablesCSSURL  = datatablesBaseURL.child(u"jquery.dataTables.min.css")
+    dataTablesBaseURL = prefixURL.child(u"datatables")
+    dataTablesJSURL = dataTablesBaseURL.child(
+        u"media", u"js", u"jquery.dataTables.min.js"
+    )
+    dataTablesCSSURL = dataTablesBaseURL.child(
+        u"media", u"css", u"jquery.dataTables.min.css"
+    )
 
     eventURL                 = prefixURL.child(u"<event>")
     pingURL                  = eventURL.child(u"ping")
@@ -94,12 +98,12 @@ class WebService(object):
     incidentNumberURL        = incidentsURL.child(u"<number>")
 
     bootstrapVersionNumber  = u"3.3.6"
-    jqueryVersionNumber     = u"2.2.3"
+    jqueryVersionNumber     = u"2.2.0"
     dataTablesVersionNumber = u"1.10.11"
 
     bootstrapVersion  = u"bootstrap-{}-dist".format(bootstrapVersionNumber)
     jqueryVersion     = u"jquery-{}".format(jqueryVersionNumber)
-    dataTablesVersion = u"jquery.dataTables-{}".format(dataTablesVersionNumber)
+    dataTablesVersion = u"DataTables-{}".format(dataTablesVersionNumber)
 
     bootstrapSourceURL = URL.fromText(
         u"https://github.com/twbs/bootstrap/releases/download/v{n}/{v}.zip"
@@ -116,13 +120,8 @@ class WebService(object):
         .format(n=jqueryVersionNumber, v=jqueryVersion)
     )
 
-    dataTablesJSSourceURL = URL.fromText(
-        u"https://cdn.datatables.net/{n}/js/jquery.dataTables.min.js"
-        .format(n=dataTablesVersionNumber, v=dataTablesVersion)
-    )
-
-    dataTablesCSSSourceURL = URL.fromText(
-        u"https://cdn.datatables.net/{n}/css/jquery.dataTables.min.css"
+    dataTablesSourceURL = URL.fromText(
+        u"https://datatables.net/releases/DataTables-{n}.zip"
         .format(n=dataTablesVersionNumber, v=dataTablesVersion)
     )
 
@@ -255,7 +254,7 @@ class WebService(object):
     #     return self.builtInResource(request, name, *names)
 
 
-    # def javaScripSourceMap(self, request, name, *names):
+    # def javaScriptSourceMap(self, request, name, *names):
     #     request.setHeader(
     #         HeaderName.contentType.value, ContentType.JSON.value
     #     )
@@ -362,7 +361,7 @@ class WebService(object):
     def bootstrap(self, request):
         requestURL = URL.fromText(request.uri.rstrip("/"))
 
-        # Remove URL prefix, add file prefix
+        # Remove URL prefix
         names = requestURL.path[len(self.bootstrapBaseURL.path):]
 
         request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
@@ -392,23 +391,17 @@ class WebService(object):
         )
 
 
-    @app.route(datatablesJSURL.asText(), methods=("HEAD", "GET"))
-    def datatablesJS(self, request):
-        request.setHeader(
-            HeaderName.contentType.value, ContentType.JavaScript.value
-        )
-        return self.cachedResource(
-            request, self.dataTablesJSSourceURL,
-            "{}.min.js".format(self.dataTablesVersion),
-        )
+    @app.route(dataTablesBaseURL.asText(), methods=("HEAD", "GET"), branch=True)
+    def dataTables(self, request):
+        requestURL = URL.fromText(request.uri.rstrip("/"))
 
+        # Remove URL prefix
+        names = requestURL.path[len(self.dataTablesBaseURL.path):]
 
-    @app.route(datatablesCSSURL.asText(), methods=("HEAD", "GET"))
-    def datatablesCSS(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
-        return self.cachedResource(
-            request, self.dataTablesCSSSourceURL,
-            "{}.min.css".format(self.dataTablesVersion),
+        return self.cachedZippedResource(
+            request, self.dataTablesSourceURL, self.dataTablesVersion,
+            self.dataTablesVersion, *names
         )
 
 
