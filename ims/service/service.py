@@ -706,7 +706,7 @@ class WebService(object):
         request.setHeader(HeaderName.incidentNumber.value, number)
         request.setHeader(
             HeaderName.location.value,
-            urlForEndpoint(request, "get_incident", {"number": number})
+            incidentNumberURL.asText() + u"/" + number
         )
 
 
@@ -813,9 +813,3 @@ class ContentType (Values):
 
 
 
-def urlForEndpoint(request, endpoint, *args, **kwargs):
-    """
-    Compute the URL for a Klein endpoint.
-    """
-    kwargs["force_external"] = True
-    return IKleinRequest(request).url_for(endpoint, *args, **kwargs)
