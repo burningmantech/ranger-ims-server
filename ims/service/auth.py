@@ -42,10 +42,17 @@ def authenticated(optional=False):
     @type optional: L{bool}
     """
     def decorator(f):
-        return f  # FIXME
-
         @wraps(f)
         def wrapper(self, request, *args, **kwargs):
+            #
+            # FIXME: Temporary hack until we get DMS integration working
+            #
+            request.user = "test"
+            return f(self, request, *args, **kwargs)
+            #
+            # **** END HACK ****
+            #
+
             session = request.getSession()
             request.user = getattr(session, "user", None)
 
@@ -73,11 +80,20 @@ def authorized(authorization):
     @type authorization: L{FlagConstant}
     """
     def decorator(f):
-        return f  # FIXME
-
         @wraps(f)
         @authenticated(optional=False)
         def wrapper(self, request, *args, **kwargs):
+            #
+            # FIXME: Temporary hack until we get DMS integration working
+            #
+            request.authorization = (
+                Authorization.readIncidents | Authorization.writeIncidents
+            )
+            return f(self, request, *args, **kwargs)
+            #
+            # **** END HACK ****
+            #
+
             session = request.getSession()
             request.authorization = getattr(session, "authorization", None)
 
