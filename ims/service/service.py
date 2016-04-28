@@ -48,6 +48,7 @@ from ..tz import utcNow
 from ..element.redirect import RedirectPage
 from ..element.root import RootPage
 from ..element.login import LoginPage
+from ..element.queue import DispatchQueuePage
 from .auth import authenticated, authorized, Authorization
 from .query import termsFromQuery, showClosedFromQuery, sinceFromQuery
 
@@ -96,6 +97,8 @@ class WebService(object):
     locationsURL             = eventURL.child(u"locations")
     incidentsURL             = eventURL.child(u"incidents")
     incidentNumberURL        = incidentsURL.child(u"<number>")
+    dispatchQueueURL         = eventURL.child(u"queue")
+    dispatchQueueRelativeURL = URL.fromText(u"queue")
 
     bootstrapVersionNumber  = u"3.3.6"
     jqueryVersionNumber     = u"2.2.0"
@@ -779,6 +782,18 @@ class WebService(object):
         etag = storage.etagForIncidentWithNumber(number)
 
         return self.noContentResource(request, etag)
+
+
+    #
+    # Web interface
+    #
+
+    @app.route(dispatchQueueURL.asText(), methods=("HEAD", "GET"))
+    @app.route(dispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
+    @authorized(Authorization.readIncidents)
+    def dispatchQueueResource(self, request, event):
+        storage = self.storage[event]
+        return DispatchQueuePage(self, storage, event)
 
 
 

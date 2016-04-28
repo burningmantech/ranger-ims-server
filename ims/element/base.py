@@ -200,6 +200,8 @@ class Element(BaseElement):
                 incident_types_url=eventURL(service.incidentTypesURL),
                 locations_url=eventURL(service.locationsURL),
                 incidents_url=eventURL(service.incidentsURL),
+                # incident_number_url
+                dispatch_queue_url=eventURL(service.dispatchQueueURL),
             ))
 
         return self._fixedSlots
