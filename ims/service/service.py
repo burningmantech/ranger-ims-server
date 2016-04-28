@@ -87,7 +87,7 @@ class WebService(object):
         u"media", u"js", u"jquery.dataTables.min.js"
     )
     dataTablesCSSURL = dataTablesBaseURL.child(
-        u"media", u"css", u"jquery.dataTables.min.css"
+        u"media", u"css", u"dataTables.bootstrap.min.css"
     )
 
     eventURL                 = prefixURL.child(u"<event>")
