@@ -24,7 +24,6 @@ __all__ = [
     "Configuration",
 ]
 
-import sys
 from os import environ, getcwd
 from os.path import sep as pathsep
 from re import compile as regex_compile
@@ -33,7 +32,7 @@ from time import tzset, time
 from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 
 from twisted.python.filepath import FilePath
-from twisted.logger import Logger, textFileLogObserver
+from twisted.logger import Logger
 
 from ..tz import FixedOffsetTimeZone
 from ..data import IncidentType
