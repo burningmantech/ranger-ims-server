@@ -49,8 +49,11 @@ from ..element.redirect import RedirectPage
 from ..element.root import RootPage
 from ..element.login import LoginPage
 from ..element.queue import DispatchQueuePage
+from ..element.incident import IncidentPage
 from .auth import authenticated, authorized, Authorization
-from .query import termsFromQuery, showClosedFromQuery, sinceFromQuery
+from .query import (
+    termsFromQuery, showClosedFromQuery, sinceFromQuery, editsFromQuery
+)
 
 
 
@@ -63,6 +66,10 @@ class WebService(object):
     log = Logger()
 
     sessionTimeout = Session.sessionTimeout
+
+    #
+    # URLs
+    #
 
     prefixURL = URL.fromText(u"/ims")
 
@@ -90,15 +97,22 @@ class WebService(object):
         u"media", u"css", u"dataTables.bootstrap.min.css"
     )
 
-    eventURL                 = prefixURL.child(u"<event>")
-    pingURL                  = eventURL.child(u"ping")
-    personnelURL             = eventURL.child(u"personnel")
-    incidentTypesURL         = eventURL.child(u"incident_types")
-    locationsURL             = eventURL.child(u"locations")
-    incidentsURL             = eventURL.child(u"incidents")
-    incidentNumberURL        = incidentsURL.child(u"<number>")
-    dispatchQueueURL         = eventURL.child(u"queue")
-    dispatchQueueRelativeURL = URL.fromText(u"queue")
+    eventURL          = prefixURL.child(u"<event>")
+    pingURL           = eventURL.child(u"ping")
+    personnelURL      = eventURL.child(u"personnel")
+    incidentTypesURL  = eventURL.child(u"incident_types")
+    locationsURL      = eventURL.child(u"locations")
+    incidentsURL      = eventURL.child(u"incidents")
+    incidentNumberURL = incidentsURL.child(u"<number>")
+
+    viewDispatchQueueURL         = eventURL.child(u"queue")
+    viewDispatchQueueRelativeURL = URL.fromText(u"queue")
+    viewIncidentsURL             = viewDispatchQueueURL.child(u"incidents")
+    viewIncidentNumberURL        = viewDispatchQueueURL.child(u"<number>")
+
+    #
+    # External resource info
+    #
 
     bootstrapVersionNumber  = u"3.3.6"
     jqueryVersionNumber     = u"2.2.0"
@@ -570,7 +584,7 @@ class WebService(object):
 
         This redirects to the event's dispatch queue page.
         """
-        return self.redirect(request, self.dispatchQueueRelativeURL)
+        return self.redirect(request, self.viewDispatchQueueRelativeURL)
 
 
     #
@@ -788,12 +802,57 @@ class WebService(object):
     # Web interface
     #
 
-    @app.route(dispatchQueueURL.asText(), methods=("HEAD", "GET"))
-    @app.route(dispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
+    @app.route(viewDispatchQueueURL.asText(), methods=("HEAD", "GET"))
+    @app.route(viewDispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
     @authorized(Authorization.readIncidents)
-    def dispatchQueueResource(self, request, event):
+    def viewDispatchQueuePage(self, request, event):
         storage = self.storage[event]
         return DispatchQueuePage(self, storage, event)
+
+
+    @app.route(viewIncidentNumberURL.asText(), methods=("HEAD", "GET"))
+    @authorized(Authorization.readIncidents)
+    def viewIncidentPage(self, request, event, number):
+        try:
+            number = int(number)
+        except ValueError:
+            return self.notFoundResource(request)
+
+        storage = self.storage[event]
+
+        return IncidentPage(self, storage, number)
+
+
+    @app.route(viewIncidentNumberURL.asText(), methods=("POST",))
+    @authorized(Authorization.readIncidents | Authorization.writeIncidents)
+    def editIncidentPage(self, request, event, number):
+        try:
+            number = int(number)
+        except ValueError:
+            return self.notFoundResource(request)
+
+        storage = self.storage[event]
+
+        author = request.user
+        edits = editsFromQuery(author, number, request)
+
+        if edits:
+            incident = storage.readIncidentWithNumber(number)
+            edited = editIncident(incident, edits, author)
+
+            self.log.info(
+                u"User {author} edited incident #{number} via web",
+                author=author, number=number
+            )
+            # self.log.debug(
+            #     u"Original: {json}", json=incidentAsJSON(incident)
+            # )
+            self.log.debug(u"Changes: {json}", json=incidentAsJSON(edits))
+            # self.log.debug(u"Edited: {json}", json=incidentAsJSON(edited))
+
+            storage.writeIncident(edited)
+
+        return IncidentPage(self, storage, number)
 
 
 

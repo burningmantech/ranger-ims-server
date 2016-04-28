@@ -25,6 +25,7 @@ __all__ = [
     "sinceDaysAgoFromQuery",
     "sinceFromQuery",
     "numShiftsFromQuery",
+    "editsFromQuery",
     "queryValue",
 ]
 
@@ -117,7 +118,7 @@ def numShiftsFromQuery(request):
     return queryValue(request, "num_shifts", "1")
 
 
-def edits_from_query(author, number, request):
+def editsFromQuery(author, number, request):
     if not request.args:
         return None
 

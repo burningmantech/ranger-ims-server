@@ -184,6 +184,7 @@ class Element(BaseElement):
                 stylesheet_url=url(service.styleSheetURL),
                 favicon_url=url(service.favIconURL),
                 logo_url=url(service.logoURL),
+
                 jquery_base_url=url(service.jqueryBaseURL),
                 jquery_js_url=url(service.jqueryJSURL),
                 jquery_map_url=url(service.jqueryMapURL),
@@ -201,7 +202,10 @@ class Element(BaseElement):
                 locations_url=eventURL(service.locationsURL),
                 incidents_url=eventURL(service.incidentsURL),
                 # incident_number_url
-                dispatch_queue_url=eventURL(service.dispatchQueueURL),
+
+                view_dispatch_queue_url=eventURL(service.viewDispatchQueueURL),
+                # view_incidents_url
+                # view_incident_number_url
             ))
 
         return self._fixedSlots
