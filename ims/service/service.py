@@ -106,6 +106,7 @@ class WebService(object):
     incidentNumberURL = incidentsURL.child(u"<number>")
 
     viewDispatchQueueURL         = eventURL.child(u"queue")
+    dispatchQueueDataURL         = viewDispatchQueueURL.child(u"data")
     viewDispatchQueueRelativeURL = URL.fromText(u"queue")
     viewIncidentsURL             = viewDispatchQueueURL.child(u"incidents")
     viewIncidentNumberURL        = viewDispatchQueueURL.child(u"<number>")
@@ -808,6 +809,36 @@ class WebService(object):
     def viewDispatchQueuePage(self, request, event):
         storage = self.storage[event]
         return DispatchQueuePage(self, storage, event)
+
+
+    @app.route(dispatchQueueDataURL.asText(), methods=("HEAD", "GET"))
+    @authorized(Authorization.readIncidents)
+    def dispatchQueueDataResource(self, request, event):
+        storage = self.storage[event]
+
+        if False and request.args:
+            incidentInfos = storage.searchIncidents(
+                terms=termsFromQuery(request),
+                showClosed=showClosedFromQuery(request),
+                since=sinceFromQuery(request),
+            )
+        else:
+            incidentInfos = storage.listIncidents()
+
+        incidentInfos = tuple(incidentInfos)
+
+        print(incidentInfos)
+
+        incidentNumbers = (number for number, etag in incidentInfos)
+
+        print(incidentNumbers)
+
+        stream = self.buildJSONArray(
+            storage.readIncidentWithNumberRaw(number).encode("utf-8")
+            for number in incidentNumbers
+        )
+
+        return self.jsonStream(request, stream, None)
 
 
     @app.route(viewIncidentNumberURL.asText(), methods=("HEAD", "GET"))
