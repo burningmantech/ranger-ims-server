@@ -24,6 +24,8 @@ __all__ = [
 
 from .base import Element, renderer
 
+from ..json import JSON
+
 # from ..json import textFromJSON
 # from ..service.query import (
 #     incidentsFromQuery, showClosedFromQuery, termsFromQuery,
@@ -73,14 +75,14 @@ class DispatchQueuePage(Element):
         return (
             u"""{{ "data": "{}" }},""".format(result)
             for result in (
-                u"number",
-                u"priority",
-                u"created",
-                u"state",
-                u"rangers",
-                u"location",
-                u"types",
-                u"summary",
+                JSON.incident_number.value,
+                JSON.incident_priority.value,
+                JSON.incident_created.value,
+                JSON.incident_state.value,
+                JSON.ranger_handles.value,
+                JSON.incident_location.value,
+                JSON.incident_types.value,
+                JSON.incident_summary.value,
             )
         )
 
