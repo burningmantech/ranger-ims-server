@@ -52,6 +52,19 @@
               break;
           };
 
+          console.log("TIME:")
+          console.log(incident.timestamp);
+          var created = new Date(incident.timestamp);
+          console.log(created);
+          incident.timestamp = (
+            created.getMonth()   + "/" +
+            created.getDate()    + "@" +
+            created.getHours()   + ":" +
+            created.getMinutes()
+          )
+          console.log(incident.timestamp);
+          console.log("------")
+
           switch (incident.state) {
             case "new":
               incident.state = "New";
@@ -75,6 +88,8 @@
           } else {
             incident.ranger_handles = incident.ranger_handles.sort().join(", ");
           };
+
+          incident.location = "PLACEHOLDER"
 
         };
 
