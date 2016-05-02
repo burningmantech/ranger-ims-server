@@ -30,6 +30,14 @@
 
       //<![CDATA[
 
+      function orUnknown(stringValue) {
+        if (stringValue == undefined) {
+          return "?";
+        } else {
+          return stringValue;
+        };
+      };
+
       function dataHandler(incidents) {
         for (var i in incidents) {
           incident = incidents[i];
@@ -52,6 +60,7 @@
               break;
           };
 
+          // FIXME: August getMonth() is returning 7?
           console.log("TIME:")
           console.log(incident.timestamp);
           var created = new Date(incident.timestamp);
@@ -61,9 +70,9 @@
             created.getDate()    + "@" +
             created.getHours()   + ":" +
             created.getMinutes()
-          )
+          );
           console.log(incident.timestamp);
-          console.log("------")
+          console.log("------");
 
           switch (incident.state) {
             case "new":
@@ -89,7 +98,38 @@
             incident.ranger_handles = incident.ranger_handles.sort().join(", ");
           };
 
-          incident.location = "PLACEHOLDER"
+          if (incident.location == undefined) {
+            incident.location = "";
+          } else {
+            var location = [];
+
+            if (incident.location.name != undefined) {
+              location.push(incident.location.name);
+            };
+
+            switch (incident.location.type) {
+              case "text":
+                break;
+              case "garett":
+                var address = "(";
+                address += orUnknown(incident.location.radial_hour);
+
+                address += "XXXXX";
+
+                address += ")";
+                break;
+              default:
+                location.push(
+                  "Unknown location type:" + incident.location.type
+                );
+                break;
+            };
+
+            incident.location = location.join(" ");
+          };
+
+          incident.incident_types = "INCIDENT TYPES";
+          incident.summary = "SUMMARY";
 
         };
 
