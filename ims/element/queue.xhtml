@@ -26,12 +26,59 @@
     <script>
       var resultColumns = [
         <javascript t:render="results" />
-      ]
+      ];
 
       //<![CDATA[
 
-      function dataHandler(data) {
-          return data;
+      function dataHandler(incidents) {
+        for (var i in incidents) {
+          incident = incidents[i];
+
+          switch (incident.priority) {
+            case 1:
+              incident.priority = "High";
+              break;
+            case 2:
+              incident.priority = "High";
+              break;
+            case 3:
+              incident.priority = "Medium";
+              break;
+            case 4:
+              incident.priority = "Low";
+              break;
+            case 5:
+              incident.priority = "Low";
+              break;
+          };
+
+          switch (incident.state) {
+            case "new":
+              incident.state = "New";
+              break;
+            case "on_hold":
+              incident.state = "On Hold";
+              break;
+            case "dispatched":
+              incident.state = "Dispatched";
+              break;
+            case "on_scene":
+              incident.state = "On Scene";
+              break;
+            case "closed":
+              incident.state = "Closed";
+              break;
+          };
+
+          if (incident.ranger_handles == undefined) {
+            incident.ranger_handles = "";
+          } else {
+            incident.ranger_handles = incident.ranger_handles.sort().join(", ");
+          };
+
+        };
+
+        return incidents;
       };
 
       $("#queue_table").DataTable({
