@@ -816,22 +816,7 @@ class WebService(object):
     def dispatchQueueDataResource(self, request, event):
         storage = self.storage[event]
 
-        if False and request.args:
-            incidentInfos = storage.searchIncidents(
-                terms=termsFromQuery(request),
-                showClosed=showClosedFromQuery(request),
-                since=sinceFromQuery(request),
-            )
-        else:
-            incidentInfos = storage.listIncidents()
-
-        incidentInfos = tuple(incidentInfos)
-
-        print(incidentInfos)
-
-        incidentNumbers = (number for number, etag in incidentInfos)
-
-        print(incidentNumbers)
+        incidentNumbers = (number for number, etag in storage.listIncidents())
 
         stream = self.buildJSONArray(
             storage.readIncidentWithNumberRaw(number).encode("utf-8")
