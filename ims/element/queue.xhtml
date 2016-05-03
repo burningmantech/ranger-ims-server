@@ -108,14 +108,40 @@
         return "#" + json;
       };
 
-      function summaryFromJSON(json) {
-        if (json == undefined) {
-          console.log("No summary provided.")
-          return "<b>*ERROR*</b>";
-        } else {
-          return json;
-        }
-      }
+      function summaryFromJSON(summary, reportEntries) {
+        if (summary == undefined) {
+          if (reportEntries == undefined) {
+            console.log("No summary provided.");
+            return "";
+          }
+          else {
+            // Get the first line of the first report entry.
+            for (var i in reportEntries) {
+              var lines = reportEntries[i].text.split("\n");
+
+              for (var j in lines) {
+                var line = lines[j];
+                if (line == undefined || line == "") {
+                  continue;
+                };
+                summary = line;
+                break;
+              }
+
+              if (summary != undefined) {
+                break;
+              }
+            };
+
+            return summary;
+          };
+
+          console.log("No summary provided and no report entry text.");
+          return "";
+        };
+
+        return summary;
+      };
 
       function padTwo(segment) {
         if (segment == undefined) {
@@ -184,7 +210,7 @@
           incident.ranger_handles = sortAndJoin(rangerHandlesFromJSON(incident.ranger_handles));
           incident.location       = shortDescribeLocation(locationFromJSON(incident.location));
           incident.incident_types = sortAndJoin(incident.incident_types);
-          incident.summary        = summaryFromJSON(incident.summary);
+          incident.summary        = summaryFromJSON(incident.summary, incident.report_entries);
         };
 
         return incidents;
