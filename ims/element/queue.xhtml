@@ -30,14 +30,6 @@
 
       //<![CDATA[
 
-      function orUnknown(stringValue) {
-        if (stringValue == undefined) {
-          return "?";
-        } else {
-          return stringValue;
-        };
-      };
-
       function priorityNameFromJSON(json) {
         // json should be an int, 1-5.
         switch (json) {
@@ -53,7 +45,7 @@
             return "Low";
           default:
             console.log("Unknown incident priority JSON: " + json);
-            return "*ERROR*";
+            return "<b>*ERROR*</b>";
         };
       };
 
@@ -66,10 +58,10 @@
         var created = new Date(json);
         console.log(created);
         var result = (
-          created.getMonth()   + "/" +
-          created.getDate()    + "@" +
-          created.getHours()   + ":" +
-          created.getMinutes()
+          padTwo(created.getMonth()) + "/" +
+          padTwo(created.getDate())  + "@" +
+          padTwo(created.getHours()) + ":" +
+          padTwo(created.getMinutes())
         );
         console.log(result);
         console.log("------");
@@ -92,13 +84,17 @@
             return "Closed";
           default:
             console.log("Unknown incident state JSON: " + json);
-            return "*ERROR*";
+            return "<b>*ERROR*</b>";
         };
       };
 
       function rangerHandlesFromJSON(json) {
-        // json should be an array of Ranger handles, so no-op.
-        return json;
+        if (json == undefined) {
+          return [];
+        } else {
+          // json should be an array of Ranger handles, so no-op.
+          return json;
+        };
       };
 
       function locationFromJSON(json) {
@@ -106,15 +102,44 @@
         return json;
       };
 
-      function joinRangerHandles(handles) {
-        if (handles == undefined) {
+      function concentricStreetFromJSON(json) {
+        // json should be an int
+        // FIXME: Do something useful
+        return "#" + json;
+      };
+
+      function summaryFromJSON(json) {
+        if (json == undefined) {
+          console.log("No summary provided.")
+          return "<b>*ERROR*</b>";
+        } else {
+          return json;
+        }
+      }
+
+      function padTwo(segment) {
+        if (segment == undefined) {
+          return "?";
+        };
+
+        segment = segment.toString();
+
+        if (segment.length == 1) {
+          return "0" + segment;
+        };
+
+        return "" + segment;
+      };
+
+      function sortAndJoin(strings) {
+        if (strings == undefined) {
           return "";
         } else {
-          return incident.ranger_handles.sort().join(", ");
+          return strings.sort().join(", ");
         };
       };
 
-      function describeLocation(location) {
+      function shortDescribeLocation(location) {
         if (location == undefined) {
           return "";
         } else {
@@ -125,15 +150,18 @@
           };
 
           switch (location.type) {
+            case "undefined":
+              // Fall through to "text" case
             case "text":
               break;
             case "garett":
-              var address = "(";
-              address += orUnknown(location.radial_hour);
-
-              address += "XXXXX";
-
-              address += ")";
+              locationBits.push(" (");
+              locationBits.push(padTwo(location.radial_hour));
+              locationBits.push(":");
+              locationBits.push(padTwo(location.radial_minute));
+              locationBits.push("@");
+              locationBits.push(concentricStreetFromJSON(location.concentric));
+              locationBits.push(")");
               break;
             default:
               locationBits.push(
@@ -142,7 +170,7 @@
               break;
           };
 
-          return locationBits.join(" ");
+          return locationBits.join("");
         };
       };
 
@@ -153,11 +181,10 @@
           incident.priority       = priorityNameFromJSON(incident.priority);
           incident.timestamp      = shortDateFromJSON(incident.timestamp);
           incident.state          = stateNameFromJSON(incident.state);
-          incident.ranger_handles = joinRangerHandles(rangerHandlesFromJSON(incident.ranger_handles));
-          incident.location       = describeLocation(locationFromJSON(incident.location));
-
-          incident.incident_types = "INCIDENT TYPES";
-          incident.summary = "SUMMARY";
+          incident.ranger_handles = sortAndJoin(rangerHandlesFromJSON(incident.ranger_handles));
+          incident.location       = shortDescribeLocation(locationFromJSON(incident.location));
+          incident.incident_types = sortAndJoin(incident.incident_types);
+          incident.summary        = summaryFromJSON(incident.summary);
         };
 
         return incidents;
