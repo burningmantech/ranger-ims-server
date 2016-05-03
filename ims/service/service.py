@@ -109,7 +109,7 @@ class WebService(object):
     dispatchQueueDataURL         = viewDispatchQueueURL.child(u"data")
     viewDispatchQueueRelativeURL = URL.fromText(u"queue")
     viewIncidentsURL             = viewDispatchQueueURL.child(u"incidents")
-    viewIncidentNumberURL        = viewDispatchQueueURL.child(u"<number>")
+    viewIncidentNumberURL        = viewIncidentsURL.child(u"<number>")
 
     #
     # External resource info
