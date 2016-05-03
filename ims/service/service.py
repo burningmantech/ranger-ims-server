@@ -477,7 +477,12 @@ class WebService(object):
 
     @inlineCallbacks
     def cacheFromURL(self, url, name):
-        destination = self.config.CachedResources.child(name)
+        cacheDir = self.config.CachedResources
+
+        if not cacheDir.isdir():
+            cacheDir.createDirectory()
+
+        destination = cacheDir.child(name)
 
         if not destination.exists():
             tmp = destination.temporarySibling(extension=".tmp")
