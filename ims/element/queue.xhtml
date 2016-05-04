@@ -34,6 +34,28 @@
 
       //<![CDATA[
 
+      function padTwo(segment) {
+        if (segment == undefined) {
+          return "?";
+        };
+
+        segment = segment.toString();
+
+        if (segment.length == 1) {
+          return "0" + segment;
+        };
+
+        return "" + segment;
+      };
+
+      function sortAndJoin(strings) {
+        if (strings == undefined) {
+          return "";
+        } else {
+          return strings.sort().join(", ");
+        };
+      };
+
       function priorityNameFromJSON(json) {
         // json should be an int, 1-5.
         switch (json) {
@@ -53,15 +75,12 @@
         };
       };
 
-      function shortDateFromJSON(json) {
-        // json should be an RFC 3339 date-time string.
-
-        var created = new Date(json);
+      function shortFormatDate(date) {
         return (
-          padTwo(created.getMonth() + 1) + "/" +
-          padTwo(created.getDate())      + "@" +
-          padTwo(created.getHours())     + ":" +
-          padTwo(created.getMinutes())
+          padTwo(date.getMonth() + 1) + "/" +
+          padTwo(date.getDate())      + "@" +
+          padTwo(date.getHours())     + ":" +
+          padTwo(date.getMinutes())
         );
       };
 
@@ -84,35 +103,10 @@
         };
       };
 
-      function rangerHandlesFromJSON(json) {
-        if (json == undefined) {
-          return [];
-        } else {
-          // json should be an array of Ranger handles, so no-op.
-          return json;
-        };
-      };
+      function summarize(incident) {
+        var summary = incident.summary;
+        var reportEntries = incident.report_entries;
 
-      function locationFromJSON(json) {
-        // no-op.
-        return json;
-      };
-
-      function concentricStreetFromJSON(json) {
-        // json should be an int
-        if (json == undefined) {
-          return "?";
-        }
-
-        var name = concentricStreetNameByNumber[json];
-        if (name == undefined) {
-          console.log("Unknown street ID: " + json);
-          name = "<b>*ERROR</b>";
-        };
-        return name;
-      };
-
-      function summaryFromJSON(summary, reportEntries) {
         if (summary == undefined) {
           if (reportEntries == undefined) {
             console.log("No summary provided.");
@@ -147,80 +141,82 @@
         return summary;
       };
 
-      function padTwo(segment) {
-        if (segment == undefined) {
+      function concentricStreetFromJSON(json) {
+        // json should be an int
+        if (json == undefined) {
           return "?";
+        }
+
+        var name = concentricStreetNameByNumber[json];
+        if (name == undefined) {
+          console.log("Unknown street ID: " + json);
+          name = "<b>*ERROR</b>";
         };
-
-        segment = segment.toString();
-
-        if (segment.length == 1) {
-          return "0" + segment;
-        };
-
-        return "" + segment;
-      };
-
-      function sortAndJoin(strings) {
-        if (strings == undefined) {
-          return "";
-        } else {
-          return strings.sort().join(", ");
-        };
+        return name;
       };
 
       function shortDescribeLocation(location) {
-        if (location == undefined) {
-          return "";
-        } else {
-          var locationBits = [];
+        var locationBits = [];
 
-          if (location.name != undefined) {
-            locationBits.push(location.name);
-          };
-
-          switch (location.type) {
-            case "undefined":
-              // Fall through to "text" case
-            case "text":
-              break;
-            case "garett":
-              locationBits.push(" (");
-              locationBits.push(padTwo(location.radial_hour));
-              locationBits.push(":");
-              locationBits.push(padTwo(location.radial_minute));
-              locationBits.push("@");
-              locationBits.push(concentricStreetFromJSON(location.concentric));
-              locationBits.push(")");
-              break;
-            default:
-              locationBits.push(
-                "Unknown location type:" + location.type
-              );
-              break;
-          };
-
-          return locationBits.join("");
+        if (location.name != undefined) {
+          locationBits.push(location.name);
         };
+
+        switch (location.type) {
+          case "undefined":
+            // Fall through to "text" case
+          case "text":
+            break;
+          case "garett":
+            locationBits.push(" (");
+            locationBits.push(padTwo(location.radial_hour));
+            locationBits.push(":");
+            locationBits.push(padTwo(location.radial_minute));
+            locationBits.push("@");
+            locationBits.push(concentricStreetFromJSON(location.concentric));
+            locationBits.push(")");
+            break;
+          default:
+            locationBits.push(
+              "Unknown location type:" + location.type
+            );
+            break;
+        };
+
+        return locationBits.join("");
       };
 
       function dataHandler(incidents) {
         for (var i in incidents) {
           incident = incidents[i];
-
-          incident.priority       = priorityNameFromJSON(incident.priority);
-          incident.timestamp      = shortDateFromJSON(incident.timestamp);
-          incident.state          = stateNameFromJSON(incident.state);
-          incident.ranger_handles = sortAndJoin(rangerHandlesFromJSON(incident.ranger_handles));
-          incident.location       = shortDescribeLocation(locationFromJSON(incident.location));
-          incident.incident_types = sortAndJoin(incident.incident_types);
-          incident.summary        = summaryFromJSON(incident.summary, incident.report_entries);
-
-          // Try to save some memory
-          incident.report_entries = undefined;
+          incident.timestamp = new Date(incident.timestamp);
         };
 
         return incidents;
+      };
+
+      function renderPriorityCell(cell, data, incident, rowIndex, colIndex) {
+        $(cell).html(priorityNameFromJSON(data));
+      };
+
+      function renderDateTimeCell(cell, data, incident, rowIndex, colIndex) {
+        $(cell).html(shortFormatDate(data));
+      };
+
+      function renderStateCell(cell, data, incident, rowIndex, colIndex) {
+        $(cell).html(stateNameFromJSON(data));
+      };
+
+      function renderArrayCell(cell, data, incident, rowIndex, colIndex) {
+        $(cell).html(sortAndJoin(data));
+      };
+
+      function renderLocationCell(cell, data, incident, rowIndex, colIndex) {
+        $(cell).html(shortDescribeLocation(data));
+      };
+
+      function renderSummaryCell(cell, data, incident, rowIndex, colIndex) {
+        $(cell).html(summarize(incident));
       };
 
       $("#queue_table").DataTable({
@@ -235,6 +231,15 @@
               "dataSrc": dataHandler,
           },
           "columns": columns,
+          "columnDefs": [
+            { targets: 1, createdCell: renderPriorityCell },
+            { targets: 2, createdCell: renderDateTimeCell },
+            { targets: 3, createdCell: renderStateCell },
+            { targets: 4, createdCell: renderArrayCell },
+            { targets: 5, createdCell: renderLocationCell, defaultContent: {} },
+            { targets: 6, createdCell: renderArrayCell },
+            { targets: 7, createdCell: renderSummaryCell, defaultContent: {} },
+          ],
           "createdRow": function (row, incident, index) {
             $(row).click(function () {
               document.location.href = incidentsURL + "/" + incident.number;
