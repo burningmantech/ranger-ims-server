@@ -52,21 +52,13 @@
       function shortDateFromJSON(json) {
         // json should be an RFC 3339 date-time string.
 
-        // FIXME: August getMonth() is returning 7?
-        console.log("TIME:")
-        console.log(json);
         var created = new Date(json);
-        console.log(created);
-        var result = (
-          padTwo(created.getMonth()) + "/" +
-          padTwo(created.getDate())  + "@" +
-          padTwo(created.getHours()) + ":" +
+        return (
+          padTwo(created.getMonth() + 1) + "/" +
+          padTwo(created.getDate())      + "@" +
+          padTwo(created.getHours())     + ":" +
           padTwo(created.getMinutes())
         );
-        console.log(result);
-        console.log("------");
-
-        return result;
       };
 
       function stateNameFromJSON(json) {
