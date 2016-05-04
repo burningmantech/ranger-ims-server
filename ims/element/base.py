@@ -189,7 +189,12 @@ class Element(BaseElement):
                 bootstrap_js_url=url(service.bootstrapJSURL),
                 datatables_base_url=url(service.dataTablesBaseURL),
                 datatables_js_url=url(service.dataTablesJSURL),
-                datatables_css_url=url(service.dataTablesCSSURL),
+                datatables_bootstrap_css_url=url(
+                    service.dataTablesBootstrapCSSURL
+                ),
+                datatables_bootstrap_js_url=url(
+                    service.dataTablesBootstrapJSURL
+                ),
             ))
 
         return self._fixedSlots

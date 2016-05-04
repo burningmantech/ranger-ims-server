@@ -3,8 +3,9 @@
 
   <head>
     <div t:render="head_common" />
-    <link type="text/css" rel="stylesheet" media="screen"><t:attr name="href"><t:slot name="datatables_css_url" /></t:attr></link>
+    <link type="text/css" rel="stylesheet" media="screen"><t:attr name="href"><t:slot name="datatables_bootstrap_css_url" /></t:attr></link>
     <script><t:attr name="src"><t:slot name="datatables_js_url" /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="datatables_bootstrap_js_url" /></t:attr></script>
   </head>
 
   <body><div t:render="container">
