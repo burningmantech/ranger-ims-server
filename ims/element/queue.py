@@ -96,6 +96,7 @@ class DispatchQueuePage(Element):
             {
                 "data": JSON.incident_priority.value,
                 "className": "incident_priority",
+                "searchable": False,
             },
             {
                 "data": JSON.incident_created.value,
