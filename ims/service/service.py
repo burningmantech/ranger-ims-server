@@ -106,6 +106,7 @@ class WebService(object):
     incidentNumberURL = incidentsURL.child(u"<number>")
 
     viewDispatchQueueURL         = eventURL.child(u"queue")
+    viewDispatchQueueJSURL       = viewDispatchQueueURL.child(u"queue.js")
     dispatchQueueDataURL         = viewDispatchQueueURL.child(u"data")
     viewDispatchQueueRelativeURL = URL.fromText(u"queue")
     viewIncidentsURL             = viewDispatchQueueURL.child(u"incidents")
@@ -265,11 +266,11 @@ class WebService(object):
         return self.builtInResource(request, name, *names)
 
 
-    # def javaScript(self, request, name, *names):
-    #     request.setHeader(
-    #         HeaderName.contentType.value, ContentType.JavaScript.value
-    #     )
-    #     return self.builtInResource(request, name, *names)
+    def javaScript(self, request, name, *names):
+        request.setHeader(
+            HeaderName.contentType.value, ContentType.JavaScript.value
+        )
+        return self.builtInResource(request, name, *names)
 
 
     # def javaScriptSourceMap(self, request, name, *names):

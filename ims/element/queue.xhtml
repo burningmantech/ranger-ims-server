@@ -30,6 +30,8 @@
         <javascript t:render="results" />
       ];
 
+      var concentricStreetNameByNumber = <javascript t:render="concentric_street_name_by_number" />;
+
       //<![CDATA[
 
       function priorityNameFromJSON(json) {
@@ -98,8 +100,16 @@
 
       function concentricStreetFromJSON(json) {
         // json should be an int
-        // FIXME: Do something useful
-        return "#" + json;
+        if (json == undefined) {
+          return "?";
+        }
+
+        var name = concentricStreetNameByNumber[json];
+        if (name == undefined) {
+          console.log("Unknown street ID: " + json);
+          name = "<b>*ERROR</b>";
+        };
+        return name;
       };
 
       function summaryFromJSON(summary, reportEntries) {

@@ -29,12 +29,17 @@ __all__ = [
     "Address",
     "TextOnlyAddress",
     "RodGarettAddress",
+    "concentricStreetNumberByName",
+    "concentricStreetNameByNumber",
 ]
 
 from functools import total_ordering
 from datetime import datetime as DateTime  # , timedelta as TimeDelta
 
 from .tz import utcNow
+from ._streets import (
+    concentricStreetNumberByName, concentricStreetNameByNumber
+)
 
 from twisted.python.constants import (
     Names, NamedConstant, Values, ValueConstant

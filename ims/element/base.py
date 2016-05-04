@@ -173,10 +173,6 @@ class Element(BaseElement):
             def url(url):
                 return url.asText()
 
-            def eventURL(url):
-                # FIXME: replace <event>
-                return url.asText()
-
             self._fixedSlots = MappingProxyType(dict(
                 title=objectAsUnicode(self.elementTitle),
 
@@ -194,18 +190,6 @@ class Element(BaseElement):
                 datatables_base_url=url(service.dataTablesBaseURL),
                 datatables_js_url=url(service.dataTablesJSURL),
                 datatables_css_url=url(service.dataTablesCSSURL),
-
-                event_url=eventURL(service.eventURL),
-                ping_url=eventURL(service.pingURL),
-                personnel_url=eventURL(service.personnelURL),
-                incident_types_url=eventURL(service.incidentTypesURL),
-                locations_url=eventURL(service.locationsURL),
-                incidents_url=eventURL(service.incidentsURL),
-                # incident_number_url
-
-                view_dispatch_queue_url=eventURL(service.viewDispatchQueueURL),
-                # view_incidents_url
-                # view_incident_number_url
             ))
 
         return self._fixedSlots

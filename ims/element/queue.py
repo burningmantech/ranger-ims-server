@@ -24,7 +24,8 @@ __all__ = [
 
 from .base import Element, renderer
 
-from ..json import JSON
+from ..json import JSON, textFromJSON
+from ..data import concentricStreetNameByNumber
 
 # from ..json import textFromJSON
 # from ..service.query import (
@@ -92,6 +93,11 @@ class DispatchQueuePage(Element):
                 JSON.incident_summary.value,
             )
         )
+
+
+    @renderer
+    def concentric_street_name_by_number(self, request, tag):
+        return textFromJSON(concentricStreetNameByNumber[self.event])
 
 
     # @renderer
