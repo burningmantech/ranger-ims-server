@@ -71,6 +71,13 @@ class DispatchQueuePage(Element):
 
 
     @renderer
+    def data_url(self, request, tag):
+        return (
+            self.service.dispatchQueueDataURL.asText()
+            .replace(u"<event>", unicode(self.event))
+        )
+
+    @renderer
     def results(self, request, tag):
         return (
             u"""{{ "data": "{}" }},""".format(result)

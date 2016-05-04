@@ -24,6 +24,8 @@
     </table>
 
     <script>
+      var dataURL = "<javascript t:render="data_url" />";
+
       var resultColumns = [
         <javascript t:render="results" />
       ];
@@ -219,7 +221,7 @@
           "processing": true,
           "scrollX": false, "scrollY": false,
           "ajax": {
-              "url": "data",
+              "url": dataURL,
               "dataSrc": dataHandler,
           },
           "columns": resultColumns,
