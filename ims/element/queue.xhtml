@@ -203,6 +203,9 @@
           incident.location       = shortDescribeLocation(locationFromJSON(incident.location));
           incident.incident_types = sortAndJoin(incident.incident_types);
           incident.summary        = summaryFromJSON(incident.summary, incident.report_entries);
+
+          // Try to save some memory
+          incident.report_entries = undefined;
         };
 
         return incidents;
