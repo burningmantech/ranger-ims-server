@@ -22,7 +22,7 @@ __all__ = [
     "IncidentPage",
 ]
 
-from .base import Element, renderer
+from .base import Element  # renderer
 
 # from .util import normalize_priority, formatTime
 
@@ -35,14 +35,14 @@ class IncidentPage(Element):
     Incident element
     """
 
-    def __init__(self, service, storage, incident):
+    def __init__(self, service, event, number):
         Element.__init__(
-            self, u"queue", service,
-            title=u"Incident #{}".format(incident.number),
+            self, u"incident", service,
+            title=u"{} Incident #{}".format(event, number),
         )
 
-        self.storage = storage
-        self.incident = incident
+        self.event  = event
+        self.number = number
 
 
     # def __init__(self, ims, storage, number):
