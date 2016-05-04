@@ -840,9 +840,7 @@ class WebService(object):
         except ValueError:
             return self.notFoundResource(request)
 
-        storage = self.storage[event]
-
-        return IncidentPage(self, storage, number)
+        return IncidentPage(self, event, number)
 
 
     @app.route(viewIncidentNumberURL.asText(), methods=("POST",))
@@ -874,7 +872,7 @@ class WebService(object):
 
             storage.writeIncident(edited)
 
-        return IncidentPage(self, storage, number)
+        return IncidentPage(self, event, number)
 
 
 
