@@ -89,17 +89,38 @@ class DispatchQueuePage(Element):
     @renderer
     def columns(self, request, tag):
         return textFromJSON([
-            dict(data=key)
-            for key in (
-                JSON.incident_number.value,
-                JSON.incident_priority.value,
-                JSON.incident_created.value,
-                JSON.incident_state.value,
-                JSON.ranger_handles.value,
-                JSON.incident_location.value,
-                JSON.incident_types.value,
-                JSON.incident_summary.value,
-            )
+            {
+                "data": JSON.incident_number.value,
+                "className": "incident_number",
+            },
+            {
+                "data": JSON.incident_priority.value,
+                "className": "incident_priority",
+            },
+            {
+                "data": JSON.incident_created.value,
+                "className": "incident_created",
+            },
+            {
+                "data": JSON.incident_state.value,
+                "className": "incident_state",
+            },
+            {
+                "data": JSON.ranger_handles.value,
+                "className": "incident_ranger_handles",
+            },
+            {
+                "data": JSON.incident_location.value,
+                "className": "incident_location",
+            },
+            {
+                "data": JSON.incident_types.value,
+                "className": "incident_types",
+            },
+            {
+                "data": JSON.incident_summary.value,
+                "className": "incident_summary",
+            },
         ])
 
 
