@@ -28,9 +28,7 @@
       var dataURL      = "<javascript t:render="data_url"      />";
       var incidentsURL = "<javascript t:render="incidents_url" />";
 
-      var resultColumns = [
-        <javascript t:render="results" />
-      ];
+      var columns = <javascript t:render="columns" />;
 
       var concentricStreetNameByNumber = <javascript t:render="concentric_street_name_by_number" />;
 
@@ -236,7 +234,7 @@
               "url": dataURL,
               "dataSrc": dataHandler,
           },
-          "columns": resultColumns,
+          "columns": columns,
           "createdRow": function (row, incident, index) {
             $(row).click(function () {
               document.location.href = incidentsURL + "/" + incident.number;

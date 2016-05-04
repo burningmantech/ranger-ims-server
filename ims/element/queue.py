@@ -87,10 +87,10 @@ class DispatchQueuePage(Element):
         )
 
     @renderer
-    def results(self, request, tag):
-        return (
-            u"""{{ "data": "{}" }},""".format(result)
-            for result in (
+    def columns(self, request, tag):
+        return textFromJSON([
+            dict(data=key)
+            for key in (
                 JSON.incident_number.value,
                 JSON.incident_priority.value,
                 JSON.incident_created.value,
@@ -100,7 +100,7 @@ class DispatchQueuePage(Element):
                 JSON.incident_types.value,
                 JSON.incident_summary.value,
             )
-        )
+        ])
 
 
     @renderer
