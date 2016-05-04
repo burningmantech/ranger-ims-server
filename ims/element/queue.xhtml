@@ -235,10 +235,10 @@
             { targets: 1, createdCell: renderPriorityCell },
             { targets: 2, createdCell: renderDateTimeCell },
             { targets: 3, createdCell: renderStateCell },
-            { targets: 4, createdCell: renderArrayCell },
+            { targets: 4, createdCell: renderArrayCell,    defaultContent: [] },
             { targets: 5, createdCell: renderLocationCell, defaultContent: {} },
-            { targets: 6, createdCell: renderArrayCell },
-            { targets: 7, createdCell: renderSummaryCell, defaultContent: {} },
+            { targets: 6, createdCell: renderArrayCell,    defaultContent: [] },
+            { targets: 7, createdCell: renderSummaryCell,  defaultContent: "" },
           ],
           "createdRow": function (row, incident, index) {
             $(row).click(function () {
