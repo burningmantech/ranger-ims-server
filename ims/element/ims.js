@@ -15,6 +15,32 @@
 
 
 //
+// HTML encoding
+//
+
+// **** BEGIN WEAKNESS ***
+
+// It seems ridiculous that this isn't standard in JavaScript
+// It is certainly ridiculous to involve the DOM, but on the other hand, the
+// browser will implement this correctly, and any solution using .replace()
+// will be buggy.  And this will be fast.  But still, this is weak.
+
+var _domTextAreaForHaxxors = document.createElement("textarea")
+
+function textAsHTML(text) {
+    _domTextAreaForHaxxors.textContent = text;
+    return _domTextAreaForHaxxors.innerHTML;
+}
+
+function htmlAsText(html) {
+    _domTextAreaForHaxxors.innerHTML = html;
+    return _domTextAreaForHaxxors.textContent;
+}
+
+// **** END WEAKNESS ***
+
+
+//
 // Generic string formatting
 //
 
@@ -195,7 +221,7 @@ function renderPriority(priorityNumber, type, incident) {
   switch (type) {
     case "display":
     case "filter":
-      return priorityNameFromNumber(priorityNumber);
+      return textAsHTML(priorityNameFromNumber(priorityNumber));
     case "type":
     case "sort":
       return priorityNumber;
@@ -207,7 +233,7 @@ function renderDate(date, type, incident) {
   switch (type) {
     case "display":
     case "filter":
-      return shortFormatDate(date);
+      return textAsHTML(shortFormatDate(date));
     case "type":
     case "sort":
       return date;
@@ -220,7 +246,7 @@ function renderState(state, type, incident) {
     case "display":
     case "filter":
     case "type":
-      return stateNameFromID(state);
+      return textAsHTML(stateNameFromID(state));
     case "sort":
       return stateSortKeyFromID(state);
   };
@@ -233,7 +259,7 @@ function renderLocation(data, type, incident) {
     case "filter":
     case "type":
     case "sort":
-      return shortDescribeLocation(data);
+      return textAsHTML(shortDescribeLocation(data));
   };
   return undefined;
 };
@@ -244,7 +270,7 @@ function renderSummary(data, type, incident) {
     case "filter":
     case "type":
     case "sort":
-      return summarizeIncident(incident);
+      return textAsHTML(summarizeIncident(incident));
   };
   return undefined;
 };
