@@ -28,8 +28,6 @@
       var dataURL      = "<javascript t:render="data_url"      />";
       var incidentsURL = "<javascript t:render="incidents_url" />";
 
-      var columns = <javascript t:render="columns" />;
-
       var concentricStreetNameByNumber = <javascript t:render="concentric_street_name_by_number" />;
 
       //<![CDATA[
@@ -230,15 +228,57 @@
               "url": dataURL,
               "dataSrc": dataHandler,
           },
-          "columns": columns,
-          "columnDefs": [
-            { targets: 1, createdCell: renderPriorityCell },
-            { targets: 2, createdCell: renderDateTimeCell },
-            { targets: 3, createdCell: renderStateCell },
-            { targets: 4, createdCell: renderArrayCell,    defaultContent: [] },
-            { targets: 5, createdCell: renderLocationCell, defaultContent: {} },
-            { targets: 6, createdCell: renderArrayCell,    defaultContent: [] },
-            { targets: 7, createdCell: renderSummaryCell,  defaultContent: "" },
+          "columns": [
+            {
+                "data": "number",
+                "className": "incident_number",
+                "defaultContent": null,
+                "createdCell": null,
+                "cellType": "th",
+            },
+            {
+                "data": "priority",
+                "className": "incident_priority",
+                "defaultContent": null,
+                "createdCell": renderPriorityCell,
+                "searchable": false,
+            },
+            {
+                "data": "timestamp",
+                "className": "incident_created",
+                "defaultContent": null,
+                "createdCell": renderDateTimeCell,
+            },
+            {
+                "data": "state",
+                "className": "incident_state",
+                "defaultContent": null,
+                "createdCell": renderStateCell,
+            },
+            {
+                "data": "ranger_handles",
+                "className": "incident_ranger_handles",
+                "defaultContent": {},
+                "createdCell": renderArrayCell,
+            },
+            {
+                "data": "location",
+                "className": "incident_location",
+                "defaultContent": {},
+                "createdCell": renderLocationCell,
+            },
+            {
+                "data": "incident_types",
+                "className": "incident_types",
+                "defaultContent": [],
+                "createdCell": renderArrayCell,
+            },
+            {
+                "data": "summary",
+                "className": "incident_summary",
+                "defaultContent": "",
+                "createdCell": renderSummaryCell,
+            },
           ],
           "createdRow": function (row, incident, index) {
             $(row).click(function () {

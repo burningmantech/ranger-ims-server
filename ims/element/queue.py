@@ -24,10 +24,9 @@ __all__ = [
 
 from .base import Element, renderer
 
-from ..json import JSON, textFromJSON
+from ..json import textFromJSON
 from ..data import concentricStreetNameByNumber
 
-# from ..json import textFromJSON
 # from ..service.query import (
 #     incidentsFromQuery, showClosedFromQuery, termsFromQuery,
 #     sinceDaysAgoFromQuery,
@@ -85,44 +84,6 @@ class DispatchQueuePage(Element):
             self.service.viewIncidentsURL.asText()
             .replace(u"<event>", unicode(self.event))
         )
-
-    @renderer
-    def columns(self, request, tag):
-        return textFromJSON([
-            {
-                "data": JSON.incident_number.value,
-                "className": "incident_number",
-            },
-            {
-                "data": JSON.incident_priority.value,
-                "className": "incident_priority",
-                "searchable": False,
-            },
-            {
-                "data": JSON.incident_created.value,
-                "className": "incident_created",
-            },
-            {
-                "data": JSON.incident_state.value,
-                "className": "incident_state",
-            },
-            {
-                "data": JSON.ranger_handles.value,
-                "className": "incident_ranger_handles",
-            },
-            {
-                "data": JSON.incident_location.value,
-                "className": "incident_location",
-            },
-            {
-                "data": JSON.incident_types.value,
-                "className": "incident_types",
-            },
-            {
-                "data": JSON.incident_summary.value,
-                "className": "incident_summary",
-            },
-        ])
 
 
     @renderer
