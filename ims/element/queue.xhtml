@@ -14,17 +14,18 @@
     <div id="button_container" class="btn-group col-sm-12" role="group">
       <a name="buttons" />
       <button id="show_closed" type="button" class="btn btn-default" onclick="toggleShowClosed();">Show Closed</button>
-<!--
       <div class="btn-group" role="group">
-        <button id="show_days" type="button" class="btn btn-default" data-toggle="dropdown">All Days <span class="caret" /></button>
+        <button id="show_days" type="button" class="btn btn-default" data-toggle="dropdown">
+          <span class="selection">All Days</span>
+          <span class="caret" />
+        </button>
         <ul class="dropdown-menu">
-          <li onclick="showDays(0);"><a href="#">All Days   </a></li>
-          <li onclick="showDays(1);"><a href="#">Today      </a></li>
-          <li onclick="showDays(2);"><a href="#">Last 2 Days</a></li>
-          <li onclick="showDays(3);"><a href="#">Last 3 Days</a></li>
+          <li id="show_days_0" onclick="showDays(0);"><span class="checkmark" /><a href="#" class="name">All Days   </a></li>
+          <li id="show_days_1" onclick="showDays(1);"><span class="checkmark" /><a href="#" class="name">Today      </a></li>
+          <li id="show_days_2" onclick="showDays(2);"><span class="checkmark" /><a href="#" class="name">Last 2 Days</a></li>
+          <li id="show_days_3" onclick="showDays(3);"><span class="checkmark" /><a href="#" class="name">Last 3 Days</a></li>
         </ul>
        </div>
- -->
     </div>
 
     <table id="queue_table" class="table table-striped table-hover">
@@ -163,8 +164,17 @@
 
       // Show days button handling
 
+      var daysToShow = 0;
+
       function showDays(number) {
-        console.log("show days: " + number);
+        var menu = $("#show_days");
+        var item = $("#show_days_" + number);
+
+        // Get title from selected item
+        var selection = item.children(".name").html()
+
+        // Update menu title to reflect selected item
+        menu.children(".selection").html(selection)
       }
 
       // Filtering
@@ -173,9 +183,17 @@
         function(settings, data, dataIndex) {
           if (showClosedIncidents) {
             return true;
-          } else {
-            return data[3] != "Closed";
+          } else if (data[3] == "Closed") {
+            return false;
           };
+
+          if (daysToShow == 0) {
+            return true;
+          } else {
+            return false;
+          };
+
+          return true;
         }
       );
 
