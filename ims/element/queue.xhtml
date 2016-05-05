@@ -6,6 +6,7 @@
     <link type="text/css" rel="stylesheet" media="screen"><t:attr name="href"><t:slot name="datatables_bootstrap_css_url" /></t:attr></link>
     <script><t:attr name="src"><t:slot name="datatables_js_url" /></t:attr></script>
     <script><t:attr name="src"><t:slot name="datatables_bootstrap_js_url" /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="ims_js_url" /></t:attr></script>
   </head>
 
   <body><div t:render="container">
@@ -25,164 +26,13 @@
     </table>
 
     <script>
-      var dataURL      = "<javascript t:render="data_url"      />";
-      var incidentsURL = "<javascript t:render="incidents_url" />";
+      // FIXME: can we use the generic JSON endpoint?
+      var dataURL          = "<javascript t:render="data_url"           />";
+      var viewIncidentsURL = "<javascript t:render="view_incidents_url" />";
 
       var concentricStreetNameByNumber = <javascript t:render="concentric_street_name_by_number" />;
 
       //<![CDATA[
-
-      function padTwo(segment) {
-        if (segment == undefined) {
-          return "?";
-        };
-
-        segment = segment.toString();
-
-        if (segment.length == 1) {
-          return "0" + segment;
-        };
-
-        return "" + segment;
-      };
-
-      function priorityNameFromNumber(priorityNumber) {
-        // priorityNumber should be an int, 1-5.
-        switch (priorityNumber) {
-          case 1: return "⬆︎";
-          case 2: return "⬆︎";
-          case 3: return "•";
-          case 4: return "⬇︎";
-          case 5: return "⬇︎";
-          default:
-            console.log("Unknown incident priority number: " + priorityNumber);
-            return undefined;
-        };
-      };
-
-      function shortFormatDate(date) {
-        return (
-          padTwo(date.getMonth() + 1) + "/" +
-          padTwo(date.getDate())      + "@" +
-          padTwo(date.getHours())     + ":" +
-          padTwo(date.getMinutes())
-        );
-      };
-
-      function stateNameFromID(stateID) {
-        // stateID should be a string key.
-        switch (stateID) {
-          case "new"       : return "New";
-          case "on_hold"   : return "On Hold";
-          case "dispatched": return "Dispatched";
-          case "on_scene"  : return "On Scene";
-          case "closed"    : return "Closed";
-          default:
-            console.log("Unknown incident state ID: " + stateID);
-            return undefined;
-        };
-      };
-
-      function stateSortKeyFromID(stateID) {
-        // stateID should be a string key.
-        switch (stateID) {
-          case "new"       : return 1;
-          case "on_hold"   : return 2;
-          case "dispatched": return 3;
-          case "on_scene"  : return 4;
-          case "closed"    : return 5;
-          default:
-            console.log("Unknown incident state ID: " + stateID);
-            return undefined;
-        };
-      };
-
-      function summarize(incident) {
-        var summary = incident.summary;
-        var reportEntries = incident.report_entries;
-
-        if (summary == undefined) {
-          if (reportEntries == undefined) {
-            console.log("No summary provided.");
-            return "";
-          }
-          else {
-            // Get the first line of the first report entry.
-            for (var i in reportEntries) {
-              var lines = reportEntries[i].text.split("\n");
-
-              for (var j in lines) {
-                var line = lines[j];
-                if (line == undefined || line == "") {
-                  continue;
-                };
-                summary = line;
-                break;
-              }
-
-              if (summary != undefined) {
-                break;
-              }
-            };
-
-            return summary;
-          };
-
-          console.log("No summary provided and no report entry text.");
-          return "";
-        };
-
-        return summary;
-      };
-
-      function concentricStreetFromJSON(json) {
-        // json should be an int
-        if (json == undefined) {
-          return "?";
-        }
-
-        var name = concentricStreetNameByNumber[json];
-        if (name == undefined) {
-          console.log("Unknown street ID: " + json);
-          name = undefined;
-        };
-        return name;
-      };
-
-      function shortDescribeLocation(location) {
-        if (location == undefined) {
-          return undefined;
-        }
-
-        var locationBits = [];
-
-        if (location.name != undefined) {
-          locationBits.push(location.name);
-        };
-
-        switch (location.type) {
-          case undefined:
-            // Fall through to "text" case
-          case "text":
-            break;
-          case "garett":
-            locationBits.push(" (");
-            locationBits.push(padTwo(location.radial_hour));
-            locationBits.push(":");
-            locationBits.push(padTwo(location.radial_minute));
-            locationBits.push("@");
-            locationBits.push(concentricStreetFromJSON(location.concentric));
-            locationBits.push(")");
-            break;
-          default:
-            locationBits.push(
-              "Unknown location type:" + location.type
-            );
-            break;
-        };
-
-        return locationBits.join("");
-      };
 
       function dataHandler(incidents) {
         for (var i in incidents) {
@@ -191,64 +41,6 @@
         };
 
         return incidents;
-      };
-
-      function renderPriority(priorityNumber, type, incident) {
-        switch (type) {
-          case "display":
-          case "filter":
-            return priorityNameFromNumber(priorityNumber);
-          case "type":
-          case "sort":
-            return priorityNumber;
-        };
-        return undefined;
-      };
-
-      function renderDate(date, type, incident) {
-        switch (type) {
-          case "display":
-          case "filter":
-            return shortFormatDate(date);
-          case "type":
-          case "sort":
-            return date;
-        };
-        return undefined;
-      };
-
-      function renderState(state, type, incident) {
-        switch (type) {
-          case "display":
-          case "filter":
-          case "type":
-            return stateNameFromID(state);
-          case "sort":
-            return stateSortKeyFromID(state);
-        };
-        return undefined;
-      };
-
-      function renderLocation(data, type, incident) {
-        switch (type) {
-          case "display":
-          case "filter":
-          case "type":
-          case "sort":
-            return shortDescribeLocation(data);
-        };
-        return undefined;
-      };
-
-      function renderSummary(data, type, incident) {
-        switch (type) {
-          case "display":
-          case "filter":
-          case "type":
-          case "sort":
-            return summarize(incident);
-        };
-        return undefined;
       };
 
       var table = $("#queue_table").DataTable({
@@ -323,7 +115,7 @@
         ],
         "createdRow": function (row, incident, index) {
           $(row).click(function () {
-            document.location.href = incidentsURL + "/" + incident.number;
+            document.location.href = viewIncidentsURL + "/" + incident.number;
           });
         },
       });

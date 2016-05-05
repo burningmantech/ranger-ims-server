@@ -100,6 +100,8 @@ class WebService(object):
         u"media", u"js", u"dataTables.bootstrap.min.js"
     )
 
+    imsJSURL = prefixURL.child(u"ims.js")
+
     eventURL          = prefixURL.child(u"<event>")
     pingURL           = eventURL.child(u"ping")
     personnelURL      = eventURL.child(u"personnel")
@@ -419,6 +421,11 @@ class WebService(object):
             request, self.dataTablesSourceURL, self.dataTablesVersion,
             self.dataTablesVersion, *names
         )
+
+
+    @app.route(imsJSURL.asText(), methods=("HEAD", "GET"))
+    def imsJSResource(self, request):
+        return self.javaScript(request, "ims.js")
 
 
     #

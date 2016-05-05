@@ -192,6 +192,8 @@ class Element(BaseElement):
                 datatables_bootstrap_js_url=(
                     service.dataTablesBootstrapJSURL.asText()
                 ),
+
+                ims_js_url=service.imsJSURL.asText(),
             ))
 
         return self._fixedSlots

@@ -79,7 +79,7 @@ class DispatchQueuePage(Element):
 
 
     @renderer
-    def incidents_url(self, request, tag):
+    def view_incidents_url(self, request, tag):
         return (
             self.service.viewIncidentsURL.asText()
             .replace(u"<event>", unicode(self.event))
