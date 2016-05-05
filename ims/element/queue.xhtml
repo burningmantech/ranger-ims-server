@@ -251,7 +251,7 @@
         return undefined;
       };
 
-      $("#queue_table").DataTable({
+      var table = $("#queue_table").DataTable({
         "deferRender": true,
         "paging": true,
         "lengthChange": true,
@@ -327,8 +327,6 @@
           });
         },
       });
-
-      $("#result_info").css({"display": "none"});
 
       //]]>
     </script>
