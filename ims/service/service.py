@@ -54,6 +54,7 @@ from .auth import authenticated, authorized, Authorization
 from .query import (
     termsFromQuery, showClosedFromQuery, sinceFromQuery, editsFromQuery
 )
+# FIXME: Query stuff may be obsolete with client-side web UI stuff
 
 
 
