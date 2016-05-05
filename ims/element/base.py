@@ -58,6 +58,7 @@ class Element(BaseElement):
     ##
 
 
+    # FIXME: Move below to xhtml
     @renderer
     def head_common(self, request, tag=None):
         return (
