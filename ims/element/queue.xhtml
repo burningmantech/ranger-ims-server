@@ -46,30 +46,17 @@
         return "" + segment;
       };
 
-      function sortAndJoin(strings) {
-        if (strings == undefined) {
-          return "";
-        } else {
-          return strings.sort().join(", ");
-        };
-      };
-
-      function priorityNameFromJSON(json) {
-        // json should be an int, 1-5.
-        switch (json) {
-          case 1:
-            return "⬆︎";
-          case 2:
-            return "⬆︎";
-          case 3:
-            return "•";
-          case 4:
-            return "⬇︎";
-          case 5:
-            return "⬇︎";
+      function priorityNameFromNumber(priorityNumber) {
+        // priorityNumber should be an int, 1-5.
+        switch (priorityNumber) {
+          case 1: return "⬆︎";
+          case 2: return "⬆︎";
+          case 3: return "•";
+          case 4: return "⬇︎";
+          case 5: return "⬇︎";
           default:
-            console.log("Unknown incident priority JSON: " + json);
-            return "<b>*ERROR*</b>";
+            console.log("Unknown incident priority number: " + priorityNumber);
+            return undefined;
         };
       };
 
@@ -82,22 +69,31 @@
         );
       };
 
-      function stateNameFromJSON(json) {
-        // json should be a string key.
-        switch (json) {
-          case "new":
-            return "New";
-          case "on_hold":
-            return "On Hold";
-          case "dispatched":
-            return "Dispatched";
-          case "on_scene":
-            return "On Scene";
-          case "closed":
-            return "Closed";
+      function stateNameFromID(stateID) {
+        // stateID should be a string key.
+        switch (stateID) {
+          case "new"       : return "New";
+          case "on_hold"   : return "On Hold";
+          case "dispatched": return "Dispatched";
+          case "on_scene"  : return "On Scene";
+          case "closed"    : return "Closed";
           default:
-            console.log("Unknown incident state JSON: " + json);
-            return "<b>*ERROR*</b>";
+            console.log("Unknown incident state ID: " + stateID);
+            return undefined;
+        };
+      };
+
+      function stateSortKeyFromID(stateID) {
+        // stateID should be a string key.
+        switch (stateID) {
+          case "new"       : return 1;
+          case "on_hold"   : return 2;
+          case "dispatched": return 3;
+          case "on_scene"  : return 4;
+          case "closed"    : return 5;
+          default:
+            console.log("Unknown incident state ID: " + stateID);
+            return undefined;
         };
       };
 
@@ -148,12 +144,16 @@
         var name = concentricStreetNameByNumber[json];
         if (name == undefined) {
           console.log("Unknown street ID: " + json);
-          name = "<b>*ERROR</b>";
+          name = undefined;
         };
         return name;
       };
 
       function shortDescribeLocation(location) {
+        if (location == undefined) {
+          return undefined;
+        }
+
         var locationBits = [];
 
         if (location.name != undefined) {
@@ -193,42 +193,60 @@
         return incidents;
       };
 
-      function renderStateCell(cell, data, incident, rowIndex, colIndex) {
-        $(cell).html(stateNameFromJSON(data));
-      };
-
-      function renderArrayCell(cell, data, incident, rowIndex, colIndex) {
-        $(cell).html(sortAndJoin(data));
-      };
-
-      function renderLocationCell(cell, data, incident, rowIndex, colIndex) {
-        $(cell).html(shortDescribeLocation(data));
-      };
-
-      function renderSummaryCell(cell, data, incident, rowIndex, colIndex) {
-        $(cell).html(summarize(incident));
-      };
-
-      function renderPriority(data, type, row) {
+      function renderPriority(priorityNumber, type, incident) {
         switch (type) {
           case "display":
           case "filter":
-            return priorityNameFromJSON(data);
+            return priorityNameFromNumber(priorityNumber);
           case "type":
           case "sort":
-            return data;
+            return priorityNumber;
         };
         return undefined;
       };
 
-      function renderDate(data, type, row) {
+      function renderDate(date, type, incident) {
         switch (type) {
           case "display":
           case "filter":
-            return shortFormatDate(data);
+            return shortFormatDate(date);
           case "type":
           case "sort":
-            return data;
+            return date;
+        };
+        return undefined;
+      };
+
+      function renderState(state, type, incident) {
+        switch (type) {
+          case "display":
+          case "filter":
+          case "type":
+            return stateNameFromID(state);
+          case "sort":
+            return stateSortKeyFromID(state);
+        };
+        return undefined;
+      };
+
+      function renderLocation(data, type, incident) {
+        switch (type) {
+          case "display":
+          case "filter":
+          case "type":
+          case "sort":
+            return shortDescribeLocation(data);
+        };
+        return undefined;
+      };
+
+      function renderSummary(data, type, incident) {
+        switch (type) {
+          case "display":
+          case "filter":
+          case "type":
+          case "sort":
+            return summarize(incident);
         };
         return undefined;
       };
@@ -250,7 +268,6 @@
             "className": "incident_number",
             "data": "number",
             "defaultContent": null,
-            "createdCell": null,
             "cellType": "th",
           },
           {
@@ -273,35 +290,35 @@
             "className": "incident_state",
             "data": "state",
             "defaultContent": null,
-            "createdCell": renderStateCell,
+            "render": renderState,
           },
           {
             "name": "incident_ranger_handles",
             "className": "incident_ranger_handles",
             "data": "ranger_handles",
-            "defaultContent": {},
-            "createdCell": renderArrayCell,
+            "defaultContent": "",
+            "render": "[, ]",  // Join array with ", "
           },
           {
             "name": "incident_location",
             "className": "incident_location",
             "data": "location",
-            "defaultContent": {},
-            "createdCell": renderLocationCell,
+            "defaultContent": "",
+            "render": renderLocation,
           },
           {
             "name": "incident_types",
             "className": "incident_types",
             "data": "incident_types",
-            "defaultContent": [],
-            "createdCell": renderArrayCell,
+            "defaultContent": "",
+            "render": "[, ]",  // Join array with ", "
           },
           {
             "name": "incident_summary",
             "className": "incident_summary",
             "data": "summary",
             "defaultContent": "",
-            "createdCell": renderSummaryCell,
+            "render": renderSummary,
           },
         ],
         "createdRow": function (row, incident, index) {
