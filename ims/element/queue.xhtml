@@ -193,10 +193,6 @@
         return incidents;
       };
 
-      function renderPriorityCell(cell, data, incident, rowIndex, colIndex) {
-        $(cell).html(priorityNameFromJSON(data));
-      };
-
       function renderDateTimeCell(cell, data, incident, rowIndex, colIndex) {
         $(cell).html(shortFormatDate(data));
       };
@@ -215,6 +211,20 @@
 
       function renderSummaryCell(cell, data, incident, rowIndex, colIndex) {
         $(cell).html(summarize(incident));
+      };
+
+      function renderPriority(data, type, row) {
+        switch (type) {
+          case "display":
+          case "filter":
+            return priorityNameFromJSON(data);
+          case "type":
+          case "sort":
+            return data;
+          default:
+            return undefined;
+        };
+        return priorityNameFromJSON(data);
       };
 
       $("#queue_table").DataTable({
@@ -243,7 +253,7 @@
             "data": "priority",
             "defaultContent": null,
             "searchable": false,
-            "createdCell": renderPriorityCell,
+            "render": renderPriority,
           },
           {
             "name": "incident_created",
