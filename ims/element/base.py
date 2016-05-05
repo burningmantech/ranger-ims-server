@@ -66,8 +66,8 @@ class Element(BaseElement):
                 name="viewport", content="width=device-width, initial-scale=1"
             ),
             tags.link(
-                type="image/x-icon", rel="shortcut icon",
-                href=self.service.favIconURL.asText(),
+                type="image/png", rel="icon",
+                href=self.service.logoURL.asText(),
             ),
             tags.link(
                 type="text/css", rel="stylesheet", media="screen",
@@ -178,7 +178,6 @@ class Element(BaseElement):
 
                 prefix_url=url(service.prefixURL),
                 stylesheet_url=url(service.styleSheetURL),
-                favicon_url=url(service.favIconURL),
                 logo_url=url(service.logoURL),
 
                 jquery_base_url=url(service.jqueryBaseURL),

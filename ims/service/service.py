@@ -76,8 +76,7 @@ class WebService(object):
 
     styleSheetURL = prefixURL.child(u"style.css")
 
-    favIconURL = prefixURL.child(u"favicon.ico")
-    logoURL    = prefixURL.child(u"logo.png")
+    logoURL = prefixURL.child(u"logo.png")
 
     loginURL  = prefixURL.child(u"login")
     logoutURL = prefixURL.child(u"logout")
@@ -366,12 +365,6 @@ class WebService(object):
     @app.route(styleSheetURL.asText(), methods=("HEAD", "GET"))
     def style(self, request):
         return self.styleSheet(request, "style.css")
-
-
-    @app.route(favIconURL.asText(), methods=("HEAD", "GET"))
-    def favIcon(self, request):
-        request.setHeader(HeaderName.contentType.value, ContentType.ICO.value)
-        return self.builtInResource(request, "favicon.ico")
 
 
     @app.route(logoURL.asText(), methods=("HEAD", "GET"))
