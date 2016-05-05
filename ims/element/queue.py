@@ -27,12 +27,6 @@ from .base import Element, renderer
 from ..json import textFromJSON
 from ..data import concentricStreetNameByNumber
 
-# from ..service.query import (
-#     incidentsFromQuery, showClosedFromQuery, termsFromQuery,
-#     sinceDaysAgoFromQuery,
-# )
-# from .util import incidents_as_table
-
 
 
 class DispatchQueuePage(Element):
