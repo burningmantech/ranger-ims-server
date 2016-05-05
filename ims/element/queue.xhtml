@@ -193,10 +193,6 @@
         return incidents;
       };
 
-      function renderDateTimeCell(cell, data, incident, rowIndex, colIndex) {
-        $(cell).html(shortFormatDate(data));
-      };
-
       function renderStateCell(cell, data, incident, rowIndex, colIndex) {
         $(cell).html(stateNameFromJSON(data));
       };
@@ -218,6 +214,20 @@
           case "display":
           case "filter":
             return priorityNameFromJSON(data);
+          case "type":
+          case "sort":
+            return data;
+          default:
+            return undefined;
+        };
+        return priorityNameFromJSON(data);
+      };
+
+      function renderDate(data, type, row) {
+        switch (type) {
+          case "display":
+          case "filter":
+            return shortFormatDate(data);
           case "type":
           case "sort":
             return data;
@@ -260,7 +270,7 @@
             "className": "incident_created",
             "data": "timestamp",
             "defaultContent": null,
-            "createdCell": renderDateTimeCell,
+            "render": renderDate,
           },
           {
             "name": "incident_state",
