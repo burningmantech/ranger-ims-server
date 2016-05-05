@@ -171,29 +171,26 @@ class Element(BaseElement):
         if not hasattr(self, "_fixedSlots"):
             service = self.service
 
-            def url(url):
-                return url.asText()
-
             self._fixedSlots = MappingProxyType(dict(
                 title=objectAsUnicode(self.elementTitle),
 
-                prefix_url=url(service.prefixURL),
-                stylesheet_url=url(service.styleSheetURL),
-                logo_url=url(service.logoURL),
+                prefix_url=service.prefixURL.asText(),
+                stylesheet_url=service.styleSheetURL.asText(),
+                logo_url=service.logoURL.asText(),
 
-                jquery_base_url=url(service.jqueryBaseURL),
-                jquery_js_url=url(service.jqueryJSURL),
-                jquery_map_url=url(service.jqueryMapURL),
-                bootstrap_base_url=url(service.bootstrapBaseURL),
-                bootstrap_css_url=url(service.bootstrapCSSURL),
-                bootstrap_js_url=url(service.bootstrapJSURL),
-                datatables_base_url=url(service.dataTablesBaseURL),
-                datatables_js_url=url(service.dataTablesJSURL),
-                datatables_bootstrap_css_url=url(
-                    service.dataTablesBootstrapCSSURL
+                jquery_base_url=service.jqueryBaseURL.asText(),
+                jquery_js_url=service.jqueryJSURL.asText(),
+                jquery_map_url=service.jqueryMapURL.asText(),
+                bootstrap_base_url=service.bootstrapBaseURL.asText(),
+                bootstrap_css_url=service.bootstrapCSSURL.asText(),
+                bootstrap_js_url=service.bootstrapJSURL.asText(),
+                datatables_base_url=service.dataTablesBaseURL.asText(),
+                datatables_js_url=service.dataTablesJSURL.asText(),
+                datatables_bootstrap_css_url=(
+                    service.dataTablesBootstrapCSSURL.asText()
                 ),
-                datatables_bootstrap_js_url=url(
-                    service.dataTablesBootstrapJSURL
+                datatables_bootstrap_js_url=(
+                    service.dataTablesBootstrapJSURL.asText()
                 ),
             ))
 
