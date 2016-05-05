@@ -25,6 +25,11 @@
       </tfoot>
     </table>
 
+    <label>
+      <input id="show_closed" type="checkbox" onclick="redraw();" />
+      Show closed
+    </label>
+
     <script>
       // FIXME: can we use the generic JSON endpoint?
       var dataURL          = "<javascript t:render="data_url"           />";
@@ -119,6 +124,29 @@
           });
         },
       });
+
+      var showClosedIncidents = undefined;
+
+      function updateSettings () {
+        showClosedIncidents = $("#show_closed")[0].checked;
+      }
+
+      updateSettings();
+
+      $.fn.dataTable.ext.search.push(
+        function(settings, data, dataIndex) {
+          if (showClosedIncidents) {
+            return true;
+          } else {
+            return data[3] != "Closed";
+          };
+        }
+      );
+
+      function redraw () {
+        updateSettings();
+        table.draw();
+      }
 
       //]]>
     </script>
