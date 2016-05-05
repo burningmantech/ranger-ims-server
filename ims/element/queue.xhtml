@@ -217,10 +217,8 @@
           case "type":
           case "sort":
             return data;
-          default:
-            return undefined;
         };
-        return priorityNameFromJSON(data);
+        return undefined;
       };
 
       function renderDate(data, type, row) {
@@ -231,10 +229,8 @@
           case "type":
           case "sort":
             return data;
-          default:
-            return undefined;
         };
-        return priorityNameFromJSON(data);
+        return undefined;
       };
 
       $("#queue_table").DataTable({
