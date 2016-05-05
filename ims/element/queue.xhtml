@@ -11,7 +11,23 @@
 
   <body><div t:render="container">
 
-    <table class="table table-striped table-hover" id="queue_table">
+    <div id="button_container" class="btn-group col-sm-12" role="group">
+      <a name="buttons" />
+      <button id="show_closed" type="button" class="btn btn-default" onclick="toggleShowClosed();">Show Closed</button>
+<!--
+      <div class="btn-group" role="group">
+        <button id="show_days" type="button" class="btn btn-default" data-toggle="dropdown">All Days <span class="caret" /></button>
+        <ul class="dropdown-menu">
+          <li onclick="showDays(0);"><a href="#">All Days   </a></li>
+          <li onclick="showDays(1);"><a href="#">Today      </a></li>
+          <li onclick="showDays(2);"><a href="#">Last 2 Days</a></li>
+          <li onclick="showDays(3);"><a href="#">Last 3 Days</a></li>
+        </ul>
+       </div>
+ -->
+    </div>
+
+    <table id="queue_table" class="table table-striped table-hover">
       <thead>
         <tr>
           <th t:render="table_headers" />
@@ -24,22 +40,6 @@
         </tr>
       </tfoot>
     </table>
-
-    <label>
-      <input id="show_closed" type="checkbox" onclick="redraw();" />
-      Show closed
-    </label>
-    <!--
-    <label>
-      Show:
-      <select name="since_days_ago" onclick="redraw();">
-        <option value="0">All days</option>
-        <option value="1">Since 1 day ago</option>
-        <option value="2">Since 2 days ago</option>
-        <option value="3">Since 3 days ago</option>
-      </select>
-    </label>
-    -->
 
     <script>
       // FIXME: can we use the generic JSON endpoint?
@@ -136,13 +136,38 @@
         },
       });
 
+      // Relocate button container
+
+      var row = $("<div />");
+      row.addClass("row");
+      row.append($("#button_container"));
+      $("#queue_table_wrapper").prepend(row);
+
+      // Show closed button handling
+
       var showClosedIncidents = undefined;
 
-      function updateSettings () {
-        showClosedIncidents = $("#show_closed")[0].checked;
+      function toggleShowClosed() {
+        showClosedIncidents = !showClosedIncidents;
+
+        var showClosedButton = $("#show_closed");
+
+        if (showClosedIncidents) {
+          showClosedButton.addClass("active");
+        } else {
+          showClosedButton.removeClass("active");
+        };
+
+        table.draw();
+      };
+
+      // Show days button handling
+
+      function showDays(number) {
+        console.log("show days: " + number);
       }
 
-      updateSettings();
+      // Filtering
 
       $.fn.dataTable.ext.search.push(
         function(settings, data, dataIndex) {
@@ -153,11 +178,6 @@
           };
         }
       );
-
-      function redraw () {
-        updateSettings();
-        table.draw();
-      }
 
       //]]>
     </script>
