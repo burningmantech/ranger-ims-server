@@ -33,6 +33,7 @@ function padTwo(segment) {
 };
 
 
+// FIXME: Try out momentjs: http://momentjs.com/docs/
 function shortFormatDate(date) {
   return (
     padTwo(date.getMonth() + 1) + "/" +
