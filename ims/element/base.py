@@ -60,8 +60,15 @@ class Element(BaseElement):
 
     # FIXME: Move below to xhtml
     @renderer
-    def head_common(self, request, tag=None):
-        return (
+    def head(self, request, tag=None):
+        if tag is None:
+            children = ()
+            tag = tags.head
+        else:
+            children = tag.children
+            tag.children = []
+
+        return tag(
             tags.meta(charset="utf-8"),
             tags.meta(
                 name="viewport", content="width=device-width, initial-scale=1"
@@ -81,6 +88,7 @@ class Element(BaseElement):
             tags.script(src=self.service.jqueryJSURL.asText()),
             tags.script(src=self.service.bootstrapJSURL.asText()),
             self.title(request, tags.title),
+            children,
         )
 
 

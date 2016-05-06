@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
 
-  <head>
-    <div t:render="head_common" />
+  <head t:render="head">
     <link type="text/css" rel="stylesheet" media="screen"><t:attr name="href"><t:slot name="datatables_bootstrap_css_url" /></t:attr></link>
     <script><t:attr name="src"><t:slot name="datatables_js_url" /></t:attr></script>
     <script><t:attr name="src"><t:slot name="datatables_bootstrap_js_url" /></t:attr></script>
