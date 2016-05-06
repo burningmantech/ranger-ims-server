@@ -230,7 +230,7 @@ function renderDate(date, type, incident) {
       return textAsHTML(shortFormatDate(date));
     case "type":
     case "sort":
-      return new Date(date);
+      return moment(date);
   }
   return undefined;
 }
