@@ -248,6 +248,9 @@ function renderState(state, type, incident) {
 }
 
 function renderLocation(data, type, incident) {
+  if (data == undefined) {
+    data = "";
+  }
   switch (type) {
     case "display":
     case "filter":
