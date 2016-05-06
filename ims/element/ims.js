@@ -148,19 +148,11 @@ function summarizeIncident(incident) {
 
         for (var j in lines) {
           var line = lines[j];
-          if (line == undefined || line == "") {
-            continue;
+          if (line != undefined && line != "") {
+            return summary;
           }
-          summary = line;
-          break;
-        }
-
-        if (summary != undefined) {
-          break;
         }
       }
-
-      return summary;
     }
 
     console.log("No summary provided and no report entry text.");
