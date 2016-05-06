@@ -72,11 +72,27 @@ function priorityNameFromNumber(priorityNumber) {
   // priorityNumber should be an int, 1-5.
 
   switch (priorityNumber) {
-    case 1: return "⬆︎";
-    case 2: return "⬆︎";
-    case 3: return "•";
-    case 4: return "⬇︎";
-    case 5: return "⬇︎";
+    case 1: return "High";
+    case 2: return "High";
+    case 3: return "Medium";
+    case 4: return "Low";
+    case 5: return "Low︎";
+    default:
+      console.log("Unknown incident priority number: " + priorityNumber);
+      return undefined;
+  }
+}
+
+
+function priorityIconFromNumber(priorityNumber) {
+  // priorityNumber should be an int, 1-5.
+
+  switch (priorityNumber) {
+    case 1: return '<span class="glyphicon glyphicon-arrow-up">';
+    case 2: return '<span class="glyphicon glyphicon-arrow-up">';
+    case 3: return '<span class="glyphicon glyphicon-minus">';
+    case 4: return '<span class="glyphicon glyphicon-arrow-down">';
+    case 5: return '<span class="glyphicon glyphicon-arrow-down">';
     default:
       console.log("Unknown incident priority number: " + priorityNumber);
       return undefined;
@@ -236,7 +252,7 @@ function shortDescribeLocation(location) {
 function renderPriority(priorityNumber, type, incident) {
   switch (type) {
     case "display":
-      return textAsHTML(priorityNameFromNumber(priorityNumber));
+      return priorityIconFromNumber(priorityNumber);
     case "filter":
       return priorityNameFromNumber(priorityNumber);
     case "type":
