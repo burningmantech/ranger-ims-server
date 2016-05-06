@@ -14,7 +14,7 @@
 # limitations under the License.
 ##
 
-"""
+r"""
 JSON bindings for IMS data.
 
 2015 JSON incident schema replaces top-level location attributes with a
