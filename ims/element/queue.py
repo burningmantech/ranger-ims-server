@@ -34,18 +34,6 @@ class DispatchQueuePage(Element):
     Dispatch queue page.
     """
 
-    columnNames = (
-        u"#",
-        u"Priority",
-        u"Created",
-        u"State",
-        u"Rangers",
-        u"Location",
-        u"Types",
-        u"Summary",
-    )
-
-
     def __init__(self, service, storage, event):
         Element.__init__(
             self, u"queue", service,
@@ -54,14 +42,6 @@ class DispatchQueuePage(Element):
 
         self.storage = storage
         self.event = event
-
-
-    @renderer
-    def table_headers(self, request, tag):
-        return (
-            tag.clone()(header)
-            for header in self.columnNames
-        )
 
 
     @renderer
