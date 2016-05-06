@@ -55,11 +55,6 @@
       //<![CDATA[
 
       function dataHandler(incidents) {
-        for (var i in incidents) {
-          incident = incidents[i];
-          incident.timestamp = new Date(incident.timestamp);
-        }
-
         return incidents;
       }
 

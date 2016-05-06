@@ -59,14 +59,8 @@ function padTwo(segment) {
 }
 
 
-// FIXME: Try out momentjs: http://momentjs.com/docs/
 function shortFormatDate(date) {
-  return (
-    padTwo(date.getMonth() + 1) + "/" +
-    padTwo(date.getDate())      + "@" +
-    padTwo(date.getHours())     + ":" +
-    padTwo(date.getMinutes())
-  );
+  return moment(date).format("M/D@h:mm z");
 }
 
 
@@ -236,7 +230,7 @@ function renderDate(date, type, incident) {
       return textAsHTML(shortFormatDate(date));
     case "type":
     case "sort":
-      return date;
+      return new Date(date);
   }
   return undefined;
 }
