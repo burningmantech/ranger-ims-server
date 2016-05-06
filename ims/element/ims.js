@@ -163,6 +163,36 @@ function summarizeIncident(incident) {
 }
 
 
+function reportTextFromIncident(incident) {
+  var texts = [];
+
+  if (incident.summary != undefined) {
+    texts.push(incident.summary);
+  }
+
+  var reportEntries = incident.report_entries;
+
+  for (var i in reportEntries) {
+    var reportEntry = reportEntries[i];
+
+    // Skip system entries
+    if (reportEntry.system_entry) {
+      continue;
+    }
+
+    var text = reportEntry.text;
+
+    if (text != undefined) {
+      texts.push(text);
+    }
+  }
+
+  var text = texts.join("");
+
+  return text;
+}
+
+
 function shortDescribeLocation(location) {
   if (location == undefined) {
     return undefined;
@@ -206,8 +236,9 @@ function shortDescribeLocation(location) {
 function renderPriority(priorityNumber, type, incident) {
   switch (type) {
     case "display":
-    case "filter":
       return textAsHTML(priorityNameFromNumber(priorityNumber));
+    case "filter":
+      return priorityNameFromNumber(priorityNumber);
     case "type":
     case "sort":
       return priorityNumber;
@@ -218,8 +249,9 @@ function renderPriority(priorityNumber, type, incident) {
 function renderDate(date, type, incident) {
   switch (type) {
     case "display":
-    case "filter":
       return textAsHTML(shortFormatDate(date));
+    case "filter":
+      return shortFormatDate(date);
     case "type":
     case "sort":
       return moment(date);
@@ -230,9 +262,11 @@ function renderDate(date, type, incident) {
 function renderState(state, type, incident) {
   switch (type) {
     case "display":
-    case "filter":
-    case "type":
       return textAsHTML(stateNameFromID(state));
+    case "filter":
+      return stateNameFromID(state);
+    case "type":
+      return state;
     case "sort":
       return stateSortKeyFromID(state);
   }
@@ -245,10 +279,12 @@ function renderLocation(data, type, incident) {
   }
   switch (type) {
     case "display":
-    case "filter":
-    case "type":
-    case "sort":
       return textAsHTML(shortDescribeLocation(data));
+    case "filter":
+    case "sort":
+      return shortDescribeLocation(data);
+    case "type":
+      return "";
   }
   return undefined;
 }
@@ -256,10 +292,13 @@ function renderLocation(data, type, incident) {
 function renderSummary(data, type, incident) {
   switch (type) {
     case "display":
-    case "filter":
-    case "type":
-    case "sort":
       return textAsHTML(summarizeIncident(incident));
+    case "sort":
+      return summarizeIncident(incident);
+    case "filter":
+      return reportTextFromIncident(incident);
+    case "type":
+      return "";
   }
   return undefined;
 }
