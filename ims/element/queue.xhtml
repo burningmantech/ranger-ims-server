@@ -58,10 +58,10 @@
         for (var i in incidents) {
           incident = incidents[i];
           incident.timestamp = new Date(incident.timestamp);
-        };
+        }
 
         return incidents;
-      };
+      }
 
       var table = $("#queue_table").DataTable({
         "deferRender": true,
@@ -160,17 +160,17 @@
           showClosedButton.addClass("active");
         } else {
           showClosedButton.removeClass("active");
-        };
+        }
 
         table.draw();
-      };
+      }
 
       // Show days button handling
 
       var showModifiedAfter = null;
 
       function showDays(daysBackToShow) {
-        var id = (daysBackToShow == null) ? "all": "" + daysBackToShow
+        var id = (daysBackToShow == null) ? "all": "" + daysBackToShow;
         var menu = $("#show_days");
         var item = $("#show_days_" + id);
 
@@ -187,10 +187,10 @@
             .startOf("day")
             .subtract(daysBackToShow, "days")
             ;
-        };
+        }
 
         table.draw();
-      };
+      }
 
       // Filtering
 
@@ -214,14 +214,14 @@
 
           if (! showClosedIncidents && incident.state == "closed") {
             return false;
-          };
+          }
 
           if (
             showModifiedAfter != null &&
             ! modifiedAfter(incident, showModifiedAfter)
           ) {
             return false
-          };
+          }
 
           return true;
         }
