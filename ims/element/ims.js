@@ -28,13 +28,13 @@
 var _domTextAreaForHaxxors = document.createElement("textarea")
 
 function textAsHTML(text) {
-    _domTextAreaForHaxxors.textContent = text;
-    return _domTextAreaForHaxxors.innerHTML;
+  _domTextAreaForHaxxors.textContent = text;
+  return _domTextAreaForHaxxors.innerHTML;
 }
 
 function htmlAsText(html) {
-    _domTextAreaForHaxxors.innerHTML = html;
-    return _domTextAreaForHaxxors.textContent;
+  _domTextAreaForHaxxors.innerHTML = html;
+  return _domTextAreaForHaxxors.textContent;
 }
 
 // **** END WEAKNESS ***
