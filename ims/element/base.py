@@ -192,6 +192,7 @@ class Element(BaseElement):
                 datatables_bootstrap_js_url=(
                     service.dataTablesBootstrapJSURL.asText()
                 ),
+                moment_js_url=service.momentJSURL.asText(),
 
                 ims_js_url=service.imsJSURL.asText(),
             ))

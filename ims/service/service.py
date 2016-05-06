@@ -100,6 +100,8 @@ class WebService(object):
         u"media", u"js", u"dataTables.bootstrap.min.js"
     )
 
+    momentJSURL = prefixURL.child(u"moment.min.js")
+
     imsJSURL = prefixURL.child(u"ims.js")
 
     eventURL          = prefixURL.child(u"<event>")
@@ -124,10 +126,12 @@ class WebService(object):
     bootstrapVersionNumber  = u"3.3.6"
     jqueryVersionNumber     = u"2.2.0"
     dataTablesVersionNumber = u"1.10.11"
+    momentVersionNumber     = u"2.13.0"
 
     bootstrapVersion  = u"bootstrap-{}-dist".format(bootstrapVersionNumber)
     jqueryVersion     = u"jquery-{}".format(jqueryVersionNumber)
     dataTablesVersion = u"DataTables-{}".format(dataTablesVersionNumber)
+    momentVersion     = u"moment"
 
     bootstrapSourceURL = URL.fromText(
         u"https://github.com/twbs/bootstrap/releases/download/v{n}/{v}.zip"
@@ -147,6 +151,11 @@ class WebService(object):
     dataTablesSourceURL = URL.fromText(
         u"https://datatables.net/releases/DataTables-{n}.zip"
         .format(n=dataTablesVersionNumber, v=dataTablesVersion)
+    )
+
+    momentJSSourceURL = URL.fromText(
+        u"https://cdnjs.cloudflare.com/ajax/libs/moment.js/{n}/{v}.min.js"
+        .format(n=momentVersionNumber, v=momentVersion)
     )
 
 
@@ -420,6 +429,17 @@ class WebService(object):
         return self.cachedZippedResource(
             request, self.dataTablesSourceURL, self.dataTablesVersion,
             self.dataTablesVersion, *names
+        )
+
+
+    @app.route(momentJSURL.asText(), methods=("HEAD", "GET"))
+    def momentJS(self, request):
+        request.setHeader(
+            HeaderName.contentType.value, ContentType.JavaScript.value
+        )
+        return self.cachedResource(
+            request, self.momentJSSourceURL,
+            "{}.min.js".format(self.momentVersion),
         )
 
 
