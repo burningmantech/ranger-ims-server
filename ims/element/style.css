@@ -28,3 +28,7 @@ a.navbar-brand>img {
   width: 20px;
   height: 20px;
 }
+
+#search_container {
+  text-align: right;
+}
