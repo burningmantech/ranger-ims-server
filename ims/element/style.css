@@ -7,15 +7,24 @@ code {
   font-family: "Courier New", "Courier", monospace;
 }
 
+.table {
+  font-family: "Helvetica Neue", "Helvetica", sans-serif;
+  font-size: 10pt;
+}
+
+.table > tbody {
+  font-weight: 400;
+}
+
 .table-hover > tbody > tr:hover {
   background-color: #FFFF00;
 }
 
 footer {
-    float: left;
+  float: left;
 }
 
 a.navbar-brand>img {
-    width: 20px;
-    height: 20px;
+  width: 20px;
+  height: 20px;
 }
