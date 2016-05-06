@@ -47,16 +47,16 @@ function htmlAsText(html) {
 function padTwo(segment) {
   if (segment == undefined) {
     return "?";
-  };
+  }
 
   segment = segment.toString();
 
   if (segment.length == 1) {
     return "0" + segment;
-  };
+  }
 
   return "" + segment;
-};
+}
 
 
 // FIXME: Try out momentjs: http://momentjs.com/docs/
@@ -67,7 +67,7 @@ function shortFormatDate(date) {
     padTwo(date.getHours())     + ":" +
     padTwo(date.getMinutes())
   );
-};
+}
 
 
 //
@@ -86,8 +86,8 @@ function priorityNameFromNumber(priorityNumber) {
     default:
       console.log("Unknown incident priority number: " + priorityNumber);
       return undefined;
-  };
-};
+  }
+}
 
 
 function stateNameFromID(stateID) {
@@ -102,8 +102,8 @@ function stateNameFromID(stateID) {
     default:
       console.log("Unknown incident state ID: " + stateID);
       return undefined;
-  };
-};
+  }
+}
 
 
 function stateSortKeyFromID(stateID) {
@@ -118,8 +118,8 @@ function stateSortKeyFromID(stateID) {
     default:
       console.log("Unknown incident state ID: " + stateID);
       return undefined;
-  };
-};
+  }
+}
 
 
 function concentricStreetFromID(streetID) {
@@ -133,9 +133,9 @@ function concentricStreetFromID(streetID) {
   if (name == undefined) {
     console.log("Unknown street ID: " + streetID);
     name = undefined;
-  };
+  }
   return name;
-};
+}
 
 
 function summarizeIncident(incident) {
@@ -156,7 +156,7 @@ function summarizeIncident(incident) {
           var line = lines[j];
           if (line == undefined || line == "") {
             continue;
-          };
+          }
           summary = line;
           break;
         }
@@ -164,17 +164,17 @@ function summarizeIncident(incident) {
         if (summary != undefined) {
           break;
         }
-      };
+      }
 
       return summary;
-    };
+    }
 
     console.log("No summary provided and no report entry text.");
     return "";
-  };
+  }
 
   return summary;
-};
+}
 
 
 function shortDescribeLocation(location) {
@@ -186,7 +186,7 @@ function shortDescribeLocation(location) {
 
   if (location.name != undefined) {
     locationBits.push(location.name);
-  };
+  }
 
   switch (location.type) {
     case undefined:
@@ -207,10 +207,10 @@ function shortDescribeLocation(location) {
         "Unknown location type:" + location.type
       );
       break;
-  };
+  }
 
   return locationBits.join("");
-};
+}
 
 
 //
@@ -225,9 +225,9 @@ function renderPriority(priorityNumber, type, incident) {
     case "type":
     case "sort":
       return priorityNumber;
-  };
+  }
   return undefined;
-};
+}
 
 function renderDate(date, type, incident) {
   switch (type) {
@@ -237,9 +237,9 @@ function renderDate(date, type, incident) {
     case "type":
     case "sort":
       return date;
-  };
+  }
   return undefined;
-};
+}
 
 function renderState(state, type, incident) {
   switch (type) {
@@ -249,9 +249,9 @@ function renderState(state, type, incident) {
       return textAsHTML(stateNameFromID(state));
     case "sort":
       return stateSortKeyFromID(state);
-  };
+  }
   return undefined;
-};
+}
 
 function renderLocation(data, type, incident) {
   switch (type) {
@@ -260,9 +260,9 @@ function renderLocation(data, type, incident) {
     case "type":
     case "sort":
       return textAsHTML(shortDescribeLocation(data));
-  };
+  }
   return undefined;
-};
+}
 
 function renderSummary(data, type, incident) {
   switch (type) {
@@ -271,6 +271,6 @@ function renderSummary(data, type, incident) {
     case "type":
     case "sort":
       return textAsHTML(summarizeIncident(incident));
-  };
+  }
   return undefined;
-};
+}
