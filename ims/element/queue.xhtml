@@ -11,7 +11,7 @@
 
   <body><div t:render="container">
 
-    <div id="button_container" class="btn-group col-sm-12" role="group">
+    <div id="button_container" class="btn-group col-sm-6" role="group">
       <a name="buttons" />
       <button id="show_closed" type="button" class="btn btn-default" onclick="toggleShowClosed();">Show Closed</button>
       <div class="btn-group" role="group">
@@ -163,10 +163,10 @@
 
       // Relocate button container
 
-      var row = $("<div />");
-      row.addClass("row");
-      row.append($("#button_container"));
-      $("#queue_table_wrapper").prepend(row);
+      $("#queue_table_wrapper")
+        .children(".row")
+        .children(".col-sm-6:first")
+        .replaceWith($("#button_container"));
 
       // Show closed button handling
 
