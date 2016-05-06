@@ -180,16 +180,10 @@
       // Filtering
 
       $.fn.dataTable.ext.search.push(
-        function(settings, data, dataIndex) {
-          if (showClosedIncidents) {
-            return true;
-          } else if (data[3] == "Closed") {
-            return false;
-          };
+        function(settings, rowData, rowIndex) {
+          var incident = table.data()[rowIndex];
 
-          if (daysToShow == 0) {
-            return true;
-          } else {
+          if (! showClosedIncidents && incident.state == "closed") {
             return false;
           };
 
