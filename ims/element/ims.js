@@ -78,7 +78,7 @@ function priorityNameFromNumber(priorityNumber) {
     case 4: return "Low";
     case 5: return "Low︎";
     default:
-      console.log("Unknown incident priority number: " + priorityNumber);
+      console.warn("Unknown incident priority number: " + priorityNumber);
       return undefined;
   }
 }
@@ -94,7 +94,7 @@ function priorityIconFromNumber(priorityNumber) {
     case 4: return '<span class="glyphicon glyphicon-arrow-down">';
     case 5: return '<span class="glyphicon glyphicon-arrow-down">';
     default:
-      console.log("Unknown incident priority number: " + priorityNumber);
+      console.warn("Unknown incident priority number: " + priorityNumber);
       return undefined;
   }
 }
@@ -110,7 +110,7 @@ function stateNameFromID(stateID) {
     case "on_scene"  : return "On Scene";
     case "closed"    : return "Closed";
     default:
-      console.log("Unknown incident state ID: " + stateID);
+      console.warn("Unknown incident state ID: " + stateID);
       return undefined;
   }
 }
@@ -126,7 +126,7 @@ function stateSortKeyFromID(stateID) {
     case "on_scene"  : return 4;
     case "closed"    : return 5;
     default:
-      console.log("Unknown incident state ID: " + stateID);
+      console.warn("Unknown incident state ID: " + stateID);
       return undefined;
   }
 }
@@ -141,7 +141,7 @@ function concentricStreetFromID(streetID) {
 
   var name = concentricStreetNameByNumber[streetID];
   if (name == undefined) {
-    console.log("Unknown street ID: " + streetID);
+    console.warn("Unknown street ID: " + streetID);
     name = undefined;
   }
   return name;
@@ -168,7 +168,7 @@ function stateForIncident(incident) {
     return "new";
   }
 
-  console.log("Unknown state for incident: " + incident);
+  console.warn("Unknown state for incident: " + incident);
   return undefined;
 }
 
@@ -179,7 +179,7 @@ function summarizeIncident(incident) {
 
   if (summary == undefined) {
     if (reportEntries == undefined) {
-      console.log("No summary provided.");
+      console.warn("No summary provided.");
       return "";
     }
     else {
@@ -196,7 +196,7 @@ function summarizeIncident(incident) {
       }
     }
 
-    console.log("No summary provided and no report entry text.");
+    console.warn("No summary provided and no report entry text.");
     return "";
   }
 
