@@ -837,8 +837,7 @@ class WebService(object):
     @app.route(viewDispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
     @authorized(Authorization.readIncidents)
     def viewDispatchQueuePage(self, request, event):
-        storage = self.storage[event]
-        return DispatchQueuePage(self, storage, event)
+        return DispatchQueuePage(self, event)
 
 
     @app.route(dispatchQueueDataURL.asText(), methods=("HEAD", "GET"))

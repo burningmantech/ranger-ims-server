@@ -34,14 +34,14 @@ class DispatchQueuePage(Element):
     Dispatch queue page.
     """
 
-    def __init__(self, service, storage, event):
+    def __init__(self, service, event):
         Element.__init__(
             self, u"queue", service,
             title=u"{} Dispatch Queue".format(event),
         )
 
-        self.storage = storage
-        self.event = event
+        self.storage = self.service.storage[event]
+        self.event   = event
 
 
     @renderer
