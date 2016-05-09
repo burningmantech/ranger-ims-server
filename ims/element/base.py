@@ -92,6 +92,7 @@ class Element(BaseElement):
         )
 
 
+    # FIXME: Move below to xhtml
     @renderer
     def container(self, request, tag):
         tag.children.insert(0, self.top(request))
@@ -172,6 +173,37 @@ class Element(BaseElement):
         tag.fillSlots(**slots)
 
         return tag
+
+
+    @renderer
+    def _events(self, request, tag, reverse_order=False):
+        events = sorted(event for event in self.service.storage)
+
+        if reverse_order:
+            events = reversed(events)
+
+        if events:
+            prefix = self.service.prefixURL.asText()
+            return (
+                tag.clone()(
+                    tags.a(
+                        event, href="{}/{}/queue".format(prefix, event)
+                    )
+                )
+                for event in events
+            )
+        else:
+            return tag("No events found.")
+
+
+    @renderer
+    def events(self, request, tag):
+        return self._events(request, tag)
+
+
+    @renderer
+    def events_reversed(self, request, tag):
+        return self._events(request, tag, reverse_order=True)
 
 
     @property

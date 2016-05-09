@@ -36,21 +36,3 @@ class RootPage(Element):
             self, u"root", service,
             title=u"Ranger Incident Management System",
         )
-
-
-    @renderer
-    def events(self, request, tag):
-        events = sorted(event for event in self.service.storage)
-
-        if events:
-            prefix = self.service.prefixURL.asText()
-            return (
-                tag.clone()(
-                    tags.a(
-                        event, href="{}/{}/queue".format(prefix, event)
-                    )
-                )
-                for event in events
-            )
-        else:
-            return tag("No events found.")
