@@ -12,7 +12,7 @@
       <div class="col-sm-4 text-center">
         <label id="incident_state_label">
           State:
-          <select name="state" form="incident_state_form" onchange="this.form.submit()">
+          <select name="state" form="incident_state_form" onchange="update_state()">
             <option value="new"        t:render="state_option">New       </option>
             <option value="on_hold"    t:render="state_option">On Hold   </option>
             <option value="dispatched" t:render="state_option">Dispatched</option>
@@ -24,7 +24,7 @@
       <div class="col-sm-4 text-right">
         <label id="incident_priority_label">
           Priority:
-          <select name="priority" form="incident_priority_form" onchange="this.form.submit()">
+          <select name="priority" form="incident_priority_form" onchange="update_priority()">
             <option value="1" t:render="priority_option">High  </option>
             <option value="3" t:render="priority_option">Normal</option>
             <option value="5" t:render="priority_option">Low   </option>
@@ -34,7 +34,12 @@
     </div>
 
     <div class="row">
-      <div class="col-sm-12">Summary:</div>
+      <div class="col-sm-12">
+        <label id="incident_summary_label">
+          Summary:
+          <input type="text" name="summary" placeholder="One-line summary of incident…" inputmode="latin-prose" form="incident_summary_form" onchange="update_summary()" />
+        </label>
+      </div>
     </div>
 
     <div class="row">
