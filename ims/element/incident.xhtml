@@ -6,9 +6,31 @@
   <body><div t:render="container">
 
     <div class="row">
-      <div class="col-sm-4 text-left  ">Incident #<t:slot name="incident_number" /></div>
-      <div class="col-sm-4 text-center">State</div>
-      <div class="col-sm-4 text-right ">Priority</div>
+      <div class="col-sm-4 text-left">
+        <label id="incident_number_label">Incident #:</label> <t:slot name="incident_number" />
+      </div>
+      <div class="col-sm-4 text-center">
+        <label id="incident_state_label">
+          State:
+          <select name="state" form="incident_state_form" onchange="this.form.submit()">
+            <option value="new"        t:render="state_option">New       </option>
+            <option value="on_hold"    t:render="state_option">On Hold   </option>
+            <option value="dispatched" t:render="state_option">Dispatched</option>
+            <option value="on_scene"   t:render="state_option">On Scene  </option>
+            <option value="closed"     t:render="state_option">Closed    </option>
+          </select>
+        </label>
+      </div>
+      <div class="col-sm-4 text-right">
+        <label id="incident_priority_label">
+          Priority:
+          <select name="priority" form="incident_priority_form" onchange="this.form.submit()">
+            <option value="1" t:render="priority_option">High  </option>
+            <option value="3" t:render="priority_option">Normal</option>
+            <option value="5" t:render="priority_option">Low   </option>
+          </select>
+        </label>
+      </div>
     </div>
 
     <div class="row">

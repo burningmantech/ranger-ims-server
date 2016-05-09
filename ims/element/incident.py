@@ -24,7 +24,7 @@ __all__ = [
 
 from .base import Element, renderer
 
-# from .util import normalize_priority, formatTime
+from .util import normalize_priority  # formatTime
 
 # from ..data import RodGarettAddress
 
@@ -41,8 +41,9 @@ class IncidentPage(Element):
             title=u"{} Incident #{}".format(event, number),
         )
 
-        self.event  = event
-        self.number = number
+        self.storage  = self.service.storage[event]
+        self.event    = event
+        self.incident = self.storage.readIncidentWithNumber(number)
 
 
     @renderer
@@ -50,37 +51,12 @@ class IncidentPage(Element):
         tag = Element.root(self, request, tag)
 
         slots = dict(
-            incident_number=unicode(self.number),
+            incident_number=unicode(self.incident.number),
         )
 
         tag.fillSlots(**slots)
 
-        print slots
-        print tag
-
         return tag
-
-
-    # def __init__(self, ims, storage, number):
-    #     BaseElement.__init__(
-    #         self, ims, "incident",
-    #         "Incident #{0}".format(number)
-    #     )
-    #     self.incident = storage.readIncidentWithNumber(number)
-
-    #     self.edit_enabled = not self.ims.config.ReadOnly
-
-    #     for attr_name in (
-    #         "number",
-    #         "priority",
-    #         "created",
-    #         "summary",
-    #     ):
-    #         @renderer
-    #         def render_attr(request, tag, attr_name=attr_name):
-    #             return tag(u"{0}".format(getattr(self.incident, attr_name)))
-
-    #         setattr(self, attr_name, render_attr)
 
 
     # def apply_disabled(self, attrs):
@@ -96,22 +72,22 @@ class IncidentPage(Element):
     #         return u""
 
 
-    # @renderer
-    # def state_option(self, request, tag):
-    #     if tag.attributes["value"] == self.incident.state.name:
-    #         return tag(selected="")
-    #     else:
-    #         return tag
+    @renderer
+    def state_option(self, request, tag):
+        if tag.attributes["value"] == self.incident.state.name:
+            return tag(selected="")
+        else:
+            return tag
 
 
-    # @renderer
-    # def priority_option(self, request, tag):
-    #     priority = normalize_priority(self.incident.priority)
+    @renderer
+    def priority_option(self, request, tag):
+        priority = normalize_priority(self.incident.priority)
 
-    #     if int(tag.attributes["value"]) == priority:
-    #         return tag(selected="")
-    #     else:
-    #         return tag
+        if int(tag.attributes["value"]) == priority:
+            return tag(selected="")
+        else:
+            return tag
 
 
     # @renderer

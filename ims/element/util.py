@@ -19,9 +19,7 @@ Element utilities
 """
 
 __all__ = [
-    # "incident_types_to_ignore",
-    # "ignore_incident",
-    # "ignore_entry",
+    "normalize_priority",
 ]
 
 # from datetime import timedelta as TimeDelta
@@ -206,17 +204,17 @@ __all__ = [
 #     )
 
 
-# def normalize_priority(priority):
-#     """
-#     Normalize priority 1, 2, 3, 4 or 5 to 1, 3 or 5.
-#     """
-#     return {
-#         1: 1,
-#         2: 1,
-#         3: 3,
-#         4: 5,
-#         5: 5,
-#     }[priority]
+def normalize_priority(priority):
+    """
+    Normalize priority 1, 2, 3, 4 or 5 to 1, 3 or 5.
+    """
+    return {
+        1: 1,
+        2: 1,
+        3: 3,
+        4: 5,
+        5: 5,
+    }[priority]
 
 
 # def priority_name(priority):
