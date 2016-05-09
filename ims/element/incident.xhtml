@@ -1,9 +1,32 @@
 <!DOCTYPE html>
-<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
 
   <head t:render="head" />
 
   <body><div t:render="container">
+
+    <div class="row">
+      <div class="col-sm-4">Incident #<t:slot name="incident_number" /></div>
+      <div class="col-sm-4">State</div>
+      <div class="col-sm-4">Priority</div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">Summary:</div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-6">Rangers</div>
+      <div class="col-sm-6">Incident Types</div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">Location</div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">Incident Report</div>
+    </div>
 
   </div></body>
 

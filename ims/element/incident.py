@@ -22,7 +22,7 @@ __all__ = [
     "IncidentPage",
 ]
 
-from .base import Element  # renderer
+from .base import Element, renderer
 
 # from .util import normalize_priority, formatTime
 
@@ -43,6 +43,22 @@ class IncidentPage(Element):
 
         self.event  = event
         self.number = number
+
+
+    @renderer
+    def root(self, request, tag):
+        tag = Element.root(self, request, tag)
+
+        slots = dict(
+            incident_number=unicode(self.number),
+        )
+
+        tag.fillSlots(**slots)
+
+        print slots
+        print tag
+
+        return tag
 
 
     # def __init__(self, ims, storage, number):

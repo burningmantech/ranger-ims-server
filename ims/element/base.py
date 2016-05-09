@@ -160,7 +160,7 @@ class Element(BaseElement):
             # Set origin for redirect back to current page
             return url.set(u"o", request.uri.decode("utf-8")).asText()
 
-        slots = dict(self.fixedSlots)
+        slots = dict(self.baseSlots)
 
         slots.update(dict(
             user=objectAsUnicode(getattr(request, "user", u"(anonymous user)")),
@@ -175,11 +175,11 @@ class Element(BaseElement):
 
 
     @property
-    def fixedSlots(self):
-        if not hasattr(self, "_fixedSlots"):
+    def baseSlots(self):
+        if not hasattr(self, "_baseSlots"):
             service = self.service
 
-            self._fixedSlots = MappingProxyType(dict(
+            self._baseSlots = MappingProxyType(dict(
                 title=objectAsUnicode(self.elementTitle),
 
                 prefix_url=service.prefixURL.asText(),
@@ -205,7 +205,7 @@ class Element(BaseElement):
                 ims_js_url=service.imsJSURL.asText(),
             ))
 
-        return self._fixedSlots
+        return self._baseSlots
 
 
 
