@@ -32,6 +32,7 @@ concentricStreetNumberByName = {
     u"Jolly"             : 10,
     u"Kook"              : 11,
     u"Laffing Sal"       : 12,
+    u"M"                 : 13,  # FIXME: name?  This is apparently in the data.
     u"3:00 Plaza"        : 300,
     u"3:00 Public Plaza" : 305,
     u"4:30 Plaza"        : 430,
