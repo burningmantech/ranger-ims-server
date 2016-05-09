@@ -148,6 +148,31 @@ function concentricStreetFromID(streetID) {
 }
 
 
+function stateForIncident(incident) {
+  // Data from 2014+ should have incident.state set.
+  if (incident.state != undefined) {
+    return incident.state;
+  }
+
+  // 2013 data had multiple overloaded timestamps instead.
+  if (incident.closed != undefined) {
+    return "closed";
+  }
+  if (incident.on_scene != undefined) {
+    return "on_scene";
+  }
+  if (incident.dispatched != undefined) {
+    return "dispatched";
+  }
+  if (incident.created != undefined) {
+    return "new";
+  }
+
+  console.log("Unknown state for incident: " + incident);
+  return undefined;
+}
+
+
 function summarizeIncident(incident) {
   var summary = incident.summary;
   var reportEntries = incident.report_entries;
@@ -276,6 +301,10 @@ function renderDate(date, type, incident) {
 }
 
 function renderState(state, type, incident) {
+  if (state == undefined) {
+    state = stateForIncident(incident);
+  }
+
   switch (type) {
     case "display":
       return textAsHTML(stateNameFromID(state));

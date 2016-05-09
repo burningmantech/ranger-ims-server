@@ -292,12 +292,14 @@
             case "all":
               break;
             case "active":
-              if (incident.state == "on_hold") {
+              state = stateForIncident(incident);
+              if (state == "on_hold" || state == "closed") {
                 return false;
               }
-              // Fall through
+              break;
             case "open":
-              if (incident.state == "closed") {
+              state = stateForIncident(incident);
+              if (state == "closed") {
                 return false;
               }
               break;
