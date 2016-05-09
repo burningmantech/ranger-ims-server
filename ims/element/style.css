@@ -32,3 +32,7 @@ a.navbar-brand>img {
 #search_container {
   text-align: right;
 }
+
+.well > .list-group {
+  margin-bottom: 0px;
+}

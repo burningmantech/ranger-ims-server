@@ -22,11 +22,11 @@ __all__ = [
     "IncidentPage",
 ]
 
-from .base import Element, renderer
-
-from .util import normalize_priority  # formatTime
-
+from ..json import textFromJSON, incidentAsJSON
 # from ..data import RodGarettAddress
+
+from .base import Element, renderer
+from .util import normalize_priority  # formatTime
 
 
 
@@ -57,6 +57,11 @@ class IncidentPage(Element):
         tag.fillSlots(**slots)
 
         return tag
+
+
+    @renderer
+    def incidentJSON(self, request, tag):
+        return textFromJSON(incidentAsJSON(self.incident))
 
 
     # def apply_disabled(self, attrs):
