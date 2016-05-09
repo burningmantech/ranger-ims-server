@@ -74,7 +74,7 @@ function priorityNameFromNumber(priorityNumber) {
   switch (priorityNumber) {
     case 1: return "High";
     case 2: return "High";
-    case 3: return "Medium";
+    case 3: return "Normal";
     case 4: return "Low";
     case 5: return "Low︎";
     default:
