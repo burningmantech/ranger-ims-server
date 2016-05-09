@@ -26,7 +26,6 @@ from ..json import textFromJSON, incidentAsJSON
 # from ..data import RodGarettAddress
 
 from .base import Element, renderer
-from .util import normalize_priority  # formatTime
 
 
 
@@ -75,24 +74,6 @@ class IncidentPage(Element):
     #         return tag
     #     else:
     #         return u""
-
-
-    @renderer
-    def state_option(self, request, tag):
-        if tag.attributes["value"] == self.incident.state.name:
-            return tag(selected="")
-        else:
-            return tag
-
-
-    @renderer
-    def priority_option(self, request, tag):
-        priority = normalize_priority(self.incident.priority)
-
-        if int(tag.attributes["value"]) == priority:
-            return tag(selected="")
-        else:
-            return tag
 
 
     # @renderer

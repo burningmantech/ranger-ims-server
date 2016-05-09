@@ -10,24 +10,25 @@
 
     <div class="row">
       <div class="col-sm-4 text-left">
-        <label id="incident_number_label">Incident #:</label> <t:slot name="incident_number" />
+        <label>Incident #:</label>
+        <span id="incident_number" />
       </div>
       <div class="col-sm-4 text-center">
         <label>State:</label>
-        <select name="state" onchange="update_state()">
-          <option value="new"        t:render="state_option">New       </option>
-          <option value="on_hold"    t:render="state_option">On Hold   </option>
-          <option value="dispatched" t:render="state_option">Dispatched</option>
-          <option value="on_scene"   t:render="state_option">On Scene  </option>
-          <option value="closed"     t:render="state_option">Closed    </option>
+        <select id="incident_state" name="state" onchange="update_state()">
+          <option value="new"       >New       </option>
+          <option value="on_hold"   >On Hold   </option>
+          <option value="dispatched">Dispatched</option>
+          <option value="on_scene"  >On Scene  </option>
+          <option value="closed"    >Closed    </option>
         </select>
       </div>
       <div class="col-sm-4 text-right">
         <label>Priority:</label>
-        <select name="priority" onchange="update_priority()">
-          <option value="1" t:render="priority_option">High  </option>
-          <option value="3" t:render="priority_option">Normal</option>
-          <option value="5" t:render="priority_option">Low   </option>
+        <select id="incident_priority" name="priority" onchange="update_priority()">
+          <option value="High"  >High  </option>
+          <option value="Normal">Normal</option>
+          <option value="Low"   >Low   </option>
         </select>
       </div>
     </div>
@@ -82,6 +83,52 @@
       var incident = <javascript t:render="incidentJSON" />;
 
       //<![CDATA[
+
+      // Populate incident number
+
+      function drawNumber() {
+        $("#incident_number").text(incident.number);
+      }
+
+      drawNumber();
+
+      // Populate incident state
+
+      function drawState() {
+        var state = stateForIncident(incident);
+        var statePopUp = $("#incident_state");
+
+        statePopUp
+          .children("option")
+          .prop("selected", false)
+          ;
+
+        statePopUp
+          .children("option[value='" + state + "']")
+          .prop("selected", true)
+          ;
+      }
+
+      drawState();
+
+      // Populate incident priority
+
+      function drawPriority() {
+        var priority = priorityNameFromNumber(incident.priority);
+        var priorityPopUp = $("#incident_priority");
+
+        priorityPopUp
+          .children("option")
+          .prop("selected", false)
+          ;
+
+        priorityPopUp
+          .children("option[value='" + priority + "']")
+          .prop("selected", true)
+          ;
+      }
+
+      drawPriority();
 
       // Populate incident summary
 
