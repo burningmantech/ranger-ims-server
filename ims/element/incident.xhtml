@@ -81,8 +81,6 @@
                 />
               </div>
             </div>
-          </form>
-          <form class="form-horizontal">
             <div class="form-group">
               <label class="col-sm-1 control-label">Address:</label>
               <div class="col-sm-11">
@@ -99,8 +97,6 @@
                 />
               </div>
             </div>
-          </form>
-          <form class="form-horizontal">
             <div class="form-group">
               <label class="col-sm-1 control-label">Description:</label>
               <div class="col-sm-11">
@@ -127,6 +123,8 @@
 
     <script>
       var incident = <javascript t:render="incidentJSON" />;
+
+      var concentricStreetNameByNumber = <javascript t:render="concentric_street_name_by_number" />;
 
       //<![CDATA[
 
@@ -221,6 +219,54 @@
       }
 
       drawIncidentTypes();
+
+      // Populate location
+
+      function drawLocationName() {
+        if (incident.location != undefined) {
+          if (incident.location.name != undefined) {
+            $("#incident_location_name").attr("value", incident.location.name);
+          }
+        }
+      }
+
+      drawLocationName();
+
+      function drawLocationAddressRadial() {
+        if (incident.location != undefined) {
+          var radial = "";
+          if (incident.location.radial_hour != undefined) {
+            radial += incident.location.radial_hour;
+          }
+          if (incident.location.radial_minute != undefined) {
+            radial += ":" + incident.location.radial_minute;
+          }
+          $("#incident_location_address_radial").attr("value", radial);
+        }
+      }
+
+      drawLocationAddressRadial();
+
+      function drawLocationAddressConcentric() {
+        if (incident.location != undefined) {
+          if (incident.location.concentric != undefined) {
+            var concentric = concentricStreetFromID(incident.location.concentric);
+            $("#incident_location_address_concentric").attr("value", concentric);
+          }
+        }
+      }
+
+      drawLocationAddressConcentric();
+
+      function drawLocationDescription() {
+        if (incident.location != undefined) {
+          if (incident.location.description != undefined) {
+            $("#incident_location_description").attr("value", incident.location.description);
+          }
+        }
+      }
+
+      drawLocationAddressConcentric();
 
       //]]>
     </script>

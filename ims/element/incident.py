@@ -23,6 +23,7 @@ __all__ = [
 ]
 
 from ..json import textFromJSON, incidentAsJSON
+from ..data import concentricStreetNameByNumber
 # from ..data import RodGarettAddress
 
 from .base import Element, renderer
@@ -61,6 +62,11 @@ class IncidentPage(Element):
     @renderer
     def incidentJSON(self, request, tag):
         return textFromJSON(incidentAsJSON(self.incident))
+
+
+    @renderer
+    def concentric_street_name_by_number(self, request, tag):
+        return textFromJSON(concentricStreetNameByNumber[self.event])
 
 
     # def apply_disabled(self, attrs):
