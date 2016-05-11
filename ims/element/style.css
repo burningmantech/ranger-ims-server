@@ -8,11 +8,7 @@ code {
 }
 
 .table {
-  font-family: "Helvetica Neue", "Helvetica", sans-serif;
   font-size: 10pt;
-}
-
-.table > tbody {
   font-weight: 400;
 }
 
