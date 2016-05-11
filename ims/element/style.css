@@ -2,7 +2,7 @@ body, h1, h2, h3, h4, h5, h6, p, p+p {
   font-family: "Helvetica Neue", "Helvetica", sans-serif;
 }
 
-body, h1, h2, h3, h4, h5, h6, p, p+p {
+h1, h2, h3, h4, h5, h6 {
   font-weight: 400;
 }
 
