@@ -49,11 +49,11 @@ a.navbar-brand>img {
   margin-left: 5px;
 }
 
-#search_container {
-  text-align: right;
-}
-
 .list-group-small > .list-group-item {
   padding: 6px 8px;
   font-size: 10pt;
+}
+
+#search_container {
+  text-align: right;
 }
