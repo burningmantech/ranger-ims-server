@@ -220,7 +220,7 @@
       var showModifiedAfter = null;
 
       function updateShowDays(daysBackToShow) {
-        var id = (daysBackToShow == null) ? "all": "" + daysBackToShow;
+        var id = (daysBackToShow == null) ? "all": daysBackToShow.toString();
         var menu = $("#show_days");
         var item = $("#show_days_" + id);
 
@@ -247,7 +247,7 @@
       // Show rows button handling
 
       function showRows(rowsToShow) {
-        var id = (rowsToShow == null) ? "all": "" + rowsToShow;
+        var id = (rowsToShow == null) ? "all": rowsToShow.toString();
         var menu = $("#show_rows");
         var item = $("#show_rows_" + id);
 

@@ -78,18 +78,19 @@ function range(start, end, step) {
 // Generic string formatting
 //
 
-function padTwo(segment) {
-  if (segment == undefined) {
+// Pad a string representing an integer to two digits.
+function padTwo(value) {
+  if (value == undefined) {
     return "?";
   }
 
-  segment = segment.toString();
+  value = value.toString();
 
-  if (segment.length == 1) {
-    return "0" + segment;
+  if (value.length == 1) {
+    return "0" + value;
   }
 
-  return "" + segment;
+  return value;
 }
 
 
