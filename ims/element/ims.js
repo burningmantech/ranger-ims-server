@@ -40,6 +40,30 @@ function htmlAsText(html) {
 // **** END WEAKNESS ***
 
 
+function ValueError(message) {
+  this.name = "ValueError";
+  this.message = message || "Invalid Value";
+  this.stack = (new Error()).stack;
+}
+ValueError.prototype = Object.create(Error.prototype);
+ValueError.prototype.constructor = ValueError;
+
+
+function range(start, end, step) {
+  if (step == undefined) {
+    step = 1;
+  } else if (step == 0) {
+    throw new ValueError("step = 0");
+  }
+
+  return Array(end - start)
+    .join(0)
+    .split(0)
+    .map(function(val, i) { return (i * step) + start} )
+    ;
+}
+
+
 //
 // Generic string formatting
 //

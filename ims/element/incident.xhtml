@@ -84,17 +84,17 @@
             <div class="form-group">
               <label class="col-sm-1 control-label">Address:</label>
               <div class="col-sm-11">
-                <input
-                  id="incident_location_address_radial" class="form-control"
-                  type="time"
-                  placeholder="00:00"
-                />
+                <select id="incident_location_address_radial_hour">
+                  <option value="" />
+                </select>
+                :
+                <select id="incident_location_address_radial_minute">
+                  <option value="" />
+                </select>
                 @
-                <input
-                  id="incident_location_address_concentric" class="form-control"
-                  type="text" inputmode="latin-prose"
-                  placeholder="Concentric street name"
-                />
+                <select id="incident_location_address_concentric">
+                  <option value="" />
+                </select>
               </div>
             </div>
             <div class="form-group">
@@ -127,6 +127,31 @@
       var concentricStreetNameByID = <javascript t:render="concentric_street_name_by_id" />;
 
       //<![CDATA[
+
+      // Add option elements to location address select elements
+
+      hours = range(1, 13);
+      for (var i in hours) {
+        var hour = padTwo(hours[i]);
+        $("#incident_location_address_radial_hour")
+          .append(jQuery("<option />", { value: hour, text: hour }))
+          ;
+      }
+
+      minutes = range(0, 12, 5);
+      for (var i in minutes) {
+        var minute = padTwo(minutes[i]);
+        $("#incident_location_address_radial_minute")
+          .append(jQuery("<option />", { value: minute, text: minute }))
+          ;
+      }
+
+      for (var id in concentricStreetNameByID) {
+        var name = concentricStreetNameByID[id];
+        $("#incident_location_address_concentric")
+          .append(jQuery("<option />", { value: id, text: name }))
+          ;
+      }
 
       // Populate incident number
 
