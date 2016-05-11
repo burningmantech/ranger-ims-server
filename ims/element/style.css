@@ -36,10 +36,6 @@ a.navbar-brand>img {
   height: 20px;
 }
 
-#search_container {
-  text-align: right;
-}
-
 .well > .list-group {
   margin-bottom: 0px;
 }
@@ -51,4 +47,13 @@ a.navbar-brand>img {
 .flex-input-container > input {
   flex: 2;
   margin-left: 5px;
+}
+
+#search_container {
+  text-align: right;
+}
+
+.list-group-small > .list-group-item {
+  padding: 6px 8px;
+  font-size: 10pt;
 }
