@@ -44,9 +44,12 @@ a.navbar-brand>img {
   display: flex;
 }
 
+.flex-input-container > label {
+  margin: 5px;
+}
+
 .flex-input-container > input {
   flex: 2;
-  margin-left: 5px;
 }
 
 .list-group-small > .list-group-item {
