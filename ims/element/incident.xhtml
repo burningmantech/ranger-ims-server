@@ -170,18 +170,9 @@
       // Populate incident state
 
       function drawState() {
-        var state = stateForIncident(incident);
-        var statePopUp = $("#incident_state");
-
-        statePopUp
-          .children("option")
-          .prop("selected", false)
-          ;
-
-        statePopUp
-          .children("option[value='" + state + "']")
-          .prop("selected", true)
-          ;
+        selectOptionWithValue(
+          $("#incident_state"), stateForIncident(incident)
+        );
       }
 
       drawState();
@@ -189,18 +180,9 @@
       // Populate incident priority
 
       function drawPriority() {
-        var priority = priorityNameFromNumber(incident.priority);
-        var priorityPopUp = $("#incident_priority");
-
-        priorityPopUp
-          .children("option")
-          .prop("selected", false)
-          ;
-
-        priorityPopUp
-          .children("option[value='" + priority + "']")
-          .prop("selected", true)
-          ;
+        selectOptionWithValue(
+          $("#incident_priority"), priorityNameFromNumber(incident.priority)
+        );
       }
 
       drawPriority();
@@ -263,28 +245,44 @@
 
       drawLocationName();
 
-      function drawLocationAddressRadial() {
+      function drawLocationAddressRadialHour() {
+        var hour = null;
         if (incident.location != undefined) {
-          var radial = "";
           if (incident.location.radial_hour != undefined) {
-            radial += incident.location.radial_hour;
+            hour = padTwo(incident.location.radial_hour);
           }
-          if (incident.location.radial_minute != undefined) {
-            radial += ":" + incident.location.radial_minute;
-          }
-          $("#incident_location_address_radial").attr("value", radial);
         }
+        selectOptionWithValue(
+          $("#incident_location_address_radial_hour"), hour
+        );
       }
 
-      drawLocationAddressRadial();
+      drawLocationAddressRadialHour();
 
-      function drawLocationAddressConcentric() {
+      function drawLocationAddressRadialMinute() {
+        var minute = null;
         if (incident.location != undefined) {
-          if (incident.location.concentric != undefined) {
-            var concentric = concentricStreetFromID(incident.location.concentric);
-            $("#incident_location_address_concentric").attr("value", concentric);
+          if (incident.location.radial_minute != undefined) {
+            minute = normalizeMinute(incident.location.radial_minute);
           }
         }
+        selectOptionWithValue(
+          $("#incident_location_address_radial_minute"), minute
+        );
+      }
+
+      drawLocationAddressRadialMinute();
+
+      function drawLocationAddressConcentric() {
+        var concentric = null;
+        if (incident.location != undefined) {
+          if (incident.location.concentric != undefined) {
+            concentric = incident.location.concentric;
+          }
+        }
+        selectOptionWithValue(
+          $("#incident_location_address_concentric"), concentric
+        );
       }
 
       drawLocationAddressConcentric();

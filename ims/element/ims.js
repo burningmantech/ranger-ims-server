@@ -100,6 +100,35 @@ function shortFormatDate(date) {
 }
 
 
+// Convert a minute (0-60) into a value used by IMS form inputs.
+// That is: round to the nearest multiple of 5 and pad to two digits.
+function normalizeMinute(minute) {
+  minute = Math.round(minute / 5) * 5;
+  while (minute > 60) {
+    minute -= 60;
+  }
+  return padTwo(minute);
+}
+
+
+//
+// Controls
+//
+
+// Select an option element with a given value from a given select element.
+function selectOptionWithValue(select, value) {
+  select
+    .children("option")
+    .prop("selected", false)
+    ;
+
+  select
+    .children("option[value='" + value + "']")
+    .prop("selected", true)
+    ;
+}
+
+
 //
 // Incident data
 //
