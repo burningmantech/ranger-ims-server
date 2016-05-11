@@ -104,33 +104,31 @@ function shortFormatDate(date) {
 // Incident data
 //
 
-function priorityNameFromNumber(priorityNumber) {
-  // priorityNumber should be an int, 1-5.
-
-  switch (priorityNumber) {
+// Look up the name of a priority given its number (1-5).
+function priorityNameFromNumber(number) {
+  switch (number) {
     case 1: return "High";
     case 2: return "High";
     case 3: return "Normal";
     case 4: return "Low";
     case 5: return "Low︎";
     default:
-      console.warn("Unknown incident priority number: " + priorityNumber);
+      console.warn("Unknown incident priority number: " + number);
       return undefined;
   }
 }
 
 
-function priorityIconFromNumber(priorityNumber) {
-  // priorityNumber should be an int, 1-5.
-
-  switch (priorityNumber) {
+// Look up the glyph for a priority given its number (1-5).
+function priorityIconFromNumber(number) {
+  switch (number) {
     case 1: return '<span class="glyphicon glyphicon-arrow-up">';
     case 2: return '<span class="glyphicon glyphicon-arrow-up">';
     case 3: return '<span class="glyphicon glyphicon-minus">';
     case 4: return '<span class="glyphicon glyphicon-arrow-down">';
     case 5: return '<span class="glyphicon glyphicon-arrow-down">';
     default:
-      console.warn("Unknown incident priority number: " + priorityNumber);
+      console.warn("Unknown incident priority number: " + number);
       return undefined;
   }
 }
