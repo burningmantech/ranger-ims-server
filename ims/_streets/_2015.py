@@ -37,7 +37,7 @@ concentricStreetIDByName = {
     u"3:00 Public Plaza" : 305,
     u"4:30 Plaza"        : 430,
     u"Center Camp Plaza" : 600,
-    u"Rte 66"            : 601,
+    u"Route 66"          : 601,
     u"Rod's Road"        : 602,
     u"6:00 Public Plaza" : 605,
     u"7:30 Plaza"        : 730,
