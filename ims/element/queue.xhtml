@@ -11,7 +11,7 @@
 
   <body><div t:render="container">
 
-    <div id="button_container" class="btn-group col-sm-6" role="group">
+    <div id="button_container" class="btn-group col-sm-5" role="group">
       <div class="btn-group" role="group">
         <button id="show_state" type="button" class="btn btn-sm btn-default" data-toggle="dropdown">
           Show
@@ -24,6 +24,7 @@
           <li id="show_state_active" onclick="updateShowState('active');"><span class="checkmark" /><a href="#" class="name">Active</a></li>
         </ul>
       </div>
+
       <div class="btn-group" role="group">
         <button id="show_days" type="button" class="btn btn-sm btn-default" data-toggle="dropdown">
           Show
@@ -38,6 +39,7 @@
           <li id="show_days_3"   onclick="updateShowDays(   3);"><span class="checkmark" /><a href="#" class="name">Last 4 Days</a></li>
         </ul>
       </div>
+
       <div class="btn-group" role="group">
         <button id="show_rows" type="button" class="btn btn-sm btn-default" data-toggle="dropdown">
           Show
@@ -53,9 +55,11 @@
        </div>
     </div>
 
-    <div id="search_container" class="form-group form-group-sm col-sm-6">
-      <label class="control-label" for="search_input"><span class="glyphicon glyphicon-search" /></label>
-      <input id="search_input" type="search" class="form-control" placeholder="Search" inputmode="latin" autocomplete="off" aria-controls="queue_table" />
+    <div id="search_container" class="form-group form-group-sm col-sm-7">
+      <div class="flex-input-container">
+        <label class="control-label" for="search_input"><span class="glyphicon glyphicon-search" /></label>
+        <input id="search_input" type="search" class="form-control" placeholder="Search" inputmode="latin" autocomplete="off" aria-controls="queue_table" />
+      </div>
     </div>
 
     <table id="queue_table" class="table table-striped table-hover">
