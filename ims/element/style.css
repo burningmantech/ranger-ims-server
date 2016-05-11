@@ -56,3 +56,11 @@ a.navbar-brand>img {
   padding: 6px 8px;
   font-size: 10pt;
 }
+
+#incident_location_address_radial {
+  width: 4.5em;
+}
+
+#incident_location_address_concentric {
+  width: 40em;
+}
