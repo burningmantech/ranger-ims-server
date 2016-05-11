@@ -27,11 +27,13 @@
 
 var _domTextAreaForHaxxors = document.createElement("textarea")
 
+// Convert text to HTML.
 function textAsHTML(text) {
   _domTextAreaForHaxxors.textContent = text;
   return _domTextAreaForHaxxors.innerHTML;
 }
 
+// Convert HTML to text.
 function htmlAsText(html) {
   _domTextAreaForHaxxors.innerHTML = html;
   return _domTextAreaForHaxxors.textContent;
@@ -39,6 +41,9 @@ function htmlAsText(html) {
 
 // **** END WEAKNESS ***
 
+//
+// Errors
+///
 
 function ValueError(message) {
   this.name = "ValueError";
@@ -49,6 +54,11 @@ ValueError.prototype = Object.create(Error.prototype);
 ValueError.prototype.constructor = ValueError;
 
 
+//
+// Arrays
+//
+
+// Build an array from a range.
 function range(start, end, step) {
   if (step == undefined) {
     step = 1;
@@ -83,6 +93,7 @@ function padTwo(segment) {
 }
 
 
+// Format a date using a compact form.
 function shortFormatDate(date) {
   return moment(date).format("M/D@h:mm z");
 }
@@ -124,9 +135,8 @@ function priorityIconFromNumber(priorityNumber) {
 }
 
 
+// Look up a state's name given its ID.
 function stateNameFromID(stateID) {
-  // stateID should be a string key.
-
   switch (stateID) {
     case "new"       : return "New";
     case "on_hold"   : return "On Hold";
@@ -140,9 +150,8 @@ function stateNameFromID(stateID) {
 }
 
 
+// Look up a state's sort key given its ID.
 function stateSortKeyFromID(stateID) {
-  // stateID should be a string key.
-
   switch (stateID) {
     case "new"       : return 1;
     case "on_hold"   : return 2;
@@ -156,9 +165,8 @@ function stateSortKeyFromID(stateID) {
 }
 
 
+// Look up a concentric street's name given its ID.
 function concentricStreetFromID(streetID) {
-  // streetID should be an int
-
   if (streetID == undefined) {
     return undefined;
   }
@@ -172,6 +180,7 @@ function concentricStreetFromID(streetID) {
 }
 
 
+// Return the state ID for a given incident.
 function stateForIncident(incident) {
   // Data from 2014+ should have incident.state set.
   if (incident.state != undefined) {
@@ -197,6 +206,7 @@ function stateForIncident(incident) {
 }
 
 
+// Return a summary for a given incident.
 function summarizeIncident(incident) {
   var summary = incident.summary;
   var reportEntries = incident.report_entries;
@@ -228,6 +238,7 @@ function summarizeIncident(incident) {
 }
 
 
+// Return all user-entered report text for a given incident.
 function reportTextFromIncident(incident) {
   var texts = [];
 
@@ -258,6 +269,7 @@ function reportTextFromIncident(incident) {
 }
 
 
+// Return a short description for a given location.
 function shortDescribeLocation(location) {
   if (location == undefined) {
     return undefined;
