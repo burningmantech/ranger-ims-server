@@ -25,7 +25,7 @@ __all__ = [
 from .base import Element, renderer
 
 from ..json import textFromJSON
-from ..data import concentricStreetNameByNumber
+from ..data import concentricStreetNameByID
 
 
 
@@ -61,5 +61,5 @@ class DispatchQueuePage(Element):
 
 
     @renderer
-    def concentric_street_name_by_number(self, request, tag):
-        return textFromJSON(concentricStreetNameByNumber[self.event])
+    def concentric_street_name_by_id(self, request, tag):
+        return textFromJSON(concentricStreetNameByID[self.event])

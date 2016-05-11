@@ -139,7 +139,7 @@ function concentricStreetFromID(streetID) {
     return undefined;
   }
 
-  var name = concentricStreetNameByNumber[streetID];
+  var name = concentricStreetNameByID[streetID];
   if (name == undefined) {
     console.warn("Unknown street ID: " + streetID);
     name = undefined;

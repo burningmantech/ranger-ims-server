@@ -18,7 +18,7 @@
 2013 BRC Street Names
 """
 
-concentricStreetNumberByName = {
+concentricStreetIDByName = {
     u"Esplanade"          : 0,
     u"Airstrip"           : 1,
     u"Biggie Size"        : 2,

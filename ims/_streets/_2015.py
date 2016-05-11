@@ -18,7 +18,7 @@
 2015 BRC Street Names
 """
 
-concentricStreetNumberByName = {
+concentricStreetIDByName = {
     u"Esplanade"         : 0,
     u"Arcade"            : 1,
     u"Ballyhoo"          : 2,

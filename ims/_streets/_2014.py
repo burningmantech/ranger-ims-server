@@ -18,7 +18,7 @@
 2014 BRC Street Names
 """
 
-concentricStreetNumberByName = {
+concentricStreetIDByName = {
     u"Esplanade"         : 0,
     u"Antioch"           : 1,
     u"Basra"             : 2,
