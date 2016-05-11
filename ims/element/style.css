@@ -36,3 +36,12 @@ a.navbar-brand>img {
 .well > .list-group {
   margin-bottom: 0px;
 }
+
+.flex-input-container {
+  display: flex;
+}
+
+.flex-input-container > input {
+  flex: 2;
+  margin-left: 5px;
+}
