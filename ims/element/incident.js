@@ -53,7 +53,7 @@ function addLocationAddressOptions() {
     for (var i in hours) {
         var hour = padTwo(hours[i]);
         $("#incident_location_address_radial_hour")
-            .append(jQuery("<option />", { "value": hour, "text": hour }))
+            .append($("<option />", { "value": hour, "text": hour }))
             ;
     }
 
@@ -61,14 +61,14 @@ function addLocationAddressOptions() {
     for (var i in minutes) {
         var minute = padTwo(minutes[i]);
         $("#incident_location_address_radial_minute")
-            .append(jQuery("<option />", { "value": minute, "text": minute }))
+            .append($("<option />", { "value": minute, "text": minute }))
             ;
     }
 
     for (var id in concentricStreetNameByID) {
         var name = concentricStreetNameByID[id];
         $("#incident_location_address_concentric")
-            .append(jQuery("<option />", { "value": id, "text": name }))
+            .append($("<option />", { "value": id, "text": name }))
             ;
     }
 }
@@ -238,9 +238,7 @@ function drawLocationDescription() {
 function reportEntryElement(entry) {
     // Build a container for the entry
 
-    var entryContainer = jQuery(
-        "<div />", {"class": "report_entry"}
-    );
+    var entryContainer = $("<div />", {"class": "report_entry"});
 
     if (entry.system_entry) {
         entryContainer.addClass("report_entry_system");
@@ -250,7 +248,7 @@ function reportEntryElement(entry) {
 
     // Add the timestamp and author
 
-    metaDataContainer = jQuery("<p />", {"class": "report_entry_metadata"})
+    metaDataContainer = $("<p />", {"class": "report_entry_metadata"})
 
     var timeStampContainer = timeElement(new Date(entry.created));
     timeStampContainer.addClass("report_entry_timestamp");
@@ -261,7 +259,7 @@ function reportEntryElement(entry) {
     if (author == undefined) {
         author = "(unknown)";
     }
-    var authorContainer = jQuery("<span />");
+    var authorContainer = $("<span />");
     authorContainer.text(entry.author);
     authorContainer.addClass("report_entry_author");
 
@@ -274,7 +272,7 @@ function reportEntryElement(entry) {
 
     var lines = entry.text.split("\n");
     for (var i in lines) {
-        var textContainer = jQuery("<p />", {"class": "report_entry_text"});
+        var textContainer = $("<p />", {"class": "report_entry_text"});
         textContainer.text(lines[i]);
 
         entryContainer.append(textContainer);
