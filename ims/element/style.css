@@ -61,3 +61,18 @@ a.navbar-brand>img {
   width: auto;
   display: inline;
 }
+
+.report_entry_system {
+  font-size: 8pt;
+  filter: brightness(250%);
+  text-align: center;
+}
+
+.report_entry_system > .report_entry_text {
+  margin: 0;
+}
+
+.report_entry_metadata {
+  font-weight: bold;
+  margin: 10px 0 0 0;
+}

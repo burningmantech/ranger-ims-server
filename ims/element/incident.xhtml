@@ -122,7 +122,11 @@
       <div class="col-sm-12">
         <label>Incident Report</label>
         <div class="well well-sm">
-          <div id="incident_report" class="form-control input-sm" />
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <div id="incident_report" />
+            </div>
+          </div>
           <textarea id="incident_report_add" class="form-control input-sm" rows="3" placeholder="Additional report text..." />
         </div>
       </div>
@@ -141,7 +145,7 @@
       for (var i in hours) {
         var hour = padTwo(hours[i]);
         $("#incident_location_address_radial_hour")
-          .append(jQuery("<option />", { value: hour, text: hour }))
+          .append(jQuery("<option />", { "value": hour, "text": hour }))
           ;
       }
 
@@ -149,14 +153,14 @@
       for (var i in minutes) {
         var minute = padTwo(minutes[i]);
         $("#incident_location_address_radial_minute")
-          .append(jQuery("<option />", { value: minute, text: minute }))
+          .append(jQuery("<option />", { "value": minute, "text": minute }))
           ;
       }
 
       for (var id in concentricStreetNameByID) {
         var name = concentricStreetNameByID[id];
         $("#incident_location_address_concentric")
-          .append(jQuery("<option />", { value: id, text: name }))
+          .append(jQuery("<option />", { "value": id, "text": name }))
           ;
       }
 
@@ -200,7 +204,9 @@
 
       // Populate Rangers list
 
-      var rangerItem = $("#incident_rangers_list").children(".list-group-item:first");
+      var rangerItem = $("#incident_rangers_list")
+        .children(".list-group-item:first")
+        ;
 
       function drawRangers() {
         var items = [];
@@ -211,14 +217,18 @@
           items.push(item);
         }
 
-        $("#incident_rangers_list").empty().append(items);
+        var container = $("#incident_rangers_list");
+        container.empty();
+        container.append(items);
       }
 
       drawRangers();
 
       // Populate incident types list
 
-      var typesItem = $("#incident_types_list").children(".list-group-item:first");
+      var typesItem = $("#incident_types_list")
+        .children(".list-group-item:first")
+        ;
 
       function drawIncidentTypes() {
         var items = [];
@@ -229,7 +239,9 @@
           items.push(item);
         }
 
-        $("#incident_types_list").empty().append(items);
+        var container = $("#incident_types_list");
+        container.empty();
+        container.append(items);
       }
 
       drawIncidentTypes();
@@ -291,12 +303,81 @@
       function drawLocationDescription() {
         if (incident.location != undefined) {
           if (incident.location.description != undefined) {
-            $("#incident_location_description").attr("value", incident.location.description);
+            $("#incident_location_description")
+              .attr("value", incident.location.description)
+              ;
           }
         }
       }
 
       drawLocationAddressConcentric();
+
+      // Populate report entry text
+
+      function reportEntryElement(entry) {
+        // Build a container for the entry
+
+        var entryContainer = jQuery(
+          "<div />", {"class": "report_entry"}
+        );
+
+        if (entry.system_entry) {
+          entryContainer.addClass("report_entry_system");
+        } else {
+          entryContainer.addClass("report_entry_user");
+        }
+
+        // Add the timestamp and author
+
+        metaDataContainer = jQuery("<p />", {"class": "report_entry_metadata"})
+
+        var timeStampContainer = timeElement(new Date(entry.created));
+        timeStampContainer.addClass("report_entry_timestamp");
+
+        metaDataContainer.append([timeStampContainer, ", "]);
+
+        var author = entry.author;
+        if (author == undefined) {
+          author = "(unknown)";
+        }
+        var authorContainer = jQuery("<span />");
+        authorContainer.text(entry.author);
+        authorContainer.addClass("report_entry_author");
+
+        metaDataContainer.append(author);
+        metaDataContainer.append(":");
+
+        entryContainer.append(metaDataContainer);
+
+        // Add report text
+
+        var lines = entry.text.split("\n");
+        for (var i in lines) {
+          var textContainer = jQuery("<p />", {"class": "report_entry_text"});
+          textContainer.text(lines[i]);
+
+          entryContainer.append(textContainer);
+        }
+
+        // Return container
+
+        return entryContainer;
+      }
+
+      function drawReportEntries() {
+        var container = $("#incident_report");
+        container.empty();
+
+        var entries = incident.report_entries;
+
+        if (entries != undefined) {
+          for (var i in entries) {
+            container.append(reportEntryElement(entries[i]));
+          }
+        }
+      }
+
+      drawReportEntries();
 
       //]]>
     </script>

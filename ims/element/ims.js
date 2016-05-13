@@ -112,6 +112,21 @@ function normalizeMinute(minute) {
 
 
 //
+// Elements
+//
+
+// Create a <time> element from a date.
+function timeElement(date) {
+  date = moment(date);
+  var timeStampContainer = jQuery(
+    "<time />", {"datetime": date.toISOString()}
+  );
+  timeStampContainer.text(date.toString());
+  return timeStampContainer;
+}
+
+
+//
 // Controls
 //
 
