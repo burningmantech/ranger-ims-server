@@ -136,7 +136,9 @@
   </div></body>
 
   <script>
-    var incident = <javascript t:render="incidentJSON" />;
+    <!-- FIXME: figure out how to move this to / incude from incident.js -->
+    var incidentNumber = "<string t:render="incident_number" />";
+    var incidentsURL = "<string t:render="incidents_url" />";
     var concentricStreetNameByID = <javascript t:render="concentric_street_name_by_id" />;
     initIncidentPage();
   </script>

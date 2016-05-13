@@ -20,7 +20,47 @@
 
 function initIncidentPage() {
     addLocationAddressOptions();
-    drawIncidentFields();
+    disableEditing();
+
+    loadIncident(function () {
+        drawIncidentFields();
+        enableEditing();
+    });
+}
+
+
+//
+// Enable.disable editing
+//
+
+function disableEditing() {
+    $(".row").addClass("disabled");
+    $(".form-control").attr("disabled", "");
+}
+
+
+function enableEditing() {
+    $(".row").removeClass("disabled");
+    $(".form-control").removeAttr("disabled");
+}
+
+
+//
+// Load incident
+//
+
+var incident = null;
+
+function loadIncident(success) {
+    function gotIncident(data, status, request) {
+        incident = data;
+
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    $.get(incidentsURL + "/" + incidentNumber, gotIncident, "json");
 }
 
 

@@ -22,9 +22,8 @@ __all__ = [
     "IncidentPage",
 ]
 
-from ..json import textFromJSON, incidentAsJSON
+from ..json import textFromJSON
 from ..data import concentricStreetNameByID
-# from ..data import RodGarettAddress
 
 from .base import Element, renderer
 
@@ -41,9 +40,9 @@ class IncidentPage(Element):
             title=u"{} Incident #{}".format(event, number),
         )
 
-        self.storage  = self.service.storage[event]
-        self.event    = event
-        self.incident = self.storage.readIncidentWithNumber(number)
+        self.storage = self.service.storage[event]
+        self.event   = event
+        self.number  = number
 
 
     @renderer
@@ -51,7 +50,7 @@ class IncidentPage(Element):
         tag = Element.root(self, request, tag)
 
         slots = dict(
-            incident_number=unicode(self.incident.number),
+            incident_number=unicode(self.number),
         )
 
         tag.fillSlots(**slots)
@@ -60,14 +59,18 @@ class IncidentPage(Element):
 
 
     @renderer
-    def incidentJSON(self, request, tag):
-        return textFromJSON(incidentAsJSON(self.incident))
+    def incident_number(self, request, tag):
+        return unicode(self.number)
+
+
+    @renderer
+    def incidents_url(self, request, tag):
+        return (
+            self.service.incidentsURL.asText()
+            .replace(u"<event>", unicode(self.event))
+        )
 
 
     @renderer
     def concentric_street_name_by_id(self, request, tag):
         return textFromJSON(concentricStreetNameByID[self.event])
-
-
-
-
