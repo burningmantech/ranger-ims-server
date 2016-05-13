@@ -22,10 +22,31 @@ function initIncidentPage() {
     addLocationAddressOptions();
     disableEditing();
 
-    loadIncident(function () {
+    function loadedIncident() {
         drawIncidentFields();
         enableEditing();
-    });
+    }
+
+    function loadedBody() {
+        loadIncident(loadedIncident);
+    }
+
+    loadBody(loadedBody);
+}
+
+
+//
+// Load HTML template.
+//
+
+function loadBody(success) {
+    function loadedBody() {
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    $("body").load(incidentTemplateURL);
 }
 
 

@@ -217,6 +217,9 @@ class Element(BaseElement):
                 prefix_url=service.prefixURL.asText(),
                 stylesheet_url=service.styleSheetURL.asText(),
                 logo_url=service.logoURL.asText(),
+                incident_template_url=(
+                    service.viewIncidentNumberTemplateURL.asText()
+                ),
 
                 jquery_base_url=service.jqueryBaseURL.asText(),
                 jquery_js_url=service.jqueryJSURL.asText(),

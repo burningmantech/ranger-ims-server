@@ -50,6 +50,7 @@ from ..element.root import RootPage
 from ..element.login import LoginPage
 from ..element.queue import DispatchQueuePage
 from ..element.incident import IncidentPage
+from ..element.incident_template import IncidentTemplatePage
 from .auth import authenticated, authorized, Authorization
 from .query import (
     termsFromQuery, showClosedFromQuery, sinceFromQuery, editsFromQuery
@@ -105,20 +106,21 @@ class WebService(object):
     imsJSURL      = prefixURL.child(u"ims.js")
     incidentJSURL = prefixURL.child(u"incident.js")
 
-    eventURL          = prefixURL.child(u"<event>")
-    pingURL           = eventURL.child(u"ping")
-    personnelURL      = eventURL.child(u"personnel")
-    incidentTypesURL  = eventURL.child(u"incident_types")
-    locationsURL      = eventURL.child(u"locations")
-    incidentsURL      = eventURL.child(u"incidents")
-    incidentNumberURL = incidentsURL.child(u"<number>")
+    eventURL            = prefixURL.child(u"<event>")
+    pingURL             = eventURL.child(u"ping")
+    personnelURL        = eventURL.child(u"personnel")
+    incidentTypesURL    = eventURL.child(u"incident_types")
+    locationsURL        = eventURL.child(u"locations")
+    incidentsURL        = eventURL.child(u"incidents")
+    incidentNumberURL   = incidentsURL.child(u"<number>")
 
-    viewDispatchQueueURL         = eventURL.child(u"queue")
-    viewDispatchQueueJSURL       = viewDispatchQueueURL.child(u"queue.js")
-    dispatchQueueDataURL         = viewDispatchQueueURL.child(u"data")
-    viewDispatchQueueRelativeURL = URL.fromText(u"queue")
-    viewIncidentsURL             = viewDispatchQueueURL.child(u"incidents")
-    viewIncidentNumberURL        = viewIncidentsURL.child(u"<number>")
+    viewDispatchQueueURL          = eventURL.child(u"queue")
+    viewDispatchQueueJSURL        = viewDispatchQueueURL.child(u"queue.js")
+    dispatchQueueDataURL          = viewDispatchQueueURL.child(u"data")
+    viewDispatchQueueRelativeURL  = URL.fromText(u"queue")
+    viewIncidentsURL              = viewDispatchQueueURL.child(u"incidents")
+    viewIncidentNumberURL         = viewIncidentsURL.child(u"<number>")
+    viewIncidentNumberTemplateURL = prefixURL.child(u"_incident")
 
     #
     # External resource info
@@ -897,6 +899,12 @@ class WebService(object):
             storage.writeIncident(edited)
 
         return IncidentPage(self, event, number)
+
+
+    @app.route(viewIncidentNumberTemplateURL.asText(), methods=("HEAD", "GET"))
+    @authorized(Authorization.readIncidents)
+    def viewIncidentNumberTemplatePage(self, request):
+        return IncidentTemplatePage(self)
 
 
     @app.route(incidentJSURL.asText(), methods=("HEAD", "GET"))

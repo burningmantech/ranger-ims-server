@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<div xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="container">
+  <div class="row">
+      <div class="col-sm-4 text-left">
+        <div class="form-group">
+          <label class="control-label">Incident #:</label>
+          <span id="incident_number" class="form-control-static" />
+        </div>
+      </div>
+      <div class="col-sm-4 text-center">
+        <div class="form-group">
+          <label class="control-label">State:</label>
+          <select id="incident_state" class="form-control input-sm auto-width" onchange="editState()">
+            <option value="new"       >New       </option>
+            <option value="on_hold"   >On Hold   </option>
+            <option value="dispatched">Dispatched</option>
+            <option value="on_scene"  >On Scene  </option>
+            <option value="closed"    >Closed    </option>
+          </select>
+        </div>
+      </div>
+      <div class="col-sm-4 text-right">
+        <div class="form-group">
+          <label class="control-label">Priority:</label>
+          <select id="incident_priority" class="form-control input-sm auto-width" onchange="editPriority()">
+            <option value="High"  >High  </option>
+            <option value="Normal">Normal</option>
+            <option value="Low"   >Low   </option>
+          </select>
+        </div>
+      </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="well well-sm flex-input-container">
+        <label>Summary:</label>
+        <input
+          id="incident_summary" class="form-control input-sm"
+          type="text" inputmode="latin-prose"
+          placeholder="One-line summary of incident…"
+          onchange="editSummary()"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-6">
+      <label>Rangers:</label>
+      <div class="well well-sm">
+        <ul id="incident_rangers_list" class="list-group list-group-small">
+          <li class="list-group-item" />
+        </ul>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <label>Incident Types</label>
+      <div class="well well-sm">
+        <ul id="incident_types_list" class="list-group list-group-small">
+          <li class="list-group-item" />
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+      <label>Location</label>
+      <div class="well well-sm">
+        <form class="form-horizontal">
+          <div class="form-group">
+            <label class="col-sm-1 control-label">Name:</label>
+            <div class="col-sm-11">
+              <input
+                id="incident_location_name" class="form-control input-sm"
+                type="text" inputmode="latin-prose"
+                placeholder="Name of location"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-1 control-label">Address:</label>
+            <div class="col-sm-11">
+              <select id="incident_location_address_radial_hour" class="form-control input-sm auto-width">
+                <option value="" />
+              </select>
+              :
+              <select id="incident_location_address_radial_minute" class="form-control input-sm auto-width">
+                <option value="" />
+              </select>
+              @
+              <select id="incident_location_address_concentric" class="form-control input-sm auto-width">
+                <option value="" />
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-1 control-label">Description:</label>
+            <div class="col-sm-11">
+              <input
+                id="incident_location_description" class="form-control input-sm"
+                type="text" inputmode="latin-prose"
+                placeholder="Other identifying info"
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+      <label>Incident Report</label>
+      <div id="incident_well" class="well well-sm">
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div id="incident_report" />
+          </div>
+        </div>
+        <textarea id="incident_report_add" class="form-control input-sm" rows="3" placeholder="Additional report text..." />
+      </div>
+    </div>
+  </div>
+
+</div>
