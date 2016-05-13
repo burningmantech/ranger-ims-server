@@ -102,7 +102,8 @@ class WebService(object):
 
     momentJSURL = prefixURL.child(u"moment.min.js")
 
-    imsJSURL = prefixURL.child(u"ims.js")
+    imsJSURL      = prefixURL.child(u"ims.js")
+    incidentJSURL = prefixURL.child(u"incident.js")
 
     eventURL          = prefixURL.child(u"<event>")
     pingURL           = eventURL.child(u"ping")
@@ -896,6 +897,11 @@ class WebService(object):
             storage.writeIncident(edited)
 
         return IncidentPage(self, event, number)
+
+
+    @app.route(incidentJSURL.asText(), methods=("HEAD", "GET"))
+    def incidentJSResource(self, request):
+        return self.javaScript(request, "incident.js")
 
 
 

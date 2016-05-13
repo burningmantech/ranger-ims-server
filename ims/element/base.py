@@ -235,6 +235,7 @@ class Element(BaseElement):
                 moment_js_url=service.momentJSURL.asText(),
 
                 ims_js_url=service.imsJSURL.asText(),
+                incident_js_url=service.incidentJSURL.asText(),
             ))
 
         return self._baseSlots

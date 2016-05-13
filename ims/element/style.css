@@ -76,3 +76,7 @@ a.navbar-brand>img {
   font-weight: bold;
   margin: 10px 0 0 0;
 }
+
+#incident_well > .panel {
+  margin-bottom: 5px;
+}
