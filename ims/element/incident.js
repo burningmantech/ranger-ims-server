@@ -346,55 +346,77 @@ function drawReportEntries() {
 // Editing
 //
 
-function performEdit(edits) {
-    edits["number"] = incident.number;
+function performEdit(element, jsonKey, transform) {
+    var value = element.val();
+
+    if (transform != undefined) {
+        value = transform(value);
+    }
+
+    edits = {"number": incident.number};
+
+    keyPath = jsonKey.split(".");
+    lastKey = keyPath.pop();
+
+    current = edits;
+    for (var i in keyPath) {
+        var next = {};
+        current[keyPath[i]] = next;
+        current = next;
+    }
+    current[lastKey] = value;
+
     console.log(edits);
 }
 
 
 function editState() {
-    var value = $("#incident_state").val();
-    performEdit({"state": value});
+    performEdit($("#incident_state"), "state");
 }
 
 
 function editPriority() {
-    var value = $("#incident_priority").val();
-    performEdit({"priority": value});
+    performEdit($("#incident_priority"), "priority", Number);
 }
 
 
 function editSummary() {
-    var value = $("#incident_summary").val();
-    performEdit({"summary": value});
+    performEdit($("#incident_summary"), "summary");
 }
 
 
 function editLocationName() {
-    var value = $("#incident_location_name").val();
-    performEdit({"location": {"name": value}});
+    performEdit($("#incident_location_name"), "location.name");
 }
 
 
 function editLocationAddressRadialHour() {
-    var value = Number($("#incident_location_address_radial_hour").val());
-    performEdit({"location": {"radial_hour": value}});
+    performEdit(
+        $("#incident_location_address_radial_hour"),
+        "location.radial_hour",
+        Number
+    );
 }
 
 
 function editLocationAddressRadialMinute() {
-    var value = Number($("#incident_location_address_radial_minute").val());
-    performEdit({"location": {"radial_minute": value}});
+    performEdit(
+        $("#incident_location_address_radial_minute"),
+        "location.radial_minute",
+        Number
+    );
 }
 
 
 function editLocationAddressConcentric() {
-    var value = Number($("#incident_location_address_concentric").val());
-    performEdit({"location": {"concentric": value}});
+    performEdit(
+        $("#incident_location_address_concentric"),
+        "location.concentric",
+        Number
+    );
 }
 
 
 function editLocationDescription() {
-    var value = $("#incident_location_description").val();
-    performEdit({"location": {"description": value}});
+    performEdit($("#incident_location_description"), "location.description");
 }
