@@ -22,7 +22,7 @@ __all__ = [
     "RootPage",
 ]
 
-from .base import Element, renderer, tags
+from .base import Element
 
 
 

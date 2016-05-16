@@ -19,12 +19,10 @@ URL query.
 """
 
 __all__ = [
-    "incidentsFromQuery",
     "termsFromQuery",
     "showClosedFromQuery",
     "sinceDaysAgoFromQuery",
     "sinceFromQuery",
-    "numShiftsFromQuery",
     "editsFromQuery",
     "queryValue",
 ]
@@ -36,23 +34,6 @@ from ..data import (
     IncidentState, Incident, ReportEntry, Location, RodGarettAddress
 )
 
-
-
-def incidentsFromQuery(storage, request):
-    """
-    Find incidents matching a request query.
-    """
-    if not hasattr(request, "ims_incidents"):
-        if request.args:
-            request.ims_incidents = storage.searchIncidents(
-                terms=termsFromQuery(request),
-                showClosed=showClosedFromQuery(request),
-                since=sinceFromQuery(request),
-            )
-        else:
-            request.ims_incidents = storage.listIncidents()
-
-    return request.ims_incidents
 
 
 def termsFromQuery(request):
@@ -110,15 +91,11 @@ def sinceFromQuery(request):
     return utcNow() - TimeDelta(days=days)
 
 
-def numShiftsFromQuery(request):
-    """
-    Determine the number of shifts a request query indicates that we should
-    display incidents for.
-    """
-    return queryValue(request, "num_shifts", "1")
-
-
 def editsFromQuery(author, number, request):
+    """
+    Create an incident object that contains changes to apply to an existing
+    incident; all of its properties represent updates to apply.
+    """
     if not request.args:
         return None
 

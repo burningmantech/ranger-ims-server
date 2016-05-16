@@ -18,8 +18,6 @@
 // HTML encoding
 //
 
-// **** BEGIN WEAKNESS ***
-
 // It seems ridiculous that this isn't standard in JavaScript
 // It is certainly ridiculous to involve the DOM, but on the other hand, the
 // browser will implement this correctly, and any solution using .replace()
@@ -39,7 +37,6 @@ function htmlAsText(html) {
   return _domTextAreaForHaxxors.textContent;
 }
 
-// **** END WEAKNESS ***
 
 //
 // Errors

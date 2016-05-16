@@ -940,7 +940,6 @@ class ContentType (Values):
     text       = ValueConstant("text/plain; charset=utf-8")
 
     PNG        = ValueConstant("image/png")
-    ICO        = ValueConstant("image/x-icon")
 
 
 
