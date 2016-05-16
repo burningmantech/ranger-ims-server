@@ -77,11 +77,25 @@ def route(*args, **kwargs):
                 HeaderName.server.value,
                 "Incident Management System/{}".format(version),
             )
-
             return f(self, request, *args, **kwargs)
 
         return wrapper
     return decorator
+
+
+
+def fixedETag(f):
+    """
+    Decorator to add a fixed ETag to static resources.
+    We use the IMS version number as the ETag, because they may change with new
+    IMS versions, but should are otherwise static.
+    """
+    @wraps(f)
+    def wrapper(self, request, *args, **kwargs):
+        request.setHeader(HeaderName.etag.value, version)
+        return f(self, request, *args, **kwargs)
+
+    return wrapper
 
 
 
@@ -405,20 +419,20 @@ class WebService(object):
     #
 
     @route(styleSheetURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
     def styleSheetResource(self, request):
-        """
-        Main style sheet.
-        """
         return self.styleSheet(request, "style.css")
 
 
     @route(logoURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
     def logoResource(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.PNG.value)
         return self.builtInResource(request, "logo.png")
 
 
     @route(bootstrapBaseURL.asText(), methods=("HEAD", "GET"), branch=True)
+    @fixedETag
     def bootstrapResource(self, request):
         requestURL = URL.fromText(request.uri.rstrip("/"))
 
@@ -433,6 +447,7 @@ class WebService(object):
 
 
     @route(jqueryJSURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
     def jqueryJSResource(self, request):
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value
@@ -444,6 +459,7 @@ class WebService(object):
 
 
     @route(jqueryMapURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
     def jqueryMapResource(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
         return self.cachedResource(
@@ -453,6 +469,7 @@ class WebService(object):
 
 
     @route(dataTablesBaseURL.asText(), methods=("HEAD", "GET"), branch=True)
+    @fixedETag
     def dataTablesResource(self, request):
         requestURL = URL.fromText(request.uri.rstrip("/"))
 
@@ -467,6 +484,7 @@ class WebService(object):
 
 
     @route(momentJSURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
     def momentJSResource(self, request):
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value
@@ -478,6 +496,7 @@ class WebService(object):
 
 
     @route(imsJSURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
     def imsJSResource(self, request):
         return self.javaScript(request, "ims.js")
 
@@ -659,6 +678,7 @@ class WebService(object):
     @route(pingURL.asText(), methods=("HEAD", "GET"))
     @route(pingURL.asText() + u"/", methods=("HEAD", "GET"))
     @authenticated()
+    @fixedETag
     def pingResource(self, request, event):
         ack = b'"ack"'
         return self.jsonBytes(request, ack, bytes(hash(ack)))
@@ -869,17 +889,20 @@ class WebService(object):
 
     @route(viewDispatchQueueURL.asText(), methods=("HEAD", "GET"))
     @route(viewDispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
+    @fixedETag
     @authorized(Authorization.readIncidents)
     def viewDispatchQueuePage(self, request, event):
         return DispatchQueuePage(self, event)
 
 
     @route(viewDispatchQueueTemplateURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
     def viewDispatchQueueTemplatePage(self, request):
         return DispatchQueueTemplatePage(self)
 
 
     @route(queueJSURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
     def queueJSResource(self, request):
         return self.javaScript(request, "queue.js")
 
@@ -900,6 +923,7 @@ class WebService(object):
 
 
     @route(viewIncidentNumberURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
     @authorized(Authorization.readIncidents)
     def viewIncidentPage(self, request, event, number):
         try:
@@ -943,11 +967,13 @@ class WebService(object):
 
 
     @route(viewIncidentNumberTemplateURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
     def viewIncidentNumberTemplatePage(self, request):
         return IncidentTemplatePage(self)
 
 
     @route(incidentJSURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
     def incidentJSResource(self, request):
         return self.javaScript(request, "incident.js")
 
