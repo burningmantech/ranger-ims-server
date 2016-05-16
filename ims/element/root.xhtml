@@ -1,35 +1,35 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
-
   <head t:render="head" />
 
-  <body><div t:render="container">
+  <body>
+    <div t:render="container">
 
-    <p>This service hosts the Ranger Incident Management System (IMS).</p>
+      <p>This service hosts the Ranger Incident Management System (IMS).</p>
 
-    <h2>Web Interface</h2>
-    <ul>
-      <li t:render="events_reversed" />
-    </ul>
+      <h2>Web Interface</h2>
+      <ul>
+        <li t:render="events_reversed" />
+      </ul>
 
-    <h2>Client Applications</h2>
+      <h2>Client Applications</h2>
 
-    <ul>
-      <li>
-        <a href="https://github.com/burningmantech/ranger-ims-mac/releases">
-          Incidents for Mac OS
-        </a>
-      </li>
-    </ul>
+      <ul>
+        <li>
+          <a href="https://github.com/burningmantech/ranger-ims-mac/releases">
+            Incidents for Mac OS
+          </a>
+        </li>
+      </ul>
 
-    <h2>Documentation</h2>
+      <h2>Documentation</h2>
 
-    <ul>
-      <li>
-        <a href="/docs/priorities.xhtml">Using Priorities</a>
-      </li>
-    </ul>
+      <ul>
+        <li>
+          <a href="/docs/priorities.xhtml">Using Priorities</a>
+        </li>
+      </ul>
 
-  </div></body>
-
+    </div>
+  </body>
 </html>
