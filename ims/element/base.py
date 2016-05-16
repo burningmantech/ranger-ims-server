@@ -238,6 +238,7 @@ class Element(BaseElement):
                 moment_js_url=service.momentJSURL.asText(),
 
                 ims_js_url=service.imsJSURL.asText(),
+                queue_js_url=service.queueJSURL.asText(),
                 incident_js_url=service.incidentJSURL.asText(),
             ))
 

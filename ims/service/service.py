@@ -104,6 +104,7 @@ class WebService(object):
     momentJSURL = prefixURL.child(u"moment.min.js")
 
     imsJSURL      = prefixURL.child(u"ims.js")
+    queueJSURL    = prefixURL.child(u"queue.js")
     incidentJSURL = prefixURL.child(u"incident.js")
 
     eventURL            = prefixURL.child(u"<event>")
@@ -841,6 +842,11 @@ class WebService(object):
     @authorized(Authorization.readIncidents)
     def viewDispatchQueuePage(self, request, event):
         return DispatchQueuePage(self, event)
+
+
+    @app.route(queueJSURL.asText(), methods=("HEAD", "GET"))
+    def queueJSResource(self, request):
+        return self.javaScript(request, "queue.js")
 
 
     @app.route(dispatchQueueDataURL.asText(), methods=("HEAD", "GET"))

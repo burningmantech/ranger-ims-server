@@ -2,10 +2,11 @@
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
   <head t:render="head">
     <link type="text/css" rel="stylesheet" media="screen"><t:attr name="href"><t:slot name="datatables_bootstrap_css_url" /></t:attr></link>
-    <script><t:attr name="src"><t:slot name="datatables_js_url" /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="datatables_js_url"           /></t:attr></script>
     <script><t:attr name="src"><t:slot name="datatables_bootstrap_js_url" /></t:attr></script>
-    <script><t:attr name="src"><t:slot name="moment_js_url" /></t:attr></script>
-    <script><t:attr name="src"><t:slot name="ims_js_url" /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="moment_js_url"               /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="ims_js_url"                  /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="queue_js_url"                /></t:attr></script>
   </head>
 
   <body>
@@ -19,9 +20,9 @@
             <span class="caret" />
           </button>
           <ul class="dropdown-menu">
-            <li id="show_state_all"    onclick="updateShowState('all'   );"><span class="checkmark" /><a href="#" class="name">All   </a></li>
-            <li id="show_state_open"   onclick="updateShowState('open'  );"><span class="checkmark" /><a href="#" class="name">Open  </a></li>
-            <li id="show_state_active" onclick="updateShowState('active');"><span class="checkmark" /><a href="#" class="name">Active</a></li>
+            <li id="show_state_all"    onclick="showState('all'   );"><span class="checkmark" /><a href="#" class="name">All   </a></li>
+            <li id="show_state_open"   onclick="showState('open'  );"><span class="checkmark" /><a href="#" class="name">Open  </a></li>
+            <li id="show_state_active" onclick="showState('active');"><span class="checkmark" /><a href="#" class="name">Active</a></li>
           </ul>
         </div>
 
@@ -32,11 +33,11 @@
             <span class="caret" />
           </button>
           <ul class="dropdown-menu">
-            <li id="show_days_all" onclick="updateShowDays(null);"><span class="checkmark" /><a href="#" class="name">All Days   </a></li>
-            <li id="show_days_0"   onclick="updateShowDays(   0);"><span class="checkmark" /><a href="#" class="name">Today      </a></li>
-            <li id="show_days_1"   onclick="updateShowDays(   1);"><span class="checkmark" /><a href="#" class="name">Last 2 Days</a></li>
-            <li id="show_days_2"   onclick="updateShowDays(   2);"><span class="checkmark" /><a href="#" class="name">Last 3 Days</a></li>
-            <li id="show_days_3"   onclick="updateShowDays(   3);"><span class="checkmark" /><a href="#" class="name">Last 4 Days</a></li>
+            <li id="show_days_all" onclick="showDays(null);"><span class="checkmark" /><a href="#" class="name">All Days   </a></li>
+            <li id="show_days_0"   onclick="showDays(   0);"><span class="checkmark" /><a href="#" class="name">Today      </a></li>
+            <li id="show_days_1"   onclick="showDays(   1);"><span class="checkmark" /><a href="#" class="name">Last 2 Days</a></li>
+            <li id="show_days_2"   onclick="showDays(   2);"><span class="checkmark" /><a href="#" class="name">Last 3 Days</a></li>
+            <li id="show_days_3"   onclick="showDays(   3);"><span class="checkmark" /><a href="#" class="name">Last 4 Days</a></li>
           </ul>
         </div>
 
@@ -89,242 +90,16 @@
           </tr>
         </tfoot>
       </table>
-
-      <script>
-        // FIXME: can we use the generic JSON endpoint?
-        var dataURL          = "<string t:render="data_url"           />";
-        var viewIncidentsURL = "<string t:render="view_incidents_url" />";
-
-        var concentricStreetNameByID = <javascript t:render="concentric_street_name_by_id" />;
-
-        //<![CDATA[
-
-        function dataHandler(incidents) {
-          return incidents;
-        }
-
-        var table = $("#queue_table").DataTable({
-          "deferRender": true,
-          "paging": true,
-          "lengthChange": false,
-          "searching": true,
-          "processing": true,
-          "scrollX": false, "scrollY": false,
-          "ajax": {
-            "url": dataURL,
-            "dataSrc": dataHandler,
-          },
-          "columns": [
-            {
-              "name": "incident_number",
-              "className": "incident_number text-right",
-              "data": "number",
-              "defaultContent": null,
-              "cellType": "th",
-            },
-            {
-              "name": "incident_priority",
-              "className": "incident_priority text-center",
-              "data": "priority",
-              "defaultContent": null,
-              "searchable": false,
-              "render": renderPriority,
-            },
-            {
-              "name": "incident_created",
-              "className": "incident_created text-center",
-              "data": "timestamp",
-              "defaultContent": null,
-              "render": renderDate,
-            },
-            {
-              "name": "incident_state",
-              "className": "incident_state text-center",
-              "data": "state",
-              "defaultContent": null,
-              "render": renderState,
-            },
-            {
-              "name": "incident_ranger_handles",
-              "className": "incident_ranger_handles",
-              "data": "ranger_handles",
-              "defaultContent": "",
-              "render": "[, ]",  // Join array with ", "
-              "width": "6em",
-            },
-            {
-              "name": "incident_location",
-              "className": "incident_location",
-              "data": "location",
-              "defaultContent": "",
-              "render": renderLocation,
-            },
-            {
-              "name": "incident_types",
-              "className": "incident_types",
-              "data": "incident_types",
-              "defaultContent": "",
-              "render": "[, ]",  // Join array with ", "
-              "width": "5em",
-            },
-            {
-              "name": "incident_summary",
-              "className": "incident_summary",
-              "data": "summary",
-              "defaultContent": "",
-              "render": renderSummary,
-            },
-          ],
-          "createdRow": function (row, incident, index) {
-            $(row).click(function () {
-              document.location.href = viewIncidentsURL + "/" + incident.number;
-            });
-          },
-        });
-
-        // Relocate button container
-
-        $("#queue_table_wrapper")
-          .children(".row")
-          .children(".col-sm-6:first")
-          .replaceWith($("#button_container"));
-
-        $("#queue_table_wrapper")
-          .children(".row")
-          .children(".col-sm-6:last")
-          .replaceWith($("#search_container"));
-
-        // Show state button handling
-
-        var showState = null;
-
-        function updateShowState(stateToShow) {
-          var menu = $("#show_state");
-          var item = $("#show_state_" + stateToShow);
-
-          // Get title from selected item
-          var selection = item.children(".name").html();
-
-          // Update menu title to reflect selected item
-          menu.children(".selection").html(selection);
-
-          showState = stateToShow;
-
-          table.draw();
-        }
-
-        updateShowState("open");
-
-        // Show days button handling
-
-        var showModifiedAfter = null;
-
-        function updateShowDays(daysBackToShow) {
-          var id = (daysBackToShow == null) ? "all": daysBackToShow.toString();
-          var menu = $("#show_days");
-          var item = $("#show_days_" + id);
-
-          // Get title from selected item
-          var selection = item.children(".name").html();
-
-          // Update menu title to reflect selected item
-          menu.children(".selection").html(selection);
-
-          if (daysBackToShow == null) {
-            showModifiedAfter = null;
-          } else {
-            showModifiedAfter = moment()
-              .startOf("day")
-              .subtract(daysBackToShow, "days")
-              ;
-          }
-
-          table.draw();
-        }
-
-        updateShowDays(null);
-
-        // Show rows button handling
-
-        function showRows(rowsToShow) {
-          var id = (rowsToShow == null) ? "all": rowsToShow.toString();
-          var menu = $("#show_rows");
-          var item = $("#show_rows_" + id);
-
-          // Get title from selected item
-          var selection = item.children(".name").html();
-
-          // Update menu title to reflect selected item
-          menu.children(".selection").html(selection);
-
-          if (rowsToShow == null) {
-            rowsToShow = -1;
-          }
-
-          table.page.len(rowsToShow);
-          table.draw()
-        }
-
-        showRows(25);
-
-        // Search field handling
-
-        $("#search_input").on("keyup", function () {
-          table.search(this.value);
-          table.draw();
-        });
-
-        // Filtering
-
-        function modifiedAfter(incident, timestamp) {
-          if (timestamp.isBefore(incident.timestamp)) {
-            return true;
-          }
-
-          for (var i in incident.report_entries) {
-            if (timestamp.isBefore(incident.report_entries[i].created)) {
-              return true;
-            }
-          }
-
-          return false;
-        }
-
-        $.fn.dataTable.ext.search.push(
-          function(settings, rowData, rowIndex) {
-            var incident = table.data()[rowIndex];
-
-            switch(showState) {
-              case "all":
-                break;
-              case "active":
-                state = stateForIncident(incident);
-                if (state == "on_hold" || state == "closed") {
-                  return false;
-                }
-                break;
-              case "open":
-                state = stateForIncident(incident);
-                if (state == "closed") {
-                  return false;
-                }
-                break;
-            }
-
-            if (
-              showModifiedAfter != null &&
-              ! modifiedAfter(incident, showModifiedAfter)
-            ) {
-              return false
-            }
-
-            return true;
-          }
-        );
-
-        //]]>
-      </script>
-
     </div>
   </body>
+
+  <script>
+    // FIXME: can we use the generic JSON endpoint?
+    var dataURL          = "<string t:render="data_url"           />";
+    var viewIncidentsURL = "<string t:render="view_incidents_url" />";
+
+    var concentricStreetNameByID = <javascript t:render="concentric_street_name_by_id" />;
+
+    initDispatchQueuePage();
+  </script>
 </html>
