@@ -124,6 +124,21 @@ function timeElement(date) {
 
 
 //
+// Load HTML body template.
+//
+
+function loadBody(success) {
+    function complete() {
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    $("body").load(pageTemplateURL, complete);
+}
+
+
+//
 // Controls
 //
 

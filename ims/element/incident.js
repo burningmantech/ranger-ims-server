@@ -35,21 +35,6 @@ function initIncidentPage() {
 
 
 //
-// Load HTML template.
-//
-
-function loadBody(success) {
-    function complete() {
-        if (success != undefined) {
-            success();
-        }
-    }
-
-    $("body").load(incidentTemplateURL, complete);
-}
-
-
-//
 // Enable.disable editing
 //
 

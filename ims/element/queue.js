@@ -27,21 +27,6 @@ function initDispatchQueuePage() {
 
 
 //
-// Load HTML template.
-//
-
-function loadBody(success) {
-    function complete() {
-        if (success != undefined) {
-            success();
-        }
-    }
-
-    $("body").load(dispatchQueueTemplateURL, complete);
-}
-
-
-//
 // Dispatch queue table
 //
 
