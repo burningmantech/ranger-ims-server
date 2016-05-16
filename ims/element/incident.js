@@ -40,13 +40,13 @@ function initIncidentPage() {
 //
 
 function loadBody(success) {
-    function loadedBody() {
+    function complete() {
         if (success != undefined) {
             success();
         }
     }
 
-    $("body").load(incidentTemplateURL);
+    $("body").load(incidentTemplateURL, complete);
 }
 
 
@@ -73,7 +73,7 @@ function enableEditing() {
 var incident = null;
 
 function loadIncident(success) {
-    function gotIncident(data, status, request) {
+    function complete(data, status, request) {
         incident = data;
 
         if (success != undefined) {
@@ -81,7 +81,7 @@ function loadIncident(success) {
         }
     }
 
-    $.get(incidentsURL + "/" + incidentNumber, gotIncident, "json");
+    $.get(incidentsURL + "/" + incidentNumber, complete, "json");
 }
 
 
