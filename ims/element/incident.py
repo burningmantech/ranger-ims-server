@@ -40,9 +40,8 @@ class IncidentPage(Element):
             title=u"{} Incident #{}".format(event, number),
         )
 
-        self.storage = self.service.storage[event]
-        self.event   = event
-        self.number  = number
+        self.event  = event
+        self.number = number
 
 
     @renderer

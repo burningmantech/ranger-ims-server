@@ -40,8 +40,7 @@ class DispatchQueuePage(Element):
             title=u"{} Dispatch Queue".format(event),
         )
 
-        self.storage = self.service.storage[event]
-        self.event   = event
+        self.event = event
 
 
     @renderer
