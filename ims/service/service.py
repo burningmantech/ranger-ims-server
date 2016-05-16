@@ -55,10 +55,7 @@ from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
 from ..element.incident_template import IncidentTemplatePage
 from .auth import authenticated, authorized, Authorization
-from .query import (
-    termsFromQuery, showClosedFromQuery, sinceFromQuery, editsFromQuery
-)
-# FIXME: Query stuff may be obsolete with client-side web UI stuff
+from .query import editsFromQuery
 
 
 
@@ -725,14 +722,7 @@ class WebService(object):
     @route(incidentsURL.asText() + u"/", methods=("HEAD", "GET"))
     @authorized(Authorization.readIncidents)
     def listIncidentsResource(self, request, event):
-        if request.args:
-            incidents = self.storage[event].searchIncidents(
-                terms=termsFromQuery(request),
-                showClosed=showClosedFromQuery(request),
-                since=sinceFromQuery(request),
-            )
-        else:
-            incidents = self.storage[event].listIncidents()
+        incidents = self.storage[event].listIncidents()
 
         # Reverse order here because we generally want the clients to load the
         # more recent incidents first.
@@ -852,7 +842,7 @@ class WebService(object):
         except ValueError:
             return self.notFoundResource(request)
 
-        author = request.user
+        author = request.user.decode("utf-8")
 
         storage = self.storage[event]
 

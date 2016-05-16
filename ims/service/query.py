@@ -19,76 +19,14 @@ URL query.
 """
 
 __all__ = [
-    "termsFromQuery",
-    "showClosedFromQuery",
-    "sinceDaysAgoFromQuery",
-    "sinceFromQuery",
     "editsFromQuery",
     "queryValue",
 ]
 
-from datetime import timedelta as TimeDelta
-
-from ..tz import utcNow
 from ..data import (
     IncidentState, Incident, ReportEntry, Location, RodGarettAddress
 )
 
-
-
-def termsFromQuery(request):
-    """
-    Compute query terms from a request.
-    """
-    if not hasattr(request, "ims_terms"):
-        if request.args:
-            terms = set()
-
-            for query in request.args.get("search", []):
-                for term in query.split(" "):
-                    terms.add(term)
-
-            for term in request.args.get("term", []):
-                terms.add(term)
-
-            request.ims_terms = terms
-
-        else:
-            request.ims_terms = set()
-
-    return request.ims_terms
-
-
-def showClosedFromQuery(request):
-    """
-    Determine whether a request query indicates that we should display closed
-    incidents.
-    """
-    return queryValue(request, "show_closed", "false", "true") == "true"
-
-
-def sinceDaysAgoFromQuery(request):
-    """
-    Determine how many days back a request query indicates that we should
-    display incidents for.
-    """
-    return queryValue(request, "since_days_ago", "0")
-
-
-def sinceFromQuery(request):
-    """
-    Determine what start time a request query indicates that we should display
-    incidents for.
-    """
-    try:
-        days = int(sinceDaysAgoFromQuery(request))
-    except ValueError:
-        days = 0
-
-    if not days:
-        return None
-
-    return utcNow() - TimeDelta(days=days)
 
 
 def editsFromQuery(author, number, request):
