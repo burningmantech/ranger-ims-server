@@ -80,3 +80,8 @@ a.navbar-brand>img {
 #incident_well > .panel {
   margin-bottom: 5px;
 }
+
+/* We want good readability even for disabled controls. */
+.form-control {
+  color: black;
+}
