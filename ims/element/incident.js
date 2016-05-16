@@ -35,17 +35,15 @@ function initIncidentPage() {
 
 
 //
-// Enable.disable editing
+// Enable/disable all editing
 //
 
 function disableEditing() {
-    $(".row").addClass("disabled");
     $(".form-control").attr("disabled", "");
 }
 
 
 function enableEditing() {
-    $(".row").removeClass("disabled");
     $(".form-control").removeAttr("disabled");
 }
 

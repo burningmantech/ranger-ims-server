@@ -62,10 +62,6 @@ a.navbar-brand>img {
   display: inline;
 }
 
-.disabled {
-  filter: opacity(50%);
-}
-
 .report_entry_system {
   font-size: 8pt;
   text-align: center;
