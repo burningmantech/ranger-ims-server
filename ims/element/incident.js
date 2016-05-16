@@ -19,15 +19,14 @@
 //
 
 function initIncidentPage() {
-    addLocationAddressOptions();
-    disableEditing();
-
     function loadedIncident() {
         drawIncidentFields();
         enableEditing();
     }
 
     function loadedBody() {
+        addLocationAddressOptions();
+        disableEditing();
         loadIncident(loadedIncident);
     }
 
