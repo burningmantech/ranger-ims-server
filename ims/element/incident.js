@@ -178,11 +178,11 @@ function drawSummary() {
 // Populate Rangers list
 //
 
-var rangerItem = null;
+var _rangerItem = null;
 
 function drawRangers() {
-    if (rangerItem == null) {
-        rangerItem = $("#incident_rangers_list")
+    if (_rangerItem == null) {
+        _rangerItem = $("#incident_rangers_list")
             .children(".list-group-item:first")
             ;
     }
@@ -190,7 +190,7 @@ function drawRangers() {
     var items = [];
 
     for (var i in incident.ranger_handles) {
-        var item = rangerItem.clone();
+        var item = _rangerItem.clone();
         item.append(incident.ranger_handles[i]);
         items.push(item);
     }
@@ -205,11 +205,11 @@ function drawRangers() {
 // Populate incident types list
 //
 
-var typesItem = null;
+var _typesItem = null;
 
 function drawIncidentTypes() {
-    if (typesItem == null) {
-        typesItem = $("#incident_types_list")
+    if (_typesItem == null) {
+        _typesItem = $("#incident_types_list")
             .children(".list-group-item:first")
             ;
     }
@@ -217,7 +217,7 @@ function drawIncidentTypes() {
     var items = [];
 
     for (var i in incident.incident_types) {
-        var item = typesItem.clone();
+        var item = _typesItem.clone();
         item.append(incident.incident_types[i]);
         items.push(item);
     }
