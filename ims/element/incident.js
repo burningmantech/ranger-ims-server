@@ -340,3 +340,61 @@ function drawReportEntries() {
         }
     }
 }
+
+
+//
+// Editing
+//
+
+function performEdit(edits) {
+    edits["number"] = incident.number;
+    console.log(edits);
+}
+
+
+function editState() {
+    var value = $("#incident_state").val();
+    performEdit({"state": value});
+}
+
+
+function editPriority() {
+    var value = $("#incident_priority").val();
+    performEdit({"priority": value});
+}
+
+
+function editSummary() {
+    var value = $("#incident_summary").val();
+    performEdit({"summary": value});
+}
+
+
+function editLocationName() {
+    var value = $("#incident_location_name").val();
+    performEdit({"location": {"name": value}});
+}
+
+
+function editLocationAddressRadialHour() {
+    var value = Number($("#incident_location_address_radial_hour").val());
+    performEdit({"location": {"radial_hour": value}});
+}
+
+
+function editLocationAddressRadialMinute() {
+    var value = Number($("#incident_location_address_radial_minute").val());
+    performEdit({"location": {"radial_minute": value}});
+}
+
+
+function editLocationAddressConcentric() {
+    var value = Number($("#incident_location_address_concentric").val());
+    performEdit({"location": {"concentric": value}});
+}
+
+
+function editLocationDescription() {
+    var value = $("#incident_location_description").val();
+    performEdit({"location": {"description": value}});
+}
