@@ -33,5 +33,5 @@ class DispatchQueueTemplatePage(Element):
 
     def __init__(self, service):
         Element.__init__(
-            self, u"queue_template", service, title=u"Queue"
+            self, u"queue_template", service, title=u"Dispatch Queue"
         )

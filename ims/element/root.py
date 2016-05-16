@@ -28,7 +28,7 @@ from .base import Element
 
 class RootPage(Element):
     """
-    Home page element
+    Server root page.
     """
 
     def __init__(self, service):
