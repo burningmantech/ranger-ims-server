@@ -61,4 +61,9 @@ class DispatchQueuePage(Element):
 
     @renderer
     def concentric_street_name_by_id(self, request, tag):
-        return textFromJSON(concentricStreetNameByID[self.event])
+        try:
+            namesByID = concentricStreetNameByID[self.event]
+        except KeyError:
+            namesByID = {}
+
+        return textFromJSON(namesByID)
