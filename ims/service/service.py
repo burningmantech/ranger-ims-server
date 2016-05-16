@@ -49,6 +49,7 @@ from ..element.redirect import RedirectPage
 from ..element.root import RootPage
 from ..element.login import LoginPage
 from ..element.queue import DispatchQueuePage
+from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
 from ..element.incident_template import IncidentTemplatePage
 from .auth import authenticated, authorized, Authorization
@@ -116,6 +117,7 @@ class WebService(object):
     incidentNumberURL   = incidentsURL.child(u"<number>")
 
     viewDispatchQueueURL          = eventURL.child(u"queue")
+    viewDispatchQueueTemplateURL  = prefixURL.child(u"_queue")
     viewDispatchQueueJSURL        = viewDispatchQueueURL.child(u"queue.js")
     dispatchQueueDataURL          = viewDispatchQueueURL.child(u"data")
     viewDispatchQueueRelativeURL  = URL.fromText(u"queue")
@@ -844,6 +846,11 @@ class WebService(object):
         return DispatchQueuePage(self, event)
 
 
+    @app.route(viewDispatchQueueTemplateURL.asText(), methods=("HEAD", "GET"))
+    def viewDispatchQueueTemplatePage(self, request):
+        return DispatchQueueTemplatePage(self)
+
+
     @app.route(queueJSURL.asText(), methods=("HEAD", "GET"))
     def queueJSResource(self, request):
         return self.javaScript(request, "queue.js")
@@ -908,7 +915,6 @@ class WebService(object):
 
 
     @app.route(viewIncidentNumberTemplateURL.asText(), methods=("HEAD", "GET"))
-    @authorized(Authorization.readIncidents)
     def viewIncidentNumberTemplatePage(self, request):
         return IncidentTemplatePage(self)
 

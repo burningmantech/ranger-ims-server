@@ -18,7 +18,26 @@
 //
 
 function initDispatchQueuePage() {
-    initDispatchQueueTable();
+    function loadedBody() {
+        initDispatchQueueTable();
+    }
+
+    loadBody(loadedBody);
+}
+
+
+//
+// Load HTML template.
+//
+
+function loadBody(success) {
+    function complete() {
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    $("body").load(dispatchQueueTemplateURL, complete);
 }
 
 

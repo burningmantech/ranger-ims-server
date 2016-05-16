@@ -15,23 +15,23 @@
 ##
 
 """
-Incident page template.
+Dispatch queue page template.
 """
 
 __all__ = [
-    "IncidentTemplatePage",
+    "DispatchQueueTemplatePage",
 ]
 
 from .base import Element
 
 
 
-class IncidentTemplatePage(Element):
+class DispatchQueueTemplatePage(Element):
     """
-    Incident page template.
+    Queue page template.
     """
 
     def __init__(self, service):
         Element.__init__(
-            self, u"incident_template", service, title=u"Incident"
+            self, u"queue_template", service, title=u"Queue"
         )

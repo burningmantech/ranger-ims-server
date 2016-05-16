@@ -15,7 +15,7 @@
 ##
 
 """
-Incident element
+Incident page.
 """
 
 __all__ = [
@@ -31,7 +31,7 @@ from .base import Element, renderer
 
 class IncidentPage(Element):
     """
-    Incident element
+    Incident page.
     """
 
     def __init__(self, service, event, number):
