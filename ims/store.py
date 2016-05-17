@@ -365,7 +365,7 @@ class Storage(ReadOnlyStorage):
             self._maxIncidentNumber = number
 
 
-    def next_incident_number(self):
+    def nextIncidentNumber(self):
         self.provision()
         self._maxIncidentNumber += 1
         return self._maxIncidentNumber

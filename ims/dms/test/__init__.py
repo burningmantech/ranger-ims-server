@@ -15,7 +15,5 @@
 ##
 
 """
-Incident Management System
+Tests for L{ims.dms}.
 """
-
-__version__ = "1.0a1"

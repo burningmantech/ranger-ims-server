@@ -21,6 +21,10 @@ Incident editing.
 from .data import IncidentState, Incident, Location, ReportEntry
 from .json import datetimeAsRFC3339
 
+__all__ = [
+    "editIncident",
+]
+
 
 
 class EditNotAllowedError(Exception):
@@ -30,7 +34,7 @@ class EditNotAllowedError(Exception):
 
 
 
-def edit_incident(incident, edits, author):
+def editIncident(incident, edits, author):
     """
     Apply edits to an incident and return the edited incident.
 
@@ -55,7 +59,7 @@ def edit_incident(incident, edits, author):
         raise EditNotAllowedError("Incident number may not be edited.")
 
     number = incident.number
-    system_messages = []
+    systemMessages = []
 
 
     def old_new(attribute):
@@ -67,157 +71,157 @@ def edit_incident(incident, edits, author):
         return old, new
 
 
-    def edit_value(old_value, new_value, name, describe=None):
+    def editValue(oldValue, newValue, name, describe=None):
         """
         Edit a single value.
         """
-        if new_value is None:
+        if newValue is None:
             # No edit given for this attribute
-            return old_value
+            return oldValue
 
-        if new_value == old_value:
+        if newValue == oldValue:
             # The given edit doesn't change the value
-            return old_value
+            return oldValue
 
-        if name == "created" and old_value != new_value:
+        if name == "created" and oldValue != newValue:
             # Created time should not change
             raise EditNotAllowedError("Created time may not change.")
 
         if describe is None:
             describe = lambda x: x
 
-        system_messages.append(
+        systemMessages.append(
             u"Changed {attribute} to: {value}".format(
                 attribute=name.replace(u"_", u" "),
-                value=(describe(new_value) if new_value else u"<no value>")
+                value=(describe(newValue) if newValue else u"<no value>")
             )
         )
 
-        return new_value
+        return newValue
 
 
-    def edit_attribute_value(attribute, describe=None):
+    def editAttributeValue(attribute, describe=None):
         """
         Edit the single value of an incident attribute.
         """
-        old_value, new_value = old_new(attribute)
+        oldValue, newValue = old_new(attribute)
 
-        return edit_value(old_value, new_value, attribute, describe=describe)
+        return editValue(oldValue, newValue, attribute, describe=describe)
 
 
-    def edit_attribute_set(attribute):
+    def editAttributeSet(attribute):
         """
         Edit the set of values of an incident attribute.
         """
-        old_values, new_values = old_new(attribute)
+        oldValues, newValues = old_new(attribute)
 
-        if old_values is None:
-            old_values = frozenset()
+        if oldValues is None:
+            oldValues = frozenset()
 
-        if new_values is None:
+        if newValues is None:
             # No edit given for this attribute
-            return old_values
+            return oldValues
 
-        if new_values == old_values:
+        if newValues == oldValues:
             # The given edit doesn't change the values
-            return old_values
+            return oldValues
 
         # Figure out what's different
-        unchanged = old_values & new_values
-        removed = old_values ^ unchanged
-        added = new_values ^ unchanged
+        unchanged = oldValues & newValues
+        removed   = oldValues ^ unchanged
+        added     = newValues ^ unchanged
 
         if added:
-            system_messages.append(
+            systemMessages.append(
                 u"Added to {attribute}: {values}".format(
                     attribute=attribute.replace(u"_", u" "),
                     values=u", ".join(unicode(x) for x in added)
                 )
             )
         if removed:
-            system_messages.append(
+            systemMessages.append(
                 u"Removed from {attribute}: {values}".format(
                     attribute=attribute.replace(u"_", u" "),
                     values=u", ".join(unicode(x) for x in removed)
                 )
             )
 
-        return new_values
+        return newValues
 
 
-    def edit_timestamp(edit_states):
-        """
-        Edit the timestamps on state attributes.
-        """
-        timestamps = {}
+    # def editTimestamp(editStates):
+    #     """
+    #     Edit the timestamps on state attributes.
+    #     """
+    #     timestamps = {}
 
-        for state in IncidentState.iterconstants():
-            if state in edit_states:
-                timestamp = getattr(edits, state.value)
-                if timestamp is None:
-                    timestamp = getattr(incident, state.value)
+    #     for state in IncidentState.iterconstants():
+    #         if state in editStates:
+    #             timestamp = getattr(edits, state.value)
+    #             if timestamp is None:
+    #                 timestamp = getattr(incident, state.value)
 
-                timestamps[state] = timestamp
-            else:
-                timestamps[state] = None
+    #             timestamps[state] = timestamp
+    #         else:
+    #             timestamps[state] = None
 
-        return timestamps
+    #     return timestamps
 
 
     #
     # Set resulting values
     #
 
-    priority = edit_attribute_value("priority")
-    summary  = edit_attribute_value("summary")
-    created  = edit_attribute_value("created", describe=datetimeAsRFC3339)
-    state    = edit_attribute_value("state", describe=IncidentState.describe)
+    priority = editAttributeValue("priority")
+    summary  = editAttributeValue("summary")
+    created  = editAttributeValue("created", describe=datetimeAsRFC3339)
+    state    = editAttributeValue("state", describe=IncidentState.describe)
 
-    rangers        = edit_attribute_set("rangers")
-    incident_types = edit_attribute_set("incident_types")
+    rangers       = editAttributeSet("rangers")
+    incidentTypes = editAttributeSet("incident_types")
 
     # Location has to be unpacked
-    old_location, new_location = old_new("location")
+    oldLocation, newLocation = old_new("location")
 
-    if old_location is None:
-        location = new_location
-    elif new_location is None:
-        location = old_location
+    if oldLocation is None:
+        location = newLocation
+    elif newLocation is None:
+        location = oldLocation
     else:
-        location_name = edit_value(
-            old_location.name, new_location.name, "location name"
+        locationName = editValue(
+            oldLocation.name, newLocation.name, "location name"
         )
-        location_address = edit_value(
-            old_location.address, new_location.address, "location address"
+        locationAddress = editValue(
+            oldLocation.address, newLocation.address, "location address"
         )
-        location = Location(location_name, location_address)
+        location = Location(locationName, locationAddress)
 
     #
     # Add report entries
     #
-    report_entries = []
+    reportEntries = []
 
     # First, keep all existing report entries from the original incident.
     if incident.report_entries is not None:
-        for report_entry in incident.report_entries:
-            report_entries.append(report_entry)
+        for reportEntry in incident.report_entries:
+            reportEntries.append(reportEntry)
 
     # Next, add new system report entries
-    if system_messages:
-        report_entries.append(
+    if systemMessages:
+        reportEntries.append(
             ReportEntry(
                 author=author,
-                text=u"\n".join(system_messages),
+                text=u"\n".join(systemMessages),
                 system_entry=True,
             )
         )
 
     # Finally, add new user report entries
     if edits.report_entries is not None:
-        for report_entry in edits.report_entries:
+        for reportEntry in edits.report_entries:
             # Work-around for clients that resubmit the same entry >1 time
-            if report_entry not in report_entries:
-                report_entries.append(report_entry)
+            if reportEntry not in reportEntries:
+                reportEntries.append(reportEntry)
 
 
     #
@@ -229,8 +233,8 @@ def edit_incident(incident, edits, author):
         summary=summary,
         location=location,
         rangers=rangers,
-        incident_types=incident_types,
-        report_entries=report_entries,
+        incident_types=incidentTypes,
+        report_entries=reportEntries,
         created=created,
         state=state,
     )

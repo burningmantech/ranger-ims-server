@@ -1,6 +1,4 @@
-Copyright 2013-2016
- • Wilfredo Sánchez Vega
- • Burning Man
+Copyright 2013-2016 Burning Man and its contributors.
 
 All rights reserved.
 

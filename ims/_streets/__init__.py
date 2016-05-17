@@ -15,7 +15,28 @@
 ##
 
 """
-Incident Management System
+BRC Street Names
 """
 
-__version__ = "1.0a1"
+__all__ = [
+    "concentricStreetIDByName",
+    "concentricStreetNameByID",
+]
+
+from ._2013 import concentricStreetIDByName as _2013
+from ._2014 import concentricStreetIDByName as _2014
+from ._2015 import concentricStreetIDByName as _2015
+
+
+
+concentricStreetIDByName = {
+    "2013": _2013,
+    "2014": _2014,
+    "2015": _2015,
+}
+
+concentricStreetNameByID = {
+    "2013": {v: k for k, v in _2013.items()},
+    "2014": {v: k for k, v in _2014.items()},
+    "2015": {v: k for k, v in _2015.items()},
+}

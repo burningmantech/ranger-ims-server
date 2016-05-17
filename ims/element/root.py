@@ -15,7 +15,24 @@
 ##
 
 """
-Incident Management System
+Server root page.
 """
 
-__version__ = "1.0a1"
+__all__ = [
+    "RootPage",
+]
+
+from .base import Element
+
+
+
+class RootPage(Element):
+    """
+    Server root page.
+    """
+
+    def __init__(self, service):
+        Element.__init__(
+            self, u"root", service,
+            title=u"Ranger Incident Management System",
+        )

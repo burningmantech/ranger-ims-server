@@ -15,7 +15,5 @@
 ##
 
 """
-Incident Management System
+Incident Management System web service
 """
-
-__version__ = "1.0a1"

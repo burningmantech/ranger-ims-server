@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
+  <head t:render="head">
+    <link type="text/css" rel="stylesheet" media="screen"><t:attr name="href"><t:slot name="datatables_bootstrap_css_url" /></t:attr></link>
+    <script><t:attr name="src"><t:slot name="datatables_js_url"           /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="datatables_bootstrap_js_url" /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="moment_js_url"               /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="ims_js_url"                  /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="queue_js_url"                /></t:attr></script>
+  </head>
+
+  <body />
+
+  <script>
+    <!-- FIXME: figure out how to move this to / include from incident.js -->
+    var pageTemplateURL = "<t:slot name="queue_template_url" />";
+
+    // FIXME: can we use the generic JSON endpoint?
+    var dataURL          = "<string t:render="data_url"           />";
+    var viewIncidentsURL = "<string t:render="view_incidents_url" />";
+
+    var concentricStreetNameByID = <javascript t:render="concentric_street_name_by_id" />;
+
+    initDispatchQueuePage();
+  </script>
+</html>

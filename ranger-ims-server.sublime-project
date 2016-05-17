@@ -15,12 +15,15 @@
                 ".git",
                 ".develop",
                 "*.egg-info",
+                "cached",
+                "data",
+                "log",
             ],
 		},
-        {
-            "name": "external sources",
-            "path": ".develop/virtualenv/src",
-        },
+        // {
+        //     "name": "external sources",
+        //     "path": ".develop/virtualenv/src",
+        // },
 	],
 
     "settings": {

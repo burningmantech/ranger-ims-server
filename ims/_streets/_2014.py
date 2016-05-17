@@ -15,7 +15,21 @@
 ##
 
 """
-Incident Management System
+2014 BRC Street Names
 """
 
-__version__ = "1.0a1"
+concentricStreetIDByName = {
+    u"Esplanade"    : 0,
+    u"Antioch"      : 1,
+    u"Basra"        : 2,
+    u"Cinnamon"     : 3,
+    u"Darjeeling"   : 4,
+    u"Ephesus"      : 5,
+    u"Frankinsense" : 6,
+    u"Gold"         : 7,
+    u"Haifa"        : 8,
+    u"Isfahan"      : 9,
+    u"Jade"         : 10,
+    u"Kandahar"     : 11,
+    u"Lapis Lazuli" : 12,
+}

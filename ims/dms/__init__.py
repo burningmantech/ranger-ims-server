@@ -15,7 +15,5 @@
 ##
 
 """
-Incident Management System
+Duty Management System integration.
 """
-
-__version__ = "1.0a1"

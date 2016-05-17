@@ -15,7 +15,23 @@
 ##
 
 """
-Incident Management System
+Dispatch queue page template.
 """
 
-__version__ = "1.0a1"
+__all__ = [
+    "DispatchQueueTemplatePage",
+]
+
+from .base import Element
+
+
+
+class DispatchQueueTemplatePage(Element):
+    """
+    Queue page template.
+    """
+
+    def __init__(self, service):
+        Element.__init__(
+            self, u"queue_template", service, title=u"Dispatch Queue"
+        )

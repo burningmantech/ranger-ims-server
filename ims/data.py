@@ -29,13 +29,17 @@ __all__ = [
     "Address",
     "TextOnlyAddress",
     "RodGarettAddress",
-    # "Shift",
+    "concentricStreetIDByName",
+    "concentricStreetNameByID",
 ]
 
 from functools import total_ordering
 from datetime import datetime as DateTime  # , timedelta as TimeDelta
 
 from .tz import utcNow
+from ._streets import (
+    concentricStreetIDByName, concentricStreetNameByID
+)
 
 from twisted.python.constants import (
     Names, NamedConstant, Values, ValueConstant
@@ -836,118 +840,3 @@ class RodGarettAddress(Address):
         _validateIsInstance(
             "description", self.description, unicode, optional=True
         )
-
-
-
-# class Shift(object):
-#     @classmethod
-#     def from_datetime(cls, position, datetime):
-#         """
-#         Create a shift from a datetime.
-
-#         @param position: a L{Values} container corresponding to the
-#             position the shift is for.
-
-#         @param datetime: a L{DateTime} during the shift.
-
-
-#         """
-#         return cls(
-#             position=position,
-#             date=datetime.date(),
-#             name=position.shiftForTime(datetime.time()),
-#         )
-
-
-#     def __init__(self, position, date, time=None, name=None):
-#         """
-#         One or both of C{time} and C{name} are required.  If both are
-#         provided, they must match (meaning C{time == name.value}).
-
-#         @param position: a L{Values} container corresponding to the
-#             position the shift is for.
-
-#         @param date: the L{Date} for the shift.
-
-#         @param time: the L{Time} for the shift.
-
-#         @param name: the L{ValueConstant} from the C{position}
-#             container corresponding to the time of the shift.
-#         """
-#         if time is None:
-#             if name is None:
-#                 raise ValueError("Both time and name may not be None.")
-#             else:
-#                 time = name.value
-
-#         if name is None:
-#             name = position.lookupByValue(time)
-#         elif name.value != time:
-#             raise ValueError(
-#                 "time and name do not match: {} != {}"
-#                 .format(time, name)
-#             )
-
-#         self.position = position
-#         self.start = DateTime(
-#             year=date.year,
-#             month=date.month,
-#             day=date.day,
-#             hour=time.hour,
-#         )
-#         self.name = name
-
-
-#     def __hash__(self):
-#         return hash((self.position, self.name))
-
-
-#     def __eq__(self, other):
-#         return (
-#             self.position == other.position and
-#             self.start == other.start
-#         )
-
-
-#     def __lt__(self, other):
-#         if not isinstance(other, Shift):
-#             return NotImplemented
-#         return self.start < other.start
-
-
-#     def __le__(self, other):
-#         if not isinstance(other, Shift):
-#             return NotImplemented
-#         return self.start <= other.start
-
-
-#     def __gt__(self, other):
-#         if not isinstance(other, Shift):
-#             return NotImplemented
-#         return self.start > other.start
-
-
-#     def __ge__(self, other):
-#         if not isinstance(other, Shift):
-#             return NotImplemented
-#         return self.start >= other.start
-
-
-#     def __str__(self):
-#         return (
-#             u"{self.start:%y-%m-%d %a} {self.name.name}"
-#             .format(self=self).encode("utf-8")
-#         )
-
-
-#     @property
-#     def end(self):
-#         return (self.start.time() + TimeDelta(hours=self.position.length))
-
-
-#     def next_shift(self):
-#         return self.__class__(
-#             position=self.position,
-#             date=self.start.date(),
-#             time=self.end,
-#         )

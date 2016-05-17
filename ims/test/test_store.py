@@ -50,9 +50,9 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
             if data is not None:
                 for incident in data():
                     # Make sure that the incident numbers vended by
-                    # data() match the next_incident_number()
+                    # data() match the nextIncidentNumber()
                     # implementation.
-                    assert incident.number == rw_store.next_incident_number()
+                    assert incident.number == rw_store.nextIncidentNumber()
                     rw_store.writeIncident(incident)
 
         store = ReadOnlyStorage(fp)
@@ -400,8 +400,8 @@ class StorageTests(twisted.trial.unittest.TestCase):
             if data is not None:
                 for incident in data(store):
                     # Make sure that the incident numbers vended by data()
-                    # match the next_incident_number() implementation.
-                    assert incident.number == store.next_incident_number()
+                    # match the nextIncidentNumber() implementation.
+                    assert incident.number == store.nextIncidentNumber()
                     store.writeIncident(incident)
 
         # Make sure provisioning is correct
@@ -448,8 +448,8 @@ class StorageTests(twisted.trial.unittest.TestCase):
 
         for incident in incidents:
             # Make sure that the incident numbers vended by data()
-            # match the next_incident_number() implementation.
-            assert incident.number == store.next_incident_number()
+            # match the nextIncidentNumber() implementation.
+            assert incident.number == store.nextIncidentNumber()
             store.writeIncident(incident)
             self.assertEquals(
                 incident, store.readIncidentWithNumber(incident.number)
@@ -458,11 +458,11 @@ class StorageTests(twisted.trial.unittest.TestCase):
 
     def test_next(self):
         """
-        L{Storage.next_incident_number} returns the next available number.
+        L{Storage.nextIncidentNumber} returns the next available number.
         """
         store = self.storage(provisioned=False)
         last = store._maxIncidentNumber
-        next = store.next_incident_number()
+        next = store.nextIncidentNumber()
         self.assertEquals(next, last + 1)
         self.assertRaises(
             NoSuchIncidentError,

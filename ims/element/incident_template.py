@@ -15,7 +15,23 @@
 ##
 
 """
-Incident Management System
+Incident page template.
 """
 
-__version__ = "1.0a1"
+__all__ = [
+    "IncidentTemplatePage",
+]
+
+from .base import Element
+
+
+
+class IncidentTemplatePage(Element):
+    """
+    Incident page template.
+    """
+
+    def __init__(self, service):
+        Element.__init__(
+            self, u"incident_template", service, title=u"Incident Details"
+        )

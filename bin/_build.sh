@@ -82,6 +82,7 @@ find_header () {
 
 # Initialize all the global state required to use this library.
 init_build () {
+  local lwd="$(pwd)";
   cd "${wd}";
 
   init_py;
@@ -155,6 +156,8 @@ init_build () {
   else
     hash () { echo "INTERNAL ERROR: No hash function."; exit 1; }
   fi;
+
+  cd "${lwd}";
 }
 
 
@@ -249,47 +252,21 @@ www_get () {
 
         echo "Downloading ${name}...";
 
-        local pkg_host="static.calendarserver.org";
-        local pkg_path="/pkg";
-
-        #
-        # Try getting a copy from calendarserver.org.
-        #
-        local tmp="$(mktemp "/tmp/${cache_basename}.XXXXXX")";
-        curl -L "http://${pkg_host}${pkg_path}/${cache_basename}" -o "${tmp}" || true;
-        echo "";
-        if [ ! -s "${tmp}" ] || grep '<title>404 Not Found</title>' "${tmp}" > /dev/null; then
-          rm -f "${tmp}";
-          echo "${name} is not available from calendarserver.org; trying upstream source.";
-        elif ! check_hash "${tmp}"; then
-          rm -f "${tmp}";
-          echo "${name} from calendarserver.org is invalid; trying upstream source.";
-        fi;
-
         #
         # That didn't work. Try getting a copy from the upstream source.
         #
-        if [ ! -f "${tmp}" ]; then
-          curl -L "${url}" -o "${tmp}";
-          echo "";
+        local tmp="$(mktemp -t ccsXXXXX)";
+        curl -L "${url}" -o "${tmp}";
+        echo "";
 
-          if [ ! -s "${tmp}" ] || grep '<title>404 Not Found</title>' "${tmp}" > /dev/null; then
-            rm -f "${tmp}";
-            echo "${name} is not available from upstream source: ${url}";
-            exit 1;
-          elif ! check_hash "${tmp}"; then
-            rm -f "${tmp}";
-            echo "${name} from upstream source is invalid: ${url}";
-            exit 1;
-          fi;
-
-          if egrep "^${pkg_host}" "${HOME}/.ssh/known_hosts" > /dev/null 2>&1; then
-            echo "Copying cache file up to ${pkg_host}.";
-            if ! scp "${tmp}" "${pkg_host}:/var/www/static${pkg_path}/${cache_basename}"; then
-              echo "Failed to copy cache file up to ${pkg_host}.";
-            fi;
-            echo ""
-          fi;
+        if [ ! -s "${tmp}" ] || grep '<title>404 Not Found</title>' "${tmp}" > /dev/null; then
+          rm -f "${tmp}";
+          echo "${name} is not available from upstream source: ${url}";
+          exit 1;
+        elif ! check_hash "${tmp}"; then
+          rm -f "${tmp}";
+          echo "${name} from upstream source is invalid: ${url}";
+          exit 1;
         fi;
 
         #
@@ -313,9 +290,10 @@ www_get () {
     fi;
 
     rm -rf "${path}";
+    local lwd="$(pwd)";
     cd "$(dirname "${path}")";
     get | ${decompress} | ${unpack};
-    cd "${wd}";
+    cd "${lwd}";
   fi;
 }
 
@@ -350,8 +328,8 @@ jmake () {
 c_dependency () {
   local f_hash="";
   local configure="configure";
-  local prebuild_cmd=""; 
-  local build_cmd="jmake"; 
+  local prebuild_cmd="";
+  local build_cmd="jmake";
   local install_cmd="make install";
 
   local OPTIND=1;
@@ -393,6 +371,7 @@ c_dependency () {
     fi;
     if [ ! -d "${dstroot}" ]; then
       echo "Building ${name}...";
+      local lwd="$(pwd)";
       cd "${srcdir}";
       "./${configure}" --prefix="${dstroot}" "$@";
       if [ ! -z "${prebuild_cmd}" ]; then
@@ -400,7 +379,7 @@ c_dependency () {
       fi;
       eval ${build_cmd};
       eval ${install_cmd};
-      cd "${wd}";
+      cd "${lwd}";
     else
       echo "Using built ${name}.";
       echo "";
@@ -444,22 +423,23 @@ c_dependencies () {
   # value of OPENSSL_VERSION_NUBMER for use in inequality comparison.
   ruler;
 
-  local min_ssl_version="9470463";  # OpenSSL 0.9.8zf
+  local min_ssl_version="9470095";  # OpenSSL 0.9.8zh
 
   local ssl_version="$(c_macro openssl/ssl.h OPENSSL_VERSION_NUMBER)";
+
   if [ -z "${ssl_version}" ]; then ssl_version="0x0"; fi;
   ssl_version="$("${bootstrap_python}" -c "print ${ssl_version}")";
 
   if [ "${ssl_version}" -ge "${min_ssl_version}" ]; then
     using_system "OpenSSL";
   else
-    local v="0.9.8zf";
+    local v="0.9.8zh";
     local n="openssl";
     local p="${n}-${v}";
 
     # use 'config' instead of 'configure'; 'make' instead of 'jmake'.
     # also pass 'shared' to config to build shared libs.
-    c_dependency -c "config" -m "c69a4a679233f7df189e1ad6659511ec" \
+    c_dependency -c "config" -s "3ff71636bea85a99f4d76a10d119c09bda0421e3" \
       -p "make depend" -b "make" \
       "openssl" "${p}" \
       "http://www.openssl.org/source/${p}.tar.gz" "shared";
@@ -484,7 +464,6 @@ c_dependencies () {
       "libffi" "${p}" \
       "ftp://sourceware.org/pub/libffi/${p}.tar.gz"
   fi;
-
 }
 
 
@@ -497,8 +476,8 @@ py_dependencies () {
 
   export PATH="${py_virtualenv}/bin:${PATH}";
   export PYTHON="${python}";
-  export PYTHONPATH="${py_ve_tools}/lib:${wd}:${PYTHONPATH:-}";
 
+  ve_pythonpath="${py_ve_tools}/lib";
 
   # Work around a change in Xcode tools that breaks Python modules in OS X
   # 10.9.2 and prior due to a hard error if the -mno-fused-madd is used, as
@@ -521,17 +500,17 @@ py_dependencies () {
 
   if [ ! -d "${py_virtualenv}" ]; then
     bootstrap_virtualenv;
-    "${bootstrap_python}" -m virtualenv  \
-      --system-site-packages             \
-      --no-setuptools                    \
-      "${py_virtualenv}";
+    PYTHONPATH="${ve_pythonpath}"          \
+      "${bootstrap_python}" -m virtualenv  \
+        --system-site-packages             \
+        "${py_virtualenv}";
   fi;
 
+  local lwd="$(pwd)";
   cd "${wd}";
 
   # Make sure setup got called enough to write the version file.
-
-  PYTHONPATH="${PYTHONPATH}" "${python}" "${wd}/setup.py" check > /dev/null;
+  PYTHONPATH="${ve_pythonpath}" PYTHONPATH="${PYTHONPATH}" "${python}" "${wd}/setup.py" check > /dev/null;
 
   if [ -d "${dev_home}/pip_downloads" ]; then
     pip_install="pip_install_from_cache";
@@ -551,6 +530,8 @@ py_dependencies () {
     fi;
   done;
 
+  cd "${lwd}";
+
   echo "";
 }
 
@@ -561,9 +542,9 @@ bootstrap_virtualenv () {
   mkdir -p "${py_ve_tools}/junk";
 
   for pkg in             \
-      setuptools-18.5    \
-      pip-7.1.2          \
-      virtualenv-13.1.2  \
+      setuptools-20.3.1  \
+      pip-8.1.1          \
+      virtualenv-15.0.1  \
   ; do
       local    name="${pkg%-*}";
       local version="${pkg#*-}";
@@ -576,8 +557,9 @@ bootstrap_virtualenv () {
 
       curl -L "${url}" | tar -C "${tmp}" -xvzf -;
 
+      local lwd="$(pwd)";
       cd "${tmp}/$(basename "${pkg}")";
-      PYTHONPATH="${py_ve_tools}/lib"                \
+      PYTHONPATH="${ve_pythonpath}"                  \
         "${bootstrap_python}" setup.py install       \
             --install-base="${py_ve_tools}"          \
             --install-lib="${py_ve_tools}/lib"       \
@@ -585,7 +567,7 @@ bootstrap_virtualenv () {
             --install-scripts="${py_ve_tools}/junk"  \
             --install-data="${py_ve_tools}/junk"     \
             ;                                        \
-      cd "${wd}";
+      cd "${lwd}";
 
       rm -rf "${tmp}";
   done;
@@ -607,6 +589,7 @@ pip_download () {
 
 pip_install_from_cache () {
   "${python}" -m pip install                 \
+    --upgrade                                \
     --disable-pip-version-check              \
     --pre --allow-all-external               \
     --no-index                               \
@@ -619,6 +602,7 @@ pip_install_from_cache () {
 
 pip_download_and_install () {
   "${python}" -m pip install                 \
+    --upgrade                                \
     --disable-pip-version-check              \
     --pre --allow-all-external               \
     --no-cache-dir                           \

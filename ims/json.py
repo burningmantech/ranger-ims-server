@@ -14,7 +14,7 @@
 # limitations under the License.
 ##
 
-"""
+r"""
 JSON bindings for IMS data.
 
 2015 JSON incident schema replaces top-level location attributes with a
@@ -30,7 +30,7 @@ dictionary.
             "concentric": 11,                       // int >= 0 (garett)
             "radial_hour": 8,                       // int 2-10 (garett)
             "radial_minute": 15,                    // int 0-59 (garett)
-            "description: "Large dome, red flags"   // one line (garett,text)
+            "description": "Large dome, red flags"  // one line (garett,text)
         }
         "ranger_handles": [
             "Santa Cruz"                            // handle in Clubhouse

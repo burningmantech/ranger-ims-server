@@ -15,7 +15,21 @@
 ##
 
 """
-Incident Management System
+2013 BRC Street Names
 """
 
-__version__ = "1.0a1"
+concentricStreetIDByName = {
+    u"Esplanade"          : 0,
+    u"Airstrip"           : 1,
+    u"Biggie Size"        : 2,
+    u"Consumer"           : 3,
+    u"Desiderata"         : 4,
+    u"Extraterreristrial" : 5,
+    u"False Idol"         : 6,
+    u"GDP"                : 7,
+    u"Holy"               : 8,
+    u"Interstellar"       : 9,
+    u"John Frum"          : 10,
+    u"Kowtow"             : 11,
+    u"Laissez-faire"      : 12,
+}

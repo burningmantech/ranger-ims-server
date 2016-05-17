@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
+  <head t:render="head" />
+
+  <body>
+    <div t:render="container">
+
+    <p>
+      Destination:
+      <a t:render="destination">
+       <t:attr name="href"><t:slot name="destination_url" /></t:attr>
+       <t:slot name="destination_url" />
+      </a>
+    </p>
+
+    </div>
+  </body>
+</html>
