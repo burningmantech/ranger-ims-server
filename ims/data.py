@@ -710,17 +710,6 @@ class RodGarettAddress(Address):
         @param description: The address' radial minute.
         @type description: L{unicode}
         """
-        if concentric is not None and concentric < 0:
-            raise ValueError("Concentric street number may not be negative")
-
-        if radialHour is not None:
-            if not 1 <= radialHour <= 12:
-                raise ValueError("Radial hour must be 1-12")
-
-        if radialMinute is not None:
-            if not 0 <= radialMinute < 60:
-                raise ValueError("Radial minute must be 0-59")
-
         self.concentric   = concentric
         self.radialHour   = radialHour
         self.radialMinute = radialMinute
@@ -840,3 +829,24 @@ class RodGarettAddress(Address):
         _validateIsInstance(
             "description", self.description, unicode, optional=True
         )
+
+        if self.concentric is not None and self.concentric < 0:
+            raise InvalidDataError(
+                "Concentric street number must be non-negative, not {!r}"
+                .format(self.concentric)
+            )
+
+        if self.radialHour is not None:
+            if not 1 <= self.radialHour <= 12:
+                raise InvalidDataError(
+                    "Radial hour must be 1-12, not {!r}"
+                    .format(self.radialHour)
+                )
+
+        if self.radialMinute is not None:
+            if not 0 <= self.radialMinute < 60:
+                raise InvalidDataError(
+                    "Radial minute must be 0-59, not {!r}"
+                    .format(self.radialMinute)
+                )
+
