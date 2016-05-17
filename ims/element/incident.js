@@ -342,9 +342,7 @@ function drawReportEntries() {
 function performEdit(element, jsonKey, transform) {
     var value = element.val();
 
-    if (value == "") {
-        value = null;
-    } else if (transform != undefined) {
+    if (transform != undefined) {
         value = transform(value);
     }
 
