@@ -337,12 +337,12 @@ function performEdit(element, jsonKey, transform) {
         value = transform(value);
     }
 
-    edits = {"number": incident.number};
+    var edits = {"number": incident.number};
 
-    keyPath = jsonKey.split(".");
-    lastKey = keyPath.pop();
+    var keyPath = jsonKey.split(".");
+    var lastKey = keyPath.pop();
 
-    current = edits;
+    var current = edits;
     for (var i in keyPath) {
         var next = {};
         current[keyPath[i]] = next;
@@ -350,7 +350,17 @@ function performEdit(element, jsonKey, transform) {
     }
     current[lastKey] = value;
 
-    console.log(edits);
+    var json = JSON.stringify(edits);
+
+    console.log(json);
+
+    function complete(data, status, xhr) {
+        console.log("-------- GOT REPLY --------");
+        console.log("Status:" + status);
+        console.log(data);
+    }
+
+    $.post(incidentsURL + "/" + incident.number, json, complete, "json");
 }
 
 
