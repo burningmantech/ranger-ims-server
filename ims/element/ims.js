@@ -135,13 +135,35 @@ function enable(element) {
 }
 
 
+// Disable editing for an element
 function disableEditing() {
     disable($(".form-control"));
 }
 
 
+// Enable editing for an element
 function enableEditing() {
     enable($(".form-control"));
+}
+
+
+// Add an error indication to a control
+function controlHasError(element) {
+    element.parent().addClass("has-error");
+}
+
+
+// Add a success indication to a control
+function controlHasSuccess(element) {
+    element.parent().addClass("has-success");
+}
+
+
+// Clear error/success indication from a control
+function controlClear(element) {
+    var parent = element.parent();
+    parent.removeClass("has-error");
+    parent.removeClass("has-success");
 }
 
 

@@ -358,12 +358,14 @@ function performEdit(element, jsonKey, transform) {
 
     function ok(data, status, xhr) {
         console.log("Updated element: " + status);
-        // FIXME
+        controlHasSuccess(element);
+        // Clear success state after a 1s delay
+        element.delay("1000").queue(function() {controlClear(element)});
     }
 
     function fail(xhr, status, error) {
         console.log("Oh no: " + status + ": " + error);
-        // FIXME
+        controlHasError(element);
     }
 
     $.ajax({
