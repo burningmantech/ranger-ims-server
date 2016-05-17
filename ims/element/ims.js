@@ -123,6 +123,28 @@ function timeElement(date) {
 }
 
 
+// Disable an element
+function disable(element) {
+    element.attr("disabled", "");
+}
+
+
+// Enable an element
+function enable(element) {
+    element.attr("disabled", "");
+}
+
+
+function disableEditing() {
+    disable($(".form-control"));
+}
+
+
+function enableEditing() {
+    enable($(".form-control"));
+}
+
+
 //
 // Load HTML body template.
 //

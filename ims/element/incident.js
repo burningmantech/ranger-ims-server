@@ -35,20 +35,6 @@ function initIncidentPage() {
 
 
 //
-// Enable/disable all editing
-//
-
-function disableEditing() {
-    $(".form-control").attr("disabled", "");
-}
-
-
-function enableEditing() {
-    $(".form-control").removeAttr("disabled");
-}
-
-
-//
 // Load incident
 //
 
