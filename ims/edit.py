@@ -18,7 +18,10 @@
 Incident editing.
 """
 
-from .data import IncidentState, Incident, Location, ReportEntry
+from .data import (
+    IncidentState, Incident, ReportEntry,
+    Location, RodGarettAddress, TextOnlyAddress,
+)
 from .json import datetimeAsRFC3339
 
 __all__ = [
@@ -185,15 +188,65 @@ def editIncident(incident, edits, author):
 
     if oldLocation is None:
         location = newLocation
+        # For system entry
+        editValue(None, newLocation, "location")
     elif newLocation is None:
         location = oldLocation
     else:
         locationName = editValue(
             oldLocation.name, newLocation.name, "location name"
         )
-        locationAddress = editValue(
-            oldLocation.address, newLocation.address, "location address"
+
+        # Address needs to be unpacked
+        oldAddress = oldLocation.address
+        newAddress = newLocation.address
+
+        # If we are changing the address type, then force the old value into
+        # the new type, preserving the description, but losing other data.
+        if (
+            isinstance(newAddress, TextOnlyAddress) and not
+            isinstance(newAddress, TextOnlyAddress)
+        ):
+            oldAddress = TextOnlyAddress(description=oldAddress.description)
+            # For system entry
+            editValue(None, "text", "location address type")
+        elif (
+            isinstance(newAddress, RodGarettAddress) and not
+            isinstance(oldAddress, RodGarettAddress)
+        ):
+            oldAddress = RodGarettAddress(description=oldAddress.description)
+            # For system entry
+            editValue(None, "Rod Garett", "location address type")
+
+        description = editValue(
+            oldAddress.description, newAddress.description,
+            "location address description",
         )
+
+        if isinstance(newAddress, TextOnlyAddress):
+            locationAddress = TextOnlyAddress(description=description)
+        elif isinstance(newAddress, RodGarettAddress):
+            concentric = editValue(
+                oldAddress.concentric, newAddress.concentric,
+                "location address concentric street",
+            )
+            radialHour = editValue(
+                oldAddress.radialHour, newAddress.radialHour,
+                "location address radial street hour",
+            )
+            radialMinute = editValue(
+                oldAddress.radialMinute, newAddress.radialMinute,
+                "location address radial street minute",
+            )
+
+            locationAddress = RodGarettAddress(
+                concentric=concentric,
+                radialHour=radialHour, radialMinute=radialMinute,
+                description=description,
+            )
+        else:
+            raise NotImplementedError("Unknown address type")
+
         location = Location(locationName, locationAddress)
 
     #
