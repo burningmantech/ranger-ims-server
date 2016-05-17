@@ -250,6 +250,14 @@ def editIncident(incident, edits, author):
                     "location address radial street minute",
                 )
 
+                # We're using -1 to mean that we should clear the value
+                if concentric == -1:
+                    concentric = None
+                if radialHour == -1:
+                    radialHour = None
+                if radialMinute == -1:
+                    radialMinute = None
+
                 locationAddress = RodGarettAddress(
                     concentric=concentric,
                     radialHour=radialHour, radialMinute=radialMinute,
