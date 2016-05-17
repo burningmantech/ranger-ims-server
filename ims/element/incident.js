@@ -19,15 +19,10 @@
 //
 
 function initIncidentPage() {
-    function loadedIncident() {
-        drawIncidentFields();
-        enableEditing();
-    }
-
     function loadedBody() {
         addLocationAddressOptions();
         disableEditing();
-        loadIncident(loadedIncident);
+        loadAndDisplayIncident();
     }
 
     loadBody(loadedBody);
@@ -41,7 +36,7 @@ function initIncidentPage() {
 var incident = null;
 
 function loadIncident(success) {
-    function complete(data, status, request) {
+    function loaded(data, status, request) {
         incident = data;
 
         if (success != undefined) {
@@ -49,7 +44,21 @@ function loadIncident(success) {
         }
     }
 
-    $.get(incidentsURL + "/" + incidentNumber, complete, "json");
+    $.get(incidentsURL + "/" + incidentNumber, loaded, "json");
+}
+
+
+function loadAndDisplayIncident(success) {
+    function loaded() {
+        drawIncidentFields();
+        enableEditing();
+
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    loadIncident(loaded);
 }
 
 
