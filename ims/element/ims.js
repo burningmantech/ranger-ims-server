@@ -131,7 +131,7 @@ function disable(element) {
 
 // Enable an element
 function enable(element) {
-    element.attr("disabled", "");
+    element.removeAttr("disabled");
 }
 
 
