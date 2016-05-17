@@ -350,17 +350,30 @@ function performEdit(element, jsonKey, transform) {
     }
     current[lastKey] = value;
 
-    var json = JSON.stringify(edits);
+    var jsonText = JSON.stringify(edits);
 
-    console.log(json);
+    console.log("Sending edit: " + jsonText);
 
-    function complete(data, status, xhr) {
-        console.log("-------- GOT REPLY --------");
-        console.log("Status:" + status);
-        console.log(data);
+    var url = incidentsURL + "/" + incident.number;
+
+    function ok(data, status, xhr) {
+        console.log("Updated element: " + status);
+        // FIXME
     }
 
-    $.post(incidentsURL + "/" + incident.number, json, complete, "json");
+    function fail(xhr, status, error) {
+        console.log("Oh no: " + status + ": " + error);
+        // FIXME
+    }
+
+    $.ajax({
+        "url": url,
+        "method": "POST",
+        "contentType": "application/json",
+        "data": jsonText,
+        "success": ok,
+        "error": fail,
+    })
 }
 
 
