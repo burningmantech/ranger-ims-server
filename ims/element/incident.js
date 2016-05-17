@@ -138,7 +138,7 @@ function drawState() {
 
 function drawPriority() {
     selectOptionWithValue(
-        $("#incident_priority"), priorityNameFromNumber(incident.priority)
+        $("#incident_priority"), incident.priority
     );
 }
 
