@@ -346,6 +346,8 @@ function performEdit(element, jsonKey, transform) {
         value = transform(value);
     }
 
+    // Build a JSON object representing the requested edits
+
     var edits = {"number": incident.number};
 
     var keyPath = jsonKey.split(".");
@@ -358,6 +360,14 @@ function performEdit(element, jsonKey, transform) {
         current = next;
     }
     current[lastKey] = value;
+
+    // Location must include type
+
+    if (edits.location != undefined) {
+        edits.location.type = "garett";  // UI only supports one type
+    }
+
+    // Send request to server
 
     var jsonText = JSON.stringify(edits);
 
