@@ -375,6 +375,8 @@ function performEdit(element, jsonKey, transform) {
     function fail(xhr, status, error) {
         console.log("Oh no: " + status + ": " + error);
         controlHasError(element);
+        loadAndDisplayIncident();
+        window.alert("Failed to apply edit:\n" + error);
     }
 
     $.ajax({
