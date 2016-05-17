@@ -201,51 +201,62 @@ def editIncident(incident, edits, author):
         oldAddress = oldLocation.address
         newAddress = newLocation.address
 
-        # If we are changing the address type, then force the old value into
-        # the new type, preserving the description, but losing other data.
-        if (
-            isinstance(newAddress, TextOnlyAddress) and not
-            isinstance(newAddress, TextOnlyAddress)
-        ):
-            oldAddress = TextOnlyAddress(description=oldAddress.description)
+        if oldAddress is None:
+            locationAddress = newAddress
             # For system entry
-            editValue(None, "text", "location address type")
-        elif (
-            isinstance(newAddress, RodGarettAddress) and not
-            isinstance(oldAddress, RodGarettAddress)
-        ):
-            oldAddress = RodGarettAddress(description=oldAddress.description)
-            # For system entry
-            editValue(None, "Rod Garett", "location address type")
-
-        description = editValue(
-            oldAddress.description, newAddress.description,
-            "location address description",
-        )
-
-        if isinstance(newAddress, TextOnlyAddress):
-            locationAddress = TextOnlyAddress(description=description)
-        elif isinstance(newAddress, RodGarettAddress):
-            concentric = editValue(
-                oldAddress.concentric, newAddress.concentric,
-                "location address concentric street",
-            )
-            radialHour = editValue(
-                oldAddress.radialHour, newAddress.radialHour,
-                "location address radial street hour",
-            )
-            radialMinute = editValue(
-                oldAddress.radialMinute, newAddress.radialMinute,
-                "location address radial street minute",
-            )
-
-            locationAddress = RodGarettAddress(
-                concentric=concentric,
-                radialHour=radialHour, radialMinute=radialMinute,
-                description=description,
-            )
+            editValue(None, newAddress, "location address")
+        elif newAddress is None:
+            locationAddress = oldAddress
         else:
-            raise NotImplementedError("Unknown address type")
+            # If we are changing the address type, then force the old value into
+            # the new type, preserving the description, but losing other data.
+            if (
+                isinstance(newAddress, TextOnlyAddress) and not
+                isinstance(newAddress, TextOnlyAddress)
+            ):
+                oldAddress = TextOnlyAddress(
+                    description=oldAddress.description
+                )
+                # For system entry
+                editValue(None, "text", "location address type")
+            elif (
+                isinstance(newAddress, RodGarettAddress) and not
+                isinstance(oldAddress, RodGarettAddress)
+            ):
+                oldAddress = RodGarettAddress(
+                    description=oldAddress.description
+                )
+                # For system entry
+                editValue(None, "Rod Garett", "location address type")
+
+            description = editValue(
+                oldAddress.description, newAddress.description,
+                "location address description",
+            )
+
+            if isinstance(newAddress, TextOnlyAddress):
+                locationAddress = TextOnlyAddress(description=description)
+            elif isinstance(newAddress, RodGarettAddress):
+                concentric = editValue(
+                    oldAddress.concentric, newAddress.concentric,
+                    "location address concentric street",
+                )
+                radialHour = editValue(
+                    oldAddress.radialHour, newAddress.radialHour,
+                    "location address radial street hour",
+                )
+                radialMinute = editValue(
+                    oldAddress.radialMinute, newAddress.radialMinute,
+                    "location address radial street minute",
+                )
+
+                locationAddress = RodGarettAddress(
+                    concentric=concentric,
+                    radialHour=radialHour, radialMinute=radialMinute,
+                    description=description,
+                )
+            else:
+                raise NotImplementedError("Unknown address type")
 
         location = Location(locationName, locationAddress)
 
