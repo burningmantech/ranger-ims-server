@@ -19,32 +19,13 @@
 //
 
 function initIncidentPage() {
-    function loadedIncident() {
-        drawIncidentFields();
-        enableEditing();
-    }
-
     function loadedBody() {
         addLocationAddressOptions();
         disableEditing();
-        loadIncident(loadedIncident);
+        loadAndDisplayIncident();
     }
 
     loadBody(loadedBody);
-}
-
-
-//
-// Enable/disable all editing
-//
-
-function disableEditing() {
-    $(".form-control").attr("disabled", "");
-}
-
-
-function enableEditing() {
-    $(".form-control").removeAttr("disabled");
 }
 
 
@@ -55,7 +36,7 @@ function enableEditing() {
 var incident = null;
 
 function loadIncident(success) {
-    function complete(data, status, request) {
+    function loaded(data, status, request) {
         incident = data;
 
         if (success != undefined) {
@@ -63,7 +44,21 @@ function loadIncident(success) {
         }
     }
 
-    $.get(incidentsURL + "/" + incidentNumber, complete, "json");
+    $.get(incidentsURL + "/" + incidentNumber, loaded, "json");
+}
+
+
+function loadAndDisplayIncident(success) {
+    function loaded() {
+        drawIncidentFields();
+        enableEditing();
+
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    loadIncident(loaded);
 }
 
 
@@ -143,7 +138,7 @@ function drawState() {
 
 function drawPriority() {
     selectOptionWithValue(
-        $("#incident_priority"), priorityNameFromNumber(incident.priority)
+        $("#incident_priority"), incident.priority
     );
 }
 
@@ -344,19 +339,56 @@ function drawReportEntries() {
 // Editing
 //
 
-function performEdit(element, jsonKey, transform) {
+function sendEdits(edits, sender) {
+    edits.number = incident.number;
+
+    var jsonText = JSON.stringify(edits);
+
+    console.log("Sending edit: " + jsonText);
+
+    var url = incidentsURL + "/" + incident.number;
+
+    function ok(data, status, xhr) {
+        controlHasSuccess(sender);
+        loadAndDisplayIncident();
+        // Clear success state after a 1s delay
+        sender.delay("1000").queue(function() {controlClear(sender)});
+    }
+
+    function fail(xhr, status, error) {
+        var message = "Failed to apply edit:\n" + error
+        console.error(message);
+        controlHasError(sender);
+        loadAndDisplayIncident();
+        window.alert(message);
+    }
+
+    $.ajax({
+        "url": url,
+        "method": "POST",
+        "contentType": "application/json",
+        "data": jsonText,
+        "success": ok,
+        "error": fail,
+    })
+}
+
+
+function editFromElement(element, jsonKey, transform) {
     var value = element.val();
 
     if (transform != undefined) {
         value = transform(value);
     }
 
-    edits = {"number": incident.number};
+    // Build a JSON object representing the requested edits
 
-    keyPath = jsonKey.split(".");
-    lastKey = keyPath.pop();
+    var edits = {};
 
-    current = edits;
+    var keyPath = jsonKey.split(".");
+    var lastKey = keyPath.pop();
+
+    var current = edits;
     for (var i in keyPath) {
         var next = {};
         current[keyPath[i]] = next;
@@ -364,32 +396,40 @@ function performEdit(element, jsonKey, transform) {
     }
     current[lastKey] = value;
 
-    console.log(edits);
+    // Location must include type
+
+    if (edits.location != undefined) {
+        edits.location.type = "garett";  // UI only supports one type
+    }
+
+    // Send request to server
+
+    sendEdits(edits, element);
 }
 
 
 function editState() {
-    performEdit($("#incident_state"), "state");
+    editFromElement($("#incident_state"), "state");
 }
 
 
 function editPriority() {
-    performEdit($("#incident_priority"), "priority", Number);
+    editFromElement($("#incident_priority"), "priority", Number);
 }
 
 
 function editSummary() {
-    performEdit($("#incident_summary"), "summary");
+    editFromElement($("#incident_summary"), "summary");
 }
 
 
 function editLocationName() {
-    performEdit($("#incident_location_name"), "location.name");
+    editFromElement($("#incident_location_name"), "location.name");
 }
 
 
 function editLocationAddressRadialHour() {
-    performEdit(
+    editFromElement(
         $("#incident_location_address_radial_hour"),
         "location.radial_hour",
         Number
@@ -398,7 +438,7 @@ function editLocationAddressRadialHour() {
 
 
 function editLocationAddressRadialMinute() {
-    performEdit(
+    editFromElement(
         $("#incident_location_address_radial_minute"),
         "location.radial_minute",
         Number
@@ -407,7 +447,7 @@ function editLocationAddressRadialMinute() {
 
 
 function editLocationAddressConcentric() {
-    performEdit(
+    editFromElement(
         $("#incident_location_address_concentric"),
         "location.concentric",
         Number
@@ -416,5 +456,33 @@ function editLocationAddressConcentric() {
 
 
 function editLocationDescription() {
-    performEdit($("#incident_location_description"), "location.description");
+    editFromElement($("#incident_location_description"), "location.description");
+}
+
+
+function removeRanger(sender) {
+    rangerHandle = $(sender).parent().text().trim();
+
+    sendEdits(
+        {
+            "ranger_handles": incident.ranger_handles.filter(
+                function(h) { return h != rangerHandle }
+            ),
+        },
+        $(sender)
+    );
+}
+
+
+function removeIncidentType(sender) {
+    incidentType = $(sender).parent().text().trim();
+
+    sendEdits(
+        {
+            "incident_types": incident.incident_types.filter(
+                function(t) { return t != incidentType }
+            ),
+        },
+        $(sender)
+    );
 }

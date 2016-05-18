@@ -42,7 +42,7 @@ from twext.who.idirectory import RecordType
 from klein import Klein
 
 from ims import __version__ as version
-from ..data import Incident
+from ..data import Incident, InvalidDataError
 from ..json import textFromJSON, jsonFromFile
 from ..json import rangerAsJSON, incidentAsJSON, incidentFromJSON
 from ..edit import editIncident
@@ -81,6 +81,14 @@ def route(*args, **kwargs):
 
 
 
+if True:
+    _fixedETag = version
+else:
+    # For debugging, change the ETag on every app start
+    from uuid import uuid4
+    _fixedETag = uuid4().hex
+
+
 def fixedETag(f):
     """
     Decorator to add a fixed ETag to static resources.
@@ -89,7 +97,7 @@ def fixedETag(f):
     """
     @wraps(f)
     def wrapper(self, request, *args, **kwargs):
-        request.setHeader(HeaderName.etag.value, version)
+        request.setHeader(HeaderName.etag.value, _fixedETag)
         return f(self, request, *args, **kwargs)
 
     return wrapper
@@ -408,6 +416,8 @@ class WebService(object):
         request.setResponseCode(http.BAD_REQUEST)
         if message is None:
             message = "Bad request."
+        else:
+            message = u"{}".format(message).encode("utf-8")
         return self.textResource(request, message)
 
 
@@ -648,6 +658,7 @@ class WebService(object):
     @route(prefixURL.asText(), methods=("HEAD", "GET"))
     @route(prefixURL.asText() + u"/", methods=("HEAD", "GET"))
     @authorized(Authorization.readIncidents)
+    @fixedETag
     def applicationRootResource(self, request):
         """
         Application root page.
@@ -852,7 +863,10 @@ class WebService(object):
         # Apply the changes requested by the client
         #
         jsonEdits = jsonFromFile(request.content)
-        edits = incidentFromJSON(jsonEdits, number=number, validate=False)
+        try:
+            edits = incidentFromJSON(jsonEdits, number=number, validate=False)
+        except InvalidDataError as e:
+            return self.badRequestResource(request, e)
         edited = editIncident(incident, edits, author)
 
         #
