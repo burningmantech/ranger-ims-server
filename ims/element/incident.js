@@ -339,7 +339,42 @@ function drawReportEntries() {
 // Editing
 //
 
-function performEdit(element, jsonKey, transform) {
+function sendEdits(edits, sender) {
+    edits.number = incident.number;
+
+    var jsonText = JSON.stringify(edits);
+
+    console.log("Sending edit: " + jsonText);
+
+    var url = incidentsURL + "/" + incident.number;
+
+    function ok(data, status, xhr) {
+        controlHasSuccess(sender);
+        loadAndDisplayIncident();
+        // Clear success state after a 1s delay
+        sender.delay("1000").queue(function() {controlClear(sender)});
+    }
+
+    function fail(xhr, status, error) {
+        var message = "Failed to apply edit:\n" + error
+        console.error(message);
+        controlHasError(sender);
+        loadAndDisplayIncident();
+        window.alert(message);
+    }
+
+    $.ajax({
+        "url": url,
+        "method": "POST",
+        "contentType": "application/json",
+        "data": jsonText,
+        "success": ok,
+        "error": fail,
+    })
+}
+
+
+function editFromElement(element, jsonKey, transform) {
     var value = element.val();
 
     if (transform != undefined) {
@@ -348,7 +383,7 @@ function performEdit(element, jsonKey, transform) {
 
     // Build a JSON object representing the requested edits
 
-    var edits = {"number": incident.number};
+    var edits = {};
 
     var keyPath = jsonKey.split(".");
     var lastKey = keyPath.pop();
@@ -369,60 +404,32 @@ function performEdit(element, jsonKey, transform) {
 
     // Send request to server
 
-    var jsonText = JSON.stringify(edits);
-
-    console.log("Sending edit: " + jsonText);
-
-    var url = incidentsURL + "/" + incident.number;
-
-    function ok(data, status, xhr) {
-        controlHasSuccess(element);
-        loadAndDisplayIncident();
-        // Clear success state after a 1s delay
-        element.delay("1000").queue(function() {controlClear(element)});
-    }
-
-    function fail(xhr, status, error) {
-        var message = "Failed to apply edit:\n" + error
-        console.error(message);
-        controlHasError(element);
-        loadAndDisplayIncident();
-        window.alert(message);
-    }
-
-    $.ajax({
-        "url": url,
-        "method": "POST",
-        "contentType": "application/json",
-        "data": jsonText,
-        "success": ok,
-        "error": fail,
-    })
+    sendEdits(edits, element);
 }
 
 
 function editState() {
-    performEdit($("#incident_state"), "state");
+    editFromElement($("#incident_state"), "state");
 }
 
 
 function editPriority() {
-    performEdit($("#incident_priority"), "priority", Number);
+    editFromElement($("#incident_priority"), "priority", Number);
 }
 
 
 function editSummary() {
-    performEdit($("#incident_summary"), "summary");
+    editFromElement($("#incident_summary"), "summary");
 }
 
 
 function editLocationName() {
-    performEdit($("#incident_location_name"), "location.name");
+    editFromElement($("#incident_location_name"), "location.name");
 }
 
 
 function editLocationAddressRadialHour() {
-    performEdit(
+    editFromElement(
         $("#incident_location_address_radial_hour"),
         "location.radial_hour",
         Number
@@ -431,7 +438,7 @@ function editLocationAddressRadialHour() {
 
 
 function editLocationAddressRadialMinute() {
-    performEdit(
+    editFromElement(
         $("#incident_location_address_radial_minute"),
         "location.radial_minute",
         Number
@@ -440,7 +447,7 @@ function editLocationAddressRadialMinute() {
 
 
 function editLocationAddressConcentric() {
-    performEdit(
+    editFromElement(
         $("#incident_location_address_concentric"),
         "location.concentric",
         Number
@@ -449,7 +456,7 @@ function editLocationAddressConcentric() {
 
 
 function editLocationDescription() {
-    performEdit($("#incident_location_description"), "location.description");
+    editFromElement($("#incident_location_description"), "location.description");
 }
 
 
