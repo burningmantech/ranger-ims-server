@@ -378,6 +378,7 @@ function performEdit(element, jsonKey, transform) {
     function ok(data, status, xhr) {
         console.log("Updated element: " + status);
         controlHasSuccess(element);
+        loadAndDisplayIncident();
         // Clear success state after a 1s delay
         element.delay("1000").queue(function() {controlClear(element)});
     }
