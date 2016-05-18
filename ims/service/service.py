@@ -81,6 +81,14 @@ def route(*args, **kwargs):
 
 
 
+if True:
+    _fixedETag = version
+else:
+    # For debugging, change the ETag on every app start
+    from uuid import uuid4
+    _fixedETag = uuid4().hex
+
+
 def fixedETag(f):
     """
     Decorator to add a fixed ETag to static resources.
@@ -89,7 +97,7 @@ def fixedETag(f):
     """
     @wraps(f)
     def wrapper(self, request, *args, **kwargs):
-        request.setHeader(HeaderName.etag.value, version)
+        request.setHeader(HeaderName.etag.value, _fixedETag)
         return f(self, request, *args, **kwargs)
 
     return wrapper
