@@ -85,3 +85,11 @@ a.navbar-brand>img {
 .form-control {
   color: black;
 }
+
+.remove-badge {
+  display: none;
+}
+
+.list-group-item:hover .remove-badge {
+  display: inline-block;
+}
