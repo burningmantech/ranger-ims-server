@@ -658,6 +658,7 @@ class WebService(object):
     @route(prefixURL.asText(), methods=("HEAD", "GET"))
     @route(prefixURL.asText() + u"/", methods=("HEAD", "GET"))
     @authorized(Authorization.readIncidents)
+    @fixedETag
     def applicationRootResource(self, request):
         """
         Application root page.
