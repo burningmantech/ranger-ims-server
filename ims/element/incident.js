@@ -451,3 +451,17 @@ function editLocationAddressConcentric() {
 function editLocationDescription() {
     performEdit($("#incident_location_description"), "location.description");
 }
+
+
+function removeRanger(sender) {
+    rangerHandle = $(sender).parent().text().trim();
+
+    console.log("Remove Ranger: " + rangerHandle);
+}
+
+
+function removeIncidentType(sender) {
+    incidentType = $(sender).parent().text().trim();
+
+    console.log("Remove incident type: " + incidentType);
+}
