@@ -463,12 +463,26 @@ function editLocationDescription() {
 function removeRanger(sender) {
     rangerHandle = $(sender).parent().text().trim();
 
-    console.log("Remove Ranger: " + rangerHandle);
+    sendEdits(
+        {
+            "ranger_handles": incident.ranger_handles.filter(
+                function(h) { return h != rangerHandle }
+            ),
+        },
+        $(sender)
+    );
 }
 
 
 function removeIncidentType(sender) {
     incidentType = $(sender).parent().text().trim();
 
-    console.log("Remove incident type: " + incidentType);
+    sendEdits(
+        {
+            "incident_types": incident.incident_types.filter(
+                function(t) { return t != incidentType }
+            ),
+        },
+        $(sender)
+    );
 }
