@@ -376,7 +376,6 @@ function performEdit(element, jsonKey, transform) {
     var url = incidentsURL + "/" + incident.number;
 
     function ok(data, status, xhr) {
-        console.log("Updated element: " + status);
         controlHasSuccess(element);
         loadAndDisplayIncident();
         // Clear success state after a 1s delay
@@ -384,10 +383,11 @@ function performEdit(element, jsonKey, transform) {
     }
 
     function fail(xhr, status, error) {
-        console.log("Oh no: " + status + ": " + error);
+        var message = "Failed to apply edit:\n" + error
+        console.error(message);
         controlHasError(element);
         loadAndDisplayIncident();
-        window.alert("Failed to apply edit:\n" + error);
+        window.alert(message);
     }
 
     $.ajax({
