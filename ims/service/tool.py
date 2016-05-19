@@ -64,10 +64,15 @@ class WebTool(Executable):
             self["configFile"] = FilePath(path)
 
 
-        def parseArgs(self):
-            BaseOptions.parseArgs(self)
-
+        def initConfig(self):
             configFile = self.get("configFile")
+
+            if configFile is None:
+                if FilePath("./.develop").isdir():
+                    dev = FilePath("./conf/imsd.conf")
+                    if dev.isfile():
+                        configFile = dev
+
             if configFile is None:
                 configuration = Configuration(None)
             else:
@@ -77,6 +82,11 @@ class WebTool(Executable):
 
             self["configuration"] = configuration
 
+
+        def parseArgs(self):
+            BaseOptions.parseArgs(self)
+
+            self.initConfig()
 
 
     @inlineCallbacks
