@@ -102,6 +102,8 @@ function drawIncidentFields() {
     drawLocationAddressConcentric();
     drawLocationDescription();
     drawReportEntries();
+
+    $("#incident_report_add").on("input", reportEntryEdited);
 }
 
 
@@ -522,4 +524,20 @@ function addIncidentType(sender) {
     incidentType = $(sender).val().trim();
 
     console.log("Add incident type: " + incidentType);
+}
+
+
+function reportEntryEdited(event) {
+    var text = $("#incident_report_add").val().trim();
+    var submitButton = $("#report_entry_submit");
+
+    if (text == "") {
+        submitButton.addClass("disabled");
+        submitButton.removeClass("btn-warning");
+        submitButton.addClass("btn-default");
+    } else {
+        submitButton.removeClass("disabled");
+        submitButton.removeClass("btn-default");
+        submitButton.addClass("btn-warning");
+    }
 }
