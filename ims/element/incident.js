@@ -364,7 +364,7 @@ function drawReportEntries() {
 // Editing
 //
 
-function sendEdits(edits, sender) {
+function sendEdits(edits, success, error) {
     edits.number = incident.number;
 
     var jsonText = JSON.stringify(edits);
@@ -374,16 +374,14 @@ function sendEdits(edits, sender) {
     var url = incidentsURL + "/" + incident.number;
 
     function ok(data, status, xhr) {
-        controlHasSuccess(sender);
+        success();
         loadAndDisplayIncident();
-        // Clear success state after a 1s delay
-        sender.delay("1000").queue(function() {controlClear(sender)});
     }
 
-    function fail(xhr, status, error) {
-        var message = "Failed to apply edit:\n" + error
-        console.error(message);
-        controlHasError(sender);
+    function fail(xhr, status, e) {
+        var message = "Failed to apply edit:\n" + e
+        console.log(message);
+        error();
         loadAndDisplayIncident();
         window.alert(message);
     }
@@ -429,7 +427,17 @@ function editFromElement(element, jsonKey, transform) {
 
     // Send request to server
 
-    sendEdits(edits, element);
+    function ok() {
+        controlHasSuccess(element);
+        // Clear success state after a 1s delay
+        element.delay("1000").queue(function() {controlClear(element)});
+    }
+
+    function fail() {
+        controlHasError(element);
+    }
+
+    sendEdits(edits, element, ok, fail);
 }
 
 
@@ -486,7 +494,17 @@ function editLocationDescription() {
 
 
 function removeRanger(sender) {
-    rangerHandle = $(sender).parent().text().trim();
+    sender = $(sender);
+
+    var rangerHandle = sender.parent().text().trim();
+
+    function ok() {
+        controlHasSuccess(sender);
+    }
+
+    function fail() {
+        controlHasError(sender);
+    }
 
     sendEdits(
         {
@@ -494,13 +512,23 @@ function removeRanger(sender) {
                 function(h) { return h != rangerHandle }
             ),
         },
-        $(sender)
+        ok, fail
     );
 }
 
 
 function removeIncidentType(sender) {
-    incidentType = $(sender).parent().text().trim();
+    sender = $(sender);
+
+    var incidentType = sender.parent().text().trim();
+
+    function ok() {
+        controlHasSuccess(sender);
+    }
+
+    function fail() {
+        controlHasError(sender);
+    }
 
     sendEdits(
         {
@@ -508,7 +536,7 @@ function removeIncidentType(sender) {
                 function(t) { return t != incidentType }
             ),
         },
-        $(sender)
+        ok, fail
     );
 }
 
@@ -531,13 +559,42 @@ function reportEntryEdited(event) {
     var text = $("#incident_report_add").val().trim();
     var submitButton = $("#report_entry_submit");
 
+    submitButton.removeClass("btn-default");
+    submitButton.removeClass("btn-warning");
+    submitButton.removeClass("btn-danger");
+
     if (text == "") {
         submitButton.addClass("disabled");
-        submitButton.removeClass("btn-warning");
         submitButton.addClass("btn-default");
     } else {
         submitButton.removeClass("disabled");
-        submitButton.removeClass("btn-default");
         submitButton.addClass("btn-warning");
     }
+}
+
+
+function submitReportEntry() {
+    var text = $("#incident_report_add").val().trim();
+
+    if (text == "") {
+        return;
+    }
+
+    console.log("New report entry:\n" + text);
+
+    function ok() {
+        // Clear the report entry
+        $("#incident_report_add").val("");
+        // Reset the submit button
+        reportEntryEdited();
+    }
+
+    function fail() {
+        var submitButton = $("#report_entry_submit");
+        submitButton.removeClass("btn-default");
+        submitButton.removeClass("btn-warning");
+        submitButton.addClass("btn-danger");
+    }
+
+    sendEdits({"report_entries": [{"text": text}]}, ok, fail);
 }
