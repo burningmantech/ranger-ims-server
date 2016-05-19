@@ -586,11 +586,13 @@ function removeRanger(sender) {
     var rangerHandle = sender.parent().text().trim();
 
     function ok() {
-        controlHasSuccess(sender);
+        // FIXME
+        // controlHasSuccess(sender);
     }
 
     function fail() {
-        controlHasError(sender);
+        // FIXME
+        // controlHasError(sender);
     }
 
     sendEdits(
@@ -610,11 +612,13 @@ function removeIncidentType(sender) {
     var incidentType = sender.parent().text().trim();
 
     function ok() {
-        controlHasSuccess(sender);
+        // FIXME
+        // controlHasSuccess(sender);
     }
 
     function fail() {
-        controlHasError(sender);
+        // FIXME
+        // controlHasError(sender);
     }
 
     sendEdits(
