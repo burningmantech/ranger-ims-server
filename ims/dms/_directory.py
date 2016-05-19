@@ -22,23 +22,25 @@ __all__ = [
     "DirectoryService",
 ]
 
-from twisted.logger import Logger
+from twisted.python.constants import Names, NamedConstant
 
 from twext.who.idirectory import (
-    # DirectoryServiceError, DirectoryAvailabilityError,
-    # FieldName as BaseFieldName,
-    RecordType as BaseRecordType,
-    # IPlaintextPasswordVerifier, DirectoryConfigurationError
+    RecordType as BaseRecordType, FieldName as BaseFieldName
 )
-from twext.who.directory import (
+from twext.who.index import (
     DirectoryService as BaseDirectoryService,
     DirectoryRecord as BaseDirectoryRecord,
 )
-from twext.who.expression import (
-    MatchExpression,  # ExistsExpression, BooleanExpression,
-    # CompoundExpression, Operand, MatchType
-)
 from twext.who.util import ConstantsContainer
+
+
+
+class FieldName(Names):
+    """
+    DMS field names.
+    """
+    status = NamedConstant()
+    status.description = u"status"
 
 
 
@@ -47,7 +49,7 @@ class DirectoryService(BaseDirectoryService):
     Duty Management System directory service.
     """
 
-    log = Logger()
+    fieldName = ConstantsContainer((BaseFieldName, FieldName))
 
     recordType = ConstantsContainer((
         BaseRecordType.user, BaseRecordType.group,
@@ -55,23 +57,42 @@ class DirectoryService(BaseDirectoryService):
 
 
     def __init__(self, dms):
+        BaseDirectoryService.__init__(self, realmName=noRealmName)
+
         self.dms = dms
+        self._personnel = None
 
 
-    def recordsFromNonCompoundExpression(
-        self, expression, recordTypes=None, records=None,
-        limitResults=None, timeoutSeconds=None,
-    ):
-        if isinstance(expression, MatchExpression):
-            raise NotImplementedError(
-                "Expression: {}".format(expression)
-            )
+    @property
+    def realmName(self):
+        return "{}@{}".format(self.dms.database, self.dms.host)
 
-        return BaseDirectoryService.recordsFromNonCompoundExpression(
-            expression,
-            recordTypes=recordTypes, records=records,
-            limitResults=limitResults, timeoutSeconds=timeoutSeconds,
+
+    @realmName.setter
+    def realmName(self, value):
+        if value is not noRealmName:
+            raise AttributeError("realmName may not be set directly")
+
+
+    def loadRecords(self):
+        # Getting the personnel data from DMS is async, and this API is not,
+        # so we'll set up a callback to get the data when it's available.
+
+        d = self.dms.personnel()
+        d.addCallback(self.loadRecordsForRealz)
+
+
+    def loadRecordsForRealz(self, personnel):
+        if personnel is self._personnel:
+            return
+
+        self.flush()
+        self.indexRecords(
+            DirectoryRecord(self, ranger) for ranger in personnel
         )
+
+        self._personnel = personnel
+
 
 
 class DirectoryRecord(BaseDirectoryRecord):
@@ -79,12 +100,25 @@ class DirectoryRecord(BaseDirectoryRecord):
     Duty Management System directory record.
     """
 
-    log = Logger()
+    def __init__(self, service, ranger):
+        fields = {
+            service.fieldName.uid       : ranger.handle,
+            service.fieldName.shortNames: (ranger.handle,),
+            service.fieldName.fullNames : (ranger.name,),
+            service.fieldName.status    : ranger.status,
+            service.fieldName.recordType: service.recordType.user,
+        }
+
+        BaseDirectoryRecord.__init__(self, service, fields)
 
 
-    # #
-    # # Verifiers for twext.who.checker stuff.
-    # #
+    #
+    # Verifiers for twext.who.checker stuff.
+    #
 
-    # def verifyPlaintextPassword(self, password):
-    #     return self.service._authenticateUsernamePassword(self.dn, password)
+    def verifyPlaintextPassword(self, password):
+        return True  # FIXME
+
+
+
+noRealmName = object()
