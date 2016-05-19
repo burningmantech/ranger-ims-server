@@ -509,3 +509,17 @@ function removeIncidentType(sender) {
         $(sender)
     );
 }
+
+
+function addRanger(sender) {
+    rangerHandle = $(sender).val().trim();
+
+    console.log("Add Ranger: " + rangerHandle);
+}
+
+
+function addIncidentType(sender) {
+    incidentType = $(sender).val().trim();
+
+    console.log("Add incident type: " + incidentType);
+}
