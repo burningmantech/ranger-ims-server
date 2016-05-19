@@ -58,7 +58,12 @@ class DutyManagementSystem(object):
     """
     log = Logger()
 
-    personnel_cache_interval = 60 * 60 * 1  # 1 hour
+    # DMS data changes rarely, so hour intervals between refreshing data should
+    # be fine.
+    # Refresh after an hour, but don't panic about it until we're stale for >12
+    # hours.
+    personnelCacheInterval    = 60 * 60 * 1   # 1 hour
+    personnelCacheIntervalMax = 60 * 60 * 12  # 12 hours
 
 
     def __init__(self, host, database, username, password):
@@ -81,8 +86,9 @@ class DutyManagementSystem(object):
         self.password = password
 
         self._personnel = ()
-        self._personnel_updated = 0
+        self._personnelLastUpdated = 0
         self._dbpool = None
+        self._busy = False
 
 
     @property
@@ -117,45 +123,49 @@ class DutyManagementSystem(object):
     @inlineCallbacks
     def personnel(self):
         now = time()
+        elapsed = now - self._personnelLastUpdated
 
-        if now - self._personnel_updated > self.personnel_cache_interval:
-            # Mark as updated now so we don't end up performing multiple
-            # (redundant) DB queries at the same time.
-            self._personnel_updated = now
-
+        if (not self._busy and elapsed > self.personnelCacheInterval):
+            self._busy = True
             try:
-                #
-                # Ask the database for a list of personnel.
-                #
-                self.log.info(
-                    "{dms} retrieving personnel from "
-                    "Duty Management System...",
-                    dms=self
-                )
-
-                results = yield self.dbpool.runQuery(
-                    """
-                    select callsign, first_name, mi, last_name, status
-                    from person
-                    where status not in (
-                        'prospective', 'alpha',
-                        'bonked', 'uberbonked',
-                        'deceased'
+                try:
+                    self.log.info(
+                        "Retrieving personnel from Duty Management System..."
                     )
-                    """
-                )
 
-                self._personnel = tuple(
-                    Ranger(handle, fullName(first, middle, last), status)
-                    for handle, first, middle, last, status
-                    in results
-                )
-                self._personnel_updated = time()
+                    results = yield self.dbpool.runQuery(
+                        """
+                        select callsign, first_name, mi, last_name, status
+                        from person
+                        where status not in (
+                            'prospective', 'alpha',
+                            'bonked', 'uberbonked',
+                            'deceased'
+                        )
+                        """
+                    )
 
-            except Exception as e:
-                self._personnel_updated = 0
-                self._dbpool = None
-                raise DatabaseError(e)
+                    self._personnel = tuple(
+                        Ranger(handle, fullName(first, middle, last), status)
+                        for handle, first, middle, last, status
+                        in results
+                    )
+                    self._personnelLastUpdated = time()
+
+                except Exception as e:
+                    self._personnelLastUpdated = 0
+                    self._dbpool = None
+
+                    if elapsed > self.personnelCacheIntervalMax:
+                        raise DatabaseError(e)
+
+                    self.log.warn(
+                        "Unable to load personnel data from DMS: {error}",
+                        error=e
+                    )
+
+            finally:
+                self._busy = False
 
         returnValue(self._personnel)
 
