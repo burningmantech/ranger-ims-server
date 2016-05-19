@@ -255,11 +255,22 @@ function drawRangersToAdd() {
     handles = handles.sort();
 
     for (var i in handles) {
-        handle = handles[i];
+        var handle = handles[i];
+        var ranger = personnel[handle];
+
+        // Filter inactive Rangers out
+        // FIXME: better yet: filter based on on-playa state
+        switch (ranger.status) {
+            case "active":
+            case "vintage":
+                break;
+            default:
+                continue;
+        }
 
         var option = $("<option />");
         option.attr("value", handle);
-        option.text(rangerAsString(personnel[handle]));
+        option.text(rangerAsString(ranger));
 
         select.append(option);
     }
