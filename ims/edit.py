@@ -293,6 +293,7 @@ def editIncident(incident, edits, author):
         for reportEntry in edits.report_entries:
             # Work-around for clients that resubmit the same entry >1 time
             if reportEntry not in reportEntries:
+                reportEntry.author = author
                 reportEntries.append(reportEntry)
 
 
