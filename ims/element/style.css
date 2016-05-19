@@ -77,10 +77,6 @@ a.navbar-brand>img {
   margin: 10px 0 0 0;
 }
 
-#incident_well > .panel {
-  margin-bottom: 5px;
-}
-
 /* We want good readability even for disabled controls. */
 .form-control {
   color: black;
@@ -92,4 +88,12 @@ a.navbar-brand>img {
 
 .list-group-item:hover .remove-badge {
   display: inline-block;
+}
+
+#incident_well > .panel {
+  margin-bottom: 5px;
+}
+
+#incident_report_add {
+  resize: vertical;
 }
