@@ -19,32 +19,13 @@
 //
 
 function initIncidentPage() {
-    function loadedIncident() {
-        drawIncidentFields();
-        enableEditing();
-    }
-
     function loadedBody() {
         addLocationAddressOptions();
         disableEditing();
-        loadIncident(loadedIncident);
+        loadAndDisplayIncident();
     }
 
     loadBody(loadedBody);
-}
-
-
-//
-// Enable/disable all editing
-//
-
-function disableEditing() {
-    $(".form-control").attr("disabled", "");
-}
-
-
-function enableEditing() {
-    $(".form-control").removeAttr("disabled");
 }
 
 
@@ -55,7 +36,7 @@ function enableEditing() {
 var incident = null;
 
 function loadIncident(success) {
-    function complete(data, status, request) {
+    function loaded(data, status, request) {
         incident = data;
 
         if (success != undefined) {
@@ -63,7 +44,21 @@ function loadIncident(success) {
         }
     }
 
-    $.get(incidentsURL + "/" + incidentNumber, complete, "json");
+    $.get(incidentsURL + "/" + incidentNumber, loaded, "json");
+}
+
+
+function loadAndDisplayIncident(success) {
+    function loaded() {
+        drawIncidentFields();
+        enableEditing();
+
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    loadIncident(loaded);
 }
 
 
@@ -351,12 +346,14 @@ function performEdit(element, jsonKey, transform) {
         value = transform(value);
     }
 
-    edits = {"number": incident.number};
+    // Build a JSON object representing the requested edits
 
-    keyPath = jsonKey.split(".");
-    lastKey = keyPath.pop();
+    var edits = {"number": incident.number};
 
-    current = edits;
+    var keyPath = jsonKey.split(".");
+    var lastKey = keyPath.pop();
+
+    var current = edits;
     for (var i in keyPath) {
         var next = {};
         current[keyPath[i]] = next;
@@ -364,7 +361,42 @@ function performEdit(element, jsonKey, transform) {
     }
     current[lastKey] = value;
 
-    console.log(edits);
+    // Location must include type
+
+    if (edits.location != undefined) {
+        edits.location.type = "garett";  // UI only supports one type
+    }
+
+    // Send request to server
+
+    var jsonText = JSON.stringify(edits);
+
+    console.log("Sending edit: " + jsonText);
+
+    var url = incidentsURL + "/" + incident.number;
+
+    function ok(data, status, xhr) {
+        console.log("Updated element: " + status);
+        controlHasSuccess(element);
+        // Clear success state after a 1s delay
+        element.delay("1000").queue(function() {controlClear(element)});
+    }
+
+    function fail(xhr, status, error) {
+        console.log("Oh no: " + status + ": " + error);
+        controlHasError(element);
+        loadAndDisplayIncident();
+        window.alert("Failed to apply edit:\n" + error);
+    }
+
+    $.ajax({
+        "url": url,
+        "method": "POST",
+        "contentType": "application/json",
+        "data": jsonText,
+        "success": ok,
+        "error": fail,
+    })
 }
 
 

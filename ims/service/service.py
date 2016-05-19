@@ -42,7 +42,7 @@ from twext.who.idirectory import RecordType
 from klein import Klein
 
 from ims import __version__ as version
-from ..data import Incident
+from ..data import Incident, InvalidDataError
 from ..json import textFromJSON, jsonFromFile
 from ..json import rangerAsJSON, incidentAsJSON, incidentFromJSON
 from ..edit import editIncident
@@ -408,6 +408,8 @@ class WebService(object):
         request.setResponseCode(http.BAD_REQUEST)
         if message is None:
             message = "Bad request."
+        else:
+            message = u"{}".format(message).encode("utf-8")
         return self.textResource(request, message)
 
 
@@ -852,7 +854,10 @@ class WebService(object):
         # Apply the changes requested by the client
         #
         jsonEdits = jsonFromFile(request.content)
-        edits = incidentFromJSON(jsonEdits, number=number, validate=False)
+        try:
+            edits = incidentFromJSON(jsonEdits, number=number, validate=False)
+        except InvalidDataError as e:
+            return self.badRequestResource(request, e)
         edited = editIncident(incident, edits, author)
 
         #
