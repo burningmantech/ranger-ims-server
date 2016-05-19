@@ -54,7 +54,7 @@ from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
 from ..element.incident_template import IncidentTemplatePage
-from ..dms.dms import DatabaseError
+from ..dms import DatabaseError
 from .auth import authenticated, authorized, Authorization
 from .query import editsFromQuery
 

@@ -25,9 +25,7 @@ __all__ = [
 ]
 
 from time import time
-# from datetime import time as Time
 
-# from twisted.python.constants import Values, ValueConstant
 from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.enterprise import adbapi

@@ -17,3 +17,13 @@
 """
 Duty Management System integration.
 """
+
+__all__ = [
+    "DMSError",
+    "DatabaseError",
+    "DutyManagementSystem",
+]
+
+from ._dms import DMSError
+from ._dms import DatabaseError
+from ._dms import DutyManagementSystem

@@ -23,7 +23,7 @@ from twisted.trial import unittest
 from twisted.internet.defer import succeed, fail
 from twisted.internet.defer import inlineCallbacks
 
-from ..dms import DutyManagementSystem, fullName
+from .. import DutyManagementSystem, fullName
 
 
 
