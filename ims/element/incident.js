@@ -242,9 +242,16 @@ function drawRangers() {
 
     var items = [];
 
-    for (var i in incident.ranger_handles) {
+    var handles = incident.ranger_handles;
+    if (handles == undefined) {
+        handles = [];
+    } else {
+        handles.sort();
+    }
+
+    for (var i in handles) {
         var item = _rangerItem.clone();
-        item.append(incident.ranger_handles[i]);
+        item.append(handles[i]);
         items.push(item);
     }
 
