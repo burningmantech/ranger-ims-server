@@ -526,7 +526,7 @@ function editFromElement(element, jsonKey, transform) {
         controlHasError(element);
     }
 
-    sendEdits(edits, element, ok, fail);
+    sendEdits(edits, ok, fail);
 }
 
 
