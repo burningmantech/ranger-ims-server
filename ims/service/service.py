@@ -54,6 +54,7 @@ from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
 from ..element.incident_template import IncidentTemplatePage
+from ..dms.dms import DatabaseError
 from .auth import authenticated, authorized, Authorization
 from .query import editsFromQuery
 
@@ -69,12 +70,18 @@ def route(*args, **kwargs):
     def decorator(f):
         @_app.route(*args, **kwargs)
         @wraps(f)
+        @inlineCallbacks
         def wrapper(self, request, *args, **kwargs):
             request.setHeader(
                 HeaderName.server.value,
                 "Incident Management System/{}".format(version),
             )
-            return f(self, request, *args, **kwargs)
+            try:
+                response = yield f(self, request, *args, **kwargs)
+            except Exception:
+                self.log.failure("Request failed")
+                returnValue(self.internalErrorResource(request))
+            returnValue(response)
 
         return wrapper
     return decorator
@@ -421,6 +428,15 @@ class WebService(object):
         return self.textResource(request, message)
 
 
+    def internalErrorResource(self, request, message=None):
+        request.setResponseCode(http.INTERNAL_SERVER_ERROR)
+        if message is None:
+            message = "Internal error."
+        else:
+            message = u"{}".format(message).encode("utf-8")
+        return self.textResource(request, message)
+
+
     #
     # Static content
     #
@@ -697,7 +713,14 @@ class WebService(object):
     @authorized(Authorization.readIncidents)
     @inlineCallbacks
     def personnelResource(self, request, event):
-        stream, etag = yield self.personnelData()
+        try:
+            stream, etag = yield self.personnelData()
+        except DatabaseError as e:
+            self.log.error(
+                "Unable to load personnel data from DMS: {failure}",
+                failure=e
+            )
+            returnValue(self.internalErrorResource(request))
         returnValue(self.jsonStream(request, stream, etag))
 
 
