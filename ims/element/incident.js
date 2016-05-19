@@ -44,7 +44,7 @@ function loadIncident(success) {
         }
     }
 
-    var url = incidentsURL + "/ss" + incidentNumber;
+    var url = incidentsURL + "/" + incidentNumber;
 
     function ok(data, status, xhr) {
         incident = data;
