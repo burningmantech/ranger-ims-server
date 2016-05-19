@@ -58,7 +58,11 @@
       <label>Rangers:</label>
       <div class="well well-sm">
         <ul id="incident_rangers_list" class="list-group list-group-small">
-          <li class="list-group-item" />
+          <li class="list-group-item">
+            <span class="badge remove-badge" onclick="removeRanger(this)">
+              <span class="glyphicon glyphicon-remove" />
+            </span>
+          </li>
         </ul>
       </div>
     </div>
@@ -66,7 +70,11 @@
       <label>Incident Types</label>
       <div class="well well-sm">
         <ul id="incident_types_list" class="list-group list-group-small">
-          <li class="list-group-item" />
+          <li class="list-group-item">
+            <span class="badge remove-badge" onclick="removeIncidentType(this)">
+              <span class="glyphicon glyphicon-remove" />
+            </span>
+          </li>
         </ul>
       </div>
     </div>
@@ -96,7 +104,7 @@
                 class="form-control input-sm auto-width"
                 onchange="editLocationAddressRadialHour()"
               >
-                <option value="" />
+                <option value="-1" />
               </select>
               :
               <select
@@ -104,7 +112,7 @@
                 class="form-control input-sm auto-width"
                 onchange="editLocationAddressRadialMinute()"
               >
-                <option value="" />
+                <option value="-1" />
               </select>
               @
               <select
@@ -112,7 +120,7 @@
                 class="form-control input-sm auto-width"
                 onchange="editLocationAddressConcentric()"
               >
-                <option value="" />
+                <option value="-1" />
               </select>
             </div>
           </div>
