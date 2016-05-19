@@ -78,10 +78,14 @@ def route(*args, **kwargs):
             )
             try:
                 response = yield f(self, request, *args, **kwargs)
+            except DatabaseError as e:
+                self.log.error("DMS error: {failure}", failure=e)
             except Exception:
                 self.log.failure("Request failed")
-                returnValue(self.internalErrorResource(request))
-            returnValue(response)
+            else:
+                returnValue(response)
+
+            returnValue(self.internalErrorResource(request))
 
         return wrapper
     return decorator
@@ -713,14 +717,7 @@ class WebService(object):
     @authorized(Authorization.readIncidents)
     @inlineCallbacks
     def personnelResource(self, request, event):
-        try:
-            stream, etag = yield self.personnelData()
-        except DatabaseError as e:
-            self.log.error(
-                "Unable to load personnel data from DMS: {failure}",
-                failure=e
-            )
-            returnValue(self.internalErrorResource(request))
+        stream, etag = yield self.personnelData()
         returnValue(self.jsonStream(request, stream, etag))
 
 
