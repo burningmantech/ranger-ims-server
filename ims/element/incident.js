@@ -263,7 +263,7 @@ function drawRangersToAdd() {
     for (var handle in personnel) {
         handles.push(handle);
     }
-    handles = handles.sort();
+    handles.sort();
 
     for (var i in handles) {
         var handle = handles[i];
