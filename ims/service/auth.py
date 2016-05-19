@@ -44,15 +44,6 @@ def authenticated(optional=False):
     def decorator(f):
         @wraps(f)
         def wrapper(self, request, *args, **kwargs):
-            #
-            # FIXME: Temporary hack until we get DMS integration working
-            #
-            request.user = "test"
-            return f(self, request, *args, **kwargs)
-            #
-            # **** END HACK ****
-            #
-
             session = request.getSession()
             request.user = getattr(session, "user", None)
 
