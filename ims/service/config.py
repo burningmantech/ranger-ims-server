@@ -94,11 +94,12 @@ class Configuration (object):
                     "Read configuration file: {configFile.path}",
                     configFile=configFile
                 )
-
-            self.log.error(
-                "Unable to read configuration file: {file.path}",
-                file=configFile
-            )
+                break
+            else:
+                self.log.error(
+                    "Unable to read configuration file: {file.path}",
+                    file=configFile
+                )
 
         def valueFromConfig(section, option, default):
             try:
