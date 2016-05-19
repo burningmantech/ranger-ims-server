@@ -37,7 +37,7 @@ from twisted.logger import Logger
 from ..tz import FixedOffsetTimeZone
 from ..data import IncidentType
 from ..json import textFromJSON, jsonFromFile
-from ..dms import DutyManagementSystem
+from ..dms import DutyManagementSystem, DirectoryService
 from ..store import MultiStorage
 
 
@@ -264,6 +264,8 @@ class Configuration (object):
             username=self.DMSUsername,
             password=self.DMSPassword,
         )
+
+        self.directory = DirectoryService(self.dms)
 
         self.storage = MultiStorage(self.DataRoot, self.ReadOnly)
 

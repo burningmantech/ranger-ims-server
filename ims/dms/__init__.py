@@ -22,8 +22,9 @@ __all__ = [
     "DMSError",
     "DatabaseError",
     "DutyManagementSystem",
+    "DirectoryService",
+    "DirectoryRecord",
 ]
 
-from ._dms import DMSError
-from ._dms import DatabaseError
-from ._dms import DutyManagementSystem
+from ._dms import DMSError, DatabaseError, DutyManagementSystem
+from ._directory import DirectoryService, DirectoryRecord

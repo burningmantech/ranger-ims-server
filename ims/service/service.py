@@ -224,7 +224,7 @@ class WebService(object):
         self.config = config
         self.storage = config.storage
         self.dms = config.dms
-        self.directory = None
+        self.directory = config.directory
 
 
     def resource(self):
