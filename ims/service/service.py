@@ -273,6 +273,7 @@ class WebService(object):
             returnValue(Authorization.none)
 
         # FIXME: Check clubhouse roles
+        yield
 
         returnValue(
             Authorization.readIncidents |
