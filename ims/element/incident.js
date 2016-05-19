@@ -44,7 +44,30 @@ function loadIncident(success) {
         }
     }
 
-    $.get(incidentsURL + "/" + incidentNumber, loaded, "json");
+    var url = incidentsURL + "/ss" + incidentNumber;
+
+    function ok(data, status, xhr) {
+        incident = data;
+
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    function fail(xhr, status, error) {
+        disableEditing();
+        var message = "Failed to load incident:\n" + error
+        console.error(message);
+        window.alert(message);
+    }
+
+    $.ajax({
+        "url": url,
+        "method": "GET",
+        "dataType": "json",
+        "success": ok,
+        "error": fail,
+    });
 }
 
 
