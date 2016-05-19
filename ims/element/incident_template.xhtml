@@ -64,12 +64,15 @@
             </span>
           </li>
         </ul>
-        <input
-          id="rangers_add" class="form-control input-sm"
-          type="text" inputmode="latin-name"
-          placeholder="Ranger to add…"
-          onchange="addRanger(this)"
-        />
+        <div>
+          <label>Add:</label>
+          <select
+            id="ranger_add"
+            class="form-control input-sm auto-width"
+            onchange="addRanger()"
+          >
+          </select>
+        </div>
       </div>
     </div>
     <div class="col-sm-6">
@@ -82,12 +85,15 @@
             </span>
           </li>
         </ul>
-        <input
-          id="incident_types_add" class="form-control input-sm"
-          type="text" inputmode="latin-name"
-          placeholder="Incident type to add…"
-          onchange="addIncidentType(this)"
-        />
+        <div>
+          <label>Add:</label>
+          <select
+            id="incident_type_add"
+            class="form-control input-sm auto-width"
+            onchange="addIncidentType()"
+          >
+          </select>
+        </div>
       </div>
     </div>
   </div>
