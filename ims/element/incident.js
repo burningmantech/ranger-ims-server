@@ -22,7 +22,9 @@ function initIncidentPage() {
     function loadedBody() {
         addLocationAddressOptions();
         disableEditing();
-        loadAndDisplayIncident();
+        loadAndDisplayIncident(function() {
+            loadPersonnel(function() {drawRangersToAdd()});
+        });
     }
 
     loadBody(loadedBody);
@@ -36,14 +38,6 @@ function initIncidentPage() {
 var incident = null;
 
 function loadIncident(success) {
-    function loaded(data, status, request) {
-        incident = data;
-
-        if (success != undefined) {
-            success();
-        }
-    }
-
     var url = incidentsURL + "/" + incidentNumber;
 
     function ok(data, status, xhr) {
@@ -73,6 +67,13 @@ function loadIncident(success) {
 
 function loadAndDisplayIncident(success) {
     function loaded() {
+        if (incident == null) {
+            var message = "Incident failed to load"
+            console.log(message);
+            alert(message);
+            return;
+        }
+
         drawIncidentFields();
         enableEditing();
 
@@ -82,6 +83,44 @@ function loadAndDisplayIncident(success) {
     }
 
     loadIncident(loaded);
+}
+
+
+//
+// Load personnel
+//
+
+var personnel = null;
+
+function loadPersonnel(success) {
+    var url = personnelURL;
+
+    function ok(data, status, xhr) {
+        var _personnel = {};
+        for (var i in data) {
+            var record = data[i];
+            _personnel[record.handle] = record;
+        }
+        personnel = _personnel
+
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    function fail(xhr, status, error) {
+        var message = "Failed to load personnel:\n" + error
+        console.error(message);
+        window.alert(message);
+    }
+
+    $.ajax({
+        "url": url,
+        "method": "GET",
+        "dataType": "json",
+        "success": ok,
+        "error": fail,
+    });
 }
 
 
@@ -201,6 +240,44 @@ function drawRangers() {
     var container = $("#incident_rangers_list");
     container.empty();
     container.append(items);
+}
+
+
+function drawRangersToAdd() {
+    console.log("Draw Rangers to add...");
+
+    var select = $("#ranger_add");
+
+    var handles = [];
+    for (var handle in personnel) {
+        handles.push(handle);
+    }
+    handles = handles.sort();
+
+    for (var i in handles) {
+        handle = handles[i];
+
+        var option = $("<option />");
+        option.attr("value", handle);
+        option.text(rangerAsString(personnel[handle]));
+
+        select.append(option);
+    }
+}
+
+
+function rangerAsString(ranger) {
+    var result = ranger.handle;
+
+    if (ranger.name != undefined && ranger.name != null && ranger.name != "") {
+        result += " (" + ranger.name + ")";
+    }
+
+    if (ranger.status == "vintage") {
+        result += "*";
+    }
+
+    return result;
 }
 
 
