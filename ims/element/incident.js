@@ -632,10 +632,37 @@ function removeIncidentType(sender) {
 }
 
 
-function addRanger(sender) {
-    rangerHandle = $(sender).val().trim();
+function addRanger() {
+    var select = $("#ranger_add");
+    var handle = $(select).val();
+    var handles = incident.ranger_handles;
 
-    console.log("Add Ranger: " + rangerHandle);
+    if (handles == undefined) {
+        handles = [];
+    } else {
+        handles = handles.slice();  // copy
+    }
+
+    if (handles.indexOf(handle) != -1) {
+        // Already in the list, so… move along.
+        select.val("");
+        return;
+    }
+
+    handles.push(handle);
+
+
+    function ok() {
+        select.val("");
+        controlHasSuccess(select, 1000);
+    }
+
+    function fail() {
+        controlHasError(select);
+        select.val("");
+    }
+
+    sendEdits({"ranger_handles": handles}, ok, fail);
 }
 
 
