@@ -517,9 +517,7 @@ function editFromElement(element, jsonKey, transform) {
     // Send request to server
 
     function ok() {
-        controlHasSuccess(element);
-        // Clear success state after a 1s delay
-        element.delay("1000").queue(function() {controlClear(element)});
+        controlHasSuccess(element, 1000);
     }
 
     function fail() {
