@@ -262,7 +262,7 @@ function drawRangers() {
         }
         var item = _rangerItem.clone();
         item.append(ranger);
-        item.val(handle);
+        item.attr("value", handle);
         items.push(item);
     }
 
@@ -601,7 +601,7 @@ function editLocationDescription() {
 function removeRanger(sender) {
     sender = $(sender);
 
-    var rangerHandle = sender.parent().text().trim();
+    var rangerHandle = sender.parent().attr("value");
 
     function ok() {
         // FIXME
