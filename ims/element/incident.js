@@ -22,10 +22,10 @@ function initIncidentPage() {
     function loadedIncident() {
         loadPersonnel(function() {
             drawRangers();
-            drawRangersToAdd()
+            drawRangersToAdd();
         });
         loadIncidentTypes(function() {
-            drawIncidentTypesToAdd()
+            drawIncidentTypesToAdd();
         });
     }
 
@@ -48,7 +48,7 @@ var incident = null;
 function loadIncident(success) {
     var url = incidentsURL + "/" + incidentNumber;
 
-    function ok(data, status) {
+    function ok(data, status, xhr) {
         incident = data;
 
         if (success != undefined) {
@@ -56,9 +56,9 @@ function loadIncident(success) {
         }
     }
 
-    function fail(error, status) {
+    function fail(error, status, xhr) {
         disableEditing();
-        var message = "Failed to load incident:\n" + error
+        var message = "Failed to load incident:\n" + error;
         console.error(message);
         window.alert(message);
     }
@@ -70,7 +70,7 @@ function loadIncident(success) {
 function loadAndDisplayIncident(success) {
     function loaded() {
         if (incident == null) {
-            var message = "Incident failed to load"
+            var message = "Incident failed to load";
             console.log(message);
             alert(message);
             return;
@@ -97,7 +97,7 @@ var personnel = null;
 function loadPersonnel(success) {
     var url = personnelURL;
 
-    function ok(data, status) {
+    function ok(data, status, xhr) {
         var _personnel = {};
         for (var i in data) {
             var record = data[i];
@@ -121,7 +121,7 @@ function loadPersonnel(success) {
         }
     }
 
-    function fail(error, status) {
+    function fail(error, status, xhr) {
         var message = "Failed to load personnel:\n" + error
         console.error(message);
         window.alert(message);
@@ -140,7 +140,7 @@ var incidentTypes = null;
 function loadIncidentTypes(success) {
     var url = incidentTypesURL;
 
-    function ok(data, status) {
+    function ok(data, status, xhr) {
         var _incidentTypes = [];
         for (var i in data) {
             _incidentTypes.push(data[i])
@@ -153,7 +153,7 @@ function loadIncidentTypes(success) {
         }
     }
 
-    function fail(error, status) {
+    function fail(error, status, xhr) {
         var message = "Failed to load incident types:\n" + error
         console.error(message);
         window.alert(message);
@@ -521,12 +521,12 @@ function sendEdits(edits, success, error) {
 
     var url = incidentsURL + "/" + incident.number;
 
-    function ok(data, status) {
+    function ok(data, status, xhr) {
         success();
         loadAndDisplayIncident();
     }
 
-    function fail(requestError, status) {
+    function fail(requestError, status, xhr) {
         var message = "Failed to apply edit:\n" + requestError
         console.log(message);
         error();

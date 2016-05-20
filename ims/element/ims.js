@@ -78,13 +78,13 @@ function range(start, end, step) {
 function jsonRequest(url, jsonOut, success, error) {
     function ok(data, status, xhr) {
         if (success != undefined) {
-            success(data, status);
+            success(data, status, xhr);
         }
     }
 
     function fail(xhr, status, requestError) {
         if (error != undefined) {
-            error(requestError, status);
+            error(requestError, status, xhr);
         }
     }
 
