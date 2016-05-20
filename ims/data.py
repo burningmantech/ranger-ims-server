@@ -467,7 +467,7 @@ class Ranger(object):
     Ranger
     """
 
-    def __init__(self, handle, name, status):
+    def __init__(self, handle, name, status, password=None):
         """
         @param handle: The Ranger's handle.
         @type handle: L{unicode}
@@ -478,9 +478,10 @@ class Ranger(object):
         @param status: The Ranger's status.
         @type status: L{unicode}
         """
-        self.handle = handle
-        self.name   = name
-        self.status = status
+        self.handle   = handle
+        self.name     = name
+        self.status   = status
+        self.password = password
 
 
     def __str__(self):

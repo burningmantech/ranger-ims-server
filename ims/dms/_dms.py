@@ -133,7 +133,9 @@ class DutyManagementSystem(object):
 
                     results = yield self.dbpool.runQuery(
                         """
-                        select callsign, first_name, mi, last_name, status
+                        select
+                            callsign, first_name, mi, last_name,
+                            status, password
                         from person
                         where status not in (
                             'prospective', 'alpha',
@@ -144,8 +146,13 @@ class DutyManagementSystem(object):
                     )
 
                     self._personnel = tuple(
-                        Ranger(handle, fullName(first, middle, last), status)
-                        for handle, first, middle, last, status
+                        Ranger(
+                            handle,
+                            fullName(first, middle, last),
+                            status,
+                            password=password
+                        )
+                        for handle, first, middle, last, status, password
                         in results
                     )
                     self._personnelLastUpdated = time()
