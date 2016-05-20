@@ -82,9 +82,9 @@ function jsonRequest(url, jsonOut, success, error) {
         }
     }
 
-    function fail(xhr, status, error) {
+    function fail(xhr, status, requestError) {
         if (error != undefined) {
-            error(error, status);
+            error(requestError, status);
         }
     }
 
