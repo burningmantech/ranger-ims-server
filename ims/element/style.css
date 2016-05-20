@@ -36,10 +36,6 @@ a.navbar-brand>img {
   height: 20px;
 }
 
-.well > .list-group {
-  margin-bottom: 0px;
-}
-
 .flex-input-container {
   display: flex;
 }
