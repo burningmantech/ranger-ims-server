@@ -831,7 +831,7 @@ class WebService(object):
         request.setHeader(HeaderName.incidentNumber.value, number)
         request.setHeader(
             HeaderName.location.value,
-            self.incidentNumberURL.asText() + u"/" + number
+            "{}/{}".format(self.incidentNumberURL.asText(), number)
         )
 
 
