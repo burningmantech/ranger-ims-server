@@ -833,6 +833,7 @@ class WebService(object):
             HeaderName.location.value,
             "{}/{}".format(self.incidentNumberURL.asText(), number)
         )
+        return self.noContentResource(request)
 
 
     @route(incidentNumberURL.asText(), methods=("HEAD", "GET"))
