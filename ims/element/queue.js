@@ -149,6 +149,8 @@ function initTableButtons() {
     showState("open");
     showDays(null);
     showRows(25);
+
+    $(".new_incident_link").attr("href", viewIncidentsURL + "/new");
 }
 
 

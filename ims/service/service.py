@@ -953,10 +953,13 @@ class WebService(object):
     @fixedETag
     @authorized(Authorization.readIncidents)
     def viewIncidentPage(self, request, event, number):
-        try:
-            number = int(number)
-        except ValueError:
-            return self.notFoundResource(request)
+        if number == u"new":
+            number = None
+        else:
+            try:
+                number = int(number)
+            except ValueError:
+                return self.notFoundResource(request)
 
         return IncidentPage(self, event, number)
 

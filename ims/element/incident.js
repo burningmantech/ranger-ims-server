@@ -46,7 +46,14 @@ function initIncidentPage() {
 var incident = null;
 
 function loadIncident(success) {
-    var url = incidentsURL + "/" + incidentNumber;
+    var number = null;
+    if (incident == null) {
+        // First time here.  Use page JavaScript initial value.
+        number = incidentNumber;
+    } else {
+        // We have an incident already.  Use that number.
+        number = incident.number;
+    }
 
     function ok(data, status, xhr) {
         incident = data;
@@ -63,7 +70,17 @@ function loadIncident(success) {
         window.alert(message);
     }
 
-    jsonRequest(url, null, ok, fail);
+    if (number == null) {
+        ok({
+            "number": null,
+            "state": "new",
+            "priority": 3,
+            "summary": "",
+        });
+    } else {
+        var url = incidentsURL + "/" + number;
+        jsonRequest(url, null, ok, fail);
+    }
 }
 
 
@@ -517,11 +534,51 @@ function drawReportEntries() {
 //
 
 function sendEdits(edits, success, error) {
-    edits.number = incident.number;
+    var number = incident.number
+    var url = incidentsURL + "/";
 
-    var url = incidentsURL + "/" + incident.number;
+    if (number == null) {
+        // We're creating a new incident.
+        var required = ["state", "priority"];
+        for (var i in required) {
+            var key = required[i];
+            if (edits[key] == undefined) {
+                edits[key] = incident[key];
+            }
+        }
+    } else {
+        // We're editing an existing incident.
+        edits.number = number;
+        url += number;
+    }
 
     function ok(data, status, xhr) {
+        if (number == null) {
+            // We created a new incident.
+            // We need to find out the create incident number so that future
+            // edits don't keep creating new resources.
+
+            newNumber = xhr.getResponseHeader("Incident-Number")
+            // Check that we got a value back
+            if (newNumber == null) {
+                fail("No Incident-Number header provided.", status, xhr);
+                return;
+            }
+
+            newNumber = Number.parseInt(newNumber);
+            // Check that the value we got back is valid
+            if (isNaN(newNumber)) {
+                fail(
+                    "Non-integer Incident-Number header provided:" + newNumber,
+                    status, xhr
+                );
+                return;
+            }
+
+            // Store the new number in our incident object
+            incident.number = newNumber;
+        }
+
         success();
         loadAndDisplayIncident();
     }
@@ -586,7 +643,7 @@ function editState() {
 
 
 function editPriority() {
-    editFromElement($("#incident_priority"), "priority", Number);
+    editFromElement($("#incident_priority"), "priority", Number.parseInt);
 }
 
 
@@ -604,7 +661,7 @@ function editLocationAddressRadialHour() {
     editFromElement(
         $("#incident_location_address_radial_hour"),
         "location.radial_hour",
-        Number
+        Number.parseInt
     );
 }
 
@@ -613,7 +670,7 @@ function editLocationAddressRadialMinute() {
     editFromElement(
         $("#incident_location_address_radial_minute"),
         "location.radial_minute",
-        Number
+        Number.parseInt
     );
 }
 
@@ -622,7 +679,7 @@ function editLocationAddressConcentric() {
     editFromElement(
         $("#incident_location_address_concentric"),
         "location.concentric",
-        Number
+        Number.parseInt
     );
 }
 
