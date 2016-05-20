@@ -83,6 +83,16 @@ function jsonRequest(url, jsonOut, success, error) {
     }
 
     function fail(xhr, status, requestError) {
+        // Intentionally empty response is not an error.
+        if (
+            status == "parsererror" &&
+            xhr.status == 201 &&
+            xhr.responseText == ""
+        ) {
+            ok("", "", xhr);
+            return;
+        }
+
         if (error != undefined) {
             error(requestError, status, xhr);
         }
