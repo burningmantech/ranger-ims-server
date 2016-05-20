@@ -22,6 +22,8 @@ __all__ = [
     "DirectoryService",
 ]
 
+from hashlib import sha1
+
 from twisted.python.constants import Names, NamedConstant
 
 from twext.who.idirectory import (
@@ -61,6 +63,7 @@ class DirectoryService(BaseDirectoryService):
 
         self.dms = dms
         self._personnel = None
+        self.loadRecords()
 
 
     @property
@@ -102,10 +105,11 @@ class DirectoryRecord(BaseDirectoryRecord):
 
     def __init__(self, service, ranger):
         fields = {
-            service.fieldName.uid       : ranger.handle,
-            service.fieldName.shortNames: (ranger.handle,),
-            service.fieldName.fullNames : (ranger.name,),
-            service.fieldName.status    : ranger.status,
+            service.fieldName.uid        : ranger.handle,
+            service.fieldName.shortNames : (ranger.handle,),
+            service.fieldName.fullNames  : (ranger.name,),
+            service.fieldName.status     : ranger.status,
+            service.fieldName.password   : ranger.password,
             service.fieldName.recordType: service.recordType.user,
         }
 
@@ -117,7 +121,19 @@ class DirectoryRecord(BaseDirectoryRecord):
     #
 
     def verifyPlaintextPassword(self, password):
-        return True  # FIXME
+        # Reference Clubhouse code, standard/controllers/security.php#L457
+
+        try:
+            # DMS password field is a salt and a SHA-1 hash (hex digest),
+            # separated by ":".
+            salt, hashValue = self.password.split(":")
+        except ValueError:
+            # Invalid password format, punt
+            return False
+
+        hashed = sha1(salt + password).hexdigest()
+
+        return hashed == hashValue
 
 
 
