@@ -283,3 +283,22 @@ class Configuration (object):
         else:
             self.log.info("No locations file: {file.path}", file=locationsFile)
             self.locationsJSONBytes = textFromJSON([]).encode("utf-8")
+
+        #
+        # Auth hackery, FIXME
+        #
+
+        writersFile = self.ConfigFile.parent().child("writers")
+        readersFile = self.ConfigFile.parent().child("readers")
+
+        try:
+            self.readers = set(u.strip() for u in readersFile.open())
+        except IOError:
+            self.readers = set()
+        self.log.info("Readers: {readers}", readers=self.readers)
+
+        try:
+            self.writers = set(u.strip() for u in writersFile.open())
+        except IOError:
+            self.writers = set()
+        self.log.info("Writers: {writers}", writers=self.writers)

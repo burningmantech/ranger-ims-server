@@ -267,18 +267,20 @@ class WebService(object):
         returnValue(authenticated)
 
 
-    @inlineCallbacks
     def authorizationForUser(self, user):
-        if user is None:
-            returnValue(Authorization.none)
+        authorization = Authorization.none
 
-        # FIXME: Check clubhouse roles
-        yield
+        if user is not None:
+            if user.uid in self.config.readers:
+                authorization |= Authorization.readIncidents
 
-        returnValue(
-            Authorization.readIncidents |
-            Authorization.writeIncidents
-        )
+            if user.uid in self.config.writers:
+                authorization |= Authorization.readIncidents
+                authorization |= Authorization.writeIncidents
+
+        print("Authz for {}: {}".format(user, authorization))
+
+        return authorization
 
 
     @route(loginURL.asText(), methods=("POST",))
