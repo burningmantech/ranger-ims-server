@@ -27,6 +27,9 @@ function initIncidentPage() {
                 drawRangers();
                 drawRangersToAdd()
             });
+            loadIncidentTypes(function() {
+                drawIncidentTypesToAdd()
+            });
         });
     }
 
@@ -124,6 +127,44 @@ function loadPersonnel(success) {
 
     function fail(xhr, status, error) {
         var message = "Failed to load personnel:\n" + error
+        console.error(message);
+        window.alert(message);
+    }
+
+    $.ajax({
+        "url": url,
+        "method": "GET",
+        "dataType": "json",
+        "success": ok,
+        "error": fail,
+    });
+}
+
+
+//
+// Load incident types
+//
+
+var incidentTypes = null;
+
+function loadIncidentTypes(success) {
+    var url = incidentTypesURL;
+
+    function ok(data, status, xhr) {
+        var _incidentTypes = [];
+        for (var i in data) {
+            _incidentTypes.push(data[i])
+        }
+        _incidentTypes.sort()
+        incidentTypes = _incidentTypes
+
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    function fail(xhr, status, error) {
+        var message = "Failed to load incident types:\n" + error
         console.error(message);
         window.alert(message);
     }
@@ -273,8 +314,6 @@ function drawRangers() {
 
 
 function drawRangersToAdd() {
-    console.log("Draw Rangers to add...");
-
     var select = $("#ranger_add");
 
     var handles = [];
@@ -326,7 +365,14 @@ function drawIncidentTypes() {
 
     var items = [];
 
-    for (var i in incident.incident_types) {
+    var incidentTypes = incident.incident_types;
+    if (incidentTypes == undefined) {
+        incidentTypes = [];
+    } else {
+        incidentTypes.sort();
+    }
+
+    for (var i in incidentTypes) {
         var item = _typesItem.clone();
         item.append(incident.incident_types[i]);
         items.push(item);
@@ -335,6 +381,21 @@ function drawIncidentTypes() {
     var container = $("#incident_types_list");
     container.empty();
     container.append(items);
+}
+
+
+function drawIncidentTypesToAdd() {
+    var select = $("#incident_type_add");
+
+    for (var i in incidentTypes) {
+        var incidentType = incidentTypes[i];
+
+        var option = $("<option />");
+        option.val(incidentType);
+        option.text(incidentType);
+
+        select.append(option);
+    }
 }
 
 
@@ -669,7 +730,6 @@ function addRanger() {
 
     handles.push(handle);
 
-
     function ok() {
         select.val("");
         controlHasSuccess(select, 1000);
@@ -684,10 +744,36 @@ function addRanger() {
 }
 
 
-function addIncidentType(sender) {
-    incidentType = $(sender).val().trim();
+function addIncidentType() {
+    var select = $("#incident_type_add");
+    var incidentType = $(select).val();
+    var incidentTypes = incident.incident_types
 
-    console.log("Add incident type: " + incidentType);
+    if (incidentTypes == undefined) {
+        incidentTypes = [];
+    } else {
+        incidentTypes = incidentTypes.slice();  // copy
+    }
+
+    if (incidentTypes.indexOf(incidentType) != -1) {
+        // Already in the list, so… move along.
+        select.val("");
+        return;
+    }
+
+    incidentTypes.push(incidentType);
+
+    function ok() {
+        select.val("");
+        controlHasSuccess(select, 1000);
+    }
+
+    function fail() {
+        controlHasError(select);
+        select.val("");
+    }
+
+    sendEdits({"incident_types": incidentTypes}, ok, fail);
 }
 
 

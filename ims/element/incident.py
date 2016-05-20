@@ -79,5 +79,13 @@ class IncidentPage(Element):
 
 
     @renderer
+    def incident_types_url(self, request, tag):
+        return (
+            self.service.incidentTypesURL.asText()
+            .replace(u"<event>", unicode(self.event))
+        )
+
+
+    @renderer
     def concentric_street_name_by_id(self, request, tag):
         return textFromJSON(concentricStreetNameByID[self.event])
