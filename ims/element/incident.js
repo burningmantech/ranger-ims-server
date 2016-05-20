@@ -19,18 +19,20 @@
 //
 
 function initIncidentPage() {
+    function loadedIncident() {
+        loadPersonnel(function() {
+            drawRangers();
+            drawRangersToAdd()
+        });
+        loadIncidentTypes(function() {
+            drawIncidentTypesToAdd()
+        });
+    }
+
     function loadedBody() {
         addLocationAddressOptions();
         disableEditing();
-        loadAndDisplayIncident(function() {
-            loadPersonnel(function() {
-                drawRangers();
-                drawRangersToAdd()
-            });
-            loadIncidentTypes(function() {
-                drawIncidentTypesToAdd()
-            });
-        });
+        loadAndDisplayIncident(loadedIncident);
     }
 
     loadBody(loadedBody);
@@ -46,7 +48,7 @@ var incident = null;
 function loadIncident(success) {
     var url = incidentsURL + "/" + incidentNumber;
 
-    function ok(data, status, xhr) {
+    function ok(data, status) {
         incident = data;
 
         if (success != undefined) {
@@ -54,20 +56,14 @@ function loadIncident(success) {
         }
     }
 
-    function fail(xhr, status, error) {
+    function fail(error, status) {
         disableEditing();
         var message = "Failed to load incident:\n" + error
         console.error(message);
         window.alert(message);
     }
 
-    $.ajax({
-        "url": url,
-        "method": "GET",
-        "dataType": "json",
-        "success": ok,
-        "error": fail,
-    });
+    jsonRequest(url, null, ok, fail);
 }
 
 
@@ -101,7 +97,7 @@ var personnel = null;
 function loadPersonnel(success) {
     var url = personnelURL;
 
-    function ok(data, status, xhr) {
+    function ok(data, status) {
         var _personnel = {};
         for (var i in data) {
             var record = data[i];
@@ -125,19 +121,13 @@ function loadPersonnel(success) {
         }
     }
 
-    function fail(xhr, status, error) {
+    function fail(error, status) {
         var message = "Failed to load personnel:\n" + error
         console.error(message);
         window.alert(message);
     }
 
-    $.ajax({
-        "url": url,
-        "method": "GET",
-        "dataType": "json",
-        "success": ok,
-        "error": fail,
-    });
+    jsonRequest(url, null, ok, fail);
 }
 
 
@@ -150,7 +140,7 @@ var incidentTypes = null;
 function loadIncidentTypes(success) {
     var url = incidentTypesURL;
 
-    function ok(data, status, xhr) {
+    function ok(data, status) {
         var _incidentTypes = [];
         for (var i in data) {
             _incidentTypes.push(data[i])
@@ -163,19 +153,13 @@ function loadIncidentTypes(success) {
         }
     }
 
-    function fail(xhr, status, error) {
+    function fail(error, status) {
         var message = "Failed to load incident types:\n" + error
         console.error(message);
         window.alert(message);
     }
 
-    $.ajax({
-        "url": url,
-        "method": "GET",
-        "dataType": "json",
-        "success": ok,
-        "error": fail,
-    });
+    jsonRequest(url, null, ok, fail);
 }
 
 
@@ -535,33 +519,22 @@ function drawReportEntries() {
 function sendEdits(edits, success, error) {
     edits.number = incident.number;
 
-    var jsonText = JSON.stringify(edits);
-
-    console.log("Sending edit: " + jsonText);
-
     var url = incidentsURL + "/" + incident.number;
 
-    function ok(data, status, xhr) {
+    function ok(data, status) {
         success();
         loadAndDisplayIncident();
     }
 
-    function fail(xhr, status, e) {
-        var message = "Failed to apply edit:\n" + e
+    function fail(requestError, status) {
+        var message = "Failed to apply edit:\n" + requestError
         console.log(message);
         error();
         loadAndDisplayIncident();
         window.alert(message);
     }
 
-    $.ajax({
-        "url": url,
-        "method": "POST",
-        "contentType": "application/json",
-        "data": jsonText,
-        "success": ok,
-        "error": fail,
-    })
+    jsonRequest(url, edits, ok, fail);
 }
 
 

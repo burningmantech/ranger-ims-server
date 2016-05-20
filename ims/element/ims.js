@@ -72,6 +72,49 @@ function range(start, end, step) {
 
 
 //
+// Request making
+//
+
+function jsonRequest(url, jsonOut, success, error) {
+    function ok(data, status, xhr) {
+        if (success != undefined) {
+            success(data, status);
+        }
+    }
+
+    function fail(xhr, status, error) {
+        if (error != undefined) {
+            error(error, status);
+        }
+    }
+
+    var args = {
+        "url": url,
+        "method": "GET",
+        "dataType": "json",
+        "success": ok,
+        "error": fail,
+    }
+
+    if (jsonOut) {
+        var jsonText = null
+        if (typeof(jsonOut) == "string") {
+          jsonText = jsonOut;
+        } else {
+          jsonText = JSON.stringify(jsonOut);
+        }
+
+        args["method"] = "POST";
+        args["contentType"] = "application/json";
+        args["data"] = jsonText;
+    }
+
+    $.ajax(args);
+}
+
+
+
+//
 // Generic string formatting
 //
 
