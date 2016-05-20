@@ -23,7 +23,10 @@ function initIncidentPage() {
         addLocationAddressOptions();
         disableEditing();
         loadAndDisplayIncident(function() {
-            loadPersonnel(function() {drawRangersToAdd()});
+            loadPersonnel(function() {
+                drawRangers();
+                drawRangersToAdd()
+            });
         });
     }
 
@@ -250,8 +253,16 @@ function drawRangers() {
     }
 
     for (var i in handles) {
+        var handle = handles[i]
+        var ranger = null;
+        if (personnel == null) {
+            ranger = handle;
+        } else {
+            ranger = rangerAsString(personnel[handle]);
+        }
         var item = _rangerItem.clone();
-        item.append(handles[i]);
+        item.append(ranger);
+        item.val(handle);
         items.push(item);
     }
 
