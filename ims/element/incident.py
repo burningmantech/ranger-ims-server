@@ -45,26 +45,13 @@ class IncidentPage(Element):
 
 
     @renderer
-    def root(self, request, tag):
-        tag = Element.root(self, request, tag)
-
-        slots = dict(
-            incident_number=unicode(self.number),
-        )
-
-        tag.fillSlots(**slots)
-
-        return tag
-
-
-    @renderer
     def incident_number(self, request, tag):
-        return unicode(self.number)
+        return textFromJSON(self.number)
 
 
     @renderer
     def incidents_url(self, request, tag):
-        return (
+        return textFromJSON(
             self.service.incidentsURL.asText()
             .replace(u"<event>", unicode(self.event))
         )
@@ -72,7 +59,7 @@ class IncidentPage(Element):
 
     @renderer
     def personnel_url(self, request, tag):
-        return (
+        return textFromJSON(
             self.service.personnelURL.asText()
             .replace(u"<event>", unicode(self.event))
         )
@@ -80,7 +67,7 @@ class IncidentPage(Element):
 
     @renderer
     def incident_types_url(self, request, tag):
-        return (
+        return textFromJSON(
             self.service.incidentTypesURL.asText()
             .replace(u"<event>", unicode(self.event))
         )
