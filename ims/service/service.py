@@ -401,7 +401,8 @@ class WebService(object):
 
     def noContentResource(self, request, etag=None):
         request.setResponseCode(http.NO_CONTENT)
-        request.setHeader(HeaderName.etag.value, etag)
+        if etag is not None:
+            request.setHeader(HeaderName.etag.value, etag)
         return b""
 
 
