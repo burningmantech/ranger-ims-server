@@ -223,7 +223,7 @@ function drawPriority() {
 //
 
 function drawSummary() {
-    $("#incident_summary").attr("value", summarizeIncident(incident));
+    $("#incident_summary").val(summarizeIncident(incident));
 }
 
 
@@ -277,7 +277,7 @@ function drawRangersToAdd() {
         var ranger = personnel[handle];
 
         var option = $("<option />");
-        option.attr("value", handle);
+        option.val(handle);
         option.text(rangerAsString(ranger));
 
         select.append(option);
@@ -334,7 +334,7 @@ function drawIncidentTypes() {
 function drawLocationName() {
     if (incident.location != undefined) {
         if (incident.location.name != undefined) {
-            $("#incident_location_name").attr("value", incident.location.name);
+            $("#incident_location_name").val(incident.location.name);
         }
     }
 }
@@ -383,7 +383,7 @@ function drawLocationDescription() {
     if (incident.location != undefined) {
         if (incident.location.description != undefined) {
             $("#incident_location_description")
-                .attr("value", incident.location.description)
+                .val(incident.location.description)
                 ;
         }
     }
