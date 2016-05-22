@@ -234,27 +234,27 @@ class Incident(object):
 
     def __str__(self):
         return (
-            "{self.number}: {summary}".format(
+            u"{self.number}: {summary}".format(
                 self=self,
-                summary=self.summaryFromReport().encode("utf-8"),
-            )
+                summary=self.summaryFromReport()
+            ).encode("utf-8")
         )
 
 
     def __repr__(self):
         return (
-            "{self.__class__.__name__}("
-            "number={self.number!r},"
-            "rangers={self.rangers!r},"
-            "location={self.location!r},"
-            "incident_types={self.incident_types!r},"
-            "summary={self.summary!r},"
-            "report_entries={self.report_entries!r},"
-            "created={self.created!r},"
-            "state={self.state!r},"
-            "priority={self.priority!r})"
+            u"{self.__class__.__name__}("
+            u"number={self.number!r},"
+            u"rangers={self.rangers!r},"
+            u"location={self.location!r},"
+            u"incident_types={self.incident_types!r},"
+            u"summary={self.summary!r},"
+            u"report_entries={self.report_entries!r},"
+            u"created={self.created!r},"
+            u"state={self.state!r},"
+            u"priority={self.priority!r})"
             .format(self=self)
-        )
+        ).encode("utf-8")
 
 
     def __hash__(self):
@@ -391,9 +391,9 @@ class ReportEntry(object):
             prefix = ""
 
         return (
-            "{prefix}{self.author}@{self.created}: {self.text}".format(
+            u"{prefix}{self.author}@{self.created}: {self.text}".format(
                 self=self, prefix=prefix
-            )
+            ).encode("utf-8")
         )
 
 
@@ -404,12 +404,12 @@ class ReportEntry(object):
             star = ""
 
         return (
-            "{self.__class__.__name__}("
-            "author={self.author!r}{star},"
-            "text={self.text!r},"
-            "created={self.created!r})"
+            u"{self.__class__.__name__}("
+            u"author={self.author!r}{star},"
+            u"text={self.text!r},"
+            u"created={self.created!r})"
             .format(self=self, star=star)
-        )
+        ).encode("utf-8")
 
 
     def __hash__(self):
@@ -492,12 +492,12 @@ class Ranger(object):
 
     def __repr__(self):
         return (
-            "{self.__class__.__name__}("
-            "handle={self.handle!r},"
-            "name={self.name!r},"
-            "status={self.status!r})"
+            u"{self.__class__.__name__}("
+            u"handle={self.handle!r},"
+            u"name={self.name!r},"
+            u"status={self.status!r})"
             .format(self=self)
-        )
+        ).encode("utf-8")
 
 
     def __hash__(self):
@@ -555,27 +555,27 @@ class Location(object):
         if self.name:
             if self.address:
                 return (
-                    "{name} ({self.address})".format(
+                    u"{name} ({self.address})".format(
                         self=self,
-                        name=self.name.encode("utf-8"),
-                    )
+                        name=self.name
+                    ).encode("utf-8")
                 )
             else:
                 return self.name.encode("utf-8")
         else:
             if self.address:
-                return "({self.address})".format(self=self)
+                return "({self.address})".format(self=self).encode("utf-8")
             else:
                 return ""
 
 
     def __repr__(self):
         return (
-            "{self.__class__.__name__}("
-            "name={self.name!r},"
-            "address={self.address!r})"
+            u"{self.__class__.__name__}("
+            u"name={self.name!r},"
+            u"address={self.address!r})"
             .format(self=self)
-        )
+        ).encode("utf-8")
 
 
     def __hash__(self):
@@ -649,9 +649,9 @@ class TextOnlyAddress(Address):
 
     def __repr__(self):
         return (
-            "{self.__class__.__name__}(description={self.description!r})"
+            u"{self.__class__.__name__}(description={self.description!r})"
             .format(self=self)
-        )
+        ).encode("utf-8")
 
 
     def __hash__(self):
@@ -761,13 +761,13 @@ class RodGarettAddress(Address):
 
     def __repr__(self):
         return (
-            "{self.__class__.__name__}("
-            "concentric={self.concentric!r},"
-            "radialHour={self.radialHour!r},"
-            "radialMinute={self.radialMinute!r},"
-            "description={self.description!r})"
+            u"{self.__class__.__name__}("
+            u"concentric={self.concentric!r},"
+            u"radialHour={self.radialHour!r},"
+            u"radialMinute={self.radialMinute!r},"
+            u"description={self.description!r})"
             .format(self=self)
-        )
+        ).encode("utf-8")
 
 
     def __hash__(self):
