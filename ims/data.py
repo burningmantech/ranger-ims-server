@@ -219,7 +219,8 @@ class Incident(object):
             incident_types = frozenset(incident_types)
 
         if report_entries is not None:
-            report_entries = tuple(sorted(report_entries))
+            # set is used to filter duplicates, which exist in 2015 data
+            report_entries = tuple(sorted(set(report_entries)))
 
         self.number         = number
         self.priority       = priority
