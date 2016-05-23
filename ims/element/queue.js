@@ -123,9 +123,13 @@ function initDataTables() {
         ],
         "createdRow": function (row, incident, index) {
             $(row).click(function () {
-                document.location.href = (
-                    viewIncidentsURL + "/" + incident.number
-                );
+                var url = viewIncidentsURL + "/" + incident.number;
+
+                // // Change currently displayed page
+                // document.location.href = (url);
+
+                // Open new context with link
+                window.open(url);
             });
         },
     });
