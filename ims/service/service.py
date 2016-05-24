@@ -37,7 +37,7 @@ from twisted.web import http
 from twisted.web.server import Session
 from twisted.web.client import downloadPage
 
-from twext.who.idirectory import RecordType
+from twext.who.idirectory import RecordType, FieldName
 
 from klein import Klein
 
@@ -292,6 +292,18 @@ class WebService(object):
         user = yield self.directory.recordWithShortName(
             RecordType.user, username
         )
+
+        if user is None:
+            # Try lookup by email address
+            for record in (yield self.directory.recordsWithFieldValue(
+                FieldName.emailAddresses, username
+            )):
+                if user is not None:
+                    # More than one record with the same email address.
+                    # We can't know which is the right one, so none is.
+                    user = None
+                    break
+                user = record
 
         authenticated = yield self.verifyCredentials(user, password)
         if not authenticated:
