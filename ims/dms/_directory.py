@@ -44,6 +44,14 @@ class FieldName(Names):
     status = NamedConstant()
     status.description = u"status"
 
+    dmsID = NamedConstant()
+    dmsID.description = u"DMS ID"
+    dmsID.valueType = int
+
+    onSite = NamedConstant()
+    onSite.description = "on site"
+    onSite.valueType = bool
+
 
 
 class DirectoryService(BaseDirectoryService):
@@ -104,13 +112,21 @@ class DirectoryRecord(BaseDirectoryRecord):
     """
 
     def __init__(self, service, ranger):
+        if ranger.email is None:
+            emailAddresses = ()
+        else:
+            emailAddresses = (ranger.email,)
+
         fields = {
-            service.fieldName.uid        : ranger.handle,
-            service.fieldName.shortNames : (ranger.handle,),
-            service.fieldName.fullNames  : (ranger.name,),
-            service.fieldName.status     : ranger.status,
-            service.fieldName.password   : ranger.password,
             service.fieldName.recordType: service.recordType.user,
+            service.fieldName.uid            : ranger.handle,
+            service.fieldName.shortNames     : (ranger.handle,),
+            service.fieldName.fullNames      : (ranger.name,),
+            service.fieldName.status         : ranger.status,
+            service.fieldName.dmsID          : ranger.dmsID,
+            service.fieldName.emailAddresses : emailAddresses,
+            service.fieldName.onSite         : ranger.onSite,
+            service.fieldName.password       : ranger.password,
         }
 
         BaseDirectoryRecord.__init__(self, service, fields)
