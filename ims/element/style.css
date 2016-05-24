@@ -78,11 +78,16 @@ a.navbar-brand>img {
   color: black;
 }
 
-.remove-badge {
+/*
+ * Below is a trick to hide the remove buttons (.remove-badge) from list
+ * groups except when hovering.
+ */
+
+.no-touch .remove-badge {
   display: none;
 }
 
-.list-group-item:hover .remove-badge {
+.no-touch .list-group-item:hover .remove-badge {
   display: inline-block;
 }
 

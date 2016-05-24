@@ -234,7 +234,23 @@ function loadBody(success) {
         }
     }
 
+    detectTouchDevice();
     $("body").load(pageTemplateURL, complete);
+}
+
+
+//
+// Touch device detection
+//
+
+// Add .touch or .no-touch class to top-level element if the browser is or is
+// not on a touch device, respectively.
+function detectTouchDevice() {
+    if ("ontouchstart" in document.documentElement) {
+        $(document.documentElement).addClass("touch");
+    } else {
+        $(document.documentElement).addClass("no-touch");
+    }
 }
 
 
