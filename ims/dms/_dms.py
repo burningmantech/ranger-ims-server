@@ -134,8 +134,9 @@ class DutyManagementSystem(object):
                     results = yield self.dbpool.runQuery(
                         """
                         select
-                            callsign, first_name, mi, last_name,
-                            status, password
+                            id,
+                            callsign, first_name, mi, last_name, email,
+                            status, on_site, password
                         from person
                         where status not in (
                             'prospective', 'alpha',
@@ -150,10 +151,15 @@ class DutyManagementSystem(object):
                             handle,
                             fullName(first, middle, last),
                             status,
-                            password=password
+                            dmsID=dmsID,
+                            email=email,
+                            onSite=bool(onSite),
+                            password=password,
                         )
-                        for handle, first, middle, last, status, password
-                        in results
+                        for (
+                            dmsID, handle, first, middle, last, email,
+                            status, onSite, password,
+                        ) in results
                     )
                     self._personnelLastUpdated = time()
 

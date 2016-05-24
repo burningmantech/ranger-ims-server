@@ -268,9 +268,12 @@ class JSON(Values):
     _closed     = ValueConstant("closed")
 
     # Ranger attribute keys
-    ranger_handle = ValueConstant("handle")
-    ranger_name   = ValueConstant("name")
-    ranger_status = ValueConstant("status")
+    ranger_handle  = ValueConstant("handle")
+    ranger_name    = ValueConstant("name")
+    ranger_status  = ValueConstant("status")
+    ranger_dms_id  = ValueConstant("dms_id")
+    ranger_email   = ValueConstant("email")
+    ranger_on_site = ValueConstant("on_site")
 
     # Report entry attribute keys
     entry_author  = ValueConstant("author")
@@ -553,9 +556,12 @@ def rangerAsJSON(ranger):
     @rtype: L{dict}
     """
     return {
-        JSON.ranger_handle.value: ranger.handle,
-        JSON.ranger_name.value: ranger.name,
-        JSON.ranger_status.value: ranger.status,
+        JSON.ranger_handle.value  : ranger.handle,
+        JSON.ranger_name.value    : ranger.name,
+        JSON.ranger_status.value  : ranger.status,
+        JSON.ranger_dms_id.value  : ranger.dmsID,
+        JSON.ranger_email.value   : ranger.email,
+        JSON.ranger_on_site.value : ranger.onSite,
     }
 
 
