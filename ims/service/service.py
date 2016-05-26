@@ -341,13 +341,8 @@ class WebService(object):
         session = request.getSession()
         session.expire()
 
-        url = request.args.get(u"o", [None])[0]
-        if url is None:
-            location = self.prefixURL  # Default to application home
-        else:
-            location = URL.fromText(url)
-
-        return self.redirect(request, location)
+        # Redirect back to application home
+        return self.redirect(request, self.prefixURL)
 
 
     #
