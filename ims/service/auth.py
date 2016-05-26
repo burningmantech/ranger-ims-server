@@ -86,8 +86,7 @@ def authorized(requiredAuthorizations=Authorization.none):
         @wraps(f)
         @authenticated(optional=False)
         def wrapper(self, request, *args, **kwargs):
-            event = getattr(request, "event", None)
-            if self.authorizeRequest(request, event, requiredAuthorizations):
+            if self.authorizeRequest(request, None, requiredAuthorizations):
                 return f(self, request, *args, **kwargs)
             else:
                 return self.redirect(request, self.loginURL, origin=u"o")
