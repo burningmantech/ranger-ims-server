@@ -41,7 +41,7 @@ from twisted.python.constants import (
 )
 
 from ..tz import utcNow
-from .._streets import (
+from ._streets import (
     concentricStreetIDByName, concentricStreetNameByID
 )
 
