@@ -2,24 +2,39 @@
 
 	"folders": [
 		{
-			"path": ".",
-            "name": "ranger-ims-server",
-
+			"path": "./ims",
+            "name": "ims",
             "file_exclude_patterns": [
                 "*.pyc",
                 "*.pyo",
             ],
-
-            "folder_exclude_patterns":
-            [
-                ".git",
-                ".develop",
-                "*.egg-info",
-                "cached",
-                "data",
-                "log",
-            ],
+            "folder_exclude_patterns": [],
 		},
+		{
+			"path": "./tools",
+            "name": "tools",
+            "file_exclude_patterns": [],
+            "folder_exclude_patterns": [],
+		},
+		{
+			"path": "./bin",
+            "name": "bin",
+            "file_exclude_patterns": [],
+            "folder_exclude_patterns": [],
+		},
+		{
+			"path": "./conf",
+            "name": "conf",
+            "file_exclude_patterns": [],
+            "folder_exclude_patterns": [],
+		},
+		{
+			"path": ".",
+            "name": "top",
+            "file_exclude_patterns": [],
+            "folder_exclude_patterns": ["*"],
+		},
+
         // {
         //     "name": "external sources",
         //     "path": ".develop/virtualenv/src",
