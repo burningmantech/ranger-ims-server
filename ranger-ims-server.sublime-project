@@ -47,7 +47,7 @@
         "python_interpreter": "../bin/python",
         "test_command": "../bin/trial",
         "test_delimeter": ".",
-        "test_project_path": "ims",
+        "test_project_path": ".",
 
         "pep8_max_line_length": 80,
         "pep8_ignore": [
