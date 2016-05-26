@@ -21,7 +21,9 @@ Tests for L{ims.data.edit}.
 from twisted.trial import unittest
 
 from ...tz import utcNow
-from ..model import IncidentState, Incident, Ranger, Location, ReportEntry
+from ..model import (
+    IncidentState, Incident, Ranger, Location, TextOnlyAddress, ReportEntry
+)
 from ..edit import editIncident, EditNotAllowedError
 from .test_store import time1, time2
 
@@ -90,7 +92,7 @@ class EditingTests(unittest.TestCase):
         """
         self.assertEditValueNoop(
             "location",
-            Location(u"Tokyo", u"9 & C"), None
+            Location(u"Tokyo", TextOnlyAddress(u"9 & C")), None
         )
 
 
@@ -100,7 +102,8 @@ class EditingTests(unittest.TestCase):
         """
         self.assertEditValueNoop(
             "location",
-            Location(u"Tokyo", u"9 & C"), Location(None, u"9 & C")
+            Location(u"Tokyo", TextOnlyAddress(u"9 & C")),
+            Location(None, TextOnlyAddress(u"9 & C")),
         )
 
 
@@ -110,7 +113,8 @@ class EditingTests(unittest.TestCase):
         """
         self.assertEditValueNoop(
             "location",
-            Location(u"Tokyo", u"9 & C"), Location(u"Tokyo", None)
+            Location(u"Tokyo", TextOnlyAddress(u"9 & C")),
+            Location(u"Tokyo", None),
         )
 
 
@@ -120,7 +124,8 @@ class EditingTests(unittest.TestCase):
         """
         self.assertEditValueNoop(
             "location",
-            Location(u"Tokyo", u"9 & C"), Location(u"Tokyo", u"9 & C")
+            Location(u"Tokyo", TextOnlyAddress(u"9 & C")),
+            Location(u"Tokyo", TextOnlyAddress(u"9 & C")),
         )
 
 
@@ -130,14 +135,14 @@ class EditingTests(unittest.TestCase):
         """
         (edited, before, after) = self.editIncident(
             "location",
-            Location(u"Tokyo", u"9 & C"),
-            Location(u"Berlin", None)
+            Location(u"Tokyo", TextOnlyAddress(u"9 & C")),
+            Location(u"Berlin", None),
         )
 
         report_text = u"Changed location name to: Berlin"
 
         self.assertEquals(edited.location.name, u"Berlin")
-        self.assertEquals(edited.location.address, u"9 & C")
+        self.assertEquals(edited.location.address, TextOnlyAddress(u"9 & C"))
         self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
@@ -147,14 +152,14 @@ class EditingTests(unittest.TestCase):
         """
         (edited, before, after) = self.editIncident(
             "location",
-            Location(u"Tokyo", u"9 & C"),
-            Location(None, u"3 & C")
+            Location(u"Tokyo", TextOnlyAddress(u"9 & C")),
+            Location(None, TextOnlyAddress(u"3 & C")),
         )
 
-        report_text = u"Changed location address to: 3 & C"
+        report_text = u"Changed location address description to: 3 & C"
 
         self.assertEquals(edited.location.name, u"Tokyo")
-        self.assertEquals(edited.location.address, u"3 & C")
+        self.assertEquals(edited.location.address, TextOnlyAddress(u"3 & C"))
         self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
@@ -164,17 +169,17 @@ class EditingTests(unittest.TestCase):
         """
         (edited, before, after) = self.editIncident(
             "location",
-            Location(u"Tokyo", u"9 & C"),
-            Location(u"Berlin", u"3 & C")
+            Location(u"Tokyo", TextOnlyAddress(u"9 & C")),
+            Location(u"Berlin", TextOnlyAddress(u"3 & C"))
         )
 
         report_text = (
             u"Changed location name to: Berlin\n"
-            "Changed location address to: 3 & C"
+            "Changed location address description to: 3 & C"
         )
 
         self.assertEquals(edited.location.name, u"Berlin")
-        self.assertEquals(edited.location.address, u"3 & C")
+        self.assertEquals(edited.location.address, TextOnlyAddress(u"3 & C"))
         self.assertSystemReportEntryAdded(edited, before, after, report_text)
 
 
