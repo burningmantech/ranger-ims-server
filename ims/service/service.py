@@ -941,6 +941,7 @@ class WebService(object):
 
     @route(viewDispatchQueueTemplateURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
+    @authenticated(optional=True)
     def viewDispatchQueueTemplatePage(self, request):
         return DispatchQueueTemplatePage(self)
 
@@ -1015,6 +1016,7 @@ class WebService(object):
 
     @route(viewIncidentNumberTemplateURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
+    @authenticated(optional=True)
     def viewIncidentNumberTemplatePage(self, request):
         return IncidentTemplatePage(self)
 
