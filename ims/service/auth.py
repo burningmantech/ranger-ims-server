@@ -56,19 +56,10 @@ def authenticated(optional=False):
     def decorator(f):
         @wraps(f)
         def wrapper(self, request, *args, **kwargs):
-            session = request.getSession()
-            request.user = getattr(session, "user", None)
-
-            self.log.debug(
-                "Authentication: {request.user}", request=request
-            )
-
-            if optional or request.user is not None:
+            if self.authenticateRequest(request) or optional:
                 return f(self, request, *args, **kwargs)
-
-            self.log.debug("Authentication failed")
-
-            return self.redirect(request, self.loginURL, origin=u"o")
+            else:
+                return self.redirect(request, self.loginURL, origin=u"o")
 
         return wrapper
     return decorator

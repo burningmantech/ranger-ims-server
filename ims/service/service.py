@@ -267,6 +267,21 @@ class WebService(object):
         returnValue(authenticated)
 
 
+    def authenticateRequest(self, request):
+        session = request.getSession()
+        request.user = getattr(session, "user", None)
+
+        self.log.debug(
+            "Authentication: {request.user}", request=request
+        )
+
+        if request.user is not None:
+            return True
+        else:
+            self.log.debug("Authentication failed")
+            return False
+
+
     def authorizationsForUser(self, user, event):
         authorization = Authorization.none
 
