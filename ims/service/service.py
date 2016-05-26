@@ -45,7 +45,7 @@ from ims import __version__ as version
 from ..data.model import Incident, InvalidDataError
 from ..json import textFromJSON, jsonFromFile
 from ..json import rangerAsJSON, incidentAsJSON, incidentFromJSON
-from ..edit import editIncident
+from ..data.edit import editIncident
 from ..tz import utcNow
 from ..element.redirect import RedirectPage
 from ..element.root import RootPage

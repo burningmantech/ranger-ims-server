@@ -18,11 +18,11 @@
 Incident editing.
 """
 
-from .data.model import (
+from .model import (
     IncidentState, Incident, ReportEntry,
     Location, RodGarettAddress, TextOnlyAddress,
 )
-from .json import datetimeAsRFC3339
+from ..json import datetimeAsRFC3339
 
 __all__ = [
     "editIncident",

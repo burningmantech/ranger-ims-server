@@ -19,8 +19,8 @@ Tests for L{ims.service.edit}.
 """
 
 from ...tz import utcNow
-from ...data.model import IncidentState, Incident, Ranger, Location, ReportEntry
-from ...edit import editIncident, EditNotAllowedError
+from ..model import IncidentState, Incident, Ranger, Location, ReportEntry
+from ..edit import editIncident, EditNotAllowedError
 
 from ...test.test_store import time1, time2
 
