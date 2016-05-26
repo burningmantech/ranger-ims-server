@@ -70,7 +70,6 @@ class DutyManagementSystemTests(unittest.TestCase):
         self.assertEquals(dms.database, self.database)
         self.assertEquals(dms.username, self.username)
         self.assertEquals(dms.password, self.password)
-        self.assertEquals(dms._personnel_updated, 0)
 
 
     def test_dbpool(self):
