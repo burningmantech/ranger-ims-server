@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for L{ims.service.edit}.
+Tests for L{ims.data.edit}.
 """
 
 from twisted.trial import unittest

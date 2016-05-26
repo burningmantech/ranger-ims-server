@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for L{ims.data}.
+Tests for L{ims.data.model}.
 """
 
 from datetime import datetime as DateTime

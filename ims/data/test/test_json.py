@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for L{ims.json}.
+Tests for L{ims.data.json}.
 """
 
 from datetime import datetime as DateTime
