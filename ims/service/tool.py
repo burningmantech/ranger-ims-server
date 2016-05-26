@@ -23,11 +23,11 @@ __all__ = [
 ]
 
 from twisted.python.filepath import FilePath
+from twisted.logger import Logger, LogLevel
+from twisted.web.server import Site
 from twext.python.usage import (
     Executable, Options as BaseOptions, exit, ExitStatus
 )
-from twisted.logger import Logger
-from twisted.web.server import Site
 
 from .config import Configuration
 from .service import WebService
@@ -88,8 +88,17 @@ class WebTool(Executable):
             self.initConfig()
 
 
+    def startLogging(self):
+        if self.options["configuration"].Debug:
+            if "logLevel" not in self.options:
+                self.options["logLevel"] = LogLevel.debug
+                self.log.debug("Debug logging enabled.")
+        Executable.startLogging(self)
+
+
     def whenRunning(self):
-        service = WebService(self.options["configuration"])
+        config = self.options["configuration"]
+        service = WebService(config)
 
         host = self.options.get("host", "localhost")
         port = int(self.options["port"])
