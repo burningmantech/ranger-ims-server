@@ -956,6 +956,9 @@ class RangerSerializationTests(unittest.TestCase):
                 JSON.ranger_handle.value: u"Tool",
                 JSON.ranger_name.value: None,
                 JSON.ranger_status.value: None,
+                JSON.ranger_dms_id.value: None,
+                JSON.ranger_email.value: None,
+                JSON.ranger_on_site.value: None,
             },
             rangerAsJSON(Ranger(handle=u"Tool", name=None, status=None))
         )
@@ -970,9 +973,13 @@ class RangerSerializationTests(unittest.TestCase):
                 JSON.ranger_handle.value: u"Tool",
                 JSON.ranger_name.value: u"Wilfredo S\xe1nchez",
                 JSON.ranger_status.value: u"vintage",
+                JSON.ranger_dms_id.value: 1234,
+                JSON.ranger_email.value: u"tool@burningman.org",
+                JSON.ranger_on_site.value: False,
             },
             rangerAsJSON(Ranger(
-                handle=u"Tool", name=u"Wilfredo S\xe1nchez", status=u"vintage"
+                handle=u"Tool", name=u"Wilfredo S\xe1nchez", status=u"vintage",
+                dmsID=1234, email=u"tool@burningman.org", onSite=False,
             ))
         )
 
