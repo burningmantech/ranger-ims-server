@@ -267,7 +267,7 @@ class WebService(object):
         returnValue(authenticated)
 
 
-    def authorizationForUser(self, user):
+    def authorizationsForUser(self, user, event=None):
         authorization = Authorization.none
 
         if user is not None:
@@ -286,15 +286,17 @@ class WebService(object):
         return authorization
 
 
+    def lookupUser(self, username):
+        return self.directory.recordWithShortName(RecordType.user, username)
+
+
     @route(loginURL.asText(), methods=("POST",))
     @inlineCallbacks
     def loginSubmit(self, request):
         username = request.args.get("username", [""])[0].decode("utf-8")
         password = request.args.get("password", [""])[0].decode("utf-8")
 
-        user = yield self.directory.recordWithShortName(
-            RecordType.user, username
-        )
+        user = yield self.lookupUser(username)
 
         if user is None:
             # Try lookup by email address
@@ -312,12 +314,9 @@ class WebService(object):
         if not authenticated:
             user = None
 
-        authorization = yield self.authorizationForUser(user)
-
         if user:
             session = request.getSession()
-            session.user = username
-            session.authorization = authorization
+            session.user = user
 
             url = request.args.get(u"o", [None])[0]
             if url is None:

@@ -161,10 +161,19 @@ class Element(BaseElement):
             # Set origin for redirect back to current page
             return url.set(u"o", request.uri.decode("utf-8")).asText()
 
+        user = getattr(request, "user")
+        if user is None:
+            username = u"(anonymous user)"
+        else:
+            try:
+                username = user.shortNames[0]
+            except IndexError:
+                username = u"* NO USER NAME *"
+
         slots = dict(self.baseSlots)
 
         slots.update(dict(
-            user=objectAsUnicode(getattr(request, "user", u"(anonymous user)")),
+            user=username,
 
             login_url=redirectBack(service.loginURL),
             logout_url=redirectBack(service.logoutURL),

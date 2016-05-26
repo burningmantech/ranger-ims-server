@@ -62,26 +62,29 @@ def authenticated(optional=False):
     return decorator
 
 
-def authorized(authorization):
+def authorized(requiredAuthorizations):
     """
     Decorator enabling authorization for a Klein route method.
 
-    @param authorization: The authorization required to be considered
+    @param requiredAuthorizations: The authorizations required to be considered
         authorized.
-    @type authorization: L{FlagConstant}
+    @type requiredAuthorizations: L{FlagConstant}
     """
     def decorator(f):
         @wraps(f)
         @authenticated(optional=False)
         def wrapper(self, request, *args, **kwargs):
             session = request.getSession()
-            request.authorization = getattr(session, "authorization", None)
+            user = getattr(session, "user", None)
+
+            userAuthorizations = self.authorizationsForUser(user)
 
             self.log.debug(
-                "Authorization: {request.authorization}", request=request
+                "Authorization for {user}: {authorizations}",
+                user=user, authorizations=userAuthorizations,
             )
 
-            if (authorization & request.authorization):
+            if (requiredAuthorizations & userAuthorizations):
                 return f(self, request, *args, **kwargs)
 
             self.log.debug("Authorization failed")
