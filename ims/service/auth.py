@@ -29,6 +29,18 @@ from twisted.python.constants import FlagConstant, Flags
 
 
 
+class Authorization(Flags):
+    """
+    Authorizations
+    """
+
+    readIncidents  = FlagConstant()
+    writeIncidents = FlagConstant()
+
+Authorization.none = Authorization.readIncidents ^ Authorization.readIncidents
+
+
+
 def authenticated(optional=False):
     """
     Decorator enabling authentication for a Klein route method.
@@ -62,7 +74,7 @@ def authenticated(optional=False):
     return decorator
 
 
-def authorized(requiredAuthorizations):
+def authorized(requiredAuthorizations=Authorization.none):
     """
     Decorator enabling authorization for a Klein route method.
 
@@ -74,22 +86,11 @@ def authorized(requiredAuthorizations):
         @wraps(f)
         @authenticated(optional=False)
         def wrapper(self, request, *args, **kwargs):
-            if self.authorizeRequest(request, None, requiredAuthorizations):
+            event = getattr(request, "event", None)
+            if self.authorizeRequest(request, event, requiredAuthorizations):
                 return f(self, request, *args, **kwargs)
             else:
                 return self.redirect(request, self.loginURL, origin=u"o")
 
         return wrapper
     return decorator
-
-
-
-class Authorization(Flags):
-    """
-    Authorizations
-    """
-
-    readIncidents  = FlagConstant()
-    writeIncidents = FlagConstant()
-
-Authorization.none = Authorization.readIncidents ^ Authorization.readIncidents
