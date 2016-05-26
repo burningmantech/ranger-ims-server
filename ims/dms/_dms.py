@@ -26,6 +26,8 @@ __all__ = [
 
 from time import time
 
+from mysql.connector.errors import Error as SQLModuleError
+
 from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.enterprise import adbapi
@@ -167,9 +169,15 @@ class DutyManagementSystem(object):
                     self._personnelLastUpdated = 0
                     self._dbpool = None
 
-                    self.log.failure(
-                        "Unable to load personnel data from DMS"
-                    )
+                    if isinstance(e, SQLModuleError):
+                        self.log.warn(
+                            "Unable to load personnel data from DMS: {error}",
+                            error=e
+                        )
+                    else:
+                        self.log.failure(
+                            "Unable to load personnel data from DMS"
+                        )
 
                     if elapsed > self.personnelCacheIntervalMax:
                         raise DatabaseError(e)
