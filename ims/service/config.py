@@ -67,7 +67,6 @@ class Configuration (object):
             "Core.CachedResources: {self.CachedResources}\n"
             "Core.RejectClients: {self.RejectClients}\n"
             "Core.TimeZone: {self.TimeZone}\n"
-            "Core.ReadOnly: {self.ReadOnly}\n"
             "Core.Debug: {self.Debug}\n"
             "\n"
             "DMS.Hostname: {self.DMSHost}\n"
@@ -201,11 +200,6 @@ class Configuration (object):
 
         self.TimeZone = FixedOffsetTimeZone.fromLocalTimeStamp(time())
 
-        self.ReadOnly = (
-            valueFromConfig("Core", "ReadOnly", "false") == "true"
-        )
-        self.log.info("ReadOnly: {readOnly}", readOnly=self.ReadOnly)
-
         self.Debug = (
             valueFromConfig("Core", "Debug", "false") == "true"
         )
@@ -267,7 +261,7 @@ class Configuration (object):
 
         self.directory = DirectoryService(self.dms)
 
-        self.storage = MultiStorage(self.DataRoot, self.ReadOnly)
+        self.storage = MultiStorage(self.DataRoot)
 
         self.IncidentTypesJSONBytes = (
             textFromJSON(self.IncidentTypes).encode("utf-8")

@@ -378,7 +378,7 @@ class MultiStorage(object):
     Container for multiple storages.
     """
 
-    def __init__(self, path, readOnly):
+    def __init__(self, path, readOnly=False):
         self.path = path
         self.readOnly = readOnly
         self.stores = {}
@@ -395,9 +395,10 @@ class MultiStorage(object):
                 child = self.path.child(unicode(name))
                 if child.isdir:
                     if self.readOnly:
-                        store = ReadOnlyStorage(child)
+                        storeFactory = ReadOnlyStorage
                     else:
-                        store = Storage(child)
+                        storeFactory = Storage
+                    store = storeFactory(child)
                     self.stores[name] = store
                     return store
 
