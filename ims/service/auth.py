@@ -74,22 +74,10 @@ def authorized(requiredAuthorizations):
         @wraps(f)
         @authenticated(optional=False)
         def wrapper(self, request, *args, **kwargs):
-            session = request.getSession()
-            user = getattr(session, "user", None)
-
-            userAuthorizations = self.authorizationsForUser(user)
-
-            self.log.debug(
-                "Authorization for {user}: {authorizations}",
-                user=user, authorizations=userAuthorizations,
-            )
-
-            if (requiredAuthorizations & userAuthorizations):
+            if self.authorizeRequest(request, None, requiredAuthorizations):
                 return f(self, request, *args, **kwargs)
-
-            self.log.debug("Authorization failed")
-
-            return self.redirect(request, self.loginURL, origin=u"o")
+            else:
+                return self.redirect(request, self.loginURL, origin=u"o")
 
         return wrapper
     return decorator

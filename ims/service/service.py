@@ -267,7 +267,7 @@ class WebService(object):
         returnValue(authenticated)
 
 
-    def authorizationsForUser(self, user, event=None):
+    def authorizationsForUser(self, user, event):
         authorization = Authorization.none
 
         if user is not None:
@@ -284,6 +284,24 @@ class WebService(object):
         )
 
         return authorization
+
+
+    def authorizeRequest(self, request, event, requiredAuthorizations):
+        session = request.getSession()
+        user = getattr(session, "user", None)
+
+        userAuthorizations = self.authorizationsForUser(user, event)
+
+        self.log.debug(
+            "Authorization for {user}: {authorizations}",
+            user=user, authorizations=userAuthorizations,
+        )
+
+        if (requiredAuthorizations & userAuthorizations):
+            return True
+        else:
+            self.log.debug("Authorization failed")
+            return False
 
 
     def lookupUser(self, username):
