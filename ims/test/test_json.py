@@ -22,7 +22,7 @@ from datetime import datetime as DateTime
 
 from twisted.trial import unittest
 
-from ..data import (
+from ..data.model import (
     InvalidDataError, IncidentState,
     Incident, ReportEntry, Ranger,
     Location, TextOnlyAddress, RodGarettAddress,

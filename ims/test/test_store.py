@@ -24,14 +24,14 @@ import twisted.trial.unittest
 from twisted.python.filepath import FilePath
 
 from ..tz import utc
-from ims.json import (
+from ..json import (
     incidentFromJSON, incidentAsJSON, jsonFromText, textFromJSON
 )
-from ims.data import IncidentState, Incident, ReportEntry
-from ims.store import (
+from ..data.model import IncidentState, Incident, ReportEntry
+from ..store import (
     StorageError, ReadOnlyStorage, Storage, NoSuchIncidentError, etag_hash
 )
-from .test_data import location_tokyo, location_man, location_zero
+from ..data.test.test_model import location_tokyo, location_man, location_zero
 
 
 

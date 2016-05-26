@@ -18,7 +18,7 @@
 Incident editing.
 """
 
-from .data import (
+from .data.model import (
     IncidentState, Incident, ReportEntry,
     Location, RodGarettAddress, TextOnlyAddress,
 )

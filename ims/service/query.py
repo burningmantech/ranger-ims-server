@@ -23,7 +23,7 @@ __all__ = [
     "queryValue",
 ]
 
-from ..data import (
+from ..data.model import (
     IncidentState, Incident, ReportEntry, Location, RodGarettAddress
 )
 

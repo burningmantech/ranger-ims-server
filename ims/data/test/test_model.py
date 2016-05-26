@@ -22,8 +22,8 @@ from datetime import datetime as DateTime
 
 from twisted.trial import unittest
 
-from ..tz import utcNow
-from ..data import (
+from ...tz import utcNow
+from ..model import (
     InvalidDataError,
     IncidentState,
     Incident,

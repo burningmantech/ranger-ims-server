@@ -30,7 +30,7 @@ from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.enterprise import adbapi
 
-from ..data import Ranger
+from ..data.model import Ranger
 
 
 

@@ -36,8 +36,8 @@ __all__ = [
 from functools import total_ordering
 from datetime import datetime as DateTime  # , timedelta as TimeDelta
 
-from .tz import utcNow
-from ._streets import (
+from ..tz import utcNow
+from .._streets import (
     concentricStreetIDByName, concentricStreetNameByID
 )
 

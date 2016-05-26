@@ -132,7 +132,7 @@ from twisted.python.constants import (
 )
 
 from .tz import utc
-from .data import (
+from .data.model import (
     InvalidDataError, IncidentState, Incident, ReportEntry, Ranger,
     Location, TextOnlyAddress, RodGarettAddress,
 )

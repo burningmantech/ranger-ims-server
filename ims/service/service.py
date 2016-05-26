@@ -42,7 +42,7 @@ from twext.who.idirectory import RecordType, FieldName
 from klein import Klein
 
 from ims import __version__ as version
-from ..data import Incident, InvalidDataError
+from ..data.model import Incident, InvalidDataError
 from ..json import textFromJSON, jsonFromFile
 from ..json import rangerAsJSON, incidentAsJSON, incidentFromJSON
 from ..edit import editIncident

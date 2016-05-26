@@ -23,7 +23,7 @@ __all__ = [
 ]
 
 from ..json import textFromJSON
-from ..data import concentricStreetNameByID
+from ..data.model import concentricStreetNameByID
 
 from .base import Element, renderer
 
