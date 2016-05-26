@@ -25,6 +25,7 @@ __all__ = [
 from hashlib import sha1
 
 from twisted.python.constants import Names, NamedConstant
+from twisted.logger import Logger
 
 from twext.who.idirectory import (
     RecordType as BaseRecordType, FieldName as BaseFieldName
@@ -59,6 +60,8 @@ class DirectoryService(BaseDirectoryService):
     Duty Management System directory service.
     """
 
+    log = Logger()
+
     fieldName = ConstantsContainer((BaseFieldName, FieldName))
 
     recordType = ConstantsContainer((
@@ -90,10 +93,13 @@ class DirectoryService(BaseDirectoryService):
         # so we'll set up a callback to get the data when it's available.
 
         d = self.dms.personnel()
-        d.addCallback(self.loadRecordsForRealz)
+        d.addCallback(self._loadRecordsFromPersonnel)
+        d.addErrback(lambda f: self.log.error(
+            "Unable to populate directory: {error}", error=f.getErrorMessage()
+        ))
 
 
-    def loadRecordsForRealz(self, personnel):
+    def _loadRecordsFromPersonnel(self, personnel):
         if personnel is self._personnel:
             return
 
