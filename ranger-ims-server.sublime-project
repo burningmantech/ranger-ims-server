@@ -44,8 +44,8 @@
     "settings": {
         "tab_size": 4,
 
-        "python_interpreter": "./bin/python",
-        "test_command": "./bin/trial",
+        "python_interpreter": "../bin/python",
+        "test_command": "../bin/trial",
         "test_delimeter": ".",
         "test_project_path": "ims",
 
