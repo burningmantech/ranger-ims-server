@@ -50,7 +50,6 @@ class ConfigurationTests(twisted.trial.unittest.TestCase):
 
         self.assertEquals(config.ServerRoot, serverRoot)
         self.assertEquals(config.ConfigRoot, configRoot)
-        self.assertEquals(config.UserDB, configRoot.child("users.pwdb"))
         self.assertEquals(config.DataRoot, dataRoot)
         self.assertEquals(config.CachedResources, cached)
 
@@ -73,7 +72,6 @@ class ConfigurationTests(twisted.trial.unittest.TestCase):
 
         self.assertEquals(config.ServerRoot, serverRoot)
         self.assertEquals(config.ConfigRoot, configRoot)
-        self.assertEquals(config.UserDB, configRoot.child("users.pwdb"))
         self.assertEquals(config.DataRoot, dataRoot)
         self.assertEquals(config.CachedResources, cached)
 
