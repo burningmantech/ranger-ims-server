@@ -46,14 +46,12 @@ class ConfigurationTests(twisted.trial.unittest.TestCase):
         serverRoot = FilePath("/")
         configRoot = serverRoot.child("conf")
         dataRoot   = serverRoot.child("data")
-        resources  = serverRoot.child("resources")
         cached     = serverRoot.child("cached")
 
         self.assertEquals(config.ServerRoot, serverRoot)
         self.assertEquals(config.ConfigRoot, configRoot)
         self.assertEquals(config.UserDB, configRoot.child("users.pwdb"))
         self.assertEquals(config.DataRoot, dataRoot)
-        self.assertEquals(config.Resources, resources)
         self.assertEquals(config.CachedResources, cached)
 
         self.assertEquals(config.DMSHost, None)
@@ -71,14 +69,12 @@ class ConfigurationTests(twisted.trial.unittest.TestCase):
         serverRoot = sourceRoot
         configRoot = serverRoot.child("conf")
         dataRoot   = serverRoot.child("data")
-        resources  = serverRoot.child("resources")
         cached     = serverRoot.child("cached")
 
         self.assertEquals(config.ServerRoot, serverRoot)
         self.assertEquals(config.ConfigRoot, configRoot)
         self.assertEquals(config.UserDB, configRoot.child("users.pwdb"))
         self.assertEquals(config.DataRoot, dataRoot)
-        self.assertEquals(config.Resources, resources)
         self.assertEquals(config.CachedResources, cached)
 
         self.assertEquals(config.DMSHost, "dms.rangers.example.com")

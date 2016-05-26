@@ -63,7 +63,6 @@ class Configuration (object):
             "Core.ConfigRoot: {self.ConfigRoot}\n"
             "Core.UserDB: {self.UserDB}\n"
             "Core.DataRoot: {self.DataRoot}\n"
-            "Core.Resources: {self.Resources}\n"
             "Core.CachedResources: {self.CachedResources}\n"
             "Core.RejectClients: {self.RejectClients}\n"
             "Core.TimeZone: {self.TimeZone}\n"
@@ -162,13 +161,6 @@ class Configuration (object):
         )
         self.log.info(
             "Data root: {dataRoot.path}", dataRoot=self.DataRoot
-        )
-
-        self.Resources = filePathFromConfig(
-            "Core", "Resources", self.ServerRoot, ("resources",)
-        )
-        self.log.info(
-            "Resources: {resources.path}", resources=self.Resources
         )
 
         self.CachedResources = filePathFromConfig(
