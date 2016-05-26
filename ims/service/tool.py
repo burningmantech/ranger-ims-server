@@ -27,7 +27,6 @@ from twext.python.usage import (
     Executable, Options as BaseOptions, exit, ExitStatus
 )
 from twisted.logger import Logger
-from twisted.internet.defer import inlineCallbacks
 from twisted.web.server import Site
 
 from .config import Configuration
@@ -89,7 +88,6 @@ class WebTool(Executable):
             self.initConfig()
 
 
-    @inlineCallbacks
     def whenRunning(self):
         service = WebService(self.options["configuration"])
 
@@ -105,4 +103,3 @@ class WebTool(Executable):
         reactor.listenTCP(
             port, Site(service.resource()), interface=host
         )
-        yield
