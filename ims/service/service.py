@@ -278,7 +278,10 @@ class WebService(object):
                 authorization |= Authorization.readIncidents
                 authorization |= Authorization.writeIncidents
 
-        print("Authz for {}: {}".format(user, authorization))
+        self.log.debug(
+            "Authz for {user}: {authorization}",
+            user=user, authorization=authorization,
+        )
 
         return authorization
 
