@@ -22,8 +22,8 @@ __all__ = [
     "DispatchQueuePage",
 ]
 
-from ..json import textFromJSON
 from ..data.model import concentricStreetNameByID
+from ..data.json import textFromJSON
 
 from .base import Element, renderer
 

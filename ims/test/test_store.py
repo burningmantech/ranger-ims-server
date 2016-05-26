@@ -24,10 +24,10 @@ import twisted.trial.unittest
 from twisted.python.filepath import FilePath
 
 from ..tz import utc
-from ..json import (
+from ..data.model import IncidentState, Incident, ReportEntry
+from ..data.json import (
     incidentFromJSON, incidentAsJSON, jsonFromText, textFromJSON
 )
-from ..data.model import IncidentState, Incident, ReportEntry
 from ..store import (
     StorageError, ReadOnlyStorage, Storage, NoSuchIncidentError, etag_hash
 )

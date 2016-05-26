@@ -43,8 +43,8 @@ from klein import Klein
 
 from ims import __version__ as version
 from ..data.model import Incident, InvalidDataError
-from ..json import textFromJSON, jsonFromFile
-from ..json import rangerAsJSON, incidentAsJSON, incidentFromJSON
+from ..data.json import textFromJSON, jsonFromFile
+from ..data.json import rangerAsJSON, incidentAsJSON, incidentFromJSON
 from ..data.edit import editIncident
 from ..tz import utcNow
 from ..element.redirect import RedirectPage

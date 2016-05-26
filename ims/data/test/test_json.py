@@ -22,19 +22,19 @@ from datetime import datetime as DateTime
 
 from twisted.trial import unittest
 
-from ..data.model import (
+from ...tz import utc, FixedOffsetTimeZone
+from ..model import (
     InvalidDataError, IncidentState,
     Incident, ReportEntry, Ranger,
     Location, TextOnlyAddress, RodGarettAddress,
 )
-from ..tz import utc, FixedOffsetTimeZone
 from ..json import (
     JSON,
     datetimeAsRFC3339, rfc3339AsDateTime,
     incidentFromJSON, incidentAsJSON, rangerAsJSON, locationAsJSON,
 )
 
-from .test_store import time1, time2
+from ...test.test_store import time1, time2
 
 
 
