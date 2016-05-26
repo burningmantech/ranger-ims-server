@@ -33,8 +33,7 @@ from ..json import (
     datetimeAsRFC3339, rfc3339AsDateTime,
     incidentFromJSON, incidentAsJSON, rangerAsJSON, locationAsJSON,
 )
-
-from ...test.test_store import time1, time2
+from .test_store import time1, time2
 
 
 

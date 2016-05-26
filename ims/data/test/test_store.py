@@ -23,15 +23,15 @@ from datetime import datetime as DateTime
 import twisted.trial.unittest
 from twisted.python.filepath import FilePath
 
-from ..tz import utc
-from ..data.model import IncidentState, Incident, ReportEntry
-from ..data.json import (
+from ...tz import utc
+from ..model import IncidentState, Incident, ReportEntry
+from ..json import (
     incidentFromJSON, incidentAsJSON, jsonFromText, textFromJSON
 )
 from ..store import (
     StorageError, ReadOnlyStorage, Storage, NoSuchIncidentError, etag_hash
 )
-from ..data.test.test_model import location_tokyo, location_man, location_zero
+from ..test.test_model import location_tokyo, location_man, location_zero
 
 
 

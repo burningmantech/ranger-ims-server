@@ -42,11 +42,11 @@ from twext.who.idirectory import RecordType, FieldName
 from klein import Klein
 
 from ims import __version__ as version
+from ..tz import utcNow
 from ..data.model import Incident, InvalidDataError
 from ..data.json import textFromJSON, jsonFromFile
 from ..data.json import rangerAsJSON, incidentAsJSON, incidentFromJSON
 from ..data.edit import editIncident
-from ..tz import utcNow
 from ..element.redirect import RedirectPage
 from ..element.root import RootPage
 from ..element.login import LoginPage

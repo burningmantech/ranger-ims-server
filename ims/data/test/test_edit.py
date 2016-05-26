@@ -18,13 +18,12 @@
 Tests for L{ims.service.edit}.
 """
 
+from twisted.trial import unittest
+
 from ...tz import utcNow
 from ..model import IncidentState, Incident, Ranger, Location, ReportEntry
 from ..edit import editIncident, EditNotAllowedError
-
-from ...test.test_store import time1, time2
-
-from twisted.trial import unittest
+from .test_store import time1, time2
 
 
 

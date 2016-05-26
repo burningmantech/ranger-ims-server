@@ -30,8 +30,9 @@ from hashlib import sha1 as etag_hash
 
 from twisted.logger import Logger
 from twisted.python.filepath import UnlistableError
-from .data.model import IncidentState, InvalidDataError
-from .data.json import (
+
+from .model import IncidentState, InvalidDataError
+from .json import (
     incidentAsJSON, incidentFromJSON, textFromJSON, jsonFromFile,
     rfc3339AsDateTime
 )

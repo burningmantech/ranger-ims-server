@@ -11,12 +11,12 @@ try:
     from time import tzset
 except ImportError:
     tzset = None
-
-from ..tz import FixedOffsetTimeZone
-from twisted.trial.unittest import TestCase, SkipTest
+from time import mktime as _mktime
 from datetime import timedelta
 
-from time import mktime as mktime_real
+from twisted.trial.unittest import TestCase, SkipTest
+
+from ..tz import FixedOffsetTimeZone
 
 
 # On some rare platforms (FreeBSD 8?  I was not able to reproduce
@@ -26,7 +26,7 @@ from time import mktime as mktime_real
 
 def mktime(t9):
     """
-    Call L{mktime_real}, and if it raises L{OverflowError}, catch it and raise
+    Call L{_mktime}, and if it raises L{OverflowError}, catch it and raise
     SkipTest instead.
 
     @param t9: A time as a 9-item tuple.
@@ -36,7 +36,7 @@ def mktime(t9):
     @rtype: L{float}
     """
     try:
-        return mktime_real(t9)
+        return _mktime(t9)
     except OverflowError:
         raise SkipTest(
             "Platform cannot construct time zone for {0!r}"

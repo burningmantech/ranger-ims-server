@@ -36,13 +36,13 @@ __all__ = [
 from functools import total_ordering
 from datetime import datetime as DateTime  # , timedelta as TimeDelta
 
+from twisted.python.constants import (
+    Names, NamedConstant, Values, ValueConstant
+)
+
 from ..tz import utcNow
 from .._streets import (
     concentricStreetIDByName, concentricStreetNameByID
-)
-
-from twisted.python.constants import (
-    Names, NamedConstant, Values, ValueConstant
 )
 
 
