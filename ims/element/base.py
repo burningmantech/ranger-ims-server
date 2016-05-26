@@ -161,7 +161,7 @@ class Element(BaseElement):
             # Set origin for redirect back to current page
             return url.set(u"o", request.uri.decode("utf-8")).asText()
 
-        user = getattr(request, "user")
+        user = getattr(request, "user", None)
         if user is None:
             username = u"(anonymous user)"
         else:
