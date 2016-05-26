@@ -23,7 +23,8 @@ from twisted.trial import unittest
 from twisted.internet.defer import succeed, fail
 from twisted.internet.defer import inlineCallbacks
 
-from .. import DutyManagementSystem, fullName
+from .. import DutyManagementSystem
+from .._dms import fullName
 
 
 
@@ -38,8 +39,8 @@ class DutyManagementSystemTests(unittest.TestCase):
         """
         self.dummyADBAPI = DummyADBAPI()
 
-        import ims.dms.dms
-        self.patch(ims.dms.dms, "adbapi", self.dummyADBAPI)
+        import ims.dms._dms
+        self.patch(ims.dms._dms, "adbapi", self.dummyADBAPI)
 
 
     def dms(self):
