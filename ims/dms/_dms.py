@@ -167,13 +167,12 @@ class DutyManagementSystem(object):
                     self._personnelLastUpdated = 0
                     self._dbpool = None
 
+                    self.log.failure(
+                        "Unable to load personnel data from DMS"
+                    )
+
                     if elapsed > self.personnelCacheIntervalMax:
                         raise DatabaseError(e)
-
-                    self.log.warn(
-                        "Unable to load personnel data from DMS: {error}",
-                        error=e
-                    )
 
             finally:
                 self._busy = False
