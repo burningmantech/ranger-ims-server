@@ -99,7 +99,7 @@ class DutyManagementSystemTests(unittest.TestCase):
 
         self.assertEquals(
             [p.handle for p in personnel],
-            [p[0] for p in cannedPersonnel],
+            [p[1] for p in cannedPersonnel],
         )
 
 
@@ -160,9 +160,10 @@ class DummyConnectionPool(object):
         sql = query.sql()
 
         if sql == (
-            "select callsign, first_name, mi, last_name, status "
-            "from person "
-            "where status not in "
+            "select "
+            "id, callsign, first_name, mi, last_name, "
+            "email, status, on_site, password "
+            "from person where status not in "
             "( 'prospective', 'alpha', 'bonked', 'uberbonked', 'deceased' )"
         ):
             return succeed(iter(cannedPersonnel))
@@ -184,10 +185,28 @@ class DummyADBAPI(object):
 
 
 cannedPersonnel = (
-    ("Easy E", "Eric", "P", "Grant", "active"),
-    ("El Weso", "Wes", "", "Johnson", "active"),
-    ("SciFi", "Fred", "", "McCord", "active"),
-    ("Slumber", "Sleepy", "T", "Dwarf", "inactive"),
-    ("Tool", "Wilfredo", "", "Sanchez", "vintage"),
-    ("Tulsa", "Curtis", "", "Kline", "vintage"),
+    (
+        1, u"Easy E", u"Eric", u"P", u"Grant", u"easye@example.com",
+        u"active", True, u"easypass",
+    ),
+    (
+        2, u"Weso", u"Wes", u"", u"Johnson", u"weso@example.com",
+        u"active", True, u"wespass",
+    ),
+    (
+        3, u"SciFi", u"Fred", u"", u"McCord", u"scifi@example.com",
+        u"active", True, u"scipass",
+    ),
+    (
+        4, u"Slumber", u"Sleepy", u"T", u"Dwarf", u"slumber@example.com",
+        u"inactive", False, u"sleepypass",
+    ),
+    (
+        5, u"Tool", u"Wilfredo", u"", u"Sanchez", u"tool@example.com",
+        u"vintage", True, u"toolpass",
+    ),
+    (
+        6, u"Tulsa", u"Curtis", u"", u"Kline", u"tulsa@example.com",
+        u"vintage", True, u"tulsapass",
+    ),
 )
