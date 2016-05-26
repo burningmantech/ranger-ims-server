@@ -304,8 +304,26 @@ class WebService(object):
             return False
 
 
-    def lookupUser(self, username):
+    def lookupUserName(self, username):
         return self.directory.recordWithShortName(RecordType.user, username)
+
+
+    @inlineCallbacks
+    def lookupUserEmail(self, email):
+        user = None
+
+        # Try lookup by email address
+        for record in (yield self.directory.recordsWithFieldValue(
+            FieldName.emailAddresses, email
+        )):
+            if user is not None:
+                # More than one record with the same email address.
+                # We can't know which is the right one, so none is.
+                user = None
+                break
+            user = record
+
+        returnValue(user)
 
 
     @route(loginURL.asText(), methods=("POST",))
@@ -314,35 +332,24 @@ class WebService(object):
         username = request.args.get("username", [""])[0].decode("utf-8")
         password = request.args.get("password", [""])[0].decode("utf-8")
 
-        user = yield self.lookupUser(username)
-
+        user = yield self.lookupUserName(username)
         if user is None:
-            # Try lookup by email address
-            for record in (yield self.directory.recordsWithFieldValue(
-                FieldName.emailAddresses, username
-            )):
-                if user is not None:
-                    # More than one record with the same email address.
-                    # We can't know which is the right one, so none is.
-                    user = None
-                    break
-                user = record
+            user = yield self.lookupUserEmail(username)
 
-        authenticated = yield self.verifyCredentials(user, password)
-        if not authenticated:
-            user = None
+        if user is not None:
+            authenticated = yield self.verifyCredentials(user, password)
 
-        if user:
-            session = request.getSession()
-            session.user = user
+            if authenticated:
+                session = request.getSession()
+                session.user = user
 
-            url = request.args.get(u"o", [None])[0]
-            if url is None:
-                location = self.prefixURL  # Default to application home
-            else:
-                location = URL.fromText(url)
+                url = request.args.get(u"o", [None])[0]
+                if url is None:
+                    location = self.prefixURL  # Default to application home
+                else:
+                    location = URL.fromText(url)
 
-            returnValue(self.redirect(request, location))
+                returnValue(self.redirect(request, location))
 
         returnValue(self.login(request, failed=True))
 
