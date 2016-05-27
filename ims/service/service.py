@@ -30,7 +30,6 @@ from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.python.url import URL
 from twisted.internet.defer import inlineCallbacks, returnValue
-from twisted.web.server import Session
 from twisted.web.client import downloadPage
 
 from ..data.json import textFromJSON
@@ -47,8 +46,6 @@ class WebService(KleinService, URLs, AuthMixIn, JSONMixIn, WebMixIn):
     """
     Incident Management System web service.
     """
-
-    sessionTimeout = Session.sessionTimeout
 
     #
     # External resource info
