@@ -29,6 +29,7 @@ from twext.python.usage import (
     Executable, Options as BaseOptions, exit, ExitStatus
 )
 
+from .log import patchCombinedLogFormatter
 from .config import Configuration
 from .service import WebService
 
@@ -89,10 +90,13 @@ class WebTool(Executable):
 
 
     def startLogging(self):
+        patchCombinedLogFormatter()
+
         if self.options["configuration"].Debug:
             if "logLevel" not in self.options:
                 self.options["logLevel"] = LogLevel.debug
                 self.log.debug("Debug logging enabled.")
+
         Executable.startLogging(self)
 
 
