@@ -31,7 +31,7 @@ from re import compile as regex_compile
 from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 
 from twisted.python.filepath import FilePath
-from twisted.logger import Logger, LogLevel
+from twisted.logger import Logger
 
 from ..data.model import IncidentType
 from ..data.json import textFromJSON, jsonFromFile
@@ -174,12 +174,18 @@ class Configuration (object):
             "RejectClients: {rejectClients}", rejectClients=self.RejectClients
         )
 
-        levelName = valueFromConfig("Core", "LogLevel", "info")
-        try:
-            self.LogLevel = LogLevel.lookupByName(levelName)
-        except:
-            raise ValueError("Invalid log level: {}".format(levelName))
+        self.LogLevel = valueFromConfig("Core", "LogLevel", "info")
         self.log.info("LogLevel: {logLevel}", logLevel=self.LogLevel)
+
+        self.LogFormat = valueFromConfig("Core", "LogFormat", "text")
+        self.log.info("LogFormat: {logFormat}", logFormat=self.LogFormat)
+
+        self.PIDFile = filePathFromConfig(
+            "Core", "PIDFile", self.DataRoot, ("ims_web.pid",)
+        )
+        self.log.info(
+            "PIDFile: {pidFile.path}", pidFile=self.PIDFile
+        )
 
         self.DMSHost     = valueFromConfig("DMS", "Hostname", None)
         self.DMSDatabase = valueFromConfig("DMS", "Database", None)

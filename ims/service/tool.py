@@ -92,12 +92,16 @@ class WebTool(Executable):
                 exit(ExitStatus.EX_CONFIG, unicode(e))
 
 
-    def startLogging(self):
+    def postOptions(self):
+        Executable.postOptions(self)
+
         patchCombinedLogFormatter()
 
-        self.options["logLevel"] = self.options["configuration"].LogLevel
+        config = self.options["configuration"]
 
-        Executable.startLogging(self)
+        self.options.opt_log_format(config.LogFormat)
+        self.options.opt_log_level(config.LogLevel)
+        self.options.opt_pid_file(config.PIDFile.path)
 
 
     def whenRunning(self):
