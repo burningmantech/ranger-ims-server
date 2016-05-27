@@ -38,13 +38,14 @@ def combinedLogFormatter(timestamp, request):
     referrer = _escape(request.getHeader(b"referer") or b"-")
     agent = _escape(request.getHeader(b"user-agent") or b"-")
 
-    if hasattr(request, "user") and request.user:
+    if hasattr(request, "user") and request.user is not None:
+        uid = request.user.uid
         try:
-            user = _escape(request.user)
+            username = _escape(uid)
         except Exception:
-            user = _escape(repr(request.user))
+            username = _escape(repr(uid))
     else:
-        user = b"-"
+        username = u"-"
 
     line = (
         u'"%(ip)s" %(user)s - %(timestamp)s "%(method)s %(uri)s %(protocol)s" '
@@ -58,11 +59,12 @@ def combinedLogFormatter(timestamp, request):
             length=request.sentLength or u"-",
             referrer=referrer,
             agent=agent,
-            user=user,
+            user=username,
         )
     )
     return line
 
 
 
-twisted.web.http.combinedLogFormatter = combinedLogFormatter
+def patchCombinedLogFormatter():
+    twisted.web.http.combinedLogFormatter = combinedLogFormatter
