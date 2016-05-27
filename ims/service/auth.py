@@ -19,6 +19,8 @@ Incident Management System authorization and authentication.
 """
 
 __all__ = [
+    "Authorization",
+    "NotAuthorizedError",
     "authenticated",
     "authorized",
 ]
@@ -38,6 +40,13 @@ class Authorization(Flags):
     writeIncidents = FlagConstant()
 
 Authorization.none = Authorization.readIncidents ^ Authorization.readIncidents
+
+
+
+class NotAuthorizedError(Exception):
+    """
+    Not authorized.
+    """
 
 
 
@@ -77,10 +86,8 @@ def authorized(requiredAuthorizations=Authorization.none):
         @wraps(f)
         @authenticated(optional=False)
         def wrapper(self, request, *args, **kwargs):
-            if self.authorizeRequest(request, None, requiredAuthorizations):
-                return f(self, request, *args, **kwargs)
-            else:
-                return self.redirect(request, self.loginURL, origin=u"o")
+            self.authorizeRequest(request, None, requiredAuthorizations)
+            return f(self, request, *args, **kwargs)
 
         return wrapper
     return decorator

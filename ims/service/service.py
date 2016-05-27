@@ -55,7 +55,7 @@ from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
 from ..element.incident_template import IncidentTemplatePage
 from ..dms import DatabaseError
-from .auth import authenticated, authorized, Authorization
+from .auth import authenticated, authorized, Authorization, NotAuthorizedError
 from .query import editsFromQuery
 
 
@@ -78,6 +78,8 @@ def route(*args, **kwargs):
             )
             try:
                 response = yield f(self, request, *args, **kwargs)
+            except NotAuthorizedError:
+                returnValue(self.redirect(request, self.loginURL, origin=u"o"))
             except DatabaseError as e:
                 self.log.error("DMS error: {failure}", failure=e)
             except Exception:
@@ -308,15 +310,13 @@ class WebService(object):
         userAuthorizations = self.authorizationsForUser(user, event)
 
         self.log.debug(
-            "Authorization for {user}: {authorizations}",
+            "Authorizations for {user}: {authorizations}",
             user=user, authorizations=userAuthorizations,
         )
 
-        if (requiredAuthorizations & userAuthorizations):
-            return True
-        else:
-            self.log.debug("Authorization failed")
-            return False
+        if not (requiredAuthorizations & userAuthorizations):
+            self.log.debug("Authorization failed for {user}", user=user)
+            raise NotAuthorizedError()
 
 
     def lookupUserName(self, username):
