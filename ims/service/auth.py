@@ -20,10 +20,19 @@ Incident Management System authorization and authentication.
 
 __all__ = [
     "Authorization",
-    "NotAuthorizedError",
+    "AuthMixIn",
 ]
 
 from twisted.python.constants import FlagConstant, Flags
+from twisted.python.url import URL
+from twisted.internet.defer import inlineCallbacks, returnValue
+
+from twext.who.idirectory import RecordType, FieldName
+
+from ..element.login import LoginPage
+from .klein import route
+from .urls import URLs
+from .error import NotAuthenticatedError, NotAuthorizedError
 
 
 
@@ -39,13 +48,139 @@ Authorization.none = Authorization.readIncidents ^ Authorization.readIncidents
 
 
 
-class NotAuthenticatedError(Exception):
+class AuthMixIn(object):
     """
-    Not authorized.
+    Mix-in for authentication and authorization support.
     """
 
+    @inlineCallbacks
+    def verifyCredentials(self, user, password):
+        if user is None:
+            authenticated = False
+        else:
+            try:
+                authenticated = yield user.verifyPlaintextPassword(password)
+            except Exception:
+                self.log.failure("Unable to check password")
+                authenticated = False
 
-class NotAuthorizedError(Exception):
-    """
-    Not authorized.
-    """
+        self.log.debug(
+            "Valid credentials for {user}: {result}",
+            user=user, result=authenticated,
+        )
+
+        returnValue(authenticated)
+
+
+    def authenticateRequest(self, request, optional=False):
+        session = request.getSession()
+        request.user = getattr(session, "user", None)
+
+        if request.user is None and not optional:
+            self.log.debug("Authentication failed")
+            raise NotAuthenticatedError()
+        else:
+            self.log.debug(
+                "Authenticated as {request.user}", request=request
+            )
+
+
+    def authorizationsForUser(self, user, event):
+        authorizations = Authorization.none
+
+        if user is not None:
+            if user.uid in self.config.readers:
+                authorizations |= Authorization.readIncidents
+
+            if user.uid in self.config.writers:
+                authorizations |= Authorization.readIncidents
+                authorizations |= Authorization.writeIncidents
+
+        self.log.debug(
+            "Authz for {user}: {authorizations}",
+            user=user, authorizations=authorizations,
+        )
+
+        return authorizations
+
+
+    def authorizeRequest(self, request, event, requiredAuthorizations):
+        session = request.getSession()
+        user = getattr(session, "user", None)
+
+        userAuthorizations = self.authorizationsForUser(user, event)
+
+        self.log.debug(
+            "Authorizations for {user}: {authorizations}",
+            user=user, authorizations=userAuthorizations,
+        )
+
+        if not (requiredAuthorizations & userAuthorizations):
+            self.log.debug("Authorization failed for {user}", user=user)
+            raise NotAuthorizedError()
+
+
+    def lookupUserName(self, username):
+        return self.directory.recordWithShortName(RecordType.user, username)
+
+
+    @inlineCallbacks
+    def lookupUserEmail(self, email):
+        user = None
+
+        # Try lookup by email address
+        for record in (yield self.directory.recordsWithFieldValue(
+            FieldName.emailAddresses, email
+        )):
+            if user is not None:
+                # More than one record with the same email address.
+                # We can't know which is the right one, so none is.
+                user = None
+                break
+            user = record
+
+        returnValue(user)
+
+
+    @route(URLs.loginURL.asText(), methods=("POST",))
+    @inlineCallbacks
+    def loginSubmit(self, request):
+        username = request.args.get("username", [""])[0].decode("utf-8")
+        password = request.args.get("password", [""])[0].decode("utf-8")
+
+        user = yield self.lookupUserName(username)
+        if user is None:
+            user = yield self.lookupUserEmail(username)
+
+        if user is not None:
+            authenticated = yield self.verifyCredentials(user, password)
+
+            if authenticated:
+                session = request.getSession()
+                session.user = user
+
+                url = request.args.get(u"o", [None])[0]
+                if url is None:
+                    location = self.prefixURL  # Default to application home
+                else:
+                    location = URL.fromText(url)
+
+                returnValue(self.redirect(request, location))
+
+        returnValue(self.login(request, failed=True))
+
+
+    @route(URLs.loginURL.asText(), methods=("HEAD", "GET"))
+    def login(self, request, failed=False):
+        self.authenticateRequest(request, optional=True)
+
+        return LoginPage(self, failed=failed)
+
+
+    @route(URLs.logoutURL.asText(), methods=("HEAD", "GET"))
+    def logout(self, request):
+        session = request.getSession()
+        session.expire()
+
+        # Redirect back to application home
+        return self.redirect(request, self.prefixURL)

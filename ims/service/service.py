@@ -27,7 +27,6 @@ __all__ = [
 from functools import wraps
 from zipfile import BadZipfile
 
-from twisted.python.constants import Values, ValueConstant
 from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.python.url import URL
@@ -37,10 +36,6 @@ from twisted.web import http
 from twisted.web.server import Session
 from twisted.web.client import downloadPage
 
-from twext.who.idirectory import RecordType, FieldName
-
-from klein import Klein
-
 from ims import __version__ as version
 from ..tz import utcNow
 from ..data.model import Incident, InvalidDataError
@@ -49,48 +44,15 @@ from ..data.json import rangerAsJSON, incidentAsJSON, incidentFromJSON
 from ..data.edit import editIncident
 from ..element.redirect import RedirectPage
 from ..element.root import RootPage
-from ..element.login import LoginPage
 from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
 from ..element.incident_template import IncidentTemplatePage
-from ..dms import DatabaseError
-from .auth import NotAuthenticatedError, NotAuthorizedError, Authorization
+from .http import HeaderName, ContentType
+from .urls import URLs
+from .klein import application as _app, route
+from .auth import Authorization, AuthMixIn
 from .query import editsFromQuery
-
-
-
-_app = Klein()
-
-def route(*args, **kwargs):
-    """
-    Decorator that applies a Klein route and anything else we want applied to
-    all endpoints.
-    """
-    def decorator(f):
-        @_app.route(*args, **kwargs)
-        @wraps(f)
-        @inlineCallbacks
-        def wrapper(self, request, *args, **kwargs):
-            request.setHeader(
-                HeaderName.server.value,
-                "Incident Management System/{}".format(version),
-            )
-            try:
-                response = yield f(self, request, *args, **kwargs)
-            except (NotAuthenticatedError, NotAuthorizedError):
-                returnValue(self.redirect(request, self.loginURL, origin=u"o"))
-            except DatabaseError as e:
-                self.log.error("DMS error: {failure}", failure=e)
-            except Exception:
-                self.log.failure("Request failed")
-            else:
-                returnValue(response)
-
-            returnValue(self.internalErrorResource(request))
-
-        return wrapper
-    return decorator
 
 
 
@@ -117,7 +79,7 @@ def fixedETag(f):
 
 
 
-class WebService(object):
+class WebService(URLs, AuthMixIn):
     """
     Incident Management System web service.
     """
@@ -126,61 +88,6 @@ class WebService(object):
     app = _app
 
     sessionTimeout = Session.sessionTimeout
-
-    #
-    # URLs
-    #
-
-    prefixURL = URL.fromText(u"/ims")
-
-    styleSheetURL = prefixURL.child(u"style.css")
-
-    logoURL = prefixURL.child(u"logo.png")
-
-    loginURL  = prefixURL.child(u"login")
-    logoutURL = prefixURL.child(u"logout")
-
-    jqueryBaseURL = prefixURL.child(u"jquery")
-    jqueryJSURL   = jqueryBaseURL.child(u"jquery.min.js")
-    jqueryMapURL  = jqueryBaseURL.child(u"jquery.min.map")
-
-    bootstrapBaseURL = prefixURL.child(u"bootstrap")
-    bootstrapCSSURL  = bootstrapBaseURL.child(u"css", u"bootstrap.min.css")
-    bootstrapJSURL   = bootstrapBaseURL.child(u"js", u"bootstrap.min.js")
-
-    dataTablesBaseURL = prefixURL.child(u"datatables")
-    dataTablesJSURL = dataTablesBaseURL.child(
-        u"media", u"js", u"jquery.dataTables.min.js"
-    )
-    dataTablesBootstrapCSSURL = dataTablesBaseURL.child(
-        u"media", u"css", u"dataTables.bootstrap.min.css"
-    )
-    dataTablesBootstrapJSURL = dataTablesBaseURL.child(
-        u"media", u"js", u"dataTables.bootstrap.min.js"
-    )
-
-    momentJSURL = prefixURL.child(u"moment.min.js")
-
-    imsJSURL      = prefixURL.child(u"ims.js")
-    queueJSURL    = prefixURL.child(u"queue.js")
-    incidentJSURL = prefixURL.child(u"incident.js")
-
-    eventURL            = prefixURL.child(u"<event>")
-    pingURL             = eventURL.child(u"ping")
-    personnelURL        = eventURL.child(u"personnel")
-    incidentTypesURL    = eventURL.child(u"incident_types")
-    locationsURL        = eventURL.child(u"locations")
-    incidentsURL        = eventURL.child(u"incidents")
-    incidentNumberURL   = incidentsURL.child(u"<number>")
-
-    viewDispatchQueueURL          = eventURL.child(u"queue")
-    viewDispatchQueueTemplateURL  = prefixURL.child(u"_queue")
-    viewDispatchQueueJSURL        = viewDispatchQueueURL.child(u"queue.js")
-    dispatchQueueDataURL          = viewDispatchQueueURL.child(u"data")
-    viewDispatchQueueRelativeURL  = URL.fromText(u"queue")
-    viewIncidentsURL              = viewDispatchQueueURL.child(u"incidents")
-    viewIncidentNumberURL         = viewIncidentsURL.child(u"<number>")
-    viewIncidentNumberTemplateURL = prefixURL.child(u"_incident")
 
     #
     # External resource info
@@ -244,143 +151,6 @@ class WebService(object):
         request.setResponseCode(http.FOUND)
 
         return RedirectPage(self, location)
-
-
-    #
-    # Authentication & authorization
-    #
-
-    @inlineCallbacks
-    def verifyCredentials(self, user, password):
-        if user is None:
-            authenticated = False
-        else:
-            try:
-                authenticated = yield user.verifyPlaintextPassword(password)
-            except Exception:
-                self.log.failure("Unable to check password")
-                authenticated = False
-
-        self.log.debug(
-            "Valid credentials for {user}: {result}",
-            user=user, result=authenticated,
-        )
-
-        returnValue(authenticated)
-
-
-    def authenticateRequest(self, request, optional=False):
-        session = request.getSession()
-        request.user = getattr(session, "user", None)
-
-        if request.user is None and not optional:
-            self.log.debug("Authentication failed")
-            raise NotAuthenticatedError()
-        else:
-            self.log.debug(
-                "Authenticated as {request.user}", request=request
-            )
-
-
-    def authorizationsForUser(self, user, event):
-        authorizations = Authorization.none
-
-        if user is not None:
-            if user.uid in self.config.readers:
-                authorizations |= Authorization.readIncidents
-
-            if user.uid in self.config.writers:
-                authorizations |= Authorization.readIncidents
-                authorizations |= Authorization.writeIncidents
-
-        self.log.debug(
-            "Authz for {user}: {authorizations}",
-            user=user, authorizations=authorizations,
-        )
-
-        return authorizations
-
-
-    def authorizeRequest(self, request, event, requiredAuthorizations):
-        session = request.getSession()
-        user = getattr(session, "user", None)
-
-        userAuthorizations = self.authorizationsForUser(user, event)
-
-        self.log.debug(
-            "Authorizations for {user}: {authorizations}",
-            user=user, authorizations=userAuthorizations,
-        )
-
-        if not (requiredAuthorizations & userAuthorizations):
-            self.log.debug("Authorization failed for {user}", user=user)
-            raise NotAuthorizedError()
-
-
-    def lookupUserName(self, username):
-        return self.directory.recordWithShortName(RecordType.user, username)
-
-
-    @inlineCallbacks
-    def lookupUserEmail(self, email):
-        user = None
-
-        # Try lookup by email address
-        for record in (yield self.directory.recordsWithFieldValue(
-            FieldName.emailAddresses, email
-        )):
-            if user is not None:
-                # More than one record with the same email address.
-                # We can't know which is the right one, so none is.
-                user = None
-                break
-            user = record
-
-        returnValue(user)
-
-
-    @route(loginURL.asText(), methods=("POST",))
-    @inlineCallbacks
-    def loginSubmit(self, request):
-        username = request.args.get("username", [""])[0].decode("utf-8")
-        password = request.args.get("password", [""])[0].decode("utf-8")
-
-        user = yield self.lookupUserName(username)
-        if user is None:
-            user = yield self.lookupUserEmail(username)
-
-        if user is not None:
-            authenticated = yield self.verifyCredentials(user, password)
-
-            if authenticated:
-                session = request.getSession()
-                session.user = user
-
-                url = request.args.get(u"o", [None])[0]
-                if url is None:
-                    location = self.prefixURL  # Default to application home
-                else:
-                    location = URL.fromText(url)
-
-                returnValue(self.redirect(request, location))
-
-        returnValue(self.login(request, failed=True))
-
-
-    @route(loginURL.asText(), methods=("HEAD", "GET"))
-    def login(self, request, failed=False):
-        self.authenticateRequest(request, optional=True)
-
-        return LoginPage(self, failed=failed)
-
-
-    @route(logoutURL.asText(), methods=("HEAD", "GET"))
-    def logout(self, request):
-        session = request.getSession()
-        session.expire()
-
-        # Redirect back to application home
-        return self.redirect(request, self.prefixURL)
 
 
     #
@@ -497,20 +267,20 @@ class WebService(object):
     # Static content
     #
 
-    @route(styleSheetURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.styleSheetURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def styleSheetResource(self, request):
         return self.styleSheet(request, "style.css")
 
 
-    @route(logoURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.logoURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def logoResource(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.PNG.value)
         return self.builtInResource(request, "logo.png")
 
 
-    @route(bootstrapBaseURL.asText(), methods=("HEAD", "GET"), branch=True)
+    @route(URLs.bootstrapBaseURL.asText(), methods=("HEAD", "GET"), branch=True)
     @fixedETag
     def bootstrapResource(self, request):
         requestURL = URL.fromText(request.uri.rstrip("/"))
@@ -525,7 +295,7 @@ class WebService(object):
         )
 
 
-    @route(jqueryJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.jqueryJSURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def jqueryJSResource(self, request):
         request.setHeader(
@@ -537,7 +307,7 @@ class WebService(object):
         )
 
 
-    @route(jqueryMapURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.jqueryMapURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def jqueryMapResource(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
@@ -547,7 +317,9 @@ class WebService(object):
         )
 
 
-    @route(dataTablesBaseURL.asText(), methods=("HEAD", "GET"), branch=True)
+    @route(
+        URLs.dataTablesBaseURL.asText(), methods=("HEAD", "GET"), branch=True
+    )
     @fixedETag
     def dataTablesResource(self, request):
         requestURL = URL.fromText(request.uri.rstrip("/"))
@@ -562,7 +334,7 @@ class WebService(object):
         )
 
 
-    @route(momentJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.momentJSURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def momentJSResource(self, request):
         request.setHeader(
@@ -574,7 +346,7 @@ class WebService(object):
         )
 
 
-    @route(imsJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.imsJSURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def imsJSResource(self, request):
         return self.javaScript(request, "ims.js")
@@ -727,8 +499,8 @@ class WebService(object):
         return self.redirect(request, self.prefixURL)
 
 
-    @route(prefixURL.asText(), methods=("HEAD", "GET"))
-    @route(prefixURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.prefixURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.prefixURL.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     def applicationRootResource(self, request):
         """
@@ -741,8 +513,8 @@ class WebService(object):
 
     # Event root page; redirect to event dispatch queue
 
-    @route(eventURL.asText(), methods=("HEAD", "GET"))
-    @route(eventURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.eventURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.eventURL.asText() + u"/", methods=("HEAD", "GET"))
     def eventRootResource(self, request, event):
         """
         Event root page.
@@ -756,8 +528,8 @@ class WebService(object):
     # JSON API endpoints
     #
 
-    @route(pingURL.asText(), methods=("HEAD", "GET"))
-    @route(pingURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.pingURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.pingURL.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     def pingResource(self, request, event):
         self.authenticateRequest(request)
@@ -766,8 +538,8 @@ class WebService(object):
         return self.jsonBytes(request, ack, bytes(hash(ack)))
 
 
-    @route(personnelURL.asText(), methods=("HEAD", "GET"))
-    @route(personnelURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.personnelURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.personnelURL.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
     def personnelResource(self, request, event):
         self.authorizeRequest(request, event, Authorization.readIncidents)
@@ -788,8 +560,8 @@ class WebService(object):
         ))
 
 
-    @route(incidentTypesURL.asText(), methods=("HEAD", "GET"))
-    @route(incidentTypesURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.incidentTypesURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.incidentTypesURL.asText() + u"/", methods=("HEAD", "GET"))
     def incidentTypesResource(self, request, event):
         self.authorizeRequest(request, event, Authorization.readIncidents)
 
@@ -797,8 +569,8 @@ class WebService(object):
         return self.jsonBytes(request, data, bytes(hash(data)))
 
 
-    @route(locationsURL.asText(), methods=("HEAD", "GET"))
-    @route(locationsURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.locationsURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.locationsURL.asText() + u"/", methods=("HEAD", "GET"))
     def locationsResource(self, request, event):
         self.authorizeRequest(request, event, Authorization.readIncidents)
 
@@ -806,8 +578,8 @@ class WebService(object):
         return self.jsonBytes(request, data, bytes(hash(data)))
 
 
-    @route(incidentsURL.asText(), methods=("HEAD", "GET"))
-    @route(incidentsURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.incidentsURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.incidentsURL.asText() + u"/", methods=("HEAD", "GET"))
     def listIncidentsResource(self, request, event):
         self.authorizeRequest(request, event, Authorization.readIncidents)
 
@@ -828,8 +600,8 @@ class WebService(object):
         return self.jsonStream(request, stream, None)
 
 
-    @route(incidentsURL.asText(), methods=("POST",))
-    @route(incidentsURL.asText() + u"/", methods=("POST",))
+    @route(URLs.incidentsURL.asText(), methods=("POST",))
+    @route(URLs.incidentsURL.asText() + u"/", methods=("POST",))
     def newIncidentResource(self, request, event):
         self.authorizeRequest(request, event, Authorization.readIncidents)
 
@@ -893,7 +665,7 @@ class WebService(object):
         return self.noContentResource(request)
 
 
-    @route(incidentNumberURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.incidentNumberURL.asText(), methods=("HEAD", "GET"))
     def readIncidentResource(self, request, event, number):
         self.authorizeRequest(request, event, Authorization.readIncidents)
 
@@ -926,7 +698,7 @@ class WebService(object):
         return self.jsonBytes(request, text.encode("utf-8"), etag)
 
 
-    @route(incidentNumberURL.asText(), methods=("POST",))
+    @route(URLs.incidentNumberURL.asText(), methods=("POST",))
     def editIncidentResource(self, request, event, number):
         self.authorizeRequest(request, event, Authorization.readIncidents)
 
@@ -973,8 +745,8 @@ class WebService(object):
     # Web interface
     #
 
-    @route(viewDispatchQueueURL.asText(), methods=("HEAD", "GET"))
-    @route(viewDispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.viewDispatchQueueURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewDispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     def viewDispatchQueuePage(self, request, event):
         self.authorizeRequest(request, event, Authorization.readIncidents)
@@ -982,7 +754,7 @@ class WebService(object):
         return DispatchQueuePage(self, event)
 
 
-    @route(viewDispatchQueueTemplateURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewDispatchQueueTemplateURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def viewDispatchQueueTemplatePage(self, request):
         self.authenticateRequest(request, optional=True)
@@ -990,13 +762,13 @@ class WebService(object):
         return DispatchQueueTemplatePage(self)
 
 
-    @route(queueJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.queueJSURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def queueJSResource(self, request):
         return self.javaScript(request, "queue.js")
 
 
-    @route(dispatchQueueDataURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.dispatchQueueDataURL.asText(), methods=("HEAD", "GET"))
     def dispatchQueueDataResource(self, request, event):
         self.authorizeRequest(request, event, Authorization.readIncidents)
 
@@ -1012,7 +784,7 @@ class WebService(object):
         return self.jsonStream(request, stream, None)
 
 
-    @route(viewIncidentNumberURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewIncidentNumberURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def viewIncidentPage(self, request, event, number):
         self.authorizeRequest(request, event, Authorization.readIncidents)
@@ -1028,7 +800,7 @@ class WebService(object):
         return IncidentPage(self, event, number)
 
 
-    @route(viewIncidentNumberURL.asText(), methods=("POST",))
+    @route(URLs.viewIncidentNumberURL.asText(), methods=("POST",))
     def editIncidentPage(self, request, event, number):
         self.authorizeRequest(
             request, event,
@@ -1064,7 +836,7 @@ class WebService(object):
         return IncidentPage(self, event, number)
 
 
-    @route(viewIncidentNumberTemplateURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewIncidentNumberTemplateURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def viewIncidentNumberTemplatePage(self, request):
         self.authenticateRequest(request, optional=True)
@@ -1072,41 +844,10 @@ class WebService(object):
         return IncidentTemplatePage(self)
 
 
-    @route(incidentJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.incidentJSURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def incidentJSResource(self, request):
         return self.javaScript(request, "incident.js")
-
-
-
-class HeaderName (Values):
-    """
-    Header names
-    """
-
-    server         = ValueConstant("Server")
-    contentType    = ValueConstant("Content-Type")
-    etag           = ValueConstant("ETag")
-    incidentNumber = ValueConstant("Incident-Number")
-    location       = ValueConstant("Location")
-
-
-
-class ContentType (Values):
-    """
-    Content types
-    """
-
-    HTML       = ValueConstant("text/html; charset=utf-8")
-    XHTML      = ValueConstant("application/xhtml+xml")
-    CSS        = ValueConstant("text/css")
-    JavaScript = ValueConstant("application/javascript")
-
-    JSON       = ValueConstant("application/json")
-
-    text       = ValueConstant("text/plain; charset=utf-8")
-
-    PNG        = ValueConstant("image/png")
 
 
 
