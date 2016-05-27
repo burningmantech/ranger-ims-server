@@ -24,7 +24,6 @@ __all__ = [
     "WebService",
 ]
 
-from functools import wraps
 from zipfile import BadZipfile
 
 from twisted.python.filepath import FilePath
@@ -36,46 +35,20 @@ from twisted.web import http
 from twisted.web.server import Session
 from twisted.web.client import downloadPage
 
-from ims import __version__ as version
-from ..tz import utcNow
-from ..data.model import Incident, InvalidDataError
-from ..data.json import textFromJSON, jsonFromFile
-from ..data.json import rangerAsJSON, incidentAsJSON, incidentFromJSON
+from ..data.json import textFromJSON
+from ..data.json import incidentAsJSON
 from ..data.edit import editIncident
 from ..element.redirect import RedirectPage
-from ..element.root import RootPage
 from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
 from ..element.incident_template import IncidentTemplatePage
-from .http import HeaderName, ContentType
+from ..element.root import RootPage
+from .http import HeaderName, ContentType, fixedETag
 from .urls import URLs
 from .klein import application as _app, route
 from .auth import Authorization, AuthMixIn
 from .query import editsFromQuery
-
-
-
-if True:
-    _fixedETag = version
-else:
-    # For debugging, change the ETag on every app start
-    from uuid import uuid4
-    _fixedETag = uuid4().hex
-
-
-def fixedETag(f):
-    """
-    Decorator to add a fixed ETag to static resources.
-    We use the IMS version number as the ETag, because they may change with new
-    IMS versions, but should are otherwise static.
-    """
-    @wraps(f)
-    def wrapper(self, request, *args, **kwargs):
-        request.setHeader(HeaderName.etag.value, _fixedETag)
-        return f(self, request, *args, **kwargs)
-
-    return wrapper
 
 
 
@@ -486,7 +459,7 @@ class WebService(URLs, AuthMixIn):
 
 
     #
-    # Basic resources
+    # Web interface
     #
 
     @route(u"/", methods=("HEAD", "GET"))
@@ -523,227 +496,6 @@ class WebService(URLs, AuthMixIn):
         """
         return self.redirect(request, self.viewDispatchQueueRelativeURL)
 
-
-    #
-    # JSON API endpoints
-    #
-
-    @route(URLs.pingURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.pingURL.asText() + u"/", methods=("HEAD", "GET"))
-    @fixedETag
-    def pingResource(self, request, event):
-        self.authenticateRequest(request)
-
-        ack = b'"ack"'
-        return self.jsonBytes(request, ack, bytes(hash(ack)))
-
-
-    @route(URLs.personnelURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.personnelURL.asText() + u"/", methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def personnelResource(self, request, event):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
-
-        stream, etag = yield self.personnelData()
-        returnValue(self.jsonStream(request, stream, etag))
-
-
-    @inlineCallbacks
-    def personnelData(self):
-        personnel = yield self.dms.personnel()
-        returnValue((
-            self.buildJSONArray(
-                textFromJSON(rangerAsJSON(ranger)).encode("utf-8")
-                for ranger in personnel
-            ),
-            bytes(hash(personnel)),
-        ))
-
-
-    @route(URLs.incidentTypesURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.incidentTypesURL.asText() + u"/", methods=("HEAD", "GET"))
-    def incidentTypesResource(self, request, event):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
-
-        data = self.config.IncidentTypesJSONBytes
-        return self.jsonBytes(request, data, bytes(hash(data)))
-
-
-    @route(URLs.locationsURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.locationsURL.asText() + u"/", methods=("HEAD", "GET"))
-    def locationsResource(self, request, event):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
-
-        data = self.config.locationsJSONBytes
-        return self.jsonBytes(request, data, bytes(hash(data)))
-
-
-    @route(URLs.incidentsURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.incidentsURL.asText() + u"/", methods=("HEAD", "GET"))
-    def listIncidentsResource(self, request, event):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
-
-        incidents = self.storage[event].listIncidents()
-
-        # Reverse order here because we generally want the clients to load the
-        # more recent incidents first.
-        # FIXME: Probably that should just be client-side logic.
-        incidents = sorted(
-            incidents, cmp=lambda a, b: cmp(a[0], b[0]), reverse=True
-        )
-
-        stream = self.buildJSONArray(
-            textFromJSON(incident).encode("utf-8")
-            for incident in incidents
-        )
-
-        return self.jsonStream(request, stream, None)
-
-
-    @route(URLs.incidentsURL.asText(), methods=("POST",))
-    @route(URLs.incidentsURL.asText() + u"/", methods=("POST",))
-    def newIncidentResource(self, request, event):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
-
-        number = self.storage[event].nextIncidentNumber()
-
-        json = jsonFromFile(request.content)
-        incident = incidentFromJSON(json, number=number, validate=False)
-
-        now = utcNow()
-
-        if incident.created is None:
-            # No timestamp provided; add one.
-
-            # Right now is a decent default, but if there's a report entry
-            # that's older than now, that's a better pick.
-            created = now
-            if incident.report_entries is not None:
-                for entry in incident.report_entries:
-                    if entry.created < created:
-                        created = entry.created
-
-            incident.created = created
-            self.log.info(
-                "Adding created time {created} to new incident #{number}",
-                created=incident.created, number=number
-            )
-        else:
-            if incident.created > now:
-                return self.badRequestResource(
-                    "Created time {} is in the future. Current time is {}."
-                    .format(incident.created, now)
-                )
-
-        author = request.user
-
-        # Apply this new incident as changes to an empty incident so that
-        # system report entries get added.
-        # It also adds the author, so we don't need to do it here.
-        incident = editIncident(
-            Incident(
-                number=incident.number,    # Must match
-                created=incident.created,  # Must match
-            ),
-            incident,
-            author
-        )
-
-        self.storage[event].writeIncident(incident)
-
-        self.log.info(
-            u"User {author} created new incident #{number} via JSON",
-            author=author, number=number
-        )
-        self.log.debug(u"New: {json}", json=incidentAsJSON(incident))
-
-        request.setHeader(HeaderName.incidentNumber.value, number)
-        request.setHeader(
-            HeaderName.location.value,
-            "{}/{}".format(self.incidentNumberURL.asText(), number)
-        )
-        return self.noContentResource(request)
-
-
-    @route(URLs.incidentNumberURL.asText(), methods=("HEAD", "GET"))
-    def readIncidentResource(self, request, event, number):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
-
-        # # For simulating slow connections
-        # import time
-        # time.sleep(0.3)
-
-        try:
-            number = int(number)
-        except ValueError:
-            return self.notFoundResource(request)
-
-        if False:
-            #
-            # This is faster, but doesn't benefit from any cleanup or
-            # validation code, so it's only OK if we know all data in the
-            # store is clean by this server version's standards.
-            #
-            text = self.storage[event].readIncidentWithNumberRaw(number)
-        else:
-            #
-            # This parses the data from the store, validates it, then
-            # re-serializes it.
-            #
-            incident = self.storage[event].readIncidentWithNumber(number)
-            text = textFromJSON(incidentAsJSON(incident))
-
-        etag = self.storage[event].etagForIncidentWithNumber(number)
-
-        return self.jsonBytes(request, text.encode("utf-8"), etag)
-
-
-    @route(URLs.incidentNumberURL.asText(), methods=("POST",))
-    def editIncidentResource(self, request, event, number):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
-
-        try:
-            number = int(number)
-        except ValueError:
-            return self.notFoundResource(request)
-
-        author = request.user.decode("utf-8")
-
-        storage = self.storage[event]
-
-        incident = storage.readIncidentWithNumber(number)
-
-        #
-        # Apply the changes requested by the client
-        #
-        jsonEdits = jsonFromFile(request.content)
-        try:
-            edits = incidentFromJSON(jsonEdits, number=number, validate=False)
-        except InvalidDataError as e:
-            return self.badRequestResource(request, e)
-        edited = editIncident(incident, edits, author)
-
-        #
-        # Write to disk
-        #
-        storage.writeIncident(edited)
-
-        self.log.debug(
-            u"User {author} edited incident #{number} via JSON",
-            author=author, number=number
-        )
-        # self.log.debug(u"Original: {json}", json=incidentAsJSON(incident))
-        self.log.debug(u"Changes: {json}", json=jsonEdits)
-        # self.log.debug(u"Edited: {json}", json=incidentAsJSON(edited))
-
-        etag = storage.etagForIncidentWithNumber(number)
-
-        return self.noContentResource(request, etag)
-
-
-    #
-    # Web interface
-    #
 
     @route(URLs.viewDispatchQueueURL.asText(), methods=("HEAD", "GET"))
     @route(URLs.viewDispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
