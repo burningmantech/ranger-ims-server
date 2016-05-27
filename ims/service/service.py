@@ -55,7 +55,10 @@ from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
 from ..element.incident_template import IncidentTemplatePage
 from ..dms import DatabaseError
-from .auth import authenticated, authorized, Authorization, NotAuthorizedError
+from .auth import (
+    NotAuthenticatedError, NotAuthorizedError,
+    authenticated, authorized, Authorization,
+)
 from .query import editsFromQuery
 
 
@@ -78,7 +81,7 @@ def route(*args, **kwargs):
             )
             try:
                 response = yield f(self, request, *args, **kwargs)
-            except NotAuthorizedError:
+            except (NotAuthenticatedError, NotAuthorizedError):
                 returnValue(self.redirect(request, self.loginURL, origin=u"o"))
             except DatabaseError as e:
                 self.log.error("DMS error: {failure}", failure=e)
@@ -262,26 +265,24 @@ class WebService(object):
                 authenticated = False
 
         self.log.debug(
-            "Authentication for {user}: {result}",
+            "Valid credentials for {user}: {result}",
             user=user, result=authenticated,
         )
 
         returnValue(authenticated)
 
 
-    def authenticateRequest(self, request):
+    def authenticateRequest(self, request, optional=False):
         session = request.getSession()
         request.user = getattr(session, "user", None)
 
-        self.log.debug(
-            "Authentication: {request.user}", request=request
-        )
-
-        if request.user is not None:
-            return True
-        else:
+        if request.user is None and not optional:
             self.log.debug("Authentication failed")
-            return False
+            raise NotAuthenticatedError()
+        else:
+            self.log.debug(
+                "Authenticated as {request.user}", request=request
+            )
 
 
     def authorizationsForUser(self, user, event):

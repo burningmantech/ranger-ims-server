@@ -43,6 +43,12 @@ Authorization.none = Authorization.readIncidents ^ Authorization.readIncidents
 
 
 
+class NotAuthenticatedError(Exception):
+    """
+    Not authorized.
+    """
+
+
 class NotAuthorizedError(Exception):
     """
     Not authorized.
@@ -65,10 +71,8 @@ def authenticated(optional=False):
     def decorator(f):
         @wraps(f)
         def wrapper(self, request, *args, **kwargs):
-            if self.authenticateRequest(request) or optional:
-                return f(self, request, *args, **kwargs)
-            else:
-                return self.redirect(request, self.loginURL, origin=u"o")
+            self.authenticateRequest(request, optional=optional)
+            return f(self, request, *args, **kwargs)
 
         return wrapper
     return decorator
