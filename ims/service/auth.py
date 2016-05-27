@@ -89,12 +89,20 @@ class AuthMixIn(object):
         authorizations = Authorization.none
 
         if user is not None:
-            if user.uid in self.config.readers:
-                authorizations |= Authorization.readIncidents
+            if event:
+                storage = self.storage[event]
+                uid = user.uid
 
-            if user.uid in self.config.writers:
-                authorizations |= Authorization.readIncidents
-                authorizations |= Authorization.writeIncidents
+                writers = set(storage.writers())
+
+                if u"*" in writers or uid in writers:
+                    authorizations |= Authorization.readIncidents
+                    authorizations |= Authorization.writeIncidents
+                else:
+                    readers = set(storage.readers())
+
+                    if u"*" in readers or uid in readers:
+                        authorizations |= Authorization.readIncidents
 
         self.log.debug(
             "Authz for {user}: {authorizations}",

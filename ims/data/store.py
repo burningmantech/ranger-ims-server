@@ -73,12 +73,12 @@ class ReadOnlyStorage(object):
 
 
     def _openIncident(self, number, mode):
-        incident_fp = self.path.child(unicode(number))
+        incidentFP = self.path.child(unicode(number))
         try:
-            incident_fh = incident_fp.open(mode)
+            incidentFH = incidentFP.open(mode)
         except (IOError, OSError):
             raise NoSuchIncidentError(number)
-        return incident_fh
+        return incidentFH
 
 
     def readIncidentWithNumberRaw(self, number):
@@ -133,7 +133,7 @@ class ReadOnlyStorage(object):
         try:
             for child in self.path.children():
                 name = child.basename()
-                if name.startswith("."):
+                if name.startswith(u".") or name in (u"readers", u"writers"):
                     continue
                 try:
                     number = int(name)
@@ -302,6 +302,23 @@ class ReadOnlyStorage(object):
                 yield (number, etag)
 
 
+    def _acl(self, name):
+        fp = self.path.child(name)
+        try:
+            return (uid.strip() for uid in fp.open())
+        except (IOError, OSError):
+            self.log.error("Unable to open ACL: {fp}", fp=fp)
+            return ()
+
+
+    def readers(self):
+        return self._acl(u"readers")
+
+
+    def writers(self):
+        return ()
+
+
 
 class Storage(ReadOnlyStorage):
     """
@@ -331,11 +348,11 @@ class Storage(ReadOnlyStorage):
 
 
     def _writeIncidentText(self, number, text):
-        incident_fh = self._openIncident(number, "w")
+        incidentFH = self._openIncident(number, "w")
         try:
-            incident_fh.write(text)
+            incidentFH.write(text)
         finally:
-            incident_fh.close()
+            incidentFH.close()
 
 
     def writeIncident(self, incident):
@@ -370,6 +387,10 @@ class Storage(ReadOnlyStorage):
         self.provision()
         self._maxIncidentNumber += 1
         return self._maxIncidentNumber
+
+
+    def writers(self):
+        return self._acl(u"writers")
 
 
 
