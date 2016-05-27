@@ -29,30 +29,24 @@ from zipfile import BadZipfile
 from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.python.url import URL
-from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks, returnValue
-from twisted.web import http
 from twisted.web.server import Session
 from twisted.web.client import downloadPage
 
 from ..data.json import textFromJSON
-from ..element.redirect import RedirectPage
 from .http import HeaderName, ContentType, fixedETag
 from .urls import URLs
-from .klein import application as _app, route
+from .klein import route, KleinService
 from .auth import AuthMixIn
 from .json import JSONMixIn
 from .web import WebMixIn
 
 
 
-class WebService(URLs, AuthMixIn, JSONMixIn, WebMixIn):
+class WebService(KleinService, URLs, AuthMixIn, JSONMixIn, WebMixIn):
     """
     Incident Management System web service.
     """
-
-    log = Logger()
-    app = _app
 
     sessionTimeout = Session.sessionTimeout
 
@@ -101,23 +95,6 @@ class WebService(URLs, AuthMixIn, JSONMixIn, WebMixIn):
         self.storage = config.storage
         self.dms = config.dms
         self.directory = config.directory
-
-
-    def resource(self):
-        return self.app.resource()
-
-
-    def redirect(self, request, location, origin=None):
-        if origin is not None:
-            location = location.set(origin, request.uri.decode("utf-8"))
-
-        url = location.asText().encode("utf-8")
-
-        request.setHeader(HeaderName.contentType.value, ContentType.HTML.value)
-        request.setHeader(HeaderName.location.value, url)
-        request.setResponseCode(http.FOUND)
-
-        return RedirectPage(self, location)
 
 
     #
@@ -180,54 +157,6 @@ class WebService(URLs, AuthMixIn, JSONMixIn, WebMixIn):
             yield item
 
         yield b']'
-
-
-    #
-    # Error resources
-    #
-
-    def noContentResource(self, request, etag=None):
-        request.setResponseCode(http.NO_CONTENT)
-        if etag is not None:
-            request.setHeader(HeaderName.etag.value, etag)
-        return b""
-
-
-    def textResource(self, request, message):
-        message = message
-        request.setHeader(HeaderName.contentType.value, ContentType.text.value)
-        request.setHeader(HeaderName.etag.value, bytes(hash(message)))
-        return message.encode("utf-8")
-
-
-    def notFoundResource(self, request):
-        request.setResponseCode(http.NOT_FOUND)
-        return self.textResource(request, "Not found.")
-
-
-    def invalidQueryResource(self, request, arg, value):
-        request.setResponseCode(http.BAD_REQUEST)
-        return self.textResource(
-            request, "Invalid query: {}={}".format(arg, value)
-        )
-
-
-    def badRequestResource(self, request, message=None):
-        request.setResponseCode(http.BAD_REQUEST)
-        if message is None:
-            message = "Bad request."
-        else:
-            message = u"{}".format(message).encode("utf-8")
-        return self.textResource(request, message)
-
-
-    def internalErrorResource(self, request, message=None):
-        request.setResponseCode(http.INTERNAL_SERVER_ERROR)
-        if message is None:
-            message = "Internal error."
-        else:
-            message = u"{}".format(message).encode("utf-8")
-        return self.textResource(request, message)
 
 
     #

@@ -23,17 +23,21 @@ from __future__ import absolute_import
 __all__ = [
     "application",
     "route",
+    "KleinService",
 ]
 
 from functools import wraps
 
+from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks, returnValue
+from twisted.web import http
 
 from klein import Klein
 
 from ims import __version__ as version
 from ..dms import DatabaseError
-from .http import HeaderName
+from ..element.redirect import RedirectPage
+from .http import HeaderName, ContentType
 from .error import NotAuthenticatedError, NotAuthorizedError
 
 
@@ -70,3 +74,77 @@ def route(*args, **kwargs):
 
         return wrapper
     return decorator
+
+
+
+class KleinService(object):
+    """
+    Klein service.
+    """
+
+    log = Logger()
+    app = application
+
+    def resource(self):
+        return self.app.resource()
+
+
+    def redirect(self, request, location, origin=None):
+        if origin is not None:
+            location = location.set(origin, request.uri.decode("utf-8"))
+
+        url = location.asText().encode("utf-8")
+
+        request.setHeader(HeaderName.contentType.value, ContentType.HTML.value)
+        request.setHeader(HeaderName.location.value, url)
+        request.setResponseCode(http.FOUND)
+
+        return RedirectPage(self, location)
+
+
+    #
+    # Error resources
+    #
+
+    def noContentResource(self, request, etag=None):
+        request.setResponseCode(http.NO_CONTENT)
+        if etag is not None:
+            request.setHeader(HeaderName.etag.value, etag)
+        return b""
+
+
+    def textResource(self, request, message):
+        message = message
+        request.setHeader(HeaderName.contentType.value, ContentType.text.value)
+        request.setHeader(HeaderName.etag.value, bytes(hash(message)))
+        return message.encode("utf-8")
+
+
+    def notFoundResource(self, request):
+        request.setResponseCode(http.NOT_FOUND)
+        return self.textResource(request, "Not found.")
+
+
+    def invalidQueryResource(self, request, arg, value):
+        request.setResponseCode(http.BAD_REQUEST)
+        return self.textResource(
+            request, "Invalid query: {}={}".format(arg, value)
+        )
+
+
+    def badRequestResource(self, request, message=None):
+        request.setResponseCode(http.BAD_REQUEST)
+        if message is None:
+            message = "Bad request."
+        else:
+            message = u"{}".format(message).encode("utf-8")
+        return self.textResource(request, message)
+
+
+    def internalErrorResource(self, request, message=None):
+        request.setResponseCode(http.INTERNAL_SERVER_ERROR)
+        if message is None:
+            message = "Internal error."
+        else:
+            message = u"{}".format(message).encode("utf-8")
+        return self.textResource(request, message)
