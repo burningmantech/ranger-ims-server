@@ -48,11 +48,12 @@ from .http import HeaderName, ContentType, fixedETag
 from .urls import URLs
 from .klein import application as _app, route
 from .auth import Authorization, AuthMixIn
+from .json import JSONMixIn
 from .query import editsFromQuery
 
 
 
-class WebService(URLs, AuthMixIn):
+class WebService(URLs, AuthMixIn, JSONMixIn):
     """
     Incident Management System web service.
     """
