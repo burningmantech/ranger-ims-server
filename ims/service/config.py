@@ -24,17 +24,15 @@ __all__ = [
     "Configuration",
 ]
 
-from os import environ, getcwd
+from os import getcwd
 from os.path import sep as pathsep
 from re import compile as regex_compile
-from time import tzset, time
 
 from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 
-from ..tz import FixedOffsetTimeZone
 from ..data.model import IncidentType
 from ..data.json import textFromJSON, jsonFromFile
 from ..data.store import MultiStorage
@@ -64,7 +62,6 @@ class Configuration (object):
             "Core.DataRoot: {self.DataRoot}\n"
             "Core.CachedResources: {self.CachedResources}\n"
             "Core.RejectClients: {self.RejectClients}\n"
-            "Core.TimeZone: {self.TimeZone}\n"
             "Core.Debug: {self.Debug}\n"
             "\n"
             "DMS.Hostname: {self.DMSHost}\n"
@@ -176,15 +173,6 @@ class Configuration (object):
         self.log.info(
             "RejectClients: {rejectClients}", rejectClients=self.RejectClients
         )
-
-        timeZoneName = valueFromConfig(
-            "Core", "TimeZone", "America/Los_Angeles"
-        )
-
-        environ["TZ"] = timeZoneName
-        tzset()
-
-        self.TimeZone = FixedOffsetTimeZone.fromLocalTimeStamp(time())
 
         self.Debug = (
             valueFromConfig("Core", "Debug", "false") == "true"
