@@ -23,7 +23,7 @@ __all__ = [
 ]
 
 from twisted.python.filepath import FilePath
-from twisted.logger import Logger, LogLevel
+from twisted.logger import Logger
 from twisted.web.server import Site
 from twext.python.usage import (
     Executable, Options as BaseOptions, exit, ExitStatus
@@ -86,16 +86,16 @@ class WebTool(Executable):
         def parseArgs(self):
             BaseOptions.parseArgs(self)
 
-            self.initConfig()
+            try:
+                self.initConfig()
+            except Exception as e:
+                exit(ExitStatus.EX_CONFIG, unicode(e))
 
 
     def startLogging(self):
         patchCombinedLogFormatter()
 
-        if self.options["configuration"].Debug:
-            if "logLevel" not in self.options:
-                self.options["logLevel"] = LogLevel.debug
-                self.log.debug("Debug logging enabled.")
+        self.options["logLevel"] = self.options["configuration"].LogLevel
 
         Executable.startLogging(self)
 
