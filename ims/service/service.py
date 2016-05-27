@@ -285,22 +285,22 @@ class WebService(object):
 
 
     def authorizationsForUser(self, user, event):
-        authorization = Authorization.none
+        authorizations = Authorization.none
 
         if user is not None:
             if user.uid in self.config.readers:
-                authorization |= Authorization.readIncidents
+                authorizations |= Authorization.readIncidents
 
             if user.uid in self.config.writers:
-                authorization |= Authorization.readIncidents
-                authorization |= Authorization.writeIncidents
+                authorizations |= Authorization.readIncidents
+                authorizations |= Authorization.writeIncidents
 
         self.log.debug(
-            "Authz for {user}: {authorization}",
-            user=user, authorization=authorization,
+            "Authz for {user}: {authorizations}",
+            user=user, authorizations=authorizations,
         )
 
-        return authorization
+        return authorizations
 
 
     def authorizeRequest(self, request, event, requiredAuthorizations):
