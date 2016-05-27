@@ -21,11 +21,7 @@ Incident Management System authorization and authentication.
 __all__ = [
     "Authorization",
     "NotAuthorizedError",
-    "authenticated",
-    "authorized",
 ]
-
-from functools import wraps
 
 from twisted.python.constants import FlagConstant, Flags
 
@@ -53,45 +49,3 @@ class NotAuthorizedError(Exception):
     """
     Not authorized.
     """
-
-
-
-def authenticated(optional=False):
-    """
-    Decorator enabling authentication for a Klein route method.
-
-    The route method will be called if the request is authenticated.
-    If the request is not authenticated, the client will be redirected to the
-    login page.
-
-    @param optional: If C{True}, the route will be called even if the request
-        has no authentication, in which case C{request.user} is C{None}.
-    @type optional: L{bool}
-    """
-    def decorator(f):
-        @wraps(f)
-        def wrapper(self, request, *args, **kwargs):
-            self.authenticateRequest(request, optional=optional)
-            return f(self, request, *args, **kwargs)
-
-        return wrapper
-    return decorator
-
-
-def authorized(requiredAuthorizations=Authorization.none):
-    """
-    Decorator enabling authorization for a Klein route method.
-
-    @param requiredAuthorizations: The authorizations required to be considered
-        authorized.
-    @type requiredAuthorizations: L{FlagConstant}
-    """
-    def decorator(f):
-        @wraps(f)
-        @authenticated(optional=False)
-        def wrapper(self, request, *args, **kwargs):
-            self.authorizeRequest(request, None, requiredAuthorizations)
-            return f(self, request, *args, **kwargs)
-
-        return wrapper
-    return decorator

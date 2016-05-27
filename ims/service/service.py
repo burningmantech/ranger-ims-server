@@ -55,10 +55,7 @@ from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
 from ..element.incident_template import IncidentTemplatePage
 from ..dms import DatabaseError
-from .auth import (
-    NotAuthenticatedError, NotAuthorizedError,
-    authenticated, authorized, Authorization,
-)
+from .auth import NotAuthenticatedError, NotAuthorizedError, Authorization
 from .query import editsFromQuery
 
 
@@ -371,8 +368,9 @@ class WebService(object):
 
 
     @route(loginURL.asText(), methods=("HEAD", "GET"))
-    @authenticated(optional=True)
     def login(self, request, failed=False):
+        self.authenticateRequest(request, optional=True)
+
         return LoginPage(self, failed=failed)
 
 
@@ -731,12 +729,13 @@ class WebService(object):
 
     @route(prefixURL.asText(), methods=("HEAD", "GET"))
     @route(prefixURL.asText() + u"/", methods=("HEAD", "GET"))
-    @authorized(Authorization.readIncidents)
     @fixedETag
     def applicationRootResource(self, request):
         """
         Application root page.
         """
+        self.authorizeRequest(request, None, Authorization.readIncidents)
+
         return RootPage(self)
 
 
@@ -759,18 +758,20 @@ class WebService(object):
 
     @route(pingURL.asText(), methods=("HEAD", "GET"))
     @route(pingURL.asText() + u"/", methods=("HEAD", "GET"))
-    @authenticated()
     @fixedETag
     def pingResource(self, request, event):
+        self.authenticateRequest(request)
+
         ack = b'"ack"'
         return self.jsonBytes(request, ack, bytes(hash(ack)))
 
 
     @route(personnelURL.asText(), methods=("HEAD", "GET"))
     @route(personnelURL.asText() + u"/", methods=("HEAD", "GET"))
-    @authorized(Authorization.readIncidents)
     @inlineCallbacks
     def personnelResource(self, request, event):
+        self.authorizeRequest(request, event, Authorization.readIncidents)
+
         stream, etag = yield self.personnelData()
         returnValue(self.jsonStream(request, stream, etag))
 
@@ -789,24 +790,27 @@ class WebService(object):
 
     @route(incidentTypesURL.asText(), methods=("HEAD", "GET"))
     @route(incidentTypesURL.asText() + u"/", methods=("HEAD", "GET"))
-    @authorized(Authorization.readIncidents)
     def incidentTypesResource(self, request, event):
+        self.authorizeRequest(request, event, Authorization.readIncidents)
+
         data = self.config.IncidentTypesJSONBytes
         return self.jsonBytes(request, data, bytes(hash(data)))
 
 
     @route(locationsURL.asText(), methods=("HEAD", "GET"))
     @route(locationsURL.asText() + u"/", methods=("HEAD", "GET"))
-    @authorized(Authorization.readIncidents)
     def locationsResource(self, request, event):
+        self.authorizeRequest(request, event, Authorization.readIncidents)
+
         data = self.config.locationsJSONBytes
         return self.jsonBytes(request, data, bytes(hash(data)))
 
 
     @route(incidentsURL.asText(), methods=("HEAD", "GET"))
     @route(incidentsURL.asText() + u"/", methods=("HEAD", "GET"))
-    @authorized(Authorization.readIncidents)
     def listIncidentsResource(self, request, event):
+        self.authorizeRequest(request, event, Authorization.readIncidents)
+
         incidents = self.storage[event].listIncidents()
 
         # Reverse order here because we generally want the clients to load the
@@ -826,8 +830,9 @@ class WebService(object):
 
     @route(incidentsURL.asText(), methods=("POST",))
     @route(incidentsURL.asText() + u"/", methods=("POST",))
-    @authorized(Authorization.readIncidents)
     def newIncidentResource(self, request, event):
+        self.authorizeRequest(request, event, Authorization.readIncidents)
+
         number = self.storage[event].nextIncidentNumber()
 
         json = jsonFromFile(request.content)
@@ -889,8 +894,9 @@ class WebService(object):
 
 
     @route(incidentNumberURL.asText(), methods=("HEAD", "GET"))
-    @authorized(Authorization.readIncidents)
     def readIncidentResource(self, request, event, number):
+        self.authorizeRequest(request, event, Authorization.readIncidents)
+
         # # For simulating slow connections
         # import time
         # time.sleep(0.3)
@@ -921,8 +927,9 @@ class WebService(object):
 
 
     @route(incidentNumberURL.asText(), methods=("POST",))
-    @authorized(Authorization.readIncidents)
     def editIncidentResource(self, request, event, number):
+        self.authorizeRequest(request, event, Authorization.readIncidents)
+
         try:
             number = int(number)
         except ValueError:
@@ -969,15 +976,17 @@ class WebService(object):
     @route(viewDispatchQueueURL.asText(), methods=("HEAD", "GET"))
     @route(viewDispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
-    @authorized(Authorization.readIncidents)
     def viewDispatchQueuePage(self, request, event):
+        self.authorizeRequest(request, event, Authorization.readIncidents)
+
         return DispatchQueuePage(self, event)
 
 
     @route(viewDispatchQueueTemplateURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
-    @authenticated(optional=True)
     def viewDispatchQueueTemplatePage(self, request):
+        self.authenticateRequest(request, optional=True)
+
         return DispatchQueueTemplatePage(self)
 
 
@@ -988,8 +997,9 @@ class WebService(object):
 
 
     @route(dispatchQueueDataURL.asText(), methods=("HEAD", "GET"))
-    @authorized(Authorization.readIncidents)
     def dispatchQueueDataResource(self, request, event):
+        self.authorizeRequest(request, event, Authorization.readIncidents)
+
         storage = self.storage[event]
 
         incidentNumbers = (number for number, etag in storage.listIncidents())
@@ -1004,8 +1014,9 @@ class WebService(object):
 
     @route(viewIncidentNumberURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
-    @authorized(Authorization.readIncidents)
     def viewIncidentPage(self, request, event, number):
+        self.authorizeRequest(request, event, Authorization.readIncidents)
+
         if number == u"new":
             number = None
         else:
@@ -1018,8 +1029,12 @@ class WebService(object):
 
 
     @route(viewIncidentNumberURL.asText(), methods=("POST",))
-    @authorized(Authorization.readIncidents | Authorization.writeIncidents)
     def editIncidentPage(self, request, event, number):
+        self.authorizeRequest(
+            request, event,
+            Authorization.readIncidents | Authorization.writeIncidents
+        )
+
         try:
             number = int(number)
         except ValueError:
@@ -1051,8 +1066,9 @@ class WebService(object):
 
     @route(viewIncidentNumberTemplateURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
-    @authenticated(optional=True)
     def viewIncidentNumberTemplatePage(self, request):
+        self.authenticateRequest(request, optional=True)
+
         return IncidentTemplatePage(self)
 
 
