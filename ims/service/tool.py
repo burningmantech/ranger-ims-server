@@ -99,9 +99,14 @@ class WebTool(Executable):
 
         config = self.options["configuration"]
 
-        self.options.opt_log_format(config.LogFormat)
-        self.options.opt_log_level(config.LogLevel)
-        self.options.opt_pid_file(config.PIDFile.path)
+        if "logFile" not in self.options:
+            self.options.opt_log_file(config.LogFile)
+        if "logFormat" not in self.options:
+            self.options.opt_log_format(config.LogFormat)
+        if "logLevel" not in self.options:
+            self.options.opt_log_level(config.LogLevel)
+        if "pidFile" not in self.options:
+            self.options.opt_pid_file(config.PIDFile)
 
 
     def whenRunning(self):

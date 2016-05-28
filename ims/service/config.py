@@ -180,11 +180,18 @@ class Configuration (object):
         self.LogFormat = valueFromConfig("Core", "LogFormat", "text")
         self.log.info("LogFormat: {logFormat}", logFormat=self.LogFormat)
 
+        self.LogFile = filePathFromConfig(
+            "Core", "LogFile", self.DataRoot, ("ims_web.log",)
+        ).path
+        self.log.info(
+            "LogFile: {logFile}", logFile=self.LogFile
+        )
+
         self.PIDFile = filePathFromConfig(
             "Core", "PIDFile", self.DataRoot, ("ims_web.pid",)
-        )
+        ).path
         self.log.info(
-            "PIDFile: {pidFile.path}", pidFile=self.PIDFile
+            "PIDFile: {pidFile}", pidFile=self.PIDFile
         )
 
         self.DMSHost     = valueFromConfig("DMS", "Hostname", None)
