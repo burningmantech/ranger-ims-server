@@ -22,7 +22,6 @@ __all__ = [
     "IncidentPage",
 ]
 
-from ..data.model import concentricStreetNameByID
 from ..data.json import textFromJSON
 
 from .base import Element, renderer
@@ -75,4 +74,6 @@ class IncidentPage(Element):
 
     @renderer
     def concentric_street_name_by_id(self, request, tag):
-        return textFromJSON(concentricStreetNameByID[self.event])
+        namesByID = self.service.storage[self.event].streetsByID()
+
+        return textFromJSON(namesByID)

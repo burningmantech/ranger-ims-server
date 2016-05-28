@@ -22,7 +22,6 @@ __all__ = [
     "DispatchQueuePage",
 ]
 
-from ..data.model import concentricStreetNameByID
 from ..data.json import textFromJSON
 
 from .base import Element, renderer
@@ -61,9 +60,6 @@ class DispatchQueuePage(Element):
 
     @renderer
     def concentric_street_name_by_id(self, request, tag):
-        try:
-            namesByID = concentricStreetNameByID[self.event]
-        except KeyError:
-            namesByID = {}
+        namesByID = self.service.storage[self.event].streetsByID()
 
         return textFromJSON(namesByID)

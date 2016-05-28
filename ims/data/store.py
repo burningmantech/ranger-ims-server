@@ -133,7 +133,7 @@ class ReadOnlyStorage(object):
         try:
             for child in self.path.children():
                 name = child.basename()
-                if name.startswith(u".") or name in (u"readers", u"writers"):
+                if name.startswith(u"."):
                     continue
                 try:
                     number = int(name)
@@ -317,6 +317,32 @@ class ReadOnlyStorage(object):
 
     def writers(self):
         return ()
+
+
+    def streetsByName(self):
+        if not hasattr(self, "_streetsByName"):
+            fp = self.path.child(".streets.json")
+            try:
+                self._streetsByName = jsonFromFile(fp.open())
+            except (IOError, OSError):
+                self.log.warn("Unable to open streets data: {fp.path}", fp=fp)
+                self._streetsByName = {}
+            except ValueError as e:
+                self.log.error(
+                    "Unable to parse streets data: {fp.path}: {error}",
+                    fp=fp, error=e,
+                )
+                self._streetsByName = {}
+
+        return self._streetsByName
+
+
+    def streetsByID(self):
+        if not hasattr(self, "_streetsByID"):
+            streetsByName = self.streetsByName()
+            self._streetsByID = {v: k for k, v in streetsByName.items()}
+
+        return self._streetsByID
 
 
 

@@ -29,8 +29,6 @@ __all__ = [
     "Address",
     "TextOnlyAddress",
     "RodGarettAddress",
-    "concentricStreetIDByName",
-    "concentricStreetNameByID",
 ]
 
 from functools import total_ordering
@@ -41,9 +39,6 @@ from twisted.python.constants import (
 )
 
 from ..tz import utcNow
-from ._streets import (
-    concentricStreetIDByName, concentricStreetNameByID
-)
 
 
 
