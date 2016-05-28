@@ -86,7 +86,7 @@ class WebMixIn(object):
         """
         Application root page.
         """
-        self.authenticateRequest(request, optional=True)
+        self.authenticateRequest(request)
 
         return RootPage(self)
 
