@@ -26,7 +26,6 @@ __all__ = [
 
 from os import getcwd
 from os.path import sep as pathsep
-from re import compile as regex_compile
 
 from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 
@@ -61,7 +60,6 @@ class Configuration (object):
             "Core.ConfigRoot: {self.ConfigRoot}\n"
             "Core.DataRoot: {self.DataRoot}\n"
             "Core.CachedResources: {self.CachedResources}\n"
-            "Core.RejectClients: {self.RejectClients}\n"
             "Core.LogLevel: {self.LogLevel}\n"
             "\n"
             "DMS.Hostname: {self.DMSHost}\n"
@@ -160,18 +158,6 @@ class Configuration (object):
         self.log.info(
             "CachedResources: {cachedResources.path}",
             cachedResources=self.CachedResources
-        )
-
-        rejectClients = valueFromConfig("Core", "RejectClients", "")
-        rejectClients = tuple([e for e in rejectClients.split("\n") if e])
-
-        self.RejectClients = rejectClients
-        self.RejectClientsRegex = tuple([
-            regex_compile(e)
-            for e in rejectClients
-        ])
-        self.log.info(
-            "RejectClients: {rejectClients}", rejectClients=self.RejectClients
         )
 
         self.LogLevel = valueFromConfig("Core", "LogLevel", "info")
