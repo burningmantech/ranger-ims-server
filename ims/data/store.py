@@ -303,11 +303,11 @@ class ReadOnlyStorage(object):
 
 
     def _acl(self, name):
-        fp = self.path.child(name)
+        fp = self.path.child(".{}.txt".format(name))
         try:
             return (uid.strip() for uid in fp.open())
         except (IOError, OSError):
-            self.log.error("Unable to open ACL: {fp}", fp=fp)
+            self.log.debug("Unable to open ACL: {fp.path}", fp=fp)
             return ()
 
 
