@@ -86,7 +86,7 @@ class WebMixIn(object):
         """
         Application root page.
         """
-        self.authorizeRequest(request, None, Authorization.readIncidents)
+        self.authenticateRequest(request, optional=True)
 
         return RootPage(self)
 
@@ -108,6 +108,8 @@ class WebMixIn(object):
     @route(URLs.viewDispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     def viewDispatchQueuePage(self, request, event):
+        # FIXME: Not strictly required because the underlying data is protected.
+        # But the error you get is stupid, so let's avoid that for now.
         self.authorizeRequest(request, event, Authorization.readIncidents)
 
         return DispatchQueuePage(self, event)
@@ -146,6 +148,8 @@ class WebMixIn(object):
     @route(URLs.viewIncidentNumberURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def viewIncidentPage(self, request, event, number):
+        # FIXME: Not strictly required because the underlying data is protected.
+        # But the error you get is stupid, so let's avoid that for now.
         self.authorizeRequest(request, event, Authorization.readIncidents)
 
         if number == u"new":
