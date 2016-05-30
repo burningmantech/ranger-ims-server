@@ -61,8 +61,10 @@ def route(*args, **kwargs):
             )
             try:
                 response = yield f(self, request, *args, **kwargs)
-            except (NotAuthenticatedError, NotAuthorizedError):
+            except NotAuthenticatedError:
                 returnValue(self.redirect(request, self.loginURL, origin=u"o"))
+            except NotAuthorizedError:
+                returnValue(self.notAuthorizedResource(request))
             except DatabaseError as e:
                 self.log.error("DMS error: {failure}", failure=e)
             except Exception:
@@ -123,6 +125,11 @@ class KleinService(object):
     def notFoundResource(self, request):
         request.setResponseCode(http.NOT_FOUND)
         return self.textResource(request, "Not found.")
+
+
+    def notAuthorizedResource(self, request):
+        request.setResponseCode(http.NOT_ALLOWED)
+        return b"Permission denied"
 
 
     def invalidQueryResource(self, request, arg, value):
