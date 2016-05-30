@@ -113,18 +113,17 @@ class AuthMixIn(object):
 
 
     def authorizeRequest(self, request, event, requiredAuthorizations):
-        session = request.getSession()
-        user = getattr(session, "user", None)
+        self.authenticateRequest(request)
 
-        userAuthorizations = self.authorizationsForUser(user, event)
+        userAuthorizations = self.authorizationsForUser(request.user, event)
 
         self.log.debug(
             "Authorizations for {user}: {authorizations}",
-            user=user, authorizations=userAuthorizations,
+            user=request.user, authorizations=userAuthorizations,
         )
 
         if not (requiredAuthorizations & userAuthorizations):
-            self.log.debug("Authorization failed for {user}", user=user)
+            self.log.debug("Authorization failed for {user}", user=request.user)
             raise NotAuthorizedError()
 
 
