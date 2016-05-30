@@ -35,7 +35,7 @@ from twisted.web import http
 from klein import Klein
 
 from ims import __version__ as version
-from ..dms import DatabaseError
+from ..dms import DMSError
 from ..element.redirect import RedirectPage
 from .http import HeaderName, ContentType
 from .error import NotAuthenticatedError, NotAuthorizedError
@@ -65,7 +65,7 @@ def route(*args, **kwargs):
                 returnValue(self.redirect(request, self.loginURL, origin=u"o"))
             except NotAuthorizedError:
                 returnValue(self.notAuthorizedResource(request))
-            except DatabaseError as e:
+            except DMSError as e:
                 self.log.error("DMS error: {failure}", failure=e)
             except Exception:
                 self.log.failure("Request failed")

@@ -185,7 +185,10 @@ class DutyManagementSystem(object):
             finally:
                 self._busy = False
 
-        returnValue(self._personnel)
+        try:
+            returnValue(self._personnel)
+        except AttributeError:
+            raise DMSError("No personnel data loaded.")
 
 
 
