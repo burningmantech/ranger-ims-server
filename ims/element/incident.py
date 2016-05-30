@@ -23,6 +23,7 @@ __all__ = [
 ]
 
 from ..data.json import textFromJSON
+from ..service.auth import Authorization
 
 from .base import Element, renderer
 
@@ -41,6 +42,14 @@ class IncidentPage(Element):
 
         self.event  = event
         self.number = number
+
+
+    @renderer
+    def editing_allowed(self, request, tag):
+        if (request.authorizations & Authorization.writeIncidents):
+            return textFromJSON(True)
+        else:
+            return textFromJSON(False)
 
 
     @renderer

@@ -94,7 +94,10 @@ function loadAndDisplayIncident(success) {
         }
 
         drawIncidentFields();
-        enableEditing();
+
+        if (editingAllowed) {
+            enableEditing();
+        }
 
         if (success != undefined) {
             success();
