@@ -25,7 +25,7 @@ __all__ = [
 from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..tz import utcNow
-from ..data.model import Incident, InvalidDataError
+from ..data.model import IncidentState, Incident, InvalidDataError
 from ..data.json import textFromJSON, jsonFromFile
 from ..data.json import rangerAsJSON, incidentAsJSON, incidentFromJSON
 from ..data.edit import editIncident
@@ -126,6 +126,9 @@ class JSONMixIn(object):
 
         json = jsonFromFile(request.content)
         incident = incidentFromJSON(json, number=number, validate=False)
+
+        if incident.state is None:
+            incident.state = IncidentState.new
 
         now = utcNow()
 
