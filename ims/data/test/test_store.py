@@ -177,7 +177,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
 
         for number, etag in store.listIncidents():
             incident = store.readIncidentWithNumber(number)
-            for entry in incident.report_entries:
+            for entry in incident.reportEntries:
                 self.assertEquals(entry.author, u"<unknown>")
 
 
@@ -488,9 +488,9 @@ def test_incidents():
     incidents = (
         Incident(
             number=next_number(),
-            rangers=(), incident_types=(), priority=5,
+            rangers=(), incidentTypes=(), priority=5,
             created=time1,
-            report_entries=(
+            reportEntries=(
                 ReportEntry(u"Tool", u"Man overboard!", time1),
                 ReportEntry(u"Splinter", u"What?", time2),
             ),
@@ -498,27 +498,27 @@ def test_incidents():
         ),
         Incident(
             number=next_number(),
-            rangers=(), incident_types=(), priority=5,
+            rangers=(), incidentTypes=(), priority=5,
             created=time3,
-            report_entries=(
+            reportEntries=(
                 ReportEntry(u"El Weso", u"Does this work?", time3),
             ),
             location=location_zero,
         ),
         Incident(
             number=next_number(),
-            rangers=(), incident_types=(), priority=5,
+            rangers=(), incidentTypes=(), priority=5,
             created=time2,
-            report_entries=(
+            reportEntries=(
                 ReportEntry(u"Librarian", u"Go read something.", time2),
             ),
             location=location_man,
         ),
         Incident(
             number=next_number(),
-            rangers=(), incident_types=(), priority=5,
+            rangers=(), incidentTypes=(), priority=5,
             created=time1, state=IncidentState.closed,
-            report_entries=(
+            reportEntries=(
                 ReportEntry(u"da Mongolian", u"Fire!", time2),
             ),
         ),

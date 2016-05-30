@@ -106,9 +106,9 @@ class IncidentTests(unittest.TestCase):
         self.assertEquals(incident.number, 1)
         self.assertEquals(incident.rangers, None)
         self.assertIdentical(incident.location, None)
-        self.assertEquals(incident.incident_types, None)
+        self.assertEquals(incident.incidentTypes, None)
         self.assertIdentical(incident.summary, None)
-        self.assertEquals(incident.report_entries, None)
+        self.assertEquals(incident.reportEntries, None)
         self.assertIdentical(incident.created, None)
         self.assertIdentical(incident.state, None)
         self.assertEquals(incident.priority, None)
@@ -130,14 +130,14 @@ class IncidentTests(unittest.TestCase):
 
     def test_init_sortedEntries(self):
         """
-        L{Incident.report_entries} is sorted.
+        L{Incident.reportEntries} is sorted.
         """
         r1 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 1))
         r2 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 2))
 
         for entries in ((r1, r2), (r2, r1)):
-            incident = newIncident(report_entries=entries)
-            self.assertEquals((r1, r2), incident.report_entries)
+            incident = newIncident(reportEntries=entries)
+            self.assertEquals((r1, r2), incident.reportEntries)
 
 
     def test_str(self):
@@ -167,9 +167,9 @@ class IncidentTests(unittest.TestCase):
             "number={i.number!r},"
             "rangers={i.rangers!r},"
             "location={i.location!r},"
-            "incident_types={i.incident_types!r},"
+            "incidentTypes={i.incidentTypes!r},"
             "summary={i.summary!r},"
-            "report_entries={i.report_entries!r},"
+            "reportEntries={i.reportEntries!r},"
             "created={i.created!r},"
             "state={i.state!r},"
             "priority={i.priority!r})"
@@ -246,7 +246,7 @@ class IncidentTests(unittest.TestCase):
         """
         L{Incident.validate} of incident with valid incident types.
         """
-        incident = newIncident(incident_types=(u"some unicode",))
+        incident = newIncident(incidentTypes=(u"some unicode",))
         incident.validate()
 
 
@@ -254,7 +254,7 @@ class IncidentTests(unittest.TestCase):
         """
         L{Incident.validate} of incident with non-unicode incident types.
         """
-        incident = newIncident(incident_types=(b"some bytes",))
+        incident = newIncident(incidentTypes=(b"some bytes",))
         self.assertRaises(InvalidDataError, incident.validate)
 
 
@@ -279,7 +279,7 @@ class IncidentTests(unittest.TestCase):
         L{Incident.validate} incident with valid report entry.
         """
         incident = newIncident(
-            report_entries=[
+            reportEntries=[
                 ReportEntry(
                     author=u"Tool",
                     text=u"All out of no. 2 pencils. Need air drop stat.",
@@ -295,7 +295,7 @@ class IncidentTests(unittest.TestCase):
         L{Incident.validate} incident with invalid report entry.
         """
         incident = newIncident(
-            report_entries=[ReportEntry(author=None, text=None)],
+            reportEntries=[ReportEntry(author=None, text=None)],
         )
         self.assertRaises(InvalidDataError, incident.validate)
 
@@ -923,8 +923,8 @@ def newIncident(
     summary=None,
     location=None,
     rangers=(),
-    incident_types=(),
-    report_entries=(),
+    incidentTypes=(),
+    reportEntries=(),
     created=DateTime(2006, 4, 5, 16, 30, 0),
     state=None,
 ):
@@ -934,8 +934,8 @@ def newIncident(
         summary=summary,
         location=location,
         rangers=rangers,
-        incident_types=incident_types,
-        report_entries=report_entries,
+        incidentTypes=incidentTypes,
+        reportEntries=reportEntries,
         created=created,
         state=state,
     )

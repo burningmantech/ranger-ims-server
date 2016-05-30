@@ -420,14 +420,14 @@ def incidentFromJSON(root, number, validate=True):
             for handle in ranger_handles
         )
 
-    incident_types = root.get(JSON.incident_types.value, None)
+    incidentTypes = root.get(JSON.incident_types.value, None)
 
     json_entries = root.get(JSON.report_entries.value, None)
 
     if json_entries is None:
-        report_entries = None
+        reportEntries = None
     else:
-        report_entries = [
+        reportEntries = [
             ReportEntry(
                 author=entry.get(JSON.entry_author.value, None),
                 text=entry.get(JSON.entry_text.value, None),
@@ -474,8 +474,8 @@ def incidentFromJSON(root, number, validate=True):
         summary=summary,
         location=location,
         rangers=rangers,
-        incident_types=incident_types,
-        report_entries=report_entries,
+        incidentTypes=incidentTypes,
+        reportEntries=reportEntries,
         created=created,
         state=state,
     )
@@ -517,10 +517,10 @@ def incidentAsJSON(incident):
             ranger.handle for ranger in incident.rangers
         ]
 
-    if incident.incident_types is not None:
-        root[JSON.incident_types.value] = list(incident.incident_types)
+    if incident.incidentTypes is not None:
+        root[JSON.incident_types.value] = list(incident.incidentTypes)
 
-    if incident.report_entries is not None:
+    if incident.reportEntries is not None:
         root[JSON.report_entries.value] = [
             {
                 JSON.entry_author.value: entry.author,
@@ -528,7 +528,7 @@ def incidentAsJSON(incident):
                 JSON.entry_created.value: datetimeAsRFC3339(entry.created),
                 JSON.entry_system.value: entry.system_entry,
             }
-            for entry in incident.report_entries
+            for entry in incident.reportEntries
         ]
 
     if incident.created is not None:

@@ -249,12 +249,12 @@ class ReadOnlyStorage(object):
             # yield incident.summary
             # yield incident.location.name
             # yield incident.location.address
-            # for incident_type in incident.incident_types:
-            #     yield incident_type
+            # for incidentType in incident.incidentTypes:
+            #     yield incidentType
             # for ranger in incident.rangers:
             #     yield ranger.handle
 
-            for entry in incident.report_entries:
+            for entry in incident.reportEntries:
                 yield entry.text
 
         def inTimeBounds(when):
@@ -277,7 +277,7 @@ class ReadOnlyStorage(object):
             # Filter out incidents outside of the given time range
             #
             if since is not None or until is not None:
-                for entry in incident.report_entries:
+                for entry in incident.reportEntries:
                     if inTimeBounds(entry.created):
                         break
                 else:
@@ -491,12 +491,12 @@ def ims2014Cleanup(incident):
     # * incidents with no created timestamp
     # * report entries with no author
 
-    if incident.report_entries is not None:
+    if incident.reportEntries is not None:
         if incident.created is None:
-            for reportEntry in sorted(incident.report_entries):
+            for reportEntry in sorted(incident.reportEntries):
                 incident.created = reportEntry.created
 
-        for reportEntry in incident.report_entries:
+        for reportEntry in incident.reportEntries:
             if reportEntry.author is None:
                 reportEntry.author = u"<unknown>"
 

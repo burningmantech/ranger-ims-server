@@ -163,8 +163,8 @@ class Incident(object):
         summary=None,
         location=None,
         rangers=None,
-        incident_types=None,
-        report_entries=None,
+        incidentTypes=None,
+        reportEntries=None,
         created=None, state=None,
     ):
         """
@@ -183,11 +183,11 @@ class Incident(object):
         @param rangers: The Rangers associated with the incident.
         @type rangers: iterable of L{Ranger}
 
-        @param incident_types: The incident types associated with the incident.
-        @type incident_types: iterable of L{unicode}
+        @param incidentTypes: The incident types associated with the incident.
+        @type incidentTypes: iterable of L{unicode}
 
-        @param report_entries: The report entries associated with the incident.
-        @type report_entries: iterable of L{ReportEntry}
+        @param reportEntries: The report entries associated with the incident.
+        @type reportEntries: iterable of L{ReportEntry}
 
         @param created: The created time for the incident.
         @type created: L{DateTime}
@@ -210,22 +210,22 @@ class Incident(object):
         if rangers is not None:
             rangers = frozenset(rangers)
 
-        if incident_types is not None:
-            incident_types = frozenset(incident_types)
+        if incidentTypes is not None:
+            incidentTypes = frozenset(incidentTypes)
 
-        if report_entries is not None:
+        if reportEntries is not None:
             # set is used to filter duplicates, which exist in 2015 data
-            report_entries = tuple(sorted(set(report_entries)))
+            reportEntries = tuple(sorted(set(reportEntries)))
 
-        self.number         = number
-        self.priority       = priority
-        self.summary        = summary
-        self.location       = location
-        self.rangers        = rangers
-        self.incident_types = incident_types
-        self.report_entries = report_entries
-        self.created        = created
-        self.state          = state
+        self.number        = number
+        self.priority      = priority
+        self.summary       = summary
+        self.location      = location
+        self.rangers       = rangers
+        self.incidentTypes = incidentTypes
+        self.reportEntries = reportEntries
+        self.created       = created
+        self.state         = state
 
 
     def __str__(self):
@@ -243,9 +243,9 @@ class Incident(object):
             u"number={self.number!r},"
             u"rangers={self.rangers!r},"
             u"location={self.location!r},"
-            u"incident_types={self.incident_types!r},"
+            u"incidentTypes={self.incidentTypes!r},"
             u"summary={self.summary!r},"
-            u"report_entries={self.report_entries!r},"
+            u"reportEntries={self.reportEntries!r},"
             u"created={self.created!r},"
             u"state={self.state!r},"
             u"priority={self.priority!r})"
@@ -263,9 +263,9 @@ class Incident(object):
                 self.number == other.number and
                 self.rangers == other.rangers and
                 self.location == other.location and
-                self.incident_types == other.incident_types and
+                self.incidentTypes == other.incidentTypes and
                 self.summary == other.summary and
-                self.report_entries == other.report_entries and
+                self.reportEntries == other.reportEntries and
                 self.created == other.created and
                 self.state == other.state and
                 self.priority == other.priority
@@ -292,8 +292,8 @@ class Incident(object):
         if self.summary:
             return self.summary
 
-        if self.report_entries is not None:
-            for entry in self.report_entries:
+        if self.reportEntries is not None:
+            for entry in self.reportEntries:
                 return entry.text.split("\n")[0]
 
         return ""
@@ -313,16 +313,16 @@ class Incident(object):
             "location", self.location, Location, optional=True, recurse=True
         )
 
-        if self.incident_types is not None:
-            for incident_type in self.incident_types:
-                _validateIsInstance("incident type", incident_type, unicode)
+        if self.incidentTypes is not None:
+            for incidentType in self.incidentTypes:
+                _validateIsInstance("incident type", incidentType, unicode)
 
         _validateIsInstance("summary", self.summary, unicode, optional=True)
 
-        if self.report_entries is not None:
-            for report_entry in self.report_entries:
+        if self.reportEntries is not None:
+            for reportEntry in self.reportEntries:
                 _validateIsInstance(
-                    "report entry", report_entry, ReportEntry, recurse=True
+                    "report entry", reportEntry, ReportEntry, recurse=True
                 )
 
         _validateIsInstance("created", self.created, DateTime, optional=False)
@@ -853,4 +853,3 @@ class RodGarettAddress(Address):
                     "Radial minute must be 0-59, not {!r}"
                     .format(self.radialMinute)
                 )
-

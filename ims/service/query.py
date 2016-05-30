@@ -38,7 +38,7 @@ def editsFromQuery(author, number, request):
         return None
 
     priority = summary = location = address = rangers = None
-    incident_types = report_entries = state = None
+    incidentTypes = reportEntries = state = None
 
     def get(key, cast, defaultArgs=[]):
         for value in request.args.get(key, defaultArgs):
@@ -91,12 +91,12 @@ def editsFromQuery(author, number, request):
     rangers
 
     # FIXME:
-    incident_types
+    incidentTypes
 
-    report_entries = []
+    reportEntries = []
 
     for text in request.args.get("report_text", []):
-        report_entries = (
+        reportEntries = (
             ReportEntry(
                 author=author,
                 text=text.replace("\r\n", "\n").decode("utf-8"),
@@ -109,8 +109,8 @@ def editsFromQuery(author, number, request):
         summary=summary,
         location=location,
         rangers=rangers,
-        incident_types=incident_types,
-        report_entries=report_entries,
+        incidentTypes=incidentTypes,
+        reportEntries=reportEntries,
         state=state,
     )
 

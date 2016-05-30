@@ -135,8 +135,8 @@ class JSONMixIn(object):
             # Right now is a decent default, but if there's a report entry
             # that's older than now, that's a better pick.
             created = now
-            if incident.report_entries is not None:
-                for entry in incident.report_entries:
+            if incident.reportEntries is not None:
+                for entry in incident.reportEntries:
                     if entry.created < created:
                         created = entry.created
 

@@ -181,7 +181,7 @@ def editIncident(incident, edits, author):
     state    = editAttributeValue("state", describe=IncidentState.describe)
 
     rangers       = editAttributeSet("rangers")
-    incidentTypes = editAttributeSet("incident_types")
+    incidentTypes = editAttributeSet("incidentTypes")
 
     # Location has to be unpacked
     oldLocation, newLocation = old_new("location")
@@ -274,8 +274,8 @@ def editIncident(incident, edits, author):
     reportEntries = []
 
     # First, keep all existing report entries from the original incident.
-    if incident.report_entries is not None:
-        for reportEntry in incident.report_entries:
+    if incident.reportEntries is not None:
+        for reportEntry in incident.reportEntries:
             reportEntries.append(reportEntry)
 
     # Next, add new system report entries
@@ -289,8 +289,8 @@ def editIncident(incident, edits, author):
         )
 
     # Finally, add new user report entries
-    if edits.report_entries is not None:
-        for reportEntry in edits.report_entries:
+    if edits.reportEntries is not None:
+        for reportEntry in edits.reportEntries:
             # Work-around for clients that resubmit the same entry >1 time
             if reportEntry not in reportEntries:
                 reportEntry.author = author
@@ -306,8 +306,8 @@ def editIncident(incident, edits, author):
         summary=summary,
         location=location,
         rangers=rangers,
-        incident_types=incidentTypes,
-        report_entries=reportEntries,
+        incidentTypes=incidentTypes,
+        reportEntries=reportEntries,
         created=created,
         state=state,
     )

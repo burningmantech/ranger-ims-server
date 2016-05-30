@@ -408,7 +408,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             number=1, validate=False
         )
         self.assertEquals(
-            incident.incident_types, frozenset((u"Footsie", u"Jacks"))
+            incident.incidentTypes, frozenset((u"Footsie", u"Jacks"))
         )
 
 
@@ -420,7 +420,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             {JSON.incident_number.value: 1},
             number=1, validate=False
         )
-        self.assertEquals(incident.incident_types, None)
+        self.assertEquals(incident.incidentTypes, None)
 
 
     def test_incidentFromJSONTypesEmpty(self):
@@ -435,7 +435,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             number=1, validate=False
         )
         self.assertEquals(
-            incident.incident_types, frozenset()
+            incident.incidentTypes, frozenset()
         )
 
 
@@ -466,7 +466,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             number=1, validate=False
         )
         self.assertEquals(
-            incident.report_entries,
+            incident.reportEntries,
             (
                 ReportEntry(author=u"Tool", text=u"1 2 3", created=time1),
                 ReportEntry(author=u"Tulsa", text=u"A B C", created=time2),
@@ -482,7 +482,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             {JSON.incident_number.value: 1},
             number=1, validate=False
         )
-        self.assertEquals(incident.report_entries, None)
+        self.assertEquals(incident.reportEntries, None)
 
 
     def test_incidentFromJSONEntriesEmpty(self):
@@ -496,7 +496,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             },
             number=1, validate=False
         )
-        self.assertEquals(incident.report_entries, ())
+        self.assertEquals(incident.reportEntries, ())
 
 
     def test_incidentFromJSONCreated(self):
@@ -823,7 +823,7 @@ class IncidentSerializationTests(unittest.TestCase):
         result = incidentAsJSON(
             Incident(
                 number=1,
-                incident_types=(u"Footsie", u"Jacks"),
+                incidentTypes=(u"Footsie", u"Jacks"),
             )
         )
 
@@ -847,7 +847,7 @@ class IncidentSerializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.incident_types.value: [],
             },
-            incidentAsJSON(Incident(number=1, incident_types=()))
+            incidentAsJSON(Incident(number=1, incidentTypes=()))
         )
 
 
@@ -876,7 +876,7 @@ class IncidentSerializationTests(unittest.TestCase):
             incidentAsJSON(
                 Incident(
                     number=1,
-                    report_entries=(
+                    reportEntries=(
                         ReportEntry(
                             author=u"Tool", text=u"1 2 3", created=time1
                         ),
@@ -899,7 +899,7 @@ class IncidentSerializationTests(unittest.TestCase):
                 JSON.report_entries.value: [],
             },
             incidentAsJSON(
-                Incident(number=1, report_entries=())
+                Incident(number=1, reportEntries=())
             )
         )
 

@@ -222,14 +222,14 @@ class EditingTests(unittest.TestCase):
         """
         Edit incident types to C{None} is a no-op.
         """
-        self.assertEditSetNoop("incident_types", (u"A", u"B"), None)
+        self.assertEditSetNoop("incidentTypes", (u"A", u"B"), None)
 
 
     def test_typesSame(self):
         """
         Edit incident types to same value is a no-op.
         """
-        self.assertEditSetNoop("incident_types", (u"A", u"B"), (u"A", u"B"))
+        self.assertEditSetNoop("incidentTypes", (u"A", u"B"), (u"A", u"B"))
 
 
     def test_typesChanged(self):
@@ -237,7 +237,7 @@ class EditingTests(unittest.TestCase):
         Edit incident types to a new value.
         """
         self.assertEditSetChanged(
-            "incident_types", (u"A", u"B"), (u"A", u"C"), (u"C",), (u"B",)
+            "incidentTypes", (u"A", u"B"), (u"A", u"C"), (u"C",), (u"B",)
         )
 
 
@@ -297,16 +297,16 @@ class EditingTests(unittest.TestCase):
         r2 = ReportEntry(u"Tool", u"Bye!")
 
         (edited, before, after) = (
-            self.editIncident("report_entries", [r1], [r2])
+            self.editIncident("reportEntries", [r1], [r2])
         )
 
-        self.assertEquals(2, len(edited.report_entries))
+        self.assertEquals(2, len(edited.reportEntries))
 
-        self.assertEquals(u"Splinter", edited.report_entries[0].author)
-        self.assertEquals(u"Hello!", edited.report_entries[0].text)
+        self.assertEquals(u"Splinter", edited.reportEntries[0].author)
+        self.assertEquals(u"Hello!", edited.reportEntries[0].text)
 
-        self.assertEquals(u"Tool", edited.report_entries[1].author)
-        self.assertEquals(u"Bye!", edited.report_entries[1].text)
+        self.assertEquals(u"Tool", edited.reportEntries[1].author)
+        self.assertEquals(u"Bye!", edited.reportEntries[1].text)
 
 
     def assertEditValueNoop(self, attribute, old_value, new_value):
@@ -342,7 +342,7 @@ class EditingTests(unittest.TestCase):
         self.assertEquals(old, getattr(edited, attribute))
 
         # No report entry was added
-        self.assertEquals(0, len(edited.report_entries))
+        self.assertEquals(0, len(edited.reportEntries))
 
 
     def assertEditValueChanged(self, attribute, old_value, new_value):
@@ -402,9 +402,9 @@ class EditingTests(unittest.TestCase):
         """
         Verify that a report entry was added.
         """
-        self.assertEquals(1, len(edited.report_entries))
+        self.assertEquals(1, len(edited.reportEntries))
 
-        last_entry = edited.report_entries[-1]
+        last_entry = edited.reportEntries[-1]
 
         self.assertEquals(u"Tool", last_entry.author)
         self.assertTrue(before < last_entry.created < after)

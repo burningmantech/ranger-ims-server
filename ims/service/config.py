@@ -220,7 +220,7 @@ class Configuration (object):
 
         self.log.info(
             "{count} incident types",
-            incident_types=self.IncidentTypes, count=len(self.IncidentTypes),
+            incidentTypes=self.IncidentTypes, count=len(self.IncidentTypes),
         )
 
         #
