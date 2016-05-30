@@ -116,6 +116,7 @@ class AuthMixIn(object):
         self.authenticateRequest(request)
 
         userAuthorizations = self.authorizationsForUser(request.user, event)
+        request.authorizations = userAuthorizations
 
         self.log.debug(
             "Authorizations for {user}: {authorizations}",
