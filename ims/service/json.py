@@ -120,7 +120,7 @@ class JSONMixIn(object):
     @route(URLs.incidentsURL.asText(), methods=("POST",))
     @route(URLs.incidentsURL.asText() + u"/", methods=("POST",))
     def newIncidentResource(self, request, event):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
+        self.authorizeRequest(request, event, Authorization.writeIncidents)
 
         number = self.storage[event].nextIncidentNumber()
 
@@ -152,7 +152,7 @@ class JSONMixIn(object):
                     .format(incident.created, now)
                 )
 
-        author = request.user
+        author = request.user.uid
 
         # Apply this new incident as changes to an empty incident so that
         # system report entries get added.
@@ -217,14 +217,14 @@ class JSONMixIn(object):
 
     @route(URLs.incidentNumberURL.asText(), methods=("POST",))
     def editIncidentResource(self, request, event, number):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
+        self.authorizeRequest(request, event, Authorization.writeIncidents)
 
         try:
             number = int(number)
         except ValueError:
             return self.notFoundResource(request)
 
-        author = request.user.decode("utf-8")
+        author = request.user.uid
 
         storage = self.storage[event]
 
