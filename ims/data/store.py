@@ -72,8 +72,12 @@ class ReadOnlyStorage(object):
         return "{self.__class__.__name__}({self.path})".format(self=self)
 
 
+    def _incidentBaseFP(self, number):
+        return self.path.child(unicode(number))
+
+
     def _openIncident(self, number, mode):
-        incidentFP = self.path.child(unicode(number))
+        incidentFP = self._incidentBaseFP(number)
         try:
             incidentFH = incidentFP.open(mode)
         except (IOError, OSError):
@@ -133,20 +137,28 @@ class ReadOnlyStorage(object):
         try:
             for child in self.path.children():
                 name = child.basename()
+
                 if name.startswith(u"."):
                     continue
+                if not child.isfile():
+                    continue
+
                 try:
                     number = int(name)
                 except ValueError:
                     self.log.error(
-                        "Invalid filename in data store: {name}",
-                        name=name
+                        "Invalid filename in event store: {fp.path}",
+                        fp=child
                     )
                     continue
 
                 yield number
+
         except UnlistableError:
-            pass
+            self.log.error(
+                "Unable to list incidents in event store: {fp.path}",
+                fp=self.path
+            )
 
 
     def listIncidents(self):
