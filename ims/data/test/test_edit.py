@@ -18,14 +18,16 @@
 Tests for L{ims.data.edit}.
 """
 
+__all__ = []
+
 from twisted.trial import unittest
 
 from ...tz import utcNow
+from ...store.test.test_file import time1, time2
 from ..model import (
     IncidentState, Incident, Ranger, Location, TextOnlyAddress, ReportEntry
 )
 from ..edit import editIncident, EditNotAllowedError
-from .test_store import time1, time2
 
 
 

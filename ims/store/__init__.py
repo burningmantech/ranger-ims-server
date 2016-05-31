@@ -15,5 +15,5 @@
 ##
 
 """
-Incident Management System data model.
+Incident Management System data storage.
 """

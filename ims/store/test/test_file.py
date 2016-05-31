@@ -15,8 +15,10 @@
 ##
 
 """
-Tests for L{ims.data.store}.
+Tests for L{ims.store.file}.
 """
+
+__all__ = []
 
 from datetime import datetime as DateTime
 
@@ -24,14 +26,16 @@ import twisted.trial.unittest
 from twisted.python.filepath import FilePath
 
 from ...tz import utc
-from ..model import IncidentState, Incident, ReportEntry
-from ..json import (
+from ...data.model import IncidentState, Incident, ReportEntry
+from ...data.json import (
     incidentFromJSON, incidentAsJSON, jsonFromText, textFromJSON
 )
-from ..store import (
+from ...data.test.test_model import (
+    location_tokyo, location_man, location_zero
+)
+from ..file import (
     StorageError, ReadOnlyStorage, Storage, NoSuchIncidentError, etag_hash
 )
-from ..test.test_model import location_tokyo, location_man, location_zero
 
 
 

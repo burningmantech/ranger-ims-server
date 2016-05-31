@@ -15,5 +15,5 @@
 ##
 
 """
-Incident Management System data model.
+Tests for L{ims.store}.
 """

@@ -34,7 +34,7 @@ from twisted.logger import Logger
 
 from ..data.model import IncidentType
 from ..data.json import textFromJSON, jsonFromFile
-from ..data.store import MultiStorage
+from ..store.file import MultiStorage
 from ..dms import DutyManagementSystem, DirectoryService
 
 

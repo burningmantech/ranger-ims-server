@@ -18,11 +18,14 @@
 Tests for L{ims.data.json}.
 """
 
+__all__ = []
+
 from datetime import datetime as DateTime
 
 from twisted.trial import unittest
 
 from ...tz import utc, FixedOffsetTimeZone
+from ...store.test.test_file import time1, time2
 from ..model import (
     InvalidDataError, IncidentState,
     Incident, ReportEntry, Ranger,
@@ -33,7 +36,6 @@ from ..json import (
     datetimeAsRFC3339, rfc3339AsDateTime,
     incidentFromJSON, incidentAsJSON, rangerAsJSON, locationAsJSON,
 )
-from .test_store import time1, time2
 
 
 

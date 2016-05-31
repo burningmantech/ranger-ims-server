@@ -18,6 +18,8 @@
 Tests for L{ims.data.model}.
 """
 
+__all__ = []
+
 from datetime import datetime as DateTime
 
 from twisted.trial import unittest
