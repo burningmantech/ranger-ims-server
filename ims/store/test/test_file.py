@@ -33,9 +33,8 @@ from ...data.json import (
 from ...data.test.test_model import (
     location_tokyo, location_man, location_zero
 )
-from ..file import (
-    StorageError, ReadOnlyStorage, Storage, NoSuchIncidentError, etag_hash
-)
+from ..istore import StorageError, ReadOnlyStorage
+from ..file import Storage, NoSuchIncidentError, etag_hash
 
 
 

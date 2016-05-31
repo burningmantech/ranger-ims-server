@@ -19,8 +19,6 @@ Incident Management System file data store.
 """
 
 __all__ = [
-    "StorageError",
-    "NoSuchIncidentError",
     "ReadOnlyStorage",
     "Storage",
     "MultiStorage",
@@ -36,20 +34,7 @@ from ..data.json import (
     incidentAsJSON, incidentFromJSON, textFromJSON, jsonFromFile,
     rfc3339AsDateTime
 )
-
-
-
-class StorageError(RuntimeError):
-    """
-    Storage error.
-    """
-
-
-
-class NoSuchIncidentError(StorageError):
-    """
-    No such incident.
-    """
+from .istore import StorageError, NoSuchIncidentError
 
 
 
@@ -65,7 +50,7 @@ class ReadOnlyStorage(object):
         self.path = path
         self._incidentETags = {}
         self._locations = None
-        self.log.info("New data store: {store}", store=self)
+        self.log.info("New file data store: {store}", store=self)
 
 
     def __repr__(self):
@@ -200,31 +185,8 @@ class ReadOnlyStorage(object):
         self._maxIncidentNumber_ = value
 
 
-    def locations(self):
-        """
-        @return: all known locations.
-        @rtype: iterable of L{Location}
-        """
-        if self._locations is None:
-            def locations():
-                for (number, etag) in self.listIncidents():
-                    incident = self.readIncidentWithNumber(number)
-                    location = incident.location
-
-                    if location is not None:
-                        yield location
-
-            self._locations = frozenset(locations())
-
-        return self._locations
-
-
     def searchIncidents(
-        self,
-        terms=(),
-        showClosed=False,
-        since=None,
-        until=None,
+        self, terms=(), showClosed=False, since=None, until=None
     ):
         """
         Search all incidents.
@@ -314,6 +276,25 @@ class ReadOnlyStorage(object):
                 yield (number, etag)
 
 
+    def locations(self):
+        """
+        @return: all known locations.
+        @rtype: iterable of L{Location}
+        """
+        if self._locations is None:
+            def locations():
+                for (number, etag) in self.listIncidents():
+                    incident = self.readIncidentWithNumber(number)
+                    location = incident.location
+
+                    if location is not None:
+                        yield location
+
+            self._locations = frozenset(locations())
+
+        return self._locations
+
+
     def _acl(self, name):
         fp = self.path.child(".{}.txt".format(name))
         try:
@@ -362,8 +343,6 @@ class Storage(ReadOnlyStorage):
     """
     Back-end storage (read-write).
     """
-
-    log = Logger()
 
     def provision(self):
         if hasattr(self, "_provisioned"):
@@ -440,16 +419,16 @@ class MultiStorage(object):
     def __init__(self, path, readOnly=False):
         self.path = path
         self.readOnly = readOnly
-        self.stores = {}
+        self._stores = {}
 
 
     def __getitem__(self, name):
         try:
             # Try returning cached value
-            return self.stores[name]
+            return self._stores[name]
 
         except KeyError:
-            if not name.startswith("."):
+            if name in self:
                 # Try opening the named storage
                 child = self.path.child(unicode(name))
                 if child.isdir:
@@ -458,7 +437,7 @@ class MultiStorage(object):
                     else:
                         storeFactory = Storage
                     store = storeFactory(child)
-                    self.stores[name] = store
+                    self._stores[name] = store
                     return store
 
         raise KeyError(name)
@@ -469,7 +448,7 @@ class MultiStorage(object):
 
 
     def __len__(self):
-        return len(self._events())
+        return len(tuple(self._events()))
 
 
     def __iter__(self):
@@ -480,7 +459,6 @@ class MultiStorage(object):
 
 
     def _events(self):
-        events = []
         for child in self.path.children():
             name = child.basename()
 
@@ -489,9 +467,7 @@ class MultiStorage(object):
             if not child.isdir():
                 continue
 
-            events.append(name)
-
-        return events
+            yield name
 
 
 
