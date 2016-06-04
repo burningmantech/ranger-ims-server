@@ -418,52 +418,7 @@ c_dependencies () {
 
   export C_INCLUDE_PATH="${c_glue_include}:${C_INCLUDE_PATH:-}";
 
-
-  # The OpenSSL version number is special. Our strategy is to get the integer
-  # value of OPENSSL_VERSION_NUBMER for use in inequality comparison.
-  ruler;
-
-  local min_ssl_version="9470095";  # OpenSSL 0.9.8zh
-
-  local ssl_version="$(c_macro openssl/ssl.h OPENSSL_VERSION_NUMBER)";
-
-  if [ -z "${ssl_version}" ]; then ssl_version="0x0"; fi;
-  ssl_version="$("${bootstrap_python}" -c "print ${ssl_version}")";
-
-  if [ "${ssl_version}" -ge "${min_ssl_version}" ]; then
-    using_system "OpenSSL";
-  else
-    local v="0.9.8zh";
-    local n="openssl";
-    local p="${n}-${v}";
-
-    # use 'config' instead of 'configure'; 'make' instead of 'jmake'.
-    # also pass 'shared' to config to build shared libs.
-    c_dependency -c "config" -s "3ff71636bea85a99f4d76a10d119c09bda0421e3" \
-      -p "make depend" -b "make" \
-      "openssl" "${p}" \
-      "http://www.openssl.org/source/${p}.tar.gz" "shared";
-  fi;
-
-
-  ruler;
-  if find_header ffi.h; then
-    using_system "libffi";
-  elif find_header ffi/ffi.h; then
-    if "${do_setup}"; then
-      mkdir -p "${c_glue_include}";
-      echo "#include <ffi/ffi.h>" > "${c_glue_include}/ffi.h"
-      using_system "libffi";
-    fi;
-  else
-    local v="3.0.13";
-    local n="libffi";
-    local p="${n}-${v}";
-
-    c_dependency -m "45f3b6dbc9ee7c7dfbbbc5feba571529" \
-      "libffi" "${p}" \
-      "ftp://sourceware.org/pub/libffi/${p}.tar.gz"
-  fi;
+  ####
 }
 
 
