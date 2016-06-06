@@ -26,7 +26,9 @@ __all__ = [
 
 from time import time
 
-from mysql.connector.errors import Error as SQLModuleError
+# from mysql.connector.errors import Error as SQLModuleError
+class SQLModuleError(object):
+    pass
 
 from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks, returnValue
@@ -105,7 +107,7 @@ class DutyManagementSystem(object):
 
             else:
                 dbpool = adbapi.ConnectionPool(
-                    "mysql.connector",
+                    "pymysql",
                     host=self.host,
                     database=self.database,
                     user=self.username,
@@ -148,15 +150,24 @@ class DutyManagementSystem(object):
                         """
                     )
 
+                    def string(bytesString):
+                        if bytesString is None:
+                            return None
+                        return bytesString.decode("utf-8")
+
                     self._personnel = tuple(
                         Ranger(
-                            handle,
-                            fullName(first, middle, last),
-                            status,
-                            dmsID=dmsID,
-                            email=email,
+                            string(handle),
+                            fullName(
+                                string(first),
+                                string(middle),
+                                string(last),
+                            ),
+                            string(status),
+                            dmsID=int(dmsID),
+                            email=string(email),
                             onSite=bool(onSite),
-                            password=password,
+                            password=string(password),
                         )
                         for (
                             dmsID, handle, first, middle, last, email,
@@ -193,8 +204,9 @@ class DutyManagementSystem(object):
 
 
 def fullName(first, middle, last):
-    values = dict(first=first, middle=middle, last=last)
     if middle:
-        return u"{first} {middle}. {last}".format(**values)
+        format = u"{first} {middle}. {last}"
     else:
-        return u"{first} {last}".format(**values)
+        format = u"{first} {last}"
+
+    return format.format(first=first, middle=middle, last=last)

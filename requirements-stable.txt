@@ -33,7 +33,7 @@
     #characteristic==14.3.0
 
     # MySQL
-    mysql-connector-python-rf==2.0.4
+    PyMySQL==0.7.4
 
     --editable svn+http://svn.calendarserver.org/repository/calendarserver/twext/trunk@HEAD#egg=twextpy
         #cffi

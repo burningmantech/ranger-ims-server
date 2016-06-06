@@ -95,7 +95,7 @@ install_requirements = [
     "Twisted",
     "klein",
     "pyOpenSSL", "service_identity",
-    "mysql-connector-python-rf",
+    "PyMySQL",
 ]
 
 extras_requirements = {}
