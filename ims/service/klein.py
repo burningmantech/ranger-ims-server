@@ -68,7 +68,7 @@ def route(*args, **kwargs):
             except DMSError as e:
                 self.log.error("DMS error: {failure}", failure=e)
             except Exception:
-                self.log.failure("Request failed")
+                self.log.failure("Request failed", request=request)
             else:
                 returnValue(response)
 
