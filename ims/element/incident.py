@@ -24,6 +24,7 @@ __all__ = [
 
 from ..data.json import textFromJSON
 from ..service.auth import Authorization
+from ..service.urls import URLs
 
 from .base import Element, renderer
 
@@ -60,7 +61,7 @@ class IncidentPage(Element):
     @renderer
     def incidents_url(self, request, tag):
         return textFromJSON(
-            self.service.incidentsURL.asText()
+            URLs.incidentsURL.asText()
             .replace(u"<event>", unicode(self.event))
         )
 
@@ -68,7 +69,7 @@ class IncidentPage(Element):
     @renderer
     def personnel_url(self, request, tag):
         return textFromJSON(
-            self.service.personnelURL.asText()
+            URLs.personnelURL.asText()
             .replace(u"<event>", unicode(self.event))
         )
 
@@ -76,7 +77,7 @@ class IncidentPage(Element):
     @renderer
     def incident_types_url(self, request, tag):
         return textFromJSON(
-            self.service.incidentTypesURL.asText()
+            URLs.incidentTypesURL.asText()
             .replace(u"<event>", unicode(self.event))
         )
 

@@ -30,7 +30,6 @@ from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 
 from ..data.json import textFromJSON
-from .urls import URLs
 from .http import HeaderName, ContentType
 from .klein import KleinService
 from .auth import AuthMixIn
@@ -41,7 +40,7 @@ from .external import ExternalMixIn
 
 
 class WebService(
-    KleinService, URLs, AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn
+    KleinService, AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn
 ):
     """
     Incident Management System web service.

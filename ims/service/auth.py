@@ -169,7 +169,7 @@ class AuthMixIn(object):
 
                 url = request.args.get(u"o", [None])[0]
                 if url is None:
-                    location = self.prefixURL  # Default to application home
+                    location = URLs.prefixURL  # Default to application home
                 else:
                     location = URL.fromText(url)
 
@@ -191,4 +191,4 @@ class AuthMixIn(object):
         session.expire()
 
         # Redirect back to application home
-        return self.redirect(request, self.prefixURL)
+        return self.redirect(request, URLs.prefixURL)

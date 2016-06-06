@@ -31,6 +31,8 @@ from twisted.web.template import (
 from twisted.python.filepath import FilePath
 from twext.python.types import MappingProxyType
 
+from ..service.urls import URLs
+
 
 
 class Element(BaseElement):
@@ -75,18 +77,18 @@ class Element(BaseElement):
             ),
             tags.link(
                 type="image/png", rel="icon",
-                href=self.service.logoURL.asText(),
+                href=URLs.logoURL.asText(),
             ),
             tags.link(
                 type="text/css", rel="stylesheet", media="screen",
-                href=self.service.bootstrapCSSURL.asText(),
+                href=URLs.bootstrapCSSURL.asText(),
             ),
             tags.link(
                 type="text/css", rel="stylesheet", media="screen",
-                href=self.service.styleSheetURL.asText(),
+                href=URLs.styleSheetURL.asText(),
             ),
-            tags.script(src=self.service.jqueryJSURL.asText()),
-            tags.script(src=self.service.bootstrapJSURL.asText()),
+            tags.script(src=URLs.jqueryJSURL.asText()),
+            tags.script(src=URLs.bootstrapJSURL.asText()),
             self.title(request, tags.title),
             children,
         )
@@ -155,8 +157,6 @@ class Element(BaseElement):
 
     @renderer
     def root(self, request, tag):
-        service = self.service
-
         def redirectBack(url):
             # Set origin for redirect back to current page
             return url.set(u"o", request.uri.decode("utf-8")).asText()
@@ -175,8 +175,8 @@ class Element(BaseElement):
         slots.update(dict(
             user=username,
 
-            login_url=redirectBack(service.loginURL),
-            logout_url=redirectBack(service.logoutURL),
+            login_url=redirectBack(URLs.loginURL),
+            logout_url=redirectBack(URLs.logoutURL),
         ))
 
         tag.fillSlots(**slots)
@@ -192,7 +192,7 @@ class Element(BaseElement):
             events = reversed(events)
 
         if events:
-            prefix = self.service.prefixURL.asText()
+            prefix = URLs.prefixURL.asText()
             return (
                 tag.clone()(
                     tags.a(
@@ -218,40 +218,36 @@ class Element(BaseElement):
     @property
     def baseSlots(self):
         if not hasattr(self, "_baseSlots"):
-            service = self.service
-
             self._baseSlots = MappingProxyType(dict(
                 title=objectAsUnicode(self.elementTitle),
 
-                prefix_url=service.prefixURL.asText(),
-                stylesheet_url=service.styleSheetURL.asText(),
-                logo_url=service.logoURL.asText(),
-                queue_template_url=(
-                    service.viewDispatchQueueTemplateURL.asText()
-                ),
+                prefix_url=URLs.prefixURL.asText(),
+                stylesheet_url=URLs.styleSheetURL.asText(),
+                logo_url=URLs.logoURL.asText(),
+                queue_template_url=URLs.viewDispatchQueueTemplateURL.asText(),
                 incident_template_url=(
-                    service.viewIncidentNumberTemplateURL.asText()
+                    URLs.viewIncidentNumberTemplateURL.asText()
                 ),
 
-                jquery_base_url=service.jqueryBaseURL.asText(),
-                jquery_js_url=service.jqueryJSURL.asText(),
-                jquery_map_url=service.jqueryMapURL.asText(),
-                bootstrap_base_url=service.bootstrapBaseURL.asText(),
-                bootstrap_css_url=service.bootstrapCSSURL.asText(),
-                bootstrap_js_url=service.bootstrapJSURL.asText(),
-                datatables_base_url=service.dataTablesBaseURL.asText(),
-                datatables_js_url=service.dataTablesJSURL.asText(),
+                jquery_base_url=URLs.jqueryBaseURL.asText(),
+                jquery_js_url=URLs.jqueryJSURL.asText(),
+                jquery_map_url=URLs.jqueryMapURL.asText(),
+                bootstrap_base_url=URLs.bootstrapBaseURL.asText(),
+                bootstrap_css_url=URLs.bootstrapCSSURL.asText(),
+                bootstrap_js_url=URLs.bootstrapJSURL.asText(),
+                datatables_base_url=URLs.dataTablesBaseURL.asText(),
+                datatables_js_url=URLs.dataTablesJSURL.asText(),
                 datatables_bootstrap_css_url=(
-                    service.dataTablesBootstrapCSSURL.asText()
+                    URLs.dataTablesBootstrapCSSURL.asText()
                 ),
                 datatables_bootstrap_js_url=(
-                    service.dataTablesBootstrapJSURL.asText()
+                    URLs.dataTablesBootstrapJSURL.asText()
                 ),
-                moment_js_url=service.momentJSURL.asText(),
+                moment_js_url=URLs.momentJSURL.asText(),
 
-                ims_js_url=service.imsJSURL.asText(),
-                queue_js_url=service.queueJSURL.asText(),
-                incident_js_url=service.incidentJSURL.asText(),
+                ims_js_url=URLs.imsJSURL.asText(),
+                queue_js_url=URLs.queueJSURL.asText(),
+                incident_js_url=URLs.incidentJSURL.asText(),
             ))
 
         return self._baseSlots

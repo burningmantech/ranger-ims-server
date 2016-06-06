@@ -35,8 +35,9 @@ from twisted.web import http
 from klein import Klein
 
 from ims import __version__ as version
-from ..dms import DMSError
 from ..element.redirect import RedirectPage
+from .urls import URLs
+from ..dms import DMSError
 from .http import HeaderName, ContentType
 from .error import NotAuthenticatedError, NotAuthorizedError
 
@@ -62,7 +63,7 @@ def route(*args, **kwargs):
             try:
                 response = yield f(self, request, *args, **kwargs)
             except NotAuthenticatedError:
-                returnValue(self.redirect(request, self.loginURL, origin=u"o"))
+                returnValue(self.redirect(request, URLs.loginURL, origin=u"o"))
             except NotAuthorizedError:
                 returnValue(self.notAuthorizedResource(request))
             except DMSError as e:

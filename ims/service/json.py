@@ -180,7 +180,7 @@ class JSONMixIn(object):
         request.setHeader(HeaderName.incidentNumber.value, number)
         request.setHeader(
             HeaderName.location.value,
-            "{}/{}".format(self.incidentNumberURL.asText(), number)
+            "{}/{}".format(URLs.incidentNumberURL.asText(), number)
         )
         return self.noContentResource(request)
 

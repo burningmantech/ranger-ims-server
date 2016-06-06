@@ -23,6 +23,7 @@ __all__ = [
 ]
 
 from ..data.json import textFromJSON
+from ..service.urls import URLs
 
 from .base import Element, renderer
 
@@ -45,7 +46,7 @@ class DispatchQueuePage(Element):
     @renderer
     def data_url(self, request, tag):
         return textFromJSON(
-            self.service.dispatchQueueDataURL.asText()
+            URLs.dispatchQueueDataURL.asText()
             .replace(u"<event>", unicode(self.event))
         )
 
@@ -53,7 +54,7 @@ class DispatchQueuePage(Element):
     @renderer
     def view_incidents_url(self, request, tag):
         return textFromJSON(
-            self.service.viewIncidentsURL.asText()
+            URLs.viewIncidentsURL.asText()
             .replace(u"<event>", unicode(self.event))
         )
 

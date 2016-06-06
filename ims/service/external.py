@@ -82,7 +82,7 @@ class ExternalMixIn(object):
         requestURL = URL.fromText(request.uri.rstrip("/"))
 
         # Remove URL prefix
-        names = requestURL.path[len(self.bootstrapBaseURL.path):]
+        names = requestURL.path[len(URLs.bootstrapBaseURL.path):]
 
         request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.cachedZippedResource(
@@ -121,7 +121,7 @@ class ExternalMixIn(object):
         requestURL = URL.fromText(request.uri.rstrip("/"))
 
         # Remove URL prefix
-        names = requestURL.path[len(self.dataTablesBaseURL.path):]
+        names = requestURL.path[len(URLs.dataTablesBaseURL.path):]
 
         request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.cachedZippedResource(

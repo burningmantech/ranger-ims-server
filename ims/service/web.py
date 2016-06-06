@@ -76,7 +76,7 @@ class WebMixIn(object):
 
         This redirects to the application root page.
         """
-        return self.redirect(request, self.prefixURL)
+        return self.redirect(request, URLs.prefixURL)
 
 
     @route(URLs.prefixURL.asText(), methods=("HEAD", "GET"))
@@ -101,7 +101,7 @@ class WebMixIn(object):
 
         This redirects to the event's dispatch queue page.
         """
-        return self.redirect(request, self.viewDispatchQueueRelativeURL)
+        return self.redirect(request, URLs.viewDispatchQueueRelativeURL)
 
 
     @route(URLs.viewDispatchQueueURL.asText(), methods=("HEAD", "GET"))
