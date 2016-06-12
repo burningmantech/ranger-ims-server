@@ -30,7 +30,14 @@ create table INCIDENT_TYPE (
 
 
 create table REPORT_ENTRY (
-    ID     integer not null,
+    ID        integer not null,
+    AUTHOR    text    not null,
+    TEXT      text    not null,
+    CREATED   integer not null,
+    GENERATED numeric not null,
+
+    -- FIXME: AUTHOR is an external non-primary key.
+    -- Primary key is DMS Person ID.
 
     primary key (ID)
 );
@@ -41,7 +48,13 @@ create table INCIDENT (
     NUMBER   integer not null,
     PRIORITY integer not null,
     SUMMARY  text,
-    LOCATION ...,
+
+    LOCATION_NAME          text,
+    LOCATION_CONCENTRIC    integer,
+    LOCATION_RADIAL_HOUR   integer,
+    LOCATION_RADIAL_MINUTE integer,
+    LOCATION_DESCRIPTION   integer,
+
     CREATED  integer not null,
     STATE    text    not null,
 
@@ -62,6 +75,9 @@ create table INCIDENT__RANGER (
 
     foreign key (EVENT, INCIDENT_NUMBER)
     references INCIDENT(EVENT, NUMBER),
+
+    -- FIXME: RANGER_HANDLE is an external non-primary key.
+    -- Primary key is DMS Person ID.
 
     primary key (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
 );
