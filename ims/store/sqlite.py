@@ -82,6 +82,26 @@ class Storage(object):
         raise NotImplementedError()
 
 
+    def createIncident(self, event, incident):
+        """
+        Write the given incident into the given event.
+        """
+        incident.validate()
+
+        raise NotImplementedError()
+
+    _query_addIncident = dedent(
+        """
+        insert into INCIDENT (
+            EVENT, NUMBER, VERSION, PRIORITY, SUMMARY, CREATED, STATE,
+            LOCATION_NAME, LOCATION_DESCRIPTION,
+            LOCATION_CONCENTRIC, LOCATION_RADIAL_HOUR, LOCATION_RADIAL_MINUTE
+        )
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+    )
+
+
     def readers(self):
         return ("*",)
 
