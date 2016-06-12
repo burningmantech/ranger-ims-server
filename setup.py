@@ -75,7 +75,9 @@ entry_points = {
 }
 
 script_entry_points = {
-    "web" : ("ims.service.tool", "WebTool.main"),
+    "web"    : ("ims.service.tool", "WebTool.main"),
+    "schema" : ("ims.store.sqlite", "Storage.printSchema"),
+    "queries": ("ims.store.sqlite", "Storage.printQueries"),
 }
 
 for tool, (module, function) in script_entry_points.iteritems():
