@@ -48,14 +48,13 @@ create table INCIDENT (
     NUMBER   integer not null,
     PRIORITY integer not null,
     SUMMARY  text,
+    CREATED  integer not null,
+    STATE    text    not null,
 
     LOCATION_NAME          text,
     LOCATION_CONCENTRIC    integer,
     LOCATION_RADIAL_HOUR   integer,
     LOCATION_RADIAL_MINUTE integer,
-
-    CREATED  integer not null,
-    STATE    text    not null,
     LOCATION_DESCRIPTION   text,
 
     foreign key (EVENT)
