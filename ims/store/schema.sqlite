@@ -53,10 +53,10 @@ create table INCIDENT (
     LOCATION_CONCENTRIC    integer,
     LOCATION_RADIAL_HOUR   integer,
     LOCATION_RADIAL_MINUTE integer,
-    LOCATION_DESCRIPTION   integer,
 
     CREATED  integer not null,
     STATE    text    not null,
+    LOCATION_DESCRIPTION   text,
 
     foreign key (EVENT)
     references EVENT(ID),
