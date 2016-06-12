@@ -18,11 +18,14 @@
 Incident Management System SQLite data store.
 """
 
+from __future__ import print_function
+
 __all__ = [
     "Storage"
 ]
 
-from sqlite3 import connect, Row as LameRow
+from sqlite3 import connect, Row as LameRow, OperationalError
+
 from twisted.python.filepath import FilePath
 
 
@@ -31,6 +34,20 @@ class Storage(object):
     """
     SQLite-backed storage.
     """
+
+    @classmethod
+    def printSchema(cls):
+        with createDB() as db:
+            printSchema(db)
+
+
+    @classmethod
+    def printQueries(cls):
+        storage = cls(None)
+        for line in storage.explainQueryPlans():
+            print(line)
+            print()
+
 
     def __init__(self, dbFilePath):
         self.dbFilePath = dbFilePath
@@ -80,6 +97,36 @@ class Storage(object):
         return ()
 
 
+    def explainQueryPlans(self):
+        queries = [
+            (getattr(self, k), k[7:])
+            for k in vars(self.__class__).iterkeys()
+            if k.startswith("_query_")
+        ]
+
+        for query, name in queries:
+            try:
+                lines = (
+                    QueryPlanExplanation.Line(
+                        nestingOrder, selectFrom, details
+                    )
+                    for n, nestingOrder, selectFrom, details in (
+                        self._db.execute(
+                            "explain query plan {}".format(query),
+                            ("1",) * query.count("?")  # Dummy args list
+                        )
+                    )
+                )
+            except OperationalError as e:
+                lines = (
+                    QueryPlanExplanation.Line(
+                        None, None, "{}".format(e),
+                    ),
+                )
+
+            yield QueryPlanExplanation(name, query, lines)
+
+
 
 class Row(LameRow):
     def get(self, key, default=None):
@@ -87,6 +134,7 @@ class Row(LameRow):
             return self[key]
         else:
             return default
+
 
 
 def loadSchema():
@@ -154,6 +202,40 @@ def printSchema(db):
 
 
 
-if __name__ == "__main__":
-    with createDB() as db:
-        printSchema(db)
+class QueryPlanExplanation(object):
+    class Line(object):
+        def __init__(self, nestingOrder, selectFrom, details):
+            self.nestingOrder = nestingOrder
+            self.selectFrom   = selectFrom
+            self.details      = details
+
+
+        def asText(self):
+            return u"[{},{}] {}".format(
+                self.nestingOrder, self.selectFrom, self.details
+            )
+
+
+    def __init__(self, name, query, lines):
+        self.name  = name
+        self.query = query
+        self.lines = tuple(lines)
+
+
+    def __str__(self):
+        return str(self.asText())
+
+
+    def asText(self):
+        text = [u"{}:".format(self.name), u"", u"  -- query --", u""]
+
+        text.extend(
+            u"    {}".format(l)
+            for l in self.query.strip().split("\n")
+        )
+
+        if self.lines:
+            text.extend((u"", "  -- query plan --", u""))
+            text.extend(u"    {}".format(l.asText()) for l in self.lines)
+
+        return u"\n".join(text)
