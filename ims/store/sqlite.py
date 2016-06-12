@@ -68,13 +68,6 @@ class Storage(object):
         raise NotImplementedError()
 
 
-    def incidentNumbersAndETags(self, event):
-        """
-        Look up all incident numbers and corresponding ETags in the given event.
-        """
-        raise NotImplementedError()
-
-
     def incidentETag(self, event, number):
         """
         Look up the ETag for the incident with the given number in the given
