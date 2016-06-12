@@ -24,6 +24,7 @@ __all__ = [
     "Storage"
 ]
 
+from textwrap import dedent
 from sqlite3 import connect, Row as LameRow, OperationalError
 
 from twisted.python.filepath import FilePath
