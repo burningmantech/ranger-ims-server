@@ -89,14 +89,42 @@ class Storage(object):
         """
         incident.validate()
 
+        location = incident.location
+
+        self._db.execute(
+            self._query_addIncident, (
+                event,
+                incident.number,
+                1,
+                incident.priority,
+                incident.summary,
+                incident.created,
+                incident.state,
+                location.name,
+                location.address.concentric,
+                location.address.radialHour,
+                location.address.radialMinute,
+                location.address.description,
+            )
+        )
+
         raise NotImplementedError()
 
     _query_addIncident = dedent(
         """
         insert into INCIDENT (
-            EVENT, NUMBER, VERSION, PRIORITY, SUMMARY, CREATED, STATE,
-            LOCATION_NAME, LOCATION_DESCRIPTION,
-            LOCATION_CONCENTRIC, LOCATION_RADIAL_HOUR, LOCATION_RADIAL_MINUTE
+            EVENT,
+            NUMBER,
+            VERSION,
+            PRIORITY,
+            SUMMARY,
+            CREATED,
+            STATE,
+            LOCATION_NAME,
+            LOCATION_CONCENTRIC,
+            LOCATION_RADIAL_HOUR,
+            LOCATION_RADIAL_MINUTE,
+            LOCATION_DESCRIPTION
         )
         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
