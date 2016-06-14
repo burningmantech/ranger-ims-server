@@ -335,7 +335,9 @@ class Storage(object):
         insert into INCIDENT__REPORT_ENTRY (
             EVENT, INCIDENT_NUMBER, REPORT_ENTRY
         )
-        values ({query_eventID}, ?, ?)
+        values (
+            ({query_eventID}), ?, ?
+        )
         """
         .format(query_eventID=_query_eventID.strip())
     )
