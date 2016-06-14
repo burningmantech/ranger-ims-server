@@ -24,10 +24,17 @@ __all__ = [
     "Storage"
 ]
 
+import sys
+
 from textwrap import dedent
 from sqlite3 import connect, Row as LameRow, OperationalError
 
 from twisted.python.filepath import FilePath
+from twisted.logger import Logger
+from twext.python.usage import exit, ExitStatus
+
+from ..data.model import TextOnlyAddress, RodGarettAddress
+from .file import MultiStorage
 
 
 
@@ -35,6 +42,9 @@ class Storage(object):
     """
     SQLite-backed storage.
     """
+
+    log = Logger()
+
 
     @classmethod
     def printSchema(cls):
@@ -50,23 +60,62 @@ class Storage(object):
             print()
 
 
+    @classmethod
+    def loadFiles(cls, args=sys.argv):
+        if len(args) < 3:
+            exit(ExitStatus.EX_USAGE, "Too few arguments")
+
+        dbPath     = args[1]
+        storePaths = args[2:]
+
+        storage = cls(FilePath(dbPath))
+
+        for storePath in storePaths:
+            storage.loadFromFileStore(FilePath(storePath))
+
+
     def __init__(self, dbFilePath):
         self.dbFilePath = dbFilePath
         self._db = openDB(dbFilePath, create=True)
 
 
-    def loadFromFileStore(self, store):
+    def loadFromFileStore(self, filePath):
         """
-        Load data from a legacy file store
+        Load data from a legacy file store.
         """
-        raise NotImplementedError()
+        multiStore = MultiStorage(filePath, readOnly=True)
+
+        for event in multiStore:
+            self.createEvent(event)
+
+            eventStore = multiStore[event]
+
+            for number, etag in eventStore.listIncidents():
+                incident = eventStore.readIncidentWithNumber(number)
+
+                self.createIncident(event, incident)
 
 
     def events(self):
         """
         Look up all events in this store.
         """
-        raise NotImplementedError()
+        for row in self._db.execute("select NAME from EVENT"):
+            yield row.NAME
+
+
+    def createEvent(self, name):
+        """
+        Create an event with the given name.
+        """
+        self._db.execute(self._query_createEvent, (name,))
+        self._db.commit()
+
+    _query_createEvent = dedent(
+        """
+        insert into EVENT (NAME) values (?)
+        """
+    )
 
 
     def incidentETag(self, event, number):
@@ -91,24 +140,48 @@ class Storage(object):
 
         location = incident.location
 
-        self._db.execute(
-            self._query_addIncident, (
-                event,
-                incident.number,
-                1,
-                incident.priority,
-                incident.summary,
-                incident.created,
-                incident.state,
-                location.name,
-                location.address.concentric,
-                location.address.radialHour,
-                location.address.radialMinute,
-                location.address.description,
-            )
-        )
+        if location is None:
+            locationName = None
+            address = RodGarettAddress()
+        else:
+            locationName = location.name
+            if location.address is None:
+                address = RodGarettAddress()
+            elif isinstance(location.address, TextOnlyAddress):
+                address = RodGarettAddress(
+                    description=location.address.description,
+                )
+            elif isinstance(location.address, RodGarettAddress):
+                address = location.address
+            else:
+                raise AssertionError(
+                    "Unknown address type: {!r}".format(location.address)
+                )
 
-        raise NotImplementedError()
+        try:
+            self._db.execute(
+                self._query_addIncident, (
+                    event,
+                    incident.number,
+                    1,
+                    incident.priority,
+                    incident.summary,
+                    incident.created,
+                    incident.state.name,
+                    locationName,
+                    address.concentric,
+                    address.radialHour,
+                    address.radialMinute,
+                    address.description,
+                )
+            )
+            self._db.commit()
+        except Exception:
+            self.log.critical(
+                "Unable to write incident to event {event}: {incident!r}",
+                incident=incident, event=event
+            )
+            raise
 
     _query_addIncident = dedent(
         """
@@ -126,7 +199,10 @@ class Storage(object):
             LOCATION_RADIAL_MINUTE,
             LOCATION_DESCRIPTION
         )
-        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        values (
+            (select ID from EVENT where NAME=?),
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        )
         """
     )
 
