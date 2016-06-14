@@ -176,6 +176,15 @@ class Storage(object):
         Look up the ETag for the incident with the given number in the given
         event.
         """
+        self._db.execute(self._query_version, (event, number))
+
+    _query_version = dedent(
+        """
+        select VERSION from INCIDENT
+        where EVENT = ({query_eventID}) and NUMBER = ?
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
 
 
     def readIncident(self, event, number):
