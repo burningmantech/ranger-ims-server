@@ -112,6 +112,11 @@ class Storage(object):
         """
     )
 
+    _query_eventID = dedent(
+        """
+        select ID from EVENT where NAME = ?
+        """
+    )
 
     def createEvent(self, name):
         """
@@ -261,10 +266,11 @@ class Storage(object):
             LOCATION_DESCRIPTION
         )
         values (
-            (select ID from EVENT where NAME=?),
+            ({query_eventID}),
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
         """
+        .format(query_eventID=_query_eventID.strip())
     )
 
     _query_attachRanger = dedent(
@@ -273,9 +279,10 @@ class Storage(object):
             EVENT, INCIDENT_NUMBER, RANGER_HANDLE
         )
         values (
-            (select ID from EVENT where NAME=?), ?, ?
+            ({query_eventID}), ?, ?
         )
         """
+        .format(query_eventID=_query_eventID.strip())
     )
 
     _query_attachIncidentType = dedent(
@@ -284,11 +291,12 @@ class Storage(object):
             EVENT, INCIDENT_NUMBER, INCIDENT_TYPE
         )
         values (
-            (select ID from EVENT where NAME=?),
+            ({query_eventID}),
             ?,
             (select ID from INCIDENT_TYPE where NAME=?)
         )
         """
+        .format(query_eventID=_query_eventID.strip())
     )
 
 
