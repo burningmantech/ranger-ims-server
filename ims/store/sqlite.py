@@ -38,7 +38,7 @@ from twext.python.usage import exit, ExitStatus
 from ..data.model import (
     Incident, IncidentState, Ranger, Location, TextOnlyAddress, RodGarettAddress
 )
-from .file import MultiStorage
+from ._file import MultiStorage
 from .istore import StorageError
 
 
