@@ -93,6 +93,9 @@ class Storage(object):
             for number, etag in eventStore.listIncidents():
                 incident = eventStore.readIncidentWithNumber(number)
 
+                for incidentType in incident.incidentTypes:
+                    self.createIncidentType(incidentType, hidden=True)
+
                 self.createIncident(event, incident)
 
 
@@ -100,8 +103,14 @@ class Storage(object):
         """
         Look up all events in this store.
         """
-        for row in self._db.execute("select NAME from EVENT"):
+        for row in self._db.execute(self._query_events):
             yield row.NAME
+
+    _query_events = dedent(
+        """
+        select NAME from EVENT
+        """
+    )
 
 
     def createEvent(self, name):
@@ -113,7 +122,46 @@ class Storage(object):
 
     _query_createEvent = dedent(
         """
-        insert into EVENT (NAME) values (?)
+        insert or ignore into EVENT (NAME) values (?)
+        """
+    )
+
+
+    def incidentTypes(self, includeHidden=True):
+        """
+        Look up all events in this store.
+        """
+        if includeHidden:
+            query = self._query_incidentTypes
+        else:
+            query = self._query_incidentTypesNotHidden
+
+        for row in self._db.execute(query):
+            yield row.NAME
+
+    _query_incidentTypes = dedent(
+        """
+        select NAME from INCIDENT_TYPE
+        """
+    )
+
+    _query_incidentTypesNotHidden = dedent(
+        """
+        select NAME from INCIDENT_TYPE where HIDDEN = 0
+        """
+    )
+
+
+    def createIncidentType(self, name, hidden=False):
+        """
+        Create an incident type with the given name.
+        """
+        self._db.execute(self._query_createIncidentType, (name, hidden))
+        self._db.commit()
+
+    _query_createIncidentType = dedent(
+        """
+        insert or ignore into INCIDENT_TYPE (NAME, HIDDEN) values (?, ?)
         """
     )
 
@@ -175,6 +223,19 @@ class Storage(object):
                     address.description,
                 )
             )
+
+            for ranger in incident.rangers:
+                self._db.execute(
+                    self._query_attachRanger,
+                    (event, incident.number, ranger.handle)
+                )
+
+            for incidentType in incident.incidentTypes:
+                self._db.execute(
+                    self._query_attachIncidentType,
+                    (event, incident.number, incidentType)
+                )
+
             self._db.commit()
         except Exception:
             self.log.critical(
@@ -202,6 +263,30 @@ class Storage(object):
         values (
             (select ID from EVENT where NAME=?),
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        )
+        """
+    )
+
+    _query_attachRanger = dedent(
+        """
+        insert into INCIDENT__RANGER (
+            EVENT, INCIDENT_NUMBER, RANGER_HANDLE
+        )
+        values (
+            (select ID from EVENT where NAME=?), ?, ?
+        )
+        """
+    )
+
+    _query_attachIncidentType = dedent(
+        """
+        insert into INCIDENT__INCIDENT_TYPE (
+            EVENT, INCIDENT_NUMBER, INCIDENT_TYPE
+        )
+        values (
+            (select ID from EVENT where NAME=?),
+            ?,
+            (select ID from INCIDENT_TYPE where NAME=?)
         )
         """
     )
