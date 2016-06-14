@@ -27,7 +27,9 @@ __all__ = [
 import sys
 
 from textwrap import dedent
-from sqlite3 import connect, Row as LameRow, OperationalError
+from sqlite3 import (
+    connect, Row as LameRow, OperationalError, Error as SQLiteError
+)
 
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
@@ -35,6 +37,7 @@ from twext.python.usage import exit, ExitStatus
 
 from ..data.model import TextOnlyAddress, RodGarettAddress
 from .file import MultiStorage
+from .istore import StorageError
 
 
 
@@ -76,7 +79,10 @@ class Storage(object):
 
     def __init__(self, dbFilePath):
         self.dbFilePath = dbFilePath
-        self._db = openDB(dbFilePath, create=True)
+        try:
+            self._db = openDB(dbFilePath, create=True)
+        except SQLiteError as e:
+            raise StorageError(e)
 
 
     def loadFromFileStore(self, filePath):
@@ -103,8 +109,12 @@ class Storage(object):
         """
         Look up all events in this store.
         """
-        for row in self._db.execute(self._query_events):
-            yield row.NAME
+        try:
+            for row in self._db.execute(self._query_events):
+                yield row.NAME
+        except SQLiteError as e:
+            self.log.critical("Unable to look up events")
+            raise StorageError(e)
 
     _query_events = dedent(
         """
@@ -122,8 +132,12 @@ class Storage(object):
         """
         Create an event with the given name.
         """
-        self._db.execute(self._query_createEvent, (name,))
-        self._db.commit()
+        try:
+            self._db.execute(self._query_createEvent, (name,))
+            self._db.commit()
+        except SQLiteError as e:
+            self.log.critical("Unable to create event")
+            raise StorageError(e)
 
     _query_createEvent = dedent(
         """
@@ -141,8 +155,13 @@ class Storage(object):
         else:
             query = self._query_incidentTypesNotHidden
 
-        for row in self._db.execute(query):
-            yield row.NAME
+        try:
+            for row in self._db.execute(query):
+                yield row.NAME
+        except SQLiteError as e:
+            self.log.critical("Unable to look up incident types")
+            raise StorageError(e)
+
 
     _query_incidentTypes = dedent(
         """
@@ -161,8 +180,12 @@ class Storage(object):
         """
         Create an incident type with the given name.
         """
-        self._db.execute(self._query_createIncidentType, (name, hidden))
-        self._db.commit()
+        try:
+            self._db.execute(self._query_createIncidentType, (name, hidden))
+            self._db.commit()
+        except SQLiteError as e:
+            self.log.critical("Unable to create incident type")
+            raise StorageError(e)
 
     _query_createIncidentType = dedent(
         """
@@ -176,7 +199,11 @@ class Storage(object):
         Look up the ETag for the incident with the given number in the given
         event.
         """
-        self._db.execute(self._query_version, (event, number))
+        try:
+            self._db.execute(self._query_version, (event, number))
+        except SQLiteError as e:
+            self.log.critical("Unable to look up ETag")
+            raise StorageError(e)
 
     _query_version = dedent(
         """
@@ -271,12 +298,12 @@ class Storage(object):
                 cursor.close()
 
             self._db.commit()
-        except Exception:
+        except SQLiteError as e:
             self.log.critical(
                 "Unable to write incident to event {event}: {incident!r}",
                 incident=incident, event=event
             )
-            raise
+            raise StorageError(e)
 
     _query_addIncident = dedent(
         """
