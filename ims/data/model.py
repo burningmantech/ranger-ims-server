@@ -166,6 +166,7 @@ class Incident(object):
         incidentTypes=None,
         reportEntries=None,
         created=None, state=None,
+        version=None
     ):
         """
         @param number: The incident's identifying number.
@@ -194,6 +195,9 @@ class Incident(object):
 
         @param state: The state of the incident.
         @type state: L{IncidentState}
+
+        @param version: The version of the incident.
+        @type version: L{int}
         """
         if type(number) is not int:
             raise InvalidDataError(
@@ -226,6 +230,7 @@ class Incident(object):
         self.reportEntries = reportEntries
         self.created       = created
         self.state         = state
+        self.version       = version
 
 
     def __str__(self):
@@ -241,14 +246,15 @@ class Incident(object):
         return (
             u"{self.__class__.__name__}("
             u"number={self.number!r},"
-            u"rangers={self.rangers!r},"
-            u"location={self.location!r},"
-            u"incidentTypes={self.incidentTypes!r},"
+            u"priority={self.priority!r})"
             u"summary={self.summary!r},"
+            u"location={self.location!r},"
+            u"rangers={self.rangers!r},"
+            u"incidentTypes={self.incidentTypes!r},"
             u"reportEntries={self.reportEntries!r},"
             u"created={self.created!r},"
             u"state={self.state!r},"
-            u"priority={self.priority!r})"
+            u"version={self.version!r})"
             .format(self=self)
         ).encode("utf-8")
 
