@@ -250,6 +250,21 @@ class Storage(object):
                     (event, incident.number, incidentType)
                 )
 
+            for reportEntry in incident.reportEntries:
+                self._db_execute(
+                    self._query_addReportEntry,
+                    (
+                        reportEntry.author.handle,
+                        reportEntry.text,
+                        reportEntry.created,
+                        reportEntry.system_entry,
+                    )
+                )
+                self._db_execute(
+                    self._query_attachReportEntry,
+                    (event, incident.number, NotImplemented)
+                )
+
             self._db.commit()
         except Exception:
             self.log.critical(
@@ -304,6 +319,23 @@ class Storage(object):
             ?,
             (select ID from INCIDENT_TYPE where NAME=?)
         )
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
+
+    _query_addReportEntry = dedent(
+        """
+        insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
+        values (?, ?, ?, ?)
+        """
+    )
+
+    _query_attachReportEntry = dedent(
+        """
+        insert into INCIDENT__REPORT_ENTRY (
+            EVENT, INCIDENT_NUMBER, REPORT_ENTRY
+        )
+        values ({query_eventID}, ?, ?)
         """
         .format(query_eventID=_query_eventID.strip())
     )
