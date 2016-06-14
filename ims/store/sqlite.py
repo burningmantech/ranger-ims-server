@@ -221,49 +221,54 @@ class Storage(object):
                 )
 
         try:
-            self._db.execute(
-                self._query_addIncident, (
-                    event,
-                    incident.number,
-                    1,
-                    incident.priority,
-                    incident.summary,
-                    incident.created,
-                    incident.state.name,
-                    locationName,
-                    address.concentric,
-                    address.radialHour,
-                    address.radialMinute,
-                    address.description,
-                )
-            )
-
-            for ranger in incident.rangers:
-                self._db.execute(
-                    self._query_attachRanger,
-                    (event, incident.number, ranger.handle)
-                )
-
-            for incidentType in incident.incidentTypes:
-                self._db.execute(
-                    self._query_attachIncidentType,
-                    (event, incident.number, incidentType)
-                )
-
-            for reportEntry in incident.reportEntries:
-                self._db_execute(
-                    self._query_addReportEntry,
-                    (
-                        reportEntry.author.handle,
-                        reportEntry.text,
-                        reportEntry.created,
-                        reportEntry.system_entry,
+            cursor = self._db.cursor()
+            try:
+                cursor.execute(
+                    self._query_addIncident, (
+                        event,
+                        incident.number,
+                        1,
+                        incident.priority,
+                        incident.summary,
+                        incident.created,
+                        incident.state.name,
+                        locationName,
+                        address.concentric,
+                        address.radialHour,
+                        address.radialMinute,
+                        address.description,
                     )
                 )
-                self._db_execute(
-                    self._query_attachReportEntry,
-                    (event, incident.number, NotImplemented)
-                )
+
+                for ranger in incident.rangers:
+                    cursor.execute(
+                        self._query_attachRanger,
+                        (event, incident.number, ranger.handle)
+                    )
+
+                for incidentType in incident.incidentTypes:
+                    cursor.execute(
+                        self._query_attachIncidentType,
+                        (event, incident.number, incidentType)
+                    )
+
+                for reportEntry in incident.reportEntries:
+                    cursor.execute(
+                        self._query_addReportEntry,
+                        (
+                            reportEntry.author,
+                            reportEntry.text,
+                            reportEntry.created,
+                            reportEntry.system_entry,
+                        )
+                    )
+                    cursor.execute(
+                        self._query_attachReportEntry,
+                        (event, incident.number, cursor.lastrowid)
+                    )
+
+            finally:
+                cursor.close()
 
             self._db.commit()
         except Exception:
