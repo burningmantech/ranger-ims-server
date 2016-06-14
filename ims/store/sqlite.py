@@ -35,7 +35,9 @@ from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 from twext.python.usage import exit, ExitStatus
 
-from ..data.model import TextOnlyAddress, RodGarettAddress
+from ..data.model import (
+    Incident, IncidentState, Ranger, Location, TextOnlyAddress, RodGarettAddress
+)
 from .file import MultiStorage
 from .istore import StorageError
 
@@ -194,31 +196,135 @@ class Storage(object):
     )
 
 
-    def incidentETag(self, event, number):
-        """
-        Look up the ETag for the incident with the given number in the given
-        event.
-        """
-        try:
-            self._db.execute(self._query_version, (event, number))
-        except SQLiteError as e:
-            self.log.critical("Unable to look up ETag")
-            raise StorageError(e)
+    # def incidentETag(self, event, number):
+    #     """
+    #     Look up the ETag for the incident with the given number in the given
+    #     event.
+    #     """
+    #     try:
+    #         cursor = self._db.execute(self._query_version, (event, number))
+    #         return cursor.fetchone()[0]
+    #     except SQLiteError as e:
+    #         self.log.critical("Unable to look up ETag")
+    #         raise StorageError(e)
 
-    _query_version = dedent(
-        """
-        select VERSION from INCIDENT
-        where EVENT = ({query_eventID}) and NUMBER = ?
-        """
-        .format(query_eventID=_query_eventID.strip())
-    )
+    # _query_version = dedent(
+    #     """
+    #     select VERSION from INCIDENT
+    #     where EVENT = ({query_eventID}) and NUMBER = ?
+    #     """
+    #     .format(query_eventID=_query_eventID.strip())
+    # )
 
 
     def readIncident(self, event, number):
         """
         Look up the incident with the given number in the given event.
         """
-        raise NotImplementedError()
+        cursor = self._db.cursor()
+        try:
+            try:
+                cursor.execute(self._query_incident, (event, number))
+                (
+                    event, number, version, priority, summary, created,
+                    stateName,
+                    locationName,
+                    locationConcentric,
+                    locationRadialHour,
+                    locationRadialMinute,
+                    locationDescription,
+                ) = cursor.fetchone()
+
+                state = IncidentState.lookupByName(stateName)
+
+                cursor.execute(self._query_incident_rangers, (event, number))
+                rangers = (
+                    Ranger(handle=row[0], name=None, status=None)
+                    for row in cursor
+                )
+
+                cursor.execute(self._query_incident_types, (event, number))
+                incidentTypes = (row[0] for row in cursor)
+
+                cursor.execute(
+                    self._query_incident_reportEntries, (event, number)
+                )
+                raise NotImplementedError()
+
+            except SQLiteError as e:
+                self.log.critical("Unable to look up incident")
+                raise StorageError(e)
+        finally:
+            cursor.close()
+
+        location = Location(
+            name=locationName,
+            address=RodGarettAddress(
+                concentric=locationConcentric,
+                radialHour=locationRadialHour,
+                radialMinute=locationRadialMinute,
+                description=locationDescription,
+            ),
+        )
+
+        incident = Incident(
+            number=number,
+            priority=priority,
+            summary=summary,
+            location=location,
+            rangers=rangers,
+            incidentTypes=incidentTypes,
+            reportEntries=None,
+            created=created,
+            state=state,
+        )
+        # Check for issues in stored data; disable if performance an issue
+        incident.validate()
+
+        return incident
+
+    _query_incident = dedent(
+        """
+        select
+            EVENT, NUMBER, VERSION, PRIORITY, SUMMARY, CREATED, STATE,
+            LOCATION_NAME,
+            LOCATION_CONCENTRIC,
+            LOCATION_RADIAL_HOUR,
+            LOCATION_RADIAL_MINUTE,
+            LOCATION_DESCRIPTION
+        from INCIDENT where EVENT = ({query_eventID}) and NUMBER = ?
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
+
+    _query_incident_rangers = dedent(
+        """
+        select RANGER_HANDLE from INCIDENT__RANGER
+        where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
+
+    _query_incident_types = dedent(
+        """
+        select NAME from INCIDENT_TYPE where ID in (
+            select INCIDENT_TYPE from INCIDENT__INCIDENT_TYPE
+            where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
+        )
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
+
+    _query_incident_reportEntries = dedent(
+        """
+        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
+        where ID in (
+            select REPORT_ENTRY from INCIDENT__REPORT_ENTRY
+            where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
+        )
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
 
 
     def createIncident(self, event, incident):
