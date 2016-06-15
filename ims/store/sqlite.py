@@ -327,6 +327,33 @@ class Storage(object):
     )
 
 
+    def _incidentNumbers(self, event):
+        """
+        Look up all incident numbers for the given event.
+        """
+        try:
+            for row in self._db.execute(self._query_incidentNumbers, (event,)):
+                yield row[0]
+        except SQLiteError as e:
+            self.log.critical("Unable to look up incident numbers")
+            raise StorageError(e)
+
+    _query_incidentNumbers = dedent(
+        """
+        select NUMBER from INCIDENT where EVENT = ({query_eventID})
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
+
+
+    def incidents(self, event):
+        """
+        Look up all incidents for the given event.
+        """
+        for number in self._incidentNumbers(event):
+            yield self.incident(event, number)
+
+
     def createIncident(self, event, incident):
         """
         Write the given incident into the given event.
