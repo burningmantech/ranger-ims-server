@@ -310,5 +310,4 @@ class JSONMixIn(object):
                         )
                     )
 
-        # FIXME:STORE ETag
-        return self.noContentResource(request, etag=None)
+        return self.noContentResource(request)
