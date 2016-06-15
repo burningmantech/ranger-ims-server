@@ -227,7 +227,7 @@ class Storage(object):
         """
         try:
             (
-                event, number, version, priority, summary, createdTimestamp,
+                number, version, priority, summary, createdTimestamp,
                 stateName,
                 locationName,
                 locationConcentric,
@@ -310,7 +310,7 @@ class Storage(object):
     _query_incident = dedent(
         """
         select
-            EVENT, NUMBER, VERSION, PRIORITY, SUMMARY, CREATED, STATE,
+            NUMBER, VERSION, PRIORITY, SUMMARY, CREATED, STATE,
             LOCATION_NAME,
             LOCATION_CONCENTRIC,
             LOCATION_RADIAL_HOUR,
