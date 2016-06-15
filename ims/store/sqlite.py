@@ -140,15 +140,15 @@ class Storage(object):
         """
     )
 
-    def createEvent(self, name):
+    def createEvent(self, event):
         """
         Create an event with the given name.
         """
         try:
-            self._db.execute(self._query_createEvent, (name,))
+            self._db.execute(self._query_createEvent, (event,))
             self._db.commit()
         except SQLiteError as e:
-            self.log.critical("Unable to create event")
+            self.log.critical("Unable to create event: {event}", event=event)
             raise StorageError(e)
 
     _query_createEvent = dedent(
@@ -188,15 +188,20 @@ class Storage(object):
     )
 
 
-    def createIncidentType(self, name, hidden=False):
+    def createIncidentType(self, incidentType, hidden=False):
         """
-        Create an incident type with the given name.
+        Create the given incident type.
         """
         try:
-            self._db.execute(self._query_createIncidentType, (name, hidden))
+            self._db.execute(
+                self._query_createIncidentType, (incidentType, hidden)
+            )
             self._db.commit()
         except SQLiteError as e:
-            self.log.critical("Unable to create incident type")
+            self.log.critical(
+                "Unable to create incident type: {incidentType}",
+                incidentType=incidentType
+            )
             raise StorageError(e)
 
     _query_createIncidentType = dedent(
@@ -282,7 +287,10 @@ class Storage(object):
                 )
 
         except SQLiteError as e:
-            self.log.critical("Unable to look up incident")
+            self.log.critical(
+                "Unable to look up incident: {event}:{number}",
+                event=event, number=number
+            )
             raise StorageError(e)
 
         location = Location(
@@ -371,7 +379,10 @@ class Storage(object):
             for row in self._db.execute(self._query_incidentNumbers, (event,)):
                 yield row[0]
         except SQLiteError as e:
-            self.log.critical("Unable to look up incident numbers")
+            self.log.critical(
+                "Unable to look up incident numbers for event: {event}",
+                event=event
+            )
             raise StorageError(e)
 
     _query_incidentNumbers = dedent(
@@ -552,7 +563,11 @@ class Storage(object):
                 self._query_setPriority, (priority, event, number)
             )
         except SQLiteError as e:
-            self.log.critical("Unable to set incident priority")
+            self.log.critical(
+                "Unable to set priority for incident {event}:{number} to "
+                "{priority}",
+                event=event, number=number, priority=priority
+            )
             raise StorageError(e)
 
     _query_setPriority = dedent(
@@ -649,7 +664,10 @@ class Storage(object):
             ):
                 result[streetID] = streetName
         except SQLiteError as e:
-            self.log.critical("Unable to look up events")
+            self.log.critical(
+                "Unable to look up concentric street names for event: {event}",
+                event=event
+            )
             raise StorageError(e)
 
         return result
@@ -673,7 +691,7 @@ class Storage(object):
             )
         except SQLiteError as e:
             self.log.critical(
-                "Unable to concentric street to event {event}: {id}={name!r}",
+                "Unable to concentric street to event {event}: ({id}){name}",
                 event=event, id=id, name=name
             )
             raise StorageError(e)
