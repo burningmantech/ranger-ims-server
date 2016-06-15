@@ -38,7 +38,9 @@ from twext.python.usage import exit, ExitStatus
 
 from ..tz import utc
 from ..data.model import (
-    Incident, IncidentState, Ranger, Location, TextOnlyAddress, RodGarettAddress
+    Incident, IncidentState, Ranger, ReportEntry,
+    Location, TextOnlyAddress, RodGarettAddress,
+    InvalidDataError,
 )
 from ._file import MultiStorage
 from .istore import StorageError
@@ -219,45 +221,57 @@ class Storage(object):
     # )
 
 
-    def readIncident(self, event, number):
+    def incident(self, event, number):
         """
         Look up the incident with the given number in the given event.
         """
-        cursor = self._db.cursor()
         try:
-            try:
-                cursor.execute(self._query_incident, (event, number))
-                (
-                    event, number, version, priority, summary, created,
-                    stateName,
-                    locationName,
-                    locationConcentric,
-                    locationRadialHour,
-                    locationRadialMinute,
-                    locationDescription,
-                ) = cursor.fetchone()
+            (
+                event, number, version, priority, summary, createdTimestamp,
+                stateName,
+                locationName,
+                locationConcentric,
+                locationRadialHour,
+                locationRadialMinute,
+                locationDescription,
+            ) = self._db.execute(
+                self._query_incident, (event, number)
+            ).fetchone()
 
-                state = IncidentState.lookupByName(stateName)
+            created = fromTimeStamp(createdTimestamp)
 
-                cursor.execute(self._query_incident_rangers, (event, number))
-                rangers = (
-                    Ranger(handle=row[0], name=None, status=None)
-                    for row in cursor
+            state = IncidentState.lookupByName(stateName)
+
+            rangers = (
+                Ranger(handle=row[0], name=None, status=None)
+                for row in self._db.execute(
+                    self._query_incident_rangers, (event, number)
+                )
+            )
+
+            incidentTypes = (
+                row[0] for row in self._db.execute(
+                    self._query_incident_types, (event, number)
+                )
+            )
+
+            reportEntries = []
+
+            for author, text, createdTimeStamp, generated in self._db.execute(
+                self._query_incident_reportEntries, (event, number)
+            ):
+                reportEntries.add(
+                    ReportEntry(
+                        auhor=author,
+                        text=text,
+                        created=fromTimeStamp(createdTimestamp),
+                        system_entry=generated,
+                    )
                 )
 
-                cursor.execute(self._query_incident_types, (event, number))
-                incidentTypes = (row[0] for row in cursor)
-
-                cursor.execute(
-                    self._query_incident_reportEntries, (event, number)
-                )
-                raise NotImplementedError()
-
-            except SQLiteError as e:
-                self.log.critical("Unable to look up incident")
-                raise StorageError(e)
-        finally:
-            cursor.close()
+        except SQLiteError as e:
+            self.log.critical("Unable to look up incident")
+            raise StorageError(e)
 
         location = Location(
             name=locationName,
@@ -276,12 +290,20 @@ class Storage(object):
             location=location,
             rangers=rangers,
             incidentTypes=incidentTypes,
-            reportEntries=None,
+            reportEntries=reportEntries,
             created=created,
             state=state,
+            version=version,
         )
         # Check for issues in stored data; disable if performance an issue
-        incident.validate()
+        try:
+            incident.validate()
+        except InvalidDataError as e:
+            self.log.critical(
+                "Invalid incident ({error}): {incident!r}",
+                incident=incident, error=e
+            )
+            raise
 
         return incident
 
