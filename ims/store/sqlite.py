@@ -550,7 +550,7 @@ class Storage(object):
     )
 
 
-    def concentricStreeetsByID(self, event):
+    def concentricStreetsByID(self, event):
         """
         Look up all concentric street names, indexed by ID, IDs for the given
         event.
