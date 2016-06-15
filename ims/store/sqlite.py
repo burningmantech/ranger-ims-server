@@ -260,9 +260,9 @@ class Storage(object):
             for author, text, createdTimeStamp, generated in self._db.execute(
                 self._query_incident_reportEntries, (event, number)
             ):
-                reportEntries.add(
+                reportEntries.append(
                     ReportEntry(
-                        auhor=author,
+                        author=author,
                         text=text,
                         created=fromTimeStamp(createdTimestamp),
                         system_entry=generated,
