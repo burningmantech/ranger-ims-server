@@ -330,7 +330,9 @@ def incidentFromJSON(root, number, validate=True):
         try:
             JSON.lookupByValue(attribute)
         except Exception:
-            raise InvalidDataError("ARGH! Evil Death!")
+            raise InvalidDataError(
+                "Unknown JSON attribute: {}".format(attribute)
+            )
 
     json_number = root.get(JSON.incident_number.value, None)
 
