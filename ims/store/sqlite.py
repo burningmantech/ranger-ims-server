@@ -25,8 +25,9 @@ __all__ = [
 ]
 
 import sys
-
 from textwrap import dedent
+from datetime import datetime as DateTime, timedelta as TimeDelta
+from calendar import timegm
 from sqlite3 import (
     connect, Row as LameRow, OperationalError, Error as SQLiteError
 )
@@ -35,6 +36,7 @@ from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 from twext.python.usage import exit, ExitStatus
 
+from ..tz import utc
 from ..data.model import (
     Incident, IncidentState, Ranger, Location, TextOnlyAddress, RodGarettAddress
 )
@@ -390,7 +392,7 @@ class Storage(object):
                         1,
                         incident.priority,
                         incident.summary,
-                        incident.created,
+                        asTimeStamp(incident.created),
                         incident.state.name,
                         locationName,
                         address.concentric,
@@ -418,7 +420,7 @@ class Storage(object):
                         (
                             reportEntry.author,
                             reportEntry.text,
-                            reportEntry.created,
+                            asTimeStamp(reportEntry.created),
                             reportEntry.system_entry,
                         )
                     )
@@ -658,3 +660,18 @@ class QueryPlanExplanation(object):
             text.extend(u"    {}".format(l.asText()) for l in self.lines)
 
         return u"\n".join(text)
+
+
+
+zeroTimeDelta = TimeDelta(0)
+
+
+def asTimeStamp(datetime):
+    assert datetime.tzinfo is not None
+    assert datetime.tzinfo.utcoffset(datetime) == zeroTimeDelta
+
+    return timegm(datetime.timetuple())
+
+
+def fromTimeStamp(timestamp):
+    return DateTime.fromtimestamp(timestamp, tz=utc)
