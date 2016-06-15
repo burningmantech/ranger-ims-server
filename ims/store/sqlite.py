@@ -705,14 +705,38 @@ class Storage(object):
     )
 
 
+    def _rangerEventAccess(self, event, mode):
+        try:
+            for row in self._db.execute(
+                self._query_rangerEventAccess, (event, mode)
+            ):
+                yield row[0]
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to look up readers for event: {event}", event=event
+            )
+            raise StorageError(e)
+
+    _query_rangerEventAccess = dedent(
+        """
+        select RANGER_HANDLE from RANGER_EVENT_ACCESS
+        where EVENT = ({query_eventID}) and MODE = ?
+        """
+    )
+
+
     def readers(self, event):
-        # FIXME:STORE
-        return ("*",)
+        """
+        Look up Ranger handles of allowed readers for the given event.
+        """
+        return self._rangerEventAccess(event, "read")
 
 
     def writers(self, event):
-        # FIXME:STORE
-        return ("*",)
+        """
+        Look up Ranger handles of allowed writers for the given event.
+        """
+        return self._rangerEventAccess(event, "read")
 
 
     def explainQueryPlans(self):
