@@ -30,7 +30,6 @@ from ..tz import utcNow
 from ..data.model import IncidentState, Incident, ReportEntry
 from ..data.json import JSON, textFromJSON, jsonFromFile
 from ..data.json import rangerAsJSON, incidentAsJSON, incidentFromJSON
-from ..data.edit import editIncident
 from .http import HeaderName, fixedETag
 from .klein import route
 from .urls import URLs
@@ -162,6 +161,7 @@ class JSONMixIn(object):
         # Apply this new incident as changes to an empty incident so that
         # system report entries get added.
         # It also adds the author, so we don't need to do it here.
+        # FIXME:STORE Don't use editIncident
         incident = editIncident(
             Incident(
                 number=incident.number,    # Must match

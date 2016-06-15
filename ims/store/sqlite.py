@@ -688,11 +688,13 @@ class Storage(object):
 
 
     def readers(self, event):
+        # FIXME:STORE
         return ("*",)
 
 
     def writers(self, event):
-        return ()
+        # FIXME:STORE
+        return ("*",)
 
 
     def explainQueryPlans(self):
