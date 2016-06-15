@@ -543,6 +543,99 @@ class Storage(object):
     )
 
 
+    def setIncidentPriority(self, event, number, priority):
+        """
+        Set the priority for the given incident in the given event.
+        """
+        try:
+            self._db.execute(
+                self._query_setPriority, (priority, event, number)
+            )
+        except SQLiteError as e:
+            self.log.critical("Unable to set incident priority")
+            raise StorageError(e)
+
+    _query_setPriority = dedent(
+        """
+        update INCIDENT (PRIORITY) values (?)
+        where EVENT = ({query_eventID}) and NUMBER = ?
+        """
+    )
+
+
+    def setIncidentState(self, event, number, priority):
+        """
+        Set the state for the given incident in the given event.
+        """
+        raise NotImplementedError()
+
+
+    def setIncidentSummary(self, event, number, summary):
+        """
+        Set the summary for the given incident in the given event.
+        """
+        raise NotImplementedError()
+
+
+    def setIncidentLocationName(self, event, number, name):
+        """
+        Set the location name for the given incident in the given event.
+        """
+        raise NotImplementedError()
+
+
+    def setIncidentLocationConcentricStreet(self, event, number, streetID):
+        """
+        Set the location concentric street for the given incident in the given
+        event.
+        """
+        raise NotImplementedError()
+
+
+    def setIncidentLocationRadialHour(self, event, number, hour):
+        """
+        Set the location radial hour for the given incident in the given event.
+        """
+        raise NotImplementedError()
+
+
+    def setIncidentLocationRadialMinute(self, event, number, minute):
+        """
+        Set the location radial minute for the given incident in the given
+        event.
+        """
+        raise NotImplementedError()
+
+
+    def setIncidentLocationDescription(self, event, number, description):
+        """
+        Set the location description for the given incident in the given event.
+        """
+        raise NotImplementedError()
+
+
+    def setIncidentRangers(self, event, number, handles):
+        """
+        Set the rangers attached to the given incident in the given event.
+        """
+        raise NotImplementedError()
+
+
+    def setIncidentTypes(self, event, number, incidentTypes):
+        """
+        Set the incident types attached to the given incident in the given
+        event.
+        """
+        raise NotImplementedError()
+
+
+    def addIncidentReportEntry(self, event, number, reportEntry):
+        """
+        Add a report entry to the given incident in the given event.
+        """
+        raise NotImplementedError()
+
+
     def concentricStreetsByID(self, event):
         """
         Look up all concentric street names, indexed by ID, IDs for the given
