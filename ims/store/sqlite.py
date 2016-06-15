@@ -113,7 +113,7 @@ class Storage(object):
         """
         try:
             for row in self._db.execute(self._query_events):
-                yield row.NAME
+                yield row[0]
         except SQLiteError as e:
             self.log.critical("Unable to look up events")
             raise StorageError(e)
@@ -159,7 +159,7 @@ class Storage(object):
 
         try:
             for row in self._db.execute(query):
-                yield row.NAME
+                yield row[0]
         except SQLiteError as e:
             self.log.critical("Unable to look up incident types")
             raise StorageError(e)
