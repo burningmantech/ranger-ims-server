@@ -90,16 +90,15 @@ class AuthMixIn(object):
 
         if user is not None:
             if event:
-                storage = self.storage[event]
                 uid = user.uid
 
-                writers = set(storage.writers())
+                writers = set(self.storage.writers(event))
 
                 if u"*" in writers or uid in writers:
                     authorizations |= Authorization.readIncidents
                     authorizations |= Authorization.writeIncidents
                 else:
-                    readers = set(storage.readers())
+                    readers = set(self.storage.readers(event))
 
                     if u"*" in readers or uid in readers:
                         authorizations |= Authorization.readIncidents

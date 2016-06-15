@@ -22,7 +22,7 @@ __all__ = [
     "WebMixIn",
 ]
 
-from ..data.json import incidentAsJSON
+from ..data.json import textFromJSON, incidentAsJSON
 from ..data.edit import editIncident
 from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
@@ -133,13 +133,9 @@ class WebMixIn(object):
     def dispatchQueueDataResource(self, request, event):
         self.authorizeRequest(request, event, Authorization.readIncidents)
 
-        storage = self.storage[event]
-
-        incidentNumbers = (number for number, etag in storage.listIncidents())
-
         stream = self.buildJSONArray(
-            storage.readIncidentWithNumberRaw(number).encode("utf-8")
-            for number in incidentNumbers
+            textFromJSON(incidentAsJSON(incident)).encode("utf-8")
+            for incident in self.storage.incidents(event)
         )
 
         return self.jsonStream(request, stream, None)

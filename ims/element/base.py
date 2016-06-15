@@ -186,7 +186,7 @@ class Element(BaseElement):
 
     @renderer
     def _events(self, request, tag, reverse_order=False):
-        events = sorted(event for event in self.service.storage)
+        events = sorted(event for event in self.service.storage.events())
 
         if reverse_order:
             events = reversed(events)

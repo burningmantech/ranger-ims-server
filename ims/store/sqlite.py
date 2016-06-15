@@ -97,11 +97,13 @@ class Storage(object):
         """
         multiStore = MultiStorage(filePath, readOnly=True)
 
+        # Iterate through each event
         for event in multiStore:
             self.createEvent(event)
 
             eventStore = multiStore[event]
 
+            # Load incidents
             for number, etag in eventStore.listIncidents():
                 incident = eventStore.readIncidentWithNumber(number)
 
@@ -226,6 +228,7 @@ class Storage(object):
         Look up the incident with the given number in the given event.
         """
         try:
+            # Fetch incident row
             (
                 number, version, priority, summary, createdTimestamp,
                 stateName,
@@ -238,10 +241,13 @@ class Storage(object):
                 self._query_incident, (event, number)
             ).fetchone()
 
+            # Convert created timestamp to a datetime
             created = fromTimeStamp(createdTimestamp)
 
+            # Turn state ID string into the corresponding constant
             state = IncidentState.lookupByName(stateName)
 
+            # Look up Rangers from join table
             rangers = (
                 Ranger(handle=row[0], name=None, status=None)
                 for row in self._db.execute(
@@ -249,12 +255,14 @@ class Storage(object):
                 )
             )
 
+            # Look up incident types from join table
             incidentTypes = (
                 row[0] for row in self._db.execute(
                     self._query_incident_types, (event, number)
                 )
             )
 
+            # Look up report entries from join table
             reportEntries = []
 
             for author, text, createdTimeStamp, generated in self._db.execute(
@@ -380,10 +388,11 @@ class Storage(object):
 
     def createIncident(self, event, incident):
         """
-        Write the given incident into the given event.
+        Create the given incident into the given event.
         """
         incident.validate()
 
+        # Coerce all location addresses into Rod Garett form
         location = incident.location
 
         if location is None:
@@ -407,6 +416,7 @@ class Storage(object):
         try:
             cursor = self._db.cursor()
             try:
+                # Write incident row, version is 1 because it's a new row
                 cursor.execute(
                     self._query_addIncident, (
                         event,
@@ -424,12 +434,14 @@ class Storage(object):
                     )
                 )
 
+                # Join with Ranger handles
                 for ranger in incident.rangers:
                     cursor.execute(
                         self._query_attachRanger,
                         (event, incident.number, ranger.handle)
                     )
 
+                # Join with incident types
                 for incidentType in incident.incidentTypes:
                     cursor.execute(
                         self._query_attachIncidentType,
@@ -437,6 +449,7 @@ class Storage(object):
                     )
 
                 for reportEntry in incident.reportEntries:
+                    # Create report entry row
                     cursor.execute(
                         self._query_addReportEntry,
                         (
@@ -446,6 +459,7 @@ class Storage(object):
                             reportEntry.system_entry,
                         )
                     )
+                    # Join to incident
                     cursor.execute(
                         self._query_attachReportEntry,
                         (event, incident.number, cursor.lastrowid)

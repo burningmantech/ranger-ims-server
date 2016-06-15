@@ -198,24 +198,10 @@ class JSONMixIn(object):
         except ValueError:
             return self.notFoundResource(request)
 
-        if False:
-            #
-            # This is faster, but doesn't benefit from any cleanup or
-            # validation code, so it's only OK if we know all data in the
-            # store is clean by this server version's standards.
-            #
-            text = self.storage[event].readIncidentWithNumberRaw(number)
-        else:
-            #
-            # This parses the data from the store, validates it, then
-            # re-serializes it.
-            #
-            incident = self.storage[event].readIncidentWithNumber(number)
-            text = textFromJSON(incidentAsJSON(incident))
+        incident = self.storage.incident(event, number)
+        text = textFromJSON(incidentAsJSON(incident))
 
-        etag = self.storage[event].etagForIncidentWithNumber(number)
-
-        return self.jsonBytes(request, text.encode("utf-8"), etag)
+        return self.jsonBytes(request, text.encode("utf-8"), incident.version)
 
 
     @route(URLs.incidentNumberURL.asText(), methods=("POST",))
@@ -229,9 +215,7 @@ class JSONMixIn(object):
 
         author = request.user.uid
 
-        storage = self.storage[event]
-
-        incident = storage.readIncidentWithNumber(number)
+        incident = self.storage.readIncidentWithNumber(event, number)
 
         #
         # Apply the changes requested by the client

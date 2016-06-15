@@ -34,7 +34,7 @@ from twisted.logger import Logger
 
 from ..data.model import IncidentType
 from ..data.json import textFromJSON, jsonFromFile
-from ..store.file import MultiStorage
+from ..store.sqlite import Storage
 from ..dms import DutyManagementSystem, DirectoryService
 
 
@@ -152,6 +152,13 @@ class Configuration (object):
             "Data root: {dataRoot.path}", dataRoot=self.DataRoot
         )
 
+        self.DatabaseFile = filePathFromConfig(
+            "Core", "Database", self.DataRoot, ("db.sqlite",)
+        )
+        self.log.info(
+            "Database: {db.path}", db=self.DatabaseFile
+        )
+
         self.CachedResources = filePathFromConfig(
             "Core", "CachedResources", self.ServerRoot, ("cached",)
         )
@@ -236,7 +243,7 @@ class Configuration (object):
 
         self.directory = DirectoryService(self.dms)
 
-        self.storage = MultiStorage(self.DataRoot)
+        self.storage = Storage(self.DatabaseFile)
 
         self.IncidentTypesJSONBytes = (
             textFromJSON(self.IncidentTypes).encode("utf-8")
