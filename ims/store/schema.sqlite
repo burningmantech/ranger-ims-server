@@ -58,10 +58,10 @@ create table INCIDENT (
     EVENT    integer not null,
     NUMBER   integer not null,
     VERSION  integer not null,
-    PRIORITY integer not null,
-    SUMMARY  text,
     CREATED  integer not null,
+    PRIORITY integer not null,
     STATE    text    not null,
+    SUMMARY  text,
 
     LOCATION_NAME          text,
     LOCATION_CONCENTRIC    integer,
