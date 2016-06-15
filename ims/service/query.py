@@ -20,7 +20,6 @@ URL query.
 
 __all__ = [
     "editsFromQuery",
-    "queryValue",
 ]
 
 from ..data.model import (
@@ -113,28 +112,3 @@ def editsFromQuery(author, number, request):
         reportEntries=reportEntries,
         state=state,
     )
-
-
-def queryValue(request, key, default, no_args_default=None):
-    """
-    Determine the value for a query argument from a request.
-    """
-    attr_name = "ims_qv_{0}".format(key)
-
-    if not hasattr(request, attr_name):
-        if request.args:
-            try:
-                setattr(
-                    request,
-                    attr_name,
-                    request.args.get(key, [default])[-1]
-                )
-            except IndexError:
-                setattr(request, attr_name, default)
-        else:
-            if no_args_default is not None:
-                setattr(request, attr_name, no_args_default)
-            else:
-                setattr(request, attr_name, default)
-
-    return getattr(request, attr_name)
