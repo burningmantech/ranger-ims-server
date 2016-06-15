@@ -23,7 +23,6 @@ __all__ = [
 ]
 
 from ..data.json import textFromJSON, incidentAsJSON
-from ..store.istore import NoSuchIncidentError
 from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
@@ -33,7 +32,6 @@ from .http import fixedETag, HeaderName, ContentType
 from .klein import route
 from .urls import URLs
 from .auth import Authorization
-from .query import applyEditsFromQuery
 
 
 
@@ -155,27 +153,6 @@ class WebMixIn(object):
                 number = int(number)
             except ValueError:
                 return self.notFoundResource(request)
-
-        return IncidentPage(self, event, number)
-
-
-    @route(URLs.viewIncidentNumberURL.asText(), methods=("POST",))
-    def editIncidentPage(self, request, event, number):
-        self.authorizeRequest(
-            request, event,
-            Authorization.readIncidents | Authorization.writeIncidents
-        )
-
-        try:
-            applyEditsFromQuery(
-                storage=self.storage,
-                event=event,
-                number=number,
-                author=request.user.uid,
-                request=request
-            )
-        except NoSuchIncidentError:
-            return self.notFoundResource(request)
 
         return IncidentPage(self, event, number)
 
