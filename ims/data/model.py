@@ -693,6 +693,12 @@ class TextOnlyAddress(Address):
         _validateIsInstance("description", self.description, unicode)
 
 
+    def asRodGarettAddress(self):
+        return RodGarettAddress(
+            description=self.description
+        )
+
+
 
 @total_ordering
 class RodGarettAddress(Address):
@@ -859,3 +865,7 @@ class RodGarettAddress(Address):
                     "Radial minute must be 0-59, not {!r}"
                     .format(self.radialMinute)
                 )
+
+
+    def asRodGarettAddress(self):
+        return self

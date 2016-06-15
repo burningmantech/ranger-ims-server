@@ -39,7 +39,7 @@ from twext.python.usage import exit, ExitStatus
 from ..tz import utc
 from ..data.model import (
     Incident, IncidentState, Ranger, ReportEntry,
-    Location, TextOnlyAddress, RodGarettAddress,
+    Location, RodGarettAddress,
     InvalidDataError,
 )
 from ._file import MultiStorage
@@ -396,7 +396,8 @@ class Storage(object):
         """
         incident.validate()
 
-        # Coerce all location addresses into Rod Garett form
+        # Make sure location name and address are not None.
+        # Coerce all location addresses into Rod Garett form.
         location = incident.location
 
         if location is None:
@@ -406,16 +407,8 @@ class Storage(object):
             locationName = location.name
             if location.address is None:
                 address = RodGarettAddress()
-            elif isinstance(location.address, TextOnlyAddress):
-                address = RodGarettAddress(
-                    description=location.address.description,
-                )
-            elif isinstance(location.address, RodGarettAddress):
-                address = location.address
             else:
-                raise AssertionError(
-                    "Unknown address type: {!r}".format(location.address)
-                )
+                address = location.address.asRodGarettAddress()
 
         try:
             cursor = self._db.cursor()
