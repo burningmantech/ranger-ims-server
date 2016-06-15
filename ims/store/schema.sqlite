@@ -129,8 +129,8 @@ create table ACCESS_MODE (
     primary key (ID)
 );
 
-insert into ACCESS_MODE (ID) values ('read' , 0);
-insert into ACCESS_MODE (ID) values ('write', 0);
+insert into ACCESS_MODE (ID) values ('read' );
+insert into ACCESS_MODE (ID) values ('write');
 
 
 create table RANGER_EVENT_ACCESS (
