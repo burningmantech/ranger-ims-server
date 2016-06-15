@@ -99,6 +99,7 @@ class Storage(object):
 
         # Iterate through each event
         for event in multiStore:
+            self.log.info("Creating event: {event}", event=event)
             self.createEvent(event)
 
             eventStore = multiStore[event]
