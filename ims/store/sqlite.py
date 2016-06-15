@@ -110,10 +110,17 @@ class Storage(object):
                 for incidentType in incident.incidentTypes:
                     self.createIncidentType(incidentType, hidden=True)
 
+                self.log.info(
+                    "Creating incident: {incident}", incident=incident
+                )
                 self.createIncident(event, incident)
 
             # Load concentric street names
             for name, id in eventStore.streetsByName().items():
+                self.log.info(
+                    "Creating concentric street: {event}: {name}",
+                    event=event, name=name
+                )
                 self.createConcentricStreet(event, id, name)
 
 
