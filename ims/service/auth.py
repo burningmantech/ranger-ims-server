@@ -175,7 +175,7 @@ class AuthMixIn(object):
 
                 returnValue(self.redirect(request, location))
 
-        returnValue(self.login(request, failed=True))
+        returnValue((yield self.login(request, failed=True)))
 
 
     @route(URLs.loginURL.asText(), methods=("HEAD", "GET"))
