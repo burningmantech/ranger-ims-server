@@ -508,11 +508,11 @@ class Storage(object):
     )
 
 
-    def readers(self):
+    def readers(self, event):
         return ("*",)
 
 
-    def writers(self):
+    def writers(self, event):
         return ()
 
 
