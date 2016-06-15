@@ -19,32 +19,33 @@ URL query.
 """
 
 __all__ = [
-    "editsFromQuery",
+    "applyEditsFromQuery",
 ]
 
-from ..data.model import (
-    IncidentState, Incident, ReportEntry, Location, RodGarettAddress
-)
+from ..data.model import IncidentState, ReportEntry
+from ..store.istore import NoSuchIncidentError
 
 
 
-def editsFromQuery(author, number, request):
+def applyEditsFromQuery(storage, event, number, author, request):
     """
     Create an incident object that contains changes to apply to an existing
     incident; all of its properties represent updates to apply.
     """
+    try:
+        number = int(number)
+    except ValueError:
+        raise NoSuchIncidentError(number)
+
     if not request.args:
         return None
-
-    priority = summary = location = address = rangers = None
-    incidentTypes = reportEntries = state = None
 
     def get(key, cast, defaultArgs=[]):
         for value in request.args.get(key, defaultArgs):
             return cast(value)
         return None
 
-    def radialHourMinute(radial):
+    def radialHourAndMinute(radial):
         if radial:
             try:
                 hour, minute = radial.split(":")
@@ -61,54 +62,53 @@ def editsFromQuery(author, number, request):
             return None
 
     priority = get("priority", int)
+    if priority is not None:
+        storage.setIncidentPriority(event, number, priority)
+
     state = get("state", IncidentState.lookupByName)
+    if state is not None:
+        storage.setIncidentState(event, number, state)
+
     summary = get("summary", unicode)
+    if summary is not None:
+        storage.setIncidentSummary(event, number, summary)
 
-    location_name = get("location_name", unicode)
-    location_hour, location_minute = get(
-        "location_radial", radialHourMinute, [""]
+    locationName = get("location_name", unicode)
+    if locationName is not None:
+        storage.setIncidentLocationName(event, number, locationName)
+
+    streetID = get("location_concentric", unicode)
+    if streetID is not None:
+        if streetID == "":  # unset this, please
+            streetID = None
+        storage.setIncidentLocationConcentricStreet(event, number, streetID)
+
+    hour, minute = get(
+        "location_radial", radialHourAndMinute, [""]
     )
-    location_concentric = get("location_concentric", concentric)
-    location_description = get("location_description", unicode)
+    if hour is not None:
+        storage.setIncidentLocationRadialHour(event, number, hour)
+    if minute is not None:
+        storage.setIncidentLocationRadialMinute(event, number, minute)
 
-    if (
-        location_hour is not None or
-        location_minute is not None or
-        location_concentric is not None or
-        location_description is not None
-    ):
-        address = RodGarettAddress(
-            radialHour=location_hour,
-            radialMinute=location_minute,
-            concentric=location_concentric,
-            description=location_description,
-        )
+    hour = get("location_radial_hour", int)
+    if hour is not None:
+        storage.setIncidentLocationRadialHour(event, number, hour)
 
-    location = Location(name=location_name, address=address)
+    minute = get("location_radial_minute", int)
+    if minute is not None:
+        storage.setIncidentLocationRadialMinute(event, number, minute)
 
-    # FIXME:
-    rangers
+    description = get("location_description", unicode)
+    if description is not None:
+        storage.setIncidentLocationDescription(event, number, description)
 
-    # FIXME:
-    incidentTypes
-
-    reportEntries = []
+    # FIXME: rangers
+    # FIXME: incidentTypes
 
     for text in request.args.get("report_text", []):
-        reportEntries = (
-            ReportEntry(
-                author=author,
-                text=text.replace("\r\n", "\n").decode("utf-8"),
-            ),
+        reportEntry = ReportEntry(
+            author=author,
+            text=text.replace("\r\n", "\n").decode("utf-8"),
         )
-
-    return Incident(
-        number,
-        priority=priority,
-        summary=summary,
-        location=location,
-        rangers=rangers,
-        incidentTypes=incidentTypes,
-        reportEntries=reportEntries,
-        state=state,
-    )
+        storage.addIncidentReportEntry(event, number, reportEntry)

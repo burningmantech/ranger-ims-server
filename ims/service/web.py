@@ -23,7 +23,7 @@ __all__ = [
 ]
 
 from ..data.json import textFromJSON, incidentAsJSON
-from ..data.edit import editIncident
+from ..store.istore import NoSuchIncidentError
 from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
@@ -33,7 +33,7 @@ from .http import fixedETag, HeaderName, ContentType
 from .klein import route
 from .urls import URLs
 from .auth import Authorization
-from .query import editsFromQuery
+from .query import applyEditsFromQuery
 
 
 
@@ -167,30 +167,15 @@ class WebMixIn(object):
         )
 
         try:
-            number = int(number)
-        except ValueError:
-            return self.notFoundResource(request)
-
-        storage = self.storage[event]
-
-        author = request.user
-        edits = editsFromQuery(author, number, request)
-
-        if edits:
-            incident = storage.readIncidentWithNumber(number)
-            edited = editIncident(incident, edits, author)
-
-            self.log.info(
-                u"User {author} edited incident #{number} via web",
-                author=author, number=number
+            applyEditsFromQuery(
+                storage=self.storage,
+                event=event,
+                number=number,
+                author=request.user.uid,
+                request=request
             )
-            # self.log.debug(
-            #     u"Original: {json}", json=incidentAsJSON(incident)
-            # )
-            self.log.debug(u"Changes: {json}", json=incidentAsJSON(edits))
-            # self.log.debug(u"Edited: {json}", json=incidentAsJSON(edited))
-
-            storage.writeIncident(edited)
+        except NoSuchIncidentError:
+            return self.notFoundResource(request)
 
         return IncidentPage(self, event, number)
 
