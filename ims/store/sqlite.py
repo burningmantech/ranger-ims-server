@@ -559,7 +559,7 @@ class Storage(object):
 
         try:
             for streetID, streetName in (
-                self._db.execute(self._query_concentricStreets)
+                self._db.execute(self._query_concentricStreets, (event,))
             ):
                 result[streetID] = streetName
         except SQLiteError as e:
@@ -571,7 +571,7 @@ class Storage(object):
     _query_concentricStreets = dedent(
         """
         select ID, NAME from CONCENTRIC_STREET
-        where where EVENT = ({query_eventID})
+        where EVENT = ({query_eventID})
         """
         .format(query_eventID=_query_eventID.strip())
     )
