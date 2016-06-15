@@ -22,11 +22,13 @@ __all__ = [
     "JSONMixIn",
 ]
 
+from datetime import datetime as DateTime
+
 from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..tz import utcNow
-from ..data.model import IncidentState, Incident, InvalidDataError
-from ..data.json import textFromJSON, jsonFromFile
+from ..data.model import IncidentState, Incident, ReportEntry
+from ..data.json import JSON, textFromJSON, jsonFromFile
 from ..data.json import rangerAsJSON, incidentAsJSON, incidentFromJSON
 from ..data.edit import editIncident
 from .http import HeaderName, fixedETag
@@ -169,6 +171,7 @@ class JSONMixIn(object):
             author
         )
 
+        # FIXME:STORE
         self.storage[event].writeIncident(incident)
 
         self.log.info(
@@ -213,33 +216,99 @@ class JSONMixIn(object):
         except ValueError:
             return self.notFoundResource(request)
 
-        author = request.user.uid
-
-        incident = self.storage.readIncidentWithNumber(event, number)
-
         #
-        # Apply the changes requested by the client
+        # Get the edits requested by the client
         #
-        jsonEdits = jsonFromFile(request.content)
-        try:
-            edits = incidentFromJSON(jsonEdits, number=number, validate=False)
-        except InvalidDataError as e:
-            return self.badRequestResource(request, e)
-        edited = editIncident(incident, edits, author)
+        edits = jsonFromFile(request.content)
 
-        #
-        # Write to disk
-        #
-        storage.writeIncident(edited)
+        if not isinstance(edits, dict):
+            return self.badRequestResource(
+                request, "JSON incident must be a dictionary"
+            )
 
-        self.log.debug(
-            u"User {author} edited incident #{number} via JSON",
-            author=author, number=number
+        if edits.get(JSON.incident_number.value, number) != number:
+            return self.badRequestResource(
+                request, "Incident number may not be modified"
+            )
+
+        UNSET = object()
+
+        created = edits.get(JSON.incident_created.value, UNSET)
+        if created is not UNSET:
+            return self.badRequestResource(
+                request, "Incident created time may not be modified"
+            )
+
+        def applyEdit(json, key, setter, cast=None):
+            if cast is None:
+                cast = lambda x: x
+            value = json.get(key.value, UNSET)
+            if value is not UNSET:
+                setter(event, number, cast(value))
+
+        storage = self.storage
+
+        applyEdit(edits, JSON.incident_priority, storage.setIncidentPriority)
+
+        applyEdit(
+            edits, JSON.incident_state,
+            storage.setIncidentState, IncidentState.lookupByName
         )
-        # self.log.debug(u"Original: {json}", json=incidentAsJSON(incident))
-        self.log.debug(u"Changes: {json}", json=jsonEdits)
-        # self.log.debug(u"Edited: {json}", json=incidentAsJSON(edited))
 
-        etag = storage.etagForIncidentWithNumber(number)
+        applyEdit(edits, JSON.incident_summary, storage.setIncidentSummary)
 
-        return self.noContentResource(request, etag)
+        location = edits.get(JSON.incident_location.value, UNSET)
+        if location is not UNSET:
+            if location is None:
+                storage.setIncidentLocationName(event, number, None)
+                storage.setIncidentLocationConcentricStreet(event, number, None)
+                storage.setIncidentLocationRadialHour(event, number, None)
+                storage.setIncidentLocationRadialMinute(event, number, None)
+                storage.setIncidentLocationDescription(event, number, None)
+            else:
+                applyEdit(
+                    location, JSON.location_name,
+                    storage.setIncidentLocationName
+                )
+                applyEdit(
+                    location, JSON.location_garett_concentric,
+                    storage.setIncidentLocationConcentricStreet
+                )
+                applyEdit(
+                    location, JSON.location_garett_radial_hour,
+                    storage.setIncidentLocationRadialHour
+                )
+                applyEdit(
+                    location, JSON.location_garett_radial_minute,
+                    storage.setIncidentLocationRadialMinute
+                )
+                applyEdit(
+                    location, JSON.location_garett_description,
+                    storage.setIncidentLocationDescription
+                )
+
+        applyEdit(edits, JSON.ranger_handles, storage.setIncidentRangers)
+
+        applyEdit(edits, JSON.incident_types, storage.setIncidentTypes)
+
+        entries = edits.get(JSON.report_entries.value, UNSET)
+        if entries is not UNSET:
+            author = request.user.uid
+
+            now = DateTime.now()
+
+            for entry in entries:
+                text = entry.get(JSON.entry_text.value, None)
+                if text:
+                    storage.addIncidentReportEntry(
+                        event, number,
+                        ReportEntry(
+                            author=author,
+                            text=text,
+                            created=now,
+                            system_entry=False,
+                        )
+                    )
+
+        # FIXME:STORE ETag
+        return self.noContentResource(request, etag=None)
