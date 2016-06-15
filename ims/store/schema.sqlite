@@ -112,3 +112,12 @@ create table INCIDENT__REPORT_ENTRY (
 
     primary key (EVENT, INCIDENT_NUMBER, REPORT_ENTRY)
 );
+
+
+create table CONCENTRIC_STREET (
+    EVENT integer not null,
+    ID    text    not null,
+    NAME  text    not null,
+
+    primary key (EVENT, ID)
+);

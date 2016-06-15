@@ -112,6 +112,10 @@ class Storage(object):
 
                 self.createIncident(event, incident)
 
+            # Load concentric street names
+            for name, id in eventStore.streetsByName().items():
+                self.createConcentricStreet(event, id, name)
+
 
     def events(self):
         """
@@ -541,6 +545,57 @@ class Storage(object):
         values (
             ({query_eventID}), ?, ?
         )
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
+
+
+    def concentricStreeetsByID(self, event):
+        """
+        Look up all concentric street names, indexed by ID, IDs for the given
+        event.
+        """
+        result = {}
+
+        try:
+            for streetID, streetName in (
+                self._db.execute(self._query_concentricStreets)
+            ):
+                result[streetID] = streetName
+        except SQLiteError as e:
+            self.log.critical("Unable to look up events")
+            raise StorageError(e)
+
+        return result
+
+    _query_concentricStreets = dedent(
+        """
+        select ID, NAME from CONCENTRIC_STREET
+        where where EVENT = ({query_eventID})
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
+
+
+    def createConcentricStreet(self, event, id, name):
+        """
+        Create the given concentric street name and ID into the given event.
+        """
+        try:
+            self._db.execute(
+                self._query_addConcentricStreet, (event, id, name)
+            )
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to concentric street to event {event}: {id}={name!r}",
+                event=event, id=id, name=name
+            )
+            raise StorageError(e)
+
+    _query_addConcentricStreet = dedent(
+        """
+        insert into CONCENTRIC_STREET (EVENT, ID, NAME)
+        values (({query_eventID}), ?, ?)
         """
         .format(query_eventID=_query_eventID.strip())
     )
