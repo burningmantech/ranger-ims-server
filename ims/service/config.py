@@ -24,9 +24,9 @@ __all__ = [
     "Configuration",
 ]
 
+from sys import argv
 from os import getcwd
-from os.path import sep as pathsep
-
+from os.path import sep as pathsep, basename
 from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 
 from twisted.python.filepath import FilePath
@@ -76,6 +76,8 @@ class Configuration (object):
 
 
     def load(self):
+        command = basename(argv[0])
+
         configParser = SafeConfigParser()
 
         def readConfig(configFile):
@@ -178,14 +180,14 @@ class Configuration (object):
         self.log.info("LogFormat: {logFormat}", logFormat=self.LogFormat)
 
         self.LogFile = filePathFromConfig(
-            "Core", "LogFile", self.DataRoot, ("ims_web.log",)
+            "Core", "LogFile", self.DataRoot, ("{}.log".format(command),)
         ).path
         self.log.info(
             "LogFile: {logFile}", logFile=self.LogFile
         )
 
         self.PIDFile = filePathFromConfig(
-            "Core", "PIDFile", self.DataRoot, ("ims_web.pid",)
+            "Core", "PIDFile", self.DataRoot, ("{}.pid".format(command),)
         ).path
         self.log.info(
             "PIDFile: {pidFile}", pidFile=self.PIDFile
