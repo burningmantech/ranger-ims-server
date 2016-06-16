@@ -142,7 +142,9 @@ class Storage(object):
         try:
             self._db.execute(self._query_createEvent, (event,))
             self._db.commit()
+
         except SQLiteError as e:
+            self._db.rollback()
             self.log.critical("Unable to create event: {event}", event=event)
             raise StorageError(e)
 
@@ -192,7 +194,9 @@ class Storage(object):
                 self._query_createIncidentType, (incidentType, hidden)
             )
             self._db.commit()
+
         except SQLiteError as e:
+            self._db.rollback()
             self.log.critical(
                 "Unable to create incident type: {incidentType}",
                 incidentType=incidentType
@@ -472,7 +476,9 @@ class Storage(object):
                 cursor.close()
 
             self._db.commit()
+
         except SQLiteError as e:
+            self._db.rollback()
             self.log.critical(
                 "Unable to write incident to event {event}: {incident!r}",
                 incident=incident, event=event
@@ -557,7 +563,10 @@ class Storage(object):
             self._db.execute(
                 self._query_setPriority, (priority, event, number)
             )
+            self._db.commit()
+
         except SQLiteError as e:
+            self._db.rollback()
             self.log.critical(
                 "Unable to set priority for incident {event}:{number} to "
                 "{priority}",
@@ -684,7 +693,10 @@ class Storage(object):
             self._db.execute(
                 self._query_addConcentricStreet, (event, id, name)
             )
+            self._db.commit()
+
         except SQLiteError as e:
+            self._db.rollback()
             self.log.critical(
                 "Unable to concentric street to event {event}: ({id}){name}",
                 event=event, id=id, name=name
