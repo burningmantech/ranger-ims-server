@@ -124,7 +124,7 @@ class JSONMixIn(object):
         self.authorizeRequest(request, event, Authorization.writeIncidents)
 
         json = jsonFromFile(request.content)
-        incident = incidentFromJSON(json, validate=False)
+        incident = incidentFromJSON(json, number=None, validate=False)
 
         now = utcNow()
         if incident.created is not None and incident.created > now:
