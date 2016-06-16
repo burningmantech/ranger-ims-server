@@ -300,7 +300,7 @@ class ReadOnlyStorage(object):
         try:
             return (uid.strip() for uid in fp.open())
         except (IOError, OSError):
-            self.log.debug("Unable to open ACL: {fp.path}", fp=fp)
+            self.log.warn("Unable to open ACL: {fp.path}", fp=fp)
             return ()
 
 
