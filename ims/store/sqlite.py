@@ -111,6 +111,10 @@ class Storage(object):
                 )
                 self.createConcentricStreet(event, id, name)
 
+            # Load access
+            self.setReaders(event, eventStore.readers())
+            self.setWriters(event, eventStore.writers())
+
 
     def events(self):
         """
