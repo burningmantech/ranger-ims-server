@@ -309,7 +309,7 @@ class ReadOnlyStorage(object):
 
 
     def writers(self):
-        return ()
+        return self._acl(u"writers")
 
 
     def streetsByName(self):
