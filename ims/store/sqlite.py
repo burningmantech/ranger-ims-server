@@ -403,16 +403,32 @@ class Storage(object):
 
     def importIncident(self, event, incident):
         """
-        Create the given incident into the given event.
+        Import the given incident into the given event.
+        The incident number is specified by the given incident, as this is used
+        to import data from an another data store.
         """
         incident.validate()
 
+        self._addIncident(event, incident, self._importIncident)
+
+
+    def createIncident(self, event, incident):
+        """
+        Import the given incident into the given event.
+        The incident number is determined by the database.
+        """
+        incident.validate()
+
+        self._addIncident(event, incident, self._createIncident)
+
+
+    def _addIncident(self, event, incident, addMethod):
         try:
             with self._db as db:
                 cursor = db.cursor()
                 try:
                     # Write incident row
-                    self._importIncident(event, incident, cursor)
+                    addMethod(event, incident, cursor)
 
                     # Join with Ranger handles
                     for ranger in incident.rangers:
@@ -436,7 +452,7 @@ class Storage(object):
 
         except SQLiteError as e:
             self.log.critical(
-                "Unable to write incident to event {event}: {incident!r}",
+                "Unable to import incident to event {event}: {incident!r}",
                 incident=incident, event=event
             )
             raise StorageError(e)
@@ -462,7 +478,9 @@ class Storage(object):
 
     def _importIncident(self, event, incident, cursor):
         """
-        Add the given incident to the given event.
+        Import the given incident to the given event.
+        The incident number is specified by the given incident, as this is used
+        to import data from an another data store.
         This does not attach relational data such as Rangers, incident types,
         and report entries.
         """
@@ -490,6 +508,57 @@ class Storage(object):
         insert into INCIDENT (
             EVENT,
             NUMBER,
+            VERSION,
+            CREATED,
+            PRIORITY,
+            STATE,
+            SUMMARY,
+            LOCATION_NAME,
+            LOCATION_CONCENTRIC,
+            LOCATION_RADIAL_HOUR,
+            LOCATION_RADIAL_MINUTE,
+            LOCATION_DESCRIPTION
+        )
+        values (
+            ({query_eventID}),
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        )
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
+
+
+    def _createIncident(self, event, incident, cursor):
+        """
+        Add the given incident to the given event.
+        The incident number is determined by the database.
+        This does not attach relational data such as Rangers, incident types,
+        and report entries.
+        """
+        assert incident.number is None
+
+        locationName, address = self._coerceLocation(incident.location)
+
+        cursor.execute(
+            self._query_createIncident, (
+                event,
+                1,  # Version is 1 because it's a new row
+                asTimeStamp(incident.created),
+                incident.priority,
+                incident.state.name,
+                incident.summary,
+                locationName,
+                address.concentric,
+                address.radialHour,
+                address.radialMinute,
+                address.description,
+            )
+        )
+
+    _query_createIncident = dedent(
+        """
+        insert into INCIDENT (
+            EVENT,
             VERSION,
             CREATED,
             PRIORITY,
