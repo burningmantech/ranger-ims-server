@@ -78,7 +78,7 @@ script_entry_points = {
     "web"    : ("ims.service.tool", "WebTool.main"),
     "schema" : ("ims.store.sqlite", "Storage.printSchema"),
     "queries": ("ims.store.sqlite", "Storage.printQueries"),
-    "load"   : ("ims.store.sqlite", "Storage.loadFiles"),
+    "load"   : ("ims.service.tool", "DBLoadTool.main"),
 }
 
 for tool, (module, function) in script_entry_points.iteritems():

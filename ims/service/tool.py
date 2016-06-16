@@ -29,6 +29,8 @@ from twext.python.usage import (
     Executable, Options as BaseOptions, exit, ExitStatus
 )
 
+from ..store.istore import StorageError
+from ..store.sqlite import Storage
 from .log import patchCombinedLogFormatter
 from .config import Configuration
 from .service import WebService
@@ -120,3 +122,56 @@ class WebTool(Executable):
         reactor.listenTCP(
             port, Site(service.resource()), interface=host
         )
+
+
+
+class DBLoadTool(Executable):
+    """
+    Incident Management System tool for loading data from a legacy file store
+    into to a database store.
+    """
+
+    log = Logger()
+
+    class Options(BaseOptions, ConfigOptionsMixIn):
+        optFlags = []
+
+        optParameters = []
+
+
+        def __init__(self):
+            BaseOptions.__init__(self)
+            self.opt_log_file("-")
+
+
+        def getSynopsis(self):
+            return "{} datadir [datadir ...]".format(
+                BaseOptions.getSynopsis(self)
+            )
+
+
+        def parseArgs(self, *datadirs):
+            BaseOptions.parseArgs(self)
+            self["fileStores"] = [FilePath(d) for d in datadirs]
+
+
+    def whenRunning(self):
+        try:
+            self.options.initConfig()
+
+            config = self.options["configuration"]
+
+            storage = Storage(config.DatabaseFile)
+
+            for storeFilePath in self.options["fileStores"]:
+                try:
+                    storage.loadFromFileStore(storeFilePath)
+                except StorageError as e:
+                    self.log.critical(
+                        "{error}", store=storeFilePath, error=e
+                    )
+                    break
+
+        finally:
+            from twisted.internet import reactor
+            reactor.stop()

@@ -69,20 +69,6 @@ class Storage(object):
             print()
 
 
-    @classmethod
-    def loadFiles(cls, args=sys.argv):
-        if len(args) < 3:
-            exit(ExitStatus.EX_USAGE, "Too few arguments")
-
-        dbPath     = args[1]
-        storePaths = args[2:]
-
-        storage = cls(FilePath(dbPath))
-
-        for storePath in storePaths:
-            storage.loadFromFileStore(FilePath(storePath))
-
-
     def __init__(self, dbFilePath):
         self.dbFilePath = dbFilePath
         try:
