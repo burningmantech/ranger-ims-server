@@ -459,7 +459,15 @@ class MultiStorage(object):
 
 
     def _events(self):
-        for child in self.path.children():
+        try:
+            children = self.path.children()
+        except UnlistableError:
+            raise StorageError(
+                "Unable to list events in data store: {fp.path}"
+                .format(fp=self.path)
+            )
+
+        for child in children:
             name = child.basename()
 
             if name.startswith("."):
