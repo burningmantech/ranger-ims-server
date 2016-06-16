@@ -751,7 +751,7 @@ class Storage(object):
 
     _query_clearEventAccess = dedent(
         """
-        delete from EVENT_ACCESS;
+        delete from EVENT_ACCESS
         """
     )
 
