@@ -33,7 +33,6 @@ from sqlite3 import (
 
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
-from twext.python.usage import exit, ExitStatus
 
 from ..tz import utc
 from ..data.model import (
