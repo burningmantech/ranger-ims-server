@@ -554,51 +554,75 @@ class Storage(object):
     )
 
 
+    def _setIncidentColumn(self, query, event, number, column, value):
+        try:
+            with self._db as db:
+                db.execute(query, (value, event, number))
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to set {column} for incident {event}:{number} to "
+                "{value}",
+                event=event, number=number, column=column, value=value
+            )
+            raise StorageError(e)
+
+    _queryFormat_setIncidentColumn = dedent(
+        """
+        update INCIDENT set {{column}} = ?
+        where EVENT = ({query_eventID}) and NUMBER = ?
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
+
+
     def setIncidentPriority(self, event, number, priority):
         """
         Set the priority for the given incident in the given event.
         """
-        try:
-            with self._db as db:
-                db.execute(
-                    self._query_setPriority, (priority, event, number)
-                )
+        self._setIncidentColumn(
+            self._query_setIncidentPriority,
+            event, number, "priority", priority
+        )
 
-        except SQLiteError as e:
-            self.log.critical(
-                "Unable to set priority for incident {event}:{number} to "
-                "{priority}",
-                event=event, number=number, priority=priority
-            )
-            raise StorageError(e)
-
-    _query_setPriority = dedent(
-        """
-        update INCIDENT (PRIORITY) values (?)
-        where EVENT = ({query_eventID}) and NUMBER = ?
-        """
-    )
+    _query_setIncidentPriority = _setIncidentColumn.format(column="PRIORITY")
 
 
-    def setIncidentState(self, event, number, priority):
+    def setIncidentState(self, event, number, state):
         """
         Set the state for the given incident in the given event.
         """
-        raise NotImplementedError()
+        self._setIncidentColumn(
+            self._query_setIncidentState,
+            event, number, "state", state
+        )
+
+    _query_setIncidentState = _setIncidentColumn.format(column="STATE")
 
 
     def setIncidentSummary(self, event, number, summary):
         """
         Set the summary for the given incident in the given event.
         """
-        raise NotImplementedError()
+        self._setIncidentColumn(
+            self._query_setIncidentSummary,
+            event, number, "summary", summary
+        )
+
+    _query_setIncidentSummary = _setIncidentColumn.format(column="SUMMARY")
 
 
     def setIncidentLocationName(self, event, number, name):
         """
         Set the location name for the given incident in the given event.
         """
-        raise NotImplementedError()
+        self._setIncidentColumn(
+            self._query_setIncidentLocationName,
+            event, number, "location name", name
+        )
+
+    _query_setIncidentLocationName = _setIncidentColumn.format(
+        column="LOCATION_NAME"
+    )
 
 
     def setIncidentLocationConcentricStreet(self, event, number, streetID):
@@ -606,14 +630,28 @@ class Storage(object):
         Set the location concentric street for the given incident in the given
         event.
         """
-        raise NotImplementedError()
+        self._setIncidentColumn(
+            self._query_setIncidentLocationConcentricStreet,
+            event, number, "location concentric street", streetID
+        )
+
+    _query_setIncidentLocationConcentricStreet = _setIncidentColumn.format(
+        column="LOCATION_CONCENTRIC"
+    )
 
 
     def setIncidentLocationRadialHour(self, event, number, hour):
         """
         Set the location radial hour for the given incident in the given event.
         """
-        raise NotImplementedError()
+        self._setIncidentColumn(
+            self._query_setIncidentLocationRadialHour,
+            event, number, "location radial hour", hour
+        )
+
+    _query_setIncidentLocationRadialHour = _setIncidentColumn.format(
+        column="LOCATION_RADIAL_HOUR"
+    )
 
 
     def setIncidentLocationRadialMinute(self, event, number, minute):
@@ -621,14 +659,28 @@ class Storage(object):
         Set the location radial minute for the given incident in the given
         event.
         """
-        raise NotImplementedError()
+        self._setIncidentColumn(
+            self._query_setIncidentLocationRadialMinute,
+            event, number, "location radial minute", minute
+        )
+
+    _query_setIncidentLocationRadialMinute = _setIncidentColumn.format(
+        column="LOCATION_RADIAL_MINUTE"
+    )
 
 
     def setIncidentLocationDescription(self, event, number, description):
         """
         Set the location description for the given incident in the given event.
         """
-        raise NotImplementedError()
+        self._setIncidentColumn(
+            self._query_setIncidentLocationDescription,
+            event, number, "location description", description
+        )
+
+    _query_setIncidentLocationDescription = _setIncidentColumn.format(
+        column="LOCATION_DESCRIPTION"
+    )
 
 
     def setIncidentRangers(self, event, number, handles):
@@ -806,7 +858,7 @@ class Storage(object):
     def explainQueryPlans(self):
         queries = [
             (getattr(self, k), k[7:])
-            for k in vars(self.__class__).iterkeys()
+            for k in sorted(vars(self.__class__))
             if k.startswith("_query_")
         ]
 
