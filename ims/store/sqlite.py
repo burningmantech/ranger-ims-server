@@ -473,7 +473,7 @@ class Storage(object):
 
         except SQLiteError as e:
             self.log.critical(
-                "Unable to import incident to event {event}: {incident!r}",
+                "Unable to add incident to event {event}: {incident!r}",
                 incident=incident, event=event
             )
             raise StorageError(e)
@@ -563,6 +563,7 @@ class Storage(object):
         cursor.execute(
             self._query_createIncident, (
                 event,
+                event,
                 1,  # Version is 1 because it's a new row
                 asTimeStamp(incident.created),
                 incident.priority,
@@ -580,6 +581,7 @@ class Storage(object):
         """
         insert into INCIDENT (
             EVENT,
+            NUMBER,
             VERSION,
             CREATED,
             PRIORITY,
@@ -593,7 +595,11 @@ class Storage(object):
         )
         values (
             ({query_eventID}),
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            (
+                select max(NUMBER) + 1 or 1 from INCIDENT
+                where EVENT = ({query_eventID})
+            ),
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
         """
         .format(query_eventID=_query_eventID.strip())
