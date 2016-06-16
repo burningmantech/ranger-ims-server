@@ -730,6 +730,7 @@ class Storage(object):
         select RANGER_HANDLE from RANGER_EVENT_ACCESS
         where EVENT = ({query_eventID}) and MODE = ?
         """
+        .format(query_eventID=_query_eventID.strip())
     )
 
 
