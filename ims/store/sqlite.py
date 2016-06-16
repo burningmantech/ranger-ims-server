@@ -34,7 +34,7 @@ from sqlite3 import (
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 
-from ..tz import utc
+from ..tz import utc, utcNow
 from ..data.model import (
     Incident, IncidentState, Ranger, ReportEntry,
     Location, RodGarettAddress,
@@ -414,12 +414,35 @@ class Storage(object):
 
     def createIncident(self, event, incident):
         """
-        Import the given incident into the given event.
-        The incident number is determined by the database.
+        Add the given incident into the given event.
+        The incident number is determined by the database and must not be
+        specified by the given incident.
         """
+        assert incident.number is None
+
+        if incident.state is None:
+            incident.state = IncidentState.new
+
+        if incident.created is None:
+            # No timestamp provided; add one.
+
+            # Right now is a decent default, but if there's a report entry
+            # that's older than now, that's a better pick.
+            created = utcNow()
+            if incident.reportEntries is not None:
+                for entry in incident.reportEntries:
+                    if entry.created < created:
+                        created = entry.created
+
+            incident.created = created
+
         incident.validate()
 
+        # FIXME:STORE Add system report entry
+
         self._addIncident(event, incident, self._createIncident)
+
+        # FIXME:STORE Return incident number
 
 
     def _addIncident(self, event, incident, addMethod):

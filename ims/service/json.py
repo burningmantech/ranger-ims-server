@@ -123,61 +123,23 @@ class JSONMixIn(object):
     def newIncidentResource(self, request, event):
         self.authorizeRequest(request, event, Authorization.writeIncidents)
 
-        # FIXME:STORE
-        number = self.storage[event].nextIncidentNumber()
-
         json = jsonFromFile(request.content)
-        incident = incidentFromJSON(json, number=number, validate=False)
-
-        if incident.state is None:
-            incident.state = IncidentState.new
+        incident = incidentFromJSON(json, validate=False)
 
         now = utcNow()
-
-        if incident.created is None:
-            # No timestamp provided; add one.
-
-            # Right now is a decent default, but if there's a report entry
-            # that's older than now, that's a better pick.
-            created = now
-            if incident.reportEntries is not None:
-                for entry in incident.reportEntries:
-                    if entry.created < created:
-                        created = entry.created
-
-            incident.created = created
-            self.log.info(
-                "Adding created time {created} to new incident #{number}",
-                created=incident.created, number=number
+        if incident.created is not None and incident.created > now:
+            return self.badRequestResource(
+                "Created time {} is in the future. Current time is {}."
+                .format(incident.created, now)
             )
-        else:
-            if incident.created > now:
-                return self.badRequestResource(
-                    "Created time {} is in the future. Current time is {}."
-                    .format(incident.created, now)
-                )
 
         author = request.user.uid
 
-        # Apply this new incident as changes to an empty incident so that
-        # system report entries get added.
-        # It also adds the author, so we don't need to do it here.
-        # FIXME:STORE Don't use editIncident
-        incident = editIncident(
-            Incident(
-                number=incident.number,    # Must match
-                created=incident.created,  # Must match
-            ),
-            incident,
-            author
-        )
-
-        # FIXME:STORE
-        self.storage[event].writeIncident(incident)
+        number = self.storage.createIncident(event, incident)
 
         self.log.info(
-            u"User {author} created new incident #{number} via JSON",
-            author=author, number=number
+            u"User {author} created new incident #{incident.number} via JSON",
+            author=author, incident=incident
         )
         self.log.debug(u"New: {json}", json=incidentAsJSON(incident))
 
