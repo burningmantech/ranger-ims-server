@@ -123,6 +123,7 @@ class JSONMixIn(object):
     def newIncidentResource(self, request, event):
         self.authorizeRequest(request, event, Authorization.writeIncidents)
 
+        # FIXME:STORE
         number = self.storage[event].nextIncidentNumber()
 
         json = jsonFromFile(request.content)
