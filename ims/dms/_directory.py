@@ -74,7 +74,6 @@ class DirectoryService(BaseDirectoryService):
 
         self.dms = dms
         self._personnel = None
-        self.loadRecords()
 
 
     @property

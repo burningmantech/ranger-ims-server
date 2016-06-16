@@ -105,6 +105,7 @@ class WebTool(Executable):
         self.options.initConfig()
 
         config = self.options["configuration"]
+        config.directory.loadRecords()
         service = WebService(config)
 
         host = self.options.get("host", "localhost")
