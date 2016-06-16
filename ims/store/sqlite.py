@@ -24,7 +24,6 @@ __all__ = [
     "Storage"
 ]
 
-import sys
 from textwrap import dedent
 from datetime import datetime as DateTime, timedelta as TimeDelta
 from calendar import timegm
