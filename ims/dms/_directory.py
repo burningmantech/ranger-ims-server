@@ -107,6 +107,8 @@ class DirectoryService(BaseDirectoryService):
             DirectoryRecord(self, ranger) for ranger in personnel
         )
 
+        self.log.info("DMS directory service updated.")
+
         self._personnel = personnel
 
 
