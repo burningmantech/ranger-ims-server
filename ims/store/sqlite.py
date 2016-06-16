@@ -95,6 +95,9 @@ class Storage(object):
         """
         Load data from a legacy file store.
         """
+        self.log.info(
+            "Loading data from file store: {filePath.path}", filePath=filePath
+        )
         multiStore = MultiStorage(filePath, readOnly=True)
 
         # Iterate through each event
