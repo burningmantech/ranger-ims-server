@@ -566,7 +566,7 @@ class Storage(object):
             )
             raise StorageError(e)
 
-    _queryFormat_setIncidentColumn = dedent(
+    _querySetIncidentColumn = dedent(
         """
         update INCIDENT set {{column}} = ?
         where EVENT = ({query_eventID}) and NUMBER = ?
@@ -584,7 +584,9 @@ class Storage(object):
             event, number, "priority", priority
         )
 
-    _query_setIncidentPriority = _setIncidentColumn.format(column="PRIORITY")
+    _query_setIncidentPriority = _querySetIncidentColumn.format(
+        column="PRIORITY"
+    )
 
 
     def setIncidentState(self, event, number, state):
@@ -596,7 +598,9 @@ class Storage(object):
             event, number, "state", state
         )
 
-    _query_setIncidentState = _setIncidentColumn.format(column="STATE")
+    _query_setIncidentState = _querySetIncidentColumn.format(
+        column="STATE"
+    )
 
 
     def setIncidentSummary(self, event, number, summary):
@@ -608,7 +612,9 @@ class Storage(object):
             event, number, "summary", summary
         )
 
-    _query_setIncidentSummary = _setIncidentColumn.format(column="SUMMARY")
+    _query_setIncidentSummary = _querySetIncidentColumn.format(
+        column="SUMMARY"
+    )
 
 
     def setIncidentLocationName(self, event, number, name):
@@ -620,7 +626,7 @@ class Storage(object):
             event, number, "location name", name
         )
 
-    _query_setIncidentLocationName = _setIncidentColumn.format(
+    _query_setIncidentLocationName = _querySetIncidentColumn.format(
         column="LOCATION_NAME"
     )
 
@@ -635,7 +641,7 @@ class Storage(object):
             event, number, "location concentric street", streetID
         )
 
-    _query_setIncidentLocationConcentricStreet = _setIncidentColumn.format(
+    _query_setIncidentLocationConcentricStreet = _querySetIncidentColumn.format(
         column="LOCATION_CONCENTRIC"
     )
 
@@ -649,7 +655,7 @@ class Storage(object):
             event, number, "location radial hour", hour
         )
 
-    _query_setIncidentLocationRadialHour = _setIncidentColumn.format(
+    _query_setIncidentLocationRadialHour = _querySetIncidentColumn.format(
         column="LOCATION_RADIAL_HOUR"
     )
 
@@ -664,7 +670,7 @@ class Storage(object):
             event, number, "location radial minute", minute
         )
 
-    _query_setIncidentLocationRadialMinute = _setIncidentColumn.format(
+    _query_setIncidentLocationRadialMinute = _querySetIncidentColumn.format(
         column="LOCATION_RADIAL_MINUTE"
     )
 
@@ -678,7 +684,7 @@ class Storage(object):
             event, number, "location description", description
         )
 
-    _query_setIncidentLocationDescription = _setIncidentColumn.format(
+    _query_setIncidentLocationDescription = _querySetIncidentColumn.format(
         column="LOCATION_DESCRIPTION"
     )
 
