@@ -35,36 +35,20 @@ from .service import WebService
 
 
 
-class WebTool(Executable):
+class ConfigOptionsMixIn(object):
     """
-    Incident Management System web service command line tool.
+    Mixin for L{Options} which adds options for reading an IMS config file.
     """
 
-    log = Logger()
+    def opt_config(self, path):
+        """
+        Location of configuration file.
+        """
+        self["configFile"] = FilePath(path)
 
 
-    class Options(BaseOptions):
-        optFlags = []
-
-        optParameters = [
-            ["port", "p", 8080, "Port to listen on."],
-        ]
-
-
-        def getSynopsis(self):
-            return "{}".format(
-                BaseOptions.getSynopsis(self)
-            )
-
-
-        def opt_config(self, path):
-            """
-            Location of configuration file.
-            """
-            self["configFile"] = FilePath(path)
-
-
-        def initConfig(self):
+    def initConfig(self):
+        try:
             configFile = self.get("configFile")
 
             if configFile is None:
@@ -80,16 +64,35 @@ class WebTool(Executable):
                     exit(ExitStatus.EX_CONFIG, "Config file not found.")
                 configuration = Configuration(configFile)
 
+            if "logFile" not in self:
+                self.opt_log_file(configuration.LogFile)
+            if "logFormat" not in self:
+                self.opt_log_format(configuration.LogFormat)
+            if "logLevel" not in self:
+                self.opt_log_level(configuration.LogLevel)
+            if "pidFile" not in self:
+                self.opt_pid_file(configuration.PIDFile)
+
             self["configuration"] = configuration
+        except Exception as e:
+            exit(ExitStatus.EX_CONFIG, unicode(e))
 
 
-        def parseArgs(self):
-            BaseOptions.parseArgs(self)
 
-            try:
-                self.initConfig()
-            except Exception as e:
-                exit(ExitStatus.EX_CONFIG, unicode(e))
+class WebTool(Executable):
+    """
+    Incident Management System web service command line tool.
+    """
+
+    log = Logger()
+
+
+    class Options(BaseOptions, ConfigOptionsMixIn):
+        optFlags = []
+
+        optParameters = [
+            ["port", "p", 8080, "Port to listen on."],
+        ]
 
 
     def postOptions(self):
@@ -97,19 +100,10 @@ class WebTool(Executable):
 
         patchCombinedLogFormatter()
 
-        config = self.options["configuration"]
-
-        if "logFile" not in self.options:
-            self.options.opt_log_file(config.LogFile)
-        if "logFormat" not in self.options:
-            self.options.opt_log_format(config.LogFormat)
-        if "logLevel" not in self.options:
-            self.options.opt_log_level(config.LogLevel)
-        if "pidFile" not in self.options:
-            self.options.opt_pid_file(config.PIDFile)
-
 
     def whenRunning(self):
+        self.options.initConfig()
+
         config = self.options["configuration"]
         service = WebService(config)
 
