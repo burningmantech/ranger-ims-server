@@ -102,7 +102,7 @@ class Storage(object):
                 self.log.info(
                     "Creating incident: {incident}", incident=incident
                 )
-                self.createIncident(event, incident)
+                self.importIncident(event, incident)
 
             # Load concentric street names
             for name, id in eventStore.streetsByName().items():
@@ -401,77 +401,34 @@ class Storage(object):
             yield self.incident(event, number)
 
 
-    def createIncident(self, event, incident):
+    def importIncident(self, event, incident):
         """
         Create the given incident into the given event.
         """
         incident.validate()
 
-        # Make sure location name and address are not None.
-        # Coerce all location addresses into Rod Garett form.
-        location = incident.location
-
-        if location is None:
-            locationName = None
-            address = RodGarettAddress()
-        else:
-            locationName = location.name
-            if location.address is None:
-                address = RodGarettAddress()
-            else:
-                address = location.address.asRodGarettAddress()
-
         try:
             with self._db as db:
                 cursor = db.cursor()
                 try:
-                    # Write incident row, version is 1 because it's a new row
-                    cursor.execute(
-                        self._query_addIncident, (
-                            event,
-                            incident.number,
-                            1,
-                            asTimeStamp(incident.created),
-                            incident.priority,
-                            incident.state.name,
-                            incident.summary,
-                            locationName,
-                            address.concentric,
-                            address.radialHour,
-                            address.radialMinute,
-                            address.description,
-                        )
-                    )
+                    # Write incident row
+                    self._importIncident(event, incident, cursor)
 
                     # Join with Ranger handles
                     for ranger in incident.rangers:
-                        cursor.execute(
-                            self._query_attachRanger,
-                            (event, incident.number, ranger.handle)
+                        self._attachRanger(
+                            event, incident.number, ranger.handle, cursor
                         )
 
                     # Join with incident types
                     for incidentType in incident.incidentTypes:
-                        cursor.execute(
-                            self._query_attachIncidentType,
-                            (event, incident.number, incidentType)
+                        self._attachIncidentType(
+                            event, incident.number, incidentType, cursor
                         )
 
                     for reportEntry in incident.reportEntries:
-                        # Create report entry row
-                        cursor.execute(
-                            self._query_addReportEntry,
-                            (
-                                reportEntry.author,
-                                reportEntry.text,
-                                asTimeStamp(reportEntry.created),
-                                reportEntry.system_entry,
-                            )
-                        )
-                        # Join to incident
-                        cursor.execute(
-                            self._query_attachReportEntry,
-                            (event, incident.number, cursor.lastrowid)
+                        self._addAndAttachReportEntry(
+                            event, incident.number, reportEntry, cursor
                         )
 
                 finally:
@@ -484,7 +441,51 @@ class Storage(object):
             )
             raise StorageError(e)
 
-    _query_addIncident = dedent(
+
+    @staticmethod
+    def _coerceLocation(location):
+        # Make sure location name and address are not None.
+        # Coerce all location addresses into Rod Garett form.
+
+        if location is None:
+            locationName = None
+            address = RodGarettAddress()
+        else:
+            locationName = location.name
+            if location.address is None:
+                address = RodGarettAddress()
+            else:
+                address = location.address.asRodGarettAddress()
+
+        return (locationName, address)
+
+
+    def _importIncident(self, event, incident, cursor):
+        """
+        Add the given incident to the given event.
+        This does not attach relational data such as Rangers, incident types,
+        and report entries.
+        """
+        locationName, address = self._coerceLocation(incident.location)
+
+        cursor.execute(
+            self._query_importIncident, (
+                event,
+                incident.number,
+                1,  # Version is 1 because it's a new row
+                asTimeStamp(incident.created),
+                incident.priority,
+                incident.state.name,
+                incident.summary,
+                locationName,
+                address.concentric,
+                address.radialHour,
+                address.radialMinute,
+                address.description,
+            )
+        )
+
+    _query_importIncident = dedent(
         """
         insert into INCIDENT (
             EVENT,
@@ -508,6 +509,14 @@ class Storage(object):
         .format(query_eventID=_query_eventID.strip())
     )
 
+
+    def _attachRanger(self, event, number, rangerHandle, cursor):
+        """
+        Attach the given Ranger to the incident with the given number in the
+        given event.
+        """
+        cursor.execute(self._query_attachRanger, (event, number, rangerHandle))
+
     _query_attachRanger = dedent(
         """
         insert into INCIDENT__RANGER (
@@ -519,6 +528,16 @@ class Storage(object):
         """
         .format(query_eventID=_query_eventID.strip())
     )
+
+
+    def _attachIncidentType(self, event, number, incidentType, cursor):
+        """
+        Attach the given incident type to the incident with the given number in
+        the given event.
+        """
+        cursor.execute(
+            self._query_attachIncidentType, (event, number, incidentType)
+        )
 
     _query_attachIncidentType = dedent(
         """
@@ -533,6 +552,28 @@ class Storage(object):
         """
         .format(query_eventID=_query_eventID.strip())
     )
+
+
+    def _addAndAttachReportEntry(self, event, number, reportEntry, cursor):
+        """
+        Attach the given report entry to the incident with the given number in
+        the given event.
+        """
+        # Create report entry row
+        cursor.execute(
+            self._query_addReportEntry,
+            (
+                reportEntry.author,
+                reportEntry.text,
+                asTimeStamp(reportEntry.created),
+                reportEntry.system_entry,
+            )
+        )
+        # Join to incident
+        cursor.execute(
+            self._query_attachReportEntry,
+            (event, number, cursor.lastrowid)
+        )
 
     _query_addReportEntry = dedent(
         """
