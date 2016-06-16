@@ -71,6 +71,7 @@ class Storage(object):
         self.dbFilePath = dbFilePath
         try:
             self._db = openDB(dbFilePath, create=True)
+            self._db.execute("pragma foreign_keys = ON")
         except SQLiteError as e:
             raise StorageError(e)
 
