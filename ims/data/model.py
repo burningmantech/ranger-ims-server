@@ -199,17 +199,18 @@ class Incident(object):
         @param version: The version of the incident.
         @type version: L{int}
         """
-        if type(number) is not int:
-            raise InvalidDataError(
-                "Incident number must be an int, not "
-                "({n.__class__.__name__}){n}"
-                .format(n=number)
-            )
+        if number is not None:
+            if type(number) is not int:
+                raise InvalidDataError(
+                    "Incident number must be an int, not "
+                    "({n.__class__.__name__}){n}"
+                    .format(n=number)
+                )
 
-        if number < 0:
-            raise InvalidDataError(
-                "Incident number must be whole, not {n}".format(n=number)
-            )
+            if number < 0:
+                raise InvalidDataError(
+                    "Incident number must be whole, not {n}".format(n=number)
+                )
 
         if rangers is not None:
             rangers = frozenset(rangers)
@@ -305,12 +306,33 @@ class Incident(object):
         return ""
 
 
-    def validate(self):
+    def validate(self, noneNumber=False):
         """
         Validate this incident.
 
         @raise: L{InvalidDataError} if the incident does not validate.
         """
+        number = self.number
+
+        if noneNumber:
+            if number is not None:
+                raise InvalidDataError("Incident number must be None")
+        else:
+            raise InvalidDataError("Incident number may not be None")
+
+        if number is not None:
+            if type(number) is not int:
+                raise InvalidDataError(
+                    "Incident number must be an int, not "
+                    "({n.__class__.__name__}){n}"
+                    .format(n=number)
+                )
+
+            if number < 0:
+                raise InvalidDataError(
+                    "Incident number must be whole, not {n}".format(n=number)
+                )
+
         if self.rangers is not None:
             for ranger in self.rangers:
                 _validateIsInstance("Ranger", ranger, Ranger, recurse=True)
