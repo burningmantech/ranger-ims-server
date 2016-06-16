@@ -123,7 +123,7 @@ class Storage(object):
         """
         try:
             for row in self._db.execute(self._query_events):
-                yield row[0]
+                yield row["name"]
         except SQLiteError as e:
             self.log.critical("Unable to look up events")
             raise StorageError(e)
@@ -169,7 +169,7 @@ class Storage(object):
 
         try:
             for row in self._db.execute(query):
-                yield row[0]
+                yield row["NAME"]
         except SQLiteError as e:
             self.log.critical("Unable to look up incident types")
             raise StorageError(e)
@@ -258,7 +258,7 @@ class Storage(object):
 
             # Look up Rangers from join table
             rangers = (
-                Ranger(handle=row[0], name=None, status=None)
+                Ranger(handle=row["RANGER_HANDLE"], name=None, status=None)
                 for row in self._db.execute(
                     self._query_incident_rangers, (event, number)
                 )
@@ -266,7 +266,7 @@ class Storage(object):
 
             # Look up incident types from join table
             incidentTypes = (
-                row[0] for row in self._db.execute(
+                row["NAME"] for row in self._db.execute(
                     self._query_incident_types, (event, number)
                 )
             )
@@ -377,7 +377,7 @@ class Storage(object):
         """
         try:
             for row in self._db.execute(self._query_incidentNumbers, (event,)):
-                yield row[0]
+                yield row["NUMBER"]
         except SQLiteError as e:
             self.log.critical(
                 "Unable to look up incident numbers for event: {event}",
@@ -771,7 +771,7 @@ class Storage(object):
             for row in self._db.execute(
                 self._query_eventAccess, (event, mode)
             ):
-                yield row[0]
+                yield row["EXPRESSION"]
         except SQLiteError as e:
             self.log.critical(
                 "Unable to look up {mode} access for event: {event}",
