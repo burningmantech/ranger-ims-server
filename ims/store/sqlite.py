@@ -734,7 +734,11 @@ class Storage(object):
             with self._db as db:
                 cursor = db.cursor()
                 try:
-                    cursor.execute(self._query_clearEventAccess)
+                    self.log.info(
+                        "Clearing access: {event} {mode}",
+                        event=event, mode=mode
+                    )
+                    cursor.execute(self._query_clearEventAccess, (event, mode))
                     for expression in expressions:
                         self.log.info(
                             "Adding access: {event} {mode} {expression}",
@@ -756,7 +760,9 @@ class Storage(object):
     _query_clearEventAccess = dedent(
         """
         delete from EVENT_ACCESS
+        where EVENT = ({query_eventID}) and MODE = ?
         """
+        .format(query_eventID=_query_eventID.strip())
     )
 
     _query_addEventAccess = dedent(
