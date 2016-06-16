@@ -746,7 +746,7 @@ class Storage(object):
                         )
                         cursor.execute(
                             self._query_addEventAccess,
-                            (event, mode, expression)
+                            (event, expression, mode)
                         )
                 finally:
                     cursor.close()
