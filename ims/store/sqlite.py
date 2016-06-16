@@ -736,8 +736,8 @@ class Storage(object):
                 try:
                     cursor.execute(self._query_clearEventAccess)
                     for expression in expressions:
-                        self.log.critical(
-                            "Access: {event} {mode} {expression}",
+                        self.log.info(
+                            "Adding access: {event} {mode} {expression}",
                             event=event, mode=mode, expression=expression
                         )
                         cursor.execute(
