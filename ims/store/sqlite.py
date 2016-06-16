@@ -452,21 +452,24 @@ class Storage(object):
                     addMethod(event, incident, cursor)
 
                     # Join with Ranger handles
-                    for ranger in incident.rangers:
-                        self._attachRanger(
-                            event, incident.number, ranger.handle, cursor
-                        )
+                    if incident.rangers is not None:
+                        for ranger in incident.rangers:
+                            self._attachRanger(
+                                event, incident.number, ranger.handle, cursor
+                            )
 
                     # Join with incident types
-                    for incidentType in incident.incidentTypes:
-                        self._attachIncidentType(
-                            event, incident.number, incidentType, cursor
-                        )
+                    if incident.incidentTypes is not None:
+                        for incidentType in incident.incidentTypes:
+                            self._attachIncidentType(
+                                event, incident.number, incidentType, cursor
+                            )
 
-                    for reportEntry in incident.reportEntries:
-                        self._addAndAttachReportEntry(
-                            event, incident.number, reportEntry, cursor
-                        )
+                    if incident.reportEntries is not None:
+                        for reportEntry in incident.reportEntries:
+                            self._addAndAttachReportEntry(
+                                event, incident.number, reportEntry, cursor
+                            )
 
                 finally:
                     cursor.close()
