@@ -133,13 +133,13 @@ insert into ACCESS_MODE (ID) values ('read' );
 insert into ACCESS_MODE (ID) values ('write');
 
 
-create table RANGER_EVENT_ACCESS (
-    EVENT          integer not null,
-    RANGER_HANDLE  text    not null,
-    MODE           text    not null,
+create table EVENT_ACCESS (
+    EVENT      integer not null,
+    EXPRESSION text    not null,
+    MODE       text    not null,
 
     foreign key (EVENT) references EVENT(ID),
     foreign key (MODE) references ACCESS_MODE(ID),
 
-    primary key (EVENT, RANGER_HANDLE)
+    primary key (EVENT, EXPRESSION)
 );

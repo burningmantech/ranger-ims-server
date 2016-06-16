@@ -140,11 +140,9 @@ class Storage(object):
         Create an event with the given name.
         """
         try:
-            self._db.execute(self._query_createEvent, (event,))
-            self._db.commit()
-
+            with self._db as db:
+                db.execute(self._query_createEvent, (event,))
         except SQLiteError as e:
-            self._db.rollback()
             self.log.critical("Unable to create event: {event}", event=event)
             raise StorageError(e)
 
@@ -190,13 +188,11 @@ class Storage(object):
         Create the given incident type.
         """
         try:
-            self._db.execute(
-                self._query_createIncidentType, (incidentType, hidden)
-            )
-            self._db.commit()
-
+            with self._db as db:
+                db.execute(
+                    self._query_createIncidentType, (incidentType, hidden)
+                )
         except SQLiteError as e:
-            self._db.rollback()
             self.log.critical(
                 "Unable to create incident type: {incidentType}",
                 incidentType=incidentType
@@ -421,64 +417,62 @@ class Storage(object):
                 address = location.address.asRodGarettAddress()
 
         try:
-            cursor = self._db.cursor()
-            try:
-                # Write incident row, version is 1 because it's a new row
-                cursor.execute(
-                    self._query_addIncident, (
-                        event,
-                        incident.number,
-                        1,
-                        asTimeStamp(incident.created),
-                        incident.priority,
-                        incident.state.name,
-                        incident.summary,
-                        locationName,
-                        address.concentric,
-                        address.radialHour,
-                        address.radialMinute,
-                        address.description,
-                    )
-                )
-
-                # Join with Ranger handles
-                for ranger in incident.rangers:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    # Write incident row, version is 1 because it's a new row
                     cursor.execute(
-                        self._query_attachRanger,
-                        (event, incident.number, ranger.handle)
-                    )
-
-                # Join with incident types
-                for incidentType in incident.incidentTypes:
-                    cursor.execute(
-                        self._query_attachIncidentType,
-                        (event, incident.number, incidentType)
-                    )
-
-                for reportEntry in incident.reportEntries:
-                    # Create report entry row
-                    cursor.execute(
-                        self._query_addReportEntry,
-                        (
-                            reportEntry.author,
-                            reportEntry.text,
-                            asTimeStamp(reportEntry.created),
-                            reportEntry.system_entry,
+                        self._query_addIncident, (
+                            event,
+                            incident.number,
+                            1,
+                            asTimeStamp(incident.created),
+                            incident.priority,
+                            incident.state.name,
+                            incident.summary,
+                            locationName,
+                            address.concentric,
+                            address.radialHour,
+                            address.radialMinute,
+                            address.description,
                         )
                     )
-                    # Join to incident
-                    cursor.execute(
-                        self._query_attachReportEntry,
-                        (event, incident.number, cursor.lastrowid)
-                    )
 
-            finally:
-                cursor.close()
+                    # Join with Ranger handles
+                    for ranger in incident.rangers:
+                        cursor.execute(
+                            self._query_attachRanger,
+                            (event, incident.number, ranger.handle)
+                        )
 
-            self._db.commit()
+                    # Join with incident types
+                    for incidentType in incident.incidentTypes:
+                        cursor.execute(
+                            self._query_attachIncidentType,
+                            (event, incident.number, incidentType)
+                        )
+
+                    for reportEntry in incident.reportEntries:
+                        # Create report entry row
+                        cursor.execute(
+                            self._query_addReportEntry,
+                            (
+                                reportEntry.author,
+                                reportEntry.text,
+                                asTimeStamp(reportEntry.created),
+                                reportEntry.system_entry,
+                            )
+                        )
+                        # Join to incident
+                        cursor.execute(
+                            self._query_attachReportEntry,
+                            (event, incident.number, cursor.lastrowid)
+                        )
+
+                finally:
+                    cursor.close()
 
         except SQLiteError as e:
-            self._db.rollback()
             self.log.critical(
                 "Unable to write incident to event {event}: {incident!r}",
                 incident=incident, event=event
@@ -560,13 +554,12 @@ class Storage(object):
         Set the priority for the given incident in the given event.
         """
         try:
-            self._db.execute(
-                self._query_setPriority, (priority, event, number)
-            )
-            self._db.commit()
+            with self._db as db:
+                db.execute(
+                    self._query_setPriority, (priority, event, number)
+                )
 
         except SQLiteError as e:
-            self._db.rollback()
             self.log.critical(
                 "Unable to set priority for incident {event}:{number} to "
                 "{priority}",
@@ -690,13 +683,11 @@ class Storage(object):
         Create the given concentric street name and ID into the given event.
         """
         try:
-            self._db.execute(
-                self._query_addConcentricStreet, (event, id, name)
-            )
-            self._db.commit()
-
+            with self._db as db:
+                db.execute(
+                    self._query_addConcentricStreet, (event, id, name)
+                )
         except SQLiteError as e:
-            self._db.rollback()
             self.log.critical(
                 "Unable to concentric street to event {event}: ({id}){name}",
                 event=event, id=id, name=name
@@ -712,22 +703,62 @@ class Storage(object):
     )
 
 
-    def _rangerEventAccess(self, event, mode):
+    def _eventAccess(self, event, mode):
         try:
             for row in self._db.execute(
-                self._query_rangerEventAccess, (event, mode)
+                self._query_eventAccess, (event, mode)
             ):
                 yield row[0]
         except SQLiteError as e:
             self.log.critical(
-                "Unable to look up readers for event: {event}", event=event
+                "Unable to look up {mode} access for event: {event}",
+                event=event, mode=mode
             )
             raise StorageError(e)
 
-    _query_rangerEventAccess = dedent(
+    _query_eventAccess = dedent(
         """
-        select RANGER_HANDLE from RANGER_EVENT_ACCESS
+        select EXPRESSION from EVENT_ACCESS
         where EVENT = ({query_eventID}) and MODE = ?
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
+
+
+    def _setEventAccess(self, event, mode, expressions):
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(self._query_clearEventAccess)
+                    for expression in expressions:
+                        self.log.critical(
+                            "Access: {event} {mode} {expression}",
+                            event=event, mode=mode, expression=expression
+                        )
+                        cursor.execute(
+                            self._query_addEventAccess,
+                            (event, mode, expression)
+                        )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to set {mode} access for event: {event}",
+                event=event, mode=mode, expressions=expressions
+            )
+            raise StorageError(e)
+
+    _query_clearEventAccess = dedent(
+        """
+        delete from EVENT_ACCESS;
+        """
+    )
+
+    _query_addEventAccess = dedent(
+        """
+        insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)
+        values (({query_eventID}), ?, ?)
         """
         .format(query_eventID=_query_eventID.strip())
     )
@@ -735,16 +766,30 @@ class Storage(object):
 
     def readers(self, event):
         """
-        Look up Ranger handles of allowed readers for the given event.
+        Look up the allowed readers for the given event.
         """
-        return self._rangerEventAccess(event, "read")
+        return self._eventAccess(event, "read")
+
+
+    def setReaders(self, event, readers):
+        """
+        Set the allowed readers for the given event.
+        """
+        return self._setEventAccess(event, "read", readers)
 
 
     def writers(self, event):
         """
-        Look up Ranger handles of allowed writers for the given event.
+        Look up the allowed writers for the given event.
         """
-        return self._rangerEventAccess(event, "read")
+        return self._eventAccess(event, "write")
+
+
+    def setWriters(self, event, writers):
+        """
+        Set the allowed writers for the given event.
+        """
+        return self._setEventAccess(event, "write", writers)
 
 
     def explainQueryPlans(self):
