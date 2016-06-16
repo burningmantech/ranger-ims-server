@@ -418,8 +418,6 @@ class Storage(object):
         The incident number is determined by the database and must not be
         specified by the given incident.
         """
-        assert incident.number is None
-
         if incident.state is None:
             incident.state = IncidentState.new
 
@@ -436,7 +434,7 @@ class Storage(object):
 
             incident.created = created
 
-        incident.validate()
+        incident.validate(noneNumber=True)
 
         # FIXME:STORE Add system report entry
 
