@@ -6,7 +6,9 @@
 Time zone utilities.
 """
 
-from datetime import datetime, timedelta, tzinfo
+from datetime import (
+    datetime as DateTime, timedelta as TimeDelta, tzinfo as TZInfo
+)
 
 __all__ = [
     "FixedOffsetTimeZone",
@@ -16,14 +18,14 @@ __all__ = [
 
 
 
-class FixedOffsetTimeZone(tzinfo):
+class FixedOffsetTimeZone(TZInfo):
     """
     Represents a fixed timezone offset (without daylight saving time).
 
     @ivar name: A L{str} giving the name of this timezone; the name just
         includes how much time this offset represents.
 
-    @ivar offset: A L{timedelta} giving the amount of time this timezone is
+    @ivar offset: A L{TimeDelta} giving the amount of time this timezone is
         offset.
     """
 
@@ -32,7 +34,7 @@ class FixedOffsetTimeZone(tzinfo):
         Construct a L{FixedOffsetTimeZone} with a fixed offset.
 
         @param offset: a delta representing the offset from UTC.
-        @type offset: L{timedelta}
+        @type offset: L{TimeDelta}
 
         @param name: A name to be given for this timezone.
         @type name: L{str} or L{NoneType}
@@ -72,7 +74,7 @@ class FixedOffsetTimeZone(tzinfo):
             minutes = -minutes
         elif sign != "+":
             raise ValueError("Invalid sign for timezone %r" % (sign,))
-        return cls(timedelta(hours=hours, minutes=minutes), name)
+        return cls(TimeDelta(hours=hours, minutes=minutes), name)
 
 
     @classmethod
@@ -88,8 +90,8 @@ class FixedOffsetTimeZone(tzinfo):
         @rtype: L{FixedOffsetTimeZone}
         """
         offset = (
-            datetime.fromtimestamp(timeStamp) -
-            datetime.utcfromtimestamp(timeStamp)
+            DateTime.fromtimestamp(timeStamp) -
+            DateTime.utcfromtimestamp(timeStamp)
         )
         return cls(offset)
 
@@ -103,10 +105,10 @@ class FixedOffsetTimeZone(tzinfo):
 
     def dst(self, dt):
         """
-        Return a zero C{datetime.timedelta} for the daylight saving time
-        offset, since there is never one.
+        Return a zero L{TimeDelta} for the daylight saving time offset, since
+        there is never one.
         """
-        return timedelta(0)
+        return TimeDelta(0)
 
 
     def tzname(self, dt):
@@ -116,7 +118,7 @@ class FixedOffsetTimeZone(tzinfo):
         if self.name is not None:
             return self.name
         # XXX this is wrong; the tests are
-        dt = datetime.fromtimestamp(0, self)
+        dt = DateTime.fromtimestamp(0, self)
         return dt.strftime("UTC%z")
 
 
@@ -129,4 +131,4 @@ def utcNow():
     """
     Compute current time in UTC timezone.
     """
-    return datetime.utcnow().replace(tzinfo=utc)
+    return DateTime.utcnow().replace(tzinfo=utc)
