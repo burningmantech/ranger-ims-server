@@ -199,19 +199,6 @@ class Incident(object):
         @param version: The version of the incident.
         @type version: L{int}
         """
-        if number is not None:
-            if type(number) is not int:
-                raise InvalidDataError(
-                    "Incident number must be an int, not "
-                    "({n.__class__.__name__}){n}"
-                    .format(n=number)
-                )
-
-            if number < 0:
-                raise InvalidDataError(
-                    "Incident number must be whole, not {n}".format(n=number)
-                )
-
         if rangers is not None:
             rangers = frozenset(rangers)
 
