@@ -708,7 +708,7 @@ class Storage(object):
         """
         self._setIncidentColumn(
             self._query_setIncidentState,
-            event, number, "state", state
+            event, number, "state", state.name
         )
 
     _query_setIncidentState = _querySetIncidentColumn.format(
