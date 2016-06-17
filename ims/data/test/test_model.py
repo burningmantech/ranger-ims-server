@@ -153,14 +153,15 @@ class IncidentTests(unittest.TestCase):
             repr(incident),
             "{i.__class__.__name__}("
             "number={i.number!r},"
-            "rangers={i.rangers!r},"
-            "location={i.location!r},"
-            "incidentTypes={i.incidentTypes!r},"
+            "priority={i.priority!r},"
             "summary={i.summary!r},"
+            "location={i.location!r},"
+            "rangers={i.rangers!r},"
+            "incidentTypes={i.incidentTypes!r},"
             "reportEntries={i.reportEntries!r},"
             "created={i.created!r},"
             "state={i.state!r},"
-            "priority={i.priority!r})"
+            "version={i.version!r})"
             .format(i=incident)
         )
 
