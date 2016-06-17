@@ -22,8 +22,6 @@ __all__ = [
     "JSONMixIn",
 ]
 
-from datetime import datetime as DateTime
-
 from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..tz import utcNow
