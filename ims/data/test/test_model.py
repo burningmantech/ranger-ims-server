@@ -116,13 +116,6 @@ class IncidentTests(unittest.TestCase):
         self.assertEquals(incident.priority, None)
 
 
-    def test_init_numberNotWhole(self):
-        """
-        L{Incident.__init__} with non-whole C{number}.
-        """
-        self.assertRaises(InvalidDataError, Incident, number=-1)
-
-
     def test_init_sortedEntries(self):
         """
         L{Incident.reportEntries} is sorted.
