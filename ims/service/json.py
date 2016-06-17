@@ -27,7 +27,7 @@ from datetime import datetime as DateTime
 from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..tz import utcNow
-from ..data.model import IncidentState, Incident, ReportEntry
+from ..data.model import IncidentState, ReportEntry
 from ..data.json import JSON, textFromJSON, jsonFromFile
 from ..data.json import rangerAsJSON, incidentAsJSON, incidentFromJSON
 from .http import HeaderName, fixedETag
