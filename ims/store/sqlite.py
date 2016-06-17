@@ -69,11 +69,19 @@ class Storage(object):
 
     def __init__(self, dbFilePath):
         self.dbFilePath = dbFilePath
-        try:
-            self._db = openDB(dbFilePath, create=True)
-            self._db.execute("pragma foreign_keys = ON")
-        except SQLiteError as e:
-            raise StorageError(e)
+
+
+    @property
+    def _db(self):
+        if not hasattr(self, "_connection"):
+            try:
+                db = openDB(self.dbFilePath, create=True)
+                db.execute("pragma foreign_keys = ON")
+            except SQLiteError as e:
+                raise StorageError(e)
+            self._connection = db
+
+        return self._connection
 
 
     def loadFromFileStore(self, filePath):
