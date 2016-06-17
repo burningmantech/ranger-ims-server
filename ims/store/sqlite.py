@@ -1162,7 +1162,7 @@ zeroTimeDelta = TimeDelta(0)
 
 
 def asTimeStamp(datetime):
-    assert datetime.tzinfo is not None
+    assert datetime.tzinfo is not None, repr(datetime)
     assert datetime.tzinfo.utcoffset(datetime) == zeroTimeDelta
 
     return timegm(datetime.timetuple())
