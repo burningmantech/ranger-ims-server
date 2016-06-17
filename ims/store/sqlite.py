@@ -262,14 +262,14 @@ class Storage(object):
             # Look up report entries from join table
             reportEntries = []
 
-            for author, text, createdTimeStamp, generated in self._db.execute(
+            for author, text, entryTimeStamp, generated in self._db.execute(
                 self._query_incident_reportEntries, (event, number)
             ):
                 reportEntries.append(
                     ReportEntry(
                         author=author,
                         text=text,
-                        created=fromTimeStamp(createdTimestamp),
+                        created=fromTimeStamp(entryTimeStamp),
                         system_entry=generated,
                     )
                 )
