@@ -318,9 +318,9 @@ class Incident(object):
             if number is not None:
                 raise InvalidDataError("Incident number must be None")
         else:
-            raise InvalidDataError("Incident number may not be None")
+            if number is None:
+                raise InvalidDataError("Incident number may not be None")
 
-        if number is not None:
             if type(number) is not int:
                 raise InvalidDataError(
                     "Incident number must be an int, not "
