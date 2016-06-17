@@ -440,8 +440,6 @@ class Storage(object):
 
         self._addIncident(event, incident, self._createIncident)
 
-        # FIXME:STORE Return incident number
-
 
     def _addIncident(self, event, incident, addMethod):
         try:
@@ -552,6 +550,26 @@ class Storage(object):
     )
 
 
+    def _nextIncidentNumber(self, event, cursor):
+        """
+        Look up the next available incident number.
+        """
+        cursor.execute(self._query_nextIncidentNumber, (event,))
+        (number,) = cursor.fetchone()
+        if number is None:
+            return 1
+        else:
+            return number + 1
+
+    _query_nextIncidentNumber = dedent(
+        """
+        select max(NUMBER) from INCIDENT
+        where EVENT = ({query_eventID})
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
+
+
     def _createIncident(self, event, incident, cursor):
         """
         Add the given incident to the given event.
@@ -560,53 +578,8 @@ class Storage(object):
         and report entries.
         """
         assert incident.number is None
-
-        locationName, address = self._coerceLocation(incident.location)
-
-        cursor.execute(
-            self._query_createIncident, (
-                event,
-                event,
-                1,  # Version is 1 because it's a new row
-                asTimeStamp(incident.created),
-                incident.priority,
-                incident.state.name,
-                incident.summary,
-                locationName,
-                address.concentric,
-                address.radialHour,
-                address.radialMinute,
-                address.description,
-            )
-        )
-
-    _query_createIncident = dedent(
-        """
-        insert into INCIDENT (
-            EVENT,
-            NUMBER,
-            VERSION,
-            CREATED,
-            PRIORITY,
-            STATE,
-            SUMMARY,
-            LOCATION_NAME,
-            LOCATION_CONCENTRIC,
-            LOCATION_RADIAL_HOUR,
-            LOCATION_RADIAL_MINUTE,
-            LOCATION_DESCRIPTION
-        )
-        values (
-            ({query_eventID}),
-            (
-                select max(NUMBER) + 1 or 1 from INCIDENT
-                where EVENT = ({query_eventID})
-            ),
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-        )
-        """
-        .format(query_eventID=_query_eventID.strip())
-    )
+        incident.number = self._nextIncidentNumber(event, cursor)
+        self._importIncident(event, incident, cursor)
 
 
     def _attachRanger(self, event, number, rangerHandle, cursor):

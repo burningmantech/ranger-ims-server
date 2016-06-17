@@ -135,7 +135,7 @@ class JSONMixIn(object):
 
         author = request.user.uid
 
-        number = self.storage.createIncident(event, incident)
+        self.storage.createIncident(event, incident)
 
         self.log.info(
             u"User {author} created new incident #{incident.number} via JSON",
@@ -143,10 +143,10 @@ class JSONMixIn(object):
         )
         self.log.debug(u"New: {json}", json=incidentAsJSON(incident))
 
-        request.setHeader(HeaderName.incidentNumber.value, number)
+        request.setHeader(HeaderName.incidentNumber.value, incident.number)
         request.setHeader(
             HeaderName.location.value,
-            "{}/{}".format(URLs.incidentNumberURL.asText(), number)
+            "{}/{}".format(URLs.incidentNumberURL.asText(), incident.number)
         )
         return self.noContentResource(request)
 
