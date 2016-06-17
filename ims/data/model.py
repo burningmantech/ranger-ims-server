@@ -398,10 +398,6 @@ class ReportEntry(object):
             IMS software (as opposed to by a user).
         @type system_entry: L{bool}
         """
-        # FIXME: raise instead?
-        if created is None:
-            created = utcNow()
-
         self.author       = author
         self.text         = text
         self.created      = created
