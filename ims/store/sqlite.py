@@ -810,11 +810,32 @@ class Storage(object):
     )
 
 
-    def setIncidentRangers(self, event, number, handles):
+    def setIncidentRangers(self, event, number, rangerHandles):
         """
         Set the rangers attached to the given incident in the given event.
         """
-        raise NotImplementedError()
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                cursor.execute(
+                    self._query_clearIncidentRangers, (event, number)
+                )
+                for handle in rangerHandles:
+                    self._attachRanger(event, number, handle, cursor)
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to set Rangers for incident {event}:{number} to "
+                "{handles}",
+                event=event, number=number, handles=rangerHandles
+            )
+            raise StorageError(e)
+
+    _query_clearIncidentRangers = dedent(
+        """
+        delete from INCIDENT__RANGER
+        where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
+        """
+    )
 
 
     def setIncidentTypes(self, event, number, incidentTypes):
