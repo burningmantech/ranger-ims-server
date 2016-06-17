@@ -232,7 +232,7 @@ class Incident(object):
         return (
             u"{self.__class__.__name__}("
             u"number={self.number!r},"
-            u"priority={self.priority!r})"
+            u"priority={self.priority!r},"
             u"summary={self.summary!r},"
             u"location={self.location!r},"
             u"rangers={self.rangers!r},"
