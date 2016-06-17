@@ -814,14 +814,18 @@ class Storage(object):
         """
         Set the rangers attached to the given incident in the given event.
         """
+        rangerHandles = tuple(rangerHandles)
         try:
             with self._db as db:
                 cursor = db.cursor()
-                cursor.execute(
-                    self._query_clearIncidentRangers, (event, number)
-                )
-                for handle in rangerHandles:
-                    self._attachRanger(event, number, handle, cursor)
+                try:
+                    cursor.execute(
+                        self._query_clearIncidentRangers, (event, number)
+                    )
+                    for handle in rangerHandles:
+                        self._attachRanger(event, number, handle, cursor)
+                finally:
+                    cursor.close()
         except SQLiteError as e:
             self.log.critical(
                 "Unable to set Rangers for incident {event}:{number} to "
@@ -835,6 +839,7 @@ class Storage(object):
         delete from INCIDENT__RANGER
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
         """
+        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -843,14 +848,57 @@ class Storage(object):
         Set the incident types attached to the given incident in the given
         event.
         """
-        raise NotImplementedError()
+        incidentTypes = tuple(incidentTypes)
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(
+                        self._query_clearIncidentTypes, (event, number)
+                    )
+                    for incidentType in incidentTypes:
+                        self._attachIncidentType(
+                            event, number, incidentType, cursor
+                        )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to set incident types for incident {event}:{number} to "
+                "{incidentTypes}",
+                event=event, number=number, incidentTypes=incidentTypes
+            )
+            raise StorageError(e)
+
+    _query_clearIncidentTypes = dedent(
+        """
+        delete from INCIDENT__INCIDENT_TYPE
+        where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
+        """
+        .format(query_eventID=_query_eventID.strip())
+    )
 
 
     def addIncidentReportEntry(self, event, number, reportEntry):
         """
         Add a report entry to the given incident in the given event.
         """
-        raise NotImplementedError()
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    self._addAndAttachReportEntry(
+                        event, number, reportEntry, cursor
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to add report entry for incident {event}:{number}: "
+                "{reportEntry}",
+                event=event, number=number, reportEntry=reportEntry
+            )
+            raise StorageError(e)
 
 
     def concentricStreetsByID(self, event):
