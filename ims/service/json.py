@@ -258,7 +258,7 @@ class JSONMixIn(object):
         if entries is not UNSET:
             author = request.user.uid
 
-            now = DateTime.now()
+            now = utcNow()
 
             for entry in entries:
                 text = entry.get(JSON.entry_text.value, None)
