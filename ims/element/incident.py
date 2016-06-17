@@ -84,6 +84,5 @@ class IncidentPage(Element):
 
     @renderer
     def concentric_street_name_by_id(self, request, tag):
-        namesByID = self.service.storage[self.event].streetsByID()
-
+        namesByID = self.service.storage.concentricStreetsByID(self.event)
         return textFromJSON(namesByID)

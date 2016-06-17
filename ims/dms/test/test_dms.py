@@ -81,7 +81,7 @@ class DutyManagementSystemTests(unittest.TestCase):
 
         self.assertIsInstance(dbpool, DummyConnectionPool)
 
-        self.assertEquals(dbpool.dbapiname, "mysql.connector")
+        self.assertEquals(dbpool.dbapiname, "pymysql")
         self.assertEquals(dbpool.connkw["host"], self.host)
         self.assertEquals(dbpool.connkw["database"], self.database)
         self.assertEquals(dbpool.connkw["user"], self.username)

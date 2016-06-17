@@ -74,7 +74,6 @@ class DirectoryService(BaseDirectoryService):
 
         self.dms = dms
         self._personnel = None
-        self.loadRecords()
 
 
     @property
@@ -107,6 +106,8 @@ class DirectoryService(BaseDirectoryService):
         self.indexRecords(
             DirectoryRecord(self, ranger) for ranger in personnel
         )
+
+        self.log.info("DMS directory service updated.")
 
         self._personnel = personnel
 

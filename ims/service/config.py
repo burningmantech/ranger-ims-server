@@ -24,9 +24,9 @@ __all__ = [
     "Configuration",
 ]
 
+from sys import argv
 from os import getcwd
-from os.path import sep as pathsep
-
+from os.path import sep as pathsep, basename
 from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 
 from twisted.python.filepath import FilePath
@@ -34,7 +34,7 @@ from twisted.logger import Logger
 
 from ..data.model import IncidentType
 from ..data.json import textFromJSON, jsonFromFile
-from ..store.file import MultiStorage
+from ..store.sqlite import Storage
 from ..dms import DutyManagementSystem, DirectoryService
 
 
@@ -59,8 +59,12 @@ class Configuration (object):
             "Core.ServerRoot: {self.ServerRoot}\n"
             "Core.ConfigRoot: {self.ConfigRoot}\n"
             "Core.DataRoot: {self.DataRoot}\n"
+            "Core.DatabaseFile: {self.DatabaseFile}\n"
             "Core.CachedResources: {self.CachedResources}\n"
             "Core.LogLevel: {self.LogLevel}\n"
+            "Core.LogFile: {self.LogFile}\n"
+            "Core.LogFormat: {self.LogFormat}\n"
+            "Core.PIDFile: {self.PIDFile}\n"
             "\n"
             "DMS.Hostname: {self.DMSHost}\n"
             "DMS.Database: {self.DMSDatabase}\n"
@@ -72,6 +76,8 @@ class Configuration (object):
 
 
     def load(self):
+        command = basename(argv[0])
+
         configParser = SafeConfigParser()
 
         def readConfig(configFile):
@@ -152,6 +158,13 @@ class Configuration (object):
             "Data root: {dataRoot.path}", dataRoot=self.DataRoot
         )
 
+        self.DatabaseFile = filePathFromConfig(
+            "Core", "Database", self.DataRoot, ("db.sqlite",)
+        )
+        self.log.info(
+            "Database: {db.path}", db=self.DatabaseFile
+        )
+
         self.CachedResources = filePathFromConfig(
             "Core", "CachedResources", self.ServerRoot, ("cached",)
         )
@@ -167,14 +180,14 @@ class Configuration (object):
         self.log.info("LogFormat: {logFormat}", logFormat=self.LogFormat)
 
         self.LogFile = filePathFromConfig(
-            "Core", "LogFile", self.DataRoot, ("ims_web.log",)
+            "Core", "LogFile", self.DataRoot, ("{}.log".format(command),)
         ).path
         self.log.info(
             "LogFile: {logFile}", logFile=self.LogFile
         )
 
         self.PIDFile = filePathFromConfig(
-            "Core", "PIDFile", self.DataRoot, ("ims_web.pid",)
+            "Core", "PIDFile", self.DataRoot, ("{}.pid".format(command),)
         ).path
         self.log.info(
             "PIDFile: {pidFile}", pidFile=self.PIDFile
@@ -236,7 +249,7 @@ class Configuration (object):
 
         self.directory = DirectoryService(self.dms)
 
-        self.storage = MultiStorage(self.DataRoot)
+        self.storage = Storage(self.DatabaseFile)
 
         self.IncidentTypesJSONBytes = (
             textFromJSON(self.IncidentTypes).encode("utf-8")

@@ -22,8 +22,7 @@ __all__ = [
     "WebMixIn",
 ]
 
-from ..data.json import incidentAsJSON
-from ..data.edit import editIncident
+from ..data.json import textFromJSON, incidentAsJSON
 from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
@@ -33,7 +32,6 @@ from .http import fixedETag, HeaderName, ContentType
 from .klein import route
 from .urls import URLs
 from .auth import Authorization
-from .query import editsFromQuery
 
 
 
@@ -133,13 +131,9 @@ class WebMixIn(object):
     def dispatchQueueDataResource(self, request, event):
         self.authorizeRequest(request, event, Authorization.readIncidents)
 
-        storage = self.storage[event]
-
-        incidentNumbers = (number for number, etag in storage.listIncidents())
-
         stream = self.buildJSONArray(
-            storage.readIncidentWithNumberRaw(number).encode("utf-8")
-            for number in incidentNumbers
+            textFromJSON(incidentAsJSON(incident)).encode("utf-8")
+            for incident in self.storage.incidents(event)
         )
 
         return self.jsonStream(request, stream, None)
@@ -159,42 +153,6 @@ class WebMixIn(object):
                 number = int(number)
             except ValueError:
                 return self.notFoundResource(request)
-
-        return IncidentPage(self, event, number)
-
-
-    @route(URLs.viewIncidentNumberURL.asText(), methods=("POST",))
-    def editIncidentPage(self, request, event, number):
-        self.authorizeRequest(
-            request, event,
-            Authorization.readIncidents | Authorization.writeIncidents
-        )
-
-        try:
-            number = int(number)
-        except ValueError:
-            return self.notFoundResource(request)
-
-        storage = self.storage[event]
-
-        author = request.user
-        edits = editsFromQuery(author, number, request)
-
-        if edits:
-            incident = storage.readIncidentWithNumber(number)
-            edited = editIncident(incident, edits, author)
-
-            self.log.info(
-                u"User {author} edited incident #{number} via web",
-                author=author, number=number
-            )
-            # self.log.debug(
-            #     u"Original: {json}", json=incidentAsJSON(incident)
-            # )
-            self.log.debug(u"Changes: {json}", json=incidentAsJSON(edits))
-            # self.log.debug(u"Edited: {json}", json=incidentAsJSON(edited))
-
-            storage.writeIncident(edited)
 
         return IncidentPage(self, event, number)
 

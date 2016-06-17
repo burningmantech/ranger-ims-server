@@ -320,9 +320,6 @@ def incidentFromJSON(root, number, validate=True):
     @return: The de-serialized incident.
     @rtype: L{Incident}
     """
-    if number is None:
-        raise TypeError("Incident number may not be null")
-
     if not isinstance(root, dict):
         raise InvalidDataError("JSON incident must be a dict")
 
@@ -330,7 +327,9 @@ def incidentFromJSON(root, number, validate=True):
         try:
             JSON.lookupByValue(attribute)
         except Exception:
-            raise InvalidDataError("ARGH! Evil Death!")
+            raise InvalidDataError(
+                "Unknown JSON attribute: {}".format(attribute)
+            )
 
     json_number = root.get(JSON.incident_number.value, None)
 

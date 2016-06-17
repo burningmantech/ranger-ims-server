@@ -116,20 +116,6 @@ class IncidentTests(unittest.TestCase):
         self.assertEquals(incident.priority, None)
 
 
-    def test_init_numberNotInt(self):
-        """
-        L{Incident.__init__} with non-int C{number}.
-        """
-        self.assertRaises(InvalidDataError, Incident, number="1")
-
-
-    def test_init_numberNotWhole(self):
-        """
-        L{Incident.__init__} with non-whole C{number}.
-        """
-        self.assertRaises(InvalidDataError, Incident, number=-1)
-
-
     def test_init_sortedEntries(self):
         """
         L{Incident.reportEntries} is sorted.
@@ -167,14 +153,15 @@ class IncidentTests(unittest.TestCase):
             repr(incident),
             "{i.__class__.__name__}("
             "number={i.number!r},"
-            "rangers={i.rangers!r},"
-            "location={i.location!r},"
-            "incidentTypes={i.incidentTypes!r},"
+            "priority={i.priority!r},"
             "summary={i.summary!r},"
+            "location={i.location!r},"
+            "rangers={i.rangers!r},"
+            "incidentTypes={i.incidentTypes!r},"
             "reportEntries={i.reportEntries!r},"
             "created={i.created!r},"
             "state={i.state!r},"
-            "priority={i.priority!r})"
+            "version={i.version!r})"
             .format(i=incident)
         )
 
@@ -297,7 +284,9 @@ class IncidentTests(unittest.TestCase):
         L{Incident.validate} incident with invalid report entry.
         """
         incident = newIncident(
-            reportEntries=[ReportEntry(author=None, text=None)],
+            reportEntries=[
+                ReportEntry(author=None, created=utcNow(), text=None)
+            ],
         )
         self.assertRaises(InvalidDataError, incident.validate)
 
@@ -377,16 +366,14 @@ class ReportEntryTests(unittest.TestCase):
 
     def test_init_defaults(self):
         """
-        L{ReportEntry.__init__} with default values.
+        L{ReportEntry.__init__} with given values.
         """
-        dt1 = utcNow()
-        entry = ReportEntry(author=u"Tool", text=u"xyzzy")
-        dt2 = utcNow()
+        dt = utcNow()
+        entry = ReportEntry(author=u"Tool", created=dt, text=u"xyzzy")
 
         self.assertEquals(entry.author, u"Tool")
         self.assertEquals(entry.text, u"xyzzy")
-        self.assertTrue(entry.created >= dt1)
-        self.assertTrue(entry.created <= dt2)
+        self.assertTrue(entry.created == dt)
         self.assertIdentical(entry.system_entry, False)
 
 
@@ -489,7 +476,9 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of valid entry.
         """
-        entry = ReportEntry(author=u"Tool", text=u"Something happened!")
+        entry = ReportEntry(
+            author=u"Tool", created=utcNow(), text=u"Something happened!"
+        )
         entry.validate()
 
 
@@ -497,7 +486,9 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of entry with L{None} author.
         """
-        entry = ReportEntry(author=None, text=u"Something happened!")
+        entry = ReportEntry(
+            author=None, created=utcNow(), text=u"Something happened!"
+        )
         self.assertRaises(InvalidDataError, entry.validate)
 
 
@@ -513,7 +504,9 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of entry with non-unicode author.
         """
-        entry = ReportEntry(author=b"Tool", text=u"Something happened!")
+        entry = ReportEntry(
+            author=b"Tool", created=utcNow(), text=u"Something happened!"
+        )
         self.assertRaises(InvalidDataError, entry.validate)
 
 
@@ -521,7 +514,9 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of entry with valid text.
         """
-        entry = ReportEntry(author=u"Tool", text=u"Something happened!")
+        entry = ReportEntry(
+            author=u"Tool", created=utcNow(), text=u"Something happened!"
+        )
         entry.validate()
 
 
@@ -529,7 +524,7 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of entry with L{None} text.
         """
-        entry = ReportEntry(author=u"Tool", text=None)
+        entry = ReportEntry(author=u"Tool", created=utcNow(), text=None)
         self.assertRaises(InvalidDataError, entry.validate)
 
 
@@ -545,7 +540,9 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of entry with non-unicode text.
         """
-        entry = ReportEntry(author=u"", text=b"Something happened!")
+        entry = ReportEntry(
+            author=u"", created=utcNow(), text=b"Something happened!"
+        )
         self.assertRaises(InvalidDataError, entry.validate)
 
 

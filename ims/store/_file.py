@@ -300,7 +300,7 @@ class ReadOnlyStorage(object):
         try:
             return (uid.strip() for uid in fp.open())
         except (IOError, OSError):
-            self.log.debug("Unable to open ACL: {fp.path}", fp=fp)
+            self.log.warn("Unable to open ACL: {fp.path}", fp=fp)
             return ()
 
 
@@ -309,7 +309,7 @@ class ReadOnlyStorage(object):
 
 
     def writers(self):
-        return ()
+        return self._acl(u"writers")
 
 
     def streetsByName(self):
@@ -459,7 +459,15 @@ class MultiStorage(object):
 
 
     def _events(self):
-        for child in self.path.children():
+        try:
+            children = self.path.children()
+        except UnlistableError:
+            raise StorageError(
+                "Unable to list events in data store: {fp.path}"
+                .format(fp=self.path)
+            )
+
+        for child in children:
             name = child.basename()
 
             if name.startswith("."):

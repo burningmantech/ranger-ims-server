@@ -38,8 +38,6 @@ from twisted.python.constants import (
     Names, NamedConstant, Values, ValueConstant
 )
 
-from ..tz import utcNow
-
 
 
 #
@@ -166,6 +164,7 @@ class Incident(object):
         incidentTypes=None,
         reportEntries=None,
         created=None, state=None,
+        version=None
     ):
         """
         @param number: The incident's identifying number.
@@ -194,19 +193,10 @@ class Incident(object):
 
         @param state: The state of the incident.
         @type state: L{IncidentState}
+
+        @param version: The version of the incident.
+        @type version: L{int}
         """
-        if type(number) is not int:
-            raise InvalidDataError(
-                "Incident number must be an int, not "
-                "({n.__class__.__name__}){n}"
-                .format(n=number)
-            )
-
-        if number < 0:
-            raise InvalidDataError(
-                "Incident number must be whole, not {n}".format(n=number)
-            )
-
         if rangers is not None:
             rangers = frozenset(rangers)
 
@@ -226,6 +216,7 @@ class Incident(object):
         self.reportEntries = reportEntries
         self.created       = created
         self.state         = state
+        self.version       = version
 
 
     def __str__(self):
@@ -241,14 +232,15 @@ class Incident(object):
         return (
             u"{self.__class__.__name__}("
             u"number={self.number!r},"
-            u"rangers={self.rangers!r},"
-            u"location={self.location!r},"
-            u"incidentTypes={self.incidentTypes!r},"
+            u"priority={self.priority!r},"
             u"summary={self.summary!r},"
+            u"location={self.location!r},"
+            u"rangers={self.rangers!r},"
+            u"incidentTypes={self.incidentTypes!r},"
             u"reportEntries={self.reportEntries!r},"
             u"created={self.created!r},"
             u"state={self.state!r},"
-            u"priority={self.priority!r})"
+            u"version={self.version!r})"
             .format(self=self)
         ).encode("utf-8")
 
@@ -299,12 +291,33 @@ class Incident(object):
         return ""
 
 
-    def validate(self):
+    def validate(self, noneNumber=False):
         """
         Validate this incident.
 
         @raise: L{InvalidDataError} if the incident does not validate.
         """
+        number = self.number
+
+        if noneNumber:
+            if number is not None:
+                raise InvalidDataError("Incident number must be None")
+        else:
+            if number is None:
+                raise InvalidDataError("Incident number may not be None")
+
+            if type(number) is not int:
+                raise InvalidDataError(
+                    "Incident number must be an int, not "
+                    "({n.__class__.__name__}){n}"
+                    .format(n=number)
+                )
+
+            if number < 0:
+                raise InvalidDataError(
+                    "Incident number must be whole, not {n}".format(n=number)
+                )
+
         if self.rangers is not None:
             for ranger in self.rangers:
                 _validateIsInstance("Ranger", ranger, Ranger, recurse=True)
@@ -370,10 +383,6 @@ class ReportEntry(object):
             IMS software (as opposed to by a user).
         @type system_entry: L{bool}
         """
-        # FIXME: raise instead?
-        if created is None:
-            created = utcNow()
-
         self.author       = author
         self.text         = text
         self.created      = created
@@ -687,6 +696,12 @@ class TextOnlyAddress(Address):
         _validateIsInstance("description", self.description, unicode)
 
 
+    def asRodGarettAddress(self):
+        return RodGarettAddress(
+            description=self.description
+        )
+
+
 
 @total_ordering
 class RodGarettAddress(Address):
@@ -853,3 +868,7 @@ class RodGarettAddress(Address):
                     "Radial minute must be 0-59, not {!r}"
                     .format(self.radialMinute)
                 )
+
+
+    def asRodGarettAddress(self):
+        return self
