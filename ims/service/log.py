@@ -39,11 +39,11 @@ def combinedLogFormatter(timestamp, request):
     agent = _escape(request.getHeader(b"user-agent") or b"-")
 
     if hasattr(request, "user") and request.user is not None:
-        uid = request.user.uid
+        username = request.user.shortNames[0]
         try:
-            username = _escape(uid)
+            username = _escape(username)
         except Exception:
-            username = _escape(repr(uid))
+            username = _escape(repr(username))
     else:
         username = u"-"
 

@@ -131,7 +131,7 @@ class JSONMixIn(object):
                 .format(incident.created, now)
             )
 
-        author = request.user.uid
+        author = request.user.shortNames[0]
 
         self.storage.createIncident(event, incident)
 
@@ -254,7 +254,7 @@ class JSONMixIn(object):
 
         entries = edits.get(JSON.report_entries.value, UNSET)
         if entries is not UNSET:
-            author = request.user.uid
+            author = request.user.shortNames[0]
 
             now = utcNow()
 

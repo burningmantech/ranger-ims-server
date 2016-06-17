@@ -126,7 +126,7 @@ class DirectoryRecord(BaseDirectoryRecord):
 
         fields = {
             service.fieldName.recordType: service.recordType.user,
-            service.fieldName.uid            : ranger.handle,
+            service.fieldName.uid            : unicode(ranger.dmsID),
             service.fieldName.shortNames     : (ranger.handle,),
             service.fieldName.fullNames      : (ranger.name,),
             service.fieldName.status         : ranger.status,

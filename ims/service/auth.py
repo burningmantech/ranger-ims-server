@@ -90,18 +90,17 @@ class AuthMixIn(object):
 
         if user is not None:
             if event:
-                uid = user.uid
+                for shortName in user.shortNames:
+                    writers = set(self.storage.writers(event))
 
-                writers = set(self.storage.writers(event))
-
-                if u"*" in writers or uid in writers:
-                    authorizations |= Authorization.readIncidents
-                    authorizations |= Authorization.writeIncidents
-                else:
-                    readers = set(self.storage.readers(event))
-
-                    if u"*" in readers or uid in readers:
+                    if u"*" in writers or shortName in writers:
                         authorizations |= Authorization.readIncidents
+                        authorizations |= Authorization.writeIncidents
+                    else:
+                        readers = set(self.storage.readers(event))
+
+                        if u"*" in readers or shortName in readers:
+                            authorizations |= Authorization.readIncidents
 
         self.log.debug(
             "Authz for {user}: {authorizations}",
