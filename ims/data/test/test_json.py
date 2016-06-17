@@ -96,16 +96,6 @@ class IncidentDeserializationTests(unittest.TestCase):
     Tests for L{incidentFromJSON}.
     """
 
-    def test_numberArgumentRequired(self):
-        """
-        Raise L{TypeError} if passed-in C{number} is C{None}.
-        """
-        self.assertRaises(
-            TypeError,
-            incidentFromJSON, {}, number=None, validate=False,
-        )
-
-
     def test_jsonMustBeDict(self):
         """
         Raise L{InvalidDataError} if passed-in JSON C{root} is not a C{dict}.
