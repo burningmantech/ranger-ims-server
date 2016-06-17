@@ -219,27 +219,6 @@ class Storage(object):
     )
 
 
-    # def incidentETag(self, event, number):
-    #     """
-    #     Look up the ETag for the incident with the given number in the given
-    #     event.
-    #     """
-    #     try:
-    #         cursor = self._db.execute(self._query_version, (event, number))
-    #         return cursor.fetchone()[0]
-    #     except SQLiteError as e:
-    #         self.log.critical("Unable to look up ETag")
-    #         raise StorageError(e)
-
-    # _query_version = dedent(
-    #     """
-    #     select VERSION from INCIDENT
-    #     where EVENT = ({query_eventID}) and NUMBER = ?
-    #     """
-    #     .format(query_eventID=_query_eventID.strip())
-    # )
-
-
     def incident(self, event, number):
         """
         Look up the incident with the given number in the given event.
