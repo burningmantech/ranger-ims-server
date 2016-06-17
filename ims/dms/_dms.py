@@ -121,6 +121,52 @@ class DutyManagementSystem(object):
 
 
     @inlineCallbacks
+    def _queryRangers(self):
+        self.log.info(
+            "Retrieving personnel from Duty Management System..."
+        )
+
+        rows = yield self.dbpool.runQuery(
+            """
+            select
+                id,
+                callsign, first_name, mi, last_name, email,
+                status, on_site, password
+            from person
+            where status not in (
+                'prospective', 'alpha',
+                'bonked', 'uberbonked',
+                'deceased'
+            )
+            """
+        )
+
+        def string(bytesString):
+            if bytesString is None:
+                return None
+            return bytesString.decode("utf-8")
+
+        returnValue(
+            Ranger(
+                string(handle),
+                fullName(
+                    string(first),
+                    string(middle),
+                    string(last),
+                ),
+                string(status),
+                dmsID=int(dmsID),
+                email=string(email),
+                onSite=bool(onSite),
+                password=string(password),
+            )
+            for (
+                dmsID, handle, first, middle, last, email,
+                status, onSite, password,
+            ) in rows
+        )
+
+    @inlineCallbacks
     def personnel(self):
         now = time()
         elapsed = now - self._personnelLastUpdated
@@ -129,49 +175,7 @@ class DutyManagementSystem(object):
             self._busy = True
             try:
                 try:
-                    self.log.info(
-                        "Retrieving personnel from Duty Management System..."
-                    )
-
-                    results = yield self.dbpool.runQuery(
-                        """
-                        select
-                            id,
-                            callsign, first_name, mi, last_name, email,
-                            status, on_site, password
-                        from person
-                        where status not in (
-                            'prospective', 'alpha',
-                            'bonked', 'uberbonked',
-                            'deceased'
-                        )
-                        """
-                    )
-
-                    def string(bytesString):
-                        if bytesString is None:
-                            return None
-                        return bytesString.decode("utf-8")
-
-                    self._personnel = tuple(
-                        Ranger(
-                            string(handle),
-                            fullName(
-                                string(first),
-                                string(middle),
-                                string(last),
-                            ),
-                            string(status),
-                            dmsID=int(dmsID),
-                            email=string(email),
-                            onSite=bool(onSite),
-                            password=string(password),
-                        )
-                        for (
-                            dmsID, handle, first, middle, last, email,
-                            status, onSite, password,
-                        ) in results
-                    )
+                    self._personnel = tuple((yield self._queryRangers()))
                     self._personnelLastUpdated = time()
 
                 except Exception as e:
