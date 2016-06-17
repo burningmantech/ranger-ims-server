@@ -120,24 +120,39 @@ class DutyManagementSystem(object):
         return self._dbpool
 
 
-    @inlineCallbacks
+    def _queryPositions(self):
+        self.log.info(
+            "Retrieving positions from Duty Management System..."
+        )
+
+        d = self.dbpool.runQuery(
+            """
+            select id, title from position where all_rangers = 0
+            """
+        )
+
+        def gotRows(rows):
+            return dict(
+                (id, Position(id, title))
+                for (id, title) in rows
+            )
+
+        d.addCallback(gotRows)
+        return d
+
+
     def _queryRangers(self):
         self.log.info(
             "Retrieving personnel from Duty Management System..."
         )
 
-        rows = yield self.dbpool.runQuery(
+        d = self.dbpool.runQuery(
             """
             select
                 id,
                 callsign, first_name, mi, last_name, email,
                 status, on_site, password
-            from person
-            where status not in (
-                'prospective', 'alpha',
-                'bonked', 'uberbonked',
-                'deceased'
-            )
+            from person where status in ('active', 'inactive', 'vintage')
             """
         )
 
@@ -146,25 +161,55 @@ class DutyManagementSystem(object):
                 return None
             return bytesString.decode("utf-8")
 
-        returnValue(
-            Ranger(
-                string(handle),
-                fullName(
-                    string(first),
-                    string(middle),
-                    string(last),
-                ),
-                string(status),
-                dmsID=int(dmsID),
-                email=string(email),
-                onSite=bool(onSite),
-                password=string(password),
+        def gotRows(rows):
+            return dict(
+                (
+                    dmsID,
+                    Ranger(
+                        string(handle),
+                        fullName(
+                            string(first),
+                            string(middle),
+                            string(last),
+                        ),
+                        string(status),
+                        dmsID=int(dmsID),
+                        email=string(email),
+                        onSite=bool(onSite),
+                        password=string(password),
+                    )
+                )
+                for (
+                    dmsID, handle, first, middle, last, email,
+                    status, onSite, password,
+                ) in rows
             )
-            for (
-                dmsID, handle, first, middle, last, email,
-                status, onSite, password,
-            ) in rows
+
+        d.addCallback(gotRows)
+        return d
+
+
+    def _queryPositionRangerJoin(self):
+        self.log.info(
+            "Retrieving position-personnel relations from "
+            "Duty Management System..."
         )
+
+        d = self.dbpool.runQuery(
+            """
+            select person_id, position_id from person_position
+            """
+        )
+        return d
+
+
+    def positions(self):
+        # Call self.personnel() to make sure we have current data, then return
+        # self._positions, which will have been set.
+        d = self._personnel()
+        d.addCallback(lambda _: self._positions)
+        return d
+
 
     @inlineCallbacks
     def personnel(self):
@@ -175,7 +220,21 @@ class DutyManagementSystem(object):
             self._busy = True
             try:
                 try:
-                    self._personnel = tuple((yield self._queryRangers()))
+                    rangersByID = yield self._queryRangers()
+                    positionsByID = yield self._queryPositions()
+                    join = yield self._queryPositionRangerJoin()
+
+                    for rangerID, positionID in join:
+                        position = positionsByID.get(positionID, None)
+                        if position is None:
+                            continue
+                        ranger = rangersByID.get(rangerID, None)
+                        if ranger is None:
+                            continue
+                        position.members.add(ranger)
+
+                    self._personnel = tuple(rangersByID.itervalues())
+                    self._positions = tuple(positionsByID.itervalues())
                     self._personnelLastUpdated = time()
 
                 except Exception as e:
@@ -202,6 +261,14 @@ class DutyManagementSystem(object):
             returnValue(self._personnel)
         except AttributeError:
             raise DMSError("No personnel data loaded.")
+
+
+
+class Position(object):
+    def __init__(self, positionID, name):
+        self.positionID = positionID
+        self.name = name
+        self.members = set()
 
 
 
