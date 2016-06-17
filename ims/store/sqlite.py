@@ -45,6 +45,13 @@ from .istore import StorageError
 
 
 
+def _query(query):
+    return dedent(query.format(
+        query_eventID="select ID from EVENT where NAME = ?",
+    ))
+
+
+
 class Storage(object):
     """
     SQLite-backed storage.
@@ -139,12 +146,6 @@ class Storage(object):
     _query_events = dedent(
         """
         select NAME from EVENT
-        """
-    )
-
-    _query_eventID = dedent(
-        """
-        select ID from EVENT where NAME = ?
         """
     )
 
@@ -314,7 +315,7 @@ class Storage(object):
 
         return incident
 
-    _query_incident = dedent(
+    _query_incident = _query(
         """
         select
             VERSION, CREATED, PRIORITY, STATE, SUMMARY,
@@ -325,28 +326,25 @@ class Storage(object):
             LOCATION_DESCRIPTION
         from INCIDENT where EVENT = ({query_eventID}) and NUMBER = ?
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
-    _query_incident_rangers = dedent(
+    _query_incident_rangers = _query(
         """
         select RANGER_HANDLE from INCIDENT__RANGER
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
-    _query_incident_types = dedent(
+    _query_incident_types = _query(
         """
         select NAME from INCIDENT_TYPE where ID in (
             select INCIDENT_TYPE from INCIDENT__INCIDENT_TYPE
             where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
         )
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
-    _query_incident_reportEntries = dedent(
+    _query_incident_reportEntries = _query(
         """
         select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
         where ID in (
@@ -354,7 +352,6 @@ class Storage(object):
             where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
         )
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -372,11 +369,10 @@ class Storage(object):
             )
             raise StorageError(e)
 
-    _query_incidentNumbers = dedent(
+    _query_incidentNumbers = _query(
         """
         select NUMBER from INCIDENT where EVENT = ({query_eventID})
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -512,7 +508,7 @@ class Storage(object):
             )
         )
 
-    _query_importIncident = dedent(
+    _query_importIncident = _query(
         """
         insert into INCIDENT (
             EVENT,
@@ -533,7 +529,6 @@ class Storage(object):
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -548,12 +543,11 @@ class Storage(object):
         else:
             return number + 1
 
-    _query_nextIncidentNumber = dedent(
+    _query_nextIncidentNumber = _query(
         """
         select max(NUMBER) from INCIDENT
         where EVENT = ({query_eventID})
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -576,7 +570,7 @@ class Storage(object):
         """
         cursor.execute(self._query_attachRanger, (event, number, rangerHandle))
 
-    _query_attachRanger = dedent(
+    _query_attachRanger = _query(
         """
         insert into INCIDENT__RANGER (
             EVENT, INCIDENT_NUMBER, RANGER_HANDLE
@@ -585,7 +579,6 @@ class Storage(object):
             ({query_eventID}), ?, ?
         )
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -598,7 +591,7 @@ class Storage(object):
             self._query_attachIncidentType, (event, number, incidentType)
         )
 
-    _query_attachIncidentType = dedent(
+    _query_attachIncidentType = _query(
         """
         insert into INCIDENT__INCIDENT_TYPE (
             EVENT, INCIDENT_NUMBER, INCIDENT_TYPE
@@ -609,7 +602,6 @@ class Storage(object):
             (select ID from INCIDENT_TYPE where NAME=?)
         )
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -634,14 +626,14 @@ class Storage(object):
             (event, number, cursor.lastrowid)
         )
 
-    _query_addReportEntry = dedent(
+    _query_addReportEntry = _query(
         """
         insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
         values (?, ?, ?, ?)
         """
     )
 
-    _query_attachReportEntry = dedent(
+    _query_attachReportEntry = _query(
         """
         insert into INCIDENT__REPORT_ENTRY (
             EVENT, INCIDENT_NUMBER, REPORT_ENTRY
@@ -650,7 +642,6 @@ class Storage(object):
             ({query_eventID}), ?, ?
         )
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -666,12 +657,11 @@ class Storage(object):
             )
             raise StorageError(e)
 
-    _querySetIncidentColumn = dedent(
+    _querySetIncidentColumn = _query(
         """
         update INCIDENT set {{column}} = ?
         where EVENT = ({query_eventID}) and NUMBER = ?
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -813,12 +803,11 @@ class Storage(object):
             )
             raise StorageError(e)
 
-    _query_clearIncidentRangers = dedent(
+    _query_clearIncidentRangers = _query(
         """
         delete from INCIDENT__RANGER
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -849,12 +838,11 @@ class Storage(object):
             )
             raise StorageError(e)
 
-    _query_clearIncidentTypes = dedent(
+    _query_clearIncidentTypes = _query(
         """
         delete from INCIDENT__INCIDENT_TYPE
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -901,12 +889,11 @@ class Storage(object):
 
         return result
 
-    _query_concentricStreets = dedent(
+    _query_concentricStreets = _query(
         """
         select ID, NAME from CONCENTRIC_STREET
         where EVENT = ({query_eventID})
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -926,12 +913,11 @@ class Storage(object):
             )
             raise StorageError(e)
 
-    _query_addConcentricStreet = dedent(
+    _query_addConcentricStreet = _query(
         """
         insert into CONCENTRIC_STREET (EVENT, ID, NAME)
         values (({query_eventID}), ?, ?)
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -948,12 +934,11 @@ class Storage(object):
             )
             raise StorageError(e)
 
-    _query_eventAccess = dedent(
+    _query_eventAccess = _query(
         """
         select EXPRESSION from EVENT_ACCESS
         where EVENT = ({query_eventID}) and MODE = ?
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
@@ -985,20 +970,18 @@ class Storage(object):
             )
             raise StorageError(e)
 
-    _query_clearEventAccess = dedent(
+    _query_clearEventAccess = _query(
         """
         delete from EVENT_ACCESS
         where EVENT = ({query_eventID}) and MODE = ?
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
-    _query_addEventAccess = dedent(
+    _query_addEventAccess = _query(
         """
         insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)
         values (({query_eventID}), ?, ?)
         """
-        .format(query_eventID=_query_eventID.strip())
     )
 
 
