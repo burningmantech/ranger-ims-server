@@ -38,8 +38,6 @@ from twisted.python.constants import (
     Names, NamedConstant, Values, ValueConstant
 )
 
-from ..tz import utcNow
-
 
 
 #
