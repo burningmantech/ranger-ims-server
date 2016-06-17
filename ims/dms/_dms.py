@@ -26,7 +26,7 @@ __all__ = [
 
 from time import time
 
-from pymysql.err import DatabaseError as MySQLError
+from pymysql import DatabaseError as MySQLError
 
 from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks, returnValue
