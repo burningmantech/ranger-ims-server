@@ -239,7 +239,7 @@ class Storage(object):
         try:
             # Fetch incident row
             (
-                number, version, createdTimestamp, priority, stateName,
+                version, createdTimestamp, priority, stateName,
                 summary,
                 locationName,
                 locationConcentric,
@@ -330,7 +330,7 @@ class Storage(object):
     _query_incident = dedent(
         """
         select
-            NUMBER, VERSION, CREATED, PRIORITY, STATE, SUMMARY,
+            VERSION, CREATED, PRIORITY, STATE, SUMMARY,
             LOCATION_NAME,
             LOCATION_CONCENTRIC,
             LOCATION_RADIAL_HOUR,
