@@ -80,7 +80,7 @@ a.navbar-brand>img {
 
 /*
  * Below is a trick to hide the remove buttons (.remove-badge) from list
- * groups except when hovering.
+ * groups except when hovering, but only on non-touch devices.
  */
 
 .no-touch .remove-badge {
@@ -89,6 +89,16 @@ a.navbar-brand>img {
 
 .no-touch .list-group-item:hover .remove-badge {
   display: inline-block;
+}
+
+/* Disable on touch devices if editing is disabled. */
+.no-edit .remove-badge {
+  display: none;
+}
+
+/* Override hover behavior if editing is disabled. */
+.no-edit .list-group-item:hover .remove-badge {
+  display: none;
 }
 
 #incident_well > .panel {
