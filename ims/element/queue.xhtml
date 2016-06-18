@@ -15,6 +15,8 @@
     <!-- FIXME: figure out how to move this to / include from incident.js -->
     var pageTemplateURL = "<t:slot name="queue_template_url" />";
 
+    var editingAllowed = <json t:render="editing_allowed" />;
+
     // FIXME: can we use the generic JSON endpoint?
     var dataURL          = <json t:render="data_url"           />;
     var viewIncidentsURL = <json t:render="view_incidents_url" />;

@@ -19,6 +19,7 @@
 
 function initDispatchQueuePage() {
     function loadedBody() {
+        disableEditing();
         initDispatchQueueTable();
     }
 
@@ -37,6 +38,10 @@ function initDispatchQueueTable() {
     initTableButtons();
     initSearchField();
     initSearch();
+
+    if (editingAllowed) {
+        enableEditing();
+    }
 }
 
 

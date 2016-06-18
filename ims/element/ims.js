@@ -191,6 +191,7 @@ function enable(element) {
 // Disable editing for an element
 function disableEditing() {
     disable($(".form-control"));
+    enable($(":input[type=search]"));  // Don't disable search fields
     $(document.documentElement).addClass("no-edit");
 }
 

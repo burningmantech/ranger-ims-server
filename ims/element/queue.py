@@ -24,6 +24,7 @@ __all__ = [
 
 from ..data.json import textFromJSON
 from ..service.urls import URLs
+from ..service.auth import Authorization
 
 from .base import Element, renderer
 
@@ -41,6 +42,14 @@ class DispatchQueuePage(Element):
         )
 
         self.event = event
+
+
+    @renderer
+    def editing_allowed(self, request, tag):
+        if (request.authorizations & Authorization.writeIncidents):
+            return textFromJSON(True)
+        else:
+            return textFromJSON(False)
 
 
     @renderer

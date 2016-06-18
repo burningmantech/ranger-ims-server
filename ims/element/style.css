@@ -101,6 +101,10 @@ a.navbar-brand>img {
   display: none;
 }
 
+.no-edit .new_incident {
+  display: none;
+}
+
 #incident_well > .panel {
   margin-bottom: 5px;
 }
