@@ -206,7 +206,7 @@ class DutyManagementSystem(object):
     def positions(self):
         # Call self.personnel() to make sure we have current data, then return
         # self._positions, which will have been set.
-        d = self._personnel()
+        d = self.personnel()
         d.addCallback(lambda _: self._positions)
         return d
 
