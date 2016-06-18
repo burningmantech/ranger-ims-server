@@ -88,18 +88,22 @@ class AuthMixIn(object):
     def authorizationsForUser(self, user, event):
         authorizations = Authorization.none
 
+        def matchACL(acl):
+            acl = set(acl)
+
+            if u"*" in acl or shortName in acl:
+                return True
+
+            return False
+
         if user is not None:
             if event:
                 for shortName in user.shortNames:
-                    writers = set(self.storage.writers(event))
-
-                    if u"*" in writers or shortName in writers:
+                    if matchACL(self.storage.writers(event)):
                         authorizations |= Authorization.readIncidents
                         authorizations |= Authorization.writeIncidents
                     else:
-                        readers = set(self.storage.readers(event))
-
-                        if u"*" in readers or shortName in readers:
+                        if matchACL(set(self.storage.readers(event))):
                             authorizations |= Authorization.readIncidents
 
         self.log.debug(
