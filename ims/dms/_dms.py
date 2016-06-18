@@ -133,7 +133,7 @@ class DutyManagementSystem(object):
 
         def gotRows(rows):
             return dict(
-                (id, Position(id, title))
+                (id, Position(id, title.decode("utf-8")))
                 for (id, title) in rows
             )
 
