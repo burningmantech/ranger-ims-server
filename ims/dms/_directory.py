@@ -127,6 +127,8 @@ class RangerDirectoryRecord(BaseDirectoryRecord):
     """
 
     def __init__(self, service, ranger):
+        uid = u"person:{}".format(ranger.dmsID)
+
         if ranger.email is None:
             emailAddresses = ()
         else:
@@ -134,7 +136,7 @@ class RangerDirectoryRecord(BaseDirectoryRecord):
 
         fields = {
             service.fieldName.recordType: service.recordType.user,
-            service.fieldName.uid            : unicode(ranger.dmsID),
+            service.fieldName.uid            : uid,
             service.fieldName.shortNames     : (ranger.handle,),
             service.fieldName.fullNames      : (ranger.name,),
             service.fieldName.status         : ranger.status,
@@ -174,16 +176,17 @@ class PositionDirectoryRecord(BaseDirectoryRecord):
     """
 
     def __init__(self, service, position):
-        memberUIDs = (
-            unicode(ranger.dmsID) for ranger in position.members
+        uid = u"position:{}".format(position.positionID)
+
+        memberUIDs = tuple(
+            u"person:{}".format(ranger.dmsID) for ranger in position.members
         )
 
         fields = {
             service.fieldName.recordType : service.recordType.group,
-            service.fieldName.uid        : unicode(position.positionID),
+            service.fieldName.uid        : uid,
             service.fieldName.fullNames  : (position.name,),
             service.fieldName.memberUIDs : memberUIDs,
-            service.fieldName.dmsID      : position.positionID,
         }
 
         BaseDirectoryRecord.__init__(self, service, fields)
