@@ -191,12 +191,14 @@ function enable(element) {
 // Disable editing for an element
 function disableEditing() {
     disable($(".form-control"));
+    $(document.documentElement).addClass("no-edit");
 }
 
 
 // Enable editing for an element
 function enableEditing() {
     enable($(".form-control"));
+    $(document.documentElement).removeClass("no-edit");
 }
 
 
