@@ -88,23 +88,26 @@ class AuthMixIn(object):
     def authorizationsForUser(self, user, event):
         authorizations = Authorization.none
 
-        def matchACL(acl):
+        def matchACL(user, acl):
             acl = set(acl)
 
-            if u"*" in acl or shortName in acl:
+            if u"*" in acl:
                 return True
+
+            for shortName in user.shortNames:
+                if shortName in acl:
+                    return True
 
             return False
 
         if user is not None:
             if event:
-                for shortName in user.shortNames:
-                    if matchACL(self.storage.writers(event)):
+                if matchACL(user, self.storage.writers(event)):
+                    authorizations |= Authorization.readIncidents
+                    authorizations |= Authorization.writeIncidents
+                else:
+                    if matchACL(user, self.storage.readers(event)):
                         authorizations |= Authorization.readIncidents
-                        authorizations |= Authorization.writeIncidents
-                    else:
-                        if matchACL(set(self.storage.readers(event))):
-                            authorizations |= Authorization.readIncidents
 
         self.log.debug(
             "Authz for {user}: {authorizations}",
