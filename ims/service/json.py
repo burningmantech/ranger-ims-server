@@ -58,7 +58,9 @@ class JSONMixIn(object):
     @route(URLs.personnelURL.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
     def personnelResource(self, request, event):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
+        yield self.authorizeRequest(
+            request, event, Authorization.readIncidents
+        )
 
         stream, etag = yield self.personnelData()
         returnValue(self.jsonStream(request, stream, etag))
@@ -78,26 +80,35 @@ class JSONMixIn(object):
 
     @route(URLs.incidentTypesURL.asText(), methods=("HEAD", "GET"))
     @route(URLs.incidentTypesURL.asText() + u"/", methods=("HEAD", "GET"))
+    @inlineCallbacks
     def incidentTypesResource(self, request, event):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
+        yield self.authorizeRequest(
+            request, event, Authorization.readIncidents
+        )
 
         data = self.config.IncidentTypesJSONBytes
-        return self.jsonBytes(request, data, bytes(hash(data)))
+        returnValue(self.jsonBytes(request, data, bytes(hash(data))))
 
 
     @route(URLs.locationsURL.asText(), methods=("HEAD", "GET"))
     @route(URLs.locationsURL.asText() + u"/", methods=("HEAD", "GET"))
+    @inlineCallbacks
     def locationsResource(self, request, event):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
+        yield self.authorizeRequest(
+            request, event, Authorization.readIncidents
+        )
 
         data = self.config.locationsJSONBytes
-        return self.jsonBytes(request, data, bytes(hash(data)))
+        returnValue(self.jsonBytes(request, data, bytes(hash(data))))
 
 
     @route(URLs.incidentsURL.asText(), methods=("HEAD", "GET"))
     @route(URLs.incidentsURL.asText() + u"/", methods=("HEAD", "GET"))
+    @inlineCallbacks
     def listIncidentsResource(self, request, event):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
+        yield self.authorizeRequest(
+            request, event, Authorization.readIncidents
+        )
 
         incidents = self.storage[event].listIncidents()
 
@@ -113,23 +124,26 @@ class JSONMixIn(object):
             for incident in incidents
         )
 
-        return self.jsonStream(request, stream, None)
+        returnValue(self.jsonStream(request, stream, None))
 
 
     @route(URLs.incidentsURL.asText(), methods=("POST",))
     @route(URLs.incidentsURL.asText() + u"/", methods=("POST",))
+    @inlineCallbacks
     def newIncidentResource(self, request, event):
-        self.authorizeRequest(request, event, Authorization.writeIncidents)
+        yield self.authorizeRequest(
+            request, event, Authorization.writeIncidents
+        )
 
         json = jsonFromFile(request.content)
         incident = incidentFromJSON(json, number=None, validate=False)
 
         now = utcNow()
         if incident.created is not None and incident.created > now:
-            return self.badRequestResource(
+            returnValue(self.badRequestResource(
                 "Created time {} is in the future. Current time is {}."
                 .format(incident.created, now)
-            )
+            ))
 
         author = request.user.shortNames[0]
 
@@ -146,12 +160,15 @@ class JSONMixIn(object):
             HeaderName.location.value,
             "{}/{}".format(URLs.incidentNumberURL.asText(), incident.number)
         )
-        return self.noContentResource(request)
+        returnValue(self.noContentResource(request))
 
 
     @route(URLs.incidentNumberURL.asText(), methods=("HEAD", "GET"))
+    @inlineCallbacks
     def readIncidentResource(self, request, event, number):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
+        yield self.authorizeRequest(
+            request, event, Authorization.readIncidents
+        )
 
         # # For simulating slow connections
         # import time
@@ -160,22 +177,27 @@ class JSONMixIn(object):
         try:
             number = int(number)
         except ValueError:
-            return self.notFoundResource(request)
+            returnValue(self.notFoundResource(request))
 
         incident = self.storage.incident(event, number)
         text = textFromJSON(incidentAsJSON(incident))
 
-        return self.jsonBytes(request, text.encode("utf-8"), incident.version)
+        returnValue(
+            self.jsonBytes(request, text.encode("utf-8"), incident.version)
+        )
 
 
     @route(URLs.incidentNumberURL.asText(), methods=("POST",))
+    @inlineCallbacks
     def editIncidentResource(self, request, event, number):
-        self.authorizeRequest(request, event, Authorization.writeIncidents)
+        yield self.authorizeRequest(
+            request, event, Authorization.writeIncidents
+        )
 
         try:
             number = int(number)
         except ValueError:
-            return self.notFoundResource(request)
+            returnValue(self.notFoundResource(request))
 
         #
         # Get the edits requested by the client
@@ -183,22 +205,22 @@ class JSONMixIn(object):
         edits = jsonFromFile(request.content)
 
         if not isinstance(edits, dict):
-            return self.badRequestResource(
+            returnValue(self.badRequestResource(
                 request, "JSON incident must be a dictionary"
-            )
+            ))
 
         if edits.get(JSON.incident_number.value, number) != number:
-            return self.badRequestResource(
+            returnValue(self.badRequestResource(
                 request, "Incident number may not be modified"
-            )
+            ))
 
         UNSET = object()
 
         created = edits.get(JSON.incident_created.value, UNSET)
         if created is not UNSET:
-            return self.badRequestResource(
+            returnValue(self.badRequestResource(
                 request, "Incident created time may not be modified"
-            )
+            ))
 
         def applyEdit(json, key, setter, cast=None):
             if cast is None:
@@ -271,4 +293,4 @@ class JSONMixIn(object):
                         )
                     )
 
-        return self.noContentResource(request)
+        returnValue(self.noContentResource(request))

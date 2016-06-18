@@ -85,28 +85,33 @@ class AuthMixIn(object):
             )
 
 
+    @inlineCallbacks
     def authorizationsForUser(self, user, event):
-        authorizations = Authorization.none
-
+        @inlineCallbacks
         def matchACL(user, acl):
             acl = set(acl)
 
             if u"*" in acl:
-                return True
+                returnValue(True)
 
             for shortName in user.shortNames:
                 if shortName in acl:
-                    return True
+                    returnValue(True)
 
-            return False
+            for group in (yield user.groups()):
+                self.log.critical("GROUP: {group}", group=group)
+
+            returnValue(False)
+
+        authorizations = Authorization.none
 
         if user is not None:
             if event:
-                if matchACL(user, self.storage.writers(event)):
+                if (yield matchACL(user, self.storage.writers(event))):
                     authorizations |= Authorization.readIncidents
                     authorizations |= Authorization.writeIncidents
                 else:
-                    if matchACL(user, self.storage.readers(event)):
+                    if (yield matchACL(user, self.storage.readers(event))):
                         authorizations |= Authorization.readIncidents
 
         self.log.debug(
@@ -114,13 +119,16 @@ class AuthMixIn(object):
             user=user, authorizations=authorizations,
         )
 
-        return authorizations
+        returnValue(authorizations)
 
 
+    @inlineCallbacks
     def authorizeRequest(self, request, event, requiredAuthorizations):
         self.authenticateRequest(request)
 
-        userAuthorizations = self.authorizationsForUser(request.user, event)
+        userAuthorizations = yield self.authorizationsForUser(
+            request.user, event
+        )
         request.authorizations = userAuthorizations
 
         self.log.debug(

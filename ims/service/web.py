@@ -22,6 +22,8 @@ __all__ = [
     "WebMixIn",
 ]
 
+from twisted.internet.defer import inlineCallbacks, returnValue
+
 from ..data.json import textFromJSON, incidentAsJSON
 from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
@@ -105,12 +107,15 @@ class WebMixIn(object):
     @route(URLs.viewDispatchQueueURL.asText(), methods=("HEAD", "GET"))
     @route(URLs.viewDispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
+    @inlineCallbacks
     def viewDispatchQueuePage(self, request, event):
         # FIXME: Not strictly required because the underlying data is protected.
         # But the error you get is stupid, so let's avoid that for now.
-        self.authorizeRequest(request, event, Authorization.readIncidents)
+        yield self.authorizeRequest(
+            request, event, Authorization.readIncidents
+        )
 
-        return DispatchQueuePage(self, event)
+        returnValue(DispatchQueuePage(self, event))
 
 
     @route(URLs.viewDispatchQueueTemplateURL.asText(), methods=("HEAD", "GET"))
@@ -128,23 +133,29 @@ class WebMixIn(object):
 
 
     @route(URLs.dispatchQueueDataURL.asText(), methods=("HEAD", "GET"))
+    @inlineCallbacks
     def dispatchQueueDataResource(self, request, event):
-        self.authorizeRequest(request, event, Authorization.readIncidents)
+        yield self.authorizeRequest(
+            request, event, Authorization.readIncidents
+        )
 
         stream = self.buildJSONArray(
             textFromJSON(incidentAsJSON(incident)).encode("utf-8")
             for incident in self.storage.incidents(event)
         )
 
-        return self.jsonStream(request, stream, None)
+        returnValue(self.jsonStream(request, stream, None))
 
 
     @route(URLs.viewIncidentNumberURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
+    @inlineCallbacks
     def viewIncidentPage(self, request, event, number):
         # FIXME: Not strictly required because the underlying data is protected.
         # But the error you get is stupid, so let's avoid that for now.
-        self.authorizeRequest(request, event, Authorization.readIncidents)
+        yield self.authorizeRequest(
+            request, event, Authorization.readIncidents
+        )
 
         if number == u"new":
             number = None
@@ -152,9 +163,9 @@ class WebMixIn(object):
             try:
                 number = int(number)
             except ValueError:
-                return self.notFoundResource(request)
+                returnValue(self.notFoundResource(request))
 
-        return IncidentPage(self, event, number)
+        returnValue(IncidentPage(self, event, number))
 
 
     @route(URLs.viewIncidentNumberTemplateURL.asText(), methods=("HEAD", "GET"))
