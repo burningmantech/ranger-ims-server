@@ -26,6 +26,7 @@ from hashlib import sha1
 
 from twisted.python.constants import Names, NamedConstant
 from twisted.logger import Logger
+from twisted.internet.defer import inlineCallbacks
 
 from twext.who.idirectory import (
     RecordType as BaseRecordType, FieldName as BaseFieldName
@@ -33,6 +34,7 @@ from twext.who.idirectory import (
 from twext.who.index import (
     DirectoryService as BaseDirectoryService,
     DirectoryRecord as BaseDirectoryRecord,
+    FieldName as IndexFieldName,
 )
 from twext.who.util import ConstantsContainer
 
@@ -62,7 +64,7 @@ class DirectoryService(BaseDirectoryService):
 
     log = Logger()
 
-    fieldName = ConstantsContainer((BaseFieldName, FieldName))
+    fieldName = ConstantsContainer((BaseFieldName, IndexFieldName, FieldName))
 
     recordType = ConstantsContainer((
         BaseRecordType.user, BaseRecordType.group,
@@ -74,6 +76,7 @@ class DirectoryService(BaseDirectoryService):
 
         self.dms = dms
         self._personnel = None
+        self._positions = None
 
 
     @property
@@ -89,33 +92,38 @@ class DirectoryService(BaseDirectoryService):
 
     def loadRecords(self):
         # Getting the personnel data from DMS is async, and this API is not,
-        # so we'll set up a callback to get the data when it's available.
-
-        d = self.dms.personnel()
-        d.addCallback(self._loadRecordsFromPersonnel)
-        d.addErrback(lambda f: self.log.error(
-            "Unable to populate directory: {error}", error=f.getErrorMessage()
-        ))
+        # so we're going to call into an async method and when it's eventually
+        # done, we'll have some data, but we have no way to tell the caller
+        # when that is.
+        self._loadRecordsFromPersonnel()
 
 
-    def _loadRecordsFromPersonnel(self, personnel):
-        if personnel is self._personnel:
+    @inlineCallbacks
+    def _loadRecordsFromPersonnel(self):
+        personnel = yield self.dms.personnel()
+        positions = yield self.dms.positions()
+
+        if personnel is self._personnel and positions is self._positions:
             return
 
         self.flush()
         self.indexRecords(
-            DirectoryRecord(self, ranger) for ranger in personnel
+            RangerDirectoryRecord(self, ranger) for ranger in personnel
+        )
+        self.indexRecords(
+            PositionDirectoryRecord(self, position) for position in positions
         )
 
         self.log.info("DMS directory service updated.")
 
         self._personnel = personnel
+        self._positions = positions
 
 
 
-class DirectoryRecord(BaseDirectoryRecord):
+class RangerDirectoryRecord(BaseDirectoryRecord):
     """
-    Duty Management System directory record.
+    Duty Management System (user) directory record for a Ranger.
     """
 
     def __init__(self, service, ranger):
@@ -157,6 +165,28 @@ class DirectoryRecord(BaseDirectoryRecord):
         hashed = sha1(salt + password).hexdigest()
 
         return hashed == hashValue
+
+
+
+class PositionDirectoryRecord(BaseDirectoryRecord):
+    """
+    Duty Management System (group) directory record for a Position.
+    """
+
+    def __init__(self, service, position):
+        memberUIDs = (
+            unicode(ranger.dmsID) for ranger in position.members
+        )
+
+        fields = {
+            service.fieldName.recordType : service.recordType.group,
+            service.fieldName.uid        : unicode(position.positionID),
+            service.fieldName.fullNames  : (position.name,),
+            service.fieldName.memberUIDs : memberUIDs,
+            service.fieldName.dmsID      : position.positionID,
+        }
+
+        BaseDirectoryRecord.__init__(self, service, fields)
 
 
 
