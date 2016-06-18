@@ -95,11 +95,12 @@ class AuthMixIn(object):
                 returnValue(True)
 
             for shortName in user.shortNames:
-                if shortName in acl:
+                if u"person:{}".format(shortName) in acl:
                     returnValue(True)
 
             for group in (yield user.groups()):
-                self.log.critical("GROUP: {group}", group=group)
+                if u"position:{}".format(group.fullNames[0]) in acl:
+                    returnValue(True)
 
             returnValue(False)
 
