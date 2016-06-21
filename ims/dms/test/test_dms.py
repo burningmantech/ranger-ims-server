@@ -163,10 +163,20 @@ class DummyConnectionPool(object):
             "select "
             "id, callsign, first_name, mi, last_name, "
             "email, status, on_site, password "
-            "from person where status not in "
-            "( 'prospective', 'alpha', 'bonked', 'uberbonked', 'deceased' )"
+            "from person where status in "
+            "('active', 'inactive', 'vintage')"
         ):
             return succeed(iter(cannedPersonnel))
+
+        if sql == (
+            "select id, title from position where all_rangers = 0"
+        ):
+            return succeed(())
+
+        if sql == (
+            "select person_id, position_id from person_position"
+        ):
+            return succeed(())
 
         return fail(
             AssertionError("No canned response for query: {0}".format(sql))
