@@ -129,11 +129,41 @@ function addAccess(sender) {
     var container = $(sender).parents(".event_access:first");
     var event = container.find(".event_name:first").text();
     var mode = container.find(".access_mode:first").text();
-    var newExpression = sender.value;
+    var newExpression = sender.value.trim();
 
     var acl = accessControlList[event][mode].slice();
 
     acl.push(newExpression);
+
+    edits = {};
+    edits[event] = {};
+    edits[event][mode] = acl;
+
+    function refresh() {
+        updateEventAccess(event, mode);
+    }
+
+    function ok() {
+        loadAccessControlList(refresh);
+    }
+
+    function fail() {
+        loadAccessControlList(refresh);
+    }
+
+    sendACL(edits, ok, fail);
+}
+
+
+function removeAccess(sender) {
+    var container = $(sender).parents(".event_access:first");
+    var event = container.find(".event_name:first").text();
+    var mode = container.find(".access_mode:first").text();
+    var expression = $(sender).parent().text().trim();
+
+    var acl = accessControlList[event][mode].slice();
+
+    acl.splice(acl.indexOf(expression), 1);
 
     edits = {};
     edits[event] = {};
