@@ -294,3 +294,14 @@ class JSONMixIn(object):
                     )
 
         returnValue(self.noContentResource(request))
+
+
+    @route(URLs.adminAccessURL.asText(), methods=("HEAD", "GET"))
+    def readAdminAccessResource(self, request):
+        access = {}
+        for event in self.storage.events():
+            access[event] = dict(
+                readers=self.storage.readers(event),
+                writers=self.storage.writers(event),
+            )
+        return textFromJSON(access)

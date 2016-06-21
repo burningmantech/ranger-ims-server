@@ -65,6 +65,9 @@ class URLs(object):
     queueJSURL    = prefixURL.child(u"queue.js")
     incidentJSURL = prefixURL.child(u"incident.js")
 
+    # JSON endpoints
+    adminURL            = prefixURL.child(u"admin")
+    adminAccessURL      = adminURL.child(u"access")
     eventURL            = prefixURL.child(u"<event>")
     pingURL             = eventURL.child(u"ping")
     personnelURL        = eventURL.child(u"personnel")
@@ -73,6 +76,7 @@ class URLs(object):
     incidentsURL        = eventURL.child(u"incidents")
     incidentNumberURL   = incidentsURL.child(u"<number>")
 
+    # Web UI
     viewDispatchQueueURL          = eventURL.child(u"queue")
     viewDispatchQueueTemplateURL  = prefixURL.child(u"_queue")
     viewDispatchQueueJSURL        = viewDispatchQueueURL.child(u"queue.js")
