@@ -319,6 +319,6 @@ class JSONMixIn(object):
             if "readers" in eventAccess:
                 self.storage.setReaders(event, eventAccess["readers"])
             if "writers" in eventAccess:
-                self.storage.setReaders(event, eventAccess["writers"])
+                self.storage.setWriters(event, eventAccess["writers"])
 
         returnValue(self.noContentResource(request))
