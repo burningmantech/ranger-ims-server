@@ -102,10 +102,10 @@ class WebTool(Executable):
 
         patchCombinedLogFormatter()
 
-
-    def whenRunning(self):
         self.options.initConfig()
 
+
+    def whenRunning(self):
         config = self.options["configuration"]
         config.directory.loadRecords()
         service = WebService(config)
@@ -140,6 +140,8 @@ class KleinTool(Executable):
 
 
     def postOptions(self):
+        Executable.postOptions(self)
+
         self.options.initConfig()
 
         config = self.options["configuration"]
@@ -186,10 +188,14 @@ class DBLoadTool(Executable):
             self["fileStores"] = [FilePath(d) for d in datadirs]
 
 
+    def postOptions(self):
+        Executable.postOptions(self)
+
+        self.options.initConfig()
+
+
     def whenRunning(self):
         try:
-            self.options.initConfig()
-
             config = self.options["configuration"]
 
             storage = Storage(config.DatabaseFile)
