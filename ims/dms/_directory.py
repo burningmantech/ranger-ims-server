@@ -38,6 +38,8 @@ from twext.who.index import (
 )
 from twext.who.util import ConstantsContainer
 
+from ._dms import DatabaseError
+
 
 
 class FieldName(Names):
@@ -100,8 +102,12 @@ class DirectoryService(BaseDirectoryService):
 
     @inlineCallbacks
     def _loadRecordsFromPersonnel(self):
-        personnel = yield self.dms.personnel()
-        positions = yield self.dms.positions()
+        try:
+            personnel = yield self.dms.personnel()
+            positions = yield self.dms.positions()
+        except DatabaseError as e:
+            self.log.error("Unable to look up personnel data: {error}", error=e)
+            return
 
         if personnel is self._personnel and positions is self._positions:
             return
