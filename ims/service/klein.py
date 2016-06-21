@@ -60,6 +60,7 @@ def route(*args, **kwargs):
                 HeaderName.server.value,
                 "Incident Management System/{}".format(version),
             )
+            self.authenticateRequest(request, optional=True)
             try:
                 response = yield f(self, request, *args, **kwargs)
             except NotAuthenticatedError:

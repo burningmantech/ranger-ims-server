@@ -86,7 +86,7 @@ class WebMixIn(object):
         """
         Application root page.
         """
-        self.authenticateRequest(request)
+        # self.authenticateRequest(request)
 
         return RootPage(self)
 
@@ -121,8 +121,6 @@ class WebMixIn(object):
     @route(URLs.viewDispatchQueueTemplateURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def viewDispatchQueueTemplatePage(self, request):
-        self.authenticateRequest(request, optional=True)
-
         return DispatchQueueTemplatePage(self)
 
 
@@ -171,8 +169,6 @@ class WebMixIn(object):
     @route(URLs.viewIncidentNumberTemplateURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def viewIncidentNumberTemplatePage(self, request):
-        self.authenticateRequest(request, optional=True)
-
         return IncidentTemplatePage(self)
 
 
