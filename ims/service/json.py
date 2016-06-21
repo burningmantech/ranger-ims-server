@@ -297,11 +297,30 @@ class JSONMixIn(object):
 
 
     @route(URLs.adminAccessURL.asText(), methods=("HEAD", "GET"))
+    @inlineCallbacks
     def readAdminAccessResource(self, request):
+        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
+
         access = {}
         for event in self.storage.events():
             access[event] = dict(
                 readers=self.storage.readers(event),
                 writers=self.storage.writers(event),
             )
-        return textFromJSON(access)
+        returnValue(textFromJSON(access))
+
+
+    @route(URLs.adminAccessURL.asText(), methods=("POST",))
+    @inlineCallbacks
+    def editAdminAccessResource(self, request):
+        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
+
+        edits = jsonFromFile(request.content)
+
+        for event, eventAccess in edits.items():
+            if "readers" in eventAccess:
+                self.storage.setReaders(event, eventAccess["readers"])
+            if "writers" in eventAccess:
+                self.storage.setReaders(event, eventAccess["writers"])
+
+        returnValue(self.noContentResource(request))
