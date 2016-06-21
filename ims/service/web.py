@@ -25,6 +25,8 @@ __all__ = [
 from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..data.json import textFromJSON, incidentAsJSON
+from ..element.admin import AdminPage
+from ..element.admin_template import AdminTemplatePage
 from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
@@ -102,6 +104,29 @@ class WebMixIn(object):
         return self.redirect(request, URLs.viewDispatchQueueRelativeURL)
 
 
+    @route(URLs.adminURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.adminURL.asText() + u"/", methods=("HEAD", "GET"))
+    @fixedETag
+    @inlineCallbacks
+    def adminPage(self, request):
+        # FIXME: Not strictly required because the underlying data is protected.
+        # But the error you get is stupid, so let's avoid that for now.
+        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
+        returnValue(AdminPage(self))
+
+
+    @route(URLs.adminTemplateURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
+    def adminTemplatePage(self, request):
+        return AdminTemplatePage(self)
+
+
+    @route(URLs.adminJSURL.asText(), methods=("HEAD", "GET"))
+    @fixedETag
+    def adminJSResource(self, request):
+        return self.javaScript(request, "admin.js")
+
+
     @route(URLs.viewDispatchQueueURL.asText(), methods=("HEAD", "GET"))
     @route(URLs.viewDispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
@@ -109,10 +134,7 @@ class WebMixIn(object):
     def viewDispatchQueuePage(self, request, event):
         # FIXME: Not strictly required because the underlying data is protected.
         # But the error you get is stupid, so let's avoid that for now.
-        yield self.authorizeRequest(
-            request, event, Authorization.readIncidents
-        )
-
+        yield self.authorizeRequest(request, event, Authorization.readIncidents)
         returnValue(DispatchQueuePage(self, event))
 
 
@@ -131,9 +153,7 @@ class WebMixIn(object):
     @route(URLs.dispatchQueueDataURL.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def dispatchQueueDataResource(self, request, event):
-        yield self.authorizeRequest(
-            request, event, Authorization.readIncidents
-        )
+        yield self.authorizeRequest(request, event, Authorization.readIncidents)
 
         stream = self.buildJSONArray(
             textFromJSON(incidentAsJSON(incident)).encode("utf-8")
@@ -149,9 +169,7 @@ class WebMixIn(object):
     def viewIncidentPage(self, request, event, number):
         # FIXME: Not strictly required because the underlying data is protected.
         # But the error you get is stupid, so let's avoid that for now.
-        yield self.authorizeRequest(
-            request, event, Authorization.readIncidents
-        )
+        yield self.authorizeRequest(request, event, Authorization.readIncidents)
 
         if number == u"new":
             number = None

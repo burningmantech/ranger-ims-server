@@ -228,6 +228,7 @@ class Element(BaseElement):
                 incident_template_url=(
                     URLs.viewIncidentNumberTemplateURL.asText()
                 ),
+                admin_template_url=URLs.adminTemplateURL.asText(),
 
                 jquery_base_url=URLs.jqueryBaseURL.asText(),
                 jquery_js_url=URLs.jqueryJSURL.asText(),
@@ -246,6 +247,7 @@ class Element(BaseElement):
                 moment_js_url=URLs.momentJSURL.asText(),
 
                 ims_js_url=URLs.imsJSURL.asText(),
+                admin_js_url=URLs.adminJSURL.asText(),
                 queue_js_url=URLs.queueJSURL.asText(),
                 incident_js_url=URLs.incidentJSURL.asText(),
             ))

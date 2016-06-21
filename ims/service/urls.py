@@ -62,6 +62,7 @@ class URLs(object):
     momentJSURL = prefixURL.child(u"moment.min.js")
 
     imsJSURL      = prefixURL.child(u"ims.js")
+    adminJSURL    = prefixURL.child(u"admin.js")
     queueJSURL    = prefixURL.child(u"queue.js")
     incidentJSURL = prefixURL.child(u"incident.js")
 
@@ -77,6 +78,7 @@ class URLs(object):
     incidentNumberURL   = incidentsURL.child(u"<number>")
 
     # Web UI
+    adminTemplateURL              = prefixURL.child(u"_admin")
     viewDispatchQueueURL          = eventURL.child(u"queue")
     viewDispatchQueueTemplateURL  = prefixURL.child(u"_queue")
     viewDispatchQueueJSURL        = viewDispatchQueueURL.child(u"queue.js")
