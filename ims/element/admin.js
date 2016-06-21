@@ -20,7 +20,7 @@
 
 function initAdminPage() {
     function loadedAccessControlList() {
-        drawEventAccess();
+        drawAccess();
     }
 
     function loadedBody() {
@@ -55,56 +55,117 @@ function loadAccessControlList(success) {
 
 
 var _accessTemplate = null;
+var _entryTemplate = null;
 
-function drawEventAccess() {
+function drawAccess() {
     var container = $("#event_access_container");
 
     if (_accessTemplate == null) {
         _accessTemplate = container.children(".event_access:first");
+
+        _entryTemplate = _accessTemplate
+            .find(".list-group:first")
+            .children(".list-group-item:first")
+            ;
     }
 
     container.empty();
 
     for (var i in events) {
-        event = events[i];
+        var event = events[i];
 
-        eventACL = accessControlList[event];
-
-        if (eventACL == undefined) {
-            continue;
-        }
-
-        modes = ["readers", "writers"];
+        var modes = ["readers", "writers"];
 
         for (var i in modes) {
-            mode = modes[i];
+            var mode = modes[i];
 
-            eventAccess = $(_accessTemplate).clone();
+            var eventAccess = $(_accessTemplate).clone();
 
             // Add an id to the element for future reference
-            eventAccess.attr("id", "event_access_" + event);
-
-            // Set displayed event name and mode
-            eventAccess.find(".event_name").text(event);
-            eventAccess.find(".access_mode").text(mode);
-
-            entryContainer = eventAccess.find(".list-group:first");
-            entryTemplate = entryContainer.children(".list-group-item:first");
-
-            entryContainer.empty();
-
-            for (var i in eventACL[mode]) {
-                var expression = eventACL[mode][i];
-                var entryItem = entryTemplate.clone();
-
-                entryItem.append(expression);
-                entryItem.attr("value", expression);
-
-                entryContainer.append(entryItem);
-            }
+            eventAccess.attr("id", "event_access_" + event + "_" + mode);
 
             // Add to container
             container.append(eventAccess);
+
+            updateEventAccess(event, mode);
         }
     }
+}
+
+
+function updateEventAccess(event, mode) {
+    var eventACL = accessControlList[event];
+
+    if (eventACL == undefined) {
+        return;
+    }
+
+    var eventAccess = $("#event_access_" + event + "_" + mode);
+
+    // Set displayed event name and mode
+    eventAccess.find(".event_name").text(event);
+    eventAccess.find(".access_mode").text(mode);
+
+    var entryContainer = eventAccess.find(".list-group:first");
+    // var entryTemplate = entryContainer.children(
+    //     ".list-group-item:first"
+    // );
+
+    entryContainer.empty();
+
+    for (var i in eventACL[mode]) {
+        var expression = eventACL[mode][i];
+        var entryItem = _entryTemplate.clone();
+
+        entryItem.append(expression);
+        entryItem.attr("value", expression);
+
+        entryContainer.append(entryItem);
+    }
+}
+
+
+function addAccess(sender) {
+    var container = $(sender).parents(".event_access:first");
+    var event = container.find(".event_name:first").text();
+    var mode = container.find(".access_mode:first").text();
+    var newExpression = sender.value;
+
+    var acl = accessControlList[event][mode].slice();
+
+    acl.push(newExpression);
+
+    edits = {};
+    edits[event] = {};
+    edits[event][mode] = acl;
+
+    function refresh() {
+        updateEventAccess(event, mode);
+    }
+
+    function ok() {
+        loadAccessControlList(refresh);
+    }
+
+    function fail() {
+        loadAccessControlList(refresh);
+    }
+
+    sendACL(edits, ok, fail);
+}
+
+
+function sendACL(edits, success, error) {
+    function ok(data, status, xhr) {
+        success();
+    }
+
+    function fail(requestError, status, xhr) {
+        var message = "Failed to edit ACL:\n" + requestError
+        console.log(message);
+        error();
+        window.alert(message);
+    }
+
+    jsonRequest(accessURL, edits, ok, fail);
 }
