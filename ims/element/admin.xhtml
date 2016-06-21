@@ -13,6 +13,9 @@
     <!-- FIXME: figure out how to move this to / include from incident.js -->
     var pageTemplateURL = "<t:slot name="admin_template_url" />";
 
+    var events    = <json t:render="eventNames" />;
+    var accessURL = <json t:render="access_url" />;
+
     initAdminPage();
   </script>
 

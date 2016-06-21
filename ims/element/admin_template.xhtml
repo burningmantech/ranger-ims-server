@@ -1,5 +1,34 @@
 <!DOCTYPE html>
 <div xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="container">
-  <div class="row">
+  <div class="row" id="event_access_container">
+
+    <div class="col-sm-12 event_access">
+      <label>Access for <span class="event_name" /> (<span class="access_mode" />):</label>
+      <div class="well well-sm">
+        <ul class="list-group list-group-small">
+          <li class="list-group-item">
+<!--
+            <span class="badge remove-badge" onclick="removeAccess(this)">
+              <span class="glyphicon glyphicon-remove" />
+            </span>
+ -->
+          </li>
+        </ul>
+
+<!--
+      <div>
+          <label>Add:</label>
+          <select
+            id="access_add"
+            class="form-control input-sm auto-width"
+            onchange="addAccess()"
+          >
+            <option value="" />
+          </select>
+        </div>
+ -->
+      </div>
+    </div>
+
   </div>
 </div>

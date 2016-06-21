@@ -22,7 +22,9 @@ __all__ = [
     "AdminPage",
 ]
 
-from .base import Element
+from ..data.json import textFromJSON
+from ..service.urls import URLs
+from .base import Element, renderer
 
 
 
@@ -33,3 +35,13 @@ class AdminPage(Element):
 
     def __init__(self, service):
         Element.__init__(self, u"admin", service, title=u"IMS Admin")
+
+
+    @renderer
+    def eventNames(self, request, tag):
+        return textFromJSON(self.service.storage.events())
+
+
+    @renderer
+    def access_url(self, request, tag):
+        return textFromJSON(URLs.adminAccessURL.asText())
