@@ -193,6 +193,12 @@ class Configuration (object):
             "PIDFile: {pidFile}", pidFile=self.PIDFile
         )
 
+        admins = valueFromConfig("Core", "Admins", "")
+        self.IMSAdmins = set(a.strip() for a in admins.split(","))
+        self.log.info(
+            "Admins: {admins}", admins=self.IMSAdmins
+        )
+
         self.DMSHost     = valueFromConfig("DMS", "Hostname", None)
         self.DMSDatabase = valueFromConfig("DMS", "Database", None)
         self.DMSUsername = valueFromConfig("DMS", "Username", None)
