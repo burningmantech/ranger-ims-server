@@ -41,10 +41,12 @@ class Authorization(Flags):
     Authorizations
     """
 
+    imsAdmin = FlagConstant()
+
     readIncidents  = FlagConstant()
     writeIncidents = FlagConstant()
 
-Authorization.none = Authorization.readIncidents ^ Authorization.readIncidents
+Authorization.none = Authorization.imsAdmin ^ Authorization.imsAdmin
 
 
 
@@ -107,13 +109,19 @@ class AuthMixIn(object):
         authorizations = Authorization.none
 
         if user is not None:
-            if event:
-                if (yield matchACL(user, self.storage.writers(event))):
+            for shortName in user.shortNames:
+                if shortName in self.config.IMSAdmins:
+                    authorizations |= Authorization.imsAdmin
                     authorizations |= Authorization.readIncidents
                     authorizations |= Authorization.writeIncidents
-                else:
-                    if (yield matchACL(user, self.storage.readers(event))):
+            else:
+                if event:
+                    if (yield matchACL(user, self.storage.writers(event))):
+                        authorizations |= Authorization.writeIncidents
                         authorizations |= Authorization.readIncidents
+                    else:
+                        if (yield matchACL(user, self.storage.readers(event))):
+                            authorizations |= Authorization.readIncidents
 
         self.log.debug(
             "Authz for {user}: {authorizations}",
