@@ -125,6 +125,37 @@ class WebTool(Executable):
 
 
 
+class KleinTool(Executable):
+    """
+    Incident Management System web service command line tool.
+    """
+
+    log = Logger()
+
+
+    class Options(BaseOptions, ConfigOptionsMixIn):
+        optFlags = []
+
+        optParameters = []
+
+
+    def postOptions(self):
+        self.options.initConfig()
+
+        config = self.options["configuration"]
+        service = WebService(config)
+
+        for rule in service.app.url_map.iter_rules():
+            methods = list(rule.methods)
+            print(
+                "{rule.rule} {methods} -> {rule.endpoint}"
+                .format(rule=rule, methods=methods)
+            )
+
+        exit(ExitStatus.EX_OK)
+
+
+
 class DBLoadTool(Executable):
     """
     Incident Management System tool for loading data from a legacy file store
