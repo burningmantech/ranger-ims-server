@@ -150,6 +150,7 @@ function addAccess(sender) {
 
     function fail() {
         loadAccessControlList(refresh);
+        controlHasError(sender);
     }
 
     sendACL(edits, ok, fail);
