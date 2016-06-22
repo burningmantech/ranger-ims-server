@@ -145,6 +145,7 @@ function addAccess(sender) {
 
     function ok() {
         loadAccessControlList(refresh);
+        sender.value = "";  // Clear input field
     }
 
     function fail() {
