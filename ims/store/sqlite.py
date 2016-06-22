@@ -952,7 +952,7 @@ class Storage(object):
                         event=event, mode=mode
                     )
                     cursor.execute(self._query_clearEventAccess, (event, mode))
-                    for expression in expressions:
+                    for expression in frozenset(expressions):
                         self.log.info(
                             "Adding access: {event} {mode} {expression}",
                             event=event, mode=mode, expression=expression
