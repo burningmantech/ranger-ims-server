@@ -189,13 +189,13 @@ def datetimeAsRFC3339(datetime):
 
     @return: An RFC 3339 formatted date-time string corresponding to
         C{datetime} (converted to UTC).
-    @rtype: L{str}
+    @rtype: L{unicode}
     """
     if not datetime:
         return None
     else:
         datetime = datetime.astimezone(utc)
-        return datetime.strftime(rfc3339_datetime_format)
+        return datetime.strftime(rfc3339_datetime_format).decode("utf-8")
 
 
 
@@ -204,7 +204,7 @@ def rfc3339AsDateTime(rfc3339):
     Convert an RFC 3339 formatted string to a date-time object.
 
     @param rfc3339: An RFC 3339 formatted string.
-    @type rfc3339: L{str}
+    @type rfc3339: L{unicode}
 
     @return: An date-time object (in UTC) corresponding to C{rfc3339}.
     @rtype: L{DateTime}
@@ -223,67 +223,67 @@ class JSON(Values):
     """
 
     # Incident attribute keys
-    incident_number   = ValueConstant("number")
-    incident_created  = ValueConstant("timestamp")
-    incident_priority = ValueConstant("priority")
-    incident_state    = ValueConstant("state")
-    incident_summary  = ValueConstant("summary")
-    incident_location = ValueConstant("location")
-    ranger_handles    = ValueConstant("ranger_handles")
-    incident_types    = ValueConstant("incident_types")
-    report_entries    = ValueConstant("report_entries")
+    incident_number   = ValueConstant(u"number")
+    incident_created  = ValueConstant(u"timestamp")
+    incident_priority = ValueConstant(u"priority")
+    incident_state    = ValueConstant(u"state")
+    incident_summary  = ValueConstant(u"summary")
+    incident_location = ValueConstant(u"location")
+    ranger_handles    = ValueConstant(u"ranger_handles")
+    incident_types    = ValueConstant(u"incident_types")
+    report_entries    = ValueConstant(u"report_entries")
 
     # Obsolete incident attribute keys
-    _location_name    = ValueConstant("location_name")
-    _location_address = ValueConstant("location_address")
+    _location_name    = ValueConstant(u"location_name")
+    _location_address = ValueConstant(u"location_address")
 
     # Location attribute subkeys
-    location_name = ValueConstant("name")
-    location_type = ValueConstant("type")
+    location_name = ValueConstant(u"name")
+    location_type = ValueConstant(u"type")
 
     # Location type values
-    location_type_text   = ValueConstant("text")
-    location_type_garett = ValueConstant("garett")
+    location_type_text   = ValueConstant(u"text")
+    location_type_garett = ValueConstant(u"garett")
 
     # Text location type subkeys
-    location_text_description = ValueConstant("description")
+    location_text_description = ValueConstant(u"description")
 
     # Garett location type subkeys
-    location_garett_concentric    = ValueConstant("concentric")
-    location_garett_radial_hour   = ValueConstant("radial_hour")
-    location_garett_radial_minute = ValueConstant("radial_minute")
-    location_garett_description   = ValueConstant("description")
+    location_garett_concentric    = ValueConstant(u"concentric")
+    location_garett_radial_hour   = ValueConstant(u"radial_hour")
+    location_garett_radial_minute = ValueConstant(u"radial_minute")
+    location_garett_description   = ValueConstant(u"description")
 
     # State attribute values
-    state_new        = ValueConstant("new")
-    state_on_hold    = ValueConstant("on_hold")
-    state_dispatched = ValueConstant("dispatched")
-    state_on_scene   = ValueConstant("on_scene")
-    state_closed     = ValueConstant("closed")
+    state_new        = ValueConstant(u"new")
+    state_on_hold    = ValueConstant(u"on_hold")
+    state_dispatched = ValueConstant(u"dispatched")
+    state_on_scene   = ValueConstant(u"on_scene")
+    state_closed     = ValueConstant(u"closed")
 
     # Obsolete legacy state attribute keys
-    _created    = ValueConstant("created")
-    _dispatched = ValueConstant("dispatched")
-    _on_scene   = ValueConstant("on_scene")
-    _closed     = ValueConstant("closed")
+    _created    = ValueConstant(u"created")
+    _dispatched = ValueConstant(u"dispatched")
+    _on_scene   = ValueConstant(u"on_scene")
+    _closed     = ValueConstant(u"closed")
 
     # Ranger attribute keys
-    ranger_handle  = ValueConstant("handle")
-    ranger_name    = ValueConstant("name")
-    ranger_status  = ValueConstant("status")
-    ranger_dms_id  = ValueConstant("dms_id")
-    ranger_email   = ValueConstant("email")
-    ranger_on_site = ValueConstant("on_site")
+    ranger_handle  = ValueConstant(u"handle")
+    ranger_name    = ValueConstant(u"name")
+    ranger_status  = ValueConstant(u"status")
+    ranger_dms_id  = ValueConstant(u"dms_id")
+    ranger_email   = ValueConstant(u"email")
+    ranger_on_site = ValueConstant(u"on_site")
 
     # Report entry attribute keys
-    entry_author  = ValueConstant("author")
-    entry_text    = ValueConstant("text")
-    entry_system  = ValueConstant("system_entry")
-    entry_created = ValueConstant("created")
+    entry_author  = ValueConstant(u"author")
+    entry_text    = ValueConstant(u"text")
+    entry_system  = ValueConstant(u"system_entry")
+    entry_created = ValueConstant(u"created")
 
     # Web page reference keys
-    page_name = ValueConstant("name")
-    page_url  = ValueConstant("url")
+    page_name = ValueConstant(u"name")
+    page_url  = ValueConstant(u"url")
 
 
     @classmethod
@@ -331,18 +331,39 @@ def incidentFromJSON(root, number, validate=True):
                 "Unknown JSON attribute: {}".format(attribute)
             )
 
-    def get(json, name, default=None, transform=None):
+    def verifyType(expectedType, name, value):
+        if type(value) is not expectedType:
+            raise InvalidDataError(
+                "Expected {} for {}, got {!r}"
+                .format(expectedType, name, value)
+            )
+
+    def get(
+        json, name, expectedType=None, default=None,
+        transform=None, allowNone=True,
+    ):
         value = json.get(name.value, default)
 
         if value is None:
+            if not allowNone:
+                raise InvalidDataError("None not allowed for {}".format(name))
             return None
+
+        if expectedType is not None:
+            verifyType(expectedType, name, value)
 
         if transform is None:
             return value
         else:
-            return transform(value)
+            try:
+                return transform(value)
+            except (ValueError, TypeError) as e:
+                raise InvalidDataError(
+                    "Unable to transform {}={!r} with {}: {}"
+                    .format(name, value, transform, e)
+                )
 
-    json_number = get(root, JSON.incident_number)
+    json_number = get(root, JSON.incident_number, int)
 
     if json_number is not None:
         if json_number != number:
@@ -353,14 +374,14 @@ def incidentFromJSON(root, number, validate=True):
 
         root[JSON.incident_number.value] = number
 
-    priority = get(root, JSON.incident_priority)
-    summary  = get(root, JSON.incident_summary)
-    location = get(root, JSON.incident_location)
+    priority = get(root, JSON.incident_priority, int)
+    summary  = get(root, JSON.incident_summary , unicode)
+    location = get(root, JSON.incident_location, dict)
 
     if location is None:
         # Try pre-2015 attributes
-        location_name    = get(root, JSON._location_name)
-        location_address = get(root, JSON._location_address)
+        location_name    = get(root, JSON._location_name   , unicode)
+        location_address = get(root, JSON._location_address, unicode)
 
         if location_name is None and location_address is None:
             location = None
@@ -370,12 +391,12 @@ def incidentFromJSON(root, number, validate=True):
                 address=TextOnlyAddress(location_address),
             )
     else:
-        location_type = get(location, JSON.location_type)
-        location_name = get(location, JSON.location_name)
+        location_type = get(location, JSON.location_type, unicode)
+        location_name = get(location, JSON.location_name, unicode)
 
         if location_type == JSON.location_type_text.value:
             location_description = get(
-                location, JSON.location_garett_description
+                location, JSON.location_garett_description, unicode
             )
 
             if location_description is None:
@@ -384,11 +405,17 @@ def incidentFromJSON(root, number, validate=True):
                 address = TextOnlyAddress(description=location_description)
 
         elif location_type == JSON.location_type_garett.value:
-            location_concentric = get(location, JSON.location_garett_concentric)
-            location_hour = get(location, JSON.location_garett_radial_hour)
-            location_minute = get(location, JSON.location_garett_radial_minute)
+            location_concentric = get(
+                location, JSON.location_garett_concentric, int
+            )
+            location_hour = get(
+                location, JSON.location_garett_radial_hour, int
+            )
+            location_minute = get(
+                location, JSON.location_garett_radial_minute, int
+            )
             location_description = get(
-                location, JSON.location_garett_description
+                location, JSON.location_garett_description, unicode
             )
 
             if (
@@ -414,52 +441,59 @@ def incidentFromJSON(root, number, validate=True):
         location = Location(name=location_name, address=address)
 
     rangers = get(
-        root, JSON.ranger_handles,
+        root, JSON.ranger_handles, list,
         transform=(
             lambda handles:
             frozenset(Ranger(handle, None, None) for handle in handles)
         )
     )
 
-    incidentTypes = get(root, JSON.incident_types)
-    json_entries  = get(root, JSON.report_entries)
+    incidentTypes = get(root, JSON.incident_types, list)
+    if incidentTypes is not None:
+        for incidentType in incidentTypes:
+            verifyType(unicode, JSON.incident_types, incidentType)
+
+    json_entries = get(root, JSON.report_entries, list)
 
     if json_entries is None:
         reportEntries = None
     else:
         reportEntries = [
             ReportEntry(
-                author=get(entry, JSON.entry_author),
-                text=get(entry, JSON.entry_text),
+                author=get(entry, JSON.entry_author, unicode),
+                text=get(entry, JSON.entry_text, unicode),
                 created=get(
-                    entry, JSON.entry_created, transform=rfc3339AsDateTime
+                    entry, JSON.entry_created, unicode,
+                    transform=rfc3339AsDateTime,
                 ),
-                system_entry=get(entry, JSON.entry_system, False),
+                system_entry=get(entry, JSON.entry_system, bool, default=False),
             )
             for entry in json_entries
         ]
 
-    created = get(root, JSON.incident_created, transform=rfc3339AsDateTime)
+    created = get(
+        root, JSON.incident_created, unicode, transform=rfc3339AsDateTime
+    )
 
     # 2013 format did not have a true created timestamp, but it did have a
     # created state timestamp, which will have to do
     if created is None:
-        created = get(root, JSON._created, transform=rfc3339AsDateTime)
+        created = get(root, JSON._created, unicode, transform=rfc3339AsDateTime)
 
-    json_state = get(root, JSON.incident_state)
+    json_state = get(root, JSON.incident_state, unicode)
 
     if json_state is None:
         # Try obsolete attributes
-        if get(root, JSON._closed) is not None:
+        if get(root, JSON._closed, unicode) is not None:
             state = IncidentState.closed
 
-        elif get(root, JSON._on_scene) is not None:
+        elif get(root, JSON._on_scene, unicode) is not None:
             state = IncidentState.on_scene
 
-        elif get(root, JSON._dispatched) is not None:
+        elif get(root, JSON._dispatched, unicode) is not None:
             state = IncidentState.dispatched
 
-        elif get(root, JSON._created) is not None:
+        elif get(root, JSON._created, unicode) is not None:
             state = IncidentState.new
 
         else:

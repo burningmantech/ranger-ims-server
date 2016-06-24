@@ -350,7 +350,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
-                JSON.ranger_handles.value: (u"Tool", u"Tulsa"),
+                JSON.ranger_handles.value: [u"Tool", u"Tulsa"],
             },
             number=1, validate=False
         )
@@ -381,7 +381,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
-                JSON.ranger_handles.value: (),
+                JSON.ranger_handles.value: [],
             },
             number=1, validate=False
         )
@@ -395,7 +395,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
-                JSON.incident_types.value: (u"Footsie", u"Jacks"),
+                JSON.incident_types.value: [u"Footsie", u"Jacks"],
             },
             number=1, validate=False
         )
@@ -422,7 +422,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
-                JSON.incident_types.value: (),
+                JSON.incident_types.value: [],
             },
             number=1, validate=False
         )
@@ -438,22 +438,18 @@ class IncidentDeserializationTests(unittest.TestCase):
         incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
-                JSON.report_entries.value: (
+                JSON.report_entries.value: [
                     {
                         JSON.entry_author.value: u"Tool",
                         JSON.entry_text.value: u"1 2 3",
-                        JSON.entry_created.value: (
-                            datetimeAsRFC3339(time1)
-                        ),
+                        JSON.entry_created.value: datetimeAsRFC3339(time1),
                     },
                     {
                         JSON.entry_author.value: u"Tulsa",
                         JSON.entry_text.value: u"A B C",
-                        JSON.entry_created.value: (
-                            datetimeAsRFC3339(time2)
-                        ),
+                        JSON.entry_created.value: datetimeAsRFC3339(time2),
                     },
-                ),
+                ],
             },
             number=1, validate=False
         )
@@ -484,7 +480,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
-                JSON.report_entries.value: (),
+                JSON.report_entries.value: [],
             },
             number=1, validate=False
         )
@@ -554,7 +550,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             incident = incidentFromJSON(
                 {
                     JSON.incident_number.value: 1,
-                    json_key: "2012-09-01T21:00:00Z",
+                    json_key: u"2012-09-01T21:00:00Z",
                 },
                 number=1, validate=False
             )
