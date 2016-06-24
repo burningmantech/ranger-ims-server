@@ -72,6 +72,9 @@ create table INCIDENT (
     foreign key (EVENT) references EVENT(ID),
     foreign key (STATE) references INCIDENT_STATE(ID),
 
+    foreign key (EVENT, LOCATION_CONCENTRIC)
+    references CONCENTRIC_STREET(EVENT, ID),
+
     primary key (EVENT, NUMBER)
 );
 
