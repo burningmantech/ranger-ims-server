@@ -660,11 +660,19 @@ function editLocationName() {
 }
 
 
+function transformAddressInteger(value) {
+    if (value == "") {
+        return null;
+    }
+    return Number.parseInt(value);
+}
+
+
 function editLocationAddressRadialHour() {
     editFromElement(
         $("#incident_location_address_radial_hour"),
         "location.radial_hour",
-        Number.parseInt
+        transformAddressInteger
     );
 }
 
@@ -673,7 +681,7 @@ function editLocationAddressRadialMinute() {
     editFromElement(
         $("#incident_location_address_radial_minute"),
         "location.radial_minute",
-        Number.parseInt
+        transformAddressInteger
     );
 }
 
@@ -682,7 +690,7 @@ function editLocationAddressConcentric() {
     editFromElement(
         $("#incident_location_address_concentric"),
         "location.concentric",
-        Number.parseInt
+        transformAddressInteger
     );
 }
 
