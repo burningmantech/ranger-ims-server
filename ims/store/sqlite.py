@@ -107,6 +107,14 @@ class Storage(object):
 
             eventStore = multiStore[event]
 
+            # Load concentric street names
+            for name, id in eventStore.streetsByName().items():
+                self.log.info(
+                    "Creating concentric street: {event}: {name}",
+                    event=event, name=name
+                )
+                self.createConcentricStreet(event, id, name)
+
             # Load incidents
             for number, etag in eventStore.listIncidents():
                 incident = eventStore.readIncidentWithNumber(number)
@@ -118,14 +126,6 @@ class Storage(object):
                     "Creating incident: {incident}", incident=incident
                 )
                 self.importIncident(event, incident)
-
-            # Load concentric street names
-            for name, id in eventStore.streetsByName().items():
-                self.log.info(
-                    "Creating concentric street: {event}: {name}",
-                    event=event, name=name
-                )
-                self.createConcentricStreet(event, id, name)
 
             # Load access
             self.setReaders(event, eventStore.readers())
