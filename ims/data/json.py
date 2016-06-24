@@ -338,15 +338,10 @@ def incidentFromJSON(root, number, validate=True):
                 .format(expectedType, name, value)
             )
 
-    def get(
-        json, name, expectedType=None, default=None,
-        transform=None, allowNone=True,
-    ):
+    def get(json, name, expectedType=None, default=None, transform=None):
         value = json.get(name.value, default)
 
         if value is None:
-            if not allowNone:
-                raise InvalidDataError("None not allowed for {}".format(name))
             return None
 
         if expectedType is not None:
