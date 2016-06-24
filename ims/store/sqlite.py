@@ -669,6 +669,11 @@ class Storage(object):
         """
         Set the priority for the given incident in the given event.
         """
+        if (type(priority) is not int or priority < 1 or priority > 5):
+            raise InvalidDataError(
+                "Invalid incident priority: {!r}".format(priority)
+            )
+
         self._setIncidentColumn(
             self._query_setIncidentPriority,
             event, number, "priority", priority
@@ -683,6 +688,11 @@ class Storage(object):
         """
         Set the state for the given incident in the given event.
         """
+        if state not in IncidentState.iterconstants():
+            raise InvalidDataError(
+                "Invalid incident state: {!r}".format(state)
+            )
+
         self._setIncidentColumn(
             self._query_setIncidentState,
             event, number, "state", state.name
@@ -697,6 +707,11 @@ class Storage(object):
         """
         Set the summary for the given incident in the given event.
         """
+        if type(summary) is not unicode:
+            raise InvalidDataError(
+                "Invalid incident summary: {!r}".format(summary)
+            )
+
         self._setIncidentColumn(
             self._query_setIncidentSummary,
             event, number, "summary", summary
@@ -711,6 +726,11 @@ class Storage(object):
         """
         Set the location name for the given incident in the given event.
         """
+        if type(name) is not unicode:
+            raise InvalidDataError(
+                "Invalid incident location name: {!r}".format(name)
+            )
+
         self._setIncidentColumn(
             self._query_setIncidentLocationName,
             event, number, "location name", name
@@ -726,6 +746,12 @@ class Storage(object):
         Set the location concentric street for the given incident in the given
         event.
         """
+        if type(streetID) is not int:
+            raise InvalidDataError(
+                "Invalid incident location concentric street: {!r}"
+                .format(streetID)
+            )
+
         self._setIncidentColumn(
             self._query_setIncidentLocationConcentricStreet,
             event, number, "location concentric street", streetID
@@ -740,6 +766,11 @@ class Storage(object):
         """
         Set the location radial hour for the given incident in the given event.
         """
+        if (type(hour) is not int or hour < 1 or hour > 12):
+            raise InvalidDataError(
+                "Invalid incident location radial hour: {!r}".format(hour)
+            )
+
         self._setIncidentColumn(
             self._query_setIncidentLocationRadialHour,
             event, number, "location radial hour", hour
@@ -755,6 +786,11 @@ class Storage(object):
         Set the location radial minute for the given incident in the given
         event.
         """
+        if (type(minute) is not int or minute < 0 or minute >= 60):
+            raise InvalidDataError(
+                "Invalid incident location radial minute: {!r}".format(minute)
+            )
+
         self._setIncidentColumn(
             self._query_setIncidentLocationRadialMinute,
             event, number, "location radial minute", minute
@@ -769,6 +805,12 @@ class Storage(object):
         """
         Set the location description for the given incident in the given event.
         """
+        if type(description) is not unicode:
+            raise InvalidDataError(
+                "Invalid incident location description: {!r}"
+                .format(description)
+            )
+
         self._setIncidentColumn(
             self._query_setIncidentLocationDescription,
             event, number, "location description", description
@@ -792,6 +834,10 @@ class Storage(object):
                         self._query_clearIncidentRangers, (event, number)
                     )
                     for handle in rangerHandles:
+                        if type(handle) is not unicode:
+                            raise InvalidDataError(
+                                "Invalid Ranger handle: {!r}".format(handle)
+                            )
                         self._attachRanger(event, number, handle, cursor)
                 finally:
                     cursor.close()
@@ -825,6 +871,11 @@ class Storage(object):
                         self._query_clearIncidentTypes, (event, number)
                     )
                     for incidentType in incidentTypes:
+                        if type(incidentType) is not unicode:
+                            raise InvalidDataError(
+                                "Invalid incident type: {!r}"
+                                .format(incidentType)
+                            )
                         self._attachIncidentType(
                             event, number, incidentType, cursor
                         )
@@ -850,6 +901,7 @@ class Storage(object):
         """
         Add a report entry to the given incident in the given event.
         """
+        reportEntry.validate()
         try:
             with self._db as db:
                 cursor = db.cursor()
