@@ -338,7 +338,7 @@ def incidentFromJSON(root, number, validate=True):
                 .format(expectedType, name, value)
             )
 
-    def get(json, name, expectedType=None, default=None, transform=None):
+    def get(json, name, expectedType, default=None, transform=None):
         value = json.get(name.value, default)
 
         if value is None:
