@@ -707,7 +707,7 @@ class Storage(object):
         """
         Set the summary for the given incident in the given event.
         """
-        if type(summary) is not unicode:
+        if summary is not None and type(summary) is not unicode:
             raise InvalidDataError(
                 "Invalid incident summary: {!r}".format(summary)
             )
@@ -726,7 +726,7 @@ class Storage(object):
         """
         Set the location name for the given incident in the given event.
         """
-        if type(name) is not unicode:
+        if name is not None and type(name) is not unicode:
             raise InvalidDataError(
                 "Invalid incident location name: {!r}".format(name)
             )
@@ -746,7 +746,7 @@ class Storage(object):
         Set the location concentric street for the given incident in the given
         event.
         """
-        if type(streetID) is not int:
+        if streetID is not None and type(streetID) is not int:
             raise InvalidDataError(
                 "Invalid incident location concentric street: {!r}"
                 .format(streetID)
@@ -766,7 +766,10 @@ class Storage(object):
         """
         Set the location radial hour for the given incident in the given event.
         """
-        if (type(hour) is not int or hour < 1 or hour > 12):
+        if (
+            hour is not None and
+            (type(hour) is not int or hour < 1 or hour > 12)
+        ):
             raise InvalidDataError(
                 "Invalid incident location radial hour: {!r}".format(hour)
             )
@@ -786,7 +789,10 @@ class Storage(object):
         Set the location radial minute for the given incident in the given
         event.
         """
-        if (type(minute) is not int or minute < 0 or minute >= 60):
+        if (
+            minute is not None and
+            (type(minute) is not int or minute < 0 or minute >= 60)
+        ):
             raise InvalidDataError(
                 "Invalid incident location radial minute: {!r}".format(minute)
             )
@@ -805,7 +811,7 @@ class Storage(object):
         """
         Set the location description for the given incident in the given event.
         """
-        if type(description) is not unicode:
+        if description is not None and type(description) is not unicode:
             raise InvalidDataError(
                 "Invalid incident location description: {!r}"
                 .format(description)
