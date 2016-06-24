@@ -331,7 +331,18 @@ def incidentFromJSON(root, number, validate=True):
                 "Unknown JSON attribute: {}".format(attribute)
             )
 
-    json_number = root.get(JSON.incident_number.value, None)
+    def get(json, name, default=None, transform=None):
+        value = json.get(name.value, default)
+
+        if value is None:
+            return None
+
+        if transform is None:
+            return value
+        else:
+            return transform(value)
+
+    json_number = get(root, JSON.incident_number)
 
     if json_number is not None:
         if json_number != number:
@@ -342,16 +353,14 @@ def incidentFromJSON(root, number, validate=True):
 
         root[JSON.incident_number.value] = number
 
-    priority = root.get(JSON.incident_priority.value, None)
-
-    summary = root.get(JSON.incident_summary.value, None)
-
-    location = root.get(JSON.incident_location.value, None)
+    priority = get(root, JSON.incident_priority)
+    summary  = get(root, JSON.incident_summary)
+    location = get(root, JSON.incident_location)
 
     if location is None:
         # Try pre-2015 attributes
-        location_name = root.get(JSON._location_name.value, None)
-        location_address = root.get(JSON._location_address.value, None)
+        location_name    = get(root, JSON._location_name)
+        location_address = get(root, JSON._location_address)
 
         if location_name is None and location_address is None:
             location = None
@@ -361,12 +370,12 @@ def incidentFromJSON(root, number, validate=True):
                 address=TextOnlyAddress(location_address),
             )
     else:
-        location_type = location.get(JSON.location_type.value, None)
-        location_name = location.get(JSON.location_name.value, None)
+        location_type = get(location, JSON.location_type)
+        location_name = get(location, JSON.location_name)
 
         if location_type == JSON.location_type_text.value:
-            location_description = location.get(
-                JSON.location_garett_description.value, None
+            location_description = get(
+                location, JSON.location_garett_description
             )
 
             if location_description is None:
@@ -375,17 +384,11 @@ def incidentFromJSON(root, number, validate=True):
                 address = TextOnlyAddress(description=location_description)
 
         elif location_type == JSON.location_type_garett.value:
-            location_concentric = location.get(
-                JSON.location_garett_concentric.value, None
-            )
-            location_hour = location.get(
-                JSON.location_garett_radial_hour.value, None
-            )
-            location_minute = location.get(
-                JSON.location_garett_radial_minute.value, None
-            )
-            location_description = location.get(
-                JSON.location_garett_description.value, None
+            location_concentric = get(location, JSON.location_garett_concentric)
+            location_hour = get(location, JSON.location_garett_radial_hour)
+            location_minute = get(location, JSON.location_garett_radial_minute)
+            location_description = get(
+                location, JSON.location_garett_description
             )
 
             if (
@@ -410,55 +413,53 @@ def incidentFromJSON(root, number, validate=True):
 
         location = Location(name=location_name, address=address)
 
-    ranger_handles = root.get(JSON.ranger_handles.value, None)
-    if ranger_handles is None:
-        rangers = None
-    else:
-        rangers = frozenset(
-            Ranger(handle, None, None)
-            for handle in ranger_handles
+    rangers = get(
+        root, JSON.ranger_handles,
+        transform=(
+            lambda handles:
+            frozenset(Ranger(handle, None, None) for handle in handles)
         )
+    )
 
-    incidentTypes = root.get(JSON.incident_types.value, None)
-
-    json_entries = root.get(JSON.report_entries.value, None)
+    incidentTypes = get(root, JSON.incident_types)
+    json_entries  = get(root, JSON.report_entries)
 
     if json_entries is None:
         reportEntries = None
     else:
         reportEntries = [
             ReportEntry(
-                author=entry.get(JSON.entry_author.value, None),
-                text=entry.get(JSON.entry_text.value, None),
-                created=rfc3339AsDateTime(
-                    entry.get(JSON.entry_created.value, None)
+                author=get(entry, JSON.entry_author),
+                text=get(entry, JSON.entry_text),
+                created=get(
+                    entry, JSON.entry_created, transform=rfc3339AsDateTime
                 ),
-                system_entry=entry.get(JSON.entry_system.value, False),
+                system_entry=get(entry, JSON.entry_system, False),
             )
             for entry in json_entries
         ]
 
-    created = rfc3339AsDateTime(root.get(JSON.incident_created.value, None))
+    created = get(root, JSON.incident_created, transform=rfc3339AsDateTime)
 
     # 2013 format did not have a true created timestamp, but it did have a
     # created state timestamp, which will have to do
     if created is None:
-        created = rfc3339AsDateTime(root.get(JSON._created.value, None))
+        created = get(root, JSON._created, transform=rfc3339AsDateTime)
 
-    json_state = root.get(JSON.incident_state.value, None)
+    json_state = get(root, JSON.incident_state)
 
     if json_state is None:
         # Try obsolete attributes
-        if root.get(JSON._closed.value, None) is not None:
+        if get(root, JSON._closed) is not None:
             state = IncidentState.closed
 
-        elif root.get(JSON._on_scene.value, None) is not None:
+        elif get(root, JSON._on_scene) is not None:
             state = IncidentState.on_scene
 
-        elif root.get(JSON._dispatched.value, None) is not None:
+        elif get(root, JSON._dispatched) is not None:
             state = IncidentState.dispatched
 
-        elif root.get(JSON._created.value, None) is not None:
+        elif get(root, JSON._created) is not None:
             state = IncidentState.new
 
         else:
