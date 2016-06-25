@@ -26,7 +26,6 @@ from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..data.json import textFromJSON, incidentAsJSON
 from ..element.admin_acl import AdminAccessControlPage
-from ..element.admin_acl_template import AdminAccessControlTemplatePage
 from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
@@ -111,12 +110,6 @@ class WebMixIn(object):
         # But the error you get is stupid, so let's avoid that for now.
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)
         returnValue(AdminAccessControlPage(self))
-
-
-    @route(URLs.adminAccessControlTemplate.asText(), methods=("HEAD", "GET"))
-    @fixedETag
-    def adminAccessControlTemplatePage(self, request):
-        return AdminAccessControlTemplatePage(self)
 
 
     @route(URLs.adminAccessControlJS.asText(), methods=("HEAD", "GET"))

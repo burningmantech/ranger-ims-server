@@ -23,11 +23,8 @@ function initPage() {
         drawAccess();
     }
 
-    function loadedBody() {
-        loadAccessControlList(loadedAccessControlList);
-    }
-
-    loadBody(loadedBody);
+    detectTouchDevice();
+    loadAccessControlList(loadedAccessControlList);
 }
 
 
