@@ -46,4 +46,4 @@ class AdminAccessControlPage(Element):
 
     @renderer
     def acl_url(self, request, tag):
-        return textFromJSON(URLs.aclURL.asText())
+        return textFromJSON(URLs.acl.asText())

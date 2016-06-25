@@ -76,13 +76,13 @@ class ExternalMixIn(object):
     )
 
 
-    @route(URLs.bootstrapBaseURL.asText(), methods=("HEAD", "GET"), branch=True)
+    @route(URLs.bootstrapBase.asText(), methods=("HEAD", "GET"), branch=True)
     @fixedETag
     def bootstrapResource(self, request):
         requestURL = URL.fromText(request.uri.rstrip("/"))
 
         # Remove URL prefix
-        names = requestURL.path[len(URLs.bootstrapBaseURL.path):]
+        names = requestURL.path[len(URLs.bootstrapBase.path):]
 
         request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.cachedZippedResource(
@@ -91,7 +91,7 @@ class ExternalMixIn(object):
         )
 
 
-    @route(URLs.jqueryJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.jqueryJS.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def jqueryJSResource(self, request):
         request.setHeader(
@@ -103,7 +103,7 @@ class ExternalMixIn(object):
         )
 
 
-    @route(URLs.jqueryMapURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.jqueryMap.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def jqueryMapResource(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
@@ -114,14 +114,14 @@ class ExternalMixIn(object):
 
 
     @route(
-        URLs.dataTablesBaseURL.asText(), methods=("HEAD", "GET"), branch=True
+        URLs.dataTablesBase.asText(), methods=("HEAD", "GET"), branch=True
     )
     @fixedETag
     def dataTablesResource(self, request):
         requestURL = URL.fromText(request.uri.rstrip("/"))
 
         # Remove URL prefix
-        names = requestURL.path[len(URLs.dataTablesBaseURL.path):]
+        names = requestURL.path[len(URLs.dataTablesBase.path):]
 
         request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.cachedZippedResource(
@@ -130,7 +130,7 @@ class ExternalMixIn(object):
         )
 
 
-    @route(URLs.momentJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.momentJS.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def momentJSResource(self, request):
         request.setHeader(

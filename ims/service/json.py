@@ -44,16 +44,16 @@ class JSONMixIn(object):
     # JSON API endpoints
     #
 
-    @route(URLs.pingURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.pingURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.ping.asText(), methods=("HEAD", "GET"))
+    @route(URLs.ping.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     def pingResource(self, request):
         ack = b'"ack"'
         return self.jsonBytes(request, ack, bytes(hash(ack)))
 
 
-    @route(URLs.personnelURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.personnelURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.personnel.asText(), methods=("HEAD", "GET"))
+    @route(URLs.personnel.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
     def personnelResource(self, request, event):
         yield self.authorizeRequest(
@@ -76,8 +76,8 @@ class JSONMixIn(object):
         ))
 
 
-    @route(URLs.incidentTypesURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.incidentTypesURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.incidentTypes.asText(), methods=("HEAD", "GET"))
+    @route(URLs.incidentTypes.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
     def incidentTypesResource(self, request, event):
         yield self.authorizeRequest(
@@ -88,8 +88,8 @@ class JSONMixIn(object):
         returnValue(self.jsonBytes(request, data, bytes(hash(data))))
 
 
-    @route(URLs.locationsURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.locationsURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.locations.asText(), methods=("HEAD", "GET"))
+    @route(URLs.locations.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
     def locationsResource(self, request, event):
         yield self.authorizeRequest(
@@ -100,8 +100,8 @@ class JSONMixIn(object):
         returnValue(self.jsonBytes(request, data, bytes(hash(data))))
 
 
-    @route(URLs.incidentsURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.incidentsURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.incidents.asText(), methods=("HEAD", "GET"))
+    @route(URLs.incidents.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
     def listIncidentsResource(self, request, event):
         yield self.authorizeRequest(
@@ -125,8 +125,8 @@ class JSONMixIn(object):
         returnValue(self.jsonStream(request, stream, None))
 
 
-    @route(URLs.incidentsURL.asText(), methods=("POST",))
-    @route(URLs.incidentsURL.asText() + u"/", methods=("POST",))
+    @route(URLs.incidents.asText(), methods=("POST",))
+    @route(URLs.incidents.asText() + u"/", methods=("POST",))
     @inlineCallbacks
     def newIncidentResource(self, request, event):
         yield self.authorizeRequest(
@@ -156,12 +156,12 @@ class JSONMixIn(object):
         request.setHeader(HeaderName.incidentNumber.value, incident.number)
         request.setHeader(
             HeaderName.location.value,
-            "{}/{}".format(URLs.incidentNumberURL.asText(), incident.number)
+            "{}/{}".format(URLs.incidentNumber.asText(), incident.number)
         )
         returnValue(self.noContentResource(request))
 
 
-    @route(URLs.incidentNumberURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.incidentNumber.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def readIncidentResource(self, request, event, number):
         yield self.authorizeRequest(
@@ -185,7 +185,7 @@ class JSONMixIn(object):
         )
 
 
-    @route(URLs.incidentNumberURL.asText(), methods=("POST",))
+    @route(URLs.incidentNumber.asText(), methods=("POST",))
     @inlineCallbacks
     def editIncidentResource(self, request, event, number):
         yield self.authorizeRequest(
@@ -294,7 +294,7 @@ class JSONMixIn(object):
         returnValue(self.noContentResource(request))
 
 
-    @route(URLs.aclURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.acl.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def readAdminAccessResource(self, request):
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)
@@ -308,7 +308,7 @@ class JSONMixIn(object):
         returnValue(textFromJSON(acl))
 
 
-    @route(URLs.aclURL.asText(), methods=("POST",))
+    @route(URLs.acl.asText(), methods=("POST",))
     @inlineCallbacks
     def editAdminAccessResource(self, request):
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)

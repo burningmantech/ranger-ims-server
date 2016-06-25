@@ -77,18 +77,18 @@ class Element(BaseElement):
             ),
             tags.link(
                 type="image/png", rel="icon",
-                href=URLs.logoURL.asText(),
+                href=URLs.logo.asText(),
             ),
             tags.link(
                 type="text/css", rel="stylesheet", media="screen",
-                href=URLs.bootstrapCSSURL.asText(),
+                href=URLs.bootstrapCSS.asText(),
             ),
             tags.link(
                 type="text/css", rel="stylesheet", media="screen",
-                href=URLs.styleSheetURL.asText(),
+                href=URLs.styleSheet.asText(),
             ),
-            tags.script(src=URLs.jqueryJSURL.asText()),
-            tags.script(src=URLs.bootstrapJSURL.asText()),
+            tags.script(src=URLs.jqueryJS.asText()),
+            tags.script(src=URLs.bootstrapJS.asText()),
             self.title(request, tags.title),
             children,
         )
@@ -175,8 +175,8 @@ class Element(BaseElement):
         slots.update(dict(
             user=username,
 
-            login_url=redirectBack(URLs.loginURL),
-            logout_url=redirectBack(URLs.logoutURL),
+            login_url=redirectBack(URLs.login),
+            logout_url=redirectBack(URLs.logout),
         ))
 
         tag.fillSlots(**slots)
@@ -192,7 +192,7 @@ class Element(BaseElement):
             events = reversed(events)
 
         if events:
-            prefix = URLs.eventsURL.asText()
+            prefix = URLs.events.asText()
             return (
                 tag.clone()(
                     tags.a(
@@ -221,40 +221,40 @@ class Element(BaseElement):
             self._baseSlots = MappingProxyType(dict(
                 title=objectAsUnicode(self.elementTitle),
 
-                prefix_url=URLs.prefixURL.asText(),
-                stylesheet_url=URLs.styleSheetURL.asText(),
-                logo_url=URLs.logoURL.asText(),
+                prefix_url=URLs.prefix.asText(),
+                stylesheet_url=URLs.styleSheet.asText(),
+                logo_url=URLs.logo.asText(),
 
-                jquery_base_url=URLs.jqueryBaseURL.asText(),
-                jquery_js_url=URLs.jqueryJSURL.asText(),
-                jquery_map_url=URLs.jqueryMapURL.asText(),
-                bootstrap_base_url=URLs.bootstrapBaseURL.asText(),
-                bootstrap_css_url=URLs.bootstrapCSSURL.asText(),
-                bootstrap_js_url=URLs.bootstrapJSURL.asText(),
-                datatables_base_url=URLs.dataTablesBaseURL.asText(),
-                datatables_js_url=URLs.dataTablesJSURL.asText(),
+                jquery_base_url=URLs.jqueryBase.asText(),
+                jquery_js_url=URLs.jqueryJS.asText(),
+                jquery_map_url=URLs.jqueryMap.asText(),
+                bootstrap_base_url=URLs.bootstrapBase.asText(),
+                bootstrap_css_url=URLs.bootstrapCSS.asText(),
+                bootstrap_js_url=URLs.bootstrapJS.asText(),
+                datatables_base_url=URLs.dataTablesBase.asText(),
+                datatables_js_url=URLs.dataTablesJS.asText(),
                 datatables_bootstrap_css_url=(
-                    URLs.dataTablesBootstrapCSSURL.asText()
+                    URLs.dataTablesbootstrapCSS.asText()
                 ),
                 datatables_bootstrap_js_url=(
-                    URLs.dataTablesBootstrapJSURL.asText()
+                    URLs.dataTablesbootstrapJS.asText()
                 ),
-                moment_js_url=URLs.momentJSURL.asText(),
+                moment_js_url=URLs.momentJS.asText(),
 
-                ims_js_url=URLs.imsJSURL.asText(),
+                ims_js_url=URLs.imsJS.asText(),
 
                 admin_acl_template_url=(
-                    URLs.adminAccessControlTemplateURL.asText()
+                    URLs.adminAccessControlTemplate.asText()
                 ),
-                admin_acl_js_url=URLs.adminAccessControlJSURL.asText(),
+                admin_acl_js_url=URLs.adminAccessControlJS.asText(),
 
-                queue_template_url=URLs.viewDispatchQueueTemplateURL.asText(),
-                queue_js_url=URLs.viewDispatchQueueJSURL.asText(),
+                queue_template_url=URLs.viewDispatchQueueTemplate.asText(),
+                queue_js_url=URLs.viewDispatchQueueJS.asText(),
 
                 incident_template_url=(
-                    URLs.viewIncidentNumberTemplateURL.asText()
+                    URLs.viewIncidentNumberTemplate.asText()
                 ),
-                incident_js_url=URLs.viewIncidentNumberJSURL.asText(),
+                incident_js_url=URLs.viewIncidentNumberJS.asText(),
             ))
 
         return self._baseSlots

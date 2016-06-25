@@ -31,61 +31,62 @@ class URLs(object):
     Incident Management System URL schema.
     """
 
-    prefixURL = URL.fromText(u"/ims")
+    prefix = URL.fromText(u"/ims")
 
-    styleSheetURL = prefixURL.child(u"style.css")
+    styleSheet = prefix.child(u"style.css")
 
-    logoURL = prefixURL.child(u"logo.png")
+    logo = prefix.child(u"logo.png")
 
-    loginURL  = prefixURL.child(u"login")
-    logoutURL = prefixURL.child(u"logout")
+    login  = prefix.child(u"login")
+    logout = prefix.child(u"logout")
 
-    jqueryBaseURL = prefixURL.child(u"jquery")
-    jqueryJSURL   = jqueryBaseURL.child(u"jquery.min.js")
-    jqueryMapURL  = jqueryBaseURL.child(u"jquery.min.map")
+    jqueryBase = prefix.child(u"jquery")
+    jqueryJS   = jqueryBase.child(u"jquery.min.js")
+    jqueryMap  = jqueryBase.child(u"jquery.min.map")
 
-    bootstrapBaseURL = prefixURL.child(u"bootstrap")
-    bootstrapCSSURL  = bootstrapBaseURL.child(u"css", u"bootstrap.min.css")
-    bootstrapJSURL   = bootstrapBaseURL.child(u"js", u"bootstrap.min.js")
+    bootstrapBase = prefix.child(u"bootstrap")
+    bootstrapCSS  = bootstrapBase.child(u"css", u"bootstrap.min.css")
+    bootstrapJS   = bootstrapBase.child(u"js", u"bootstrap.min.js")
 
-    dataTablesBaseURL = prefixURL.child(u"datatables")
-    dataTablesJSURL = dataTablesBaseURL.child(
+    dataTablesBase = prefix.child(u"datatables")
+    dataTablesJS = dataTablesBase.child(
         u"media", u"js", u"jquery.dataTables.min.js"
     )
-    dataTablesBootstrapCSSURL = dataTablesBaseURL.child(
+    dataTablesbootstrapCSS = dataTablesBase.child(
         u"media", u"css", u"dataTables.bootstrap.min.css"
     )
-    dataTablesBootstrapJSURL = dataTablesBaseURL.child(
+    dataTablesbootstrapJS = dataTablesBase.child(
         u"media", u"js", u"dataTables.bootstrap.min.js"
     )
 
-    momentJSURL = prefixURL.child(u"moment.min.js")
+    momentJS = prefix.child(u"moment.min.js")
 
     # JSON endpoints
-    pingURL             = prefixURL.child(u"ping")
-    aclURL              = prefixURL.child(u"access")
-    eventsURL           = prefixURL.child(u"events")
-    eventURL            = eventsURL.child(u"<event>")
-    personnelURL        = eventURL.child(u"personnel")
-    incidentTypesURL    = eventURL.child(u"incident_types")
-    locationsURL        = eventURL.child(u"locations")
-    incidentsURL        = eventURL.child(u"incidents")
-    incidentNumberURL   = incidentsURL.child(u"<number>")
+    ping             = prefix.child(u"ping")
+    acl              = prefix.child(u"access")
+    events           = prefix.child(u"events")
+    event            = events.child(u"<event>")
+    personnel        = event.child(u"personnel")
+    incidentTypes    = event.child(u"incident_types")
+    locations        = event.child(u"locations")
+    incidents        = event.child(u"incidents")
+    incidentNumber   = incidents.child(u"<number>")
 
     # Web UI
-    imsJSURL                      = prefixURL.child(u"ims.js")
+    imsJS                      = prefix.child(u"ims.js")
 
-    adminAccessControlURL         = prefixURL.child(u"admin").child(u"access")
-    adminAccessControlJSURL       = adminAccessControlURL.child(u"access.js")
-    adminAccessControlTemplateURL = adminAccessControlURL.child(u"_access.html")
+    admin                      = prefix.child(u"admin")
+    adminAccessControl         = admin.child(u"access")
+    adminAccessControlJS       = adminAccessControl.child(u"access.js")
+    adminAccessControlTemplate = adminAccessControl.child(u"_access.html")
 
-    viewDispatchQueueURL          = eventURL.child(u"queue")
-    viewDispatchQueueTemplateURL  = prefixURL.child(u"_queue.html")
-    viewDispatchQueueJSURL        = prefixURL.child(u"queue.js")
-    dispatchQueueDataURL          = viewDispatchQueueURL.child(u"data")
-    viewDispatchQueueRelativeURL  = URL.fromText(u"queue")
+    viewDispatchQueue          = event.child(u"queue")
+    viewDispatchQueueTemplate  = prefix.child(u"_queue.html")
+    viewDispatchQueueJS        = prefix.child(u"queue.js")
+    dispatchQueueData          = viewDispatchQueue.child(u"data")
+    viewDispatchQueueRelative  = URL.fromText(u"queue")
 
-    viewIncidentsURL              = viewDispatchQueueURL.child(u"incidents")
-    viewIncidentNumberURL         = viewIncidentsURL.child(u"<number>")
-    viewIncidentNumberTemplateURL = prefixURL.child(u"_incident.html")
-    viewIncidentNumberJSURL       = prefixURL.child(u"incident.js")
+    viewincidents              = viewDispatchQueue.child(u"incidents")
+    viewincidentNumber         = viewincidents.child(u"<number>")
+    viewIncidentNumberTemplate = prefix.child(u"_incident.html")
+    viewIncidentNumberJS       = prefix.child(u"incident.js")

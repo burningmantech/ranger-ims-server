@@ -172,7 +172,7 @@ class AuthMixIn(object):
         returnValue(user)
 
 
-    @route(URLs.loginURL.asText(), methods=("POST",))
+    @route(URLs.login.asText(), methods=("POST",))
     @inlineCallbacks
     def loginSubmit(self, request):
         username = request.args.get("username", [""])[0].decode("utf-8")
@@ -191,7 +191,7 @@ class AuthMixIn(object):
 
                 url = request.args.get(u"o", [None])[0]
                 if url is None:
-                    location = URLs.prefixURL  # Default to application home
+                    location = URLs.prefix  # Default to application home
                 else:
                     location = URL.fromText(url)
 
@@ -200,17 +200,17 @@ class AuthMixIn(object):
         returnValue((yield self.login(request, failed=True)))
 
 
-    @route(URLs.loginURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.login.asText(), methods=("HEAD", "GET"))
     def login(self, request, failed=False):
         self.authenticateRequest(request, optional=True)
 
         return LoginPage(self, failed=failed)
 
 
-    @route(URLs.logoutURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.logout.asText(), methods=("HEAD", "GET"))
     def logout(self, request):
         session = request.getSession()
         session.expire()
 
         # Redirect back to application home
-        return self.redirect(request, URLs.prefixURL)
+        return self.redirect(request, URLs.prefix)

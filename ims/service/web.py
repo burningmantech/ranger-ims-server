@@ -48,20 +48,20 @@ class WebMixIn(object):
     # Static content
     #
 
-    @route(URLs.styleSheetURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.styleSheet.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def styleSheetResource(self, request):
         return self.styleSheet(request, "style.css")
 
 
-    @route(URLs.logoURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.logo.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def logoResource(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.PNG.value)
         return self.builtInResource(request, "logo.png")
 
 
-    @route(URLs.imsJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.imsJS.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def imsJSResource(self, request):
         return self.javaScript(request, "ims.js")
@@ -78,11 +78,11 @@ class WebMixIn(object):
 
         This redirects to the application root page.
         """
-        return self.redirect(request, URLs.prefixURL)
+        return self.redirect(request, URLs.prefix)
 
 
-    @route(URLs.prefixURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.prefixURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.prefix.asText(), methods=("HEAD", "GET"))
+    @route(URLs.prefix.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     def applicationRootResource(self, request):
         """
@@ -93,19 +93,19 @@ class WebMixIn(object):
 
     # Event root page; redirect to event dispatch queue
 
-    @route(URLs.eventURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.eventURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.event.asText(), methods=("HEAD", "GET"))
+    @route(URLs.event.asText() + u"/", methods=("HEAD", "GET"))
     def eventRootResource(self, request, event):
         """
         Event root page.
 
         This redirects to the event's dispatch queue page.
         """
-        return self.redirect(request, URLs.viewDispatchQueueRelativeURL)
+        return self.redirect(request, URLs.viewDispatchQueueRelative)
 
 
-    @route(URLs.adminAccessControlURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.adminAccessControlURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.adminAccessControl.asText(), methods=("HEAD", "GET"))
+    @route(URLs.adminAccessControl.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     @inlineCallbacks
     def adminAccessControlPage(self, request):
@@ -115,20 +115,20 @@ class WebMixIn(object):
         returnValue(AdminAccessControlPage(self))
 
 
-    @route(URLs.adminAccessControlTemplateURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.adminAccessControlTemplate.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def adminAccessControlTemplatePage(self, request):
         return AdminAccessControlTemplatePage(self)
 
 
-    @route(URLs.adminAccessControlJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.adminAccessControlJS.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def adminAccessControlJSResource(self, request):
         return self.javaScript(request, "admin_acl.js")
 
 
-    @route(URLs.viewDispatchQueueURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.viewDispatchQueueURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.viewDispatchQueue.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewDispatchQueue.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     @inlineCallbacks
     def viewDispatchQueuePage(self, request, event):
@@ -138,19 +138,19 @@ class WebMixIn(object):
         returnValue(DispatchQueuePage(self, event))
 
 
-    @route(URLs.viewDispatchQueueTemplateURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewDispatchQueueTemplate.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def viewDispatchQueueTemplatePage(self, request):
         return DispatchQueueTemplatePage(self)
 
 
-    @route(URLs.viewDispatchQueueJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewDispatchQueueJS.asText(), methods=("HEAD", "GET"))
     @fixedETag
-    def queueJSResource(self, request):
+    def viewDispatchQueueJSResource(self, request):
         return self.javaScript(request, "queue.js")
 
 
-    @route(URLs.dispatchQueueDataURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.dispatchQueueData.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def dispatchQueueDataResource(self, request, event):
         yield self.authorizeRequest(request, event, Authorization.readIncidents)
@@ -163,7 +163,7 @@ class WebMixIn(object):
         returnValue(self.jsonStream(request, stream, None))
 
 
-    @route(URLs.viewIncidentNumberURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewincidentNumber.asText(), methods=("HEAD", "GET"))
     @fixedETag
     @inlineCallbacks
     def viewIncidentPage(self, request, event, number):
@@ -182,13 +182,13 @@ class WebMixIn(object):
         returnValue(IncidentPage(self, event, number))
 
 
-    @route(URLs.viewIncidentNumberTemplateURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewIncidentNumberTemplate.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def viewIncidentNumberTemplatePage(self, request):
         return IncidentTemplatePage(self)
 
 
-    @route(URLs.viewIncidentNumberJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewIncidentNumberJS.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def incidentJSResource(self, request):
         return self.javaScript(request, "incident.js")

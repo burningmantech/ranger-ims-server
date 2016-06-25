@@ -64,7 +64,7 @@ def route(*args, **kwargs):
             try:
                 response = yield f(self, request, *args, **kwargs)
             except NotAuthenticatedError:
-                returnValue(self.redirect(request, URLs.loginURL, origin=u"o"))
+                returnValue(self.redirect(request, URLs.login, origin=u"o"))
             except NotAuthorizedError:
                 returnValue(self.notAuthorizedResource(request))
             except DMSError as e:
