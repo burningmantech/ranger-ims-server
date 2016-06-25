@@ -91,11 +91,9 @@ class WebMixIn(object):
         return RootPage(self)
 
 
-    # Event root page; redirect to event dispatch queue
-
-    @route(URLs.event.asText(), methods=("HEAD", "GET"))
-    @route(URLs.event.asText() + u"/", methods=("HEAD", "GET"))
-    def eventRootResource(self, request, event):
+    @route(URLs.viewEvent.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewEvent.asText() + u"/", methods=("HEAD", "GET"))
+    def viewEventResource(self, request, event):
         """
         Event root page.
 

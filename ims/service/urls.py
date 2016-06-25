@@ -61,10 +61,11 @@ class URLs(object):
 
     momentJS = prefix.child(u"moment.min.js")
 
-    # JSON endpoints
-    ping             = prefix.child(u"ping")
-    acl              = prefix.child(u"access")
-    events           = prefix.child(u"events")
+    # API endpoints
+    api              = prefix.child(u"api")
+    ping             = api.child(u"ping")
+    acl              = api.child(u"access")
+    events           = api.child(u"events")
     event            = events.child(u"<event>")
     personnel        = event.child(u"personnel")
     incidentTypes    = event.child(u"incident_types")
@@ -80,10 +81,13 @@ class URLs(object):
     adminAccessControlJS       = adminAccessControl.child(u"access.js")
     adminAccessControlTemplate = adminAccessControl.child(u"_access.html")
 
-    viewDispatchQueue          = event.child(u"queue")
+    viewEvents                 = prefix.child(u"events")
+    viewEvent                  = viewEvents.child(u"<event>")
+
+    viewDispatchQueue          = viewEvent.child(u"queue")
     viewDispatchQueueTemplate  = prefix.child(u"_queue.html")
     viewDispatchQueueJS        = prefix.child(u"queue.js")
-    dispatchQueueData          = viewDispatchQueue.child(u"data")
+    dispatchQueueData          = viewEvent.child(u"data")
     viewDispatchQueueRelative  = URL.fromText(u"queue")
 
     viewincidents              = viewDispatchQueue.child(u"incidents")
