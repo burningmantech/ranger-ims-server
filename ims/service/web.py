@@ -26,7 +26,7 @@ from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..data.json import textFromJSON, incidentAsJSON
 from ..element.admin import AdminPage
-from ..element.admin_template import AdminTemplatePage
+from ..element.admin_acl_template import AdminAccessControlTemplatePage
 from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
@@ -117,8 +117,8 @@ class WebMixIn(object):
 
     @route(URLs.adminTemplateURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
-    def adminTemplatePage(self, request):
-        return AdminTemplatePage(self)
+    def adminACLTemplatePage(self, request):
+        return AdminAccessControlTemplatePage(self)
 
 
     @route(URLs.adminJSURL.asText(), methods=("HEAD", "GET"))

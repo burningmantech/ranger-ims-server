@@ -15,23 +15,23 @@
 ##
 
 """
-Admin page template.
+Admin access control page template.
 """
 
 __all__ = [
-    "AdminTemplatePage",
+    "AdminAccessControlTemplatePage",
 ]
 
 from .base import Element
 
 
 
-class AdminTemplatePage(Element):
+class AdminAccessControlTemplatePage(Element):
     """
     Admin page template.
     """
 
     def __init__(self, service):
         Element.__init__(
-            self, u"admin_template", service, title=u"Admin Console"
+            self, u"admin_acl_template", service, title=u"Admin: Access Control"
         )
