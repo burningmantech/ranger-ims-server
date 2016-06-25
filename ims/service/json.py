@@ -47,7 +47,7 @@ class JSONMixIn(object):
     @route(URLs.pingURL.asText(), methods=("HEAD", "GET"))
     @route(URLs.pingURL.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
-    def pingResource(self, request, event):
+    def pingResource(self, request):
         ack = b'"ack"'
         return self.jsonBytes(request, ack, bytes(hash(ack)))
 

@@ -62,10 +62,10 @@ class URLs(object):
     momentJSURL = prefixURL.child(u"moment.min.js")
 
     # JSON endpoints
+    pingURL             = prefixURL.child(u"ping")
     aclURL              = prefixURL.child(u"access")
     eventsURL           = prefixURL.child(u"events")
     eventURL            = eventsURL.child(u"<event>")
-    pingURL             = eventURL.child(u"ping")
     personnelURL        = eventURL.child(u"personnel")
     incidentTypesURL    = eventURL.child(u"incident_types")
     locationsURL        = eventURL.child(u"locations")
