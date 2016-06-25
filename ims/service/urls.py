@@ -87,5 +87,5 @@ class URLs(object):
 
     viewIncidentsURL              = viewDispatchQueueURL.child(u"incidents")
     viewIncidentNumberURL         = viewIncidentsURL.child(u"<number>")
-    viewIncidentNumberTemplateURL = prefixURL.child(u"_incident")
+    viewIncidentNumberTemplateURL = prefixURL.child(u"_incident.html")
     viewIncidentNumberJSURL       = prefixURL.child(u"incident.js")
