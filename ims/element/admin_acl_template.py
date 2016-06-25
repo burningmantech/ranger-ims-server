@@ -28,7 +28,7 @@ from .base import Element
 
 class AdminAccessControlTemplatePage(Element):
     """
-    Admin page template.
+    Admin access control page template.
     """
 
     def __init__(self, service):

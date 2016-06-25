@@ -18,7 +18,7 @@
 // Initialize UI
 //
 
-function initAdminPage() {
+function initPage() {
     function loadedAccessControlList() {
         drawAccess();
     }

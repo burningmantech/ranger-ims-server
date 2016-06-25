@@ -15,11 +15,11 @@
 ##
 
 """
-Admin page.
+Admin access control page.
 """
 
 __all__ = [
-    "AdminPage",
+    "AdminAccessControlPage",
 ]
 
 from ..data.json import textFromJSON
@@ -28,13 +28,15 @@ from .base import Element, renderer
 
 
 
-class AdminPage(Element):
+class AdminAccessControlPage(Element):
     """
-    Admin page.
+    Admin access control page.
     """
 
     def __init__(self, service):
-        Element.__init__(self, u"admin", service, title=u"IMS Admin")
+        Element.__init__(
+            self, u"admin_acl", service, title=u"Admin: Access Control"
+        )
 
 
     @renderer
@@ -43,5 +45,5 @@ class AdminPage(Element):
 
 
     @renderer
-    def access_url(self, request, tag):
+    def acl_url(self, request, tag):
         return textFromJSON(URLs.aclURL.asText())

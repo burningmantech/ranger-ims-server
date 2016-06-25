@@ -2,9 +2,9 @@
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
 
   <head t:render="head">
-    <script><t:attr name="src"><t:slot name="moment_js_url" /></t:attr></script>
-    <script><t:attr name="src"><t:slot name="ims_js_url"    /></t:attr></script>
-    <script><t:attr name="src"><t:slot name="admin_js_url"  /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="moment_js_url"    /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="ims_js_url"       /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="admin_acl_js_url" /></t:attr></script>
   </head>
 
   <body />
@@ -14,9 +14,9 @@
     var pageTemplateURL = "<t:slot name="admin_acl_template_url" />";
 
     var events    = <json t:render="eventNames" />;
-    var accessURL = <json t:render="access_url" />;
+    var accessURL = <json t:render="acl_url" />;
 
-    initAdminPage();
+    initPage();
   </script>
 
 </html>

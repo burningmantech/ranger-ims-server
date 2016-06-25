@@ -244,7 +244,7 @@ class Element(BaseElement):
                 ims_js_url=URLs.imsJSURL.asText(),
 
                 admin_acl_template_url=URLs.adminTemplateURL.asText(),
-                admin_js_url=URLs.adminJSURL.asText(),
+                admin_acl_js_url=URLs.adminJSURL.asText(),
 
                 queue_template_url=URLs.viewDispatchQueueTemplateURL.asText(),
                 queue_js_url=URLs.viewDispatchQueueJSURL.asText(),
