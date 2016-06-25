@@ -77,10 +77,10 @@ class URLs(object):
 
     adminURL                      = prefixURL.child(u"admin")
     adminJSURL                    = adminURL.child(u"admin.js")
-    adminTemplateURL              = adminURL.child(u"_admin")
+    adminTemplateURL              = adminURL.child(u"_admin.html")
 
     viewDispatchQueueURL          = eventURL.child(u"queue")
-    viewDispatchQueueTemplateURL  = prefixURL.child(u"_queue")
+    viewDispatchQueueTemplateURL  = prefixURL.child(u"_queue.html")
     viewDispatchQueueJSURL        = prefixURL.child(u"queue.js")
     dispatchQueueDataURL          = viewDispatchQueueURL.child(u"data")
     viewDispatchQueueRelativeURL  = URL.fromText(u"queue")
