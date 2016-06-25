@@ -15,35 +15,23 @@
 ##
 
 """
-Admin access control page.
+Admin root page.
 """
 
 __all__ = [
-    "AdminAccessControlPage",
+    "AdminPage",
 ]
 
-from ..data.json import textFromJSON
-from ..service.urls import URLs
-from .base import Element, renderer
+from .base import Element
 
 
 
-class AdminAccessControlPage(Element):
+class AdminPage(Element):
     """
-    Admin access control page.
+    Admin root page.
     """
 
     def __init__(self, service):
         Element.__init__(
-            self, u"admin_acl", service, title=u"Admin: Event Access Control"
+            self, u"admin", service, title=u"Admin"
         )
-
-
-    @renderer
-    def eventNames(self, request, tag):
-        return textFromJSON(self.service.storage.events())
-
-
-    @renderer
-    def acl_url(self, request, tag):
-        return textFromJSON(URLs.acl.asText())

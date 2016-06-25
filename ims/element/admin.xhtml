@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
+
+  <head t:render="head">
+    <script><t:attr name="src"><t:slot name="moment_js_url"    /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="ims_js_url"       /></t:attr></script>
+    <script><t:attr name="src"><t:slot name="admin_js_url" /></t:attr></script>
+  </head>
+
+  <body>
+    <div t:render="container">
+      <div class="row">
+        <ul>
+          <li><a href="access">Event Access Control</a></li>
+        </ul>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    initPage();
+  </script>
+
+</html>

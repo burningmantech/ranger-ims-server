@@ -77,9 +77,10 @@ class URLs(object):
     imsJS                      = prefix.child(u"ims.js")
 
     admin                      = prefix.child(u"admin")
+    adminJS                    = admin.child(u"admin.js")
+
     adminAccessControl         = admin.child(u"access")
     adminAccessControlJS       = adminAccessControl.child(u"access.js")
-    adminAccessControlTemplate = adminAccessControl.child(u"_access.html")
 
     viewEvents                 = prefix.child(u"events")
     viewEvent                  = viewEvents.child(u"<event>")

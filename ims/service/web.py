@@ -25,6 +25,7 @@ __all__ = [
 from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..data.json import textFromJSON, incidentAsJSON
+from ..element.admin import AdminPage
 from ..element.admin_acl import AdminAccessControlPage
 from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
@@ -101,8 +102,23 @@ class WebMixIn(object):
         return self.redirect(request, URLs.viewDispatchQueueRelative)
 
 
+    @route(URLs.admin.asText(), methods=("HEAD", "GET"))
+    @route(URLs.admin.asText() + u"/", methods=("HEAD", "GET"))
+    @fixedETag
+    @inlineCallbacks
+    def adminPage(self, request):
+        # FIXME: Not strictly required because the underlying data is protected.
+        # But the error you get is stupid, so let's avoid that for now.
+        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
+        returnValue(AdminPage(self))
+
+
+    @route(URLs.adminJS.asText(), methods=("HEAD", "GET"))
+    @fixedETag
+    def adminJSResource(self, request):
+        return self.javaScript(request, "admin_acl.js")
+
     @route(URLs.adminAccessControl.asText(), methods=("HEAD", "GET"))
-    @route(URLs.adminAccessControl.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     @inlineCallbacks
     def adminAccessControlPage(self, request):
