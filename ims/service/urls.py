@@ -63,7 +63,8 @@ class URLs(object):
 
     # JSON endpoints
     aclURL              = prefixURL.child(u"access")
-    eventURL            = prefixURL.child(u"<event>")
+    eventsURL           = prefixURL.child(u"events")
+    eventURL            = eventsURL.child(u"<event>")
     pingURL             = eventURL.child(u"ping")
     personnelURL        = eventURL.child(u"personnel")
     incidentTypesURL    = eventURL.child(u"incident_types")

@@ -192,7 +192,7 @@ class Element(BaseElement):
             events = reversed(events)
 
         if events:
-            prefix = URLs.prefixURL.asText()
+            prefix = URLs.eventsURL.asText()
             return (
                 tag.clone()(
                     tags.a(
