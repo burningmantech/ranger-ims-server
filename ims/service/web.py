@@ -135,7 +135,6 @@ class WebMixIn(object):
 
 
     @route(URLs.viewDispatchQueue.asText(), methods=("HEAD", "GET"))
-    @route(URLs.viewDispatchQueue.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     @inlineCallbacks
     def viewDispatchQueuePage(self, request, event):
