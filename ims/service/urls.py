@@ -75,9 +75,9 @@ class URLs(object):
     # Web UI
     imsJSURL                      = prefixURL.child(u"ims.js")
 
-    adminURL                      = prefixURL.child(u"admin")
-    adminJSURL                    = adminURL.child(u"admin.js")
-    adminTemplateURL              = adminURL.child(u"_admin.html")
+    adminAccessControlURL         = prefixURL.child(u"admin").child(u"access")
+    adminAccessControlJSURL       = adminAccessControlURL.child(u"access.js")
+    adminAccessControlTemplateURL = adminAccessControlURL.child(u"_access.html")
 
     viewDispatchQueueURL          = eventURL.child(u"queue")
     viewDispatchQueueTemplateURL  = prefixURL.child(u"_queue.html")

@@ -104,8 +104,8 @@ class WebMixIn(object):
         return self.redirect(request, URLs.viewDispatchQueueRelativeURL)
 
 
-    @route(URLs.adminURL.asText(), methods=("HEAD", "GET"))
-    @route(URLs.adminURL.asText() + u"/", methods=("HEAD", "GET"))
+    @route(URLs.adminAccessControlURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.adminAccessControlURL.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     @inlineCallbacks
     def adminAccessControlPage(self, request):
@@ -115,13 +115,13 @@ class WebMixIn(object):
         returnValue(AdminAccessControlPage(self))
 
 
-    @route(URLs.adminTemplateURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.adminAccessControlTemplateURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def adminAccessControlTemplatePage(self, request):
         return AdminAccessControlTemplatePage(self)
 
 
-    @route(URLs.adminJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.adminAccessControlJSURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def adminAccessControlJSResource(self, request):
         return self.javaScript(request, "admin_acl.js")
