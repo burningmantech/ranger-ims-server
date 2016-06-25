@@ -144,7 +144,7 @@ class WebMixIn(object):
         return DispatchQueueTemplatePage(self)
 
 
-    @route(URLs.queueJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewDispatchQueueJSURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def queueJSResource(self, request):
         return self.javaScript(request, "queue.js")
@@ -188,7 +188,7 @@ class WebMixIn(object):
         return IncidentTemplatePage(self)
 
 
-    @route(URLs.incidentJSURL.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewIncidentNumberJSURL.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def incidentJSResource(self, request):
         return self.javaScript(request, "incident.js")

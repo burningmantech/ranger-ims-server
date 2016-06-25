@@ -61,14 +61,8 @@ class URLs(object):
 
     momentJSURL = prefixURL.child(u"moment.min.js")
 
-    imsJSURL      = prefixURL.child(u"ims.js")
-    adminJSURL    = prefixURL.child(u"admin.js")
-    queueJSURL    = prefixURL.child(u"queue.js")
-    incidentJSURL = prefixURL.child(u"incident.js")
-
     # JSON endpoints
-    adminURL            = prefixURL.child(u"admin")
-    adminAccessURL      = adminURL.child(u"access")
+    aclURL              = prefixURL.child(u"access")
     eventURL            = prefixURL.child(u"<event>")
     pingURL             = eventURL.child(u"ping")
     personnelURL        = eventURL.child(u"personnel")
@@ -78,12 +72,19 @@ class URLs(object):
     incidentNumberURL   = incidentsURL.child(u"<number>")
 
     # Web UI
-    adminTemplateURL              = prefixURL.child(u"_admin")
+    imsJSURL                      = prefixURL.child(u"ims.js")
+
+    adminURL                      = prefixURL.child(u"admin")
+    adminJSURL                    = adminURL.child(u"admin.js")
+    adminTemplateURL              = adminURL.child(u"_admin")
+
     viewDispatchQueueURL          = eventURL.child(u"queue")
     viewDispatchQueueTemplateURL  = prefixURL.child(u"_queue")
-    viewDispatchQueueJSURL        = viewDispatchQueueURL.child(u"queue.js")
+    viewDispatchQueueJSURL        = prefixURL.child(u"queue.js")
     dispatchQueueDataURL          = viewDispatchQueueURL.child(u"data")
     viewDispatchQueueRelativeURL  = URL.fromText(u"queue")
+
     viewIncidentsURL              = viewDispatchQueueURL.child(u"incidents")
     viewIncidentNumberURL         = viewIncidentsURL.child(u"<number>")
     viewIncidentNumberTemplateURL = prefixURL.child(u"_incident")
+    viewIncidentNumberJSURL       = prefixURL.child(u"incident.js")

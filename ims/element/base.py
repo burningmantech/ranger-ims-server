@@ -224,11 +224,6 @@ class Element(BaseElement):
                 prefix_url=URLs.prefixURL.asText(),
                 stylesheet_url=URLs.styleSheetURL.asText(),
                 logo_url=URLs.logoURL.asText(),
-                queue_template_url=URLs.viewDispatchQueueTemplateURL.asText(),
-                incident_template_url=(
-                    URLs.viewIncidentNumberTemplateURL.asText()
-                ),
-                admin_template_url=URLs.adminTemplateURL.asText(),
 
                 jquery_base_url=URLs.jqueryBaseURL.asText(),
                 jquery_js_url=URLs.jqueryJSURL.asText(),
@@ -247,9 +242,17 @@ class Element(BaseElement):
                 moment_js_url=URLs.momentJSURL.asText(),
 
                 ims_js_url=URLs.imsJSURL.asText(),
+
+                admin_template_url=URLs.adminTemplateURL.asText(),
                 admin_js_url=URLs.adminJSURL.asText(),
-                queue_js_url=URLs.queueJSURL.asText(),
-                incident_js_url=URLs.incidentJSURL.asText(),
+
+                queue_template_url=URLs.viewDispatchQueueTemplateURL.asText(),
+                queue_js_url=URLs.viewDispatchQueueJSURL.asText(),
+
+                incident_template_url=(
+                    URLs.viewIncidentNumberTemplateURL.asText()
+                ),
+                incident_js_url=URLs.viewIncidentNumberJSURL.asText(),
             ))
 
         return self._baseSlots

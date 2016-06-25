@@ -44,4 +44,4 @@ class AdminPage(Element):
 
     @renderer
     def access_url(self, request, tag):
-        return textFromJSON(URLs.adminAccessURL.asText())
+        return textFromJSON(URLs.aclURL.asText())
