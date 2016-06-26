@@ -116,7 +116,7 @@ class WebMixIn(object):
     @route(URLs.adminJS.asText(), methods=("HEAD", "GET"))
     @fixedETag
     def adminJSResource(self, request):
-        return self.javaScript(request, "admin_acl.js")
+        return self.javaScript(request, "admin.js")
 
     @route(URLs.adminAccessControl.asText(), methods=("HEAD", "GET"))
     @fixedETag
