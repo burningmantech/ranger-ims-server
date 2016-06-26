@@ -255,8 +255,9 @@ class Element(BaseElement):
                 ims_js_url=URLs.imsJS.asText(),
 
                 admin_url=URLs.admin.asText(),
-
                 admin_js_url=URLs.adminJS.asText(),
+
+                admin_acl_url=URLs.adminAccessControl.asText(),
                 admin_acl_js_url=URLs.adminAccessControlJS.asText(),
 
                 queue_template_url=URLs.viewDispatchQueueTemplate.asText(),
