@@ -31,8 +31,6 @@ function initPage() {
 var accessControlList = null
 
 function loadAccessControlList(success) {
-    var url = accessURL;
-
     function ok(data, status, xhr) {
         accessControlList = data;
 
@@ -47,7 +45,7 @@ function loadAccessControlList(success) {
         window.alert(message);
     }
 
-    jsonRequest(url, null, ok, fail);
+    jsonRequest(accessURL, null, ok, fail);
 }
 
 
@@ -104,9 +102,6 @@ function updateEventAccess(event, mode) {
     eventAccess.find(".access_mode").text(mode);
 
     var entryContainer = eventAccess.find(".list-group:first");
-    // var entryTemplate = entryContainer.children(
-    //     ".list-group-item:first"
-    // );
 
     entryContainer.empty();
 

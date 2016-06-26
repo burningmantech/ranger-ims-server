@@ -65,6 +65,7 @@ class URLs(object):
     api              = prefix.child(u"api")
     ping             = api.child(u"ping")
     acl              = api.child(u"access")
+    streets          = api.child(u"streets")
     events           = api.child(u"events")
     event            = events.child(u"<event>")
     personnel        = event.child(u"personnel")
@@ -81,6 +82,9 @@ class URLs(object):
 
     adminAccessControl         = admin.child(u"access")
     adminAccessControlJS       = adminAccessControl.child(u"access.js")
+
+    adminStreets               = admin.child(u"streets")
+    adminStreetsJS             = adminAccessControl.child(u"streets.js")
 
     viewEvents                 = prefix.child(u"events")
     viewEvent                  = viewEvents.child(u"<event>")

@@ -260,6 +260,9 @@ class Element(BaseElement):
                 admin_acl_url=URLs.adminAccessControl.asText(),
                 admin_acl_js_url=URLs.adminAccessControlJS.asText(),
 
+                admin_streets_url=URLs.adminStreets.asText(),
+                admin_streets_js_url=URLs.adminStreetsJS.asText(),
+
                 queue_template_url=URLs.viewDispatchQueueTemplate.asText(),
                 queue_js_url=URLs.viewDispatchQueueJS.asText(),
 

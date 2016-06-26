@@ -32,6 +32,7 @@ from .http import HeaderName, fixedETag
 from .klein import route
 from .urls import URLs
 from .auth import Authorization
+from .error import NotAuthorizedError
 
 
 
@@ -320,5 +321,41 @@ class JSONMixIn(object):
                 self.storage.setReaders(event, acl["readers"])
             if "writers" in acl:
                 self.storage.setWriters(event, acl["writers"])
+
+        returnValue(self.noContentResource(request))
+
+
+    @route(URLs.streets.asText(), methods=("HEAD", "GET"))
+    @inlineCallbacks
+    def readStreetsResource(self, request):
+        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
+
+        streets = {}
+        for event in self.storage.events():
+            streets[event] = self.storage.concentricStreetsByID(event)
+        returnValue(textFromJSON(streets))
+
+
+    @route(URLs.streets.asText(), methods=("POST",))
+    @inlineCallbacks
+    def editStreetsResource(self, request):
+        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
+
+        edits = jsonFromFile(request.content)
+
+        for event, streets in edits.items():
+            existing = self.storage.concentricStreetsByID(event)
+
+            for streetID, streetName in existing.items():
+                raise NotAuthorizedError("Removal of streets is not allowed.")
+
+        for event, streets in edits.items():
+            existing = self.storage.concentricStreetsByID(event)
+
+            for streetID, streetName in streets.items():
+                if streetID not in existing:
+                    self.storage.createConcentricStreet(
+                        event, streetID, streetName
+                    )
 
         returnValue(self.noContentResource(request))
