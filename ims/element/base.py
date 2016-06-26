@@ -151,8 +151,19 @@ class Element(BaseElement):
     def if_logged_in(self, request, tag):
         if getattr(request, "user", None) is None:
             return u""
-        else:
-            return tag
+        return tag
+
+
+    @renderer
+    def if_admin(self, request, tag):
+        user = getattr(request, "user", None)
+
+        if user is None:
+            return u""
+
+        for shortName in user.shortNames:
+            if shortName in self.service.config.IMSAdmins:
+                return tag
 
 
     @renderer
@@ -243,8 +254,9 @@ class Element(BaseElement):
 
                 ims_js_url=URLs.imsJS.asText(),
 
-                admin_js_url=URLs.adminJS.asText(),
+                admin_url=URLs.admin.asText(),
 
+                admin_js_url=URLs.adminJS.asText(),
                 admin_acl_js_url=URLs.adminAccessControlJS.asText(),
 
                 queue_template_url=URLs.viewDispatchQueueTemplate.asText(),

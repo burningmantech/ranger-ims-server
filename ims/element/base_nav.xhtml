@@ -19,6 +19,7 @@
       <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><code><t:slot name="user" /></code><span class="caret"></span></a>
           <ul class="dropdown-menu">
+            <li t:render="if_admin"><a><t:attr name="href"><t:slot name="admin_url" /></t:attr>Admin</a></li>
             <li><a><t:attr name="href"><t:slot name="logout_url" /></t:attr>Log out</a></li>
           </ul>
       </li>
