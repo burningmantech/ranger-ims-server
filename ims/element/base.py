@@ -259,6 +259,9 @@ class Element(BaseElement):
                 admin_url=URLs.admin.asText(),
                 admin_js_url=URLs.adminJS.asText(),
 
+                admin_types_url=URLs.adminIncidentTypes.asText(),
+                admin_types_js_url=URLs.adminIncidentTypesJS.asText(),
+
                 admin_acl_url=URLs.adminAccessControl.asText(),
                 admin_acl_js_url=URLs.adminAccessControlJS.asText(),
 

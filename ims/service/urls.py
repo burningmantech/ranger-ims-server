@@ -83,6 +83,9 @@ class URLs(object):
     adminAccessControl         = admin.child(u"access")
     adminAccessControlJS       = adminAccessControl.child(u"access.js")
 
+    adminIncidentTypes         = admin.child(u"types")
+    adminIncidentTypesJS       = adminAccessControl.child(u"types.js")
+
     adminStreets               = admin.child(u"streets")
     adminStreetsJS             = adminAccessControl.child(u"streets.js")
 
