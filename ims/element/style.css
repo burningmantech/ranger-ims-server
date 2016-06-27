@@ -112,3 +112,21 @@ a.navbar-brand>img {
 #incident_report_add {
   resize: vertical;
 }
+
+.item-hidden > .badge-visible {
+  display: none;
+}
+
+.item-visible > .badge-hidden {
+  display: none;
+}
+
+.badge-visible {
+  float: left !important;
+  margin-right: 20px;
+}
+
+.badge-hidden {
+  float: left !important;
+  margin-right: 20px;
+}

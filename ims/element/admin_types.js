@@ -29,16 +29,28 @@ function initPage() {
 
 
 var incidentTypes = null;
+var incidentTypesVisible = null;
 
 function loadIncidentTypes(success) {
     var url = incidentTypesURL;
 
-    function ok(data, status, xhr) {
-        incidentTypes = data;
-
-        if (success != undefined) {
-            success();
+    function ok() {
+        if (incidentTypes != null && incidentTypesVisible != null) {
+            if (success != undefined) {
+                success();
+            }
         }
+    }
+
+    function okVisible(data, status, xhr) {
+        incidentTypesVisible = data;
+        ok();
+    }
+
+
+    function okAll(data, status, xhr) {
+        incidentTypes = data;
+        ok();
     }
 
     function fail(error, status, xhr) {
@@ -47,7 +59,8 @@ function loadIncidentTypes(success) {
         window.alert(message);
     }
 
-    jsonRequest(incidentTypesURL, null, ok, fail);
+    jsonRequest(incidentTypesURL, null, okVisible, fail);
+    jsonRequest(incidentTypesURL + "/?hidden=true", null, okAll, fail);
 }
 
 
@@ -80,6 +93,12 @@ function updateIncidentTypes() {
     for (var i in incidentTypes) {
         var incidentType = incidentTypes[i];
         var entryItem = _entryTemplate.clone();
+
+        if (incidentTypesVisible.indexOf(incidentType) == -1) {
+            entryItem.addClass("item-visible")
+        } else {
+            entryItem.addClass("item-hidden")
+        }
 
         entryItem.append(incidentType);
         entryItem.attr("value", incidentType);

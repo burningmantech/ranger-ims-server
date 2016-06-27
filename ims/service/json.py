@@ -83,7 +83,11 @@ class JSONMixIn(object):
     def incidentTypesResource(self, request):
         yield self.authenticateRequest(request)
 
-        incidentTypes = tuple(self.storage.allIncidentTypes())
+        hidden = request.args.get("hidden", [""])[0] == "true"
+
+        incidentTypes = tuple(
+            self.storage.allIncidentTypes(includeHidden=hidden)
+        )
 
         stream = self.buildJSONArray(
             textFromJSON(incidentType).encode("utf-8")
