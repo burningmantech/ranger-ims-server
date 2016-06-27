@@ -167,9 +167,9 @@ class Storage(object):
     )
 
 
-    def incidentTypes(self, includeHidden=True):
+    def allIncidentTypes(self, includeHidden=False):
         """
-        Look up all events in this store.
+        Look up the incident types used in this store.
         """
         if includeHidden:
             query = self._query_incidentTypes

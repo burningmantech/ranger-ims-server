@@ -32,7 +32,6 @@ from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 
-from ..data.model import IncidentType
 from ..data.json import textFromJSON, jsonFromFile
 from ..store.sqlite import Storage
 from ..dms import DutyManagementSystem, DirectoryService
@@ -70,8 +69,6 @@ class Configuration (object):
             "DMS.Database: {self.DMSDatabase}\n"
             "DMS.Username: {self.DMSUsername}\n"
             "DMS.Password: {self.DMSPassword}\n"
-            "\n"
-            "Incident types: {self.IncidentTypes}\n"
         ).format(self=self)
 
 
@@ -209,39 +206,6 @@ class Configuration (object):
             user=self.DMSUsername, host=self.DMSHost, db=self.DMSDatabase,
         )
 
-        self.IncidentTypes = (
-            u"Art",
-            u"Assault",
-            u"Courtesy Notice",
-            u"Commerce",
-            u"Drone",
-            u"Echelon",
-            u"Eviction",
-            u"Fire",
-            u"Gate",
-            u"Green Dot",
-            u"HQ",
-            u"Law Enforcement",
-            u"Laser",
-            u"Lost Child",
-            u"Medical",
-            u"Mental Health",
-            u"Missing Person",
-            u"MOOP",
-            u"SITE",
-            u"Staff",
-            u"Theme Camp",
-            u"Vehicle",
-
-            IncidentType.Admin.value,
-            IncidentType.Junk.value,
-        )
-
-        self.log.info(
-            "{count} incident types",
-            incidentTypes=self.IncidentTypes, count=len(self.IncidentTypes),
-        )
-
         #
         # Persist some objects
         #
@@ -256,10 +220,6 @@ class Configuration (object):
         self.directory = DirectoryService(self.dms)
 
         self.storage = Storage(self.DatabaseFile)
-
-        self.IncidentTypesJSONBytes = (
-            textFromJSON(self.IncidentTypes).encode("utf-8")
-        )
 
         locationsFile = self.ConfigRoot.sibling("locations.json")
 

@@ -80,13 +80,17 @@ class JSONMixIn(object):
     @route(URLs.incidentTypes.asText(), methods=("HEAD", "GET"))
     @route(URLs.incidentTypes.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
-    def incidentTypesResource(self, request, event):
-        yield self.authorizeRequest(
-            request, event, Authorization.readIncidents
+    def incidentTypesResource(self, request):
+        yield self.authenticateRequest(request)
+
+        incidentTypes = tuple(self.storage.allIncidentTypes())
+
+        stream = self.buildJSONArray(
+            textFromJSON(incidentType).encode("utf-8")
+            for incidentType in incidentTypes
         )
 
-        data = self.config.IncidentTypesJSONBytes
-        returnValue(self.jsonBytes(request, data, bytes(hash(data))))
+        returnValue(self.jsonStream(request, stream, None))
 
 
     @route(URLs.locations.asText(), methods=("HEAD", "GET"))
