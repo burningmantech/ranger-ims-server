@@ -165,6 +165,8 @@ class Element(BaseElement):
             if shortName in self.service.config.IMSAdmins:
                 return tag
 
+        return u""
+
 
     @renderer
     def root(self, request, tag):
