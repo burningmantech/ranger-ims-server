@@ -19,11 +19,16 @@
 //
 
 function initPage() {
+    detectTouchDevice();
+    loadAndDrawIncidentTypes();
+}
+
+
+function loadAndDrawIncidentTypes() {
     function loadedIncidentTypes() {
         drawIncidentTypes();
     }
 
-    detectTouchDevice();
     loadIncidentTypes(loadedIncidentTypes);
 }
 
@@ -34,8 +39,11 @@ var incidentTypesVisible = null;
 function loadIncidentTypes(success) {
     var url = incidentTypesURL;
 
+    var gotAll = false;
+    var gotVisible = false;
+
     function ok() {
-        if (incidentTypes != null && incidentTypesVisible != null) {
+        if (gotAll && gotVisible) {
             if (success != undefined) {
                 success();
             }
@@ -44,12 +52,14 @@ function loadIncidentTypes(success) {
 
     function okVisible(data, status, xhr) {
         incidentTypesVisible = data;
+        gotVisible = true;
         ok();
     }
 
 
     function okAll(data, status, xhr) {
         incidentTypes = data;
+        gotAll = true;
         ok();
     }
 
@@ -108,13 +118,32 @@ function updateIncidentTypes() {
 }
 
 
-function addType(sender) {
-    alert("Add unimplemented");
+function addIncidentType(sender) {
+    sendIncidentTypes(
+        { "add": [$(sender).parent().attr("value")] },
+        loadAndDrawIncidentTypes, loadAndDrawIncidentTypes
+    );
 }
 
 
-function removeType(sender) {
+function removeIncidentType(sender) {
     alert("Remove unimplemented");
+}
+
+
+function showIncidentType(sender) {
+    sendIncidentTypes(
+        { "show": [$(sender).parent().attr("value")] },
+        loadAndDrawIncidentTypes, loadAndDrawIncidentTypes
+    );
+}
+
+
+function hideIncidentType(sender) {
+    sendIncidentTypes(
+        { "hide": [$(sender).parent().attr("value")] },
+        loadAndDrawIncidentTypes, loadAndDrawIncidentTypes
+    );
 }
 
 
@@ -130,5 +159,5 @@ function sendIncidentTypes(edits, success, error) {
         window.alert(message);
     }
 
-    jsonRequest(incidentTypesURL, edits, ok, fail);
+    jsonRequest(incidentTypesURL + "/", edits, ok, fail);
 }

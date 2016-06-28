@@ -97,6 +97,40 @@ class JSONMixIn(object):
         returnValue(self.jsonStream(request, stream, None))
 
 
+    @route(URLs.incidentTypes.asText(), methods=("POST",))
+    @route(URLs.incidentTypes.asText() + u"/", methods=("POST",))
+    @inlineCallbacks
+    def editIncidentTypesResource(self, request):
+        yield self.authorizeRequest(
+            request, None, Authorization.imsAdmin
+        )
+
+        json = jsonFromFile(request.content)
+
+        if type(json) is not dict:
+            returnValue(self.badRequestResource("root: expected a dictionary."))
+
+        adds = json.get("add" , [])
+        show = json.get("show", [])
+        hide = json.get("hide", [])
+
+        if adds:
+            for incidentType in adds:
+                self.storage.createIncidentType(incidentType)
+
+        if show:
+            if type(show) is not list:
+                returnValue(self.badRequestResource("show: expected a list."))
+            self.storage.showIncidentTypes(show)
+
+        if hide:
+            if type(hide) is not list:
+                returnValue(self.badRequestResource("hide: expected a list."))
+            self.storage.hideIncidentTypes(hide)
+
+        returnValue(self.noContentResource(request))
+
+
     @route(URLs.locations.asText(), methods=("HEAD", "GET"))
     @route(URLs.locations.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks

@@ -220,6 +220,45 @@ class Storage(object):
     )
 
 
+    def showIncidentTypes(self, incidentTypes):
+        """
+        Show the given incident types.
+        """
+        return self._hideShowIncidentTypes(incidentTypes, False)
+
+
+    def hideIncidentTypes(self, incidentTypes):
+        """
+        Hide the given incident types.
+        """
+        return self._hideShowIncidentTypes(incidentTypes, True)
+
+
+    def _hideShowIncidentTypes(self, incidentTypes, hidden):
+        """
+        Show the given incident types.
+        """
+        try:
+            with self._db as db:
+                for incidentType in incidentTypes:
+                    db.execute(
+                        self._query_hideShowIncidentType, (hidden, incidentType)
+                    )
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to create show types: {incidentTypes}",
+                incidentTypes=incidentTypes
+            )
+            raise StorageError(e)
+
+
+    _query_hideShowIncidentType = dedent(
+        """
+        update INCIDENT_TYPE set HIDDEN = ? where NAME = ?
+        """
+    )
+
+
     def incident(self, event, number):
         """
         Look up the incident with the given number in the given event.
