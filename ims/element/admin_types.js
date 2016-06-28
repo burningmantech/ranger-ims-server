@@ -119,9 +119,14 @@ function updateIncidentTypes() {
 
 
 function addIncidentType(sender) {
+    function ok () {
+        sender.value = "";
+        loadAndDrawIncidentTypes();
+    }
+
     sendIncidentTypes(
-        { "add": [$(sender).parent().attr("value")] },
-        loadAndDrawIncidentTypes, loadAndDrawIncidentTypes
+        { "add": [sender.value] },
+        ok, loadAndDrawIncidentTypes
     );
 }
 
