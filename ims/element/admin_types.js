@@ -95,9 +95,9 @@ function updateIncidentTypes() {
         var entryItem = _entryTemplate.clone();
 
         if (incidentTypesVisible.indexOf(incidentType) == -1) {
-            entryItem.addClass("item-visible")
-        } else {
             entryItem.addClass("item-hidden")
+        } else {
+            entryItem.addClass("item-visible")
         }
 
         entryItem.append(incidentType);
