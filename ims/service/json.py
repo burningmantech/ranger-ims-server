@@ -117,10 +117,7 @@ class JSONMixIn(object):
         if adds:
             if type(adds) is not list:
                 returnValue(self.badRequestResource("add: expected a list."))
-            print "*"*80
-            print json
             for incidentType in adds:
-                print incidentType
                 self.storage.createIncidentType(incidentType)
 
         if show:
