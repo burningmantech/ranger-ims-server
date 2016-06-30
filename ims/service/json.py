@@ -81,7 +81,7 @@ class JSONMixIn(object):
     @route(URLs.incidentTypes.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
     def incidentTypesResource(self, request):
-        yield self.authenticateRequest(request)
+        self.authenticateRequest(request)
 
         hidden = request.args.get("hidden", [""])[0] == "true"
 
