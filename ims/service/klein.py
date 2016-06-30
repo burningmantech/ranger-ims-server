@@ -31,7 +31,10 @@ from functools import wraps
 from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.web import http
+from twisted.web.iweb import IRenderable
+from twisted.web.template import renderElement
 
+from werkzeug.exceptions import NotFound
 from klein import Klein
 
 from ims import __version__ as version
@@ -60,24 +63,34 @@ def route(*args, **kwargs):
                 HeaderName.server.value,
                 "Incident Management System/{}".format(version),
             )
-            self.authenticateRequest(request, optional=True)
-            try:
-                response = yield f(self, request, *args, **kwargs)
-            except NotAuthenticatedError:
-                returnValue(self.redirect(request, URLs.login, origin=u"o"))
-            except NotAuthorizedError:
-                returnValue(self.notAuthorizedResource(request))
-            except DMSError as e:
-                self.log.error("DMS error: {failure}", failure=e)
-            except Exception:
-                self.log.failure("Request failed", request=request)
-            else:
-                returnValue(response)
 
-            returnValue(self.internalErrorResource(request))
+            # Capture authentication info if sent by the client, (ie. it's been
+            # previously asked to authenticate), so we can log it, but don't
+            # require authentication.
+            self.authenticateRequest(request, optional=True)
+
+            response = yield f(self, request, *args, **kwargs)
+            returnValue(response)
 
         return wrapper
     return decorator
+
+
+def renderResponse(f):
+    """
+    Decorator to ensure that the returned response is rendered, if applicable.
+    Needed because L{Klein.handle_errors} doesn't do rendering for you.
+    """
+    @wraps(f)
+    def wrapper(request, *args, **kwargs):
+        response = f(request, *args, **kwargs)
+
+        if IRenderable.providedBy(response):
+            return renderElement(request, response)
+
+        return response
+
+    return wrapper
 
 
 
@@ -125,6 +138,10 @@ class KleinService(object):
 
 
     def notFoundResource(self, request):
+        # Require authentication.
+        # This is because exposing what resources do or do not exist can expose
+        # information that was not meant to be exposed.
+        self.authenticateRequest(request)
         request.setResponseCode(http.NOT_FOUND)
         return self.textResource(request, "Not found.")
 
@@ -157,3 +174,67 @@ class KleinService(object):
         else:
             message = u"{}".format(message).encode("utf-8")
         return self.textResource(request, message)
+
+
+    #
+    # Error handlers
+    #
+
+    @app.handle_errors(NotFound)
+    @renderResponse
+    def notFoundError(self, request, failure):
+        """
+        Not found.
+        """
+        return self.notFoundResource(request)
+
+
+    @app.handle_errors(NotAuthorizedError)
+    @renderResponse
+    def notAuthorizedError(self, request, failure):
+        """
+        Not authorized.
+        """
+        return self.notAuthorizedResource(request)
+
+
+    @app.handle_errors(NotAuthenticatedError)
+    @renderResponse
+    def notAuthenticatedError(self, request, failure):
+        """
+        Not authenticated.
+        """
+        element = self.redirect(request, URLs.login, origin=u"o")
+        return renderElement(request, element)
+
+
+    @app.handle_errors(DMSError)
+    @renderResponse
+    def dmsError(self, request, failure):
+        """
+        DMS error.
+        """
+        self.log.failure("DMS error", failure)
+        return self.internalErrorResource(request)
+
+
+    @app.handle_errors
+    @renderResponse
+    def unknownError(self, request, failure):
+        """
+        Deal with a request error caught by Klein.
+        """
+        # This logs the failure traceback for debugging.
+        # Klein normally will also display the traceback in the response.
+        # We don't do that for a few reasons:
+        #  - It's a poor security practice to explain to an attacker what
+        #    exactly is causing an internal error.
+        #  - Most users don't know what to do with that inforrmation.
+        #  - The admins should be able to find the errors in the logs.
+        #  - Klein doing that is a developer feature; developers can also watch
+        #    the logs.
+        #  - The traceback is emitted after whatever else was sent with the
+        #    request, which often means that it displays like a total mess in
+        #    a browser, and that's just pitiful.
+        self.log.failure("Request failed", failure)
+        return self.internalErrorResource(request)
