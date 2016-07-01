@@ -281,6 +281,10 @@ class JSON(Values):
     entry_system  = ValueConstant(u"system_entry")
     entry_created = ValueConstant(u"created")
 
+    # Incident report attribute keys
+    incident_report_number  = ValueConstant("number")
+    incident_report_created = ValueConstant("created")
+
     # Web page reference keys
     page_name = ValueConstant(u"name")
     page_url  = ValueConstant(u"url")
@@ -633,3 +637,37 @@ def locationAsJSON(location):
         }
     else:
         raise InvalidDataError("Unknown addresses type: {}".format(address))
+
+
+
+def incidentReportAsJSON(incidentReport):
+    """
+    Generate JSON data from an incident report.
+
+    @param incidentReport: An incident report to serialize.
+    @type incidentReport: L{IncidentReport}
+
+    @return: C{incidentReport}, serialized as JSON data.
+    @rtype: L{dict}
+    """
+    root = {}
+
+    root[JSON.incident_report_number.value] = incidentReport.number
+
+    if incidentReport.created is not None:
+        root[JSON.incident_report_created.value] = (
+            datetimeAsRFC3339(incidentReport.created)
+        )
+
+    if incidentReport.reportEntries is not None:
+        root[JSON.report_entries.value] = [
+            {
+                JSON.entry_author.value: entry.author,
+                JSON.entry_text.value: entry.text,
+                JSON.entry_created.value: datetimeAsRFC3339(entry.created),
+                JSON.entry_system.value: entry.system_entry,
+            }
+            for entry in incidentReport.reportEntries
+        ]
+
+    return root
