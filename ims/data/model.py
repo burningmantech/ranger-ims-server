@@ -29,6 +29,7 @@ __all__ = [
     "Address",
     "TextOnlyAddress",
     "RodGarettAddress",
+    "IncidentReport",
 ]
 
 from functools import total_ordering
@@ -276,7 +277,7 @@ class Incident(object):
         """
         Generate a summary.  This uses the C{summary} attribute if it is not
         C{None} or empty; otherwise, it uses the first line of the first
-        report entry,
+        report entry.
 
         @return: The incident summary.
         @rtype: L{unicode}
@@ -286,9 +287,9 @@ class Incident(object):
 
         if self.reportEntries is not None:
             for entry in self.reportEntries:
-                return entry.text.split("\n")[0]
+                return entry.text.split(u"\n")[0]
 
-        return ""
+        return u""
 
 
     def validate(self, noneNumber=False):
@@ -871,4 +872,123 @@ class RodGarettAddress(Address):
 
 
     def asRodGarettAddress(self):
+        return self
+
+
+
+@total_ordering
+class IncidentReport(object):
+    """
+    Incident Report.
+    """
+
+    def __init__(self, id, created=None, reportEntries=None):
+        """
+        @param id: The incident report's identifying number.
+        @type id: L{int}
+
+        @param created: The created time for the incident report.
+        @type created: L{DateTime}
+
+        @param reportEntries: The report entries associated with the incident
+            report.
+        @type reportEntries: iterable of L{ReportEntry}
+        """
+        if reportEntries is not None:
+            reportEntries = tuple(sorted(reportEntries))
+
+        self.id            = id
+        self.created       = created
+        self.reportEntries = reportEntries
+
+
+    def __str__(self):
+        return (
+            u"{self.id}: {summary}".format(
+                self=self,
+                summary=self.summaryFromReport()
+            ).encode("utf-8")
+        )
+
+
+    def __repr__(self):
+        return (
+            u"{self.__class__.__name__}("
+            u"number={self.id!r},"
+            u"created={self.created!r},"
+            u"reportEntries={self.reportEntries!r})"
+            .format(self=self)
+        ).encode("utf-8")
+
+
+    def __hash__(self):
+        return hash(self.number)
+
+
+    def __eq__(self, other):
+        if isinstance(other, Incident):
+            return (
+                self.id == other.id and
+                self.created == other.created and
+                self.reportEntries == other.reportEntries
+            )
+        return NotImplemented
+
+
+    def __lt__(self, other):
+        if isinstance(other, Incident):
+            return self.id < other.id
+
+        return NotImplemented
+
+
+    def summaryFromReport(self):
+        """
+        Generate a summary.  This uses the first line of the first report entry.
+
+        @return: The incident report summary.
+        @rtype: L{unicode}
+        """
+        if self.reportEntries is not None:
+            for entry in self.reportEntries:
+                return entry.text.split(u"\n")[0]
+
+        return u""
+
+
+    def validate(self, noneID=False):
+        """
+        Validate this incident report.
+
+        @raise: L{InvalidDataError} if the incident report does not validate.
+        """
+        id = self.id
+
+        if noneID:
+            if id is not None:
+                raise InvalidDataError("Incident report ID must be None")
+        else:
+            if id is None:
+                raise InvalidDataError("Incident report ID may not be None")
+
+            if type(id) is not int:
+                raise InvalidDataError(
+                    "Incident report ID must be an int, not "
+                    "({n.__class__.__name__}){n}"
+                    .format(n=id)
+                )
+
+            if id < 0:
+                raise InvalidDataError(
+                    "Incident report ID must be whole, not {n}".format(n=id)
+                )
+
+        _validateIsInstance("created", self.created, DateTime, optional=False)
+
+        if self.reportEntries is not None:
+            for reportEntry in self.reportEntries:
+                _validateIsInstance(
+                    "report entry", reportEntry, ReportEntry, recurse=True
+                )
+
         return self
