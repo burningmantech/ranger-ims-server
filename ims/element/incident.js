@@ -568,7 +568,7 @@ function sendEdits(edits, success, error) {
                 return;
             }
 
-            newNumber = Number.parseInt(newNumber);
+            newNumber = parseInt(newNumber);
             // Check that the value we got back is valid
             if (isNaN(newNumber)) {
                 fail(
@@ -646,7 +646,7 @@ function editState() {
 
 
 function editPriority() {
-    editFromElement($("#incident_priority"), "priority", Number.parseInt);
+    editFromElement($("#incident_priority"), "priority", parseInt);
 }
 
 
@@ -664,7 +664,7 @@ function transformAddressInteger(value) {
     if (value == "") {
         return null;
     }
-    return Number.parseInt(value);
+    return parseInt(value);
 }
 
 

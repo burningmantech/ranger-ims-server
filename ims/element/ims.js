@@ -161,6 +161,13 @@ function normalizeMinute(minute) {
 }
 
 
+// Apparently some implementations of Number.parseInt don't reliably use base
+// 10 by default (eg. when encountering leading zeroes).
+function parseInt(stringInt) {
+    return Number.parseInt(stringInt, 10);
+}
+
+
 //
 // Elements
 //
