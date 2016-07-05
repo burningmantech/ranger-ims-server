@@ -98,7 +98,7 @@ class URLs(object):
     dispatchQueueData          = viewEvent.child(u"data")
     viewDispatchQueueRelative  = URL.fromText(u"queue")
 
-    viewincidents              = viewEvent.child(u"incidents")
-    viewincidentNumber         = viewincidents.child(u"<number>")
+    viewIncidents              = viewEvent.child(u"incidents")
+    viewIncidentNumber         = viewIncidents.child(u"<number>")
     viewIncidentNumberTemplate = prefix.child(u"_incident.html")
     viewIncidentNumberJS       = prefix.child(u"incident.js")

@@ -203,7 +203,7 @@ class WebMixIn(object):
         returnValue(self.jsonStream(request, stream, None))
 
 
-    @route(URLs.viewincidentNumber.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewIncidentNumber.asText(), methods=("HEAD", "GET"))
     @fixedETag
     @inlineCallbacks
     def viewIncidentPage(self, request, event, number):
