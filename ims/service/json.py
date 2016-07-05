@@ -79,7 +79,6 @@ class JSONMixIn(object):
 
     @route(URLs.incidentTypes.asText(), methods=("HEAD", "GET"))
     @route(URLs.incidentTypes.asText() + u"/", methods=("HEAD", "GET"))
-    @inlineCallbacks
     def incidentTypesResource(self, request):
         self.authenticateRequest(request)
 
@@ -94,7 +93,7 @@ class JSONMixIn(object):
             for incidentType in incidentTypes
         )
 
-        returnValue(self.jsonStream(request, stream, None))
+        return self.jsonStream(request, stream, None)
 
 
     @route(URLs.incidentTypes.asText(), methods=("POST",))
