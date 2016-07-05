@@ -618,11 +618,9 @@ function reportEntryElement(entry) {
     return entryContainer;
 }
 
-function drawReportEntries() {
+function drawReportEntries(entries) {
     var container = $("#incident_report");
     container.empty();
-
-    var entries = incident.report_entries;
 
     if (entries != undefined) {
         for (var i in entries) {

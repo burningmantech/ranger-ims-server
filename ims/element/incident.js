@@ -199,7 +199,7 @@ function drawIncidentFields() {
     drawLocationAddressRadialMinute();
     drawLocationAddressConcentric();
     drawLocationDescription();
-    drawReportEntries();
+    drawReportEntries(incident.report_entries);
 
     $("#incident_report_add").on("input", reportEntryEdited);
 }
