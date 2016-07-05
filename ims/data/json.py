@@ -335,33 +335,6 @@ def incidentFromJSON(root, number, validate=True):
                 "Unknown JSON attribute: {}".format(attribute)
             )
 
-    def verifyType(expectedType, name, value):
-        if type(value) is not expectedType:
-            raise InvalidDataError(
-                "Expected {} for {}, got {!r}"
-                .format(expectedType, name, value)
-            )
-
-    def get(json, name, expectedType, default=None, transform=None):
-        value = json.get(name.value, default)
-
-        if value is None:
-            return None
-
-        if expectedType is not None:
-            verifyType(expectedType, name, value)
-
-        if transform is None:
-            return value
-        else:
-            try:
-                return transform(value)
-            except (ValueError, TypeError) as e:
-                raise InvalidDataError(
-                    "Unable to transform {}={!r} with {}: {}"
-                    .format(name, value, transform, e)
-                )
-
     json_number = get(root, JSON.incident_number, int)
 
     if json_number is not None:
@@ -671,3 +644,34 @@ def incidentReportAsJSON(incidentReport):
         ]
 
     return root
+
+
+
+def verifyType(expectedType, name, value):
+    if type(value) is not expectedType:
+        raise InvalidDataError(
+            "Expected {} for {}, got {!r}"
+            .format(expectedType, name, value)
+        )
+
+
+
+def get(json, name, expectedType, default=None, transform=None):
+    value = json.get(name.value, default)
+
+    if value is None:
+        return None
+
+    if expectedType is not None:
+        verifyType(expectedType, name, value)
+
+    if transform is None:
+        return value
+    else:
+        try:
+            return transform(value)
+        except (ValueError, TypeError) as e:
+            raise InvalidDataError(
+                "Unable to transform {}={!r} with {}: {}"
+                .format(name, value, transform, e)
+            )
