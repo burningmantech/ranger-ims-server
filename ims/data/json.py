@@ -134,7 +134,7 @@ from twisted.python.constants import (
 from ..tz import utc
 from .model import (
     InvalidDataError, IncidentState, Incident, ReportEntry, Ranger,
-    Location, TextOnlyAddress, RodGarettAddress,
+    Location, TextOnlyAddress, RodGarettAddress, IncidentReport,
 )
 
 rfc3339_datetime_format = "%Y-%m-%dT%H:%M:%SZ"
@@ -639,6 +639,67 @@ def reportEntriesAsJSON(reportEntries):
         }
         for entry in reportEntries
     ]
+
+
+
+def incidentReportFromJSON(root, number, validate=True):
+    """
+    Create an incident report from JSON data.
+
+    @param root: JSON data representing an incident report.
+    @type root: L{dict}
+
+    @param number: The number of the incident report.
+        If C{root} specifies an incident report number that is different than
+        C{number}, raise an L{InvalidDataError}.
+    @type number: L{int}
+
+    @param validate: If true, raise L{InvalidDataError} if the data does
+        not validate as a fully-well-formed incident report.
+    @type validate: L{bool}
+
+    @return: The de-serialized incident report.
+    @rtype: L{IncidentReport}
+    """
+    if not isinstance(root, dict):
+        raise InvalidDataError("JSON incident report must be a dict")
+
+    for attribute in root:
+        try:
+            JSON.lookupByValue(attribute)
+        except Exception:
+            raise InvalidDataError(
+                "Unknown JSON attribute: {}".format(attribute)
+            )
+
+    json_number = get(root, JSON.incident_report_number, int)
+
+    if json_number is not None:
+        if json_number != number:
+            raise InvalidDataError(
+                "Incident report number may not be modified: {0!r} != {1!r}"
+                .format(json_number, number)
+            )
+
+        root[JSON.incident_report_number.value] = number
+
+    json_entries = get(root, JSON.report_entries, list)
+    reportEntries = reportEntriesFromJSON(json_entries)
+
+    created = get(
+        root, JSON.incident_report_created, unicode, transform=rfc3339AsDateTime
+    )
+
+    incidentReport = IncidentReport(
+        number=number,
+        reportEntries=reportEntries,
+        created=created,
+    )
+
+    if validate:
+        incidentReport.validate()
+
+    return incidentReport
 
 
 
