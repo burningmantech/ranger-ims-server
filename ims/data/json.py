@@ -426,22 +426,7 @@ def incidentFromJSON(root, number, validate=True):
             verifyType(unicode, JSON.incident_types, incidentType)
 
     json_entries = get(root, JSON.report_entries, list)
-
-    if json_entries is None:
-        reportEntries = None
-    else:
-        reportEntries = [
-            ReportEntry(
-                author=get(entry, JSON.entry_author, unicode),
-                text=get(entry, JSON.entry_text, unicode),
-                created=get(
-                    entry, JSON.entry_created, unicode,
-                    transform=rfc3339AsDateTime,
-                ),
-                system_entry=get(entry, JSON.entry_system, bool, default=False),
-            )
-            for entry in json_entries
-        ]
+    reportEntries = reportEntriesFromJSON(json_entries)
 
     created = get(
         root, JSON.incident_created, unicode, transform=rfc3339AsDateTime
@@ -527,15 +512,9 @@ def incidentAsJSON(incident):
         root[JSON.incident_types.value] = list(incident.incidentTypes)
 
     if incident.reportEntries is not None:
-        root[JSON.report_entries.value] = [
-            {
-                JSON.entry_author.value: entry.author,
-                JSON.entry_text.value: entry.text,
-                JSON.entry_created.value: datetimeAsRFC3339(entry.created),
-                JSON.entry_system.value: entry.system_entry,
-            }
-            for entry in incident.reportEntries
-        ]
+        root[JSON.report_entries.value] = reportEntriesAsJSON(
+            incident.reportEntries
+        )
 
     if incident.created is not None:
         root[JSON.incident_created.value] = (
@@ -613,6 +592,56 @@ def locationAsJSON(location):
 
 
 
+def reportEntriesFromJSON(json):
+    """
+    Create incident report entries from JSON data.
+
+    @param root: JSON data representing an array of incident report entries.
+    @type root: iterable of L{ReportEntry}
+
+    @return: The de-serialized incident report entries.
+    @rtype: iterable of L{IncidentReport}
+    """
+    if json is None:
+        return None
+    else:
+        return (
+            ReportEntry(
+                author=get(entry, JSON.entry_author, unicode),
+                text=get(entry, JSON.entry_text, unicode),
+                created=get(
+                    entry, JSON.entry_created, unicode,
+                    transform=rfc3339AsDateTime,
+                ),
+                system_entry=get(entry, JSON.entry_system, bool, default=False),
+            )
+            for entry in json
+        )
+
+
+
+def reportEntriesAsJSON(reportEntries):
+    """
+    Generate JSON data from report entries.
+
+    @param reportEntries: The report entries to serialize.
+    @type reportEntries: iterable of L{ReportEntry}
+
+    @return: C{reportEntries}, serialized as JSON data.
+    @rtype: L{list}
+    """
+    return [
+        {
+            JSON.entry_author.value: entry.author,
+            JSON.entry_text.value: entry.text,
+            JSON.entry_created.value: datetimeAsRFC3339(entry.created),
+            JSON.entry_system.value: entry.system_entry,
+        }
+        for entry in reportEntries
+    ]
+
+
+
 def incidentReportAsJSON(incidentReport):
     """
     Generate JSON data from an incident report.
@@ -633,15 +662,9 @@ def incidentReportAsJSON(incidentReport):
         )
 
     if incidentReport.reportEntries is not None:
-        root[JSON.report_entries.value] = [
-            {
-                JSON.entry_author.value: entry.author,
-                JSON.entry_text.value: entry.text,
-                JSON.entry_created.value: datetimeAsRFC3339(entry.created),
-                JSON.entry_system.value: entry.system_entry,
-            }
-            for entry in incidentReport.reportEntries
-        ]
+        root[JSON.report_entries.value] = reportEntriesAsJSON(
+            incidentReport.reportEntries
+        )
 
     return root
 
