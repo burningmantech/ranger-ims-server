@@ -63,7 +63,6 @@ function loadIncidentReport(success) {
     }
 
     if (number == null) {
-        window.alert("Not Implemented");
         ok({
             "number": null,
             "created": null,
