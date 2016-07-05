@@ -33,6 +33,8 @@ from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
 from ..element.incident_template import IncidentTemplatePage
+from ..element.report import IncidentReportPage
+from ..element.report_template import IncidentReportTemplatePage
 from ..element.root import RootPage
 from .http import fixedETag, HeaderName, ContentType
 from .klein import route
@@ -207,17 +209,17 @@ class WebMixIn(object):
     @fixedETag
     @inlineCallbacks
     def viewIncidentPage(self, request, event, number):
-        # FIXME: Not strictly required because the underlying data is protected.
-        # But the error you get is stupid, so let's avoid that for now.
-        yield self.authorizeRequest(request, event, Authorization.readIncidents)
-
         if number == u"new":
+            authz = Authorization.readIncidents
             number = None
         else:
+            authz = Authorization.writeIncidents
             try:
                 number = int(number)
             except ValueError:
                 returnValue(self.notFoundResource(request))
+
+        yield self.authorizeRequest(request, event, authz)
 
         returnValue(IncidentPage(self, event, number))
 
@@ -232,3 +234,37 @@ class WebMixIn(object):
     @fixedETag
     def incidentJSResource(self, request):
         return self.javaScript(request, "incident.js")
+
+
+    # FIXME: viewIncidentReports
+
+
+    @route(URLs.viewIncidentReport.asText(), methods=("HEAD", "GET"))
+    @fixedETag
+    @inlineCallbacks
+    def viewIncidentReportPage(self, request, number):
+        if number == u"new":
+            authz = Authorization.writeIncidentReports
+            number = None
+        else:
+            authz = Authorization.readIncidentReports
+            try:
+                number = int(number)
+            except ValueError:
+                returnValue(self.notFoundResource(request))
+
+        yield self.authorizeRequest(request, None, authz)
+
+        returnValue(IncidentReportPage(self, number))
+
+
+    @route(URLs.viewIncidentReportTemplate.asText(), methods=("HEAD", "GET"))
+    @fixedETag
+    def viewIncidentReportTemplatePage(self, request):
+        return IncidentReportTemplatePage(self)
+
+
+    @route(URLs.viewIncidentReportJS.asText(), methods=("HEAD", "GET"))
+    @fixedETag
+    def viewIncidentReportJSResource(self, request):
+        return self.javaScript(request, "report.js")

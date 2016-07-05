@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<div xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="container">
+  <div class="row">
+      <div class="col-sm-4 text-left">
+        <div class="form-group">
+          <label class="control-label">Incident Report #:</label>
+          <span id="incident_report_number" class="form-control-static" />
+        </div>
+      </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+      <label>Incident Report</label>
+      <div id="incident_well" class="well well-sm">
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div id="incident_report" />
+          </div>
+        </div>
+        <textarea
+          id="incident_report_add"
+          class="form-control input-sm"
+          rows="3"
+          placeholder="Additional report text..."
+          autofocus=""
+          onchange="reportEntryEdited()"
+        />
+        <button
+          id="report_entry_submit"
+          type="submit"
+          class="btn btn-default btn-sm btn-block disabled"
+          onclick="submitReportEntry()"
+        >
+          Add Report Entry
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

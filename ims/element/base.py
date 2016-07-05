@@ -269,8 +269,8 @@ class Element(BaseElement):
                 admin_streets_js_url=URLs.adminStreetsJS.asText(),
 
                 queue_js_url=URLs.viewDispatchQueueJS.asText(),
-
                 incident_js_url=URLs.viewIncidentNumberJS.asText(),
+                incident_report_js_url=URLs.viewIncidentReportJS.asText(),
             ))
 
         return self._baseSlots
