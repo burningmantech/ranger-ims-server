@@ -882,10 +882,10 @@ class IncidentReport(object):
     Incident Report.
     """
 
-    def __init__(self, id, created=None, reportEntries=None):
+    def __init__(self, number, created=None, reportEntries=None):
         """
-        @param id: The incident report's identifying number.
-        @type id: L{int}
+        @param number: The incident report's identifying number.
+        @type number: L{int}
 
         @param created: The created time for the incident report.
         @type created: L{DateTime}
@@ -897,14 +897,14 @@ class IncidentReport(object):
         if reportEntries is not None:
             reportEntries = tuple(sorted(reportEntries))
 
-        self.id            = id
+        self.number        = number
         self.created       = created
         self.reportEntries = reportEntries
 
 
     def __str__(self):
         return (
-            u"{self.id}: {summary}".format(
+            u"{self.number}: {summary}".format(
                 self=self,
                 summary=self.summaryFromReport()
             ).encode("utf-8")
@@ -914,7 +914,7 @@ class IncidentReport(object):
     def __repr__(self):
         return (
             u"{self.__class__.__name__}("
-            u"number={self.id!r},"
+            u"number={self.number!r},"
             u"created={self.created!r},"
             u"reportEntries={self.reportEntries!r})"
             .format(self=self)
@@ -928,7 +928,7 @@ class IncidentReport(object):
     def __eq__(self, other):
         if isinstance(other, Incident):
             return (
-                self.id == other.id and
+                self.number == other.number and
                 self.created == other.created and
                 self.reportEntries == other.reportEntries
             )
@@ -937,7 +937,7 @@ class IncidentReport(object):
 
     def __lt__(self, other):
         if isinstance(other, Incident):
-            return self.id < other.id
+            return self.number < other.number
 
         return NotImplemented
 
@@ -962,25 +962,25 @@ class IncidentReport(object):
 
         @raise: L{InvalidDataError} if the incident report does not validate.
         """
-        id = self.id
+        number = self.number
 
         if noneID:
-            if id is not None:
+            if number is not None:
                 raise InvalidDataError("Incident report ID must be None")
         else:
-            if id is None:
+            if number is None:
                 raise InvalidDataError("Incident report ID may not be None")
 
-            if type(id) is not int:
+            if type(number) is not int:
                 raise InvalidDataError(
                     "Incident report ID must be an int, not "
                     "({n.__class__.__name__}){n}"
-                    .format(n=id)
+                    .format(n=number)
                 )
 
-            if id < 0:
+            if number < 0:
                 raise InvalidDataError(
-                    "Incident report ID must be whole, not {n}".format(n=id)
+                    "Incident report ID must be whole, not {n}".format(n=number)
                 )
 
         _validateIsInstance("created", self.created, DateTime, optional=False)
