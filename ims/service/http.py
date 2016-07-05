@@ -36,11 +36,12 @@ class HeaderName (Values):
     Header names
     """
 
-    server         = ValueConstant("Server")
-    contentType    = ValueConstant("Content-Type")
-    etag           = ValueConstant("ETag")
-    incidentNumber = ValueConstant("Incident-Number")
-    location       = ValueConstant("Location")
+    server               = ValueConstant("Server")
+    contentType          = ValueConstant("Content-Type")
+    etag                 = ValueConstant("ETag")
+    incidentNumber       = ValueConstant("Incident-Number")
+    incidentReportNumber = ValueConstant("Incident-Report-Number")
+    location             = ValueConstant("Location")
 
 
 
