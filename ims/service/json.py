@@ -56,9 +56,9 @@ class JSONMixIn(object):
     @route(URLs.personnel.asText(), methods=("HEAD", "GET"))
     @route(URLs.personnel.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
-    def personnelResource(self, request, event):
+    def personnelResource(self, request):
         yield self.authorizeRequest(
-            request, event, Authorization.readIncidents
+            request, None, Authorization.readPersonnel
         )
 
         stream, etag = yield self.personnelData()

@@ -43,6 +43,8 @@ class Authorization(Flags):
 
     imsAdmin = FlagConstant()
 
+    readPersonnel = FlagConstant()
+
     readIncidents  = FlagConstant()
     writeIncidents = FlagConstant()
 
@@ -107,6 +109,7 @@ class AuthMixIn(object):
             returnValue(False)
 
         authorizations = Authorization.none
+        authorizations |= Authorization.readPersonnel
 
         if user is not None:
             for shortName in user.shortNames:
