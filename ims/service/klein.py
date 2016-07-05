@@ -28,12 +28,14 @@ __all__ = [
 
 from functools import wraps
 
+from twisted.python.url import URL
 from twisted.logger import Logger
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.web import http
 from twisted.web.iweb import IRenderable
 from twisted.web.template import renderElement
 
+from werkzeug.routing import RequestRedirect
 from werkzeug.exceptions import NotFound
 from klein import Klein
 
@@ -179,6 +181,17 @@ class KleinService(object):
     #
     # Error handlers
     #
+
+    @app.handle_errors(RequestRedirect)
+    @renderResponse
+    def requestRedirectError(self, request, failure):
+        """
+        Not authenticated.
+        """
+        url = URL.fromText(failure.value.args[0].decode("utf-8"))
+        element = self.redirect(request, url)
+        return renderElement(request, element)
+
 
     @app.handle_errors(NotFound)
     @renderResponse
