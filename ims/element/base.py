@@ -268,12 +268,8 @@ class Element(BaseElement):
                 admin_streets_url=URLs.adminStreets.asText(),
                 admin_streets_js_url=URLs.adminStreetsJS.asText(),
 
-                queue_template_url=URLs.viewDispatchQueueTemplate.asText(),
                 queue_js_url=URLs.viewDispatchQueueJS.asText(),
 
-                incident_template_url=(
-                    URLs.viewIncidentNumberTemplate.asText()
-                ),
                 incident_js_url=URLs.viewIncidentNumberJS.asText(),
             ))
 

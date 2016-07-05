@@ -59,6 +59,13 @@ class IncidentPage(Element):
 
 
     @renderer
+    def template_url(self, request, tag):
+        return textFromJSON(
+            URLs.viewIncidentNumberTemplate.asText()
+            .replace(u"<event>", unicode(self.event))
+        )
+
+    @renderer
     def incidents_url(self, request, tag):
         return textFromJSON(
             URLs.incidents.asText()
