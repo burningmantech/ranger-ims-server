@@ -106,7 +106,11 @@ function loadAndDisplayIncidentReport(success) {
 //
 
 function drawNumber() {
-    $("#incident_report_number").text(incidentReport.number);
+    var number = incidentReport.number;
+    if (number == null) {
+        number = "(new)";
+    }
+    $("#incident_report_number").text(number);
 }
 
 

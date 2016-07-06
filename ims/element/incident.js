@@ -240,7 +240,11 @@ function addLocationAddressOptions() {
 //
 
 function drawNumber() {
-    $("#incident_number").text(incident.number);
+    var number = incident.number;
+    if (number == null) {
+        number = "(new)";
+    }
+    $("#incident_number").text(number);
 }
 
 
