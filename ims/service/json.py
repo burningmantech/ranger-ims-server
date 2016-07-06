@@ -36,6 +36,7 @@ from .klein import route
 from .urls import URLs
 from .auth import Authorization
 from .error import NotAuthorizedError
+from ..dms import DMSError
 
 
 
@@ -70,7 +71,12 @@ class JSONMixIn(object):
 
     @inlineCallbacks
     def personnelData(self):
-        personnel = yield self.dms.personnel()
+        try:
+            personnel = yield self.dms.personnel()
+        except DMSError as e:
+            self.log.error("Unable to vend personnel: {failure}", failure=e)
+            personnel = ()
+
         returnValue((
             self.buildJSONArray(
                 textFromJSON(rangerAsJSON(ranger)).encode("utf-8")
