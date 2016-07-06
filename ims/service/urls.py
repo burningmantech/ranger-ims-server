@@ -69,6 +69,7 @@ class URLs(object):
     personnel        = api.child(u"personnel")
     incidentTypes    = api.child(u"incident_types")
     incidentReports  = api.child(u"incident_reports")
+    incidentReport   = incidentReports.child(u"<number>")
     events           = api.child(u"events")
     event            = events.child(u"<event>")
     locations        = event.child(u"locations")
