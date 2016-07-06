@@ -265,6 +265,7 @@ class Storage(object):
         """
         try:
             # Fetch incident row
+            cursor = self._db.execute(self._query_incident, (event, number))
             (
                 version, createdTimestamp, priority, stateName,
                 summary,
@@ -273,9 +274,7 @@ class Storage(object):
                 locationRadialHour,
                 locationRadialMinute,
                 locationDescription,
-            ) = self._db.execute(
-                self._query_incident, (event, number)
-            ).fetchone()
+            ) = cursor.fetchone()
 
             # Convert created timestamp to a datetime
             created = fromTimeStamp(createdTimestamp)
@@ -342,12 +341,12 @@ class Storage(object):
             state=state,
             version=version,
         )
-        # Check for issues in stored data; disable if performance an issue
+        # Check for issues in stored data
         try:
             incident.validate()
         except InvalidDataError as e:
             self.log.critical(
-                "Invalid incident ({error}): {incident!r}",
+                "Invalid stored incident ({error}): {incident!r}",
                 incident=incident, error=e
             )
             raise
