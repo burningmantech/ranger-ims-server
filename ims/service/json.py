@@ -422,6 +422,28 @@ class JSONMixIn(object):
         returnValue(self.noContentResource(request))
 
 
+    @route(URLs.incidentReport.asText(), methods=("HEAD", "GET"))
+    @inlineCallbacks
+    def readIncidentReportResource(self, request, number):
+        yield self.authorizeRequest(
+            request, None, Authorization.readIncidentReports
+        )
+
+        try:
+            number = int(number)
+        except ValueError:
+            returnValue(self.notFoundResource(request))
+
+        incidentReport = self.storage.incidentReport(number)
+        text = textFromJSON(incidentReportAsJSON(incidentReport))
+
+        returnValue(
+            self.jsonBytes(
+                request, text.encode("utf-8"), incidentReport.version()
+            )
+        )
+
+
     @route(URLs.acl.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def readAdminAccessResource(self, request):
