@@ -83,7 +83,9 @@ function loadAndDisplayIncidentReport(success) {
             return;
         }
 
+        drawNumber();
         drawReportEntries(incidentReport.report_entries);
+
         $("#incident_report_add").on("input", reportEntryEdited);
 
         if (editingAllowed) {
@@ -96,6 +98,15 @@ function loadAndDisplayIncidentReport(success) {
     }
 
     loadIncidentReport(loaded);
+}
+
+
+//
+// Populate incident report number
+//
+
+function drawNumber() {
+    $("#incident_report_number").text(incidentReport.number);
 }
 
 
