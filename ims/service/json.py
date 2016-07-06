@@ -180,14 +180,34 @@ class JSONMixIn(object):
         json = jsonFromFile(request.content)
         incident = incidentFromJSON(json, number=None, validate=False)
 
+        if incident.state is None:
+            incident.state = IncidentState.new
+
+        author = request.user.shortNames[0]
         now = utcNow()
-        if incident.created is not None and incident.created > now:
+
+        if incident.created is None:
+            # No created timestamp provided; add one.
+
+            # Right now is a decent default, but if there's a report entry
+            # that's older than now, that's a better pick.
+            created = utcNow()
+            if incident.reportEntries is not None:
+                for entry in incident.reportEntries:
+                    if entry.author is None:
+                        entry.author = author
+                    if entry.created is None:
+                        entry.created = now
+                    elif entry.created < created:
+                        created = entry.created
+
+            incident.created = created
+
+        elif incident.created > now:
             returnValue(self.badRequestResource(
                 "Created time {} is in the future. Current time is {}."
                 .format(incident.created, now)
             ))
-
-        author = request.user.shortNames[0]
 
         self.storage.createIncident(event, incident)
 
@@ -195,7 +215,7 @@ class JSONMixIn(object):
             u"User {author} created new incident #{incident.number} via JSON",
             author=author, incident=incident
         )
-        self.log.debug(u"New: {json}", json=incidentAsJSON(incident))
+        self.log.debug(u"New incident: {json}", json=incidentAsJSON(incident))
 
         request.setHeader(HeaderName.incidentNumber.value, incident.number)
         request.setHeader(

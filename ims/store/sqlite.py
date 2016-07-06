@@ -440,22 +440,6 @@ class Storage(object):
         The incident number is determined by the database and must not be
         specified by the given incident.
         """
-        if incident.state is None:
-            incident.state = IncidentState.new
-
-        if incident.created is None:
-            # No created timestamp provided; add one.
-
-            # Right now is a decent default, but if there's a report entry
-            # that's older than now, that's a better pick.
-            created = utcNow()
-            if incident.reportEntries is not None:
-                for entry in incident.reportEntries:
-                    if entry.created < created:
-                        created = entry.created
-
-            incident.created = created
-
         incident.validate(noneNumber=True)
 
         # FIXME:STORE Add system report entry
@@ -985,19 +969,6 @@ class Storage(object):
         The incident report ID is determined by the database and must not be
         specified by the given incident report.
         """
-        if incidentReport.created is None:
-            # No created timestamp provided; add one.
-
-            # Right now is a decent default, but if there's a report entry
-            # that's older than now, that's a better pick.
-            created = utcNow()
-            if incidentReport.reportEntries is not None:
-                for entry in incidentReport.reportEntries:
-                    if entry.created < created:
-                        created = entry.created
-
-            incidentReport.created = created
-
         incidentReport.validate(noneID=True)
 
         assert incidentReport.id is None
