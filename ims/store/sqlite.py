@@ -557,7 +557,7 @@ class Storage(object):
         Look up the next available incident number.
         """
         cursor.execute(self._query_maxIncidentNumber, (event,))
-        (number,) = cursor.fetchone()
+        number = cursor.fetchone()[0]
         if number is None:
             return 1
         else:
