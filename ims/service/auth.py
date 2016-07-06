@@ -52,6 +52,14 @@ class Authorization(Flags):
     writeIncidentReports = FlagConstant()
 
 Authorization.none = Authorization.imsAdmin ^ Authorization.imsAdmin
+Authorization.all = (
+    Authorization.imsAdmin             |
+    Authorization.readPersonnel        |
+    Authorization.readIncidents        |
+    Authorization.writeIncidents       |
+    Authorization.readIncidentReports  |
+    Authorization.writeIncidentReports
+)
 
 
 
@@ -118,9 +126,7 @@ class AuthMixIn(object):
         if user is not None:
             for shortName in user.shortNames:
                 if shortName in self.config.IMSAdmins:
-                    authorizations |= Authorization.imsAdmin
-                    authorizations |= Authorization.readIncidents
-                    authorizations |= Authorization.writeIncidents
+                    authorizations |= Authorization.all
             else:
                 if event:
                     if (yield matchACL(user, self.storage.writers(event))):
