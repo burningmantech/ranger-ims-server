@@ -945,24 +945,6 @@ class Storage(object):
             raise StorageError(e)
 
 
-    def _nextIncidentReportID(self, event, cursor):
-        """
-        Look up the next available incident report ID.
-        """
-        cursor.execute(self._query_maxIncidentReportID, (event,))
-        (number,) = cursor.fetchone()
-        if number is None:
-            return 1
-        else:
-            return number + 1
-
-    _query_maxIncidentReportID = _query(
-        """
-        select max(ID) from INCIDENT_REPORT
-        """
-    )
-
-
     def createIncidentReport(self, incidentReport):
         """
         Create a new incident report.
