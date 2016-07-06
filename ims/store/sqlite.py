@@ -971,7 +971,7 @@ class Storage(object):
         """
         incidentReport.validate(noneID=True)
 
-        assert incidentReport.id is None
+        assert incidentReport.number is None
 
         try:
             with self._db as db:
@@ -979,7 +979,7 @@ class Storage(object):
                 try:
                     cursor.execute(
                         self._query_createIncidentReport, (
-                            incidentReport.id, incidentReport.created
+                            incidentReport.number, incidentReport.created
                         )
                     )
                 finally:
@@ -994,7 +994,7 @@ class Storage(object):
 
     _query_createIncidentReport = _query(
         """
-        insert into INCIDENT_REPORT (ID, CREATED) values (?, ?)
+        insert into INCIDENT_REPORT (NUMBER, CREATED) values (?, ?)
         """
     )
 
