@@ -97,3 +97,70 @@ function loadAndDisplayIncidentReport(success) {
 
     loadIncidentReport(loaded);
 }
+
+
+//
+// Editing
+//
+
+function sendEdits(edits, success, error) {
+    var number = incidentReport.number
+    var url = incidentReportsURL + "/";
+
+    if (number == null) {
+        // We're creating a new incident report.
+        var required = [];
+        for (var i in required) {
+            var key = required[i];
+            if (edits[key] == undefined) {
+                edits[key] = incidentReport[key];
+            }
+        }
+    } else {
+        // We're editing an existing incident report.
+        edits.number = number;
+        url += number;
+    }
+
+    function ok(data, status, xhr) {
+        if (number == null) {
+            // We created a new incident report.
+            // We need to find out the create incident report number so that
+            // future edits don't keep creating new resources.
+
+            newNumber = xhr.getResponseHeader("Incident-Report-Number")
+            // Check that we got a value back
+            if (newNumber == null) {
+                fail("No Incident-Report-Number header provided.", status, xhr);
+                return;
+            }
+
+            newNumber = parseInt(newNumber);
+            // Check that the value we got back is valid
+            if (isNaN(newNumber)) {
+                fail(
+                    "Non-integer Incident-Report-Number header provided:" +
+                    newNumber,
+                    status, xhr
+                );
+                return;
+            }
+
+            // Store the new number in our incident object
+            incidentReport.number = newNumber;
+        }
+
+        success();
+        loadAndDisplayIncidentReport();
+    }
+
+    function fail(requestError, status, xhr) {
+        var message = "Failed to apply edit:\n" + requestError
+        console.log(message);
+        error();
+        loadAndDisplayIncidentReport();
+        window.alert(message);
+    }
+
+    jsonRequest(url, edits, ok, fail);
+}
