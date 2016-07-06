@@ -34,11 +34,10 @@ from sqlite3 import (
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 
-from ..tz import utc, utcNow
+from ..tz import utc
 from ..data.model import (
-    Incident, IncidentState, Ranger, ReportEntry,
-    Location, RodGarettAddress,
-    InvalidDataError,
+    Incident, IncidentState, Ranger, ReportEntry, Location, RodGarettAddress,
+    IncidentReport, InvalidDataError,
 )
 from ._file import MultiStorage
 from .istore import StorageError
@@ -916,6 +915,73 @@ class Storage(object):
         """
         delete from INCIDENT__INCIDENT_TYPE
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
+        """
+    )
+
+
+    def incidentReport(self, number):
+        """
+        Look up the incident report with the given number.
+        """
+        try:
+            # Fetch incident report row
+            cursor = self._db.execute(self._query_incidentReport, (number,))
+            createdTimestamp = cursor.fetchone()[0]
+
+            # Convert created timestamp to a datetime
+            created = fromTimeStamp(createdTimestamp)
+
+            # Look up report entries from join table
+            reportEntries = []
+
+            for author, text, entryTimeStamp, generated in self._db.execute(
+                self._query_incidentReport_reportEntries, (number,)
+            ):
+                reportEntries.append(
+                    ReportEntry(
+                        author=author,
+                        text=text,
+                        created=fromTimeStamp(entryTimeStamp),
+                        system_entry=generated,
+                    )
+                )
+
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to look up incident report: {number}", number=number
+            )
+            raise StorageError(e)
+
+        incidentReport = IncidentReport(
+            number=number,
+            reportEntries=reportEntries,
+            created=created,
+        )
+        # Check for issues in stored data
+        try:
+            incidentReport.validate()
+        except InvalidDataError as e:
+            self.log.critical(
+                "Invalid stored incident report ({error}): {incidentReport!r}",
+                incidentReport=incidentReport, error=e
+            )
+            raise
+
+        return incidentReport
+
+    _query_incidentReport = _query(
+        """
+        select CREATED from INCIDENT_REPORT where NUMBER = ?
+        """
+    )
+
+    _query_incidentReport_reportEntries = _query(
+        """
+        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
+        where ID in (
+            select REPORT_ENTRY from INCIDENT_REPORT__REPORT_ENTRY
+            where INCIDENT_REPORT_NUMBER = ?
+        )
         """
     )
 
