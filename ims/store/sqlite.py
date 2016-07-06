@@ -982,6 +982,7 @@ class Storage(object):
                             incidentReport.number, incidentReport.created
                         )
                     )
+                    incidentReport.number = cursor.lastrowid
                 finally:
                     cursor.close()
 
