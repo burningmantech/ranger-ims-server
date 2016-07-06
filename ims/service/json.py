@@ -444,6 +444,63 @@ class JSONMixIn(object):
         )
 
 
+    @route(URLs.incidentReport.asText(), methods=("POST",))
+    @inlineCallbacks
+    def editIncidentReportResource(self, request, number):
+        yield self.authorizeRequest(
+            request, None, Authorization.writeIncidentReports
+        )
+
+        try:
+            number = int(number)
+        except ValueError:
+            returnValue(self.notFoundResource(request))
+
+        #
+        # Get the edits requested by the client
+        #
+        edits = jsonFromFile(request.content)
+
+        if not isinstance(edits, dict):
+            returnValue(self.badRequestResource(
+                request, "JSON incident report must be a dictionary"
+            ))
+
+        if edits.get(JSON.incident_report_number.value, number) != number:
+            returnValue(self.badRequestResource(
+                request, "Incident report number may not be modified"
+            ))
+
+        UNSET = object()
+
+        created = edits.get(JSON.incident_report_created.value, UNSET)
+        if created is not UNSET:
+            returnValue(self.badRequestResource(
+                request, "Incident report created time may not be modified"
+            ))
+
+        entries = edits.get(JSON.report_entries.value, UNSET)
+        if entries is not UNSET:
+            author = request.user.shortNames[0]
+
+            now = utcNow()
+
+            for entry in entries:
+                text = entry.get(JSON.entry_text.value, None)
+                if text:
+                    self.storage.addIncidentReportReportEntry(
+                        number,
+                        ReportEntry(
+                            author=author,
+                            text=text,
+                            created=now,
+                            system_entry=False,
+                        )
+                    )
+
+        returnValue(self.noContentResource(request))
+
+
     @route(URLs.acl.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def readAdminAccessResource(self, request):
