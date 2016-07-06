@@ -469,7 +469,7 @@ class Storage(object):
 
                     if incident.reportEntries is not None:
                         for reportEntry in incident.reportEntries:
-                            self._addAndAttachReportEntry(
+                            self._addAndAttachReportEntryToIncident(
                                 event, incident.number, reportEntry, cursor
                             )
 
@@ -639,7 +639,9 @@ class Storage(object):
     )
 
 
-    def _addAndAttachReportEntry(self, event, number, reportEntry, cursor):
+    def _addAndAttachReportEntryToIncident(
+        self, event, number, reportEntry, cursor
+    ):
         """
         Attach the given report entry to the incident with the given number in
         the given event.
@@ -929,7 +931,7 @@ class Storage(object):
             with self._db as db:
                 cursor = db.cursor()
                 try:
-                    self._addAndAttachReportEntry(
+                    self._addAndAttachReportEntryToIncident(
                         event, number, reportEntry, cursor
                     )
                 finally:
@@ -1031,6 +1033,13 @@ class Storage(object):
                         )
                     )
                     incidentReport.number = cursor.lastrowid
+
+                    if incidentReport.reportEntries is not None:
+                        for reportEntry in incidentReport.reportEntries:
+                            self._addAndAttachReportEntryToIncidentReport(
+                                incidentReport.number, reportEntry, cursor
+                            )
+
                 finally:
                     cursor.close()
 
@@ -1048,31 +1057,42 @@ class Storage(object):
     )
 
 
-    def addIncidentReportReportEntry(self, id, reportEntry):
+    def addIncidentReportReportEntry(self, number, reportEntry):
         """
-        Add a report entry to the incident report with the given id in the given
-        event.
+        Add a report entry to the incident report with the given number.
         """
         reportEntry.validate()
         try:
             with self._db as db:
                 cursor = db.cursor()
                 try:
-                    self._createReportEntry(reportEntry, cursor)
-                    # Join to incident report
-                    cursor.execute(
-                        self._query_attachReportEntryToIncidentReport,
-                        (id, cursor.lastrowid)
+                    self._addAndAttachReportEntryToIncidentReport(
+                        number, reportEntry, cursor
                     )
                 finally:
                     cursor.close()
         except SQLiteError as e:
             self.log.critical(
-                "Unable to add report entry for incident report {id}: "
+                "Unable to add report entry for incident report {number}: "
                 "{reportEntry}",
-                id=id, reportEntry=reportEntry
+                number=number, reportEntry=reportEntry
             )
             raise StorageError(e)
+
+
+    def _addAndAttachReportEntryToIncidentReport(
+        self, number, reportEntry, cursor
+    ):
+        """
+        Attach the given report entry to the incident report with the given
+        number.
+        """
+        self._createReportEntry(reportEntry, cursor)
+        # Join to incident report
+        cursor.execute(
+            self._query_attachReportEntryToIncidentReport,
+            (number, cursor.lastrowid)
+        )
 
     _query_attachReportEntryToIncidentReport = _query(
         """
