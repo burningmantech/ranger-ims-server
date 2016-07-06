@@ -919,6 +919,30 @@ class Storage(object):
     )
 
 
+    def addIncidentReportEntry(self, event, number, reportEntry):
+        """
+        Add a report entry to the incident with the given number in the given
+        event.
+        """
+        reportEntry.validate()
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    self._addAndAttachReportEntry(
+                        event, number, reportEntry, cursor
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to add report entry for incident {event}:{number}: "
+                "{reportEntry}",
+                event=event, number=number, reportEntry=reportEntry
+            )
+            raise StorageError(e)
+
+
     def incidentReport(self, number):
         """
         Look up the incident report with the given number.
@@ -984,30 +1008,6 @@ class Storage(object):
         )
         """
     )
-
-
-    def addIncidentReportEntry(self, event, number, reportEntry):
-        """
-        Add a report entry to the incident with the given number in the given
-        event.
-        """
-        reportEntry.validate()
-        try:
-            with self._db as db:
-                cursor = db.cursor()
-                try:
-                    self._addAndAttachReportEntry(
-                        event, number, reportEntry, cursor
-                    )
-                finally:
-                    cursor.close()
-        except SQLiteError as e:
-            self.log.critical(
-                "Unable to add report entry for incident {event}:{number}: "
-                "{reportEntry}",
-                event=event, number=number, reportEntry=reportEntry
-            )
-            raise StorageError(e)
 
 
     def createIncidentReport(self, incidentReport):
