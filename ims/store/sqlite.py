@@ -961,7 +961,8 @@ class Storage(object):
                 try:
                     cursor.execute(
                         self._query_createIncidentReport, (
-                            incidentReport.number, incidentReport.created
+                            incidentReport.number,
+                            asTimeStamp(incidentReport.created),
                         )
                     )
                     incidentReport.number = cursor.lastrowid
