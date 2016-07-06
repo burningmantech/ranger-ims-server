@@ -26,8 +26,11 @@ from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..tz import utcNow
 from ..data.model import IncidentState, ReportEntry
-from ..data.json import JSON, textFromJSON, jsonFromFile
-from ..data.json import rangerAsJSON, incidentAsJSON, incidentFromJSON
+from ..data.json import (
+    JSON, textFromJSON, jsonFromFile, rangerAsJSON,
+    incidentAsJSON, incidentFromJSON,
+    incidentReportAsJSON, incidentReportFromJSON,
+)
 from .http import HeaderName, fixedETag
 from .klein import route
 from .urls import URLs
@@ -211,6 +214,8 @@ class JSONMixIn(object):
 
         self.storage.createIncident(event, incident)
 
+        assert incident.number is not None
+
         self.log.info(
             u"User {author} created new incident #{incident.number} via JSON",
             author=author, incident=incident
@@ -355,6 +360,69 @@ class JSONMixIn(object):
                         )
                     )
 
+        returnValue(self.noContentResource(request))
+
+
+    @route(URLs.incidentReports.asText(), methods=("POST",))
+    @route(URLs.incidentReports.asText() + u"/", methods=("POST",))
+    @inlineCallbacks
+    def newIncidentReportResource(self, request):
+        yield self.authorizeRequest(
+            request, None, Authorization.writeIncidentReports
+        )
+
+        json = jsonFromFile(request.content)
+        incidentReport = incidentReportFromJSON(
+            json, number=None, validate=False
+        )
+
+        author = request.user.shortNames[0]
+        now = utcNow()
+
+        if incidentReport.created is None:
+            # No created timestamp provided; add one.
+
+            # Right now is a decent default, but if there's a report entry
+            # that's older than now, that's a better pick.
+            created = utcNow()
+            if incidentReport.reportEntries is not None:
+                for entry in incidentReport.reportEntries:
+                    if entry.author is None:
+                        entry.author = author
+                    if entry.created is None:
+                        entry.created = now
+                    elif entry.created < created:
+                        created = entry.created
+
+            incidentReport.created = created
+
+        elif incidentReport.created > now:
+            returnValue(self.badRequestResource(
+                "Created time {} is in the future. Current time is {}."
+                .format(incidentReport.created, now)
+            ))
+
+        self.storage.createIncidentReport(incidentReport)
+
+        assert incidentReport.number is not None
+
+        self.log.info(
+            u"User {author} created new incident report "
+            u"#{incidentReport.number} via JSON",
+            author=author, incidentReport=incidentReport
+        )
+        self.log.debug(
+            u"New incident report: {json}",
+            json=incidentReportAsJSON(incidentReport),
+        )
+
+        request.setHeader(
+            HeaderName.incidentReportNumber.value, incidentReport.number
+        )
+        request.setHeader(
+            HeaderName.location.value,
+            "{}/{}".format(URLs.incidentNumber.asText(), incidentReport.number)
+        )
         returnValue(self.noContentResource(request))
 
 
