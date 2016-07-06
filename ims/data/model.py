@@ -956,6 +956,10 @@ class IncidentReport(object):
         return u""
 
 
+    def version(self):
+        return hash((self.number, self.created, self.reportEntries))
+
+
     def validate(self, noneID=False):
         """
         Validate this incident report.
