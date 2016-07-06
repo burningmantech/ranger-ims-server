@@ -237,10 +237,6 @@ class JSONMixIn(object):
             request, event, Authorization.readIncidents
         )
 
-        # # For simulating slow connections
-        # import time
-        # time.sleep(0.3)
-
         try:
             number = int(number)
         except ValueError:
