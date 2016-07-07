@@ -1012,6 +1012,32 @@ class Storage(object):
     )
 
 
+    def _incidentReportNumbers(self):
+        """
+        Look up all incident report numbers.
+        """
+        try:
+            for row in self._db.execute(self._query_incidentReportNumbers):
+                yield row["NUMBER"]
+        except SQLiteError as e:
+            self.log.critical("Unable to look up incident report numbers")
+            raise StorageError(e)
+
+    _query_incidentReportNumbers = _query(
+        """
+        select NUMBER from INCIDENT_REPORT
+        """
+    )
+
+
+    def incidentReports(self):
+        """
+        Look up all incident reports.
+        """
+        for number in self._incidentReportNumbers():
+            yield self.incidentReport(number)
+
+
     def createIncidentReport(self, incidentReport):
         """
         Create a new incident report.
