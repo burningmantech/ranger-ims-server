@@ -29,6 +29,7 @@ function initIncidentPage() {
         });
         loadUnattachedIncidentReports(function () {
             drawMergedReportEntries();
+            drawIncidentReportsToAdd();
         });
         loadAttachedIncidentReports(function () {
             drawMergedReportEntries();
@@ -549,6 +550,22 @@ function drawMergedReportEntries() {
 
     drawReportEntries(entries);
 }
+
+
+function drawIncidentReportsToAdd() {
+    var select = $("#attached_incident_report_add");
+
+    for (var i in unattachedIncidentReports) {
+        var report = unattachedIncidentReports[i];
+
+        var option = $("<option />");
+        option.val(report.number);
+        option.text(report.number + ": " + summarizeIncident(report));
+
+        select.append(option);
+    }
+}
+
 
 //
 // Editing
