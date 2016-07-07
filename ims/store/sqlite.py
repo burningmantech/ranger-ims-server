@@ -1012,12 +1012,23 @@ class Storage(object):
     )
 
 
-    def _incidentReportNumbers(self):
+    def _incidentReportNumbers(self, attachedTo):
         """
         Look up all incident report numbers.
         """
+        if attachedTo is not None:
+            event, number = attachedTo
+            if (event is None and number is None):
+                sql = (self._query_unAttachedIncidentReportNumbers,)
+            else:
+                sql = (
+                    self._query_attachedIncidentReportNumbers, (event, number)
+                )
+        else:
+            sql = (self._query_incidentReportNumbers,)
+
         try:
-            for row in self._db.execute(self._query_incidentReportNumbers):
+            for row in self._db.execute(*sql):
                 yield row["NUMBER"]
         except SQLiteError as e:
             self.log.critical("Unable to look up incident report numbers")
@@ -1029,12 +1040,31 @@ class Storage(object):
         """
     )
 
+    _query_unAttachedIncidentReportNumbers = _query(
+        """
+        select NUMBER from INCIDENT_REPORT
+        where NUMBER not in (
+            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
+        )
+        """
+    )
 
-    def incidentReports(self):
+    _query_attachedIncidentReportNumbers = _query(
+        """
+        select NUMBER from INCIDENT_REPORT
+        where NUMBER in (
+            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
+            where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
+        )
+        """
+    )
+
+
+    def incidentReports(self, attachedTo=None):
         """
         Look up all incident reports.
         """
-        for number in self._incidentReportNumbers():
+        for number in self._incidentReportNumbers(attachedTo):
             yield self.incidentReport(number)
 
 

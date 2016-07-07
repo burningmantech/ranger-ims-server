@@ -54,6 +54,11 @@ class IncidentPage(Element):
 
 
     @renderer
+    def event_id(self, request, tag):
+        return textFromJSON(self.event)
+
+
+    @renderer
     def incident_number(self, request, tag):
         return textFromJSON(self.number)
 

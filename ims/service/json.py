@@ -364,9 +364,18 @@ class JSONMixIn(object):
             request, None, Authorization.readIncidentReports
         )
 
+        event          = request.args.get("event"   , [""])[0]
+        incidentNumber = request.args.get("incident", [""])[0]
+
+        if event == incidentNumber == "":
+            attachedTo = (None, None)
+        else:
+            attachedTo = (event, incidentNumber)
+
         stream = self.buildJSONArray(
             textFromJSON(incidentReportAsJSON(incidentReport)).encode("utf-8")
-            for incidentReport in self.storage.incidentReports()
+            for incidentReport
+            in self.storage.incidentReports(attachedTo=attachedTo)
         )
 
         returnValue(self.jsonStream(request, stream, None))
