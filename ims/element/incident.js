@@ -28,7 +28,10 @@ function initIncidentPage() {
             drawIncidentTypesToAdd();
         });
         loadUnattachedIncidentReports(function () {
-            drawIncidentReports();
+            drawMergedReportEntries();
+        });
+        loadAttachedIncidentReports(function () {
+            drawMergedReportEntries();
         });
     }
 
@@ -208,6 +211,31 @@ function loadUnattachedIncidentReports(success) {
 
 
 //
+// Load attached incident reports
+//
+
+var attachedIncidentReports = null;
+
+function loadAttachedIncidentReports(success) {
+    function ok(data, status, xhr) {
+        attachedIncidentReports = data;
+
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    function fail(error, status, xhr) {
+        var message = "Failed to load unattached incident reports:\n" + error
+        console.error(message);
+        window.alert(message);
+    }
+
+    jsonRequest(incidentReportsURL, null, ok, fail);
+}
+
+
+//
 // Draw all fields
 //
 
@@ -223,7 +251,7 @@ function drawIncidentFields() {
     drawLocationAddressRadialMinute();
     drawLocationAddressConcentric();
     drawLocationDescription();
-    drawReportEntries(incident.report_entries);
+    drawMergedReportEntries();
 
     $("#incident_report_add").on("input", reportEntryEdited);
 }
@@ -493,6 +521,27 @@ function drawLocationDescription() {
     }
 }
 
+
+//
+// Draw report entries
+//
+
+function drawMergedReportEntries() {
+    var entries = [];
+
+    $.merge(entries, incident.report_entries);
+
+    if (attachedIncidentReports != null) {
+        for (var i in attachedIncidentReports) {
+            var report = attachedIncidentReports[i];
+            $.merge(entries, report.report_entries);
+        }
+    }
+
+    entries.sort()
+
+    drawReportEntries(entries);
+}
 
 //
 // Editing
