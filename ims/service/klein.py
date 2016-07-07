@@ -36,7 +36,7 @@ from twisted.web.iweb import IRenderable
 from twisted.web.template import renderElement
 
 from werkzeug.routing import RequestRedirect
-from werkzeug.exceptions import NotFound
+from werkzeug.exceptions import NotFound, MethodNotAllowed
 from klein import Klein
 
 from ims import __version__ as version
@@ -145,12 +145,26 @@ class KleinService(object):
         # information that was not meant to be exposed.
         self.authenticateRequest(request)
         request.setResponseCode(http.NOT_FOUND)
-        return self.textResource(request, "Not found.")
+        return self.textResource(request, "Not found")
 
 
-    def notAuthorizedResource(self, request):
+    def methodNotAllowedResource(self, request):
+        # Require authentication.
+        # This is because exposing what resources do or do not exist can expose
+        # information that was not meant to be exposed.
+        self.authenticateRequest(request)
         request.setResponseCode(http.NOT_ALLOWED)
-        return b"Permission denied"
+        return self.textResource(request, "HTTP method not allowed")
+
+
+    def forbiddenResource(self, request):
+        request.setResponseCode(http.FORBIDDEN)
+        return self.textResource(request, "Permission denied")
+
+
+    def notAllowedResource(self, request):
+        request.setResponseCode(http.NOT_ALLOWED)
+        return self.textResource(request, "HTTP method not supported")
 
 
     def invalidQueryResource(self, request, arg, value):
@@ -163,7 +177,7 @@ class KleinService(object):
     def badRequestResource(self, request, message=None):
         request.setResponseCode(http.BAD_REQUEST)
         if message is None:
-            message = "Bad request."
+            message = "Bad request"
         else:
             message = u"{}".format(message).encode("utf-8")
         return self.textResource(request, message)
@@ -172,7 +186,7 @@ class KleinService(object):
     def internalErrorResource(self, request, message=None):
         request.setResponseCode(http.INTERNAL_SERVER_ERROR)
         if message is None:
-            message = "Internal error."
+            message = "Internal error"
         else:
             message = u"{}".format(message).encode("utf-8")
         return self.textResource(request, message)
@@ -202,13 +216,22 @@ class KleinService(object):
         return self.notFoundResource(request)
 
 
+    @app.handle_errors(MethodNotAllowed)
+    @renderResponse
+    def methodNotAllowedError(self, request, failure):
+        """
+        HTTP method not allowed.
+        """
+        return self.methodNotAllowedResource(request)
+
+
     @app.handle_errors(NotAuthorizedError)
     @renderResponse
     def notAuthorizedError(self, request, failure):
         """
         Not authorized.
         """
-        return self.notAuthorizedResource(request)
+        return self.forbiddenResource(request)
 
 
     @app.handle_errors(NotAuthenticatedError)
