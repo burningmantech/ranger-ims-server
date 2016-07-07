@@ -595,6 +595,10 @@ function reportEntryElement(entry) {
         entryContainer.addClass("report_entry_user");
     }
 
+    if (entry.merged) {
+        entryContainer.addClass("report_entry_merged");
+    }
+
     // Add the timestamp and author
 
     metaDataContainer = $("<p />", {"class": "report_entry_metadata"})
@@ -613,6 +617,14 @@ function reportEntryElement(entry) {
     authorContainer.addClass("report_entry_author");
 
     metaDataContainer.append(author);
+
+    if (entry.merged) {
+      metaDataContainer.append(" ");
+      var reportNumberContainer = $("<span />");
+      metaDataContainer.append("(via incident report #" + entry.merged + ")");
+      authorContainer.addClass("report_entry_source");
+    }
+
     metaDataContainer.append(":");
 
     entryContainer.append(metaDataContainer);

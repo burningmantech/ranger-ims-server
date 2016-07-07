@@ -536,7 +536,11 @@ function drawMergedReportEntries() {
     if (attachedIncidentReports != null) {
         for (var i in attachedIncidentReports) {
             var report = attachedIncidentReports[i];
-            $.merge(entries, report.report_entries);
+            for (var j in report.report_entries) {
+                var entry = report.report_entries[j];
+                entry.merged = report.number;
+                entries.push(entry);
+            }
         }
     }
 
