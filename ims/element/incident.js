@@ -115,8 +115,6 @@ function loadAndDisplayIncident(success) {
 var personnel = null;
 
 function loadPersonnel(success) {
-    var url = personnelURL;
-
     function ok(data, status, xhr) {
         var _personnel = {};
         for (var i in data) {
@@ -147,7 +145,7 @@ function loadPersonnel(success) {
         window.alert(message);
     }
 
-    jsonRequest(url, null, ok, fail);
+    jsonRequest(personnelURL, null, ok, fail);
 }
 
 
@@ -158,8 +156,6 @@ function loadPersonnel(success) {
 var incidentTypes = null;
 
 function loadIncidentTypes(success) {
-    var url = incidentTypesURL;
-
     function ok(data, status, xhr) {
         var _incidentTypes = [];
         for (var i in data) {
@@ -179,7 +175,7 @@ function loadIncidentTypes(success) {
         window.alert(message);
     }
 
-    jsonRequest(url, null, ok, fail);
+    jsonRequest(incidentTypesURL, null, ok, fail);
 }
 
 
