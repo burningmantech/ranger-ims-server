@@ -161,18 +161,9 @@ class JSONMixIn(object):
             request, event, Authorization.readIncidents
         )
 
-        incidents = self.storage[event].listIncidents()
-
-        # Reverse order here because we generally want the clients to load the
-        # more recent incidents first.
-        # FIXME: Probably that should just be client-side logic.
-        incidents = sorted(
-            incidents, cmp=lambda a, b: cmp(a[0], b[0]), reverse=True
-        )
-
         stream = self.buildJSONArray(
-            textFromJSON(incident).encode("utf-8")
-            for incident in incidents
+            textFromJSON(incidentAsJSON(incident)).encode("utf-8")
+            for incident in self.storage.incidents(event)
         )
 
         returnValue(self.jsonStream(request, stream, None))

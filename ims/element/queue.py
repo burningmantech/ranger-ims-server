@@ -59,7 +59,7 @@ class DispatchQueuePage(Element):
     @renderer
     def data_url(self, request, tag):
         return textFromJSON(
-            URLs.dispatchQueueData.asText()
+            URLs.incidents.asText()
             .replace(u"<event>", unicode(self.event))
         )
 

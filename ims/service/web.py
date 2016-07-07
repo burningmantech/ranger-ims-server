@@ -192,19 +192,6 @@ class WebMixIn(object):
         return self.javaScript(request, "queue.js")
 
 
-    @route(URLs.dispatchQueueData.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def dispatchQueueDataResource(self, request, event):
-        yield self.authorizeRequest(request, event, Authorization.readIncidents)
-
-        stream = self.buildJSONArray(
-            textFromJSON(incidentAsJSON(incident)).encode("utf-8")
-            for incident in self.storage.incidents(event)
-        )
-
-        returnValue(self.jsonStream(request, stream, None))
-
-
     @route(URLs.viewIncidentNumber.asText(), methods=("HEAD", "GET"))
     @fixedETag
     @inlineCallbacks
