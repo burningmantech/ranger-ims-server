@@ -419,7 +419,7 @@ function summarizeIncident(incident) {
         for (var j in lines) {
           var line = lines[j];
           if (line != undefined && line != "") {
-            return summary;
+            return line;
           }
         }
       }
