@@ -24,7 +24,6 @@ __all__ = [
 
 from twisted.internet.defer import inlineCallbacks, returnValue
 
-from ..data.json import textFromJSON, incidentAsJSON
 from ..element.admin import AdminPage
 from ..element.admin_acl import AdminAccessControlPage
 from ..element.admin_types import AdminIncidentTypesPage
