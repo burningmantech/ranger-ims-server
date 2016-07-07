@@ -620,9 +620,17 @@ function reportEntryElement(entry) {
 
     if (entry.merged) {
       metaDataContainer.append(" ");
+
+      var link = $("<a />");
+      link.text("incident report #" + entry.merged);
+      link.attr("href", viewIncidentReportsURL + "/" + entry.merged)
+
       var reportNumberContainer = $("<span />");
-      metaDataContainer.append("(via incident report #" + entry.merged + ")");
-      authorContainer.addClass("report_entry_source");
+      metaDataContainer.append("(via ");
+      metaDataContainer.append(link);
+      metaDataContainer.append(")");
+
+      metaDataContainer.addClass("report_entry_source");
     }
 
     metaDataContainer.append(":");

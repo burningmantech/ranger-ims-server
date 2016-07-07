@@ -86,6 +86,11 @@ class IncidentPage(Element):
 
 
     @renderer
+    def view_incident_reports_url(self, request, tag):
+        return textFromJSON(URLs.viewIncidentReports.asText())
+
+
+    @renderer
     def concentric_street_name_by_id(self, request, tag):
         namesByID = self.service.storage.concentricStreetsByID(self.event)
         return textFromJSON(namesByID)
