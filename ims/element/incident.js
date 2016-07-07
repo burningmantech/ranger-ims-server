@@ -27,6 +27,9 @@ function initIncidentPage() {
         loadIncidentTypes(function() {
             drawIncidentTypesToAdd();
         });
+        loadUnattachedIncidentReports(function () {
+            drawIncidentReports();
+        });
     }
 
     function loadedBody() {
@@ -176,6 +179,31 @@ function loadIncidentTypes(success) {
     }
 
     jsonRequest(incidentTypesURL, null, ok, fail);
+}
+
+
+//
+// Load unattached incident reports
+//
+
+var unattachedIncidentReports = null;
+
+function loadUnattachedIncidentReports(success) {
+    function ok(data, status, xhr) {
+        unattachedIncidentReports = data;
+
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    function fail(error, status, xhr) {
+        var message = "Failed to load unattached incident reports:\n" + error
+        console.error(message);
+        window.alert(message);
+    }
+
+    jsonRequest(incidentReportsURL, null, ok, fail);
 }
 
 
