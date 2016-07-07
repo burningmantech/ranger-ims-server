@@ -356,6 +356,22 @@ class JSONMixIn(object):
         returnValue(self.noContentResource(request))
 
 
+    @route(URLs.incidentReports.asText(), methods=("HEAD", "GET"))
+    @route(URLs.incidentReports.asText() + u"/", methods=("HEAD", "GET"))
+    @inlineCallbacks
+    def listIncidentReportsResource(self, request):
+        yield self.authorizeRequest(
+            request, None, Authorization.readIncidentReports
+        )
+
+        stream = self.buildJSONArray(
+            textFromJSON(incidentReportAsJSON(incidentReport)).encode("utf-8")
+            for incidentReport in self.storage.incidentReports()
+        )
+
+        returnValue(self.jsonStream(request, stream, None))
+
+
     @route(URLs.incidentReports.asText(), methods=("POST",))
     @route(URLs.incidentReports.asText() + u"/", methods=("POST",))
     @inlineCallbacks
