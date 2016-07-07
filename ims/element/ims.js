@@ -71,6 +71,20 @@ function range(start, end, step) {
 }
 
 
+function compareReportEntries(a, b) {
+    if (a.created < b.created) { return -1; }
+    if (a.created > b.created) { return  1; }
+
+    if (a.system_entry && ! b.system_entry) { return -1; }
+    if (! a.system_entry && b.system_entry) { return  1; }
+
+    if (a.text < b.text) { return -1; }
+    if (a.text > b.text) { return  1; }
+
+    return 0;
+}
+
+
 //
 // Request making
 //

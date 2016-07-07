@@ -206,6 +206,7 @@ function loadUnattachedIncidentReports(success) {
         window.alert(message);
     }
 
+    // FIXME: This current gets all incident reports
     jsonRequest(incidentReportsURL, null, ok, fail);
 }
 
@@ -231,6 +232,7 @@ function loadAttachedIncidentReports(success) {
         window.alert(message);
     }
 
+    // FIXME: This current gets all incident reports
     jsonRequest(incidentReportsURL, null, ok, fail);
 }
 
@@ -538,7 +540,7 @@ function drawMergedReportEntries() {
         }
     }
 
-    entries.sort()
+    entries.sort(compareReportEntries)
 
     drawReportEntries(entries);
 }
