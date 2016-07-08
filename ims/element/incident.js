@@ -392,6 +392,9 @@ function drawRangersToAdd() {
     }
     handles.sort();
 
+    select.empty();
+    select.append($("<option />"));
+
     for (var i in handles) {
         var handle = handles[i];
         var ranger = personnel[handle];
@@ -456,6 +459,9 @@ function drawIncidentTypes() {
 
 function drawIncidentTypesToAdd() {
     var select = $("#incident_type_add");
+
+    select.empty();
+    select.append($("<option />"));
 
     for (var i in incidentTypes) {
         var incidentType = incidentTypes[i];
@@ -592,6 +598,9 @@ function drawAttachedIncidentReports() {
 
 function drawIncidentReportsToAttach() {
     var select = $("#attached_incident_report_add");
+
+    select.empty();
+    select.append($("<option />"));
 
     for (var i in unattachedIncidentReports) {
         var report = unattachedIncidentReports[i];
