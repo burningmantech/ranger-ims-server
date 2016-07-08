@@ -196,10 +196,10 @@ class WebMixIn(object):
     @inlineCallbacks
     def viewIncidentPage(self, request, event, number):
         if number == u"new":
-            authz = Authorization.readIncidents
+            authz = Authorization.writeIncidents
             number = None
         else:
-            authz = Authorization.writeIncidents
+            authz = Authorization.readIncidents
             try:
                 number = int(number)
             except ValueError:
