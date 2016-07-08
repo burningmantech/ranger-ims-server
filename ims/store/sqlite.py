@@ -1140,8 +1140,8 @@ class Storage(object):
         self, number, reportEntry, cursor
     ):
         """
-        Attach the given report entry to the incident report with the given
-        number.
+        Create the given report entry and attach it to the incident report with
+        the given number.
         """
         self._createReportEntry(reportEntry, cursor)
         # Join to incident report
@@ -1156,6 +1156,43 @@ class Storage(object):
             INCIDENT_REPORT_NUMBER, REPORT_ENTRY
         )
         values (?, ?)
+        """
+    )
+
+
+    def attachIncidentReportToIncident(
+        self, incidentReportNumber, event, incidentNumber
+    ):
+        """
+        Attach the incident report with the given number to the incident with
+        the given number in the given event.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(
+                        self._query_attachIncidentReportToIncident,
+                        (event, incidentNumber, incidentReportNumber)
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to attach incident report {incidentReportNumber} "
+                "to incident {incidentNumber}",
+                incidentReportNumber=incidentReportNumber,
+                incidentNumber=incidentNumber,
+            )
+            raise StorageError(e)
+
+
+    _query_attachIncidentReportToIncident = _query(
+        """
+        insert into INCIDENT_INCIDENT_REPORT (
+            EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER
+        )
+        values (({query_eventID}), ?, ?)
         """
     )
 
