@@ -164,6 +164,36 @@ class AuthMixIn(object):
             raise NotAuthorizedError()
 
 
+    @inlineCallbacks
+    def authorizeRequestForIncidentReport(self, request, number):
+        authFailure = None
+
+        for event, incidentNumber in (
+            self.storage.incidentsAttachedToIncidentReport(number)
+        ):
+            # No incident attached; use the authorization for reading incidents
+            # from the corresponding event.
+            # Because it's possible for multiple incidents to be attached, if
+            # one fails, keep trying the others in case they allow it.
+            try:
+                yield self.authorizeRequest(
+                    request, event, Authorization.readIncidents
+                )
+            except NotAuthorizedError as e:
+                authFailure = e
+            else:
+                authFailure = None
+                break
+        else:
+            # No incident attached
+            yield self.authorizeRequest(
+                request, None, Authorization.readIncidentReports
+            )
+
+        if authFailure is not None:
+            raise authFailure
+
+
     def lookupUserName(self, username):
         return self.directory.recordWithShortName(RecordType.user, username)
 
