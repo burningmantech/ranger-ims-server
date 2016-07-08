@@ -22,7 +22,8 @@ __all__ = [
     "RootPage",
 ]
 
-from .base import Element
+from ..service.urls import URLs
+from .base import Element, renderer
 
 
 
@@ -36,3 +37,8 @@ class RootPage(Element):
             self, u"root", service,
             title=u"Ranger Incident Management System",
         )
+
+
+    @renderer
+    def new_incident_report(self, request, tag):
+        return tag(href=URLs.viewIncidentReports.child(u"new").asText())

@@ -9,7 +9,13 @@
 
       <h2>Web Interface</h2>
       <ul>
-        <li t:render="events_reversed" />
+        <li>
+          <a t:render="new_incident_report">Create a new incident report</a>
+        </li>
+        <li>Events:</li>
+        <ul>
+          <li t:render="events_reversed" />
+        </ul>
       </ul>
 
 <!--
