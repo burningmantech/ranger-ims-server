@@ -230,16 +230,17 @@ class WebMixIn(object):
     @inlineCallbacks
     def viewIncidentReportPage(self, request, number):
         if number == u"new":
-            authz = Authorization.writeIncidentReports
+            yield self.authorizeRequest(
+                request, None, Authorization.writeIncidentReports
+            )
             number = None
         else:
-            authz = Authorization.readIncidentReports
             try:
                 number = int(number)
             except ValueError:
                 returnValue(self.notFoundResource(request))
 
-        yield self.authorizeRequest(request, None, authz)
+            yield self.authorizeRequestForIncidentReport(request, number)
 
         returnValue(IncidentReportPage(self, number))
 

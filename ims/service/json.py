@@ -447,14 +447,12 @@ class JSONMixIn(object):
     @route(URLs.incidentReport.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def readIncidentReportResource(self, request, number):
-        yield self.authorizeRequest(
-            request, None, Authorization.readIncidentReports
-        )
-
         try:
             number = int(number)
         except ValueError:
             returnValue(self.notFoundResource(request))
+
+        yield self.authorizeRequestForIncidentReport(request, number)
 
         incidentReport = self.storage.incidentReport(number)
         text = textFromJSON(incidentReportAsJSON(incidentReport))
