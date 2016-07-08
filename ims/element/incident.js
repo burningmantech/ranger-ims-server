@@ -27,14 +27,7 @@ function initIncidentPage() {
         loadIncidentTypes(function() {
             drawIncidentTypesToAdd();
         });
-        loadUnattachedIncidentReports(function () {
-            drawMergedReportEntries();
-            drawIncidentReportsToAttach();
-        });
-        loadAttachedIncidentReports(function () {
-            drawMergedReportEntries();
-            drawAttachedIncidentReports();
-        });
+        loadAndDisplayIncidentReports();
     }
 
     function loadedBody() {
@@ -113,6 +106,18 @@ function loadAndDisplayIncident(success) {
     }
 
     loadIncident(loaded);
+}
+
+
+function loadAndDisplayIncidentReports() {
+    loadUnattachedIncidentReports(function () {
+        drawMergedReportEntries();
+        drawIncidentReportsToAttach();
+    });
+    loadAttachedIncidentReports(function () {
+        drawMergedReportEntries();
+        drawAttachedIncidentReports();
+    });
 }
 
 
@@ -881,4 +886,28 @@ function addIncidentType() {
     }
 
     sendEdits({"incident_types": incidentTypes}, ok, fail);
+}
+
+
+function attachIncidentReport() {
+    var select = $("#attached_incident_report_add");
+    var incidentReportNumber = $(select).val();
+
+    var url = (
+        incidentReportsURL + "/" + incidentReportNumber +
+        "?event=" + event + ";incident=" + incidentNumber
+    );
+
+    function ok(data, status, xhr) {
+        loadAndDisplayIncidentReports();
+    }
+
+    function fail(requestError, status, xhr) {
+        var message = "Failed to attach incident report:\n" + requestError
+        console.log(message);
+        loadAndDisplayIncidentReports();
+        window.alert(message);
+    }
+
+    jsonRequest(url, {}, ok, fail);
 }
