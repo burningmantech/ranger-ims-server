@@ -1235,6 +1235,34 @@ class Storage(object):
     )
 
 
+    def incidentsAttachedToIncidentReport(self, incidentReportNumber):
+        """
+        Look up incidents attached to the incident report with the given number.
+        """
+        try:
+            for row in self._db.execute(
+                self._query_incidentsAttachedToIncidentReport,
+                (incidentReportNumber,)
+            ):
+                yield (row["EVENT"], row["INCIDENT_NUMBER"])
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to look up incidents attached to incident report: "
+                "{incidentReportNumber}",
+                incidentReportNumber=incidentReportNumber
+            )
+            raise StorageError(e)
+
+    _query_incidentsAttachedToIncidentReport = _query(
+        """
+        select e.NAME as EVENT, iir.INCIDENT_NUMBER as INCIDENT_NUMBER
+        from INCIDENT_INCIDENT_REPORT iir
+        join EVENT e on e.ID = iir.EVENT
+        where iir.INCIDENT_REPORT_NUMBER = ?
+        """
+    )
+
+
     def concentricStreetsByID(self, event):
         """
         Look up all concentric street names, indexed by ID, IDs for the given
