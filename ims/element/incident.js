@@ -153,7 +153,7 @@ function loadPersonnel(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load personnel:\n" + error
+        var message = "Failed to load personnel:\n" + error;
         console.error(message);
         window.alert(message);
     }
@@ -183,7 +183,7 @@ function loadIncidentTypes(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load incident types:\n" + error
+        var message = "Failed to load incident types:\n" + error;
         console.error(message);
         window.alert(message);
     }
@@ -199,6 +199,10 @@ function loadIncidentTypes(success) {
 var unattachedIncidentReports = null;
 
 function loadUnattachedIncidentReports(success) {
+    if (unattachedIncidentReports == undefined) {
+        return;
+    }
+
     function ok(data, status, xhr) {
         unattachedIncidentReports = data;
 
@@ -208,9 +212,16 @@ function loadUnattachedIncidentReports(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load unattached incident reports:\n" + error
-        console.error(message);
-        window.alert(message);
+        if (xhr.status == 403) {
+            // We're not allow to look these up.
+            unattachedIncidentReports = undefined;
+        } else {
+            var message = (
+                "Failed to load unattached incident reports:\n" + error
+            );
+            console.error(message);
+            window.alert(message);
+        }
     }
 
     jsonRequest(incidentReportsURL + "/?event=;incident=", null, ok, fail);
@@ -233,7 +244,7 @@ function loadAttachedIncidentReports(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load unattached incident reports:\n" + error
+        var message = "Failed to load attached incident reports:\n" + error;
         console.error(message);
         window.alert(message);
     }
