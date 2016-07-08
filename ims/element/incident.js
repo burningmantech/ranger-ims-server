@@ -899,13 +899,13 @@ function detachIncidentReport(sender) {
 
     var incidentReportNumber = sender.parent().text().trim();
 
-    function ok() {
+    function ok(data, status, xhr) {
         // FIXME
         // controlHasSuccess(sender);
         loadAndDisplayIncidentReports();
     }
 
-    function fail() {
+    function fail(requestError, status, xhr) {
         // FIXME
         // controlHasError(sender);
 
