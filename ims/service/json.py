@@ -485,13 +485,6 @@ class JSONMixIn(object):
         event          = request.args.get("event"   , [""])[0]
         incidentNumber = request.args.get("incident", [""])[0]
 
-        try:
-            incidentNumber = int(incidentNumber)
-        except ValueError:
-            returnValue(self.badRequestResource(
-                request, "Invalid incident number: {}".format(incidentNumber)
-            ))
-
         if action != "":
             if event == "":
                 returnValue(self.badRequestResource(
@@ -500,6 +493,13 @@ class JSONMixIn(object):
             if incidentNumber == "":
                 returnValue(self.badRequestResource(
                     request, "No incident number specified: {}".format(action)
+                ))
+
+            try:
+                incidentNumber = int(incidentNumber)
+            except ValueError:
+                returnValue(self.badRequestResource(
+                    request, "Invalid incident number: {!r}".format(incidentNumber)
                 ))
 
             if action == "attach":
