@@ -889,14 +889,39 @@ function addIncidentType() {
 }
 
 
-function attachIncidentReport() {
-    var select = $("#attached_incident_report_add");
-    var incidentReportNumber = $(select).val();
+function detachIncidentReport(sender) {
+    sender = $(sender);
+
+    var incidentReportNumber = sender.parent().text().trim();
+
+    function ok() {
+        // FIXME
+        // controlHasSuccess(sender);
+        loadAndDisplayIncidentReports();
+    }
+
+    function fail() {
+        // FIXME
+        // controlHasError(sender);
+
+        var message = "Failed to detach incident report:\n" + requestError
+        console.log(message);
+        loadAndDisplayIncidentReports();
+        window.alert(message);
+    }
 
     var url = (
         incidentReportsURL + "/" + incidentReportNumber +
-        "?event=" + event + ";incident=" + incidentNumber
+        "?action=detach;event=" + event + ";incident=" + incidentNumber
     );
+
+    jsonRequest(url, {}, ok, fail);
+}
+
+
+function attachIncidentReport() {
+    var select = $("#attached_incident_report_add");
+    var incidentReportNumber = $(select).val();
 
     function ok(data, status, xhr) {
         loadAndDisplayIncidentReports();
@@ -908,6 +933,11 @@ function attachIncidentReport() {
         loadAndDisplayIncidentReports();
         window.alert(message);
     }
+
+    var url = (
+        incidentReportsURL + "/" + incidentReportNumber +
+        "?action=attach;event=" + event + ";incident=" + incidentNumber
+    );
 
     jsonRequest(url, {}, ok, fail);
 }
