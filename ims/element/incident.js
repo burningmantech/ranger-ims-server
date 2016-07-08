@@ -577,8 +577,10 @@ function drawAttachedIncidentReports() {
     }
 
     for (var i in reports) {
+        var report = reports[i];
         var item = _reportsItem.clone();
-        item.append(summarizeIncidentReport(reports[i]));
+        item.append(summarizeIncidentReport(report));
+        item.data(report);
         items.push(item);
     }
 
@@ -897,7 +899,7 @@ function addIncidentType() {
 function detachIncidentReport(sender) {
     sender = $(sender);
 
-    var incidentReportNumber = sender.parent().text().trim();
+    var incidentReport = sender.parent().data();
 
     function ok(data, status, xhr) {
         // FIXME
@@ -916,7 +918,7 @@ function detachIncidentReport(sender) {
     }
 
     var url = (
-        incidentReportsURL + "/" + incidentReportNumber +
+        incidentReportsURL + "/" + incidentReport.number +
         "?action=detach;event=" + event + ";incident=" + incidentNumber
     );
 
