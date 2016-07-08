@@ -479,6 +479,32 @@ class JSONMixIn(object):
             returnValue(self.notFoundResource(request))
 
         #
+        # Attach to incident if requested
+        #
+        action         = request.args.get("action"  , [""])[0]
+        event          = request.args.get("event"   , [""])[0]
+        incidentNumber = request.args.get("incident", [""])[0]
+
+        try:
+            incidentNumber = int(incidentNumber)
+        except ValueError:
+            returnValue(self.badRequestResource(
+                request, "Invalid incident number: {}".format(incidentNumber)
+            ))
+
+        if not action == event == incidentNumber == "":
+            if action == "attach":
+                self.storage.attachIncidentReportToIncident(
+                    number, event, incidentNumber
+                )
+            elif action == "detach":
+                raise NotImplementedError()
+            else:
+                returnValue(self.badRequestResource(
+                    request, "Unknown action: {}".format(action)
+                ))
+
+        #
         # Get the edits requested by the client
         #
         edits = jsonFromFile(request.content)
