@@ -372,7 +372,7 @@ function drawRangers() {
             ranger = rangerAsString(personnel[handle]);
         }
         var item = _rangerItem.clone();
-        item.text(ranger);
+        item.append(ranger);
         item.attr("value", handle);
         items.push(item);
     }
@@ -444,7 +444,7 @@ function drawIncidentTypes() {
 
     for (var i in incidentTypes) {
         var item = _typesItem.clone();
-        item.text(incidentTypes[i]);
+        item.append(incidentTypes[i]);
         items.push(item);
     }
 
@@ -578,7 +578,7 @@ function drawAttachedIncidentReports() {
 
     for (var i in reports) {
         var item = _reportsItem.clone();
-        item.text(summarizeIncidentReport(reports[i]));
+        item.append(summarizeIncidentReport(reports[i]));
         items.push(item);
     }
 
