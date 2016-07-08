@@ -1197,6 +1197,44 @@ class Storage(object):
     )
 
 
+    def detachIncidentReportFromIncident(
+        self, incidentReportNumber, event, incidentNumber
+    ):
+        """
+        Detach the incident report with the given number from the incident with
+        the given number in the given event.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(
+                        self._query_detachIncidentReportFromIncident,
+                        (event, incidentNumber, incidentReportNumber)
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to detach incident report {incidentReportNumber} "
+                "to incident {incidentNumber}",
+                incidentReportNumber=incidentReportNumber,
+                incidentNumber=incidentNumber,
+            )
+            raise StorageError(e)
+
+
+    _query_detachIncidentReportFromIncident = _query(
+        """
+        delete from INCIDENT_INCIDENT_REPORT
+        where
+            EVENT = ({query_eventID}) and
+            INCIDENT_NUMBER = ? and
+            INCIDENT_REPORT_NUMBER = ?
+        """
+    )
+
+
     def concentricStreetsByID(self, event):
         """
         Look up all concentric street names, indexed by ID, IDs for the given
