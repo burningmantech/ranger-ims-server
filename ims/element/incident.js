@@ -372,7 +372,7 @@ function drawRangers() {
             ranger = rangerAsString(personnel[handle]);
         }
         var item = _rangerItem.clone();
-        item.append(ranger);
+        item.text(ranger);
         item.attr("value", handle);
         items.push(item);
     }
@@ -444,7 +444,7 @@ function drawIncidentTypes() {
 
     for (var i in incidentTypes) {
         var item = _typesItem.clone();
-        item.append(incidentTypes[i]);
+        item.text(incidentTypes[i]);
         items.push(item);
     }
 
@@ -578,7 +578,7 @@ function drawAttachedIncidentReports() {
 
     for (var i in reports) {
         var item = _reportsItem.clone();
-        item.append(reports[i]);
+        item.text(summarizeIncidentReport(reports[i]));
         items.push(item);
     }
 
@@ -596,10 +596,15 @@ function drawIncidentReportsToAttach() {
 
         var option = $("<option />");
         option.val(report.number);
-        option.text(report.number + ": " + summarizeIncident(report));
+        option.text(summarizeIncidentReport(report));
 
         select.append(option);
     }
+}
+
+
+function summarizeIncidentReport(report) {
+    return report.number + ": " + summarizeIncident(report);
 }
 
 
