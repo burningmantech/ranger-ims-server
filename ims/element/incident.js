@@ -585,7 +585,10 @@ function drawAttachedIncidentReports() {
     for (var i in reports) {
         var report = reports[i];
         var item = _reportsItem.clone();
-        item.append(summarizeIncidentReport(report));
+        var link = $("<a />");
+        link.attr("href", viewIncidentReportsURL + "/" + report.number);
+        link.text(summarizeIncidentReport(report));
+        item.append(link);
         item.data(report);
         items.push(item);
     }
