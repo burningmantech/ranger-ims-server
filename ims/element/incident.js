@@ -29,10 +29,11 @@ function initIncidentPage() {
         });
         loadUnattachedIncidentReports(function () {
             drawMergedReportEntries();
-            drawIncidentReportsToAdd();
+            drawIncidentReportsToAttach();
         });
         loadAttachedIncidentReports(function () {
             drawMergedReportEntries();
+            drawAttachedIncidentReports();
         });
     }
 
@@ -438,7 +439,7 @@ function drawIncidentTypes() {
 
     for (var i in incidentTypes) {
         var item = _typesItem.clone();
-        item.append(incident.incident_types[i]);
+        item.append(incidentTypes[i]);
         items.push(item);
     }
 
@@ -552,7 +553,37 @@ function drawMergedReportEntries() {
 }
 
 
-function drawIncidentReportsToAdd() {
+var _reportsItem = null;
+
+function drawAttachedIncidentReports() {
+    if (_reportsItem == null) {
+        _reportsItem = $("#attached_incident_reports")
+            .children(".list-group-item:first")
+            ;
+    }
+
+    var items = [];
+
+    var reports = attachedIncidentReports;
+    if (reports == undefined) {
+        reports = [];
+    } else {
+        reports.sort();
+    }
+
+    for (var i in reports) {
+        var item = _reportsItem.clone();
+        item.append(reports[i]);
+        items.push(item);
+    }
+
+    var container = $("#attached_incident_reports");
+    container.empty();
+    container.append(items);
+}
+
+
+function drawIncidentReportsToAttach() {
     var select = $("#attached_incident_report_add");
 
     for (var i in unattachedIncidentReports) {
