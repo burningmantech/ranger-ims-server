@@ -492,13 +492,24 @@ class JSONMixIn(object):
                 request, "Invalid incident number: {}".format(incidentNumber)
             ))
 
-        if not action == event == incidentNumber == "":
+        if action != "":
+            if event == "":
+                returnValue(self.badRequestResource(
+                    request, "No event specified: {}".format(action)
+                ))
+            if incidentNumber == "":
+                returnValue(self.badRequestResource(
+                    request, "No incident number specified: {}".format(action)
+                ))
+
             if action == "attach":
                 self.storage.attachIncidentReportToIncident(
                     number, event, incidentNumber
                 )
             elif action == "detach":
-                raise NotImplementedError()
+                self.storage.detachIncidentReportFromIncident(
+                    number, event, incidentNumber
+                )
             else:
                 returnValue(self.badRequestResource(
                     request, "Unknown action: {}".format(action)
