@@ -360,16 +360,18 @@ class JSONMixIn(object):
     @route(URLs.incidentReports.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
     def listIncidentReportsResource(self, request):
-        yield self.authorizeRequest(
-            request, None, Authorization.readIncidentReports
-        )
-
         event          = request.args.get("event"   , [""])[0]
         incidentNumber = request.args.get("incident", [""])[0]
 
         if event == incidentNumber == "":
+            yield self.authorizeRequest(
+                request, None, Authorization.readIncidentReports
+            )
             attachedTo = (None, None)
         else:
+            yield self.authorizeRequest(
+                request, event, Authorization.readIncidents
+            )
             attachedTo = (event, incidentNumber)
 
         stream = self.buildJSONArray(
