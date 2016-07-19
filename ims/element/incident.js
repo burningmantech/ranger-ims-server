@@ -213,7 +213,7 @@ function loadUnattachedIncidentReports(success) {
 
     function fail(error, status, xhr) {
         if (xhr.status == 403) {
-            // We're not allow to look these up.
+            // We're not allowed to look these up.
             unattachedIncidentReports = undefined;
         } else {
             var message = (

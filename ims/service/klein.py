@@ -200,7 +200,7 @@ class KleinService(object):
     @renderResponse
     def requestRedirectError(self, request, failure):
         """
-        Not authenticated.
+        Redirect.
         """
         url = URL.fromText(failure.value.args[0].decode("utf-8"))
         element = self.redirect(request, url)
