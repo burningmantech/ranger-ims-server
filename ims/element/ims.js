@@ -71,6 +71,20 @@ function range(start, end, step) {
 }
 
 
+function compareReportEntries(a, b) {
+    if (a.created < b.created) { return -1; }
+    if (a.created > b.created) { return  1; }
+
+    if (a.system_entry && ! b.system_entry) { return -1; }
+    if (! a.system_entry && b.system_entry) { return  1; }
+
+    if (a.text < b.text) { return -1; }
+    if (a.text > b.text) { return  1; }
+
+    return 0;
+}
+
+
 //
 // Request making
 //
@@ -405,7 +419,7 @@ function summarizeIncident(incident) {
         for (var j in lines) {
           var line = lines[j];
           if (line != undefined && line != "") {
-            return summary;
+            return line;
           }
         }
       }
@@ -563,4 +577,132 @@ function renderSummary(data, type, incident) {
       return "";
   }
   return undefined;
+}
+
+
+//
+// Populate report entry text
+//
+
+function reportEntryElement(entry) {
+    // Build a container for the entry
+
+    var entryContainer = $("<div />", {"class": "report_entry"});
+
+    if (entry.system_entry) {
+        entryContainer.addClass("report_entry_system");
+    } else {
+        entryContainer.addClass("report_entry_user");
+    }
+
+    if (entry.merged) {
+        entryContainer.addClass("report_entry_merged");
+    }
+
+    // Add the timestamp and author
+
+    metaDataContainer = $("<p />", {"class": "report_entry_metadata"})
+
+    var timeStampContainer = timeElement(new Date(entry.created));
+    timeStampContainer.addClass("report_entry_timestamp");
+
+    metaDataContainer.append([timeStampContainer, ", "]);
+
+    var author = entry.author;
+    if (author == undefined) {
+        author = "(unknown)";
+    }
+    var authorContainer = $("<span />");
+    authorContainer.text(entry.author);
+    authorContainer.addClass("report_entry_author");
+
+    metaDataContainer.append(author);
+
+    if (entry.merged) {
+      metaDataContainer.append(" ");
+
+      var link = $("<a />");
+      link.text("incident report #" + entry.merged);
+      link.attr("href", viewIncidentReportsURL + "/" + entry.merged)
+
+      var reportNumberContainer = $("<span />");
+      metaDataContainer.append("(via ");
+      metaDataContainer.append(link);
+      metaDataContainer.append(")");
+
+      metaDataContainer.addClass("report_entry_source");
+    }
+
+    metaDataContainer.append(":");
+
+    entryContainer.append(metaDataContainer);
+
+    // Add report text
+
+    var lines = entry.text.split("\n");
+    for (var i in lines) {
+        var textContainer = $("<p />", {"class": "report_entry_text"});
+        textContainer.text(lines[i]);
+
+        entryContainer.append(textContainer);
+    }
+
+    // Return container
+
+    return entryContainer;
+}
+
+function drawReportEntries(entries) {
+    var container = $("#incident_report");
+    container.empty();
+
+    if (entries != undefined) {
+        for (var i in entries) {
+            container.append(reportEntryElement(entries[i]));
+        }
+    }
+}
+
+function reportEntryEdited(event) {
+    var text = $("#incident_report_add").val().trim();
+    var submitButton = $("#report_entry_submit");
+
+    submitButton.removeClass("btn-default");
+    submitButton.removeClass("btn-warning");
+    submitButton.removeClass("btn-danger");
+
+    if (text == "") {
+        submitButton.addClass("disabled");
+        submitButton.addClass("btn-default");
+    } else {
+        submitButton.removeClass("disabled");
+        submitButton.addClass("btn-warning");
+    }
+}
+
+
+function submitReportEntry() {
+    var text = $("#incident_report_add").val().trim();
+
+    if (text == "") {
+        return;
+    }
+
+    console.log("New report entry:\n" + text);
+
+    function ok() {
+        // Clear the report entry
+        $("#incident_report_add").val("");
+        // Reset the submit button
+        reportEntryEdited();
+    }
+
+    function fail() {
+        var submitButton = $("#report_entry_submit");
+        submitButton.removeClass("btn-default");
+        submitButton.removeClass("btn-warning");
+        submitButton.addClass("btn-danger");
+    }
+
+    sendEdits({"report_entries": [{"text": text}]}, ok, fail);
 }

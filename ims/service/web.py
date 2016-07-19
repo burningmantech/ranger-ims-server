@@ -24,7 +24,6 @@ __all__ = [
 
 from twisted.internet.defer import inlineCallbacks, returnValue
 
-from ..data.json import textFromJSON, incidentAsJSON
 from ..element.admin import AdminPage
 from ..element.admin_acl import AdminAccessControlPage
 from ..element.admin_types import AdminIncidentTypesPage
@@ -33,6 +32,8 @@ from ..element.queue import DispatchQueuePage
 from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.incident import IncidentPage
 from ..element.incident_template import IncidentTemplatePage
+from ..element.report import IncidentReportPage
+from ..element.report_template import IncidentReportTemplatePage
 from ..element.root import RootPage
 from .http import fixedETag, HeaderName, ContentType
 from .klein import route
@@ -190,34 +191,21 @@ class WebMixIn(object):
         return self.javaScript(request, "queue.js")
 
 
-    @route(URLs.dispatchQueueData.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def dispatchQueueDataResource(self, request, event):
-        yield self.authorizeRequest(request, event, Authorization.readIncidents)
-
-        stream = self.buildJSONArray(
-            textFromJSON(incidentAsJSON(incident)).encode("utf-8")
-            for incident in self.storage.incidents(event)
-        )
-
-        returnValue(self.jsonStream(request, stream, None))
-
-
-    @route(URLs.viewincidentNumber.asText(), methods=("HEAD", "GET"))
+    @route(URLs.viewIncidentNumber.asText(), methods=("HEAD", "GET"))
     @fixedETag
     @inlineCallbacks
     def viewIncidentPage(self, request, event, number):
-        # FIXME: Not strictly required because the underlying data is protected.
-        # But the error you get is stupid, so let's avoid that for now.
-        yield self.authorizeRequest(request, event, Authorization.readIncidents)
-
         if number == u"new":
+            authz = Authorization.writeIncidents
             number = None
         else:
+            authz = Authorization.readIncidents
             try:
                 number = int(number)
             except ValueError:
                 returnValue(self.notFoundResource(request))
+
+        yield self.authorizeRequest(request, event, authz)
 
         returnValue(IncidentPage(self, event, number))
 
@@ -232,3 +220,38 @@ class WebMixIn(object):
     @fixedETag
     def incidentJSResource(self, request):
         return self.javaScript(request, "incident.js")
+
+
+    # FIXME: viewIncidentReports
+
+
+    @route(URLs.viewIncidentReport.asText(), methods=("HEAD", "GET"))
+    @fixedETag
+    @inlineCallbacks
+    def viewIncidentReportPage(self, request, number):
+        if number == u"new":
+            yield self.authorizeRequest(
+                request, None, Authorization.writeIncidentReports
+            )
+            number = None
+        else:
+            try:
+                number = int(number)
+            except ValueError:
+                returnValue(self.notFoundResource(request))
+
+            yield self.authorizeRequestForIncidentReport(request, number)
+
+        returnValue(IncidentReportPage(self, number))
+
+
+    @route(URLs.viewIncidentReportTemplate.asText(), methods=("HEAD", "GET"))
+    @fixedETag
+    def viewIncidentReportTemplatePage(self, request):
+        return IncidentReportTemplatePage(self)
+
+
+    @route(URLs.viewIncidentReportJS.asText(), methods=("HEAD", "GET"))
+    @fixedETag
+    def viewIncidentReportJSResource(self, request):
+        return self.javaScript(request, "report.js")

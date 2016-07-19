@@ -9,28 +9,15 @@
 
       <h2>Web Interface</h2>
       <ul>
-        <li t:render="events_reversed" />
-      </ul>
-
-<!--
-      <h2>Client Applications</h2>
-
-      <ul>
         <li>
-          <a href="https://github.com/burningmantech/ranger-ims-mac/releases">
-            Incidents for Mac OS
-          </a>
+          <a t:render="new_incident_report">Create a new incident report</a>
         </li>
+        <li>Events:</li>
+        <ul>
+          <li t:render="events_reversed" />
+        </ul>
       </ul>
 
-      <h2>Documentation</h2>
-
-      <ul>
-        <li>
-          <a href="/docs/priorities.xhtml">Using Priorities</a>
-        </li>
-      </ul>
- -->
     </div>
   </body>
 </html>

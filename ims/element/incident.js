@@ -27,6 +27,7 @@ function initIncidentPage() {
         loadIncidentTypes(function() {
             drawIncidentTypesToAdd();
         });
+        loadAndDisplayIncidentReports();
     }
 
     function loadedBody() {
@@ -108,6 +109,18 @@ function loadAndDisplayIncident(success) {
 }
 
 
+function loadAndDisplayIncidentReports() {
+    loadUnattachedIncidentReports(function () {
+        drawMergedReportEntries();
+        drawIncidentReportsToAttach();
+    });
+    loadAttachedIncidentReports(function () {
+        drawMergedReportEntries();
+        drawAttachedIncidentReports();
+    });
+}
+
+
 //
 // Load personnel
 //
@@ -115,8 +128,6 @@ function loadAndDisplayIncident(success) {
 var personnel = null;
 
 function loadPersonnel(success) {
-    var url = personnelURL;
-
     function ok(data, status, xhr) {
         var _personnel = {};
         for (var i in data) {
@@ -142,12 +153,12 @@ function loadPersonnel(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load personnel:\n" + error
+        var message = "Failed to load personnel:\n" + error;
         console.error(message);
         window.alert(message);
     }
 
-    jsonRequest(url, null, ok, fail);
+    jsonRequest(personnelURL, null, ok, fail);
 }
 
 
@@ -158,8 +169,6 @@ function loadPersonnel(success) {
 var incidentTypes = null;
 
 function loadIncidentTypes(success) {
-    var url = incidentTypesURL;
-
     function ok(data, status, xhr) {
         var _incidentTypes = [];
         for (var i in data) {
@@ -174,12 +183,76 @@ function loadIncidentTypes(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load incident types:\n" + error
+        var message = "Failed to load incident types:\n" + error;
         console.error(message);
         window.alert(message);
     }
 
-    jsonRequest(url, null, ok, fail);
+    jsonRequest(incidentTypesURL, null, ok, fail);
+}
+
+
+//
+// Load unattached incident reports
+//
+
+var unattachedIncidentReports = null;
+
+function loadUnattachedIncidentReports(success) {
+    if (unattachedIncidentReports == undefined) {
+        return;
+    }
+
+    function ok(data, status, xhr) {
+        unattachedIncidentReports = data;
+
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    function fail(error, status, xhr) {
+        if (xhr.status == 403) {
+            // We're not allow to look these up.
+            unattachedIncidentReports = undefined;
+        } else {
+            var message = (
+                "Failed to load unattached incident reports:\n" + error
+            );
+            console.error(message);
+            window.alert(message);
+        }
+    }
+
+    jsonRequest(incidentReportsURL + "/?event=;incident=", null, ok, fail);
+}
+
+
+//
+// Load attached incident reports
+//
+
+var attachedIncidentReports = null;
+
+function loadAttachedIncidentReports(success) {
+    function ok(data, status, xhr) {
+        attachedIncidentReports = data;
+
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    function fail(error, status, xhr) {
+        var message = "Failed to load attached incident reports:\n" + error;
+        console.error(message);
+        window.alert(message);
+    }
+
+    jsonRequest(
+        incidentReportsURL + "/?event=" + event + ";incident=" + incidentNumber,
+        null, ok, fail
+    );
 }
 
 
@@ -199,7 +272,7 @@ function drawIncidentFields() {
     drawLocationAddressRadialMinute();
     drawLocationAddressConcentric();
     drawLocationDescription();
-    drawReportEntries();
+    drawMergedReportEntries();
 
     $("#incident_report_add").on("input", reportEntryEdited);
 }
@@ -240,7 +313,11 @@ function addLocationAddressOptions() {
 //
 
 function drawNumber() {
-    $("#incident_number").text(incident.number);
+    var number = incident.number;
+    if (number == null) {
+        number = "(new)";
+    }
+    $("#incident_number").text(number);
 }
 
 
@@ -326,6 +403,9 @@ function drawRangersToAdd() {
     }
     handles.sort();
 
+    select.empty();
+    select.append($("<option />"));
+
     for (var i in handles) {
         var handle = handles[i];
         var ranger = personnel[handle];
@@ -378,7 +458,7 @@ function drawIncidentTypes() {
 
     for (var i in incidentTypes) {
         var item = _typesItem.clone();
-        item.append(incident.incident_types[i]);
+        item.append(incidentTypes[i]);
         items.push(item);
     }
 
@@ -390,6 +470,9 @@ function drawIncidentTypes() {
 
 function drawIncidentTypesToAdd() {
     var select = $("#incident_type_add");
+
+    select.empty();
+    select.append($("<option />"));
 
     for (var i in incidentTypes) {
         var incidentType = incidentTypes[i];
@@ -467,68 +550,86 @@ function drawLocationDescription() {
 
 
 //
-// Populate report entry text
+// Draw report entries
 //
 
-function reportEntryElement(entry) {
-    // Build a container for the entry
+function drawMergedReportEntries() {
+    var entries = [];
 
-    var entryContainer = $("<div />", {"class": "report_entry"});
+    $.merge(entries, incident.report_entries);
 
-    if (entry.system_entry) {
-        entryContainer.addClass("report_entry_system");
-    } else {
-        entryContainer.addClass("report_entry_user");
-    }
-
-    // Add the timestamp and author
-
-    metaDataContainer = $("<p />", {"class": "report_entry_metadata"})
-
-    var timeStampContainer = timeElement(new Date(entry.created));
-    timeStampContainer.addClass("report_entry_timestamp");
-
-    metaDataContainer.append([timeStampContainer, ", "]);
-
-    var author = entry.author;
-    if (author == undefined) {
-        author = "(unknown)";
-    }
-    var authorContainer = $("<span />");
-    authorContainer.text(entry.author);
-    authorContainer.addClass("report_entry_author");
-
-    metaDataContainer.append(author);
-    metaDataContainer.append(":");
-
-    entryContainer.append(metaDataContainer);
-
-    // Add report text
-
-    var lines = entry.text.split("\n");
-    for (var i in lines) {
-        var textContainer = $("<p />", {"class": "report_entry_text"});
-        textContainer.text(lines[i]);
-
-        entryContainer.append(textContainer);
-    }
-
-    // Return container
-
-    return entryContainer;
-}
-
-function drawReportEntries() {
-    var container = $("#incident_report");
-    container.empty();
-
-    var entries = incident.report_entries;
-
-    if (entries != undefined) {
-        for (var i in entries) {
-            container.append(reportEntryElement(entries[i]));
+    if (attachedIncidentReports != null) {
+        for (var i in attachedIncidentReports) {
+            var report = attachedIncidentReports[i];
+            for (var j in report.report_entries) {
+                var entry = report.report_entries[j];
+                entry.merged = report.number;
+                entries.push(entry);
+            }
         }
     }
+
+    entries.sort(compareReportEntries)
+
+    drawReportEntries(entries);
+}
+
+
+var _reportsItem = null;
+
+function drawAttachedIncidentReports() {
+    if (_reportsItem == null) {
+        _reportsItem = $("#attached_incident_reports")
+            .children(".list-group-item:first")
+            ;
+    }
+
+    var items = [];
+
+    var reports = attachedIncidentReports;
+    if (reports == undefined) {
+        reports = [];
+    } else {
+        reports.sort();
+    }
+
+    for (var i in reports) {
+        var report = reports[i];
+        var item = _reportsItem.clone();
+        var link = $("<a />");
+        link.attr("href", viewIncidentReportsURL + "/" + report.number);
+        link.text(summarizeIncidentReport(report));
+        item.append(link);
+        item.data(report);
+        items.push(item);
+    }
+
+    var container = $("#attached_incident_reports");
+    container.empty();
+    container.append(items);
+}
+
+
+function drawIncidentReportsToAttach() {
+    var select = $("#attached_incident_report_add");
+
+    select.empty();
+    select.append($("<option />"));
+
+    for (var i in unattachedIncidentReports) {
+        var report = unattachedIncidentReports[i];
+
+        var option = $("<option />");
+        option.val(report.number);
+        option.text(summarizeIncidentReport(report));
+
+        select.append(option);
+    }
+}
+
+
+function summarizeIncidentReport(report) {
+    return report.number + ": " + summarizeIncident(report);
 }
 
 
@@ -818,46 +919,55 @@ function addIncidentType() {
 }
 
 
-function reportEntryEdited(event) {
-    var text = $("#incident_report_add").val().trim();
-    var submitButton = $("#report_entry_submit");
+function detachIncidentReport(sender) {
+    sender = $(sender);
 
-    submitButton.removeClass("btn-default");
-    submitButton.removeClass("btn-warning");
-    submitButton.removeClass("btn-danger");
+    var incidentReport = sender.parent().data();
 
-    if (text == "") {
-        submitButton.addClass("disabled");
-        submitButton.addClass("btn-default");
-    } else {
-        submitButton.removeClass("disabled");
-        submitButton.addClass("btn-warning");
+    function ok(data, status, xhr) {
+        // FIXME
+        // controlHasSuccess(sender);
+        loadAndDisplayIncidentReports();
     }
+
+    function fail(requestError, status, xhr) {
+        // FIXME
+        // controlHasError(sender);
+
+        var message = "Failed to detach incident report:\n" + requestError
+        console.log(message);
+        loadAndDisplayIncidentReports();
+        window.alert(message);
+    }
+
+    var url = (
+        incidentReportsURL + "/" + incidentReport.number +
+        "?action=detach;event=" + event + ";incident=" + incidentNumber
+    );
+
+    jsonRequest(url, {}, ok, fail);
 }
 
 
-function submitReportEntry() {
-    var text = $("#incident_report_add").val().trim();
+function attachIncidentReport() {
+    var select = $("#attached_incident_report_add");
+    var incidentReportNumber = $(select).val();
 
-    if (text == "") {
-        return;
+    function ok(data, status, xhr) {
+        loadAndDisplayIncidentReports();
     }
 
-    console.log("New report entry:\n" + text);
-
-    function ok() {
-        // Clear the report entry
-        $("#incident_report_add").val("");
-        // Reset the submit button
-        reportEntryEdited();
+    function fail(requestError, status, xhr) {
+        var message = "Failed to attach incident report:\n" + requestError
+        console.log(message);
+        loadAndDisplayIncidentReports();
+        window.alert(message);
     }
 
-    function fail() {
-        var submitButton = $("#report_entry_submit");
-        submitButton.removeClass("btn-default");
-        submitButton.removeClass("btn-warning");
-        submitButton.addClass("btn-danger");
-    }
+    var url = (
+        incidentReportsURL + "/" + incidentReportNumber +
+        "?action=attach;event=" + event + ";incident=" + incidentNumber
+    );
 
-    sendEdits({"report_entries": [{"text": text}]}, ok, fail);
+    jsonRequest(url, {}, ok, fail);
 }

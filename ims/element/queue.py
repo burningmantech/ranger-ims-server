@@ -53,9 +53,13 @@ class DispatchQueuePage(Element):
 
 
     @renderer
+    def template_url(self, request, tag):
+        return textFromJSON(URLs.viewDispatchQueueTemplate.asText())
+
+    @renderer
     def data_url(self, request, tag):
         return textFromJSON(
-            URLs.dispatchQueueData.asText()
+            URLs.incidents.asText()
             .replace(u"<event>", unicode(self.event))
         )
 
@@ -63,7 +67,7 @@ class DispatchQueuePage(Element):
     @renderer
     def view_incidents_url(self, request, tag):
         return textFromJSON(
-            URLs.viewincidents.asText()
+            URLs.viewIncidents.asText()
             .replace(u"<event>", unicode(self.event))
         )
 

@@ -34,11 +34,10 @@ from sqlite3 import (
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 
-from ..tz import utc, utcNow
+from ..tz import utc
 from ..data.model import (
-    Incident, IncidentState, Ranger, ReportEntry,
-    Location, RodGarettAddress,
-    InvalidDataError,
+    Incident, IncidentState, Ranger, ReportEntry, Location, RodGarettAddress,
+    IncidentReport, InvalidDataError,
 )
 from ._file import MultiStorage
 from .istore import StorageError
@@ -265,6 +264,7 @@ class Storage(object):
         """
         try:
             # Fetch incident row
+            cursor = self._db.execute(self._query_incident, (event, number))
             (
                 version, createdTimestamp, priority, stateName,
                 summary,
@@ -273,9 +273,7 @@ class Storage(object):
                 locationRadialHour,
                 locationRadialMinute,
                 locationDescription,
-            ) = self._db.execute(
-                self._query_incident, (event, number)
-            ).fetchone()
+            ) = cursor.fetchone()
 
             # Convert created timestamp to a datetime
             created = fromTimeStamp(createdTimestamp)
@@ -342,12 +340,12 @@ class Storage(object):
             state=state,
             version=version,
         )
-        # Check for issues in stored data; disable if performance an issue
+        # Check for issues in stored data
         try:
             incident.validate()
         except InvalidDataError as e:
             self.log.critical(
-                "Invalid incident ({error}): {incident!r}",
+                "Invalid stored incident ({error}): {incident!r}",
                 incident=incident, error=e
             )
             raise
@@ -436,26 +434,10 @@ class Storage(object):
 
     def createIncident(self, event, incident):
         """
-        Add the given incident into the given event.
+        Create a new incident and add it into the given event.
         The incident number is determined by the database and must not be
         specified by the given incident.
         """
-        if incident.state is None:
-            incident.state = IncidentState.new
-
-        if incident.created is None:
-            # No timestamp provided; add one.
-
-            # Right now is a decent default, but if there's a report entry
-            # that's older than now, that's a better pick.
-            created = utcNow()
-            if incident.reportEntries is not None:
-                for entry in incident.reportEntries:
-                    if entry.created < created:
-                        created = entry.created
-
-            incident.created = created
-
         incident.validate(noneNumber=True)
 
         # FIXME:STORE Add system report entry
@@ -487,7 +469,7 @@ class Storage(object):
 
                     if incident.reportEntries is not None:
                         for reportEntry in incident.reportEntries:
-                            self._addAndAttachReportEntry(
+                            self._addAndAttachReportEntryToIncident(
                                 event, incident.number, reportEntry, cursor
                             )
 
@@ -563,10 +545,7 @@ class Storage(object):
             LOCATION_RADIAL_MINUTE,
             LOCATION_DESCRIPTION
         )
-        values (
-            ({query_eventID}),
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-        )
+        values (({query_eventID}), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
     )
 
@@ -575,17 +554,16 @@ class Storage(object):
         """
         Look up the next available incident number.
         """
-        cursor.execute(self._query_nextIncidentNumber, (event,))
-        (number,) = cursor.fetchone()
+        cursor.execute(self._query_maxIncidentNumber, (event,))
+        number = cursor.fetchone()[0]
         if number is None:
             return 1
         else:
             return number + 1
 
-    _query_nextIncidentNumber = _query(
+    _query_maxIncidentNumber = _query(
         """
-        select max(NUMBER) from INCIDENT
-        where EVENT = ({query_eventID})
+        select max(NUMBER) from INCIDENT where EVENT = ({query_eventID})
         """
     )
 
@@ -614,9 +592,7 @@ class Storage(object):
         insert into INCIDENT__RANGER (
             EVENT, INCIDENT_NUMBER, RANGER_HANDLE
         )
-        values (
-            ({query_eventID}), ?, ?
-        )
+        values (({query_eventID}), ?, ?)
         """
     )
 
@@ -644,12 +620,7 @@ class Storage(object):
     )
 
 
-    def _addAndAttachReportEntry(self, event, number, reportEntry, cursor):
-        """
-        Attach the given report entry to the incident with the given number in
-        the given event.
-        """
-        # Create report entry row
+    def _createReportEntry(self, reportEntry, cursor):
         cursor.execute(
             self._query_addReportEntry,
             (
@@ -659,11 +630,6 @@ class Storage(object):
                 reportEntry.system_entry,
             )
         )
-        # Join to incident
-        cursor.execute(
-            self._query_attachReportEntry,
-            (event, number, cursor.lastrowid)
-        )
 
     _query_addReportEntry = _query(
         """
@@ -672,14 +638,27 @@ class Storage(object):
         """
     )
 
-    _query_attachReportEntry = _query(
+
+    def _addAndAttachReportEntryToIncident(
+        self, event, number, reportEntry, cursor
+    ):
+        """
+        Attach the given report entry to the incident with the given number in
+        the given event.
+        """
+        self._createReportEntry(reportEntry, cursor)
+        # Join to incident
+        cursor.execute(
+            self._query_attachReportEntryToIncident,
+            (event, number, cursor.lastrowid)
+        )
+
+    _query_attachReportEntryToIncident = _query(
         """
         insert into INCIDENT__REPORT_ENTRY (
             EVENT, INCIDENT_NUMBER, REPORT_ENTRY
         )
-        values (
-            ({query_eventID}), ?, ?
-        )
+        values (({query_eventID}), ?, ?)
         """
     )
 
@@ -944,14 +923,15 @@ class Storage(object):
 
     def addIncidentReportEntry(self, event, number, reportEntry):
         """
-        Add a report entry to the given incident in the given event.
+        Add a report entry to the incident with the given number in the given
+        event.
         """
         reportEntry.validate()
         try:
             with self._db as db:
                 cursor = db.cursor()
                 try:
-                    self._addAndAttachReportEntry(
+                    self._addAndAttachReportEntryToIncident(
                         event, number, reportEntry, cursor
                     )
                 finally:
@@ -963,6 +943,324 @@ class Storage(object):
                 event=event, number=number, reportEntry=reportEntry
             )
             raise StorageError(e)
+
+
+    def incidentReport(self, number):
+        """
+        Look up the incident report with the given number.
+        """
+        try:
+            # Fetch incident report row
+            cursor = self._db.execute(self._query_incidentReport, (number,))
+            createdTimestamp = cursor.fetchone()[0]
+
+            # Convert created timestamp to a datetime
+            created = fromTimeStamp(createdTimestamp)
+
+            # Look up report entries from join table
+            reportEntries = []
+
+            for author, text, entryTimeStamp, generated in self._db.execute(
+                self._query_incidentReport_reportEntries, (number,)
+            ):
+                reportEntries.append(
+                    ReportEntry(
+                        author=author,
+                        text=text,
+                        created=fromTimeStamp(entryTimeStamp),
+                        system_entry=generated,
+                    )
+                )
+
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to look up incident report: {number}", number=number
+            )
+            raise StorageError(e)
+
+        incidentReport = IncidentReport(
+            number=number,
+            reportEntries=reportEntries,
+            created=created,
+        )
+        # Check for issues in stored data
+        try:
+            incidentReport.validate()
+        except InvalidDataError as e:
+            self.log.critical(
+                "Invalid stored incident report ({error}): {incidentReport!r}",
+                incidentReport=incidentReport, error=e
+            )
+            raise
+
+        return incidentReport
+
+    _query_incidentReport = _query(
+        """
+        select CREATED from INCIDENT_REPORT where NUMBER = ?
+        """
+    )
+
+    _query_incidentReport_reportEntries = _query(
+        """
+        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
+        where ID in (
+            select REPORT_ENTRY from INCIDENT_REPORT__REPORT_ENTRY
+            where INCIDENT_REPORT_NUMBER = ?
+        )
+        """
+    )
+
+
+    def _incidentReportNumbers(self, attachedTo):
+        """
+        Look up all incident report numbers.
+        """
+        if attachedTo is not None:
+            event, number = attachedTo
+            if (event is None and number is None):
+                sql = (self._query_unAttachedIncidentReportNumbers,)
+            else:
+                sql = (
+                    self._query_attachedIncidentReportNumbers, (event, number)
+                )
+        else:
+            sql = (self._query_incidentReportNumbers,)
+
+        try:
+            for row in self._db.execute(*sql):
+                yield row["NUMBER"]
+        except SQLiteError as e:
+            self.log.critical("Unable to look up incident report numbers")
+            raise StorageError(e)
+
+    _query_incidentReportNumbers = _query(
+        """
+        select NUMBER from INCIDENT_REPORT
+        """
+    )
+
+    _query_unAttachedIncidentReportNumbers = _query(
+        """
+        select NUMBER from INCIDENT_REPORT
+        where NUMBER not in (
+            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
+        )
+        """
+    )
+
+    _query_attachedIncidentReportNumbers = _query(
+        """
+        select NUMBER from INCIDENT_REPORT
+        where NUMBER in (
+            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
+            where EVENT = ({query_eventID}) and INCIDENT_NUMBER = ?
+        )
+        """
+    )
+
+
+    def incidentReports(self, attachedTo=None):
+        """
+        Look up all incident reports.
+        """
+        for number in self._incidentReportNumbers(attachedTo):
+            yield self.incidentReport(number)
+
+
+    def createIncidentReport(self, incidentReport):
+        """
+        Create a new incident report.
+        The incident report ID is determined by the database and must not be
+        specified by the given incident report.
+        """
+        incidentReport.validate(noneID=True)
+
+        assert incidentReport.number is None
+
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(
+                        self._query_createIncidentReport, (
+                            incidentReport.number,
+                            asTimeStamp(incidentReport.created),
+                        )
+                    )
+                    incidentReport.number = cursor.lastrowid
+
+                    if incidentReport.reportEntries is not None:
+                        for reportEntry in incidentReport.reportEntries:
+                            self._addAndAttachReportEntryToIncidentReport(
+                                incidentReport.number, reportEntry, cursor
+                            )
+
+                finally:
+                    cursor.close()
+
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to create incident report: {incidentReport!r}",
+                incidentReport=incidentReport
+            )
+            raise StorageError(e)
+
+    _query_createIncidentReport = _query(
+        """
+        insert into INCIDENT_REPORT (NUMBER, CREATED) values (?, ?)
+        """
+    )
+
+
+    def addIncidentReportReportEntry(self, number, reportEntry):
+        """
+        Add a report entry to the incident report with the given number.
+        """
+        reportEntry.validate()
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    self._addAndAttachReportEntryToIncidentReport(
+                        number, reportEntry, cursor
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to add report entry for incident report {number}: "
+                "{reportEntry}",
+                number=number, reportEntry=reportEntry
+            )
+            raise StorageError(e)
+
+
+    def _addAndAttachReportEntryToIncidentReport(
+        self, number, reportEntry, cursor
+    ):
+        """
+        Create the given report entry and attach it to the incident report with
+        the given number.
+        """
+        self._createReportEntry(reportEntry, cursor)
+        # Join to incident report
+        cursor.execute(
+            self._query_attachReportEntryToIncidentReport,
+            (number, cursor.lastrowid)
+        )
+
+    _query_attachReportEntryToIncidentReport = _query(
+        """
+        insert into INCIDENT_REPORT__REPORT_ENTRY (
+            INCIDENT_REPORT_NUMBER, REPORT_ENTRY
+        )
+        values (?, ?)
+        """
+    )
+
+
+    def attachIncidentReportToIncident(
+        self, incidentReportNumber, event, incidentNumber
+    ):
+        """
+        Attach the incident report with the given number to the incident with
+        the given number in the given event.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(
+                        self._query_attachIncidentReportToIncident,
+                        (event, incidentNumber, incidentReportNumber)
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to attach incident report {incidentReportNumber} "
+                "to incident {incidentNumber}",
+                incidentReportNumber=incidentReportNumber,
+                incidentNumber=incidentNumber,
+            )
+            raise StorageError(e)
+
+
+    _query_attachIncidentReportToIncident = _query(
+        """
+        insert into INCIDENT_INCIDENT_REPORT (
+            EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER
+        )
+        values (({query_eventID}), ?, ?)
+        """
+    )
+
+
+    def detachIncidentReportFromIncident(
+        self, incidentReportNumber, event, incidentNumber
+    ):
+        """
+        Detach the incident report with the given number from the incident with
+        the given number in the given event.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(
+                        self._query_detachIncidentReportFromIncident,
+                        (event, incidentNumber, incidentReportNumber)
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to detach incident report {incidentReportNumber} "
+                "to incident {incidentNumber}",
+                incidentReportNumber=incidentReportNumber,
+                incidentNumber=incidentNumber,
+            )
+            raise StorageError(e)
+
+
+    _query_detachIncidentReportFromIncident = _query(
+        """
+        delete from INCIDENT_INCIDENT_REPORT
+        where
+            EVENT = ({query_eventID}) and
+            INCIDENT_NUMBER = ? and
+            INCIDENT_REPORT_NUMBER = ?
+        """
+    )
+
+
+    def incidentsAttachedToIncidentReport(self, incidentReportNumber):
+        """
+        Look up incidents attached to the incident report with the given number.
+        """
+        try:
+            for row in self._db.execute(
+                self._query_incidentsAttachedToIncidentReport,
+                (incidentReportNumber,)
+            ):
+                yield (row["EVENT"], row["INCIDENT_NUMBER"])
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to look up incidents attached to incident report: "
+                "{incidentReportNumber}",
+                incidentReportNumber=incidentReportNumber
+            )
+            raise StorageError(e)
+
+    _query_incidentsAttachedToIncidentReport = _query(
+        """
+        select e.NAME as EVENT, iir.INCIDENT_NUMBER as INCIDENT_NUMBER
+        from INCIDENT_INCIDENT_REPORT iir
+        join EVENT e on e.ID = iir.EVENT
+        where iir.INCIDENT_REPORT_NUMBER = ?
+        """
+    )
 
 
     def concentricStreetsByID(self, event):

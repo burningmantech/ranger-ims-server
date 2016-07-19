@@ -15,11 +15,11 @@
 ##
 
 """
-Incident page.
+Incident report page.
 """
 
 __all__ = [
-    "IncidentPage",
+    "IncidentReportPage",
 ]
 
 from ..data.json import textFromJSON
@@ -30,60 +30,36 @@ from .base import Element, renderer
 
 
 
-class IncidentPage(Element):
+class IncidentReportPage(Element):
     """
-    Incident page.
+    Incident report page.
     """
 
-    def __init__(self, service, event, number):
+    def __init__(self, service, number):
         Element.__init__(
-            self, u"incident", service,
-            title=u"{} Incident #{}".format(event, number),
+            self, u"report", service,
+            title=u"Incident Report #{}".format(number),
         )
 
-        self.event  = event
         self.number = number
 
 
     @renderer
     def editing_allowed(self, request, tag):
-        if (request.authorizations & Authorization.writeIncidents):
+        if (request.authorizations & Authorization.writeIncidentReports):
             return textFromJSON(True)
         else:
             return textFromJSON(False)
 
 
     @renderer
-    def event_id(self, request, tag):
-        return textFromJSON(self.event)
-
-
-    @renderer
-    def incident_number(self, request, tag):
+    def incident_report_number(self, request, tag):
         return textFromJSON(self.number)
 
 
     @renderer
     def template_url(self, request, tag):
-        return textFromJSON(URLs.viewIncidentNumberTemplate.asText())
-
-    @renderer
-    def incidents_url(self, request, tag):
-        return textFromJSON(
-            URLs.incidents.asText()
-            .replace(u"<event>", unicode(self.event))
-        )
-
-
-    @renderer
-    def personnel_url(self, request, tag):
-        return textFromJSON(URLs.personnel.asText())
-
-
-    @renderer
-    def incident_types_url(self, request, tag):
-        return textFromJSON(URLs.incidentTypes.asText())
-
+        return textFromJSON(URLs.viewIncidentReportTemplate.asText())
 
     @renderer
     def incident_reports_url(self, request, tag):
@@ -91,11 +67,5 @@ class IncidentPage(Element):
 
 
     @renderer
-    def view_incident_reports_url(self, request, tag):
-        return textFromJSON(URLs.viewIncidentReports.asText())
-
-
-    @renderer
-    def concentric_street_name_by_id(self, request, tag):
-        namesByID = self.service.storage.concentricStreetsByID(self.event)
-        return textFromJSON(namesByID)
+    def personnel_url(self, request, tag):
+        return textFromJSON(URLs.personnel.asText())

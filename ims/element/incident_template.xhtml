@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <div xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="container">
+
+  <!-- Incident number, state, priority -->
+
   <div class="row">
       <div class="col-sm-4 text-left">
         <div class="form-group">
@@ -53,6 +56,8 @@
     </div>
   </div>
 
+  <!-- Attached Rangers, incident types -->
+
   <div class="row">
     <div class="col-sm-6">
       <label>Rangers:</label>
@@ -99,6 +104,8 @@
       </div>
     </div>
   </div>
+
+  <!-- Location -->
 
   <div class="row">
     <div class="col-sm-12">
@@ -160,10 +167,42 @@
     </div>
   </div>
 
+  <!-- Attached incident reports -->
+
+  <div class="row">
+    <div class="col-sm-12">
+      <label>Attached Incident Reports</label>
+      <div class="well well-sm">
+        <ul id="attached_incident_reports" class="list-group list-group-small">
+          <li class="list-group-item">
+            <span
+              class="badge remove-badge"
+              onclick="detachIncidentReport(this)"
+            >
+              <span class="glyphicon glyphicon-remove" />
+            </span>
+          </li>
+        </ul>
+        <div>
+          <label>Add:</label>
+          <select
+            id="attached_incident_report_add"
+            class="form-control input-sm auto-width"
+            onchange="attachIncidentReport()"
+          >
+            <option value="" />
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Incident report -->
+
   <div class="row">
     <div class="col-sm-12">
       <label>Incident Report</label>
-      <div id="incident_well" class="well well-sm">
+      <div id="incident_report_well" class="well well-sm">
         <div class="panel panel-default">
           <div class="panel-body">
             <div id="incident_report" />

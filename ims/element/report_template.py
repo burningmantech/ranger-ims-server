@@ -15,30 +15,23 @@
 ##
 
 """
-Server root page.
+Incident report page template.
 """
 
 __all__ = [
-    "RootPage",
+    "IncidentReportTemplatePage",
 ]
 
-from ..service.urls import URLs
-from .base import Element, renderer
+from .base import Element
 
 
 
-class RootPage(Element):
+class IncidentReportTemplatePage(Element):
     """
-    Server root page.
+    Incident report page template.
     """
 
     def __init__(self, service):
         Element.__init__(
-            self, u"root", service,
-            title=u"Ranger Incident Management System",
+            self, u"report_template", service, title=u"Incident Report Details"
         )
-
-
-    @renderer
-    def new_incident_report(self, request, tag):
-        return tag(href=URLs.viewIncidentReports.child(u"new").asText())

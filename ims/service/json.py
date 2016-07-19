@@ -26,13 +26,17 @@ from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..tz import utcNow
 from ..data.model import IncidentState, ReportEntry
-from ..data.json import JSON, textFromJSON, jsonFromFile
-from ..data.json import rangerAsJSON, incidentAsJSON, incidentFromJSON
+from ..data.json import (
+    JSON, textFromJSON, jsonFromFile, rangerAsJSON,
+    incidentAsJSON, incidentFromJSON,
+    incidentReportAsJSON, incidentReportFromJSON,
+)
 from .http import HeaderName, fixedETag
 from .klein import route
 from .urls import URLs
 from .auth import Authorization
 from .error import NotAuthorizedError
+from ..dms import DMSError
 
 
 
@@ -56,9 +60,9 @@ class JSONMixIn(object):
     @route(URLs.personnel.asText(), methods=("HEAD", "GET"))
     @route(URLs.personnel.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
-    def personnelResource(self, request, event):
+    def personnelResource(self, request):
         yield self.authorizeRequest(
-            request, event, Authorization.readIncidents
+            request, None, Authorization.readPersonnel
         )
 
         stream, etag = yield self.personnelData()
@@ -67,7 +71,12 @@ class JSONMixIn(object):
 
     @inlineCallbacks
     def personnelData(self):
-        personnel = yield self.dms.personnel()
+        try:
+            personnel = yield self.dms.personnel()
+        except DMSError as e:
+            self.log.error("Unable to vend personnel: {failure}", failure=e)
+            personnel = ()
+
         returnValue((
             self.buildJSONArray(
                 textFromJSON(rangerAsJSON(ranger)).encode("utf-8")
@@ -79,7 +88,6 @@ class JSONMixIn(object):
 
     @route(URLs.incidentTypes.asText(), methods=("HEAD", "GET"))
     @route(URLs.incidentTypes.asText() + u"/", methods=("HEAD", "GET"))
-    @inlineCallbacks
     def incidentTypesResource(self, request):
         self.authenticateRequest(request)
 
@@ -94,7 +102,7 @@ class JSONMixIn(object):
             for incidentType in incidentTypes
         )
 
-        returnValue(self.jsonStream(request, stream, None))
+        return self.jsonStream(request, stream, None)
 
 
     @route(URLs.incidentTypes.asText(), methods=("POST",))
@@ -153,18 +161,9 @@ class JSONMixIn(object):
             request, event, Authorization.readIncidents
         )
 
-        incidents = self.storage[event].listIncidents()
-
-        # Reverse order here because we generally want the clients to load the
-        # more recent incidents first.
-        # FIXME: Probably that should just be client-side logic.
-        incidents = sorted(
-            incidents, cmp=lambda a, b: cmp(a[0], b[0]), reverse=True
-        )
-
         stream = self.buildJSONArray(
-            textFromJSON(incident).encode("utf-8")
-            for incident in incidents
+            textFromJSON(incidentAsJSON(incident)).encode("utf-8")
+            for incident in self.storage.incidents(event)
         )
 
         returnValue(self.jsonStream(request, stream, None))
@@ -181,22 +180,44 @@ class JSONMixIn(object):
         json = jsonFromFile(request.content)
         incident = incidentFromJSON(json, number=None, validate=False)
 
+        if incident.state is None:
+            incident.state = IncidentState.new
+
+        author = request.user.shortNames[0]
         now = utcNow()
-        if incident.created is not None and incident.created > now:
+
+        if incident.created is None:
+            # No created timestamp provided; add one.
+
+            # Right now is a decent default, but if there's a report entry
+            # that's older than now, that's a better pick.
+            created = utcNow()
+            if incident.reportEntries is not None:
+                for entry in incident.reportEntries:
+                    if entry.author is None:
+                        entry.author = author
+                    if entry.created is None:
+                        entry.created = now
+                    elif entry.created < created:
+                        created = entry.created
+
+            incident.created = created
+
+        elif incident.created > now:
             returnValue(self.badRequestResource(
                 "Created time {} is in the future. Current time is {}."
                 .format(incident.created, now)
             ))
 
-        author = request.user.shortNames[0]
-
         self.storage.createIncident(event, incident)
+
+        assert incident.number is not None
 
         self.log.info(
             u"User {author} created new incident #{incident.number} via JSON",
             author=author, incident=incident
         )
-        self.log.debug(u"New: {json}", json=incidentAsJSON(incident))
+        self.log.debug(u"New incident: {json}", json=incidentAsJSON(incident))
 
         request.setHeader(HeaderName.incidentNumber.value, incident.number)
         request.setHeader(
@@ -212,10 +233,6 @@ class JSONMixIn(object):
         yield self.authorizeRequest(
             request, event, Authorization.readIncidents
         )
-
-        # # For simulating slow connections
-        # import time
-        # time.sleep(0.3)
 
         try:
             number = int(number)
@@ -328,6 +345,210 @@ class JSONMixIn(object):
                 if text:
                     storage.addIncidentReportEntry(
                         event, number,
+                        ReportEntry(
+                            author=author,
+                            text=text,
+                            created=now,
+                            system_entry=False,
+                        )
+                    )
+
+        returnValue(self.noContentResource(request))
+
+
+    @route(URLs.incidentReports.asText(), methods=("HEAD", "GET"))
+    @route(URLs.incidentReports.asText() + u"/", methods=("HEAD", "GET"))
+    @inlineCallbacks
+    def listIncidentReportsResource(self, request):
+        event          = request.args.get("event"   , [""])[0]
+        incidentNumber = request.args.get("incident", [""])[0]
+
+        if event == incidentNumber == "":
+            yield self.authorizeRequest(
+                request, None, Authorization.readIncidentReports
+            )
+            attachedTo = (None, None)
+        else:
+            yield self.authorizeRequest(
+                request, event, Authorization.readIncidents
+            )
+            attachedTo = (event, incidentNumber)
+
+        stream = self.buildJSONArray(
+            textFromJSON(incidentReportAsJSON(incidentReport)).encode("utf-8")
+            for incidentReport
+            in self.storage.incidentReports(attachedTo=attachedTo)
+        )
+
+        returnValue(self.jsonStream(request, stream, None))
+
+
+    @route(URLs.incidentReports.asText(), methods=("POST",))
+    @route(URLs.incidentReports.asText() + u"/", methods=("POST",))
+    @inlineCallbacks
+    def newIncidentReportResource(self, request):
+        yield self.authorizeRequest(
+            request, None, Authorization.writeIncidentReports
+        )
+
+        json = jsonFromFile(request.content)
+        incidentReport = incidentReportFromJSON(
+            json, number=None, validate=False
+        )
+
+        author = request.user.shortNames[0]
+        now = utcNow()
+
+        if incidentReport.created is None:
+            # No created timestamp provided; add one.
+
+            # Right now is a decent default, but if there's a report entry
+            # that's older than now, that's a better pick.
+            created = utcNow()
+            if incidentReport.reportEntries is not None:
+                for entry in incidentReport.reportEntries:
+                    if entry.author is None:
+                        entry.author = author
+                    if entry.created is None:
+                        entry.created = now
+                    elif entry.created < created:
+                        created = entry.created
+
+            incidentReport.created = created
+
+        elif incidentReport.created > now:
+            returnValue(self.badRequestResource(
+                "Created time {} is in the future. Current time is {}."
+                .format(incidentReport.created, now)
+            ))
+
+        self.storage.createIncidentReport(incidentReport)
+
+        assert incidentReport.number is not None
+
+        self.log.info(
+            u"User {author} created new incident report "
+            u"#{incidentReport.number} via JSON",
+            author=author, incidentReport=incidentReport
+        )
+        self.log.debug(
+            u"New incident report: {json}",
+            json=incidentReportAsJSON(incidentReport),
+        )
+
+        request.setHeader(
+            HeaderName.incidentReportNumber.value, incidentReport.number
+        )
+        request.setHeader(
+            HeaderName.location.value,
+            "{}/{}".format(URLs.incidentNumber.asText(), incidentReport.number)
+        )
+        returnValue(self.noContentResource(request))
+
+
+    @route(URLs.incidentReport.asText(), methods=("HEAD", "GET"))
+    @inlineCallbacks
+    def readIncidentReportResource(self, request, number):
+        try:
+            number = int(number)
+        except ValueError:
+            returnValue(self.notFoundResource(request))
+
+        yield self.authorizeRequestForIncidentReport(request, number)
+
+        incidentReport = self.storage.incidentReport(number)
+        text = textFromJSON(incidentReportAsJSON(incidentReport))
+
+        returnValue(
+            self.jsonBytes(
+                request, text.encode("utf-8"), incidentReport.version()
+            )
+        )
+
+
+    @route(URLs.incidentReport.asText(), methods=("POST",))
+    @inlineCallbacks
+    def editIncidentReportResource(self, request, number):
+        yield self.authorizeRequest(
+            request, None, Authorization.writeIncidentReports
+        )
+
+        try:
+            number = int(number)
+        except ValueError:
+            returnValue(self.notFoundResource(request))
+
+        #
+        # Attach to incident if requested
+        #
+        action         = request.args.get("action"  , [""])[0]
+        event          = request.args.get("event"   , [""])[0]
+        incidentNumber = request.args.get("incident", [""])[0]
+
+        if action != "":
+            if event == "":
+                returnValue(self.badRequestResource(
+                    request, "No event specified: {}".format(action)
+                ))
+            if incidentNumber == "":
+                returnValue(self.badRequestResource(
+                    request, "No incident number specified: {}".format(action)
+                ))
+
+            try:
+                incidentNumber = int(incidentNumber)
+            except ValueError:
+                returnValue(self.badRequestResource(
+                    request, "Invalid incident number: {!r}".format(incidentNumber)
+                ))
+
+            if action == "attach":
+                self.storage.attachIncidentReportToIncident(
+                    number, event, incidentNumber
+                )
+            elif action == "detach":
+                self.storage.detachIncidentReportFromIncident(
+                    number, event, incidentNumber
+                )
+            else:
+                returnValue(self.badRequestResource(
+                    request, "Unknown action: {}".format(action)
+                ))
+
+        #
+        # Get the edits requested by the client
+        #
+        edits = jsonFromFile(request.content)
+
+        if not isinstance(edits, dict):
+            returnValue(self.badRequestResource(
+                request, "JSON incident report must be a dictionary"
+            ))
+
+        if edits.get(JSON.incident_report_number.value, number) != number:
+            returnValue(self.badRequestResource(
+                request, "Incident report number may not be modified"
+            ))
+
+        UNSET = object()
+
+        created = edits.get(JSON.incident_report_created.value, UNSET)
+        if created is not UNSET:
+            returnValue(self.badRequestResource(
+                request, "Incident report created time may not be modified"
+            ))
+
+        entries = edits.get(JSON.report_entries.value, UNSET)
+        if entries is not UNSET:
+            author = request.user.shortNames[0]
+
+            now = utcNow()
+
+            for entry in entries:
+                text = entry.get(JSON.entry_text.value, None)
+                if text:
+                    self.storage.addIncidentReportReportEntry(
+                        number,
                         ReportEntry(
                             author=author,
                             text=text,

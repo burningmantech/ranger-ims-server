@@ -43,10 +43,23 @@ class Authorization(Flags):
 
     imsAdmin = FlagConstant()
 
+    readPersonnel = FlagConstant()
+
     readIncidents  = FlagConstant()
     writeIncidents = FlagConstant()
 
+    readIncidentReports  = FlagConstant()
+    writeIncidentReports = FlagConstant()
+
 Authorization.none = Authorization.imsAdmin ^ Authorization.imsAdmin
+Authorization.all = (
+    Authorization.imsAdmin             |
+    Authorization.readPersonnel        |
+    Authorization.readIncidents        |
+    Authorization.writeIncidents       |
+    Authorization.readIncidentReports  |
+    Authorization.writeIncidentReports
+)
 
 
 
@@ -107,13 +120,13 @@ class AuthMixIn(object):
             returnValue(False)
 
         authorizations = Authorization.none
+        authorizations |= Authorization.readPersonnel
+        authorizations |= Authorization.writeIncidentReports
 
         if user is not None:
             for shortName in user.shortNames:
                 if shortName in self.config.IMSAdmins:
-                    authorizations |= Authorization.imsAdmin
-                    authorizations |= Authorization.readIncidents
-                    authorizations |= Authorization.writeIncidents
+                    authorizations |= Authorization.all
             else:
                 if event:
                     if (yield matchACL(user, self.storage.writers(event))):
@@ -140,14 +153,45 @@ class AuthMixIn(object):
         )
         request.authorizations = userAuthorizations
 
-        self.log.debug(
-            "Authorizations for {user}: {authorizations}",
-            user=request.user, authorizations=userAuthorizations,
-        )
-
         if not (requiredAuthorizations & userAuthorizations):
-            self.log.debug("Authorization failed for {user}", user=request.user)
+            self.log.debug(
+                "Authorization failed for {user}. "
+                "Requires {requiredAuthorizations}, has {userAuthorizations}.",
+                user=request.user,
+                requiredAuthorizations=requiredAuthorizations,
+                userAuthorizations=userAuthorizations,
+            )
             raise NotAuthorizedError()
+
+
+    @inlineCallbacks
+    def authorizeRequestForIncidentReport(self, request, number):
+        authFailure = None
+
+        for event, incidentNumber in (
+            self.storage.incidentsAttachedToIncidentReport(number)
+        ):
+            # No incident attached; use the authorization for reading incidents
+            # from the corresponding event.
+            # Because it's possible for multiple incidents to be attached, if
+            # one fails, keep trying the others in case they allow it.
+            try:
+                yield self.authorizeRequest(
+                    request, event, Authorization.readIncidents
+                )
+            except NotAuthorizedError as e:
+                authFailure = e
+            else:
+                authFailure = None
+                break
+        else:
+            # No incident attached
+            yield self.authorizeRequest(
+                request, None, Authorization.readIncidentReports
+            )
+
+        if authFailure is not None:
+            raise authFailure
 
 
     def lookupUserName(self, username):

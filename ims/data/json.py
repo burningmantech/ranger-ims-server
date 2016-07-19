@@ -134,7 +134,7 @@ from twisted.python.constants import (
 from ..tz import utc
 from .model import (
     InvalidDataError, IncidentState, Incident, ReportEntry, Ranger,
-    Location, TextOnlyAddress, RodGarettAddress,
+    Location, TextOnlyAddress, RodGarettAddress, IncidentReport,
 )
 
 rfc3339_datetime_format = "%Y-%m-%dT%H:%M:%SZ"
@@ -281,6 +281,10 @@ class JSON(Values):
     entry_system  = ValueConstant(u"system_entry")
     entry_created = ValueConstant(u"created")
 
+    # Incident report attribute keys
+    incident_report_number  = ValueConstant("number")
+    incident_report_created = ValueConstant("created")
+
     # Web page reference keys
     page_name = ValueConstant(u"name")
     page_url  = ValueConstant(u"url")
@@ -330,33 +334,6 @@ def incidentFromJSON(root, number, validate=True):
             raise InvalidDataError(
                 "Unknown JSON attribute: {}".format(attribute)
             )
-
-    def verifyType(expectedType, name, value):
-        if type(value) is not expectedType:
-            raise InvalidDataError(
-                "Expected {} for {}, got {!r}"
-                .format(expectedType, name, value)
-            )
-
-    def get(json, name, expectedType, default=None, transform=None):
-        value = json.get(name.value, default)
-
-        if value is None:
-            return None
-
-        if expectedType is not None:
-            verifyType(expectedType, name, value)
-
-        if transform is None:
-            return value
-        else:
-            try:
-                return transform(value)
-            except (ValueError, TypeError) as e:
-                raise InvalidDataError(
-                    "Unable to transform {}={!r} with {}: {}"
-                    .format(name, value, transform, e)
-                )
 
     json_number = get(root, JSON.incident_number, int)
 
@@ -449,22 +426,7 @@ def incidentFromJSON(root, number, validate=True):
             verifyType(unicode, JSON.incident_types, incidentType)
 
     json_entries = get(root, JSON.report_entries, list)
-
-    if json_entries is None:
-        reportEntries = None
-    else:
-        reportEntries = [
-            ReportEntry(
-                author=get(entry, JSON.entry_author, unicode),
-                text=get(entry, JSON.entry_text, unicode),
-                created=get(
-                    entry, JSON.entry_created, unicode,
-                    transform=rfc3339AsDateTime,
-                ),
-                system_entry=get(entry, JSON.entry_system, bool, default=False),
-            )
-            for entry in json_entries
-        ]
+    reportEntries = reportEntriesFromJSON(json_entries)
 
     created = get(
         root, JSON.incident_created, unicode, transform=rfc3339AsDateTime
@@ -550,15 +512,9 @@ def incidentAsJSON(incident):
         root[JSON.incident_types.value] = list(incident.incidentTypes)
 
     if incident.reportEntries is not None:
-        root[JSON.report_entries.value] = [
-            {
-                JSON.entry_author.value: entry.author,
-                JSON.entry_text.value: entry.text,
-                JSON.entry_created.value: datetimeAsRFC3339(entry.created),
-                JSON.entry_system.value: entry.system_entry,
-            }
-            for entry in incident.reportEntries
-        ]
+        root[JSON.report_entries.value] = reportEntriesAsJSON(
+            incident.reportEntries
+        )
 
     if incident.created is not None:
         root[JSON.incident_created.value] = (
@@ -633,3 +589,173 @@ def locationAsJSON(location):
         }
     else:
         raise InvalidDataError("Unknown addresses type: {}".format(address))
+
+
+
+def reportEntriesFromJSON(json):
+    """
+    Create incident report entries from JSON data.
+
+    @param root: JSON data representing an array of incident report entries.
+    @type root: iterable of L{ReportEntry}
+
+    @return: The de-serialized incident report entries.
+    @rtype: iterable of L{IncidentReport}
+    """
+    if json is None:
+        return None
+    else:
+        return (
+            ReportEntry(
+                author=get(entry, JSON.entry_author, unicode),
+                text=get(entry, JSON.entry_text, unicode),
+                created=get(
+                    entry, JSON.entry_created, unicode,
+                    transform=rfc3339AsDateTime,
+                ),
+                system_entry=get(entry, JSON.entry_system, bool, default=False),
+            )
+            for entry in json
+        )
+
+
+
+def reportEntriesAsJSON(reportEntries):
+    """
+    Generate JSON data from report entries.
+
+    @param reportEntries: The report entries to serialize.
+    @type reportEntries: iterable of L{ReportEntry}
+
+    @return: C{reportEntries}, serialized as JSON data.
+    @rtype: L{list}
+    """
+    return [
+        {
+            JSON.entry_author.value: entry.author,
+            JSON.entry_text.value: entry.text,
+            JSON.entry_created.value: datetimeAsRFC3339(entry.created),
+            JSON.entry_system.value: entry.system_entry,
+        }
+        for entry in reportEntries
+    ]
+
+
+
+def incidentReportFromJSON(root, number, validate=True):
+    """
+    Create an incident report from JSON data.
+
+    @param root: JSON data representing an incident report.
+    @type root: L{dict}
+
+    @param number: The number of the incident report.
+        If C{root} specifies an incident report number that is different than
+        C{number}, raise an L{InvalidDataError}.
+    @type number: L{int}
+
+    @param validate: If true, raise L{InvalidDataError} if the data does
+        not validate as a fully-well-formed incident report.
+    @type validate: L{bool}
+
+    @return: The de-serialized incident report.
+    @rtype: L{IncidentReport}
+    """
+    if not isinstance(root, dict):
+        raise InvalidDataError("JSON incident report must be a dict")
+
+    for attribute in root:
+        try:
+            JSON.lookupByValue(attribute)
+        except Exception:
+            raise InvalidDataError(
+                "Unknown JSON attribute: {}".format(attribute)
+            )
+
+    json_number = get(root, JSON.incident_report_number, int)
+
+    if json_number is not None:
+        if json_number != number:
+            raise InvalidDataError(
+                "Incident report number may not be modified: {0!r} != {1!r}"
+                .format(json_number, number)
+            )
+
+        root[JSON.incident_report_number.value] = number
+
+    json_entries = get(root, JSON.report_entries, list)
+    reportEntries = reportEntriesFromJSON(json_entries)
+
+    created = get(
+        root, JSON.incident_report_created, unicode, transform=rfc3339AsDateTime
+    )
+
+    incidentReport = IncidentReport(
+        number=number,
+        reportEntries=reportEntries,
+        created=created,
+    )
+
+    if validate:
+        incidentReport.validate()
+
+    return incidentReport
+
+
+
+def incidentReportAsJSON(incidentReport):
+    """
+    Generate JSON data from an incident report.
+
+    @param incidentReport: An incident report to serialize.
+    @type incidentReport: L{IncidentReport}
+
+    @return: C{incidentReport}, serialized as JSON data.
+    @rtype: L{dict}
+    """
+    root = {}
+
+    root[JSON.incident_report_number.value] = incidentReport.number
+
+    if incidentReport.created is not None:
+        root[JSON.incident_report_created.value] = (
+            datetimeAsRFC3339(incidentReport.created)
+        )
+
+    if incidentReport.reportEntries is not None:
+        root[JSON.report_entries.value] = reportEntriesAsJSON(
+            incidentReport.reportEntries
+        )
+
+    return root
+
+
+
+def verifyType(expectedType, name, value):
+    if type(value) is not expectedType:
+        raise InvalidDataError(
+            "Expected {} for {}, got {!r}"
+            .format(expectedType, name, value)
+        )
+
+
+
+def get(json, name, expectedType, default=None, transform=None):
+    value = json.get(name.value, default)
+
+    if value is None:
+        return None
+
+    if expectedType is not None:
+        verifyType(expectedType, name, value)
+
+    if transform is None:
+        return value
+    else:
+        try:
+            return transform(value)
+        except (ValueError, TypeError) as e:
+            raise InvalidDataError(
+                "Unable to transform {}={!r} with {}: {}"
+                .format(name, value, transform, e)
+            )

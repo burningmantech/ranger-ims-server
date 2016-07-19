@@ -146,3 +146,34 @@ create table EVENT_ACCESS (
 
     primary key (EVENT, EXPRESSION)
 );
+
+
+create table INCIDENT_REPORT (
+    NUMBER   integer not null,
+    CREATED  integer not null,
+
+    primary key (NUMBER)
+);
+
+
+create table INCIDENT_REPORT__REPORT_ENTRY (
+    INCIDENT_REPORT_NUMBER integer not null,
+    REPORT_ENTRY           integer not null,
+
+    foreign key (INCIDENT_REPORT_NUMBER) references INCIDENT_REPORT(NUMBER),
+    foreign key (REPORT_ENTRY) references REPORT_ENTRY(ID),
+
+    primary key (INCIDENT_REPORT_NUMBER, REPORT_ENTRY)
+);
+
+
+create table INCIDENT_INCIDENT_REPORT (
+    EVENT                  integer not null,
+    INCIDENT_NUMBER        integer not null,
+    INCIDENT_REPORT_NUMBER integer not null,
+
+    foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
+    foreign key (INCIDENT_REPORT_NUMBER) references INCIDENT_REPORT(NUMBER),
+
+    primary key (EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER)
+);
