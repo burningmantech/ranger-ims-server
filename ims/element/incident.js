@@ -199,7 +199,7 @@ function loadIncidentTypes(success) {
 var unattachedIncidentReports = null;
 
 function loadUnattachedIncidentReports(success) {
-    if (unattachedIncidentReports == undefined) {
+    if (unattachedIncidentReports === undefined) {
         return;
     }
 
