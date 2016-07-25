@@ -40,7 +40,7 @@ class ExternalMixIn(object):
     Mix-in for cached external resources.
     """
 
-    bootstrapVersionNumber  = u"3.3.6"
+    bootstrapVersionNumber  = u"3.3.7"
     jqueryVersionNumber     = u"2.2.0"
     dataTablesVersionNumber = u"1.10.11"
     momentVersionNumber     = u"2.13.0"
