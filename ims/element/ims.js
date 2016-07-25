@@ -163,7 +163,6 @@ function shortFormatDate(date) {
   return moment(date).format("dd M/D h:mm");
 }
 function shortFormatDateHTML(date) {
-  return "We 12/30<wbr />@12:00";
   return moment(date).format("dd M/D[<wbr />]@h:mm");
 }
 
