@@ -556,7 +556,9 @@ function drawLocationDescription() {
 function drawMergedReportEntries() {
     var entries = [];
 
-    $.merge(entries, incident.report_entries);
+    if (incident.report_entries) {
+        $.merge(entries, incident.report_entries);
+    }
 
     if (attachedIncidentReports != null) {
         for (var i in attachedIncidentReports) {
