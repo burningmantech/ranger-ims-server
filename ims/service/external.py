@@ -42,7 +42,7 @@ class ExternalMixIn(object):
 
     bootstrapVersionNumber  = u"3.3.7"
     jqueryVersionNumber     = u"3.1.0"
-    dataTablesVersionNumber = u"1.10.11"
+    dataTablesVersionNumber = u"1.10.12"
     momentVersionNumber     = u"2.13.0"
 
     bootstrapVersion  = u"bootstrap-{}-dist".format(bootstrapVersionNumber)
