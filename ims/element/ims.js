@@ -158,15 +158,6 @@ function padTwo(value) {
 }
 
 
-// Format a date using a compact form.
-function shortFormatDate(date) {
-  return moment(date).format("dd M/D h:mm");
-}
-function shortFormatDateHTML(date) {
-  return moment(date).format("dd M/D[<wbr />]@h:mm");
-}
-
-
 // Convert a minute (0-60) into a value used by IMS form inputs.
 // That is: round to the nearest multiple of 5 and pad to two digits.
 function normalizeMinute(minute) {
@@ -524,9 +515,9 @@ function renderPriority(priorityNumber, type, incident) {
 function renderDate(date, type, incident) {
   switch (type) {
     case "display":
-      return shortFormatDateHTML(date);
+      return moment(date).format("dd M/D[<wbr />]@h:mm");
     case "filter":
-      return shortFormatDate(date);
+      return moment(date).format("dd M/D h:mm");
     case "type":
     case "sort":
       return moment(date);
