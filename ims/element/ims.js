@@ -160,7 +160,11 @@ function padTwo(value) {
 
 // Format a date using a compact form.
 function shortFormatDate(date) {
-  return moment(date).format("dd M/D@h:mm z");
+  return moment(date).format("dd M/D h:mm");
+}
+function shortFormatDateHTML(date) {
+  return "We 12/30<wbr />@12:00";
+  return moment(date).format("dd M/D[<wbr />]@h:mm");
 }
 
 
@@ -521,7 +525,7 @@ function renderPriority(priorityNumber, type, incident) {
 function renderDate(date, type, incident) {
   switch (type) {
     case "display":
-      return textAsHTML(shortFormatDate(date));
+      return shortFormatDateHTML(date);
     case "filter":
       return shortFormatDate(date);
     case "type":
