@@ -203,6 +203,10 @@
     <div class="col-sm-12">
       <label class="control-label">Incident Details</label>
       <div id="incident_report_well" class="well well-sm">
+        <label class="control-label">
+          <input id="merge_reports_checkbox" type="checkbox" checked="" onchange="drawMergedReportEntries()" />
+          Include attached incident report entries
+        </label>
         <div class="panel panel-default">
           <div class="panel-body">
             <div id="incident_report" />

@@ -561,12 +561,14 @@ function drawMergedReportEntries() {
     }
 
     if (attachedIncidentReports != null) {
-        for (var i in attachedIncidentReports) {
-            var report = attachedIncidentReports[i];
-            for (var j in report.report_entries) {
-                var entry = report.report_entries[j];
-                entry.merged = report.number;
-                entries.push(entry);
+        if ($("#merge_reports_checkbox").is(":checked")) {
+            for (var i in attachedIncidentReports) {
+                var report = attachedIncidentReports[i];
+                for (var j in report.report_entries) {
+                    var entry = report.report_entries[j];
+                    entry.merged = report.number;
+                    entries.push(entry);
+                }
             }
         }
     }
