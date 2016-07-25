@@ -160,7 +160,7 @@ function padTwo(value) {
 
 // Format a date using a compact form.
 function shortFormatDate(date) {
-  return moment(date).format("M/D@h:mm z");
+  return moment(date).format("dd M/D@h:mm z");
 }
 
 
