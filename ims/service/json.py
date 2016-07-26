@@ -254,6 +254,8 @@ class JSONMixIn(object):
             request, event, Authorization.writeIncidents
         )
 
+        author = request.user.shortNames[0]
+
         try:
             number = int(number)
         except ValueError:
@@ -287,7 +289,7 @@ class JSONMixIn(object):
                 cast = lambda x: x
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                setter(event, number, cast(value))
+                setter(event, number, cast(value), author)
 
         storage = self.storage
 
@@ -303,11 +305,14 @@ class JSONMixIn(object):
         location = edits.get(JSON.incident_location.value, UNSET)
         if location is not UNSET:
             if location is None:
-                storage.setIncidentLocationName(event, number, None)
-                storage.setIncidentLocationConcentricStreet(event, number, None)
-                storage.setIncidentLocationRadialHour(event, number, None)
-                storage.setIncidentLocationRadialMinute(event, number, None)
-                storage.setIncidentLocationDescription(event, number, None)
+                for setter in (
+                    storage.setIncidentLocationName,
+                    storage.setIncidentLocationConcentricStreet,
+                    storage.setIncidentLocationRadialHour,
+                    storage.setIncidentLocationRadialMinute,
+                    storage.setIncidentLocationDescription,
+                ):
+                    setter(event, number, None, author)
             else:
                 applyEdit(
                     location, JSON.location_name,
@@ -336,8 +341,6 @@ class JSONMixIn(object):
 
         entries = edits.get(JSON.report_entries.value, UNSET)
         if entries is not UNSET:
-            author = request.user.shortNames[0]
-
             now = utcNow()
 
             for entry in entries:
