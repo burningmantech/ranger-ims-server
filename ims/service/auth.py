@@ -156,9 +156,10 @@ class AuthMixIn(object):
 
         if not (requiredAuthorizations & userAuthorizations):
             self.log.debug(
-                "Authorization failed for {user}. "
-                "Requires {requiredAuthorizations}, has {userAuthorizations}.",
-                user=request.user,
+                "Authorization failed for {request.user}. "
+                "Requires {requiredAuthorizations}, has {userAuthorizations}. "
+                "URI: {request.uri}",
+                request=request,
                 requiredAuthorizations=requiredAuthorizations,
                 userAuthorizations=userAuthorizations,
             )
