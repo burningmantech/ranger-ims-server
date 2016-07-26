@@ -121,6 +121,7 @@ class AuthMixIn(object):
 
         authorizations = Authorization.none
         authorizations |= Authorization.readPersonnel
+        authorizations |= Authorization.readIncidentReports
         authorizations |= Authorization.writeIncidentReports
 
         if user is not None:
