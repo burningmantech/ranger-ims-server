@@ -40,15 +40,15 @@ class ExternalMixIn(object):
     Mix-in for cached external resources.
     """
 
-    bootstrapVersionNumber  = u"3.3.6"
-    jqueryVersionNumber     = u"2.2.0"
-    dataTablesVersionNumber = u"1.10.11"
-    momentVersionNumber     = u"2.13.0"
+    bootstrapVersionNumber  = u"3.3.7"
+    jqueryVersionNumber     = u"3.1.0"
+    dataTablesVersionNumber = u"1.10.12"
+    momentVersionNumber     = u"2.14.1"
 
     bootstrapVersion  = u"bootstrap-{}-dist".format(bootstrapVersionNumber)
     jqueryVersion     = u"jquery-{}".format(jqueryVersionNumber)
     dataTablesVersion = u"DataTables-{}".format(dataTablesVersionNumber)
-    momentVersion     = u"moment"
+    momentVersion     = u"moment={}".format(momentVersionNumber)
 
     bootstrapSourceURL = URL.fromText(
         u"https://github.com/twbs/bootstrap/releases/download/v{n}/{v}.zip"
@@ -71,8 +71,8 @@ class ExternalMixIn(object):
     )
 
     momentJSSourceURL = URL.fromText(
-        u"https://cdnjs.cloudflare.com/ajax/libs/moment.js/{n}/{v}.min.js"
-        .format(n=momentVersionNumber, v=momentVersion)
+        u"https://cdnjs.cloudflare.com/ajax/libs/moment.js/{n}/moment.min.js"
+        .format(n=momentVersionNumber)
     )
 
 

@@ -34,7 +34,7 @@ from sqlite3 import (
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 
-from ..tz import utc
+from ..tz import utc, utcNow
 from ..data.model import (
     Incident, IncidentState, Ranger, ReportEntry, Location, RodGarettAddress,
     IncidentReport, InvalidDataError,
@@ -663,15 +663,28 @@ class Storage(object):
     )
 
 
-    def _setIncidentColumn(self, query, event, number, column, value):
+    def _setIncidentColumn(self, query, event, number, column, value, author):
+        systemEntry = ReportEntry(
+            text="Changed {} to: {}".format(column, value),
+            author=author, created=utcNow(), system_entry=True,
+        )
+
         try:
             with self._db as db:
-                db.execute(query, (value, event, number))
+                cursor = db.cursor()
+                try:
+                    cursor.execute(query, (value, event, number))
+                    self._addAndAttachReportEntryToIncident(
+                        event, number, systemEntry, cursor
+                    )
+                finally:
+                    cursor.close()
         except SQLiteError as e:
             self.log.critical(
-                "Unable to set {column} for incident {event}:{number} to "
-                "{value}",
-                event=event, number=number, column=column, value=value
+                "Author {author} unable to set {column} for incident "
+                "{event}:{number} to {value}",
+                event=event, number=number,
+                column=column, value=value, author=author,
             )
             raise StorageError(e)
 
@@ -683,7 +696,7 @@ class Storage(object):
     )
 
 
-    def setIncidentPriority(self, event, number, priority):
+    def setIncidentPriority(self, event, number, priority, author):
         """
         Set the priority for the given incident in the given event.
         """
@@ -694,7 +707,7 @@ class Storage(object):
 
         self._setIncidentColumn(
             self._query_setIncidentPriority,
-            event, number, "priority", priority
+            event, number, "priority", priority, author
         )
 
     _query_setIncidentPriority = _querySetIncidentColumn.format(
@@ -702,7 +715,7 @@ class Storage(object):
     )
 
 
-    def setIncidentState(self, event, number, state):
+    def setIncidentState(self, event, number, state, author):
         """
         Set the state for the given incident in the given event.
         """
@@ -713,7 +726,7 @@ class Storage(object):
 
         self._setIncidentColumn(
             self._query_setIncidentState,
-            event, number, "state", state.name
+            event, number, "state", state.name, author
         )
 
     _query_setIncidentState = _querySetIncidentColumn.format(
@@ -721,7 +734,7 @@ class Storage(object):
     )
 
 
-    def setIncidentSummary(self, event, number, summary):
+    def setIncidentSummary(self, event, number, summary, author):
         """
         Set the summary for the given incident in the given event.
         """
@@ -732,7 +745,7 @@ class Storage(object):
 
         self._setIncidentColumn(
             self._query_setIncidentSummary,
-            event, number, "summary", summary
+            event, number, "summary", summary, author
         )
 
     _query_setIncidentSummary = _querySetIncidentColumn.format(
@@ -740,7 +753,7 @@ class Storage(object):
     )
 
 
-    def setIncidentLocationName(self, event, number, name):
+    def setIncidentLocationName(self, event, number, name, author):
         """
         Set the location name for the given incident in the given event.
         """
@@ -751,7 +764,7 @@ class Storage(object):
 
         self._setIncidentColumn(
             self._query_setIncidentLocationName,
-            event, number, "location name", name
+            event, number, "location name", name, author
         )
 
     _query_setIncidentLocationName = _querySetIncidentColumn.format(
@@ -759,7 +772,9 @@ class Storage(object):
     )
 
 
-    def setIncidentLocationConcentricStreet(self, event, number, streetID):
+    def setIncidentLocationConcentricStreet(
+        self, event, number, streetID, author
+    ):
         """
         Set the location concentric street for the given incident in the given
         event.
@@ -772,7 +787,7 @@ class Storage(object):
 
         self._setIncidentColumn(
             self._query_setIncidentLocationConcentricStreet,
-            event, number, "location concentric street", streetID
+            event, number, "location concentric street", streetID, author
         )
 
     _query_setIncidentLocationConcentricStreet = _querySetIncidentColumn.format(
@@ -780,7 +795,7 @@ class Storage(object):
     )
 
 
-    def setIncidentLocationRadialHour(self, event, number, hour):
+    def setIncidentLocationRadialHour(self, event, number, hour, author):
         """
         Set the location radial hour for the given incident in the given event.
         """
@@ -794,7 +809,7 @@ class Storage(object):
 
         self._setIncidentColumn(
             self._query_setIncidentLocationRadialHour,
-            event, number, "location radial hour", hour
+            event, number, "location radial hour", hour, author
         )
 
     _query_setIncidentLocationRadialHour = _querySetIncidentColumn.format(
@@ -802,7 +817,7 @@ class Storage(object):
     )
 
 
-    def setIncidentLocationRadialMinute(self, event, number, minute):
+    def setIncidentLocationRadialMinute(self, event, number, minute, author):
         """
         Set the location radial minute for the given incident in the given
         event.
@@ -817,7 +832,7 @@ class Storage(object):
 
         self._setIncidentColumn(
             self._query_setIncidentLocationRadialMinute,
-            event, number, "location radial minute", minute
+            event, number, "location radial minute", minute, author
         )
 
     _query_setIncidentLocationRadialMinute = _querySetIncidentColumn.format(
@@ -825,7 +840,9 @@ class Storage(object):
     )
 
 
-    def setIncidentLocationDescription(self, event, number, description):
+    def setIncidentLocationDescription(
+        self, event, number, description, author
+    ):
         """
         Set the location description for the given incident in the given event.
         """
@@ -837,7 +854,7 @@ class Storage(object):
 
         self._setIncidentColumn(
             self._query_setIncidentLocationDescription,
-            event, number, "location description", description
+            event, number, "location description", description, author
         )
 
     _query_setIncidentLocationDescription = _querySetIncidentColumn.format(
@@ -845,11 +862,17 @@ class Storage(object):
     )
 
 
-    def setIncidentRangers(self, event, number, rangerHandles):
+    def setIncidentRangers(self, event, number, rangerHandles, author):
         """
         Set the rangers attached to the given incident in the given event.
         """
         rangerHandles = tuple(rangerHandles)
+
+        systemEntry = ReportEntry(
+            text="Changed Rangers to: {}".format(", ".join(rangerHandles)),
+            author=author, created=utcNow(), system_entry=True,
+        )
+
         try:
             with self._db as db:
                 cursor = db.cursor()
@@ -863,6 +886,9 @@ class Storage(object):
                                 "Invalid Ranger handle: {!r}".format(handle)
                             )
                         self._attachRanger(event, number, handle, cursor)
+                    self._addAndAttachReportEntryToIncident(
+                        event, number, systemEntry, cursor
+                    )
                 finally:
                     cursor.close()
         except SQLiteError as e:
@@ -881,12 +907,20 @@ class Storage(object):
     )
 
 
-    def setIncidentTypes(self, event, number, incidentTypes):
+    def setIncidentTypes(self, event, number, incidentTypes, author):
         """
         Set the incident types attached to the given incident in the given
         event.
         """
         incidentTypes = tuple(incidentTypes)
+
+        systemEntry = ReportEntry(
+            text="Changed incident types to: {}".format(
+                ", ".join(incidentTypes)
+            ),
+            author=author, created=utcNow(), system_entry=True,
+        )
+
         try:
             with self._db as db:
                 cursor = db.cursor()
@@ -903,6 +937,9 @@ class Storage(object):
                         self._attachIncidentType(
                             event, number, incidentType, cursor
                         )
+                    self._addAndAttachReportEntryToIncident(
+                        event, number, systemEntry, cursor
+                    )
                 finally:
                     cursor.close()
         except SQLiteError as e:
