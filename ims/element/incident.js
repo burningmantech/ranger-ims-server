@@ -250,7 +250,7 @@ function loadAttachedIncidentReports(success) {
     }
 
     jsonRequest(
-        incidentReportsURL + "/?event=" + event + ";incident=" + incidentNumber,
+        incidentReportsURL + "/?event=" + eventID + ";incident=" + incidentNumber,
         null, ok, fail
     );
 }
@@ -946,7 +946,7 @@ function detachIncidentReport(sender) {
 
     var url = (
         incidentReportsURL + "/" + incidentReport.number +
-        "?action=detach;event=" + event + ";incident=" + incidentNumber
+        "?action=detach;event=" + eventID + ";incident=" + incidentNumber
     );
 
     jsonRequest(url, {}, ok, fail);
@@ -970,7 +970,7 @@ function attachIncidentReport() {
 
     var url = (
         incidentReportsURL + "/" + incidentReportNumber +
-        "?action=attach;event=" + event + ";incident=" + incidentNumber
+        "?action=attach;event=" + eventID + ";incident=" + incidentNumber
     );
 
     jsonRequest(url, {}, ok, fail);
