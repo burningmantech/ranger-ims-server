@@ -657,7 +657,7 @@ function drawReportEntries(entries) {
     }
 }
 
-function reportEntryEdited(event) {
+function reportEntryEdited() {
     var text = $("#incident_report_add").val().trim();
     var submitButton = $("#report_entry_submit");
 
