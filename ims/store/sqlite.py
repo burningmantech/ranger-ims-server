@@ -867,6 +867,12 @@ class Storage(object):
         Set the rangers attached to the given incident in the given event.
         """
         rangerHandles = tuple(rangerHandles)
+
+        systemEntry = ReportEntry(
+            text="Changed Rangers to: {}".format(", ".join(rangerHandles)),
+            author=author, created=utcNow(), system_entry=True,
+        )
+
         try:
             with self._db as db:
                 cursor = db.cursor()
@@ -880,6 +886,9 @@ class Storage(object):
                                 "Invalid Ranger handle: {!r}".format(handle)
                             )
                         self._attachRanger(event, number, handle, cursor)
+                    self._addAndAttachReportEntryToIncident(
+                        event, number, systemEntry, cursor
+                    )
                 finally:
                     cursor.close()
         except SQLiteError as e:
@@ -904,6 +913,14 @@ class Storage(object):
         event.
         """
         incidentTypes = tuple(incidentTypes)
+
+        systemEntry = ReportEntry(
+            text="Changed incident types to: {}".format(
+                ", ".join(incidentTypes)
+            ),
+            author=author, created=utcNow(), system_entry=True,
+        )
+
         try:
             with self._db as db:
                 cursor = db.cursor()
@@ -920,6 +937,9 @@ class Storage(object):
                         self._attachIncidentType(
                             event, number, incidentType, cursor
                         )
+                    self._addAndAttachReportEntryToIncident(
+                        event, number, systemEntry, cursor
+                    )
                 finally:
                     cursor.close()
         except SQLiteError as e:
