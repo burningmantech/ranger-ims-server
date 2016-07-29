@@ -137,9 +137,6 @@ class Storage(object):
         """
         Load event data from a file containing JSON.
         """
-        print(event)
-        print(filePath)
-
         with filePath.open() as fileHandle:
             eventJSON = jsonFromFile(fileHandle)
 
