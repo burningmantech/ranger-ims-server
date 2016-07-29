@@ -158,7 +158,7 @@ class KleinTool(Executable):
 
 
 
-class DBLoadTool(Executable):
+class LegacyLoadTool(Executable):
     """
     Incident Management System tool for loading data from a legacy file store
     into to a database store.
@@ -208,6 +208,72 @@ class DBLoadTool(Executable):
                         "{error}", store=storeFilePath, error=e
                     )
                     break
+
+        finally:
+            from twisted.internet import reactor
+            reactor.stop()
+
+
+class JSONLoadTool(Executable):
+    """
+    Incident Management System tool for loading data from a JSON file into to a
+    database store.
+    """
+
+    log = Logger()
+
+    class Options(BaseOptions, ConfigOptionsMixIn):
+        optFlags = []
+
+        optParameters = []
+
+
+        def __init__(self):
+            BaseOptions.__init__(self)
+            self.opt_log_file("-")
+            self["trialRun"] = False
+
+
+        def getSynopsis(self):
+            return "{} event file".format(
+                BaseOptions.getSynopsis(self)
+            )
+
+
+        def opt_trial(self):
+            self["trialRun"] = True
+
+        opt_t = opt_trial
+
+
+        def parseArgs(self, event, fileName):
+            BaseOptions.parseArgs(self)
+
+            self["event"] = event
+            self["filePath"] = FilePath(fileName)
+
+
+    def postOptions(self):
+        Executable.postOptions(self)
+
+        self.options.initConfig()
+
+
+    def whenRunning(self):
+        try:
+            config   = self.options["configuration"]
+            event    = self.options["event"]
+            filePath = self.options["filePath"]
+            trialRun = self.options["trialRun"]
+
+            storage = Storage(config.DatabaseFile)
+
+            try:
+                storage.loadFromEventJSON(event, filePath, trialRun=trialRun)
+            except StorageError as e:
+                self.log.critical(
+                    "{error}", event=event, file=filePath, error=e
+                )
 
         finally:
             from twisted.internet import reactor

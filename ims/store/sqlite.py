@@ -36,6 +36,7 @@ from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 
 from ..tz import utc, utcNow
+from ..data.json import jsonFromFile, incidentFromJSON
 from ..data.model import (
     Incident, IncidentState, Ranger, ReportEntry, Location, RodGarettAddress,
     IncidentReport, InvalidDataError,
@@ -130,6 +131,51 @@ class Storage(object):
             # Load access
             self.setReaders(event, eventStore.readers())
             self.setWriters(event, eventStore.writers())
+
+
+    def loadFromEventJSON(self, event, filePath, trialRun=False):
+        """
+        Load event data from a file containing JSON.
+        """
+        print(event)
+        print(filePath)
+
+        with filePath.open() as fileHandle:
+            eventJSON = jsonFromFile(fileHandle)
+
+            self.log.info("Creating event: {event}", event=event)
+            self.createEvent(event)
+
+            # Load incidents
+            for incidentJSON in eventJSON:
+                number = incidentJSON["number"]
+
+                if type(number) is not int or number < 1:
+                    raise InvalidDataError(
+                        "Invalid incident number: {}".format(number)
+                    )
+
+                try:
+                    incident = incidentFromJSON(incidentJSON, number)
+                    incident.validate()
+                except InvalidDataError as e:
+                    if trialRun:
+                        self.log.critical(
+                            "Unable to load incident #{number}: {error}",
+                            number=number, error=e,
+                        )
+                    else:
+                        raise
+
+                for incidentType in incident.incidentTypes:
+                    self.createIncidentType(incidentType, hidden=True)
+
+                self.log.info(
+                    "Creating incident in {event}: {incident}",
+                    event=event, incident=incident
+                )
+                if not trialRun:
+                    self.importIncident(event, incident)
 
 
     def events(self):

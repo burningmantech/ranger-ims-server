@@ -75,11 +75,12 @@ entry_points = {
 }
 
 script_entry_points = {
-    "web"       : ("ims.service.tool", "WebTool.main"),
-    "endpoints" : ("ims.service.tool", "KleinTool.main"),
-    "schema"    : ("ims.store.sqlite", "Storage.printSchema"),
-    "queries"   : ("ims.store.sqlite", "Storage.printQueries"),
-    "load"      : ("ims.service.tool", "DBLoadTool.main"),
+    "web"         : ("ims.service.tool", "WebTool.main"),
+    "endpoints"   : ("ims.service.tool", "KleinTool.main"),
+    "schema"      : ("ims.store.sqlite", "Storage.printSchema"),
+    "queries"     : ("ims.store.sqlite", "Storage.printQueries"),
+    "load_legacy" : ("ims.service.tool", "LegacyLoadTool.main"),
+    "load_json"   : ("ims.service.tool", "JSONLoadTool.main"),
 }
 
 for tool, (module, function) in script_entry_points.iteritems():
