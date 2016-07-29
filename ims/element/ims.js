@@ -515,9 +515,9 @@ function renderPriority(priorityNumber, type, incident) {
 function renderDate(date, type, incident) {
   switch (type) {
     case "display":
-      return moment(date).format("dd M/D[<wbr />]@h:mm");
+      return moment(date).format("dd M/D[<wbr />]@HH:mm");
     case "filter":
-      return moment(date).format("dd M/D h:mm");
+      return moment(date).format("dd M/D HH:mm");
     case "type":
     case "sort":
       return moment(date);
