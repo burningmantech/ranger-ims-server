@@ -209,7 +209,7 @@ class JSONMixIn(object):
                 .format(incident.created, now)
             ))
 
-        self.storage.createIncident(event, incident)
+        self.storage.createIncident(event, incident, author)
 
         assert incident.number is not None
 

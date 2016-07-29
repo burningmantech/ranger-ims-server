@@ -31,6 +31,7 @@ from sqlite3 import (
     connect, Row as LameRow, OperationalError, Error as SQLiteError
 )
 
+from twisted.python.constants import NamedConstant
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 
@@ -429,10 +430,24 @@ class Storage(object):
         """
         incident.validate()
 
-        self._addIncident(event, incident, self._importIncident)
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    self._addIncident(
+                        event, incident, self._importIncident, cursor
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self.log.critical(
+                "Unable to import incident to event {event}: {incident!r}",
+                incident=incident, event=event
+            )
+            raise StorageError(e)
 
 
-    def createIncident(self, event, incident):
+    def createIncident(self, event, incident, author):
         """
         Create a new incident and add it into the given event.
         The incident number is determined by the database and must not be
@@ -442,46 +457,93 @@ class Storage(object):
 
         # FIXME:STORE Add system report entry
 
-        self._addIncident(event, incident, self._createIncident)
-
-
-    def _addIncident(self, event, incident, addMethod):
         try:
             with self._db as db:
                 cursor = db.cursor()
                 try:
-                    # Write incident row
-                    addMethod(event, incident, cursor)
-
-                    # Join with Ranger handles
-                    if incident.rangers is not None:
-                        for ranger in incident.rangers:
-                            self._attachRanger(
-                                event, incident.number, ranger.handle, cursor
-                            )
-
-                    # Join with incident types
-                    if incident.incidentTypes is not None:
-                        for incidentType in incident.incidentTypes:
-                            self._attachIncidentType(
-                                event, incident.number, incidentType, cursor
-                            )
-
-                    if incident.reportEntries is not None:
-                        for reportEntry in incident.reportEntries:
-                            self._addAndAttachReportEntryToIncident(
-                                event, incident.number, reportEntry, cursor
-                            )
-
+                    self._addIncident(
+                        event, incident, self._createIncident, cursor
+                    )
+                    self._addInitialReportEntry(event, incident, author, cursor)
                 finally:
                     cursor.close()
-
         except SQLiteError as e:
             self.log.critical(
-                "Unable to add incident to event {event}: {incident!r}",
+                "Unable to create incident in event {event}: {incident!r}",
                 incident=incident, event=event
             )
             raise StorageError(e)
+
+
+    def _addIncident(self, event, incident, addMethod, cursor):
+        # Write incident row
+        addMethod(event, incident, cursor)
+
+        # Join with Ranger handles
+        if incident.rangers is not None:
+            for ranger in incident.rangers:
+                self._attachRanger(
+                    event, incident.number, ranger.handle, cursor
+                )
+
+        # Join with incident types
+        if incident.incidentTypes is not None:
+            for incidentType in incident.incidentTypes:
+                self._attachIncidentType(
+                    event, incident.number, incidentType, cursor
+                )
+
+        if incident.reportEntries is not None:
+            for reportEntry in incident.reportEntries:
+                self._addAndAttachReportEntryToIncident(
+                    event, incident.number, reportEntry, cursor
+                )
+
+
+    def _addInitialReportEntry(self, event, incident, author, cursor):
+        now = utcNow()
+
+        def addEntry(label, value):
+            if value:
+                if isinstance(value, NamedConstant):
+                    value = value.name
+
+                systemEntry = ReportEntry(
+                    text="Changed {} to: {}".format(label, value),
+                    author=author, created=now, system_entry=True,
+                )
+                self._addAndAttachReportEntryToIncident(
+                    event, incident.number, systemEntry, cursor
+                )
+
+
+        if incident.priority != 3:
+            addEntry("priority", incident.priority)
+
+        if incident.state != IncidentState.new:
+            addEntry("state", incident.state)
+
+        addEntry("summary", incident.summary)
+
+        location = incident.location
+        if location:
+            addEntry("location name", location.name)
+
+            address = location.address
+            if address:
+                addEntry("location description", address.description)
+
+                if isinstance(address, RodGarettAddress):
+                    addEntry("location concentric street", address.concentric)
+                    addEntry("location radial hour", address.radialHour)
+                    addEntry("location radial minute", address.radialMinute)
+
+        if incident.rangers:
+            handles = (ranger.handle for ranger in incident.rangers)
+            addEntry("Rangers", ", ".join(handles))
+
+        if incident.incidentTypes:
+            addEntry("incident types", ", ".join(incident.incidentTypes))
 
 
     @staticmethod
