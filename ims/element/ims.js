@@ -408,7 +408,13 @@ function summarizeIncident(incident) {
     else {
       // Get the first line of the first report entry.
       for (var i in reportEntries) {
-        var lines = reportEntries[i].text.split("\n");
+        var reportEntry = reportEntries[i];
+
+        if (reportEntry.system_entry) {
+          continue;
+        }
+
+        var lines = reportEntry.text.split("\n");
 
         for (var j in lines) {
           var line = lines[j];
