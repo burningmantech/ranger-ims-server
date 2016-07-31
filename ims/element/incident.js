@@ -124,7 +124,9 @@ function loadAndDisplayIncident(success) {
 
         drawIncidentFields();
 
-        document.title = "#" + incident.number + ": " + summarizeIncident(incident);
+        document.title = (
+            "#" + incident.number + ": " + summarizeIncident(incident)
+        );
 
         if (editingAllowed) {
             enableEditing();
@@ -378,7 +380,17 @@ function drawPriority() {
 //
 
 function drawSummary() {
-    $("#incident_summary").val(summarizeIncident(incident));
+    var summary = incident.summary;
+
+    if (summary == undefined || summary == "") {
+        $("#incident_summary")[0].removeAttribute("value");
+        $("#incident_summary").attr(
+            "placeholder", summarizeIncident(incident)
+        );
+    } else {
+        $("#incident_summary").val(summary);
+        $("#incident_summary").attr("placeholder", "");
+    }
 }
 
 
