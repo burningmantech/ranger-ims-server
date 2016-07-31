@@ -96,6 +96,8 @@ function loadAndDisplayIncident(success) {
 
         drawIncidentFields();
 
+        document.title = "#" + incident.number + ": " + summarizeIncident(incident);
+
         if (editingAllowed) {
             enableEditing();
         }
