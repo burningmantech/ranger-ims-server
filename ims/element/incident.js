@@ -34,6 +34,34 @@ function initIncidentPage() {
         addLocationAddressOptions();
         disableEditing();
         loadAndDisplayIncident(loadedIncident);
+
+        var command = false;
+
+        function addFieldKeyDown() {
+            var keyCode = event.keyCode;
+
+            if (keyCode == 17 || keyCode == 18) {
+                command = true;
+            }
+
+            console.warn(keyCode);
+        }
+
+        function addFieldKeyUp() {
+            var keyCode = event.keyCode;
+
+            if (keyCode == 17 || keyCode == 18) {
+                command = false;
+                return;
+            }
+
+            if (command && keyCode == 13) {
+                submitReportEntry();
+            }
+        }
+
+        $("#incident_report_add")[0].onkeydown = addFieldKeyDown;
+        $("#incident_report_add")[0].onkeyup   = addFieldKeyUp;
     }
 
     loadBody(loadedBody);
