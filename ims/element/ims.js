@@ -400,7 +400,7 @@ function summarizeIncident(incident) {
   var summary = incident.summary;
   var reportEntries = incident.report_entries;
 
-  if (summary == undefined) {
+  if (summary == undefined || summary == "") {
     if (reportEntries == undefined) {
       console.warn("No summary provided.");
       return "";
