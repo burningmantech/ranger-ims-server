@@ -770,7 +770,7 @@ class Storage(object):
 
     def _setIncidentColumn(self, query, event, number, column, value, author):
         systemEntry = ReportEntry(
-            text="Changed {} to: {}".format(column, value),
+            text=u"Changed {} to: {}".format(column, value),
             author=author, created=utcNow(), system_entry=True,
         )
 
