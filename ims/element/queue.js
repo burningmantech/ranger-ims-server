@@ -21,6 +21,38 @@ function initDispatchQueuePage() {
     function loadedBody() {
         disableEditing();
         initDispatchQueueTable();
+
+        var command = false;
+
+        function addFieldKeyDown() {
+            var keyCode = event.keyCode;
+
+            // 17 = control, 18 = option
+            if (keyCode == 17 || keyCode == 18) {
+                command = true;
+            }
+
+            console.warn(keyCode);
+        }
+
+        function addFieldKeyUp() {
+            var keyCode = event.keyCode;
+
+            // 17 = control, 18 = option
+            if (keyCode == 17 || keyCode == 18) {
+                command = false;
+                return;
+            }
+
+            if (command && keyCode == 78) {
+                $("#new_incident").click();
+            }
+
+            if (command) { console.warn(keyCode); }
+        }
+
+        document.onkeydown = addFieldKeyDown;
+        document.onkeyup   = addFieldKeyUp;
     }
 
     loadBody(loadedBody);
