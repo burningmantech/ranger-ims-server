@@ -480,6 +480,10 @@ function shortDescribeLocation(location) {
         case undefined:
             // Fall through to "text" case
         case "text":
+            if (location.description != undefined) {
+                locationBits.push(" ");
+                locationBits.push(location.description);
+            }
             break;
         case "garett":
             locationBits.push(" (");
