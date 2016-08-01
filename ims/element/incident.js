@@ -678,7 +678,16 @@ function drawIncidentReportsToAttach() {
 
 
 function summarizeIncidentReport(report) {
-    return report.number + ": " + summarizeIncident(report);
+    var author = "";
+
+    for (var i in report.report_entries) {
+        entry = report.report_entries[i];
+        if (entry.author != undefined) {
+            author = entry.author + ": ";
+        }
+    }
+
+    return author + summarizeIncident(report);
 }
 
 
