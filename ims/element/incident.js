@@ -40,6 +40,7 @@ function initIncidentPage() {
         function addFieldKeyDown() {
             var keyCode = event.keyCode;
 
+            // 17 = control, 18 = option
             if (keyCode == 17 || keyCode == 18) {
                 command = true;
             }
@@ -50,11 +51,13 @@ function initIncidentPage() {
         function addFieldKeyUp() {
             var keyCode = event.keyCode;
 
+            // 17 = control, 18 = option
             if (keyCode == 17 || keyCode == 18) {
                 command = false;
                 return;
             }
 
+            // 13 = return
             if (command && keyCode == 13) {
                 submitReportEntry();
             }
