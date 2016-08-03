@@ -49,7 +49,7 @@ class ExternalMixIn(object):
     bootstrapVersion  = u"bootstrap-{}-dist".format(bootstrapVersionNumber)
     jqueryVersion     = u"jquery-{}".format(jqueryVersionNumber)
     dataTablesVersion = u"DataTables-{}".format(dataTablesVersionNumber)
-    momentVersion     = u"moment={}".format(momentVersionNumber)
+    momentVersion     = u"moment-{}".format(momentVersionNumber)
     lscacheVersion    = u"lscache-{}".format(lscacheVersionNumber)
 
     bootstrapSourceURL = URL.fromText(
