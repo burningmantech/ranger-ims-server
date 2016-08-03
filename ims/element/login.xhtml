@@ -8,7 +8,7 @@
       <form method="POST" id="login_form" class="form-horizontal">
 
         <button t:render="if_authn_failed" type="button" class="btn btn-block btn-danger">Authentication Failed</button>
-        <button t:render="if_authz_failed" type="button" class="btn btn-block btn-danger">Authorization Failed for <code><t:slot name="user" /></code></button>
+        <button t:render="if_authz_failed" type="button" class="btn btn-block btn-danger">Authorization Failed for <code t:render="logged_in_user" /></button>
 
         <p>
           Please provide your Ranger Secret Clubhouse credentials.

@@ -141,7 +141,7 @@ class Element(BaseElement):
 
 
     ##
-    # Common data
+    # Logged in state
     ##
 
     @renderer
@@ -164,6 +164,26 @@ class Element(BaseElement):
 
         return u""
 
+    @renderer
+    def logged_in_user(self, request, tag):
+        user = getattr(request, "user", None)
+        if user is None:
+            username = u"(anonymous user)"
+        else:
+            try:
+                username = user.shortNames[0]
+            except IndexError:
+                username = u"* NO USER NAME *"
+
+        if tag.tagName == "text":
+            return username
+        else:
+            return tag(username)
+
+
+    ##
+    # Common data
+    ##
 
     @renderer
     def root(self, request, tag):
