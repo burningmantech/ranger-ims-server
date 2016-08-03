@@ -7,8 +7,8 @@
       <span class="icon-bar"></span>
       <span class="icon-bar"></span>
     </button>
-    <a class="navbar-brand"><t:attr name="href"><t:slot name="prefix_url" /></t:attr>
-      <img alt="Brand"><t:attr name="src"><t:slot name="logo_url" /></t:attr></img>
+    <a class="navbar-brand" t:render="url" url="prefix">
+      <img alt="Brand" t:render="url" url="logo" />
     </a>
   </div>
   <div class="collapse navbar-collapse" id="main-navbar">
@@ -19,8 +19,8 @@
       <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><code><t:slot name="user" /></code><span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li t:render="if_admin"><a><t:attr name="href"><t:slot name="admin_url" /></t:attr>Admin</a></li>
-            <li><a><t:attr name="href"><t:slot name="logout_url" /></t:attr>Log out</a></li>
+            <li t:render="if_admin"><a t:render="url" url="admin">Admin</a></li>
+            <li><a t:render="url" url="logout">Log out</a></li>
           </ul>
       </li>
     </ul>
