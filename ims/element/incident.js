@@ -20,7 +20,7 @@
 
 function initIncidentPage() {
     function loadedIncident() {
-        loadPersonnel(function() {
+        loadPersonnelAndCache(function() {
             drawRangers();
             drawRangersToAdd();
         });
@@ -162,6 +162,23 @@ function loadAndDisplayIncidentReports() {
 
 var personnel = null;
 
+function loadPersonnelAndCache(success) {
+    var cached = localLoadPersonnel();
+
+    function loadedPersonnel() {
+        localCachePersonnel(personnel);
+        success();
+    }
+
+    if (cached == undefined) {
+        loadPersonnel(loadedPersonnel);
+    } else {
+        personnel = cached;
+        success();
+    }
+}
+
+
 function loadPersonnel(success) {
     function ok(data, status, xhr) {
         var _personnel = {};
@@ -194,6 +211,20 @@ function loadPersonnel(success) {
     }
 
     jsonRequest(personnelURL, null, ok, fail);
+}
+
+
+function localCachePersonnel(personnel) {
+    if (personnel == undefined) {
+        alert("Attempt to cache undefined personnel")
+        return;
+    }
+    lscache.set("ims.personnel", personnel, 10);
+}
+
+
+function localLoadPersonnel() {
+    return lscache.get("ims.personnel");
 }
 
 
