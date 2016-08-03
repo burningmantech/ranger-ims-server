@@ -53,6 +53,11 @@ class DispatchQueuePage(Element):
 
 
     @renderer
+    def event_id(self, request, tag):
+        return textFromJSON(self.event)
+
+
+    @renderer
     def template_url(self, request, tag):
         return textFromJSON(URLs.viewDispatchQueueTemplate.asText())
 
