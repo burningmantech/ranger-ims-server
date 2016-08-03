@@ -60,6 +60,19 @@ class Element(BaseElement):
     ##
 
 
+    @renderer
+    def title(self, request, tag):
+        if self.elementTitle is None:
+            title = u""
+        else:
+            title = self.elementTitle
+
+        if tag is None:
+            return title
+        else:
+            return tag(title)
+
+
     # FIXME: Move below to xhtml
     @renderer
     def head(self, request, tag=None):
@@ -115,19 +128,6 @@ class Element(BaseElement):
         return (
             self.footer(request),
         )
-
-
-    @renderer
-    def title(self, request, tag):
-        if self.elementTitle is None:
-            title = u""
-        else:
-            title = self.elementTitle
-
-        if tag is None:
-            return title
-        else:
-            return tag(title)
 
 
     @renderer
