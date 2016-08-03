@@ -61,6 +61,8 @@ class URLs(object):
 
     momentJS = prefix.child(u"moment.min.js")
 
+    lscacheJS = prefix.child(u"lscache.min.js")
+
     # API endpoints
     api              = prefix.child(u"api")
     ping             = api.child(u"ping")

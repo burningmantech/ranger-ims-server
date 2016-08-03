@@ -44,11 +44,13 @@ class ExternalMixIn(object):
     jqueryVersionNumber     = u"3.1.0"
     dataTablesVersionNumber = u"1.10.12"
     momentVersionNumber     = u"2.14.1"
+    lscacheVersionNumber    = u"1.0.5"
 
     bootstrapVersion  = u"bootstrap-{}-dist".format(bootstrapVersionNumber)
     jqueryVersion     = u"jquery-{}".format(jqueryVersionNumber)
     dataTablesVersion = u"DataTables-{}".format(dataTablesVersionNumber)
     momentVersion     = u"moment={}".format(momentVersionNumber)
+    lscacheVersion    = u"lscache-{}".format(lscacheVersionNumber)
 
     bootstrapSourceURL = URL.fromText(
         u"https://github.com/twbs/bootstrap/releases/download/v{n}/{v}.zip"
@@ -73,6 +75,12 @@ class ExternalMixIn(object):
     momentJSSourceURL = URL.fromText(
         u"https://cdnjs.cloudflare.com/ajax/libs/moment.js/{n}/moment.min.js"
         .format(n=momentVersionNumber)
+    )
+
+    lscacheJSSourceURL = URL.fromText(
+        u"https://raw.githubusercontent.com/pamelafox/lscache/{n}/"
+        u"lscache.min.js"
+        .format(n=lscacheVersionNumber)
     )
 
 
@@ -139,6 +147,18 @@ class ExternalMixIn(object):
         return self.cachedResource(
             request, self.momentJSSourceURL,
             "{}.min.js".format(self.momentVersion),
+        )
+
+
+    @route(URLs.lscacheJS.asText(), methods=("HEAD", "GET"))
+    @fixedETag
+    def lscacheJSResource(self, request):
+        request.setHeader(
+            HeaderName.contentType.value, ContentType.JavaScript.value
+        )
+        return self.cachedResource(
+            request, self.lscacheJSSourceURL,
+            "{}.min.js".format(self.lscacheVersion),
         )
 
 

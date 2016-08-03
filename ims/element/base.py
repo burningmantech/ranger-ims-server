@@ -253,6 +253,7 @@ class Element(BaseElement):
                     URLs.dataTablesbootstrapJS.asText()
                 ),
                 moment_js_url=URLs.momentJS.asText(),
+                lscache_js_url=URLs.lscacheJS.asText(),
 
                 ims_js_url=URLs.imsJS.asText(),
 
