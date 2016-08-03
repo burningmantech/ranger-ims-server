@@ -24,7 +24,7 @@ function initIncidentPage() {
             drawRangers();
             drawRangersToAdd();
         });
-        loadIncidentTypes(function() {
+        loadIncidentTypesAndCache(function() {
             drawIncidentTypesToAdd();
         });
         loadAndDisplayIncidentReports();
@@ -162,6 +162,7 @@ function loadAndDisplayIncidentReports() {
 
 var personnel = null;
 
+
 function loadPersonnelAndCache(success) {
     var cached = localLoadPersonnel();
 
@@ -234,6 +235,24 @@ function localLoadPersonnel() {
 
 var incidentTypes = null;
 
+
+function loadIncidentTypesAndCache(success) {
+    var cached = localLoadIncidentTypes();
+
+    function loadedIncidentTypes() {
+        localCacheIncidentTypes(incidentTypes);
+        success();
+    }
+
+    if (cached == undefined) {
+        loadIncidentTypes(loadedIncidentTypes);
+    } else {
+        incidentTypes = cached;
+        success();
+    }
+}
+
+
 function loadIncidentTypes(success) {
     function ok(data, status, xhr) {
         var _incidentTypes = [];
@@ -255,6 +274,20 @@ function loadIncidentTypes(success) {
     }
 
     jsonRequest(incidentTypesURL, null, ok, fail);
+}
+
+
+function localCacheIncidentTypes(incidentTypes) {
+    if (incidentTypes == undefined) {
+        alert("Attempt to cache undefined incident types")
+        return;
+    }
+    lscache.set("ims.incident_types", incidentTypes, 10);
+}
+
+
+function localLoadIncidentTypes() {
+    return lscache.get("ims.incident_types");
 }
 
 
