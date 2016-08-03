@@ -65,10 +65,7 @@ class Element(BaseElement):
         else:
             title = self.elementTitle
 
-        if tag is None:
-            return title
-        else:
-            return tag(title)
+        return tag(title)
 
 
     # FIXME: Move below to xhtml
