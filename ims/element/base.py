@@ -44,7 +44,7 @@ class Element(BaseElement):
         BaseElement.__init__(self, loader=self._loader(name))
 
         self.elementName = name
-        self.elementTitle = title
+        self.elementTitle = unicode(title)
         self.service = service
         self.tag = tag
 
@@ -106,7 +106,7 @@ class Element(BaseElement):
         return (
             self.nav(request),
             self.header(request),
-            self.title(request),
+            self.title(request, tags.h1),
         )
 
 
@@ -118,13 +118,16 @@ class Element(BaseElement):
 
 
     @renderer
-    def title(self, request, tag=None):
+    def title(self, request, tag):
         if self.elementTitle is None:
-            return u""
+            title = u""
         else:
-            if tag is None:
-                tag = tags.h1()
-            return tag(self.elementTitle)
+            title = self.elementTitle
+
+        if tag is None:
+            return title
+        else:
+            return tag(title)
 
 
     @renderer
