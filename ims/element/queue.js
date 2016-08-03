@@ -162,11 +162,8 @@ function initDataTables() {
             $(row).click(function () {
                 var url = viewIncidentsURL + "/" + incident.number;
 
-                // // Change currently displayed page
-                // document.location.href = (url);
-
                 // Open new context with link
-                window.open(url);
+                window.open(url, eventID + "#" + incident.number);
             });
         },
     });
