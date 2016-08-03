@@ -235,8 +235,6 @@ class Element(BaseElement):
     def baseSlots(self):
         if not hasattr(self, "_baseSlots"):
             self._baseSlots = MappingProxyType(dict(
-                title=objectAsUnicode(self.elementTitle),
-
                 prefix_url=URLs.prefix.asText(),
                 stylesheet_url=URLs.styleSheet.asText(),
                 logo_url=URLs.logo.asText(),
@@ -278,17 +276,3 @@ class Element(BaseElement):
             ))
 
         return self._baseSlots
-
-
-
-def objectAsUnicode(obj):
-    if obj is None:
-        return u"* NONE *"
-    else:
-        try:
-            return unicode(obj)
-        except:
-            try:
-                return repr(obj).decode("utf-8")
-            except:
-                return u"* ERROR *"
