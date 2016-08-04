@@ -9,6 +9,8 @@
       </div>
   </div>
 
+  <!-- Instructions -->
+
   <div class="row">
     <div class="col-sm-12">
       <label>Instructions</label>
@@ -43,7 +45,29 @@
         Don't worry about your report being too long, but be clear and concise.
         Avoid jargon and acronyms.
       </p>
+    </div>
+  </div>
 
+  <!-- Summary -->
+
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="well well-sm flex-input-container">
+        <label class="control-label">Summary:</label>
+        <input
+          id="incident_report_summary" class="form-control input-sm"
+          type="text" inputmode="latin-prose"
+          placeholder="One-line summary of incident…"
+          onchange="editSummary()"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Incident report details -->
+
+  <div class="row">
+    <div class="col-sm-12">
       <label>Incident Report Details</label>
       <div id="incident_report_well" class="well well-sm">
         <div class="panel panel-default">

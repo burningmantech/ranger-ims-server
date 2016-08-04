@@ -84,6 +84,7 @@ function loadAndDisplayIncidentReport(success) {
         }
 
         drawNumber();
+        drawSummary();
         drawReportEntries(incidentReport.report_entries);
 
         $("#incident_report_add").on("input", reportEntryEdited);
@@ -111,6 +112,25 @@ function drawNumber() {
         number = "(new)";
     }
     $("#incident_report_number").text(number);
+}
+
+
+//
+// Populate incident report summary
+//
+
+function drawSummary() {
+    var summary = incidentReport.summary;
+
+    if (summary == undefined || summary == "") {
+        $("#incident_report_summary")[0].removeAttribute("value");
+        $("#incident_report_summary").attr(
+            "placeholder", summarizeIncident(incidentReport)
+        );
+    } else {
+        $("#incident_report_summary").val(summary);
+        $("#incident_report_summary").attr("placeholder", "");
+    }
 }
 
 
@@ -178,4 +198,9 @@ function sendEdits(edits, success, error) {
     }
 
     jsonRequest(url, edits, ok, fail);
+}
+
+
+function editSummary() {
+    editFromElement($("#incident_report_summary"), "summary");
 }
