@@ -2,10 +2,10 @@
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
 
   <head t:render="head">
-    <script><t:attr name="src"><t:slot name="moment_js_url"   /></t:attr></script>
-    <script><t:attr name="src"><t:slot name="lscache_js_url"  /></t:attr></script>
-    <script><t:attr name="src"><t:slot name="ims_js_url"      /></t:attr></script>
-    <script><t:attr name="src"><t:slot name="incident_js_url" /></t:attr></script>
+    <script t:render="url" url="momentJS"             />
+    <script t:render="url" url="lscacheJS"            />
+    <script t:render="url" url="imsJS"                />
+    <script t:render="url" url="viewIncidentNumberJS" />
   </head>
 
   <body />

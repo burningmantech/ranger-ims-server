@@ -29,7 +29,6 @@ from twisted.web.template import (
     Element as BaseElement, XMLFile, renderer, tags
 )
 from twisted.python.filepath import FilePath
-from twext.python.types import MappingProxyType
 
 from ..service.urls import URLs
 
@@ -44,7 +43,7 @@ class Element(BaseElement):
         BaseElement.__init__(self, loader=self._loader(name))
 
         self.elementName = name
-        self.elementTitle = title
+        self.elementTitle = unicode(title)
         self.service = service
         self.tag = tag
 
@@ -58,6 +57,15 @@ class Element(BaseElement):
     ##
     # Common elements
     ##
+
+    @renderer
+    def title(self, request, tag):
+        if self.elementTitle is None:
+            title = u""
+        else:
+            title = self.elementTitle
+
+        return tag(title)
 
 
     # FIXME: Move below to xhtml
@@ -106,7 +114,7 @@ class Element(BaseElement):
         return (
             self.nav(request),
             self.header(request),
-            self.title(request),
+            self.title(request, tags.h1),
         )
 
 
@@ -115,16 +123,6 @@ class Element(BaseElement):
         return (
             self.footer(request),
         )
-
-
-    @renderer
-    def title(self, request, tag=None):
-        if self.elementTitle is None:
-            return u""
-        else:
-            if tag is None:
-                tag = tags.h1()
-            return tag(self.elementTitle)
 
 
     @renderer
@@ -143,9 +141,8 @@ class Element(BaseElement):
 
 
     ##
-    # Common data
+    # Logged in state
     ##
-
 
     @renderer
     def if_logged_in(self, request, tag):
@@ -167,6 +164,26 @@ class Element(BaseElement):
 
         return u""
 
+    @renderer
+    def logged_in_user(self, request, tag):
+        user = getattr(request, "user", None)
+        if user is None:
+            username = u"(anonymous user)"
+        else:
+            try:
+                username = user.shortNames[0]
+            except IndexError:
+                username = u"* NO USER NAME *"
+
+        if tag.tagName == "text":
+            return username
+        else:
+            return tag(username)
+
+
+    ##
+    # Common data
+    ##
 
     @renderer
     def root(self, request, tag):
@@ -183,14 +200,7 @@ class Element(BaseElement):
             except IndexError:
                 username = u"* NO USER NAME *"
 
-        slots = dict(self.baseSlots)
-
-        slots.update(dict(
-            user=username,
-
-            login_url=redirectBack(URLs.login),
-            logout_url=redirectBack(URLs.logout),
-        ))
+        slots = dict(user=username)
 
         tag.fillSlots(**slots)
 
@@ -228,64 +238,45 @@ class Element(BaseElement):
         return self._events(request, tag, reverse_order=True)
 
 
-    @property
-    def baseSlots(self):
-        if not hasattr(self, "_baseSlots"):
-            self._baseSlots = MappingProxyType(dict(
-                title=objectAsUnicode(self.elementTitle),
+    ##
+    # URLs
+    ##
 
-                prefix_url=URLs.prefix.asText(),
-                stylesheet_url=URLs.styleSheet.asText(),
-                logo_url=URLs.logo.asText(),
+    @renderer
+    def url(self, request, tag):
+        """
+        Look up a URL with the name specified by the given tag's C{"url"}
+        attribute, which will be removed.
+        If the tag has an C{"attr"} attribute, remove it and add the URL to the
+        tag in the attribute named by the (removed) C{"attr"} attribute and
+        return the tag.
+        For C{"a"} tags, C{"attr"} defaults to C{"href"}.
+        For C{"img"} tags, C{"attr"} defaults to C{"src"}.
+        If the C{"attr"} attribute is defined C{""}, return the URL as text.
+        """
+        name = tag.attributes.pop("url", None)
 
-                jquery_base_url=URLs.jqueryBase.asText(),
-                jquery_js_url=URLs.jqueryJS.asText(),
-                jquery_map_url=URLs.jqueryMap.asText(),
-                bootstrap_base_url=URLs.bootstrapBase.asText(),
-                bootstrap_css_url=URLs.bootstrapCSS.asText(),
-                bootstrap_js_url=URLs.bootstrapJS.asText(),
-                datatables_base_url=URLs.dataTablesBase.asText(),
-                datatables_js_url=URLs.dataTablesJS.asText(),
-                datatables_bootstrap_css_url=(
-                    URLs.dataTablesbootstrapCSS.asText()
-                ),
-                datatables_bootstrap_js_url=(
-                    URLs.dataTablesbootstrapJS.asText()
-                ),
-                moment_js_url=URLs.momentJS.asText(),
-                lscache_js_url=URLs.lscacheJS.asText(),
+        if name is None:
+            raise RuntimeError("Rendered URL must have a url attribute")
 
-                ims_js_url=URLs.imsJS.asText(),
-
-                admin_url=URLs.admin.asText(),
-                admin_js_url=URLs.adminJS.asText(),
-
-                admin_types_url=URLs.adminIncidentTypes.asText(),
-                admin_types_js_url=URLs.adminIncidentTypesJS.asText(),
-
-                admin_acl_url=URLs.adminAccessControl.asText(),
-                admin_acl_js_url=URLs.adminAccessControlJS.asText(),
-
-                admin_streets_url=URLs.adminStreets.asText(),
-                admin_streets_js_url=URLs.adminStreetsJS.asText(),
-
-                queue_js_url=URLs.viewDispatchQueueJS.asText(),
-                incident_js_url=URLs.viewIncidentNumberJS.asText(),
-                incident_report_js_url=URLs.viewIncidentReportJS.asText(),
-            ))
-
-        return self._baseSlots
-
-
-
-def objectAsUnicode(obj):
-    if obj is None:
-        return u"* NONE *"
-    else:
         try:
-            return unicode(obj)
-        except:
-            try:
-                return repr(obj).decode("utf-8")
-            except:
-                return u"* ERROR *"
+            url = getattr(URLs, name)
+        except AttributeError:
+            raise RuntimeError("Unknown URL name: {}".format(name))
+
+        text = url.asText()
+
+        attributeName = tag.attributes.pop("attr", None)
+        if attributeName is None:
+            if tag.tagName in ("a", "link"):
+                attributeName = "href"
+            elif tag.tagName in ("script", "img"):
+                attributeName = "src"
+            else:
+                raise RuntimeError("Rendered URL must have an attr attribute")
+
+        if attributeName == "":
+            return text
+        else:
+            tag.attributes[attributeName] = text
+            return tag
