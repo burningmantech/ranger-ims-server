@@ -1257,6 +1257,56 @@ class Storage(object):
     )
 
 
+    def _setIncidentReportColumn(self, query, number, column, value, author):
+        systemEntry = ReportEntry(
+            text=u"Changed {} to: {}".format(column, value),
+            author=author, created=utcNow(), system_entry=True,
+        )
+
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(query, (value, number))
+                    self._addAndAttachReportEntryToIncidentReport(
+                        number, systemEntry, cursor
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self.log.critical(
+                "Author {author} unable to set {column} for incident report "
+                "{number} to {value}",
+                number=number, column=column, value=value, author=author,
+            )
+            raise StorageError(e)
+
+    _querySetIncidentReportColumn = _query(
+        """
+        update INCIDENT_REPORT set {{column}} = ? where NUMBER = ?
+        """
+    )
+
+
+    def setIncidentReportSummary(self, number, summary, author):
+        """
+        Set the summary for the incident report with the given number.
+        """
+        if summary is not None and type(summary) is not unicode:
+            raise InvalidDataError(
+                "Invalid incident report summary: {!r}".format(summary)
+            )
+
+        self._setIncidentReportColumn(
+            self._query_setIncidentReportSummary,
+            number, "summary", summary, author
+        )
+
+    _query_setIncidentReportSummary = _querySetIncidentReportColumn.format(
+        column="SUMMARY"
+    )
+
+
     def addIncidentReportReportEntry(self, number, reportEntry):
         """
         Add a report entry to the incident report with the given number.
