@@ -151,6 +151,7 @@ create table EVENT_ACCESS (
 create table INCIDENT_REPORT (
     NUMBER   integer not null,
     CREATED  integer not null,
+    SUMMARY  text,
 
     primary key (NUMBER)
 );

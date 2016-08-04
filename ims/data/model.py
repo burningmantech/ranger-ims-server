@@ -882,7 +882,7 @@ class IncidentReport(object):
     Incident Report.
     """
 
-    def __init__(self, number, created=None, reportEntries=None):
+    def __init__(self, number, summary=None, created=None, reportEntries=None):
         """
         @param number: The incident report's identifying number.
         @type number: L{int}
@@ -898,6 +898,7 @@ class IncidentReport(object):
             reportEntries = tuple(sorted(reportEntries))
 
         self.number        = number
+        self.summary       = summary
         self.created       = created
         self.reportEntries = reportEntries
 

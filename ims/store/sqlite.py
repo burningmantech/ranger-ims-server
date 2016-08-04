@@ -1094,7 +1094,7 @@ class Storage(object):
         try:
             # Fetch incident report row
             cursor = self._db.execute(self._query_incidentReport, (number,))
-            createdTimestamp = cursor.fetchone()[0]
+            createdTimestamp, summary = cursor.fetchone()[0]
 
             # Convert created timestamp to a datetime
             created = fromTimeStamp(createdTimestamp)
@@ -1122,8 +1122,9 @@ class Storage(object):
 
         incidentReport = IncidentReport(
             number=number,
-            reportEntries=reportEntries,
+            summary=summary,
             created=created,
+            reportEntries=reportEntries,
         )
         # Check for issues in stored data
         try:
@@ -1139,7 +1140,7 @@ class Storage(object):
 
     _query_incidentReport = _query(
         """
-        select CREATED from INCIDENT_REPORT where NUMBER = ?
+        select CREATED, SUMMARY from INCIDENT_REPORT where NUMBER = ?
         """
     )
 
@@ -1228,6 +1229,7 @@ class Storage(object):
                         self._query_createIncidentReport, (
                             incidentReport.number,
                             asTimeStamp(incidentReport.created),
+                            incidentReport.summary,
                         )
                     )
                     incidentReport.number = cursor.lastrowid
@@ -1250,7 +1252,7 @@ class Storage(object):
 
     _query_createIncidentReport = _query(
         """
-        insert into INCIDENT_REPORT (NUMBER, CREATED) values (?, ?)
+        insert into INCIDENT_REPORT (NUMBER, CREATED, SUMMARY) values (?, ?, ?)
         """
     )
 
