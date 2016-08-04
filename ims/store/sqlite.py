@@ -1094,7 +1094,7 @@ class Storage(object):
         try:
             # Fetch incident report row
             cursor = self._db.execute(self._query_incidentReport, (number,))
-            createdTimestamp, summary = cursor.fetchone()[0]
+            createdTimestamp, summary = cursor.fetchone()
 
             # Convert created timestamp to a datetime
             created = fromTimeStamp(createdTimestamp)
