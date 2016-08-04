@@ -660,10 +660,13 @@ function drawReportEntries(entries) {
     var container = $("#incident_report");
     container.empty();
 
-    if (entries != undefined) {
+    if (entries != undefined && entries.length > 0) {
         for (var i in entries) {
             container.append(reportEntryElement(entries[i]));
         }
+        container.parent().parent().removeClass("hidden");
+    } else {
+        container.parent().parent().addClass("hidden");
     }
 }
 
