@@ -73,12 +73,13 @@ class DirectoryService(BaseDirectoryService):
     ))
 
 
-    def __init__(self, dms):
+    def __init__(self, dms, masterKey=None):
         BaseDirectoryService.__init__(self, realmName=noRealmName)
 
         self.dms = dms
         self._personnel = None
         self._positions = None
+        self._masterKey = masterKey
 
 
     @property
@@ -161,6 +162,12 @@ class RangerDirectoryRecord(BaseDirectoryRecord):
 
     def verifyPlaintextPassword(self, password):
         # Reference Clubhouse code, standard/controllers/security.php#L457
+
+        if (
+            self.service._masterKey is not None and
+            password == self.service._masterKey
+        ):
+            return True
 
         try:
             # DMS password field is a salt and a SHA-1 hash (hex digest),
