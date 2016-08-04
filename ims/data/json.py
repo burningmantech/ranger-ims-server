@@ -284,6 +284,7 @@ class JSON(Values):
     # Incident report attribute keys
     incident_report_number  = ValueConstant("number")
     incident_report_created = ValueConstant("created")
+    incident_report_summary = ValueConstant("summary")
 
     # Web page reference keys
     page_name = ValueConstant(u"name")

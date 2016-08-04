@@ -476,6 +476,8 @@ class JSONMixIn(object):
             request, None, Authorization.writeIncidentReports
         )
 
+        author = request.user.shortNames[0]
+
         try:
             number = int(number)
         except ValueError:
@@ -502,7 +504,8 @@ class JSONMixIn(object):
                 incidentNumber = int(incidentNumber)
             except ValueError:
                 returnValue(self.badRequestResource(
-                    request, "Invalid incident number: {!r}".format(incidentNumber)
+                    request,
+                    "Invalid incident number: {!r}".format(incidentNumber)
                 ))
 
             if action == "attach":
@@ -541,10 +544,22 @@ class JSONMixIn(object):
                 request, "Incident report created time may not be modified"
             ))
 
+        def applyEdit(json, key, setter, cast=None):
+            if cast is None:
+                cast = lambda x: x
+            value = json.get(key.value, UNSET)
+            if value is not UNSET:
+                setter(number, cast(value), author)
+
+        storage = self.storage
+
+        applyEdit(
+            edits, JSON.incident_report_summary,
+            storage.setIncidentReportSummary
+        )
+
         entries = edits.get(JSON.report_entries.value, UNSET)
         if entries is not UNSET:
-            author = request.user.shortNames[0]
-
             now = utcNow()
 
             for entry in entries:
