@@ -713,3 +713,45 @@ function submitReportEntry() {
 
     sendEdits({"report_entries": [{"text": text}]}, ok, fail);
 }
+
+
+function editFromElement(element, jsonKey, transform) {
+    var value = element.val();
+
+    if (transform != undefined) {
+        value = transform(value);
+    }
+
+    // Build a JSON object representing the requested edits
+
+    var edits = {};
+
+    var keyPath = jsonKey.split(".");
+    var lastKey = keyPath.pop();
+
+    var current = edits;
+    for (var i in keyPath) {
+        var next = {};
+        current[keyPath[i]] = next;
+        current = next;
+    }
+    current[lastKey] = value;
+
+    // Location must include type
+
+    if (edits.location != undefined) {
+        edits.location.type = "garett";  // UI only supports one type
+    }
+
+    // Send request to server
+
+    function ok() {
+        controlHasSuccess(element, 1000);
+    }
+
+    function fail() {
+        controlHasError(element);
+    }
+
+    sendEdits(edits, ok, fail);
+}
