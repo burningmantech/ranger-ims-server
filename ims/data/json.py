@@ -687,14 +687,18 @@ def incidentReportFromJSON(root, number, validate=True):
     json_entries = get(root, JSON.report_entries, list)
     reportEntries = reportEntriesFromJSON(json_entries)
 
+    summary = get(
+        root, JSON.incident_report_summary, unicode
+    )
     created = get(
         root, JSON.incident_report_created, unicode, transform=rfc3339AsDateTime
     )
 
     incidentReport = IncidentReport(
         number=number,
-        reportEntries=reportEntries,
+        summary=summary,
         created=created,
+        reportEntries=reportEntries,
     )
 
     if validate:
@@ -717,6 +721,9 @@ def incidentReportAsJSON(incidentReport):
     root = {}
 
     root[JSON.incident_report_number.value] = incidentReport.number
+
+    if incidentReport.summary is not None:
+        root[JSON.incident_report_summary.value] = incidentReport.summary
 
     if incidentReport.created is not None:
         root[JSON.incident_report_created.value] = (
