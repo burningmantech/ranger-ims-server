@@ -84,8 +84,8 @@ def renderResponse(f):
     Needed because L{Klein.handle_errors} doesn't do rendering for you.
     """
     @wraps(f)
-    def wrapper(request, *args, **kwargs):
-        response = f(request, *args, **kwargs)
+    def wrapper(self, request, *args, **kwargs):
+        response = f(self, request, *args, **kwargs)
 
         if IRenderable.providedBy(response):
             return renderElement(request, response)
