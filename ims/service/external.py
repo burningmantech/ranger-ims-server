@@ -29,7 +29,7 @@ from twisted.python.url import URL
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.web.client import downloadPage
 
-from .http import fixedETag, HeaderName, ContentType
+from .http import staticResource, HeaderName, ContentType
 from .urls import URLs
 from .klein import route
 
@@ -85,7 +85,7 @@ class ExternalMixIn(object):
 
 
     @route(URLs.bootstrapBase.asText(), methods=("HEAD", "GET"), branch=True)
-    @fixedETag
+    @staticResource
     def bootstrapResource(self, request):
         requestURL = URL.fromText(request.uri)
 
@@ -100,7 +100,7 @@ class ExternalMixIn(object):
 
 
     @route(URLs.jqueryJS.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def jqueryJSResource(self, request):
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value
@@ -112,7 +112,7 @@ class ExternalMixIn(object):
 
 
     @route(URLs.jqueryMap.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def jqueryMapResource(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
         return self.cachedResource(
@@ -124,7 +124,7 @@ class ExternalMixIn(object):
     @route(
         URLs.dataTablesBase.asText(), methods=("HEAD", "GET"), branch=True
     )
-    @fixedETag
+    @staticResource
     def dataTablesResource(self, request):
         requestURL = URL.fromText(request.uri)
 
@@ -139,7 +139,7 @@ class ExternalMixIn(object):
 
 
     @route(URLs.momentJS.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def momentJSResource(self, request):
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value
@@ -151,7 +151,7 @@ class ExternalMixIn(object):
 
 
     @route(URLs.lscacheJS.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def lscacheJSResource(self, request):
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value

@@ -31,7 +31,7 @@ from ..data.json import (
     incidentAsJSON, incidentFromJSON,
     incidentReportAsJSON, incidentReportFromJSON,
 )
-from .http import HeaderName, fixedETag
+from .http import HeaderName, staticResource
 from .klein import route
 from .urls import URLs
 from .auth import Authorization
@@ -50,7 +50,7 @@ class JSONMixIn(object):
     #
 
     @route(URLs.ping.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def pingResource(self, request):
         ack = b'"ack"'
         return self.jsonBytes(request, ack, bytes(hash(ack)))

@@ -65,26 +65,26 @@ class ContentType (Values):
 
 
 if True:
-    _fixedETag = version
+    _staticETag = version
     _maxAge = 60 * 5  # 5 minutes
 else:
     # For debugging, change the ETag on every app start
     from uuid import uuid4
-    _fixedETag = uuid4().hex
+    _staticETag = uuid4().hex
     _maxAge = 0
 
 _cacheControl = "max-age={}".format(_maxAge)
 
 
-def fixedETag(f):
+def staticResource(f):
     """
-    Decorator to add a fixed ETag to static resources.
+    Decorator to add fixed ETag and Cache-Control headers to static resources.
     We use the IMS version number as the ETag, because they may change with new
-    IMS versions, but should are otherwise static.
+    IMS versions, but should otherwise be static.
     """
     @wraps(f)
     def wrapper(self, request, *args, **kwargs):
-        request.setHeader(HeaderName.etag.value, _fixedETag)
+        request.setHeader(HeaderName.etag.value, _staticETag)
         request.setHeader(HeaderName.cacheControl.value, _cacheControl)
         return f(self, request, *args, **kwargs)
 

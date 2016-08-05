@@ -35,7 +35,7 @@ from ..element.incident_template import IncidentTemplatePage
 from ..element.report import IncidentReportPage
 from ..element.report_template import IncidentReportTemplatePage
 from ..element.root import RootPage
-from .http import fixedETag, HeaderName, ContentType
+from .http import staticResource, HeaderName, ContentType
 from .klein import route
 from .urls import URLs
 from .auth import Authorization
@@ -52,20 +52,20 @@ class WebMixIn(object):
     #
 
     @route(URLs.styleSheet.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def styleSheetResource(self, request):
         return self.styleSheet(request, "style.css")
 
 
     @route(URLs.logo.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def logoResource(self, request):
         request.setHeader(HeaderName.contentType.value, ContentType.PNG.value)
         return self.builtInResource(request, "logo.png")
 
 
     @route(URLs.imsJS.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def imsJSResource(self, request):
         return self.javaScript(request, "ims.js")
 
@@ -85,7 +85,7 @@ class WebMixIn(object):
 
 
     @route(URLs.prefix.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def applicationRootResource(self, request):
         """
         Application root page.
@@ -104,7 +104,7 @@ class WebMixIn(object):
 
 
     @route(URLs.admin.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     @inlineCallbacks
     def adminPage(self, request):
         # FIXME: Not strictly required because the underlying data is protected.
@@ -114,12 +114,11 @@ class WebMixIn(object):
 
 
     @route(URLs.adminJS.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def adminJSResource(self, request):
         return self.javaScript(request, "admin.js")
 
     @route(URLs.adminAccessControl.asText(), methods=("HEAD", "GET"))
-    @fixedETag
     @inlineCallbacks
     def adminAccessControlPage(self, request):
         # FIXME: Not strictly required because the underlying data is protected.
@@ -129,13 +128,12 @@ class WebMixIn(object):
 
 
     @route(URLs.adminAccessControlJS.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def adminAccessControlJSResource(self, request):
         return self.javaScript(request, "admin_acl.js")
 
 
     @route(URLs.adminIncidentTypes.asText(), methods=("HEAD", "GET"))
-    @fixedETag
     @inlineCallbacks
     def adminAdminIncidentTypesPagePage(self, request):
         # FIXME: Not strictly required because the underlying data is protected.
@@ -145,13 +143,12 @@ class WebMixIn(object):
 
 
     @route(URLs.adminIncidentTypesJS.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def adminAdminIncidentTypesPageJSResource(self, request):
         return self.javaScript(request, "admin_types.js")
 
 
     @route(URLs.adminStreets.asText(), methods=("HEAD", "GET"))
-    @fixedETag
     @inlineCallbacks
     def adminStreetsPage(self, request):
         # FIXME: Not strictly required because the underlying data is protected.
@@ -161,13 +158,12 @@ class WebMixIn(object):
 
 
     @route(URLs.adminStreetsJS.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def adminStreetsJSResource(self, request):
         return self.javaScript(request, "admin_streets.js")
 
 
     @route(URLs.viewDispatchQueue.asText(), methods=("HEAD", "GET"))
-    @fixedETag
     @inlineCallbacks
     def viewDispatchQueuePage(self, request, event):
         # FIXME: Not strictly required because the underlying data is protected.
@@ -177,19 +173,18 @@ class WebMixIn(object):
 
 
     @route(URLs.viewDispatchQueueTemplate.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def viewDispatchQueueTemplatePage(self, request):
         return DispatchQueueTemplatePage(self)
 
 
     @route(URLs.viewDispatchQueueJS.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def viewDispatchQueueJSResource(self, request):
         return self.javaScript(request, "queue.js")
 
 
     @route(URLs.viewIncidentNumber.asText(), methods=("HEAD", "GET"))
-    @fixedETag
     @inlineCallbacks
     def viewIncidentPage(self, request, event, number):
         if number == u"new":
@@ -208,13 +203,13 @@ class WebMixIn(object):
 
 
     @route(URLs.viewIncidentNumberTemplate.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def viewIncidentNumberTemplatePage(self, request):
         return IncidentTemplatePage(self)
 
 
     @route(URLs.viewIncidentNumberJS.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def incidentJSResource(self, request):
         return self.javaScript(request, "incident.js")
 
@@ -223,7 +218,6 @@ class WebMixIn(object):
 
 
     @route(URLs.viewIncidentReport.asText(), methods=("HEAD", "GET"))
-    @fixedETag
     @inlineCallbacks
     def viewIncidentReportPage(self, request, number):
         if number == u"new":
@@ -243,12 +237,12 @@ class WebMixIn(object):
 
 
     @route(URLs.viewIncidentReportTemplate.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def viewIncidentReportTemplatePage(self, request):
         return IncidentReportTemplatePage(self)
 
 
     @route(URLs.viewIncidentReportJS.asText(), methods=("HEAD", "GET"))
-    @fixedETag
+    @staticResource
     def viewIncidentReportJSResource(self, request):
         return self.javaScript(request, "report.js")
