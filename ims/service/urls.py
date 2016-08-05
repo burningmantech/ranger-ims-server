@@ -86,29 +86,29 @@ class URLs(object):
     admin                      = prefix.child(u"admin").child(u"")
     adminJS                    = admin.child(u"admin.js")
 
-    adminAccessControl         = admin.child(u"access").child(u"")
-    adminAccessControlJS       = adminAccessControl.child(u"access.js")
+    adminAccessControl         = admin.child(u"access")
+    adminAccessControlJS       = admin.child(u"access.js")
 
     adminIncidentTypes         = admin.child(u"types")
-    adminIncidentTypesJS       = adminAccessControl.child(u"types.js")
+    adminIncidentTypesJS       = admin.child(u"types.js")
 
     adminStreets               = admin.child(u"streets")
-    adminStreetsJS             = adminAccessControl.child(u"streets.js")
+    adminStreetsJS             = admin.child(u"streets.js")
 
     viewEvents                 = prefix.child(u"events").child(u"")
     viewEvent                  = viewEvents.child(u"<event>").child(u"")
 
     viewDispatchQueue          = viewEvent.child(u"queue")
-    viewDispatchQueueTemplate  = prefix.child(u"_queue.html")
+    viewDispatchQueueTemplate  = prefix.child(u"queue.html")
     viewDispatchQueueJS        = prefix.child(u"queue.js")
     viewDispatchQueueRelative  = URL.fromText(u"queue")
 
     viewIncidents              = viewEvent.child(u"incidents").child(u"")
     viewIncidentNumber         = viewIncidents.child(u"<number>")
-    viewIncidentNumberTemplate = prefix.child(u"_incident.html")
+    viewIncidentNumberTemplate = prefix.child(u"incident.html")
     viewIncidentNumberJS       = prefix.child(u"incident.js")
 
     viewIncidentReports        = prefix.child(u"incident_reports").child(u"")
     viewIncidentReport         = viewIncidentReports.child(u"<number>")
-    viewIncidentReportTemplate = prefix.child(u"_incident_report.html")
+    viewIncidentReportTemplate = prefix.child(u"incident_report.html")
     viewIncidentReportJS       = prefix.child(u"incident_report.js")
