@@ -70,7 +70,7 @@ function loadIncidentTypes(success) {
     }
 
     jsonRequest(incidentTypesURL, null, okVisible, fail);
-    jsonRequest(incidentTypesURL + "/?hidden=true", null, okAll, fail);
+    jsonRequest(incidentTypesURL + "?hidden=true", null, okAll, fail);
 }
 
 
@@ -164,5 +164,5 @@ function sendIncidentTypes(edits, success, error) {
         window.alert(message);
     }
 
-    jsonRequest(incidentTypesURL + "/", edits, ok, fail);
+    jsonRequest(incidentTypesURL, edits, ok, fail);
 }

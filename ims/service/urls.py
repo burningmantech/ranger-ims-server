@@ -31,7 +31,9 @@ class URLs(object):
     Incident Management System URL schema.
     """
 
-    prefix = URL.fromText(u"/ims")
+    root = URL.fromText(u"/")
+
+    prefix = URL.fromText(u"/ims/")
 
     styleSheet = prefix.child(u"style.css")
 
@@ -40,15 +42,15 @@ class URLs(object):
     login  = prefix.child(u"login")
     logout = prefix.child(u"logout")
 
-    jqueryBase = prefix.child(u"jquery")
+    jqueryBase = prefix.child(u"jquery").child(u"")
     jqueryJS   = jqueryBase.child(u"jquery.min.js")
     jqueryMap  = jqueryBase.child(u"jquery.min.map")
 
-    bootstrapBase = prefix.child(u"bootstrap")
+    bootstrapBase = prefix.child(u"bootstrap").child(u"")
     bootstrapCSS  = bootstrapBase.child(u"css", u"bootstrap.min.css")
     bootstrapJS   = bootstrapBase.child(u"js", u"bootstrap.min.js")
 
-    dataTablesBase = prefix.child(u"datatables")
+    dataTablesBase = prefix.child(u"datatables").child(u"")
     dataTablesJS = dataTablesBase.child(
         u"media", u"js", u"jquery.dataTables.min.js"
     )
@@ -64,27 +66,27 @@ class URLs(object):
     lscacheJS = prefix.child(u"lscache.min.js")
 
     # API endpoints
-    api              = prefix.child(u"api")
-    ping             = api.child(u"ping")
+    api              = prefix.child(u"api").child(u"")
+    ping             = api.child(u"ping").child(u"")
     acl              = api.child(u"access")
     streets          = api.child(u"streets")
-    personnel        = api.child(u"personnel")
-    incidentTypes    = api.child(u"incident_types")
-    incidentReports  = api.child(u"incident_reports")
+    personnel        = api.child(u"personnel").child(u"")
+    incidentTypes    = api.child(u"incident_types").child(u"")
+    incidentReports  = api.child(u"incident_reports").child(u"")
     incidentReport   = incidentReports.child(u"<number>")
-    events           = api.child(u"events")
-    event            = events.child(u"<event>")
-    locations        = event.child(u"locations")
-    incidents        = event.child(u"incidents")
+    events           = api.child(u"events").child(u"")
+    event            = events.child(u"<event>").child(u"")
+    locations        = event.child(u"locations").child(u"")
+    incidents        = event.child(u"incidents").child(u"")
     incidentNumber   = incidents.child(u"<number>")
 
     # Web UI
     imsJS                      = prefix.child(u"ims.js")
 
-    admin                      = prefix.child(u"admin")
+    admin                      = prefix.child(u"admin").child(u"")
     adminJS                    = admin.child(u"admin.js")
 
-    adminAccessControl         = admin.child(u"access")
+    adminAccessControl         = admin.child(u"access").child(u"")
     adminAccessControlJS       = adminAccessControl.child(u"access.js")
 
     adminIncidentTypes         = admin.child(u"types")
@@ -93,20 +95,20 @@ class URLs(object):
     adminStreets               = admin.child(u"streets")
     adminStreetsJS             = adminAccessControl.child(u"streets.js")
 
-    viewEvents                 = prefix.child(u"events")
-    viewEvent                  = viewEvents.child(u"<event>")
+    viewEvents                 = prefix.child(u"events").child(u"")
+    viewEvent                  = viewEvents.child(u"<event>").child(u"")
 
     viewDispatchQueue          = viewEvent.child(u"queue")
     viewDispatchQueueTemplate  = prefix.child(u"_queue.html")
     viewDispatchQueueJS        = prefix.child(u"queue.js")
     viewDispatchQueueRelative  = URL.fromText(u"queue")
 
-    viewIncidents              = viewEvent.child(u"incidents")
+    viewIncidents              = viewEvent.child(u"incidents").child(u"")
     viewIncidentNumber         = viewIncidents.child(u"<number>")
     viewIncidentNumberTemplate = prefix.child(u"_incident.html")
     viewIncidentNumberJS       = prefix.child(u"incident.js")
 
-    viewIncidentReports        = prefix.child(u"incident_reports")
+    viewIncidentReports        = prefix.child(u"incident_reports").child(u"")
     viewIncidentReport         = viewIncidentReports.child(u"<number>")
     viewIncidentReportTemplate = prefix.child(u"_incident_report.html")
     viewIncidentReportJS       = prefix.child(u"incident_report.js")

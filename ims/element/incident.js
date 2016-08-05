@@ -114,7 +114,7 @@ function loadIncident(success) {
             "summary": "",
         });
     } else {
-        var url = incidentsURL + "/" + number;
+        var url = incidentsURL + number;
         jsonRequest(url, null, ok, fail);
     }
 }
@@ -327,7 +327,7 @@ function loadUnattachedIncidentReports(success) {
         }
     }
 
-    jsonRequest(incidentReportsURL + "/?event=;incident=", null, ok, fail);
+    jsonRequest(incidentReportsURL + "?event=;incident=", null, ok, fail);
 }
 
 
@@ -353,7 +353,7 @@ function loadAttachedIncidentReports(success) {
     }
 
     jsonRequest(
-        incidentReportsURL + "/?event=" + eventID + ";incident=" + incidentNumber,
+        incidentReportsURL + "?event=" + eventID + ";incident=" + incidentNumber,
         null, ok, fail
     );
 }
@@ -714,7 +714,7 @@ function drawAttachedIncidentReports() {
         var report = reports[i];
         var item = _reportsItem.clone();
         var link = $("<a />");
-        link.attr("href", viewIncidentReportsURL + "/" + report.number);
+        link.attr("href", viewIncidentReportsURL + report.number);
         link.text(summarizeIncidentReport(report));
         item.append(link);
         item.data(report);
@@ -765,7 +765,7 @@ function summarizeIncidentReport(report) {
 
 function sendEdits(edits, success, error) {
     var number = incident.number
-    var url = incidentsURL + "/";
+    var url = incidentsURL;
 
     if (number == null) {
         // We're creating a new incident.
@@ -1025,7 +1025,7 @@ function detachIncidentReport(sender) {
     }
 
     var url = (
-        incidentReportsURL + "/" + incidentReport.number +
+        incidentReportsURL + incidentReport.number +
         "?action=detach;event=" + eventID + ";incident=" + incidentNumber
     );
 
@@ -1049,7 +1049,7 @@ function attachIncidentReport() {
     }
 
     var url = (
-        incidentReportsURL + "/" + incidentReportNumber +
+        incidentReportsURL + incidentReportNumber +
         "?action=attach;event=" + eventID + ";incident=" + incidentNumber
     );
 

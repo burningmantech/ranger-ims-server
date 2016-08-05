@@ -102,7 +102,7 @@ function loadIncidentReport(success) {
             "created": null,
         });
     } else {
-        var url = incidentReportsURL + "/" + number;
+        var url = incidentReportsURL + number;
         jsonRequest(url, null, ok, fail);
     }
 }
@@ -174,7 +174,7 @@ function drawSummary() {
 
 function sendEdits(edits, success, error) {
     var number = incidentReport.number
-    var url = incidentReportsURL + "/";
+    var url = incidentReportsURL;
 
     if (number == null) {
         // We're creating a new incident report.

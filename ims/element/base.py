@@ -215,11 +215,11 @@ class Element(BaseElement):
             events = reversed(events)
 
         if events:
-            prefix = URLs.viewEvents.asText()
+            queue = URLs.viewDispatchQueue.asText()
             return (
                 tag.clone()(
                     tags.a(
-                        event, href="{}/{}/queue".format(prefix, event)
+                        event, href=queue.replace(u"<event>", event)
                     )
                 )
                 for event in events

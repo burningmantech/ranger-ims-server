@@ -74,7 +74,7 @@ class WebMixIn(object):
     # Web interface
     #
 
-    @route(u"/", methods=("HEAD", "GET"))
+    @route(URLs.root.asText(), methods=("HEAD", "GET"))
     def rootResource(self, request):
         """
         Server root page.
@@ -85,7 +85,6 @@ class WebMixIn(object):
 
 
     @route(URLs.prefix.asText(), methods=("HEAD", "GET"))
-    @route(URLs.prefix.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     def applicationRootResource(self, request):
         """
@@ -95,7 +94,6 @@ class WebMixIn(object):
 
 
     @route(URLs.viewEvent.asText(), methods=("HEAD", "GET"))
-    @route(URLs.viewEvent.asText() + u"/", methods=("HEAD", "GET"))
     def viewEventResource(self, request, event):
         """
         Event root page.
@@ -106,7 +104,6 @@ class WebMixIn(object):
 
 
     @route(URLs.admin.asText(), methods=("HEAD", "GET"))
-    @route(URLs.admin.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     @inlineCallbacks
     def adminPage(self, request):

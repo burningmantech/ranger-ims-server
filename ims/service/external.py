@@ -87,10 +87,10 @@ class ExternalMixIn(object):
     @route(URLs.bootstrapBase.asText(), methods=("HEAD", "GET"), branch=True)
     @fixedETag
     def bootstrapResource(self, request):
-        requestURL = URL.fromText(request.uri.rstrip("/"))
+        requestURL = URL.fromText(request.uri)
 
         # Remove URL prefix
-        names = requestURL.path[len(URLs.bootstrapBase.path):]
+        names = requestURL.path[len(URLs.bootstrapBase.path) - 1:]
 
         request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.cachedZippedResource(
@@ -126,10 +126,10 @@ class ExternalMixIn(object):
     )
     @fixedETag
     def dataTablesResource(self, request):
-        requestURL = URL.fromText(request.uri.rstrip("/"))
+        requestURL = URL.fromText(request.uri)
 
         # Remove URL prefix
-        names = requestURL.path[len(URLs.dataTablesBase.path):]
+        names = requestURL.path[len(URLs.dataTablesBase.path) - 1:]
 
         request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.cachedZippedResource(

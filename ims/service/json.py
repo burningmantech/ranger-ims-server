@@ -50,7 +50,6 @@ class JSONMixIn(object):
     #
 
     @route(URLs.ping.asText(), methods=("HEAD", "GET"))
-    @route(URLs.ping.asText() + u"/", methods=("HEAD", "GET"))
     @fixedETag
     def pingResource(self, request):
         ack = b'"ack"'
@@ -58,7 +57,6 @@ class JSONMixIn(object):
 
 
     @route(URLs.personnel.asText(), methods=("HEAD", "GET"))
-    @route(URLs.personnel.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
     def personnelResource(self, request):
         yield self.authorizeRequest(
@@ -87,7 +85,6 @@ class JSONMixIn(object):
 
 
     @route(URLs.incidentTypes.asText(), methods=("HEAD", "GET"))
-    @route(URLs.incidentTypes.asText() + u"/", methods=("HEAD", "GET"))
     def incidentTypesResource(self, request):
         self.authenticateRequest(request)
 
@@ -106,7 +103,6 @@ class JSONMixIn(object):
 
 
     @route(URLs.incidentTypes.asText(), methods=("POST",))
-    @route(URLs.incidentTypes.asText() + u"/", methods=("POST",))
     @inlineCallbacks
     def editIncidentTypesResource(self, request):
         yield self.authorizeRequest(
@@ -142,7 +138,6 @@ class JSONMixIn(object):
 
 
     @route(URLs.locations.asText(), methods=("HEAD", "GET"))
-    @route(URLs.locations.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
     def locationsResource(self, request, event):
         yield self.authorizeRequest(
@@ -154,7 +149,6 @@ class JSONMixIn(object):
 
 
     @route(URLs.incidents.asText(), methods=("HEAD", "GET"))
-    @route(URLs.incidents.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
     def listIncidentsResource(self, request, event):
         yield self.authorizeRequest(
@@ -170,7 +164,6 @@ class JSONMixIn(object):
 
 
     @route(URLs.incidents.asText(), methods=("POST",))
-    @route(URLs.incidents.asText() + u"/", methods=("POST",))
     @inlineCallbacks
     def newIncidentResource(self, request, event):
         yield self.authorizeRequest(
@@ -360,7 +353,6 @@ class JSONMixIn(object):
 
 
     @route(URLs.incidentReports.asText(), methods=("HEAD", "GET"))
-    @route(URLs.incidentReports.asText() + u"/", methods=("HEAD", "GET"))
     @inlineCallbacks
     def listIncidentReportsResource(self, request):
         event          = request.args.get("event"   , [""])[0]
@@ -387,7 +379,6 @@ class JSONMixIn(object):
 
 
     @route(URLs.incidentReports.asText(), methods=("POST",))
-    @route(URLs.incidentReports.asText() + u"/", methods=("POST",))
     @inlineCallbacks
     def newIncidentReportResource(self, request):
         yield self.authorizeRequest(

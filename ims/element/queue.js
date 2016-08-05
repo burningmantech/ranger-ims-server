@@ -160,7 +160,7 @@ function initDataTables() {
         ],
         "createdRow": function (row, incident, index) {
             $(row).click(function () {
-                var url = viewIncidentsURL + "/" + incident.number;
+                var url = viewIncidentsURL + incident.number;
 
                 // Open new context with link
                 window.open(url, eventID + "#" + incident.number);
@@ -188,7 +188,7 @@ function initTableButtons() {
     showDays(null);
     showRows(25);
 
-    $(".new_incident_link").attr("href", viewIncidentsURL + "/new");
+    $(".new_incident_link").attr("href", viewIncidentsURL + "new");
 }
 
 
