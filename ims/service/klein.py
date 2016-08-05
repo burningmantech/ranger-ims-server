@@ -203,8 +203,7 @@ class KleinService(object):
         Redirect.
         """
         url = URL.fromText(failure.value.args[0].decode("utf-8"))
-        element = self.redirect(request, url)
-        return renderElement(request, element)
+        return self.redirect(request, url)
 
 
     @app.handle_errors(NotFound)
