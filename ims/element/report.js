@@ -20,6 +20,9 @@
 
 function initIncidentReportPage() {
     function loadedIncidentReport() {
+        // Scroll to incident_report_add field
+        $("html, body").animate({ scrollTop: $("#incident_report_add").offset().top }, 500);
+        $("#incident_report_add").focus();
     }
 
     function loadedBody() {
