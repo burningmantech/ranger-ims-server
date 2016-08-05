@@ -37,6 +37,7 @@ class HeaderName (Values):
     """
 
     server               = ValueConstant("Server")
+    cacheControl         = ValueConstant("Cache-Control")
     contentType          = ValueConstant("Content-Type")
     etag                 = ValueConstant("ETag")
     incidentNumber       = ValueConstant("Incident-Number")
@@ -65,10 +66,14 @@ class ContentType (Values):
 
 if True:
     _fixedETag = version
+    _maxAge = 60 * 5  # 5 minutes
 else:
     # For debugging, change the ETag on every app start
     from uuid import uuid4
     _fixedETag = uuid4().hex
+    _maxAge = 0
+
+_cacheControl = "max-age={}".format(_maxAge)
 
 
 def fixedETag(f):
@@ -80,6 +85,7 @@ def fixedETag(f):
     @wraps(f)
     def wrapper(self, request, *args, **kwargs):
         request.setHeader(HeaderName.etag.value, _fixedETag)
+        request.setHeader(HeaderName.cacheControl.value, _cacheControl)
         return f(self, request, *args, **kwargs)
 
     return wrapper
