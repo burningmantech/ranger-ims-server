@@ -25,6 +25,37 @@ function initIncidentReportPage() {
     function loadedBody() {
         disableEditing();
         loadAndDisplayIncidentReport(loadedIncidentReport);
+
+        var command = false;
+
+        function addFieldKeyDown() {
+            var keyCode = event.keyCode;
+
+            // 17 = control, 18 = option
+            if (keyCode == 17 || keyCode == 18) {
+                command = true;
+            }
+
+            console.warn(keyCode);
+        }
+
+        function addFieldKeyUp() {
+            var keyCode = event.keyCode;
+
+            // 17 = control, 18 = option
+            if (keyCode == 17 || keyCode == 18) {
+                command = false;
+                return;
+            }
+
+            // 13 = return
+            if (command && keyCode == 13) {
+                submitReportEntry();
+            }
+        }
+
+        $("#incident_report_add")[0].onkeydown = addFieldKeyDown;
+        $("#incident_report_add")[0].onkeyup   = addFieldKeyUp;
     }
 
     loadBody(loadedBody);
