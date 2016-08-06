@@ -152,6 +152,13 @@ class Element(BaseElement):
 
 
     @renderer
+    def if_not_logged_in(self, request, tag):
+        if getattr(request, "user", None) is not None:
+            return u""
+        return tag
+
+
+    @renderer
     def if_admin(self, request, tag):
         user = getattr(request, "user", None)
 
