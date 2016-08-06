@@ -30,6 +30,7 @@ from twisted.web.template import (
 )
 from twisted.python.filepath import FilePath
 
+from ..data.json import textFromJSON
 from ..service.urls import URLs
 
 
@@ -272,6 +273,9 @@ class Element(BaseElement):
             raise RuntimeError("Unknown URL name: {}".format(name))
 
         text = url.asText()
+
+        if tag.tagName == "json":
+            return textFromJSON(text)
 
         attributeName = tag.attributes.pop("attr", None)
         if attributeName is None:

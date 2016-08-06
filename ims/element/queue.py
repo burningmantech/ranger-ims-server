@@ -58,10 +58,6 @@ class DispatchQueuePage(Element):
 
 
     @renderer
-    def template_url(self, request, tag):
-        return textFromJSON(URLs.viewDispatchQueueTemplate.asText())
-
-    @renderer
     def data_url(self, request, tag):
         return textFromJSON(
             URLs.incidents.asText()

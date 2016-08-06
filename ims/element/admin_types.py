@@ -23,7 +23,6 @@ __all__ = [
 ]
 
 from ..data.json import textFromJSON
-from ..service.urls import URLs
 from .base import Element, renderer
 
 
@@ -42,8 +41,3 @@ class AdminIncidentTypesPage(Element):
     @renderer
     def eventNames(self, request, tag):
         return textFromJSON(self.service.storage.events())
-
-
-    @renderer
-    def types_url(self, request, tag):
-        return textFromJSON(URLs.incidentTypes.asText())

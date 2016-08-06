@@ -64,35 +64,11 @@ class IncidentPage(Element):
 
 
     @renderer
-    def template_url(self, request, tag):
-        return textFromJSON(URLs.viewIncidentNumberTemplate.asText())
-
-    @renderer
     def incidents_url(self, request, tag):
         return textFromJSON(
             URLs.incidents.asText()
             .replace(u"<event>", unicode(self.event))
         )
-
-
-    @renderer
-    def personnel_url(self, request, tag):
-        return textFromJSON(URLs.personnel.asText())
-
-
-    @renderer
-    def incident_types_url(self, request, tag):
-        return textFromJSON(URLs.incidentTypes.asText())
-
-
-    @renderer
-    def incident_reports_url(self, request, tag):
-        return textFromJSON(URLs.incidentReports.asText())
-
-
-    @renderer
-    def view_incident_reports_url(self, request, tag):
-        return textFromJSON(URLs.viewIncidentReports.asText())
 
 
     @renderer
