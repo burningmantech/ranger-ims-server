@@ -375,6 +375,7 @@ function drawIncidentFields() {
     drawLocationAddressRadialMinute();
     drawLocationAddressConcentric();
     drawLocationDescription();
+    toggleShowHistory();
     drawMergedReportEntries();
 
     $("#incident_report_add").on("input", reportEntryEdited);
@@ -658,6 +659,19 @@ function drawLocationDescription() {
                 .val(incident.location.description)
                 ;
         }
+    }
+}
+
+
+//
+// Incident report display
+//
+
+function toggleShowHistory() {
+    if ($("#history_checkbox").is(":checked")) {
+        $("#incident_report").removeClass("hide-history");
+    } else {
+        $("#incident_report").addClass("hide-history");
     }
 }
 

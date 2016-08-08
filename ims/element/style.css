@@ -128,3 +128,7 @@ a.navbar-brand>img {
 .badge-hidden {
   float: left !important;
 }
+
+.hide-history .report_entry_system {
+  display: none;
+}

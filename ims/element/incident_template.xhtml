@@ -206,8 +206,12 @@
       <label class="control-label">Incident Details</label>
       <div id="incident_report_well" class="well well-sm">
         <label class="control-label">
+          <input id="history_checkbox" type="checkbox" checked="" onchange="toggleShowHistory()" />
+          Show history
+        </label>
+        <label class="control-label">
           <input id="merge_reports_checkbox" type="checkbox" checked="" onchange="drawMergedReportEntries()" />
-          Show entries from attached incident reports
+          Show attached entries
         </label>
         <div class="panel panel-default">
           <div class="panel-body">
