@@ -491,7 +491,7 @@ function drawRangers() {
     for (var i in handles) {
         var handle = handles[i]
         var ranger = null;
-        if (personnel == null) {
+        if (personnel == null || personnel[handle] == undefined) {
             ranger = handle;
         } else {
             ranger = rangerAsString(personnel[handle]);
