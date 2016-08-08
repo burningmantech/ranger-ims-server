@@ -69,7 +69,10 @@ a.navbar-brand>img {
 }
 
 .report_entry_metadata {
+  font-size: 8pt;
   font-weight: bold;
+  text-decoration: underline;
+  filter: opacity(75%);
   margin: 10px 0 0 0;
 }
 
