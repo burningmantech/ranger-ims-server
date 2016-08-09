@@ -98,14 +98,14 @@ function initDataTables() {
             "dataSrc": dataHandler,
         },
         "columns": [
-            {
+            {   // 0
                 "name": "incident_number",
                 "className": "incident_number text-right",
                 "data": "number",
                 "defaultContent": null,
                 "cellType": "th",
             },
-            {
+            {   // 1
                 "name": "incident_priority",
                 "className": "incident_priority text-center",
                 "data": "priority",
@@ -113,21 +113,21 @@ function initDataTables() {
                 "searchable": false,
                 "render": renderPriority,
             },
-            {
+            {   // 2
                 "name": "incident_created",
                 "className": "incident_created text-center",
                 "data": "timestamp",
                 "defaultContent": null,
                 "render": renderDate,
             },
-            {
+            {   // 3
                 "name": "incident_state",
                 "className": "incident_state text-center",
                 "data": "state",
                 "defaultContent": null,
                 "render": renderState,
             },
-            {
+            {   // 4
                 "name": "incident_ranger_handles",
                 "className": "incident_ranger_handles",
                 "data": "ranger_handles",
@@ -135,14 +135,14 @@ function initDataTables() {
                 "render": "[, ]",  // Join array with ", "
                 "width": "6em",
             },
-            {
+            {   // 5
                 "name": "incident_location",
                 "className": "incident_location",
                 "data": "location",
                 "defaultContent": "",
                 "render": renderLocation,
             },
-            {
+            {   // 6
                 "name": "incident_types",
                 "className": "incident_types",
                 "data": "incident_types",
@@ -150,13 +150,17 @@ function initDataTables() {
                 "render": "[, ]",  // Join array with ", "
                 "width": "5em",
             },
-            {
+            {   // 7
                 "name": "incident_summary",
                 "className": "incident_summary",
                 "data": "summary",
                 "defaultContent": "",
                 "render": renderSummary,
             },
+        ],
+        "order": [
+            [1, "asc"],
+            [2, "dsc"],
         ],
         "createdRow": function (row, incident, index) {
             $(row).click(function () {
