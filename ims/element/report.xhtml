@@ -11,11 +11,12 @@
 
   <script>
     <!-- FIXME: figure out how to move this to / include from report.js -->
-    var editingAllowed       = <json t:render="editing_allowed"                      />;
-    var incidentReportNumber = <json t:render="incident_report_number"               />;
-    var pageTemplateURL      = <json t:render="url" url="viewIncidentReportTemplate" />;
-    var incidentReportsURL   = <json t:render="url" url="incidentReports"            />;
-    var personnelURL         = <json t:render="url" url="personnel"                  />;
+    var editingAllowed         = <json t:render="editing_allowed"                      />;
+    var incidentReportNumber   = <json t:render="incident_report_number"               />;
+    var pageTemplateURL        = <json t:render="url" url="viewIncidentReportTemplate" />;
+    var incidentReportsURL     = <json t:render="url" url="incidentReports"            />;
+    var viewIncidentReportsURL = <json t:render="url" url="viewIncidentReports"        />;
+    var personnelURL           = <json t:render="url" url="personnel"                  />;
 
     initIncidentReportPage();
   </script>

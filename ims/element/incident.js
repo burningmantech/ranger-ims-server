@@ -837,7 +837,9 @@ function sendEdits(edits, success, error) {
 
             // Update browser history to update URL
             drawTitle();
-            window.history.pushState(null, document.title, url + newNumber);
+            window.history.pushState(
+                null, document.title, viewIncidentsURL + newNumber
+            );
         }
 
         success();

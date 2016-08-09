@@ -147,7 +147,7 @@ function drawTitle() {
         document.title = "new incident report"
     } else {
         document.title = (
-            "#" + incidentReport.number + ": " +
+            "IR#" + incidentReport.number + ": " +
             summarizeIncident(incidentReport)
         );
     }
@@ -238,7 +238,9 @@ function sendEdits(edits, success, error) {
 
             // Update browser history to update URL
             drawTitle();
-            window.history.pushState(null, document.title, url + newNumber);
+            window.history.pushState(
+                null, document.title, viewIncidentReportsURL + newNumber
+            );
         }
 
         success();
