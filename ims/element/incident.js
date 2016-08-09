@@ -1067,6 +1067,12 @@ function detachIncidentReport(sender) {
 
 
 function attachIncidentReport() {
+    if (incidentNumber == null) {
+        // Incident doesn't exist yet.  Create it and then retry.
+        sendEdits({}, attachIncidentReport);
+        return;
+    }
+
     var select = $("#attached_incident_report_add");
     var incidentReportNumber = $(select).val();
 
