@@ -833,7 +833,7 @@ function sendEdits(edits, success, error) {
             }
 
             // Store the new number in our incident object
-            incident.number = newNumber;
+            incidentNumber = incident.number = newNumber;
 
             // Update browser history to update URL
             drawTitle();
