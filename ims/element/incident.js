@@ -131,10 +131,6 @@ function loadAndDisplayIncident(success) {
 
         drawIncidentFields();
 
-        document.title = (
-            "#" + incident.number + ": " + summarizeIncident(incident)
-        );
-
         if (editingAllowed) {
             enableEditing();
         }
@@ -364,6 +360,7 @@ function loadAttachedIncidentReports(success) {
 //
 
 function drawIncidentFields() {
+    drawTitle();
     drawNumber();
     drawState();
     drawPriority();
@@ -408,6 +405,22 @@ function addLocationAddressOptions() {
         $("#incident_location_address_concentric")
             .append($("<option />", { "value": id, "text": name }))
             ;
+    }
+}
+
+
+//
+// Populate page title
+//
+
+function drawTitle() {
+    var number = incident.number;
+    if (number == null) {
+        document.title = "new incident"
+    } else {
+        document.title = (
+            "#" + incident.number + ": " + summarizeIncident(incident)
+        );
     }
 }
 
