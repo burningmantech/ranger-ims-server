@@ -117,6 +117,7 @@ function loadAndDisplayIncidentReport(success) {
             return;
         }
 
+        drawTitle();
         drawNumber();
         drawSummary();
         drawReportEntries(incidentReport.report_entries);
@@ -133,6 +134,23 @@ function loadAndDisplayIncidentReport(success) {
     }
 
     loadIncidentReport(loaded);
+}
+
+
+//
+// Populate page title
+//
+
+function drawTitle() {
+    var number = incidentReport.number;
+    if (number == null) {
+        document.title = "new incident report"
+    } else {
+        document.title = (
+            "#" + incidentReport.number + ": " +
+            summarizeIncident(incidentReport)
+        );
+    }
 }
 
 
@@ -217,6 +235,10 @@ function sendEdits(edits, success, error) {
 
             // Store the new number in our incident object
             incidentReport.number = newNumber;
+
+            // Update browser history to update URL
+            drawTitle();
+            window.history.pushState(null, document.title, url + newNumber);
         }
 
         success();
