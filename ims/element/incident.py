@@ -55,7 +55,7 @@ class IncidentPage(Element):
 
     @renderer
     def event_id(self, request, tag):
-        return textFromJSON(self.event)
+        return textFromJSON(self.event.id)
 
 
     @renderer
@@ -67,7 +67,7 @@ class IncidentPage(Element):
     def incidents_url(self, request, tag):
         return textFromJSON(
             URLs.incidents.asText()
-            .replace(u"<event>", unicode(self.event))
+            .replace(u"<eventID>", self.event.id)
         )
 
 
@@ -75,7 +75,7 @@ class IncidentPage(Element):
     def view_incidents_url(self, request, tag):
         return textFromJSON(
             URLs.viewIncidents.asText()
-            .replace(u"<event>", unicode(self.event))
+            .replace(u"<eventID>", self.event.id)
         )
 
 

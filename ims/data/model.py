@@ -146,6 +146,46 @@ def _validateIsInstance(name, obj, typeSpec, optional=False, recurse=False):
 
 
 @total_ordering
+class Event(object):
+    """
+    Event.
+    """
+    def __init__(self, eventID):
+        self.id = eventID
+
+
+    def __str__(self):
+        return self.id
+
+
+    def __hash__(self):
+        return hash(self.id)
+
+
+    def __eq__(self, other):
+        if isinstance(other, Event):
+            return self.id == other.id
+        return NotImplemented
+
+
+    def __lt__(self, other):
+        if isinstance(other, Event):
+            return self.id < other.id
+
+        return NotImplemented
+
+
+    def validate(self):
+        """
+        Validate this event.
+
+        @raise: L{InvalidDataError} if the event does not validate.
+        """
+        _validateIsInstance("ID", self.id, unicode)
+
+
+
+@total_ordering
 class Incident(object):
     """
     Incident.

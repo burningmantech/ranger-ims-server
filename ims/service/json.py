@@ -25,7 +25,7 @@ __all__ = [
 from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..tz import utcNow
-from ..data.model import IncidentState, ReportEntry
+from ..data.model import Event, IncidentState, ReportEntry
 from ..data.json import (
     JSON, textFromJSON, jsonFromFile, rangerAsJSON,
     incidentAsJSON, incidentFromJSON,
@@ -147,7 +147,9 @@ class JSONMixIn(object):
 
     @route(URLs.locations.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
-    def locationsResource(self, request, event):
+    def locationsResource(self, request, eventID):
+        event = Event(eventID)
+
         yield self.authorizeRequest(
             request, event, Authorization.readIncidents
         )
@@ -158,7 +160,9 @@ class JSONMixIn(object):
 
     @route(URLs.incidents.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
-    def listIncidentsResource(self, request, event):
+    def listIncidentsResource(self, request, eventID):
+        event = Event(eventID)
+
         yield self.authorizeRequest(
             request, event, Authorization.readIncidents
         )
@@ -173,7 +177,9 @@ class JSONMixIn(object):
 
     @route(URLs.incidents.asText(), methods=("POST",))
     @inlineCallbacks
-    def newIncidentResource(self, request, event):
+    def newIncidentResource(self, request, eventID):
+        event = Event(eventID)
+
         yield self.authorizeRequest(
             request, event, Authorization.writeIncidents
         )
@@ -231,7 +237,9 @@ class JSONMixIn(object):
 
     @route(URLs.incidentNumber.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
-    def readIncidentResource(self, request, event, number):
+    def readIncidentResource(self, request, eventID, number):
+        event = Event(eventID)
+
         yield self.authorizeRequest(
             request, event, Authorization.readIncidents
         )
@@ -251,7 +259,9 @@ class JSONMixIn(object):
 
     @route(URLs.incidentNumber.asText(), methods=("POST",))
     @inlineCallbacks
-    def editIncidentResource(self, request, event, number):
+    def editIncidentResource(self, request, eventID, number):
+        event = Event(eventID)
+
         yield self.authorizeRequest(
             request, event, Authorization.writeIncidents
         )
@@ -367,12 +377,21 @@ class JSONMixIn(object):
         eventID        = request.args.get("event"   , [""])[0].decode("utf-8")
         incidentNumber = request.args.get("incident", [""])[0].decode("utf-8")
 
-        if event == incidentNumber == "":
+        if eventID == incidentNumber == "":
             yield self.authorizeRequest(
                 request, None, Authorization.readIncidentReports
             )
             attachedTo = (None, None)
         else:
+            event = Event(eventID)
+            try:
+                incidentNumber = int(incidentNumber)
+            except ValueError:
+                raise
+                returnValue(self.badRequestResource(
+                    request,
+                    "Invalid incident number: {}".format(incidentNumber)
+                ))
             yield self.authorizeRequest(
                 request, event, Authorization.readIncidents
             )
@@ -488,11 +507,11 @@ class JSONMixIn(object):
         # Attach to incident if requested
         #
         action         = request.args.get("action"  , [""])[0]
-        event          = request.args.get("event"   , [""])[0]
+        eventID        = request.args.get("event"   , [""])[0]
         incidentNumber = request.args.get("incident", [""])[0]
 
         if action != "":
-            if event == "":
+            if eventID == "":
                 returnValue(self.badRequestResource(
                     request, "No event specified: {}".format(action)
                 ))
@@ -508,6 +527,8 @@ class JSONMixIn(object):
                     request,
                     "Invalid incident number: {!r}".format(incidentNumber)
                 ))
+
+            event = Event(unicode(eventID))
 
             if action == "attach":
                 self.storage.attachIncidentReportToIncident(
@@ -586,9 +607,9 @@ class JSONMixIn(object):
 
         acl = {}
         for event in self.storage.events():
-            acl[event] = dict(
-                readers=self.storage.readers(event),
-                writers=self.storage.writers(event),
+            acl[event.id] = dict(
+                readers=self.storage.readers(event.id),
+                writers=self.storage.writers(event.id),
             )
         returnValue(textFromJSON(acl))
 
@@ -600,7 +621,8 @@ class JSONMixIn(object):
 
         edits = jsonFromFile(request.content)
 
-        for event, acl in edits.items():
+        for eventID, acl in edits.items():
+            event = Event(eventID)
             if "readers" in acl:
                 self.storage.setReaders(event, acl["readers"])
             if "writers" in acl:
@@ -616,7 +638,7 @@ class JSONMixIn(object):
 
         streets = {}
         for event in self.storage.events():
-            streets[event] = self.storage.concentricStreetsByID(event)
+            streets[event.id] = self.storage.concentricStreetsByID(event)
         returnValue(textFromJSON(streets))
 
 
@@ -627,13 +649,15 @@ class JSONMixIn(object):
 
         edits = jsonFromFile(request.content)
 
-        for event, streets in edits.items():
+        for eventID, streets in edits.items():
+            event = Event(eventID)
             existing = self.storage.concentricStreetsByID(event)
 
             for streetID, streetName in existing.items():
                 raise NotAuthorizedError("Removal of streets is not allowed.")
 
-        for event, streets in edits.items():
+        for eventID, streets in edits.items():
+            event = Event(eventID)
             existing = self.storage.concentricStreetsByID(event)
 
             for streetID, streetName in streets.items():

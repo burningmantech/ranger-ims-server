@@ -24,6 +24,7 @@ __all__ = [
 
 from twisted.internet.defer import inlineCallbacks, returnValue
 
+from ..data.model import Event
 from ..element.admin import AdminPage
 from ..element.admin_acl import AdminAccessControlPage
 from ..element.admin_types import AdminIncidentTypesPage
@@ -94,7 +95,7 @@ class WebMixIn(object):
 
 
     @route(URLs.viewEvent.asText(), methods=("HEAD", "GET"))
-    def viewEventResource(self, request, event):
+    def viewEventResource(self, request, eventID):
         """
         Event root page.
 
@@ -165,7 +166,8 @@ class WebMixIn(object):
 
     @route(URLs.viewDispatchQueue.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
-    def viewDispatchQueuePage(self, request, event):
+    def viewDispatchQueuePage(self, request, eventID):
+        event = Event(eventID)
         # FIXME: Not strictly required because the underlying data is protected.
         # But the error you get is stupid, so let's avoid that for now.
         yield self.authorizeRequest(request, event, Authorization.readIncidents)
@@ -186,7 +188,9 @@ class WebMixIn(object):
 
     @route(URLs.viewIncidentNumber.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
-    def viewIncidentPage(self, request, event, number):
+    def viewIncidentPage(self, request, eventID, number):
+        event = Event(eventID)
+
         if number == u"new":
             authz = Authorization.writeIncidents
             number = None

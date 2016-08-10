@@ -217,7 +217,7 @@ class Element(BaseElement):
 
     @renderer
     def _events(self, request, tag, reverse_order=False):
-        events = sorted(event for event in self.service.storage.events())
+        events = sorted(event.id for event in self.service.storage.events())
 
         if reverse_order:
             events = reversed(events)
@@ -227,7 +227,7 @@ class Element(BaseElement):
             return (
                 tag.clone()(
                     tags.a(
-                        event, href=queue.replace(u"<event>", event)
+                        event, href=queue.replace(u"<eventID>", event)
                     )
                 )
                 for event in events

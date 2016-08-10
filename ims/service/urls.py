@@ -75,7 +75,7 @@ class URLs(object):
     incidentReports  = api.child(u"incident_reports").child(u"")
     incidentReport   = incidentReports.child(u"<number>")
     events           = api.child(u"events").child(u"")
-    event            = events.child(u"<event>").child(u"")
+    event            = events.child(u"<eventID>").child(u"")
     locations        = event.child(u"locations").child(u"")
     incidents        = event.child(u"incidents").child(u"")
     incidentNumber   = incidents.child(u"<number>")
@@ -96,7 +96,7 @@ class URLs(object):
     adminStreetsJS             = admin.child(u"streets.js")
 
     viewEvents                 = prefix.child(u"events").child(u"")
-    viewEvent                  = viewEvents.child(u"<event>").child(u"")
+    viewEvent                  = viewEvents.child(u"<eventID>").child(u"")
 
     viewDispatchQueue          = viewEvent.child(u"queue")
     viewDispatchQueueTemplate  = prefix.child(u"queue.html")

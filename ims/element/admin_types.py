@@ -40,4 +40,4 @@ class AdminIncidentTypesPage(Element):
 
     @renderer
     def eventNames(self, request, tag):
-        return textFromJSON(self.service.storage.events())
+        return textFromJSON(e.id for e in self.service.storage.events())

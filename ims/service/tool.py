@@ -29,6 +29,7 @@ from twext.python.usage import (
     Executable, Options as BaseOptions, exit, ExitStatus
 )
 
+from ..data.model import Event
 from ..store.istore import StorageError
 from ..store.sqlite import Storage
 from .log import patchCombinedLogFormatter
@@ -246,10 +247,10 @@ class JSONLoadTool(Executable):
         opt_t = opt_trial
 
 
-        def parseArgs(self, event, fileName):
+        def parseArgs(self, eventID, fileName):
             BaseOptions.parseArgs(self)
 
-            self["event"] = event
+            self["event"] = Event(eventID)
             self["filePath"] = FilePath(fileName)
 
 

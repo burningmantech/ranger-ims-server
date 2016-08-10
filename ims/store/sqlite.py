@@ -38,7 +38,8 @@ from twisted.logger import Logger
 from ..tz import utc, utcNow
 from ..data.json import jsonFromFile, incidentFromJSON
 from ..data.model import (
-    Incident, IncidentState, Ranger, ReportEntry, Location, RodGarettAddress,
+    Event, Incident, IncidentState,
+    Ranger, ReportEntry, Location, RodGarettAddress,
     IncidentReport, InvalidDataError,
 )
 from ._file import MultiStorage
@@ -102,11 +103,13 @@ class Storage(object):
         multiStore = MultiStorage(filePath, readOnly=True)
 
         # Iterate through each event
-        for event in multiStore:
+        for eventID in multiStore:
+            event = Event(eventID)
+
             self.log.info("Creating event: {event}", event=event)
             self.createEvent(event)
 
-            eventStore = multiStore[event]
+            eventStore = multiStore[event.id]
 
             # Load concentric street names
             for name, id in eventStore.streetsByName().items():
@@ -137,6 +140,8 @@ class Storage(object):
         """
         Load event data from a file containing JSON.
         """
+        assert type(event) is Event
+
         with filePath.open() as fileHandle:
             eventJSON = jsonFromFile(fileHandle)
 
@@ -181,7 +186,7 @@ class Storage(object):
         """
         try:
             for row in self._db.execute(self._query_events):
-                yield row["name"]
+                yield Event(row["name"])
         except SQLiteError as e:
             self.log.critical("Unable to look up events")
             raise StorageError(e)
@@ -192,13 +197,17 @@ class Storage(object):
         """
     )
 
+
     def createEvent(self, event):
         """
         Create an event with the given name.
         """
+        assert type(event) is Event
+        event.validate()
+
         try:
             with self._db as db:
-                db.execute(self._query_createEvent, (event,))
+                db.execute(self._query_createEvent, (event.id,))
         except SQLiteError as e:
             self.log.critical("Unable to create event: {event}", event=event)
             raise StorageError(e)
@@ -244,6 +253,8 @@ class Storage(object):
         """
         Create the given incident type.
         """
+        assert type(incidentType) is unicode
+
         try:
             with self._db as db:
                 db.execute(
@@ -306,9 +317,11 @@ class Storage(object):
         """
         Look up the incident with the given number in the given event.
         """
+        assert type(event) is Event
+
         try:
             # Fetch incident row
-            cursor = self._db.execute(self._query_incident, (event, number))
+            cursor = self._db.execute(self._query_incident, (event.id, number))
             (
                 version, createdTimestamp, priority, stateName,
                 summary,
@@ -329,14 +342,14 @@ class Storage(object):
             rangers = (
                 Ranger(handle=row["RANGER_HANDLE"], name=None, status=None)
                 for row in self._db.execute(
-                    self._query_incident_rangers, (event, number)
+                    self._query_incident_rangers, (event.id, number)
                 )
             )
 
             # Look up incident types from join table
             incidentTypes = (
                 row["NAME"] for row in self._db.execute(
-                    self._query_incident_types, (event, number)
+                    self._query_incident_types, (event.id, number)
                 )
             )
 
@@ -344,7 +357,7 @@ class Storage(object):
             reportEntries = []
 
             for author, text, entryTimeStamp, generated in self._db.execute(
-                self._query_incident_reportEntries, (event, number)
+                self._query_incident_reportEntries, (event.id, number)
             ):
                 reportEntries.append(
                     ReportEntry(
@@ -440,8 +453,12 @@ class Storage(object):
         """
         Look up all incident numbers for the given event.
         """
+        assert type(event) is Event
+
         try:
-            for row in self._db.execute(self._query_incidentNumbers, (event,)):
+            for row in self._db.execute(
+                self._query_incidentNumbers, (event.id,)
+            ):
                 yield row["NUMBER"]
         except SQLiteError as e:
             self.log.critical(
@@ -461,6 +478,8 @@ class Storage(object):
         """
         Look up all incidents for the given event.
         """
+        assert type(event) is Event
+
         for number in self._incidentNumbers(event):
             yield self.incident(event, number)
 
@@ -471,6 +490,7 @@ class Storage(object):
         The incident number is specified by the given incident, as this is used
         to import data from an another data store.
         """
+        assert type(event) is Event
         incident.validate()
 
         try:
@@ -496,6 +516,7 @@ class Storage(object):
         The incident number is determined by the database and must not be
         specified by the given incident.
         """
+        assert type(event) is Event
         incident.validate(noneNumber=True)
 
         # FIXME:STORE Add system report entry
@@ -519,6 +540,8 @@ class Storage(object):
 
 
     def _addIncident(self, event, incident, addMethod, cursor):
+        assert type(event) is Event
+
         # Write incident row
         addMethod(event, incident, cursor)
 
@@ -544,6 +567,8 @@ class Storage(object):
 
 
     def _addInitialReportEntry(self, event, incident, author, cursor):
+        assert type(event) is Event
+
         now = utcNow()
 
         def addEntry(label, value):
@@ -615,11 +640,13 @@ class Storage(object):
         This does not attach relational data such as Rangers, incident types,
         and report entries.
         """
+        event.validate()
+
         locationName, address = self._coerceLocation(incident.location)
 
         cursor.execute(
             self._query_importIncident, (
-                event,
+                event.id,
                 incident.number,
                 1,  # Version is 1 because it's a new row
                 asTimeStamp(incident.created),
@@ -659,7 +686,9 @@ class Storage(object):
         """
         Look up the next available incident number.
         """
-        cursor.execute(self._query_maxIncidentNumber, (event,))
+        assert type(event) is Event
+
+        cursor.execute(self._query_maxIncidentNumber, (event.id,))
         number = cursor.fetchone()[0]
         if number is None:
             return 1
@@ -680,6 +709,7 @@ class Storage(object):
         This does not attach relational data such as Rangers, incident types,
         and report entries.
         """
+        assert type(event) is Event
         assert incident.number is None
         incident.number = self._nextIncidentNumber(event, cursor)
         self._importIncident(event, incident, cursor)
@@ -690,7 +720,11 @@ class Storage(object):
         Attach the given Ranger to the incident with the given number in the
         given event.
         """
-        cursor.execute(self._query_attachRanger, (event, number, rangerHandle))
+        event.validate()
+
+        cursor.execute(
+            self._query_attachRanger, (event.id, number, rangerHandle)
+        )
 
     _query_attachRanger = _query(
         """
@@ -707,8 +741,10 @@ class Storage(object):
         Attach the given incident type to the incident with the given number in
         the given event.
         """
+        event.validate()
+
         cursor.execute(
-            self._query_attachIncidentType, (event, number, incidentType)
+            self._query_attachIncidentType, (event.id, number, incidentType)
         )
 
     _query_attachIncidentType = _query(
@@ -751,11 +787,13 @@ class Storage(object):
         Attach the given report entry to the incident with the given number in
         the given event.
         """
+        event.validate()
+
         self._createReportEntry(reportEntry, cursor)
         # Join to incident
         cursor.execute(
             self._query_attachReportEntryToIncident,
-            (event, number, cursor.lastrowid)
+            (event.id, number, cursor.lastrowid)
         )
 
     _query_attachReportEntryToIncident = _query(
@@ -769,6 +807,8 @@ class Storage(object):
 
 
     def _setIncidentColumn(self, query, event, number, column, value, author):
+        event.validate()
+
         systemEntry = ReportEntry(
             text=u"Changed {} to: {}".format(column, value),
             author=author, created=utcNow(), system_entry=True,
@@ -778,7 +818,7 @@ class Storage(object):
             with self._db as db:
                 cursor = db.cursor()
                 try:
-                    cursor.execute(query, (value, event, number))
+                    cursor.execute(query, (value, event.id, number))
                     self._addAndAttachReportEntryToIncident(
                         event, number, systemEntry, cursor
                     )
@@ -805,6 +845,8 @@ class Storage(object):
         """
         Set the priority for the given incident in the given event.
         """
+        assert type(event) is Event
+
         if (type(priority) is not int or priority < 1 or priority > 5):
             raise InvalidDataError(
                 "Invalid incident priority: {!r}".format(priority)
@@ -824,6 +866,8 @@ class Storage(object):
         """
         Set the state for the given incident in the given event.
         """
+        assert type(event) is Event
+
         if state not in IncidentState.iterconstants():
             raise InvalidDataError(
                 "Invalid incident state: {!r}".format(state)
@@ -843,6 +887,8 @@ class Storage(object):
         """
         Set the summary for the given incident in the given event.
         """
+        assert type(event) is Event
+
         if summary is not None and type(summary) is not unicode:
             raise InvalidDataError(
                 "Invalid incident summary: {!r}".format(summary)
@@ -862,6 +908,8 @@ class Storage(object):
         """
         Set the location name for the given incident in the given event.
         """
+        assert type(event) is Event
+
         if name is not None and type(name) is not unicode:
             raise InvalidDataError(
                 "Invalid incident location name: {!r}".format(name)
@@ -884,6 +932,8 @@ class Storage(object):
         Set the location concentric street for the given incident in the given
         event.
         """
+        assert type(event) is Event
+
         if streetID is not None and type(streetID) is not int:
             raise InvalidDataError(
                 "Invalid incident location concentric street: {!r}"
@@ -904,6 +954,8 @@ class Storage(object):
         """
         Set the location radial hour for the given incident in the given event.
         """
+        assert type(event) is Event
+
         if (
             hour is not None and
             (type(hour) is not int or hour < 1 or hour > 12)
@@ -927,6 +979,8 @@ class Storage(object):
         Set the location radial minute for the given incident in the given
         event.
         """
+        assert type(event) is Event
+
         if (
             minute is not None and
             (type(minute) is not int or minute < 0 or minute >= 60)
@@ -951,6 +1005,8 @@ class Storage(object):
         """
         Set the location description for the given incident in the given event.
         """
+        assert type(event) is Event
+
         if description is not None and type(description) is not unicode:
             raise InvalidDataError(
                 "Invalid incident location description: {!r}"
@@ -971,6 +1027,8 @@ class Storage(object):
         """
         Set the rangers attached to the given incident in the given event.
         """
+        event.validate()
+
         rangerHandles = tuple(rangerHandles)
 
         systemEntry = ReportEntry(
@@ -983,7 +1041,7 @@ class Storage(object):
                 cursor = db.cursor()
                 try:
                     cursor.execute(
-                        self._query_clearIncidentRangers, (event, number)
+                        self._query_clearIncidentRangers, (event.id, number)
                     )
                     for handle in rangerHandles:
                         if type(handle) is not unicode:
@@ -1017,6 +1075,8 @@ class Storage(object):
         Set the incident types attached to the given incident in the given
         event.
         """
+        event.validate()
+
         incidentTypes = tuple(incidentTypes)
 
         systemEntry = ReportEntry(
@@ -1031,7 +1091,7 @@ class Storage(object):
                 cursor = db.cursor()
                 try:
                     cursor.execute(
-                        self._query_clearIncidentTypes, (event, number)
+                        self._query_clearIncidentTypes, (event.id, number)
                     )
                     for incidentType in incidentTypes:
                         if type(incidentType) is not unicode:
@@ -1068,6 +1128,8 @@ class Storage(object):
         Add a report entry to the incident with the given number in the given
         event.
         """
+        assert type(event) is Event
+
         reportEntry.validate()
         try:
             with self._db as db:
@@ -1165,7 +1227,8 @@ class Storage(object):
                 sql = (self._query_unAttachedIncidentReportNumbers,)
             else:
                 sql = (
-                    self._query_attachedIncidentReportNumbers, (event, number)
+                    self._query_attachedIncidentReportNumbers,
+                    (event.id, number)
                 )
         else:
             sql = (self._query_incidentReportNumbers,)
@@ -1361,13 +1424,15 @@ class Storage(object):
         Attach the incident report with the given number to the incident with
         the given number in the given event.
         """
+        event.validate()
+
         try:
             with self._db as db:
                 cursor = db.cursor()
                 try:
                     cursor.execute(
                         self._query_attachIncidentReportToIncident,
-                        (event, incidentNumber, incidentReportNumber)
+                        (event.id, incidentNumber, incidentReportNumber)
                     )
                 finally:
                     cursor.close()
@@ -1398,13 +1463,15 @@ class Storage(object):
         Detach the incident report with the given number from the incident with
         the given number in the given event.
         """
+        event.validate()
+
         try:
             with self._db as db:
                 cursor = db.cursor()
                 try:
                     cursor.execute(
                         self._query_detachIncidentReportFromIncident,
-                        (event, incidentNumber, incidentReportNumber)
+                        (event.id, incidentNumber, incidentReportNumber)
                     )
                 finally:
                     cursor.close()
@@ -1438,7 +1505,7 @@ class Storage(object):
                 self._query_incidentsAttachedToIncidentReport,
                 (incidentReportNumber,)
             ):
-                yield (row["EVENT"], row["INCIDENT_NUMBER"])
+                yield (Event(row["EVENT"]), row["INCIDENT_NUMBER"])
         except SQLiteError as e:
             self.log.critical(
                 "Unable to look up incidents attached to incident report: "
@@ -1462,11 +1529,13 @@ class Storage(object):
         Look up all concentric street names, indexed by ID, IDs for the given
         event.
         """
+        assert type(event) is Event
+
         result = {}
 
         try:
             for streetID, streetName in (
-                self._db.execute(self._query_concentricStreets, (event,))
+                self._db.execute(self._query_concentricStreets, (event.id,))
             ):
                 result[streetID] = streetName
         except SQLiteError as e:
@@ -1490,10 +1559,12 @@ class Storage(object):
         """
         Create the given concentric street name and ID into the given event.
         """
+        event.validate()
+
         try:
             with self._db as db:
                 db.execute(
-                    self._query_addConcentricStreet, (event, id, name)
+                    self._query_addConcentricStreet, (event.id, id, name)
                 )
         except SQLiteError as e:
             self.log.critical(
@@ -1513,7 +1584,7 @@ class Storage(object):
     def _eventAccess(self, event, mode):
         try:
             for row in self._db.execute(
-                self._query_eventAccess, (event, mode)
+                self._query_eventAccess, (event.id, mode)
             ):
                 yield row["EXPRESSION"]
         except SQLiteError as e:
@@ -1532,6 +1603,8 @@ class Storage(object):
 
 
     def _setEventAccess(self, event, mode, expressions):
+        event.validate()
+
         try:
             with self._db as db:
                 cursor = db.cursor()
@@ -1540,7 +1613,9 @@ class Storage(object):
                         "Clearing access: {event} {mode}",
                         event=event, mode=mode
                     )
-                    cursor.execute(self._query_clearEventAccess, (event, mode))
+                    cursor.execute(
+                        self._query_clearEventAccess, (event.id, mode)
+                    )
                     for expression in frozenset(expressions):
                         self.log.info(
                             "Adding access: {event} {mode} {expression}",
@@ -1548,7 +1623,7 @@ class Storage(object):
                         )
                         cursor.execute(
                             self._query_addEventAccess,
-                            (event, expression, mode)
+                            (event.id, expression, mode)
                         )
                 finally:
                     cursor.close()
@@ -1578,6 +1653,8 @@ class Storage(object):
         """
         Look up the allowed readers for the given event.
         """
+        assert type(event) is Event
+
         return self._eventAccess(event, "read")
 
 
@@ -1585,13 +1662,15 @@ class Storage(object):
         """
         Set the allowed readers for the given event.
         """
-        return self._setEventAccess(event, "read", readers)
+        return self._setEventAccess(event.id, "read", readers)
 
 
     def writers(self, event):
         """
         Look up the allowed writers for the given event.
         """
+        assert type(event) is Event
+
         return self._eventAccess(event, "write")
 
 
@@ -1599,7 +1678,7 @@ class Storage(object):
         """
         Set the allowed writers for the given event.
         """
-        return self._setEventAccess(event, "write", writers)
+        return self._setEventAccess(event.id, "write", writers)
 
 
     def explainQueryPlans(self):
