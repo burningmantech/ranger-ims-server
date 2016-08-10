@@ -235,7 +235,7 @@ class AuthMixIn(object):
                 session = request.getSession()
                 session.user = user
 
-                url = request.args.get(u"o", [None])[0]
+                url = request.args.get(u"o", [None])[0].decode("utf-8")
                 if url is None:
                     location = URLs.prefix  # Default to application home
                 else:

@@ -355,8 +355,8 @@ class JSONMixIn(object):
     @route(URLs.incidentReports.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def listIncidentReportsResource(self, request):
-        event          = request.args.get("event"   , [""])[0]
-        incidentNumber = request.args.get("incident", [""])[0]
+        eventID        = request.args.get("event"   , [""])[0].decode("utf-8")
+        incidentNumber = request.args.get("incident", [""])[0].decode("utf-8")
 
         if event == incidentNumber == "":
             yield self.authorizeRequest(
