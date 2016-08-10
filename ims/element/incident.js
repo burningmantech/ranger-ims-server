@@ -334,6 +334,10 @@ function loadUnattachedIncidentReports(success) {
 var attachedIncidentReports = null;
 
 function loadAttachedIncidentReports(success) {
+    if (incidentNumber == null) {
+        return;
+    }
+
     function ok(data, status, xhr) {
         attachedIncidentReports = data;
 
