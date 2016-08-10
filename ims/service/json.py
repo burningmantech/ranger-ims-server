@@ -112,7 +112,9 @@ class JSONMixIn(object):
         json = jsonFromFile(request.content)
 
         if type(json) is not dict:
-            returnValue(self.badRequestResource("root: expected a dictionary."))
+            returnValue(self.badRequestResource(
+                request, "root: expected a dictionary.")
+            )
 
         adds = json.get("add" , [])
         show = json.get("show", [])
@@ -120,18 +122,24 @@ class JSONMixIn(object):
 
         if adds:
             if type(adds) is not list:
-                returnValue(self.badRequestResource("add: expected a list."))
+                returnValue(self.badRequestResource(
+                    request, "add: expected a list.")
+                )
             for incidentType in adds:
                 self.storage.createIncidentType(incidentType)
 
         if show:
             if type(show) is not list:
-                returnValue(self.badRequestResource("show: expected a list."))
+                returnValue(self.badRequestResource(
+                    request, "show: expected a list.")
+                )
             self.storage.showIncidentTypes(show)
 
         if hide:
             if type(hide) is not list:
-                returnValue(self.badRequestResource("hide: expected a list."))
+                returnValue(self.badRequestResource(
+                    request, "hide: expected a list.")
+                )
             self.storage.hideIncidentTypes(hide)
 
         returnValue(self.noContentResource(request))
@@ -198,6 +206,7 @@ class JSONMixIn(object):
 
         elif incident.created > now:
             returnValue(self.badRequestResource(
+                request,
                 "Created time {} is in the future. Current time is {}."
                 .format(incident.created, now)
             ))
@@ -412,6 +421,7 @@ class JSONMixIn(object):
 
         elif incidentReport.created > now:
             returnValue(self.badRequestResource(
+                request,
                 "Created time {} is in the future. Current time is {}."
                 .format(incidentReport.created, now)
             ))
