@@ -94,10 +94,6 @@ class AuthMixIn(object):
         if request.user is None and not optional:
             self.log.debug("Authentication failed")
             raise NotAuthenticatedError()
-        else:
-            self.log.debug(
-                "Authenticated as {request.user}", request=request
-            )
 
 
     @inlineCallbacks
@@ -228,7 +224,11 @@ class AuthMixIn(object):
         if user is None:
             user = yield self.lookupUserEmail(username)
 
-        if user is not None:
+        if user is None:
+            self.log.debug(
+                "Login failed: no such user: {username}", username=username
+            )
+        else:
             authenticated = yield self.verifyCredentials(user, password)
 
             if authenticated:
@@ -242,6 +242,11 @@ class AuthMixIn(object):
                     location = URL.fromText(url)
 
                 returnValue(self.redirect(request, location))
+            else:
+                self.log.debug(
+                    "Login failed: incorrect credentials for user: {user}",
+                    user=user
+                )
 
         returnValue((yield self.login(request, failed=True)))
 

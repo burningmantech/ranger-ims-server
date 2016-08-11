@@ -140,6 +140,8 @@ class KleinService(object):
 
 
     def notFoundResource(self, request):
+        self.log.debug("Resource not found: {request.uri}", request=request)
+
         # Require authentication.
         # This is because exposing what resources do or do not exist can expose
         # information that was not meant to be exposed.
@@ -149,6 +151,11 @@ class KleinService(object):
 
 
     def methodNotAllowedResource(self, request):
+        self.log.debug(
+            "Method {request.method} not allowed for resource: {request.uri}",
+            request=request
+        )
+
         # Require authentication.
         # This is because exposing what resources do or do not exist can expose
         # information that was not meant to be exposed.
@@ -158,23 +165,22 @@ class KleinService(object):
 
 
     def forbiddenResource(self, request):
+        user = getattr(request, "user", None)
+        self.log.debug(
+            "Forbidden resource for user {user}: {request.uri}",
+            request=request, user=user
+        )
+
         request.setResponseCode(http.FORBIDDEN)
         return self.textResource(request, "Permission denied")
 
 
-    def notAllowedResource(self, request):
-        request.setResponseCode(http.NOT_ALLOWED)
-        return self.textResource(request, "HTTP method not supported")
-
-
-    def invalidQueryResource(self, request, arg, value):
-        request.setResponseCode(http.BAD_REQUEST)
-        return self.textResource(
-            request, "Invalid query: {}={}".format(arg, value)
+    def badRequestResource(self, request, message=None):
+        self.log.debug(
+            "Bad request for resource: {request.uri}: {message}",
+            request=request, message=message
         )
 
-
-    def badRequestResource(self, request, message=None):
         request.setResponseCode(http.BAD_REQUEST)
         if message is None:
             message = "Bad request"
@@ -183,7 +189,23 @@ class KleinService(object):
         return self.textResource(request, message)
 
 
+    def invalidQueryResource(self, request, arg, value):
+        if value is None:
+            return self.badRequestResource(
+                request, "Invalid query: missing parameter {}".format(arg)
+            )
+        else:
+            return self.badRequestResource(
+                request, "Invalid query: {}={}".format(arg, value)
+            )
+
+
     def internalErrorResource(self, request, message=None):
+        self.log.critical(
+            "Internal error for resource: {request.uri}: {message}",
+            request=request, message=message
+        )
+
         request.setResponseCode(http.INTERNAL_SERVER_ERROR)
         if message is None:
             message = "Internal error"
