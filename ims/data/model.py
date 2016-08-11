@@ -181,6 +181,9 @@ class Event(object):
 
         @raise: L{InvalidDataError} if the event does not validate.
         """
+        if not self.id:
+            raise InvalidDataError("Event ID must be a non-empty string")
+
         _validateIsInstance("ID", self.id, unicode)
 
 
