@@ -123,8 +123,8 @@ class AuthMixIn(object):
         if user is not None:
             for shortName in user.shortNames:
                 if shortName in self.config.IMSAdmins:
-                    authorizations |= Authorization.all
-            else:
+                    authorizations |= Authorization.imsAdmin
+
                 if event:
                     if (yield matchACL(user, self.storage.writers(event))):
                         authorizations |= Authorization.writeIncidents
