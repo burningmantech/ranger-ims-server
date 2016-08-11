@@ -25,7 +25,7 @@ __all__ = [
 from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..tz import utcNow
-from ..data.model import Event, IncidentState, ReportEntry
+from ..data.model import InvalidDataError, Event, IncidentState, ReportEntry
 from ..data.json import (
     JSON, textFromJSON, jsonFromFile, rangerAsJSON,
     incidentAsJSON, incidentFromJSON,
@@ -88,7 +88,7 @@ class JSONMixIn(object):
     def incidentTypesResource(self, request):
         self.authenticateRequest(request)
 
-        hidden = request.args.get("hidden", [""])[0] == "true"
+        hidden = self.queryValue(request, u"hidden") == u"true"
 
         incidentTypes = tuple(
             self.storage.allIncidentTypes(includeHidden=hidden)
@@ -374,10 +374,12 @@ class JSONMixIn(object):
     @route(URLs.incidentReports.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def listIncidentReportsResource(self, request):
-        eventID        = request.args.get("event"   , [""])[0].decode("utf-8")
-        incidentNumber = request.args.get("incident", [""])[0].decode("utf-8")
+        eventID        = self.queryValue(request, u"event")
+        incidentNumber = self.queryValue(request, u"incident")
 
-        if eventID == incidentNumber == "":
+        if eventID is None and incidentNumber is None:
+            attachedTo = None
+        elif eventID == incidentNumber == u"":
             yield self.authorizeRequest(
                 request, None, Authorization.readIncidentReports
             )
@@ -385,13 +387,19 @@ class JSONMixIn(object):
         else:
             event = Event(eventID)
             try:
+                event.validate()
+            except InvalidDataError:
+                returnValue(
+                    self.invalidQueryResource(request, u"event", eventID)
+                )
+            try:
                 incidentNumber = int(incidentNumber)
             except ValueError:
-                raise
-                returnValue(self.badRequestResource(
-                    request,
-                    "Invalid incident number: {}".format(incidentNumber)
-                ))
+                returnValue(
+                    self.invalidQueryResource(
+                        request, u"incident", incidentNumber
+                    )
+                )
             yield self.authorizeRequest(
                 request, event, Authorization.readIncidents
             )
@@ -506,41 +514,38 @@ class JSONMixIn(object):
         #
         # Attach to incident if requested
         #
-        action         = request.args.get("action"  , [""])[0]
-        eventID        = request.args.get("event"   , [""])[0]
-        incidentNumber = request.args.get("incident", [""])[0]
+        action = self.queryValue(request, u"action")
 
-        if action != "":
-            if eventID == "":
-                returnValue(self.badRequestResource(
-                    request, "No event specified: {}".format(action)
-                ))
-            if incidentNumber == "":
-                returnValue(self.badRequestResource(
-                    request, "No incident number specified: {}".format(action)
-                ))
+        if action is not None:
+            eventID        = self.queryValue(request, u"event")
+            incidentNumber = self.queryValue(request, u"incident")
+
+            event = Event(eventID)
+            try:
+                event.validate()
+            except InvalidDataError:
+                returnValue(
+                    self.invalidQueryResource(request, u"event", eventID)
+                )
 
             try:
                 incidentNumber = int(incidentNumber)
             except ValueError:
-                returnValue(self.badRequestResource(
-                    request,
-                    "Invalid incident number: {!r}".format(incidentNumber)
+                returnValue(self.invalidQueryResource(
+                    request, u"incident", incidentNumber
                 ))
 
-            event = Event(unicode(eventID))
-
-            if action == "attach":
+            if action == u"attach":
                 self.storage.attachIncidentReportToIncident(
                     number, event, incidentNumber
                 )
-            elif action == "detach":
+            elif action == u"detach":
                 self.storage.detachIncidentReportFromIncident(
                     number, event, incidentNumber
                 )
             else:
-                returnValue(self.badRequestResource(
-                    request, "Unknown action: {}".format(action)
+                returnValue(self.invalidQueryResource(
+                    request, u"action", action
                 ))
 
         #

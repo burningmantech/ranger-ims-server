@@ -217,12 +217,15 @@ class AuthMixIn(object):
     @route(URLs.login.asText(), methods=("POST",))
     @inlineCallbacks
     def loginSubmit(self, request):
-        username = request.args.get("username", [""])[0].decode("utf-8")
-        password = request.args.get("password", [""])[0].decode("utf-8")
+        username = self.queryValue(request, u"username")
+        password = self.queryValue(request, u"password", default=u"")
 
-        user = yield self.lookupUserName(username)
-        if user is None:
-            user = yield self.lookupUserEmail(username)
+        if username is None:
+            user = None
+        else:
+            user = yield self.lookupUserName(username)
+            if user is None:
+                user = yield self.lookupUserEmail(username)
 
         if user is None:
             self.log.debug(
@@ -235,7 +238,7 @@ class AuthMixIn(object):
                 session = request.getSession()
                 session.user = user
 
-                url = request.args.get(u"o", [None])[0].decode("utf-8")
+                url = self.queryValue(request, u"0")
                 if url is None:
                     location = URLs.prefix  # Default to application home
                 else:
