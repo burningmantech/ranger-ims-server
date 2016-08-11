@@ -122,6 +122,68 @@ class KleinService(object):
 
 
     #
+    # Query arguments
+    #
+
+    def queryValue(self, request, name, default=None):
+        """
+        Look up the value of a query parameter with the given name in the
+        given request.
+
+        @param request: The request to look into.
+        @type request: L{IRequest}
+
+        @param name: The name of the query parameter to find a value for.
+        @type name: L{unicode}
+
+        @param default: The default value to return if no query parameter
+            specified by C{name} is found in C{request}.
+        @type default: L{unicode}
+
+        @return: The value of the query parameter specified by C{name}, or
+            C{default} if there no such query parameter.  If more than one value
+            is found, return the last value found.
+        @rtype: L{unicode}
+        """
+        values = request.args.get(name.encode("utf-8"))
+
+        if values is None:
+            return default
+
+        if len(values) > 0:
+            return values[-1].decode("utf-8")
+        else:
+            return default
+
+
+    def queryValues(self, request, name, default=()):
+        """
+        Look up the values of a query parameter with the given name in the
+        given request.
+
+        @param request: The request to look into.
+        @type request: L{IRequest}
+
+        @param name: The name of the query parameter to find a value for.
+        @type name: L{unicode}
+
+        @param default: The default values to return if no query parameter
+            specified by C{name} is found in C{request}.
+        @type default: iterable of L{unicode}
+
+        @return: The values of the query parameter specified by C{name}, or
+            C{default} if there no such query parameter.
+        @rtype: iterable of L{unicode}
+        """
+        values = request.args.get(name)
+
+        if values is None:
+            return default
+
+        return (a.decode("utf-8") for a in values)
+
+
+    #
     # Error resources
     #
 
