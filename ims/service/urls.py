@@ -80,6 +80,8 @@ class URLs(object):
     incidents        = event.child(u"incidents").child(u"")
     incidentNumber   = incidents.child(u"<number>")
 
+    eventSource      = api.child(u"eventsource")
+
     # Web UI
     imsJS                      = prefix.child(u"ims.js")
 

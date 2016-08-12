@@ -36,6 +36,7 @@ from .klein import route
 from .urls import URLs
 from .auth import Authorization
 from .error import NotAuthorizedError
+from .eventsource import DataStoreEventSourceResource
 from ..dms import DMSError
 
 
@@ -672,3 +673,8 @@ class JSONMixIn(object):
                     )
 
         returnValue(self.noContentResource(request))
+
+
+    @route(URLs.eventSource.asText(), methods=("GET",))
+    def eventSourceResource(self, request):
+        return DataStoreEventSourceResource(self.storeObserver)

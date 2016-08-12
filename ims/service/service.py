@@ -28,6 +28,7 @@ from zipfile import BadZipfile
 
 from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
+from twisted.logger import globalLogPublisher
 
 from ..data.json import textFromJSON
 from .http import HeaderName, ContentType
@@ -36,6 +37,7 @@ from .auth import AuthMixIn
 from .json import JSONMixIn
 from .web import WebMixIn
 from .external import ExternalMixIn
+from .eventsource import DataStoreLogObserver
 
 
 
@@ -51,6 +53,13 @@ class WebService(
         self.storage = config.storage
         self.dms = config.dms
         self.directory = config.directory
+
+        self.storeObserver = DataStoreLogObserver()
+        globalLogPublisher.addObserver(self.storeObserver)
+
+
+    def __del__(self):
+        globalLogPublisher.removeObserver(self.storeObserver)
 
 
     #
