@@ -22,7 +22,8 @@ __all__ = [
     "JSONMixIn",
 ]
 
-from twisted.internet.defer import inlineCallbacks, returnValue
+from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
+from twisted.internet.error import ConnectionDone
 
 from ..tz import utcNow
 from ..data.model import InvalidDataError, Event, IncidentState, ReportEntry
@@ -31,12 +32,11 @@ from ..data.json import (
     incidentAsJSON, incidentFromJSON,
     incidentReportAsJSON, incidentReportFromJSON,
 )
-from .http import HeaderName, staticResource
+from .http import HeaderName, ContentType, staticResource
 from .klein import route
 from .urls import URLs
 from .auth import Authorization
 from .error import NotAuthorizedError
-from .eventsource import DataStoreEventSourceResource
 from ..dms import DMSError
 
 
@@ -677,4 +677,26 @@ class JSONMixIn(object):
 
     @route(URLs.eventSource.asText(), methods=("GET",))
     def eventSourceResource(self, request):
-        return DataStoreEventSourceResource(self.storeObserver)
+        d = Deferred()
+
+        self.log.info("Event source connected: {id}", id=id(request))
+
+        request.setHeader(
+            HeaderName.contentType.value, ContentType.eventStream.value
+        )
+
+        self.storeObserver.addListener(request)
+
+        def disconnected(f):
+            f.trap(ConnectionDone)
+            self.log.info("Event source disconnected: {id}", id=id(request))
+            self.storeObserver.removeListener(request)
+
+        def finished(_):
+            self.storeObserver.removeListener(request)
+            raise AssertionError("This was not expected")
+
+        df = request.notifyFinish()
+        df.addCallbacks(finished, disconnected)
+
+        return d

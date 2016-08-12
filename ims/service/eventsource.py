@@ -18,15 +18,11 @@
 HTML5 EventSource support.
 """
 
-from weakref import ref as WeakReference
 from collections import deque
 
 from zope.interface import implementer
-from twisted.logger import ILogObserver, eventAsJSON
-from twisted.web.server import NOT_DONE_YET
-from twisted.web.resource import Resource
 
-from .http import HeaderName, ContentType
+from twisted.logger import Logger, ILogObserver, eventAsJSON
 
 
 
@@ -50,86 +46,71 @@ class Event(object):
         if self.eventClass is not None:
             parts.append(u"event: {0}".format(self.eventClass))
 
-        if self.eventRetry is not None:
-            parts.append(u"retry: {0:d}".format(self.eventRetry))
+        if self.retry is not None:
+            parts.append(u"retry: {0:d}".format(self.retry))
 
         parts.extend(
-            u"data: {}".format(line) for line in self.text.split(u"\n")
+            u"data: {}".format(line) for line in self.message.split(u"\n")
         )
 
-        return (u"\n".join(parts) + u"\n\n")
+        return (u"\r\n".join(parts) + u"\r\n\r\n")
 
 
 
 @implementer(ILogObserver)
-class DataStoreLogObserver(object):
+class DataStoreEventSourceLogObserver(object):
     """
-    Observer for events related to any incident changing.
+    Observer for events related to any updates to the data store.
     """
+    log = Logger()
+
+
     def __init__(self):
         self._listeners = set()
-        self._expiredListeners = set()
-
         self._events = deque(maxlen=1000)
 
 
     def addListener(self, listener):
-        ref = WeakReference(listener, self._expiredListeners.add)
-        self._listeners.add(ref)
+        self.log.debug("Adding listener: {listener}", listener=listener)
+
+        # FIXME: send buffered events
+        self._listeners.add(listener)
 
 
-    def renderEvent(self, loggerEvent):
+    def removeListener(self, listener):
+        self.log.debug("Removing listener: {listener}", listener=listener)
+
+        self._listeners.add(listener)
+
+
+    def _transmogrify(self, loggerEvent):
+        """
+        Convert a logger event into an EventSource event.
+        """
+        if "storeWriteClass" not in loggerEvent:
+            # Not a data store event
+            return None
+
         eventSourceEvent = Event(
+            # FIXME: add ID
             eventClass="Store Write",
             message=eventAsJSON(loggerEvent),
         )
-        return eventSourceEvent.render().encode("utf-8")
+        return eventSourceEvent
+
+
+    def _publish(self, eventSourceEvent):
+        eventText = eventSourceEvent.render().encode("utf-8")
+
+        for listener in self._listeners:
+            listener.write(eventText)
+
+        self._events.append(eventText)
 
 
     def __call__(self, event):
-        if "storeWriteClass" not in event:
+        eventSourceEvent = self._transmogrify(event)
+        if eventSourceEvent is None:
             return
 
-        eventText = self.renderEvent(event)
-
-        # Clean up, expired listeners
-        for ref in self._expiredListeners:
-            self._listeners.remove(ref)
-
-        for ref in self._listeners:
-            listener = ref()
-            if listener is None:
-                self._expiredListeners.add(ref)
-                continue
-
-            listener.notify(eventText)
-
-
-
-class DataStoreEventSourceResource(Resource):
-    """
-    Event source for data store changes.
-    """
-    isLeaf = True
-
-
-    def __init__(self, observer):
-        self.observer = observer
-        self.request = None
-
-
-    def notify(self, eventText):
-        if hasattr(self, "_write"):
-            self._write(eventText)
-
-
-    def render_GET(self, request):
-        request.setResponseCode(200)
-        request.setHeader(
-            HeaderName.contentType.value, ContentType.eventStream.value
-        )
-
-        self.observer.addListener(self)
-        self._write = request.write
-
-        return NOT_DONE_YET
+        self._publish(eventSourceEvent)

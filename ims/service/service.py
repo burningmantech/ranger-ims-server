@@ -37,7 +37,7 @@ from .auth import AuthMixIn
 from .json import JSONMixIn
 from .web import WebMixIn
 from .external import ExternalMixIn
-from .eventsource import DataStoreLogObserver
+from .eventsource import DataStoreEventSourceLogObserver
 
 
 
@@ -54,7 +54,7 @@ class WebService(
         self.dms = config.dms
         self.directory = config.directory
 
-        self.storeObserver = DataStoreLogObserver()
+        self.storeObserver = DataStoreEventSourceLogObserver()
         globalLogPublisher.addObserver(self.storeObserver)
 
 
