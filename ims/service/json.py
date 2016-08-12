@@ -614,8 +614,8 @@ class JSONMixIn(object):
         acl = {}
         for event in self.storage.events():
             acl[event.id] = dict(
-                readers=self.storage.readers(event.id),
-                writers=self.storage.writers(event.id),
+                readers=self.storage.readers(event),
+                writers=self.storage.writers(event),
             )
         returnValue(textFromJSON(acl))
 
