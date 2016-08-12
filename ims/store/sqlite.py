@@ -1801,7 +1801,7 @@ class Storage(object):
         """
         Set the allowed readers for the given event.
         """
-        return self._setEventAccess(event.id, "read", readers)
+        return self._setEventAccess(event, "read", readers)
 
 
     def writers(self, event):
@@ -1817,7 +1817,7 @@ class Storage(object):
         """
         Set the allowed writers for the given event.
         """
-        return self._setEventAccess(event.id, "write", writers)
+        return self._setEventAccess(event, "write", writers)
 
 
     def explainQueryPlans(self):
