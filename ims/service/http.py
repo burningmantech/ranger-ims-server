@@ -51,16 +51,17 @@ class ContentType (Values):
     Content types
     """
 
-    HTML       = ValueConstant("text/html; charset=utf-8")
-    XHTML      = ValueConstant("application/xhtml+xml")
-    CSS        = ValueConstant("text/css")
-    JavaScript = ValueConstant("application/javascript")
+    HTML        = ValueConstant("text/html; charset=utf-8")
+    XHTML       = ValueConstant("application/xhtml+xml")
+    CSS         = ValueConstant("text/css")
+    JavaScript  = ValueConstant("application/javascript")
 
-    JSON       = ValueConstant("application/json")
+    JSON        = ValueConstant("application/json")
+    eventStream = ValueConstant("text/event-stream")
 
-    text       = ValueConstant("text/plain; charset=utf-8")
+    text        = ValueConstant("text/plain; charset=utf-8")
 
-    PNG        = ValueConstant("image/png")
+    PNG         = ValueConstant("image/png")
 
 
 
