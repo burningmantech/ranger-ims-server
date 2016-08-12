@@ -24,7 +24,7 @@ from collections import deque
 from zope.interface import implementer
 from twisted.logger import ILogObserver, eventAsJSON
 from twisted.web.server import NOT_DONE_YET
-from twisted.web.resource import IResource
+from twisted.web.resource import Resource
 
 from .http import HeaderName, ContentType
 
@@ -57,7 +57,7 @@ class Event(object):
             u"data: {}".format(line) for line in self.text.split(u"\n")
         )
 
-        return (u"\n".join(parts) + u"\n\n").encode("utf-8")
+        return (u"\n".join(parts) + u"\n\n")
 
 
 
@@ -83,7 +83,7 @@ class DataStoreLogObserver(object):
             eventClass="Store Write",
             message=eventAsJSON(loggerEvent),
         )
-        return eventSourceEvent.render()
+        return eventSourceEvent.render().encode("utf-8")
 
 
     def __call__(self, event):
@@ -106,22 +106,30 @@ class DataStoreLogObserver(object):
 
 
 
-@implementer(IResource)
-class DataStoreEventSourceResource(object):
+class DataStoreEventSourceResource(Resource):
     """
     Event source for data store changes.
     """
+    isLeaf = True
+
+
     def __init__(self, observer):
         self.observer = observer
+        self.request = None
 
 
-    def notify(self, event):
-        self.request.write(event.render())
+    def notify(self, eventText):
+        if hasattr(self, "_write"):
+            self._write(eventText)
 
 
-    def render(self, request):
+    def render_GET(self, request):
+        request.setResponseCode(200)
         request.setHeader(
             HeaderName.contentType.value, ContentType.eventStream.value
         )
+
         self.observer.addListener(self)
+        self._write = request.write
+
         return NOT_DONE_YET
