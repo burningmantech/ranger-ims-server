@@ -424,8 +424,6 @@ function summarizeIncident(incident) {
                 }
             }
         }
-
-        console.warn("No summary provided and no report entry text.");
         return "";
     }
 
