@@ -677,10 +677,8 @@ class Storage(object):
         )
 
         self.log.info(
-            "Created incident in event {event}: {incident}",
-            storeWriteClass=Incident,
-            eventID=event,
-            incident=incident,
+            "Created incident {event}:{incident}",
+            storeWriteClass=Incident, event=event, incident=incident,
         )
 
     _query_importIncident = _query(
@@ -750,11 +748,9 @@ class Storage(object):
 
         self.log.info(
             "Attached Ranger {rangerHandle} to incident "
-            "{eventID}#{incidentNumber}",
+            "{event}#{incidentNumber}",
             storeWriteClass=Incident,
-            eventID=event,
-            incidentNumber=number,
-            rangerHandle=rangerHandle,
+            event=event, incidentNumber=number, rangerHandle=rangerHandle,
         )
 
     _query_attachRanger = _query(
@@ -780,11 +776,9 @@ class Storage(object):
 
         self.log.info(
             "Attached incident type {incidentType} to incident "
-            "{eventID}#{incidentNumber}",
+            "{event}#{incidentNumber}",
             storeWriteClass=Incident,
-            eventID=event,
-            incidentNumber=number,
-            incidentType=incidentType,
+            event=event, incidentNumber=number, incidentType=incidentType,
         )
 
     _query_attachIncidentType = _query(
@@ -842,12 +836,10 @@ class Storage(object):
         )
 
         self.log.info(
-            "Attached report entry to incident {eventID}#{incidentNumber}: "
+            "Attached report entry to incident {event}#{incidentNumber}: "
             "{reportEntry}",
             storeWriteClass=Incident,
-            eventID=event,
-            incidentNumber=number,
-            reportEntry=reportEntry,
+            event=event, incidentNumber=number, reportEntry=reportEntry,
         )
 
     _query_attachReportEntryToIncident = _query(
@@ -888,11 +880,11 @@ class Storage(object):
             raise StorageError(e)
 
         self.log.info(
-            "{author} updated incident {eventID}#{incidentNumber}: "
+            "{author} updated incident {event}#{incidentNumber}: "
             "{column}={value}",
             storeWriteClass=Incident,
             query=query,
-            eventID=event,
+            event=event,
             incidentNumber=number,
             column=column,
             value=value,
@@ -1129,11 +1121,11 @@ class Storage(object):
             raise StorageError(e)
 
         self.log.info(
-            "{author} set Rangers for incident {eventID}#{incidentNumber}: "
+            "{author} set Rangers for incident {event}#{incidentNumber}: "
             "{rangerHandles}",
             storeWriteClass=Incident,
             author=author,
-            eventID=event,
+            event=event,
             incidentNumber=number,
             rangerHandles=rangerHandles,
         )
@@ -1193,10 +1185,10 @@ class Storage(object):
 
         self.log.info(
             "{author} set incident types for incident "
-            "{eventID}#{incidentNumber}: {incidentTypes}",
+            "{event}#{incidentNumber}: {incidentTypes}",
             storeWriteClass=Incident,
             author=author,
-            eventID=event,
+            event=event,
             incidentNumber=number,
             incidentTypes=incidentTypes,
         )
@@ -1401,8 +1393,7 @@ class Storage(object):
 
         self.log.info(
             "Created incident report: {incidentReport}",
-            storeWriteClass=IncidentReport,
-            incidentReport=incidentReport,
+            storeWriteClass=IncidentReport, incidentReport=incidentReport,
         )
 
     _query_createIncidentReport = _query(
@@ -1514,8 +1505,7 @@ class Storage(object):
             "Attached report entry to incident report #{incidentReportNumber}: "
             "{reportEntry}",
             storeWriteClass=Incident,
-            incidentReportNumber=number,
-            reportEntry=reportEntry,
+            incidentReportNumber=number, reportEntry=reportEntry,
         )
 
     _query_attachReportEntryToIncidentReport = _query(
@@ -1558,10 +1548,10 @@ class Storage(object):
 
         self.log.info(
             "Attached incident report #{incidentReportNumber} to incident "
-            "{eventID}#{incidentNumber}",
+            "{event}#{incidentNumber}",
             storeWriteClass=Incident,
             incidentReportNumber=incidentReportNumber,
-            eventID=event,
+            event=event,
             incidentNumber=incidentNumber,
         )
 
@@ -1605,10 +1595,10 @@ class Storage(object):
 
         self.log.info(
             "Detached incident report #{incidentReportNumber} from incident "
-            "{eventID}#{incidentNumber}",
+            "{event}#{incidentNumber}",
             storeWriteClass=Incident,
             incidentReportNumber=incidentReportNumber,
-            eventID=event,
+            event=event,
             incidentNumber=incidentNumber,
         )
 
@@ -1701,8 +1691,8 @@ class Storage(object):
             raise StorageError(e)
 
         self.log.info(
-            "Created concentric street in {eventID}: {streetName}",
-            storeWriteClass=Event, eventID=event, concentricStreetName=name,
+            "Created concentric street in {event}: {streetName}",
+            storeWriteClass=Event, event=event, concentricStreetName=name,
         )
 
     _query_addConcentricStreet = _query(
@@ -1767,10 +1757,9 @@ class Storage(object):
             raise StorageError(e)
 
         self.log.info(
-            "Set {mode} access for {eventID}: {expressions}",
+            "Set {mode} access for {event}: {expressions}",
             storeWriteClass=Event,
-            eventID=event,
-            mode=mode, expressions=expressions,
+            event=event, mode=mode, expressions=expressions,
         )
 
     _query_clearEventAccess = _query(
