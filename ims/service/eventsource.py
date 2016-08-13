@@ -19,10 +19,13 @@ HTML5 EventSource support.
 """
 
 from collections import deque
+from time import time
 
 from zope.interface import implementer
+from twisted.logger import Logger, ILogObserver
 
-from twisted.logger import Logger, ILogObserver, eventAsJSON
+from ..data.model import Incident
+from ..data.json import textFromJSON
 
 
 
@@ -68,12 +71,15 @@ class DataStoreEventSourceLogObserver(object):
     def __init__(self):
         self._listeners = set()
         self._events = deque(maxlen=1000)
+        self._start = time()
+        self._counter = 0
 
 
-    def addListener(self, listener):
+    def addListener(self, listener, lastEventID=None):
         self.log.debug("Adding listener: {listener}", listener=listener)
 
-        # FIXME: send buffered events
+        self._playback(listener, lastEventID)
+
         self._listeners.add(listener)
 
 
@@ -91,12 +97,54 @@ class DataStoreEventSourceLogObserver(object):
             # Not a data store event
             return None
 
+        eventClass = loggerEvent.get("storeWriteClass", None)
+
+        if eventClass is None:
+            return
+
+        elif eventClass is Incident:
+            incident = loggerEvent.get("incident", None)
+
+            if incident is None:
+                incidentNumber = loggerEvent.get("incidentNumber", None)
+            else:
+                incidentNumber = incident.number
+
+            self.log.critical(
+                "Unable to determine incident number from store event: {event}",
+                event=loggerEvent,
+            )
+
+            message = dict(incident_number=incidentNumber)
+
+        else:
+            self.log.debug(
+                "Unknown data store event class: {eventClass}",
+                eventClass=eventClass
+            )
+            return
+
         eventSourceEvent = Event(
             # FIXME: add ID
-            eventClass="Store Write",
-            message=eventAsJSON(loggerEvent),
+            eventClass=eventClass.__name__,
+            message=textFromJSON(message),
         )
         return eventSourceEvent
+
+
+    def _playback(self, listener, lastEventID):
+        if lastEventID is None:
+            return
+
+        observerID, counter = lastEventID.split(":")
+
+        if observerID != str(id(self)):
+            # lastEventID came from a different observer
+            counter = 0
+
+        for eventCounter, event in self.events:
+            if eventCounter >= counter:
+                listener.write(event.render().encode("utf-8"))
 
 
     def _publish(self, eventSourceEvent):
@@ -105,7 +153,8 @@ class DataStoreEventSourceLogObserver(object):
         for listener in self._listeners:
             listener.write(eventText)
 
-        self._events.append(eventText)
+        self._counter += 1
+        self._events.append((self._counter, eventSourceEvent))
 
 
     def __call__(self, event):
