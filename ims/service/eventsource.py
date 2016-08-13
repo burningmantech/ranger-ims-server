@@ -89,7 +89,7 @@ class DataStoreEventSourceLogObserver(object):
         self._listeners.add(listener)
 
 
-    def _transmogrify(self, loggerEvent):
+    def _transmogrify(self, loggerEvent, eventID):
         """
         Convert a logger event into an EventSource event.
         """
@@ -110,10 +110,13 @@ class DataStoreEventSourceLogObserver(object):
             else:
                 incidentNumber = incident.number
 
-            self.log.critical(
-                "Unable to determine incident number from store event: {event}",
-                event=loggerEvent,
-            )
+            if incidentNumber is None:
+                self.log.critical(
+                    "Unable to determine incident number from store event: "
+                    "{event}",
+                    event=loggerEvent,
+                )
+                return
 
             message = dict(incident_number=incidentNumber)
 
@@ -125,7 +128,7 @@ class DataStoreEventSourceLogObserver(object):
             return
 
         eventSourceEvent = Event(
-            # FIXME: add ID
+            eventID=eventID,
             eventClass=eventClass.__name__,
             message=textFromJSON(message),
         )
@@ -147,19 +150,20 @@ class DataStoreEventSourceLogObserver(object):
                 listener.write(event.render().encode("utf-8"))
 
 
-    def _publish(self, eventSourceEvent):
+    def _publish(self, eventSourceEvent, eventID):
         eventText = eventSourceEvent.render().encode("utf-8")
 
         for listener in self._listeners:
             listener.write(eventText)
 
-        self._counter += 1
         self._events.append((self._counter, eventSourceEvent))
 
 
     def __call__(self, event):
-        eventSourceEvent = self._transmogrify(event)
+        self._counter += 1
+
+        eventSourceEvent = self._transmogrify(event, self._counter)
         if eventSourceEvent is None:
             return
 
-        self._publish(eventSourceEvent)
+        self._publish(eventSourceEvent, self._counter)
