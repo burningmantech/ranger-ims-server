@@ -82,7 +82,7 @@ function initDispatchQueueTable() {
         var json = JSON.parse(jsonText);
         var number = json["incident_number"];
 
-        console.log("Got event update: " + number);
+        console.log("Got incident update: " + number);
         dispatchQueueTable.ajax.reload();
     }, true);
 }
