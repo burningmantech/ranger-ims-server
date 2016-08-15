@@ -238,7 +238,7 @@ class AuthMixIn(object):
                 session = request.getSession()
                 session.user = user
 
-                url = self.queryValue(request, u"0")
+                url = self.queryValue(request, u"o")
                 if url is None:
                     location = URLs.prefix  # Default to application home
                 else:
