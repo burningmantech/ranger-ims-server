@@ -76,27 +76,6 @@ function initDispatchQueueTable() {
     }
 
     subscribeToUpdates();
-}
-
-
-var eventSource = null;
-
-function subscribeToUpdates() {
-    eventSource = new EventSource(
-        eventSourceURL, { withCredentials: true }
-    );
-
-    eventSource.addEventListener("open", function(e) {
-            console.log("Events listener opened");
-    }, true);
-
-    eventSource.addEventListener("error", function(e) {
-        if (e.readyState == EventSource.CLOSED) {
-            console.log("Events listener closed");
-        } else {
-            console.log("Events listener error");
-        }
-    }, true);
 
     eventSource.addEventListener("Incident", function(e) {
         var jsonText = e.data;

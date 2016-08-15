@@ -753,3 +753,28 @@ function editFromElement(element, jsonKey, transform) {
 
     sendEdits(edits, ok, fail);
 }
+
+
+//
+// EventSource
+//
+
+var eventSource = null;
+
+function subscribeToUpdates() {
+    eventSource = new EventSource(
+        eventSourceURL, { withCredentials: true }
+    );
+
+    eventSource.addEventListener("open", function(e) {
+        console.log("Event listener opened");
+    }, true);
+
+    eventSource.addEventListener("error", function(e) {
+        if (e.readyState == EventSource.CLOSED) {
+            console.log("Event listener closed");
+        } else {
+            console.log("Event listener error");
+        }
+    }, true);
+}
