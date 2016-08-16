@@ -35,6 +35,6 @@
     # MySQL
     PyMySQL==0.7.6
 
-    --editable svn+http://svn.calendarserver.org/repository/calendarserver/twext/trunk@HEAD#egg=twextpy
+    --editable git+https://github.com/apple/ccs-twistedextensions.git#egg=twextpy
         #cffi
         #twisted ...
