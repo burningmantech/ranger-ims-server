@@ -39,6 +39,23 @@ function initIncidentPage() {
         disableEditing();
         loadAndDisplayIncident(loadedIncident);
 
+        // Updates
+
+        subscribeToUpdates();
+
+        eventSource.addEventListener("Incident", function(e) {
+            var jsonText = e.data;
+            var json = JSON.parse(jsonText);
+            var number = json["incident_number"];
+
+            if (number == incidentNumber) {
+                console.log("Got incident update");
+                loadAndDisplayIncident();
+            }
+        }, true);
+
+        // Keyboard shortcuts
+
         var command = false;
 
         function addFieldKeyDown() {

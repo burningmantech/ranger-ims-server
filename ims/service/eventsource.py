@@ -153,8 +153,15 @@ class DataStoreEventSourceLogObserver(object):
     def _publish(self, eventSourceEvent, eventID):
         eventText = eventSourceEvent.render().encode("utf-8")
 
-        for listener in self._listeners:
-            listener.write(eventText)
+        for listener in tuple(self._listeners):
+            try:
+                listener.write(eventText)
+            except Exception:
+                self.log.failure(
+                    "Unable to publish to EventSource listener: {listener}",
+                    listener=listener
+                )
+                self.removeListener(listener)
 
         self._events.append((self._counter, eventSourceEvent))
 
