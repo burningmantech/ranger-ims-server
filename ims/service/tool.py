@@ -24,7 +24,7 @@ __all__ = [
 
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
-from twisted.web.server import Site
+from twisted.web.server import Site, Session
 from twext.python.usage import (
     Executable, Options as BaseOptions, exit, ExitStatus
 )
@@ -35,6 +35,11 @@ from ..store.sqlite import Storage
 from .log import patchCombinedLogFormatter
 from .config import Configuration
 from .service import WebService
+
+
+
+class IMSSession(Session):
+    sessionTimeout = 60 * 60 * 1  # 1 hour
 
 
 
@@ -119,10 +124,11 @@ class WebTool(Executable):
             host=host, port=port,
         )
 
+        factory = Site(service.resource())
+        factory.sessionFactory = IMSSession
+
         from twisted.internet import reactor
-        reactor.listenTCP(
-            port, Site(service.resource()), interface=host
-        )
+        reactor.listenTCP(port, factory, interface=host)
 
 
 
