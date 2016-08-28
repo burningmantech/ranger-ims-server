@@ -156,10 +156,11 @@ class DataStoreEventSourceLogObserver(object):
         for listener in tuple(self._listeners):
             try:
                 listener.write(eventText)
-            except Exception:
-                self.log.failure(
-                    "Unable to publish to EventSource listener: {listener}",
-                    listener=listener
+            except Exception as e:
+                self.log.error(
+                    "Unable to publish to EventSource listener {listener}: "
+                    "{error}",
+                    listener=listener, error=e,
                 )
                 self.removeListener(listener)
 
