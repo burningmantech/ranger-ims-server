@@ -51,6 +51,7 @@ class Authorization(Flags):
     readIncidentReports  = FlagConstant()
     writeIncidentReports = FlagConstant()
 
+
 Authorization.none = Authorization.imsAdmin ^ Authorization.imsAdmin
 Authorization.all = (
     Authorization.imsAdmin             |
