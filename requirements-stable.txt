@@ -19,7 +19,7 @@
             six==1.10.0
 
         service-identity==16.0.0
-            attrs==16.2.0
+            attrs==16.3.0
             #pyasn1
             pyasn1-modules==0.0.8
                 #pyasn1
