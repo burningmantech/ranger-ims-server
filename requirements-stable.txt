@@ -7,7 +7,7 @@
         # Twisted doesn't declare these
 
         pyOpenSSL==16.2.0
-            cryptography==1.6
+            cryptography==1.7
                 cffi==1.9.1
                     pycparser==2.17
                 enum34==1.1.6
