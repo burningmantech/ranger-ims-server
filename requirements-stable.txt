@@ -1,13 +1,13 @@
 --editable .  # Get self and dependencies from setup.py
 
     Twisted==16.6.0
-        zope.interface==4.3.2
+        zope.interface==4.3.3
             setuptools==31.0.0
 
         # Twisted doesn't declare these
 
         pyOpenSSL==16.2.0
-            cryptography==1.7
+            cryptography==1.7.1
                 cffi==1.9.1
                     pycparser==2.17
                 enum34==1.1.6
