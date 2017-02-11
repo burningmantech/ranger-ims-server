@@ -1,6 +1,6 @@
 --editable .  # Get self and dependencies from setup.py
 
-    Twisted==16.6.0
+    Twisted==17.1.0
         zope.interface==4.3.3
             setuptools==34.1.1
 
