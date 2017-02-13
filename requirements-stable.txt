@@ -2,7 +2,7 @@
 
     Twisted==17.1.0
         zope.interface==4.3.3
-            setuptools==34.1.1
+            setuptools==34.2.0
 
         # Twisted doesn't declare these
 
