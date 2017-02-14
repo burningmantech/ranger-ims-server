@@ -33,7 +33,7 @@
     #characteristic==14.3.0
 
     # MySQL
-    PyMySQL==0.7.9
+    PyMySQL==0.7.10
 
     --editable git+https://github.com/apple/ccs-twistedextensions.git#egg=twextpy
         #cffi
