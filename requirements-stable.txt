@@ -28,7 +28,7 @@
 
     klein==17.2.0
         #twisted ...
-        Werkzeug==0.12
+        Werkzeug==0.12.1
 
     #characteristic==14.3.0
 
