@@ -17,53 +17,61 @@
 ##
 
 """
-Distutils config
+Setuptools configuration
 """
 
-from __future__ import print_function
+import sys
 
-from os.path import dirname, join as joinpath
+# if sys.version_info < (3, 5, 0):
+#     sys.stderr.write("ERROR: Python 3.5 or later is required.\n")
+#     exit(1)
+
+# from pathlib import Path
+from os.path import dirname, join
 from setuptools import setup, find_packages
 
+sys.path.insert(0, "src")
+
+from ims import __version__ as version_string
 
 
 #
 # Options
 #
 
-name = "ranger-ims"
-
-from ims import __version__ as version_string
+name = "ranger-ims-server"
 
 description = "Ranger Incident Management System"
 
-try:
-    long_description = file(joinpath(dirname(__file__), "README.md")).read()
-except IOError:
-    long_description = None
+# readme_path = Path(__file__).parent / "README.rst"
+# try:
+#     long_description = readme_path.open().read()
+# except IOError:
+#     long_description = None
 
-url = "https://github.com/burningmantech/ranger-ims"
+long_description = open(join(dirname(__file__), "README.rst")).read()
 
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Framework :: Twisted",
-    "Intended Audience :: Information Technology",
-    "Intended Audience :: Other Audience",
-    "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 2.7",
-    "Programming Language :: Python :: 2 :: Only",
-    "Topic :: Office/Business",
-]
+url = "https://github.com/burningmantech/ranger-ims-server"
 
-author = "Wilfredo S\xe1nchez Vega"
+author = "Burning Man"
 
-author_email = "tool@burningman.org"
+author_email = "rangers@burningman.org"
 
 license = "Apache License, Version 2.0"
 
 platforms = ["all"]
 
+packages = find_packages(where="src")
+
+classifiers = [
+    "Framework :: Twisted",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Other Audience",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Office/Business",
+]
 
 
 #
@@ -83,11 +91,10 @@ script_entry_points = {
     "load_json"   : ("ims.service.tool", "JSONLoadTool.main"),
 }
 
-for tool, (module, function) in script_entry_points.iteritems():
+for tool, (module, function) in script_entry_points.items():
     entry_points["console_scripts"].append(
         "ims_{} = {}:{}".format(tool, module, function)
     )
-
 
 
 #
@@ -97,14 +104,12 @@ for tool, (module, function) in script_entry_points.iteritems():
 setup_requirements = []
 
 install_requirements = [
-    "Twisted",
+    "Twisted>=16.6.0",
     "klein",
-    "pyOpenSSL", "service_identity",
     "PyMySQL",
 ]
 
 extras_requirements = {}
-
 
 
 #
@@ -114,14 +119,13 @@ extras_requirements = {}
 extensions = []
 
 
-
 #
 # Run setup
 #
 
-def doSetup():
+def main():
     """
-    Run L{setup}.
+    Run :func:`setup`.
     """
     setup(
         name=name,
@@ -134,18 +138,15 @@ def doSetup():
         author_email=author_email,
         license=license,
         platforms=platforms,
-        packages=find_packages(),
-        package_data={},
+        packages=packages,
+        package_dir={"": "src"},
+        package_data=dict(),
         entry_points=entry_points,
-        scripts=[],
-        data_files=[],
         ext_modules=extensions,
-        py_modules=[],
         setup_requires=setup_requirements,
         install_requires=install_requirements,
         extras_require=extras_requirements,
     )
-
 
 
 #
@@ -153,4 +154,4 @@ def doSetup():
 #
 
 if __name__ == "__main__":
-    doSetup()
+    main()

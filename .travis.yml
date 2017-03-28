@@ -1,20 +1,32 @@
 language: python
 
-python:
-  - "2.7"
+# We don't need sudo, and setting this to false means faster VM bootup.
+sudo: false
 
-before_install:
- - sudo apt-get update -qq
- - sudo apt-get install -qq libffi6
- - sudo apt-get install -qq libssl0.9.8
- - pip install codecov
+
+branches:
+  only:
+    - master
+
 
 install:
-  - pip install -r requirements-dev.txt --allow-external mysql-connector-python
+  - pip install tox
+
+
+matrix:
+  include:
+    - python: 3.5
+      env: TOXENV=flake8
+
+    - python: 3.5
+      env: TOXENV=mypy
+
+    - python: 3.5
+      env: TOXENV=docs
+
+    - python: 3.5
+      env: TOXENV=py35-coverage,codecov
+
 
 script:
-  - pyflakes ims
-  - trial --coverage --random=0 ims
-
-after_success:
-  - codecov
+  - tox

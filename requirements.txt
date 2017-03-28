@@ -1,0 +1,16 @@
+--editable .  # Get self and dependencies from setup.py
+
+    Twisted==16.3.0
+        zope.interface==4.2.0
+            setuptools==25.1.6
+
+    klein==15.3.1
+        #twisted ...
+        Werkzeug==0.11.10
+
+    # MySQL
+    PyMySQL==0.7.6
+
+    --editable git+https://github.com/apple/ccs-twistedextensions.git#egg=twextpy
+        cffi==1.7.0
+        #twisted ...
