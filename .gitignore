@@ -1,8 +1,11 @@
+*.egg-info
+*.pyc
+*.pyc
+*.pyo
+*~
+.DS_Store
 /.hypothesis
 /.tox
 /cached/
 /data/
-.DS_Store
-*~
-*.pyc
-*.egg-info
+__pycache__
