@@ -27,7 +27,7 @@ __all__ = [
 from sys import argv
 from os import getcwd
 from os.path import sep as pathsep, basename
-from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
+from configparser import SafeConfigParser, NoSectionError, NoOptionError
 
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
