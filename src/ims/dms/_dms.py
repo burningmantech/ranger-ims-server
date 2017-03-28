@@ -158,27 +158,16 @@ class DutyManagementSystem(object):
             """
         )
 
-        def string(bytesString):
-            if bytesString is None:
-                return None
-            return bytesString.decode("utf-8")
-
         def gotRows(rows):
             return dict(
                 (
                     dmsID,
                     Ranger(
-                        string(handle),
-                        fullName(
-                            string(first),
-                            string(middle),
-                            string(last),
-                        ),
-                        string(status),
+                        handle, fullName(first, middle, last), status,
                         dmsID=int(dmsID),
-                        email=string(email),
+                        email=email,
                         onSite=bool(onSite),
-                        password=string(password),
+                        password=password,
                     )
                 )
                 for (
