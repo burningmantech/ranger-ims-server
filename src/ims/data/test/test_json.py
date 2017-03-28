@@ -33,7 +33,7 @@ from ..model import (
 )
 from ..json import (
     JSON,
-    datetimeAsRFC3339, rfc3339AsDateTime,
+    dateTimeAsRFC3339Text, rfc3339TextAsDateTime,
     incidentFromJSON, incidentAsJSON, rangerAsJSON, locationAsJSON,
 )
 
@@ -44,48 +44,48 @@ class TimeSerializationTests(unittest.TestCase):
     Tests for time serialization and deserialization.
     """
 
-    def test_datetimeAsRFC3339Naive(self):
+    def test_dateTimeAsRFC3339TextNaive(self):
         """
-        L{datetimeAsRFC3339} returns a proper RFC 3339 string for the given
+        L{dateTimeAsRFC3339Text} returns a proper RFC 3339 string for the given
         naive L{DateTime}, which is assumed to be UTC.
         """
         self.assertRaises(
             ValueError,
-            datetimeAsRFC3339, DateTime(1971, 4, 20, 16, 20, 4, tzinfo=None)
+            dateTimeAsRFC3339Text, DateTime(1971, 4, 20, 16, 20, 4, tzinfo=None)
         )
 
 
-    def test_datetimeAsRFC3339UTC(self):
+    def test_dateTimeAsRFC3339TextUTC(self):
         """
-        L{datetimeAsRFC3339} returns a proper RFC 3339 string for the given
+        L{dateTimeAsRFC3339Text} returns a proper RFC 3339 string for the given
         UTC L{DateTime}.
         """
         self.assertEquals(
-            datetimeAsRFC3339(DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)),
+            dateTimeAsRFC3339Text(DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)),
             "1971-04-20T16:20:04Z"
         )
 
 
-    def test_datetimeAsRFC3339Other(self):
+    def test_dateTimeAsRFC3339TextOther(self):
         """
-        L{datetimeAsRFC3339} returns a proper RFC 3339 string for the given
+        L{dateTimeAsRFC3339Text} returns a proper RFC 3339 string for the given
         non-UTC L{DateTime}.
         """
         tz = FixedOffsetTimeZone.fromSignHoursMinutes("+", 4, 20)
 
         self.assertEquals(
-            datetimeAsRFC3339(DateTime(1971, 4, 20, 20, 40, 4, tzinfo=tz)),
+            dateTimeAsRFC3339Text(DateTime(1971, 4, 20, 20, 40, 4, tzinfo=tz)),
             "1971-04-20T16:20:04Z"
         )
 
 
-    def test_rfc3339AsDatetime(self):
+    def test_rfc3339TextAsDateTime(self):
         """
-        L{rfc3339AsDateTime} returns a proper UTC L{DateTime} for the given
+        L{rfc3339TextAsDateTime} returns a proper UTC L{DateTime} for the given
         RFC 3339 string.
         """
         self.assertEquals(
-            rfc3339AsDateTime("1971-04-20T16:20:04Z"),
+            rfc3339TextAsDateTime("1971-04-20T16:20:04Z"),
             DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)
         )
 
@@ -442,12 +442,12 @@ class IncidentDeserializationTests(unittest.TestCase):
                     {
                         JSON.entry_author.value: "Tool",
                         JSON.entry_text.value: "1 2 3",
-                        JSON.entry_created.value: datetimeAsRFC3339(time1),
+                        JSON.entry_created.value: dateTimeAsRFC3339Text(time1),
                     },
                     {
                         JSON.entry_author.value: "Tulsa",
                         JSON.entry_text.value: "A B C",
-                        JSON.entry_created.value: datetimeAsRFC3339(time2),
+                        JSON.entry_created.value: dateTimeAsRFC3339Text(time2),
                     },
                 ],
             },
@@ -494,7 +494,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
-                JSON.incident_created.value: datetimeAsRFC3339(time1),
+                JSON.incident_created.value: dateTimeAsRFC3339Text(time1),
             },
             number=1, validate=False
         )
@@ -850,13 +850,13 @@ class IncidentSerializationTests(unittest.TestCase):
                     {
                         JSON.entry_author.value: "Tool",
                         JSON.entry_text.value: "1 2 3",
-                        JSON.entry_created.value: datetimeAsRFC3339(time1),
+                        JSON.entry_created.value: dateTimeAsRFC3339Text(time1),
                         JSON.entry_system.value: False,
                     },
                     {
                         JSON.entry_author.value: "Tulsa",
                         JSON.entry_text.value: "A B C",
-                        JSON.entry_created.value: datetimeAsRFC3339(time2),
+                        JSON.entry_created.value: dateTimeAsRFC3339Text(time2),
                         JSON.entry_system.value: False,
                     },
                 ],
@@ -899,7 +899,7 @@ class IncidentSerializationTests(unittest.TestCase):
         self.assertEquals(
             {
                 JSON.incident_number.value: 1,
-                JSON.incident_created.value: datetimeAsRFC3339(time1),
+                JSON.incident_created.value: dateTimeAsRFC3339Text(time1),
             },
             incidentAsJSON(
                 Incident(

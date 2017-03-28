@@ -32,7 +32,7 @@ from twisted.python.filepath import UnlistableError
 from ..data.model import IncidentState, InvalidDataError
 from ..data.json import (
     incidentAsJSON, incidentFromJSON, jsonTextFromObject, jsonFromFile,
-    rfc3339AsDateTime
+    rfc3339TextAsDateTime
 )
 from .istore import StorageError, NoSuchIncidentError
 
@@ -499,6 +499,6 @@ def ims2014Cleanup(incident):
     if incident.created is None:
         # Wow MAJOR HAXXOR SKILLZ
         if incident.number == 1158:
-            incident.created = rfc3339AsDateTime("2014-09-01T01:06:06Z")
+            incident.created = rfc3339TextAsDateTime("2014-09-01T01:06:06Z")
 
     return incident

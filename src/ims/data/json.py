@@ -111,13 +111,12 @@ from __future__ import absolute_import
 __all__ = [
     "jsonTextFromObject",
     "objectFromJSONText",
+    "dateTimeAsRFC3339Text",
+    "rfc3339TextAsDateTime",
 
     #####
 
     "jsonFromFile",
-
-    "datetimeAsRFC3339",
-    "rfc3339AsDateTime",
 
     #####
 
@@ -208,40 +207,28 @@ def objectFromJSONText(text: str) -> Any:
 
 
 
-def datetimeAsRFC3339(datetime):
+def dateTimeAsRFC3339Text(dateTime: DateTime) -> str:
     """
-    Convert a date-time object into an RFC 3339 formatted date-time string.
+    Convert a :class:`DateTime` into an RFC 3339 formatted date-time string.
 
-    @param datetime: A non-naive date-time object to convert.
-    @type datetime: L{DateTime}
+    :param dateTime: A non-naive :class:`DateTime` to convert.
 
-    @return: An RFC 3339 formatted date-time string corresponding to
-        C{datetime} (converted to UTC).
-    @rtype: L{unicode}
+    :return: An RFC 3339 formatted date-time string corresponding to
+        :obj:`dateTime`.
     """
-    if not datetime:
-        return None
-    else:
-        datetime = datetime.astimezone(utc)
-        return datetime.strftime(rfc3339_datetime_format)
+    return dateTime.isoformat()
 
 
 
-def rfc3339AsDateTime(rfc3339):
+def rfc3339TextAsDateTime(rfc3339: str) -> DateTime:
     """
-    Convert an RFC 3339 formatted string to a date-time object.
+    Convert an RFC 3339 formatted string to a :class:`DateTime`.
 
-    @param rfc3339: An RFC 3339 formatted string.
-    @type rfc3339: L{unicode}
+    :param rfc3339: An RFC-3339 formatted string.
 
-    @return: An date-time object (in UTC) corresponding to C{rfc3339}.
-    @rtype: L{DateTime}
+    :return: A :class:`DateTime` corresponding to :obj:`rfc3339`.
     """
-    if not rfc3339:
-        return None
-    else:
-        datetime = DateTime.strptime(rfc3339, rfc3339_datetime_format)
-        return datetime.replace(tzinfo=utc)
+    return DateTimeParser().parse_iso(rfc3339)
 
 
 
@@ -458,13 +445,13 @@ def incidentFromJSON(root, number, validate=True):
     reportEntries = reportEntriesFromJSON(json_entries)
 
     created = get(
-        root, JSON.incident_created, unicode, transform=rfc3339AsDateTime
+        root, JSON.incident_created, unicode, transform=rfc3339TextAsDateTime
     )
 
     # 2013 format did not have a true created timestamp, but it did have a
     # created state timestamp, which will have to do
     if created is None:
-        created = get(root, JSON._created, unicode, transform=rfc3339AsDateTime)
+        created = get(root, JSON._created, unicode, transform=rfc3339TextAsDateTime)
 
     json_state = get(root, JSON.incident_state, unicode)
 
@@ -547,7 +534,7 @@ def incidentAsJSON(incident):
 
     if incident.created is not None:
         root[JSON.incident_created.value] = (
-            datetimeAsRFC3339(incident.created)
+            dateTimeAsRFC3339Text(incident.created)
         )
 
     if incident.state is not None:
@@ -640,7 +627,7 @@ def reportEntriesFromJSON(json):
                 text=get(entry, JSON.entry_text, unicode),
                 created=get(
                     entry, JSON.entry_created, unicode,
-                    transform=rfc3339AsDateTime,
+                    transform=rfc3339TextAsDateTime,
                 ),
                 system_entry=get(entry, JSON.entry_system, bool, default=False),
             )
@@ -663,7 +650,7 @@ def reportEntriesAsJSON(reportEntries):
         {
             JSON.entry_author.value: entry.author,
             JSON.entry_text.value: entry.text,
-            JSON.entry_created.value: datetimeAsRFC3339(entry.created),
+            JSON.entry_created.value: dateTimeAsRFC3339Text(entry.created),
             JSON.entry_system.value: entry.system_entry,
         }
         for entry in reportEntries
@@ -719,7 +706,7 @@ def incidentReportFromJSON(root, number, validate=True):
         root, JSON.incident_report_summary, unicode
     )
     created = get(
-        root, JSON.incident_report_created, unicode, transform=rfc3339AsDateTime
+        root, JSON.incident_report_created, unicode, transform=rfc3339TextAsDateTime
     )
 
     incidentReport = IncidentReport(
@@ -755,7 +742,7 @@ def incidentReportAsJSON(incidentReport):
 
     if incidentReport.created is not None:
         root[JSON.incident_report_created.value] = (
-            datetimeAsRFC3339(incidentReport.created)
+            dateTimeAsRFC3339Text(incidentReport.created)
         )
 
     if incidentReport.reportEntries is not None:
