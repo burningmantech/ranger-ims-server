@@ -257,7 +257,7 @@ class Storage(object):
         """
         Create the given incident type.
         """
-        assert type(incidentType) is unicode
+        assert type(incidentType) is str
 
         try:
             with self._db as db:
@@ -947,7 +947,7 @@ class Storage(object):
         """
         assert type(event) is Event
 
-        if summary is not None and type(summary) is not unicode:
+        if summary is not None and type(summary) is not str:
             raise InvalidDataError(
                 "Invalid incident summary: {!r}".format(summary)
             )
@@ -968,7 +968,7 @@ class Storage(object):
         """
         assert type(event) is Event
 
-        if name is not None and type(name) is not unicode:
+        if name is not None and type(name) is not str:
             raise InvalidDataError(
                 "Invalid incident location name: {!r}".format(name)
             )
@@ -1065,7 +1065,7 @@ class Storage(object):
         """
         assert type(event) is Event
 
-        if description is not None and type(description) is not unicode:
+        if description is not None and type(description) is not str:
             raise InvalidDataError(
                 "Invalid incident location description: {!r}"
                 .format(description)
@@ -1102,7 +1102,7 @@ class Storage(object):
                         self._query_clearIncidentRangers, (event.id, number)
                     )
                     for handle in rangerHandles:
-                        if type(handle) is not unicode:
+                        if type(handle) is not str:
                             raise InvalidDataError(
                                 "Invalid Ranger handle: {!r}".format(handle)
                             )
@@ -1162,7 +1162,7 @@ class Storage(object):
                         self._query_clearIncidentTypes, (event.id, number)
                     )
                     for incidentType in incidentTypes:
-                        if type(incidentType) is not unicode:
+                        if type(incidentType) is not str:
                             raise InvalidDataError(
                                 "Invalid incident type: {!r}"
                                 .format(incidentType)
@@ -1449,7 +1449,7 @@ class Storage(object):
         """
         Set the summary for the incident report with the given number.
         """
-        if summary is not None and type(summary) is not unicode:
+        if summary is not None and type(summary) is not str:
             raise InvalidDataError(
                 "Invalid incident report summary: {!r}".format(summary)
             )

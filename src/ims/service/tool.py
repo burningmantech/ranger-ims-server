@@ -83,7 +83,7 @@ class ConfigOptionsMixIn(object):
 
             self["configuration"] = configuration
         except Exception as e:
-            exit(ExitStatus.EX_CONFIG, unicode(e))
+            exit(ExitStatus.EX_CONFIG, str(e))
 
 
 

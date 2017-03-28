@@ -58,7 +58,7 @@ class ReadOnlyStorage(object):
 
 
     def _incidentBaseFP(self, number):
-        return self.path.child(unicode(number))
+        return self.path.child(str(number))
 
 
     def _openIncident(self, number, mode):
@@ -193,7 +193,7 @@ class ReadOnlyStorage(object):
 
         @param terms: Search terms.
             Filter out incidents that do not match every given search term.
-        @type terms: iterable of L{unicode}
+        @type terms: iterable of L{str}
 
         @param showClosed: Whether to include closed incidents in result.
         @type showClosed: L{bool}
@@ -430,7 +430,7 @@ class MultiStorage(object):
         except KeyError:
             if name in self:
                 # Try opening the named storage
-                child = self.path.child(unicode(name))
+                child = self.path.child(str(name))
                 if child.isdir:
                     if self.readOnly:
                         storeFactory = ReadOnlyStorage

@@ -71,16 +71,16 @@ class DutyManagementSystem(object):
     def __init__(self, host, database, username, password):
         """
         @param host: The name of the database host to connect to.
-        @type host: L{unicode}
+        @type host: L{str}
 
         @param database: The name of the database to access.
-        @type database: L{unicode}
+        @type database: L{str}
 
         @param username: The user name to use to access the database.
-        @type username: L{unicode}
+        @type username: L{str}
 
         @param password: The password to use to access the database.
-        @type password: L{unicode}
+        @type password: L{str}
         """
         self.host     = host
         self.database = database

@@ -44,7 +44,7 @@ class Element(BaseElement):
         BaseElement.__init__(self, loader=self._loader(name))
 
         self.elementName = name
-        self.elementTitle = unicode(title)
+        self.elementTitle = str(title)
         self.service = service
         self.tag = tag
 

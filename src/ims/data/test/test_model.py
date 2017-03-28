@@ -235,13 +235,13 @@ class IncidentTests(unittest.TestCase):
         """
         L{Incident.validate} of incident with valid incident types.
         """
-        incident = newIncident(incidentTypes=("some unicode",))
+        incident = newIncident(incidentTypes=("some text",))
         incident.validate()
 
 
-    def test_validate_types_notUnicode(self):
+    def test_validate_types_notText(self):
         """
-        L{Incident.validate} of incident with non-unicode incident types.
+        L{Incident.validate} of incident with non-str incident types.
         """
         incident = newIncident(incidentTypes=(b"some bytes",))
         self.assertRaises(InvalidDataError, incident.validate)
@@ -251,13 +251,13 @@ class IncidentTests(unittest.TestCase):
         """
         L{Incident.validate} of incident with valid summary.
         """
-        incident = newIncident(summary="some unicode")
+        incident = newIncident(summary="some text")
         incident.validate()
 
 
-    def test_validate_summary_notUnicode(self):
+    def test_validate_summary_notText(self):
         """
-        L{Incident.validate} of incident with non-unicode summary.
+        L{Incident.validate} of incident with non-str summary.
         """
         incident = newIncident(summary=b"some bytes")
         self.assertRaises(InvalidDataError, incident.validate)
@@ -500,9 +500,9 @@ class ReportEntryTests(unittest.TestCase):
     #     self.assertRaises(InvalidDataError, entry.validate)
 
 
-    def test_validate_author_nonUnicode(self):
+    def test_validate_author_nonText(self):
         """
-        L{ReportEntry.validate} of entry with non-unicode author.
+        L{ReportEntry.validate} of entry with non-str author.
         """
         entry = ReportEntry(
             author=b"Tool", created=utcNow(), text="Something happened!"
@@ -536,9 +536,9 @@ class ReportEntryTests(unittest.TestCase):
     #     self.assertRaises(InvalidDataError, entry.validate)
 
 
-    def test_validate_text_nonUnicode(self):
+    def test_validate_text_nonText(self):
         """
-        L{ReportEntry.validate} of entry with non-unicode text.
+        L{ReportEntry.validate} of entry with non-str text.
         """
         entry = ReportEntry(
             author="", created=utcNow(), text=b"Something happened!"
@@ -642,9 +642,9 @@ class RangerTests(unittest.TestCase):
         ranger_tool.validate()
 
 
-    def test_validate_handle_nonUnicode(self):
+    def test_validate_handle_nonText(self):
         """
-        L{Ranger.validate} of Ranger with non-unicode handle.
+        L{Ranger.validate} of Ranger with non-str handle.
         """
         ranger = Ranger(handle=b"Tool", name="", status="")
         self.assertRaises(InvalidDataError, ranger.validate)
@@ -652,7 +652,7 @@ class RangerTests(unittest.TestCase):
 
     def test_validate_name(self):
         """
-        L{Ranger.validate} of Ranger with non-unicode name.
+        L{Ranger.validate} of Ranger with non-str name.
         """
         ranger = Ranger(
             handle="Tool", name="Wifredo S\xe1nchez Vega", status=""
@@ -660,9 +660,9 @@ class RangerTests(unittest.TestCase):
         ranger.validate()
 
 
-    def test_validate_name_nonUnicode(self):
+    def test_validate_name_nonText(self):
         """
-        L{Ranger.validate} of Ranger with non-unicode name.
+        L{Ranger.validate} of Ranger with non-str name.
         """
         ranger = Ranger(
             handle=b"Tool", name="Wifredo S\xc3\xa1nchez Vega", status=""
@@ -680,9 +680,9 @@ class RangerTests(unittest.TestCase):
         ranger.validate()
 
 
-    def test_validate_status_nonUnicode(self):
+    def test_validate_status_nonText(self):
         """
-        L{Ranger.validate} of Ranger with non-unicode status.
+        L{Ranger.validate} of Ranger with non-str status.
         """
         ranger = Ranger(
             handle=b"Tool", name="Wifredo S\xc3\xa1nchez Vega",
@@ -810,9 +810,9 @@ class LocationTests(unittest.TestCase):
         location.validate()
 
 
-    def test_validate_name_nonUnicode(self):
+    def test_validate_name_nonText(self):
         """
-        L{Location.validate} of location with non-unicode name.
+        L{Location.validate} of location with non-str name.
         """
         location = Location(name=b"Ranger HQ")
         self.assertRaises(InvalidDataError, location.validate)
@@ -828,7 +828,7 @@ class LocationTests(unittest.TestCase):
 
     def test_validate_address_nonAddress(self):
         """
-        L{Location.validate} of location with non-unicode address.
+        L{Location.validate} of location with non-str address.
         """
         location = Location(address="5:45 & Esplanade")
         self.assertRaises(InvalidDataError, location.validate)

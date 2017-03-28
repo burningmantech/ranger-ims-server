@@ -66,7 +66,7 @@ class IncidentState(Names):
         @type constant: L{NamedConstant}
 
         @return: A string description of C{value}.
-        @rtype: L{unicode}
+        @rtype: L{str}
         """
         return {
             cls.new: "New",
@@ -184,7 +184,7 @@ class Event(object):
         if not self.id:
             raise InvalidDataError("Event ID must be a non-empty string")
 
-        _validateIsInstance("ID", self.id, unicode)
+        _validateIsInstance("ID", self.id, str)
 
 
 
@@ -218,7 +218,7 @@ class Incident(object):
         @type priority: L{int}
 
         @param summary: The incident's summary.
-        @type summary: L{unicode}
+        @type summary: L{str}
 
         @param location: The location associated with the incident.
         @type location: L{Location}
@@ -227,7 +227,7 @@ class Incident(object):
         @type rangers: iterable of L{Ranger}
 
         @param incidentTypes: The incident types associated with the incident.
-        @type incidentTypes: iterable of L{unicode}
+        @type incidentTypes: iterable of L{str}
 
         @param reportEntries: The report entries associated with the incident.
         @type reportEntries: iterable of L{ReportEntry}
@@ -323,7 +323,7 @@ class Incident(object):
         report entry.
 
         @return: The incident summary.
-        @rtype: L{unicode}
+        @rtype: L{str}
         """
         if self.summary:
             return self.summary
@@ -372,9 +372,9 @@ class Incident(object):
 
         if self.incidentTypes is not None:
             for incidentType in self.incidentTypes:
-                _validateIsInstance("incident type", incidentType, unicode)
+                _validateIsInstance("incident type", incidentType, str)
 
-        _validateIsInstance("summary", self.summary, unicode, optional=True)
+        _validateIsInstance("summary", self.summary, str, optional=True)
 
         if self.reportEntries is not None:
             for reportEntry in self.reportEntries:
@@ -415,10 +415,10 @@ class ReportEntry(object):
     def __init__(self, author, text, created=None, system_entry=False):
         """
         @param author: The person who created/entered the entry.
-        @type author: L{unicode}
+        @type author: L{str}
 
         @param text: The report entry text.
-        @type text: L{unicode}
+        @type text: L{str}
 
         @param created: The created time of the report entry.
         @type created: L{DateTime}
@@ -504,8 +504,8 @@ class ReportEntry(object):
 
         @raise: L{InvalidDataError} if the report entry does not validate.
         """
-        _validateIsInstance("author", self.author, unicode)
-        _validateIsInstance("text", self.text, unicode)
+        _validateIsInstance("author", self.author, str)
+        _validateIsInstance("text", self.text, str)
         _validateIsInstance("created", self.created, DateTime)
 
 
@@ -523,13 +523,13 @@ class Ranger(object):
     ):
         """
         @param handle: The Ranger's handle.
-        @type handle: L{unicode}
+        @type handle: L{str}
 
         @param name: The Ranger's name.
-        @type name: L{unicode}
+        @type name: L{str}
 
         @param status: The Ranger's status.
-        @type status: L{unicode}
+        @type status: L{str}
         """
         self.handle   = handle
         self.name     = name
@@ -580,13 +580,13 @@ class Ranger(object):
 
         @raise: L{InvalidDataError} if the Ranger does not validate.
         """
-        _validateIsInstance("handle", self.handle, unicode)
+        _validateIsInstance("handle", self.handle, str)
 
         if not self.handle:
             raise InvalidDataError("Ranger handle may not be empty")
 
-        _validateIsInstance("name", self.name, unicode, optional=True)
-        _validateIsInstance("status", self.status, unicode, optional=True)
+        _validateIsInstance("name", self.name, str, optional=True)
+        _validateIsInstance("status", self.status, str, optional=True)
 
 
 
@@ -598,10 +598,10 @@ class Location(object):
     def __init__(self, name=None, address=None):
         """
         @param name: The location's name.
-        @type name: L{unicode}
+        @type name: L{str}
 
         @param address: The location's address.
-        @type address: L{unicode}
+        @type address: L{str}
         """
         self.name    = name
         self.address = address
@@ -669,7 +669,7 @@ class Location(object):
 
         @raise: L{InvalidDataError} if the location does not validate.
         """
-        _validateIsInstance("name", self.name, unicode, optional=True)
+        _validateIsInstance("name", self.name, str, optional=True)
         _validateIsInstance(
             "address", self.address, Address, optional=True, recurse=True
         )
@@ -692,7 +692,7 @@ class TextOnlyAddress(Address):
     def __init__(self, description=None):
         """
         @param description: The address' radial minute.
-        @type description: L{unicode}
+        @type description: L{str}
         """
         self.description = description
 
@@ -737,7 +737,7 @@ class TextOnlyAddress(Address):
 
         @raise: L{InvalidDataError} if the location does not validate.
         """
-        _validateIsInstance("description", self.description, unicode)
+        _validateIsInstance("description", self.description, str)
 
 
     def asRodGarettAddress(self):
@@ -771,7 +771,7 @@ class RodGarettAddress(Address):
         @type radialMinute: L{int}
 
         @param description: The address' radial minute.
-        @type description: L{unicode}
+        @type description: L{str}
         """
         self.concentric   = concentric
         self.radialHour   = radialHour
@@ -890,7 +890,7 @@ class RodGarettAddress(Address):
             "radialMinute", self.radialMinute, int, optional=True
         )
         _validateIsInstance(
-            "description", self.description, unicode, optional=True
+            "description", self.description, str, optional=True
         )
 
         if self.concentric is not None and self.concentric < 0:
@@ -991,7 +991,7 @@ class IncidentReport(object):
         Generate a summary.  This uses the first line of the first report entry.
 
         @return: The incident report summary.
-        @rtype: L{unicode}
+        @rtype: L{str}
         """
         if self.reportEntries is not None:
             for entry in self.reportEntries:

@@ -134,16 +134,16 @@ class KleinService(object):
         @type request: L{IRequest}
 
         @param name: The name of the query parameter to find a value for.
-        @type name: L{unicode}
+        @type name: L{str}
 
         @param default: The default value to return if no query parameter
             specified by C{name} is found in C{request}.
-        @type default: L{unicode}
+        @type default: L{str}
 
         @return: The value of the query parameter specified by C{name}, or
             C{default} if there no such query parameter.  If more than one value
             is found, return the last value found.
-        @rtype: L{unicode}
+        @rtype: L{str}
         """
         values = request.args.get(name.encode("utf-8"))
 
@@ -165,15 +165,15 @@ class KleinService(object):
         @type request: L{IRequest}
 
         @param name: The name of the query parameter to find a value for.
-        @type name: L{unicode}
+        @type name: L{str}
 
         @param default: The default values to return if no query parameter
             specified by C{name} is found in C{request}.
-        @type default: iterable of L{unicode}
+        @type default: iterable of L{str}
 
         @return: The values of the query parameter specified by C{name}, or
             C{default} if there no such query parameter.
-        @rtype: iterable of L{unicode}
+        @rtype: iterable of L{str}
         """
         values = request.args.get(name)
 

@@ -310,7 +310,7 @@ class JSON(Values):
         @type constant: L{ValueConstant}
 
         @return: A string description of C{value}.
-        @rtype: L{unicode}
+        @rtype: L{str}
         """
         value.name.replace("_", " ").decode("utf-8")
 
@@ -358,13 +358,13 @@ def incidentFromJSON(root, number, validate=True):
         root[JSON.incident_number.value] = number
 
     priority = get(root, JSON.incident_priority, int)
-    summary  = get(root, JSON.incident_summary , unicode)
+    summary  = get(root, JSON.incident_summary , str)
     location = get(root, JSON.incident_location, dict)
 
     if location is None:
         # Try pre-2015 attributes
-        location_name    = get(root, JSON._location_name   , unicode)
-        location_address = get(root, JSON._location_address, unicode)
+        location_name    = get(root, JSON._location_name   , str)
+        location_address = get(root, JSON._location_address, str)
 
         if location_name is None and location_address is None:
             location = None
@@ -374,12 +374,12 @@ def incidentFromJSON(root, number, validate=True):
                 address=TextOnlyAddress(location_address),
             )
     else:
-        location_type = get(location, JSON.location_type, unicode)
-        location_name = get(location, JSON.location_name, unicode)
+        location_type = get(location, JSON.location_type, str)
+        location_name = get(location, JSON.location_name, str)
 
         if location_type == JSON.location_type_text.value:
             location_description = get(
-                location, JSON.location_garett_description, unicode
+                location, JSON.location_garett_description, str
             )
 
             if location_description is None:
@@ -398,7 +398,7 @@ def incidentFromJSON(root, number, validate=True):
                 location, JSON.location_garett_radial_minute, int
             )
             location_description = get(
-                location, JSON.location_garett_description, unicode
+                location, JSON.location_garett_description, str
             )
 
             if (
@@ -434,34 +434,34 @@ def incidentFromJSON(root, number, validate=True):
     incidentTypes = get(root, JSON.incident_types, list)
     if incidentTypes is not None:
         for incidentType in incidentTypes:
-            verifyType(unicode, JSON.incident_types, incidentType)
+            verifyType(str, JSON.incident_types, incidentType)
 
     json_entries = get(root, JSON.report_entries, list)
     reportEntries = reportEntriesFromJSON(json_entries)
 
     created = get(
-        root, JSON.incident_created, unicode, transform=rfc3339TextAsDateTime
+        root, JSON.incident_created, str, transform=rfc3339TextAsDateTime
     )
 
     # 2013 format did not have a true created timestamp, but it did have a
     # created state timestamp, which will have to do
     if created is None:
-        created = get(root, JSON._created, unicode, transform=rfc3339TextAsDateTime)
+        created = get(root, JSON._created, str, transform=rfc3339TextAsDateTime)
 
-    json_state = get(root, JSON.incident_state, unicode)
+    json_state = get(root, JSON.incident_state, str)
 
     if json_state is None:
         # Try obsolete attributes
-        if get(root, JSON._closed, unicode) is not None:
+        if get(root, JSON._closed, str) is not None:
             state = IncidentState.closed
 
-        elif get(root, JSON._on_scene, unicode) is not None:
+        elif get(root, JSON._on_scene, str) is not None:
             state = IncidentState.on_scene
 
-        elif get(root, JSON._dispatched, unicode) is not None:
+        elif get(root, JSON._dispatched, str) is not None:
             state = IncidentState.dispatched
 
-        elif get(root, JSON._created, unicode) is not None:
+        elif get(root, JSON._created, str) is not None:
             state = IncidentState.new
 
         else:
@@ -618,10 +618,10 @@ def reportEntriesFromJSON(json):
     else:
         return (
             ReportEntry(
-                author=get(entry, JSON.entry_author, unicode),
-                text=get(entry, JSON.entry_text, unicode),
+                author=get(entry, JSON.entry_author, str),
+                text=get(entry, JSON.entry_text, str),
                 created=get(
-                    entry, JSON.entry_created, unicode,
+                    entry, JSON.entry_created, str,
                     transform=rfc3339TextAsDateTime,
                 ),
                 system_entry=get(entry, JSON.entry_system, bool, default=False),
@@ -698,10 +698,10 @@ def incidentReportFromJSON(root, number, validate=True):
     reportEntries = reportEntriesFromJSON(json_entries)
 
     summary = get(
-        root, JSON.incident_report_summary, unicode
+        root, JSON.incident_report_summary, str
     )
     created = get(
-        root, JSON.incident_report_created, unicode, transform=rfc3339TextAsDateTime
+        root, JSON.incident_report_created, str, transform=rfc3339TextAsDateTime
     )
 
     incidentReport = IncidentReport(
