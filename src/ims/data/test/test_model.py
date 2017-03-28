@@ -573,11 +573,11 @@ class RangerTests(unittest.TestCase):
         L{Ranger.__init__} with default values.
         """
         ranger = Ranger(
-            handle="Tool", name="Wilfredo S\xe1nchez Vega", status="vintage"
+            handle="Tool", name="Wilfredo Sánchez Vega", status="vintage"
         )
 
         self.assertEquals(ranger.handle, "Tool")
-        self.assertEquals(ranger.name, "Wilfredo S\xe1nchez Vega")
+        self.assertEquals(ranger.name, "Wilfredo Sánchez Vega")
         self.assertEquals(ranger.status, "vintage")
 
 
@@ -587,7 +587,7 @@ class RangerTests(unittest.TestCase):
         """
         self.assertEquals(
             str(ranger_tool),
-            "Tool (Wilfredo S\xc3\xa1nchez Vega)"
+            "Tool (Wilfredo Sánchez Vega)"
         )
 
 
@@ -597,7 +597,7 @@ class RangerTests(unittest.TestCase):
         """
         self.assertEquals(
             repr(ranger_tool),
-            "Ranger(handle='Tool',name='Wilfredo S\\xe1nchez Vega',"
+            "Ranger(handle='Tool',name='Wilfredo Sánchez Vega',"
             "status='vintage')"
         )
 
@@ -650,34 +650,14 @@ class RangerTests(unittest.TestCase):
         self.assertRaises(InvalidDataError, ranger.validate)
 
 
-    def test_validate_name(self):
-        """
-        L{Ranger.validate} of Ranger with non-str name.
-        """
-        ranger = Ranger(
-            handle="Tool", name="Wifredo S\xe1nchez Vega", status=""
-        )
-        ranger.validate()
-
-
     def test_validate_name_nonText(self):
         """
         L{Ranger.validate} of Ranger with non-str name.
         """
         ranger = Ranger(
-            handle=b"Tool", name="Wifredo S\xc3\xa1nchez Vega", status=""
+            handle="Tool", name=b"Wilfredo S\xc3\xa1nchez Vega", status=""
         )
         self.assertRaises(InvalidDataError, ranger.validate)
-
-
-    def test_validate_status(self):
-        """
-        L{Ranger.validate} of Ranger with valid status.
-        """
-        ranger = Ranger(
-            handle="Tool", name="Wifredo S\xe1nchez Vega", status="vintage"
-        )
-        ranger.validate()
 
 
     def test_validate_status_nonText(self):
@@ -685,8 +665,7 @@ class RangerTests(unittest.TestCase):
         L{Ranger.validate} of Ranger with non-str status.
         """
         ranger = Ranger(
-            handle=b"Tool", name="Wifredo S\xc3\xa1nchez Vega",
-            status=b"vintage"
+            handle="Tool", name="Wifredo Sánchez Vega", status=b"vintage"
         )
         self.assertRaises(InvalidDataError, ranger.validate)
 
@@ -942,7 +921,7 @@ def newIncident(
 
 
 ranger_tool = Ranger(
-    "Tool", "Wilfredo S\xe1nchez Vega", "vintage"
+    "Tool", "Wilfredo Sánchez Vega", "vintage"
 )
 
 ranger_tulsa = Ranger(
