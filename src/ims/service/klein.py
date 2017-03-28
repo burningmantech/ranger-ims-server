@@ -247,7 +247,7 @@ class KleinService(object):
         if message is None:
             message = "Bad request"
         else:
-            message = u"{}".format(message).encode("utf-8")
+            message = "{}".format(message).encode("utf-8")
         return self.textResource(request, message)
 
 
@@ -272,7 +272,7 @@ class KleinService(object):
         if message is None:
             message = "Internal error"
         else:
-            message = u"{}".format(message).encode("utf-8")
+            message = "{}".format(message).encode("utf-8")
         return self.textResource(request, message)
 
 
@@ -323,7 +323,7 @@ class KleinService(object):
         """
         Not authenticated.
         """
-        element = self.redirect(request, URLs.login, origin=u"o")
+        element = self.redirect(request, URLs.login, origin="o")
         return renderElement(request, element)
 
 

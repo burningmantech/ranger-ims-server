@@ -32,7 +32,7 @@ class LoginPage(Element):
     """
 
     def __init__(self, service, failed=False):
-        Element.__init__(self, u"login", service, title=u"Log In")
+        Element.__init__(self, "login", service, title="Log In")
         self.failed = failed
 
 

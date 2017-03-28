@@ -856,7 +856,7 @@ class Storage(object):
         event.validate()
 
         systemEntry = ReportEntry(
-            text=u"Changed {} to: {}".format(column, value),
+            text="Changed {} to: {}".format(column, value),
             author=author, created=utcNow(), system_entry=True,
         )
 
@@ -1405,7 +1405,7 @@ class Storage(object):
 
     def _setIncidentReportColumn(self, query, number, column, value, author):
         systemEntry = ReportEntry(
-            text=u"Changed {} to: {}".format(column, value),
+            text="Changed {} to: {}".format(column, value),
             author=author, created=utcNow(), system_entry=True,
         )
 
@@ -1862,7 +1862,7 @@ def configure(db):
 
 def dbForFilePath(filePath):
     if filePath is None:
-        fileName = u":memory:"
+        fileName = ":memory:"
     else:
         fileName = filePath.path
 
@@ -1923,7 +1923,7 @@ class QueryPlanExplanation(object):
 
 
         def asText(self):
-            return u"[{},{}] {}".format(
+            return "[{},{}] {}".format(
                 self.nestingOrder, self.selectFrom, self.details
             )
 
@@ -1939,18 +1939,18 @@ class QueryPlanExplanation(object):
 
 
     def asText(self):
-        text = [u"{}:".format(self.name), u"", u"  -- query --", u""]
+        text = ["{}:".format(self.name), "", "  -- query --", ""]
 
         text.extend(
-            u"    {}".format(l)
+            "    {}".format(l)
             for l in self.query.strip().split("\n")
         )
 
         if self.lines:
-            text.extend((u"", "  -- query plan --", u""))
-            text.extend(u"    {}".format(l.asText()) for l in self.lines)
+            text.extend(("", "  -- query plan --", ""))
+            text.extend("    {}".format(l.asText()) for l in self.lines)
 
-        return u"\n".join(text)
+        return "\n".join(text)
 
 
 

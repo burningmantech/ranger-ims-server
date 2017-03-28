@@ -32,7 +32,7 @@ class RedirectPage(Element):
     """
 
     def __init__(self, service, location):
-        Element.__init__(self, u"redirect", service, title=u"Redirect")
+        Element.__init__(self, "redirect", service, title="Redirect")
         self.location = location
 
 

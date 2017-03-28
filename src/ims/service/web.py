@@ -191,7 +191,7 @@ class WebMixIn(object):
     def viewIncidentPage(self, request, eventID, number):
         event = Event(eventID)
 
-        if number == u"new":
+        if number == "new":
             authz = Authorization.writeIncidents
             number = None
         else:
@@ -224,7 +224,7 @@ class WebMixIn(object):
     @route(URLs.viewIncidentReport.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def viewIncidentReportPage(self, request, number):
-        if number == u"new":
+        if number == "new":
             yield self.authorizeRequest(
                 request, None, Authorization.writeIncidentReports
             )

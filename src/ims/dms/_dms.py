@@ -276,8 +276,8 @@ class Position(object):
 
 def fullName(first, middle, last):
     if middle:
-        format = u"{first} {middle}. {last}"
+        format = "{first} {middle}. {last}"
     else:
-        format = u"{first} {last}"
+        format = "{first} {last}"
 
     return format.format(first=first, middle=middle, last=last)

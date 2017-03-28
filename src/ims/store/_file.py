@@ -123,7 +123,7 @@ class ReadOnlyStorage(object):
             for child in self.path.children():
                 name = child.basename()
 
-                if name.startswith(u"."):
+                if name.startswith("."):
                     continue
                 if not child.isfile():
                     continue
@@ -305,11 +305,11 @@ class ReadOnlyStorage(object):
 
 
     def readers(self):
-        return self._acl(u"readers")
+        return self._acl("readers")
 
 
     def writers(self):
-        return self._acl(u"writers")
+        return self._acl("writers")
 
 
     def streetsByName(self):
@@ -407,7 +407,7 @@ class Storage(ReadOnlyStorage):
 
 
     def writers(self):
-        return self._acl(u"writers")
+        return self._acl("writers")
 
 
 
@@ -494,7 +494,7 @@ def ims2014Cleanup(incident):
 
         for reportEntry in incident.reportEntries:
             if reportEntry.author is None:
-                reportEntry.author = u"<unknown>"
+                reportEntry.author = "<unknown>"
 
     if incident.created is None:
         # Wow MAJOR HAXXOR SKILLZ

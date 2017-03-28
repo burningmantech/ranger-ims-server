@@ -25,29 +25,29 @@ from ims.json import locationAsJSON, textFromJSON
 
 
 concentricStreetToNumberMap = {
-    u"Esplanade"        : 0,
-    u"A"                : 1,
-    u"B"                : 2,
-    u"C"                : 3,
-    u"D"                : 4,
-    u"E"                : 5,
-    u"F"                : 6,
-    u"G"                : 7,
-    u"H"                : 8,
-    u"I"                : 9,
-    u"J"                : 10,
-    u"K"                : 11,
-    u"L"                : 12,
-    u"3:00 Plaza"       : 300,
-    u"3:00 Public Plaza": 305,
-    u"4:30 Plaza"       : 430,
-    u"Center Camp Plaza": 600,
-    u"Rte 66"           : 601,
-    u"Rod's Road"       : 602,
-    u"6:00 Public Plaza": 605,
-    u"7:30 Plaza"       : 730,
-    u"9:00 Plaza"       : 900,
-    u"9:00 Public Plaza": 905,
+    "Esplanade"        : 0,
+    "A"                : 1,
+    "B"                : 2,
+    "C"                : 3,
+    "D"                : 4,
+    "E"                : 5,
+    "F"                : 6,
+    "G"                : 7,
+    "H"                : 8,
+    "I"                : 9,
+    "J"                : 10,
+    "K"                : 11,
+    "L"                : 12,
+    "3:00 Plaza"       : 300,
+    "3:00 Public Plaza": 305,
+    "4:30 Plaza"       : 430,
+    "Center Camp Plaza": 600,
+    "Rte 66"           : 601,
+    "Rod's Road"       : 602,
+    "6:00 Public Plaza": 605,
+    "7:30 Plaza"       : 730,
+    "9:00 Plaza"       : 900,
+    "9:00 Public Plaza": 905,
 }
 
 
@@ -115,16 +115,16 @@ def parseLocation(
                     .format(streetAddress)
                 )
 
-    if category == u"Camp within a Village":
+    if category == "Camp within a Village":
         description = textAddress
-    elif category == u"Burning Man Department":
-        description = u"Burning Man Department"
+    elif category == "Burning Man Department":
+        description = "Burning Man Department"
     else:
         description = category
 
     if dimensions:
-        description = u"{} {}".format(
-            description, dimensions.replace(u" ", u"")
+        description = "{} {}".format(
+            description, dimensions.replace(" ", "")
         )
 
     if plaza:
@@ -134,7 +134,7 @@ def parseLocation(
         #         radialHour, radialMinute, concentric, plaza
         #     )
         # )
-        description = u"{}, {}".format(plaza, description)
+        description = "{}, {}".format(plaza, description)
 
     address = RodGarettAddress(
         concentric=concentric,
@@ -149,7 +149,7 @@ def parseConcentricStreetAddress(address):
     number = concentricStreetToNumberMap.get(address, None)
 
     if number is None:
-        if address.startswith(u"Rte 66 Qrtr "):
+        if address.startswith("Rte 66 Qrtr "):
             number = concentricStreetToNumberMap["Rte 66"]
         else:
             raise ConcentricStreetAddressParseError()

@@ -4,7 +4,7 @@ extensions = ["sphinx.ext.autodoc"]
 
 project = "ranger-ims-server"
 copyright = "2016-2017"
-author = u"Wilfredo S\xe1nchez Vega"
+author = "Wilfredo S\xe1nchez Vega"
 
 # File names
 

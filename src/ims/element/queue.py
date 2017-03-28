@@ -37,8 +37,8 @@ class DispatchQueuePage(Element):
 
     def __init__(self, service, event):
         Element.__init__(
-            self, u"queue", service,
-            title=u"{} Dispatch Queue".format(event),
+            self, "queue", service,
+            title="{} Dispatch Queue".format(event),
         )
 
         self.event = event
@@ -61,7 +61,7 @@ class DispatchQueuePage(Element):
     def data_url(self, request, tag):
         return textFromJSON(
             URLs.incidents.asText()
-            .replace(u"<eventID>", self.event.id)
+            .replace("<eventID>", self.event.id)
         )
 
 
@@ -69,7 +69,7 @@ class DispatchQueuePage(Element):
     def view_incidents_url(self, request, tag):
         return textFromJSON(
             URLs.viewIncidents.asText()
-            .replace(u"<eventID>", self.event.id)
+            .replace("<eventID>", self.event.id)
         )
 
 

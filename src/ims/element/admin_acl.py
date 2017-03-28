@@ -34,7 +34,7 @@ class AdminAccessControlPage(Element):
 
     def __init__(self, service):
         Element.__init__(
-            self, u"admin_acl", service, title=u"Admin: Event Access Control"
+            self, "admin_acl", service, title="Admin: Event Access Control"
         )
 
 

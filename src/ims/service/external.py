@@ -40,46 +40,46 @@ class ExternalMixIn(object):
     Mix-in for cached external resources.
     """
 
-    bootstrapVersionNumber  = u"3.3.7"
-    jqueryVersionNumber     = u"3.1.0"
-    dataTablesVersionNumber = u"1.10.12"
-    momentVersionNumber     = u"2.14.1"
-    lscacheVersionNumber    = u"1.0.5"
+    bootstrapVersionNumber  = "3.3.7"
+    jqueryVersionNumber     = "3.1.0"
+    dataTablesVersionNumber = "1.10.12"
+    momentVersionNumber     = "2.14.1"
+    lscacheVersionNumber    = "1.0.5"
 
-    bootstrapVersion  = u"bootstrap-{}-dist".format(bootstrapVersionNumber)
-    jqueryVersion     = u"jquery-{}".format(jqueryVersionNumber)
-    dataTablesVersion = u"DataTables-{}".format(dataTablesVersionNumber)
-    momentVersion     = u"moment-{}".format(momentVersionNumber)
-    lscacheVersion    = u"lscache-{}".format(lscacheVersionNumber)
+    bootstrapVersion  = "bootstrap-{}-dist".format(bootstrapVersionNumber)
+    jqueryVersion     = "jquery-{}".format(jqueryVersionNumber)
+    dataTablesVersion = "DataTables-{}".format(dataTablesVersionNumber)
+    momentVersion     = "moment-{}".format(momentVersionNumber)
+    lscacheVersion    = "lscache-{}".format(lscacheVersionNumber)
 
     bootstrapSourceURL = URL.fromText(
-        u"https://github.com/twbs/bootstrap/releases/download/v{n}/{v}.zip"
+        "https://github.com/twbs/bootstrap/releases/download/v{n}/{v}.zip"
         .format(n=bootstrapVersionNumber, v=bootstrapVersion)
     )
 
     jqueryJSSourceURL = URL.fromText(
-        u"https://code.jquery.com/{v}.min.js"
+        "https://code.jquery.com/{v}.min.js"
         .format(n=jqueryVersionNumber, v=jqueryVersion)
     )
 
     jqueryMapSourceURL = URL.fromText(
-        u"https://code.jquery.com/{v}.min.map"
+        "https://code.jquery.com/{v}.min.map"
         .format(n=jqueryVersionNumber, v=jqueryVersion)
     )
 
     dataTablesSourceURL = URL.fromText(
-        u"https://datatables.net/releases/DataTables-{n}.zip"
+        "https://datatables.net/releases/DataTables-{n}.zip"
         .format(n=dataTablesVersionNumber, v=dataTablesVersion)
     )
 
     momentJSSourceURL = URL.fromText(
-        u"https://cdnjs.cloudflare.com/ajax/libs/moment.js/{n}/moment.min.js"
+        "https://cdnjs.cloudflare.com/ajax/libs/moment.js/{n}/moment.min.js"
         .format(n=momentVersionNumber)
     )
 
     lscacheJSSourceURL = URL.fromText(
-        u"https://raw.githubusercontent.com/pamelafox/lscache/{n}/"
-        u"lscache.min.js"
+        "https://raw.githubusercontent.com/pamelafox/lscache/{n}/"
+        "lscache.min.js"
         .format(n=lscacheVersionNumber)
     )
 

@@ -69,11 +69,11 @@ class IncidentState(Names):
         @rtype: L{unicode}
         """
         return {
-            cls.new: u"New",
-            cls.on_hold: u"On Hold",
-            cls.dispatched: u"Dispatched",
-            cls.on_scene: u"On Scene",
-            cls.closed: u"Closed",
+            cls.new: "New",
+            cls.on_hold: "On Hold",
+            cls.dispatched: "Dispatched",
+            cls.on_scene: "On Scene",
+            cls.closed: "Closed",
         }[value]
 
 
@@ -104,8 +104,8 @@ class IncidentType(Values):
     known to (that is: used by) the software need to be here.
     """
 
-    Admin = ValueConstant(u"Admin")
-    Junk  = ValueConstant(u"Junk")
+    Admin = ValueConstant("Admin")
+    Junk  = ValueConstant("Junk")
 
 
 
@@ -265,7 +265,7 @@ class Incident(object):
 
     def __str__(self):
         return (
-            u"{self.number}: {summary}".format(
+            "{self.number}: {summary}".format(
                 self=self,
                 summary=self.summaryFromReport()
             ).encode("utf-8")
@@ -274,17 +274,17 @@ class Incident(object):
 
     def __repr__(self):
         return (
-            u"{self.__class__.__name__}("
-            u"number={self.number!r},"
-            u"priority={self.priority!r},"
-            u"summary={self.summary!r},"
-            u"location={self.location!r},"
-            u"rangers={self.rangers!r},"
-            u"incidentTypes={self.incidentTypes!r},"
-            u"reportEntries={self.reportEntries!r},"
-            u"created={self.created!r},"
-            u"state={self.state!r},"
-            u"version={self.version!r})"
+            "{self.__class__.__name__}("
+            "number={self.number!r},"
+            "priority={self.priority!r},"
+            "summary={self.summary!r},"
+            "location={self.location!r},"
+            "rangers={self.rangers!r},"
+            "incidentTypes={self.incidentTypes!r},"
+            "reportEntries={self.reportEntries!r},"
+            "created={self.created!r},"
+            "state={self.state!r},"
+            "version={self.version!r})"
             .format(self=self)
         ).encode("utf-8")
 
@@ -330,9 +330,9 @@ class Incident(object):
 
         if self.reportEntries is not None:
             for entry in self.reportEntries:
-                return entry.text.split(u"\n")[0]
+                return entry.text.split("\n")[0]
 
-        return u""
+        return ""
 
 
     def validate(self, noneNumber=False):
@@ -440,7 +440,7 @@ class ReportEntry(object):
             prefix = ""
 
         return (
-            u"{prefix}{self.author}@{self.created}: {self.text}".format(
+            "{prefix}{self.author}@{self.created}: {self.text}".format(
                 self=self, prefix=prefix
             ).encode("utf-8")
         )
@@ -453,10 +453,10 @@ class ReportEntry(object):
             star = ""
 
         return (
-            u"{self.__class__.__name__}("
-            u"author={self.author!r}{star},"
-            u"text={self.text!r},"
-            u"created={self.created!r})"
+            "{self.__class__.__name__}("
+            "author={self.author!r}{star},"
+            "text={self.text!r},"
+            "created={self.created!r})"
             .format(self=self, star=star)
         ).encode("utf-8")
 
@@ -542,16 +542,16 @@ class Ranger(object):
 
     def __str__(self):
         return (
-            u"{self.handle} ({self.name})".format(self=self).encode("utf-8")
+            "{self.handle} ({self.name})".format(self=self).encode("utf-8")
         )
 
 
     def __repr__(self):
         return (
-            u"{self.__class__.__name__}("
-            u"handle={self.handle!r},"
-            u"name={self.name!r},"
-            u"status={self.status!r})"
+            "{self.__class__.__name__}("
+            "handle={self.handle!r},"
+            "name={self.name!r},"
+            "status={self.status!r})"
             .format(self=self)
         ).encode("utf-8")
 
@@ -611,7 +611,7 @@ class Location(object):
         if self.name:
             if self.address:
                 return (
-                    u"{name} ({self.address})".format(
+                    "{name} ({self.address})".format(
                         self=self,
                         name=self.name
                     ).encode("utf-8")
@@ -627,9 +627,9 @@ class Location(object):
 
     def __repr__(self):
         return (
-            u"{self.__class__.__name__}("
-            u"name={self.name!r},"
-            u"address={self.address!r})"
+            "{self.__class__.__name__}("
+            "name={self.name!r},"
+            "address={self.address!r})"
             .format(self=self)
         ).encode("utf-8")
 
@@ -705,7 +705,7 @@ class TextOnlyAddress(Address):
 
     def __repr__(self):
         return (
-            u"{self.__class__.__name__}(description={self.description!r})"
+            "{self.__class__.__name__}(description={self.description!r})"
             .format(self=self)
         ).encode("utf-8")
 
@@ -781,36 +781,36 @@ class RodGarettAddress(Address):
 
     def __str__(self):
         if self.concentric is None:
-            concentric = u""
+            concentric = ""
         else:
             concentric = self.concentric
 
         if self.radialHour is None and self.radialMinute is None:
-            radial = u""
+            radial = ""
         else:
             if self.radialHour is None:
-                radialHour = u"?"
+                radialHour = "?"
             else:
                 radialHour = self.radialHour
 
             if self.radialMinute is None:
-                radialMinute = u"?"
+                radialMinute = "?"
             else:
                 radialMinute = self.radialMinute
-            radial = u"{}:{}".format(radialHour, radialMinute)
+            radial = "{}:{}".format(radialHour, radialMinute)
 
         if not concentric or not radial:
-            at = u""
+            at = ""
         else:
-            at = u"@"
+            at = "@"
 
         if self.description is None:
-            description = u""
+            description = ""
         else:
-            description = u", {}".format(self.description)
+            description = ", {}".format(self.description)
 
         return (
-            u"{concentric}{at}{radial}{description}"
+            "{concentric}{at}{radial}{description}"
             .format(
                 self=self,
                 concentric=concentric,
@@ -823,11 +823,11 @@ class RodGarettAddress(Address):
 
     def __repr__(self):
         return (
-            u"{self.__class__.__name__}("
-            u"concentric={self.concentric!r},"
-            u"radialHour={self.radialHour!r},"
-            u"radialMinute={self.radialMinute!r},"
-            u"description={self.description!r})"
+            "{self.__class__.__name__}("
+            "concentric={self.concentric!r},"
+            "radialHour={self.radialHour!r},"
+            "radialMinute={self.radialMinute!r},"
+            "description={self.description!r})"
             .format(self=self)
         ).encode("utf-8")
 
@@ -948,7 +948,7 @@ class IncidentReport(object):
 
     def __str__(self):
         return (
-            u"{self.number}: {summary}".format(
+            "{self.number}: {summary}".format(
                 self=self,
                 summary=self.summaryFromReport()
             ).encode("utf-8")
@@ -957,10 +957,10 @@ class IncidentReport(object):
 
     def __repr__(self):
         return (
-            u"{self.__class__.__name__}("
-            u"number={self.number!r},"
-            u"created={self.created!r},"
-            u"reportEntries={self.reportEntries!r})"
+            "{self.__class__.__name__}("
+            "number={self.number!r},"
+            "created={self.created!r},"
+            "reportEntries={self.reportEntries!r})"
             .format(self=self)
         ).encode("utf-8")
 
@@ -995,9 +995,9 @@ class IncidentReport(object):
         """
         if self.reportEntries is not None:
             for entry in self.reportEntries:
-                return entry.text.split(u"\n")[0]
+                return entry.text.split("\n")[0]
 
-        return u""
+        return ""
 
 
     def version(self):

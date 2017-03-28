@@ -51,7 +51,7 @@ class Element(BaseElement):
 
     def _loader(self, name):
         return XMLFile(
-            FilePath(__file__).parent().child(u"{}.xhtml".format(name))
+            FilePath(__file__).parent().child("{}.xhtml".format(name))
         )
 
 
@@ -62,7 +62,7 @@ class Element(BaseElement):
     @renderer
     def title(self, request, tag):
         if self.elementTitle is None:
-            title = u""
+            title = ""
         else:
             title = self.elementTitle
 
@@ -128,17 +128,17 @@ class Element(BaseElement):
 
     @renderer
     def nav(self, request, tag=None):
-        return Element(u"base_nav", self.service)
+        return Element("base_nav", self.service)
 
 
     @renderer
     def header(self, request, tag=None):
-        return Element(u"base_header", self.service)
+        return Element("base_header", self.service)
 
 
     @renderer
     def footer(self, request, tag=None):
-        return Element(u"base_footer", self.service)
+        return Element("base_footer", self.service)
 
 
     ##
@@ -148,14 +148,14 @@ class Element(BaseElement):
     @renderer
     def if_logged_in(self, request, tag):
         if getattr(request, "user", None) is None:
-            return u""
+            return ""
         return tag
 
 
     @renderer
     def if_not_logged_in(self, request, tag):
         if getattr(request, "user", None) is not None:
-            return u""
+            return ""
         return tag
 
 
@@ -164,24 +164,24 @@ class Element(BaseElement):
         user = getattr(request, "user", None)
 
         if user is None:
-            return u""
+            return ""
 
         for shortName in user.shortNames:
             if shortName in self.service.config.IMSAdmins:
                 return tag
 
-        return u""
+        return ""
 
     @renderer
     def logged_in_user(self, request, tag):
         user = getattr(request, "user", None)
         if user is None:
-            username = u"(anonymous user)"
+            username = "(anonymous user)"
         else:
             try:
                 username = user.shortNames[0]
             except IndexError:
-                username = u"* NO USER NAME *"
+                username = "* NO USER NAME *"
 
         if tag.tagName == "text":
             return username
@@ -197,16 +197,16 @@ class Element(BaseElement):
     def root(self, request, tag):
         def redirectBack(url):
             # Set origin for redirect back to current page
-            return url.set(u"o", request.uri.decode("utf-8")).asText()
+            return url.set("o", request.uri.decode("utf-8")).asText()
 
         user = getattr(request, "user", None)
         if user is None:
-            username = u"(anonymous user)"
+            username = "(anonymous user)"
         else:
             try:
                 username = user.shortNames[0]
             except IndexError:
-                username = u"* NO USER NAME *"
+                username = "* NO USER NAME *"
 
         slots = dict(user=username)
 
@@ -227,7 +227,7 @@ class Element(BaseElement):
             return (
                 tag.clone()(
                     tags.a(
-                        event, href=queue.replace(u"<eventID>", event)
+                        event, href=queue.replace("<eventID>", event)
                     )
                 )
                 for event in events

@@ -33,5 +33,5 @@ class AdminPage(Element):
 
     def __init__(self, service):
         Element.__init__(
-            self, u"admin", service, title=u"Admin"
+            self, "admin", service, title="Admin"
         )

@@ -34,11 +34,11 @@ class RootPage(Element):
 
     def __init__(self, service):
         Element.__init__(
-            self, u"root", service,
-            title=u"Ranger Incident Management System",
+            self, "root", service,
+            title="Ranger Incident Management System",
         )
 
 
     @renderer
     def new_incident_report(self, request, tag):
-        return tag(href=URLs.viewIncidentReports.child(u"new").asText())
+        return tag(href=URLs.viewIncidentReports.child("new").asText())

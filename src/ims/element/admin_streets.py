@@ -34,8 +34,8 @@ class AdminStreetsPage(Element):
 
     def __init__(self, service):
         Element.__init__(
-            self, u"admin_streets", service,
-            title=u"Admin: Event Concentric Streets",
+            self, "admin_streets", service,
+            title="Admin: Event Concentric Streets",
         )
 
 

@@ -103,15 +103,15 @@ class AuthMixIn(object):
         def matchACL(user, acl):
             acl = set(acl)
 
-            if u"*" in acl:
+            if "*" in acl:
                 returnValue(True)
 
             for shortName in user.shortNames:
-                if u"person:{}".format(shortName) in acl:
+                if "person:{}".format(shortName) in acl:
                     returnValue(True)
 
             for group in (yield user.groups()):
-                if u"position:{}".format(group.fullNames[0]) in acl:
+                if "position:{}".format(group.fullNames[0]) in acl:
                     returnValue(True)
 
             returnValue(False)
@@ -218,8 +218,8 @@ class AuthMixIn(object):
     @route(URLs.login.asText(), methods=("POST",))
     @inlineCallbacks
     def loginSubmit(self, request):
-        username = self.queryValue(request, u"username")
-        password = self.queryValue(request, u"password", default=u"")
+        username = self.queryValue(request, "username")
+        password = self.queryValue(request, "password", default="")
 
         if username is None:
             user = None
@@ -239,7 +239,7 @@ class AuthMixIn(object):
                 session = request.getSession()
                 session.user = user
 
-                url = self.queryValue(request, u"o")
+                url = self.queryValue(request, "o")
                 if url is None:
                     location = URLs.prefix  # Default to application home
                 else:

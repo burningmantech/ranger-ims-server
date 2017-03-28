@@ -47,10 +47,10 @@ class FieldName(Names):
     DMS field names.
     """
     status = NamedConstant()
-    status.description = u"status"
+    status.description = "status"
 
     dmsID = NamedConstant()
-    dmsID.description = u"DMS ID"
+    dmsID.description = "DMS ID"
     dmsID.valueType = int
 
     onSite = NamedConstant()
@@ -134,7 +134,7 @@ class RangerDirectoryRecord(BaseDirectoryRecord):
     """
 
     def __init__(self, service, ranger):
-        uid = u"person:{}".format(ranger.dmsID)
+        uid = "person:{}".format(ranger.dmsID)
 
         if ranger.email is None:
             emailAddresses = ()
@@ -189,10 +189,10 @@ class PositionDirectoryRecord(BaseDirectoryRecord):
     """
 
     def __init__(self, service, position):
-        uid = u"position:{}".format(position.positionID)
+        uid = "position:{}".format(position.positionID)
 
         memberUIDs = tuple(
-            u"person:{}".format(ranger.dmsID) for ranger in position.members
+            "person:{}".format(ranger.dmsID) for ranger in position.members
         )
 
         fields = {

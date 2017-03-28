@@ -34,7 +34,7 @@ class AdminIncidentTypesPage(Element):
 
     def __init__(self, service):
         Element.__init__(
-            self, u"admin_types", service, title=u"Admin: Incident Types"
+            self, "admin_types", service, title="Admin: Incident Types"
         )
 
 

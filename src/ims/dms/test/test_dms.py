@@ -47,10 +47,10 @@ class DutyManagementSystemTests(unittest.TestCase):
         """
         Gimme a DMS.
         """
-        self.host = u"the-server"
-        self.database = u"the-db"
-        self.username = u"the-user"
-        self.password = u"the-password"
+        self.host = "the-server"
+        self.database = "the-db"
+        self.username = "the-user"
+        self.password = "the-password"
 
         return DutyManagementSystem(
             host=self.host,
@@ -196,27 +196,27 @@ class DummyADBAPI(object):
 
 cannedPersonnel = (
     (
-        1, u"Easy E", u"Eric", u"P", u"Grant", u"easye@example.com",
-        u"active", True, u"easypass",
+        1, "Easy E", "Eric", "P", "Grant", "easye@example.com",
+        "active", True, "easypass",
     ),
     (
-        2, u"Weso", u"Wes", u"", u"Johnson", u"weso@example.com",
-        u"active", True, u"wespass",
+        2, "Weso", "Wes", "", "Johnson", "weso@example.com",
+        "active", True, "wespass",
     ),
     (
-        3, u"SciFi", u"Fred", u"", u"McCord", u"scifi@example.com",
-        u"active", True, u"scipass",
+        3, "SciFi", "Fred", "", "McCord", "scifi@example.com",
+        "active", True, "scipass",
     ),
     (
-        4, u"Slumber", u"Sleepy", u"T", u"Dwarf", u"slumber@example.com",
-        u"inactive", False, u"sleepypass",
+        4, "Slumber", "Sleepy", "T", "Dwarf", "slumber@example.com",
+        "inactive", False, "sleepypass",
     ),
     (
-        5, u"Tool", u"Wilfredo", u"", u"Sanchez", u"tool@example.com",
-        u"vintage", True, u"toolpass",
+        5, "Tool", "Wilfredo", "", "Sanchez", "tool@example.com",
+        "vintage", True, "toolpass",
     ),
     (
-        6, u"Tulsa", u"Curtis", u"", u"Kline", u"tulsa@example.com",
-        u"vintage", True, u"tulsapass",
+        6, "Tulsa", "Curtis", "", "Kline", "tulsa@example.com",
+        "vintage", True, "tulsapass",
     ),
 )

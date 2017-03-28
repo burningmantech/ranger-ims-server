@@ -102,7 +102,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         self.assertRaises(
             InvalidDataError,
-            incidentFromJSON, u"", number=1, validate=False,
+            incidentFromJSON, "", number=1, validate=False,
         )
 
 
@@ -113,7 +113,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         """
         self.assertRaises(
             InvalidDataError,
-            incidentFromJSON, {u"xyzzy": u"foo"}, number=1, validate=False,
+            incidentFromJSON, {"xyzzy": "foo"}, number=1, validate=False,
         )
 
 
@@ -187,11 +187,11 @@ class IncidentDeserializationTests(unittest.TestCase):
         incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
-                JSON.incident_summary.value: u"A B C",
+                JSON.incident_summary.value: "A B C",
             },
             number=1, validate=False
         )
-        self.assertEquals(incident.summary, u"A B C")
+        self.assertEquals(incident.summary, "A B C")
 
 
     def test_incidentFromJSONTextOnlyLocation(self):
@@ -203,9 +203,9 @@ class IncidentDeserializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
                     JSON.location_type.value: JSON.location_type_text.value,
-                    JSON.location_name.value: u"Ranger Outpost Zero",
+                    JSON.location_name.value: "Ranger Outpost Zero",
                     JSON.location_garett_description.value: (
-                        u"Halfway between the Man and the Temple"
+                        "Halfway between the Man and the Temple"
                     ),
                 },
             },
@@ -214,9 +214,9 @@ class IncidentDeserializationTests(unittest.TestCase):
         self.assertEquals(
             incident.location,
             Location(
-                name=u"Ranger Outpost Zero",
+                name="Ranger Outpost Zero",
                 address=TextOnlyAddress(
-                    description=u"Halfway between the Man and the Temple",
+                    description="Halfway between the Man and the Temple",
                 ),
             )
         )
@@ -232,7 +232,7 @@ class IncidentDeserializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
                     JSON.location_type.value: JSON.location_type_text.value,
-                    JSON.location_name.value: u"Ranger Outpost Zero",
+                    JSON.location_name.value: "Ranger Outpost Zero",
                     JSON.location_garett_description.value: None,
                 },
             },
@@ -240,7 +240,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
         self.assertEquals(
             incident.location,
-            Location(name=u"Ranger Outpost Zero", address=None)
+            Location(name="Ranger Outpost Zero", address=None)
         )
 
 
@@ -253,11 +253,11 @@ class IncidentDeserializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
                     JSON.location_type.value: JSON.location_type_garett.value,
-                    JSON.location_name.value: u"Tokyo",
+                    JSON.location_name.value: "Tokyo",
                     JSON.location_garett_concentric.value: 3,  # 3 == C
                     JSON.location_garett_radial_hour.value: 9,
                     JSON.location_garett_radial_minute.value: 0,
-                    JSON.location_garett_description.value: u"Opposite ESD",
+                    JSON.location_garett_description.value: "Opposite ESD",
                 },
             },
             number=1, validate=False
@@ -265,10 +265,10 @@ class IncidentDeserializationTests(unittest.TestCase):
         self.assertEquals(
             incident.location,
             Location(
-                name=u"Tokyo",
+                name="Tokyo",
                 address=RodGarettAddress(
                     concentric=3, radialHour=9, radialMinute=0,
-                    description=u"Opposite ESD",
+                    description="Opposite ESD",
                 ),
             )
         )
@@ -283,7 +283,7 @@ class IncidentDeserializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
                     JSON.location_type.value: JSON.location_type_garett.value,
-                    JSON.location_name.value: u"Tokyo",
+                    JSON.location_name.value: "Tokyo",
                     JSON.location_garett_concentric.value: None,
                     JSON.location_garett_radial_hour.value: None,
                     JSON.location_garett_radial_minute.value: None,
@@ -294,7 +294,7 @@ class IncidentDeserializationTests(unittest.TestCase):
         )
         self.assertEquals(
             incident.location,
-            Location(name=u"Tokyo", address=None)
+            Location(name="Tokyo", address=None)
         )
 
 
@@ -305,14 +305,14 @@ class IncidentDeserializationTests(unittest.TestCase):
         incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
-                JSON._location_name.value: u"Tokyo",
-                JSON._location_address.value: u"9:00 & C",
+                JSON._location_name.value: "Tokyo",
+                JSON._location_address.value: "9:00 & C",
             },
             number=1, validate=False
         )
         self.assertEquals(
             incident.location,
-            Location(name=u"Tokyo", address=TextOnlyAddress(u"9:00 & C"))
+            Location(name="Tokyo", address=TextOnlyAddress("9:00 & C"))
         )
 
 
@@ -350,15 +350,15 @@ class IncidentDeserializationTests(unittest.TestCase):
         incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
-                JSON.ranger_handles.value: [u"Tool", u"Tulsa"],
+                JSON.ranger_handles.value: ["Tool", "Tulsa"],
             },
             number=1, validate=False
         )
         self.assertEquals(
             incident.rangers,
             frozenset((
-                Ranger(u"Tool", None, None),
-                Ranger(u"Tulsa", None, None),
+                Ranger("Tool", None, None),
+                Ranger("Tulsa", None, None),
             ))
         )
 
@@ -395,12 +395,12 @@ class IncidentDeserializationTests(unittest.TestCase):
         incident = incidentFromJSON(
             {
                 JSON.incident_number.value: 1,
-                JSON.incident_types.value: [u"Footsie", u"Jacks"],
+                JSON.incident_types.value: ["Footsie", "Jacks"],
             },
             number=1, validate=False
         )
         self.assertEquals(
-            incident.incidentTypes, frozenset((u"Footsie", u"Jacks"))
+            incident.incidentTypes, frozenset(("Footsie", "Jacks"))
         )
 
 
@@ -440,13 +440,13 @@ class IncidentDeserializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.report_entries.value: [
                     {
-                        JSON.entry_author.value: u"Tool",
-                        JSON.entry_text.value: u"1 2 3",
+                        JSON.entry_author.value: "Tool",
+                        JSON.entry_text.value: "1 2 3",
                         JSON.entry_created.value: datetimeAsRFC3339(time1),
                     },
                     {
-                        JSON.entry_author.value: u"Tulsa",
-                        JSON.entry_text.value: u"A B C",
+                        JSON.entry_author.value: "Tulsa",
+                        JSON.entry_text.value: "A B C",
                         JSON.entry_created.value: datetimeAsRFC3339(time2),
                     },
                 ],
@@ -456,8 +456,8 @@ class IncidentDeserializationTests(unittest.TestCase):
         self.assertEquals(
             incident.reportEntries,
             (
-                ReportEntry(author=u"Tool", text=u"1 2 3", created=time1),
-                ReportEntry(author=u"Tulsa", text=u"A B C", created=time2),
+                ReportEntry(author="Tool", text="1 2 3", created=time1),
+                ReportEntry(author="Tulsa", text="A B C", created=time2),
             )
         )
 
@@ -550,7 +550,7 @@ class IncidentDeserializationTests(unittest.TestCase):
             incident = incidentFromJSON(
                 {
                     JSON.incident_number.value: 1,
-                    json_key: u"2012-09-01T21:00:00Z",
+                    json_key: "2012-09-01T21:00:00Z",
                 },
                 number=1, validate=False
             )
@@ -593,9 +593,9 @@ class IncidentSerializationTests(unittest.TestCase):
         self.assertEquals(
             {
                 JSON.incident_number.value: 1,
-                JSON.incident_summary.value: u"A B C",
+                JSON.incident_summary.value: "A B C",
             },
-            incidentAsJSON(Incident(number=1, summary=u"A B C"))
+            incidentAsJSON(Incident(number=1, summary="A B C"))
         )
 
 
@@ -607,7 +607,7 @@ class IncidentSerializationTests(unittest.TestCase):
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
-                    JSON.location_name.value: u"Tokyo",
+                    JSON.location_name.value: "Tokyo",
                     JSON.location_type.value: JSON.location_type_text.value,
                     JSON.location_text_description.value: None,
                 },
@@ -615,7 +615,7 @@ class IncidentSerializationTests(unittest.TestCase):
             incidentAsJSON(
                 Incident(
                     number=1,
-                    location=Location(name=u"Tokyo", address=None),
+                    location=Location(name="Tokyo", address=None),
                 )
             )
         )
@@ -651,10 +651,10 @@ class IncidentSerializationTests(unittest.TestCase):
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
-                    JSON.location_name.value: u"Ranger Outpost Zero",
+                    JSON.location_name.value: "Ranger Outpost Zero",
                     JSON.location_type.value: JSON.location_type_text.value,
                     JSON.location_text_description.value: (
-                        u"Halfway between the Man and the Temple"
+                        "Halfway between the Man and the Temple"
                     ),
                 },
             },
@@ -662,10 +662,10 @@ class IncidentSerializationTests(unittest.TestCase):
                 Incident(
                     number=1,
                     location=Location(
-                        name=u"Ranger Outpost Zero",
+                        name="Ranger Outpost Zero",
                         address=TextOnlyAddress(
                             description=(
-                                u"Halfway between the Man and the Temple"
+                                "Halfway between the Man and the Temple"
                             )
                         ),
                     ),
@@ -682,7 +682,7 @@ class IncidentSerializationTests(unittest.TestCase):
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
-                    JSON.location_name.value: u"Ranger Outpost Zero",
+                    JSON.location_name.value: "Ranger Outpost Zero",
                     JSON.location_type.value: JSON.location_type_text.value,
                     JSON.location_text_description.value: None,
                 },
@@ -691,7 +691,7 @@ class IncidentSerializationTests(unittest.TestCase):
                 Incident(
                     number=1,
                     location=Location(
-                        name=u"Ranger Outpost Zero",
+                        name="Ranger Outpost Zero",
                         address=TextOnlyAddress(description=None),
                     ),
                 )
@@ -707,7 +707,7 @@ class IncidentSerializationTests(unittest.TestCase):
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
-                    JSON.location_name.value: u"Tokyo",
+                    JSON.location_name.value: "Tokyo",
                     JSON.location_type.value: JSON.location_type_garett.value,
                     JSON.location_garett_concentric.value: 3,  # 3 == C
                     JSON.location_garett_radial_hour.value: 9,
@@ -721,7 +721,7 @@ class IncidentSerializationTests(unittest.TestCase):
                 Incident(
                     number=1,
                     location=Location(
-                        name=u"Tokyo",
+                        name="Tokyo",
                         address=RodGarettAddress(
                             concentric=3, radialHour=9, radialMinute=0,
                             description="Back of 9:00 plaza, opposite Medical",
@@ -741,7 +741,7 @@ class IncidentSerializationTests(unittest.TestCase):
             {
                 JSON.incident_number.value: 1,
                 JSON.incident_location.value: {
-                    JSON.location_name.value: u"Tokyo",
+                    JSON.location_name.value: "Tokyo",
                     JSON.location_type.value: JSON.location_type_garett.value,
                     JSON.location_garett_concentric.value: None,
                     JSON.location_garett_radial_hour.value: None,
@@ -753,7 +753,7 @@ class IncidentSerializationTests(unittest.TestCase):
                 Incident(
                     number=1,
                     location=Location(
-                        name=u"Tokyo",
+                        name="Tokyo",
                         address=RodGarettAddress(
                             concentric=None,
                             radialHour=None,
@@ -774,8 +774,8 @@ class IncidentSerializationTests(unittest.TestCase):
             Incident(
                 number=1,
                 rangers=(
-                    Ranger(u"Tool", None, None),
-                    Ranger(u"Tulsa", None, None),
+                    Ranger("Tool", None, None),
+                    Ranger("Tulsa", None, None),
                 ),
             )
         )
@@ -787,7 +787,7 @@ class IncidentSerializationTests(unittest.TestCase):
         self.assertEquals(result[JSON.incident_number.value], 1)
         self.assertEquals(
             frozenset(result[JSON.ranger_handles.value]),
-            frozenset((u"Tool", u"Tulsa"))
+            frozenset(("Tool", "Tulsa"))
         )
 
 
@@ -811,7 +811,7 @@ class IncidentSerializationTests(unittest.TestCase):
         result = incidentAsJSON(
             Incident(
                 number=1,
-                incidentTypes=(u"Footsie", u"Jacks"),
+                incidentTypes=("Footsie", "Jacks"),
             )
         )
 
@@ -822,7 +822,7 @@ class IncidentSerializationTests(unittest.TestCase):
         self.assertEquals(result[JSON.incident_number.value], 1)
         self.assertEquals(
             frozenset(result[JSON.incident_types.value]),
-            frozenset((u"Footsie", u"Jacks"))
+            frozenset(("Footsie", "Jacks"))
         )
 
 
@@ -848,14 +848,14 @@ class IncidentSerializationTests(unittest.TestCase):
                 JSON.incident_number.value: 1,
                 JSON.report_entries.value: [
                     {
-                        JSON.entry_author.value: u"Tool",
-                        JSON.entry_text.value: u"1 2 3",
+                        JSON.entry_author.value: "Tool",
+                        JSON.entry_text.value: "1 2 3",
                         JSON.entry_created.value: datetimeAsRFC3339(time1),
                         JSON.entry_system.value: False,
                     },
                     {
-                        JSON.entry_author.value: u"Tulsa",
-                        JSON.entry_text.value: u"A B C",
+                        JSON.entry_author.value: "Tulsa",
+                        JSON.entry_text.value: "A B C",
                         JSON.entry_created.value: datetimeAsRFC3339(time2),
                         JSON.entry_system.value: False,
                     },
@@ -866,10 +866,10 @@ class IncidentSerializationTests(unittest.TestCase):
                     number=1,
                     reportEntries=(
                         ReportEntry(
-                            author=u"Tool", text=u"1 2 3", created=time1
+                            author="Tool", text="1 2 3", created=time1
                         ),
                         ReportEntry(
-                            author=u"Tulsa", text=u"A B C", created=time2
+                            author="Tulsa", text="A B C", created=time2
                         ),
                     ),
                 )
@@ -940,14 +940,14 @@ class RangerSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.ranger_handle.value: u"Tool",
+                JSON.ranger_handle.value: "Tool",
                 JSON.ranger_name.value: None,
                 JSON.ranger_status.value: None,
                 JSON.ranger_dms_id.value: None,
                 JSON.ranger_email.value: None,
                 JSON.ranger_on_site.value: None,
             },
-            rangerAsJSON(Ranger(handle=u"Tool", name=None, status=None))
+            rangerAsJSON(Ranger(handle="Tool", name=None, status=None))
         )
 
 
@@ -957,16 +957,16 @@ class RangerSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             {
-                JSON.ranger_handle.value: u"Tool",
-                JSON.ranger_name.value: u"Wilfredo S\xe1nchez",
-                JSON.ranger_status.value: u"vintage",
+                JSON.ranger_handle.value: "Tool",
+                JSON.ranger_name.value: "Wilfredo S\xe1nchez",
+                JSON.ranger_status.value: "vintage",
                 JSON.ranger_dms_id.value: 1234,
-                JSON.ranger_email.value: u"tool@burningman.org",
+                JSON.ranger_email.value: "tool@burningman.org",
                 JSON.ranger_on_site.value: False,
             },
             rangerAsJSON(Ranger(
-                handle=u"Tool", name=u"Wilfredo S\xe1nchez", status=u"vintage",
-                dmsID=1234, email=u"tool@burningman.org", onSite=False,
+                handle="Tool", name="Wilfredo S\xe1nchez", status="vintage",
+                dmsID=1234, email="tool@burningman.org", onSite=False,
             ))
         )
 
@@ -984,10 +984,10 @@ class LocationSerializationTests(unittest.TestCase):
         self.assertEquals(
             {
                 "type": "text",
-                "name": u"Ranger Outpost Tokyo",
+                "name": "Ranger Outpost Tokyo",
                 "description": None,
             },
-            locationAsJSON(Location(name=u"Ranger Outpost Tokyo"))
+            locationAsJSON(Location(name="Ranger Outpost Tokyo"))
         )
 
     def test_locationAsJSONTextOnlyAddress(self):
@@ -998,9 +998,9 @@ class LocationSerializationTests(unittest.TestCase):
             {
                 "type": "text",
                 "name": None,
-                "description": u"The Temple",
+                "description": "The Temple",
             },
-            locationAsJSON(Location(address=TextOnlyAddress(u"The Temple")))
+            locationAsJSON(Location(address=TextOnlyAddress("The Temple")))
         )
 
     # FIXME: more complete testing of locationAsJSON() is in serialization

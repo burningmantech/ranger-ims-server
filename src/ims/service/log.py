@@ -45,7 +45,7 @@ def combinedLogFormatter(timestamp, request):
         except Exception:
             username = _escape(repr(username))
     else:
-        username = u"-"
+        username = "-"
 
     line = (
         u'"%(ip)s" %(user)s - %(timestamp)s "%(method)s %(uri)s %(protocol)s" '
@@ -56,7 +56,7 @@ def combinedLogFormatter(timestamp, request):
             uri=_escape(request.uri),
             protocol=_escape(request.clientproto),
             code=request.code,
-            length=request.sentLength or u"-",
+            length=request.sentLength or "-",
             referrer=referrer,
             agent=agent,
             user=username,

@@ -120,8 +120,8 @@ class IncidentTests(unittest.TestCase):
         """
         L{Incident.reportEntries} is sorted.
         """
-        r1 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 1))
-        r2 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 2))
+        r1 = ReportEntry("", "", created=DateTime(1972, 6, 29, 12, 0, 1))
+        r2 = ReportEntry("", "", created=DateTime(1972, 6, 29, 12, 0, 2))
 
         for entries in ((r1, r2), (r2, r1)):
             incident = newIncident(reportEntries=entries)
@@ -208,8 +208,8 @@ class IncidentTests(unittest.TestCase):
         """
         incident = newIncident(
             location=Location(
-                name=u"Name",
-                address=TextOnlyAddress(u"Address"),
+                name="Name",
+                address=TextOnlyAddress("Address"),
             )
         )
         incident.validate()
@@ -235,7 +235,7 @@ class IncidentTests(unittest.TestCase):
         """
         L{Incident.validate} of incident with valid incident types.
         """
-        incident = newIncident(incidentTypes=(u"some unicode",))
+        incident = newIncident(incidentTypes=("some unicode",))
         incident.validate()
 
 
@@ -251,7 +251,7 @@ class IncidentTests(unittest.TestCase):
         """
         L{Incident.validate} of incident with valid summary.
         """
-        incident = newIncident(summary=u"some unicode")
+        incident = newIncident(summary="some unicode")
         incident.validate()
 
 
@@ -270,8 +270,8 @@ class IncidentTests(unittest.TestCase):
         incident = newIncident(
             reportEntries=[
                 ReportEntry(
-                    author=u"Tool",
-                    text=u"All out of no. 2 pencils. Need air drop stat.",
+                    author="Tool",
+                    text="All out of no. 2 pencils. Need air drop stat.",
                     created=DateTime.now(),
                 ),
             ]
@@ -343,7 +343,7 @@ class IncidentTests(unittest.TestCase):
         """
         L{Incident.validate} of incident with non-int priority.
         """
-        incident = newIncident(priority=u"1")
+        incident = newIncident(priority="1")
         self.assertRaises(InvalidDataError, incident.validate)
 
 
@@ -369,10 +369,10 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.__init__} with given values.
         """
         dt = utcNow()
-        entry = ReportEntry(author=u"Tool", created=dt, text=u"xyzzy")
+        entry = ReportEntry(author="Tool", created=dt, text="xyzzy")
 
-        self.assertEquals(entry.author, u"Tool")
-        self.assertEquals(entry.text, u"xyzzy")
+        self.assertEquals(entry.author, "Tool")
+        self.assertEquals(entry.text, "xyzzy")
         self.assertTrue(entry.created == dt)
         self.assertIdentical(entry.system_entry, False)
 
@@ -382,8 +382,8 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.__str__}
         """
         entry = ReportEntry(
-            author=u"Tool",
-            text=u"Something happened!",
+            author="Tool",
+            text="Something happened!",
             created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertEquals(
@@ -397,8 +397,8 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.__repr__}
         """
         entry = ReportEntry(
-            author=u"Tool",
-            text=u"Something happened!",
+            author="Tool",
+            text="Something happened!",
             created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertEquals(
@@ -416,13 +416,13 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.__eq__} between two different entries.
         """
         entry1 = ReportEntry(
-            author=u"Tool",
-            text=u"Something happened!",
+            author="Tool",
+            text="Something happened!",
             created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         entry2 = ReportEntry(
-            author=u"Tool",
-            text=u"Something else happened!",
+            author="Tool",
+            text="Something else happened!",
             created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertNotEquals(entry1, entry2)
@@ -433,13 +433,13 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.__eq__} between equal entries.
         """
         entry1a = ReportEntry(
-            author=u"Tool",
-            text=u"Something happened!",
+            author="Tool",
+            text="Something happened!",
             created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         entry1b = ReportEntry(
-            author=u"Tool",
-            text=u"Something happened!",
+            author="Tool",
+            text="Something happened!",
             created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertEquals(entry1a, entry1a)
@@ -451,8 +451,8 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.__eq__} between entry and other type.
         """
         entry = ReportEntry(
-            author=u"Tool",
-            text=u"Something happened!",
+            author="Tool",
+            text="Something happened!",
             created=DateTime(1972, 6, 29, 12, 0, 0),
         )
         self.assertNotEquals(entry, object())
@@ -464,9 +464,9 @@ class ReportEntryTests(unittest.TestCase):
         """
         # Define r2 first so we might notice if sort order is (incorrectly)
         # defined by object id (which seems to be the default in CPython)
-        r2 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 2))
-        r1 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 1))
-        r3 = ReportEntry(u"", u"", created=DateTime(1972, 6, 29, 12, 0, 3))
+        r2 = ReportEntry("", "", created=DateTime(1972, 6, 29, 12, 0, 2))
+        r1 = ReportEntry("", "", created=DateTime(1972, 6, 29, 12, 0, 1))
+        r3 = ReportEntry("", "", created=DateTime(1972, 6, 29, 12, 0, 3))
 
         for entries in ((r1, r2, r3), (r3, r2, r1)):
             self.assertEquals(sorted(entries), [r1, r2, r3])
@@ -477,7 +477,7 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.validate} of valid entry.
         """
         entry = ReportEntry(
-            author=u"Tool", created=utcNow(), text=u"Something happened!"
+            author="Tool", created=utcNow(), text="Something happened!"
         )
         entry.validate()
 
@@ -487,7 +487,7 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.validate} of entry with L{None} author.
         """
         entry = ReportEntry(
-            author=None, created=utcNow(), text=u"Something happened!"
+            author=None, created=utcNow(), text="Something happened!"
         )
         self.assertRaises(InvalidDataError, entry.validate)
 
@@ -496,7 +496,7 @@ class ReportEntryTests(unittest.TestCase):
     #     """
     #     L{ReportEntry.validate} of entry with empty author.
     #     """
-    #     entry = ReportEntry(author=u"", text=u"Something happened!")
+    #     entry = ReportEntry(author="", text="Something happened!")
     #     self.assertRaises(InvalidDataError, entry.validate)
 
 
@@ -505,7 +505,7 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.validate} of entry with non-unicode author.
         """
         entry = ReportEntry(
-            author=b"Tool", created=utcNow(), text=u"Something happened!"
+            author=b"Tool", created=utcNow(), text="Something happened!"
         )
         self.assertRaises(InvalidDataError, entry.validate)
 
@@ -515,7 +515,7 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.validate} of entry with valid text.
         """
         entry = ReportEntry(
-            author=u"Tool", created=utcNow(), text=u"Something happened!"
+            author="Tool", created=utcNow(), text="Something happened!"
         )
         entry.validate()
 
@@ -524,7 +524,7 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of entry with L{None} text.
         """
-        entry = ReportEntry(author=u"Tool", created=utcNow(), text=None)
+        entry = ReportEntry(author="Tool", created=utcNow(), text=None)
         self.assertRaises(InvalidDataError, entry.validate)
 
 
@@ -532,7 +532,7 @@ class ReportEntryTests(unittest.TestCase):
     #     """
     #     L{ReportEntry.validate} of entry with empty text.
     #     """
-    #     entry = ReportEntry(author=u"Tool", text=u"")
+    #     entry = ReportEntry(author="Tool", text="")
     #     self.assertRaises(InvalidDataError, entry.validate)
 
 
@@ -541,7 +541,7 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.validate} of entry with non-unicode text.
         """
         entry = ReportEntry(
-            author=u"", created=utcNow(), text=b"Something happened!"
+            author="", created=utcNow(), text=b"Something happened!"
         )
         self.assertRaises(InvalidDataError, entry.validate)
 
@@ -550,7 +550,7 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of entry with valid created time.
         """
-        entry = ReportEntry(author=u"", text=u"", created=DateTime.now())
+        entry = ReportEntry(author="", text="", created=DateTime.now())
         entry.validate()
 
 
@@ -558,7 +558,7 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of entry with non-DateTime created time.
         """
-        entry = ReportEntry(author=u"", text=u"", created=0)
+        entry = ReportEntry(author="", text="", created=0)
         self.assertRaises(InvalidDataError, entry.validate)
 
 
@@ -573,12 +573,12 @@ class RangerTests(unittest.TestCase):
         L{Ranger.__init__} with default values.
         """
         ranger = Ranger(
-            handle=u"Tool", name=u"Wilfredo S\xe1nchez Vega", status=u"vintage"
+            handle="Tool", name="Wilfredo S\xe1nchez Vega", status="vintage"
         )
 
-        self.assertEquals(ranger.handle, u"Tool")
-        self.assertEquals(ranger.name, u"Wilfredo S\xe1nchez Vega")
-        self.assertEquals(ranger.status, u"vintage")
+        self.assertEquals(ranger.handle, "Tool")
+        self.assertEquals(ranger.name, "Wilfredo S\xe1nchez Vega")
+        self.assertEquals(ranger.status, "vintage")
 
 
     def test_str(self):
@@ -614,13 +614,13 @@ class RangerTests(unittest.TestCase):
         L{Ranger.__eq__} between equal entries.
         """
         ranger1a = Ranger(
-            handle=u"Tulsa",
-            name=u"Curtis Kline",
+            handle="Tulsa",
+            name="Curtis Kline",
             status="vintage",
         )
         ranger1b = Ranger(
-            handle=u"Tulsa",
-            name=u"Curtis Kline",
+            handle="Tulsa",
+            name="Curtis Kline",
             status="vintage",
         )
 
@@ -646,7 +646,7 @@ class RangerTests(unittest.TestCase):
         """
         L{Ranger.validate} of Ranger with non-unicode handle.
         """
-        ranger = Ranger(handle=b"Tool", name=u"", status=u"")
+        ranger = Ranger(handle=b"Tool", name="", status="")
         self.assertRaises(InvalidDataError, ranger.validate)
 
 
@@ -655,7 +655,7 @@ class RangerTests(unittest.TestCase):
         L{Ranger.validate} of Ranger with non-unicode name.
         """
         ranger = Ranger(
-            handle=u"Tool", name=u"Wifredo S\xe1nchez Vega", status=u""
+            handle="Tool", name="Wifredo S\xe1nchez Vega", status=""
         )
         ranger.validate()
 
@@ -665,7 +665,7 @@ class RangerTests(unittest.TestCase):
         L{Ranger.validate} of Ranger with non-unicode name.
         """
         ranger = Ranger(
-            handle=b"Tool", name=u"Wifredo S\xc3\xa1nchez Vega", status=u""
+            handle=b"Tool", name="Wifredo S\xc3\xa1nchez Vega", status=""
         )
         self.assertRaises(InvalidDataError, ranger.validate)
 
@@ -675,7 +675,7 @@ class RangerTests(unittest.TestCase):
         L{Ranger.validate} of Ranger with valid status.
         """
         ranger = Ranger(
-            handle=u"Tool", name=u"Wifredo S\xe1nchez Vega", status=u"vintage"
+            handle="Tool", name="Wifredo S\xe1nchez Vega", status="vintage"
         )
         ranger.validate()
 
@@ -685,7 +685,7 @@ class RangerTests(unittest.TestCase):
         L{Ranger.validate} of Ranger with non-unicode status.
         """
         ranger = Ranger(
-            handle=b"Tool", name=u"Wifredo S\xc3\xa1nchez Vega",
+            handle=b"Tool", name="Wifredo S\xc3\xa1nchez Vega",
             status=b"vintage"
         )
         self.assertRaises(InvalidDataError, ranger.validate)
@@ -711,7 +711,7 @@ class LocationTests(unittest.TestCase):
         """
         L{Location.__str__} with name and address.
         """
-        location = Location(name=u"Name", address="Address")
+        location = Location(name="Name", address="Address")
         self.assertEquals(str(location), "Name (Address)")
 
 
@@ -719,7 +719,7 @@ class LocationTests(unittest.TestCase):
         """
         L{Location.__str__} with name and no address.
         """
-        location = Location(name=u"Name")
+        location = Location(name="Name")
         self.assertEquals(str(location), "Name")
 
 
@@ -767,12 +767,12 @@ class LocationTests(unittest.TestCase):
         L{Location.__eq__} between equal locations.
         """
         location1a = Location(
-            name=u"Ranger HQ",
-            address=u"5:45 & Esplanade",
+            name="Ranger HQ",
+            address="5:45 & Esplanade",
         )
         location1b = Location(
-            name=u"Ranger HQ",
-            address=u"5:45 & Esplanade",
+            name="Ranger HQ",
+            address="5:45 & Esplanade",
         )
 
         self.assertEquals(location1a, location1a)
@@ -806,7 +806,7 @@ class LocationTests(unittest.TestCase):
         """
         L{Location.validate} of location with valid name.
         """
-        location = Location(name=u"Ranger HQ")
+        location = Location(name="Ranger HQ")
         location.validate()
 
 
@@ -830,7 +830,7 @@ class LocationTests(unittest.TestCase):
         """
         L{Location.validate} of location with non-unicode address.
         """
-        location = Location(address=u"5:45 & Esplanade")
+        location = Location(address="5:45 & Esplanade")
         self.assertRaises(InvalidDataError, location.validate)
 
 
@@ -860,7 +860,7 @@ class TextOnlyAddressTests(unittest.TestCase):
         """
         L{TextOnlyAddress.__str__} with description.
         """
-        self.assertEquals(str(address_man.description), u"The Man")
+        self.assertEquals(str(address_man.description), "The Man")
 
 
     def test_str_withoutDescription(self):
@@ -892,8 +892,8 @@ class TextOnlyAddressTests(unittest.TestCase):
         """
         L{Location.__eq__} between equal addresses.
         """
-        address1a = TextOnlyAddress(u"12:00 at the fence")
-        address1b = TextOnlyAddress(u"12:00 at the fence")
+        address1a = TextOnlyAddress("12:00 at the fence")
+        address1b = TextOnlyAddress("12:00 at the fence")
 
         self.assertEquals(address1a, address1b)
         self.assertEquals(address1b, address1a)
@@ -942,22 +942,22 @@ def newIncident(
 
 
 ranger_tool = Ranger(
-    u"Tool", u"Wilfredo S\xe1nchez Vega", u"vintage"
+    "Tool", "Wilfredo S\xe1nchez Vega", "vintage"
 )
 
 ranger_tulsa = Ranger(
-    u"Tulsa", u"Curtis Kline", u"vintage"
+    "Tulsa", "Curtis Kline", "vintage"
 )
 
 
 address_tokyo = RodGarettAddress(
     concentric=3, radialHour=8, radialMinute=55,
-    description=u"Behind 9:00 Plaza, opposite medical.",
+    description="Behind 9:00 Plaza, opposite medical.",
 )
-location_tokyo = Location(u"Ranger Outpost Tokyo", address_tokyo)
+location_tokyo = Location("Ranger Outpost Tokyo", address_tokyo)
 
-address_man = TextOnlyAddress(u"The Man")
-location_man = Location(u"The Man", address_man)
+address_man = TextOnlyAddress("The Man")
+location_man = Location("The Man", address_man)
 
-address_zero = TextOnlyAddress(u"Halfway between the Man and the Temple")
-location_zero = Location(u"Ranger Outpost Zero", address_zero)
+address_zero = TextOnlyAddress("Halfway between the Man and the Temple")
+location_zero = Location("Ranger Outpost Zero", address_zero)

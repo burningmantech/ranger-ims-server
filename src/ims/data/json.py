@@ -223,63 +223,63 @@ class JSON(Values):
     """
 
     # Incident attribute keys
-    incident_number   = ValueConstant(u"number")
-    incident_created  = ValueConstant(u"timestamp")
-    incident_priority = ValueConstant(u"priority")
-    incident_state    = ValueConstant(u"state")
-    incident_summary  = ValueConstant(u"summary")
-    incident_location = ValueConstant(u"location")
-    ranger_handles    = ValueConstant(u"ranger_handles")
-    incident_types    = ValueConstant(u"incident_types")
-    report_entries    = ValueConstant(u"report_entries")
+    incident_number   = ValueConstant("number")
+    incident_created  = ValueConstant("timestamp")
+    incident_priority = ValueConstant("priority")
+    incident_state    = ValueConstant("state")
+    incident_summary  = ValueConstant("summary")
+    incident_location = ValueConstant("location")
+    ranger_handles    = ValueConstant("ranger_handles")
+    incident_types    = ValueConstant("incident_types")
+    report_entries    = ValueConstant("report_entries")
 
     # Obsolete incident attribute keys
-    _location_name    = ValueConstant(u"location_name")
-    _location_address = ValueConstant(u"location_address")
+    _location_name    = ValueConstant("location_name")
+    _location_address = ValueConstant("location_address")
 
     # Location attribute subkeys
-    location_name = ValueConstant(u"name")
-    location_type = ValueConstant(u"type")
+    location_name = ValueConstant("name")
+    location_type = ValueConstant("type")
 
     # Location type values
-    location_type_text   = ValueConstant(u"text")
-    location_type_garett = ValueConstant(u"garett")
+    location_type_text   = ValueConstant("text")
+    location_type_garett = ValueConstant("garett")
 
     # Text location type subkeys
-    location_text_description = ValueConstant(u"description")
+    location_text_description = ValueConstant("description")
 
     # Garett location type subkeys
-    location_garett_concentric    = ValueConstant(u"concentric")
-    location_garett_radial_hour   = ValueConstant(u"radial_hour")
-    location_garett_radial_minute = ValueConstant(u"radial_minute")
-    location_garett_description   = ValueConstant(u"description")
+    location_garett_concentric    = ValueConstant("concentric")
+    location_garett_radial_hour   = ValueConstant("radial_hour")
+    location_garett_radial_minute = ValueConstant("radial_minute")
+    location_garett_description   = ValueConstant("description")
 
     # State attribute values
-    state_new        = ValueConstant(u"new")
-    state_on_hold    = ValueConstant(u"on_hold")
-    state_dispatched = ValueConstant(u"dispatched")
-    state_on_scene   = ValueConstant(u"on_scene")
-    state_closed     = ValueConstant(u"closed")
+    state_new        = ValueConstant("new")
+    state_on_hold    = ValueConstant("on_hold")
+    state_dispatched = ValueConstant("dispatched")
+    state_on_scene   = ValueConstant("on_scene")
+    state_closed     = ValueConstant("closed")
 
     # Obsolete legacy state attribute keys
-    _created    = ValueConstant(u"created")
-    _dispatched = ValueConstant(u"dispatched")
-    _on_scene   = ValueConstant(u"on_scene")
-    _closed     = ValueConstant(u"closed")
+    _created    = ValueConstant("created")
+    _dispatched = ValueConstant("dispatched")
+    _on_scene   = ValueConstant("on_scene")
+    _closed     = ValueConstant("closed")
 
     # Ranger attribute keys
-    ranger_handle  = ValueConstant(u"handle")
-    ranger_name    = ValueConstant(u"name")
-    ranger_status  = ValueConstant(u"status")
-    ranger_dms_id  = ValueConstant(u"dms_id")
-    ranger_email   = ValueConstant(u"email")
-    ranger_on_site = ValueConstant(u"on_site")
+    ranger_handle  = ValueConstant("handle")
+    ranger_name    = ValueConstant("name")
+    ranger_status  = ValueConstant("status")
+    ranger_dms_id  = ValueConstant("dms_id")
+    ranger_email   = ValueConstant("email")
+    ranger_on_site = ValueConstant("on_site")
 
     # Report entry attribute keys
-    entry_author  = ValueConstant(u"author")
-    entry_text    = ValueConstant(u"text")
-    entry_system  = ValueConstant(u"system_entry")
-    entry_created = ValueConstant(u"created")
+    entry_author  = ValueConstant("author")
+    entry_text    = ValueConstant("text")
+    entry_system  = ValueConstant("system_entry")
+    entry_created = ValueConstant("created")
 
     # Incident report attribute keys
     incident_report_number  = ValueConstant("number")
@@ -287,8 +287,8 @@ class JSON(Values):
     incident_report_summary = ValueConstant("summary")
 
     # Web page reference keys
-    page_name = ValueConstant(u"name")
-    page_url  = ValueConstant(u"url")
+    page_name = ValueConstant("name")
+    page_url  = ValueConstant("url")
 
 
     @classmethod

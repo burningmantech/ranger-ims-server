@@ -181,7 +181,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         for number, etag in store.listIncidents():
             incident = store.readIncidentWithNumber(number)
             for entry in incident.reportEntries:
-                self.assertEquals(entry.author, u"<unknown>")
+                self.assertEquals(entry.author, "<unknown>")
 
 
     def test_etag(self):
@@ -494,8 +494,8 @@ def test_incidents():
             rangers=(), incidentTypes=(), priority=5,
             created=time1,
             reportEntries=(
-                ReportEntry(u"Tool", u"Man overboard!", time1),
-                ReportEntry(u"Splinter", u"What?", time2),
+                ReportEntry("Tool", "Man overboard!", time1),
+                ReportEntry("Splinter", "What?", time2),
             ),
             location=location_tokyo,
         ),
@@ -504,7 +504,7 @@ def test_incidents():
             rangers=(), incidentTypes=(), priority=5,
             created=time3,
             reportEntries=(
-                ReportEntry(u"El Weso", u"Does this work?", time3),
+                ReportEntry("El Weso", "Does this work?", time3),
             ),
             location=location_zero,
         ),
@@ -513,7 +513,7 @@ def test_incidents():
             rangers=(), incidentTypes=(), priority=5,
             created=time2,
             reportEntries=(
-                ReportEntry(u"Librarian", u"Go read something.", time2),
+                ReportEntry("Librarian", "Go read something.", time2),
             ),
             location=location_man,
         ),
@@ -522,7 +522,7 @@ def test_incidents():
             rangers=(), incidentTypes=(), priority=5,
             created=time1, state=IncidentState.closed,
             reportEntries=(
-                ReportEntry(u"da Mongolian", u"Fire!", time2),
+                ReportEntry("da Mongolian", "Fire!", time2),
             ),
         ),
     )

@@ -36,8 +36,8 @@ class IncidentReportPage(Element):
 
     def __init__(self, service, number):
         Element.__init__(
-            self, u"report", service,
-            title=u"Incident Report #{}".format(number),
+            self, "report", service,
+            title="Incident Report #{}".format(number),
         )
 
         self.number = number

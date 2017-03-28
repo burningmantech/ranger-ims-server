@@ -33,5 +33,5 @@ class IncidentReportTemplatePage(Element):
 
     def __init__(self, service):
         Element.__init__(
-            self, u"report_template", service, title=u"Incident Report Details"
+            self, "report_template", service, title="Incident Report Details"
         )

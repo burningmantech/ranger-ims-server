@@ -37,8 +37,8 @@ class IncidentPage(Element):
 
     def __init__(self, service, event, number):
         Element.__init__(
-            self, u"incident", service,
-            title=u"#{}".format(number),
+            self, "incident", service,
+            title="#{}".format(number),
         )
 
         self.event  = event
@@ -67,7 +67,7 @@ class IncidentPage(Element):
     def incidents_url(self, request, tag):
         return textFromJSON(
             URLs.incidents.asText()
-            .replace(u"<eventID>", self.event.id)
+            .replace("<eventID>", self.event.id)
         )
 
 
@@ -75,7 +75,7 @@ class IncidentPage(Element):
     def view_incidents_url(self, request, tag):
         return textFromJSON(
             URLs.viewIncidents.asText()
-            .replace(u"<eventID>", self.event.id)
+            .replace("<eventID>", self.event.id)
         )
 
 
