@@ -22,7 +22,7 @@ __all__ = [
     "IncidentReportPage",
 ]
 
-from ..data.json import textFromJSON
+from ..data.json import jsonTextFromObject
 from ..service.auth import Authorization
 
 from .base import Element, renderer
@@ -46,11 +46,11 @@ class IncidentReportPage(Element):
     @renderer
     def editing_allowed(self, request, tag):
         if (request.authorizations & Authorization.writeIncidentReports):
-            return textFromJSON(True)
+            return jsonTextFromObject(True)
         else:
-            return textFromJSON(False)
+            return jsonTextFromObject(False)
 
 
     @renderer
     def incident_report_number(self, request, tag):
-        return textFromJSON(self.number)
+        return jsonTextFromObject(self.number)

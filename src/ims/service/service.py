@@ -30,7 +30,7 @@ from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.logger import globalLogPublisher
 
-from ..data.json import textFromJSON
+from ..data.json import jsonTextFromObject
 from .http import HeaderName, ContentType
 from .klein import KleinService
 from .auth import AuthMixIn
@@ -89,7 +89,7 @@ class WebService(
         request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
         if etag is not None:
             request.setHeader(HeaderName.etag.value, etag)
-        return textFromJSON(json)
+        return jsonTextFromObject(json)
 
 
     def jsonBytes(self, request, data, etag=None):

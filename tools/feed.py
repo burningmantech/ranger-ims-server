@@ -20,7 +20,7 @@ import sys
 from csv import reader as CSVReader
 
 from ims.data import Location, RodGarettAddress
-from ims.json import locationAsJSON, textFromJSON
+from ims.json import locationAsJSON, jsonTextFromObject
 
 
 
@@ -200,4 +200,4 @@ if __name__ == "__main__":
         locations = parseLocations(inStream)
         json = [locationAsJSON(location) for location in locations]
 
-    sys.stdout.write(textFromJSON(json))
+    sys.stdout.write(jsonTextFromObject(json))

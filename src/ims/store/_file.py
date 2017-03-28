@@ -31,7 +31,7 @@ from twisted.python.filepath import UnlistableError
 
 from ..data.model import IncidentState, InvalidDataError
 from ..data.json import (
-    incidentAsJSON, incidentFromJSON, textFromJSON, jsonFromFile,
+    incidentAsJSON, incidentFromJSON, jsonTextFromObject, jsonFromFile,
     rfc3339AsDateTime
 )
 from .istore import StorageError, NoSuchIncidentError
@@ -379,7 +379,7 @@ class Storage(ReadOnlyStorage):
 
         number = incident.number
         json = incidentAsJSON(incident)
-        text = textFromJSON(json)
+        text = jsonTextFromObject(json)
 
         self._writeIncidentText(number, text)
 

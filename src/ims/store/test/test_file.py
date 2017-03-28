@@ -28,7 +28,7 @@ from twisted.python.filepath import FilePath
 from ...tz import utc
 from ...data.model import IncidentState, Incident, ReportEntry
 from ...data.json import (
-    incidentFromJSON, incidentAsJSON, jsonFromText, textFromJSON
+    incidentFromJSON, incidentAsJSON, jsonFromText, jsonTextFromObject
 )
 from ...data.test.test_model import (
     location_tokyo, location_man, location_zero
@@ -532,7 +532,7 @@ def test_incidents():
 
 def expectedETagForIncident(incident):
     json = incidentAsJSON(incident)
-    text = textFromJSON(json)
+    text = jsonTextFromObject(json)
 
     return etag_hash(text).hexdigest()
 

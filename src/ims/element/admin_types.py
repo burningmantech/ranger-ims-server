@@ -22,7 +22,7 @@ __all__ = [
     "AdminIncidentTypesPage",
 ]
 
-from ..data.json import textFromJSON
+from ..data.json import jsonTextFromObject
 from .base import Element, renderer
 
 
@@ -40,4 +40,4 @@ class AdminIncidentTypesPage(Element):
 
     @renderer
     def eventNames(self, request, tag):
-        return textFromJSON(e.id for e in self.service.storage.events())
+        return jsonTextFromObject(e.id for e in self.service.storage.events())

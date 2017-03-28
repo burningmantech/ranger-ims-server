@@ -22,7 +22,7 @@ __all__ = [
     "DispatchQueuePage",
 ]
 
-from ..data.json import textFromJSON
+from ..data.json import jsonTextFromObject
 from ..service.urls import URLs
 from ..service.auth import Authorization
 
@@ -47,19 +47,19 @@ class DispatchQueuePage(Element):
     @renderer
     def editing_allowed(self, request, tag):
         if (request.authorizations & Authorization.writeIncidents):
-            return textFromJSON(True)
+            return jsonTextFromObject(True)
         else:
-            return textFromJSON(False)
+            return jsonTextFromObject(False)
 
 
     @renderer
     def event_id(self, request, tag):
-        return textFromJSON(self.event.id)
+        return jsonTextFromObject(self.event.id)
 
 
     @renderer
     def data_url(self, request, tag):
-        return textFromJSON(
+        return jsonTextFromObject(
             URLs.incidents.asText()
             .replace("<eventID>", self.event.id)
         )
@@ -67,7 +67,7 @@ class DispatchQueuePage(Element):
 
     @renderer
     def view_incidents_url(self, request, tag):
-        return textFromJSON(
+        return jsonTextFromObject(
             URLs.viewIncidents.asText()
             .replace("<eventID>", self.event.id)
         )
@@ -76,4 +76,4 @@ class DispatchQueuePage(Element):
     @renderer
     def concentric_street_name_by_id(self, request, tag):
         namesByID = self.service.storage.concentricStreetsByID(self.event)
-        return textFromJSON(namesByID)
+        return jsonTextFromObject(namesByID)

@@ -30,7 +30,7 @@ from twisted.web.template import (
 )
 from twisted.python.filepath import FilePath
 
-from ..data.json import textFromJSON
+from ..data.json import jsonTextFromObject
 from ..service.urls import URLs
 
 
@@ -275,7 +275,7 @@ class Element(BaseElement):
         text = url.asText()
 
         if tag.tagName == "json":
-            return textFromJSON(text)
+            return jsonTextFromObject(text)
 
         attributeName = tag.attributes.pop("attr", None)
         if attributeName is None:

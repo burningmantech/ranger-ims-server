@@ -25,7 +25,7 @@ from zope.interface import implementer
 from twisted.logger import Logger, ILogObserver
 
 from ..data.model import Incident
-from ..data.json import textFromJSON
+from ..data.json import jsonTextFromObject
 
 
 
@@ -130,7 +130,7 @@ class DataStoreEventSourceLogObserver(object):
         eventSourceEvent = Event(
             eventID=eventID,
             eventClass=eventClass.__name__,
-            message=textFromJSON(message),
+            message=jsonTextFromObject(message),
         )
         return eventSourceEvent
 

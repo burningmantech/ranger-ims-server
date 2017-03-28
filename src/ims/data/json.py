@@ -109,12 +109,17 @@ created time stamp plus a state attribute:
 from __future__ import absolute_import
 
 __all__ = [
+    "jsonTextFromObject",
+
+    #####
+
     "jsonFromFile",
     "jsonFromText",
-    "textFromJSON",
 
     "datetimeAsRFC3339",
     "rfc3339AsDateTime",
+
+    #####
 
     "JSON",
 
@@ -142,7 +147,11 @@ rfc3339_datetime_format = "%Y-%m-%dT%H:%M:%SZ"
 
 
 class Encoder(JSONEncoder):
-    def default(self, obj):
+    """
+    JSON encoder that converts treats any iterable as a list.
+    """
+
+    def default(self, obj: Any) -> Any:
         iterate = getattr(obj, "__iter__", None)
         if iterate is not None:
             return list(iterate())
@@ -151,19 +160,17 @@ class Encoder(JSONEncoder):
 
 
 
-def textFromJSON(obj, pretty=False):
+def jsonTextFromObject(obj: Any, pretty: bool = False) -> str:
     """
     Convert an object into JSON text.
 
     @param obj: An object that is serializable to JSON.
-    @type obj: L{object}
 
-    @return: JSON text.
-    @rtype: L{unicode}
+    @param pretty: Whether to format for easier human consumption.
     """
     if pretty:
         separators = (",", ": ")
-        indent = 2
+        indent = 2  # type: Optional[int]
         sort_keys = True
     else:
         separators = (",", ":")
@@ -172,11 +179,12 @@ def textFromJSON(obj, pretty=False):
 
     return dumps(
         obj,
+        ensure_ascii=False,
         separators=separators,
         indent=indent,
         sort_keys=sort_keys,
         cls=Encoder,
-    ).decode("UTF-8")
+    )
 
 
 
@@ -195,7 +203,7 @@ def datetimeAsRFC3339(datetime):
         return None
     else:
         datetime = datetime.astimezone(utc)
-        return datetime.strftime(rfc3339_datetime_format).decode("utf-8")
+        return datetime.strftime(rfc3339_datetime_format)
 
 
 

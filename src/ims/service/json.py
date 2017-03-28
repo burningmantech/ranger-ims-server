@@ -28,7 +28,7 @@ from twisted.internet.error import ConnectionDone
 from ..tz import utcNow
 from ..data.model import InvalidDataError, Event, IncidentState, ReportEntry
 from ..data.json import (
-    JSON, textFromJSON, jsonFromFile, rangerAsJSON,
+    JSON, jsonTextFromObject, jsonFromFile, rangerAsJSON,
     incidentAsJSON, incidentFromJSON,
     incidentReportAsJSON, incidentReportFromJSON,
 )
@@ -78,7 +78,7 @@ class JSONMixIn(object):
 
         returnValue((
             self.buildJSONArray(
-                textFromJSON(rangerAsJSON(ranger)).encode("utf-8")
+                jsonTextFromObject(rangerAsJSON(ranger)).encode("utf-8")
                 for ranger in personnel
             ),
             bytes(hash(personnel)),
@@ -96,7 +96,7 @@ class JSONMixIn(object):
         )
 
         stream = self.buildJSONArray(
-            textFromJSON(incidentType).encode("utf-8")
+            jsonTextFromObject(incidentType).encode("utf-8")
             for incidentType in incidentTypes
         )
 
@@ -169,7 +169,7 @@ class JSONMixIn(object):
         )
 
         stream = self.buildJSONArray(
-            textFromJSON(incidentAsJSON(incident)).encode("utf-8")
+            jsonTextFromObject(incidentAsJSON(incident)).encode("utf-8")
             for incident in self.storage.incidents(event)
         )
 
@@ -251,7 +251,7 @@ class JSONMixIn(object):
             returnValue(self.notFoundResource(request))
 
         incident = self.storage.incident(event, number)
-        text = textFromJSON(incidentAsJSON(incident))
+        text = jsonTextFromObject(incidentAsJSON(incident))
 
         returnValue(
             self.jsonBytes(request, text.encode("utf-8"), incident.version)
@@ -407,7 +407,7 @@ class JSONMixIn(object):
             attachedTo = (event, incidentNumber)
 
         stream = self.buildJSONArray(
-            textFromJSON(incidentReportAsJSON(incidentReport)).encode("utf-8")
+            jsonTextFromObject(incidentReportAsJSON(incidentReport)).encode("utf-8")
             for incidentReport
             in self.storage.incidentReports(attachedTo=attachedTo)
         )
@@ -489,7 +489,7 @@ class JSONMixIn(object):
         yield self.authorizeRequestForIncidentReport(request, number)
 
         incidentReport = self.storage.incidentReport(number)
-        text = textFromJSON(incidentReportAsJSON(incidentReport))
+        text = jsonTextFromObject(incidentReportAsJSON(incidentReport))
 
         returnValue(
             self.jsonBytes(
@@ -617,7 +617,7 @@ class JSONMixIn(object):
                 readers=self.storage.readers(event),
                 writers=self.storage.writers(event),
             )
-        returnValue(textFromJSON(acl))
+        returnValue(jsonTextFromObject(acl))
 
 
     @route(URLs.acl.asText(), methods=("POST",))
@@ -645,7 +645,7 @@ class JSONMixIn(object):
         streets = {}
         for event in self.storage.events():
             streets[event.id] = self.storage.concentricStreetsByID(event)
-        returnValue(textFromJSON(streets))
+        returnValue(jsonTextFromObject(streets))
 
 
     @route(URLs.streets.asText(), methods=("POST",))

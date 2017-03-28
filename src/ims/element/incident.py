@@ -22,7 +22,7 @@ __all__ = [
     "IncidentPage",
 ]
 
-from ..data.json import textFromJSON
+from ..data.json import jsonTextFromObject
 from ..service.auth import Authorization
 from ..service.urls import URLs
 
@@ -48,24 +48,24 @@ class IncidentPage(Element):
     @renderer
     def editing_allowed(self, request, tag):
         if (request.authorizations & Authorization.writeIncidents):
-            return textFromJSON(True)
+            return jsonTextFromObject(True)
         else:
-            return textFromJSON(False)
+            return jsonTextFromObject(False)
 
 
     @renderer
     def event_id(self, request, tag):
-        return textFromJSON(self.event.id)
+        return jsonTextFromObject(self.event.id)
 
 
     @renderer
     def incident_number(self, request, tag):
-        return textFromJSON(self.number)
+        return jsonTextFromObject(self.number)
 
 
     @renderer
     def incidents_url(self, request, tag):
-        return textFromJSON(
+        return jsonTextFromObject(
             URLs.incidents.asText()
             .replace("<eventID>", self.event.id)
         )
@@ -73,7 +73,7 @@ class IncidentPage(Element):
 
     @renderer
     def view_incidents_url(self, request, tag):
-        return textFromJSON(
+        return jsonTextFromObject(
             URLs.viewIncidents.asText()
             .replace("<eventID>", self.event.id)
         )
@@ -82,4 +82,4 @@ class IncidentPage(Element):
     @renderer
     def concentric_street_name_by_id(self, request, tag):
         namesByID = self.service.storage.concentricStreetsByID(self.event)
-        return textFromJSON(namesByID)
+        return jsonTextFromObject(namesByID)
