@@ -1,6 +1,0 @@
-#!/bin/sh
-
-set -e
-set -u
-
-python -m json.tool "$@";
