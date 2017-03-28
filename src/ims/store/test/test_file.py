@@ -34,7 +34,7 @@ from ...data.test.test_model import (
     location_tokyo, location_man, location_zero
 )
 from ..istore import StorageError, NoSuchIncidentError
-from .._file import Storage, ReadOnlyStorage, etag_hash
+from .._file import Storage, ReadOnlyStorage, eTagHash
 
 
 
@@ -534,7 +534,7 @@ def expectedETagForIncident(incident):
     json = incidentAsJSON(incident)
     text = jsonTextFromObject(json)
 
-    return etag_hash(text).hexdigest()
+    return eTagHash(text).hexdigest()
 
 
 test_incident_etags = dict((

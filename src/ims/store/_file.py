@@ -24,7 +24,7 @@ __all__ = [
     "MultiStorage",
 ]
 
-from hashlib import sha1 as etag_hash
+from hashlib import sha1
 
 from twisted.logger import Logger
 from twisted.python.filepath import UnlistableError
@@ -35,6 +35,11 @@ from ..data.json import (
     rfc3339TextAsDateTime
 )
 from .istore import StorageError, NoSuchIncidentError
+
+
+
+def eTagHash(text):
+    return sha1(text.encode("utf-8"))
 
 
 
@@ -73,7 +78,7 @@ class ReadOnlyStorage(object):
     def readIncidentWithNumberRaw(self, number):
         handle = self._openIncident(number, "r")
         try:
-            jsonText = handle.read()
+            jsonText = handle.read().decode("utf-8")
         finally:
             handle.close()
         return jsonText
@@ -107,7 +112,7 @@ class ReadOnlyStorage(object):
             return self._incidentETags[number]
 
         data = self.readIncidentWithNumberRaw(number)
-        etag = etag_hash(data).hexdigest()
+        etag = eTagHash(data).hexdigest()
 
         if etag:
             self._incidentETags[number] = etag
@@ -367,7 +372,7 @@ class Storage(ReadOnlyStorage):
     def _writeIncidentText(self, number, text):
         incidentFH = self._openIncident(number, "w")
         try:
-            incidentFH.write(text)
+            incidentFH.write(text.encode("utf-8"))
         finally:
             incidentFH.close()
 
