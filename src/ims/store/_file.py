@@ -460,9 +460,6 @@ class MultiStorage(object):
         return iter(self._events())
 
 
-    iterkeys = __iter__
-
-
     def _events(self):
         try:
             children = self.path.children()

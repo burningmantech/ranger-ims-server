@@ -190,7 +190,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         the incident with the given number.
         """
         store = self.storage(data=test_incidents)
-        for number, etag in test_incident_etags.iteritems():
+        for number, etag in test_incident_etags.items():
             self.assertEquals(
                 etag, store.etagForIncidentWithNumber(number)
             )
@@ -222,7 +222,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         store = self.storage(data=test_incidents)
         self.assertEquals(
             set(number for number, etag in store.listIncidents()),
-            set(test_incident_etags.iterkeys())
+            set(test_incident_etags.keys())
         )
 
 
@@ -234,7 +234,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         store = self.storage(data=test_incidents)
         self.assertEquals(
             set(etag for number, etag in store.listIncidents()),
-            set(test_incident_etags.itervalues())
+            set(test_incident_etags.values())
         )
 
 

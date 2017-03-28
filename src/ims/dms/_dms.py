@@ -224,8 +224,8 @@ class DutyManagementSystem(object):
                             continue
                         position.members.add(ranger)
 
-                    self._personnel = tuple(rangersByID.itervalues())
-                    self._positions = tuple(positionsByID.itervalues())
+                    self._personnel = tuple(rangersByID.values())
+                    self._positions = tuple(positionsByID.values())
                     self._personnelLastUpdated = time()
 
                 except Exception as e:
