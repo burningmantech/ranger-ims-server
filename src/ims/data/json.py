@@ -110,11 +110,11 @@ from __future__ import absolute_import
 
 __all__ = [
     "jsonTextFromObject",
+    "objectFromJSONText",
 
     #####
 
     "jsonFromFile",
-    "jsonFromText",
 
     "datetimeAsRFC3339",
     "rfc3339AsDateTime",
@@ -129,8 +129,9 @@ __all__ = [
     "locationAsJSON",
 ]
 
-from json import dumps, load as jsonFromFile, loads as jsonFromText, JSONEncoder
+from json import dumps, load as jsonFromFile, loads, JSONEncoder
 from datetime import datetime as DateTime
+from typing import Any, Optional
 
 from twisted.python.constants import (
     Values, ValueConstant
@@ -141,6 +142,10 @@ from .model import (
     InvalidDataError, IncidentState, Incident, ReportEntry, Ranger,
     Location, TextOnlyAddress, RodGarettAddress, IncidentReport,
 )
+
+
+Optional  # pyflakes
+
 
 rfc3339_datetime_format = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -185,6 +190,21 @@ def jsonTextFromObject(obj: Any, pretty: bool = False) -> str:
         sort_keys=sort_keys,
         cls=Encoder,
     )
+
+
+
+def objectFromJSONText(text: str) -> Any:
+    """
+    Convert JSON text into an object.
+    """
+    try:
+        return loads(text)
+    except JSONDecodeError as e:
+        raise JSONDecodeError(
+            msg="{} in {!r}".format(e.msg, text),
+            doc=e.doc,
+            pos=e.pos,
+        )
 
 
 

@@ -28,7 +28,7 @@ from twisted.python.filepath import FilePath
 from ...tz import utc
 from ...data.model import IncidentState, Incident, ReportEntry
 from ...data.json import (
-    incidentFromJSON, incidentAsJSON, jsonFromText, jsonTextFromObject
+    incidentFromJSON, incidentAsJSON, objectFromJSONText, jsonTextFromObject
 )
 from ...data.test.test_model import (
     location_tokyo, location_man, location_zero
@@ -89,7 +89,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
         store = self.storage(data=test_incidents)
         for number in test_incident_etags:
             jsonText = store.readIncidentWithNumberRaw(number)
-            json = jsonFromText(jsonText)
+            json = objectFromJSONText(jsonText)
             incident = incidentFromJSON(json, number=number)
             self.assertEquals(incident.number, number)
 
