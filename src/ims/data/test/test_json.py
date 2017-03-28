@@ -62,11 +62,11 @@ class TimeSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             dateTimeAsRFC3339Text(DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)),
-            "1971-04-20T16:20:04Z"
+            "1971-04-20T16:20:04+00:00"
         )
 
 
-    def test_dateTimeAsRFC3339TextOther(self):
+    def test_dateTimeAsRFC3339TextNotUTC(self):
         """
         L{dateTimeAsRFC3339Text} returns a proper RFC 3339 string for the given
         non-UTC L{DateTime}.
@@ -75,17 +75,28 @@ class TimeSerializationTests(unittest.TestCase):
 
         self.assertEquals(
             dateTimeAsRFC3339Text(DateTime(1971, 4, 20, 20, 40, 4, tzinfo=tz)),
-            "1971-04-20T16:20:04Z"
+            "1971-04-20T20:40:04+04:20"
         )
 
 
-    def test_rfc3339TextAsDateTime(self):
+    def test_rfc3339TextAsDateTimeUTCZ(self):
         """
         L{rfc3339TextAsDateTime} returns a proper UTC L{DateTime} for the given
-        RFC 3339 string.
+        RFC 3339 string with UTC indicated as C{"Z"}.
         """
         self.assertEquals(
             rfc3339TextAsDateTime("1971-04-20T16:20:04Z"),
+            DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)
+        )
+
+
+    def test_rfc3339TextAsDateTimeUTCZeroes(self):
+        """
+        L{rfc3339TextAsDateTime} returns a proper UTC L{DateTime} for the given
+        RFC 3339 string with UTC indicated as C{"+00:00"}.
+        """
+        self.assertEquals(
+            rfc3339TextAsDateTime("1971-04-20T16:20:04+00:00"),
             DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)
         )
 

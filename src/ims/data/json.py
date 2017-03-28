@@ -127,6 +127,8 @@ from json import dumps, load as jsonFromTextIO, loads, JSONEncoder
 from datetime import datetime as DateTime
 from typing import Any, Optional
 
+from arrow.parser import DateTimeParser
+
 from twisted.python.constants import (
     Values, ValueConstant
 )
@@ -211,6 +213,9 @@ def dateTimeAsRFC3339Text(dateTime: DateTime) -> str:
     :return: An RFC 3339 formatted date-time string corresponding to
         :obj:`dateTime`.
     """
+    if dateTime.tzinfo is None:
+        raise ValueError("DateTime must not be naive: {}".format(dateTime))
+
     return dateTime.isoformat()
 
 
@@ -223,6 +228,9 @@ def rfc3339TextAsDateTime(rfc3339: str) -> DateTime:
 
     :return: A :class:`DateTime` corresponding to :obj:`rfc3339`.
     """
+    if rfc3339.endswith("Z"):
+        rfc3339 = rfc3339[:-1] + "+00:00"
+
     return DateTimeParser().parse_iso(rfc3339)
 
 
