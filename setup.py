@@ -22,17 +22,16 @@ Setuptools configuration
 
 import sys
 
-# if sys.version_info < (3, 5, 0):
-#     sys.stderr.write("ERROR: Python 3.5 or later is required.\n")
-#     exit(1)
+if sys.version_info < (3, 5, 0):
+    sys.stderr.write("ERROR: Python 3.5 or later is required.\n")
+    exit(1)
 
-# from pathlib import Path
-from os.path import dirname, join
-from setuptools import setup, find_packages
+from pathlib import Path  # noqa
+from setuptools import setup, find_packages  # noqa
 
 sys.path.insert(0, "src")
 
-from ims import __version__ as version_string
+from ims import __version__ as version_string  # noqa
 
 
 #
@@ -43,13 +42,11 @@ name = "ranger-ims-server"
 
 description = "Ranger Incident Management System"
 
-# readme_path = Path(__file__).parent / "README.rst"
-# try:
-#     long_description = readme_path.open().read()
-# except IOError:
-#     long_description = None
-
-long_description = open(join(dirname(__file__), "README.rst")).read()
+readme_path = Path(__file__).parent / "README.rst"
+try:
+    long_description = readme_path.open().read()
+except IOError:
+    long_description = None
 
 url = "https://github.com/burningmantech/ranger-ims-server"
 
