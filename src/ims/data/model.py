@@ -268,7 +268,7 @@ class Incident(object):
             "{self.number}: {summary}".format(
                 self=self,
                 summary=self.summaryFromReport()
-            ).encode("utf-8")
+            )
         )
 
 
@@ -286,7 +286,7 @@ class Incident(object):
             "state={self.state!r},"
             "version={self.version!r})"
             .format(self=self)
-        ).encode("utf-8")
+        )
 
 
     def __hash__(self):
@@ -442,7 +442,7 @@ class ReportEntry(object):
         return (
             "{prefix}{self.author}@{self.created}: {self.text}".format(
                 self=self, prefix=prefix
-            ).encode("utf-8")
+            )
         )
 
 
@@ -458,7 +458,7 @@ class ReportEntry(object):
             "text={self.text!r},"
             "created={self.created!r})"
             .format(self=self, star=star)
-        ).encode("utf-8")
+        )
 
 
     def __hash__(self):
@@ -542,7 +542,7 @@ class Ranger(object):
 
     def __str__(self):
         return (
-            "{self.handle} ({self.name})".format(self=self).encode("utf-8")
+            "{self.handle} ({self.name})".format(self=self)
         )
 
 
@@ -553,7 +553,7 @@ class Ranger(object):
             "name={self.name!r},"
             "status={self.status!r})"
             .format(self=self)
-        ).encode("utf-8")
+        )
 
 
     def __hash__(self):
@@ -614,13 +614,13 @@ class Location(object):
                     "{name} ({self.address})".format(
                         self=self,
                         name=self.name
-                    ).encode("utf-8")
+                    )
                 )
             else:
-                return self.name.encode("utf-8")
+                return self.name
         else:
             if self.address:
-                return "({self.address})".format(self=self).encode("utf-8")
+                return "({self.address})".format(self=self)
             else:
                 return ""
 
@@ -631,7 +631,7 @@ class Location(object):
             "name={self.name!r},"
             "address={self.address!r})"
             .format(self=self)
-        ).encode("utf-8")
+        )
 
 
     def __hash__(self):
@@ -700,14 +700,14 @@ class TextOnlyAddress(Address):
     def __str__(self):
         if self.description is None:
             return ""
-        return self.description.encode("utf-8")
+        return self.description
 
 
     def __repr__(self):
         return (
             "{self.__class__.__name__}(description={self.description!r})"
             .format(self=self)
-        ).encode("utf-8")
+        )
 
 
     def __hash__(self):
@@ -817,7 +817,7 @@ class RodGarettAddress(Address):
                 at=at,
                 radial=radial,
                 description=description,
-            ).encode("utf-8")
+            )
         )
 
 
@@ -829,7 +829,7 @@ class RodGarettAddress(Address):
             "radialMinute={self.radialMinute!r},"
             "description={self.description!r})"
             .format(self=self)
-        ).encode("utf-8")
+        )
 
 
     def __hash__(self):
@@ -951,7 +951,7 @@ class IncidentReport(object):
             "{self.number}: {summary}".format(
                 self=self,
                 summary=self.summaryFromReport()
-            ).encode("utf-8")
+            )
         )
 
 
@@ -962,7 +962,7 @@ class IncidentReport(object):
             "created={self.created!r},"
             "reportEntries={self.reportEntries!r})"
             .format(self=self)
-        ).encode("utf-8")
+        )
 
 
     def __hash__(self):
