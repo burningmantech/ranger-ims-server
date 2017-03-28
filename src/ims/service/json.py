@@ -28,7 +28,7 @@ from twisted.internet.error import ConnectionDone
 from ..tz import utcNow
 from ..data.model import InvalidDataError, Event, IncidentState, ReportEntry
 from ..data.json import (
-    JSON, jsonTextFromObject, jsonFromFile, rangerAsJSON,
+    JSON, jsonTextFromObject, jsonFromTextIO, rangerAsJSON,
     incidentAsJSON, incidentFromJSON,
     incidentReportAsJSON, incidentReportFromJSON,
 )
@@ -110,7 +110,7 @@ class JSONMixIn(object):
             request, None, Authorization.imsAdmin
         )
 
-        json = jsonFromFile(request.content)
+        json = jsonFromTextIO(request.content)
 
         if type(json) is not dict:
             returnValue(self.badRequestResource(
@@ -185,7 +185,7 @@ class JSONMixIn(object):
             request, event, Authorization.writeIncidents
         )
 
-        json = jsonFromFile(request.content)
+        json = jsonFromTextIO(request.content)
         incident = incidentFromJSON(json, number=None, validate=False)
 
         if incident.state is None:
@@ -277,7 +277,7 @@ class JSONMixIn(object):
         #
         # Get the edits requested by the client
         #
-        edits = jsonFromFile(request.content)
+        edits = jsonFromTextIO(request.content)
 
         if not isinstance(edits, dict):
             returnValue(self.badRequestResource(
@@ -422,7 +422,7 @@ class JSONMixIn(object):
             request, None, Authorization.writeIncidentReports
         )
 
-        json = jsonFromFile(request.content)
+        json = jsonFromTextIO(request.content)
         incidentReport = incidentReportFromJSON(
             json, number=None, validate=False
         )
@@ -552,7 +552,7 @@ class JSONMixIn(object):
         #
         # Get the edits requested by the client
         #
-        edits = jsonFromFile(request.content)
+        edits = jsonFromTextIO(request.content)
 
         if not isinstance(edits, dict):
             returnValue(self.badRequestResource(
@@ -625,7 +625,7 @@ class JSONMixIn(object):
     def editAdminAccessResource(self, request):
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)
 
-        edits = jsonFromFile(request.content)
+        edits = jsonFromTextIO(request.content)
 
         for eventID, acl in edits.items():
             event = Event(eventID)
@@ -653,7 +653,7 @@ class JSONMixIn(object):
     def editStreetsResource(self, request):
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)
 
-        edits = jsonFromFile(request.content)
+        edits = jsonFromTextIO(request.content)
 
         for eventID, streets in edits.items():
             event = Event(eventID)

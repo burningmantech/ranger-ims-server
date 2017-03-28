@@ -36,7 +36,7 @@ from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 
 from ..tz import utc, utcNow
-from ..data.json import jsonFromFile, incidentFromJSON
+from ..data.json import jsonFromTextIO, incidentFromJSON
 from ..data.model import (
     Event, IncidentType, Incident, IncidentState,
     Ranger, ReportEntry, Location, RodGarettAddress,
@@ -143,7 +143,7 @@ class Storage(object):
         assert type(event) is Event
 
         with filePath.open() as fileHandle:
-            eventJSON = jsonFromFile(fileHandle)
+            eventJSON = jsonFromTextIO(fileHandle)
 
             self.log.info("Creating event: {event}", event=event)
             self.createEvent(event)

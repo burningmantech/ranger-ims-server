@@ -32,7 +32,7 @@ from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 
-from ..data.json import jsonTextFromObject, jsonFromFile
+from ..data.json import jsonTextFromObject, jsonFromTextIO
 from ..store.sqlite import Storage
 from ..dms import DutyManagementSystem, DirectoryService
 
@@ -227,7 +227,7 @@ class Configuration (object):
 
         if locationsFile.isfile():
             with locationsFile.open() as jsonStrem:
-                json = jsonFromFile(jsonStrem)
+                json = jsonFromTextIO(jsonStrem)
             self.log.info("{count} locations", count=len(json))
             self.locationsJSONBytes = jsonTextFromObject(json).encode("utf-8")
         else:

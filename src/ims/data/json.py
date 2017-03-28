@@ -109,16 +109,11 @@ created time stamp plus a state attribute:
 from __future__ import absolute_import
 
 __all__ = [
+    "dateTimeAsRFC3339Text",
+    "jsonFromTextIO",
     "jsonTextFromObject",
     "objectFromJSONText",
-    "dateTimeAsRFC3339Text",
     "rfc3339TextAsDateTime",
-
-    #####
-
-    "jsonFromFile",
-
-    #####
 
     "JSON",
 
@@ -128,7 +123,7 @@ __all__ = [
     "locationAsJSON",
 ]
 
-from json import dumps, load as jsonFromFile, loads, JSONEncoder
+from json import dumps, load as jsonFromTextIO, loads, JSONEncoder
 from datetime import datetime as DateTime
 from typing import Any, Optional
 
