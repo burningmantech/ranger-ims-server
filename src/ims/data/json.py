@@ -110,8 +110,8 @@ from __future__ import absolute_import
 
 __all__ = [
     "dateTimeAsRFC3339Text",
-    "jsonFromTextIO",
     "jsonTextFromObject",
+    "objectFromJSONBytesIO",
     "objectFromJSONText",
     "rfc3339TextAsDateTime",
 
@@ -123,9 +123,11 @@ __all__ = [
     "locationAsJSON",
 ]
 
-from json import dumps, load as jsonFromTextIO, loads, JSONEncoder
+from json import JSONDecodeError, JSONEncoder, dumps, load, loads
 from datetime import datetime as DateTime
+from io import TextIOWrapper
 from typing import Any, Optional
+from typing.io import BinaryIO
 
 from arrow.parser import DateTimeParser
 
@@ -201,6 +203,15 @@ def objectFromJSONText(text: str) -> Any:
             doc=e.doc,
             pos=e.pos,
         )
+
+
+
+def objectFromJSONBytesIO(io: BinaryIO, encoding="utf-8"):
+    """
+    Covert JSON text from a byte stream into an object.
+    """
+    textIO = TextIOWrapper(io, encoding=encoding, newline="")
+    return load(textIO)
 
 
 

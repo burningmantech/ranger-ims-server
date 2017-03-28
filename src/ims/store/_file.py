@@ -31,7 +31,7 @@ from twisted.python.filepath import UnlistableError
 
 from ..data.model import IncidentState, InvalidDataError
 from ..data.json import (
-    incidentAsJSON, incidentFromJSON, jsonTextFromObject, jsonFromTextIO,
+    incidentAsJSON, incidentFromJSON, jsonTextFromObject, objectFromJSONBytesIO,
     rfc3339TextAsDateTime
 )
 from .istore import StorageError, NoSuchIncidentError
@@ -87,7 +87,7 @@ class ReadOnlyStorage(object):
     def readIncidentWithNumber(self, number):
         handle = self._openIncident(number, "r")
         try:
-            json = jsonFromTextIO(handle)
+            json = objectFromJSONBytesIO(handle)
             incident = incidentFromJSON(json, number=number, validate=False)
         finally:
             handle.close()
@@ -321,7 +321,7 @@ class ReadOnlyStorage(object):
         if not hasattr(self, "_streetsByName"):
             fp = self.path.child(".streets.json")
             try:
-                self._streetsByName = jsonFromTextIO(fp.open())
+                self._streetsByName = objectFromJSONBytesIO(fp.open())
             except (IOError, OSError):
                 self.log.warn("Unable to open streets data: {fp.path}", fp=fp)
                 self._streetsByName = {}
