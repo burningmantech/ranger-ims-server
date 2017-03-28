@@ -597,8 +597,8 @@ class RangerTests(unittest.TestCase):
         """
         self.assertEquals(
             repr(ranger_tool),
-            "Ranger(handle=u'Tool',name=u'Wilfredo S\\xe1nchez Vega',"
-            "status=u'vintage')"
+            "Ranger(handle='Tool',name='Wilfredo S\\xe1nchez Vega',"
+            "status='vintage')"
         )
 
 
@@ -747,9 +747,9 @@ class LocationTests(unittest.TestCase):
             repr(location_zero),
             (
                 "Location("
-                "name=u'Ranger Outpost Zero',"
+                "name='Ranger Outpost Zero',"
                 "address=TextOnlyAddress("
-                "description=u'Halfway between the Man and the Temple'"
+                "description='Halfway between the Man and the Temple'"
                 "))"
             )
         )
@@ -877,7 +877,7 @@ class TextOnlyAddressTests(unittest.TestCase):
         """
         self.assertEquals(
             repr(address_man),
-            "TextOnlyAddress(description=u'The Man')"
+            "TextOnlyAddress(description='The Man')"
         )
 
 
