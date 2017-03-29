@@ -20,7 +20,7 @@ Incident Management System HTTP support.
 
 from functools import wraps
 
-from twisted.python.constants import Values, ValueConstant
+from twisted.python.constants import ValueConstant, Values
 
 from ims import __version__ as version
 

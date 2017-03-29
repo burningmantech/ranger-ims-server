@@ -18,16 +18,16 @@
 Incident Management System authorization and authentication.
 """
 
+from twext.who.idirectory import FieldName, RecordType
+
+from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.python.constants import FlagConstant, Flags
 from twisted.python.url import URL
-from twisted.internet.defer import inlineCallbacks, returnValue
 
-from twext.who.idirectory import RecordType, FieldName
-
-from ..element.login import LoginPage
+from .error import NotAuthenticatedError, NotAuthorizedError
 from .klein import route
 from .urls import URLs
-from .error import NotAuthenticatedError, NotAuthorizedError
+from ..element.login import LoginPage
 
 
 __all__ = (
@@ -72,6 +72,9 @@ class AuthMixIn(object):
 
     @inlineCallbacks
     def verifyCredentials(self, user, password):
+        """
+        Verify a password for the given user.
+        """
         if user is None:
             authenticated = False
         else:
@@ -90,6 +93,14 @@ class AuthMixIn(object):
 
 
     def authenticateRequest(self, request, optional=False):
+        """
+        Authenticate a request.
+
+        @param request: The request to authenticate.
+
+        @param optional: If true, do not raise NotAuthenticatedError() if no
+            user is associated with the request.
+        """
         session = request.getSession()
         request.user = getattr(session, "user", None)
 
@@ -100,6 +111,9 @@ class AuthMixIn(object):
 
     @inlineCallbacks
     def authorizationsForUser(self, user, event):
+        """
+        Look up the authorizations that a user has for a given event.
+        """
         @inlineCallbacks
         def matchACL(user, acl):
             acl = set(acl)
@@ -145,6 +159,10 @@ class AuthMixIn(object):
 
     @inlineCallbacks
     def authorizeRequest(self, request, event, requiredAuthorizations):
+        """
+        Determine whether the user attached to a request has the required
+        authorizations in the context of a given event.
+        """
         self.authenticateRequest(request)
 
         userAuthorizations = yield self.authorizationsForUser(
@@ -166,9 +184,13 @@ class AuthMixIn(object):
 
     @inlineCallbacks
     def authorizeRequestForIncidentReport(self, request, number):
+        """
+        Determine whether the user attached to a request has the required
+        authorizations to read the incident report with the given number.
+        """
         authFailure = None
 
-        for event, incidentNumber in (
+        for event, _incidentNumber in (
             self.storage.incidentsAttachedToIncidentReport(number)
         ):
             # No incident attached; use the authorization for reading incidents
@@ -195,11 +217,17 @@ class AuthMixIn(object):
 
 
     def lookupUserName(self, username):
+        """
+        Look up the user record for a user short name.
+        """
         return self.directory.recordWithShortName(RecordType.user, username)
 
 
     @inlineCallbacks
     def lookupUserEmail(self, email):
+        """
+        Look up the user record for an email address.
+        """
         user = None
 
         # Try lookup by email address
@@ -219,6 +247,9 @@ class AuthMixIn(object):
     @route(URLs.login.asText(), methods=("POST",))
     @inlineCallbacks
     def loginSubmit(self, request):
+        """
+        Endpoint for a login form submission.
+        """
         username = self.queryValue(request, "username")
         password = self.queryValue(request, "password", default="")
 
@@ -258,6 +289,9 @@ class AuthMixIn(object):
 
     @route(URLs.login.asText(), methods=("HEAD", "GET"))
     def login(self, request, failed=False):
+        """
+        Endpoint for the login page.
+        """
         self.authenticateRequest(request, optional=True)
 
         return LoginPage(self, failed=failed)
@@ -265,6 +299,9 @@ class AuthMixIn(object):
 
     @route(URLs.logout.asText(), methods=("HEAD", "GET"))
     def logout(self, request):
+        """
+        Endpoint for logging out.
+        """
         session = request.getSession()
         session.expire()
 

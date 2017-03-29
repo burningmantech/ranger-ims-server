@@ -24,9 +24,9 @@ from pymysql import (
     DatabaseError as SQLDatabaseError, OperationalError as SQLOperationalError
 )
 
-from twisted.logger import Logger
-from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.enterprise import adbapi
+from twisted.internet.defer import inlineCallbacks, returnValue
+from twisted.logger import Logger
 
 from ..data.model import Ranger
 
@@ -59,6 +59,7 @@ class DutyManagementSystem(object):
 
     This class connects to an external system to get data.
     """
+
     log = Logger()
 
     # DMS data changes rarely, so hour intervals between refreshing data should
@@ -96,6 +97,9 @@ class DutyManagementSystem(object):
 
     @property
     def dbpool(self):
+        """
+        Set up a database pool if needed and return it.
+        """
         if self._dbpool is None:
             if (
                 self.host is None and
@@ -196,6 +200,9 @@ class DutyManagementSystem(object):
 
 
     def positions(self):
+        """
+        Look up all positions.
+        """
         # Call self.personnel() to make sure we have current data, then return
         # self._positions, which will have been set.
         d = self.personnel()
@@ -205,6 +212,9 @@ class DutyManagementSystem(object):
 
     @inlineCallbacks
     def personnel(self):
+        """
+        Look up all personnel.
+        """
         now = time()
         elapsed = now - self._personnelLastUpdated
 
@@ -257,6 +267,10 @@ class DutyManagementSystem(object):
 
 
 class Position(object):
+    """
+    A Ranger position.
+    """
+
     def __init__(self, positionID, name):
         self.positionID = positionID
         self.name = name
@@ -265,6 +279,9 @@ class Position(object):
 
 
 def fullName(first, middle, last):
+    """
+    Compose parts of a name into a full name.
+    """
     if middle:
         format = "{first} {middle}. {last}"
     else:

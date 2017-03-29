@@ -18,22 +18,19 @@
 Incident Management System web service.
 """
 
-from __future__ import print_function
-
 from zipfile import BadZipfile
 
+from twisted.logger import globalLogPublisher
 from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
-from twisted.logger import globalLogPublisher
 
-from ..data.json import jsonTextFromObject
-from .http import HeaderName, ContentType
-from .klein import KleinService
 from .auth import AuthMixIn
-from .json import JSONMixIn
-from .web import WebMixIn
-from .external import ExternalMixIn
 from .eventsource import DataStoreEventSourceLogObserver
+from .external import ExternalMixIn
+from .http import ContentType, HeaderName
+from .json import JSONMixIn
+from .klein import KleinService
+from .web import WebMixIn
 
 
 __all__ = (
@@ -50,6 +47,9 @@ class WebService(
     """
 
     def __init__(self, config):
+        """
+        @param config: The configuration to use.
+        """
         self.config = config
         self.storage = config.storage
         self.dms = config.dms
@@ -68,11 +68,17 @@ class WebService(
     #
 
     def styleSheet(self, request, name, *names):
+        """
+        Respond with a style sheet.
+        """
         request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
         return self.builtInResource(request, name, *names)
 
 
     def javaScript(self, request, name, *names):
+        """
+        Respond with JavaScript.
+        """
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value
         )
@@ -80,20 +86,19 @@ class WebService(
 
 
     # def javaScriptSourceMap(self, request, name, *names):
+    #     """
+    #     Respond with a JavaScript source map.
+    #     """
     #     request.setHeader(
     #         HeaderName.contentType.value, ContentType.JSON.value
     #     )
     #     return self.builtInResource(request, name, *names)
 
 
-    def jsonData(self, request, json, etag=None):
-        request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
-        if etag is not None:
-            request.setHeader(HeaderName.etag.value, etag)
-        return jsonTextFromObject(json)
-
-
     def jsonBytes(self, request, data, etag=None):
+        """
+        Respond with encoded JSON text.
+        """
         request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
         if etag is not None:
             request.setHeader(HeaderName.etag.value, etag)
@@ -101,6 +106,9 @@ class WebService(
 
 
     def jsonStream(self, request, jsonStream, etag=None):
+        """
+        Respond with a stream of JSON data.
+        """
         request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
         if etag is not None:
             request.setHeader(HeaderName.etag.value, etag)
@@ -110,6 +118,9 @@ class WebService(
 
     @staticmethod
     def buildJSONArray(items):
+        """
+        Generate a JSON array from an iterable of JSON objects.
+        """
         first = True
 
         yield b'['
@@ -132,6 +143,9 @@ class WebService(
     _elementsRoot = FilePath(__file__).parent().parent().child("element")
 
     def builtInResource(self, request, name, *names):
+        """
+        Respond with data from a local file.
+        """
         filePath = self._elementsRoot.child(name)
 
         for name in names:
@@ -147,6 +161,9 @@ class WebService(
 
 
     def zippedResource(self, request, archiveName, name, *names):
+        """
+        Respond with data from within a local zip file.
+        """
         archivePath = self._elementsRoot.child("{0}.zip".format(archiveName))
 
         try:

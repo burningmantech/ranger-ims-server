@@ -22,18 +22,11 @@ from datetime import datetime as DateTime
 
 from twisted.trial import unittest
 
-from ...tz import utcNow
 from ..model import (
-    InvalidDataError,
-    IncidentState,
-    Incident,
-    ReportEntry,
-    Ranger,
-    Location,
-    # Address,
-    TextOnlyAddress,
-    RodGarettAddress,
+    Incident, IncidentState, InvalidDataError, Location, Ranger, ReportEntry,
+    RodGarettAddress, TextOnlyAddress,
 )
+from ...tz import utcNow
 
 
 __all__ = ()

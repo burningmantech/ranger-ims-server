@@ -21,11 +21,12 @@ HTML5 EventSource support.
 from collections import deque
 from time import time
 
-from zope.interface import implementer
-from twisted.logger import Logger, ILogObserver
+from twisted.logger import ILogObserver, Logger
 
-from ..data.model import Incident
+from zope.interface import implementer
+
 from ..data.json import jsonTextFromObject
+from ..data.model import Incident
 
 
 __all__ = (
@@ -38,7 +39,17 @@ class Event(object):
     """
     HTML5 EventSource event.
     """
+
     def __init__(self, message, eventID=None, eventClass=None, retry=None):
+        """
+        @param message: The event message.
+
+        @param eventID: The event ID.
+
+        @param eventClass: The event class.
+
+        @param retry: The retry interval to suggest to the client.
+        """
         self.message    = message
         self.eventID    = eventID
         self.eventClass = eventClass
@@ -46,6 +57,9 @@ class Event(object):
 
 
     def render(self):
+        """
+        Render this event as an HTML EventSource event.
+        """
         parts = []
 
         if self.eventID is not None:
@@ -70,10 +84,14 @@ class DataStoreEventSourceLogObserver(object):
     """
     Observer for events related to any updates to the data store.
     """
+
     log = Logger()
 
 
     def __init__(self):
+        """
+        Initialize.
+        """
         self._listeners = set()
         self._events = deque(maxlen=1000)
         self._start = time()
@@ -81,6 +99,9 @@ class DataStoreEventSourceLogObserver(object):
 
 
     def addListener(self, listener, lastEventID=None):
+        """
+        Add a listener.
+        """
         self.log.debug("Adding listener: {listener}", listener=listener)
 
         self._playback(listener, lastEventID)
@@ -89,6 +110,9 @@ class DataStoreEventSourceLogObserver(object):
 
 
     def removeListener(self, listener):
+        """
+        Remove a listener.
+        """
         self.log.debug("Removing listener: {listener}", listener=listener)
 
         self._listeners.add(listener)
@@ -173,6 +197,9 @@ class DataStoreEventSourceLogObserver(object):
 
 
     def __call__(self, event):
+        """
+        See L{ILogObserver.__call__}.
+        """
         self._counter += 1
 
         eventSourceEvent = self._transmogrify(event, self._counter)

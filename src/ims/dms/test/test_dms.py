@@ -18,10 +18,8 @@
 Tests for L{ims.dms}.
 """
 
+from twisted.internet.defer import fail, inlineCallbacks, succeed
 from twisted.trial import unittest
-
-from twisted.internet.defer import succeed, fail
-from twisted.internet.defer import inlineCallbacks
 
 from .. import DutyManagementSystem
 from .._dms import fullName

@@ -22,23 +22,24 @@ from __future__ import absolute_import
 
 from functools import wraps
 
-from twisted.python.url import URL
-from twisted.logger import Logger
+from klein import Klein
+
 from twisted.internet.defer import inlineCallbacks, returnValue
+from twisted.logger import Logger
+from twisted.python.url import URL
 from twisted.web import http
 from twisted.web.iweb import IRenderable
 from twisted.web.template import renderElement
 
+from werkzeug.exceptions import MethodNotAllowed, NotFound
 from werkzeug.routing import RequestRedirect
-from werkzeug.exceptions import NotFound, MethodNotAllowed
-from klein import Klein
 
 from ims import __version__ as version
-from ..element.redirect import RedirectPage
+from .error import NotAuthenticatedError, NotAuthorizedError
+from .http import ContentType, HeaderName
 from .urls import URLs
 from ..dms import DMSError
-from .http import HeaderName, ContentType
-from .error import NotAuthenticatedError, NotAuthorizedError
+from ..element.redirect import RedirectPage
 
 
 __all__ = (
@@ -106,10 +107,16 @@ class KleinService(object):
     app = application
 
     def resource(self):
+        """
+        Return the Klein resource.
+        """
         return self.app.resource()
 
 
     def redirect(self, request, location, origin=None):
+        """
+        Perform a redirect.
+        """
         if origin is not None:
             location = location.set(origin, request.uri.decode("utf-8"))
 
@@ -142,8 +149,8 @@ class KleinService(object):
         @type default: L{str}
 
         @return: The value of the query parameter specified by C{name}, or
-            C{default} if there no such query parameter.  If more than one value
-            is found, return the last value found.
+            C{default} if there no such query parameter.
+            If more than one value is found, return the last value found.
         @rtype: L{str}
         """
         values = request.args.get(name.encode("utf-8"))
@@ -189,6 +196,9 @@ class KleinService(object):
     #
 
     def noContentResource(self, request, etag=None):
+        """
+        Respond with no content.
+        """
         request.setResponseCode(http.NO_CONTENT)
         if etag is not None:
             request.setHeader(HeaderName.etag.value, etag)
@@ -196,6 +206,9 @@ class KleinService(object):
 
 
     def textResource(self, request, message):
+        """
+        Respond with the given text.
+        """
         message = message
         request.setHeader(HeaderName.contentType.value, ContentType.text.value)
         request.setHeader(HeaderName.etag.value, bytes(hash(message)))
@@ -203,6 +216,9 @@ class KleinService(object):
 
 
     def notFoundResource(self, request):
+        """
+        Respond with a NOT FOUND status.
+        """
         self.log.debug("Resource not found: {request.uri}", request=request)
 
         # Require authentication.
@@ -214,6 +230,9 @@ class KleinService(object):
 
 
     def methodNotAllowedResource(self, request):
+        """
+        Respond with a METHOD NOT ALLOWED status.
+        """
         self.log.debug(
             "Method {request.method} not allowed for resource: {request.uri}",
             request=request
@@ -228,6 +247,9 @@ class KleinService(object):
 
 
     def forbiddenResource(self, request):
+        """
+        Respond with a FORBIDDEN status.
+        """
         user = getattr(request, "user", None)
         self.log.debug(
             "Forbidden resource for user {user}: {request.uri}",
@@ -239,6 +261,9 @@ class KleinService(object):
 
 
     def badRequestResource(self, request, message=None):
+        """
+        Respond with a BAD REQUEST status.
+        """
         self.log.debug(
             "Bad request for resource: {request.uri}: {message}",
             request=request, message=message
@@ -253,6 +278,9 @@ class KleinService(object):
 
 
     def invalidQueryResource(self, request, arg, value):
+        """
+        Respond with a BAD REQUEST status due to an invalid query.
+        """
         if value is None:
             return self.badRequestResource(
                 request, "Invalid query: missing parameter {}".format(arg)
@@ -264,6 +292,9 @@ class KleinService(object):
 
 
     def internalErrorResource(self, request, message=None):
+        """
+        Respond with an INTERNAL SERVER ERROR status.
+        """
         self.log.critical(
             "Internal error for resource: {request.uri}: {message}",
             request=request, message=message

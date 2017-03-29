@@ -21,19 +21,19 @@ Incident Management System JSON API endpoints.
 from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 from twisted.internet.error import ConnectionDone
 
-from ..tz import utcNow
-from ..data.model import InvalidDataError, Event, IncidentState, ReportEntry
-from ..data.json import (
-    JSON, jsonTextFromObject, objectFromJSONBytesIO, rangerAsJSON,
-    incidentAsJSON, incidentFromJSON,
-    incidentReportAsJSON, incidentReportFromJSON,
-)
-from .http import HeaderName, ContentType, staticResource
-from .klein import route
-from .urls import URLs
 from .auth import Authorization
 from .error import NotAuthorizedError
+from .http import ContentType, HeaderName, staticResource
+from .klein import route
+from .urls import URLs
+from ..data.json import (
+    JSON, incidentAsJSON, incidentFromJSON, incidentReportAsJSON,
+    incidentReportFromJSON, jsonTextFromObject, objectFromJSONBytesIO,
+    rangerAsJSON,
+)
+from ..data.model import Event, IncidentState, InvalidDataError, ReportEntry
 from ..dms import DMSError
+from ..tz import utcNow
 
 
 __all__ = (
@@ -54,6 +54,9 @@ class JSONMixIn(object):
     @route(URLs.ping.asText(), methods=("HEAD", "GET"))
     @staticResource
     def pingResource(self, request):
+        """
+        Ping (health check) endpoint.
+        """
         ack = b'"ack"'
         return self.jsonBytes(request, ack, bytes(hash(ack)))
 
@@ -61,6 +64,9 @@ class JSONMixIn(object):
     @route(URLs.personnel.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def personnelResource(self, request):
+        """
+        Personnel endpoint.
+        """
         yield self.authorizeRequest(
             request, None, Authorization.readPersonnel
         )
@@ -71,6 +77,9 @@ class JSONMixIn(object):
 
     @inlineCallbacks
     def personnelData(self):
+        """
+        Data for personnel endpoint.
+        """
         try:
             personnel = yield self.dms.personnel()
         except DMSError as e:
@@ -88,6 +97,9 @@ class JSONMixIn(object):
 
     @route(URLs.incidentTypes.asText(), methods=("HEAD", "GET"))
     def incidentTypesResource(self, request):
+        """
+        Incident types endpoint.
+        """
         self.authenticateRequest(request)
 
         hidden = self.queryValue(request, "hidden") == "true"
@@ -107,6 +119,9 @@ class JSONMixIn(object):
     @route(URLs.incidentTypes.asText(), methods=("POST",))
     @inlineCallbacks
     def editIncidentTypesResource(self, request):
+        """
+        Incident types editing endpoint.
+        """
         yield self.authorizeRequest(
             request, None, Authorization.imsAdmin
         )
@@ -118,7 +133,7 @@ class JSONMixIn(object):
                 request, "root: expected a dictionary.")
             )
 
-        adds = json.get("add" , [])
+        adds = json.get("add", [])
         show = json.get("show", [])
         hide = json.get("hide", [])
 
@@ -150,6 +165,9 @@ class JSONMixIn(object):
     @route(URLs.locations.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def locationsResource(self, request, eventID):
+        """
+        Location list endpoint.
+        """
         event = Event(eventID)
 
         yield self.authorizeRequest(
@@ -163,6 +181,9 @@ class JSONMixIn(object):
     @route(URLs.incidents.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def listIncidentsResource(self, request, eventID):
+        """
+        Incident list endpoint.
+        """
         event = Event(eventID)
 
         yield self.authorizeRequest(
@@ -180,6 +201,9 @@ class JSONMixIn(object):
     @route(URLs.incidents.asText(), methods=("POST",))
     @inlineCallbacks
     def newIncidentResource(self, request, eventID):
+        """
+        New incident endpoint.
+        """
         event = Event(eventID)
 
         yield self.authorizeRequest(
@@ -240,6 +264,9 @@ class JSONMixIn(object):
     @route(URLs.incidentNumber.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def readIncidentResource(self, request, eventID, number):
+        """
+        Incident endpoint.
+        """
         event = Event(eventID)
 
         yield self.authorizeRequest(
@@ -262,6 +289,9 @@ class JSONMixIn(object):
     @route(URLs.incidentNumber.asText(), methods=("POST",))
     @inlineCallbacks
     def editIncidentResource(self, request, eventID, number):
+        """
+        Incident edit endpoint.
+        """
         event = Event(eventID)
 
         yield self.authorizeRequest(
@@ -300,7 +330,8 @@ class JSONMixIn(object):
 
         def applyEdit(json, key, setter, cast=None):
             if cast is None:
-                cast = lambda x: x
+                def cast(obj):
+                    return obj
             value = json.get(key.value, UNSET)
             if value is not UNSET:
                 setter(event, number, cast(value), author)
@@ -376,6 +407,9 @@ class JSONMixIn(object):
     @route(URLs.incidentReports.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def listIncidentReportsResource(self, request):
+        """
+        Incident reports endpoint.
+        """
         eventID        = self.queryValue(request, "event")
         incidentNumber = self.queryValue(request, "incident")
 
@@ -408,7 +442,9 @@ class JSONMixIn(object):
             attachedTo = (event, incidentNumber)
 
         stream = self.buildJSONArray(
-            jsonTextFromObject(incidentReportAsJSON(incidentReport)).encode("utf-8")
+            jsonTextFromObject(
+                incidentReportAsJSON(incidentReport)
+            ).encode("utf-8")
             for incidentReport
             in self.storage.incidentReports(attachedTo=attachedTo)
         )
@@ -419,6 +455,9 @@ class JSONMixIn(object):
     @route(URLs.incidentReports.asText(), methods=("POST",))
     @inlineCallbacks
     def newIncidentReportResource(self, request):
+        """
+        New incident report endpoint.
+        """
         yield self.authorizeRequest(
             request, None, Authorization.writeIncidentReports
         )
@@ -482,6 +521,9 @@ class JSONMixIn(object):
     @route(URLs.incidentReport.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def readIncidentReportResource(self, request, number):
+        """
+        Incident report endpoint.
+        """
         try:
             number = int(number)
         except ValueError:
@@ -502,6 +544,9 @@ class JSONMixIn(object):
     @route(URLs.incidentReport.asText(), methods=("POST",))
     @inlineCallbacks
     def editIncidentReportResource(self, request, number):
+        """
+        Incident report edit endpoint.
+        """
         yield self.authorizeRequest(
             request, None, Authorization.writeIncidentReports
         )
@@ -575,7 +620,8 @@ class JSONMixIn(object):
 
         def applyEdit(json, key, setter, cast=None):
             if cast is None:
-                cast = lambda x: x
+                def cast(obj):
+                    return obj
             value = json.get(key.value, UNSET)
             if value is not UNSET:
                 setter(number, cast(value), author)
@@ -610,6 +656,9 @@ class JSONMixIn(object):
     @route(URLs.acl.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def readAdminAccessResource(self, request):
+        """
+        Admin access control endpoint.
+        """
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         acl = {}
@@ -624,6 +673,9 @@ class JSONMixIn(object):
     @route(URLs.acl.asText(), methods=("POST",))
     @inlineCallbacks
     def editAdminAccessResource(self, request):
+        """
+        Admin access control edit endpoint.
+        """
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         edits = objectFromJSONBytesIO(request.content)
@@ -641,6 +693,9 @@ class JSONMixIn(object):
     @route(URLs.streets.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def readStreetsResource(self, request):
+        """
+        Street list endpoint.
+        """
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         streets = {}
@@ -652,15 +707,18 @@ class JSONMixIn(object):
     @route(URLs.streets.asText(), methods=("POST",))
     @inlineCallbacks
     def editStreetsResource(self, request):
+        """
+        Street list edit endpoint.
+        """
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         edits = objectFromJSONBytesIO(request.content)
 
-        for eventID, streets in edits.items():
+        for eventID, _streets in edits.items():
             event = Event(eventID)
             existing = self.storage.concentricStreetsByID(event)
 
-            for streetID, streetName in existing.items():
+            for _streetID, _streetName in existing.items():
                 raise NotAuthorizedError("Removal of streets is not allowed.")
 
         for eventID, streets in edits.items():
@@ -678,6 +736,9 @@ class JSONMixIn(object):
 
     @route(URLs.eventSource.asText(), methods=("GET",))
     def eventSourceResource(self, request):
+        """
+        HTML5 EventSource endpoint.
+        """
         d = Deferred()
 
         self.log.info("Event source connected: {id}", id=id(request))

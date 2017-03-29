@@ -18,8 +18,8 @@
 Duty Management System integration.
 """
 
-from ._dms import DMSError, DatabaseError, DutyManagementSystem
 from ._directory import DirectoryService
+from ._dms import DMSError, DatabaseError, DutyManagementSystem
 
 
 __all__ = (

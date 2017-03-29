@@ -18,8 +18,8 @@
 Tests for L{ims.config}.
 """
 
-from twisted.python.filepath import FilePath
 import twisted.trial.unittest
+from twisted.python.filepath import FilePath
 
 from ..config import Configuration
 

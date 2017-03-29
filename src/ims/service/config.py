@@ -18,19 +18,17 @@
 Server
 """
 
-from __future__ import print_function
-
-from sys import argv
+from configparser import NoOptionError, NoSectionError, SafeConfigParser
 from os import getcwd
-from os.path import sep as pathsep, basename
-from configparser import SafeConfigParser, NoSectionError, NoOptionError
+from os.path import basename, sep as pathsep
+from sys import argv
 
-from twisted.python.filepath import FilePath
 from twisted.logger import Logger
+from twisted.python.filepath import FilePath
 
 from ..data.json import jsonTextFromObject, objectFromJSONBytesIO
+from ..dms import DirectoryService, DutyManagementSystem
 from ..store.sqlite import Storage
-from ..dms import DutyManagementSystem, DirectoryService
 
 
 __all__ = (
@@ -48,6 +46,9 @@ class Configuration (object):
 
 
     def __init__(self, configFile):
+        """
+        @param configFile: The configuration file to load.
+        """
         self.ConfigFile = configFile
         self.load()
 
@@ -74,6 +75,9 @@ class Configuration (object):
 
 
     def load(self):
+        """
+        Load the configuration.
+        """
         command = basename(argv[0])
 
         configParser = SafeConfigParser()
@@ -83,9 +87,7 @@ class Configuration (object):
                 self.log.info("No configuration file specified.")
                 return
 
-            okFile = None
-
-            for okFile in configParser.read(configFile.path,):
+            for _okFile in configParser.read(configFile.path,):
                 self.log.info(
                     "Read configuration file: {configFile.path}",
                     configFile=configFile

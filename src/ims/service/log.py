@@ -19,13 +19,16 @@ Monkey patch L{twisted.web} logging, which annoyingly doesn't let you log the
 username.
 """
 
-from zope.interface import provider
-from twisted.web.iweb import IAccessLogFormatter
-from twisted.web.http import _escape
 import twisted.web.http
+from twisted.web.http import _escape
+from twisted.web.iweb import IAccessLogFormatter
+
+from zope.interface import provider
 
 
-__all__ = ()
+__all__ = (
+    "patchCombinedLogFormatter",
+)
 
 
 
@@ -68,4 +71,7 @@ def combinedLogFormatter(timestamp, request):
 
 
 def patchCombinedLogFormatter():
+    """
+    Patch the twisted.web.http.combinedLogFormatter to include USER.
+    """
     twisted.web.http.combinedLogFormatter = combinedLogFormatter

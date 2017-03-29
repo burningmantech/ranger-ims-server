@@ -18,8 +18,6 @@
 Incident Management System SQLite data store.
 """
 
-from __future__ import print_function
-
 from textwrap import dedent
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone

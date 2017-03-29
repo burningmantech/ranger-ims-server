@@ -20,14 +20,14 @@ Incident Management System cached external resources.
 
 from zipfile import BadZipfile
 
-from twisted.python.zippath import ZipArchive
-from twisted.python.url import URL
 from twisted.internet.defer import inlineCallbacks, returnValue
+from twisted.python.url import URL
+from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
 
-from .http import staticResource, HeaderName, ContentType
-from .urls import URLs
+from .http import ContentType, HeaderName, staticResource
 from .klein import route
+from .urls import URLs
 
 
 __all__ = (
@@ -88,6 +88,9 @@ class ExternalMixIn(object):
     @route(URLs.bootstrapBase.asText(), methods=("HEAD", "GET"), branch=True)
     @staticResource
     def bootstrapResource(self, request):
+        """
+        Endpoint for Bootstrap.
+        """
         requestURL = URL.fromText(request.uri)
 
         # Remove URL prefix
@@ -103,6 +106,9 @@ class ExternalMixIn(object):
     @route(URLs.jqueryJS.asText(), methods=("HEAD", "GET"))
     @staticResource
     def jqueryJSResource(self, request):
+        """
+        Endpoint for jQuery.
+        """
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value
         )
@@ -115,6 +121,9 @@ class ExternalMixIn(object):
     @route(URLs.jqueryMap.asText(), methods=("HEAD", "GET"))
     @staticResource
     def jqueryMapResource(self, request):
+        """
+        Endpoint for the jQuery map file.
+        """
         request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
         return self.cachedResource(
             request, self.jqueryMapSourceURL,
@@ -127,6 +136,9 @@ class ExternalMixIn(object):
     )
     @staticResource
     def dataTablesResource(self, request):
+        """
+        Endpoint for DataTables.
+        """
         requestURL = URL.fromText(request.uri)
 
         # Remove URL prefix
@@ -142,6 +154,9 @@ class ExternalMixIn(object):
     @route(URLs.momentJS.asText(), methods=("HEAD", "GET"))
     @staticResource
     def momentJSResource(self, request):
+        """
+        Endpoint for moment.js.
+        """
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value
         )
@@ -154,6 +169,9 @@ class ExternalMixIn(object):
     @route(URLs.lscacheJS.asText(), methods=("HEAD", "GET"))
     @staticResource
     def lscacheJSResource(self, request):
+        """
+        Endpoint for lscache.
+        """
         request.setHeader(
             HeaderName.contentType.value, ContentType.JavaScript.value
         )
@@ -165,6 +183,9 @@ class ExternalMixIn(object):
 
     @inlineCallbacks
     def cacheFromURL(self, url, name):
+        """
+        Download a resource and cache it.
+        """
         cacheDir = self.config.CachedResources
 
         if not cacheDir.isdir():
@@ -178,7 +199,7 @@ class ExternalMixIn(object):
                 yield downloadPage(
                     url.asText().encode("utf-8"), tmp.open("w")
                 )
-            except:
+            except BaseException:
                 self.log.failure("Download failed for {url}", url=url)
                 try:
                     tmp.remove()
@@ -192,6 +213,9 @@ class ExternalMixIn(object):
 
     @inlineCallbacks
     def cachedResource(self, request, url, name):
+        """
+        Retrieve a cached resource.
+        """
         filePath = yield self.cacheFromURL(url, name)
 
         try:
@@ -206,6 +230,9 @@ class ExternalMixIn(object):
 
     @inlineCallbacks
     def cachedZippedResource(self, request, url, archiveName, name, *names):
+        """
+        Retrieve a cached resource from a zip file.
+        """
         archivePath = yield self.cacheFromURL(
             url, "{0}.zip".format(archiveName)
         )

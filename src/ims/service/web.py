@@ -20,22 +20,22 @@ Incident Management System web interface.
 
 from twisted.internet.defer import inlineCallbacks, returnValue
 
+from .auth import Authorization
+from .http import ContentType, HeaderName, staticResource
+from .klein import route
+from .urls import URLs
 from ..data.model import Event
 from ..element.admin import AdminPage
 from ..element.admin_acl import AdminAccessControlPage
-from ..element.admin_types import AdminIncidentTypesPage
 from ..element.admin_streets import AdminStreetsPage
-from ..element.queue import DispatchQueuePage
-from ..element.queue_template import DispatchQueueTemplatePage
+from ..element.admin_types import AdminIncidentTypesPage
 from ..element.incident import IncidentPage
 from ..element.incident_template import IncidentTemplatePage
+from ..element.queue import DispatchQueuePage
+from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.report import IncidentReportPage
 from ..element.report_template import IncidentReportTemplatePage
 from ..element.root import RootPage
-from .http import staticResource, HeaderName, ContentType
-from .klein import route
-from .urls import URLs
-from .auth import Authorization
 
 
 __all__ = (
@@ -56,12 +56,18 @@ class WebMixIn(object):
     @route(URLs.styleSheet.asText(), methods=("HEAD", "GET"))
     @staticResource
     def styleSheetResource(self, request):
+        """
+        Endpoint for global style sheet.
+        """
         return self.styleSheet(request, "style.css")
 
 
     @route(URLs.logo.asText(), methods=("HEAD", "GET"))
     @staticResource
     def logoResource(self, request):
+        """
+        Endpoint for logo.
+        """
         request.setHeader(HeaderName.contentType.value, ContentType.PNG.value)
         return self.builtInResource(request, "logo.png")
 
@@ -69,6 +75,9 @@ class WebMixIn(object):
     @route(URLs.imsJS.asText(), methods=("HEAD", "GET"))
     @staticResource
     def imsJSResource(self, request):
+        """
+        Endpoint for C{ims.js}.
+        """
         return self.javaScript(request, "ims.js")
 
 
@@ -109,7 +118,11 @@ class WebMixIn(object):
     @staticResource
     @inlineCallbacks
     def adminPage(self, request):
-        # FIXME: Not strictly required because the underlying data is protected.
+        """
+        Endpoint for admin page.
+        """
+        # FIXME: Not strictly required because the underlying data is
+        # protected.
         # But the error you get is stupid, so let's avoid that for now.
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)
         returnValue(AdminPage(self))
@@ -118,12 +131,19 @@ class WebMixIn(object):
     @route(URLs.adminJS.asText(), methods=("HEAD", "GET"))
     @staticResource
     def adminJSResource(self, request):
+        """
+        Endpoint for C{admin.js}.
+        """
         return self.javaScript(request, "admin.js")
 
     @route(URLs.adminAccessControl.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def adminAccessControlPage(self, request):
-        # FIXME: Not strictly required because the underlying data is protected.
+        """
+        Endpoint for access control page.
+        """
+        # FIXME: Not strictly required because the underlying data is
+        # protected.
         # But the error you get is stupid, so let's avoid that for now.
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)
         returnValue(AdminAccessControlPage(self))
@@ -132,13 +152,20 @@ class WebMixIn(object):
     @route(URLs.adminAccessControlJS.asText(), methods=("HEAD", "GET"))
     @staticResource
     def adminAccessControlJSResource(self, request):
+        """
+        Endpoint for C{admin_acl.js}.
+        """
         return self.javaScript(request, "admin_acl.js")
 
 
     @route(URLs.adminIncidentTypes.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def adminAdminIncidentTypesPagePage(self, request):
-        # FIXME: Not strictly required because the underlying data is protected.
+        """
+        Endpoint for incident types admin page.
+        """
+        # FIXME: Not strictly required because the underlying data is
+        # protected.
         # But the error you get is stupid, so let's avoid that for now.
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)
         returnValue(AdminIncidentTypesPage(self))
@@ -147,13 +174,20 @@ class WebMixIn(object):
     @route(URLs.adminIncidentTypesJS.asText(), methods=("HEAD", "GET"))
     @staticResource
     def adminAdminIncidentTypesPageJSResource(self, request):
+        """
+        Endpoint for C{admin_types.js}.
+        """
         return self.javaScript(request, "admin_types.js")
 
 
     @route(URLs.adminStreets.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def adminStreetsPage(self, request):
-        # FIXME: Not strictly required because the underlying data is protected.
+        """
+        Endpoint for streets admin page.
+        """
+        # FIXME: Not strictly required because the underlying data is
+        # protected.
         # But the error you get is stupid, so let's avoid that for now.
         yield self.authorizeRequest(request, None, Authorization.imsAdmin)
         returnValue(AdminStreetsPage(self))
@@ -162,34 +196,52 @@ class WebMixIn(object):
     @route(URLs.adminStreetsJS.asText(), methods=("HEAD", "GET"))
     @staticResource
     def adminStreetsJSResource(self, request):
+        """
+        Endpoint for C{admin_streets.js}.
+        """
         return self.javaScript(request, "admin_streets.js")
 
 
     @route(URLs.viewDispatchQueue.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def viewDispatchQueuePage(self, request, eventID):
+        """
+        Endpoint for the dispatch queue page.
+        """
         event = Event(eventID)
-        # FIXME: Not strictly required because the underlying data is protected.
+        # FIXME: Not strictly required because the underlying data is
+        # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        yield self.authorizeRequest(request, event, Authorization.readIncidents)
+        yield self.authorizeRequest(
+            request, event, Authorization.readIncidents
+        )
         returnValue(DispatchQueuePage(self, event))
 
 
     @route(URLs.viewDispatchQueueTemplate.asText(), methods=("HEAD", "GET"))
     @staticResource
     def viewDispatchQueueTemplatePage(self, request):
+        """
+        Endpoint for the dispatch queue page template.
+        """
         return DispatchQueueTemplatePage(self)
 
 
     @route(URLs.viewDispatchQueueJS.asText(), methods=("HEAD", "GET"))
     @staticResource
     def viewDispatchQueueJSResource(self, request):
+        """
+        Endpoint for C{queue.js}.
+        """
         return self.javaScript(request, "queue.js")
 
 
     @route(URLs.viewIncidentNumber.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def viewIncidentPage(self, request, eventID, number):
+        """
+        Endpoint for the incident page.
+        """
         event = Event(eventID)
 
         if number == "new":
@@ -210,12 +262,18 @@ class WebMixIn(object):
     @route(URLs.viewIncidentNumberTemplate.asText(), methods=("HEAD", "GET"))
     @staticResource
     def viewIncidentNumberTemplatePage(self, request):
+        """
+        Endpoint for the incident page template.
+        """
         return IncidentTemplatePage(self)
 
 
     @route(URLs.viewIncidentNumberJS.asText(), methods=("HEAD", "GET"))
     @staticResource
     def incidentJSResource(self, request):
+        """
+        Endpoint for C{incident.js}.
+        """
         return self.javaScript(request, "incident.js")
 
 
@@ -225,6 +283,9 @@ class WebMixIn(object):
     @route(URLs.viewIncidentReport.asText(), methods=("HEAD", "GET"))
     @inlineCallbacks
     def viewIncidentReportPage(self, request, number):
+        """
+        Endpoint for the report page.
+        """
         if number == "new":
             yield self.authorizeRequest(
                 request, None, Authorization.writeIncidentReports
@@ -244,10 +305,16 @@ class WebMixIn(object):
     @route(URLs.viewIncidentReportTemplate.asText(), methods=("HEAD", "GET"))
     @staticResource
     def viewIncidentReportTemplatePage(self, request):
+        """
+        Endpoint for the incident page template.
+        """
         return IncidentReportTemplatePage(self)
 
 
     @route(URLs.viewIncidentReportJS.asText(), methods=("HEAD", "GET"))
     @staticResource
     def viewIncidentReportJSResource(self, request):
+        """
+        Endpoint for C{report.js}.
+        """
         return self.javaScript(request, "report.js")

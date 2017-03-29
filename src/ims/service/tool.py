@@ -18,19 +18,20 @@
 Incident Management System web service command line tool.
 """
 
-from twisted.python.filepath import FilePath
-from twisted.logger import Logger
-from twisted.web.server import Site, Session
 from twext.python.usage import (
-    Executable, Options as BaseOptions, exit, ExitStatus
+    Executable, ExitStatus, Options as BaseOptions, exit
 )
 
+from twisted.logger import Logger
+from twisted.python.filepath import FilePath
+from twisted.web.server import Session, Site
+
+from .config import Configuration
+from .log import patchCombinedLogFormatter
+from .service import WebService
 from ..data.model import Event
 from ..store.istore import StorageError
 from ..store.sqlite import Storage
-from .log import patchCombinedLogFormatter
-from .config import Configuration
-from .service import WebService
 
 
 __all__ = (
@@ -97,6 +98,10 @@ class WebTool(Executable):
 
 
     class Options(BaseOptions, ConfigOptionsMixIn):
+        """
+        Tool options.
+        """
+
         optFlags = []
 
         optParameters = [
@@ -105,6 +110,9 @@ class WebTool(Executable):
 
 
     def postOptions(self):
+        """
+        See L{Executable.postOptions}.
+        """
         Executable.postOptions(self)
 
         patchCombinedLogFormatter()
@@ -113,6 +121,9 @@ class WebTool(Executable):
 
 
     def whenRunning(self):
+        """
+        See L{Executable.whenRunning}.
+        """
         config = self.options["configuration"]
         config.directory.loadRecords()
         service = WebService(config)
@@ -142,12 +153,19 @@ class KleinTool(Executable):
 
 
     class Options(BaseOptions, ConfigOptionsMixIn):
+        """
+        Tool options.
+        """
+
         optFlags = []
 
         optParameters = []
 
 
     def postOptions(self):
+        """
+        See L{Executable.postOptions}.
+        """
         Executable.postOptions(self)
 
         self.options.initConfig()
@@ -175,6 +193,10 @@ class LegacyLoadTool(Executable):
     log = Logger()
 
     class Options(BaseOptions, ConfigOptionsMixIn):
+        """
+        Tool options.
+        """
+
         optFlags = []
 
         optParameters = []
@@ -186,23 +208,35 @@ class LegacyLoadTool(Executable):
 
 
         def getSynopsis(self):
+            """
+            See L{BaseOptions.getSynopsis}.
+            """
             return "{} datadir [datadir ...]".format(
                 BaseOptions.getSynopsis(self)
             )
 
 
         def parseArgs(self, *datadirs):
+            """
+            See L{BaseOptions.parseArgs}.
+            """
             BaseOptions.parseArgs(self)
             self["fileStores"] = [FilePath(d) for d in datadirs]
 
 
     def postOptions(self):
+        """
+        See L{Executable.postOptions}.
+        """
         Executable.postOptions(self)
 
         self.options.initConfig()
 
 
     def whenRunning(self):
+        """
+        See L{Executable.whenRunning}.
+        """
         try:
             config = self.options["configuration"]
 
@@ -231,6 +265,10 @@ class JSONLoadTool(Executable):
     log = Logger()
 
     class Options(BaseOptions, ConfigOptionsMixIn):
+        """
+        Tool options.
+        """
+
         optFlags = []
 
         optParameters = []
@@ -243,18 +281,27 @@ class JSONLoadTool(Executable):
 
 
         def getSynopsis(self):
+            """
+            See L{BaseOptions.getSynopsis}.
+            """
             return "{} event file".format(
                 BaseOptions.getSynopsis(self)
             )
 
 
         def opt_trial(self):
+            """
+            trial executable
+            """  # noqa
             self["trialRun"] = True
 
         opt_t = opt_trial
 
 
         def parseArgs(self, eventID, fileName):
+            """
+            See L{BaseOptions.parseArgs}.
+            """
             BaseOptions.parseArgs(self)
 
             self["event"] = Event(eventID)
@@ -262,12 +309,18 @@ class JSONLoadTool(Executable):
 
 
     def postOptions(self):
+        """
+        See L{Executable.postOptions}.
+        """
         Executable.postOptions(self)
 
         self.options.initConfig()
 
 
     def whenRunning(self):
+        """
+        See L{Executable.whenRunning}.
+        """
         try:
             config   = self.options["configuration"]
             event    = self.options["event"]
