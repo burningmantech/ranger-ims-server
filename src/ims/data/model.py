@@ -216,7 +216,6 @@ class Incident(object):
         incidentTypes=None,
         reportEntries=None,
         created=None, state=None,
-        version=None
     ):
         """
         @param number: The incident's identifying number.
@@ -245,9 +244,6 @@ class Incident(object):
 
         @param state: The state of the incident.
         @type state: L{IncidentState}
-
-        @param version: The version of the incident.
-        @type version: L{int}
         """
         if rangers is not None:
             rangers = frozenset(rangers)
@@ -268,7 +264,6 @@ class Incident(object):
         self.reportEntries = reportEntries
         self.created       = created
         self.state         = state
-        self.version       = version
 
 
     def __str__(self):
@@ -292,7 +287,6 @@ class Incident(object):
             "reportEntries={self.reportEntries!r},"
             "created={self.created!r},"
             "state={self.state!r},"
-            "version={self.version!r})"
             .format(self=self)
         )
 
@@ -1013,10 +1007,6 @@ class IncidentReport(object):
                 return entry.text.split("\n")[0]
 
         return ""
-
-
-    def version(self):
-        return hash((self.number, self.created, self.reportEntries))
 
 
     def validate(self, noneID=False):

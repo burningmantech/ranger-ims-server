@@ -162,7 +162,6 @@ class IncidentTests(unittest.TestCase):
             "reportEntries={i.reportEntries!r},"
             "created={i.created!r},"
             "state={i.state!r},"
-            "version={i.version!r})"
             .format(i=incident)
         )
 
