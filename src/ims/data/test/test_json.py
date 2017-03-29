@@ -24,17 +24,15 @@ from datetime import (
 
 from twisted.trial import unittest
 
-from ...store.test.test_file import time1, time2
-from ..model import (
-    InvalidDataError, IncidentState,
-    Incident, ReportEntry, Ranger,
-    Location, TextOnlyAddress, RodGarettAddress,
-)
 from ..json import (
-    JSON,
-    dateTimeAsRFC3339Text, rfc3339TextAsDateTime,
-    incidentFromJSON, incidentAsJSON, rangerAsJSON, locationAsJSON,
+    JSON, dateTimeAsRFC3339Text, incidentAsJSON, incidentFromJSON,
+    locationAsJSON, rangerAsJSON, rfc3339TextAsDateTime,
 )
+from ..model import (
+    Incident, IncidentState, InvalidDataError, Location, Ranger, ReportEntry,
+    RodGarettAddress, TextOnlyAddress,
+)
+from ...store.test.test_file import time1, time2
 
 
 __all__ = ()

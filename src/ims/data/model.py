@@ -157,6 +157,7 @@ class Event(object):
     """
     Event.
     """
+
     def __init__(self, eventID):
         self.id = eventID
 
@@ -748,6 +749,9 @@ class TextOnlyAddress(Address):
 
 
     def asRodGarettAddress(self):
+        """
+        Convert to Rod Garett address.
+        """
         return RodGarettAddress(
             description=self.description
         )
@@ -922,6 +926,9 @@ class RodGarettAddress(Address):
 
 
     def asRodGarettAddress(self):
+        """
+        Convert to Rod Garett address.
+        """
         return self
 
 
@@ -995,7 +1002,8 @@ class IncidentReport(object):
 
     def summaryFromReport(self):
         """
-        Generate a summary.  This uses the first line of the first report entry.
+        Generate a summary.  This uses the first line of the first report
+        entry.
 
         @return: The incident report summary.
         @rtype: L{str}
@@ -1035,7 +1043,8 @@ class IncidentReport(object):
 
             if number < 0:
                 raise InvalidDataError(
-                    "Incident report ID must be whole, not {n}".format(n=number)
+                    "Incident report ID must be whole, not {n}"
+                    .format(n=number)
                 )
 
         _validateIsInstance("created", self.created, DateTime, optional=False)
