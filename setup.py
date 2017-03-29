@@ -95,6 +95,18 @@ for tool, (module, function) in script_entry_points.items():
 
 
 #
+# Package data
+#
+
+package_data = dict(
+    ims = [
+        "service/test/empty.conf",
+        "service/test/test.conf",
+    ],
+)
+
+
+#
 # Dependencies
 #
 
@@ -137,8 +149,9 @@ def main():
         platforms=platforms,
         packages=packages,
         package_dir={"": "src"},
-        package_data=dict(),
+        package_data=package_data,
         entry_points=entry_points,
+        data_files=[],
         ext_modules=extensions,
         setup_requires=setup_requirements,
         install_requires=install_requirements,
