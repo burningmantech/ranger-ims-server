@@ -108,21 +108,19 @@ created time stamp plus a state attribute:
 
 from __future__ import absolute_import
 
-from json import JSONDecodeError, JSONEncoder, dumps, load, loads
 from datetime import datetime as DateTime
 from io import TextIOWrapper
+from json import JSONDecodeError, JSONEncoder, dumps, load, loads
 from typing import Any, Optional
 from typing.io import BinaryIO
 
 from arrow.parser import DateTimeParser
 
-from twisted.python.constants import (
-    Values, ValueConstant
-)
+from twisted.python.constants import ValueConstant, Values
 
 from .model import (
-    InvalidDataError, IncidentState, Incident, ReportEntry, Ranger,
-    Location, TextOnlyAddress, RodGarettAddress, IncidentReport,
+    Incident, IncidentReport, IncidentState, InvalidDataError, Location,
+    Ranger, ReportEntry, RodGarettAddress, TextOnlyAddress,
 )
 
 
@@ -377,12 +375,12 @@ def incidentFromJSON(root, number, validate=True):
         root[JSON.incident_number.value] = number
 
     priority = get(root, JSON.incident_priority, int)
-    summary  = get(root, JSON.incident_summary , str)
+    summary  = get(root, JSON.incident_summary, str)
     location = get(root, JSON.incident_location, dict)
 
     if location is None:
         # Try pre-2015 attributes
-        location_name    = get(root, JSON._location_name   , str)
+        location_name    = get(root, JSON._location_name, str)
         location_address = get(root, JSON._location_address, str)
 
         if location_name is None and location_address is None:
@@ -465,7 +463,9 @@ def incidentFromJSON(root, number, validate=True):
     # 2013 format did not have a true created timestamp, but it did have a
     # created state timestamp, which will have to do
     if created is None:
-        created = get(root, JSON._created, str, transform=rfc3339TextAsDateTime)
+        created = get(
+            root, JSON._created, str, transform=rfc3339TextAsDateTime
+        )
 
     json_state = get(root, JSON.incident_state, str)
 
@@ -571,12 +571,12 @@ def rangerAsJSON(ranger):
     @rtype: L{dict}
     """
     return {
-        JSON.ranger_handle.value  : ranger.handle,
-        JSON.ranger_name.value    : ranger.name,
-        JSON.ranger_status.value  : ranger.status,
-        JSON.ranger_dms_id.value  : ranger.dmsID,
-        JSON.ranger_email.value   : ranger.email,
-        JSON.ranger_on_site.value : ranger.onSite,
+        JSON.ranger_handle.value: ranger.handle,
+        JSON.ranger_name.value: ranger.name,
+        JSON.ranger_status.value: ranger.status,
+        JSON.ranger_dms_id.value: ranger.dmsID,
+        JSON.ranger_email.value: ranger.email,
+        JSON.ranger_on_site.value: ranger.onSite,
     }
 
 
@@ -643,7 +643,9 @@ def reportEntriesFromJSON(json):
                     entry, JSON.entry_created, str,
                     transform=rfc3339TextAsDateTime,
                 ),
-                system_entry=get(entry, JSON.entry_system, bool, default=False),
+                system_entry=get(
+                    entry, JSON.entry_system, bool, default=False
+                ),
             )
             for entry in json
         )
@@ -720,7 +722,8 @@ def incidentReportFromJSON(root, number, validate=True):
         root, JSON.incident_report_summary, str
     )
     created = get(
-        root, JSON.incident_report_created, str, transform=rfc3339TextAsDateTime
+        root, JSON.incident_report_created, str,
+        transform=rfc3339TextAsDateTime
     )
 
     incidentReport = IncidentReport(

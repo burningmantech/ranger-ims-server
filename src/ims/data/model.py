@@ -18,11 +18,11 @@
 IMS data model
 """
 
+from datetime import datetime as DateTime
 from functools import total_ordering
-from datetime import datetime as DateTime  # , timedelta as TimeDelta
 
 from twisted.python.constants import (
-    Names, NamedConstant, Values, ValueConstant
+    NamedConstant, Names, ValueConstant, Values
 )
 
 
@@ -80,6 +80,9 @@ class IncidentState(Names):
 
     @classmethod
     def states_prior_to(cls, state):
+        """
+        Return states that are ordered before the given state.
+        """
         for s in cls.iterconstants():
             if s is state:
                 break
@@ -88,6 +91,9 @@ class IncidentState(Names):
 
     @classmethod
     def states_following(cls, state):
+        """
+        Return states that are ordered after the given state.
+        """
         states = cls.iterconstants()
 
         for s in states:
