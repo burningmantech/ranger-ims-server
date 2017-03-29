@@ -20,10 +20,6 @@ Server
 
 from __future__ import print_function
 
-__all__ = [
-    "Configuration",
-]
-
 from sys import argv
 from os import getcwd
 from os.path import sep as pathsep, basename
@@ -35,6 +31,11 @@ from twisted.logger import Logger
 from ..data.json import jsonTextFromObject, objectFromJSONBytesIO
 from ..store.sqlite import Storage
 from ..dms import DutyManagementSystem, DirectoryService
+
+
+__all__ = (
+    "Configuration",
+)
 
 
 

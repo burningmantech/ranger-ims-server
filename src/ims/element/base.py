@@ -18,13 +18,6 @@
 Base element class.
 """
 
-__all__ = [
-    "Element",
-    "XMLFile",
-    "renderer",
-    "tags",
-]
-
 from twisted.web.template import (
     Element as BaseElement, XMLFile, renderer, tags
 )
@@ -32,6 +25,13 @@ from twisted.python.filepath import FilePath
 
 from ..data.json import jsonTextFromObject
 from ..service.urls import URLs
+
+__all__ = (
+    "Element",
+    "XMLFile",
+    "renderer",
+    "tags",
+)
 
 
 

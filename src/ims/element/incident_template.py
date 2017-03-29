@@ -18,11 +18,11 @@
 Incident page template.
 """
 
-__all__ = [
-    "IncidentTemplatePage",
-]
-
 from .base import Element
+
+__all__ = (
+    "IncidentTemplatePage",
+)
 
 
 

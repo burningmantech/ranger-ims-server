@@ -10,11 +10,11 @@ from datetime import (
     datetime as DateTime, timedelta as TimeDelta, tzinfo as TZInfo
 )
 
-__all__ = [
+__all__ = (
     "FixedOffsetTimeZone",
     "utc",
     "utcNow",
-]
+)
 
 
 

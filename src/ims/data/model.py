@@ -18,7 +18,15 @@
 IMS data model
 """
 
-__all__ = [
+from functools import total_ordering
+from datetime import datetime as DateTime  # , timedelta as TimeDelta
+
+from twisted.python.constants import (
+    Names, NamedConstant, Values, ValueConstant
+)
+
+
+__all__ = (
     "IncidentState",
     "IncidentType",
     "InvalidDataError",
@@ -30,13 +38,6 @@ __all__ = [
     "TextOnlyAddress",
     "RodGarettAddress",
     "IncidentReport",
-]
-
-from functools import total_ordering
-from datetime import datetime as DateTime  # , timedelta as TimeDelta
-
-from twisted.python.constants import (
-    Names, NamedConstant, Values, ValueConstant
 )
 
 

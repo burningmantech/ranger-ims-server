@@ -18,12 +18,12 @@
 Admin streets page.
 """
 
-__all__ = [
-    "AdminStreetsPage",
-]
-
 from ..data.json import jsonTextFromObject
 from .base import Element, renderer
+
+__all__ = (
+    "AdminStreetsPage",
+)
 
 
 

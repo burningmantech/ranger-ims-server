@@ -18,12 +18,6 @@
 Duty Management System.
 """
 
-__all__ = [
-    "DMSError",
-    "DatabaseError",
-    "DutyManagementSystem",
-]
-
 from time import time
 
 from pymysql import (
@@ -35,6 +29,13 @@ from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.enterprise import adbapi
 
 from ..data.model import Ranger
+
+
+__all__ = (
+    "DMSError",
+    "DatabaseError",
+    "DutyManagementSystem",
+)
 
 
 

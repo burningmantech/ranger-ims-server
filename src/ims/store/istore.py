@@ -18,10 +18,10 @@
 Incident Management System storage interface.
 """
 
-__all__ = [
+__all__ = (
     "StorageError",
     "NoSuchIncidentError",
-]
+)
 
 
 

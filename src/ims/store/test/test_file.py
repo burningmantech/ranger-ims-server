@@ -18,8 +18,6 @@
 Tests for L{ims.store.file}.
 """
 
-__all__ = []
-
 from datetime import datetime as DateTime
 
 import twisted.trial.unittest
@@ -35,6 +33,9 @@ from ...data.test.test_model import (
 )
 from ..istore import StorageError, NoSuchIncidentError
 from .._file import Storage, ReadOnlyStorage, eTagHash
+
+
+__all__ = ()
 
 
 

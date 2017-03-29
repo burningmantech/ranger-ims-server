@@ -18,10 +18,6 @@
 Duty Management System directory service.
 """
 
-__all__ = [
-    "DirectoryService",
-]
-
 from hashlib import sha1
 
 from twisted.python.constants import Names, NamedConstant
@@ -39,6 +35,11 @@ from twext.who.index import (
 from twext.who.util import ConstantsContainer
 
 from ._dms import DatabaseError
+
+
+__all__ = (
+    "DirectoryService",
+)
 
 
 

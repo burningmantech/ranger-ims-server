@@ -18,12 +18,13 @@
 Server root page.
 """
 
-__all__ = [
-    "RootPage",
-]
-
 from ..service.urls import URLs
 from .base import Element, renderer
+
+
+__all__ = (
+    "RootPage",
+)
 
 
 

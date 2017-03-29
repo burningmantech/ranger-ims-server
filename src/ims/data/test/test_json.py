@@ -18,8 +18,6 @@
 Tests for L{ims.data.json}.
 """
 
-__all__ = []
-
 from datetime import datetime as DateTime
 
 from twisted.trial import unittest
@@ -36,6 +34,9 @@ from ..json import (
     dateTimeAsRFC3339Text, rfc3339TextAsDateTime,
     incidentFromJSON, incidentAsJSON, rangerAsJSON, locationAsJSON,
 )
+
+
+__all__ = ()
 
 
 

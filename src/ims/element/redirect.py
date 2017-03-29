@@ -18,11 +18,12 @@
 Redirect page.
 """
 
-__all__ = [
-    "RedirectPage"
-]
-
 from .base import Element, renderer
+
+
+__all__ = (
+    "RedirectPage",
+)
 
 
 

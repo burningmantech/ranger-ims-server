@@ -24,6 +24,9 @@ import twisted.trial.unittest
 from ..config import Configuration
 
 
+__all__ = ()
+
+
 emptyConfigFile  = FilePath(__file__).sibling("empty.conf")
 sampleConfigFile = FilePath(__file__).sibling("test.conf")
 

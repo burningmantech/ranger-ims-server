@@ -19,6 +19,10 @@ from twisted.trial.unittest import TestCase, SkipTest
 from ..tz import FixedOffsetTimeZone
 
 
+__all__ = ()
+
+
+
 # On some rare platforms (FreeBSD 8?  I was not able to reproduce
 # on FreeBSD 9) 'mktime' seems to always fail once tzset() has been
 # called more than once in a process lifetime.  I think this is

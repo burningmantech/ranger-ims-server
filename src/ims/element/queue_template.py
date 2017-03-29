@@ -18,11 +18,12 @@
 Dispatch queue page template.
 """
 
-__all__ = [
-    "DispatchQueueTemplatePage",
-]
-
 from .base import Element
+
+
+__all__ = (
+    "DispatchQueueTemplatePage",
+)
 
 
 

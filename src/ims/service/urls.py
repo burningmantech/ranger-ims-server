@@ -18,11 +18,11 @@
 Incident Management System URL schema.
 """
 
-__all__ = [
-    "URLs",
-]
-
 from twisted.python.url import URL
+
+__all__ = (
+    "URLs",
+)
 
 
 

@@ -18,14 +18,15 @@
 Incident report page.
 """
 
-__all__ = [
-    "IncidentReportPage",
-]
-
 from ..data.json import jsonTextFromObject
 from ..service.auth import Authorization
 
 from .base import Element, renderer
+
+
+__all__ = (
+    "IncidentReportPage",
+)
 
 
 

@@ -18,15 +18,16 @@
 Dispatch queue page.
 """
 
-__all__ = [
-    "DispatchQueuePage",
-]
-
 from ..data.json import jsonTextFromObject
 from ..service.urls import URLs
 from ..service.auth import Authorization
 
 from .base import Element, renderer
+
+
+__all__ = (
+    "DispatchQueuePage",
+)
 
 
 

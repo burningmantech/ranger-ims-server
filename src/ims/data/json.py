@@ -108,21 +108,6 @@ created time stamp plus a state attribute:
 
 from __future__ import absolute_import
 
-__all__ = [
-    "dateTimeAsRFC3339Text",
-    "jsonTextFromObject",
-    "objectFromJSONBytesIO",
-    "objectFromJSONText",
-    "rfc3339TextAsDateTime",
-
-    "JSON",
-
-    "incidentFromJSON",
-    "incidentAsJSON",
-    "rangerAsJSON",
-    "locationAsJSON",
-]
-
 from json import JSONDecodeError, JSONEncoder, dumps, load, loads
 from datetime import datetime as DateTime
 from io import TextIOWrapper
@@ -139,6 +124,22 @@ from ..tz import utc
 from .model import (
     InvalidDataError, IncidentState, Incident, ReportEntry, Ranger,
     Location, TextOnlyAddress, RodGarettAddress, IncidentReport,
+)
+
+
+__all__ = (
+    "dateTimeAsRFC3339Text",
+    "jsonTextFromObject",
+    "objectFromJSONBytesIO",
+    "objectFromJSONText",
+    "rfc3339TextAsDateTime",
+
+    "JSON",
+
+    "incidentFromJSON",
+    "incidentAsJSON",
+    "rangerAsJSON",
+    "locationAsJSON",
 )
 
 

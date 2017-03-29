@@ -18,16 +18,17 @@
 Incident Management System HTTP support.
 """
 
-__all__ = [
-    "HeaderName",
-    "ContentType",
-]
-
 from functools import wraps
 
 from twisted.python.constants import Values, ValueConstant
 
 from ims import __version__ as version
+
+
+__all__ = (
+    "HeaderName",
+    "ContentType",
+)
 
 
 

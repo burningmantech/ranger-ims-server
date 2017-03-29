@@ -18,11 +18,6 @@
 Incident Management System authorization and authentication.
 """
 
-__all__ = [
-    "Authorization",
-    "AuthMixIn",
-]
-
 from twisted.python.constants import FlagConstant, Flags
 from twisted.python.url import URL
 from twisted.internet.defer import inlineCallbacks, returnValue
@@ -33,6 +28,12 @@ from ..element.login import LoginPage
 from .klein import route
 from .urls import URLs
 from .error import NotAuthenticatedError, NotAuthorizedError
+
+
+__all__ = (
+    "Authorization",
+    "AuthMixIn",
+)
 
 
 

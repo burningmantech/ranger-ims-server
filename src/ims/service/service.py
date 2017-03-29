@@ -20,10 +20,6 @@ Incident Management System web service.
 
 from __future__ import print_function
 
-__all__ = [
-    "WebService",
-]
-
 from zipfile import BadZipfile
 
 from twisted.python.filepath import FilePath
@@ -38,6 +34,11 @@ from .json import JSONMixIn
 from .web import WebMixIn
 from .external import ExternalMixIn
 from .eventsource import DataStoreEventSourceLogObserver
+
+
+__all__ = (
+    "WebService",
+)
 
 
 

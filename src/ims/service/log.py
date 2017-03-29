@@ -19,12 +19,13 @@ Monkey patch L{twisted.web} logging, which annoyingly doesn't let you log the
 username.
 """
 
-__all__ = []
-
 from zope.interface import provider
 from twisted.web.iweb import IAccessLogFormatter
 from twisted.web.http import _escape
 import twisted.web.http
+
+
+__all__ = ()
 
 
 

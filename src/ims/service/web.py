@@ -18,10 +18,6 @@
 Incident Management System web interface.
 """
 
-__all__ = [
-    "WebMixIn",
-]
-
 from twisted.internet.defer import inlineCallbacks, returnValue
 
 from ..data.model import Event
@@ -40,6 +36,11 @@ from .http import staticResource, HeaderName, ContentType
 from .klein import route
 from .urls import URLs
 from .auth import Authorization
+
+
+__all__ = (
+    "WebMixIn",
+)
 
 
 

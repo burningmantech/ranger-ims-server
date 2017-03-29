@@ -18,11 +18,12 @@
 Login page.
 """
 
-__all__ = [
-    "LoginPage"
-]
-
 from .base import Element, renderer
+
+
+__all__ = (
+    "LoginPage",
+)
 
 
 

@@ -18,12 +18,6 @@
 Incident Management System file data store.
 """
 
-__all__ = [
-    "ReadOnlyStorage",
-    "Storage",
-    "MultiStorage",
-]
-
 from hashlib import sha1
 
 from twisted.logger import Logger
@@ -35,6 +29,13 @@ from ..data.json import (
     rfc3339TextAsDateTime
 )
 from .istore import StorageError, NoSuchIncidentError
+
+
+__all__ = (
+    "ReadOnlyStorage",
+    "Storage",
+    "MultiStorage",
+)
 
 
 

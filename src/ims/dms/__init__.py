@@ -18,12 +18,13 @@
 Duty Management System integration.
 """
 
-__all__ = [
+from ._dms import DMSError, DatabaseError, DutyManagementSystem
+from ._directory import DirectoryService
+
+
+__all__ = (
     "DMSError",
     "DatabaseError",
     "DutyManagementSystem",
     "DirectoryService",
-]
-
-from ._dms import DMSError, DatabaseError, DutyManagementSystem
-from ._directory import DirectoryService
+)

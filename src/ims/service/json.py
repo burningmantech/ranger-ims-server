@@ -18,10 +18,6 @@
 Incident Management System JSON API endpoints.
 """
 
-__all__ = [
-    "JSONMixIn",
-]
-
 from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 from twisted.internet.error import ConnectionDone
 
@@ -38,6 +34,11 @@ from .urls import URLs
 from .auth import Authorization
 from .error import NotAuthorizedError
 from ..dms import DMSError
+
+
+__all__ = (
+    "JSONMixIn",
+)
 
 
 

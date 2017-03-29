@@ -20,10 +20,6 @@ Incident Management System SQLite data store.
 
 from __future__ import print_function
 
-__all__ = [
-    "Storage"
-]
-
 from textwrap import dedent
 from datetime import datetime as DateTime, timedelta as TimeDelta
 from calendar import timegm
@@ -44,6 +40,11 @@ from ..data.model import (
 )
 from ._file import MultiStorage
 from .istore import StorageError
+
+
+__all__ = (
+    "Storage",
+)
 
 
 

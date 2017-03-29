@@ -18,10 +18,6 @@
 Incident Management System cached external resources.
 """
 
-__all__ = [
-    "ExternalMixIn",
-]
-
 from zipfile import BadZipfile
 
 from twisted.python.zippath import ZipArchive
@@ -32,6 +28,11 @@ from twisted.web.client import downloadPage
 from .http import staticResource, HeaderName, ContentType
 from .urls import URLs
 from .klein import route
+
+
+__all__ = (
+    "ExternalMixIn",
+)
 
 
 

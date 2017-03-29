@@ -18,10 +18,10 @@
 Incident Management System service errors.
 """
 
-__all__ = [
+__all__ = (
     "NotAuthenticatedError",
     "NotAuthorizedError",
-]
+)
 
 
 

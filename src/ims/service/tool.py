@@ -18,10 +18,6 @@
 Incident Management System web service command line tool.
 """
 
-__all__ = [
-    "WebTool",
-]
-
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 from twisted.web.server import Site, Session
@@ -35,6 +31,11 @@ from ..store.sqlite import Storage
 from .log import patchCombinedLogFormatter
 from .config import Configuration
 from .service import WebService
+
+
+__all__ = (
+    "WebTool",
+)
 
 
 

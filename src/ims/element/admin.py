@@ -18,11 +18,12 @@
 Admin root page.
 """
 
-__all__ = [
-    "AdminPage",
-]
-
 from .base import Element
+
+
+__all__ = (
+    "AdminPage",
+)
 
 
 

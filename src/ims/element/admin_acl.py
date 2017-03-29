@@ -18,12 +18,13 @@
 Admin access control page.
 """
 
-__all__ = [
-    "AdminAccessControlPage",
-]
-
 from ..data.json import jsonTextFromObject
 from .base import Element, renderer
+
+
+__all__ = (
+    "AdminAccessControlPage",
+)
 
 
 

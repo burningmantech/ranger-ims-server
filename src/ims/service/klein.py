@@ -20,12 +20,6 @@ Incident Management System Klein application.
 
 from __future__ import absolute_import
 
-__all__ = [
-    "application",
-    "route",
-    "KleinService",
-]
-
 from functools import wraps
 
 from twisted.python.url import URL
@@ -45,6 +39,13 @@ from .urls import URLs
 from ..dms import DMSError
 from .http import HeaderName, ContentType
 from .error import NotAuthenticatedError, NotAuthorizedError
+
+
+__all__ = (
+    "application",
+    "route",
+    "KleinService",
+)
 
 
 

@@ -28,6 +28,11 @@ from ..data.model import Incident
 from ..data.json import jsonTextFromObject
 
 
+__all__ = (
+    "DataStoreEventSourceLogObserver",
+)
+
+
 
 class Event(object):
     """
