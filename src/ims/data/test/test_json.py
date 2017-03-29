@@ -18,11 +18,12 @@
 Tests for L{ims.data.json}.
 """
 
-from datetime import datetime as DateTime
+from datetime import (
+    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+)
 
 from twisted.trial import unittest
 
-from ...tz import utc, FixedOffsetTimeZone
 from ...store.test.test_file import time1, time2
 from ..model import (
     InvalidDataError, IncidentState,
@@ -52,7 +53,8 @@ class TimeSerializationTests(unittest.TestCase):
         """
         self.assertRaises(
             ValueError,
-            dateTimeAsRFC3339Text, DateTime(1971, 4, 20, 16, 20, 4, tzinfo=None)
+            dateTimeAsRFC3339Text,
+            DateTime(1971, 4, 20, 16, 20, 4, tzinfo=None)
         )
 
 
@@ -62,7 +64,9 @@ class TimeSerializationTests(unittest.TestCase):
         UTC L{DateTime}.
         """
         self.assertEquals(
-            dateTimeAsRFC3339Text(DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)),
+            dateTimeAsRFC3339Text(
+                DateTime(1971, 4, 20, 16, 20, 4, tzinfo=TimeZone.utc)
+            ),
             "1971-04-20T16:20:04+00:00"
         )
 
@@ -72,7 +76,7 @@ class TimeSerializationTests(unittest.TestCase):
         L{dateTimeAsRFC3339Text} returns a proper RFC 3339 string for the given
         non-UTC L{DateTime}.
         """
-        tz = FixedOffsetTimeZone.fromSignHoursMinutes("+", 4, 20)
+        tz = TimeZone(TimeDelta(hours=4, minutes=20))
 
         self.assertEquals(
             dateTimeAsRFC3339Text(DateTime(1971, 4, 20, 20, 40, 4, tzinfo=tz)),
@@ -87,7 +91,7 @@ class TimeSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             rfc3339TextAsDateTime("1971-04-20T16:20:04Z"),
-            DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)
+            DateTime(1971, 4, 20, 16, 20, 4, tzinfo=TimeZone.utc)
         )
 
 
@@ -98,7 +102,7 @@ class TimeSerializationTests(unittest.TestCase):
         """
         self.assertEquals(
             rfc3339TextAsDateTime("1971-04-20T16:20:04+00:00"),
-            DateTime(1971, 4, 20, 16, 20, 4, tzinfo=utc)
+            DateTime(1971, 4, 20, 16, 20, 4, tzinfo=TimeZone.utc)
         )
 
 

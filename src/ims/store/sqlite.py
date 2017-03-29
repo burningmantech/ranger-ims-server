@@ -21,7 +21,9 @@ Incident Management System SQLite data store.
 from __future__ import print_function
 
 from textwrap import dedent
-from datetime import datetime as DateTime, timedelta as TimeDelta
+from datetime import (
+    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+)
 from calendar import timegm
 from sqlite3 import (
     connect, Row as LameRow, OperationalError, Error as SQLiteError
@@ -31,7 +33,7 @@ from twisted.python.constants import NamedConstant
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 
-from ..tz import utc, utcNow
+from ..tz import utcNow
 from ..data.json import objectFromJSONBytesIO, incidentFromJSON
 from ..data.model import (
     Event, IncidentType, Incident, IncidentState,
@@ -1966,4 +1968,4 @@ def asTimeStamp(datetime):
 
 
 def fromTimeStamp(timestamp):
-    return DateTime.fromtimestamp(timestamp, tz=utc)
+    return DateTime.fromtimestamp(timestamp, tz=TimeZone.utc)

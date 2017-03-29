@@ -18,12 +18,11 @@
 Tests for L{ims.store.file}.
 """
 
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import twisted.trial.unittest
 from twisted.python.filepath import FilePath
 
-from ...tz import utc
 from ...data.model import IncidentState, Incident, ReportEntry
 from ...data.json import (
     incidentFromJSON, incidentAsJSON, objectFromJSONText, jsonTextFromObject
@@ -475,9 +474,9 @@ class StorageTests(twisted.trial.unittest.TestCase):
 
 
 
-time1 = DateTime(2012, 9, 1, 21, 0, 0, tzinfo=utc)
-time2 = DateTime(2013, 8, 31, 21, 0, 0, tzinfo=utc)
-time3 = DateTime(2014, 8, 23, 21, 0, 0, tzinfo=utc)
+time1 = DateTime(2012, 9, 1, 21, 0, 0, tzinfo=TimeZone.utc)
+time2 = DateTime(2013, 8, 31, 21, 0, 0, tzinfo=TimeZone.utc)
+time3 = DateTime(2014, 8, 23, 21, 0, 0, tzinfo=TimeZone.utc)
 
 
 # This is a function just to ensure that the test data aren't mutated.
