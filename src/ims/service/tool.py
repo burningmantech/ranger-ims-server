@@ -291,8 +291,8 @@ class JSONLoadTool(Executable):
 
         def opt_trial(self):
             """
-            trial executable
-            """  # noqa
+            Path to trial executable
+            """
             self["trialRun"] = True
 
         opt_t = opt_trial

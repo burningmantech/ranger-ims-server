@@ -23,15 +23,15 @@ from datetime import datetime as DateTime, timezone as TimeZone
 import twisted.trial.unittest
 from twisted.python.filepath import FilePath
 
-from ...data.model import IncidentState, Incident, ReportEntry
+from .._file import ReadOnlyStorage, Storage, eTagHash
+from ..istore import NoSuchIncidentError, StorageError
 from ...data.json import (
-    incidentFromJSON, incidentAsJSON, objectFromJSONText, jsonTextFromObject
+    incidentAsJSON, incidentFromJSON, jsonTextFromObject, objectFromJSONText
 )
+from ...data.model import Incident, IncidentState, ReportEntry
 from ...data.test.test_model import (
-    location_tokyo, location_man, location_zero
+    location_man, location_tokyo, location_zero
 )
-from ..istore import StorageError, NoSuchIncidentError
-from .._file import Storage, ReadOnlyStorage, eTagHash
 
 
 __all__ = ()
@@ -152,7 +152,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
 
         store = self.storageWithSourceData(source)
 
-        for number, etag in store.listIncidents():
+        for number, _etag in store.listIncidents():
             incident = store.readIncidentWithNumber(number)
             self.assertEquals(incident.created, time1)
 
@@ -178,7 +178,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
 
         store = self.storageWithSourceData(source)
 
-        for number, etag in store.listIncidents():
+        for number, _etag in store.listIncidents():
             incident = store.readIncidentWithNumber(number)
             for entry in incident.reportEntries:
                 self.assertEquals(entry.author, "<unknown>")

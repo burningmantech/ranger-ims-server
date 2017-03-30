@@ -39,8 +39,8 @@ def combinedLogFormatter(timestamp, request):
 
     @see: L{IAccessLogFormatter}
     """
-    referrer = _escape(request.getHeader(b"referer") or b"-")
-    agent = _escape(request.getHeader(b"user-agent") or b"-")
+    referrer = _escape(request.getHeader("referer") or "-")
+    agent = _escape(request.getHeader("user-agent") or "-")
 
     if hasattr(request, "user") and request.user is not None:
         username = request.user.shortNames[0]
@@ -52,9 +52,9 @@ def combinedLogFormatter(timestamp, request):
         username = "-"
 
     line = (
-        u'"%(ip)s" %(user)s - %(timestamp)s "%(method)s %(uri)s %(protocol)s" '
-        u'%(code)d %(length)s "%(referrer)s" "%(agent)s"' % dict(
-            ip=_escape(request.getClientIP() or b"-"),
+        '"{ip}" {user} - {timestamp} "{method} {uri} {protocol}" '
+        '{code} {length} "{referrer}" "{agent}"'.format(
+            ip=_escape(request.getClientIP() or "-"),
             timestamp=timestamp,
             method=_escape(request.method),
             uri=_escape(request.uri),

@@ -18,29 +18,28 @@
 Incident Management System SQLite data store.
 """
 
-from textwrap import dedent
+from calendar import timegm
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
-from calendar import timegm
 from sqlite3 import (
-    connect, Row as LameRow, OperationalError, Error as SQLiteError
+    Error as SQLiteError, OperationalError, Row as LameRow, connect
 )
+from textwrap import dedent
 
+from twisted.logger import Logger
 from twisted.python.constants import NamedConstant
 from twisted.python.filepath import FilePath
-from twisted.logger import Logger
 
 from util.tz import utcNow
 
-from ..data.json import objectFromJSONBytesIO, incidentFromJSON
-from ..data.model import (
-    Event, IncidentType, Incident, IncidentState,
-    Ranger, ReportEntry, Location, RodGarettAddress,
-    IncidentReport, InvalidDataError,
-)
 from ._file import MultiStorage
 from .istore import StorageError
+from ..data.json import incidentFromJSON, objectFromJSONBytesIO
+from ..data.model import (
+    Event, Incident, IncidentReport, IncidentState, IncidentType,
+    InvalidDataError, Location, Ranger, ReportEntry, RodGarettAddress,
+)
 
 
 __all__ = (
@@ -66,12 +65,18 @@ class Storage(object):
 
     @classmethod
     def printSchema(cls):
+        """
+        Print schema.
+        """
         with createDB() as db:
             printSchema(db)
 
 
     @classmethod
     def printQueries(cls):
+        """
+        Print a summary of queries.
+        """
         storage = cls(None)
         for line in storage.explainQueryPlans():
             print(line)
@@ -79,6 +84,9 @@ class Storage(object):
 
 
     def __init__(self, dbFilePath):
+        """
+        @param dbFilePath: Path to the database.
+        """
         self.dbFilePath = dbFilePath
 
 
@@ -122,7 +130,7 @@ class Storage(object):
                 self.createConcentricStreet(event, id, name)
 
             # Load incidents
-            for number, etag in eventStore.listIncidents():
+            for number, _etag in eventStore.listIncidents():
                 incident = eventStore.readIncidentWithNumber(number)
 
                 for incidentType in incident.incidentTypes:
@@ -308,7 +316,8 @@ class Storage(object):
             with self._db as db:
                 for incidentType in incidentTypes:
                     db.execute(
-                        self._query_hideShowIncidentType, (hidden, incidentType)
+                        self._query_hideShowIncidentType,
+                        (hidden, incidentType)
                     )
         except SQLiteError as e:
             self.log.critical(
@@ -545,7 +554,9 @@ class Storage(object):
                     self._addIncident(
                         event, incident, self._createIncident, cursor
                     )
-                    self._addInitialReportEntry(event, incident, author, cursor)
+                    self._addInitialReportEntry(
+                        event, incident, author, cursor
+                    )
                 finally:
                     cursor.close()
         except SQLiteError as e:
@@ -1005,8 +1016,8 @@ class Storage(object):
             event, number, "location concentric street", streetID, author
         )
 
-    _query_setIncidentLocationConcentricStreet = _querySetIncidentColumn.format(
-        column="LOCATION_CONCENTRIC"
+    _query_setIncidentLocationConcentricStreet = (
+        _querySetIncidentColumn.format(column="LOCATION_CONCENTRIC")
     )
 
 
@@ -1179,8 +1190,8 @@ class Storage(object):
                     cursor.close()
         except SQLiteError as e:
             self.log.critical(
-                "Unable to set incident types for incident {event}#{number} to "
-                "{incidentTypes}",
+                "Unable to set incident types for incident {event}#{number} "
+                "to {incidentTypes}",
                 event=event, number=number, incidentTypes=incidentTypes
             )
             raise StorageError(e)
@@ -1504,8 +1515,8 @@ class Storage(object):
         )
 
         self.log.info(
-            "Attached report entry to incident report #{incidentReportNumber}: "
-            "{reportEntry}",
+            "Attached report entry to incident report "
+            "#{incidentReportNumber}: {reportEntry}",
             storeWriteClass=Incident,
             incidentReportNumber=number, reportEntry=reportEntry,
         )
@@ -1617,7 +1628,8 @@ class Storage(object):
 
     def incidentsAttachedToIncidentReport(self, incidentReportNumber):
         """
-        Look up incidents attached to the incident report with the given number.
+        Look up incidents attached to the incident report with the given
+        number.
         """
         try:
             for row in self._db.execute(
@@ -1812,6 +1824,9 @@ class Storage(object):
 
 
     def explainQueryPlans(self):
+        """
+        Gather query plan explanations.
+        """
         queries = [
             (getattr(self, k), k[7:])
             for k in sorted(vars(self.__class__))

@@ -189,7 +189,7 @@ class ReadOnlyStorage(object):
         """
         if not hasattr(self, "_maxIncidentNumber_"):
             max = 0
-            for number, etag in self.listIncidents():
+            for number, _etag in self.listIncidents():
                 if number > max:
                     max = number
             self._maxIncidentNumber_ = max
@@ -301,7 +301,7 @@ class ReadOnlyStorage(object):
         """
         if self._locations is None:
             def locations():
-                for (number, etag) in self.listIncidents():
+                for (number, _etag) in self.listIncidents():
                     incident = self.readIncidentWithNumber(number)
                     location = incident.location
 
@@ -459,6 +459,11 @@ class MultiStorage(object):
     """
 
     def __init__(self, path, readOnly=False):
+        """
+        @param path: The path to the data store.
+
+        @param readOnly: Whether the store is read-only.
+        """
         self.path = path
         self.readOnly = readOnly
         self._stores = {}
