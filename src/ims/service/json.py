@@ -21,6 +21,8 @@ Incident Management System JSON API endpoints.
 from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 from twisted.internet.error import ConnectionDone
 
+from util.tz import utcNow
+
 from .auth import Authorization
 from .error import NotAuthorizedError
 from .http import ContentType, HeaderName, staticResource
@@ -33,7 +35,6 @@ from ..data.json import (
 )
 from ..data.model import Event, IncidentState, InvalidDataError, ReportEntry
 from ..dms import DMSError
-from ..tz import utcNow
 
 
 __all__ = (

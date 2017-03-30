@@ -31,7 +31,8 @@ from twisted.python.constants import NamedConstant
 from twisted.python.filepath import FilePath
 from twisted.logger import Logger
 
-from ..tz import utcNow
+from util.tz import utcNow
+
 from ..data.json import objectFromJSONBytesIO, incidentFromJSON
 from ..data.model import (
     Event, IncidentType, Incident, IncidentState,
