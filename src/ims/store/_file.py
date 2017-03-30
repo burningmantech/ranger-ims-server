@@ -23,12 +23,12 @@ from hashlib import sha1
 from twisted.logger import Logger
 from twisted.python.filepath import UnlistableError
 
-from ..data.model import IncidentState, InvalidDataError
+from .istore import NoSuchIncidentError, StorageError
 from ..data.json import (
-    incidentAsJSON, incidentFromJSON, jsonTextFromObject, objectFromJSONBytesIO,
-    rfc3339TextAsDateTime
+    incidentAsJSON, incidentFromJSON, jsonTextFromObject,
+    objectFromJSONBytesIO, rfc3339TextAsDateTime,
 )
-from .istore import StorageError, NoSuchIncidentError
+from ..data.model import IncidentState, InvalidDataError
 
 
 __all__ = (
@@ -53,6 +53,9 @@ class ReadOnlyStorage(object):
 
 
     def __init__(self, path):
+        """
+        @param path: The path to the data store.
+        """
         self.path = path
         self._incidentETags = {}
         self._locations = None
@@ -77,6 +80,9 @@ class ReadOnlyStorage(object):
 
 
     def readIncidentWithNumberRaw(self, number):
+        """
+        Fetch the JSON text for the incident with the given number.
+        """
         handle = self._openIncident(number, "r")
         try:
             jsonText = handle.read().decode("utf-8")
@@ -86,6 +92,9 @@ class ReadOnlyStorage(object):
 
 
     def readIncidentWithNumber(self, number):
+        """
+        Fetch the incident with the given number.
+        """
         handle = self._openIncident(number, "r")
         try:
             json = objectFromJSONBytesIO(handle)
@@ -109,6 +118,9 @@ class ReadOnlyStorage(object):
 
 
     def etagForIncidentWithNumber(self, number):
+        """
+        Fetch ETag for the incident with the given number.
+        """
         if number in self._incidentETags:
             return self._incidentETags[number]
 
@@ -311,14 +323,23 @@ class ReadOnlyStorage(object):
 
 
     def readers(self):
+        """
+        Look up the allowed readers for this data store.
+        """
         return self._acl("readers")
 
 
     def writers(self):
+        """
+        Look up the allowed writers for this data store.
+        """
         return self._acl("writers")
 
 
     def streetsByName(self):
+        """
+        Look up the streets by name.
+        """
         if not hasattr(self, "_streetsByName"):
             fp = self.path.child(".streets.json")
             try:
@@ -337,6 +358,9 @@ class ReadOnlyStorage(object):
 
 
     def streetsByID(self):
+        """
+        Look up the streets by ID.
+        """
         if not hasattr(self, "_streetsByID"):
             streetsByName = self.streetsByName()
             self._streetsByID = {v: k for k, v in streetsByName.items()}
@@ -351,6 +375,9 @@ class Storage(ReadOnlyStorage):
     """
 
     def provision(self):
+        """
+        Create this store if needed.
+        """
         if hasattr(self, "_provisioned"):
             return
 
@@ -379,6 +406,9 @@ class Storage(ReadOnlyStorage):
 
 
     def writeIncident(self, incident):
+        """
+        Write an incident to the store.
+        """
         incident.validate()
 
         self.provision()
@@ -407,12 +437,18 @@ class Storage(ReadOnlyStorage):
 
 
     def nextIncidentNumber(self):
+        """
+        Look up the next incident number.
+        """
         self.provision()
         self._maxIncidentNumber += 1
         return self._maxIncidentNumber
 
 
     def writers(self):
+        """
+        Look up the allowed writers for this data store.
+        """
         return self._acl("writers")
 
 
