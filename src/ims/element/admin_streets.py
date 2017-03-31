@@ -18,8 +18,8 @@
 Admin streets page.
 """
 
-from ..data.json import jsonTextFromObject
 from .base import Element, renderer
+from ..data.json import jsonTextFromObject
 
 __all__ = (
     "AdminStreetsPage",
@@ -33,6 +33,9 @@ class AdminStreetsPage(Element):
     """
 
     def __init__(self, service):
+        """
+        @param service: The service.
+        """
         Element.__init__(
             self, "admin_streets", service,
             title="Admin: Event Concentric Streets",
@@ -41,4 +44,7 @@ class AdminStreetsPage(Element):
 
     @renderer
     def eventNames(self, request, tag):
+        """
+        JSON list of events IDs.
+        """
         return jsonTextFromObject(e.id for e in self.service.storage.events())

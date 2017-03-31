@@ -18,10 +18,9 @@
 Incident report page.
 """
 
+from .base import Element, renderer
 from ..data.json import jsonTextFromObject
 from ..service.auth import Authorization
-
-from .base import Element, renderer
 
 
 __all__ = (
@@ -36,6 +35,10 @@ class IncidentReportPage(Element):
     """
 
     def __init__(self, service, number):
+        """
+        @param service: The service.
+        @param number: The incident report number.
+        """
         Element.__init__(
             self, "report", service,
             title="Incident Report #{}".format(number),
@@ -46,6 +49,9 @@ class IncidentReportPage(Element):
 
     @renderer
     def editing_allowed(self, request, tag):
+        """
+        JSON boolean, true if editing is allowed.
+        """
         if (request.authorizations & Authorization.writeIncidentReports):
             return jsonTextFromObject(True)
         else:
@@ -54,4 +60,7 @@ class IncidentReportPage(Element):
 
     @renderer
     def incident_report_number(self, request, tag):
+        """
+        JSON integer: incident report number.
+        """
         return jsonTextFromObject(self.number)

@@ -33,6 +33,9 @@ class AdminPage(Element):
     """
 
     def __init__(self, service):
+        """
+        @param service: The service.
+        """
         Element.__init__(
             self, "admin", service, title="Admin"
         )

@@ -18,8 +18,8 @@
 Server root page.
 """
 
-from ..service.urls import URLs
 from .base import Element, renderer
+from ..service.urls import URLs
 
 
 __all__ = (
@@ -34,6 +34,9 @@ class RootPage(Element):
     """
 
     def __init__(self, service):
+        """
+        @param service: The service.
+        """
         Element.__init__(
             self, "root", service,
             title="Ranger Incident Management System",
@@ -42,4 +45,8 @@ class RootPage(Element):
 
     @renderer
     def new_incident_report(self, request, tag):
+        """
+        JSON string: add C{href} attribute to a tag with the URL to the new
+        incident report page.
+        """
         return tag(href=URLs.viewIncidentReports.child("new").asText())

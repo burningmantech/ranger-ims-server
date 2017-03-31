@@ -32,6 +32,9 @@ class IncidentTemplatePage(Element):
     """
 
     def __init__(self, service):
+        """
+        @param service: The service.
+        """
         Element.__init__(
             self, "incident_template", service, title="Incident Details"
         )

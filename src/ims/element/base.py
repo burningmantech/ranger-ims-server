@@ -18,10 +18,10 @@
 Base element class.
 """
 
+from twisted.python.filepath import FilePath
 from twisted.web.template import (
     Element as BaseElement, XMLFile, renderer, tags
 )
-from twisted.python.filepath import FilePath
 
 from ..data.json import jsonTextFromObject
 from ..service.urls import URLs
@@ -41,6 +41,13 @@ class Element(BaseElement):
     """
 
     def __init__(self, name, service, title=None, loader=None, tag=tags.html):
+        """
+        @param name: The template name.
+        @param service: The service.
+        @param title: The page title.
+        @param loader: The page loader.
+        @param tag: The element tag.
+        """
         BaseElement.__init__(self, loader=self._loader(name))
 
         self.elementName = name
@@ -61,6 +68,9 @@ class Element(BaseElement):
 
     @renderer
     def title(self, request, tag):
+        """
+        <title> element.
+        """
         if self.elementTitle is None:
             title = ""
         else:
@@ -72,6 +82,9 @@ class Element(BaseElement):
     # FIXME: Move below to xhtml
     @renderer
     def head(self, request, tag=None):
+        """
+        <head> element.
+        """
         if tag is None:
             children = ()
             tag = tags.head
@@ -106,12 +119,18 @@ class Element(BaseElement):
     # FIXME: Move below to xhtml
     @renderer
     def container(self, request, tag):
+        """
+        App container.
+        """
         tag.children.insert(0, self.top(request))
         return tag(self.bottom(request), **{"class": "container-fluid"})
 
 
     @renderer
     def top(self, request, tag=None):
+        """
+        Top elements.
+        """
         return (
             self.nav(request),
             self.header(request),
@@ -121,6 +140,9 @@ class Element(BaseElement):
 
     @renderer
     def bottom(self, request, tag=None):
+        """
+        Bottom elements.
+        """
         return (
             self.footer(request),
         )
@@ -128,16 +150,25 @@ class Element(BaseElement):
 
     @renderer
     def nav(self, request, tag=None):
+        """
+        <nav> element.
+        """
         return Element("base_nav", self.service)
 
 
     @renderer
     def header(self, request, tag=None):
+        """
+        <header> element.
+        """
         return Element("base_header", self.service)
 
 
     @renderer
     def footer(self, request, tag=None):
+        """
+        <footer> element.
+        """
         return Element("base_footer", self.service)
 
 
@@ -147,6 +178,9 @@ class Element(BaseElement):
 
     @renderer
     def if_logged_in(self, request, tag):
+        """
+        Render conditionally if the user is logged in.
+        """
         if getattr(request, "user", None) is None:
             return ""
         return tag
@@ -154,6 +188,9 @@ class Element(BaseElement):
 
     @renderer
     def if_not_logged_in(self, request, tag):
+        """
+        Render conditionally if the user is not logged in.
+        """
         if getattr(request, "user", None) is not None:
             return ""
         return tag
@@ -161,6 +198,9 @@ class Element(BaseElement):
 
     @renderer
     def if_admin(self, request, tag):
+        """
+        Render conditionally if the user is an admin.
+        """
         user = getattr(request, "user", None)
 
         if user is None:
@@ -174,6 +214,9 @@ class Element(BaseElement):
 
     @renderer
     def logged_in_user(self, request, tag):
+        """
+        Embed the logged in user into an element content.
+        """
         user = getattr(request, "user", None)
         if user is None:
             username = "(anonymous user)"
@@ -195,6 +238,9 @@ class Element(BaseElement):
 
     @renderer
     def root(self, request, tag):
+        """
+        Root element.
+        """
         def redirectBack(url):
             # Set origin for redirect back to current page
             return url.set("o", request.uri.decode("utf-8")).asText()
@@ -238,11 +284,18 @@ class Element(BaseElement):
 
     @renderer
     def events(self, request, tag):
+        """
+        Repeat an element once for each event, embedding the event ID.
+        """
         return self._events(request, tag)
 
 
     @renderer
     def events_reversed(self, request, tag):
+        """
+        Repeat an element once for each event in reverse order, embedding the
+        event ID.
+        """
         return self._events(request, tag, reverse_order=True)
 
 

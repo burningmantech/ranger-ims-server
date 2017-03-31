@@ -18,11 +18,10 @@
 Incident page.
 """
 
+from .base import Element, renderer
 from ..data.json import jsonTextFromObject
 from ..service.auth import Authorization
 from ..service.urls import URLs
-
-from .base import Element, renderer
 
 
 __all__ = (
@@ -37,6 +36,9 @@ class IncidentPage(Element):
     """
 
     def __init__(self, service, event, number):
+        """
+        @param service: The service.
+        """
         Element.__init__(
             self, "incident", service,
             title="#{}".format(number),
@@ -48,6 +50,9 @@ class IncidentPage(Element):
 
     @renderer
     def editing_allowed(self, request, tag):
+        """
+        JSON boolean, true if editing is allowed.
+        """
         if (request.authorizations & Authorization.writeIncidents):
             return jsonTextFromObject(True)
         else:
@@ -56,16 +61,25 @@ class IncidentPage(Element):
 
     @renderer
     def event_id(self, request, tag):
+        """
+        JSON string: event ID.
+        """
         return jsonTextFromObject(self.event.id)
 
 
     @renderer
     def incident_number(self, request, tag):
+        """
+        JSON integer: incident number.
+        """
         return jsonTextFromObject(self.number)
 
 
     @renderer
     def incidents_url(self, request, tag):
+        """
+        JSON string: URL for incidents endpoint for the event.
+        """
         return jsonTextFromObject(
             URLs.incidents.asText()
             .replace("<eventID>", self.event.id)
@@ -74,6 +88,9 @@ class IncidentPage(Element):
 
     @renderer
     def view_incidents_url(self, request, tag):
+        """
+        JSON string: URL for incidents page for the event.
+        """
         return jsonTextFromObject(
             URLs.viewIncidents.asText()
             .replace("<eventID>", self.event.id)
@@ -82,5 +99,8 @@ class IncidentPage(Element):
 
     @renderer
     def concentric_street_name_by_id(self, request, tag):
+        """
+        JSON dictionary: concentric streets by ID.
+        """
         namesByID = self.service.storage.concentricStreetsByID(self.event)
         return jsonTextFromObject(namesByID)

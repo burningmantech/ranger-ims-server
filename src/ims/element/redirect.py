@@ -33,10 +33,17 @@ class RedirectPage(Element):
     """
 
     def __init__(self, service, location):
+        """
+        @param service: The service.
+        @param location: The redirect target URI.
+        """
         Element.__init__(self, "redirect", service, title="Redirect")
         self.location = location
 
 
     @renderer
     def destination(self, request, tag):
+        """
+        JSON string: URL for the redirect destination.
+        """
         return tag.fillSlots(destination_url=self.location.asText())

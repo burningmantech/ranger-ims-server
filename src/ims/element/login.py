@@ -33,12 +33,19 @@ class LoginPage(Element):
     """
 
     def __init__(self, service, failed=False):
+        """
+        @param service: The service.
+        @param failed: Whether to indicate that a prior login attempt failed.
+        """
         Element.__init__(self, "login", service, title="Log In")
         self.failed = failed
 
 
     @renderer
     def if_authn_failed(self, request, tag):
+        """
+        Render conditionally if the user failed to authenticate.
+        """
         if self.failed:
             return tag
         else:
@@ -47,6 +54,9 @@ class LoginPage(Element):
 
     @renderer
     def if_authz_failed(self, request, tag):
+        """
+        Render conditionally if the user failed to authorize.
+        """
         if self.failed:
             # authn failed, not authz
             return ()

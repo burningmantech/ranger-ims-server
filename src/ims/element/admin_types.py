@@ -18,8 +18,8 @@
 Admin incident types page.
 """
 
-from ..data.json import jsonTextFromObject
 from .base import Element, renderer
+from ..data.json import jsonTextFromObject
 
 
 __all__ = (
@@ -34,6 +34,9 @@ class AdminIncidentTypesPage(Element):
     """
 
     def __init__(self, service):
+        """
+        @param service: The service.
+        """
         Element.__init__(
             self, "admin_types", service, title="Admin: Incident Types"
         )
@@ -41,4 +44,7 @@ class AdminIncidentTypesPage(Element):
 
     @renderer
     def eventNames(self, request, tag):
+        """
+        JSON list of events IDs.
+        """
         return jsonTextFromObject(e.id for e in self.service.storage.events())

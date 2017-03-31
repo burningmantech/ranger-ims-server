@@ -33,6 +33,9 @@ class DispatchQueueTemplatePage(Element):
     """
 
     def __init__(self, service):
+        """
+        @param service: The service.
+        """
         Element.__init__(
             self, "queue_template", service, title="Dispatch Queue"
         )
