@@ -18,7 +18,7 @@ r"""
 JSON bindings for IMS data.
 
 2015 JSON incident schema replaces top-level location attributes with a
-dictionary.
+dictionary::
 
     {
         "number": 101,                              // int >= 0
@@ -51,7 +51,7 @@ dictionary.
     }
 
 2014 JSON incident schema replaces per-state time stamp attributes with a
-created time stamp plus a state attribute:
+created time stamp plus a state attribute::
 
     {
         "number": 101,                              // int >= 0
@@ -77,7 +77,7 @@ created time stamp plus a state attribute:
         "state": "closed",                          // from JSON.state_*
     }
 
-2013 JSON incident schema:
+2013 JSON incident schema::
 
     {
         "number": 101,                              // int >= 0
