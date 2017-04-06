@@ -1,5 +1,5 @@
 """
-Tests for :mod:`ranger-ims-server.util.json`
+Tests for :mod:`ranger-ims-server.ext.json`
 """
 
 from datetime import (

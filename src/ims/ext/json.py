@@ -1,4 +1,4 @@
-# -*- test-case-name: ranger-ims-server.util.test.test_json -*-
+# -*- test-case-name: ranger-ims-server.ext.test.test_json -*-
 """
 Extensions to :mod:`json`
 """
