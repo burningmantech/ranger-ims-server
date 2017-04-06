@@ -31,8 +31,6 @@ from twisted.logger import Logger
 from twisted.python.constants import NamedConstant
 from twisted.python.filepath import FilePath
 
-from util.tz import utcNow
-
 from ._file import MultiStorage
 from .istore import StorageError
 from ..data.json import incidentFromJSON, objectFromJSONBytesIO
@@ -597,7 +595,7 @@ class Storage(object):
     def _addInitialReportEntry(self, event, incident, author, cursor):
         assert type(event) is Event
 
-        now = utcNow()
+        now = DateTime.now(TimeZone.utc)
 
         def addEntry(label, value):
             if value:
@@ -870,7 +868,9 @@ class Storage(object):
 
         systemEntry = ReportEntry(
             text="Changed {} to: {}".format(column, value),
-            author=author, created=utcNow(), system_entry=True,
+            author=author,
+            created=DateTime.now(TimeZone.utc),
+            system_entry=True,
         )
 
         try:
@@ -1104,7 +1104,9 @@ class Storage(object):
 
         systemEntry = ReportEntry(
             text="Changed Rangers to: {}".format(", ".join(rangerHandles)),
-            author=author, created=utcNow(), system_entry=True,
+            author=author,
+            created=DateTime.now(TimeZone.utc),
+            system_entry=True,
         )
 
         try:
@@ -1164,7 +1166,9 @@ class Storage(object):
             text="Changed incident types to: {}".format(
                 ", ".join(incidentTypes)
             ),
-            author=author, created=utcNow(), system_entry=True,
+            author=author,
+            created=DateTime.now(TimeZone.utc),
+            system_entry=True,
         )
 
         try:
@@ -1419,7 +1423,9 @@ class Storage(object):
     def _setIncidentReportColumn(self, query, number, column, value, author):
         systemEntry = ReportEntry(
             text="Changed {} to: {}".format(column, value),
-            author=author, created=utcNow(), system_entry=True,
+            author=author,
+            created=DateTime.now(TimeZone.utc),
+            system_entry=True,
         )
 
         try:

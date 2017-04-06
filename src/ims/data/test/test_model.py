@@ -18,11 +18,9 @@
 Tests for L{ims.data.model}.
 """
 
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 from twisted.trial import unittest
-
-from util.tz import utcNow
 
 from ..model import (
     Incident, IncidentState, InvalidDataError, Location, Ranger, ReportEntry,
@@ -279,7 +277,9 @@ class IncidentTests(unittest.TestCase):
         """
         incident = newIncident(
             reportEntries=[
-                ReportEntry(author=None, created=utcNow(), text=None)
+                ReportEntry(
+                    author=None, created=DateTime.now(TimeZone.utc), text=None
+                )
             ],
         )
         self.assertRaises(InvalidDataError, incident.validate)
@@ -362,7 +362,7 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.__init__} with given values.
         """
-        dt = utcNow()
+        dt = DateTime.now(TimeZone.utc)
         entry = ReportEntry(author="Tool", created=dt, text="xyzzy")
 
         self.assertEquals(entry.author, "Tool")
@@ -471,7 +471,9 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.validate} of valid entry.
         """
         entry = ReportEntry(
-            author="Tool", created=utcNow(), text="Something happened!"
+            author="Tool",
+            created=DateTime.now(TimeZone.utc),
+            text="Something happened!",
         )
         entry.validate()
 
@@ -481,7 +483,9 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.validate} of entry with L{None} author.
         """
         entry = ReportEntry(
-            author=None, created=utcNow(), text="Something happened!"
+            author=None,
+            created=DateTime.now(TimeZone.utc),
+            text="Something happened!",
         )
         self.assertRaises(InvalidDataError, entry.validate)
 
@@ -499,7 +503,9 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.validate} of entry with non-str author.
         """
         entry = ReportEntry(
-            author=b"Tool", created=utcNow(), text="Something happened!"
+            author=b"Tool",
+            created=DateTime.now(TimeZone.utc),
+            text="Something happened!",
         )
         self.assertRaises(InvalidDataError, entry.validate)
 
@@ -509,7 +515,9 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.validate} of entry with valid text.
         """
         entry = ReportEntry(
-            author="Tool", created=utcNow(), text="Something happened!"
+            author="Tool",
+            created=DateTime.now(TimeZone.utc),
+            text="Something happened!",
         )
         entry.validate()
 
@@ -518,7 +526,9 @@ class ReportEntryTests(unittest.TestCase):
         """
         L{ReportEntry.validate} of entry with L{None} text.
         """
-        entry = ReportEntry(author="Tool", created=utcNow(), text=None)
+        entry = ReportEntry(
+            author="Tool", created=DateTime.now(TimeZone.utc), text=None
+        )
         self.assertRaises(InvalidDataError, entry.validate)
 
 
@@ -535,7 +545,9 @@ class ReportEntryTests(unittest.TestCase):
         L{ReportEntry.validate} of entry with non-str text.
         """
         entry = ReportEntry(
-            author="", created=utcNow(), text=b"Something happened!"
+            author="",
+            created=DateTime.now(TimeZone.utc),
+            text=b"Something happened!",
         )
         self.assertRaises(InvalidDataError, entry.validate)
 

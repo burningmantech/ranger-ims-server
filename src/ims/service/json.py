@@ -18,10 +18,10 @@
 Incident Management System JSON API endpoints.
 """
 
+from datetime import datetime as DateTime, timezone as TimeZone
+
 from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 from twisted.internet.error import ConnectionDone
-
-from util.tz import utcNow
 
 from .auth import Authorization
 from .error import NotAuthorizedError
@@ -218,14 +218,14 @@ class JSONMixIn(object):
             incident.state = IncidentState.new
 
         author = request.user.shortNames[0]
-        now = utcNow()
+        now = DateTime.now(TimeZone.utc)
 
         if incident.created is None:
             # No created timestamp provided; add one.
 
             # Right now is a decent default, but if there's a report entry
             # that's older than now, that's a better pick.
-            created = utcNow()
+            created = DateTime.now(TimeZone.utc)
             if incident.reportEntries is not None:
                 for entry in incident.reportEntries:
                     if entry.author is None:
@@ -387,7 +387,7 @@ class JSONMixIn(object):
 
         entries = edits.get(JSON.report_entries.value, UNSET)
         if entries is not UNSET:
-            now = utcNow()
+            now = DateTime.now(TimeZone.utc)
 
             for entry in entries:
                 text = entry.get(JSON.entry_text.value, None)
@@ -469,14 +469,14 @@ class JSONMixIn(object):
         )
 
         author = request.user.shortNames[0]
-        now = utcNow()
+        now = DateTime.now(TimeZone.utc)
 
         if incidentReport.created is None:
             # No created timestamp provided; add one.
 
             # Right now is a decent default, but if there's a report entry
             # that's older than now, that's a better pick.
-            created = utcNow()
+            created = DateTime.now(TimeZone.utc)
             if incidentReport.reportEntries is not None:
                 for entry in incidentReport.reportEntries:
                     if entry.author is None:
@@ -636,7 +636,7 @@ class JSONMixIn(object):
 
         entries = edits.get(JSON.report_entries.value, UNSET)
         if entries is not UNSET:
-            now = utcNow()
+            now = DateTime.now(TimeZone.utc)
 
             for entry in entries:
                 text = entry.get(JSON.entry_text.value, None)
