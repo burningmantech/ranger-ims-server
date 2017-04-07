@@ -1,2 +1,6 @@
 # Get master requirements
 -r requirements.txt
+
+hypothesis
+mock
+pytz
