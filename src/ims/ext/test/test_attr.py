@@ -2,8 +2,8 @@
 Tests for :mod:`ranger-ims-server.ext.attr`
 """
 
-from ..trial import TestCase
 from ..attr import attrib, attrs, instanceOf, required, true
+from ..trial import TestCase
 
 
 __all__ = ()
