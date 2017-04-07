@@ -27,6 +27,11 @@ matrix:
     - python: 3.5
       env: TOXENV=py35-coverage,codecov
 
+  allow_failures:
+    # Needs work
+    - env: TOXENV=mypy
+    - env: TOXENV=doc
+
 
 script:
   - tox
