@@ -1,7 +1,6 @@
 # Get master requirements
--r requirements-stable.txt
+-r requirements.txt
 
-# Additional dependencies for development and testing
-tox
-flake8
-tl.eggdeps
+hypothesis
+mock
+pytz

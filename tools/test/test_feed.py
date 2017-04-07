@@ -35,22 +35,22 @@ class ParseLocationTests(twisted.trial.unittest.TestCase):
         """
         Basic camp info
         """
-        streets = (u"9:00", u"C")
+        streets = ("9:00", "C")
         for front, cross in (streets, reversed(streets)):
             location = parseLocation(
-                u"Burning Man Department",
-                u"Ranger Outpost Tokyo",
-                u"9:00 & Carny",
+                "Burning Man Department",
+                "Ranger Outpost Tokyo",
+                "9:00 & Carny",
                 front, cross,
-                u"260 x 160"
+                "260 x 160"
             )
             self.assertEquals(
                 location,
                 Location(
-                    name=u"Ranger Outpost Tokyo",
+                    name="Ranger Outpost Tokyo",
                     address=RodGarettAddress(
                         concentric=3, radialHour=9, radialMinute=0,
-                        description=u"Burning Man Department 260x160",
+                        description="Burning Man Department 260x160",
                     ),
                 )
             )
@@ -60,23 +60,23 @@ class ParseLocationTests(twisted.trial.unittest.TestCase):
         """
         One street is radial & "Portal", cross street is blank.
         """
-        streets = (u"6:00 Portal", u"")
+        streets = ("6:00 Portal", "")
         for front, cross in (streets, reversed(streets)):
             location = parseLocation(
-                u"Burning Man Department",
-                u"Fire Conclave Convergence",
-                u"6:00 Portal",
+                "Burning Man Department",
+                "Fire Conclave Convergence",
+                "6:00 Portal",
                 front, cross,
-                u"133 x 80"
+                "133 x 80"
             )
             self.assertEquals(
                 location,
                 Location(
-                    name=u"Fire Conclave Convergence",
+                    name="Fire Conclave Convergence",
                     address=RodGarettAddress(
                         concentric=None, radialHour=6, radialMinute=0,
                         description=(
-                            u"6:00 Portal, Burning Man Department 133x80"
+                            "6:00 Portal, Burning Man Department 133x80"
                         ),
                     ),
                 )
@@ -87,22 +87,22 @@ class ParseLocationTests(twisted.trial.unittest.TestCase):
         """
         One street is radial & "Portal", cross street is a concentric.
         """
-        streets = (u"9:00 Portal", u"A")
+        streets = ("9:00 Portal", "A")
         for front, cross in (streets, reversed(streets)):
             location = parseLocation(
-                u"Theme Camp",
-                u"Camp at Portal",
-                u"Portal & Arcade",
+                "Theme Camp",
+                "Camp at Portal",
+                "Portal & Arcade",
                 front, cross,
-                u"100 x 150+"
+                "100 x 150+"
             )
             self.assertEquals(
                 location,
                 Location(
-                    name=u"Camp at Portal",
+                    name="Camp at Portal",
                     address=RodGarettAddress(
                         concentric=1, radialHour=9, radialMinute=0,
-                        description=u"9:00 Portal, Theme Camp 100x150+",
+                        description="9:00 Portal, Theme Camp 100x150+",
                     ),
                 )
             )
@@ -112,22 +112,22 @@ class ParseLocationTests(twisted.trial.unittest.TestCase):
         """
         Both streets are radial & "Portal".
         """
-        streets = (u"9:00 Portal", u"9:00 Portal")
+        streets = ("9:00 Portal", "9:00 Portal")
         for front, cross in (streets, reversed(streets)):
             location = parseLocation(
-                u"Theme Camp",
-                u"Camp at Portal",
-                u"9:00 Portal @ 9:00 Portal",
+                "Theme Camp",
+                "Camp at Portal",
+                "9:00 Portal @ 9:00 Portal",
                 front, cross,
-                u"50 x 200"
+                "50 x 200"
             )
             self.assertEquals(
                 location,
                 Location(
-                    name=u"Camp at Portal",
+                    name="Camp at Portal",
                     address=RodGarettAddress(
                         concentric=None, radialHour=9, radialMinute=0,
-                        description=u"9:00 Portal, Theme Camp 50x200",
+                        description="9:00 Portal, Theme Camp 50x200",
                     ),
                 )
             )
@@ -137,22 +137,22 @@ class ParseLocationTests(twisted.trial.unittest.TestCase):
         """
         One street is a plaza (which is concentric), cross is radial in plaza.
         """
-        streets = (u"9:00 Plaza", u"4:30")
+        streets = ("9:00 Plaza", "4:30")
         for front, cross in (streets, reversed(streets)):
             location = parseLocation(
-                u"Burning Man Department",
-                u"Ice Nine",
-                u"9:00 Plaza @ 4:30",
+                "Burning Man Department",
+                "Ice Nine",
+                "9:00 Plaza @ 4:30",
                 front, cross,
-                u"70 x 100+"
+                "70 x 100+"
             )
             self.assertEquals(
                 location,
                 Location(
-                    name=u"Ice Nine",
+                    name="Ice Nine",
                     address=RodGarettAddress(
                         concentric=900, radialHour=4, radialMinute=30,
-                        description=u"Burning Man Department 70x100+",
+                        description="Burning Man Department 70x100+",
                     ),
                 )
             )
@@ -163,22 +163,22 @@ class ParseLocationTests(twisted.trial.unittest.TestCase):
         One street is a public plaza (which is concentric), cross is radial in
         plaza.
         """
-        streets = (u"9:00 Public Plaza", u"12:15")
+        streets = ("9:00 Public Plaza", "12:15")
         for front, cross in (streets, reversed(streets)):
             location = parseLocation(
-                u"Village",
-                u"Village in Public Plaza",
-                u"9:00 Public Plaza @ 12:15",
+                "Village",
+                "Village in Public Plaza",
+                "9:00 Public Plaza @ 12:15",
                 front, cross,
-                u"110 x 200-"
+                "110 x 200-"
             )
             self.assertEquals(
                 location,
                 Location(
-                    name=u"Village in Public Plaza",
+                    name="Village in Public Plaza",
                     address=RodGarettAddress(
                         concentric=905, radialHour=12, radialMinute=15,
-                        description=u"Village 110x200-",
+                        description="Village 110x200-",
                     ),
                 )
             )
