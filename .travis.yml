@@ -30,7 +30,9 @@ matrix:
   allow_failures:
     # Needs work
     - env: TOXENV=mypy
-    - env: TOXENV=doc
+
+    # Needs work
+    - env: TOXENV=docs
 
 
 script:
