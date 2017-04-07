@@ -102,6 +102,7 @@ package_data = dict(
     ims = [
         "service/test/empty.conf",
         "service/test/test.conf",
+        "store/schema.sqlite",
     ],
 )
 
