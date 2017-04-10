@@ -2,7 +2,7 @@
 Incident state
 """
 
-from enum import Enum, unique
+from ..ext.enum import Enum, enumOrdering, unique
 
 
 __all__ = ()
