@@ -2,17 +2,17 @@
 
     arrow==0.10.0
 
-    Twisted==16.3.0
-        zope.interface==4.2.0
-            setuptools==25.1.6
+    Twisted==17.1.0
+        zope.interface==4.3.3
+            setuptools==34.4.1
 
-    klein==15.3.1
+    klein==17.2.0
         #twisted ...
-        Werkzeug==0.11.10
+        Werkzeug==0.12.1
 
     # MySQL
-    PyMySQL==0.7.6
+    PyMySQL==0.7.11
 
     --editable git+https://github.com/apple/ccs-twistedextensions.git#egg=twextpy
-        cffi==1.7.0
+        cffi==1.10.0
         #twisted ...
