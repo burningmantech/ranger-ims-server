@@ -10,5 +10,7 @@ from ._type import IncidentType
 
 __all__ = (
     "Event",
+    "IncidentPriority",
+    "IncidentState",
     "IncidentType",
 )
