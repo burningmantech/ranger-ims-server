@@ -42,6 +42,21 @@ class EnumOrderingTests(TestCase):
         self.assertFalse(Thing.second.__eq__(self))
 
 
+    def test_notEqual(self):
+        """
+        :func:`enumOrdering` sets ``__ne__``.
+        """
+        self.assertTrue(Thing.first.__ne__(Thing.second))
+        self.assertTrue(Thing.second.__ne__(Thing.first))
+
+        self.assertFalse(Thing.second.__ne__(Thing.second))
+
+        self.assertTrue(Thing.second.__ne__(Thing.third))
+        self.assertTrue(Thing.third.__ne__(Thing.second))
+
+        self.assertTrue(Thing.second.__ne__(self))
+
+
     def test_lessThan(self):
         """
         :func:`enumOrdering` sets ``__lt__``.
