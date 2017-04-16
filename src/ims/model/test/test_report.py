@@ -19,13 +19,9 @@ Tests for :mod:`ranger-ims-server.model._report`
 """
 
 from .datetimes import dt1
-from .events import eventA
-from .locations import theMan
 from .rangers import rangerHubcap
 from .._entry import ReportEntry
-from .._priority import IncidentPriority
 from .._report import IncidentReport
-from .._state import IncidentState
 from ...ext.trial import TestCase
 
 
