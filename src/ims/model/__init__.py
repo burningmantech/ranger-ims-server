@@ -2,6 +2,7 @@
 Incident Management System data model
 """
 
+from ._entry import ReportEntry
 from ._event import Event
 from ._priority import IncidentPriority
 from ._state import IncidentState
@@ -16,4 +17,5 @@ __all__ = (
     "IncidentType",
     "Ranger",
     "RangerStatus",
+    "ReportEntry",
 )

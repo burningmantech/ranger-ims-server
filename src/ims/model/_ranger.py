@@ -18,8 +18,6 @@ class RangerStatus(Enum):
     Ranger status
 
     A Ranger status denotes the status of a Ranger in the Ranger department.
-
-    Because this information
     """
 
     prospective = 0
