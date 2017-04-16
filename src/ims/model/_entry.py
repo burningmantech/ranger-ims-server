@@ -21,10 +21,10 @@ class ReportEntry(object):
     A report entry is text with an associated author and time stamp.
     """
 
-    created = attrib(validator=instanceOf(DateTime))
-    author = attrib(validator=instanceOf(Ranger))
+    created   = attrib(validator=instanceOf(DateTime))
+    author    = attrib(validator=instanceOf(Ranger))
     automatic = attrib(validator=instanceOf(bool))
-    text = attrib(validator=true(instanceOf(str)))
+    text      = attrib(validator=true(instanceOf(str)))
 
 
     def _cmpKey(self) -> Any:
