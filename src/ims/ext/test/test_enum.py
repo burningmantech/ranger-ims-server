@@ -15,6 +15,7 @@ class Thing(Enum):
     """
     Enumeration of some things.
     """
+
     first  = object()
     second = object()
     third  = object()

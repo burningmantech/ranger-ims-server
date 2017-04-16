@@ -18,8 +18,8 @@
 Incident
 """
 
-from datetime import datetime as DateTime
 from collections.abc import Iterable as IterableABC
+from datetime import datetime as DateTime
 from typing import Iterable
 
 from ._entry import ReportEntry

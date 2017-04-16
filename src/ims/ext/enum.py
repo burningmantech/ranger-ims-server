@@ -15,6 +15,10 @@ __all__ = (
 
 
 def enumOrdering(enumClass):
+    """
+    Decorator for an `Enum` class which adds comparison methods that orders
+    instances in the order that they were enumerated.
+    """
     def equal(self, other):
         return self is other
 

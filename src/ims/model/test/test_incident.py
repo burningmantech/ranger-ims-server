@@ -23,7 +23,7 @@ from .events import eventA
 from .locations import theMan
 from .rangers import rangerHubcap
 from .._entry import ReportEntry
-from .._incident import summaryFromReport, Incident
+from .._incident import Incident, summaryFromReport
 from .._priority import IncidentPriority
 from .._state import IncidentState
 from ...ext.trial import TestCase
@@ -149,4 +149,3 @@ class SummaryFromReportTests(TestCase):
         )
 
         self.assertEqual(result, "")
-

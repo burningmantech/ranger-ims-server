@@ -18,8 +18,8 @@
 Incident Report
 """
 
-from datetime import datetime as DateTime
 from collections.abc import Iterable
+from datetime import datetime as DateTime
 
 from ._incident import summaryFromReport
 from ..ext.attr import attrib, attrs, instanceOf, optional

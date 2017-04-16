@@ -18,12 +18,9 @@
 Tests for :mod:`ranger-ims-server.model._entry`
 """
 
-from twisted.python.compat import cmp
-
 from .datetimes import dt1, dt2
 from .rangers import rangerBucket, rangerHubcap
 from .._entry import ReportEntry
-from .._ranger import Ranger, RangerStatus
 from ...ext.trial import TestCase
 
 
@@ -101,4 +98,3 @@ class ReportEntryTests(TestCase):
         )
 
         self.assertLess(a, b)
-
