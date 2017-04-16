@@ -1,5 +1,5 @@
 """
-Report entry
+Address
 """
 
 from ..ext.attr import attrib, attrs, instanceOf
@@ -31,7 +31,7 @@ class TextOnlyAddress(Address):
 @attrs(frozen=True)
 class RodGarettAddress(Address):
     """
-    Rog Garett Address
+    Rod Garett Address
 
     Address at concentric and radial streets, as per Rod Garett's design for
     Black Rock City.
