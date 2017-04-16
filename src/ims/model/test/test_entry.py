@@ -18,10 +18,10 @@
 Tests for :mod:`ranger-ims-server.model._entry`
 """
 
-from datetime import datetime as DateTime, timezone as TimeZone
-
 from twisted.python.compat import cmp
 
+from .datetimes import dt1, dt2
+from .rangers import rangerBucket, rangerHubcap
 from .._entry import ReportEntry
 from .._ranger import Ranger, RangerStatus
 from ...ext.trial import TestCase
@@ -36,29 +36,6 @@ class ReportEntryTests(TestCase):
     Tests for :class:`ReportEntry`
     """
 
-    hubcap = Ranger(
-        handle="Hubcap",
-        name="Ranger Hubcap",
-        status=RangerStatus.active,
-        email=(),
-        onSite=False,
-        dmsID=0,
-        password="password",
-    )
-
-    bucket = Ranger(
-        handle="Bucket",
-        name="Ranger Bucket",
-        status=RangerStatus.active,
-        email=(),
-        onSite=False,
-        dmsID=0,
-        password="password",
-    )
-
-    author = hubcap
-    automatic = False
-    created = DateTime(2000, 1, 2, tzinfo=TimeZone.utc)
     text = "Hello"
 
 
@@ -67,16 +44,16 @@ class ReportEntryTests(TestCase):
         Report entry ordering sorts by created.
         """
         b = ReportEntry(
-            created=self.created,
-            author=self.author,
-            automatic=self.automatic,
+            created=dt2,
+            author=rangerHubcap,
+            automatic=False,
             text=self.text,
         )
 
         a = ReportEntry(
-            created=DateTime(2000, 1, 1, tzinfo=TimeZone.utc),
-            author=self.author,
-            automatic=self.automatic,
+            created=dt1,
+            author=rangerHubcap,
+            automatic=False,
             text=self.text,
         )
 
@@ -88,16 +65,16 @@ class ReportEntryTests(TestCase):
         Report entry ordering with same created sorts by author.
         """
         b = ReportEntry(
-            created=self.created,
-            author=self.hubcap,
-            automatic=self.automatic,
+            created=dt1,
+            author=rangerHubcap,
+            automatic=False,
             text=self.text,
         )
 
         a = ReportEntry(
-            created=self.created,
-            author=self.bucket,
-            automatic=self.automatic,
+            created=dt1,
+            author=rangerBucket,
+            automatic=False,
             text=self.text,
         )
 
@@ -110,15 +87,15 @@ class ReportEntryTests(TestCase):
         where :obj:`True` comes before :obj:`False`.
         """
         b = ReportEntry(
-            created=self.created,
-            author=self.hubcap,
+            created=dt1,
+            author=rangerHubcap,
             automatic=False,
             text=self.text,
         )
 
         a = ReportEntry(
-            created=self.created,
-            author=self.hubcap,
+            created=dt1,
+            author=rangerHubcap,
             automatic=True,
             text=self.text,
         )

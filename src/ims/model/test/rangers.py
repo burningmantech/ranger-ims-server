@@ -1,5 +1,3 @@
-# -*- test-case-name: ranger-ims-server.model.test.test_event -*-
-
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -17,26 +15,32 @@
 ##
 
 """
-Event
+Test data.
 """
 
-from ..ext.attr import attrib, attrs, instanceOf, true
+from .._ranger import Ranger, RangerStatus
 
 
 __all__ = ()
 
 
 
-@attrs(frozen=True)
-class Event(object):
-    """
-    Event
+rangerHubcap = Ranger(
+    handle="Hubcap",
+    name="Ranger Hubcap",
+    status=RangerStatus.active,
+    email=(),
+    onSite=False,
+    dmsID=0,
+    password="password",
+)
 
-    An event is a container for incident data with an ID.
-    """
-
-    id = attrib(validator=true(instanceOf(str)))
-
-
-    def __str__(self) -> str:
-        return self.id
+rangerBucket = Ranger(
+    handle="Bucket",
+    name="Ranger Bucket",
+    status=RangerStatus.active,
+    email=(),
+    onSite=False,
+    dmsID=0,
+    password="password",
+)

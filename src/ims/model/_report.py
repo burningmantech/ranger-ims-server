@@ -21,6 +21,7 @@ Incident Report
 from datetime import datetime as DateTime
 from collections.abc import Iterable
 
+from ._incident import summaryFromReport
 from ..ext.attr import attrib, attrs, instanceOf, optional
 
 
@@ -38,3 +39,11 @@ class IncidentReport(object):
     created       = attrib(validator=instanceOf(DateTime))
     summary       = attrib(validator=optional(instanceOf(str)))
     reportEntries = attrib(validator=instanceOf(Iterable))  # FIXME: validator
+
+
+    def summaryFromReport(self) -> str:
+        """
+        Generate a summary by either using ``self.summary`` if it is not
+        :obj:`None` or empty, or the first line of the first report entry.
+        """
+        return summaryFromReport(self.summary, self.reportEntries)

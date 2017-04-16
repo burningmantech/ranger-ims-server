@@ -1,5 +1,3 @@
-# -*- test-case-name: ranger-ims-server.model.test.test_event -*-
-
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -17,26 +15,15 @@
 ##
 
 """
-Event
+Test data.
 """
 
-from ..ext.attr import attrib, attrs, instanceOf, true
+from .._event import Event
 
 
 __all__ = ()
 
 
 
-@attrs(frozen=True)
-class Event(object):
-    """
-    Event
-
-    An event is a container for incident data with an ID.
-    """
-
-    id = attrib(validator=true(instanceOf(str)))
-
-
-    def __str__(self) -> str:
-        return self.id
+eventA = Event(id="2015")
+eventB = Event(id="2016")

@@ -20,7 +20,7 @@ Tests for :mod:`ranger-ims-server.model._event`
 
 from twisted.python.compat import cmp
 
-from .._event import Event
+from .events import eventA, eventB
 from ...ext.trial import TestCase
 
 
@@ -33,12 +33,17 @@ class EventTests(TestCase):
     Tests for :class:`Event`
     """
 
+    def test_str(self) -> None:
+        """
+        :meth:`Event.__str__` renders the event as a string.
+        """
+        self.assertEqual(str(eventA), eventA.id)
+
+
     def test_ordering(self) -> None:
         """
         Event ordering corresponds to event ID ordering.
         """
-        for idA, idB in (("a", "b"), ("b", "a")):
-            eventA = Event(id=idA)
-            eventB = Event(id=idB)
-
-            self.assertEqual(cmp(idA, idB), cmp(eventA, eventB))
+        self.assertEqual(cmp(eventA, eventA), cmp(eventA.id, eventA.id))
+        self.assertEqual(cmp(eventA, eventB), cmp(eventA.id, eventB.id))
+        self.assertEqual(cmp(eventB, eventA), cmp(eventB.id, eventA.id))
