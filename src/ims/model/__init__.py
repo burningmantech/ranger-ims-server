@@ -2,6 +2,7 @@
 Incident Management System data model
 """
 
+from ._address import Address, RodGarettAddress, TextOnlyAddress
 from ._entry import ReportEntry
 from ._event import Event
 from ._priority import IncidentPriority
@@ -11,6 +12,7 @@ from ._type import IncidentType
 
 
 __all__ = (
+    "Address",
     "Event",
     "IncidentPriority",
     "IncidentState",
@@ -18,4 +20,6 @@ __all__ = (
     "Ranger",
     "RangerStatus",
     "ReportEntry",
+    "RodGarettAddress",
+    "TextOnlyAddress",
 )
