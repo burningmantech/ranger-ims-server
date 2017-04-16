@@ -23,8 +23,8 @@ from .events import eventA
 from .locations import theMan
 from .rangers import rangerHubcap
 from .._entry import ReportEntry
-from .._incident import Incident
 from .._priority import IncidentPriority
+from .._report import IncidentReport
 from .._state import IncidentState
 from ...ext.trial import TestCase
 
@@ -49,41 +49,29 @@ class IncidentReportTests(TestCase):
 
     def test_str_summary(self) -> None:
         """
-        :meth:`Incident.__str__` renders an incident with a summary as a
+        :meth:`IncidentReport.__str__` renders an report with a summary as a
         string.
         """
-        incident = Incident(
-            event=eventA,
+        report = IncidentReport(
             number=123,
             created=dt1,
-            state=IncidentState.new,
-            priority=IncidentPriority.normal,
             summary="A thing happened",
-            rangers=(),
-            incidentTypes=(),
-            location=theMan,
             reportEntries=(),
         )
 
-        self.assertEqual(str(incident), "123: A thing happened")
+        self.assertEqual(str(report), "123: A thing happened")
 
 
     def test_str_report(self) -> None:
         """
-        :meth:`Incident.__str__` renders an incident without a summary as a
+        :meth:`IncidentReport.__str__` renders an report without a summary as a
         string.
         """
-        incident = Incident(
-            event=eventA,
+        report = IncidentReport(
             number=321,
             created=dt1,
-            state=IncidentState.new,
-            priority=IncidentPriority.normal,
             summary=None,
-            rangers=(),
-            incidentTypes=(),
-            location=theMan,
             reportEntries=(entry,),
         )
 
-        self.assertEqual(str(incident), "321: A different thing happened")
+        self.assertEqual(str(report), "321: A different thing happened")

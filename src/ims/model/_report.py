@@ -41,6 +41,15 @@ class IncidentReport(object):
     reportEntries = attrib(validator=instanceOf(Iterable))  # FIXME: validator
 
 
+    def __str__(self) -> str:
+        return (
+            "{self.number}: {summary}".format(
+                self=self,
+                summary=self.summaryFromReport()
+            )
+        )
+
+
     def summaryFromReport(self) -> str:
         """
         Generate a summary by either using ``self.summary`` if it is not
