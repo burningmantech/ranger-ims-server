@@ -37,7 +37,7 @@ class RodGarettAddress(Address):
     Black Rock City.
     """
 
-    concentric   = attrib(validator=instanceOf(int))
-    radialHour   = attrib(validator=instanceOf(int))
-    radialMinute = attrib(validator=instanceOf(int))
+    concentric   = attrib(validator=instanceOf(int))  # FIXME: validator
+    radialHour   = attrib(validator=instanceOf(int))  # FIXME: validator
+    radialMinute = attrib(validator=instanceOf(int))  # FIXME: validator
     description  = attrib(validator=instanceOf(str))

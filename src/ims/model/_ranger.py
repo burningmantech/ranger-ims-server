@@ -46,7 +46,7 @@ class Ranger(object):
     handle   = attrib(validator=true(instanceOf(str)))
     name     = attrib(validator=true(instanceOf(str)))
     status   = attrib(validator=instanceOf(RangerStatus))
-    email    = attrib(validator=instanceOf(Iterable))
+    email    = attrib(validator=instanceOf(Iterable))  # FIXME: validator
     onSite   = attrib(validator=instanceOf(bool))
     dmsID    = attrib(validator=optional(instanceOf(int)))
     password = attrib(validator=optional(instanceOf(str)))
