@@ -4,6 +4,7 @@
 *~
 .DS_Store
 /.hypothesis
+/.mypy_cache
 /.tox
 /cached/
 /data/
