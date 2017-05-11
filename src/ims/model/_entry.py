@@ -49,7 +49,7 @@ class ReportEntry(object):
         return (self.created, self.author, not self.automatic, self.text)
 
 
-    def _cmp(self, other, methodName):
+    def _cmp(self, other: Any, methodName: str) -> bool:
         if other.__class__ is self.__class__:
             selfKey = self._cmpKey()
             otherKey = other._cmpKey()

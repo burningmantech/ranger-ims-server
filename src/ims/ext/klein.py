@@ -122,8 +122,8 @@ _cacheControl = "max-age={}".format(_maxAge)
 
 def static(f: KleinRouteMethod) -> KleinRouteMethod:
     """
-    Decorator for a route handler that adds fixed ETag and Cache-Control
-    headers, which are appropriate for static resources.
+    Decorate a route handler to add fixed ETag and Cache-Control headers, which
+    are appropriate for static resources.
     """
     @wraps(f)
     def wrapper(

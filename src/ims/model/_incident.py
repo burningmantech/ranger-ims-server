@@ -20,7 +20,7 @@ Incident
 
 from collections.abc import Iterable as IterableABC
 from datetime import datetime as DateTime
-from typing import Iterable
+from typing import Iterable, Optional
 
 from ._entry import ReportEntry
 from ._event import Event
@@ -73,7 +73,7 @@ class Incident(object):
 
 
 def summaryFromReport(
-    summary: str, reportEntries: Iterable[ReportEntry]
+    summary: Optional[str], reportEntries: Iterable[ReportEntry]
 ) -> str:
     """
     Generate a summary by either using ``self.summary`` if it is not
