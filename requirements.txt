@@ -1,5 +1,8 @@
 --editable .  # Get self and dependencies from setup.py
 
+    attrs==16.3.0
+    cattrs==0.2.0
+
     arrow==0.10.0
 
     Twisted==16.3.0
