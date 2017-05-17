@@ -22,9 +22,8 @@ from hypothesis import given
 from hypothesis.strategies import text
 
 
-from .._json import jsonDeserialize, jsonTextFromModelObject
+from .._json import jsonDeserialize, jsonSerialize
 from ..._event import Event
-from ....ext.json import jsonTextFromObject
 from ....ext.trial import TestCase
 
 
@@ -40,13 +39,9 @@ class EventSerializationTests(TestCase):
     @given(text(min_size=1))
     def test_serialize(self, eventID: str) -> None:
         """
-        :func:`jsonTextFromModelObject` serializes the given event using its
-        ID.
+        :func:`jsonSerialize` serializes the given event using its ID.
         """
-        self.assertEqual(
-            jsonTextFromModelObject(Event(id=eventID)),
-            jsonTextFromObject(eventID),
-        )
+        self.assertEqual(jsonSerialize(Event(id=eventID)), eventID)
 
 
 

@@ -18,9 +18,8 @@
 Tests for :mod:`ranger-ims-server.model.json._type`
 """
 
-from .._json import jsonDeserialize, jsonTextFromModelObject
+from .._json import jsonDeserialize, jsonSerialize
 from ..._type import IncidentType
-from ....ext.json import jsonTextFromObject
 from ....ext.trial import TestCase
 
 
@@ -35,14 +34,11 @@ class IncidentTypeSerializationTests(TestCase):
 
     def test_serialize(self) -> None:
         """
-        :func:`jsonTextFromModelObject` returns the value of the given incident
+        :func:`jsonSerialize` returns the value of the given incident
         type.
         """
         for incidentType in IncidentType:
-            self.assertEqual(
-                jsonTextFromModelObject(incidentType),
-                jsonTextFromObject(incidentType.value),
-            )
+            self.assertEqual(jsonSerialize(incidentType), incidentType.value)
 
 
 

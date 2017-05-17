@@ -18,9 +18,8 @@
 Tests for :mod:`ranger-ims-server.model.json._priority`
 """
 
-from .._json import jsonDeserialize, jsonTextFromModelObject
+from .._json import jsonDeserialize, jsonSerialize
 from ..._priority import IncidentPriority
-from ....ext.json import jsonTextFromObject
 from ....ext.trial import TestCase
 
 
@@ -43,14 +42,11 @@ class IncidentPrioritySerializationTests(TestCase):
 
     def test_serialize(self) -> None:
         """
-        :func:`jsonTextFromModelObject` serializes the given incident priority
-        as the expected value.
+        :func:`jsonSerialize` serializes the given incident priority as the
+        expected value.
         """
         for incidentPriority, jsonValue in incidentPriorityToJSON.items():
-            self.assertEqual(
-                jsonTextFromModelObject(incidentPriority),
-                jsonTextFromObject(jsonValue),
-            )
+            self.assertEqual(jsonSerialize(incidentPriority), jsonValue)
 
 
 

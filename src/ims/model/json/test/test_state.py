@@ -18,9 +18,8 @@
 Tests for :mod:`ranger-ims-server.model.json._state`
 """
 
-from .._json import jsonDeserialize, jsonTextFromModelObject
+from .._json import jsonDeserialize, jsonSerialize
 from ..._state import IncidentState
-from ....ext.json import jsonTextFromObject
 from ....ext.trial import TestCase
 
 
@@ -45,14 +44,11 @@ class IncidentStateSerializationTests(TestCase):
 
     def test_serialize(self) -> None:
         """
-        :func:`jsonTextFromModelObject` serializes the given incident state as
+        :func:`jsonSerialize` serializes the given incident state as
         the expected value.
         """
         for incidentState, jsonValue in incidentStateToJSON.items():
-            self.assertEqual(
-                jsonTextFromModelObject(incidentState),
-                jsonTextFromObject(jsonValue),
-            )
+            self.assertEqual(jsonSerialize(incidentState), jsonValue)
 
 
 
