@@ -23,7 +23,6 @@ Report entry
 from datetime import datetime as DateTime
 from typing import Any
 
-from ._ranger import Ranger
 from ..ext.attr import attrib, attrs, instanceOf, true
 
 
@@ -40,7 +39,7 @@ class ReportEntry(object):
     """
 
     created   = attrib(validator=instanceOf(DateTime))
-    author    = attrib(validator=instanceOf(Ranger))
+    author    = attrib(validator=instanceOf(str))
     automatic = attrib(validator=instanceOf(bool))
     text      = attrib(validator=true(instanceOf(str)))
 

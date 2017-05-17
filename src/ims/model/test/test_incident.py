@@ -35,14 +35,14 @@ __all__ = ()
 
 entryA = ReportEntry(
     created=dt1,
-    author=rangerHubcap,
+    author=rangerHubcap.handle,
     automatic=True,
     text="State changed to: new",
 )
 
 entryB = ReportEntry(
     created=dt2,
-    author=rangerHubcap,
+    author=rangerHubcap.handle,
     automatic=False,
     text="A different thing happened",
 )

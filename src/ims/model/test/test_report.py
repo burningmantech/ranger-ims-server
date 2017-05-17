@@ -31,7 +31,7 @@ __all__ = ()
 
 entry = ReportEntry(
     created=dt1,
-    author=rangerHubcap,
+    author=rangerHubcap.handle,
     automatic=False,
     text="A different thing happened",
 )

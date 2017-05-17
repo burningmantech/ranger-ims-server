@@ -42,14 +42,14 @@ class ReportEntryTests(TestCase):
         """
         b = ReportEntry(
             created=dt2,
-            author=rangerHubcap,
+            author=rangerHubcap.handle,
             automatic=False,
             text=self.text,
         )
 
         a = ReportEntry(
             created=dt1,
-            author=rangerHubcap,
+            author=rangerHubcap.handle,
             automatic=False,
             text=self.text,
         )
@@ -67,14 +67,14 @@ class ReportEntryTests(TestCase):
         """
         b = ReportEntry(
             created=dt1,
-            author=rangerHubcap,
+            author=rangerHubcap.handle,
             automatic=False,
             text=self.text,
         )
 
         a = ReportEntry(
             created=dt1,
-            author=rangerBucket,
+            author=rangerBucket.handle,
             automatic=False,
             text=self.text,
         )
@@ -93,14 +93,14 @@ class ReportEntryTests(TestCase):
         """
         b = ReportEntry(
             created=dt1,
-            author=rangerHubcap,
+            author=rangerHubcap.handle,
             automatic=False,
             text=self.text,
         )
 
         a = ReportEntry(
             created=dt1,
-            author=rangerHubcap,
+            author=rangerHubcap.handle,
             automatic=True,
             text=self.text,
         )
@@ -118,14 +118,14 @@ class ReportEntryTests(TestCase):
         """
         a = ReportEntry(
             created=dt1,
-            author=rangerHubcap,
+            author=rangerHubcap.handle,
             automatic=True,
             text=self.text,
         )
 
         b = ReportEntry(
             created=dt1,
-            author=rangerHubcap,
+            author=rangerHubcap.handle,
             automatic=True,
             text=self.text,
         )
@@ -139,7 +139,7 @@ class ReportEntryTests(TestCase):
         """
         a = ReportEntry(
             created=dt1,
-            author=rangerHubcap,
+            author=rangerHubcap.handle,
             automatic=True,
             text=self.text,
         )
