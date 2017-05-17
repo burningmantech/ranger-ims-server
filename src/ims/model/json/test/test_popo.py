@@ -33,9 +33,10 @@ from ....ext.trial import TestCase
 __all__ = ()
 
 
+
 class POPOSerializationTests(TestCase):
     """
-    Tests for serialization of Plain Old Python Objects.
+    Tests for serialization of Plain Old Python Objects
     """
 
     def _test_identical(self, obj: Any) -> None:
@@ -110,7 +111,7 @@ class POPOSerializationTests(TestCase):
 
 class POPODeserializationTests(TestCase):
     """
-    Tests for deserialization of Plain Old Python Objects.
+    Tests for deserialization of Plain Old Python Objects
     """
 
     def _test_identical(self, obj: Any) -> None:

@@ -15,21 +15,29 @@
 ##
 
 """
-Incident Management System data model JSON serialization/deserialization
+JSON serialization/deserialization for events
 """
 
-from . import _event
-from . import _priority
-from . import _state
-from . import _type
-from ._json import jsonTextFromModelObject
+from typing import Type
 
-del _event
-del _priority
-del _state
-del _type
+from ._json import registerDeserializer, registerSerializer
+from .._event import Event
 
 
-__all__ = (
-    "jsonTextFromModelObject",
-)
+__all__ = ()
+
+
+def serializeEvent(event: Event) -> str:
+    return event.id
+
+
+registerSerializer(Event, serializeEvent)
+
+
+def deserializeEvent(cl: Type, obj: str) -> Event:
+    assert cl is Event, (cl, obj)
+
+    return Event(id=obj)
+
+
+registerDeserializer(Event, deserializeEvent)

@@ -15,21 +15,12 @@
 ##
 
 """
-Incident Management System data model JSON serialization/deserialization
+JSON serialization/deserialization for incident type
 """
 
-from . import _event
-from . import _priority
-from . import _state
-from . import _type
-from ._json import jsonTextFromModelObject
 
-del _event
-del _priority
-del _state
-del _type
+__all__ = ()
 
 
-__all__ = (
-    "jsonTextFromModelObject",
-)
+# Nothing to register here; by default, cattrs handles enums by value, which is
+# what we want here.

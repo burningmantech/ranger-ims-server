@@ -32,7 +32,7 @@ class Event(object):
     """
     Event
 
-    An event is a container for incident data with an ID.
+    An event identifies a container for incident data.
     """
 
     id = attrib(validator=true(instanceOf(str)))

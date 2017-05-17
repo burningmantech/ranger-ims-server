@@ -28,32 +28,31 @@ from ...ext.json import (
 )
 
 
-__all__ = (
-)
+__all__ = ()
 
 
 converter = Converter()
 jsonSerialize = converter.dumps
 jsonDeserialize = converter.loads
 
+registerSerializer = converter.register_dumps_hook
+registerDeserializer = converter.register_loads_hook
+
 
 # Serialization hooks
 
-dumps_datetime = dateTimeAsRFC3339Text
-
-
-converter.register_dumps_hook(DateTime, dumps_datetime)
+registerSerializer(DateTime, dateTimeAsRFC3339Text)
 
 
 # Deserialization hooks
 
-def loads_datetime(cl: Type, obj: str) -> DateTime:
+def deserializeDateTime(cl: Type, obj: str) -> DateTime:
     assert cl is DateTime, (cl, obj)
 
     return rfc3339TextAsDateTime(obj)
 
 
-converter.register_loads_hook(DateTime, loads_datetime)
+registerDeserializer(DateTime, deserializeDateTime)
 
 
 def jsonTextFromModelObject(
