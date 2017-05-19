@@ -30,7 +30,7 @@ __all__ = ()
 
 
 @unique
-class IncidentStateJSON(Enum):
+class IncidentStateJSONValue(Enum):
     """
     Incident state JSON values
     """
@@ -44,7 +44,7 @@ class IncidentStateJSON(Enum):
 
 
 def serializeIncidentState(incidentState: IncidentState) -> str:
-    return getattr(IncidentStateJSON, incidentState.name).value
+    return getattr(IncidentStateJSONValue, incidentState.name).value
 
 
 registerSerializer(IncidentState, serializeIncidentState)
@@ -53,7 +53,7 @@ registerSerializer(IncidentState, serializeIncidentState)
 def deserializeIncidentState(cl: Type, obj: str) -> IncidentState:
     assert cl is IncidentState, (cl, obj)
 
-    return getattr(IncidentState, IncidentStateJSON(obj).name)
+    return getattr(IncidentState, IncidentStateJSONValue(obj).name)
 
 
 registerDeserializer(IncidentState, deserializeIncidentState)
