@@ -39,7 +39,7 @@ class ReportEntry(object):
     """
 
     created   = attrib(validator=instanceOf(DateTime))
-    author    = attrib(validator=instanceOf(str))
+    author    = attrib(validator=true(instanceOf(str)))
     automatic = attrib(validator=instanceOf(bool))
     text      = attrib(validator=true(instanceOf(str)))
 
