@@ -29,7 +29,7 @@ __all__ = ()
 
 
 
-class IncidentPriorityJSON(Enum):
+class IncidentPriorityJSONValue(Enum):
     """
     Incident priority JSON values
     """
@@ -41,7 +41,7 @@ class IncidentPriorityJSON(Enum):
 
 
 def serializeIncidentPriority(incidentPriority: IncidentPriority) -> str:
-    return getattr(IncidentPriorityJSON, incidentPriority.name).value
+    return getattr(IncidentPriorityJSONValue, incidentPriority.name).value
 
 
 registerSerializer(IncidentPriority, serializeIncidentPriority)
@@ -50,7 +50,7 @@ registerSerializer(IncidentPriority, serializeIncidentPriority)
 def deserializeIncidentPriority(cl: Type, obj: int) -> IncidentPriority:
     assert cl is IncidentPriority, (cl, obj)
 
-    return getattr(IncidentPriority, IncidentPriorityJSON(obj).name)
+    return getattr(IncidentPriority, IncidentPriorityJSONValue(obj).name)
 
 
 registerDeserializer(IncidentPriority, deserializeIncidentPriority)
