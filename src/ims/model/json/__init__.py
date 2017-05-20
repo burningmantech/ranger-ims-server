@@ -18,12 +18,14 @@
 Incident Management System data model JSON serialization/deserialization
 """
 
+from . import _entry
 from . import _event
 from . import _priority
 from . import _state
 from . import _type
 from ._json import jsonTextFromModelObject
 
+del _entry
 del _event
 del _priority
 del _state
