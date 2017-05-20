@@ -18,6 +18,8 @@
 Address
 """
 
+from abc import ABC
+
 from ..ext.attr import attrib, attrs, instanceOf
 
 
@@ -25,7 +27,7 @@ __all__ = ()
 
 
 
-class Address(object):
+class Address(ABC):
     """
     Location address
     """
