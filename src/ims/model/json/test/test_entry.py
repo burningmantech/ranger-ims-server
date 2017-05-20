@@ -18,11 +18,11 @@
 Tests for :mod:`ranger-ims-server.model.json._entry`
 """
 
-from datetime import datetime as DateTime
+from typing import Any, Callable, Dict, Tuple
 
 from hypothesis import given
 from hypothesis.extra.datetime import datetimes
-from hypothesis.strategies import booleans, text
+from hypothesis.strategies import booleans, composite, text
 
 
 from .._json import jsonDeserialize, jsonSerialize
@@ -33,35 +33,44 @@ from ....ext.trial import TestCase
 __all__ = ()
 
 
+EntryAndJSON = Tuple[ReportEntry, Dict[str, Any]]
+
+
+@composite
+def entryAndJSON(draw: Callable) -> EntryAndJSON:
+    created   = draw(datetimes())
+    author    = draw(text(min_size=1))
+    automatic = draw(booleans())
+    entryText = draw(text(min_size=1))
+
+    entry = ReportEntry(
+        created=created, author=author, automatic=automatic, text=entryText
+    )
+
+    json = dict(
+        created=jsonSerialize(created),
+        author=jsonSerialize(author),
+        system_entry=jsonSerialize(automatic),
+        text=jsonSerialize(entryText),
+    )
+
+    return (entry, json)
+
+
 
 class ReportEntrySerializationTests(TestCase):
     """
     Tests for serialization of :class:`ReportEntry`
     """
 
-    @given(datetimes(), text(min_size=1), booleans(), text(min_size=1))
-    def test_serialize(
-        self, created: DateTime, author: str, automatic: bool, text: str
-    ) -> None:
+    @given(entryAndJSON())
+    def test_serialize(self, entryAndJSON: EntryAndJSON) -> None:
         """
         :func:`jsonSerialize` serializes the given report entry.
         """
-        self.assertEqual(
-            jsonSerialize(
-                ReportEntry(
-                    created=created,
-                    author=author,
-                    automatic=automatic,
-                    text=text,
-                )
-            ),
-            dict(
-                created=jsonSerialize(created),
-                author=jsonSerialize(author),
-                system_entry=jsonSerialize(automatic),
-                text=jsonSerialize(text),
-            )
-        )
+        entry, json = entryAndJSON
+
+        self.assertEqual(jsonSerialize(entry), json)
 
 
 
@@ -70,27 +79,11 @@ class ReportEntryDeserializationTests(TestCase):
     Tests for deserialization of :class:`ReportEntry`
     """
 
-    @given(datetimes(), text(min_size=1), booleans(), text(min_size=1))
-    def test_deserialize(
-        self, created: DateTime, author: str, automatic: bool, text: str
-    ) -> None:
+    @given(entryAndJSON())
+    def test_deserialize(self, entryAndJSON: EntryAndJSON) -> None:
         """
         :func:`jsonDeserialize` returns a report entry with the correct data.
         """
-        self.assertEqual(
-            jsonDeserialize(
-                dict(
-                    created=jsonSerialize(created),
-                    author=jsonSerialize(author),
-                    system_entry=jsonSerialize(automatic),
-                    text=jsonSerialize(text),
-                ),
-                ReportEntry
-            ),
-            ReportEntry(
-                created=created,
-                author=author,
-                automatic=automatic,
-                text=text,
-            )
-        )
+        entry, json = entryAndJSON
+
+        self.assertEqual(jsonDeserialize(json, ReportEntry), entry)
