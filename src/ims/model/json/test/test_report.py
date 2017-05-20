@@ -18,62 +18,16 @@
 Tests for :mod:`ranger-ims-server.model.json._report`
 """
 
-from typing import Any, Callable, Dict, Tuple
-
 from hypothesis import given
-from hypothesis.extra.datetime import datetimes
-from hypothesis.strategies import booleans, composite, integers, text
 
+from .json import jsonFromIncidentReport
+from .strategies import incidentReports
 from .._json import jsonDeserialize, jsonSerialize
-from ..._entry import ReportEntry
 from ..._report import IncidentReport
 from ....ext.trial import TestCase
 
 
 __all__ = ()
-
-
-ReportAndJSON = Tuple[IncidentReport, Dict[str, Any]]
-
-
-@composite
-def entries(draw: Callable) -> ReportEntry:
-    created   = draw(datetimes())
-    author    = draw(text(min_size=1))
-    automatic = draw(booleans())
-    entryText = draw(text(min_size=1))
-
-    return ReportEntry(
-        created=created, author=author, automatic=automatic, text=entryText
-    )
-
-
-@composite
-def reportsAndJSON(draw: Callable) -> ReportAndJSON:
-    number  = draw(integers(min_value=1))
-    created = draw(datetimes())
-    summary = draw(text(min_size=1))
-
-    reportEntries = tuple(sorted(
-        draw(entries())
-        for i in range(draw(integers(min_value=0, max_value=10)))
-    ))
-
-    report = IncidentReport(
-        number=number,
-        created=created,
-        summary=summary,
-        reportEntries=reportEntries,
-    )
-
-    json = dict(
-        number=jsonSerialize(number),
-        created=jsonSerialize(created),
-        summary=jsonSerialize(summary),
-        report_entries=tuple(jsonSerialize(e) for e in reportEntries),
-    )
-
-    return (report, json)
 
 
 
@@ -82,14 +36,12 @@ class IncidentReportSerializationTests(TestCase):
     Tests for serialization of :class:`IncidentReport`
     """
 
-    @given(reportsAndJSON())
-    def test_serialize(self, reportAndJSON: ReportAndJSON) -> None:
+    @given(incidentReports())
+    def test_serialize(self, report: IncidentReport) -> None:
         """
         :func:`jsonSerialize` serializes the given report.
         """
-        report, json = reportAndJSON
-
-        self.assertEqual(jsonSerialize(report), json)
+        self.assertEqual(jsonSerialize(report), jsonFromIncidentReport(report))
 
 
 
@@ -98,11 +50,12 @@ class IncidentReportDeserializationTests(TestCase):
     Tests for deserialization of :class:`IncidentReport`
     """
 
-    @given(reportsAndJSON())
-    def test_deserialize(self, reportAndJSON: ReportAndJSON) -> None:
+    @given(incidentReports())
+    def test_deserialize(self, report: IncidentReport) -> None:
         """
         :func:`jsonDeserialize` returns a report with the correct data.
         """
-        report, json = reportAndJSON
-
-        self.assertEqual(jsonDeserialize(json, IncidentReport), report)
+        self.assertEqual(
+            jsonDeserialize(jsonFromIncidentReport(report), IncidentReport),
+            report
+        )

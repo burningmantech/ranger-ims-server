@@ -18,11 +18,10 @@
 Tests for :mod:`ranger-ims-server.model.json._address`
 """
 
-from typing import Any, Callable, Dict, Tuple
-
 from hypothesis import given
-from hypothesis.strategies import composite, integers, text
 
+from .json import jsonFromRodGarettAddress, jsonFromTextOnlyAddress
+from .strategies import rodGarettAddresses, textOnlyAddresses
 from .._json import jsonDeserialize, jsonSerialize
 from ..._address import RodGarettAddress, TextOnlyAddress
 from ....ext.trial import TestCase
@@ -31,61 +30,20 @@ from ....ext.trial import TestCase
 __all__ = ()
 
 
-TextOnlyAddressAndJSON  = Tuple[TextOnlyAddress, Dict[str, Any]]
-RodGarettAddressAndJSON = Tuple[RodGarettAddress, Dict[str, Any]]
-
-
-@composite
-def textOnlyAddressesAndJSON(draw: Callable) -> TextOnlyAddressAndJSON:
-    description = draw(text())
-
-    address = TextOnlyAddress(description=description)
-
-    json = dict(description=jsonSerialize(description))
-
-    return (address, json)
-
-
-@composite
-def rodGarettAddressesAndJSON(draw: Callable) -> RodGarettAddressAndJSON:
-    concentric   = draw(integers(min_value=0, max_value=12))
-    radialHour   = draw(integers(min_value=1, max_value=12))
-    radialMinute = draw(integers(min_value=0, max_value=59))
-    description  = draw(text())
-
-    address = RodGarettAddress(
-        concentric=concentric,
-        radialHour=radialHour,
-        radialMinute=radialMinute,
-        description=description,
-    )
-
-    json = dict(
-        concentric=jsonSerialize(concentric),
-        radial_hour=jsonSerialize(radialHour),
-        radial_minute=jsonSerialize(radialMinute),
-        description=jsonSerialize(description),
-    )
-
-    return (address, json)
-
-
 
 class TextOnlyAddressSerializationTests(TestCase):
     """
     Tests for serialization of :class:`TextOnlyAddress`
     """
 
-    @given(textOnlyAddressesAndJSON())
-    def test_serialize(
-        self, textOnlyAddressAndJSON: TextOnlyAddressAndJSON
-    ) -> None:
+    @given(textOnlyAddresses())
+    def test_serialize(self, address: TextOnlyAddress) -> None:
         """
         :func:`jsonSerialize` serializes the given address.
         """
-        address, json = textOnlyAddressAndJSON
-
-        self.assertEqual(jsonSerialize(address), json)
+        self.assertEqual(
+            jsonSerialize(address), jsonFromTextOnlyAddress(address)
+        )
 
 
 
@@ -94,16 +52,16 @@ class RodGarettAddressSerializationTests(TestCase):
     Tests for serialization of :class:`RodGarettAddress`
     """
 
-    @given(rodGarettAddressesAndJSON())
+    @given(rodGarettAddresses())
     def test_serialize(
-        self, rodGarettAddressAndJSON: RodGarettAddressAndJSON
+        self, address: RodGarettAddress
     ) -> None:
         """
         :func:`jsonSerialize` serializes the given address.
         """
-        address, json = rodGarettAddressAndJSON
-
-        self.assertEqual(jsonSerialize(address), json)
+        self.assertEqual(
+            jsonSerialize(address), jsonFromRodGarettAddress(address)
+        )
 
 
 
@@ -112,16 +70,15 @@ class TextOnlyAddressDeserializationTests(TestCase):
     Tests for deserialization of :class:`TextOnlyAddress`
     """
 
-    @given(textOnlyAddressesAndJSON())
-    def test_deserialize(
-        self, textOnlyAddressAndJSON: TextOnlyAddressAndJSON
-    ) -> None:
+    @given(textOnlyAddresses())
+    def test_deserialize(self, address: TextOnlyAddress) -> None:
         """
         :func:`jsonDeserialize` returns a address with the correct data.
         """
-        address, json = textOnlyAddressAndJSON
-
-        self.assertEqual(jsonDeserialize(json, TextOnlyAddress), address)
+        self.assertEqual(
+            jsonDeserialize(jsonFromTextOnlyAddress(address), TextOnlyAddress),
+            address
+        )
 
 
 
@@ -130,13 +87,14 @@ class RodGarettAddressDeserializationTests(TestCase):
     Tests for deserialization of :class:`RodGarettAddress`
     """
 
-    @given(rodGarettAddressesAndJSON())
-    def test_deserialize(
-        self, rodGarettAddressAndJSON: RodGarettAddressAndJSON
-    ) -> None:
+    @given(rodGarettAddresses())
+    def test_deserialize(self, address: RodGarettAddress) -> None:
         """
         :func:`jsonDeserialize` returns a address with the correct data.
         """
-        address, json = rodGarettAddressAndJSON
-
-        self.assertEqual(jsonDeserialize(json, RodGarettAddress), address)
+        self.assertEqual(
+            jsonDeserialize(
+                jsonFromRodGarettAddress(address), RodGarettAddress
+            ),
+            address
+        )

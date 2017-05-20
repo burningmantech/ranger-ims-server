@@ -19,9 +19,9 @@ Tests for :mod:`ranger-ims-server.model.json._event`
 """
 
 from hypothesis import given
-from hypothesis.strategies import text
 
-
+from .json import jsonFromEvent
+from .strategies import events
 from .._json import jsonDeserialize, jsonSerialize
 from ..._event import Event
 from ....ext.trial import TestCase
@@ -36,12 +36,12 @@ class EventSerializationTests(TestCase):
     Tests for serialization of :class:`Event`
     """
 
-    @given(text(min_size=1))
-    def test_serialize(self, eventID: str) -> None:
+    @given(events())
+    def test_serialize(self, event: Event) -> None:
         """
         :func:`jsonSerialize` serializes the given event using its ID.
         """
-        self.assertEqual(jsonSerialize(Event(id=eventID)), eventID)
+        self.assertEqual(jsonSerialize(event), jsonFromEvent(event))
 
 
 
@@ -50,13 +50,10 @@ class EventDeserializationTests(TestCase):
     Tests for deserialization of :class:`Event`
     """
 
-    @given(text(min_size=1))
-    def test_deserialize(self, eventID: str) -> None:
+    @given(events())
+    def test_deserialize(self, event: Event) -> None:
         """
         :func:`jsonDeserialize` returns an event with an ID corresponding to
         the given value.
         """
-        self.assertEqual(
-            jsonDeserialize(eventID, Event),
-            Event(id=eventID),
-        )
+        self.assertEqual(jsonDeserialize(jsonFromEvent(event), Event), event)

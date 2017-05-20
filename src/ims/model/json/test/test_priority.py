@@ -18,6 +18,10 @@
 Tests for :mod:`ranger-ims-server.model.json._priority`
 """
 
+from hypothesis import given
+
+from .json import jsonFromIncidentPriority
+from .strategies import incidentPriorities
 from .._json import jsonDeserialize, jsonSerialize
 from ..._priority import IncidentPriority
 from ....ext.trial import TestCase
@@ -40,13 +44,15 @@ class IncidentPrioritySerializationTests(TestCase):
     Tests for serialization of :class:`IncidentPriority`
     """
 
-    def test_serialize(self) -> None:
+    @given(incidentPriorities())
+    def test_serialize(self, priority: IncidentPriority) -> None:
         """
         :func:`jsonSerialize` serializes the given incident priority as the
         expected value.
         """
-        for incidentPriority, jsonValue in incidentPriorityToJSON.items():
-            self.assertEqual(jsonSerialize(incidentPriority), jsonValue)
+        self.assertEqual(
+            jsonSerialize(priority), jsonFromIncidentPriority(priority)
+        )
 
 
 
@@ -55,13 +61,15 @@ class IncidentPriorityDeserializationTests(TestCase):
     Tests for deserialization of :class:`IncidentPriority`
     """
 
-    def test_deserialize(self) -> None:
+    @given(incidentPriorities())
+    def test_deserialize(self, priority: IncidentPriority) -> None:
         """
         :func:`jsonDeserialize` returns the expected incident priority for the
         given value.
         """
-        for incidentPriority, jsonValue in incidentPriorityToJSON.items():
-            self.assertIdentical(
-                jsonDeserialize(jsonValue, IncidentPriority),
-                incidentPriority
-            )
+        self.assertIdentical(
+            jsonDeserialize(
+                jsonFromIncidentPriority(priority), IncidentPriority
+            ),
+            priority
+        )

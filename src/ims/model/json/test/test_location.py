@@ -18,63 +18,16 @@
 Tests for :mod:`ranger-ims-server.model.json._location`
 """
 
-from typing import Any, Callable, Dict, Tuple
-
 from hypothesis import given
-from hypothesis.strategies import choices, composite, integers, text
 
-
+from .json import jsonFromLocation
+from .strategies import locations
 from .._json import jsonDeserialize, jsonSerialize
-from ..._address import Address, RodGarettAddress, TextOnlyAddress
 from ..._location import Location
 from ....ext.trial import TestCase
 
 
 __all__ = ()
-
-
-LocationAndJSON = Tuple[Location, Dict[str, Any]]
-
-
-@composite
-def textOnlyAddresses(draw: Callable) -> TextOnlyAddress:
-    description = draw(text())
-
-    return TextOnlyAddress(description=description)
-
-
-@composite
-def rodGarettAddresses(draw: Callable) -> RodGarettAddress:
-    concentric   = draw(integers(min_value=0, max_value=12))
-    radialHour   = draw(integers(min_value=1, max_value=12))
-    radialMinute = draw(integers(min_value=0, max_value=59))
-    description  = draw(text())
-
-    return RodGarettAddress(
-        concentric=concentric,
-        radialHour=radialHour,
-        radialMinute=radialMinute,
-        description=description,
-    )
-
-
-@composite
-def addresses(draw: Callable) -> Address:
-    choice = draw(choices())
-    addresses = choice((textOnlyAddresses, rodGarettAddresses))
-    return draw(addresses())
-
-
-@composite
-def locationsAndJSON(draw: Callable) -> LocationAndJSON:
-    name    = draw(text())
-    address = draw(addresses())
-
-    location = Location(name=name, address=address)
-
-    json = dict(name=jsonSerialize(name), address=jsonSerialize(address))
-
-    return (location, json)
 
 
 
@@ -83,14 +36,12 @@ class LocationSerializationTests(TestCase):
     Tests for serialization of :class:`Location`
     """
 
-    @given(locationsAndJSON())
-    def test_serialize(self, locationAndJSON: LocationAndJSON) -> None:
+    @given(locations())
+    def test_serialize(self, location: Location) -> None:
         """
         :func:`jsonSerialize` serializes the given location.
         """
-        location, json = locationAndJSON
-
-        self.assertEqual(jsonSerialize(location), json)
+        self.assertEqual(jsonSerialize(location), jsonFromLocation(location))
 
 
 
@@ -99,11 +50,11 @@ class LocationDeserializationTests(TestCase):
     Tests for deserialization of :class:`Location`
     """
 
-    @given(locationsAndJSON())
-    def test_deserialize(self, locationAndJSON: LocationAndJSON) -> None:
+    @given(locations())
+    def test_deserialize(self, location: Location) -> None:
         """
         :func:`jsonDeserialize` returns a location with the correct data.
         """
-        location, json = locationAndJSON
-
-        self.assertEqual(jsonDeserialize(json, Location), location)
+        self.assertEqual(
+            jsonDeserialize(jsonFromLocation(location), Location), location
+        )

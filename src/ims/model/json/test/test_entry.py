@@ -18,13 +18,10 @@
 Tests for :mod:`ranger-ims-server.model.json._entry`
 """
 
-from typing import Any, Callable, Dict, Tuple
-
 from hypothesis import given
-from hypothesis.extra.datetime import datetimes
-from hypothesis.strategies import booleans, composite, text
 
-
+from .json import jsonFromReportEntry
+from .strategies import reportEntries
 from .._json import jsonDeserialize, jsonSerialize
 from ..._entry import ReportEntry
 from ....ext.trial import TestCase
@@ -33,44 +30,18 @@ from ....ext.trial import TestCase
 __all__ = ()
 
 
-EntryAndJSON = Tuple[ReportEntry, Dict[str, Any]]
-
-
-@composite
-def entriesAndJSON(draw: Callable) -> EntryAndJSON:
-    created   = draw(datetimes())
-    author    = draw(text(min_size=1))
-    automatic = draw(booleans())
-    entryText = draw(text(min_size=1))
-
-    entry = ReportEntry(
-        created=created, author=author, automatic=automatic, text=entryText
-    )
-
-    json = dict(
-        created=jsonSerialize(created),
-        author=jsonSerialize(author),
-        system_entry=jsonSerialize(automatic),
-        text=jsonSerialize(entryText),
-    )
-
-    return (entry, json)
-
-
 
 class ReportEntrySerializationTests(TestCase):
     """
     Tests for serialization of :class:`ReportEntry`
     """
 
-    @given(entriesAndJSON())
-    def test_serialize(self, entryAndJSON: EntryAndJSON) -> None:
+    @given(reportEntries())
+    def test_serialize(self, entry: ReportEntry) -> None:
         """
         :func:`jsonSerialize` serializes the given report entry.
         """
-        entry, json = entryAndJSON
-
-        self.assertEqual(jsonSerialize(entry), json)
+        self.assertEqual(jsonSerialize(entry), jsonFromReportEntry(entry))
 
 
 
@@ -79,11 +50,11 @@ class ReportEntryDeserializationTests(TestCase):
     Tests for deserialization of :class:`ReportEntry`
     """
 
-    @given(entriesAndJSON())
-    def test_deserialize(self, entryAndJSON: EntryAndJSON) -> None:
+    @given(reportEntries())
+    def test_deserialize(self, entry: ReportEntry) -> None:
         """
         :func:`jsonDeserialize` returns a report entry with the correct data.
         """
-        entry, json = entryAndJSON
-
-        self.assertEqual(jsonDeserialize(json, ReportEntry), entry)
+        self.assertEqual(
+            jsonDeserialize(jsonFromReportEntry(entry), ReportEntry), entry
+        )

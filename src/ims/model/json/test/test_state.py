@@ -18,6 +18,10 @@
 Tests for :mod:`ranger-ims-server.model.json._state`
 """
 
+from hypothesis import given
+
+from .json import jsonFromIncidentState
+from .strategies import incidentStates
 from .._json import jsonDeserialize, jsonSerialize
 from ..._state import IncidentState
 from ....ext.trial import TestCase
@@ -27,28 +31,18 @@ __all__ = ()
 
 
 
-incidentStateToJSON = {
-    IncidentState.new: "new",
-    IncidentState.onHold: "on_hold",
-    IncidentState.dispatched: "dispatched",
-    IncidentState.onScene: "on_scene",
-    IncidentState.closed: "closed",
-}
-
-
-
 class IncidentStateSerializationTests(TestCase):
     """
     Tests for serialization of :class:`IncidentState`
     """
 
-    def test_serialize(self) -> None:
+    @given(incidentStates())
+    def test_serialize(self, state: IncidentState) -> None:
         """
         :func:`jsonSerialize` serializes the given incident state as
         the expected value.
         """
-        for incidentState, jsonValue in incidentStateToJSON.items():
-            self.assertEqual(jsonSerialize(incidentState), jsonValue)
+        self.assertEqual(jsonSerialize(state), jsonFromIncidentState(state))
 
 
 
@@ -57,13 +51,12 @@ class IncidentStateDeserializationTests(TestCase):
     Tests for deserialization of :class:`IncidentState`
     """
 
-    def test_deserialize(self) -> None:
+    @given(incidentStates())
+    def test_deserialize(self, state: IncidentState) -> None:
         """
         :func:`jsonDeserialize` returns the expected incident state for the
         given value.
         """
-        for incidentState, jsonValue in incidentStateToJSON.items():
-            self.assertIdentical(
-                jsonDeserialize(jsonValue, IncidentState),
-                incidentState
-            )
+        self.assertIdentical(
+            jsonDeserialize(jsonFromIncidentState(state), IncidentState), state
+        )

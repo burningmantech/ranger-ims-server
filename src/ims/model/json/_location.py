@@ -18,14 +18,11 @@
 JSON serialization/deserialization for addresses
 """
 
-from enum import Enum, unique
 from typing import Any, Dict, Type
 
 from ._address import RodGarettAddressJSONKey
-from ._json import (
-    jsonDeserialize, jsonSerialize, registerDeserializer, registerSerializer
-)
-from .._address import TextOnlyAddress, RodGarettAddress
+from ._json import jsonDeserialize, registerDeserializer
+from .._address import RodGarettAddress, TextOnlyAddress
 from .._location import Location
 
 
@@ -49,7 +46,7 @@ def deserializeLocation(
         if key.name == "description":
             continue
         if key.name in jsonAddress:
-            addressClass = RodGarettAddress
+            addressClass = RodGarettAddress  # type: Type
             break
     else:
         addressClass = TextOnlyAddress
