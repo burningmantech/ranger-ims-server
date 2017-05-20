@@ -20,7 +20,6 @@ JSON serialization/deserialization for addresses
 
 from typing import Any, Dict, Type
 
-from ._address import RodGarettAddressJSONKey
 from ._json import jsonDeserialize, registerDeserializer
 from .._address import RodGarettAddress, TextOnlyAddress
 from .._location import Location
@@ -41,15 +40,14 @@ def deserializeLocation(
     assert cl is Location, (cl, obj)
 
     jsonAddress = obj["address"]
+    addressType = jsonAddress["type"]
 
-    for key in RodGarettAddressJSONKey:
-        if key.name == "description":
-            continue
-        if key.name in jsonAddress:
-            addressClass = RodGarettAddress  # type: Type
-            break
-    else:
+    if addressType == "garett":
+        addressClass = RodGarettAddress  # type: Type
+    elif addressType == "text":
         addressClass = TextOnlyAddress
+    else:
+        raise ValueError("unknown address type: {}".format(addressType))
 
     return Location(
         name=obj["name"],

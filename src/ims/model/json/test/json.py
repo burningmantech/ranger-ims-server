@@ -40,11 +40,12 @@ __all__ = ()
 ##
 
 def jsonFromTextOnlyAddress(address: TextOnlyAddress) -> Dict[str, Any]:
-    return dict(description=jsonSerialize(address.description))
+    return dict(type="text", description=jsonSerialize(address.description))
 
 
 def jsonFromRodGarettAddress(address: RodGarettAddress) -> Dict[str, Any]:
     return dict(
+        type="garett",
         concentric=jsonSerialize(address.concentric),
         radial_hour=jsonSerialize(address.radialHour),
         radial_minute=jsonSerialize(address.radialMinute),

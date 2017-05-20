@@ -24,7 +24,7 @@ from typing import Any, Dict, Type
 from ._json import (
     jsonDeserialize, jsonSerialize, registerDeserializer, registerSerializer
 )
-from .._address import RodGarettAddress
+from .._address import RodGarettAddress, TextOnlyAddress
 
 
 __all__ = ()
@@ -33,6 +33,25 @@ __all__ = ()
 
 # cattrs defaults for TextOnlyAddress work, but RodGarettAddress requires key
 # remapping.
+
+
+@unique
+class TextOnlyAddressJSONKey(Enum):
+    """
+    Text-only address JSON keys
+    """
+
+    description = "description"
+
+
+
+class TextOnlyAddressJSONType(Enum):
+    """
+    Text-only address attribute types
+    """
+
+    description = str
+
 
 
 @unique
@@ -60,15 +79,53 @@ class RodGarettAddressJSONType(Enum):
 
 
 
+def serializeTextOnlyAddress(address: TextOnlyAddress) -> Dict[str, Any]:
+    # Map TextOnlyAddress attribute names to JSON dict key names
+    json = dict(
+        (key.value, jsonSerialize(getattr(address, key.name)))
+        for key in TextOnlyAddressJSONKey
+    )
+    json["type"] = "text"
+    return json
+
+
+registerSerializer(TextOnlyAddress, serializeTextOnlyAddress)
+
+
 def serializeRodGarettAddress(address: RodGarettAddress) -> Dict[str, Any]:
     # Map RodGarettAddress attribute names to JSON dict key names
-    return dict(
+    json = dict(
         (key.value, jsonSerialize(getattr(address, key.name)))
         for key in RodGarettAddressJSONKey
     )
+    json["type"] = "garett"
+    return json
 
 
 registerSerializer(RodGarettAddress, serializeRodGarettAddress)
+
+
+def deserializeTextOnlyAddress(
+    cl: Type, obj: Dict[str, Any]
+) -> TextOnlyAddress:
+    assert cl is TextOnlyAddress, (cl, obj)
+
+    return TextOnlyAddress(
+        # Map JSON dict key names to TextOnlyAddress attribute names
+        **dict(
+            (
+                key.name,
+                jsonDeserialize(
+                    obj[key.value],
+                    getattr(TextOnlyAddressJSONType, key.name).value
+                )
+            )
+            for key in TextOnlyAddressJSONKey
+        )
+    )
+
+
+registerDeserializer(TextOnlyAddress, deserializeTextOnlyAddress)
 
 
 def deserializeRodGarettAddress(
