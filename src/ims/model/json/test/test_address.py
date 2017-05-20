@@ -62,8 +62,8 @@ def rodGarettAddressesAndJSON(draw: Callable) -> RodGarettAddressAndJSON:
 
     json = dict(
         concentric=jsonSerialize(concentric),
-        radialHour=jsonSerialize(radialHour),
-        radialMinute=jsonSerialize(radialMinute),
+        radial_hour=jsonSerialize(radialHour),
+        radial_minute=jsonSerialize(radialMinute),
         description=jsonSerialize(description),
     )
 
