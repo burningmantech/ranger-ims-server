@@ -22,13 +22,14 @@ from typing import Callable
 
 from hypothesis.extra.datetime import datetimes
 from hypothesis.strategies import (
-    booleans, choices, composite, integers, one_of as oneOf,
+    booleans, composite, integers, iterables, none, one_of as oneOf,
     sampled_from as sampledFrom, text,
 )
 
 from ..._address import Address, RodGarettAddress, TextOnlyAddress
 from ..._entry import ReportEntry
 from ..._event import Event
+from ..._incident import Incident
 from ..._location import Location
 from ..._priority import IncidentPriority
 from ..._report import IncidentReport
@@ -98,6 +99,42 @@ def events(draw: Callable) -> Event:
 
 
 ##
+# Incident
+##
+
+@composite
+def incidentSummaries(draw: Callable) -> str:
+    return draw(oneOf(none(), text()))
+
+
+@composite
+def incidents(draw: Callable) -> Incident:
+    event         = draw(events())
+    number        = draw(integers(min_value=1))
+    created       = draw(datetimes())
+    state         = draw(incidentStates())
+    priority      = draw(incidentPriorities())
+    summary       = draw(incidentSummaries())
+    location      = draw(locations())
+    rangers       = draw(iterables(rangerHandles()))
+    incidentTypes = draw(iterables(incidentTypesText()))
+    entries       = draw(iterables(reportEntries()))
+
+    return Incident(
+        event=event,
+        number=number,
+        created=created,
+        state=state,
+        priority=priority,
+        summary=summary,
+        location=location,
+        rangers=rangers,
+        incidentTypes=incidentTypes,
+        reportEntries=entries,
+    )
+
+
+##
 # Location
 ##
 
@@ -116,6 +153,15 @@ def locations(draw: Callable) -> Location:
 @composite
 def incidentPriorities(draw: Callable) -> IncidentPriority:
     return draw(sampledFrom(IncidentPriority))
+
+
+##
+# Ranger
+##
+
+@composite
+def rangerHandles(draw: Callable) -> str:
+    return draw(text(min_size=1))
 
 
 ##
@@ -153,6 +199,11 @@ def incidentStates(draw: Callable) -> IncidentState:
 ##
 # Type
 ##
+
+@composite
+def incidentTypesText(draw: Callable) -> str:
+    return draw(text(min_size=1))
+
 
 @composite
 def incidentTypes(draw: Callable) -> IncidentType:

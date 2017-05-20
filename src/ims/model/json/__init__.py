@@ -21,6 +21,7 @@ Incident Management System data model JSON serialization/deserialization
 from . import _address
 from . import _entry
 from . import _event
+from . import _incident
 from . import _location
 from . import _priority
 from . import _report
@@ -31,6 +32,7 @@ from ._json import jsonTextFromModelObject
 del _address
 del _entry
 del _event
+del _incident
 del _location
 del _priority
 del _report

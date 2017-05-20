@@ -15,7 +15,7 @@
 ##
 
 """
-JSON serialization/deserialization for report entries
+JSON serialization/deserialization for incident reports
 """
 
 from datetime import datetime as DateTime
@@ -36,7 +36,7 @@ __all__ = ()
 @unique
 class IncidentReportJSONKey(Enum):
     """
-    Incident state JSON keys
+    Incident report JSON keys
     """
 
     number        = "number"
@@ -48,7 +48,7 @@ class IncidentReportJSONKey(Enum):
 
 class IncidentReportJSONType(Enum):
     """
-    Incident state JSON keys
+    Incident report attribute types
     """
 
     number        = int

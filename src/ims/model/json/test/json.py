@@ -24,6 +24,7 @@ from .._json import jsonSerialize
 from ..._address import RodGarettAddress, TextOnlyAddress
 from ..._entry import ReportEntry
 from ..._event import Event
+from ..._incident import Incident
 from ..._location import Location
 from ..._priority import IncidentPriority
 from ..._report import IncidentReport
@@ -70,6 +71,29 @@ def jsonFromReportEntry(entry: ReportEntry) -> Dict[str, Any]:
 
 def jsonFromEvent(event: Event) -> str:
     return event.id
+
+
+##
+# Incident
+##
+
+def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
+    return dict(
+        event=jsonSerialize(incident.event),
+        number=jsonSerialize(incident.number),
+        created=jsonSerialize(incident.created),
+        state=jsonSerialize(incident.state),
+        priority=jsonSerialize(incident.priority),
+        summary=jsonSerialize(incident.summary),
+        location=jsonSerialize(incident.location),
+        ranger_handles=frozenset(jsonSerialize(r) for r in incident.rangers),
+        incident_types=frozenset(
+            jsonSerialize(t) for t in incident.incidentTypes
+        ),
+        report_entries=tuple(
+            jsonSerialize(e) for e in sorted(incident.reportEntries)
+        ),
+    )
 
 
 ##
