@@ -15,27 +15,12 @@
 ##
 
 """
-Incident Management System data model JSON serialization/deserialization
+JSON serialization/deserialization for addresses
 """
 
-from . import _address
-from . import _entry
-from . import _event
-from . import _priority
-from . import _report
-from . import _state
-from . import _type
-from ._json import jsonTextFromModelObject
 
-del _address
-del _entry
-del _event
-del _priority
-del _report
-del _state
-del _type
+__all__ = ()
 
 
-__all__ = (
-    "jsonTextFromModelObject",
-)
+# Nothing to register here; by default, cattrs default behavior works for
+# address classes.
