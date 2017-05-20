@@ -3,7 +3,7 @@
 Extensions to :mod:`attr`
 """
 
-from typing import Any, Callable
+from typing import Any, Callable, Iterable, Tuple, TypeVar
 
 from attr import Attribute, attrib, attrs
 from attr.validators import instance_of as instanceOf, optional, provides
@@ -20,6 +20,8 @@ __all__ = (
     "true",
 )
 
+
+T = TypeVar("T")
 
 Validator = Callable[[Any, Attribute, Any], None]
 
@@ -43,3 +45,10 @@ def true(validator: Validator) -> Validator:
             )
         validator(instance, attribute, value)
     return true
+
+
+def sortedTuple(iterable: Iterable[T]) -> Tuple[T]:
+    """
+    Sort and convert an iterable into a tuple.
+    """
+    return tuple(sorted(iterable))
