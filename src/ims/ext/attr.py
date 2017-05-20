@@ -47,7 +47,7 @@ def true(validator: Validator) -> Validator:
     return true
 
 
-def sortedTuple(iterable: Iterable[T]) -> Tuple[T]:
+def sortedTuple(iterable: Iterable[T]) -> Tuple[T, ...]:
     """
     Sort and convert an iterable into a tuple.
     """
