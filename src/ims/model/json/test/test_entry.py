@@ -37,7 +37,7 @@ EntryAndJSON = Tuple[ReportEntry, Dict[str, Any]]
 
 
 @composite
-def entryAndJSON(draw: Callable) -> EntryAndJSON:
+def entriesAndJSON(draw: Callable) -> EntryAndJSON:
     created   = draw(datetimes())
     author    = draw(text(min_size=1))
     automatic = draw(booleans())
@@ -63,7 +63,7 @@ class ReportEntrySerializationTests(TestCase):
     Tests for serialization of :class:`ReportEntry`
     """
 
-    @given(entryAndJSON())
+    @given(entriesAndJSON())
     def test_serialize(self, entryAndJSON: EntryAndJSON) -> None:
         """
         :func:`jsonSerialize` serializes the given report entry.
@@ -79,7 +79,7 @@ class ReportEntryDeserializationTests(TestCase):
     Tests for deserialization of :class:`ReportEntry`
     """
 
-    @given(entryAndJSON())
+    @given(entriesAndJSON())
     def test_deserialize(self, entryAndJSON: EntryAndJSON) -> None:
         """
         :func:`jsonDeserialize` returns a report entry with the correct data.

@@ -22,10 +22,10 @@ from typing import Any, Callable, Dict, Tuple
 
 from hypothesis import given
 from hypothesis.extra.datetime import datetimes
-from hypothesis.strategies import composite, integers, text
-
+from hypothesis.strategies import booleans, composite, integers, text
 
 from .._json import jsonDeserialize, jsonSerialize
+from ..._entry import ReportEntry
 from ..._report import IncidentReport
 from ....ext.trial import TestCase
 
@@ -37,12 +37,27 @@ ReportAndJSON = Tuple[IncidentReport, Dict[str, Any]]
 
 
 @composite
-def reportAndJSON(draw: Callable) -> ReportAndJSON:
+def entries(draw: Callable) -> ReportEntry:
+    created   = draw(datetimes())
+    author    = draw(text(min_size=1))
+    automatic = draw(booleans())
+    entryText = draw(text(min_size=1))
+
+    return ReportEntry(
+        created=created, author=author, automatic=automatic, text=entryText
+    )
+
+
+@composite
+def reportsAndJSON(draw: Callable) -> ReportAndJSON:
     number  = draw(integers(min_value=1))
     created = draw(datetimes())
     summary = draw(text(min_size=1))
 
-    reportEntries = ()  # FIXME
+    reportEntries = tuple(sorted(
+        draw(entries())
+        for i in range(draw(integers(min_value=0, max_value=10)))
+    ))
 
     report = IncidentReport(
         number=number,
@@ -67,7 +82,7 @@ class IncidentReportSerializationTests(TestCase):
     Tests for serialization of :class:`IncidentReport`
     """
 
-    @given(reportAndJSON())
+    @given(reportsAndJSON())
     def test_serialize(self, reportAndJSON: ReportAndJSON) -> None:
         """
         :func:`jsonSerialize` serializes the given report entry.
@@ -83,7 +98,7 @@ class IncidentReportDeserializationTests(TestCase):
     Tests for deserialization of :class:`IncidentReport`
     """
 
-    @given(reportAndJSON())
+    @given(reportsAndJSON())
     def test_deserialize(self, reportAndJSON: ReportAndJSON) -> None:
         """
         :func:`jsonDeserialize` returns a report entry with the correct data.
