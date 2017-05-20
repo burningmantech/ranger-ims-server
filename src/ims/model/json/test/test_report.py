@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for :mod:`ranger-ims-server.model.json._entry`
+Tests for :mod:`ranger-ims-server.model.json._report`
 """
 
 from typing import Any, Callable, Dict, Tuple
@@ -85,7 +85,7 @@ class IncidentReportSerializationTests(TestCase):
     @given(reportsAndJSON())
     def test_serialize(self, reportAndJSON: ReportAndJSON) -> None:
         """
-        :func:`jsonSerialize` serializes the given report entry.
+        :func:`jsonSerialize` serializes the given report.
         """
         report, json = reportAndJSON
 
@@ -101,7 +101,7 @@ class IncidentReportDeserializationTests(TestCase):
     @given(reportsAndJSON())
     def test_deserialize(self, reportAndJSON: ReportAndJSON) -> None:
         """
-        :func:`jsonDeserialize` returns a report entry with the correct data.
+        :func:`jsonDeserialize` returns a report with the correct data.
         """
         report, json = reportAndJSON
 
