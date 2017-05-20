@@ -147,16 +147,11 @@ def rangerHandles(draw: Callable) -> str:
 
 @composite
 def incidentReports(draw: Callable) -> IncidentReport:
-    entries = tuple(sorted(
-        draw(reportEntries())
-        for i in range(draw(integers(min_value=0, max_value=10)))
-    ))
-
     return IncidentReport(
         number=draw(integers(min_value=1)),
         created=draw(datetimes()),
         summary=draw(text(min_size=1)),
-        reportEntries=entries,
+        reportEntries=sorted(draw(iterables(reportEntries()))),
     )
 
 
