@@ -21,7 +21,10 @@ Test strategies for model data.
 from typing import Callable
 
 from hypothesis.extra.datetime import datetimes
-from hypothesis.strategies import booleans, choices, composite, integers, text
+from hypothesis.strategies import (
+    booleans, choices, composite, integers, one_of as oneOf,
+    sampled_from as sampledFrom, text,
+)
 
 from ..._address import Address, RodGarettAddress, TextOnlyAddress
 from ..._entry import ReportEntry
@@ -64,9 +67,7 @@ def rodGarettAddresses(draw: Callable) -> RodGarettAddress:
 
 @composite
 def addresses(draw: Callable) -> Address:
-    choice = draw(choices())
-    addresses = choice((textOnlyAddresses, rodGarettAddresses))
-    return draw(addresses())
+    return draw(oneOf((textOnlyAddresses(), rodGarettAddresses())))
 
 
 ##
@@ -114,8 +115,7 @@ def locations(draw: Callable) -> Location:
 
 @composite
 def incidentPriorities(draw: Callable) -> IncidentPriority:
-    choice = draw(choices())
-    return choice(IncidentPriority)
+    return draw(sampledFrom(IncidentPriority))
 
 
 ##
@@ -147,8 +147,7 @@ def incidentReports(draw: Callable) -> IncidentReport:
 
 @composite
 def incidentStates(draw: Callable) -> IncidentState:
-    choice = draw(choices())
-    return choice(IncidentState)
+    return draw(sampledFrom(IncidentState))
 
 
 ##
@@ -157,5 +156,4 @@ def incidentStates(draw: Callable) -> IncidentState:
 
 @composite
 def incidentTypes(draw: Callable) -> IncidentType:
-    choice = draw(choices())
-    return choice(IncidentType)
+    return draw(sampledFrom(IncidentType))
