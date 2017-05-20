@@ -53,16 +53,11 @@ def textOnlyAddresses(draw: Callable) -> TextOnlyAddress:
 
 @composite
 def rodGarettAddresses(draw: Callable) -> RodGarettAddress:
-    concentric   = draw(integers(min_value=0, max_value=12))
-    radialHour   = draw(integers(min_value=1, max_value=12))
-    radialMinute = draw(integers(min_value=0, max_value=59))
-    description  = draw(text())
-
     return RodGarettAddress(
-        concentric=concentric,
-        radialHour=radialHour,
-        radialMinute=radialMinute,
-        description=description,
+        concentric=draw(integers(min_value=0, max_value=12)),
+        radialHour=draw(integers(min_value=1, max_value=12)),
+        radialMinute=draw(integers(min_value=0, max_value=59)),
+        description=draw(text()),
     )
 
 
@@ -77,13 +72,11 @@ def addresses(draw: Callable) -> Address:
 
 @composite
 def reportEntries(draw: Callable) -> ReportEntry:
-    created   = draw(datetimes())
-    author    = draw(text(min_size=1))
-    automatic = draw(booleans())
-    entryText = draw(text(min_size=1))
-
     return ReportEntry(
-        created=created, author=author, automatic=automatic, text=entryText
+        created=draw(datetimes()),
+        author=draw(text(min_size=1)),
+        automatic=draw(booleans()),
+        text=draw(text(min_size=1)),
     )
 
 
@@ -93,9 +86,7 @@ def reportEntries(draw: Callable) -> ReportEntry:
 
 @composite
 def events(draw: Callable) -> Event:
-    id = draw(text(min_size=1))
-
-    return Event(id=id)
+    return Event(id=draw(text(min_size=1)))
 
 
 ##
@@ -109,28 +100,17 @@ def incidentSummaries(draw: Callable) -> str:
 
 @composite
 def incidents(draw: Callable) -> Incident:
-    event         = draw(events())
-    number        = draw(integers(min_value=1))
-    created       = draw(datetimes())
-    state         = draw(incidentStates())
-    priority      = draw(incidentPriorities())
-    summary       = draw(incidentSummaries())
-    location      = draw(locations())
-    rangers       = draw(iterables(rangerHandles()))
-    incidentTypes = draw(iterables(incidentTypesText()))
-    entries       = draw(iterables(reportEntries()))
-
     return Incident(
-        event=event,
-        number=number,
-        created=created,
-        state=state,
-        priority=priority,
-        summary=summary,
-        location=location,
-        rangers=rangers,
-        incidentTypes=incidentTypes,
-        reportEntries=entries,
+        event=draw(events()),
+        number=draw(integers(min_value=1)),
+        created=draw(datetimes()),
+        state=draw(incidentStates()),
+        priority=draw(incidentPriorities()),
+        summary=draw(incidentSummaries()),
+        location=draw(locations()),
+        rangers=draw(iterables(rangerHandles())),
+        incidentTypes=draw(iterables(incidentTypesText())),
+        reportEntries=draw(iterables(reportEntries())),
     )
 
 
@@ -140,10 +120,7 @@ def incidents(draw: Callable) -> Incident:
 
 @composite
 def locations(draw: Callable) -> Location:
-    name    = draw(text())
-    address = draw(addresses())
-
-    return Location(name=name, address=address)
+    return Location(name=draw(text()), address=draw(addresses()))
 
 
 ##
@@ -170,19 +147,15 @@ def rangerHandles(draw: Callable) -> str:
 
 @composite
 def incidentReports(draw: Callable) -> IncidentReport:
-    number  = draw(integers(min_value=1))
-    created = draw(datetimes())
-    summary = draw(text(min_size=1))
-
     entries = tuple(sorted(
         draw(reportEntries())
         for i in range(draw(integers(min_value=0, max_value=10)))
     ))
 
     return IncidentReport(
-        number=number,
-        created=created,
-        summary=summary,
+        number=draw(integers(min_value=1)),
+        created=draw(datetimes()),
+        summary=draw(text(min_size=1)),
         reportEntries=entries,
     )
 
