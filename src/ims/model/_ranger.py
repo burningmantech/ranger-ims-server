@@ -59,10 +59,12 @@ class Ranger(object):
     specific to a Black Rock Ranger.
     """
 
+    # FIXME: better validator for email
+
     handle   = attrib(validator=true(instanceOf(str)))
     name     = attrib(validator=true(instanceOf(str)))
     status   = attrib(validator=instanceOf(RangerStatus))
-    email    = attrib(validator=instanceOf(Iterable))  # FIXME: validator
+    email    = attrib(validator=instanceOf(Iterable), convert=frozenset)
     onSite   = attrib(validator=instanceOf(bool))
     dmsID    = attrib(validator=optional(instanceOf(int)))
     password = attrib(validator=optional(instanceOf(str)))

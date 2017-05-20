@@ -27,7 +27,7 @@ from ._event import Event
 from ._location import Location
 from ._priority import IncidentPriority
 from ._state import IncidentState
-from ..ext.attr import attrib, attrs, instanceOf, optional
+from ..ext.attr import attrib, attrs, instanceOf, optional, sortedTuple
 
 
 __all__ = ()
@@ -40,18 +40,25 @@ class Incident(object):
     Incident
     """
 
-    # FIXME: validator for IterableABC attrs
+    # FIXME: better validator for IterableABC attrs
 
-    event         = attrib(validator=instanceOf(Event))
-    number        = attrib(validator=instanceOf(int))
-    created       = attrib(validator=instanceOf(DateTime))
-    state         = attrib(validator=instanceOf(IncidentState))
-    priority      = attrib(validator=instanceOf(IncidentPriority))
-    summary       = attrib(validator=optional(instanceOf(str)))
-    rangers       = attrib(validator=instanceOf(IterableABC))
-    incidentTypes = attrib(validator=instanceOf(IterableABC))
-    location      = attrib(validator=instanceOf(Location))
-    reportEntries = attrib(validator=instanceOf(IterableABC))
+    event    = attrib(validator=instanceOf(Event))
+    number   = attrib(validator=instanceOf(int))
+    created  = attrib(validator=instanceOf(DateTime))
+    state    = attrib(validator=instanceOf(IncidentState))
+    priority = attrib(validator=instanceOf(IncidentPriority))
+    summary  = attrib(validator=optional(instanceOf(str)))
+    location = attrib(validator=instanceOf(Location))
+
+    rangers = attrib(
+        validator=instanceOf(IterableABC), convert=frozenset
+    )
+    incidentTypes = attrib(
+        validator=instanceOf(IterableABC), convert=frozenset
+    )
+    reportEntries = attrib(
+        validator=instanceOf(IterableABC), convert=sortedTuple
+    )
 
 
     def __str__(self) -> str:

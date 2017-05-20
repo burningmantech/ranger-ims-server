@@ -22,7 +22,7 @@ from collections.abc import Iterable
 from datetime import datetime as DateTime
 
 from ._incident import summaryFromReport
-from ..ext.attr import attrib, attrs, instanceOf, optional
+from ..ext.attr import attrib, attrs, instanceOf, optional, sortedTuple
 
 
 __all__ = ()
@@ -35,10 +35,12 @@ class IncidentReport(object):
     Incident
     """
 
+    # FIXME: better validator for reportEntries
+
     number        = attrib(validator=instanceOf(int))
     created       = attrib(validator=instanceOf(DateTime))
     summary       = attrib(validator=optional(instanceOf(str)))
-    reportEntries = attrib(validator=instanceOf(Iterable))  # FIXME: validator
+    reportEntries = attrib(validator=instanceOf(Iterable), convert=sortedTuple)
 
 
     def __str__(self) -> str:
