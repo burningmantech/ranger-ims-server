@@ -27,7 +27,7 @@ class EnumOrderingTests(TestCase):
     Tests for :func:`enumOrdering`.
     """
 
-    def test_equal(self):
+    def test_equal(self) -> None:
         """
         :func:`enumOrdering` sets ``__eq__``.
         """
@@ -42,7 +42,7 @@ class EnumOrderingTests(TestCase):
         self.assertFalse(Thing.second.__eq__(self))
 
 
-    def test_notEqual(self):
+    def test_notEqual(self) -> None:
         """
         :func:`enumOrdering` sets ``__ne__``.
         """
@@ -57,7 +57,7 @@ class EnumOrderingTests(TestCase):
         self.assertTrue(Thing.second.__ne__(self))
 
 
-    def test_lessThan(self):
+    def test_lessThan(self) -> None:
         """
         :func:`enumOrdering` sets ``__lt__``.
         """
@@ -72,7 +72,7 @@ class EnumOrderingTests(TestCase):
         self.assertIdentical(Thing.second.__lt__(self), NotImplemented)
 
 
-    def test_lessThanOrEqual(self):
+    def test_lessThanOrEqual(self) -> None:
         """
         :func:`enumOrdering` sets ``__le__``.
         """
@@ -87,7 +87,7 @@ class EnumOrderingTests(TestCase):
         self.assertIdentical(Thing.second.__le__(self), NotImplemented)
 
 
-    def test_greaterThan(self):
+    def test_greaterThan(self) -> None:
         """
         :func:`enumOrdering` sets ``__gt__``.
         """
@@ -102,7 +102,7 @@ class EnumOrderingTests(TestCase):
         self.assertIdentical(Thing.second.__gt__(self), NotImplemented)
 
 
-    def test_greaterThanOrEqual(self):
+    def test_greaterThanOrEqual(self) -> None:
         """
         :func:`enumOrdering` sets ``__ge__``.
         """
