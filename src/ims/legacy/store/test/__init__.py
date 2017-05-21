@@ -15,5 +15,5 @@
 ##
 
 """
-Tests for L{ims.store}.
+Tests for L{ims.legacy.store}.
 """

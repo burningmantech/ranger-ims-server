@@ -31,7 +31,6 @@ mypy "$@"                                                                  \
         -e '^src/ims/element/.*: error: Function is missing a type annotation'      \
         -e '^src/ims/service/.*: error: Function is missing a type annotation'      \
         -e '^src/ims/service/.*: error: Need type annotation for variable'          \
-        -e '^src/ims/store/.*: error: Function is missing a type annotation'        \
         > "${tmp}" || true;
 
 sort < "${tmp}";

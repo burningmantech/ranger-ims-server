@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for L{ims.store.file}.
+Tests for L{ims.legacy.store.file}.
 """
 
 from datetime import datetime as DateTime, timezone as TimeZone
@@ -25,13 +25,11 @@ from twisted.python.filepath import FilePath
 
 from .._file import ReadOnlyStorage, Storage, eTagHash
 from ..istore import NoSuchIncidentError, StorageError
-from ...legacy.data.json import (
+from ...data.json import (
     incidentAsJSON, incidentFromJSON, jsonTextFromObject, objectFromJSONText
 )
-from ...legacy.data.model import Incident, IncidentState, ReportEntry
-from ...legacy.data.test.test_model import (
-    location_man, location_tokyo, location_zero
-)
+from ...data.model import Incident, IncidentState, ReportEntry
+from ...data.test.test_model import location_man, location_tokyo, location_zero
 
 
 __all__ = ()
@@ -40,7 +38,7 @@ __all__ = ()
 
 class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
     """
-    Tests for L{ims.store.ReadOnlyStorage}
+    Tests for L{ims.legacy.store.ReadOnlyStorage}
     """
 
     def storage(self, provisioned=True, data=None):
@@ -388,7 +386,7 @@ class ReadOnlyStorageTests(twisted.trial.unittest.TestCase):
 
 class StorageTests(twisted.trial.unittest.TestCase):
     """
-    Tests for L{ims.store.Storage}
+    Tests for L{ims.legacy.store.Storage}
     """
 
     def storage(self, provisioned=True, data=None, fp=None):

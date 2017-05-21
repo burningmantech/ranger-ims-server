@@ -24,11 +24,11 @@ from twisted.logger import Logger
 from twisted.python.filepath import UnlistableError
 
 from .istore import NoSuchIncidentError, StorageError
-from ..legacy.data.json import (
+from ..data.json import (
     incidentAsJSON, incidentFromJSON, jsonTextFromObject,
     objectFromJSONBytesIO, rfc3339TextAsDateTime,
 )
-from ..legacy.data.model import IncidentState, InvalidDataError
+from ..data.model import IncidentState, InvalidDataError
 
 
 __all__ = (

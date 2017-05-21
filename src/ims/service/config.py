@@ -28,7 +28,7 @@ from twisted.python.filepath import FilePath
 
 from ..dms import DirectoryService, DutyManagementSystem
 from ..legacy.data.json import jsonTextFromObject, objectFromJSONBytesIO
-from ..store.sqlite import Storage
+from ..legacy.store.sqlite import Storage
 
 
 __all__ = (

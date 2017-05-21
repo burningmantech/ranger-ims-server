@@ -32,7 +32,7 @@ from ..model import (
     Incident, IncidentState, InvalidDataError, Location, Ranger, ReportEntry,
     RodGarettAddress, TextOnlyAddress,
 )
-from ....store.test.test_file import time1, time2
+from ...store.test.test_file import time1, time2
 
 
 __all__ = ()
