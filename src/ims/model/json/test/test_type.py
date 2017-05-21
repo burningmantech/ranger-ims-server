@@ -20,10 +20,10 @@ Tests for :mod:`ranger-ims-server.model.json._type`
 
 from hypothesis import given
 
-from .json import jsonFromIncidentType
+from .json import jsonFromKnownIncidentType
 from .strategies import incidentTypes
 from .._json import jsonDeserialize, jsonSerialize
-from ..._type import IncidentType
+from ..._type import KnownIncidentType
 from ....ext.trial import TestCase
 
 
@@ -31,34 +31,37 @@ __all__ = ()
 
 
 
-class IncidentTypeSerializationTests(TestCase):
+class KnownIncidentTypeSerializationTests(TestCase):
     """
-    Tests for serialization of :class:`IncidentType`.
+    Tests for serialization of :class:`KnownIncidentType`.
     """
 
     @given(incidentTypes())
-    def test_serialize(self, incidentType: IncidentType) -> None:
+    def test_serialize(self, incidentType: KnownIncidentType) -> None:
         """
         :func:`jsonSerialize` returns the value of the given incident
         type.
         """
         self.assertEqual(
-            jsonSerialize(incidentType), jsonFromIncidentType(incidentType)
+            jsonSerialize(incidentType),
+            jsonFromKnownIncidentType(incidentType)
         )
 
 
 
-class IncidentTypeDeserializationTests(TestCase):
+class KnownIncidentTypeDeserializationTests(TestCase):
     """
-    Tests for deserialization of :class:`IncidentType`.
+    Tests for deserialization of :class:`KnownIncidentType`.
     """
 
     @given(incidentTypes())
-    def test_deserialize(self, incidentType: IncidentType) -> None:
+    def test_deserialize(self, incidentType: KnownIncidentType) -> None:
         """
         :func:`jsonDeserialize` returns the incident type with the given value.
         """
         self.assertIdentical(
-            jsonDeserialize(jsonFromIncidentType(incidentType), IncidentType),
+            jsonDeserialize(
+                jsonFromKnownIncidentType(incidentType), KnownIncidentType
+            ),
             incidentType,
         )

@@ -34,7 +34,7 @@ from ..._location import Location
 from ..._priority import IncidentPriority
 from ..._report import IncidentReport
 from ..._state import IncidentState
-from ..._type import IncidentType
+from ..._type import KnownIncidentType
 
 
 __all__ = ()
@@ -174,5 +174,5 @@ def incidentTypesText(draw: Callable) -> str:
 
 
 @composite
-def incidentTypes(draw: Callable) -> IncidentType:
-    return draw(sampledFrom(IncidentType))
+def incidentTypes(draw: Callable) -> KnownIncidentType:
+    return draw(sampledFrom(KnownIncidentType))

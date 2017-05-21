@@ -29,7 +29,7 @@ from ..._location import Location
 from ..._priority import IncidentPriority
 from ..._report import IncidentReport
 from ..._state import IncidentState
-from ..._type import IncidentType
+from ..._type import KnownIncidentType
 
 
 __all__ = ()
@@ -151,5 +151,5 @@ def jsonFromIncidentState(state: IncidentState) -> str:
 # Type
 ##
 
-def jsonFromIncidentType(incidentType: IncidentType) -> str:
+def jsonFromKnownIncidentType(incidentType: KnownIncidentType) -> str:
     return incidentType.value
