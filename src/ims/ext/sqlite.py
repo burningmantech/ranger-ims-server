@@ -1,0 +1,230 @@
+# -*- test-case-name: ranger-ims-server.ext.test.test_sqlite -*-
+"""
+SQLite utilities
+"""
+
+from pathlib import Path
+from sqlite3 import (
+    Cursor, Error as SQLiteError, Row as BaseRow, connect as sqliteConnect
+)
+from typing import Any, Iterable, Mapping, Optional, Tuple, TypeVar
+from typing.io import TextIO
+
+from attr import attrib, attrs
+
+from twisted.logger import Logger
+
+from .attr import instanceOf, optional
+
+
+__all__ = ()
+
+
+TConnection = TypeVar("TConnection", bound="Connection")
+
+
+
+class Row(BaseRow):
+    """
+    Subclass of :class:`sqlite3.Row` that has a :class:`dict`-like ``get``
+    method.
+    """
+
+    def get(self, key: str, default: Any = None) -> Any:
+        if key in self.keys():
+            return self[key]
+        else:
+            return default
+
+
+
+@attrs(frozen=True)
+class Connection(object):
+    """
+    (Incomplete) stand-in for :class:`sqlite3.Connection`.
+
+    This class adds logging of SQL statements for debugging purposes.
+    """
+
+    # This would probably be a lot simpler if it were possible to subclass
+    # sqlite3.Connection.
+
+    log = Logger()
+
+    @attrs(frozen=False)
+    class State(object):
+        """
+        Internal mutable state for :class:`Connection`.
+        """
+
+        db = attrib(init=False)
+
+    _database = attrib(validator=optional(instanceOf(str)))
+
+    _state = attrib(default=State(), init=False)
+
+
+    def __attrs_post_init__(self) -> None:
+        db = sqliteConnect(self._database)
+        db.row_factory = Row
+        db.execute("pragma foreign_keys = ON")
+
+        self._state.db = db
+
+
+    def commit(self) -> None:
+        self.log.debug("COMMIT")
+        self._state.db.commit()
+
+
+    def executescript(self, sql_script: str) -> Cursor:
+        self.log.debug("EXECUTE SCRIPT:\n{script}", script=sql_script)
+        return self._state.db.executescript(sql_script)
+
+
+    def execute(self, sql: str, parameters: Mapping = None) -> Cursor:
+        if parameters is None:
+            parameters = {}
+        self.log.debug(
+            "EXECUTE: {sql} <- {parameters}", sql=sql, parameters=parameters
+        )
+        return self._state.db.execute(sql, parameters)
+
+
+    def __enter__(self: TConnection) -> TConnection:
+        self.log.debug("---------- ENTER ----------")
+        self._state.db.__enter__()
+        return self
+
+
+    def __exit__(
+        self, exc_type: type, exc_val: BaseException, exc_tb: Any
+    ) -> bool:
+        self.log.debug("---------- EXIT ----------")
+        return self._state.db.__exit__(exc_type, exc_val, exc_tb)
+
+
+
+def connect(path: Optional[Path]) -> Connection:
+    """
+    Open the database at the given path and configure it.
+    """
+    if path is None:
+        endpoint = ":memory:"
+    else:
+        endpoint = str(path)
+
+    return Connection(endpoint)
+
+
+def createDB(path: Optional[Path], schema: str) -> Connection:
+    """
+    Create a new database at the given path.
+    """
+    db = connect(path)
+
+    db.executescript(schema)
+    db.commit()
+
+    return db
+
+
+def openDB(path: Path, schema: str = None) -> Connection:
+    """
+    Open an SQLite DB with the schema for this application.
+    """
+    if path.exists():
+        return connect(path)
+
+    if schema is not None:
+        return createDB(path, schema)
+
+    raise SQLiteError("Database does not exist")
+
+
+def printSchema(db: Connection, out: TextIO) -> None:
+    """
+    Print the database schema.
+    """
+    for (tableName,) in db.execute(
+        """
+        select NAME from SQLITE_MASTER where TYPE='table' order by NAME;
+        """
+    ):
+        print("{}:".format(tableName), file=out)
+        for (
+            rowNumber, colName, colType, colNotNull, colDefault, colPK
+        ) in db.execute("pragma table_info('{}');".format(tableName)):
+            print(
+                "  {n}: {name}({type}){null}{default}{pk}".format(
+                    n=rowNumber,
+                    name=colName,
+                    type=colType,
+                    null=" not null" if colNotNull else "",
+                    default=" [{}]".format(colDefault) if colDefault else "",
+                    pk=" *{}".format(colPK) if colPK else "",
+                ),
+                file=out,
+            )
+
+
+
+@attrs(frozen=True)
+class QueryPlanExplanation(object):
+
+    @attrs(frozen=True)
+    class Line(object):
+        nestingOrder = attrib(validator=optional(instanceOf(int)))
+        selectFrom = attrib(validator=optional(instanceOf(int)))
+        details = attrib(validator=instanceOf(str))
+
+        def __str__(self) -> str:
+            return "[{},{}] {}".format(
+                self.nestingOrder, self.selectFrom, self.details
+            )
+
+
+    name = attrib(validator=instanceOf(str))
+    query = attrib(validator=instanceOf(str))
+    lines = attrib()  # FIXME: validator=instanceOf(Iterable[Line])
+
+
+    def __str__(self) -> str:
+        text = ["{}:".format(self.name), "", "  -- query --", ""]
+
+        text.extend(
+            "    {}".format(l)
+            for l in self.query.strip().split("\n")
+        )
+
+        if self.lines:
+            text.extend(("", "  -- query plan --", ""))
+            text.extend("    {}".format(line) for line in self.lines)
+
+        return "\n".join(text)
+
+
+
+def explainQueryPlans(
+    db: Connection, queries: Iterable[Tuple[str, str]]
+) -> Iterable[QueryPlanExplanation]:
+
+    for query, name in queries:
+        params = dict((x, x) for x in range(query.count(":")))  # Dummy params
+        try:
+            lines = (
+                QueryPlanExplanation.Line(
+                    nestingOrder, selectFrom, details
+                )
+                for n, nestingOrder, selectFrom, details in (
+                    db.execute("explain query plan {}".format(query), params)
+                )
+            )  # type: Iterable[QueryPlanExplanation.Line]
+        except SQLiteError as e:
+            lines = (
+                QueryPlanExplanation.Line(
+                    None, None, "{}".format(e),
+                ),
+            )
+
+        yield QueryPlanExplanation(name, query, lines)
