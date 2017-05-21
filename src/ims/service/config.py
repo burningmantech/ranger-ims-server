@@ -18,7 +18,7 @@
 Server
 """
 
-from configparser import NoOptionError, NoSectionError, SafeConfigParser
+from configparser import ConfigParser, NoOptionError, NoSectionError
 from os import getcwd
 from os.path import basename, sep as pathsep
 from sys import argv
@@ -80,7 +80,7 @@ class Configuration (object):
         """
         command = basename(argv[0])
 
-        configParser = SafeConfigParser()
+        configParser = ConfigParser()
 
         def readConfig(configFile):
             if configFile is None:

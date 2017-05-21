@@ -29,9 +29,6 @@ matrix:
 
   allow_failures:
     # Needs work
-    - env: TOXENV=mypy
-
-    # Needs work
     - env: TOXENV=docs
 
 

@@ -23,8 +23,6 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
     Decorate an `Enum` class to add comparison methods that order instances in
     the order that they were enumerated.
     """
-    enumClass = cast(Iterable, enumClass)
-
     def equal(self, other: Any) -> bool:
         return self is other
 
@@ -32,11 +30,11 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
         return self is not other
 
     def compare(self, other: Any, lessThan: bool) -> bool:
-        if other in enumClass:
-            for incidentPriority in enumClass:
-                if incidentPriority is self:
+        if other in cast(Iterable, enumClass):
+            for enumInstance in cast(Iterable, enumClass):
+                if enumInstance is self:
                     return lessThan
-                elif incidentPriority is other:
+                elif enumInstance is other:
                     return not lessThan
 
         return NotImplemented
