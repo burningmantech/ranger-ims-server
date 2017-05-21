@@ -18,7 +18,7 @@
 Server
 """
 
-from configparser import NoOptionError, NoSectionError, ConfigParser
+from configparser import ConfigParser, NoOptionError, NoSectionError
 from os import getcwd
 from os.path import basename, sep as pathsep
 from sys import argv
