@@ -24,12 +24,12 @@ import twisted.trial.unittest
 from twisted.python.filepath import FilePath
 
 from .._file import ReadOnlyStorage, Storage, eTagHash
-from ..istore import NoSuchIncidentError, StorageError
 from ...data.json import (
     incidentAsJSON, incidentFromJSON, jsonTextFromObject, objectFromJSONText
 )
 from ...data.model import Incident, IncidentState, ReportEntry
 from ...data.test.test_model import location_man, location_tokyo, location_zero
+from ....store import NoSuchIncidentError, StorageError
 
 
 __all__ = ()

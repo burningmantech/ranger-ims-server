@@ -32,12 +32,12 @@ from twisted.python.constants import NamedConstant
 from twisted.python.filepath import FilePath
 
 from ._file import MultiStorage
-from .istore import StorageError
 from ..data.json import incidentFromJSON, objectFromJSONBytesIO
 from ..data.model import (
     Event, Incident, IncidentReport, IncidentState, IncidentType,
     InvalidDataError, Location, Ranger, ReportEntry, RodGarettAddress,
 )
+from ...store import StorageError
 
 
 __all__ = (

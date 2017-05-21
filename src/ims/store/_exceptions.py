@@ -15,13 +15,10 @@
 ##
 
 """
-Incident Management System storage interface.
+Incident Management System data store exceptions.
 """
 
-__all__ = (
-    "StorageError",
-    "NoSuchIncidentError",
-)
+__all__ = ()
 
 
 

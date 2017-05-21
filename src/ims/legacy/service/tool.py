@@ -30,8 +30,8 @@ from .config import Configuration
 from .log import patchCombinedLogFormatter
 from .service import WebService
 from ..data.model import Event
-from ..store.istore import StorageError
 from ..store.sqlite import Storage
+from ...store import StorageError
 
 
 __all__ = (
