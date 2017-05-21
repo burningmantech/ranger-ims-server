@@ -22,9 +22,16 @@ mypy "$@"                                                                  \
         -e ': error: Unexpected keyword argument '                         \
         -e ': error: "JSONDecodeError" has no attribute'                   \
         -e ': error: Callable\[\[[^\]*\], None\] has no attribute "todo"'  \
+        -e '^src/ims/data/.*: error: Function is missing a type annotation'         \
+        -e '^src/ims/data/.*: error: Function is missing a return type annotation'  \
+        -e '^src/ims/dms/.*: error: Function is missing a type annotation'          \
+        -e '^src/ims/element/.*: error: Function is missing a type annotation'      \
+        -e '^src/ims/service/.*: error: Function is missing a type annotation'      \
+        -e '^src/ims/service/.*: error: Need type annotation for variable'          \
+        -e '^src/ims/store/.*: error: Function is missing a type annotation'        \
         > "${tmp}" || true;
 
-cat "${tmp}";
+sort < "${tmp}";
 
 if grep -e ": error: " "${tmp}" > /dev/null; then
   exit 1;
