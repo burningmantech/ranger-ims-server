@@ -25,8 +25,10 @@ from hypothesis import given
 from hypothesis.extra.datetime import datetimes
 from hypothesis.strategies import floats, integers, text
 
-from .._json import jsonDeserialize, jsonSerialize
-from ....ext.json import dateTimeAsRFC3339Text
+from .strategies import incidents
+from .._json import jsonDeserialize, jsonSerialize, jsonTextFromModelObject
+from ..._incident import Incident
+from ....ext.json import dateTimeAsRFC3339Text, jsonTextFromObject
 from ....ext.trial import TestCase
 
 
@@ -181,3 +183,20 @@ class POPODeserializationTests(TestCase):
         :func:`jsonDeserialize` correctly deserializes a :class:`DateTime`.
         """
         self._test_equal(value)
+
+
+
+class ModelSerializationTests(TestCase):
+    """
+    Tests for serialization of model objects
+    """
+
+    @given(incidents())
+    def test_incident(self, incident: Incident) -> None:
+        """
+        :func:`jsonTextFromModelObject` serializes an incident as JSON text.
+        """
+        self.assertEqual(
+            jsonTextFromModelObject(incident),
+            jsonTextFromObject(jsonSerialize(incident))
+        )
