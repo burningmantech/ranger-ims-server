@@ -26,8 +26,8 @@ from sys import argv
 from twisted.logger import Logger
 from twisted.python.filepath import FilePath
 
-from ..data.json import jsonTextFromObject, objectFromJSONBytesIO
 from ..dms import DirectoryService, DutyManagementSystem
+from ..legacy.data.json import jsonTextFromObject, objectFromJSONBytesIO
 from ..store.sqlite import Storage
 
 

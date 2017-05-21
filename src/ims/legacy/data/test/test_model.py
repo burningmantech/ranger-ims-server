@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for L{ims.data.model}.
+Tests for L{ims.legacy.data.model}.
 """
 
 from datetime import datetime as DateTime, timezone as TimeZone

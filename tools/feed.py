@@ -17,7 +17,7 @@
 import sys
 from csv import reader as CSVReader
 
-from ims.data import Location, RodGarettAddress
+from ims.legacy.data import Location, RodGarettAddress
 from ims.json import locationAsJSON, jsonTextFromObject
 
 

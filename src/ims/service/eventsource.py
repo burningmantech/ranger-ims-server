@@ -25,8 +25,8 @@ from twisted.logger import ILogObserver, Logger
 
 from zope.interface import implementer
 
-from ..data.json import jsonTextFromObject
-from ..data.model import Incident
+from ..legacy.data.json import jsonTextFromObject
+from ..legacy.data.model import Incident
 
 
 __all__ = (

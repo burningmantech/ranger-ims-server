@@ -20,7 +20,7 @@ Tests for L{tools.feed}.
 
 import twisted.trial.unittest
 
-from ims.data import Location, RodGarettAddress
+from ims.legacy.data import Location, RodGarettAddress
 
 from tools.feed import parseLocation
 

@@ -28,13 +28,15 @@ from .error import NotAuthorizedError
 from .http import ContentType, HeaderName, staticResource
 from .klein import route
 from .urls import URLs
-from ..data.json import (
+from ..dms import DMSError
+from ..legacy.data.json import (
     JSON, incidentAsJSON, incidentFromJSON, incidentReportAsJSON,
     incidentReportFromJSON, jsonTextFromObject, objectFromJSONBytesIO,
     rangerAsJSON,
 )
-from ..data.model import Event, IncidentState, InvalidDataError, ReportEntry
-from ..dms import DMSError
+from ..legacy.data.model import (
+    Event, IncidentState, InvalidDataError, ReportEntry
+)
 
 
 __all__ = (

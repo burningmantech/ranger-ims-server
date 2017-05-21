@@ -15,5 +15,5 @@
 ##
 
 """
-Tests for L{ims.data}.
+Tests for L{ims.legacy.data}.
 """

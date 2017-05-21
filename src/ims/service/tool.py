@@ -29,7 +29,7 @@ from twisted.web.server import Session, Site
 from .config import Configuration
 from .log import patchCombinedLogFormatter
 from .service import WebService
-from ..data.model import Event
+from ..legacy.data.model import Event
 from ..store.istore import StorageError
 from ..store.sqlite import Storage
 

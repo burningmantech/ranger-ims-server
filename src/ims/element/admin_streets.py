@@ -19,7 +19,7 @@ Admin streets page.
 """
 
 from .base import Element, renderer
-from ..data.json import jsonTextFromObject
+from ..legacy.data.json import jsonTextFromObject
 
 __all__ = (
     "AdminStreetsPage",

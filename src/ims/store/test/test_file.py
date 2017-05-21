@@ -25,11 +25,11 @@ from twisted.python.filepath import FilePath
 
 from .._file import ReadOnlyStorage, Storage, eTagHash
 from ..istore import NoSuchIncidentError, StorageError
-from ...data.json import (
+from ...legacy.data.json import (
     incidentAsJSON, incidentFromJSON, jsonTextFromObject, objectFromJSONText
 )
-from ...data.model import Incident, IncidentState, ReportEntry
-from ...data.test.test_model import (
+from ...legacy.data.model import Incident, IncidentState, ReportEntry
+from ...legacy.data.test.test_model import (
     location_man, location_tokyo, location_zero
 )
 
