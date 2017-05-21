@@ -54,7 +54,7 @@ class ConnectionTests(TestCase):
                 unique (NAME)
             );
             insert into PERSON (NAME) values ('John Doe');
-            """[1:]
+            """
         )
 
         db = createDB(None, schema=schema)
@@ -104,7 +104,7 @@ class ConnectionTests(TestCase):
                 primary key (ID),
                 unique (NAME)
             );
-            """[1:]
+            """
         )
 
         db = createDB(None, schema=schema)
@@ -118,8 +118,8 @@ class ConnectionTests(TestCase):
                 PERSON:
                   0: ID(integer) not null *1
                   1: NAME(text) not null
-                """
-            )[1:]
+                """[1:]
+            )
         )
 
 
@@ -247,7 +247,7 @@ class DebugToolsTests(TestCase):
                 unique (NAME)
             );
             insert into PERSON (NAME) values ('John Doe');
-            """[1:]
+            """
         )
 
         db = createDB(None, schema=schema)
