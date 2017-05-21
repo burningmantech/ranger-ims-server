@@ -114,9 +114,12 @@ package_data = dict(
 setup_requirements = []
 
 install_requirements = [
+    "attr",
+    "arrow",
     "Twisted>=16.6.0",
     "klein",
     "PyMySQL",
+    "twextpy",
 ]
 
 extras_requirements = {}
