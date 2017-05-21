@@ -15,21 +15,22 @@
 ##
 
 """
-Admin streets page.
+Admin incident types page.
 """
 
 from .base import Element, renderer
-from ..legacy.data.json import jsonTextFromObject
+from ..data.json import jsonTextFromObject
+
 
 __all__ = (
-    "AdminStreetsPage",
+    "AdminIncidentTypesPage",
 )
 
 
 
-class AdminStreetsPage(Element):
+class AdminIncidentTypesPage(Element):
     """
-    Admin streets page.
+    Admin incident types page.
     """
 
     def __init__(self, service):
@@ -37,8 +38,7 @@ class AdminStreetsPage(Element):
         @param service: The service.
         """
         Element.__init__(
-            self, "admin_streets", service,
-            title="Admin: Event Concentric Streets",
+            self, "admin_types", service, title="Admin: Incident Types"
         )
 
 

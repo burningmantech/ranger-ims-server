@@ -38,8 +38,8 @@ from ims import __version__ as version
 from .error import NotAuthenticatedError, NotAuthorizedError
 from .http import ContentType, HeaderName
 from .urls import URLs
-from ..dms import DMSError
 from ..element.redirect import RedirectPage
+from ...dms import DMSError
 
 
 __all__ = (

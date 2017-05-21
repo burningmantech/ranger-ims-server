@@ -29,9 +29,9 @@ from twisted.web.server import Session, Site
 from .config import Configuration
 from .log import patchCombinedLogFormatter
 from .service import WebService
-from ..legacy.data.model import Event
-from ..legacy.store.istore import StorageError
-from ..legacy.store.sqlite import Storage
+from ..data.model import Event
+from ..store.istore import StorageError
+from ..store.sqlite import Storage
 
 
 __all__ = (

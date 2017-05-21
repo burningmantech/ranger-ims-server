@@ -80,12 +80,12 @@ entry_points = {
 }
 
 script_entry_points = {
-    "web"         : ("ims.service.tool", "WebTool.main"),
-    "endpoints"   : ("ims.service.tool", "KleinTool.main"),
+    "web"         : ("ims.legacy.service.tool", "WebTool.main"),
+    "endpoints"   : ("ims.legacy.service.tool", "KleinTool.main"),
     "schema"      : ("ims.legacy.store.sqlite", "Storage.printSchema"),
     "queries"     : ("ims.legacy.store.sqlite", "Storage.printQueries"),
-    "load_legacy" : ("ims.service.tool", "LegacyLoadTool.main"),
-    "load_json"   : ("ims.service.tool", "JSONLoadTool.main"),
+    "load_legacy" : ("ims.legacy.service.tool", "LegacyLoadTool.main"),
+    "load_json"   : ("ims.legacy.service.tool", "JSONLoadTool.main"),
 }
 
 for tool, (module, function) in script_entry_points.items():
@@ -100,9 +100,9 @@ for tool, (module, function) in script_entry_points.items():
 
 package_data = dict(
     ims = [
-        "service/test/empty.conf",
-        "service/test/test.conf",
-        "store/schema.sqlite",
+        "legacy/service/test/empty.conf",
+        "legacy/service/test/test.conf",
+        "legacy/store/schema.sqlite",
     ],
 )
 

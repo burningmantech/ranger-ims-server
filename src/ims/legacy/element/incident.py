@@ -19,7 +19,7 @@ Incident page.
 """
 
 from .base import Element, renderer
-from ..legacy.data.json import jsonTextFromObject
+from ..data.json import jsonTextFromObject
 from ..service.auth import Authorization
 from ..service.urls import URLs
 

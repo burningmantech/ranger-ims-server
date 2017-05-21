@@ -24,6 +24,7 @@ from .auth import Authorization
 from .http import ContentType, HeaderName, staticResource
 from .klein import route
 from .urls import URLs
+from ..data.model import Event
 from ..element.admin import AdminPage
 from ..element.admin_acl import AdminAccessControlPage
 from ..element.admin_streets import AdminStreetsPage
@@ -35,7 +36,6 @@ from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.report import IncidentReportPage
 from ..element.report_template import IncidentReportTemplatePage
 from ..element.root import RootPage
-from ..legacy.data.model import Event
 
 
 __all__ = (

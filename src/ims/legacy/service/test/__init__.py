@@ -15,5 +15,5 @@
 ##
 
 """
-Tests for L{ims.service}.
+Tests for L{ims.legacy.service}.
 """
