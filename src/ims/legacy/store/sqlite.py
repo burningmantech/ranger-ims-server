@@ -1873,7 +1873,12 @@ class Row(LameRow):
 
 
 def loadSchema():
-    fp = FilePath(__file__).parent().child("schema.sqlite")
+    fp = (
+        FilePath(__file__)
+        .parent().parent().parent()
+        .child("store").child("sqlite")
+        .child("schema.sqlite")
+    )
     return fp.getContent().decode("utf-8")
 
 

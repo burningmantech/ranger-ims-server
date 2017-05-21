@@ -102,7 +102,7 @@ package_data = dict(
     ims = [
         "legacy/service/test/empty.conf",
         "legacy/service/test/test.conf",
-        "legacy/store/schema.sqlite",
+        "store/sqlite/schema.sqlite",
     ],
 )
 
