@@ -22,8 +22,8 @@ Setuptools configuration
 
 import sys
 
-if sys.version_info < (3, 5, 0):
-    sys.stderr.write("ERROR: Python 3.5 or later is required.\n")
+if sys.version_info < (3, 6, 0):
+    sys.stderr.write("ERROR: Python 3.6 or later is required.\n")
     exit(1)
 
 from pathlib import Path  # noqa

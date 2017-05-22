@@ -34,7 +34,7 @@ def serializeEvent(event: Event) -> str:
 registerSerializer(Event, serializeEvent)
 
 
-def deserializeEvent(cl: Type, obj: str) -> Event:
+def deserializeEvent(obj: str, cl: Type) -> Event:
     assert cl is Event, (cl, obj)
 
     return Event(id=obj)

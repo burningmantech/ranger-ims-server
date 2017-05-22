@@ -34,9 +34,7 @@ __all__ = ()
 
 
 
-def deserializeLocation(
-    cl: Type, obj: Dict[str, Any]
-) -> Location:
+def deserializeLocation(obj: Dict[str, Any], cl: Type) -> Location:
     assert cl is Location, (cl, obj)
 
     jsonAddress = obj["address"]
