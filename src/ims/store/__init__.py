@@ -15,13 +15,15 @@
 ##
 
 """
-Incident Management System data storage.
+Incident Management System data store.
 """
 
+from ._abc import IMSDataStore
 from ._exceptions import NoSuchIncidentError, StorageError
 
 
 __all__ = (
+    "IMSDataStore",
     "NoSuchIncidentError",
     "StorageError",
 )
