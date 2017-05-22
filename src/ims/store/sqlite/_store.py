@@ -25,8 +25,11 @@ from typing.io import TextIO
 from twisted.logger import Logger
 
 from .._abc import IMSDataStore
-from ...ext.attr import attrib, attrs, instanceOf
-from ...ext.sqlite import createDB, printSchema
+from .._exceptions import StorageError
+from ...ext.attr import attrib, attrs, instanceOf, optional
+from ...ext.sqlite import (
+    Connection, SQLiteError, createDB, openDB, printSchema
+)
 from ...model import Event, Incident, Ranger
 
 
@@ -43,7 +46,19 @@ class DataStore(IMSDataStore):
     _log = Logger()
     _schema = None
 
+    @attrs(frozen=False)
+    class State(object):
+        """
+        Internal mutable state for :class:`Connection`.
+        """
+
+        db = attrib(
+            validator=optional(instanceOf(Connection)),
+            default=None, init=False,
+        )
+
     dbPath = attrib(validator=instanceOf(Path))
+    _state = attrib(default=State(), init=False)
 
 
     @classmethod
@@ -62,6 +77,18 @@ class DataStore(IMSDataStore):
         """
         with createDB(None, cls._loadSchema()) as db:
             printSchema(db, out=out)
+
+
+    @property
+    def _db(self) -> Connection:
+        if self._state.db is None:
+            try:
+                db = openDB(self.dbPath, schema=self._schema)
+            except SQLiteError as e:
+                raise StorageError(e)
+            self._state.db = db
+
+        return self._state.db
 
 
     async def events(self) -> Iterable[Event]:

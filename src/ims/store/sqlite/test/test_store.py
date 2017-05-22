@@ -23,6 +23,7 @@ from pathlib import Path
 from textwrap import dedent
 
 from .._store import DataStore
+from ....ext.sqlite import Connection
 from ....ext.trial import TestCase
 
 
@@ -131,6 +132,14 @@ class DataStoreTests(TestCase):
                 """[1:]
             )
         )
+
+
+    def test_db(self) -> None:
+        """
+        :meth:`DataStore._db` returns a :class:`Connection`.
+        """
+        store = self.store()
+        self.assertIsInstance(store._db, Connection)
 
 
     def test_events(self) -> None:
