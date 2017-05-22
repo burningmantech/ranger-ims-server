@@ -56,7 +56,7 @@ class Connection(object):
     # This would probably be a lot simpler if it were possible to subclass
     # sqlite3.Connection.
 
-    log = Logger()
+    _log = Logger()
 
     @attrs(frozen=False)
     class State(object):
@@ -83,7 +83,7 @@ class Connection(object):
         """
         See :meth:`sqlite3.Connection.commit`.
         """
-        self.log.debug("COMMIT")
+        self._log.debug("COMMIT")
         self._state.db.commit()
 
 
@@ -91,7 +91,7 @@ class Connection(object):
         """
         See :meth:`sqlite3.Connection.executescript`.
         """
-        self.log.debug("EXECUTE SCRIPT:\n{script}", script=sql_script)
+        self._log.debug("EXECUTE SCRIPT:\n{script}", script=sql_script)
         return self._state.db.executescript(sql_script)
 
 
@@ -101,14 +101,14 @@ class Connection(object):
         """
         if parameters is None:
             parameters = {}
-        self.log.debug(
+        self._log.debug(
             "EXECUTE: {sql} <- {parameters}", sql=sql, parameters=parameters
         )
         return self._state.db.execute(sql, parameters)
 
 
     def __enter__(self: TConnection) -> TConnection:
-        self.log.debug("---------- ENTER ----------")
+        self._log.debug("---------- ENTER ----------")
         self._state.db.__enter__()
         return self
 
@@ -116,7 +116,7 @@ class Connection(object):
     def __exit__(
         self, exc_type: type, exc_val: BaseException, exc_tb: Any
     ) -> bool:
-        self.log.debug("---------- EXIT ----------")
+        self._log.debug("---------- EXIT ----------")
         return self._state.db.__exit__(exc_type, exc_val, exc_tb)
 
 
