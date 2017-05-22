@@ -17,7 +17,14 @@ from twisted.logger import Logger
 from .attr import instanceOf, optional
 
 
-__all__ = ()
+__all__ = (
+    "Connection",
+    "QueryPlanExplanation",
+    "createDB",
+    "explainQueryPlans",
+    "openDB",
+    "printSchema",
+)
 
 
 TConnection = TypeVar("TConnection", bound="Connection")
@@ -73,16 +80,25 @@ class Connection(object):
 
 
     def commit(self) -> None:
+        """
+        See :meth:`sqlite3.Connection.commit`.
+        """
         self.log.debug("COMMIT")
         self._state.db.commit()
 
 
     def executescript(self, sql_script: str) -> Cursor:
+        """
+        See :meth:`sqlite3.Connection.executescript`.
+        """
         self.log.debug("EXECUTE SCRIPT:\n{script}", script=sql_script)
         return self._state.db.executescript(sql_script)
 
 
     def execute(self, sql: str, parameters: Mapping = None) -> Cursor:
+        """
+        See :meth:`sqlite3.Connection.execute`.
+        """
         if parameters is None:
             parameters = {}
         self.log.debug(
@@ -171,9 +187,16 @@ def printSchema(db: Connection, out: TextIO) -> None:
 
 @attrs(frozen=True)
 class QueryPlanExplanation(object):
+    """
+    Container for information about a query plan.
+    """
 
     @attrs(frozen=True)
     class Line(object):
+        """
+        A line of information about a query plan.
+        """
+
         nestingOrder = attrib(validator=optional(instanceOf(int)))
         selectFrom = attrib(validator=optional(instanceOf(int)))
         details = attrib(validator=instanceOf(str))
@@ -186,7 +209,7 @@ class QueryPlanExplanation(object):
 
     name = attrib(validator=instanceOf(str))
     query = attrib(validator=instanceOf(str))
-    lines = attrib()  # FIXME: validator=instanceOf(Iterable[Line])
+    lines = attrib(validator=instanceOf(tuple))  # FIXME: Tuple[Line]
 
 
     def __str__(self) -> str:
@@ -208,23 +231,19 @@ class QueryPlanExplanation(object):
 def explainQueryPlans(
     db: Connection, queries: Iterable[Tuple[str, str]]
 ) -> Iterable[QueryPlanExplanation]:
-
+    """
+    Explain query plans for the given queries.
+    """
     for query, name in queries:
         params = dict((x, x) for x in range(query.count(":")))  # Dummy params
         try:
             lines = (
-                QueryPlanExplanation.Line(
-                    nestingOrder, selectFrom, details
-                )
+                QueryPlanExplanation.Line(nestingOrder, selectFrom, details)
                 for n, nestingOrder, selectFrom, details in (
                     db.execute("explain query plan {}".format(query), params)
                 )
             )  # type: Iterable[QueryPlanExplanation.Line]
         except SQLiteError as e:
-            lines = (
-                QueryPlanExplanation.Line(
-                    None, None, "{}".format(e),
-                ),
-            )
+            lines = (QueryPlanExplanation.Line(None, None, "{}".format(e),),)
 
         yield QueryPlanExplanation(name, query, lines)
