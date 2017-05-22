@@ -155,7 +155,7 @@ def openDB(path: Path, schema: str = None) -> Connection:
     if schema is not None:
         return createDB(path, schema)
 
-    raise SQLiteError("Database does not exist")
+    raise SQLiteError("Database does not exist: {}".format(path))
 
 
 def printSchema(db: Connection, out: TextIO) -> None:
