@@ -9,8 +9,6 @@ set -u
 
 tmp="$(mktemp -t mypy.XXXX)";
 
-# Filter out false positive errors
-
 # Bugs filed:
 # Too many arguments for: https://github.com/python/mypy/issues/2088
 # JSONDecodeError has no attribute: https://github.com/python/mypy/issues/2981

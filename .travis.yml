@@ -1,7 +1,8 @@
-language: python
-
-# We don't need sudo, and setting this to false means faster VM bootup.
+dist: trusty
 sudo: false
+
+
+language: python
 
 
 branches:
@@ -15,17 +16,14 @@ install:
 
 matrix:
   include:
-    - python: 3.5
+    - python: 3.6
       env: TOXENV=flake8
-
-    - python: 3.5
+    - python: 3.6
       env: TOXENV=mypy
-
-    - python: 3.5
+    - python: 3.6
       env: TOXENV=docs
-
-    - python: 3.5
-      env: TOXENV=py35-coverage,codecov
+    - python: 3.6
+      env: TOXENV=coverage-py36,codecov
 
   allow_failures:
     # Needs work
