@@ -19,14 +19,17 @@ Incident Management System SQLite data store.
 """
 
 from pathlib import Path
-from typing import Iterable
+from textwrap import dedent
+from typing import Any, Dict, Iterable
 from typing.io import TextIO
+
+from attr import Factory, attrib, attrs
+from attr.validators import instance_of, optional
 
 from twisted.logger import Logger
 
 from .._abc import IMSDataStore
 from .._exceptions import StorageError
-from ...ext.attr import attrib, attrs, instanceOf, optional
 from ...ext.sqlite import (
     Connection, SQLiteError, createDB, openDB, printSchema
 )
@@ -47,18 +50,18 @@ class DataStore(IMSDataStore):
     _schema = None
 
     @attrs(frozen=False)
-    class State(object):
+    class _State(object):
         """
         Internal mutable state for :class:`Connection`.
         """
 
         db = attrib(
-            validator=optional(instanceOf(Connection)),
+            validator=optional(instance_of(Connection)),
             default=None, init=False,
         )
 
-    dbPath = attrib(validator=instanceOf(Path))
-    _state = attrib(default=State(), init=False)
+    dbPath = attrib(validator=instance_of(Path))           # type: Path
+    _state = attrib(default=Factory(_State), init=False)  # type: _State
 
 
     @classmethod

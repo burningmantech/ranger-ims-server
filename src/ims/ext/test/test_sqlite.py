@@ -7,12 +7,12 @@ from io import StringIO
 from pathlib import Path
 from sqlite3 import Error as SQLiteError
 from textwrap import dedent
-from typing import Any, Generator, List, Mapping
+from typing import Any, Generator, List, Mapping, cast
 
 from attr import attrib, attrs
+from attr.validators import instance_of
 
 from .. import sqlite
-from ..attr import instanceOf
 from ..sqlite import (
     Connection, Cursor, QueryPlanExplanation,
     connect, createDB, explainQueryPlans, openDB, printSchema,
@@ -252,7 +252,7 @@ class DebugToolsTests(TestCase):
 
         db = createDB(None, schema=schema)
 
-        db._state.errors = True
+        cast(ErrneousSQLiteConnection._State, db._state).errors = True
 
         explanations = [
             str(x) for x in
@@ -280,12 +280,18 @@ class ErrneousSQLiteConnection(Connection):
     SQLite connection that raises errors for fun and profit.
     """
 
-    _err_execute = attrib(validator=instanceOf(bool), default=False)
+    @attrs(frozen=False)
+    class _State(Connection._State):
+        errors = attrib(validator=instance_of(bool), init=False)
+
+    _err_execute = attrib(
+        validator=instance_of(bool), default=False
+    )  # type: bool
 
 
     def __attrs_post_init__(self) -> None:
         Connection.__attrs_post_init__(self)
-        self._state.errors = False
+        cast(ErrneousSQLiteConnection._State, self._state).errors = False
 
 
     @contextmanager
@@ -293,21 +299,28 @@ class ErrneousSQLiteConnection(Connection):
         """
         Context manager that suspends the generation of errors.
         """
-        errors = self._state.errors
-        self._state.errors = False
+        state = cast(ErrneousSQLiteConnection._State, self._state)
+        errors = state.errors
+        state.errors = False
         yield
-        self._state.errors = errors
+        state.errors = errors
 
 
     def executescript(self, sql_script: str) -> Cursor:
-        if self._state.errors and self._err_execute:
+        if (
+            cast(ErrneousSQLiteConnection._State, self._state).errors and
+            self._err_execute
+        ):
             raise SQLiteError("executescript()")
 
         return Connection.executescript(self, sql_script)
 
 
     def execute(self, sql: str, parameters: Mapping = None) -> Cursor:
-        if self._state.errors and self._err_execute:
+        if (
+            cast(ErrneousSQLiteConnection._State, self._state).errors and
+            self._err_execute
+        ):
             raise SQLiteError("execute()")
 
         return Connection.execute(self, sql, parameters)

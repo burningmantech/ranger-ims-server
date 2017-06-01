@@ -20,8 +20,11 @@ Ranger
 
 from collections.abc import Iterable
 from enum import Enum, unique
+from typing import AbstractSet, Optional
 
 from ..ext.attr import attrib, attrs, instanceOf, optional, true
+
+AbstractSet, Optional  # silence linter
 
 
 __all__ = ()
@@ -61,10 +64,24 @@ class Ranger(object):
 
     # FIXME: better validator for email
 
-    handle   = attrib(validator=true(instanceOf(str)))
-    name     = attrib(validator=true(instanceOf(str)))
-    status   = attrib(validator=instanceOf(RangerStatus))
-    email    = attrib(validator=instanceOf(Iterable), convert=frozenset)
-    onSite   = attrib(validator=instanceOf(bool))
-    dmsID    = attrib(validator=optional(instanceOf(int)))
-    password = attrib(validator=optional(instanceOf(str)))
+    handle = attrib(
+        validator=true(instanceOf(str))
+    )  # type: str
+    name = attrib(
+        validator=true(instanceOf(str))
+    )  # type: str
+    status = attrib(
+        validator=instanceOf(RangerStatus)
+    )  # type: RangerStatus
+    email = attrib(
+        validator=instanceOf(Iterable), convert=frozenset
+    )  # type: AbstractSet
+    onSite = attrib(
+        validator=instanceOf(bool)
+    )  # type: bool
+    dmsID = attrib(
+        validator=optional(instanceOf(int))
+    )  # type: Optional[str]
+    password = attrib(
+        validator=optional(instanceOf(str))
+    )  # type: Optional[str]

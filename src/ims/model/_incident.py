@@ -20,7 +20,7 @@ Incident
 
 from collections.abc import Iterable as IterableABC
 from datetime import datetime as DateTime
-from typing import Iterable, Optional
+from typing import AbstractSet, Iterable, Optional, Sequence
 
 from ._entry import ReportEntry
 from ._event import Event
@@ -28,6 +28,8 @@ from ._location import Location
 from ._priority import IncidentPriority
 from ._state import IncidentState
 from ..ext.attr import attrib, attrs, instanceOf, optional, sortedTuple
+
+AbstractSet, Sequence  # silence linter
 
 
 __all__ = ()
@@ -42,23 +44,37 @@ class Incident(object):
 
     # FIXME: better validator for IterableABC attrs
 
-    event    = attrib(validator=instanceOf(Event))
-    number   = attrib(validator=instanceOf(int))
-    created  = attrib(validator=instanceOf(DateTime))
-    state    = attrib(validator=instanceOf(IncidentState))
-    priority = attrib(validator=instanceOf(IncidentPriority))
-    summary  = attrib(validator=optional(instanceOf(str)))
-    location = attrib(validator=instanceOf(Location))
+    event = attrib(
+        validator=instanceOf(Event)
+    )  # type: Event
+    number = attrib(
+        validator=instanceOf(int)
+    )  # type: int
+    created = attrib(
+        validator=instanceOf(DateTime)
+    )  # type: DateTime
+    state = attrib(
+        validator=instanceOf(IncidentState)
+    )  # type: IncidentState
+    priority = attrib(
+        validator=instanceOf(IncidentPriority)
+    )  # type: IncidentPriority
+    summary  = attrib(
+        validator=optional(instanceOf(str))
+    )  # type: Optional[str]
+    location = attrib(
+        validator=instanceOf(Location)
+    )  # type: Location
 
     rangers = attrib(
         validator=instanceOf(IterableABC), convert=frozenset
-    )
+    )  # type: AbstractSet
     incidentTypes = attrib(
         validator=instanceOf(IterableABC), convert=frozenset
-    )
+    )  # type: AbstractSet
     reportEntries = attrib(
         validator=instanceOf(IterableABC), convert=sortedTuple
-    )
+    )  # type: Sequence
 
 
     def __str__(self) -> str:

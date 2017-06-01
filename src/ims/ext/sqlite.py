@@ -10,11 +10,10 @@ from sqlite3 import (
 from typing import Any, Iterable, Mapping, Optional, Tuple, TypeVar
 from typing.io import TextIO
 
-from attr import attrib, attrs
+from attr import Factory, attrib, attrs
+from attr.validators import instance_of, optional
 
 from twisted.logger import Logger
-
-from .attr import instanceOf, optional
 
 
 __all__ = (
@@ -59,16 +58,18 @@ class Connection(object):
     _log = Logger()
 
     @attrs(frozen=False)
-    class State(object):
+    class _State(object):
         """
         Internal mutable state for :class:`Connection`.
         """
 
         db = attrib(init=False)
 
-    _database = attrib(validator=optional(instanceOf(str)))
+    _database = attrib(
+        validator=instance_of(str)
+    )  # type: str
 
-    _state = attrib(default=State(), init=False)
+    _state = attrib(default=Factory(_State), init=False)  # type: _State
 
 
     def __attrs_post_init__(self) -> None:
@@ -197,9 +198,13 @@ class QueryPlanExplanation(object):
         A line of information about a query plan.
         """
 
-        nestingOrder = attrib(validator=optional(instanceOf(int)))
-        selectFrom = attrib(validator=optional(instanceOf(int)))
-        details = attrib(validator=instanceOf(str))
+        nestingOrder = attrib(
+            validator=optional(instance_of(int))
+        )  # type: Optional[int]
+        selectFrom = attrib(
+            validator=optional(instance_of(int))
+        )  # type: Optional[int]
+        details = attrib(validator=instance_of(str))  # type: str
 
         def __str__(self) -> str:
             return "[{},{}] {}".format(
@@ -207,9 +212,9 @@ class QueryPlanExplanation(object):
             )
 
 
-    name = attrib(validator=instanceOf(str))
-    query = attrib(validator=instanceOf(str))
-    lines = attrib(validator=instanceOf(tuple))  # FIXME: Tuple[Line]
+    name  = attrib(validator=instance_of(str))    # type: str
+    query = attrib(validator=instance_of(str))    # type: str
+    lines = attrib(validator=instance_of(tuple))  # type: Tuple[Line]
 
 
     def __str__(self) -> str:

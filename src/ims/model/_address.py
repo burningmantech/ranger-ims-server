@@ -42,7 +42,7 @@ class TextOnlyAddress(Address):
     An address contains a description of a location.
     """
 
-    description = attrib(validator=instanceOf(str))
+    description = attrib(validator=instanceOf(str))  # type: str
 
 
 
@@ -55,7 +55,7 @@ class RodGarettAddress(Address):
     Black Rock City.
     """
 
-    concentric   = attrib(validator=instanceOf(int))  # FIXME: validator
-    radialHour   = attrib(validator=instanceOf(int))  # FIXME: validator
-    radialMinute = attrib(validator=instanceOf(int))  # FIXME: validator
-    description  = attrib(validator=instanceOf(str))
+    concentric   = attrib(validator=instanceOf(int))  # type: int
+    radialHour   = attrib(validator=instanceOf(int))  # type: int
+    radialMinute = attrib(validator=instanceOf(int))  # type: int
+    description  = attrib(validator=instanceOf(str))  # type: str

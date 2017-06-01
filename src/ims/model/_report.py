@@ -20,9 +20,12 @@ Incident Report
 
 from collections.abc import Iterable
 from datetime import datetime as DateTime
+from typing import Optional, Sequence
 
 from ._incident import summaryFromReport
 from ..ext.attr import attrib, attrs, instanceOf, optional, sortedTuple
+
+Optional, Sequence  # Silence linter
 
 
 __all__ = ()
@@ -37,10 +40,18 @@ class IncidentReport(object):
 
     # FIXME: better validator for reportEntries
 
-    number        = attrib(validator=instanceOf(int))
-    created       = attrib(validator=instanceOf(DateTime))
-    summary       = attrib(validator=optional(instanceOf(str)))
-    reportEntries = attrib(validator=instanceOf(Iterable), convert=sortedTuple)
+    number = attrib(
+        validator=instanceOf(int)
+    )  # type: int
+    created = attrib(
+        validator=instanceOf(DateTime)
+    )  # type: DateTime
+    summary = attrib(
+        validator=optional(instanceOf(str))
+    )  # type: Optional[str]
+    reportEntries = attrib(
+        validator=instanceOf(Iterable), convert=sortedTuple
+    )  # type: Sequence
 
 
     def __str__(self) -> str:

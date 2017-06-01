@@ -35,7 +35,7 @@ class Event(object):
     An event identifies a container for incident data.
     """
 
-    id = attrib(validator=true(instanceOf(str)))
+    id = attrib(validator=true(instanceOf(str)))  # type: str
 
 
     def __str__(self) -> str:

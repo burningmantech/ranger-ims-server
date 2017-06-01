@@ -32,5 +32,5 @@ class Location(Address):
     Location
     """
 
-    name    = attrib(validator=instanceOf(str))
-    address = attrib(validator=instanceOf(Address))
+    name    = attrib(validator=instanceOf(str))      # type: str
+    address = attrib(validator=instanceOf(Address))  # type: Address
