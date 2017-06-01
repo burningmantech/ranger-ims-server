@@ -25,6 +25,7 @@ from textwrap import dedent
 from .._store import DataStore
 from ....ext.sqlite import Connection
 from ....ext.trial import TestCase
+from ....model import Event
 
 
 __all__ = ()
@@ -146,6 +147,16 @@ class DataStoreTests(TestCase):
         """
         :meth:`DataStore.events` returns all events.
         """
-        raise NotImplementedError()
+        store = self.store()
+        store._db.executescript(
+            dedent(
+                """
+                insert or ignore into EVENT (NAME) values ('Event A');
+                insert or ignore into EVENT (NAME) values ('Event B');
+                """
+            )
+        )
 
-    test_events.todo = "unimplemented"
+        events = frozenset(self.successResultOf(store.events()))
+
+        self.assertEqual(events, {Event("Event A"), Event("Event B")})

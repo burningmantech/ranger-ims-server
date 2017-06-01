@@ -94,11 +94,34 @@ class DataStore(IMSDataStore):
         return self._state.db
 
 
+    def _execute(
+        self, query: str, queryArgs: Dict[str, Any],
+        errorLogFormat: str, errorLogArgs: Dict[str, Any],
+    ) -> Iterable:
+        try:
+            for row in self._db.execute(query, queryArgs):
+                yield row
+        except SQLiteError as e:
+            self._log.critical(errorLogFormat, **errorLogArgs)
+            raise StorageError(e)
+
+
     async def events(self) -> Iterable[Event]:
         """
         Look up all events in this store.
         """
-        raise NotImplementedError()
+        return (
+            Event(row["name"])
+            for row in self._execute(
+                self._query_events, {}, "Unable to look up events", {}
+            )
+        )
+
+    _query_events = dedent(
+        """
+        select NAME from EVENT
+        """
+    )
 
 
     async def createEvent(self, event: Event) -> None:
