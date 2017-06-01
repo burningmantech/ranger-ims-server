@@ -46,9 +46,7 @@ __all__ = ()
 
 @composite
 def textOnlyAddresses(draw: Callable) -> TextOnlyAddress:
-    description = draw(text())
-
-    return TextOnlyAddress(description=description)
+    return TextOnlyAddress(description=draw(text()))
 
 
 @composite
