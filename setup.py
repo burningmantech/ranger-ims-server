@@ -114,7 +114,7 @@ package_data = dict(
 setup_requirements = []
 
 install_requirements = [
-    "attr",
+    "attrs",
     "arrow",
     "Twisted>=16.6.0",
     "klein",
