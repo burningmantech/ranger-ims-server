@@ -22,8 +22,7 @@ from datetime import datetime as DateTime
 from typing import Any
 
 from hypothesis import given
-from hypothesis.extra.datetime import datetimes
-from hypothesis.strategies import floats, integers, text
+from hypothesis.strategies import datetimes, floats, integers, text
 
 from .strategies import incidents
 from .._json import jsonDeserialize, jsonSerialize, jsonTextFromModelObject

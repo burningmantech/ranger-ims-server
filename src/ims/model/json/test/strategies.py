@@ -18,12 +18,14 @@
 Test strategies for model data.
 """
 
+from datetime import (
+    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+)
 from typing import Callable
 
-from hypothesis.extra.datetime import datetimes
 from hypothesis.strategies import (
-    booleans, composite, integers, iterables, none, one_of as oneOf,
-    sampled_from as sampledFrom, text,
+    booleans, composite, datetimes as _datetimes, integers, iterables, none,
+    one_of, sampled_from, text,
 )
 
 from ..._address import Address, RodGarettAddress, TextOnlyAddress
@@ -38,6 +40,24 @@ from ..._type import KnownIncidentType
 
 
 __all__ = ()
+
+
+##
+# DateTimes
+##
+
+
+@composite
+def timezones(draw: Callable) -> TimeZone:
+    offset = draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
+    timeDelta = TimeDelta(minutes=offset)
+    timeZone = TimeZone(offset=timeDelta, name="{}s".format(offset))
+    return timeZone
+
+
+@composite
+def datetimes(draw: Callable) -> DateTime:
+    return draw(_datetimes(timezones=timezones()))
 
 
 ##
@@ -61,7 +81,7 @@ def rodGarettAddresses(draw: Callable) -> RodGarettAddress:
 
 @composite
 def addresses(draw: Callable) -> Address:
-    return draw(oneOf((textOnlyAddresses(), rodGarettAddresses())))
+    return draw(one_of((textOnlyAddresses(), rodGarettAddresses())))
 
 
 ##
@@ -93,7 +113,7 @@ def events(draw: Callable) -> Event:
 
 @composite
 def incidentSummaries(draw: Callable) -> str:
-    return draw(oneOf(none(), text()))
+    return draw(one_of(none(), text()))
 
 
 @composite
@@ -127,7 +147,7 @@ def locations(draw: Callable) -> Location:
 
 @composite
 def incidentPriorities(draw: Callable) -> IncidentPriority:
-    return draw(sampledFrom(IncidentPriority))
+    return draw(sampled_from(IncidentPriority))
 
 
 ##
@@ -159,7 +179,7 @@ def incidentReports(draw: Callable) -> IncidentReport:
 
 @composite
 def incidentStates(draw: Callable) -> IncidentState:
-    return draw(sampledFrom(IncidentState))
+    return draw(sampled_from(IncidentState))
 
 
 ##
@@ -173,4 +193,4 @@ def incidentTypesText(draw: Callable) -> str:
 
 @composite
 def incidentTypes(draw: Callable) -> KnownIncidentType:
-    return draw(sampledFrom(KnownIncidentType))
+    return draw(sampled_from(KnownIncidentType))
