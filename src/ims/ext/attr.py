@@ -5,18 +5,13 @@ Extensions to :mod:`attr`
 
 from typing import Any, Callable, Iterable, Tuple, TypeVar
 
-from attr import Attribute, attrib, attrs
-from attr.validators import instance_of as instanceOf, optional, provides
+from attr import Attribute
 
 
 __all__ = (
     "Validator",
-    "attrib",
-    "attrs",
-    "instanceOf",
-    "optional",
-    "provides",
     "required",
+    "sorted_tuple",
     "true",
 )
 
@@ -47,7 +42,7 @@ def true(validator: Validator) -> Validator:
     return true
 
 
-def sortedTuple(iterable: Iterable[T]) -> Tuple[T, ...]:
+def sorted_tuple(iterable: Iterable[T]) -> Tuple[T, ...]:
     """
     Sort and convert an iterable into a tuple.
     """

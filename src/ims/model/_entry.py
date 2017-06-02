@@ -23,7 +23,10 @@ Report entry
 from datetime import datetime as DateTime
 from typing import Any
 
-from ..ext.attr import attrib, attrs, instanceOf, true
+from attr import attrib, attrs
+from attr.validators import instance_of
+
+from ..ext.attr import true
 
 
 __all__ = ()
@@ -38,10 +41,10 @@ class ReportEntry(object):
     A report entry is text with an associated author and time stamp.
     """
 
-    created   = attrib(validator=instanceOf(DateTime))   # type: DateTime
-    author    = attrib(validator=true(instanceOf(str)))  # type: str
-    automatic = attrib(validator=instanceOf(bool))       # type: bool
-    text      = attrib(validator=true(instanceOf(str)))  # type: str
+    created   = attrib(validator=instance_of(DateTime))   # type: DateTime
+    author    = attrib(validator=true(instance_of(str)))  # type: str
+    automatic = attrib(validator=instance_of(bool))       # type: bool
+    text      = attrib(validator=true(instance_of(str)))  # type: str
 
 
     def _cmpKey(self) -> Any:

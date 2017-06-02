@@ -20,7 +20,10 @@
 Event
 """
 
-from ..ext.attr import attrib, attrs, instanceOf, true
+from attr import attrib, attrs
+from attr.validators import instance_of
+
+from ..ext.attr import true
 
 
 __all__ = ()
@@ -35,7 +38,7 @@ class Event(object):
     An event identifies a container for incident data.
     """
 
-    id = attrib(validator=true(instanceOf(str)))  # type: str
+    id = attrib(validator=true(instance_of(str)))  # type: str
 
 
     def __str__(self) -> str:

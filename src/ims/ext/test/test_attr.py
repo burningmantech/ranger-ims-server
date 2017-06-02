@@ -2,7 +2,9 @@
 Tests for :mod:`ranger-ims-server.ext.attr`
 """
 
-from ..attr import attrib, attrs, instanceOf, required, true
+from attr import attrib, attrs, instance_of
+
+from ..attr import required, true
 from ..trial import TestCase
 
 
@@ -26,7 +28,7 @@ class MustBeNiceClass(object):
     Class for testing :func:`true` validator.
     """
 
-    nice = attrib(validator=true(instanceOf(str)))  # type: str
+    nice = attrib(validator=true(instance_of(str)))  # type: str
 
 
 

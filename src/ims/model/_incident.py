@@ -22,12 +22,15 @@ from collections.abc import Iterable as IterableABC
 from datetime import datetime as DateTime
 from typing import AbstractSet, Iterable, Optional, Sequence
 
+from attr import attrib, attrs
+from attr.validators import instance_of, optional
+
 from ._entry import ReportEntry
 from ._event import Event
 from ._location import Location
 from ._priority import IncidentPriority
 from ._state import IncidentState
-from ..ext.attr import attrib, attrs, instanceOf, optional, sortedTuple
+from ..ext.attr import sorted_tuple
 
 AbstractSet, Sequence  # silence linter
 
@@ -45,35 +48,35 @@ class Incident(object):
     # FIXME: better validator for IterableABC attrs
 
     event = attrib(
-        validator=instanceOf(Event)
+        validator=instance_of(Event)
     )  # type: Event
     number = attrib(
-        validator=instanceOf(int)
+        validator=instance_of(int)
     )  # type: int
     created = attrib(
-        validator=instanceOf(DateTime)
+        validator=instance_of(DateTime)
     )  # type: DateTime
     state = attrib(
-        validator=instanceOf(IncidentState)
+        validator=instance_of(IncidentState)
     )  # type: IncidentState
     priority = attrib(
-        validator=instanceOf(IncidentPriority)
+        validator=instance_of(IncidentPriority)
     )  # type: IncidentPriority
     summary  = attrib(
-        validator=optional(instanceOf(str))
+        validator=optional(instance_of(str))
     )  # type: Optional[str]
     location = attrib(
-        validator=instanceOf(Location)
+        validator=instance_of(Location)
     )  # type: Location
 
     rangers = attrib(
-        validator=instanceOf(IterableABC), convert=frozenset
+        validator=instance_of(IterableABC), convert=frozenset
     )  # type: AbstractSet
     incidentTypes = attrib(
-        validator=instanceOf(IterableABC), convert=frozenset
+        validator=instance_of(IterableABC), convert=frozenset
     )  # type: AbstractSet
     reportEntries = attrib(
-        validator=instanceOf(IterableABC), convert=sortedTuple
+        validator=instance_of(IterableABC), convert=sorted_tuple
     )  # type: Sequence
 
 

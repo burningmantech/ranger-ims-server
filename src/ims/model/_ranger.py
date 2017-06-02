@@ -22,7 +22,10 @@ from collections.abc import Iterable
 from enum import Enum, unique
 from typing import AbstractSet, Optional
 
-from ..ext.attr import attrib, attrs, instanceOf, optional, true
+from attr import attrib, attrs
+from attr.validators import instance_of, optional
+
+from ..ext.attr import true
 
 AbstractSet, Optional  # silence linter
 
@@ -65,23 +68,23 @@ class Ranger(object):
     # FIXME: better validator for email
 
     handle = attrib(
-        validator=true(instanceOf(str))
+        validator=true(instance_of(str))
     )  # type: str
     name = attrib(
-        validator=true(instanceOf(str))
+        validator=true(instance_of(str))
     )  # type: str
     status = attrib(
-        validator=instanceOf(RangerStatus)
+        validator=instance_of(RangerStatus)
     )  # type: RangerStatus
     email = attrib(
-        validator=instanceOf(Iterable), convert=frozenset
+        validator=instance_of(Iterable), convert=frozenset
     )  # type: AbstractSet
     onSite = attrib(
-        validator=instanceOf(bool)
+        validator=instance_of(bool)
     )  # type: bool
     dmsID = attrib(
-        validator=optional(instanceOf(int))
+        validator=optional(instance_of(int))
     )  # type: Optional[str]
     password = attrib(
-        validator=optional(instanceOf(str))
+        validator=optional(instance_of(str))
     )  # type: Optional[str]

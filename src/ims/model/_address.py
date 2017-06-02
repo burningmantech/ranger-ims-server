@@ -20,7 +20,8 @@ Address
 
 from abc import ABC
 
-from ..ext.attr import attrib, attrs, instanceOf
+from attr import attrib, attrs
+from attr.validators import instance_of
 
 
 __all__ = ()
@@ -42,7 +43,7 @@ class TextOnlyAddress(Address):
     An address contains a description of a location.
     """
 
-    description = attrib(validator=instanceOf(str))  # type: str
+    description = attrib(validator=instance_of(str))  # type: str
 
 
 
@@ -55,7 +56,7 @@ class RodGarettAddress(Address):
     Black Rock City.
     """
 
-    concentric   = attrib(validator=instanceOf(int))  # type: int
-    radialHour   = attrib(validator=instanceOf(int))  # type: int
-    radialMinute = attrib(validator=instanceOf(int))  # type: int
-    description  = attrib(validator=instanceOf(str))  # type: str
+    concentric   = attrib(validator=instance_of(int))  # type: int
+    radialHour   = attrib(validator=instance_of(int))  # type: int
+    radialMinute = attrib(validator=instance_of(int))  # type: int
+    description  = attrib(validator=instance_of(str))  # type: str

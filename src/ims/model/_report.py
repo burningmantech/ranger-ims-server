@@ -22,8 +22,11 @@ from collections.abc import Iterable
 from datetime import datetime as DateTime
 from typing import Optional, Sequence
 
+from attr import attrib, attrs
+from attr.validators import instance_of, optional
+
 from ._incident import summaryFromReport
-from ..ext.attr import attrib, attrs, instanceOf, optional, sortedTuple
+from ..ext.attr import sorted_tuple
 
 Optional, Sequence  # Silence linter
 
@@ -41,16 +44,16 @@ class IncidentReport(object):
     # FIXME: better validator for reportEntries
 
     number = attrib(
-        validator=instanceOf(int)
+        validator=instance_of(int)
     )  # type: int
     created = attrib(
-        validator=instanceOf(DateTime)
+        validator=instance_of(DateTime)
     )  # type: DateTime
     summary = attrib(
-        validator=optional(instanceOf(str))
+        validator=optional(instance_of(str))
     )  # type: Optional[str]
     reportEntries = attrib(
-        validator=instanceOf(Iterable), convert=sortedTuple
+        validator=instance_of(Iterable), convert=sorted_tuple
     )  # type: Sequence
 
 

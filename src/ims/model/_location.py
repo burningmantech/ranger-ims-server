@@ -18,8 +18,10 @@
 Location
 """
 
+from attr import attrib, attrs
+from attr.validators import instance_of
+
 from ._address import Address
-from ..ext.attr import attrib, attrs, instanceOf
 
 
 __all__ = ()
@@ -32,5 +34,5 @@ class Location(Address):
     Location
     """
 
-    name    = attrib(validator=instanceOf(str))      # type: str
-    address = attrib(validator=instanceOf(Address))  # type: Address
+    name    = attrib(validator=instance_of(str))      # type: str
+    address = attrib(validator=instance_of(Address))  # type: Address
