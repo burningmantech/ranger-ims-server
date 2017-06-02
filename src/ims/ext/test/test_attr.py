@@ -2,7 +2,8 @@
 Tests for :mod:`ranger-ims-server.ext.attr`
 """
 
-from attr import attrib, attrs, instance_of
+from attr import attrib, attrs
+from attr.validators import instance_of
 
 from ..attr import required, true
 from ..trial import TestCase
