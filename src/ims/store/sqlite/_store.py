@@ -198,18 +198,24 @@ class DataStore(IMSDataStore):
     )
 
 
+    def _hideShowIncidentTypes(
+        self, incidentTypes: Iterable[str], hidden: bool
+    ) -> None:
+        raise NotImplementedError()
+
+
     async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
         """
         Show the given incident types.
         """
-        raise NotImplementedError()
+        return self._hideShowIncidentTypes(incidentTypes, False)
 
 
     async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
         """
         Hide the given incident types.
         """
-        raise NotImplementedError()
+        return self._hideShowIncidentTypes(incidentTypes, True)
 
 
     async def incidents(self, event: Event) -> Iterable[Incident]:

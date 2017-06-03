@@ -279,3 +279,55 @@ class DataStoreTests(TestCase):
         self.successResultOf(store.createIncidentType(incidentType))
         f = self.failureResultOf(store.createIncidentType(incidentType))
         self.assertEqual(f.type, StorageError)
+
+
+    def test_showIncidentTypes(self) -> None:
+        """
+        :meth:`DataStore.showIncidentTypes` makes the given incident types
+        visible.
+        """
+        incidentType = "foo"
+        store = self.store()
+        self.successResultOf(
+            store.createIncidentType(incidentType, hidden=True)
+        )
+        self.assertNotIn(
+            incidentType, self.successResultOf(store.incidentTypes())
+        )
+        self.successResultOf(store.showIncidentTypes((incidentType,)))
+        self.assertIn(
+            incidentType, self.successResultOf(store.incidentTypes())
+        )
+        # Again should also work
+        self.successResultOf(store.showIncidentTypes((incidentType,)))
+        self.assertIn(
+            incidentType, self.successResultOf(store.incidentTypes())
+        )
+
+    test_showIncidentTypes.todo = "unimplemented"
+
+
+    def test_hideIncidentTypes(self) -> None:
+        """
+        :meth:`DataStore.showIncidentTypes` makes the given incident types
+        hidden.
+        """
+        incidentType = "foo"
+        store = self.store()
+        self.successResultOf(
+            store.createIncidentType(incidentType, hidden=False)
+        )
+        self.assertIn(
+            incidentType, self.successResultOf(store.incidentTypes())
+        )
+        self.successResultOf(store.hideIncidentTypes((incidentType,)))
+        self.assertNotIn(
+            incidentType, self.successResultOf(store.incidentTypes())
+        )
+        # Again should also work
+        self.successResultOf(store.hideIncidentTypes((incidentType,)))
+        self.assertNotIn(
+            incidentType, self.successResultOf(store.incidentTypes())
+        )
+
+    test_hideIncidentTypes.todo = "unimplemented"
