@@ -78,7 +78,7 @@ class Ranger(object):
     )  # type: RangerStatus
     email = attrib(
         validator=instance_of(Iterable), convert=frozenset
-    )  # type: AbstractSet
+    )  # type: AbstractSet[str]
     onSite = attrib(
         validator=instance_of(bool)
     )  # type: bool

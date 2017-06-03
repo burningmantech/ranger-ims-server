@@ -71,13 +71,13 @@ class Incident(object):
 
     rangers = attrib(
         validator=instance_of(IterableABC), convert=frozenset
-    )  # type: AbstractSet
+    )  # type: AbstractSet[str]
     incidentTypes = attrib(
         validator=instance_of(IterableABC), convert=frozenset
-    )  # type: AbstractSet
+    )  # type: AbstractSet[str]
     reportEntries = attrib(
         validator=instance_of(IterableABC), convert=sorted_tuple
-    )  # type: Sequence
+    )  # type: Sequence[ReportEntry]
 
 
     def __str__(self) -> str:
