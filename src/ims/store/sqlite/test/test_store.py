@@ -21,10 +21,13 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
+from typing import Tuple
 
-from hypothesis import given
+from hypothesis import assume, given
+from hypothesis.strategies import booleans, text, tuples
 
 from .._store import DataStore
+from ..._exceptions import StorageError
 from ....ext.sqlite import Connection
 from ....ext.trial import TestCase
 from ....model import Event
@@ -39,6 +42,9 @@ class DataStoreTests(TestCase):
     """
     Tests for :class:`DataStore`
     """
+
+    builtInTypes = {"Admin", "Junk"}
+
 
     def store(self) -> DataStore:
         return DataStore(dbPath=Path(self.mktemp()))
@@ -174,3 +180,102 @@ class DataStoreTests(TestCase):
         self.successResultOf(store.createEvent(event))
         stored = frozenset(self.successResultOf(store.events()))
         self.assertEqual(stored, frozenset((event,)))
+
+
+    def test_createEvent_duplicate(self) -> None:
+        """
+        :meth:`DataStore.createEvent` raises :exc:`StorageError` when given an
+        event that already exists in the data store.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        f = self.failureResultOf(store.createEvent(event))
+        self.assertEqual(f.type, StorageError)
+
+
+    @given(tuples(tuples(text(), booleans())))
+    def test_incidentTypes(self, data: Tuple[Tuple[str, bool]]) -> None:
+        """
+        :meth:`DataStore.incidentTypes` returns visible incident types.
+        """
+        store = self.store()
+        for (name, hidden) in data:
+            assume(name not in self.builtInTypes)
+            store._db.execute(
+                "insert into INCIDENT_TYPE (NAME, HIDDEN) "
+                "values (:name, :hidden)",
+                dict(name=name, hidden=hidden)
+            )
+
+        incidentTypes = frozenset(
+            self.successResultOf(store.incidentTypes())
+        )
+        expected = frozenset(
+            (name for (name, hidden) in data if not hidden)
+        ) | self.builtInTypes
+
+        self.assertEqual(incidentTypes, expected)
+
+
+    @given(tuples(tuples(text(), booleans())))
+    def test_incidentTypes_includeHidden(
+        self, data: Tuple[Tuple[str, bool]]
+    ) -> None:
+        """
+        :meth:`DataStore.incidentTypes` if given CL{includeHidden=True} returns
+        all incident types.
+        """
+        store = self.store()
+        for (name, hidden) in data:
+            assume(name not in self.builtInTypes)
+            store._db.execute(
+                "insert into INCIDENT_TYPE (NAME, HIDDEN) "
+                "values (:name, :hidden)",
+                dict(name=name, hidden=hidden)
+            )
+
+        incidentTypes = frozenset(
+            self.successResultOf(store.incidentTypes(includeHidden=True))
+        )
+        expected = frozenset(
+            (name for (name, hidden) in data)
+        ) | self.builtInTypes
+
+        self.assertEqual(incidentTypes, expected)
+
+
+    @given(text(), booleans())
+    def test_createIncidentType(self, incidentType: str, hidden: bool) -> None:
+        """
+        :meth:`DataStore.createIncidentType` creates the incident type.
+        """
+        assume(incidentType not in self.builtInTypes)
+
+        store = self.store()
+        self.successResultOf(
+            store.createIncidentType(incidentType, hidden=hidden)
+        )
+
+        incidentTypes = frozenset(self.successResultOf(store.incidentTypes()))
+        if hidden:
+            self.assertNotIn(incidentType, incidentTypes)
+        else:
+            self.assertIn(incidentType, incidentTypes)
+
+        incidentTypes = frozenset(
+            self.successResultOf(store.incidentTypes(includeHidden=True))
+        )
+        self.assertIn(incidentType, incidentTypes)
+
+
+    def test_createIncidentType_duplicate(self) -> None:
+        """
+        :meth:`DataStore.createIncidentType` raises :exc:`StorageError` when
+        given an incident type that already exists in the data store.
+        """
+        incidentType = "foo"
+        store = self.store()
+        self.successResultOf(store.createIncidentType(incidentType))
+        f = self.failureResultOf(store.createIncidentType(incidentType))
+        self.assertEqual(f.type, StorageError)

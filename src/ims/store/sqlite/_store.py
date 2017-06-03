@@ -120,8 +120,7 @@ class DataStore(IMSDataStore):
         Look up all events in this store.
         """
         return (
-            Event(row["name"])
-            for row in self._executeGenerator(
+            Event(row["name"]) for row in self._executeGenerator(
                 self._query_events, {}, "Unable to look up events"
             )
         )
@@ -142,7 +141,6 @@ class DataStore(IMSDataStore):
             "Unable to create event: {eventID}"
         )
 
-
     _query_createEvent = dedent(
         """
         insert into EVENT (NAME) values (:eventID);
@@ -156,7 +154,28 @@ class DataStore(IMSDataStore):
         """
         Look up the incident types used in this store.
         """
-        raise NotImplementedError()
+        if includeHidden:
+            query = self._query_incidentTypes
+        else:
+            query = self._query_incidentTypesNotHidden
+
+        return (
+            row["name"] for row in self._executeGenerator(
+                query, {}, "Unable to look up incident types"
+            )
+        )
+
+    _query_incidentTypes = dedent(
+        """
+        select NAME from INCIDENT_TYPE
+        """
+    )
+
+    _query_incidentTypesNotHidden = dedent(
+        """
+        select NAME from INCIDENT_TYPE where HIDDEN = 0
+        """
+    )
 
 
     async def createIncidentType(
@@ -165,7 +184,18 @@ class DataStore(IMSDataStore):
         """
         Create the given incident type.
         """
-        raise NotImplementedError()
+        self._execute(
+            self._query_createIncidentType,
+            dict(incidentType=incidentType, hidden=hidden),
+            "Unable to create event: {eventID}"
+        )
+
+    _query_createIncidentType = dedent(
+        """
+        insert into INCIDENT_TYPE (NAME, HIDDEN)
+        values (:incidentType, :hidden)
+        """
+    )
 
 
     async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
