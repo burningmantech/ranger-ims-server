@@ -95,14 +95,13 @@ class DataStore(IMSDataStore):
 
 
     def _execute(
-        self, query: str, queryArgs: Dict[str, Any],
-        errorLogFormat: str, errorLogArgs: Dict[str, Any],
+        self, query: str, queryArgs: Dict[str, Any], errorLogFormat: str
     ) -> Iterable:
         try:
             for row in self._db.execute(query, queryArgs):
                 yield row
         except SQLiteError as e:
-            self._log.critical(errorLogFormat, **errorLogArgs)
+            self._log.critical(errorLogFormat, query=query, **queryArgs)
             raise StorageError(e)
 
 
@@ -113,7 +112,8 @@ class DataStore(IMSDataStore):
         return (
             Event(row["name"])
             for row in self._execute(
-                self._query_events, {}, "Unable to look up events", {}
+                self._query_events, {},
+                "Unable to look up events"
             )
         )
 
