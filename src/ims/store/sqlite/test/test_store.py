@@ -304,8 +304,6 @@ class DataStoreTests(TestCase):
             incidentType, self.successResultOf(store.incidentTypes())
         )
 
-    test_showIncidentTypes.todo = "unimplemented"
-
 
     def test_hideIncidentTypes(self) -> None:
         """
@@ -329,5 +327,3 @@ class DataStoreTests(TestCase):
         self.assertNotIn(
             incidentType, self.successResultOf(store.incidentTypes())
         )
-
-    test_hideIncidentTypes.todo = "unimplemented"

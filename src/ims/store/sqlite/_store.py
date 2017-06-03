@@ -20,7 +20,7 @@ Incident Management System SQLite data store.
 
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Tuple
 from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
@@ -95,10 +95,13 @@ class DataStore(IMSDataStore):
 
 
     def _execute(
-        self, query: str, queryArgs: Dict[str, Any], errorLogFormat: str
+        self, queries: Iterable[Tuple[str, Dict[str, Any]]],
+        errorLogFormat: str,
     ) -> None:
         try:
-            self._db.execute(query, queryArgs)
+            with self._db as db:
+                for (query, queryArgs) in queries:
+                    db.execute(query, queryArgs)
         except SQLiteError as e:
             self._log.critical(errorLogFormat, query=query, **queryArgs)
             raise StorageError(e)
@@ -137,7 +140,9 @@ class DataStore(IMSDataStore):
         Create an event with the given name.
         """
         self._execute(
-            self._query_createEvent, dict(eventID=event.id),
+            (
+                (self._query_createEvent, dict(eventID=event.id)),
+            ),
             "Unable to create event: {eventID}"
         )
 
@@ -185,15 +190,19 @@ class DataStore(IMSDataStore):
         Create the given incident type.
         """
         self._execute(
-            self._query_createIncidentType,
-            dict(incidentType=incidentType, hidden=hidden),
+            (
+                (
+                    self._query_createIncidentType,
+                    dict(name=incidentType, hidden=hidden),
+                ),
+            ),
             "Unable to create event: {eventID}"
         )
 
     _query_createIncidentType = dedent(
         """
         insert into INCIDENT_TYPE (NAME, HIDDEN)
-        values (:incidentType, :hidden)
+        values (:name, :hidden)
         """
     )
 
@@ -201,7 +210,27 @@ class DataStore(IMSDataStore):
     def _hideShowIncidentTypes(
         self, incidentTypes: Iterable[str], hidden: bool
     ) -> None:
-        raise NotImplementedError()
+        if hidden:
+            action = "hide"
+        else:
+            action = "show"
+
+        self._execute(
+            (
+                (
+                    self._query_hideShowIncidentType,
+                    dict(name=incidentType, hidden=hidden),
+                )
+                for incidentType in incidentTypes
+            ),
+            "Unable to {} incident types: {{incidentTypes}}".format(action)
+        )
+
+    _query_hideShowIncidentType = dedent(
+        """
+        update INCIDENT_TYPE set HIDDEN = :hidden where NAME = :name
+        """
+    )
 
 
     async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
