@@ -7,7 +7,7 @@ from pathlib import Path
 from sqlite3 import (
     Cursor, Error as SQLiteError, Row as BaseRow, connect as sqliteConnect
 )
-from typing import Any, Iterable, Mapping, Optional, Tuple, TypeVar
+from typing import Any, Iterable, Mapping, Optional, Tuple, TypeVar, Union
 from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
@@ -18,7 +18,10 @@ from twisted.logger import Logger
 
 __all__ = (
     "Connection",
+    "Parameter",
     "QueryPlanExplanation",
+    "Row",
+    "SQLiteError",
     "createDB",
     "explainQueryPlans",
     "openDB",
@@ -28,6 +31,7 @@ __all__ = (
 
 TConnection = TypeVar("TConnection", bound="Connection")
 
+Parameter = Optional[Union[bytes, str, int, float]]
 
 
 class Row(BaseRow):
