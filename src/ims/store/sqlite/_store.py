@@ -96,7 +96,17 @@ class DataStore(IMSDataStore):
 
     def _execute(
         self, query: str, queryArgs: Dict[str, Any], errorLogFormat: str
-    ) -> Iterable:
+    ) -> None:
+        try:
+            self._db.execute(query, queryArgs)
+        except SQLiteError as e:
+            self._log.critical(errorLogFormat, query=query, **queryArgs)
+            raise StorageError(e)
+
+
+    def _executeGenerator(
+        self, query: str, queryArgs: Dict[str, Any], errorLogFormat: str
+    ) -> Iterable[Any]:
         try:
             for row in self._db.execute(query, queryArgs):
                 yield row
@@ -111,9 +121,8 @@ class DataStore(IMSDataStore):
         """
         return (
             Event(row["name"])
-            for row in self._execute(
-                self._query_events, {},
-                "Unable to look up events"
+            for row in self._executeGenerator(
+                self._query_events, {}, "Unable to look up events"
             )
         )
 
@@ -128,7 +137,17 @@ class DataStore(IMSDataStore):
         """
         Create an event with the given name.
         """
-        raise NotImplementedError()
+        self._execute(
+            self._query_createEvent, dict(eventID=event.id),
+            "Unable to create event: {eventID}"
+        )
+
+
+    _query_createEvent = dedent(
+        """
+        insert into EVENT (NAME) values (:eventID);
+        """
+    )
 
 
     async def incidentTypes(

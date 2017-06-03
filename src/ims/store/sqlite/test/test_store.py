@@ -22,10 +22,13 @@ from io import StringIO
 from pathlib import Path
 from textwrap import dedent
 
+from hypothesis import given
+
 from .._store import DataStore
 from ....ext.sqlite import Connection
 from ....ext.trial import TestCase
 from ....model import Event
+from ....model.json.test.strategies import events
 
 
 __all__ = ()
@@ -151,8 +154,8 @@ class DataStoreTests(TestCase):
         store._db.executescript(
             dedent(
                 """
-                insert or ignore into EVENT (NAME) values ('Event A');
-                insert or ignore into EVENT (NAME) values ('Event B');
+                insert into EVENT (NAME) values ('Event A');
+                insert into EVENT (NAME) values ('Event B');
                 """
             )
         )
@@ -160,3 +163,14 @@ class DataStoreTests(TestCase):
         events = frozenset(self.successResultOf(store.events()))
 
         self.assertEqual(events, {Event("Event A"), Event("Event B")})
+
+
+    @given(events())
+    def test_createEvent(self, event: Event) -> None:
+        """
+        :meth:`DataStore.createEvent` creates the given event.
+        """
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        stored = frozenset(self.successResultOf(store.events()))
+        self.assertEqual(stored, frozenset((event,)))
