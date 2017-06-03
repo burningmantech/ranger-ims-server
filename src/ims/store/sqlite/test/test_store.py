@@ -30,8 +30,8 @@ from .._store import DataStore
 from ..._exceptions import StorageError
 from ....ext.sqlite import Connection
 from ....ext.trial import TestCase
-from ....model import Event
-from ....model.json.test.strategies import events
+from ....model import Event, Incident, Ranger
+from ....model.json.test.strategies import events, incidents, rangers
 
 
 __all__ = ()
@@ -327,3 +327,32 @@ class DataStoreTests(TestCase):
         self.assertNotIn(
             incidentType, self.successResultOf(store.incidentTypes())
         )
+
+
+    def test_incidents(self) -> None:
+        """
+        :meth:`DataStore.incidents` returns all incidents.
+        """
+        raise NotImplementedError()
+
+    test_incidents.todo = "unimplemented test"
+
+
+    @given(events(), incidents(), rangers())
+    def test_createIncident(
+        self, event: Event, incident: Incident, author: Ranger
+    ) -> None:
+        """
+        :meth:`DataStore.createIncident` creates the given incident.
+        """
+        store = self.store()
+
+        store.createEvent(event)
+
+        self.successResultOf(
+            store.createIncident(event=event, incident=incident, author=author)
+        )
+        stored = frozenset(self.successResultOf(store.incidents(event=event)))
+        self.assertEqual(stored, frozenset((incident,)))
+
+    test_createIncident.todo = "unimplemented test"
