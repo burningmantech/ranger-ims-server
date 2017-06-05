@@ -355,4 +355,4 @@ class DataStoreTests(TestCase):
         stored = frozenset(self.successResultOf(store.incidents(event=event)))
         self.assertEqual(stored, frozenset((incident,)))
 
-    test_createIncident.todo = "unimplemented test"
+    test_createIncident.todo = "unimplemented"
