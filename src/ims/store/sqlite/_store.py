@@ -273,4 +273,16 @@ class DataStore(IMSDataStore):
         The incident number is determined by the database and must not be
         specified by the given incident.
         """
-        raise NotImplementedError()
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    raise NotImplementedError()
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to create incident",
+                event=event, incident=incident, author=author, error=e,
+            )
+            raise StorageError(e)

@@ -9,12 +9,9 @@ from sqlite3 import Error as SQLiteError
 from textwrap import dedent
 from typing import Any, Generator, List, Mapping, cast
 
-from attr import attrib, attrs
-from attr.validators import instance_of
-
 from .. import sqlite
 from ..sqlite import (
-    Connection, Cursor, QueryPlanExplanation,
+    BaseCursor, Connection, QueryPlanExplanation,
     connect, createDB, explainQueryPlans, openDB, printSchema,
 )
 from ..trial import TestCase
@@ -33,11 +30,12 @@ class ConnectionTests(TestCase):
     """
 
     def patchConnectionCallable(self, name: str) -> None:
-        def connect(database: str, *args: Any) -> None:
+        def _connect(database: Any, *args: Any, **kwargs: Any) -> Connection:
             self.connections.append(database)
+            return Connection(":memory:")
 
         self.connections = []  # type: List[str]
-        self.patch(sqlite, name, connect)
+        self.patch(sqlite, name, _connect)
 
 
     def test_row_get(self) -> None:
@@ -235,7 +233,7 @@ class DebugToolsTests(TestCase):
         :func:`explainQueryPlans` emits ``[None,None] <excetion text>`` when it
         gets a SQLite error while asking for a query plan.
         """
-        patchConnect_errors(self, execute=True)
+        patchConnect_errors(self)
 
         schema = dedent(
             """
@@ -250,9 +248,9 @@ class DebugToolsTests(TestCase):
             """
         )
 
-        db = createDB(None, schema=schema)
+        db = cast(ErrneousSQLiteConnection, createDB(None, schema=schema))
 
-        cast(ErrneousSQLiteConnection._State, db._state).errors = True
+        db._generateErrors = True
 
         explanations = [
             str(x) for x in
@@ -274,24 +272,12 @@ class DebugToolsTests(TestCase):
 
 
 
-@attrs(frozen=True)
 class ErrneousSQLiteConnection(Connection):
     """
     SQLite connection that raises errors for fun and profit.
     """
 
-    @attrs(frozen=False)
-    class _State(Connection._State):
-        errors = attrib(validator=instance_of(bool), init=False)
-
-    _err_execute = attrib(
-        validator=instance_of(bool), default=False
-    )  # type: bool
-
-
-    def __attrs_post_init__(self) -> None:
-        Connection.__attrs_post_init__(self)
-        cast(ErrneousSQLiteConnection._State, self._state).errors = False
+    _generateErrors = False
 
 
     @contextmanager
@@ -299,43 +285,33 @@ class ErrneousSQLiteConnection(Connection):
         """
         Context manager that suspends the generation of errors.
         """
-        state = cast(ErrneousSQLiteConnection._State, self._state)
-        errors = state.errors
-        state.errors = False
+        generateErrors = self._generateErrors
+        self._generateErrors = False
         yield
-        state.errors = errors
+        self._generateErrors = generateErrors
 
 
-    def executescript(self, sql_script: str) -> Cursor:
-        if (
-            cast(ErrneousSQLiteConnection._State, self._state).errors and
-            self._err_execute
-        ):
+    def executescript(self, sql_script: str) -> BaseCursor:
+        if self._generateErrors:
             raise SQLiteError("executescript()")
+        return super().executescript(sql_script)
 
-        return Connection.executescript(self, sql_script)
 
-
-    def execute(self, sql: str, parameters: Mapping = None) -> Cursor:
-        if (
-            cast(ErrneousSQLiteConnection._State, self._state).errors and
-            self._err_execute
-        ):
+    def execute(self, sql: str, parameters: Mapping = None) -> BaseCursor:
+        if self._generateErrors:
             raise SQLiteError("execute()")
-
-        return Connection.execute(self, sql, parameters)
-
+        return super().execute(sql, parameters)
 
 
-def patchConnect_errors(testCase: TestCase, execute: bool = False) -> None:
+
+def patchConnect_errors(testCase: TestCase) -> None:
     """
-    Ensure that that database connections created by :mod:`sqlite` are
-    :class:`ErrneousSQLiteConnection`s.
+    Patch :func:`connect` to create :class:`ErrneousSQLiteConnection`s.
     """
     def connect(database: str) -> Connection:
         if database is None:
             database = ":memory:"
-        db = ErrneousSQLiteConnection(database, err_execute=execute)
+        db = ErrneousSQLiteConnection(database)
         return db
 
     testCase.patch(sqlite, "connect", connect)

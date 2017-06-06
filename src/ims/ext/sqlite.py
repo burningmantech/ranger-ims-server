@@ -5,12 +5,15 @@ SQLite utilities
 
 from pathlib import Path
 from sqlite3 import (
-    Cursor, Error as SQLiteError, Row as BaseRow, connect as sqliteConnect
+    Connection as BaseConnection, Cursor as BaseCursor, Error as SQLiteError,
+    Row as BaseRow, connect as sqliteConnect,
 )
-from typing import Any, Iterable, Mapping, Optional, Tuple, TypeVar, Union
+from typing import (
+    Any, Callable, Iterable, Mapping, Optional, Tuple, TypeVar, Union, cast
+)
 from typing.io import TextIO
 
-from attr import Factory, attrib, attrs
+from attr import attrib, attrs
 from attr.validators import instance_of, optional
 
 from twisted.logger import Logger
@@ -48,73 +51,60 @@ class Row(BaseRow):
 
 
 
-@attrs(frozen=True)
-class Connection(object):
+class Cursor(BaseCursor):
     """
-    (Incomplete) stand-in for :class:`sqlite3.Connection`.
-
-    This class adds logging of SQL statements for debugging purposes.
+    Subclass of `sqlite3.Cursor` that adds logging of SQL statements for
+    debugging purposes.
     """
-
-    # This would probably be a lot simpler if it were possible to subclass
-    # sqlite3.Connection.
 
     _log = Logger()
 
-    @attrs(frozen=False)
-    class _State(object):
+
+    def executescript(self, sql_script: str) -> BaseCursor:
         """
-        Internal mutable state for :class:`Connection`.
-        """
-
-        db = attrib(init=False)
-
-    _database = attrib(
-        validator=instance_of(str)
-    )  # type: str
-
-    _state = attrib(default=Factory(_State), init=False)  # type: _State
-
-
-    def __attrs_post_init__(self) -> None:
-        db = sqliteConnect(self._database)
-        db.row_factory = Row
-        db.execute("pragma foreign_keys = ON")
-
-        self._state.db = db
-
-
-    def commit(self) -> None:
-        """
-        See :meth:`sqlite3.Connection.commit`.
-        """
-        self._log.debug("COMMIT")
-        self._state.db.commit()
-
-
-    def executescript(self, sql_script: str) -> Cursor:
-        """
-        See :meth:`sqlite3.Connection.executescript`.
+        See :meth:`sqlite3.Cursor.executescript`.
         """
         self._log.debug("EXECUTE SCRIPT:\n{script}", script=sql_script)
-        return self._state.db.executescript(sql_script)
+        return super().executescript(sql_script)
 
 
-    def execute(self, sql: str, parameters: Mapping = None) -> Cursor:
+    def execute(self, sql: str, parameters: Mapping = None) -> BaseCursor:
         """
-        See :meth:`sqlite3.Connection.execute`.
+        See :meth:`sqlite3.Cursor.execute`.
         """
         if parameters is None:
             parameters = {}
         self._log.debug(
             "EXECUTE: {sql} <- {parameters}", sql=sql, parameters=parameters
         )
-        return self._state.db.execute(sql, parameters)
+        return super().execute(sql, parameters)
+
+
+
+class Connection(BaseConnection):
+    """
+    Subclass of `sqlite3.Connection` that adds logging of SQL statements for
+    debugging purposes and an improved row type.
+    """
+
+    _log = Logger()
+
+
+    def cursor(self, factory: Callable[..., Cursor] = Cursor) -> BaseCursor:
+        return super().cursor(factory=factory)
+
+
+    def commit(self) -> None:
+        """
+        See :meth:`sqlite3.Cursor.commit`.
+        """
+        self._log.debug("COMMIT")
+        super().commit()
 
 
     def __enter__(self: TConnection) -> TConnection:
         self._log.debug("---------- ENTER ----------")
-        self._state.db.__enter__()
+        super().__enter__()
         return self
 
 
@@ -122,7 +112,7 @@ class Connection(object):
         self, exc_type: type, exc_val: BaseException, exc_tb: Any
     ) -> bool:
         self._log.debug("---------- EXIT ----------")
-        return self._state.db.__exit__(exc_type, exc_val, exc_tb)
+        return super().__exit__(exc_type, exc_val, exc_tb)
 
 
 
@@ -135,7 +125,11 @@ def connect(path: Optional[Path]) -> Connection:
     else:
         endpoint = str(path)
 
-    return Connection(endpoint)
+    db = cast(Connection, sqliteConnect(endpoint, factory=Connection))
+    db.row_factory = Row
+    db.execute("pragma foreign_keys = ON")
+
+    return db
 
 
 def createDB(path: Optional[Path], schema: str) -> Connection:
