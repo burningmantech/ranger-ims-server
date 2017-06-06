@@ -49,7 +49,7 @@ entryB = ReportEntry(
 
 
 
-class EventTests(TestCase):
+class IncidentTests(TestCase):
     """
     Tests for :class:`Incident`
     """
