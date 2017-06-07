@@ -44,7 +44,10 @@ __all__ = (
     "addresses",
     "dateTimes",
     "events",
+    "incidentNumbers",
     "incidentPriorities",
+    "incidentReportNumbers",
+    "incidentReports",
     "incidentStates",
     "incidentSummaries",
     "incidentTypes",
@@ -129,6 +132,11 @@ def events(draw: Callable) -> Event:
 ##
 
 @composite
+def incidentNumbers(draw: Callable) -> str:
+    return draw(integers(min_value=0))
+
+
+@composite
 def incidentSummaries(draw: Callable) -> str:
     return draw(one_of(none(), text()))
 
@@ -137,7 +145,7 @@ def incidentSummaries(draw: Callable) -> str:
 def incidents(draw: Callable) -> Incident:
     return Incident(
         event=draw(events()),
-        number=draw(integers(min_value=1)),
+        number=draw(incidentNumbers()),
         created=draw(dateTimes()),
         state=draw(incidentStates()),
         priority=draw(incidentPriorities()),
@@ -194,9 +202,14 @@ def rangers(draw: Callable) -> Ranger:
 ##
 
 @composite
+def incidentReportNumbers(draw: Callable) -> str:
+    return draw(integers(min_value=0))
+
+
+@composite
 def incidentReports(draw: Callable) -> IncidentReport:
     return IncidentReport(
-        number=draw(integers(min_value=1)),
+        number=draw(incidentReportNumbers()),
         created=draw(dateTimes()),
         summary=draw(text(min_size=1)),
         reportEntries=sorted(draw(iterables(reportEntries()))),

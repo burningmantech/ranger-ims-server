@@ -18,6 +18,14 @@
 Tests for :mod:`ranger-ims-server.model._incident`
 """
 
+from datetime import datetime as DateTime
+from typing import Any, Iterable
+
+from attr import asdict
+
+from hypothesis import given
+from hypothesis.strategies import iterables
+
 from ims.ext.trial import TestCase
 
 from .datetimes import dt1, dt2
@@ -25,10 +33,16 @@ from .events import eventA
 from .locations import theMan
 from .rangers import rangerHubcap
 from .._entry import ReportEntry
+from .._event import Event
 from .._incident import Incident, summaryFromReport
+from .._location import Location
 from .._priority import IncidentPriority
 from .._state import IncidentState
-
+from ..strategies import (
+    dateTimes, events, incidentNumbers, incidentPriorities, incidentStates,
+    incidentSummaries, incidentTypes, incidents, locations, rangerHandles,
+    reportEntries,
+)
 
 __all__ = ()
 
@@ -95,6 +109,121 @@ class IncidentTests(TestCase):
         )
 
         self.assertEqual(str(incident), "321: A different thing happened")
+
+
+    def _test_replace(self, incident: Incident, name: str, value: Any) -> None:
+        mod = {name: value}
+        new = incident.replace(**mod)
+
+        expected = asdict(incident, recurse=False)
+        expected.update(mod)
+
+        self.assertEqual(asdict(new, recurse=False), expected)
+
+
+    @given(incidents(), events())
+    def test_replace_event(self, incident: Incident, event: Event) -> None:
+        """
+        :meth:`Incident.replace` with an event argument replaces the event.
+        """
+        self._test_replace(incident, "event", event)
+
+
+    @given(incidents(), incidentNumbers())
+    def test_replace_number(self, incident: Incident, number: int) -> None:
+        """
+        :meth:`Incident.replace` with a number argument replaces the
+        incident number.
+        """
+        self._test_replace(incident, "number", number)
+
+
+    @given(incidents(), dateTimes())
+    def test_replace_created(
+        self, incident: Incident, created: DateTime
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a created argument replaces the created
+        time.
+        """
+        self._test_replace(incident, "created", created)
+
+
+    @given(incidents(), incidentStates())
+    def test_replace_state(
+        self, incident: Incident, state: IncidentState
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a state argument replaces the incident
+        state.
+        """
+        self._test_replace(incident, "state", state)
+
+
+    @given(incidents(), incidentPriorities())
+    def test_replace_priority(
+        self, incident: Incident, priority: IncidentPriority
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a priority argument replaces the incident
+        priority.
+        """
+        self._test_replace(incident, "priority", priority)
+
+
+    @given(incidents(), incidentSummaries())
+    def test_replace_summary(self, incident: Incident, summary: str) -> None:
+        """
+        :meth:`Incident.replace` with a summary argument replaces the incident
+        summary.
+        """
+        self._test_replace(incident, "summary", summary)
+
+
+    @given(incidents(), locations())
+    def test_replace_location(
+        self, incident: Incident, location: Location
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a location argument replaces the
+        location.
+        """
+        self._test_replace(incident, "location", location)
+
+
+    @given(incidents(), iterables(rangerHandles()))
+    def test_replace_rangers(
+        self, incident: Incident, rangers: Iterable[str]
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a rangers argument replaces the
+        Rangers.
+        """
+        self._test_replace(incident, "rangers", frozenset(rangers))
+
+
+    @given(incidents(), iterables(incidentTypes()))
+    def test_replace_incidentTypes(
+        self, incident: Incident, incidentTypes: Iterable[str]
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a incidentTypes argument replaces the
+        incident types.
+        """
+        self._test_replace(incident, "incidentTypes", frozenset(incidentTypes))
+
+
+    @given(incidents(), iterables(reportEntries()))
+    def test_replace_reportEntries(
+        self, incident: Incident, reportEntries: Iterable[ReportEntry]
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a reportEntries argument replaces the
+        report entries.
+        """
+        self._test_replace(
+            incident, "reportEntries", tuple(sorted(reportEntries))
+        )
 
 
 
