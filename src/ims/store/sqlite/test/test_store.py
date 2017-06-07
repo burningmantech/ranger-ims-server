@@ -29,7 +29,7 @@ from hypothesis.strategies import booleans, text, tuples
 from ims.ext.sqlite import Connection
 from ims.ext.trial import TestCase
 from ims.model import Event, Incident, Ranger
-from ims.model.json.test.strategies import events, incidents, rangers
+from ims.model.strategies import events, incidents, rangers
 
 from .._store import DataStore
 from ..._exceptions import StorageError

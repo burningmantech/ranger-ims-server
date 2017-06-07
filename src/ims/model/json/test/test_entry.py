@@ -23,9 +23,9 @@ from hypothesis import given
 from ims.ext.trial import TestCase
 
 from .json import jsonFromReportEntry
-from .strategies import reportEntries
 from .._json import jsonDeserialize, jsonSerialize
 from ..._entry import ReportEntry
+from ...strategies import reportEntries
 
 
 __all__ = ()
