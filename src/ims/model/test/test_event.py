@@ -20,8 +20,9 @@ Tests for :mod:`ranger-ims-server.model._event`
 
 from twisted.python.compat import cmp
 
+from ims.ext.trial import TestCase
+
 from .events import eventA, eventB
-from ...ext.trial import TestCase
 
 
 __all__ = ()

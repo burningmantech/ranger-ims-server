@@ -11,7 +11,7 @@ from twisted.trial.unittest import SynchronousTestCase
 from twisted.web import http
 from twisted.web.iweb import IRequest
 
-from ..ext.klein import ContentType
+from .klein import ContentType
 
 
 __all__ = (

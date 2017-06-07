@@ -18,6 +18,8 @@
 Tests for :mod:`ranger-ims-server.model._incident`
 """
 
+from ims.ext.trial import TestCase
+
 from .datetimes import dt1, dt2
 from .events import eventA
 from .locations import theMan
@@ -26,7 +28,6 @@ from .._entry import ReportEntry
 from .._incident import Incident, summaryFromReport
 from .._priority import IncidentPriority
 from .._state import IncidentState
-from ...ext.trial import TestCase
 
 
 __all__ = ()

@@ -28,12 +28,13 @@ from attr.validators import instance_of, optional
 
 from twisted.logger import Logger
 
-from .._abc import IMSDataStore
-from .._exceptions import StorageError
-from ...ext.sqlite import (
+from ims.ext.sqlite import (
     Connection, SQLiteError, createDB, openDB, printSchema
 )
-from ...model import Event, Incident, Ranger
+from ims.model import Event, Incident, Ranger
+
+from .._abc import IMSDataStore
+from .._exceptions import StorageError
 
 
 __all__ = ()

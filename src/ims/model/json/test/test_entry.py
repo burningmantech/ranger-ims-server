@@ -20,11 +20,12 @@ Tests for :mod:`ranger-ims-server.model.json._entry`
 
 from hypothesis import given
 
+from ims.ext.trial import TestCase
+
 from .json import jsonFromReportEntry
 from .strategies import reportEntries
 from .._json import jsonDeserialize, jsonSerialize
 from ..._entry import ReportEntry
-from ....ext.trial import TestCase
 
 
 __all__ = ()

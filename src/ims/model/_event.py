@@ -23,7 +23,7 @@ Event
 from attr import attrib, attrs
 from attr.validators import instance_of
 
-from ..ext.attr import true
+from ims.ext.attr import true
 
 
 __all__ = ()

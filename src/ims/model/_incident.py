@@ -25,12 +25,13 @@ from typing import AbstractSet, Iterable, Optional, Sequence
 from attr import attrib, attrs
 from attr.validators import instance_of, optional
 
+from ims.ext.attr import sorted_tuple
+
 from ._entry import ReportEntry
 from ._event import Event
 from ._location import Location
 from ._priority import IncidentPriority
 from ._state import IncidentState
-from ..ext.attr import sorted_tuple
 
 AbstractSet, Sequence  # silence linter
 

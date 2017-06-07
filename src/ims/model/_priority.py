@@ -18,7 +18,7 @@
 Incident priority
 """
 
-from ..ext.enum import Enum, enumOrdering, unique
+from ims.ext.enum import Enum, enumOrdering, unique
 
 
 __all__ = ()

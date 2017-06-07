@@ -20,11 +20,12 @@ Tests for :mod:`ranger-ims-server.model.json._priority`
 
 from hypothesis import given
 
+from ims.ext.trial import TestCase
+
 from .json import jsonFromIncidentPriority
 from .strategies import incidentPriorities
 from .._json import jsonDeserialize, jsonSerialize
 from ..._priority import IncidentPriority
-from ....ext.trial import TestCase
 
 
 __all__ = ()

@@ -23,7 +23,7 @@ from typing import Any, Type
 
 from cattr import Converter
 
-from ...ext.json import (
+from ims.ext.json import (
     dateTimeAsRFC3339Text, jsonTextFromObject, rfc3339TextAsDateTime
 )
 

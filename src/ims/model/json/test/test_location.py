@@ -20,11 +20,12 @@ Tests for :mod:`ranger-ims-server.model.json._location`
 
 from hypothesis import given
 
+from ims.ext.trial import TestCase
+
 from .json import jsonFromLocation
 from .strategies import locations
 from .._json import jsonDeserialize, jsonSerialize
 from ..._location import Location
-from ....ext.trial import TestCase
 
 
 __all__ = ()

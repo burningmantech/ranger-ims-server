@@ -25,7 +25,7 @@ from typing import AbstractSet, Optional
 from attr import attrib, attrs
 from attr.validators import instance_of, optional
 
-from ..ext.attr import true
+from ims.ext.attr import true
 
 AbstractSet, Optional  # silence linter
 

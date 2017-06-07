@@ -28,7 +28,7 @@ from twisted.enterprise import adbapi
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.logger import Logger
 
-from ..legacy.data.model import Ranger
+from ims.legacy.data.model import Ranger
 
 
 __all__ = (

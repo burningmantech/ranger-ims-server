@@ -24,11 +24,12 @@ from typing import Any
 from hypothesis import given
 from hypothesis.strategies import datetimes, floats, integers, text
 
+from ims.ext.json import dateTimeAsRFC3339Text, jsonTextFromObject
+from ims.ext.trial import TestCase
+
 from .strategies import incidents
 from .._json import jsonDeserialize, jsonSerialize, jsonTextFromModelObject
 from ..._incident import Incident
-from ....ext.json import dateTimeAsRFC3339Text, jsonTextFromObject
-from ....ext.trial import TestCase
 
 
 __all__ = ()

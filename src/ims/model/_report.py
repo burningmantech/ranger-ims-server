@@ -25,8 +25,9 @@ from typing import Optional, Sequence
 from attr import attrib, attrs
 from attr.validators import instance_of, optional
 
+from ims.ext.attr import sorted_tuple
+
 from ._incident import summaryFromReport
-from ..ext.attr import sorted_tuple
 
 Optional, Sequence  # Silence linter
 
