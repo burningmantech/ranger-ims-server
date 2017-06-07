@@ -33,6 +33,10 @@ __all__ = (
 
 
 TConnection = TypeVar("TConnection", bound="Connection")
+TCursor     = TypeVar("TCursor", bound="Cursor")
+TBaseCursor = TypeVar("TBaseCursor", bound="BaseCursor")
+
+CursorFactory = Callable[..., TCursor]
 
 Parameter = Optional[Union[bytes, str, int, float]]
 
@@ -60,15 +64,15 @@ class Cursor(BaseCursor):
     _log = Logger()
 
 
-    def executescript(self, sql_script: str) -> BaseCursor:
+    def executescript(self, sql_script: str) -> TCursor:
         """
         See :meth:`sqlite3.Cursor.executescript`.
         """
         self._log.debug("EXECUTE SCRIPT:\n{script}", script=sql_script)
-        return super().executescript(sql_script)
+        return cast(TCursor, super().executescript(sql_script))
 
 
-    def execute(self, sql: str, parameters: Mapping = None) -> BaseCursor:
+    def execute(self, sql: str, parameters: Mapping = None) -> TCursor:
         """
         See :meth:`sqlite3.Cursor.execute`.
         """
@@ -77,7 +81,7 @@ class Cursor(BaseCursor):
         self._log.debug(
             "EXECUTE: {sql} <- {parameters}", sql=sql, parameters=parameters
         )
-        return super().execute(sql, parameters)
+        return cast(TCursor, super().execute(sql, parameters))
 
 
 
@@ -90,8 +94,10 @@ class Connection(BaseConnection):
     _log = Logger()
 
 
-    def cursor(self, factory: Callable[..., Cursor] = Cursor) -> BaseCursor:
-        return super().cursor(factory=factory)
+    def cursor(
+        self, factory: CursorFactory = cast(CursorFactory, Cursor)
+    ) -> TCursor:
+        return cast(TCursor, super().cursor(factory=factory))
 
 
     def commit(self) -> None:
