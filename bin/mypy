@@ -14,22 +14,22 @@ tmp="$(mktemp -t mypy.XXXX)";
 # JSONDecodeError has no attribute: https://github.com/python/mypy/issues/2981
 # Callable has no attribute "todo": ... uh, not sure that's a bug, but ...
 
-mypy "$@"                                                                 \
-    | grep -v                                                             \
-        -e ': error: Too many arguments for '                             \
-        -e ': error: Unexpected keyword argument '                        \
-        -e ': error: "JSONDecodeError" has no attribute '                 \
-        -e ': error: Callable\[\[[^\]*\], None\] has no attribute "todo"' \
-        -e ': error: Unsupported left operand type for '                  \
+mypy "$@"                                                                  \
+    | grep -v                                                              \
+        -e ': error: "JSONDecodeError" has no attribute '                  \
+        -e ': error: Callable\[\[[^\]\+\], None\] has no attribute "todo"' \
+        -e ': error: Too many arguments for '                              \
+        -e ': error: Unexpected keyword argument '                         \
+        -e ': error: Unsupported left operand type for '                   \
         -e '^src/ims/legacy/' \
-        -e '^src/ims/ext/enum.py:.*: error: Function is missing a type annotation for one or more arguments' \
-        -e '^src/ims/ext/enum.py:.*: error: Cannot assign to a method' \
-        -e '^src/ims/ext/enum.py:.*: error: Incompatible types in assignment ' \
-        -e '^src/ims/ext/.*sqlite.py:.*: error: Signature of ".*" incompatible with supertype ".*"' \
-        -e '^src/ims/ext/.*sqlite.py:.*: error: Argument .* of ".*" incompatible with supertype ".*"' \
-        -e '^src/ims/ext/sqlite.py:.*: error: Argument 2 to "connect" has incompatible type "Connection";' \
-        -e '^src/ims/ext/test/test_sqlite.py:.*: error: Argument 2 to "execute" of "Connection" has incompatible type "Optional\[Mapping\[Any, Any\]\]"; expected Iterable\[Any\]' \
-        -e '^src/ims/dms/.*: error: Function is missing a type annotation' \
+        -e '^src/ims/ext/enum.py:.\+: error: Function is missing a type annotation for one or more arguments' \
+        -e '^src/ims/ext/enum.py:.\+: error: Cannot assign to a method' \
+        -e '^src/ims/ext/enum.py:.\+: error: Incompatible types in assignment ' \
+        -e '^src/ims/ext/.*sqlite.py:.\+: error: Signature of ".\+" incompatible with supertype ".\+"' \
+        -e '^src/ims/ext/.*sqlite.py:.\+: error: Argument .\+ of ".\+" incompatible with supertype ".\+"' \
+        -e '^src/ims/ext/sqlite.py:.\+: error: Argument 2 to "connect" has incompatible type "Connection";' \
+        -e '^src/ims/ext/test/test_sqlite.py:.\+: error: Argument 2 to "execute" of "Connection" has incompatible type "Optional\[Mapping\[Any, Any\]\]"; expected Iterable\[Any\]' \
+        -e '^src/ims/dms/.\+: error: Function is missing a type annotation' \
         > "${tmp}" || true;
 
 sort < "${tmp}";
