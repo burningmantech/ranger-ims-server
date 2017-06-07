@@ -18,9 +18,13 @@
 Incident Management System SQLite data store.
 """
 
+from calendar import timegm
+from datetime import (
+    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+)
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, Iterable, Tuple
+from typing import Any, Dict, Iterable, Optional, Tuple
 from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
@@ -29,15 +33,21 @@ from attr.validators import instance_of, optional
 from twisted.logger import Logger
 
 from ims.ext.sqlite import (
-    Connection, SQLiteError, createDB, openDB, printSchema
+    Connection, Cursor, SQLiteError, createDB, openDB, printSchema
 )
-from ims.model import Event, Incident, Ranger
+from ims.model import Event, Incident, Ranger, RodGarettAddress
 
 from .._abc import IMSDataStore
 from .._exceptions import StorageError
 
 
 __all__ = ()
+
+
+def _query(query: str) -> str:
+    return dedent(query.format(
+        query_eventID="select ID from EVENT where NAME = :eventID",
+    ))
 
 
 
@@ -133,7 +143,7 @@ class DataStore(IMSDataStore):
             )
         )
 
-    _query_events = dedent(
+    _query_events = _query(
         """
         select NAME from EVENT
         """
@@ -151,7 +161,7 @@ class DataStore(IMSDataStore):
             "Unable to create event: {eventID}"
         )
 
-    _query_createEvent = dedent(
+    _query_createEvent = _query(
         """
         insert into EVENT (NAME) values (:eventID);
         """
@@ -175,13 +185,13 @@ class DataStore(IMSDataStore):
             )
         )
 
-    _query_incidentTypes = dedent(
+    _query_incidentTypes = _query(
         """
         select NAME from INCIDENT_TYPE
         """
     )
 
-    _query_incidentTypesNotHidden = dedent(
+    _query_incidentTypesNotHidden = _query(
         """
         select NAME from INCIDENT_TYPE where HIDDEN = 0
         """
@@ -198,16 +208,16 @@ class DataStore(IMSDataStore):
             (
                 (
                     self._query_createIncidentType,
-                    dict(name=incidentType, hidden=hidden),
+                    dict(incidentType=incidentType, hidden=hidden),
                 ),
             ),
             "Unable to create incident type: {name}"
         )
 
-    _query_createIncidentType = dedent(
+    _query_createIncidentType = _query(
         """
         insert into INCIDENT_TYPE (NAME, HIDDEN)
-        values (:name, :hidden)
+        values (:incidentType, :hidden)
         """
     )
 
@@ -224,16 +234,16 @@ class DataStore(IMSDataStore):
             (
                 (
                     self._query_hideShowIncidentType,
-                    dict(name=incidentType, hidden=hidden),
+                    dict(incidentType=incidentType, hidden=hidden),
                 )
                 for incidentType in incidentTypes
             ),
             "Unable to {} incident types: {{incidentTypes}}".format(action)
         )
 
-    _query_hideShowIncidentType = dedent(
+    _query_hideShowIncidentType = _query(
         """
-        update INCIDENT_TYPE set HIDDEN = :hidden where NAME = :name
+        update INCIDENT_TYPE set HIDDEN = :hidden where NAME = :incidentType
         """
     )
 
@@ -266,19 +276,86 @@ class DataStore(IMSDataStore):
         raise NotImplementedError()
 
 
-    async def createIncident(
-        self, event: Event, incident: Incident, author: Ranger
+    def _nextIncidentNumber(self, event: Event, cursor: Cursor) -> int:
+        """
+        Look up the next available incident number.
+        """
+        cursor.execute(self._query_maxIncidentNumber, dict(eventID=event.id))
+        number = cursor.fetchone()["NUMBER"]
+        if number is None:
+            return 1
+        else:
+            return number + 1
+
+    _query_maxIncidentNumber = _query(
+        """
+        select max(NUMBER) from INCIDENT where EVENT = ({query_eventID})
+        """
+    )
+
+
+    async def _createIncident(
+        self, event: Event, incident: Incident, author: Optional[Ranger],
+        directImport: bool,
     ) -> None:
         """
         Create a new incident and add it into the given event.
-        The incident number is determined by the database and must not be
-        specified by the given incident.
+        The incident number is determined by the database; the given incident
+        must have an incident number value of zero.
         """
         try:
             with self._db as db:
                 cursor = db.cursor()
                 try:
-                    raise NotImplementedError()
+                    # Replace incident number with a new one (unless we are
+                    # importing).
+                    if not directImport:
+                        assert incident.number == 0, (
+                            "New incident number must be zero"
+                        )
+                        number = self._nextIncidentNumber(event, cursor)
+                        incident = incident.replace(number=number)
+
+                    # Get normalized-to-Rod-Garett address fields
+                    location = incident.location
+                    address = location.address
+
+                    if isinstance(address, RodGarettAddress):
+                        locationConcentric = address.concentric
+                        locationRadialHour = address.radialHour
+                        locationRadialMinute = address.radialMinute
+                    else:
+                        locationConcentric = None
+                        locationRadialHour = None
+                        locationRadialMinute = None
+
+                    # Write incident row
+                    cursor.execute(
+                        self._query_createIncident, dict(
+                            eventID=event.id,
+                            incidentNumber=incident.number,
+                            incidentVersion=1,  # FIXME
+                            incidentCreated=asTimeStamp(incident.created),
+                            incidentPriority=incident.priority,
+                            incidentState=incident.state.name,
+                            incidentSummary=incident.summary,
+                            locationName=location.name,
+                            locationConcentric=locationConcentric,
+                            locationRadialHour=locationRadialHour,
+                            locationRadialMinute=locationRadialMinute,
+                            locationDescription=address.description,
+                        )
+                    )
+
+                    # Join with Ranger handles
+
+                    # Join with incident types
+
+                    if not directImport:
+                        # Add initial report entry
+                        pass
+
+                    # Add report entries
                 finally:
                     cursor.close()
         except SQLiteError as e:
@@ -287,3 +364,69 @@ class DataStore(IMSDataStore):
                 event=event, incident=incident, author=author, error=e,
             )
             raise StorageError(e)
+
+    _query_createIncident = _query(
+        """
+        insert into INCIDENT (
+            EVENT,
+            NUMBER,
+            VERSION,
+            CREATED,
+            PRIORITY,
+            STATE,
+            SUMMARY,
+            LOCATION_NAME,
+            LOCATION_CONCENTRIC,
+            LOCATION_RADIAL_HOUR,
+            LOCATION_RADIAL_MINUTE,
+            LOCATION_DESCRIPTION
+        )
+        values (
+            ({query_eventID}),
+            :incidentNumber,
+            :incidentVersion,
+            :incidentCreated,
+            :incidentPriority,
+            :incidentState,
+            :incidentSummary,
+            :locationName,
+            :locationConcentric,
+            :locationRadialHour,
+            :locationRadialMinute,
+            :locationDescription
+        )
+        """
+    )
+
+
+    async def createIncident(
+        self, event: Event, incident: Incident, author: Ranger
+    ) -> None:
+        """
+        Create a new incident and add it into the given event.
+        The incident number is determined by the database; the given incident
+        must have an incident number value of zero.
+        """
+        self._createIncident(event, incident, author, False)
+
+
+    async def importIncident(self, event: Event, incident: Incident) -> None:
+        """
+        Import an incident and add it into the given event.
+        """
+        self._createIncident(event, incident, None, True)
+
+
+
+zeroTimeDelta = TimeDelta(0)
+
+
+def asTimeStamp(dateTime: DateTime) -> int:
+    assert dateTime.tzinfo is not None, repr(dateTime)
+    assert dateTime.tzinfo.utcoffset(dateTime) == zeroTimeDelta
+
+    return timegm(dateTime.timetuple())
+
+
+def fromTimeStamp(timeStamp: int) -> DateTime:
+    return DateTime.fromtimestamp(timeStamp, tz=TimeZone.utc)
