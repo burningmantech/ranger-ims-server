@@ -50,7 +50,7 @@ class IncidentJSONKey(Enum):
     priority      = "priority"
     summary       = "summary"
     location      = "location"
-    rangers       = "ranger_handles"
+    rangerHandles = "ranger_handles"
     incidentTypes = "incident_types"
     reportEntries = "report_entries"
 
@@ -68,7 +68,7 @@ class IncidentJSONType(Enum):
     priority      = IncidentPriority
     summary       = Optional[str]
     location      = Location
-    rangers       = Set[str]
+    rangerHandles = Set[str]
     incidentTypes = Set[str]
     reportEntries = List[ReportEntry]
 

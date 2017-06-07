@@ -73,7 +73,7 @@ class Incident(object):
         validator=instance_of(Location)
     )  # type: Location
 
-    rangers = attrib(
+    rangerHandles = attrib(
         validator=instance_of(IterableABC), convert=frozenset
     )  # type: AbstractSet[str]
     incidentTypes = attrib(

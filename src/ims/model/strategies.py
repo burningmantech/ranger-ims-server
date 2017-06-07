@@ -151,7 +151,7 @@ def incidents(draw: Callable) -> Incident:
         priority=draw(incidentPriorities()),
         summary=draw(incidentSummaries()),
         location=draw(locations()),
-        rangers=draw(iterables(rangerHandles())),
+        rangerHandles=draw(iterables(rangerHandles())),
         incidentTypes=draw(iterables(incidentTypesText())),
         reportEntries=draw(iterables(reportEntries())),
     )

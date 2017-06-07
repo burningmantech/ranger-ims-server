@@ -81,7 +81,7 @@ class IncidentTests(TestCase):
             state=IncidentState.new,
             priority=IncidentPriority.normal,
             summary="A thing happened",
-            rangers=(),
+            rangerHandles=(),
             incidentTypes=(),
             location=theMan,
             reportEntries=(),
@@ -102,7 +102,7 @@ class IncidentTests(TestCase):
             state=IncidentState.new,
             priority=IncidentPriority.normal,
             summary=None,
-            rangers=(),
+            rangerHandles=(),
             incidentTypes=(),
             location=theMan,
             reportEntries=(entryB,),
@@ -192,14 +192,14 @@ class IncidentTests(TestCase):
 
 
     @given(incidents(), iterables(rangerHandles()))
-    def test_replace_rangers(
-        self, incident: Incident, rangers: Iterable[str]
+    def test_replace_rangerHandles(
+        self, incident: Incident, rangerHandles: Iterable[str]
     ) -> None:
         """
-        :meth:`Incident.replace` with a rangers argument replaces the
-        Rangers.
+        :meth:`Incident.replace` with a rangerHandles argument replaces the
+        Ranger handles.
         """
-        self._test_replace(incident, "rangers", frozenset(rangers))
+        self._test_replace(incident, "rangerHandles", frozenset(rangerHandles))
 
 
     @given(incidents(), iterables(incidentTypes()))
