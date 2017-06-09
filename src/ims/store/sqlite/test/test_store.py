@@ -35,7 +35,7 @@ from ims.model import (
 )
 from ims.model.strategies import events, incidents, rangers
 
-from .._store import DataStore, asTimeStamp
+from .._store import DataStore, asTimeStamp, priorityAsInteger
 from ..._exceptions import StorageError
 
 
@@ -406,7 +406,11 @@ class DataStoreTests(TestCase):
                     LOCATION_DESCRIPTION
                 ) values (
                     (select ID from EVENT where NAME = :eventID),
-                    1, 1, :created, 3, 'new',
+                    :incidentNumber,
+                    1,
+                    :incidentCreated,
+                    :incidentPriority,
+                    :incidentState,
                     :incidentSummary,
                     :locationName,
                     :locationConcentric,
@@ -417,8 +421,12 @@ class DataStoreTests(TestCase):
                 """
             ),
             dict(
-                eventID=event.id, created=asTimeStamp(incident.created),
+                eventID=event.id,
+                incidentCreated=asTimeStamp(incident.created),
+                incidentNumber=incident.number,
                 incidentSummary=incident.summary,
+                incidentPriority=priorityAsInteger(incident.priority),
+                incidentState=incident.state.name,
                 locationName=location.name,
                 locationConcentric=address.concentric,
                 locationRadialHour=address.radialHour,
