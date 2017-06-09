@@ -368,7 +368,7 @@ class DataStoreTests(TestCase):
                     description="Look for the Foobars",
                 ),
             ),
-            rangerHandles=(),
+            rangerHandles=("Hubcap", "Bucket"),
             incidentTypes=(),
             reportEntries=(),
         )
@@ -434,6 +434,25 @@ class DataStoreTests(TestCase):
                 locationDescription=address.description,
             )
         )
+        for rangerHandle in incident.rangerHandles:
+            store._db.execute(
+                dedent(
+                    """
+                    insert into INCIDENT__RANGER
+                    (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
+                    values (
+                        (select ID from EVENT where NAME = :eventID),
+                        :incidentNumber,
+                        :rangerHandle
+                    )
+                    """
+                ),
+                dict(
+                    eventID=event.id,
+                    incidentNumber=incident.number,
+                    rangerHandle=rangerHandle
+                )
+            )
 
         retrieved = self.successResultOf(
             store.incidentWithNumber(incident.event, incident.number)

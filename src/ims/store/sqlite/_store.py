@@ -268,15 +268,15 @@ class DataStore(IMSDataStore):
     def _fetchIncident(
         self, event: Event, number: int, cursor: Cursor
     ) -> Incident:
-        cursor.execute(
-            self._query_incident, dict(eventID=event.id, incidentNumber=number)
-        )
+        params = dict(eventID=event.id, incidentNumber=number)
+
+        cursor.execute(self._query_incident, params)
         row = cursor.fetchone()
 
-        print("*" * 80)
-        for key in row.keys():
-            print(key, "=", row[key])
-        print("*" * 80)
+        rangerHandles = (
+            row["RANGER_HANDLE"]
+            for row in cursor.execute(self._query_incident_rangers, params)
+        )
 
         return Incident(
             event=event,
@@ -294,7 +294,7 @@ class DataStore(IMSDataStore):
                     description=row["LOCATION_DESCRIPTION"],
                 ),
             ),
-            rangerHandles=(),
+            rangerHandles=rangerHandles,
             incidentTypes=(),
             reportEntries=(),
         )
@@ -308,8 +308,15 @@ class DataStore(IMSDataStore):
             LOCATION_RADIAL_HOUR,
             LOCATION_RADIAL_MINUTE,
             LOCATION_DESCRIPTION
-        from INCIDENT
+        from INCIDENT i
         where EVENT = ({query_eventID}) and NUMBER = :incidentNumber
+        """
+    )
+
+    _query_incident_rangers = _query(
+        """
+        select RANGER_HANDLE from INCIDENT__RANGER
+        where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber
         """
     )
 
