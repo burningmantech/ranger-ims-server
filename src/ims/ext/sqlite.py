@@ -22,6 +22,7 @@ from twisted.logger import Logger
 __all__ = (
     "Connection",
     "Parameter",
+    "Parameters",
     "QueryPlanExplanation",
     "Row",
     "SQLiteError",
