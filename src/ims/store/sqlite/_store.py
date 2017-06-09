@@ -400,7 +400,6 @@ class DataStore(IMSDataStore):
                         self._query_createIncident, dict(
                             eventID=incident.event.id,
                             incidentNumber=incident.number,
-                            incidentVersion=1,  # FIXME
                             incidentCreated=asTimeStamp(incident.created),
                             incidentPriority=incident.priority,
                             incidentState=incident.state.name,
@@ -450,7 +449,7 @@ class DataStore(IMSDataStore):
         values (
             ({query_eventID}),
             :incidentNumber,
-            :incidentVersion,
+            1,
             :incidentCreated,
             :incidentPriority,
             :incidentState,

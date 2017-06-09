@@ -349,10 +349,13 @@ class DataStoreTests(TestCase):
         """
         event = Event(id="Event A")
 
+        # No microsecond resolution when serialized
+        created = DateTime.now(TimeZone.utc).replace(microsecond=0)
+
         incident = Incident(
             event=event,
             number=1,
-            created=DateTime.now(TimeZone.utc),
+            created=created,
             state=IncidentState.new,
             priority=IncidentPriority.normal,
             summary="This thing happened",
@@ -379,19 +382,23 @@ class DataStoreTests(TestCase):
             dict(eventID=event.id)
         )
         store._db.execute(
-            """
-            insert into CONCENTRIC_STREET (EVENT, ID, NAME)
-            values (
-                (select ID from EVENT where NAME = :eventID), :streetID, 'Blah'
-            )
-            """,
+            dedent(
+                """
+                insert into CONCENTRIC_STREET (EVENT, ID, NAME)
+                values (
+                    (select ID from EVENT where NAME = :eventID),
+                    :streetID,
+                    'Blah'
+                )
+                """
+            ),
             dict(eventID=event.id, streetID=address.concentric)
         )
         store._db.execute(
             dedent(
                 """
                 insert into INCIDENT (
-                    EVENT, NUMBER, VERSION, CREATED, PRIORITY, STATE,
+                    EVENT, NUMBER, VERSION, CREATED, PRIORITY, STATE, SUMMARY,
                     LOCATION_NAME,
                     LOCATION_CONCENTRIC,
                     LOCATION_RADIAL_HOUR,
@@ -400,6 +407,7 @@ class DataStoreTests(TestCase):
                 ) values (
                     (select ID from EVENT where NAME = :eventID),
                     1, 1, :created, 3, 'new',
+                    :incidentSummary,
                     :locationName,
                     :locationConcentric,
                     :locationRadialHour,
@@ -410,6 +418,7 @@ class DataStoreTests(TestCase):
             ),
             dict(
                 eventID=event.id, created=asTimeStamp(incident.created),
+                incidentSummary=incident.summary,
                 locationName=location.name,
                 locationConcentric=address.concentric,
                 locationRadialHour=address.radialHour,
@@ -418,14 +427,16 @@ class DataStoreTests(TestCase):
             )
         )
 
-        self.assertEqual(
-            self.successResultOf(
-                store.incidentWithNumber(incident.event, incident.number)
-            ),
-            incident
+        retrieved = self.successResultOf(
+            store.incidentWithNumber(incident.event, incident.number)
         )
 
-    test_incidentWithNumber.todo = "unimplemented"
+        from attr import asdict
+        self.maxDiff = None
+
+        self.assertEqual(asdict(retrieved), asdict(incident))
+
+    test_incidentWithNumber.todo = "not done"
 
 
     @given(events(), incidents(), rangers())
