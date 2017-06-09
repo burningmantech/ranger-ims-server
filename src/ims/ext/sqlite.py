@@ -39,6 +39,7 @@ TBaseCursor = TypeVar("TBaseCursor", bound="BaseCursor")
 CursorFactory = Callable[..., TCursor]
 
 Parameter = Optional[Union[bytes, str, int, float]]
+Parameters = Mapping[str, Parameter]
 
 
 class Row(BaseRow):
@@ -57,7 +58,7 @@ class Row(BaseRow):
 
 class Cursor(BaseCursor):
     """
-    Subclass of `sqlite3.Cursor` that adds logging of SQL statements for
+    Subclass of :class:`sqlite3.Cursor` that adds logging of SQL statements for
     debugging purposes.
     """
 
@@ -72,7 +73,7 @@ class Cursor(BaseCursor):
         return cast(TCursor, super().executescript(sql_script))
 
 
-    def execute(self, sql: str, parameters: Mapping = None) -> TCursor:
+    def execute(self, sql: str, parameters: Parameters = None) -> TCursor:
         """
         See :meth:`sqlite3.Cursor.execute`.
         """
@@ -87,8 +88,8 @@ class Cursor(BaseCursor):
 
 class Connection(BaseConnection):
     """
-    Subclass of `sqlite3.Connection` that adds logging of SQL statements for
-    debugging purposes and an improved row type.
+    Subclass of :class:`sqlite3.Connection` that adds logging of SQL statements
+    for debugging purposes and an improved row type.
     """
 
     _log = Logger()
@@ -97,6 +98,9 @@ class Connection(BaseConnection):
     def cursor(
         self, factory: CursorFactory = cast(CursorFactory, Cursor)
     ) -> TCursor:
+        """
+        See :meth:`sqlite3.Cursor.cursor`.
+        """
         return cast(TCursor, super().cursor(factory=factory))
 
 
