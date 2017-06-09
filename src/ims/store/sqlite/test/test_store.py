@@ -373,122 +373,9 @@ class DataStoreTests(TestCase):
             reportEntries=(),
         )
 
-        location = incident.location
-        address = cast(RodGarettAddress, location.address)
-
         store = self.store()
 
-        store._db.execute(
-            "insert into EVENT (NAME) values (:eventID);",
-            dict(eventID=event.id)
-        )
-
-        store._db.execute(
-            dedent(
-                """
-                insert into CONCENTRIC_STREET (EVENT, ID, NAME)
-                values (
-                    (select ID from EVENT where NAME = :eventID),
-                    :streetID,
-                    'Blah'
-                )
-                """
-            ),
-            dict(eventID=event.id, streetID=address.concentric)
-        )
-
-        store._db.execute(
-            dedent(
-                """
-                insert into INCIDENT (
-                    EVENT, NUMBER, VERSION, CREATED, PRIORITY, STATE, SUMMARY,
-                    LOCATION_NAME,
-                    LOCATION_CONCENTRIC,
-                    LOCATION_RADIAL_HOUR,
-                    LOCATION_RADIAL_MINUTE,
-                    LOCATION_DESCRIPTION
-                ) values (
-                    (select ID from EVENT where NAME = :eventID),
-                    :incidentNumber,
-                    1,
-                    :incidentCreated,
-                    :incidentPriority,
-                    :incidentState,
-                    :incidentSummary,
-                    :locationName,
-                    :locationConcentric,
-                    :locationRadialHour,
-                    :locationRadialMinute,
-                    :locationDescription
-                )
-                """
-            ),
-            dict(
-                eventID=event.id,
-                incidentCreated=asTimeStamp(incident.created),
-                incidentNumber=incident.number,
-                incidentSummary=incident.summary,
-                incidentPriority=priorityAsInteger(incident.priority),
-                incidentState=incident.state.name,
-                locationName=location.name,
-                locationConcentric=address.concentric,
-                locationRadialHour=address.radialHour,
-                locationRadialMinute=address.radialMinute,
-                locationDescription=address.description,
-            )
-        )
-
-        for rangerHandle in incident.rangerHandles:
-            store._db.execute(
-                dedent(
-                    """
-                    insert into INCIDENT__RANGER
-                    (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
-                    values (
-                        (select ID from EVENT where NAME = :eventID),
-                        :incidentNumber,
-                        :rangerHandle
-                    )
-                    """
-                ),
-                dict(
-                    eventID=event.id,
-                    incidentNumber=incident.number,
-                    rangerHandle=rangerHandle
-                )
-            )
-
-        for incidentType in incident.incidentTypes:
-            store._db.execute(
-                dedent(
-                    """
-                    insert into INCIDENT_TYPE (NAME, HIDDEN)
-                    values (:incidentType, 0)
-                    """
-                ),
-                dict(incidentType=incidentType)
-            )
-            store._db.execute(
-                dedent(
-                    """
-                    insert into INCIDENT__INCIDENT_TYPE
-                    (EVENT, INCIDENT_NUMBER, INCIDENT_TYPE)
-                    values (
-                        (select ID from EVENT where NAME = :eventID),
-                        :incidentNumber,
-                        (
-                            select ID from INCIDENT_TYPE
-                            where NAME = :incidentType
-                        )
-                    )
-                    """
-                ),
-                dict(
-                    eventID=event.id,
-                    incidentNumber=incident.number,
-                    incidentType=incidentType
-                )
-            )
+        self.storeIncident(store, incident)
 
         retrieved = self.successResultOf(
             store.incidentWithNumber(incident.event, incident.number)
@@ -520,3 +407,120 @@ class DataStoreTests(TestCase):
         self.assertEqual(stored, frozenset((incident,)))
 
     test_createIncident.todo = "unimplemented"
+
+
+    def storeIncident(self, store, incident):
+        location = incident.location
+        address = cast(RodGarettAddress, location.address)
+
+        store._db.execute(
+            "insert into EVENT (NAME) values (:eventID);",
+            dict(eventID=incident.event.id)
+        )
+
+        store._db.execute(
+            dedent(
+                """
+                insert into CONCENTRIC_STREET (EVENT, ID, NAME)
+                values (
+                    (select ID from EVENT where NAME = :eventID),
+                    :streetID,
+                    'Blah'
+                )
+                """
+            ),
+            dict(eventID=incident.event.id, streetID=address.concentric)
+        )
+
+        store._db.execute(
+            dedent(
+                """
+                insert into INCIDENT (
+                    EVENT, NUMBER, VERSION, CREATED, PRIORITY, STATE, SUMMARY,
+                    LOCATION_NAME,
+                    LOCATION_CONCENTRIC,
+                    LOCATION_RADIAL_HOUR,
+                    LOCATION_RADIAL_MINUTE,
+                    LOCATION_DESCRIPTION
+                ) values (
+                    (select ID from EVENT where NAME = :eventID),
+                    :incidentNumber,
+                    1,
+                    :incidentCreated,
+                    :incidentPriority,
+                    :incidentState,
+                    :incidentSummary,
+                    :locationName,
+                    :locationConcentric,
+                    :locationRadialHour,
+                    :locationRadialMinute,
+                    :locationDescription
+                )
+                """
+            ),
+            dict(
+                eventID=incident.event.id,
+                incidentCreated=asTimeStamp(incident.created),
+                incidentNumber=incident.number,
+                incidentSummary=incident.summary,
+                incidentPriority=priorityAsInteger(incident.priority),
+                incidentState=incident.state.name,
+                locationName=location.name,
+                locationConcentric=address.concentric,
+                locationRadialHour=address.radialHour,
+                locationRadialMinute=address.radialMinute,
+                locationDescription=address.description,
+            )
+        )
+
+        for rangerHandle in incident.rangerHandles:
+            store._db.execute(
+                dedent(
+                    """
+                    insert into INCIDENT__RANGER
+                    (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
+                    values (
+                        (select ID from EVENT where NAME = :eventID),
+                        :incidentNumber,
+                        :rangerHandle
+                    )
+                    """
+                ),
+                dict(
+                    eventID=incident.event.id,
+                    incidentNumber=incident.number,
+                    rangerHandle=rangerHandle
+                )
+            )
+
+        for incidentType in incident.incidentTypes:
+            store._db.execute(
+                dedent(
+                    """
+                    insert into INCIDENT_TYPE (NAME, HIDDEN)
+                    values (:incidentType, 0)
+                    """
+                ),
+                dict(incidentType=incidentType)
+            )
+            store._db.execute(
+                dedent(
+                    """
+                    insert into INCIDENT__INCIDENT_TYPE
+                    (EVENT, INCIDENT_NUMBER, INCIDENT_TYPE)
+                    values (
+                        (select ID from EVENT where NAME = :eventID),
+                        :incidentNumber,
+                        (
+                            select ID from INCIDENT_TYPE
+                            where NAME = :incidentType
+                        )
+                    )
+                    """
+                ),
+                dict(
+                    eventID=incident.event.id,
+                    incidentNumber=incident.number,
+                    incidentType=incidentType
+                )
+            )
