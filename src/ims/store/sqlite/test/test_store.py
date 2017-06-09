@@ -369,7 +369,7 @@ class DataStoreTests(TestCase):
                 ),
             ),
             rangerHandles=("Hubcap", "Bucket"),
-            incidentTypes=(),
+            incidentTypes=("Foo", "Bar"),
             reportEntries=(),
         )
 
@@ -377,10 +377,12 @@ class DataStoreTests(TestCase):
         address = cast(RodGarettAddress, location.address)
 
         store = self.store()
+
         store._db.execute(
             "insert into EVENT (NAME) values (:eventID);",
             dict(eventID=event.id)
         )
+
         store._db.execute(
             dedent(
                 """
@@ -394,6 +396,7 @@ class DataStoreTests(TestCase):
             ),
             dict(eventID=event.id, streetID=address.concentric)
         )
+
         store._db.execute(
             dedent(
                 """
@@ -434,6 +437,7 @@ class DataStoreTests(TestCase):
                 locationDescription=address.description,
             )
         )
+
         for rangerHandle in incident.rangerHandles:
             store._db.execute(
                 dedent(
@@ -451,6 +455,38 @@ class DataStoreTests(TestCase):
                     eventID=event.id,
                     incidentNumber=incident.number,
                     rangerHandle=rangerHandle
+                )
+            )
+
+        for incidentType in incident.incidentTypes:
+            store._db.execute(
+                dedent(
+                    """
+                    insert into INCIDENT_TYPE (NAME, HIDDEN)
+                    values (:incidentType, 0)
+                    """
+                ),
+                dict(incidentType=incidentType)
+            )
+            store._db.execute(
+                dedent(
+                    """
+                    insert into INCIDENT__INCIDENT_TYPE
+                    (EVENT, INCIDENT_NUMBER, INCIDENT_TYPE)
+                    values (
+                        (select ID from EVENT where NAME = :eventID),
+                        :incidentNumber,
+                        (
+                            select ID from INCIDENT_TYPE
+                            where NAME = :incidentType
+                        )
+                    )
+                    """
+                ),
+                dict(
+                    eventID=event.id,
+                    incidentNumber=incident.number,
+                    incidentType=incidentType
                 )
             )
 

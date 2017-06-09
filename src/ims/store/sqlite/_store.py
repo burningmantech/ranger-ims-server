@@ -273,9 +273,14 @@ class DataStore(IMSDataStore):
         cursor.execute(self._query_incident, params)
         row = cursor.fetchone()
 
-        rangerHandles = (
+        rangerHandles = tuple(
             row["RANGER_HANDLE"]
             for row in cursor.execute(self._query_incident_rangers, params)
+        )
+
+        incidentTypes = tuple(
+            row["NAME"]
+            for row in cursor.execute(self._query_incident_types, params)
         )
 
         return Incident(
@@ -295,7 +300,7 @@ class DataStore(IMSDataStore):
                 ),
             ),
             rangerHandles=rangerHandles,
-            incidentTypes=(),
+            incidentTypes=incidentTypes,
             reportEntries=(),
         )
 
@@ -317,6 +322,17 @@ class DataStore(IMSDataStore):
         """
         select RANGER_HANDLE from INCIDENT__RANGER
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber
+        """
+    )
+
+    _query_incident_types = _query(
+        """
+        select NAME from INCIDENT_TYPE where ID in (
+            select INCIDENT_TYPE from INCIDENT__INCIDENT_TYPE
+            where
+                EVENT = ({query_eventID}) and
+                INCIDENT_NUMBER = :incidentNumber
+        )
         """
     )
 
