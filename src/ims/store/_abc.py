@@ -95,7 +95,7 @@ class IMSDataStore(ABC):
 
     @abstractmethod
     async def createIncident(
-        self, event: Event, incident: Incident, author: Ranger
+        self, incident: Incident, author: Ranger
     ) -> None:
         """
         Create a new incident and add it into the given event.

@@ -18,20 +18,24 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
+from datetime import datetime as DateTime, timezone as TimeZone
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
-from typing import Tuple
+from typing import Tuple, cast
 
 from hypothesis import assume, given
 from hypothesis.strategies import booleans, text, tuples
 
 from ims.ext.sqlite import Connection
 from ims.ext.trial import TestCase
-from ims.model import Event, Incident, Ranger
+from ims.model import (
+    Event, Incident, IncidentPriority, IncidentState, Location, Ranger,
+    RodGarettAddress,
+)
 from ims.model.strategies import events, incidents, rangers
 
-from .._store import DataStore
+from .._store import DataStore, asTimeStamp
 from ..._exceptions import StorageError
 
 
@@ -336,7 +340,92 @@ class DataStoreTests(TestCase):
         """
         raise NotImplementedError()
 
-    test_incidents.todo = "unimplemented test"
+    test_incidents.todo = "unimplemented"
+
+
+    def test_incidentWithNumber(self) -> None:
+        """
+        :meth:`DataStore.incidentWithNumber` return the specified incident.
+        """
+        event = Event(id="Event A")
+
+        incident = Incident(
+            event=event,
+            number=1,
+            created=DateTime.now(TimeZone.utc),
+            state=IncidentState.new,
+            priority=IncidentPriority.normal,
+            summary="This thing happened",
+            location=Location(
+                name="Camp Foobar",
+                address=RodGarettAddress(
+                    concentric=1,
+                    radialHour=4,
+                    radialMinute=30,
+                    description="Look for the Foobars",
+                ),
+            ),
+            rangerHandles=(),
+            incidentTypes=(),
+            reportEntries=(),
+        )
+
+        location = incident.location
+        address = cast(RodGarettAddress, location.address)
+
+        store = self.store()
+        store._db.execute(
+            "insert into EVENT (NAME) values (:eventID);",
+            dict(eventID=event.id)
+        )
+        store._db.execute(
+            """
+            insert into CONCENTRIC_STREET (EVENT, ID, NAME)
+            values (
+                (select ID from EVENT where NAME = :eventID), :streetID, 'Blah'
+            )
+            """,
+            dict(eventID=event.id, streetID=address.concentric)
+        )
+        store._db.execute(
+            dedent(
+                """
+                insert into INCIDENT (
+                    EVENT, NUMBER, VERSION, CREATED, PRIORITY, STATE,
+                    LOCATION_NAME,
+                    LOCATION_CONCENTRIC,
+                    LOCATION_RADIAL_HOUR,
+                    LOCATION_RADIAL_MINUTE,
+                    LOCATION_DESCRIPTION
+                ) values (
+                    (select ID from EVENT where NAME = :eventID),
+                    1, 1, :created, 3, 'new',
+                    :locationName,
+                    :locationConcentric,
+                    :locationRadialHour,
+                    :locationRadialMinute,
+                    :locationDescription
+                )
+                """
+            ),
+            dict(
+                eventID=event.id, created=asTimeStamp(incident.created),
+                locationName=location.name,
+                locationConcentric=address.concentric,
+                locationRadialHour=address.radialHour,
+                locationRadialMinute=address.radialMinute,
+                locationDescription=address.description,
+            )
+        )
+
+        self.assertEqual(
+            self.successResultOf(
+                store.incidentWithNumber(incident.event, incident.number)
+            ),
+            incident
+        )
+
+    test_incidentWithNumber.todo = "unimplemented"
 
 
     @given(events(), incidents(), rangers())
@@ -351,7 +440,7 @@ class DataStoreTests(TestCase):
         store.createEvent(event)
 
         self.successResultOf(
-            store.createIncident(event=event, incident=incident, author=author)
+            store.createIncident(incident=incident, author=author)
         )
         stored = frozenset(self.successResultOf(store.incidents(event=event)))
         self.assertEqual(stored, frozenset((incident,)))

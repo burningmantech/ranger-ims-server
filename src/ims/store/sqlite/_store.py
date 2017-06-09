@@ -35,7 +35,10 @@ from twisted.logger import Logger
 from ims.ext.sqlite import (
     Connection, Cursor, SQLiteError, createDB, openDB, printSchema
 )
-from ims.model import Event, Incident, Ranger, RodGarettAddress
+from ims.model import (
+    Event, Incident, IncidentPriority, IncidentState, Location, Ranger,
+    RodGarettAddress,
+)
 
 from .._abc import IMSDataStore
 from .._exceptions import StorageError
@@ -262,6 +265,55 @@ class DataStore(IMSDataStore):
         return self._hideShowIncidentTypes(incidentTypes, True)
 
 
+    def _fetchIncident(
+        self, event: Event, number: int, cursor: Cursor
+    ) -> Incident:
+        cursor.execute(
+            self._query_incident, dict(eventID=event.id, incidentNumber=number)
+        )
+        row = cursor.fetchone()
+
+        print("*" * 80)
+        for key in row.keys():
+            print(key, "=", row[key])
+        print("*" * 80)
+
+        return Incident(
+            event=event,
+            number=number,
+            created=fromTimeStamp(row["CREATED"]),
+            state=IncidentState[row["STATE"]],
+            priority=priorityFromInteger(row["PRIORITY"]),
+            summary=row["SUMMARY"],
+            location=Location(
+                name=row["LOCATION_NAME"],
+                address=RodGarettAddress(
+                    concentric=row["LOCATION_CONCENTRIC"],
+                    radialHour=row["LOCATION_RADIAL_HOUR"],
+                    radialMinute=row["LOCATION_RADIAL_MINUTE"],
+                    description=row["LOCATION_DESCRIPTION"],
+                ),
+            ),
+            rangerHandles=(),
+            incidentTypes=(),
+            reportEntries=(),
+        )
+
+    _query_incident = _query(
+        """
+        select
+            CREATED, PRIORITY, STATE, SUMMARY,
+            LOCATION_NAME,
+            LOCATION_CONCENTRIC,
+            LOCATION_RADIAL_HOUR,
+            LOCATION_RADIAL_MINUTE,
+            LOCATION_DESCRIPTION
+        from INCIDENT
+        where EVENT = ({query_eventID}) and NUMBER = :incidentNumber
+        """
+    )
+
+
     async def incidents(self, event: Event) -> Iterable[Incident]:
         """
         Look up all incidents for the given event.
@@ -273,7 +325,19 @@ class DataStore(IMSDataStore):
         """
         Look up the incident with the given number in the given event.
         """
-        raise NotImplementedError()
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    return self._fetchIncident(event, number, cursor)
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to look up incident #{number} in {event}",
+                event=event, number=number, error=e,
+            )
+            raise StorageError(e)
 
 
     def _nextIncidentNumber(self, event: Event, cursor: Cursor) -> int:
@@ -295,7 +359,7 @@ class DataStore(IMSDataStore):
 
 
     async def _createIncident(
-        self, event: Event, incident: Incident, author: Optional[Ranger],
+        self, incident: Incident, author: Optional[Ranger],
         directImport: bool,
     ) -> None:
         """
@@ -313,7 +377,9 @@ class DataStore(IMSDataStore):
                         assert incident.number == 0, (
                             "New incident number must be zero"
                         )
-                        number = self._nextIncidentNumber(event, cursor)
+                        number = self._nextIncidentNumber(
+                            incident.event, cursor
+                        )
                         incident = incident.replace(number=number)
 
                     # Get normalized-to-Rod-Garett address fields
@@ -321,18 +387,18 @@ class DataStore(IMSDataStore):
                     address = location.address
 
                     if isinstance(address, RodGarettAddress):
-                        locationConcentric = address.concentric
-                        locationRadialHour = address.radialHour
+                        locationConcentric   = address.concentric
+                        locationRadialHour   = address.radialHour
                         locationRadialMinute = address.radialMinute
                     else:
-                        locationConcentric = None
-                        locationRadialHour = None
+                        locationConcentric   = None
+                        locationRadialHour   = None
                         locationRadialMinute = None
 
                     # Write incident row
                     cursor.execute(
                         self._query_createIncident, dict(
-                            eventID=event.id,
+                            eventID=incident.event.id,
                             incidentNumber=incident.number,
                             incidentVersion=1,  # FIXME
                             incidentCreated=asTimeStamp(incident.created),
@@ -360,8 +426,8 @@ class DataStore(IMSDataStore):
                     cursor.close()
         except SQLiteError as e:
             self._log.critical(
-                "Unable to create incident",
-                event=event, incident=incident, author=author, error=e,
+                "Unable to create incident {incident}",
+                incident=incident, author=author, error=e,
             )
             raise StorageError(e)
 
@@ -400,21 +466,21 @@ class DataStore(IMSDataStore):
 
 
     async def createIncident(
-        self, event: Event, incident: Incident, author: Ranger
+        self, incident: Incident, author: Ranger
     ) -> None:
         """
         Create a new incident and add it into the given event.
         The incident number is determined by the database; the given incident
         must have an incident number value of zero.
         """
-        self._createIncident(event, incident, author, False)
+        self._createIncident(incident, author, False)
 
 
-    async def importIncident(self, event: Event, incident: Incident) -> None:
+    async def importIncident(self, incident: Incident) -> None:
         """
         Import an incident and add it into the given event.
         """
-        self._createIncident(event, incident, None, True)
+        self._createIncident(incident, None, True)
 
 
 
@@ -430,3 +496,21 @@ def asTimeStamp(dateTime: DateTime) -> int:
 
 def fromTimeStamp(timeStamp: int) -> DateTime:
     return DateTime.fromtimestamp(timeStamp, tz=TimeZone.utc)
+
+
+def priorityFromInteger(intValue: int) -> IncidentPriority:
+    return {
+        1: IncidentPriority.high,
+        2: IncidentPriority.high,
+        3: IncidentPriority.normal,
+        4: IncidentPriority.low,
+        5: IncidentPriority.low,
+    }[intValue]
+
+
+def priorityAsInteger(priority: IncidentPriority) -> int:
+    return {
+        IncidentPriority.high:   1,
+        IncidentPriority.normal: 3,
+        IncidentPriority.low:    4,
+    }[priority]
