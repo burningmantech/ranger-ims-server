@@ -18,21 +18,19 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from datetime import datetime as DateTime, timezone as TimeZone
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
 from typing import Tuple, cast
 
+from attr import fields as attrFields
+
 from hypothesis import assume, given
 from hypothesis.strategies import booleans, text, tuples
 
-from ims.ext.sqlite import Connection
+from ims.ext.sqlite import Connection, Cursor
 from ims.ext.trial import TestCase
-from ims.model import (
-    Event, Incident, IncidentPriority, IncidentState, Location, Ranger,
-    RodGarettAddress,
-)
+from ims.model import Event, Incident, Location, Ranger, RodGarettAddress
 from ims.model.strategies import events, incidents, rangers
 
 from .._store import DataStore, asTimeStamp, priorityAsInteger
@@ -343,82 +341,91 @@ class DataStoreTests(TestCase):
     test_incidents.todo = "unimplemented"
 
 
-    def test_incidentWithNumber(self) -> None:
+    @given(incidents())
+    def test_incidentWithNumber(self, incident: Incident) -> None:
         """
         :meth:`DataStore.incidentWithNumber` return the specified incident.
         """
-        event = Event(id="Event A")
 
-        # No microsecond resolution when serialized
-        created = DateTime.now(TimeZone.utc).replace(microsecond=0)
-
-        incident = Incident(
-            event=event,
-            number=1,
-            created=created,
-            state=IncidentState.new,
-            priority=IncidentPriority.normal,
-            summary="This thing happened",
-            location=Location(
-                name="Camp Foobar",
-                address=RodGarettAddress(
-                    concentric=1,
-                    radialHour=4,
-                    radialMinute=30,
-                    description="Look for the Foobars",
-                ),
-            ),
-            rangerHandles=("Hubcap", "Bucket"),
-            incidentTypes=("Foo", "Bar"),
-            reportEntries=(),
-        )
+        # Normalize address to Rod Garett
+        if not isinstance(incident.location.address, RodGarettAddress):
+            incident = incident.replace(
+                location=Location(
+                    name=incident.location.name,
+                    address=RodGarettAddress(
+                        concentric=None,
+                        radialHour=None,
+                        radialMinute=None,
+                        description=incident.location.address.description,
+                    )
+                )
+            )
 
         store = self.store()
-
-        self.storeIncident(store, incident)
+        with store._db as db:
+            cursor = db.cursor()
+            try:
+                self.storeIncident(cursor, incident)
+            finally:
+                cursor.close()
 
         retrieved = self.successResultOf(
             store.incidentWithNumber(incident.event, incident.number)
         )
 
-        from attr import asdict
-        self.maxDiff = None
-
-        self.assertEqual(asdict(retrieved), asdict(incident))
-
-    test_incidentWithNumber.todo = "not done"
+        self.assertIncidentsEqual(retrieved, incident)
 
 
-    @given(events(), incidents(), rangers())
-    def test_createIncident(
-        self, event: Event, incident: Incident, author: Ranger
-    ) -> None:
+    @given(incidents(), rangers())
+    def test_createIncident(self, incident: Incident, author: Ranger) -> None:
         """
         :meth:`DataStore.createIncident` creates the given incident.
         """
         store = self.store()
 
-        store.createEvent(event)
+        store.createEvent(incident.event)
 
         self.successResultOf(
             store.createIncident(incident=incident, author=author)
         )
-        stored = frozenset(self.successResultOf(store.incidents(event=event)))
+        stored = frozenset(
+            self.successResultOf(store.incidents(event=incident.event))
+        )
         self.assertEqual(stored, frozenset((incident,)))
 
     test_createIncident.todo = "unimplemented"
 
 
-    def storeIncident(self, store, incident):
+    def assertIncidentsEqual(
+        self, incidentA: Incident, incidentB: Incident
+    ) -> None:
+        if incidentA != incidentB:
+            messages = []
+
+            for attribute in attrFields(Incident):
+                name = attribute.name
+                valueA = getattr(incidentA, name)
+                valueB = getattr(incidentB, name)
+
+                if valueA != valueB:
+                    messages.append(
+                        "{name} {valueA!r} != {valueB!r}"
+                        .format(name=name, valueA=valueA, valueB=valueB)
+                    )
+
+            self.fail("Incidents no not match:\n" + "\n".join(messages))
+
+
+    def storeIncident(self, cursor: Cursor, incident: Incident) -> None:
         location = incident.location
         address = cast(RodGarettAddress, location.address)
 
-        store._db.execute(
+        cursor.execute(
             "insert into EVENT (NAME) values (:eventID);",
             dict(eventID=incident.event.id)
         )
 
-        store._db.execute(
+        cursor.execute(
             dedent(
                 """
                 insert into CONCENTRIC_STREET (EVENT, ID, NAME)
@@ -429,10 +436,10 @@ class DataStoreTests(TestCase):
                 )
                 """
             ),
-            dict(eventID=incident.event.id, streetID=address.concentric)
+            dict(eventID=incident.event.id, streetID="Esplanade")
         )
 
-        store._db.execute(
+        cursor.execute(
             dedent(
                 """
                 insert into INCIDENT (
@@ -474,7 +481,7 @@ class DataStoreTests(TestCase):
         )
 
         for rangerHandle in incident.rangerHandles:
-            store._db.execute(
+            cursor.execute(
                 dedent(
                     """
                     insert into INCIDENT__RANGER
@@ -494,7 +501,7 @@ class DataStoreTests(TestCase):
             )
 
         for incidentType in incident.incidentTypes:
-            store._db.execute(
+            cursor.execute(
                 dedent(
                     """
                     insert into INCIDENT_TYPE (NAME, HIDDEN)
@@ -503,7 +510,7 @@ class DataStoreTests(TestCase):
                 ),
                 dict(incidentType=incidentType)
             )
-            store._db.execute(
+            cursor.execute(
                 dedent(
                     """
                     insert into INCIDENT__INCIDENT_TYPE
@@ -522,5 +529,40 @@ class DataStoreTests(TestCase):
                     eventID=incident.event.id,
                     incidentNumber=incident.number,
                     incidentType=incidentType
+                )
+            )
+
+        for reportEntry in incident.reportEntries:
+            cursor.execute(
+                dedent(
+                    """
+                    insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
+                    values (:author, :text, :created, :automatic)
+                    """
+                ),
+                dict(
+                    created=asTimeStamp(reportEntry.created),
+                    author=reportEntry.author,
+                    automatic=reportEntry.automatic,
+                    text=reportEntry.text,
+                )
+            )
+            cursor.execute(
+                dedent(
+                    """
+                    insert into INCIDENT__REPORT_ENTRY (
+                        EVENT, INCIDENT_NUMBER, REPORT_ENTRY
+                    )
+                    values (
+                        (select ID from EVENT where NAME = :eventID),
+                        :incidentNumber,
+                        :reportEntryID
+                    )
+                    """
+                ),
+                dict(
+                    eventID=incident.event.id,
+                    incidentNumber=incident.number,
+                    reportEntryID=cursor.lastrowid
                 )
             )

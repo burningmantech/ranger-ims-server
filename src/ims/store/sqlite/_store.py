@@ -33,15 +33,17 @@ from attr.validators import instance_of, optional
 from twisted.logger import Logger
 
 from ims.ext.sqlite import (
-    Connection, Cursor, SQLiteError, createDB, openDB, printSchema
+    Connection, Cursor, Parameters, SQLiteError, createDB, openDB, printSchema
 )
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentState, Location, Ranger,
-    RodGarettAddress,
+    ReportEntry, RodGarettAddress,
 )
 
 from .._abc import IMSDataStore
 from .._exceptions import StorageError
+
+Parameters  # Silence linter
 
 
 __all__ = ()
@@ -268,7 +270,9 @@ class DataStore(IMSDataStore):
     def _fetchIncident(
         self, event: Event, number: int, cursor: Cursor
     ) -> Incident:
-        params = dict(eventID=event.id, incidentNumber=number)
+        params: Parameters = dict(
+            eventID=event.id, incidentNumber=number
+        )
 
         cursor.execute(self._query_incident, params)
         row = cursor.fetchone()
@@ -281,6 +285,18 @@ class DataStore(IMSDataStore):
         incidentTypes = tuple(
             row["NAME"]
             for row in cursor.execute(self._query_incident_types, params)
+        )
+
+        reportEntries = tuple(
+            ReportEntry(
+                created=fromTimeStamp(row["CREATED"]),
+                author=row["AUTHOR"],
+                automatic=bool(row["GENERATED"]),
+                text=row["TEXT"],
+            )
+            for row in self._db.execute(
+                self._query_incident_reportEntries, params
+            )
         )
 
         return Incident(
@@ -301,7 +317,7 @@ class DataStore(IMSDataStore):
             ),
             rangerHandles=rangerHandles,
             incidentTypes=incidentTypes,
-            reportEntries=(),
+            reportEntries=reportEntries,
         )
 
     _query_incident = _query(
@@ -329,6 +345,18 @@ class DataStore(IMSDataStore):
         """
         select NAME from INCIDENT_TYPE where ID in (
             select INCIDENT_TYPE from INCIDENT__INCIDENT_TYPE
+            where
+                EVENT = ({query_eventID}) and
+                INCIDENT_NUMBER = :incidentNumber
+        )
+        """
+    )
+
+    _query_incident_reportEntries = _query(
+        """
+        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
+        where ID in (
+            select REPORT_ENTRY from INCIDENT__REPORT_ENTRY
             where
                 EVENT = ({query_eventID}) and
                 INCIDENT_NUMBER = :incidentNumber
@@ -511,7 +539,9 @@ zeroTimeDelta = TimeDelta(0)
 
 def asTimeStamp(dateTime: DateTime) -> int:
     assert dateTime.tzinfo is not None, repr(dateTime)
-    assert dateTime.tzinfo.utcoffset(dateTime) == zeroTimeDelta
+    assert (
+        dateTime.tzinfo.utcoffset(dateTime) == zeroTimeDelta
+    ), dateTime.tzinfo.utcoffset(dateTime)
 
     return timegm(dateTime.timetuple())
 
