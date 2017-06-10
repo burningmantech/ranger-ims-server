@@ -19,9 +19,12 @@ Address
 """
 
 from abc import ABC
+from typing import Optional
 
 from attr import attrib, attrs
-from attr.validators import instance_of
+from attr.validators import instance_of, optional
+
+Optional  # Silence linter
 
 
 __all__ = ()
@@ -32,6 +35,8 @@ class Address(ABC):
     """
     Location address
     """
+
+    description: str
 
 
 
@@ -56,7 +61,15 @@ class RodGarettAddress(Address):
     Black Rock City.
     """
 
-    concentric   = attrib(validator=instance_of(int))  # type: int
-    radialHour   = attrib(validator=instance_of(int))  # type: int
-    radialMinute = attrib(validator=instance_of(int))  # type: int
-    description  = attrib(validator=instance_of(str))  # type: str
+    concentric = attrib(
+        validator=optional(instance_of(int))
+    )  # type: Optional[int]
+    radialHour = attrib(
+        validator=optional(instance_of(int))
+    )  # type: Optional[int]
+    radialMinute = attrib(
+        validator=optional(instance_of(int))
+    )  # type: Optional[int]
+    description = attrib(
+        validator=instance_of(str)
+    )  # type: str
