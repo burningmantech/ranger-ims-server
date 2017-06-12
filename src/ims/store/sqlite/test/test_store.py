@@ -425,19 +425,20 @@ class DataStoreTests(TestCase):
             dict(eventID=incident.event.id)
         )
 
-        cursor.execute(
-            dedent(
-                """
-                insert into CONCENTRIC_STREET (EVENT, ID, NAME)
-                values (
-                    (select ID from EVENT where NAME = :eventID),
-                    :streetID,
-                    'Blah'
-                )
-                """
-            ),
-            dict(eventID=incident.event.id, streetID="Esplanade")
-        )
+        if address.concentric is not None:
+            cursor.execute(
+                dedent(
+                    """
+                    insert into CONCENTRIC_STREET (EVENT, ID, NAME)
+                    values (
+                        (select ID from EVENT where NAME = :eventID),
+                        :streetID,
+                        'Blah'
+                    )
+                    """
+                ),
+                dict(eventID=incident.event.id, streetID=address.concentric)
+            )
 
         cursor.execute(
             dedent(
