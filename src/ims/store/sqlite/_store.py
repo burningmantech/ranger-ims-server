@@ -18,7 +18,6 @@
 Incident Management System SQLite data store.
 """
 
-from calendar import timegm
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
@@ -537,16 +536,12 @@ class DataStore(IMSDataStore):
 zeroTimeDelta = TimeDelta(0)
 
 
-def asTimeStamp(dateTime: DateTime) -> int:
+def asTimeStamp(dateTime: DateTime) -> float:
     assert dateTime.tzinfo is not None, repr(dateTime)
-    assert (
-        dateTime.tzinfo.utcoffset(dateTime) == zeroTimeDelta
-    ), dateTime.tzinfo.utcoffset(dateTime)
-
-    return timegm(dateTime.timetuple())
+    return dateTime.timestamp()
 
 
-def fromTimeStamp(timeStamp: int) -> DateTime:
+def fromTimeStamp(timeStamp: float) -> DateTime:
     return DateTime.fromtimestamp(timeStamp, tz=TimeZone.utc)
 
 

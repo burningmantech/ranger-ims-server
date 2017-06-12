@@ -18,6 +18,7 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
+from datetime import datetime as DateTime, timedelta as TimeDelta
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
@@ -349,6 +350,7 @@ class DataStoreTests(TestCase):
         :meth:`DataStore.incidentWithNumber` return the specified incident.
         """
 
+        # FIXME: Just make comparison work?
         # Normalize address to Rod Garett
         if not isinstance(incident.location.address, RodGarettAddress):
             incident = incident.replace(
@@ -409,13 +411,40 @@ class DataStoreTests(TestCase):
                 valueA = getattr(incidentA, name)
                 valueB = getattr(incidentB, name)
 
+                if name == "created":
+                    if dateTimesEqualish(valueA, valueB):
+                        continue
+                    else:
+                        messages.append(
+                            "{name} delta: {delta}"
+                            .format(name=name, delta=valueA-valueB)
+                        )
+
+                if name == "reportEntries":
+                    if len(valueA) == len(valueB):
+                        for entryA, entryB in zip(valueA, valueB):
+                            if entryA != entryB:
+                                if entryA.author != entryB.author:
+                                    break
+                                if entryA.automatic != entryB.automatic:
+                                    break
+                                if entryA.text != entryB.text:
+                                    break
+                                if not dateTimesEqualish(
+                                    entryA.created, entryB.created
+                                ):
+                                    break
+                        else:
+                            continue
+
                 if valueA != valueB:
                     messages.append(
                         "{name} {valueA!r} != {valueB!r}"
                         .format(name=name, valueA=valueA, valueB=valueB)
                     )
 
-            self.fail("Incidents no not match:\n" + "\n".join(messages))
+            if messages:
+                self.fail("Incidents no not match:\n" + "\n".join(messages))
 
 
     def storeIncident(self, cursor: Cursor, incident: Incident) -> None:
@@ -569,3 +598,12 @@ class DataStoreTests(TestCase):
                     reportEntryID=cursor.lastrowid
                 )
             )
+
+
+
+def dateTimesEqualish(a: DateTime, b: DateTime) -> bool:
+    """
+    Compare two :class:`DateTimes`.
+    Because floating point math, apply some "close enough" logic.
+    """
+    return a - b < TimeDelta(microseconds=20)
