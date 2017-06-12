@@ -42,6 +42,9 @@ CursorFactory = Callable[..., TCursor]
 Parameter = Optional[Union[bytes, str, int, float]]
 Parameters = Mapping[str, Parameter]
 
+SQLITE_MAX_INT = 9223372036854775807
+
+
 
 class Row(BaseRow):
     """

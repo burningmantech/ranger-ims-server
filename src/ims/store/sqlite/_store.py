@@ -545,7 +545,7 @@ def fromTimeStamp(timeStamp: float) -> DateTime:
     return DateTime.fromtimestamp(timeStamp, tz=TimeZone.utc)
 
 
-def incidentStateFromID(strValue) -> IncidentState:
+def incidentStateFromID(strValue: str) -> IncidentState:
     return {
         "new":        IncidentState.new,
         "on_hold":    IncidentState.onHold,

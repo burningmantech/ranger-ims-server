@@ -29,7 +29,7 @@ from attr import fields as attrFields
 from hypothesis import assume, given
 from hypothesis.strategies import booleans, text, tuples
 
-from ims.ext.sqlite import Connection, Cursor
+from ims.ext.sqlite import Connection, Cursor, SQLITE_MAX_INT
 from ims.ext.trial import TestCase
 from ims.model import Event, Incident, Location, Ranger, RodGarettAddress
 from ims.model.strategies import events, incidents, rangers
@@ -349,6 +349,7 @@ class DataStoreTests(TestCase):
         """
         :meth:`DataStore.incidentWithNumber` return the specified incident.
         """
+        assume(incident.number <= SQLITE_MAX_INT)
 
         # FIXME: Just make comparison work?
         # Normalize address to Rod Garett
@@ -385,6 +386,8 @@ class DataStoreTests(TestCase):
         """
         :meth:`DataStore.createIncident` creates the given incident.
         """
+        assume(incident.number <= SQLITE_MAX_INT)
+
         store = self.store()
 
         store.createEvent(incident.event)
@@ -417,7 +420,7 @@ class DataStoreTests(TestCase):
                     else:
                         messages.append(
                             "{name} delta: {delta}"
-                            .format(name=name, delta=valueA-valueB)
+                            .format(name=name, delta=valueA - valueB)
                         )
 
                 if name == "reportEntries":
