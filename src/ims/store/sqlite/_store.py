@@ -303,7 +303,7 @@ class DataStore(IMSDataStore):
             event=event,
             number=number,
             created=fromTimeStamp(row["CREATED"]),
-            state=IncidentState[row["STATE"]],
+            state=incidentStateFromID(row["STATE"]),
             priority=priorityFromInteger(row["PRIORITY"]),
             summary=row["SUMMARY"],
             location=Location(
@@ -453,7 +453,7 @@ class DataStore(IMSDataStore):
                             incidentNumber=incident.number,
                             incidentCreated=asTimeStamp(incident.created),
                             incidentPriority=incident.priority,
-                            incidentState=incident.state.name,
+                            incidentState=incidentStateAsID(incident.state),
                             incidentSummary=incident.summary,
                             locationName=location.name,
                             locationConcentric=locationConcentric,
@@ -548,6 +548,26 @@ def asTimeStamp(dateTime: DateTime) -> int:
 
 def fromTimeStamp(timeStamp: int) -> DateTime:
     return DateTime.fromtimestamp(timeStamp, tz=TimeZone.utc)
+
+
+def incidentStateFromID(strValue) -> IncidentState:
+    return {
+        "new":        IncidentState.new,
+        "on_hold":    IncidentState.onHold,
+        "dispatched": IncidentState.dispatched,
+        "on_scene":   IncidentState.onScene,
+        "closed":     IncidentState.closed,
+    }[strValue]
+
+
+def incidentStateAsID(incidentState: IncidentState) -> str:
+    return {
+        IncidentState.new:        "new",
+        IncidentState.onHold:     "on_hold",
+        IncidentState.dispatched: "dispatched",
+        IncidentState.onScene:    "on_scene",
+        IncidentState.closed:     "closed",
+    }[incidentState]
 
 
 def priorityFromInteger(intValue: int) -> IncidentPriority:

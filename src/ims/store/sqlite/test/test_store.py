@@ -33,7 +33,9 @@ from ims.ext.trial import TestCase
 from ims.model import Event, Incident, Location, Ranger, RodGarettAddress
 from ims.model.strategies import events, incidents, rangers
 
-from .._store import DataStore, asTimeStamp, priorityAsInteger
+from .._store import (
+    DataStore, asTimeStamp, incidentStateAsID, priorityAsInteger
+)
 from ..._exceptions import StorageError
 
 
@@ -472,7 +474,7 @@ class DataStoreTests(TestCase):
                 incidentNumber=incident.number,
                 incidentSummary=incident.summary,
                 incidentPriority=priorityAsInteger(incident.priority),
-                incidentState=incident.state.name,
+                incidentState=incidentStateAsID(incident.state),
                 locationName=location.name,
                 locationConcentric=address.concentric,
                 locationRadialHour=address.radialHour,
