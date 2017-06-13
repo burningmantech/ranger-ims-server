@@ -38,3 +38,7 @@ class IncidentPriority(Enum):
     high   = object()
     normal = object()
     low    = object()
+
+
+    def __repr__(self) -> str:
+        return "{}[{!r}]".format(self.__class__.__name__, self.name)

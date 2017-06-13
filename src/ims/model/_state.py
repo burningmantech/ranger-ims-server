@@ -54,3 +54,7 @@ class IncidentState(Enum):
     dispatched = object()
     onScene    = object()
     closed     = object()
+
+
+    def __repr__(self) -> str:
+        return "{}[{!r}]".format(self.__class__.__name__, self.name)

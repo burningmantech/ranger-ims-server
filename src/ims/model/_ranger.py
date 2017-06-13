@@ -55,6 +55,10 @@ class RangerStatus(Enum):
     other = -1
 
 
+    def __repr__(self) -> str:
+        return "{}[{!r}]".format(self.__class__.__name__, self.name)
+
+
 
 @attrs(frozen=True)
 class Ranger(object):
