@@ -26,7 +26,7 @@ from textwrap import dedent
 from typing import Any, Dict, Iterable, Optional, Tuple
 from typing.io import TextIO
 
-from attr import Factory, attrib, attrs
+from attr import Factory, attrib, asdict, attrs
 from attr.validators import instance_of, optional
 
 from twisted.logger import Logger
@@ -139,7 +139,7 @@ class DataStore(IMSDataStore):
 
     async def events(self) -> Iterable[Event]:
         """
-        Look up all events in this store.
+        See :meth:`IMSDataStore.events`.
         """
         return (
             Event(row["name"]) for row in self._executeAndIterate(
@@ -156,7 +156,7 @@ class DataStore(IMSDataStore):
 
     async def createEvent(self, event: Event) -> None:
         """
-        Create an event with the given name.
+        See :meth:`IMSDataStore.createEvent`.
         """
         self._execute(
             (
@@ -176,7 +176,7 @@ class DataStore(IMSDataStore):
         self, includeHidden: bool = False
     ) -> Iterable[str]:
         """
-        Look up the incident types used in this store.
+        See :meth:`IMSDataStore.incidentTypes`.
         """
         if includeHidden:
             query = self._query_incidentTypes
@@ -206,7 +206,7 @@ class DataStore(IMSDataStore):
         self, incidentType: str, hidden: bool = False
     ) -> None:
         """
-        Create the given incident type.
+        See :meth:`IMSDataStore.createIncidentType`.
         """
         self._execute(
             (
@@ -254,14 +254,14 @@ class DataStore(IMSDataStore):
 
     async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
         """
-        Show the given incident types.
+        See :meth:`IMSDataStore.showIncidentTypes`.
         """
         return self._hideShowIncidentTypes(incidentTypes, False)
 
 
     async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
         """
-        Hide the given incident types.
+        See :meth:`IMSDataStore.hideIncidentTypes`.
         """
         return self._hideShowIncidentTypes(incidentTypes, True)
 
@@ -384,7 +384,7 @@ class DataStore(IMSDataStore):
 
     async def incidents(self, event: Event) -> Iterable[Incident]:
         """
-        Look up all incidents for the given event.
+        See :meth:`IMSDataStore.incidents`.
         """
         try:
             with self._db as db:
@@ -407,7 +407,7 @@ class DataStore(IMSDataStore):
 
     async def incidentWithNumber(self, event: Event, number: int) -> Incident:
         """
-        Look up the incident with the given number in the given event.
+        See :meth:`IMSDataStore.incidentWithNumber`.
         """
         try:
             with self._db as db:
@@ -445,12 +445,7 @@ class DataStore(IMSDataStore):
     async def _createIncident(
         self, incident: Incident, author: Optional[Ranger],
         directImport: bool,
-    ) -> None:
-        """
-        Create a new incident and add it into the given event.
-        The incident number is determined by the database; the given incident
-        must have an incident number value of zero.
-        """
+    ) -> Incident:
         try:
             with self._db as db:
                 cursor = db.cursor()
@@ -505,6 +500,8 @@ class DataStore(IMSDataStore):
                         pass
 
                     # Add report entries
+
+                    return incident
                 finally:
                     cursor.close()
         except SQLiteError as e:
@@ -550,13 +547,11 @@ class DataStore(IMSDataStore):
 
     async def createIncident(
         self, incident: Incident, author: Ranger
-    ) -> None:
+    ) -> Incident:
         """
-        Create a new incident and add it into the given event.
-        The incident number is determined by the database; the given incident
-        must have an incident number value of zero.
+        See :meth:`IMSDataStore.createIncident`.
         """
-        await self._createIncident(incident, author, False)
+        return await self._createIncident(incident, author, False)
 
 
     async def importIncident(self, incident: Incident) -> None:

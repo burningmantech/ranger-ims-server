@@ -96,9 +96,15 @@ class IMSDataStore(ABC):
     @abstractmethod
     async def createIncident(
         self, incident: Incident, author: Ranger
-    ) -> None:
+    ) -> Incident:
         """
         Create a new incident and add it into the given event.
         The incident number is determined by the database and must not be
         specified by the given incident.
+
+        The incident's number must be zero, as it will be assigned by the data
+        store.
+
+        The stored incident is returned with the incident number assigned to it
+        by the data store.
         """
