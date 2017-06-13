@@ -47,16 +47,16 @@ class ReportEntry(object):
     text      = attrib(validator=true(instance_of(str)))  # type: str
 
 
-    def _cmpKey(self) -> Any:
+    def _cmpValue(self) -> Any:
         return (self.created, self.author, not self.automatic, self.text)
 
 
     def _cmp(self, other: Any, methodName: str) -> bool:
         if other.__class__ is self.__class__:
-            selfKey = self._cmpKey()
-            otherKey = other._cmpKey()
-            selfKeyCmp = getattr(selfKey, methodName)
-            return selfKeyCmp(otherKey)
+            selfValue = self._cmpValue()
+            otherValue = other._cmpValue()
+            selfValueCmp = getattr(selfValue, methodName)
+            return selfValueCmp(otherValue)
         else:
             return NotImplemented
 
