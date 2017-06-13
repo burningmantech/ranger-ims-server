@@ -19,7 +19,7 @@ Address
 """
 
 from abc import ABC
-from typing import Optional
+from typing import Any, Optional
 
 from attr import attrib, attrs
 from attr.validators import instance_of, optional
@@ -52,7 +52,7 @@ class TextOnlyAddress(Address):
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, cmp=False)
 class RodGarettAddress(Address):
     """
     Rod Garett Address
@@ -61,15 +61,64 @@ class RodGarettAddress(Address):
     Black Rock City.
     """
 
-    concentric = attrib(
-        validator=optional(instance_of(int))
-    )  # type: Optional[int]
-    radialHour = attrib(
-        validator=optional(instance_of(int))
-    )  # type: Optional[int]
-    radialMinute = attrib(
-        validator=optional(instance_of(int))
-    )  # type: Optional[int]
     description = attrib(
         validator=instance_of(str)
     )  # type: str
+    concentric = attrib(
+        validator=optional(instance_of(int)), default=None
+    )  # type: Optional[int]
+    radialHour = attrib(
+        validator=optional(instance_of(int)), default=None
+    )  # type: Optional[int]
+    radialMinute = attrib(
+        validator=optional(instance_of(int)), default=None
+    )  # type: Optional[int]
+
+
+    def _cmpValue(self) -> Any:
+        return (
+            self.concentric, self.radialHour, self.radialMinute,
+            self.description,
+        )
+
+
+    def _cmp(self, other: Any, methodName: str) -> bool:
+        if other.__class__ is self.__class__:
+            selfValue = self._cmpValue()
+            otherValue = other._cmpValue()
+            selfValueCmp = getattr(selfValue, methodName)
+            return selfValueCmp(otherValue)
+
+        if other.__class__ is TextOnlyAddress:
+            if (
+                self.concentric is None and
+                self.radialHour is None and
+                self.radialMinute is None
+            ):
+                return getattr(self.description, methodName)(other.description)
+
+        return NotImplemented
+
+
+    def __eq__(self, other: Any) -> bool:
+        return self._cmp(other, "__eq__")
+
+
+    def __ne__(self, other: Any) -> bool:
+        return self._cmp(other, "__ne__")
+
+
+    def __lt__(self, other: Any) -> bool:
+        return self._cmp(other, "__lt__")
+
+
+    def __le__(self, other: Any) -> bool:
+        return self._cmp(other, "__le__")
+
+
+    def __gt__(self, other: Any) -> bool:
+        return self._cmp(other, "__gt__")
+
+
+    def __ge__(self, other: Any) -> bool:
+        return self._cmp(other, "__ge__")
