@@ -100,6 +100,10 @@ class RodGarettAddress(Address):
         return NotImplemented
 
 
+    def __hash__(self):
+        return hash(self._cmpValue())
+
+
     def __eq__(self, other: Any) -> bool:
         return self._cmp(other, "__eq__")
 
