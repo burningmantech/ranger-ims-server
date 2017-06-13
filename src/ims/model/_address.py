@@ -40,7 +40,7 @@ class Address(ABC):
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, cmp=False)
 class TextOnlyAddress(Address):
     """
     Address
@@ -49,6 +49,56 @@ class TextOnlyAddress(Address):
     """
 
     description = attrib(validator=instance_of(str))  # type: str
+
+
+    def _cmpValue(self) -> Any:
+        return self.description
+
+
+    def _cmp(self, other: Any, methodName: str) -> bool:
+        if other.__class__ is self.__class__:
+            selfValue = self._cmpValue()
+            otherValue = other._cmpValue()
+            selfValueCmp = getattr(selfValue, methodName)
+            return selfValueCmp(otherValue)
+
+        if other.__class__ is TextOnlyAddress:
+            if (
+                self.concentric is None and
+                self.radialHour is None and
+                self.radialMinute is None
+            ):
+                return getattr(self.description, methodName)(other.description)
+
+        return NotImplemented
+
+
+    def __hash__(self):
+        return hash(self._cmpValue())
+
+
+    def __eq__(self, other: Any) -> bool:
+        return self._cmp(other, "__eq__")
+
+
+    def __ne__(self, other: Any) -> bool:
+        return self._cmp(other, "__ne__")
+
+
+    def __lt__(self, other: Any) -> bool:
+        return self._cmp(other, "__lt__")
+
+
+    def __le__(self, other: Any) -> bool:
+        return self._cmp(other, "__le__")
+
+
+    def __gt__(self, other: Any) -> bool:
+        return self._cmp(other, "__gt__")
+
+
+    def __ge__(self, other: Any) -> bool:
+        return self._cmp(other, "__ge__")
 
 
 
@@ -101,7 +151,17 @@ class RodGarettAddress(Address):
 
 
     def __hash__(self):
-        return hash(self._cmpValue())
+        if (
+            self.concentric is None and
+            self.radialHour is None and
+            self.radialMinute is None
+        ):
+            return hash(self.description)
+
+        return hash((
+            self.concentric, self.radialHour, self.radialMinute,
+            self.description
+        ))
 
 
     def __eq__(self, other: Any) -> bool:
