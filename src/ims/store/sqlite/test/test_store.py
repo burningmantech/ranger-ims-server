@@ -34,9 +34,7 @@ from ims.ext.trial import TestCase
 from ims.model import Event, Incident, Location, Ranger, RodGarettAddress
 from ims.model.strategies import events, incidents, rangers
 
-from .._store import (
-    DataStore, asTimeStamp, incidentStateAsID, priorityAsInteger
-)
+from .._store import DataStore, asTimeStamp, incidentStateAsID, priorityAsID
 from ..._exceptions import StorageError
 
 
@@ -375,8 +373,7 @@ class DataStoreTests(TestCase):
 
         store = self.store()
 
-        store.createEvent(incident.event)
-
+        self.successResultOf(store.createEvent(incident.event))
         self.successResultOf(
             store.createIncident(incident=incident, author=author)
         )
@@ -435,6 +432,10 @@ class DataStoreTests(TestCase):
                 self.fail("Incidents no not match:\n" + "\n".join(messages))
 
 
+    # FIXME: A better plan here would be to create a mock DB object that yields
+    # the expected rows, instead of writing to an actual DB.
+    # Since it's SQLite, which isn't actually async, that's not a huge deal,
+    # except there's a lot of fragile code below.
     def storeIncident(self, cursor: Cursor, incident: Incident) -> None:
         # Normalize address to Rod Garett; DB schema only supports those.
         if not isinstance(incident.location.address, RodGarettAddress):
@@ -501,7 +502,7 @@ class DataStoreTests(TestCase):
                 incidentCreated=asTimeStamp(incident.created),
                 incidentNumber=incident.number,
                 incidentSummary=incident.summary,
-                incidentPriority=priorityAsInteger(incident.priority),
+                incidentPriority=priorityAsID(incident.priority),
                 incidentState=incidentStateAsID(incident.state),
                 locationName=location.name,
                 locationConcentric=address.concentric,

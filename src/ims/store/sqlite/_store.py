@@ -303,7 +303,7 @@ class DataStore(IMSDataStore):
             number=number,
             created=fromTimeStamp(row["CREATED"]),
             state=incidentStateFromID(row["STATE"]),
-            priority=priorityFromInteger(row["PRIORITY"]),
+            priority=priorityFromID(row["PRIORITY"]),
             summary=row["SUMMARY"],
             location=Location(
                 name=row["LOCATION_NAME"],
@@ -485,7 +485,7 @@ class DataStore(IMSDataStore):
                             eventID=incident.event.id,
                             incidentNumber=incident.number,
                             incidentCreated=asTimeStamp(incident.created),
-                            incidentPriority=incident.priority,
+                            incidentPriority=priorityAsID(incident.priority),
                             incidentState=incidentStateAsID(incident.state),
                             incidentSummary=incident.summary,
                             locationName=location.name,
@@ -556,14 +556,14 @@ class DataStore(IMSDataStore):
         The incident number is determined by the database; the given incident
         must have an incident number value of zero.
         """
-        self._createIncident(incident, author, False)
+        await self._createIncident(incident, author, False)
 
 
     async def importIncident(self, incident: Incident) -> None:
         """
         Import an incident and add it into the given event.
         """
-        self._createIncident(incident, None, True)
+        await self._createIncident(incident, None, True)
 
 
 
@@ -599,7 +599,7 @@ def incidentStateAsID(incidentState: IncidentState) -> str:
     }[incidentState]
 
 
-def priorityFromInteger(intValue: int) -> IncidentPriority:
+def priorityFromID(intValue: int) -> IncidentPriority:
     return {
         1: IncidentPriority.high,
         2: IncidentPriority.high,
@@ -609,7 +609,7 @@ def priorityFromInteger(intValue: int) -> IncidentPriority:
     }[intValue]
 
 
-def priorityAsInteger(priority: IncidentPriority) -> int:
+def priorityAsID(priority: IncidentPriority) -> int:
     return {
         IncidentPriority.high:   1,
         IncidentPriority.normal: 3,
