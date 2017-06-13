@@ -107,8 +107,8 @@ class RodGarettAddress(Address):
         validator=instance_of(str)
     )  # type: str
     concentric = attrib(
-        validator=optional(instance_of(int)), default=None
-    )  # type: Optional[int]
+        validator=optional(instance_of(str)), default=None
+    )  # type: Optional[str]
     radialHour = attrib(
         validator=optional(instance_of(int)), default=None
     )  # type: Optional[int]

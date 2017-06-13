@@ -72,7 +72,7 @@ class RodGarettAddressJSONType(Enum):
     Rod Garett address JSON keys
     """
 
-    concentric   = int
+    concentric   = str
     radialHour   = int
     radialMinute = int
     description  = str

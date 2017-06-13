@@ -323,6 +323,12 @@ class DataStore(IMSDataStore):
             )
         )
 
+        # FIXME: This is because schema thinks concentric is an int
+        if row["LOCATION_CONCENTRIC"] is None:
+            concentric = None
+        else:
+            concentric = str(row["LOCATION_CONCENTRIC"])
+
         return Incident(
             event=event,
             number=number,
@@ -333,7 +339,7 @@ class DataStore(IMSDataStore):
             location=Location(
                 name=row["LOCATION_NAME"],
                 address=RodGarettAddress(
-                    concentric=row["LOCATION_CONCENTRIC"],
+                    concentric=concentric,
                     radialHour=row["LOCATION_RADIAL_HOUR"],
                     radialMinute=row["LOCATION_RADIAL_MINUTE"],
                     description=row["LOCATION_DESCRIPTION"],

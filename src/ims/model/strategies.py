@@ -92,7 +92,7 @@ def textOnlyAddresses(draw: Callable) -> TextOnlyAddress:
 @composite
 def rodGarettAddresses(draw: Callable) -> RodGarettAddress:
     return RodGarettAddress(
-        concentric=draw(integers(min_value=0, max_value=12)),
+        concentric=draw(text()),
         radialHour=draw(integers(min_value=1, max_value=12)),
         radialMinute=draw(integers(min_value=0, max_value=59)),
         description=draw(text()),

@@ -64,7 +64,7 @@ create table INCIDENT (
     SUMMARY  text,
 
     LOCATION_NAME          text,
-    LOCATION_CONCENTRIC    integer,
+    LOCATION_CONCENTRIC    integer,  -- FIXME: change to text to match FK
     LOCATION_RADIAL_HOUR   integer,
     LOCATION_RADIAL_MINUTE integer,
     LOCATION_DESCRIPTION   text,

@@ -34,7 +34,7 @@ theMan = Location(
 hq = Location(
     name="Ranger Headquarters",
     address=RodGarettAddress(
-        concentric=0, radialHour=5, radialMinute=45,
+        concentric="0", radialHour=5, radialMinute=45,
         description="Ranger Headquarters",
     ),
 )
@@ -42,7 +42,7 @@ hq = Location(
 berlin = Location(
     name="Ranger Outpost Berlin",
     address=RodGarettAddress(
-        concentric=3, radialHour=3, radialMinute=0,
+        concentric="3", radialHour=3, radialMinute=0,
         description="Ranger Outpost",
     ),
 )
@@ -50,7 +50,7 @@ berlin = Location(
 tokyo = Location(
     name="Ranger Outpost Tokyo",
     address=RodGarettAddress(
-        concentric=3, radialHour=9, radialMinute=0,
+        concentric="3", radialHour=9, radialMinute=0,
         description="Ranger Outpost",
     ),
 )
@@ -58,7 +58,7 @@ tokyo = Location(
 geneva = Location(
     name="Ranger Camp Geneva",
     address=RodGarettAddress(
-        concentric=10, radialHour=7, radialMinute=30,
+        concentric="10", radialHour=7, radialMinute=30,
         description="Ranger Camp",
     ),
 )
@@ -66,7 +66,7 @@ geneva = Location(
 moscow = Location(
     name="Ranger Camp Moscow",
     address=RodGarettAddress(
-        concentric=3, radialHour=5, radialMinute=30,
+        concentric="3", radialHour=5, radialMinute=30,
         description="Ranger Camp",
     ),
 )
