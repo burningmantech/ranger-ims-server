@@ -51,9 +51,9 @@ class AddressTests(TestCase):
         )
         self.assertNotEqual(
             hash(TextOnlyAddress(description=description)),
-            hash(RodGarettAddress(description=description, radialMinute="1")),
+            hash(RodGarettAddress(description=description, radialMinute=1)),
         )
         self.assertNotEqual(
             hash(TextOnlyAddress(description=description)),
-            hash(RodGarettAddress(description=description, radialHour="1")),
+            hash(RodGarettAddress(description=description, radialHour=1)),
         )
