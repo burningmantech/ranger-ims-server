@@ -62,18 +62,10 @@ class TextOnlyAddress(Address):
             selfValueCmp = getattr(selfValue, methodName)
             return selfValueCmp(otherValue)
 
-        if other.__class__ is TextOnlyAddress:
-            if (
-                self.concentric is None and
-                self.radialHour is None and
-                self.radialMinute is None
-            ):
-                return getattr(self.description, methodName)(other.description)
-
         return NotImplemented
 
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self._cmpValue())
 
 
@@ -150,7 +142,7 @@ class RodGarettAddress(Address):
         return NotImplemented
 
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         if (
             self.concentric is None and
             self.radialHour is None and

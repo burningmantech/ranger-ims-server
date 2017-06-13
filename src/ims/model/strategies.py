@@ -142,11 +142,11 @@ def incidentSummaries(draw: Callable) -> str:
 
 
 @composite
-def incidents(draw: Callable, new=False) -> Incident:
+def incidents(draw: Callable, new: bool = False) -> Incident:
     if new:
         number = 0
     else:
-        number=draw(incidentNumbers())
+        number = draw(incidentNumbers())
 
     return Incident(
         event=draw(events()),

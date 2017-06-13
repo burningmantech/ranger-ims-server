@@ -334,7 +334,9 @@ class DataStoreTests(TestCase):
 
 
     @given(events(), text(), text())
-    def test_createConcentricStreet(self, event, id, name) -> None:
+    def test_createConcentricStreet(
+        self, event: Event, id: str, name: str
+    ) -> None:
         """
         :meth:`DataStore.createConcentricStreet`…
         """
@@ -384,7 +386,10 @@ class DataStoreTests(TestCase):
         self.successResultOf(store.createEvent(incident.event))
 
         address = incident.location.address
-        if isinstance(address, RodGarettAddress):
+        if (
+            isinstance(address, RodGarettAddress) and
+            address.concentric is not None
+        ):
             self.successResultOf(
                 store.createConcentricStreet(
                     incident.event, address.concentric, "Sesame Street"

@@ -26,7 +26,7 @@ from textwrap import dedent
 from typing import Any, Dict, Iterable, Optional, Tuple
 from typing.io import TextIO
 
-from attr import Factory, attrib, asdict, attrs
+from attr import Factory, attrib, attrs
 from attr.validators import instance_of, optional
 
 from twisted.logger import Logger
@@ -424,8 +424,8 @@ class DataStore(IMSDataStore):
                     cursor.close()
         except SQLiteError as e:
             self._log.critical(
-                "Unable to look up incident #{number} in {event}",
-                event=event, number=number, error=e,
+                "Unable to look up incidents in {event}",
+                event=event, error=e,
             )
             raise StorageError(e)
 
