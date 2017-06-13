@@ -364,11 +364,45 @@ class DataStore(IMSDataStore):
     )
 
 
+    def _fetchIncidentNumbers(
+        self, event: Event, cursor: Cursor
+    ) -> Iterable[int]:
+        """
+        Look up all incident numbers for the given event.
+        """
+        for row in cursor.execute(
+            self._query_incidentNumbers, dict(eventID=event.id)
+        ):
+            yield row["NUMBER"]
+
+    _query_incidentNumbers = _query(
+        """
+        select NUMBER from INCIDENT where EVENT = ({query_eventID})
+        """
+    )
+
+
     async def incidents(self, event: Event) -> Iterable[Incident]:
         """
         Look up all incidents for the given event.
         """
-        raise NotImplementedError()
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    # FIXME: This should be an async generator
+                    return tuple(
+                        self._fetchIncident(event, number, cursor)
+                        for number in self._fetchIncidentNumbers(event, cursor)
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to look up incident #{number} in {event}",
+                event=event, number=number, error=e,
+            )
+            raise StorageError(e)
 
 
     async def incidentWithNumber(self, event: Event, number: int) -> Incident:
