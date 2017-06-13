@@ -473,23 +473,19 @@ class DataStore(IMSDataStore):
     )
 
 
-    def _attachRanger(
+    def _attachRangeHandleToIncident(
         self, event: Event, incidentNumber: int, rangerHandle: str,
         cursor: Cursor,
     ):
-        """
-        Attach the given Ranger to the incident with the given number in the
-        given event.
-        """
         cursor.execute(
-            self._query_attachRanger, dict(
+            self._query_attachRangeHandleToIncident, dict(
                 eventID=event.id,
                 incidentNumber=incidentNumber,
                 rangerHandle=rangerHandle,
             )
         )
 
-    _query_attachRanger = _query(
+    _query_attachRangeHandleToIncident = _query(
         """
         insert into INCIDENT__RANGER (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
         values (({query_eventID}), :incidentNumber, :rangerHandle)
@@ -497,19 +493,19 @@ class DataStore(IMSDataStore):
     )
 
 
-    def _attachIncidentType(
+    def _attachIncidentTypeToIncident(
         self, event: Event, incidentNumber: int, incidentType: str,
         cursor: Cursor,
     ) -> None:
         cursor.execute(
-            self._query_attachIncidentType, dict(
+            self._query_attachIncidentTypeToIncident, dict(
                 eventID=event.id,
                 incidentNumber=incidentNumber,
                 incidentType=incidentType,
             )
         )
 
-    _query_attachIncidentType = _query(
+    _query_attachIncidentTypeToIncident = _query(
         """
         insert into INCIDENT__INCIDENT_TYPE (
             EVENT, INCIDENT_NUMBER, INCIDENT_TYPE
@@ -519,6 +515,47 @@ class DataStore(IMSDataStore):
             :incidentNumber,
             (select ID from INCIDENT_TYPE where NAME = :incidentType)
         )
+        """
+    )
+
+
+    def _createReportEntry(self, reportEntry, cursor):
+        cursor.execute(
+            self._query_addReportEntry, dict(
+                created=asTimeStamp(reportEntry.created),
+                generated=reportEntry.automatic,
+                author=reportEntry.author,
+                text=reportEntry.text,
+            )
+        )
+
+    _query_addReportEntry = _query(
+        """
+        insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
+        values (:author, :text, :created, :generated)
+        """
+    )
+
+
+    def _addAndAttachReportEntryToIncident(
+        self, event, incidentNumber, reportEntry, cursor
+    ):
+        self._createReportEntry(reportEntry, cursor)
+        # Join to incident
+        cursor.execute(
+            self._query_attachReportEntryToIncident, dict(
+                eventID=event.id,
+                incidentNumber=incidentNumber,
+                reportEntryID=cursor.lastrowid,
+            )
+        )
+
+    _query_attachReportEntryToIncident = _query(
+        """
+        insert into INCIDENT__REPORT_ENTRY (
+            EVENT, INCIDENT_NUMBER, REPORT_ENTRY
+        )
+        values (({query_eventID}), :incidentNumber, :reportEntryID)
         """
     )
 
@@ -574,14 +611,14 @@ class DataStore(IMSDataStore):
 
                     # Join with Ranger handles
                     for rangerHandle in incident.rangerHandles:
-                        self._attachRanger(
+                        self._attachRangeHandleToIncident(
                             incident.event, incident.number, rangerHandle,
                             cursor,
                         )
 
                     # Attach incident types
                     for incidentType in incident.incidentTypes:
-                        self._attachIncidentType(
+                        self._attachIncidentTypeToIncident(
                             incident.event, incident.number, incidentType,
                             cursor,
                         )
@@ -591,6 +628,11 @@ class DataStore(IMSDataStore):
                         pass
 
                     # Add report entries
+                    for reportEntry in incident.reportEntries:
+                        self._addAndAttachReportEntryToIncident(
+                            incident.event, incident.number, reportEntry,
+                            cursor,
+                        )
 
                     return incident
                 finally:
