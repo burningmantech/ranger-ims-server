@@ -364,23 +364,28 @@ class DataStoreTests(TestCase):
         self.assertIncidentsEqual(retrieved, incident)
 
 
-    @given(incidents(), rangers())
+    @given(incidents(new=True), rangers())
     def test_createIncident(self, incident: Incident, author: Ranger) -> None:
         """
         :meth:`DataStore.createIncident` creates the given incident.
         """
-        assume(incident.number <= SQLITE_MAX_INT)
-
         store = self.store()
 
         self.successResultOf(store.createEvent(incident.event))
-        self.successResultOf(
+
+        # The returned incident should be the same, except for modified number
+        returnedIncident = self.successResultOf(
             store.createIncident(incident=incident, author=author)
         )
-        stored = frozenset(
+        self.assertIncidentsEqual(returnedIncident.replace(number=0), incident)
+        self.assertNotEqual(returnedIncident.number, 0)
+
+        # Stored incidents should be contain only the returned incident above
+        storedIncidents = tuple(
             self.successResultOf(store.incidents(event=incident.event))
         )
-        self.assertEqual(stored, frozenset((incident,)))
+        self.assertEqual(len(storedIncidents), 1)
+        self.assertIncidentsEqual(storedIncidents[0], returnedIncident)
 
     test_createIncident.todo = "unimplemented"
 
