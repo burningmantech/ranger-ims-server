@@ -333,6 +333,16 @@ class DataStoreTests(TestCase):
         )
 
 
+    @given(events(), text(), text())
+    def test_createConcentricStreet(self, event, id, name) -> None:
+        """
+        :meth:`DataStore.createConcentricStreet`…
+        """
+        raise NotImplementedError()
+
+    test_createConcentricStreet.todo = "unimplemented"
+
+
     def test_incidents(self) -> None:
         """
         :meth:`DataStore.incidents` returns all incidents.
@@ -372,6 +382,14 @@ class DataStoreTests(TestCase):
         store = self.store()
 
         self.successResultOf(store.createEvent(incident.event))
+
+        address = incident.location.address
+        if isinstance(address, RodGarettAddress):
+            self.successResultOf(
+                store.createConcentricStreet(
+                    incident.event, address.concentric, "Sesame Street"
+                )
+            )
 
         # The returned incident should be the same, except for modified number
         returnedIncident = self.successResultOf(

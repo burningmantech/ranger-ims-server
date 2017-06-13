@@ -266,6 +266,31 @@ class DataStore(IMSDataStore):
         return self._hideShowIncidentTypes(incidentTypes, True)
 
 
+    async def createConcentricStreet(
+        self, event: Event, id: str, name: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.createConcentricStreet`.
+        """
+        self._execute(
+            (
+                (
+                    self._query_createConcentricStreet,
+                    dict(eventID=event.id, streetID=id, streetName=name)
+                ),
+            ),
+            "Unable to create concentric street ({streetID}){streetName} "
+            "for event {event}"
+        )
+
+    _query_createConcentricStreet = _query(
+        """
+        insert into CONCENTRIC_STREET (EVENT, ID, NAME)
+        values (({query_eventID}), :streetID, :streetName)
+        """
+    )
+
+
     def _fetchIncident(
         self, event: Event, number: int, cursor: Cursor
     ) -> Incident:
