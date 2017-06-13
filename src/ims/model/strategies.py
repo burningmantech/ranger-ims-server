@@ -133,7 +133,7 @@ def events(draw: Callable) -> Event:
 
 @composite
 def incidentNumbers(draw: Callable) -> str:
-    return draw(integers(min_value=0))
+    return draw(integers(min_value=1))
 
 
 @composite
@@ -142,10 +142,15 @@ def incidentSummaries(draw: Callable) -> str:
 
 
 @composite
-def incidents(draw: Callable) -> Incident:
+def incidents(draw: Callable, new=False) -> Incident:
+    if new:
+        number = 0
+    else:
+        number=draw(incidentNumbers())
+
     return Incident(
         event=draw(events()),
-        number=draw(incidentNumbers()),
+        number=number,
         created=draw(dateTimes()),
         state=draw(incidentStates()),
         priority=draw(incidentPriorities()),
