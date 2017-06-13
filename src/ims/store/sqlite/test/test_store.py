@@ -351,21 +351,6 @@ class DataStoreTests(TestCase):
         """
         assume(incident.number <= SQLITE_MAX_INT)
 
-        # FIXME: Just make comparison work?
-        # Normalize address to Rod Garett
-        if not isinstance(incident.location.address, RodGarettAddress):
-            incident = incident.replace(
-                location=Location(
-                    name=incident.location.name,
-                    address=RodGarettAddress(
-                        concentric=None,
-                        radialHour=None,
-                        radialMinute=None,
-                        description=incident.location.address.description,
-                    )
-                )
-            )
-
         store = self.store()
         with store._db as db:
             cursor = db.cursor()
@@ -451,6 +436,17 @@ class DataStoreTests(TestCase):
 
 
     def storeIncident(self, cursor: Cursor, incident: Incident) -> None:
+        # Normalize address to Rod Garett; DB schema only supports those.
+        if not isinstance(incident.location.address, RodGarettAddress):
+            incident = incident.replace(
+                location=Location(
+                    name=incident.location.name,
+                    address=RodGarettAddress(
+                        description=incident.location.address.description,
+                    )
+                )
+            )
+
         location = incident.location
         address = cast(RodGarettAddress, location.address)
 
