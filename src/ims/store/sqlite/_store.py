@@ -473,6 +473,56 @@ class DataStore(IMSDataStore):
     )
 
 
+    def _attachRanger(
+        self, event: Event, incidentNumber: int, rangerHandle: str,
+        cursor: Cursor,
+    ):
+        """
+        Attach the given Ranger to the incident with the given number in the
+        given event.
+        """
+        cursor.execute(
+            self._query_attachRanger, dict(
+                eventID=event.id,
+                incidentNumber=incidentNumber,
+                rangerHandle=rangerHandle,
+            )
+        )
+
+    _query_attachRanger = _query(
+        """
+        insert into INCIDENT__RANGER (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
+        values (({query_eventID}), :incidentNumber, :rangerHandle)
+        """
+    )
+
+
+    def _attachIncidentType(
+        self, event: Event, incidentNumber: int, incidentType: str,
+        cursor: Cursor,
+    ) -> None:
+        cursor.execute(
+            self._query_attachIncidentType, dict(
+                eventID=event.id,
+                incidentNumber=incidentNumber,
+                incidentType=incidentType,
+            )
+        )
+
+    _query_attachIncidentType = _query(
+        """
+        insert into INCIDENT__INCIDENT_TYPE (
+            EVENT, INCIDENT_NUMBER, INCIDENT_TYPE
+        )
+        values (
+            ({query_eventID}),
+            :incidentNumber,
+            (select ID from INCIDENT_TYPE where NAME = :incidentType)
+        )
+        """
+    )
+
+
     async def _createIncident(
         self, incident: Incident, author: Optional[Ranger],
         directImport: bool,
@@ -523,8 +573,18 @@ class DataStore(IMSDataStore):
                     )
 
                     # Join with Ranger handles
+                    for rangerHandle in incident.rangerHandles:
+                        self._attachRanger(
+                            incident.event, incident.number, rangerHandle,
+                            cursor,
+                        )
 
-                    # Join with incident types
+                    # Attach incident types
+                    for incidentType in incident.incidentTypes:
+                        self._attachIncidentType(
+                            incident.event, incident.number, incidentType,
+                            cursor,
+                        )
 
                     if not directImport:
                         # Add initial report entry

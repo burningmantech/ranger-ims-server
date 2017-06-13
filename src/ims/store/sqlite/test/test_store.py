@@ -385,6 +385,9 @@ class DataStoreTests(TestCase):
 
         self.successResultOf(store.createEvent(incident.event))
 
+        for incidentType in incident.incidentTypes:
+            self.successResultOf(store.createIncidentType(incidentType))
+
         address = incident.location.address
         if (
             isinstance(address, RodGarettAddress) and
