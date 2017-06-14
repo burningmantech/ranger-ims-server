@@ -340,14 +340,30 @@ class DataStoreTests(TestCase):
 
 
     @given(events(), concentricStreetIDs(), concentricStreetNames())
-    def test_concentricStreets(self, event: Event) -> None:
+    def test_concentricStreets(
+        self, event: Event, streetID: str, streetName: str
+    ) -> None:
         """
         :meth:`DataStore.createConcentricStreet` returns the concentric streets
         for the given event.
         """
-        raise NotImplementedError()
+        store = self.store()
 
-    test_concentricStreets.todo = "unimplemented"
+        self.successResultOf(store.createEvent(event))
+
+        with store._db as db:
+            cursor = db.cursor()
+            try:
+                self.storeConcentricStreet(cursor, event, streetID, streetName)
+            finally:
+                cursor.close()
+
+        concentricStreets = self.successResultOf(
+            store.concentricStreets(event)
+        )
+
+        self.assertEqual(len(concentricStreets), 1)
+        self.assertEqual(concentricStreets.get(streetID), streetName)
 
 
     @given(events(), concentricStreetIDs(), concentricStreetNames())
@@ -368,8 +384,7 @@ class DataStoreTests(TestCase):
         stored = self.successResultOf(store.concentricStreets(event=event))
 
         self.assertEqual(len(stored), 1)
-        self.assertIn(id, stored)
-        self.assertEqual(stored[id], name)
+        self.assertEqual(stored.get(id), name)
 
 
     @given(tuples(incidents()))
@@ -514,6 +529,27 @@ class DataStoreTests(TestCase):
     # the expected rows, instead of writing to an actual DB.
     # Since it's SQLite, which isn't actually async, that's not a huge deal,
     # except there's a lot of fragile code below.
+
+    def storeConcentricStreet(
+        self, cursor: Cursor, event: Event, streetID: str, streetName: str
+    ) -> None:
+        cursor.execute(
+            dedent(
+                """
+                insert into CONCENTRIC_STREET (EVENT, ID, NAME)
+                values (
+                    (select ID from EVENT where NAME = :eventID),
+                    :streetID,
+                    :streetName
+                )
+                """
+            ),
+            dict(
+                eventID=event.id, streetID=streetID, streetName=streetName
+            )
+        )
+
+
     def storeIncident(self, cursor: Cursor, incident: Incident) -> None:
         # Normalize address to Rod Garett; DB schema only supports those.
         if not isinstance(incident.location.address, RodGarettAddress):
@@ -535,18 +571,8 @@ class DataStoreTests(TestCase):
         )
 
         if address.concentric is not None:
-            cursor.execute(
-                dedent(
-                    """
-                    insert into CONCENTRIC_STREET (EVENT, ID, NAME)
-                    values (
-                        (select ID from EVENT where NAME = :eventID),
-                        :streetID,
-                        'Blah'
-                    )
-                    """
-                ),
-                dict(eventID=incident.event.id, streetID=address.concentric)
+            self.storeConcentricStreet(
+                cursor, incident.event, address.concentric, "Some Street"
             )
 
         cursor.execute(
