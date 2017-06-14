@@ -18,11 +18,12 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
+from collections import defaultdict
 from datetime import datetime as DateTime, timedelta as TimeDelta
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
-from typing import Tuple, cast
+from typing import Dict, Set, Tuple, cast
 
 from attr import fields as attrFields
 
@@ -36,6 +37,8 @@ from ims.model.strategies import events, incidents, rangers
 
 from .._store import DataStore, asTimeStamp, incidentStateAsID, priorityAsID
 from ..._exceptions import StorageError
+
+Dict, Set  # silence linter
 
 
 __all__ = ()
@@ -345,13 +348,35 @@ class DataStoreTests(TestCase):
     test_createConcentricStreet.todo = "unimplemented"
 
 
-    def test_incidents(self) -> None:
+    @given(tuples(incidents()))
+    def test_incidents(self, incidents: Tuple[Incident]) -> None:
         """
         :meth:`DataStore.incidents` returns all incidents.
         """
-        raise NotImplementedError()
+        events: Dict[Event, Dict[int, Incident]] = defaultdict(defaultdict)
 
-    test_incidents.todo = "unimplemented"
+        store = self.store()
+
+        for incident in incidents:
+            assume(incident.number <= SQLITE_MAX_INT)
+            assume(incident.number not in events[incident.event])
+
+            with store._db as db:
+                cursor = db.cursor()
+                try:
+                    self.storeIncident(cursor, incident)
+                finally:
+                    cursor.close()
+
+            events[incident.event][incident.number] = incident
+
+        for event in events:
+            for retrieved in self.successResultOf(
+                store.incidents(event)
+            ):
+                self.assertIncidentsEqual(
+                    retrieved, events[incident.event][retrieved.number]
+                )
 
 
     @given(incidents())
