@@ -23,7 +23,8 @@ from datetime import (
 )
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, Iterable, Optional, Tuple
+from types import MappingProxyType
+from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
@@ -266,6 +267,26 @@ class DataStore(IMSDataStore):
         return self._hideShowIncidentTypes(incidentTypes, True)
 
 
+    async def concentricStreets(self, event: Event) -> Mapping[str, str]:
+        """
+        See :meth:`IMSDataStore.concentricStreets`.
+        """
+        return MappingProxyType(dict(
+            (row["ID"], row["NAME"]) for row in
+            self._executeAndIterate(
+                self._query_concentricStreets, dict(eventID=event.id),
+                "Unable to look up concentric streets for event {event}"
+            )
+        ))
+
+
+    _query_concentricStreets = _query(
+        """
+        select ID, NAME from CONCENTRIC_STREET where EVENT = ({query_eventID})
+        """
+    )
+
+
     async def createConcentricStreet(
         self, event: Event, id: str, name: str
     ) -> None:
@@ -318,7 +339,7 @@ class DataStore(IMSDataStore):
                 automatic=bool(row["GENERATED"]),
                 text=row["TEXT"],
             )
-            for row in self._db.execute(
+            for row in cursor.execute(
                 self._query_incident_reportEntries, params
             )
         )
