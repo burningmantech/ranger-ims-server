@@ -19,7 +19,7 @@ Incident Management System data store abstract base classes.
 """
 
 from abc import ABC, abstractmethod
-from typing import Iterable
+from typing import Iterable, Mapping
 
 from ims.model import Event, Incident, Ranger
 
@@ -76,6 +76,23 @@ class IMSDataStore(ABC):
     async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
         """
         Hide the given incident types.
+        """
+
+
+    @abstractmethod
+    async def concentricStreets(self, event: Event) -> Mapping[str, str]:
+        """
+        Look up the concentric streets associated with the given event.
+        Returns a mapping from street ID to street name.
+        """
+
+
+    @abstractmethod
+    async def createConcentricStreet(
+        self, event: Event, id: str, name: str
+    ) -> None:
+        """
+        Create a new concentric street and associated it with the given event.
         """
 
 
