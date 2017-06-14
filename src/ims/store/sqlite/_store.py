@@ -724,7 +724,10 @@ zeroTimeDelta = TimeDelta(0)
 
 def asTimeStamp(dateTime: DateTime) -> float:
     assert dateTime.tzinfo is not None, repr(dateTime)
-    return dateTime.timestamp()
+    timeStamp = dateTime.timestamp()
+    if timeStamp < 0:
+        raise StorageError("DateTime is before the UTC epoch: {}".dateTime)
+    return timeStamp
 
 
 def fromTimeStamp(timeStamp: float) -> DateTime:
