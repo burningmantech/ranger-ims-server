@@ -476,7 +476,7 @@ class DataStore(IMSDataStore):
     def _attachRangeHandleToIncident(
         self, event: Event, incidentNumber: int, rangerHandle: str,
         cursor: Cursor,
-    ):
+    ) -> None:
         cursor.execute(
             self._query_attachRangeHandleToIncident, dict(
                 eventID=event.id,
@@ -519,7 +519,9 @@ class DataStore(IMSDataStore):
     )
 
 
-    def _createReportEntry(self, reportEntry, cursor):
+    def _createReportEntry(
+        self, reportEntry: ReportEntry, cursor: Cursor
+    ) -> None:
         cursor.execute(
             self._query_addReportEntry, dict(
                 created=asTimeStamp(reportEntry.created),
@@ -538,8 +540,9 @@ class DataStore(IMSDataStore):
 
 
     def _addAndAttachReportEntryToIncident(
-        self, event, incidentNumber, reportEntry, cursor
-    ):
+        self, event: Event, incidentNumber: int, reportEntry: ReportEntry,
+        cursor: Cursor,
+    ) -> None:
         self._createReportEntry(reportEntry, cursor)
         # Join to incident
         cursor.execute(
