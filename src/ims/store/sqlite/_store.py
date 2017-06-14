@@ -24,7 +24,9 @@ from datetime import (
 from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
-from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
+from typing import (
+    AbstractSet, Any, Dict, Iterable, Mapping, Optional, Sequence, Tuple
+)
 from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
@@ -159,11 +161,13 @@ class DataStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.createEvent`.
         """
+        self._log.info("Creating event: {event}", event=event)
+
         self._execute(
             (
                 (self._query_createEvent, dict(eventID=event.id)),
             ),
-            "Unable to create event: {eventID}"
+            "Unable to create event {eventID}"
         )
 
     _query_createEvent = _query(
@@ -209,6 +213,11 @@ class DataStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.createIncidentType`.
         """
+        self._log.info(
+            "Creating incident type {incidentType} (hidden={hidden})",
+            incidentType=incidentType, hidden=hidden,
+        )
+
         self._execute(
             (
                 (
@@ -216,7 +225,7 @@ class DataStore(IMSDataStore):
                     dict(incidentType=incidentType, hidden=hidden),
                 ),
             ),
-            "Unable to create incident type: {name}"
+            "Unable to create incident type {name}"
         )
 
     _query_createIncidentType = _query(
@@ -230,10 +239,10 @@ class DataStore(IMSDataStore):
     def _hideShowIncidentTypes(
         self, incidentTypes: Iterable[str], hidden: bool
     ) -> None:
-        if hidden:
-            action = "hide"
-        else:
-            action = "show"
+        self._log.info(
+            "Setting hidden to {hidden} for incident types {incidentTypes}",
+            incidentTypes=incidentTypes, hidden=hidden,
+        )
 
         self._execute(
             (
@@ -243,7 +252,8 @@ class DataStore(IMSDataStore):
                 )
                 for incidentType in incidentTypes
             ),
-            "Unable to {} incident types: {{incidentTypes}}".format(action)
+            "Unable to set hidden to {hidden} incident types {{incidentTypes}}"
+            .format(hidden=hidden)
         )
 
     _query_hideShowIncidentType = _query(
@@ -293,6 +303,11 @@ class DataStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.createConcentricStreet`.
         """
+        self._log.info(
+            "Creating concentric street ({id}){name} in event {event}",
+            event=event, id=id, name=name,
+        )
+
         self._execute(
             (
                 (
@@ -494,17 +509,26 @@ class DataStore(IMSDataStore):
     )
 
 
-    def _attachRangeHandleToIncident(
-        self, event: Event, incidentNumber: int, rangerHandle: str,
+    def _attachRangeHandlesToIncident(
+        self, event: Event, incidentNumber: int, rangerHandles: Iterable[str],
         cursor: Cursor,
     ) -> None:
-        cursor.execute(
-            self._query_attachRangeHandleToIncident, dict(
-                eventID=event.id,
-                incidentNumber=incidentNumber,
-                rangerHandle=rangerHandle,
-            )
+        self._log.info(
+            "Attaching Rangers {rangerHandles} to incident #{incidentNumber} "
+            "in event {event}",
+            event=event,
+            incidentNumber=incidentNumber,
+            rangerHandles=rangerHandles,
         )
+
+        for rangerHandle in rangerHandles:
+            cursor.execute(
+                self._query_attachRangeHandleToIncident, dict(
+                    eventID=event.id,
+                    incidentNumber=incidentNumber,
+                    rangerHandle=rangerHandle,
+                )
+            )
 
     _query_attachRangeHandleToIncident = _query(
         """
@@ -514,17 +538,26 @@ class DataStore(IMSDataStore):
     )
 
 
-    def _attachIncidentTypeToIncident(
-        self, event: Event, incidentNumber: int, incidentType: str,
+    def _attachIncidentTypesToIncident(
+        self, event: Event, incidentNumber: int, incidentTypes: Iterable[str],
         cursor: Cursor,
     ) -> None:
-        cursor.execute(
-            self._query_attachIncidentTypeToIncident, dict(
-                eventID=event.id,
-                incidentNumber=incidentNumber,
-                incidentType=incidentType,
-            )
+        self._log.info(
+            "Attaching incident types {incidentTypes} to incident "
+            "#{incidentNumber} in event {event}",
+            event=event,
+            incidentNumber=incidentNumber,
+            incidentTypes=incidentTypes,
         )
+
+        for incidentType in incidentTypes:
+            cursor.execute(
+                self._query_attachIncidentTypeToIncident, dict(
+                    eventID=event.id,
+                    incidentNumber=incidentNumber,
+                    incidentType=incidentType,
+                )
+            )
 
     _query_attachIncidentTypeToIncident = _query(
         """
@@ -543,6 +576,10 @@ class DataStore(IMSDataStore):
     def _createReportEntry(
         self, reportEntry: ReportEntry, cursor: Cursor
     ) -> None:
+        self._log.info(
+            "Creating report entry {reportEntry}", reportEntry=reportEntry
+        )
+
         cursor.execute(
             self._query_addReportEntry, dict(
                 created=asTimeStamp(reportEntry.created),
@@ -560,19 +597,29 @@ class DataStore(IMSDataStore):
     )
 
 
-    def _addAndAttachReportEntryToIncident(
-        self, event: Event, incidentNumber: int, reportEntry: ReportEntry,
-        cursor: Cursor,
+    def _addAndAttachReportEntriesToIncident(
+        self, event: Event, incidentNumber: int,
+        reportEntries: Iterable[ReportEntry], cursor: Cursor,
     ) -> None:
-        self._createReportEntry(reportEntry, cursor)
-        # Join to incident
-        cursor.execute(
-            self._query_attachReportEntryToIncident, dict(
-                eventID=event.id,
+        for reportEntry in reportEntries:
+            self._createReportEntry(reportEntry, cursor)
+
+            self._log.info(
+                "Attaching report entry {reportEntry} to incident "
+                "#{incidentNumber} in event {event}",
+                event=event,
                 incidentNumber=incidentNumber,
-                reportEntryID=cursor.lastrowid,
+                reportEntry=reportEntry,
             )
-        )
+
+            # Join to incident
+            cursor.execute(
+                self._query_attachReportEntryToIncident, dict(
+                    eventID=event.id,
+                    incidentNumber=incidentNumber,
+                    reportEntryID=cursor.lastrowid,
+                )
+            )
 
     _query_attachReportEntryToIncident = _query(
         """
@@ -616,6 +663,11 @@ class DataStore(IMSDataStore):
                         locationRadialHour   = None
                         locationRadialMinute = None
 
+                    self._log.info(
+                        "Creating incident {incident}",
+                        incident=incident,
+                    )
+
                     # Write incident row
                     cursor.execute(
                         self._query_createIncident, dict(
@@ -633,30 +685,27 @@ class DataStore(IMSDataStore):
                         )
                     )
 
-                    # Join with Ranger handles
-                    for rangerHandle in incident.rangerHandles:
-                        self._attachRangeHandleToIncident(
-                            incident.event, incident.number, rangerHandle,
-                            cursor,
-                        )
-
-                    # Attach incident types
-                    for incidentType in incident.incidentTypes:
-                        self._attachIncidentTypeToIncident(
-                            incident.event, incident.number, incidentType,
-                            cursor,
-                        )
-
                     if not directImport:
                         # Add initial report entry
                         pass
 
+                    # Join with Ranger handles
+                    self._attachRangeHandlesToIncident(
+                        incident.event, incident.number,
+                        incident.rangerHandles, cursor,
+                    )
+
+                    # Attach incident types
+                    self._attachIncidentTypesToIncident(
+                        incident.event, incident.number,
+                        incident.incidentTypes, cursor,
+                    )
+
                     # Add report entries
-                    for reportEntry in incident.reportEntries:
-                        self._addAndAttachReportEntryToIncident(
-                            incident.event, incident.number, reportEntry,
-                            cursor,
-                        )
+                    self._addAndAttachReportEntriesToIncident(
+                        incident.event, incident.number,
+                        incident.reportEntries, cursor,
+                    )
 
                     return incident
                 finally:
@@ -726,7 +775,9 @@ def asTimeStamp(dateTime: DateTime) -> float:
     assert dateTime.tzinfo is not None, repr(dateTime)
     timeStamp = dateTime.timestamp()
     if timeStamp < 0:
-        raise StorageError("DateTime is before the UTC epoch: {}".dateTime)
+        raise StorageError(
+            "DateTime is before the UTC epoch: {}".format(dateTime)
+        )
     return timeStamp
 
 
