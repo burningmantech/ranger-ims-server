@@ -81,7 +81,10 @@ def timeZones(draw: Callable) -> TimeZone:
 
 @composite
 def dateTimes(draw: Callable) -> DateTime:
-    return draw(_datetimes(timezones=timeZones()))
+    return draw(_datetimes(
+        min_datetime=DateTime(1970, 1, 1),  # Post- UTC epoch
+        timezones=timeZones(),
+    ))
 
 
 ##
