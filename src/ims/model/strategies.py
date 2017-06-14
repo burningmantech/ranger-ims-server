@@ -56,6 +56,8 @@ __all__ = (
     "incidentTypesText",
     "incidents",
     "locations",
+    "radialHours",
+    "radialMinutes",
     "rangerHandles",
     "rangers",
     "reportEntries",
@@ -102,11 +104,21 @@ def concentricStreetNames(draw: Callable) -> str:
 
 
 @composite
+def radialHours(draw: Callable) -> str:
+    return draw(integers(min_value=1, max_value=12))
+
+
+@composite
+def radialMinutes(draw: Callable) -> str:
+    return draw(integers(min_value=0, max_value=59))
+
+
+@composite
 def rodGarettAddresses(draw: Callable) -> RodGarettAddress:
     return RodGarettAddress(
-        concentric=draw(text()),
-        radialHour=draw(integers(min_value=1, max_value=12)),
-        radialMinute=draw(integers(min_value=0, max_value=59)),
+        concentric=draw(concentricStreetIDs()),
+        radialHour=draw(radialHours()),
+        radialMinute=draw(radialMinutes()),
         description=draw(text()),
     )
 
