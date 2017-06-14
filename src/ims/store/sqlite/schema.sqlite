@@ -2,7 +2,7 @@ create table SCHEMA_INFO (
     VERSION integer not null
 );
 
-insert into SCHEMA_INFO (VERSION) values (1);
+insert into SCHEMA_INFO (VERSION) values (2);
 
 
 create table EVENT (
@@ -44,7 +44,7 @@ create table REPORT_ENTRY (
     ID        integer not null,
     AUTHOR    text    not null,
     TEXT      text    not null,
-    CREATED   integer not null,  -- FIXME: change to real
+    CREATED   real    not null,  -- Was integer in v1
     GENERATED numeric not null,
 
     -- FIXME: AUTHOR is an external non-primary key.
@@ -58,13 +58,13 @@ create table INCIDENT (
     EVENT    integer not null,
     NUMBER   integer not null,
     VERSION  integer not null,
-    CREATED  integer not null,  -- FIXME: change to real
+    CREATED  real    not null,  -- Was integer in v1
     PRIORITY integer not null,
     STATE    text    not null,
     SUMMARY  text,
 
     LOCATION_NAME          text,
-    LOCATION_CONCENTRIC    integer,  -- FIXME: change to text to match FK
+    LOCATION_CONCENTRIC    text,  -- Was integer in v1
     LOCATION_RADIAL_HOUR   integer,
     LOCATION_RADIAL_MINUTE integer,
     LOCATION_DESCRIPTION   text,
@@ -150,7 +150,7 @@ create table EVENT_ACCESS (
 
 create table INCIDENT_REPORT (
     NUMBER   integer not null,
-    CREATED  integer not null,  -- FIXME: change to real
+    CREATED  real    not null,  -- Was integer in v1
     SUMMARY  text,
 
     primary key (NUMBER)
