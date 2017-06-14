@@ -42,6 +42,8 @@ from ._type import KnownIncidentType
 
 __all__ = (
     "addresses",
+    "concentricStreetIDs",
+    "concentricStreetNames",
     "dateTimes",
     "events",
     "incidentNumbers",
@@ -87,6 +89,16 @@ def dateTimes(draw: Callable) -> DateTime:
 @composite
 def textOnlyAddresses(draw: Callable) -> TextOnlyAddress:
     return TextOnlyAddress(description=draw(text()))
+
+
+@composite
+def concentricStreetIDs(draw: Callable) -> str:
+    return draw(text())
+
+
+@composite
+def concentricStreetNames(draw: Callable) -> str:
+    return draw(text())
 
 
 @composite
