@@ -103,12 +103,12 @@ class DataStoreTests(TestCase):
                   0: EVENT(integer) not null *1
                   1: NUMBER(integer) not null *2
                   2: VERSION(integer) not null
-                  3: CREATED(integer) not null
+                  3: CREATED(real) not null
                   4: PRIORITY(integer) not null
                   5: STATE(text) not null
                   6: SUMMARY(text)
                   7: LOCATION_NAME(text)
-                  8: LOCATION_CONCENTRIC(integer)
+                  8: LOCATION_CONCENTRIC(text)
                   9: LOCATION_RADIAL_HOUR(integer)
                   10: LOCATION_RADIAL_MINUTE(integer)
                   11: LOCATION_DESCRIPTION(text)
@@ -118,7 +118,7 @@ class DataStoreTests(TestCase):
                   2: INCIDENT_REPORT_NUMBER(integer) not null *3
                 INCIDENT_REPORT:
                   0: NUMBER(integer) not null *1
-                  1: CREATED(integer) not null
+                  1: CREATED(real) not null
                   2: SUMMARY(text)
                 INCIDENT_REPORT__REPORT_ENTRY:
                   0: INCIDENT_REPORT_NUMBER(integer) not null *1
@@ -145,7 +145,7 @@ class DataStoreTests(TestCase):
                   0: ID(integer) not null *1
                   1: AUTHOR(text) not null
                   2: TEXT(text) not null
-                  3: CREATED(integer) not null
+                  3: CREATED(real) not null
                   4: GENERATED(numeric) not null
                 SCHEMA_INFO:
                   0: VERSION(integer) not null
