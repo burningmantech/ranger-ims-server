@@ -28,12 +28,15 @@ from typing import Dict, Set, Tuple, cast
 from attr import fields as attrFields
 
 from hypothesis import assume, given
-from hypothesis.strategies import booleans, text, tuples
+from hypothesis.strategies import booleans, tuples
 
 from ims.ext.sqlite import Connection, Cursor, SQLITE_MAX_INT
 from ims.ext.trial import TestCase
 from ims.model import Event, Incident, Location, Ranger, RodGarettAddress
-from ims.model.strategies import events, incidents, rangers
+from ims.model.strategies import (
+    concentricStreetIDs, concentricStreetNames, events,
+    incidentTypesText, incidents, rangers,
+)
 
 from .._store import DataStore, asTimeStamp, incidentStateAsID, priorityAsID
 from ..._exceptions import StorageError
@@ -201,7 +204,7 @@ class DataStoreTests(TestCase):
         self.assertEqual(f.type, StorageError)
 
 
-    @given(tuples(tuples(text(), booleans())))
+    @given(tuples(tuples(incidentTypesText(), booleans())))
     def test_incidentTypes(self, data: Tuple[Tuple[str, bool]]) -> None:
         """
         :meth:`DataStore.incidentTypes` returns visible incident types.
@@ -225,7 +228,7 @@ class DataStoreTests(TestCase):
         self.assertEqual(incidentTypes, expected)
 
 
-    @given(tuples(tuples(text(), booleans())))
+    @given(tuples(tuples(incidentTypesText(), booleans())))
     def test_incidentTypes_includeHidden(
         self, data: Tuple[Tuple[str, bool]]
     ) -> None:
@@ -252,7 +255,7 @@ class DataStoreTests(TestCase):
         self.assertEqual(incidentTypes, expected)
 
 
-    @given(text(), booleans())
+    @given(incidentTypesText(), booleans())
     def test_createIncidentType(self, incidentType: str, hidden: bool) -> None:
         """
         :meth:`DataStore.createIncidentType` creates the incident type.
@@ -336,16 +339,37 @@ class DataStoreTests(TestCase):
         )
 
 
-    @given(events(), text(), text())
+    @given(events(), concentricStreetIDs(), concentricStreetNames())
+    def test_concentricStreets(self, event: Event) -> None:
+        """
+        :meth:`DataStore.createConcentricStreet` returns the concentric streets
+        for the given event.
+        """
+        raise NotImplementedError()
+
+    test_concentricStreets.todo = "unimplemented"
+
+
+    @given(events(), concentricStreetIDs(), concentricStreetNames())
     def test_createConcentricStreet(
         self, event: Event, id: str, name: str
     ) -> None:
         """
-        :meth:`DataStore.createConcentricStreet`…
+        :meth:`DataStore.createConcentricStreet` creates a concentric streets
+        for the given event.
         """
-        raise NotImplementedError()
+        store = self.store()
 
-    test_createConcentricStreet.todo = "unimplemented"
+        self.successResultOf(store.createEvent(event))
+
+        self.successResultOf(
+            store.createConcentricStreet(event=event, id=id, name=name)
+        )
+        stored = self.successResultOf(store.concentricStreets(event=event))
+
+        self.assertEqual(len(stored), 1)
+        self.assertIn(id, stored)
+        self.assertEqual(stored[id], name)
 
 
     @given(tuples(incidents()))
@@ -437,8 +461,6 @@ class DataStoreTests(TestCase):
         )
         self.assertEqual(len(storedIncidents), 1)
         self.assertIncidentsEqual(storedIncidents[0], returnedIncident)
-
-    test_createIncident.todo = "unimplemented"
 
 
     def assertIncidentsEqual(
