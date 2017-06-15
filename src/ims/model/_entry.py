@@ -47,6 +47,17 @@ class ReportEntry(object):
     text      = attrib(validator=true(instance_of(str)))  # type: str
 
 
+    def __str__(self) -> str:
+        if self.automatic:
+            automatic = "*"
+        else:
+            automatic = ""
+
+        return "{} {}{}: {}".format(
+            self.created, self.author, automatic, self.text
+        )
+
+
     def _cmpValue(self) -> Any:
         return (self.created, self.author, not self.automatic, self.text)
 

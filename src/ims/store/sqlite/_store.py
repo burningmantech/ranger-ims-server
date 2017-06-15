@@ -214,7 +214,7 @@ class DataStore(IMSDataStore):
         See :meth:`IMSDataStore.createIncidentType`.
         """
         self._log.info(
-            "Creating incident type {incidentType} (hidden={hidden})",
+            "Creating incident type: {incidentType} (hidden={hidden})",
             incidentType=incidentType, hidden=hidden,
         )
 
@@ -240,7 +240,7 @@ class DataStore(IMSDataStore):
         self, incidentTypes: Iterable[str], hidden: bool
     ) -> None:
         self._log.info(
-            "Setting hidden to {hidden} for incident types {incidentTypes}",
+            "Setting hidden to {hidden} for incident types: {incidentTypes}",
             incidentTypes=incidentTypes, hidden=hidden,
         )
 
@@ -304,7 +304,7 @@ class DataStore(IMSDataStore):
         See :meth:`IMSDataStore.createConcentricStreet`.
         """
         self._log.info(
-            "Creating concentric street ({id}){name} in event {event}",
+            "Creating concentric street in event {event}: ({id}){name}",
             event=event, id=id, name=name,
         )
 
@@ -514,8 +514,8 @@ class DataStore(IMSDataStore):
         cursor: Cursor,
     ) -> None:
         self._log.info(
-            "Attaching Rangers {rangerHandles} to incident #{incidentNumber} "
-            "in event {event}",
+            "Attaching Rangers to incident #{incidentNumber} in event "
+            "{event}: {rangerHandles}",
             event=event,
             incidentNumber=incidentNumber,
             rangerHandles=rangerHandles,
@@ -543,8 +543,8 @@ class DataStore(IMSDataStore):
         cursor: Cursor,
     ) -> None:
         self._log.info(
-            "Attaching incident types {incidentTypes} to incident "
-            "#{incidentNumber} in event {event}",
+            "Attaching incident types to incident #{incidentNumber} in event: "
+            "{event}: {incidentTypes}",
             event=event,
             incidentNumber=incidentNumber,
             incidentTypes=incidentTypes,
@@ -577,7 +577,7 @@ class DataStore(IMSDataStore):
         self, reportEntry: ReportEntry, cursor: Cursor
     ) -> None:
         self._log.info(
-            "Creating report entry {reportEntry}", reportEntry=reportEntry
+            "Creating report entry: {reportEntry}", reportEntry=reportEntry
         )
 
         cursor.execute(
@@ -605,8 +605,8 @@ class DataStore(IMSDataStore):
             self._createReportEntry(reportEntry, cursor)
 
             self._log.info(
-                "Attaching report entry {reportEntry} to incident "
-                "#{incidentNumber} in event {event}",
+                "Attaching report entry to incident #{incidentNumber} in "
+                "event {event}: {reportEntry}",
                 event=event,
                 incidentNumber=incidentNumber,
                 reportEntry=reportEntry,
@@ -664,7 +664,7 @@ class DataStore(IMSDataStore):
                         locationRadialMinute = None
 
                     self._log.info(
-                        "Creating incident {incident}",
+                        "Creating incident: {incident}",
                         incident=incident,
                     )
 
