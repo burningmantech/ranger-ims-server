@@ -32,10 +32,10 @@ from hypothesis.strategies import booleans, tuples
 
 from ims.ext.sqlite import Connection, Cursor, SQLITE_MAX_INT
 from ims.ext.trial import TestCase
-from ims.model import Event, Incident, Location, Ranger, RodGarettAddress
+from ims.model import Event, Incident, Location, RodGarettAddress
 from ims.model.strategies import (
     concentricStreetIDs, concentricStreetNames, events,
-    incidentTypesText, incidents, rangers,
+    incidentTypesText, incidents, rangerHandles,
 )
 
 from .._store import DataStore, asTimeStamp, incidentStateAsID, priorityAsID
@@ -440,8 +440,8 @@ class DataStoreTests(TestCase):
         self.assertIncidentsEqual(retrieved, incident)
 
 
-    @given(incidents(new=True), rangers())
-    def test_createIncident(self, incident: Incident, author: Ranger) -> None:
+    @given(incidents(new=True), rangerHandles())
+    def test_createIncident(self, incident: Incident, author: str) -> None:
         """
         :meth:`DataStore.createIncident` creates the given incident.
         """
@@ -467,7 +467,9 @@ class DataStoreTests(TestCase):
         returnedIncident = self.successResultOf(
             store.createIncident(incident=incident, author=author)
         )
-        self.assertIncidentsEqual(returnedIncident.replace(number=0), incident)
+        self.assertIncidentsEqual(
+            returnedIncident.replace(number=0), incident, True
+        )
         self.assertNotEqual(returnedIncident.number, 0)
 
         # Stored incidents should be contain only the returned incident above
@@ -479,7 +481,8 @@ class DataStoreTests(TestCase):
 
 
     def assertIncidentsEqual(
-        self, incidentA: Incident, incidentB: Incident
+        self, incidentA: Incident, incidentB: Incident,
+        ignoreInitial: bool = False,
     ) -> None:
         if incidentA != incidentB:
             messages = []
@@ -499,6 +502,15 @@ class DataStoreTests(TestCase):
                         )
 
                 if name == "reportEntries":
+                    if ignoreInitial:
+                        # Remove automatic entries
+                        _valueA = tuple(e for e in valueA if not e.automatic)
+
+                        if _valueA == valueA:
+                            self.fail("No initial report entries found.")
+
+                        valueA = _valueA
+
                     if len(valueA) == len(valueB):
                         for entryA, entryB in zip(valueA, valueB):
                             if entryA != entryB:
@@ -522,7 +534,7 @@ class DataStoreTests(TestCase):
                     )
 
             if messages:
-                self.fail("Incidents no not match:\n" + "\n".join(messages))
+                self.fail("Incidents do not match:\n" + "\n".join(messages))
 
 
     # FIXME: A better plan here would be to create a mock DB object that yields

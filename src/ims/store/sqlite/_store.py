@@ -24,9 +24,7 @@ from datetime import (
 from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
-from typing import (
-    AbstractSet, Any, Dict, Iterable, Mapping, Optional, Sequence, Tuple
-)
+from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
@@ -631,42 +629,107 @@ class DataStore(IMSDataStore):
     )
 
 
+    def _initialReportEntries(
+        self, event: Event, incident: Incident, author: str
+    ) -> Iterable[ReportEntry]:
+        created = DateTime.now(TimeZone.utc)
+
+        reportEntries = []
+
+        def addEntry(label: str, value: Any) -> None:
+            if value:
+                reportEntries.append(
+                    ReportEntry(
+                        text="Changed {} to: {}".format(label, value),
+                        author=author, created=created, automatic=True,
+                    )
+                )
+
+        if incident.priority != IncidentPriority.normal:
+            addEntry("priority", incident.priority)
+
+        if incident.state != IncidentState.new:
+            addEntry("state", incident.state)
+
+        if incident.summary:
+            addEntry("summary", incident.summary)
+
+        location = incident.location
+        addEntry("location name", location.name)
+
+        address = location.address
+        addEntry("location description", address.description)
+
+        if isinstance(address, RodGarettAddress):
+            addEntry("location concentric street", address.concentric)
+            addEntry("location radial hour", address.radialHour)
+            addEntry("location radial minute", address.radialMinute)
+
+        if incident.rangerHandles:
+            addEntry("Rangers", ", ".join(incident.rangerHandles))
+
+        if incident.incidentTypes:
+            addEntry("incident types", ", ".join(incident.incidentTypes))
+
+        return tuple(reportEntries)
+
+
     async def _createIncident(
         self, incident: Incident, author: Optional[str],
         directImport: bool,
     ) -> Incident:
+        if directImport:
+            if author is not None:
+                raise ValueError("author should be None for direct import")
+
+            if not incident.number > 0:
+                raise ValueError("Imported incident number must be > 0")
+        else:
+            if not author:
+                raise ValueError("author is required")
+
+            if incident.number != 0:
+                raise ValueError("New incident number must be zero")
+
+            for reportEntry in incident.reportEntries:
+                if reportEntry.automatic:
+                    raise ValueError(
+                        "New incident may not contain automatic report entries"
+                    )
+
+            # Add initial report entries
+            reportEntries = self._initialReportEntries(
+                incident.event, incident, author
+            )
+            incident = incident.replace(
+                reportEntries=(reportEntries + incident.reportEntries)
+            )
+
+        # Get normalized-to-Rod-Garett address fields
+        location = incident.location
+        address = location.address
+
+        if isinstance(address, RodGarettAddress):
+            locationConcentric   = address.concentric
+            locationRadialHour   = address.radialHour
+            locationRadialMinute = address.radialMinute
+        else:
+            locationConcentric   = None
+            locationRadialHour   = None
+            locationRadialMinute = None
+
+        self._log.info("Creating incident: {incident}", incident=incident)
+
         try:
             with self._db as db:
                 cursor = db.cursor()
                 try:
-                    # Replace incident number with a new one (unless we are
-                    # importing).
                     if not directImport:
-                        assert incident.number == 0, (
-                            "New incident number must be zero"
-                        )
+                        # Assign the incident number a number
                         number = self._nextIncidentNumber(
                             incident.event, cursor
                         )
                         incident = incident.replace(number=number)
-
-                    # Get normalized-to-Rod-Garett address fields
-                    location = incident.location
-                    address = location.address
-
-                    if isinstance(address, RodGarettAddress):
-                        locationConcentric   = address.concentric
-                        locationRadialHour   = address.radialHour
-                        locationRadialMinute = address.radialMinute
-                    else:
-                        locationConcentric   = None
-                        locationRadialHour   = None
-                        locationRadialMinute = None
-
-                    self._log.info(
-                        "Creating incident: {incident}",
-                        incident=incident,
-                    )
 
                     # Write incident row
                     cursor.execute(
@@ -684,10 +747,6 @@ class DataStore(IMSDataStore):
                             locationDescription=address.description,
                         )
                     )
-
-                    if not directImport:
-                        # Add initial report entry
-                        pass
 
                     # Join with Ranger handles
                     self._attachRangeHandlesToIncident(
