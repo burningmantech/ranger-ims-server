@@ -33,7 +33,8 @@ from attr.validators import instance_of, optional
 from twisted.logger import Logger
 
 from ims.ext.sqlite import (
-    Connection, Cursor, Parameters, SQLiteError, createDB, openDB, printSchema
+    Connection, Cursor, ParameterValue, Parameters, SQLiteError,
+    createDB, openDB, printSchema,
 )
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentState, Location, ReportEntry,
@@ -111,29 +112,29 @@ class DataStore(IMSDataStore):
 
 
     def _execute(
-        self, queries: Iterable[Tuple[str, Dict[str, Any]]],
+        self, queries: Iterable[Tuple[str, Parameters]],
         errorLogFormat: str,
     ) -> None:
         try:
             with self._db as db:
-                for (query, queryArgs) in queries:
-                    db.execute(query, queryArgs)
+                for (query, parameters) in queries:
+                    db.execute(query, parameters)
         except SQLiteError as e:
             self._log.critical(
-                errorLogFormat, query=query, **queryArgs, error=e
+                errorLogFormat, query=query, **parameters, error=e
             )
             raise StorageError(e)
 
 
     def _executeAndIterate(
-        self, query: str, queryArgs: Dict[str, Any], errorLogFormat: str
-    ) -> Iterable[Any]:
+        self, query: str, parameters: Parameters, errorLogFormat: str
+    ) -> Iterable[ParameterValue]:
         try:
-            for row in self._db.execute(query, queryArgs):
+            for row in self._db.execute(query, parameters):
                 yield row
         except SQLiteError as e:
             self._log.critical(
-                errorLogFormat, query=query, **queryArgs, error=e
+                errorLogFormat, query=query, **parameters, error=e
             )
             raise StorageError(e)
 

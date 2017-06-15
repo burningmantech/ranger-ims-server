@@ -21,7 +21,7 @@ from twisted.logger import Logger
 
 __all__ = (
     "Connection",
-    "Parameter",
+    "ParameterValue",
     "Parameters",
     "QueryPlanExplanation",
     "Row",
@@ -39,8 +39,8 @@ TBaseCursor = TypeVar("TBaseCursor", bound="BaseCursor")
 
 CursorFactory = Callable[..., TCursor]
 
-Parameter = Optional[Union[bytes, str, int, float]]
-Parameters = Mapping[str, Parameter]
+ParameterValue = Optional[Union[bytes, str, int, float]]
+Parameters = Mapping[str, ParameterValue]
 
 SQLITE_MAX_INT = 9223372036854775807
 
