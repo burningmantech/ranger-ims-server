@@ -58,3 +58,10 @@ class IncidentState(Enum):
 
     def __repr__(self) -> str:
         return "{}[{!r}]".format(self.__class__.__name__, self.name)
+
+
+    def __str__(self) -> str:
+        return dict(
+            onHold="on hold",
+            onScene="on scene",
+        ).get(self.name, self.name)

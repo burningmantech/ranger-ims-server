@@ -42,3 +42,7 @@ class IncidentPriority(Enum):
 
     def __repr__(self) -> str:
         return "{}[{!r}]".format(self.__class__.__name__, self.name)
+
+
+    def __str__(self) -> str:
+        return self.name
