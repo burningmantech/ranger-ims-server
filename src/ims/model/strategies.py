@@ -81,8 +81,18 @@ def timeZones(draw: Callable) -> TimeZone:
 
 @composite
 def dateTimes(draw: Callable) -> DateTime:
+    #
+    # min_datetime >= UTC epoch because otherwise we can't store dates as UTC
+    # timestamps.
+    #
+    # We actually add a day below because min_datetime doesn't allow non-naive
+    # values (?!) so that ensures we have a value after the epoch
+    #
+    # For all current uses of model date-times in model objects in this module,
+    # limiting values to those past the is totally OK.
+    #
     return draw(_datetimes(
-        min_datetime=DateTime(1970, 1, 1),  # Post- UTC epoch
+        min_datetime=DateTime(1970, 1, 2),
         timezones=timeZones(),
     ))
 
