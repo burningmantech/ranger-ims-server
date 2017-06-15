@@ -21,7 +21,7 @@ Test strategies for model data.
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
-from typing import Callable
+from typing import Callable, Optional
 
 from hypothesis.strategies import (
     booleans, composite, datetimes as _datetimes, integers, iterables, none,
@@ -136,11 +136,16 @@ def addresses(draw: Callable) -> Address:
 ##
 
 @composite
-def reportEntries(draw: Callable) -> ReportEntry:
+def reportEntries(
+    draw: Callable, automatic: Optional[bool] = None
+) -> ReportEntry:
+    if automatic is None:
+        automatic = draw(booleans())
+
     return ReportEntry(
         created=draw(dateTimes()),
         author=draw(text(min_size=1)),
-        automatic=draw(booleans()),
+        automatic=automatic,
         text=draw(text(min_size=1)),
     )
 
@@ -170,10 +175,13 @@ def incidentSummaries(draw: Callable) -> str:
 
 @composite
 def incidents(draw: Callable, new: bool = False) -> Incident:
+    automatic: Optional[bool]
     if new:
         number = 0
+        automatic = False
     else:
         number = draw(incidentNumbers())
+        automatic = None
 
     return Incident(
         event=draw(events()),
@@ -185,7 +193,7 @@ def incidents(draw: Callable, new: bool = False) -> Incident:
         location=draw(locations()),
         rangerHandles=draw(iterables(rangerHandles())),
         incidentTypes=draw(iterables(incidentTypesText())),
-        reportEntries=draw(iterables(reportEntries())),
+        reportEntries=draw(iterables(reportEntries(automatic=automatic))),
     )
 
 
