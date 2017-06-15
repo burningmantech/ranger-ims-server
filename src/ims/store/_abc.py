@@ -21,7 +21,7 @@ Incident Management System data store abstract base classes.
 from abc import ABC, abstractmethod
 from typing import Iterable, Mapping
 
-from ims.model import Event, Incident, Ranger
+from ims.model import Event, Incident
 
 
 __all__ = ()
@@ -112,7 +112,7 @@ class IMSDataStore(ABC):
 
     @abstractmethod
     async def createIncident(
-        self, incident: Incident, author: Ranger
+        self, incident: Incident, author: str
     ) -> Incident:
         """
         Create a new incident and add it into the given event.

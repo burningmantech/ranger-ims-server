@@ -38,8 +38,8 @@ from ims.ext.sqlite import (
     Connection, Cursor, Parameters, SQLiteError, createDB, openDB, printSchema
 )
 from ims.model import (
-    Event, Incident, IncidentPriority, IncidentState, Location, Ranger,
-    ReportEntry, RodGarettAddress,
+    Event, Incident, IncidentPriority, IncidentState, Location, ReportEntry,
+    RodGarettAddress,
 )
 
 from .._abc import IMSDataStore
@@ -632,7 +632,7 @@ class DataStore(IMSDataStore):
 
 
     async def _createIncident(
-        self, incident: Incident, author: Optional[Ranger],
+        self, incident: Incident, author: Optional[str],
         directImport: bool,
     ) -> Incident:
         try:
@@ -752,7 +752,7 @@ class DataStore(IMSDataStore):
 
 
     async def createIncident(
-        self, incident: Incident, author: Ranger
+        self, incident: Incident, author: str
     ) -> Incident:
         """
         See :meth:`IMSDataStore.createIncident`.
