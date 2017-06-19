@@ -839,6 +839,99 @@ class DataStore(IMSDataStore):
         await self._createIncident(incident, None, True)
 
 
+    def _setIncidentAttribute(
+        self, query: str, event: Event, incidentNumber: int,
+        attribute: str, value: ParameterValue, author: str,
+    ) -> None:
+        autoEntry = self._automaticReportEntry(
+            author, DateTime.now(TimeZone.utc), attribute, value
+        )
+
+        self._log.info(
+            "Author {author} updating incident #{incidentNumber} in event "
+            "{event}: {attribute}={value}",
+            query=query,
+            event=event,
+            incidentNumber=incidentNumber,
+            attribute=attribute,
+            value=value,
+            author=author,
+        )
+
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(query, dict(
+                        eventID=event.id,
+                        incidentNumber=incidentNumber,
+                        column=attribute,
+                        value=value,
+                    ))
+
+                    # Add report entries
+                    self._addAndAttachReportEntriesToIncident(
+                        event, incidentNumber, (autoEntry,), cursor,
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Author {author} unable to update incident #{incidentNumber} "
+                "in event {event}: {attribute}={value}",
+                query=query,
+                event=event,
+                incidentNumber=incidentNumber,
+                attribute=attribute,
+                value=value,
+                author=author,
+                error=e,
+            )
+            raise StorageError(e)
+
+    _template_setIncidentAttribute = _query(
+        """
+        update INCIDENT set {{column}} = :value
+        where EVENT = ({query_eventID}) and NUMBER = :incidentNumber
+        """
+    )
+
+
+    async def setIncidentPriority(
+        self, event: Event, incidentNumber: int, priority: IncidentPriority,
+        author: str,
+    ) -> None:
+        """
+        Set the priority for the incident with the given number in the given
+        event.
+        """
+        self._setIncidentAttribute(
+            self._query_setIncidentPriority,
+            event, incidentNumber, "priority", priorityAsID(priority), author
+        )
+
+    _query_setIncidentPriority = _template_setIncidentAttribute.format(
+        column="PRIORITY"
+    )
+
+
+    async def setIncidentState(
+        self, event: Event, incidentNumber: int, state: IncidentState,
+        author: str,
+    ) -> None:
+        """
+        Set the state for the given incident in the given event.
+        """
+        self._setIncidentAttribute(
+            self._query_setIncidentState,
+            event, incidentNumber, "state", incidentStateAsID(state), author
+        )
+
+    _query_setIncidentState = _template_setIncidentAttribute.format(
+        column="STATE"
+    )
+
+
 
 zeroTimeDelta = TimeDelta(0)
 

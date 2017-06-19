@@ -23,7 +23,7 @@ from datetime import datetime as DateTime, timedelta as TimeDelta
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict, Set, Tuple, cast
+from typing import Any, Dict, Set, Tuple, cast
 
 from attr import fields as attrFields
 
@@ -33,11 +33,13 @@ from hypothesis.strategies import booleans, tuples
 from ims.ext.sqlite import Connection, Cursor, SQLITE_MAX_INT
 from ims.ext.trial import TestCase
 from ims.model import (
-    Event, Incident, IncidentPriority, Location, RodGarettAddress
+    Event, Incident, IncidentPriority, IncidentState,
+    Location, RodGarettAddress,
 )
 from ims.model.strategies import (
     concentricStreetIDs, concentricStreetNames, events,
-    incidentPriorities, incidentTypesText, incidents, rangerHandles,
+    incidentPriorities, incidentStates, incidentTypesText,
+    incidents, rangerHandles,
 )
 
 from .._store import DataStore, asTimeStamp, incidentStateAsID, priorityAsID
@@ -473,6 +475,30 @@ class DataStoreTests(TestCase):
         self.assertIncidentsEqual(storedIncidents[0], returnedIncident)
 
 
+    def _test_setIncidentAttribute(
+        self, incident: Incident,
+        methodName: str, attributeName: str, value: Any
+    ) -> None:
+        store = self.store()
+
+        self.storeIncident(store, incident)
+
+        setter = getattr(store, methodName)
+
+        self.successResultOf(
+            setter(incident.event, incident.number, value, "Hubcap")
+        )
+
+        retrieved = self.successResultOf(
+            store.incidentWithNumber(incident.event, incident.number)
+        )
+
+        self.assertIncidentsEqual(
+            retrieved, incident.replace(**{attributeName: value}),
+            ignoreInitial=True
+        )
+
+
     @given(incidents(new=True), incidentPriorities())
     def test_setIncidentPriority(
         self, incident: Incident, priority: IncidentPriority
@@ -481,12 +507,22 @@ class DataStoreTests(TestCase):
         :meth:`DataStore.setIncidentPriority` updates the priority for the
         incident with the given number in the data store.
         """
-        store = self.store()
+        self._test_setIncidentAttribute(
+            incident, "setIncidentPriority", "priority", priority
+        )
 
-        self.storeIncident(store, incident)
 
-
-
+    @given(incidents(new=True), incidentStates())
+    def test_setIncidentState(
+        self, incident: Incident, state: IncidentState
+    ) -> None:
+        """
+        :meth:`DataStore.setIncidentState` updates the state for the incident
+        with the given number in the data store.
+        """
+        self._test_setIncidentAttribute(
+            incident, "setIncidentState", "state", state
+        )
 
 
     def assertIncidentsEqual(
