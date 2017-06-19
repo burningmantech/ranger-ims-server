@@ -932,6 +932,22 @@ class DataStore(IMSDataStore):
     )
 
 
+    async def setIncidentSummary(
+        self, event: Event, incidentNumber: int, summary: str, author: str
+    ) -> None:
+        """
+        Set the summary for the given incident in the given event.
+        """
+        self._setIncidentAttribute(
+            self._query_setIncidentSummary,
+            event, incidentNumber, "summary", summary, author
+        )
+
+    _query_setIncidentSummary = _template_setIncidentAttribute.format(
+        column="SUMMARY"
+    )
+
+
 
 zeroTimeDelta = TimeDelta(0)
 

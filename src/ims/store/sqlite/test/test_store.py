@@ -38,7 +38,7 @@ from ims.model import (
 )
 from ims.model.strategies import (
     concentricStreetIDs, concentricStreetNames, events,
-    incidentPriorities, incidentStates, incidentTypesText,
+    incidentPriorities, incidentStates, incidentSummaries, incidentTypesText,
     incidents, rangerHandles,
 )
 
@@ -522,6 +522,19 @@ class DataStoreTests(TestCase):
         """
         self._test_setIncidentAttribute(
             incident, "setIncidentState", "state", state
+        )
+
+
+    @given(incidents(new=True), incidentSummaries())
+    def test_setIncidentSummary(
+        self, incident: Incident, summary: str
+    ) -> None:
+        """
+        :meth:`DataStore.setIncidentSummary` updates the summary for the
+        incident with the given number in the data store.
+        """
+        self._test_setIncidentAttribute(
+            incident, "setIncidentSummary", "summary", summary
         )
 
 
