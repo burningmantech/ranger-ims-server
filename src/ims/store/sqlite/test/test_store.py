@@ -32,10 +32,12 @@ from hypothesis.strategies import booleans, tuples
 
 from ims.ext.sqlite import Connection, Cursor, SQLITE_MAX_INT
 from ims.ext.trial import TestCase
-from ims.model import Event, Incident, Location, RodGarettAddress
+from ims.model import (
+    Event, Incident, IncidentPriority, Location, RodGarettAddress
+)
 from ims.model.strategies import (
     concentricStreetIDs, concentricStreetNames, events,
-    incidentTypesText, incidents, rangerHandles,
+    incidentPriorities, incidentTypesText, incidents, rangerHandles,
 )
 
 from .._store import DataStore, asTimeStamp, incidentStateAsID, priorityAsID
@@ -400,12 +402,7 @@ class DataStoreTests(TestCase):
             assume(incident.number <= SQLITE_MAX_INT)
             assume(incident.number not in events[incident.event])
 
-            with store._db as db:
-                cursor = db.cursor()
-                try:
-                    self.storeIncident(cursor, incident)
-                finally:
-                    cursor.close()
+            self.storeIncident(store, incident)
 
             events[incident.event][incident.number] = incident
 
@@ -426,12 +423,8 @@ class DataStoreTests(TestCase):
         assume(incident.number <= SQLITE_MAX_INT)
 
         store = self.store()
-        with store._db as db:
-            cursor = db.cursor()
-            try:
-                self.storeIncident(cursor, incident)
-            finally:
-                cursor.close()
+
+        self.storeIncident(store, incident)
 
         retrieved = self.successResultOf(
             store.incidentWithNumber(incident.event, incident.number)
@@ -478,6 +471,22 @@ class DataStoreTests(TestCase):
         )
         self.assertEqual(len(storedIncidents), 1)
         self.assertIncidentsEqual(storedIncidents[0], returnedIncident)
+
+
+    @given(incidents(new=True), incidentPriorities())
+    def test_setIncidentPriority(
+        self, incident: Incident, priority: IncidentPriority
+    ) -> None:
+        """
+        :meth:`DataStore.setIncidentPriority` updates the priority for the
+        incident with the given number in the data store.
+        """
+        store = self.store()
+
+        self.storeIncident(store, incident)
+
+
+
 
 
     def assertIncidentsEqual(
@@ -562,7 +571,16 @@ class DataStoreTests(TestCase):
         )
 
 
-    def storeIncident(self, cursor: Cursor, incident: Incident) -> None:
+    def storeIncident(self, store: DataStore, incident: Incident) -> None:
+        with store._db as db:
+            cursor = db.cursor()
+            try:
+                self._storeIncident(cursor, incident)
+            finally:
+                cursor.close()
+
+
+    def _storeIncident(self, cursor: Cursor, incident: Incident) -> None:
         # Normalize address to Rod Garett; DB schema only supports those.
         if not isinstance(incident.location.address, RodGarettAddress):
             incident = incident.replace(
