@@ -24,7 +24,7 @@ from datetime import (
 from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
-from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
+from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, cast
 from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
@@ -218,12 +218,14 @@ class DataStore(IMSDataStore):
         )
 
         self._execute(
-            (
-                (
-                    self._query_createIncidentType,
-                    dict(incidentType=incidentType, hidden=hidden),
+            ((
+                # FIXME: This casting shouldn't be necessary
+                cast(str, self._query_createIncidentType),
+                cast(
+                    Dict[str, ParameterValue],
+                    dict(incidentType=incidentType, hidden=hidden)
                 ),
-            ),
+            ),),
             "Unable to create incident type {name}"
         )
 
@@ -308,12 +310,10 @@ class DataStore(IMSDataStore):
         )
 
         self._execute(
-            (
-                (
-                    self._query_createConcentricStreet,
-                    dict(eventID=event.id, streetID=id, streetName=name)
-                ),
-            ),
+            ((
+                self._query_createConcentricStreet,
+                dict(eventID=event.id, streetID=id, streetName=name)
+            ),),
             "Unable to create concentric street ({streetID}){streetName} "
             "for event {event}"
         )
@@ -630,6 +630,15 @@ class DataStore(IMSDataStore):
     )
 
 
+    def _automaticReportEntry(
+        self, author: str, created: DateTime, attribute: str, value: Any
+    ) -> ReportEntry:
+        return ReportEntry(
+            text="Changed {} to: {}".format(attribute, value),
+            author=author, created=created, automatic=True,
+        )
+
+
     def _initialReportEntries(
         self, event: Event, incident: Incident, author: str
     ) -> Iterable[ReportEntry]:
@@ -637,14 +646,12 @@ class DataStore(IMSDataStore):
 
         reportEntries = []
 
-        def addEntry(label: str, value: Any) -> None:
-            if value:
-                reportEntries.append(
-                    ReportEntry(
-                        text="Changed {} to: {}".format(label, value),
-                        author=author, created=created, automatic=True,
-                    )
+        def addEntry(attribute: str, value: Any) -> None:
+            reportEntries.append(
+                self._automaticReportEntry(
+                    author, created, attribute, value
                 )
+            )
 
         if incident.priority != IncidentPriority.normal:
             addEntry("priority", incident.priority)
@@ -656,15 +663,20 @@ class DataStore(IMSDataStore):
             addEntry("summary", incident.summary)
 
         location = incident.location
-        addEntry("location name", location.name)
+        if location.name:
+            addEntry("location name", location.name)
 
         address = location.address
-        addEntry("location description", address.description)
+        if address.description:
+            addEntry("location description", address.description)
 
         if isinstance(address, RodGarettAddress):
-            addEntry("location concentric street", address.concentric)
-            addEntry("location radial hour", address.radialHour)
-            addEntry("location radial minute", address.radialMinute)
+            if address.concentric is not None:
+                addEntry("location concentric street", address.concentric)
+            if address.radialHour is not None:
+                addEntry("location radial hour", address.radialHour)
+            if address.radialMinute is not None:
+                addEntry("location radial minute", address.radialMinute)
 
         if incident.rangerHandles:
             addEntry("Rangers", ", ".join(incident.rangerHandles))
