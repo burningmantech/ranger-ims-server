@@ -33,7 +33,7 @@ from attr.validators import instance_of, optional
 from twisted.logger import Logger
 
 from ims.ext.sqlite import (
-    Connection, Cursor, ParameterValue, Parameters, SQLiteError,
+    Connection, Cursor, ParameterValue, Parameters, Row, SQLiteError,
     createDB, openDB, printSchema,
 )
 from ims.model import (
@@ -128,7 +128,7 @@ class DataStore(IMSDataStore):
 
     def _executeAndIterate(
         self, query: str, parameters: Parameters, errorLogFormat: str
-    ) -> Iterable[ParameterValue]:
+    ) -> Iterable[Row]:
         try:
             for row in self._db.execute(query, parameters):
                 yield row

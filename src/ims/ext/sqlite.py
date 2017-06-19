@@ -52,7 +52,7 @@ class Row(BaseRow):
     method.
     """
 
-    def get(self, key: str, default: Any = None) -> Any:
+    def get(self, key: str, default: ParameterValue = None) -> ParameterValue:
         if key in self.keys():
             return self[key]
         else:
