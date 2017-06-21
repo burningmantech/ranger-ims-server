@@ -327,10 +327,10 @@ class DataStore(IMSDataStore):
 
 
     def _fetchIncident(
-        self, event: Event, number: int, cursor: Cursor
+        self, event: Event, incidentNumber: int, cursor: Cursor
     ) -> Incident:
         params: Parameters = dict(
-            eventID=event.id, incidentNumber=number
+            eventID=event.id, incidentNumber=incidentNumber
         )
 
         cursor.execute(self._query_incident, params)
@@ -366,7 +366,7 @@ class DataStore(IMSDataStore):
 
         return Incident(
             event=event,
-            number=number,
+            number=incidentNumber,
             created=fromTimeStamp(row["CREATED"]),
             state=incidentStateFromID(row["STATE"]),
             priority=priorityFromID(row["PRIORITY"]),
@@ -907,7 +907,7 @@ class DataStore(IMSDataStore):
         """
         self._setIncidentAttribute(
             self._query_setIncidentPriority,
-            event, incidentNumber, "priority", priorityAsID(priority), author
+            event, incidentNumber, "priority", priorityAsID(priority), author,
         )
 
     _query_setIncidentPriority = _template_setIncidentAttribute.format(
@@ -924,7 +924,7 @@ class DataStore(IMSDataStore):
         """
         self._setIncidentAttribute(
             self._query_setIncidentState,
-            event, incidentNumber, "state", incidentStateAsID(state), author
+            event, incidentNumber, "state", incidentStateAsID(state), author,
         )
 
     _query_setIncidentState = _template_setIncidentAttribute.format(
@@ -940,11 +940,97 @@ class DataStore(IMSDataStore):
         """
         self._setIncidentAttribute(
             self._query_setIncidentSummary,
-            event, incidentNumber, "summary", summary, author
+            event, incidentNumber, "summary", summary, author,
         )
 
     _query_setIncidentSummary = _template_setIncidentAttribute.format(
         column="SUMMARY"
+    )
+
+
+    async def setIncidentLocationName(
+        self, event: Event, incidentNumber: int, name: str, author: str
+    ) -> None:
+        """
+        Set the location name for the given incident in the given event.
+        """
+        self._setIncidentAttribute(
+            self._query_setIncidentLocationName,
+            event, incidentNumber, "location name", name, author,
+        )
+
+    _query_setIncidentLocationName = _template_setIncidentAttribute.format(
+        column="LOCATION_NAME"
+    )
+
+
+    async def setIncidentLocationConcentricStreet(
+        self, event: Event, incidentNumber: int, streetID: str, author: str
+    ) -> None:
+        """
+        Set the location concentric street for the given incident in the given
+        event.
+        """
+        self._setIncidentAttribute(
+            self._query_setIncidentLocationConcentricStreet,
+            event, incidentNumber, "location concentric street", streetID,
+            author,
+        )
+
+    _query_setIncidentLocationConcentricStreet = (
+        _template_setIncidentAttribute.format(column="LOCATION_CONCENTRIC")
+    )
+
+
+    async def setIncidentLocationRadialHour(
+        self, event: Event, incidentNumber: int, hour: int, author: str
+    ) -> None:
+        """
+        Set the location radial hour for the given incident in the given event.
+        """
+        self._setIncidentAttribute(
+            self._query_setIncidentLocationRadialHour,
+            event, incidentNumber, "location radial hour", hour, author,
+        )
+
+    _query_setIncidentLocationRadialHour = (
+        _template_setIncidentAttribute.format(column="LOCATION_RADIAL_HOUR")
+    )
+
+
+    async def setIncidentLocationRadialMinute(
+        self, event: Event, incidentNumber: int, minute: int, author: str
+    ) -> None:
+        """
+        Set the location radial minute for the given incident in the given
+        event.
+        """
+        self._setIncidentAttribute(
+            self._query_setIncidentLocationRadialMinute,
+            event, incidentNumber, "location radial minute", minute, author,
+        )
+
+    _query_setIncidentLocationRadialMinute = (
+        _template_setIncidentAttribute.format(column="LOCATION_RADIAL_MINUTE")
+    )
+
+
+    async def setIncidentLocationDescription(
+        self, event: Event, incidentNumber: int, description: str, author: str
+    ) -> None:
+        """
+        Set the location description for the given incident in the given event.
+        """
+        self._setIncidentAttribute(
+            self._query_setIncidentLocationRadialDescription,
+            event, incidentNumber, "location description", description,
+            author,
+        )
+
+    _query_setIncidentLocationRadialDescription = (
+        _template_setIncidentAttribute.format(
+            column="LOCATION_DESCRIPTION"
+        )
     )
 
 

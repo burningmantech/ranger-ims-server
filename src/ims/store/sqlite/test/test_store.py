@@ -23,12 +23,12 @@ from datetime import datetime as DateTime, timedelta as TimeDelta
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, Set, Tuple, cast
+from typing import Any, Dict, Set, Tuple, Union, cast
 
 from attr import fields as attrFields
 
 from hypothesis import assume, given
-from hypothesis.strategies import booleans, tuples
+from hypothesis.strategies import booleans, text, tuples
 
 from ims.ext.sqlite import Connection, Cursor, SQLITE_MAX_INT
 from ims.ext.trial import TestCase
@@ -39,7 +39,7 @@ from ims.model import (
 from ims.model.strategies import (
     concentricStreetIDs, concentricStreetNames, events,
     incidentPriorities, incidentStates, incidentSummaries, incidentTypesText,
-    incidents, rangerHandles,
+    incidents, locationNames, radialHours, radialMinutes, rangerHandles,
 )
 
 from .._store import DataStore, asTimeStamp, incidentStateAsID, priorityAsID
@@ -355,12 +355,7 @@ class DataStoreTests(TestCase):
 
         self.successResultOf(store.createEvent(event))
 
-        with store._db as db:
-            cursor = db.cursor()
-            try:
-                self.storeConcentricStreet(cursor, event, streetID, streetName)
-            finally:
-                cursor.close()
+        self.storeConcentricStreet(store._db, event, streetID, streetName)
 
         concentricStreets = self.successResultOf(
             store.concentricStreets(event)
@@ -485,6 +480,13 @@ class DataStoreTests(TestCase):
 
         setter = getattr(store, methodName)
 
+        # For concentric streets, we need to make sure they exist first.
+        if attributeName == "location.address.concentric":
+            self.storeConcentricStreet(
+                store._db, incident.event, value, "Concentric Street",
+                ignoreDuplicates=True,
+            )
+
         self.successResultOf(
             setter(incident.event, incident.number, value, "Hubcap")
         )
@@ -493,10 +495,23 @@ class DataStoreTests(TestCase):
             store.incidentWithNumber(incident.event, incident.number)
         )
 
-        self.assertIncidentsEqual(
-            retrieved, incident.replace(**{attributeName: value}),
-            ignoreInitial=True
-        )
+        # Normalize location if we're updating the address.
+        if attributeName.startswith("location.address."):
+            incident = self.normalizeAddress(incident)
+
+        # Replace the specified incident attribute with the given value.
+        # This is a bit complex because we're recursing into sub-attributes.
+        attrPath = attributeName.split(".")
+        values = [incident]
+        for a in attrPath[:-1]:
+            values.append(getattr(values[-1], a))
+        values.append(value)
+        for a in reversed(attrPath):
+            v = values.pop()
+            values[-1] = values[-1].replace(**{a: v})
+        incident = values[0]
+
+        self.assertIncidentsEqual(retrieved, incident, ignoreInitial=True)
 
 
     @given(incidents(new=True), incidentPriorities())
@@ -535,6 +550,76 @@ class DataStoreTests(TestCase):
         """
         self._test_setIncidentAttribute(
             incident, "setIncidentSummary", "summary", summary
+        )
+
+
+    @given(incidents(new=True), locationNames())
+    def test_setIncidentLocationName(
+        self, incident: Incident, name: str
+    ) -> None:
+        """
+        :meth:`DataStore.setIncidentLocationName` updates the location name for
+        the incident with the given number in the data store.
+        """
+        self._test_setIncidentAttribute(
+            incident, "setIncidentLocationName", "location.name", name
+        )
+
+
+    @given(incidents(new=True), concentricStreetIDs())
+    def test_setIncidentLocationConcentricStreet(
+        self, incident: Incident, streetID: str
+    ) -> None:
+        """
+        :meth:`DataStore.setIncidentLocationConcentricStreet` updates the
+        location concentric street for the incident with the given number in
+        the data store.
+        """
+        self._test_setIncidentAttribute(
+            incident, "setIncidentLocationConcentricStreet",
+            "location.address.concentric", streetID,
+        )
+
+
+    @given(incidents(new=True), radialHours())
+    def test_setIncidentLocationRadialHour(
+        self, incident: Incident, radialHour: int
+    ) -> None:
+        """
+        :meth:`DataStore.setIncidentLocationRadialHour` updates the location
+        radial hour for the incident with the given number in the data store.
+        """
+        self._test_setIncidentAttribute(
+            incident, "setIncidentLocationRadialHour",
+            "location.address.radialHour", radialHour,
+        )
+
+
+    @given(incidents(new=True), radialMinutes())
+    def test_setIncidentLocationRadialMinute(
+        self, incident: Incident, radialMinute: int
+    ) -> None:
+        """
+        :meth:`DataStore.setIncidentLocationRadialMinute` updates the location
+        radial minute for the incident with the given number in the data store.
+        """
+        self._test_setIncidentAttribute(
+            incident, "setIncidentLocationRadialMinute",
+            "location.address.radialMinute", radialMinute,
+        )
+
+
+    @given(incidents(new=True), text())
+    def test_setIncidentLocationDescription(
+        self, incident: Incident, description: str
+    ) -> None:
+        """
+        :meth:`DataStore.setIncidentLocationDescription` updates the location
+        description for the incident with the given number in the data store.
+        """
+        self._test_setIncidentAttribute(
+            incident, "setIncidentLocationDescription",
+            "location.address.description", description,
         )
 
 
@@ -601,23 +686,43 @@ class DataStoreTests(TestCase):
     # except there's a lot of fragile code below.
 
     def storeConcentricStreet(
-        self, cursor: Cursor, event: Event, streetID: str, streetName: str
+        self, cursor: Union[Connection, Cursor], event: Event, streetID: str,
+        streetName: str, ignoreDuplicates: bool = False,
     ) -> None:
+        if ignoreDuplicates:
+            ignore = " or ignore"
+        else:
+            ignore = ""
+
         cursor.execute(
             dedent(
                 """
-                insert into CONCENTRIC_STREET (EVENT, ID, NAME)
+                insert{ignore} into CONCENTRIC_STREET (EVENT, ID, NAME)
                 values (
                     (select ID from EVENT where NAME = :eventID),
                     :streetID,
                     :streetName
                 )
-                """
+                """.format(ignore=ignore)
             ),
             dict(
                 eventID=event.id, streetID=streetID, streetName=streetName
             )
         )
+
+
+    def normalizeAddress(self, incident: Incident) -> Incident:
+        # Normalize address to Rod Garett; DB schema only supports those.
+        if not isinstance(incident.location.address, RodGarettAddress):
+            incident = incident.replace(
+                location=Location(
+                    name=incident.location.name,
+                    address=RodGarettAddress(
+                        description=incident.location.address.description,
+                    )
+                )
+            )
+        return incident
 
 
     def storeIncident(self, store: DataStore, incident: Incident) -> None:
@@ -630,16 +735,7 @@ class DataStoreTests(TestCase):
 
 
     def _storeIncident(self, cursor: Cursor, incident: Incident) -> None:
-        # Normalize address to Rod Garett; DB schema only supports those.
-        if not isinstance(incident.location.address, RodGarettAddress):
-            incident = incident.replace(
-                location=Location(
-                    name=incident.location.name,
-                    address=RodGarettAddress(
-                        description=incident.location.address.description,
-                    )
-                )
-            )
+        incident = self.normalizeAddress(incident)
 
         location = incident.location
         address = cast(RodGarettAddress, location.address)
