@@ -834,7 +834,7 @@ class DataStore(IMSDataStore):
 
     async def importIncident(self, incident: Incident) -> None:
         """
-        Import an incident and add it into the given event.
+        See :meth:`IMSDataStore.importIncident`.
         """
         await self._createIncident(incident, None, True)
 
@@ -902,8 +902,7 @@ class DataStore(IMSDataStore):
         author: str,
     ) -> None:
         """
-        Set the priority for the incident with the given number in the given
-        event.
+        See :meth:`IMSDataStore.setIncidentPriority`.
         """
         self._setIncidentAttribute(
             self._query_setIncidentPriority,
@@ -920,7 +919,7 @@ class DataStore(IMSDataStore):
         author: str,
     ) -> None:
         """
-        Set the state for the given incident in the given event.
+        See :meth:`IMSDataStore.setIncidentState`.
         """
         self._setIncidentAttribute(
             self._query_setIncidentState,
@@ -936,7 +935,7 @@ class DataStore(IMSDataStore):
         self, event: Event, incidentNumber: int, summary: str, author: str
     ) -> None:
         """
-        Set the summary for the given incident in the given event.
+        See :meth:`IMSDataStore.setIncidentSummary`.
         """
         self._setIncidentAttribute(
             self._query_setIncidentSummary,
@@ -952,7 +951,7 @@ class DataStore(IMSDataStore):
         self, event: Event, incidentNumber: int, name: str, author: str
     ) -> None:
         """
-        Set the location name for the given incident in the given event.
+        See :meth:`IMSDataStore.setIncidentLocationName`.
         """
         self._setIncidentAttribute(
             self._query_setIncidentLocationName,
@@ -968,8 +967,7 @@ class DataStore(IMSDataStore):
         self, event: Event, incidentNumber: int, streetID: str, author: str
     ) -> None:
         """
-        Set the location concentric street for the given incident in the given
-        event.
+        See :meth:`IMSDataStore.setIncidentLocationConcentricStreet`.
         """
         self._setIncidentAttribute(
             self._query_setIncidentLocationConcentricStreet,
@@ -986,7 +984,7 @@ class DataStore(IMSDataStore):
         self, event: Event, incidentNumber: int, hour: int, author: str
     ) -> None:
         """
-        Set the location radial hour for the given incident in the given event.
+        See :meth:`IMSDataStore.setIncidentLocationRadialHour`.
         """
         self._setIncidentAttribute(
             self._query_setIncidentLocationRadialHour,
@@ -1002,8 +1000,7 @@ class DataStore(IMSDataStore):
         self, event: Event, incidentNumber: int, minute: int, author: str
     ) -> None:
         """
-        Set the location radial minute for the given incident in the given
-        event.
+        See :meth:`IMSDataStore.setIncidentLocationRadialMinute`.
         """
         self._setIncidentAttribute(
             self._query_setIncidentLocationRadialMinute,
@@ -1019,7 +1016,7 @@ class DataStore(IMSDataStore):
         self, event: Event, incidentNumber: int, description: str, author: str
     ) -> None:
         """
-        Set the location description for the given incident in the given event.
+        See :meth:`IMSDataStore.setIncidentLocationDescription`.
         """
         self._setIncidentAttribute(
             self._query_setIncidentLocationRadialDescription,

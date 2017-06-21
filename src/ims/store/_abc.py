@@ -21,7 +21,7 @@ Incident Management System data store abstract base classes.
 from abc import ABC, abstractmethod
 from typing import Iterable, Mapping
 
-from ims.model import Event, Incident
+from ims.model import Event, Incident, IncidentPriority, IncidentState
 
 
 __all__ = ()
@@ -116,6 +116,7 @@ class IMSDataStore(ABC):
     ) -> Incident:
         """
         Create a new incident and add it into the given event.
+
         The incident number is determined by the database and must not be
         specified by the given incident.
 
@@ -123,5 +124,94 @@ class IMSDataStore(ABC):
         store.
 
         The stored incident is returned with the incident number assigned to it
-        by the data store.
+        by the data store, and with initial (automatic) report entries added.
+        """
+
+
+    @abstractmethod
+    async def importIncident(self, incident: Incident) -> None:
+        """
+        Import an incident and add it into the given event.
+
+        This differs from :meth:`IMSDataStore.createIncident` in that the
+        incident is added exactly as is; the incident's number is not modified
+        (and must be greater than zero), and no automatic entries are added to
+        it.
+        """
+
+
+    @abstractmethod
+    async def setIncidentPriority(
+        self, event: Event, incidentNumber: int, priority: IncidentPriority,
+        author: str,
+    ) -> None:
+        """
+        Set the priority for the incident with the given number in the given
+        event.
+        """
+
+
+    @abstractmethod
+    async def setIncidentState(
+        self, event: Event, incidentNumber: int, state: IncidentState,
+        author: str,
+    ) -> None:
+        """
+        Set the state for the given incident in the given event.
+        """
+
+
+    @abstractmethod
+    async def setIncidentSummary(
+        self, event: Event, incidentNumber: int, summary: str, author: str
+    ) -> None:
+        """
+        Set the summary for the given incident in the given event.
+        """
+
+
+    @abstractmethod
+    async def setIncidentLocationName(
+        self, event: Event, incidentNumber: int, name: str, author: str
+    ) -> None:
+        """
+        Set the location name for the given incident in the given event.
+        """
+
+
+    @abstractmethod
+    async def setIncidentLocationConcentricStreet(
+        self, event: Event, incidentNumber: int, streetID: str, author: str
+    ) -> None:
+        """
+        Set the location concentric street for the given incident in the given
+        event.
+        """
+
+
+    @abstractmethod
+    async def setIncidentLocationRadialHour(
+        self, event: Event, incidentNumber: int, hour: int, author: str
+    ) -> None:
+        """
+        Set the location radial hour for the given incident in the given event.
+        """
+
+
+    @abstractmethod
+    async def setIncidentLocationRadialMinute(
+        self, event: Event, incidentNumber: int, minute: int, author: str
+    ) -> None:
+        """
+        Set the location radial minute for the given incident in the given
+        event.
+        """
+
+
+    @abstractmethod
+    async def setIncidentLocationDescription(
+        self, event: Event, incidentNumber: int, description: str, author: str
+    ) -> None:
+        """
+        Set the location description for the given incident in the given event.
         """
