@@ -55,6 +55,7 @@ __all__ = (
     "incidentTypes",
     "incidentTypesText",
     "incidents",
+    "locationNames",
     "locations",
     "radialHours",
     "radialMinutes",
@@ -212,8 +213,13 @@ def incidents(draw: Callable, new: bool = False) -> Incident:
 ##
 
 @composite
+def locationNames(draw: Callable) -> Location:
+    return draw(text())
+
+
+@composite
 def locations(draw: Callable) -> Location:
-    return Location(name=draw(text()), address=draw(addresses()))
+    return Location(name=draw(locationNames()), address=draw(addresses()))
 
 
 ##
