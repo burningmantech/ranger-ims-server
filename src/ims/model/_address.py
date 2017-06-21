@@ -19,15 +19,18 @@ Address
 """
 
 from abc import ABC
-from typing import Any, Optional
+from typing import Any, Optional, TypeVar
 
-from attr import attrib, attrs
+from attr import asdict, attrib, attrs
 from attr.validators import instance_of, optional
 
 Optional  # Silence linter
 
 
 __all__ = ()
+
+
+TRodGarettAddress = TypeVar("TRodGarettAddress", bound="RodGarettAddress")
 
 
 
@@ -178,3 +181,13 @@ class RodGarettAddress(Address):
 
     def __ge__(self, other: Any) -> bool:
         return self._cmp(other, "__ge__")
+
+
+    def replace(self: TRodGarettAddress, **kwargs: Any) -> TRodGarettAddress:
+        """
+        Return a new address with the same values, except those specified by
+        keyword arguments.
+        """
+        newArgs = asdict(self, recurse=False)
+        newArgs.update(kwargs)
+        return self.__class__(**newArgs)
