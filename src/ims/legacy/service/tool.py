@@ -18,6 +18,8 @@
 Incident Management System web service command line tool.
 """
 
+from typing import Any, List, Mapping, MutableMapping, cast
+
 from twext.python.usage import (
     Executable, ExitStatus, Options as BaseOptions, exit
 )
@@ -50,16 +52,16 @@ class ConfigOptionsMixIn(object):
     Mixin for L{Options} which adds options for reading an IMS config file.
     """
 
-    def opt_config(self, path):
+    def opt_config(self, path: str) -> None:
         """
         Location of configuration file.
         """
-        self["configFile"] = FilePath(path)
+        cast(MutableMapping, self)["configFile"] = FilePath(path)
 
 
-    def initConfig(self):
+    def initConfig(self) -> None:
         try:
-            configFile = self.get("configFile")
+            configFile = cast(Mapping, self).get("configFile")
 
             if configFile is None:
                 if FilePath("./.develop").isdir():
@@ -74,16 +76,16 @@ class ConfigOptionsMixIn(object):
                     exit(ExitStatus.EX_CONFIG, "Config file not found.")
                 configuration = Configuration(configFile)
 
-            if "logFile" not in self:
+            if "logFile" not in cast(Mapping, self):
                 self.opt_log_file(configuration.LogFile)
-            if "logFormat" not in self:
+            if "logFormat" not in cast(Mapping, self):
                 self.opt_log_format(configuration.LogFormat)
-            if "logLevel" not in self:
+            if "logLevel" not in cast(Mapping, self):
                 self.opt_log_level(configuration.LogLevel)
-            if "pidFile" not in self:
+            if "pidFile" not in cast(Mapping, self):
                 self.opt_pid_file(configuration.PIDFile)
 
-            self["configuration"] = configuration
+            cast(MutableMapping, self)["configuration"] = configuration
         except Exception as e:
             exit(ExitStatus.EX_CONFIG, str(e))
 
@@ -102,14 +104,14 @@ class WebTool(Executable):
         Tool options.
         """
 
-        optFlags = []
+        optFlags: List[str] = []
 
-        optParameters = [
+        optParameters: List[Any] = [
             ["port", "p", 8080, "Port to listen on."],
         ]
 
 
-    def postOptions(self):
+    def postOptions(self) -> None:
         """
         See L{Executable.postOptions}.
         """
@@ -120,7 +122,7 @@ class WebTool(Executable):
         self.options.initConfig()
 
 
-    def whenRunning(self):
+    def whenRunning(self) -> None:
         """
         See L{Executable.whenRunning}.
         """
@@ -157,12 +159,12 @@ class KleinTool(Executable):
         Tool options.
         """
 
-        optFlags = []
+        optFlags: List[str] = []
 
-        optParameters = []
+        optParameters: List[Any] = []
 
 
-    def postOptions(self):
+    def postOptions(self) -> None:
         """
         See L{Executable.postOptions}.
         """
@@ -197,17 +199,17 @@ class LegacyLoadTool(Executable):
         Tool options.
         """
 
-        optFlags = []
+        optFlags: List[str] = []
 
-        optParameters = []
+        optParameters: List[Any] = []
 
 
-        def __init__(self):
+        def __init__(self) -> None:
             BaseOptions.__init__(self)
             self.opt_log_file("-")
 
 
-        def getSynopsis(self):
+        def getSynopsis(self) -> str:
             """
             See L{BaseOptions.getSynopsis}.
             """
@@ -216,7 +218,7 @@ class LegacyLoadTool(Executable):
             )
 
 
-        def parseArgs(self, *datadirs):
+        def parseArgs(self, *datadirs: str) -> None:
             """
             See L{BaseOptions.parseArgs}.
             """
@@ -224,7 +226,7 @@ class LegacyLoadTool(Executable):
             self["fileStores"] = [FilePath(d) for d in datadirs]
 
 
-    def postOptions(self):
+    def postOptions(self) -> None:
         """
         See L{Executable.postOptions}.
         """
@@ -233,7 +235,7 @@ class LegacyLoadTool(Executable):
         self.options.initConfig()
 
 
-    def whenRunning(self):
+    def whenRunning(self) -> None:
         """
         See L{Executable.whenRunning}.
         """
@@ -269,18 +271,18 @@ class JSONLoadTool(Executable):
         Tool options.
         """
 
-        optFlags = []
+        optFlags: List[str] = []
 
-        optParameters = []
+        optParameters: List[Any] = []
 
 
-        def __init__(self):
+        def __init__(self) -> None:
             BaseOptions.__init__(self)
             self.opt_log_file("-")
             self["trialRun"] = False
 
 
-        def getSynopsis(self):
+        def getSynopsis(self) -> str:
             """
             See L{BaseOptions.getSynopsis}.
             """
@@ -289,7 +291,7 @@ class JSONLoadTool(Executable):
             )
 
 
-        def opt_trial(self):
+        def opt_trial(self) -> None:
             """
             Path to trial executable
             """
@@ -298,7 +300,7 @@ class JSONLoadTool(Executable):
         opt_t = opt_trial
 
 
-        def parseArgs(self, eventID, fileName):
+        def parseArgs(self, eventID: str, fileName: str) -> None:
             """
             See L{BaseOptions.parseArgs}.
             """
@@ -308,7 +310,7 @@ class JSONLoadTool(Executable):
             self["filePath"] = FilePath(fileName)
 
 
-    def postOptions(self):
+    def postOptions(self) -> None:
         """
         See L{Executable.postOptions}.
         """
@@ -317,7 +319,7 @@ class JSONLoadTool(Executable):
         self.options.initConfig()
 
 
-    def whenRunning(self):
+    def whenRunning(self) -> None:
         """
         See L{Executable.whenRunning}.
         """

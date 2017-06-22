@@ -37,7 +37,7 @@ class ConfigurationTests(twisted.trial.unittest.TestCase):
     Tests for L{ims.config.Configuration}
     """
 
-    def test_defaults(self):
+    def test_defaults(self) -> None:
         """
         Check defaults.
         """
@@ -61,7 +61,7 @@ class ConfigurationTests(twisted.trial.unittest.TestCase):
         self.assertEquals(config.DMSPassword, None)
 
 
-    def test_sampleConfig(self):
+    def test_sampleConfig(self) -> None:
         """
         Check sample config.
         """

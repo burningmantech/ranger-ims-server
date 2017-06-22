@@ -18,7 +18,11 @@
 Incident Management System web interface.
 """
 
-from twisted.internet.defer import inlineCallbacks, returnValue
+from typing import Optional
+
+from twisted.web.iweb import IRequest
+
+from ims.ext.klein import KleinRenderable
 
 from .auth import Authorization
 from .http import ContentType, HeaderName, staticResource
@@ -36,6 +40,8 @@ from ..element.queue_template import DispatchQueueTemplatePage
 from ..element.report import IncidentReportPage
 from ..element.report_template import IncidentReportTemplatePage
 from ..element.root import RootPage
+
+Optional  # silence linter
 
 
 __all__ = (
@@ -55,7 +61,7 @@ class WebMixIn(object):
 
     @route(URLs.styleSheet.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def styleSheetResource(self, request):
+    def styleSheetResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for global style sheet.
         """
@@ -64,7 +70,7 @@ class WebMixIn(object):
 
     @route(URLs.logo.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def logoResource(self, request):
+    def logoResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for logo.
         """
@@ -74,7 +80,7 @@ class WebMixIn(object):
 
     @route(URLs.imsJS.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def imsJSResource(self, request):
+    def imsJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for C{ims.js}.
         """
@@ -86,7 +92,7 @@ class WebMixIn(object):
     #
 
     @route(URLs.root.asText(), methods=("HEAD", "GET"))
-    def rootResource(self, request):
+    def rootResource(self, request: IRequest) -> KleinRenderable:
         """
         Server root page.
 
@@ -97,7 +103,7 @@ class WebMixIn(object):
 
     @route(URLs.prefix.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def applicationRootResource(self, request):
+    def applicationRootResource(self, request: IRequest) -> KleinRenderable:
         """
         Application root page.
         """
@@ -105,7 +111,9 @@ class WebMixIn(object):
 
 
     @route(URLs.viewEvent.asText(), methods=("HEAD", "GET"))
-    def viewEventResource(self, request, eventID):
+    def viewEventResource(
+        self, request: IRequest, eventID: str
+    ) -> KleinRenderable:
         """
         Event root page.
 
@@ -116,42 +124,44 @@ class WebMixIn(object):
 
     @route(URLs.admin.asText(), methods=("HEAD", "GET"))
     @staticResource
-    @inlineCallbacks
-    def adminPage(self, request):
+    async def adminPage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for admin page.
         """
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
-        returnValue(AdminPage(self))
+        await self.authorizeRequest(request, None, Authorization.imsAdmin)
+        return AdminPage(self)
 
 
     @route(URLs.adminJS.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def adminJSResource(self, request):
+    def adminJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for C{admin.js}.
         """
         return self.javaScript(request, "admin.js")
 
     @route(URLs.adminAccessControl.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def adminAccessControlPage(self, request):
+    async def adminAccessControlPage(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Endpoint for access control page.
         """
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
-        returnValue(AdminAccessControlPage(self))
+        await self.authorizeRequest(request, None, Authorization.imsAdmin)
+        return AdminAccessControlPage(self)
 
 
     @route(URLs.adminAccessControlJS.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def adminAccessControlJSResource(self, request):
+    def adminAccessControlJSResource(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Endpoint for C{admin_acl.js}.
         """
@@ -159,21 +169,24 @@ class WebMixIn(object):
 
 
     @route(URLs.adminIncidentTypes.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def adminAdminIncidentTypesPagePage(self, request):
+    async def adminAdminIncidentTypesPagePage(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Endpoint for incident types admin page.
         """
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
-        returnValue(AdminIncidentTypesPage(self))
+        await self.authorizeRequest(request, None, Authorization.imsAdmin)
+        return AdminIncidentTypesPage(self)
 
 
     @route(URLs.adminIncidentTypesJS.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def adminAdminIncidentTypesPageJSResource(self, request):
+    def adminAdminIncidentTypesPageJSResource(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Endpoint for C{admin_types.js}.
         """
@@ -181,21 +194,20 @@ class WebMixIn(object):
 
 
     @route(URLs.adminStreets.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def adminStreetsPage(self, request):
+    async def adminStreetsPage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for streets admin page.
         """
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
-        returnValue(AdminStreetsPage(self))
+        await self.authorizeRequest(request, None, Authorization.imsAdmin)
+        return AdminStreetsPage(self)
 
 
     @route(URLs.adminStreetsJS.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def adminStreetsJSResource(self, request):
+    def adminStreetsJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for C{admin_streets.js}.
         """
@@ -203,8 +215,9 @@ class WebMixIn(object):
 
 
     @route(URLs.viewDispatchQueue.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def viewDispatchQueuePage(self, request, eventID):
+    async def viewDispatchQueuePage(
+        self, request: IRequest, eventID: str
+    ) -> KleinRenderable:
         """
         Endpoint for the dispatch queue page.
         """
@@ -212,15 +225,17 @@ class WebMixIn(object):
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        yield self.authorizeRequest(
+        await self.authorizeRequest(
             request, event, Authorization.readIncidents
         )
-        returnValue(DispatchQueuePage(self, event))
+        return DispatchQueuePage(self, event)
 
 
     @route(URLs.viewDispatchQueueTemplate.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def viewDispatchQueueTemplatePage(self, request):
+    def viewDispatchQueueTemplatePage(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Endpoint for the dispatch queue page template.
         """
@@ -229,7 +244,9 @@ class WebMixIn(object):
 
     @route(URLs.viewDispatchQueueJS.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def viewDispatchQueueJSResource(self, request):
+    def viewDispatchQueueJSResource(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Endpoint for C{queue.js}.
         """
@@ -237,31 +254,35 @@ class WebMixIn(object):
 
 
     @route(URLs.viewIncidentNumber.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def viewIncidentPage(self, request, eventID, number):
+    async def viewIncidentPage(
+        self, request: IRequest, eventID: str, number: str
+    ) -> KleinRenderable:
         """
         Endpoint for the incident page.
         """
         event = Event(eventID)
 
+        numberValue: Optional[int]
         if number == "new":
             authz = Authorization.writeIncidents
-            number = None
+            numberValue = None
         else:
             authz = Authorization.readIncidents
             try:
-                number = int(number)
+                numberValue = int(number)
             except ValueError:
-                returnValue(self.notFoundResource(request))
+                return self.notFoundResource(request)
 
-        yield self.authorizeRequest(request, event, authz)
+        await self.authorizeRequest(request, event, authz)
 
-        returnValue(IncidentPage(self, event, number))
+        return IncidentPage(self, event, numberValue)
 
 
     @route(URLs.viewIncidentNumberTemplate.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def viewIncidentNumberTemplatePage(self, request):
+    def viewIncidentNumberTemplatePage(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Endpoint for the incident page template.
         """
@@ -270,7 +291,7 @@ class WebMixIn(object):
 
     @route(URLs.viewIncidentNumberJS.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def incidentJSResource(self, request):
+    def incidentJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for C{incident.js}.
         """
@@ -281,30 +302,34 @@ class WebMixIn(object):
 
 
     @route(URLs.viewIncidentReport.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def viewIncidentReportPage(self, request, number):
+    async def viewIncidentReportPage(
+        self, request: IRequest, number: str
+    ) -> KleinRenderable:
         """
         Endpoint for the report page.
         """
+        numberValue: Optional[int]
         if number == "new":
-            yield self.authorizeRequest(
+            await self.authorizeRequest(
                 request, None, Authorization.writeIncidentReports
             )
-            number = None
+            numberValue = None
         else:
             try:
-                number = int(number)
+                numberValue = int(number)
             except ValueError:
-                returnValue(self.notFoundResource(request))
+                return self.notFoundResource(request)
 
-            yield self.authorizeRequestForIncidentReport(request, number)
+            await self.authorizeRequestForIncidentReport(request, numberValue)
 
-        returnValue(IncidentReportPage(self, number))
+        return IncidentReportPage(self, numberValue)
 
 
     @route(URLs.viewIncidentReportTemplate.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def viewIncidentReportTemplatePage(self, request):
+    def viewIncidentReportTemplatePage(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Endpoint for the incident page template.
         """
@@ -313,7 +338,9 @@ class WebMixIn(object):
 
     @route(URLs.viewIncidentReportJS.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def viewIncidentReportJSResource(self, request):
+    def viewIncidentReportJSResource(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Endpoint for C{report.js}.
         """

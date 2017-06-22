@@ -21,7 +21,7 @@ username.
 
 import twisted.web.http
 from twisted.web.http import _escape
-from twisted.web.iweb import IAccessLogFormatter
+from twisted.web.iweb import IAccessLogFormatter, IRequest
 
 from zope.interface import provider
 
@@ -33,7 +33,7 @@ __all__ = (
 
 
 @provider(IAccessLogFormatter)
-def combinedLogFormatter(timestamp, request):
+def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
     """
     @return: A combined log formatted log line for the given request.
 
@@ -70,7 +70,7 @@ def combinedLogFormatter(timestamp, request):
 
 
 
-def patchCombinedLogFormatter():
+def patchCombinedLogFormatter() -> None:
     """
     Patch the twisted.web.http.combinedLogFormatter to include USER.
     """

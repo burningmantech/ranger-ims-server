@@ -18,11 +18,16 @@
 Incident Management System authorization and authentication.
 """
 
-from twext.who.idirectory import FieldName, RecordType
+from typing import Container, Optional
 
-from twisted.internet.defer import inlineCallbacks, returnValue
+from twext.who.idirectory import FieldName, IDirectoryRecord, RecordType
+
 from twisted.python.constants import FlagConstant, Flags
 from twisted.python.url import URL
+from twisted.web.iweb import IRequest
+
+from ims.ext.klein import KleinRenderable
+from ims.model import Event
 
 from .error import NotAuthenticatedError, NotAuthorizedError
 from .klein import route
@@ -70,8 +75,9 @@ class AuthMixIn(object):
     Mix-in for authentication and authorization support.
     """
 
-    @inlineCallbacks
-    def verifyCredentials(self, user, password):
+    async def verifyCredentials(
+        self, user: IDirectoryRecord, password: str
+    ) -> bool:
         """
         Verify a password for the given user.
         """
@@ -79,7 +85,7 @@ class AuthMixIn(object):
             authenticated = False
         else:
             try:
-                authenticated = yield user.verifyPlaintextPassword(password)
+                authenticated = await user.verifyPlaintextPassword(password)
             except Exception:
                 self.log.failure("Unable to check password")
                 authenticated = False
@@ -89,10 +95,12 @@ class AuthMixIn(object):
             user=user, result=authenticated,
         )
 
-        returnValue(authenticated)
+        return authenticated
 
 
-    def authenticateRequest(self, request, optional=False):
+    def authenticateRequest(
+        self, request: IRequest, optional: bool = False
+    ) -> None:
         """
         Authenticate a request.
 
@@ -109,27 +117,27 @@ class AuthMixIn(object):
             raise NotAuthenticatedError()
 
 
-    @inlineCallbacks
-    def authorizationsForUser(self, user, event):
+    async def authorizationsForUser(
+        self, user: IDirectoryRecord, event: Optional[Event]
+    ) -> Authorization:
         """
         Look up the authorizations that a user has for a given event.
         """
-        @inlineCallbacks
-        def matchACL(user, acl):
-            acl = set(acl)
-
+        async def matchACL(
+            user: IDirectoryRecord, acl: Container[str]
+        ) -> bool:
             if "*" in acl:
-                returnValue(True)
+                return True
 
             for shortName in user.shortNames:
                 if "person:{}".format(shortName) in acl:
-                    returnValue(True)
+                    return True
 
-            for group in (yield user.groups()):
+            for group in (await user.groups()):
                 if "position:{}".format(group.fullNames[0]) in acl:
-                    returnValue(True)
+                    return True
 
-            returnValue(False)
+            return False
 
         authorizations = Authorization.none
         authorizations |= Authorization.readPersonnel
@@ -141,12 +149,12 @@ class AuthMixIn(object):
                 if shortName in self.config.IMSAdmins:
                     authorizations |= Authorization.imsAdmin
 
-                if event:
-                    if (yield matchACL(user, self.storage.writers(event))):
+                if event is not None:
+                    if (await matchACL(user, self.storage.writers(event))):
                         authorizations |= Authorization.writeIncidents
                         authorizations |= Authorization.readIncidents
                     else:
-                        if (yield matchACL(user, self.storage.readers(event))):
+                        if (await matchACL(user, self.storage.readers(event))):
                             authorizations |= Authorization.readIncidents
 
         self.log.debug(
@@ -154,18 +162,20 @@ class AuthMixIn(object):
             user=user, authorizations=authorizations,
         )
 
-        returnValue(authorizations)
+        return authorizations
 
 
-    @inlineCallbacks
-    def authorizeRequest(self, request, event, requiredAuthorizations):
+    async def authorizeRequest(
+        self, request: IRequest, event: Optional[Event],
+        requiredAuthorizations: Authorization,
+    ) -> None:
         """
         Determine whether the user attached to a request has the required
         authorizations in the context of a given event.
         """
         self.authenticateRequest(request)
 
-        userAuthorizations = yield self.authorizationsForUser(
+        userAuthorizations = await self.authorizationsForUser(
             request.user, event
         )
         request.authorizations = userAuthorizations
@@ -182,8 +192,9 @@ class AuthMixIn(object):
             raise NotAuthorizedError()
 
 
-    @inlineCallbacks
-    def authorizeRequestForIncidentReport(self, request, number):
+    async def authorizeRequestForIncidentReport(
+        self, request: IRequest, number: int
+    ) -> None:
         """
         Determine whether the user attached to a request has the required
         authorizations to read the incident report with the given number.
@@ -198,7 +209,7 @@ class AuthMixIn(object):
             # Because it's possible for multiple incidents to be attached, if
             # one fails, keep trying the others in case they allow it.
             try:
-                yield self.authorizeRequest(
+                await self.authorizeRequest(
                     request, event, Authorization.readIncidents
                 )
             except NotAuthorizedError as e:
@@ -208,7 +219,7 @@ class AuthMixIn(object):
                 break
         else:
             # No incident attached
-            yield self.authorizeRequest(
+            await self.authorizeRequest(
                 request, None, Authorization.readIncidentReports
             )
 
@@ -216,22 +227,21 @@ class AuthMixIn(object):
             raise authFailure
 
 
-    def lookupUserName(self, username):
+    def lookupUserName(self, username: str) -> IDirectoryRecord:
         """
         Look up the user record for a user short name.
         """
         return self.directory.recordWithShortName(RecordType.user, username)
 
 
-    @inlineCallbacks
-    def lookupUserEmail(self, email):
+    async def lookupUserEmail(self, email: str) -> IDirectoryRecord:
         """
         Look up the user record for an email address.
         """
         user = None
 
         # Try lookup by email address
-        for record in (yield self.directory.recordsWithFieldValue(
+        for record in (await self.directory.recordsWithFieldValue(
             FieldName.emailAddresses, email
         )):
             if user is not None:
@@ -241,12 +251,11 @@ class AuthMixIn(object):
                 break
             user = record
 
-        returnValue(user)
+        return user
 
 
     @route(URLs.login.asText(), methods=("POST",))
-    @inlineCallbacks
-    def loginSubmit(self, request):
+    async def loginSubmit(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for a login form submission.
         """
@@ -256,16 +265,16 @@ class AuthMixIn(object):
         if username is None:
             user = None
         else:
-            user = yield self.lookupUserName(username)
+            user = await self.lookupUserName(username)
             if user is None:
-                user = yield self.lookupUserEmail(username)
+                user = await self.lookupUserEmail(username)
 
         if user is None:
             self.log.debug(
                 "Login failed: no such user: {username}", username=username
             )
         else:
-            authenticated = yield self.verifyCredentials(user, password)
+            authenticated = await self.verifyCredentials(user, password)
 
             if authenticated:
                 session = request.getSession()
@@ -277,18 +286,20 @@ class AuthMixIn(object):
                 else:
                     location = URL.fromText(url)
 
-                returnValue(self.redirect(request, location))
+                return self.redirect(request, location)
             else:
                 self.log.debug(
                     "Login failed: incorrect credentials for user: {user}",
                     user=user
                 )
 
-        returnValue((yield self.login(request, failed=True)))
+        return self.login(request, failed=True)
 
 
     @route(URLs.login.asText(), methods=("HEAD", "GET"))
-    def login(self, request, failed=False):
+    def login(
+        self, request: IRequest, failed: bool = False
+    ) -> KleinRenderable:
         """
         Endpoint for the login page.
         """
@@ -298,7 +309,7 @@ class AuthMixIn(object):
 
 
     @route(URLs.logout.asText(), methods=("HEAD", "GET"))
-    def logout(self, request):
+    def logout(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for logging out.
         """

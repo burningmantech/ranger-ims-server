@@ -21,14 +21,18 @@ Server
 from configparser import ConfigParser, NoOptionError, NoSectionError
 from os import getcwd
 from os.path import basename, sep as pathsep
+from pathlib import Path
 from sys import argv
+from typing import Optional, Set, Tuple, cast
 
 from twisted.logger import Logger
 from twisted.python.filepath import FilePath
 
-from ..data.json import jsonTextFromObject, objectFromJSONBytesIO
-from ..store.sqlite import Storage
-from ...dms import DirectoryService, DutyManagementSystem
+from ims.dms import DirectoryService, DutyManagementSystem
+from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
+from ims.store.sqlite import DataStore
+
+Set  # silence linter
 
 
 __all__ = (
@@ -37,7 +41,7 @@ __all__ = (
 
 
 
-class Configuration (object):
+class Configuration(object):
     """
     Configuration
     """
@@ -45,7 +49,7 @@ class Configuration (object):
     log = Logger()
 
 
-    def __init__(self, configFile):
+    def __init__(self, configFile: FilePath) -> None:
         """
         @param configFile: The configuration file to load.
         """
@@ -53,7 +57,7 @@ class Configuration (object):
         self.load()
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             "Configuration file: {self.ConfigFile}\n"
             "\n"
@@ -74,7 +78,7 @@ class Configuration (object):
         ).format(self=self)
 
 
-    def load(self):
+    def load(self) -> None:
         """
         Load the configuration.
         """
@@ -82,7 +86,7 @@ class Configuration (object):
 
         configParser = ConfigParser()
 
-        def readConfig(configFile):
+        def readConfig(configFile: FilePath) -> None:
             if configFile is None:
                 self.log.info("No configuration file specified.")
                 return
@@ -99,7 +103,9 @@ class Configuration (object):
                     file=configFile
                 )
 
-        def valueFromConfig(section, option, default):
+        def valueFromConfig(
+            section: str, option: str, default: Optional[str]
+        ) -> Optional[str]:
             try:
                 value = configParser.get(section, option)
                 if value:
@@ -109,7 +115,9 @@ class Configuration (object):
             except (NoSectionError, NoOptionError):
                 return default
 
-        def filePathFromConfig(section, option, root, segments):
+        def filePathFromConfig(
+            section: str, option: str, root: FilePath, segments: Tuple[str]
+        ) -> FilePath:
             if section is None:
                 path = None
             else:
@@ -138,7 +146,7 @@ class Configuration (object):
             defaultRoot = self.ConfigFile.parent().parent()
 
         self.ServerRoot = filePathFromConfig(
-            "Core", "ServerRoot", defaultRoot, ()
+            "Core", "ServerRoot", defaultRoot, cast(Tuple[str], ())
         )
         self.log.info(
             "Server root: {serverRoot.path}", serverRoot=self.ServerRoot
@@ -194,7 +202,10 @@ class Configuration (object):
         )
 
         admins = valueFromConfig("Core", "Admins", "")
-        self.IMSAdmins = set(a.strip() for a in admins.split(","))
+        if admins is None:
+            self.IMSAdmins: Set[str] = set()
+        else:
+            self.IMSAdmins = set(a.strip() for a in admins.split(","))
         self.log.info(
             "Admins: {admins}", admins=self.IMSAdmins
         )
@@ -224,7 +235,7 @@ class Configuration (object):
 
         self.directory = DirectoryService(self.dms, masterKey=masterKey)
 
-        self.storage = Storage(self.DatabaseFile)
+        self.storage = DataStore(Path(self.DatabaseFile.path))
 
         locationsFile = self.ConfigRoot.sibling("locations.json")
 

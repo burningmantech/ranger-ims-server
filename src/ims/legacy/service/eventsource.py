@@ -20,13 +20,17 @@ HTML5 EventSource support.
 
 from collections import deque
 from time import time
+from typing import Deque, Mapping, Optional, Set, Tuple
 
 from twisted.logger import ILogObserver, Logger
+from twisted.web.iweb import IRequest
 
 from zope.interface import implementer
 
 from ..data.json import jsonTextFromObject
 from ..data.model import Incident
+
+Deque, Set, Tuple  # silence linter
 
 
 __all__ = (
@@ -40,7 +44,10 @@ class Event(object):
     HTML5 EventSource event.
     """
 
-    def __init__(self, message, eventID=None, eventClass=None, retry=None):
+    def __init__(
+        self, message: str, eventID: Optional[int] = None,
+        eventClass: Optional[str] = None, retry: Optional[int] = None
+    ) -> None:
         """
         @param message: The event message.
 
@@ -56,14 +63,14 @@ class Event(object):
         self.retry      = retry
 
 
-    def render(self):
+    def render(self) -> str:
         """
         Render this event as an HTML EventSource event.
         """
         parts = []
 
         if self.eventID is not None:
-            parts.append("id: {0}".format(self.eventID))
+            parts.append("id: {0:d}".format(self.eventID))
 
         if self.eventClass is not None:
             parts.append("event: {0}".format(self.eventClass))
@@ -88,17 +95,19 @@ class DataStoreEventSourceLogObserver(object):
     log = Logger()
 
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize.
         """
-        self._listeners = set()
-        self._events = deque(maxlen=1000)
+        self._listeners: Set[IRequest] = set()
+        self._events: Deque[Tuple[int, Event]] = deque(maxlen=1000)
         self._start = time()
         self._counter = 0
 
 
-    def addListener(self, listener, lastEventID=None):
+    def addListener(
+        self, listener: IRequest, lastEventID: Optional[str] = None
+    ) -> None:
         """
         Add a listener.
         """
@@ -109,7 +118,7 @@ class DataStoreEventSourceLogObserver(object):
         self._listeners.add(listener)
 
 
-    def removeListener(self, listener):
+    def removeListener(self, listener: IRequest) -> None:
         """
         Remove a listener.
         """
@@ -118,7 +127,9 @@ class DataStoreEventSourceLogObserver(object):
         self._listeners.add(listener)
 
 
-    def _transmogrify(self, loggerEvent, eventID):
+    def _transmogrify(
+        self, loggerEvent: Mapping, eventID: int
+    ) -> Optional[Event]:
         """
         Convert a logger event into an EventSource event.
         """
@@ -129,7 +140,7 @@ class DataStoreEventSourceLogObserver(object):
         eventClass = loggerEvent.get("storeWriteClass", None)
 
         if eventClass is None:
-            return
+            return None
 
         elif eventClass is Incident:
             incident = loggerEvent.get("incident", None)
@@ -145,7 +156,7 @@ class DataStoreEventSourceLogObserver(object):
                     "{event}",
                     event=loggerEvent,
                 )
-                return
+                return None
 
             message = dict(incident_number=incidentNumber)
 
@@ -154,7 +165,7 @@ class DataStoreEventSourceLogObserver(object):
                 "Unknown data store event class: {eventClass}",
                 eventClass=eventClass
             )
-            return
+            return None
 
         eventSourceEvent = Event(
             eventID=eventID,
@@ -164,22 +175,26 @@ class DataStoreEventSourceLogObserver(object):
         return eventSourceEvent
 
 
-    def _playback(self, listener, lastEventID):
+    def _playback(
+        self, listener: IRequest, lastEventID: Optional[str]
+    ) -> None:
         if lastEventID is None:
             return
 
-        observerID, counter = lastEventID.split(":")
+        observerID, counterString = lastEventID.split(":")
 
-        if observerID != str(id(self)):
+        if observerID == str(id(self)):
+            counter = int(counterString)
+        else:
             # lastEventID came from a different observer
             counter = 0
 
-        for eventCounter, event in self.events:
+        for eventCounter, event in self._events:
             if eventCounter >= counter:
                 listener.write(event.render().encode("utf-8"))
 
 
-    def _publish(self, eventSourceEvent, eventID):
+    def _publish(self, eventSourceEvent: Event, eventID: int) -> None:
         eventText = eventSourceEvent.render().encode("utf-8")
 
         for listener in tuple(self._listeners):
@@ -196,7 +211,7 @@ class DataStoreEventSourceLogObserver(object):
         self._events.append((self._counter, eventSourceEvent))
 
 
-    def __call__(self, event):
+    def __call__(self, event: Mapping) -> None:
         """
         See L{ILogObserver.__call__}.
         """

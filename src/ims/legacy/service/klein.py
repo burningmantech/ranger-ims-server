@@ -21,20 +21,25 @@ Incident Management System Klein application.
 from __future__ import absolute_import
 
 from functools import wraps
+from typing import Any, Callable, Iterable, Optional
 
 from klein import Klein
+from klein.resource import KleinResource
 
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.logger import Logger
+from twisted.python.failure import Failure
 from twisted.python.url import URL
 from twisted.web import http
-from twisted.web.iweb import IRenderable
+from twisted.web.iweb import IRenderable, IRequest
 from twisted.web.template import renderElement
 
 from werkzeug.exceptions import MethodNotAllowed, NotFound
 from werkzeug.routing import RequestRedirect
 
 from ims import __version__ as version
+from ims.ext.klein import KleinRenderable, KleinRouteMethod
+from .auth import AuthMixIn
 from .error import NotAuthenticatedError, NotAuthorizedError
 from .http import ContentType, HeaderName
 from .urls import URLs
@@ -53,16 +58,20 @@ __all__ = (
 application = Klein()
 
 
-def route(*args, **kwargs):
+def route(
+    *args: Any, **kwargs: Any
+) -> Callable[[KleinRouteMethod], KleinRouteMethod]:
     """
     Decorator that applies a Klein route and anything else we want applied to
     all endpoints.
     """
-    def decorator(f):
+    def decorator(f: KleinRouteMethod) -> KleinRouteMethod:
         @application.route(*args, **kwargs)
         @wraps(f)
         @inlineCallbacks
-        def wrapper(self, request, *args, **kwargs):
+        def wrapper(
+            self: Any, request: IRequest, *args: Any, **kwargs: Any
+        ) -> KleinRenderable:
             request.setHeader(
                 HeaderName.server.value,
                 "Incident Management System/{}".format(version),
@@ -80,13 +89,15 @@ def route(*args, **kwargs):
     return decorator
 
 
-def renderResponse(f):
+def renderResponse(f: KleinRouteMethod) -> KleinRouteMethod:
     """
     Decorator to ensure that the returned response is rendered, if applicable.
     Needed because L{Klein.handle_errors} doesn't do rendering for you.
     """
     @wraps(f)
-    def wrapper(self, request, *args, **kwargs):
+    def wrapper(
+        self: Any, request: IRequest, *args: Any, **kwargs: Any
+    ) -> KleinRenderable:
         response = f(self, request, *args, **kwargs)
 
         if IRenderable.providedBy(response):
@@ -98,7 +109,7 @@ def renderResponse(f):
 
 
 
-class KleinService(object):
+class KleinService(AuthMixIn):
     """
     Klein service.
     """
@@ -106,14 +117,16 @@ class KleinService(object):
     log = Logger()
     app = application
 
-    def resource(self):
+    def resource(self) -> KleinResource:
         """
         Return the Klein resource.
         """
         return self.app.resource()
 
 
-    def redirect(self, request, location, origin=None):
+    def redirect(
+        self, request: IRequest, location: URL, origin: Optional[str] = None
+    ) -> KleinRenderable:
         """
         Perform a redirect.
         """
@@ -133,25 +146,23 @@ class KleinService(object):
     # Query arguments
     #
 
-    def queryValue(self, request, name, default=None):
+    def queryValue(
+        self, request: IRequest, name: str, default: Optional[str] = None
+    ) -> Optional[str]:
         """
         Look up the value of a query parameter with the given name in the
         given request.
 
         @param request: The request to look into.
-        @type request: L{IRequest}
 
         @param name: The name of the query parameter to find a value for.
-        @type name: L{str}
 
         @param default: The default value to return if no query parameter
             specified by C{name} is found in C{request}.
-        @type default: L{str}
 
         @return: The value of the query parameter specified by C{name}, or
             C{default} if there no such query parameter.
             If more than one value is found, return the last value found.
-        @rtype: L{str}
         """
         values = request.args.get(name.encode("utf-8"))
 
@@ -164,24 +175,22 @@ class KleinService(object):
             return default
 
 
-    def queryValues(self, request, name, default=()):
+    def queryValues(
+        self, request: IRequest, name: str, default: Iterable[str] = ()
+    ) -> Iterable[str]:
         """
         Look up the values of a query parameter with the given name in the
         given request.
 
         @param request: The request to look into.
-        @type request: L{IRequest}
 
         @param name: The name of the query parameter to find a value for.
-        @type name: L{str}
 
         @param default: The default values to return if no query parameter
             specified by C{name} is found in C{request}.
-        @type default: iterable of L{str}
 
         @return: The values of the query parameter specified by C{name}, or
             C{default} if there no such query parameter.
-        @rtype: iterable of L{str}
         """
         values = request.args.get(name)
 
@@ -195,7 +204,9 @@ class KleinService(object):
     # Error resources
     #
 
-    def noContentResource(self, request, etag=None):
+    def noContentResource(
+        self, request: IRequest, etag: Optional[str] = None
+    ) -> KleinRenderable:
         """
         Respond with no content.
         """
@@ -205,7 +216,7 @@ class KleinService(object):
         return b""
 
 
-    def textResource(self, request, message):
+    def textResource(self, request: IRequest, message: str) -> KleinRenderable:
         """
         Respond with the given text.
         """
@@ -215,7 +226,7 @@ class KleinService(object):
         return message.encode("utf-8")
 
 
-    def notFoundResource(self, request):
+    def notFoundResource(self, request: IRequest) -> KleinRenderable:
         """
         Respond with a NOT FOUND status.
         """
@@ -229,7 +240,7 @@ class KleinService(object):
         return self.textResource(request, "Not found")
 
 
-    def methodNotAllowedResource(self, request):
+    def methodNotAllowedResource(self, request: IRequest) -> KleinRenderable:
         """
         Respond with a METHOD NOT ALLOWED status.
         """
@@ -246,7 +257,7 @@ class KleinService(object):
         return self.textResource(request, "HTTP method not allowed")
 
 
-    def forbiddenResource(self, request):
+    def forbiddenResource(self, request: IRequest) -> KleinRenderable:
         """
         Respond with a FORBIDDEN status.
         """
@@ -260,7 +271,9 @@ class KleinService(object):
         return self.textResource(request, "Permission denied")
 
 
-    def badRequestResource(self, request, message=None):
+    def badRequestResource(
+        self, request: IRequest, message: Optional[str] = None
+    ) -> KleinRenderable:
         """
         Respond with a BAD REQUEST status.
         """
@@ -273,11 +286,13 @@ class KleinService(object):
         if message is None:
             message = "Bad request"
         else:
-            message = "{}".format(message).encode("utf-8")
+            message = "{}".format(message)
         return self.textResource(request, message)
 
 
-    def invalidQueryResource(self, request, arg, value):
+    def invalidQueryResource(
+        self, request: IRequest, arg: str, value: str
+    ) -> KleinRenderable:
         """
         Respond with a BAD REQUEST status due to an invalid query.
         """
@@ -291,7 +306,9 @@ class KleinService(object):
             )
 
 
-    def internalErrorResource(self, request, message=None):
+    def internalErrorResource(
+        self, request: IRequest, message: Optional[str] = None
+    ) -> KleinRenderable:
         """
         Respond with an INTERNAL SERVER ERROR status.
         """
@@ -304,7 +321,7 @@ class KleinService(object):
         if message is None:
             message = "Internal error"
         else:
-            message = "{}".format(message).encode("utf-8")
+            message = "{}".format(message)
         return self.textResource(request, message)
 
 
@@ -314,7 +331,9 @@ class KleinService(object):
 
     @app.handle_errors(RequestRedirect)
     @renderResponse
-    def requestRedirectError(self, request, failure):
+    def requestRedirectError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
         """
         Redirect.
         """
@@ -324,7 +343,9 @@ class KleinService(object):
 
     @app.handle_errors(NotFound)
     @renderResponse
-    def notFoundError(self, request, failure):
+    def notFoundError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
         """
         Not found.
         """
@@ -333,7 +354,9 @@ class KleinService(object):
 
     @app.handle_errors(MethodNotAllowed)
     @renderResponse
-    def methodNotAllowedError(self, request, failure):
+    def methodNotAllowedError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
         """
         HTTP method not allowed.
         """
@@ -342,7 +365,9 @@ class KleinService(object):
 
     @app.handle_errors(NotAuthorizedError)
     @renderResponse
-    def notAuthorizedError(self, request, failure):
+    def notAuthorizedError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
         """
         Not authorized.
         """
@@ -351,7 +376,9 @@ class KleinService(object):
 
     @app.handle_errors(NotAuthenticatedError)
     @renderResponse
-    def notAuthenticatedError(self, request, failure):
+    def notAuthenticatedError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
         """
         Not authenticated.
         """
@@ -361,7 +388,9 @@ class KleinService(object):
 
     @app.handle_errors(DMSError)
     @renderResponse
-    def dmsError(self, request, failure):
+    def dmsError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
         """
         DMS error.
         """
@@ -371,7 +400,9 @@ class KleinService(object):
 
     @app.handle_errors
     @renderResponse
-    def unknownError(self, request, failure):
+    def unknownError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
         """
         Deal with a request error caught by Klein.
         """

@@ -28,7 +28,7 @@ from twisted.enterprise import adbapi
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.logger import Logger
 
-from ims.legacy.data.model import Ranger
+from ims.model import Ranger
 
 
 __all__ = (
@@ -168,10 +168,12 @@ class DutyManagementSystem(object):
                 (
                     dmsID,
                     Ranger(
-                        handle, fullName(first, middle, last), status,
-                        dmsID=int(dmsID),
+                        handle=handle,
+                        name=fullName(first, middle, last),
+                        status=status,
                         email=email,
                         onSite=bool(onSite),
+                        dmsID=int(dmsID),
                         password=password,
                     )
                 )

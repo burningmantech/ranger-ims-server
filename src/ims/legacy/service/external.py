@@ -18,12 +18,16 @@
 Incident Management System cached external resources.
 """
 
+from typing import Any
 from zipfile import BadZipfile
 
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.python.url import URL
 from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
+from twisted.web.iweb import IRequest
+
+from ims.ext.klein import KleinRenderable
 
 from .http import ContentType, HeaderName, staticResource
 from .klein import route
@@ -87,7 +91,7 @@ class ExternalMixIn(object):
 
     @route(URLs.bootstrapBase.asText(), methods=("HEAD", "GET"), branch=True)
     @staticResource
-    def bootstrapResource(self, request):
+    def bootstrapResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for Bootstrap.
         """
@@ -105,7 +109,7 @@ class ExternalMixIn(object):
 
     @route(URLs.jqueryJS.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def jqueryJSResource(self, request):
+    def jqueryJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for jQuery.
         """
@@ -120,7 +124,7 @@ class ExternalMixIn(object):
 
     @route(URLs.jqueryMap.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def jqueryMapResource(self, request):
+    def jqueryMapResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for the jQuery map file.
         """
@@ -135,7 +139,7 @@ class ExternalMixIn(object):
         URLs.dataTablesBase.asText(), methods=("HEAD", "GET"), branch=True
     )
     @staticResource
-    def dataTablesResource(self, request):
+    def dataTablesResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for DataTables.
         """
@@ -153,7 +157,7 @@ class ExternalMixIn(object):
 
     @route(URLs.momentJS.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def momentJSResource(self, request):
+    def momentJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for moment.js.
         """
@@ -168,7 +172,7 @@ class ExternalMixIn(object):
 
     @route(URLs.lscacheJS.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def lscacheJSResource(self, request):
+    def lscacheJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for lscache.
         """
@@ -182,7 +186,7 @@ class ExternalMixIn(object):
 
 
     @inlineCallbacks
-    def cacheFromURL(self, url, name):
+    def cacheFromURL(self, url: URL, name: str) -> KleinRenderable:
         """
         Download a resource and cache it.
         """
@@ -212,7 +216,9 @@ class ExternalMixIn(object):
 
 
     @inlineCallbacks
-    def cachedResource(self, request, url, name):
+    def cachedResource(
+        self, request: IRequest, url: URL, name: str
+    ) -> KleinRenderable:
         """
         Retrieve a cached resource.
         """
@@ -229,7 +235,10 @@ class ExternalMixIn(object):
 
 
     @inlineCallbacks
-    def cachedZippedResource(self, request, url, archiveName, name, *names):
+    def cachedZippedResource(
+        self, request: IRequest, url: URL, archiveName: str, name: str,
+        *names: Any,
+    ) -> KleinRenderable:
         """
         Retrieve a cached resource from a zip file.
         """

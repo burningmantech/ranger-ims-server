@@ -19,9 +19,15 @@ Incident Management System JSON API endpoints.
 """
 
 from datetime import datetime as DateTime, timezone as TimeZone
+from typing import Any, Callable, Mapping, Optional, Tuple
 
-from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
+from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
+from twisted.python.constants import NamedConstant
+from twisted.python.failure import Failure
+from twisted.web.iweb import IRequest
+
+from ims.ext.klein import KleinRenderable
 
 from .auth import Authorization
 from .error import NotAuthorizedError
@@ -54,7 +60,7 @@ class JSONMixIn(object):
 
     @route(URLs.ping.asText(), methods=("HEAD", "GET"))
     @staticResource
-    def pingResource(self, request):
+    def pingResource(self, request: IRequest) -> KleinRenderable:
         """
         Ping (health check) endpoint.
         """
@@ -63,41 +69,39 @@ class JSONMixIn(object):
 
 
     @route(URLs.personnel.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def personnelResource(self, request):
+    async def personnelResource(self, request: IRequest) -> KleinRenderable:
         """
         Personnel endpoint.
         """
-        yield self.authorizeRequest(
+        await self.authorizeRequest(
             request, None, Authorization.readPersonnel
         )
 
-        stream, etag = yield self.personnelData()
-        returnValue(self.jsonStream(request, stream, etag))
+        stream, etag = await self.personnelData()
+        return self.jsonStream(request, stream, etag)
 
 
-    @inlineCallbacks
-    def personnelData(self):
+    async def personnelData(self) -> Tuple[bytes, bytes]:
         """
         Data for personnel endpoint.
         """
         try:
-            personnel = yield self.dms.personnel()
+            personnel = await self.dms.personnel()
         except DMSError as e:
             self.log.error("Unable to vend personnel: {failure}", failure=e)
             personnel = ()
 
-        returnValue((
+        return (
             self.buildJSONArray(
                 jsonTextFromObject(rangerAsJSON(ranger)).encode("utf-8")
                 for ranger in personnel
             ),
             bytes(hash(personnel)),
-        ))
+        )
 
 
     @route(URLs.incidentTypes.asText(), methods=("HEAD", "GET"))
-    def incidentTypesResource(self, request):
+    def incidentTypesResource(self, request: IRequest) -> KleinRenderable:
         """
         Incident types endpoint.
         """
@@ -118,20 +122,21 @@ class JSONMixIn(object):
 
 
     @route(URLs.incidentTypes.asText(), methods=("POST",))
-    @inlineCallbacks
-    def editIncidentTypesResource(self, request):
+    async def editIncidentTypesResource(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Incident types editing endpoint.
         """
-        yield self.authorizeRequest(
+        await self.authorizeRequest(
             request, None, Authorization.imsAdmin
         )
 
         json = objectFromJSONBytesIO(request.content)
 
         if type(json) is not dict:
-            returnValue(self.badRequestResource(
-                request, "root: expected a dictionary.")
+            return self.badRequestResource(
+                request, "root: expected a dictionary."
             )
 
         adds = json.get("add", [])
@@ -140,54 +145,56 @@ class JSONMixIn(object):
 
         if adds:
             if type(adds) is not list:
-                returnValue(self.badRequestResource(
-                    request, "add: expected a list.")
+                return self.badRequestResource(
+                    request, "add: expected a list."
                 )
             for incidentType in adds:
                 self.storage.createIncidentType(incidentType)
 
         if show:
             if type(show) is not list:
-                returnValue(self.badRequestResource(
-                    request, "show: expected a list.")
+                return self.badRequestResource(
+                    request, "show: expected a list."
                 )
             self.storage.showIncidentTypes(show)
 
         if hide:
             if type(hide) is not list:
-                returnValue(self.badRequestResource(
-                    request, "hide: expected a list.")
+                return self.badRequestResource(
+                    request, "hide: expected a list."
                 )
             self.storage.hideIncidentTypes(hide)
 
-        returnValue(self.noContentResource(request))
+        return self.noContentResource(request)
 
 
     @route(URLs.locations.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def locationsResource(self, request, eventID):
+    async def locationsResource(
+        self, request: IRequest, eventID: str
+    ) -> KleinRenderable:
         """
         Location list endpoint.
         """
         event = Event(eventID)
 
-        yield self.authorizeRequest(
+        await self.authorizeRequest(
             request, event, Authorization.readIncidents
         )
 
         data = self.config.locationsJSONBytes
-        returnValue(self.jsonBytes(request, data, bytes(hash(data))))
+        return self.jsonBytes(request, data, bytes(hash(data)))
 
 
     @route(URLs.incidents.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def listIncidentsResource(self, request, eventID):
+    async def listIncidentsResource(
+        self, request: IRequest, eventID: str
+    ) -> KleinRenderable:
         """
         Incident list endpoint.
         """
         event = Event(eventID)
 
-        yield self.authorizeRequest(
+        await self.authorizeRequest(
             request, event, Authorization.readIncidents
         )
 
@@ -196,18 +203,19 @@ class JSONMixIn(object):
             for incident in self.storage.incidents(event)
         )
 
-        returnValue(self.jsonStream(request, stream, None))
+        return self.jsonStream(request, stream, None)
 
 
     @route(URLs.incidents.asText(), methods=("POST",))
-    @inlineCallbacks
-    def newIncidentResource(self, request, eventID):
+    async def newIncidentResource(
+        self, request: IRequest, eventID: str
+    ) -> KleinRenderable:
         """
         New incident endpoint.
         """
         event = Event(eventID)
 
-        yield self.authorizeRequest(
+        await self.authorizeRequest(
             request, event, Authorization.writeIncidents
         )
 
@@ -238,11 +246,11 @@ class JSONMixIn(object):
             incident.created = created
 
         elif incident.created > now:
-            returnValue(self.badRequestResource(
+            return self.badRequestResource(
                 request,
                 "Created time {} is in the future. Current time is {}."
                 .format(incident.created, now)
-            ))
+            )
 
         self.storage.createIncident(event, incident, author)
 
@@ -259,43 +267,45 @@ class JSONMixIn(object):
             HeaderName.location.value,
             "{}/{}".format(URLs.incidentNumber.asText(), incident.number)
         )
-        returnValue(self.noContentResource(request))
+        return self.noContentResource(request)
 
 
     @route(URLs.incidentNumber.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def readIncidentResource(self, request, eventID, number):
+    async def readIncidentResource(
+        self, request: IRequest, eventID: str, number: int
+    ) -> KleinRenderable:
         """
         Incident endpoint.
         """
         event = Event(eventID)
 
-        yield self.authorizeRequest(
+        await self.authorizeRequest(
             request, event, Authorization.readIncidents
         )
 
         try:
             number = int(number)
         except ValueError:
-            returnValue(self.notFoundResource(request))
+            return self.notFoundResource(request)
 
         incident = self.storage.incident(event, number)
         text = jsonTextFromObject(incidentAsJSON(incident))
 
-        returnValue(
+        return (
             self.jsonBytes(request, text.encode("utf-8"), incident.version)
         )
 
 
     @route(URLs.incidentNumber.asText(), methods=("POST",))
-    @inlineCallbacks
-    def editIncidentResource(self, request, eventID, number):
+    async def editIncidentResource(
+        self, request: IRequest, eventID: str, number: int
+    ) -> KleinRenderable:
         """
         Incident edit endpoint.
         """
         event = Event(eventID)
 
-        yield self.authorizeRequest(
+        await self.authorizeRequest(
             request, event, Authorization.writeIncidents
         )
 
@@ -304,7 +314,7 @@ class JSONMixIn(object):
         try:
             number = int(number)
         except ValueError:
-            returnValue(self.notFoundResource(request))
+            return self.notFoundResource(request)
 
         #
         # Get the edits requested by the client
@@ -312,30 +322,37 @@ class JSONMixIn(object):
         edits = objectFromJSONBytesIO(request.content)
 
         if not isinstance(edits, dict):
-            returnValue(self.badRequestResource(
+            return self.badRequestResource(
                 request, "JSON incident must be a dictionary"
-            ))
+            )
 
         if edits.get(JSON.incident_number.value, number) != number:
-            returnValue(self.badRequestResource(
+            return self.badRequestResource(
                 request, "Incident number may not be modified"
-            ))
+            )
 
         UNSET = object()
 
         created = edits.get(JSON.incident_created.value, UNSET)
         if created is not UNSET:
-            returnValue(self.badRequestResource(
+            return self.badRequestResource(
                 request, "Incident created time may not be modified"
-            ))
+            )
 
-        def applyEdit(json, key, setter, cast=None):
+        def applyEdit(
+            json: Mapping[str, Any], key: NamedConstant,
+            setter: Callable[[Event, int, Any, str], None],
+            cast: Optional[Callable[[Any], Any]] = None
+        ) -> None:
+            _cast: Callable[[Any], Any]
             if cast is None:
-                def cast(obj):
+                def _cast(obj: Any) -> Any:
                     return obj
+            else:
+                _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                setter(event, number, cast(value), author)
+                setter(event, number, _cast(value), author)
 
         storage = self.storage
 
@@ -402,12 +419,13 @@ class JSONMixIn(object):
                         )
                     )
 
-        returnValue(self.noContentResource(request))
+        return self.noContentResource(request)
 
 
     @route(URLs.incidentReports.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def listIncidentReportsResource(self, request):
+    async def listIncidentReportsResource(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Incident reports endpoint.
         """
@@ -417,7 +435,7 @@ class JSONMixIn(object):
         if eventID is None and incidentNumber is None:
             attachedTo = None
         elif eventID == incidentNumber == "":
-            yield self.authorizeRequest(
+            await self.authorizeRequest(
                 request, None, Authorization.readIncidentReports
             )
             attachedTo = (None, None)
@@ -426,18 +444,16 @@ class JSONMixIn(object):
             try:
                 event.validate()
             except InvalidDataError:
-                returnValue(
-                    self.invalidQueryResource(request, "event", eventID)
+                return self.invalidQueryResource(
+                    request, "event", eventID
                 )
             try:
                 incidentNumber = int(incidentNumber)
             except ValueError:
-                returnValue(
-                    self.invalidQueryResource(
-                        request, "incident", incidentNumber
-                    )
+                return self.invalidQueryResource(
+                    request, "incident", incidentNumber
                 )
-            yield self.authorizeRequest(
+            await self.authorizeRequest(
                 request, event, Authorization.readIncidents
             )
             attachedTo = (event, incidentNumber)
@@ -450,16 +466,17 @@ class JSONMixIn(object):
             in self.storage.incidentReports(attachedTo=attachedTo)
         )
 
-        returnValue(self.jsonStream(request, stream, None))
+        return self.jsonStream(request, stream, None)
 
 
     @route(URLs.incidentReports.asText(), methods=("POST",))
-    @inlineCallbacks
-    def newIncidentReportResource(self, request):
+    async def newIncidentReportResource(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         New incident report endpoint.
         """
-        yield self.authorizeRequest(
+        await self.authorizeRequest(
             request, None, Authorization.writeIncidentReports
         )
 
@@ -489,11 +506,11 @@ class JSONMixIn(object):
             incidentReport.created = created
 
         elif incidentReport.created > now:
-            returnValue(self.badRequestResource(
+            return self.badRequestResource(
                 request,
                 "Created time {} is in the future. Current time is {}."
                 .format(incidentReport.created, now)
-            ))
+            )
 
         self.storage.createIncidentReport(incidentReport)
 
@@ -516,39 +533,39 @@ class JSONMixIn(object):
             HeaderName.location.value,
             "{}/{}".format(URLs.incidentNumber.asText(), incidentReport.number)
         )
-        returnValue(self.noContentResource(request))
+        return self.noContentResource(request)
 
 
     @route(URLs.incidentReport.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def readIncidentReportResource(self, request, number):
+    async def readIncidentReportResource(
+        self, request: IRequest, number: int
+    ) -> KleinRenderable:
         """
         Incident report endpoint.
         """
         try:
             number = int(number)
         except ValueError:
-            returnValue(self.notFoundResource(request))
+            return self.notFoundResource(request)
 
-        yield self.authorizeRequestForIncidentReport(request, number)
+        await self.authorizeRequestForIncidentReport(request, number)
 
         incidentReport = self.storage.incidentReport(number)
         text = jsonTextFromObject(incidentReportAsJSON(incidentReport))
 
-        returnValue(
-            self.jsonBytes(
-                request, text.encode("utf-8"), incidentReport.version()
-            )
+        return self.jsonBytes(
+            request, text.encode("utf-8"), incidentReport.version()
         )
 
 
     @route(URLs.incidentReport.asText(), methods=("POST",))
-    @inlineCallbacks
-    def editIncidentReportResource(self, request, number):
+    async def editIncidentReportResource(
+        self, request: IRequest, number: int
+    ) -> KleinRenderable:
         """
         Incident report edit endpoint.
         """
-        yield self.authorizeRequest(
+        await self.authorizeRequest(
             request, None, Authorization.writeIncidentReports
         )
 
@@ -557,7 +574,7 @@ class JSONMixIn(object):
         try:
             number = int(number)
         except ValueError:
-            returnValue(self.notFoundResource(request))
+            return self.notFoundResource(request)
 
         #
         # Attach to incident if requested
@@ -572,16 +589,14 @@ class JSONMixIn(object):
             try:
                 event.validate()
             except InvalidDataError:
-                returnValue(
-                    self.invalidQueryResource(request, "event", eventID)
-                )
+                return self.invalidQueryResource(request, "event", eventID)
 
             try:
                 incidentNumber = int(incidentNumber)
             except ValueError:
-                returnValue(self.invalidQueryResource(
+                return self.invalidQueryResource(
                     request, "incident", incidentNumber
-                ))
+                )
 
             if action == "attach":
                 self.storage.attachIncidentReportToIncident(
@@ -592,9 +607,7 @@ class JSONMixIn(object):
                     number, event, incidentNumber
                 )
             else:
-                returnValue(self.invalidQueryResource(
-                    request, "action", action
-                ))
+                return self.invalidQueryResource(request, "action", action)
 
         #
         # Get the edits requested by the client
@@ -602,30 +615,37 @@ class JSONMixIn(object):
         edits = objectFromJSONBytesIO(request.content)
 
         if not isinstance(edits, dict):
-            returnValue(self.badRequestResource(
+            return self.badRequestResource(
                 request, "JSON incident report must be a dictionary"
-            ))
+            )
 
         if edits.get(JSON.incident_report_number.value, number) != number:
-            returnValue(self.badRequestResource(
+            return self.badRequestResource(
                 request, "Incident report number may not be modified"
-            ))
+            )
 
         UNSET = object()
 
         created = edits.get(JSON.incident_report_created.value, UNSET)
         if created is not UNSET:
-            returnValue(self.badRequestResource(
+            return self.badRequestResource(
                 request, "Incident report created time may not be modified"
-            ))
+            )
 
-        def applyEdit(json, key, setter, cast=None):
+        def applyEdit(
+            json: Mapping[str, Any], key: NamedConstant,
+            setter: Callable[[Event, int, Any, str], None],
+            cast: Optional[Callable[[Any], Any]] = None
+        ) -> None:
+            _cast: Callable[[Any], Any]
             if cast is None:
-                def cast(obj):
+                def _cast(obj: Any) -> Any:
                     return obj
+            else:
+                _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                setter(number, cast(value), author)
+                setter(event, number, _cast(value), author)
 
         storage = self.storage
 
@@ -651,16 +671,17 @@ class JSONMixIn(object):
                         )
                     )
 
-        returnValue(self.noContentResource(request))
+        return self.noContentResource(request)
 
 
     @route(URLs.acl.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def readAdminAccessResource(self, request):
+    async def readAdminAccessResource(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Admin access control endpoint.
         """
-        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         acl = {}
         for event in self.storage.events():
@@ -668,16 +689,17 @@ class JSONMixIn(object):
                 readers=self.storage.readers(event),
                 writers=self.storage.writers(event),
             )
-        returnValue(jsonTextFromObject(acl))
+        return jsonTextFromObject(acl)
 
 
     @route(URLs.acl.asText(), methods=("POST",))
-    @inlineCallbacks
-    def editAdminAccessResource(self, request):
+    async def editAdminAccessResource(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Admin access control edit endpoint.
         """
-        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         edits = objectFromJSONBytesIO(request.content)
 
@@ -688,30 +710,28 @@ class JSONMixIn(object):
             if "writers" in acl:
                 self.storage.setWriters(event, acl["writers"])
 
-        returnValue(self.noContentResource(request))
+        return self.noContentResource(request)
 
 
     @route(URLs.streets.asText(), methods=("HEAD", "GET"))
-    @inlineCallbacks
-    def readStreetsResource(self, request):
+    async def readStreetsResource(self, request: IRequest) -> KleinRenderable:
         """
         Street list endpoint.
         """
-        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         streets = {}
         for event in self.storage.events():
             streets[event.id] = self.storage.concentricStreetsByID(event)
-        returnValue(jsonTextFromObject(streets))
+        return jsonTextFromObject(streets)
 
 
     @route(URLs.streets.asText(), methods=("POST",))
-    @inlineCallbacks
-    def editStreetsResource(self, request):
+    async def editStreetsResource(self, request: IRequest) -> KleinRenderable:
         """
         Street list edit endpoint.
         """
-        yield self.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         edits = objectFromJSONBytesIO(request.content)
 
@@ -732,11 +752,11 @@ class JSONMixIn(object):
                         event, streetID, streetName
                     )
 
-        returnValue(self.noContentResource(request))
+        return self.noContentResource(request)
 
 
     @route(URLs.eventSource.asText(), methods=("GET",))
-    def eventSourceResource(self, request):
+    def eventSourceResource(self, request: IRequest) -> KleinRenderable:
         """
         HTML5 EventSource endpoint.
         """
@@ -750,12 +770,12 @@ class JSONMixIn(object):
 
         self.storeObserver.addListener(request)
 
-        def disconnected(f):
+        def disconnected(f: Failure) -> None:
             f.trap(ConnectionDone)
             self.log.info("Event source disconnected: {id}", id=id(request))
             self.storeObserver.removeListener(request)
 
-        def finished(_):
+        def finished(_: Any) -> None:
             self.storeObserver.removeListener(request)
             raise AssertionError("This was not expected")
 

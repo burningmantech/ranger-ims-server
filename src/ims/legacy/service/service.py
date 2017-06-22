@@ -18,13 +18,18 @@
 Incident Management System web service.
 """
 
+from typing import Any, Iterable, Optional
+from typing.io import BinaryIO
 from zipfile import BadZipfile
 
 from twisted.logger import globalLogPublisher
 from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
+from twisted.web.iweb import IRequest
 
-from .auth import AuthMixIn
+from ims.ext.klein import KleinRenderable
+
+from .config import Configuration
 from .eventsource import DataStoreEventSourceLogObserver
 from .external import ExternalMixIn
 from .http import ContentType, HeaderName
@@ -39,14 +44,12 @@ __all__ = (
 
 
 
-class WebService(
-    KleinService, AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn
-):
+class WebService(KleinService, JSONMixIn, WebMixIn, ExternalMixIn):
     """
     Incident Management System web service.
     """
 
-    def __init__(self, config):
+    def __init__(self, config: Configuration) -> None:
         """
         @param config: The configuration to use.
         """
@@ -59,7 +62,7 @@ class WebService(
         globalLogPublisher.addObserver(self.storeObserver)
 
 
-    def __del__(self):
+    def __del__(self) -> None:
         globalLogPublisher.removeObserver(self.storeObserver)
 
 
@@ -67,7 +70,9 @@ class WebService(
     # MIME type wrappers
     #
 
-    def styleSheet(self, request, name, *names):
+    def styleSheet(
+        self, request: IRequest, name: str, *names: str
+    ) -> KleinRenderable:
         """
         Respond with a style sheet.
         """
@@ -75,7 +80,9 @@ class WebService(
         return self.builtInResource(request, name, *names)
 
 
-    def javaScript(self, request, name, *names):
+    def javaScript(
+        self, request: IRequest, name: str, *names: str
+    ) -> KleinRenderable:
         """
         Respond with JavaScript.
         """
@@ -85,17 +92,9 @@ class WebService(
         return self.builtInResource(request, name, *names)
 
 
-    # def javaScriptSourceMap(self, request, name, *names):
-    #     """
-    #     Respond with a JavaScript source map.
-    #     """
-    #     request.setHeader(
-    #         HeaderName.contentType.value, ContentType.JSON.value
-    #     )
-    #     return self.builtInResource(request, name, *names)
-
-
-    def jsonBytes(self, request, data, etag=None):
+    def jsonBytes(
+        self, request: IRequest, data: bytes, etag: Optional[str] = None
+    ) -> bytes:
         """
         Respond with encoded JSON text.
         """
@@ -105,7 +104,10 @@ class WebService(
         return data
 
 
-    def jsonStream(self, request, jsonStream, etag=None):
+    def jsonStream(
+        self, request: IRequest, jsonStream: BinaryIO,
+        etag: Optional[str] = None,
+    ) -> None:
         """
         Respond with a stream of JSON data.
         """
@@ -117,7 +119,7 @@ class WebService(
 
 
     @staticmethod
-    def buildJSONArray(items):
+    def buildJSONArray(items: Iterable[Any]) -> Iterable[Any]:
         """
         Generate a JSON array from an iterable of JSON objects.
         """
@@ -142,7 +144,9 @@ class WebService(
 
     _elementsRoot = FilePath(__file__).parent().parent().child("element")
 
-    def builtInResource(self, request, name, *names):
+    def builtInResource(
+        self, request: IRequest, name: str, *names: str
+    ) -> KleinRenderable:
         """
         Respond with data from a local file.
         """
@@ -160,7 +164,9 @@ class WebService(
             return self.notFoundResource(request)
 
 
-    def zippedResource(self, request, archiveName, name, *names):
+    def zippedResource(
+        self, request: IRequest, archiveName: str, name: str, *names: str
+    ) -> KleinRenderable:
         """
         Respond with data from within a local zip file.
         """
