@@ -27,9 +27,8 @@ from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
 from twisted.web.iweb import IRequest
 
-from ims.ext.klein import KleinRenderable
+from ims.ext.klein import KleinRenderable, ContentType, HeaderName, static
 
-from .http import ContentType, HeaderName, staticResource
 from .klein import route
 from .urls import URLs
 
@@ -90,7 +89,7 @@ class ExternalMixIn(object):
 
 
     @route(URLs.bootstrapBase.asText(), methods=("HEAD", "GET"), branch=True)
-    @staticResource
+    @static
     def bootstrapResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for Bootstrap.
@@ -100,7 +99,7 @@ class ExternalMixIn(object):
         # Remove URL prefix
         names = requestURL.path[len(URLs.bootstrapBase.path) - 1:]
 
-        request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
+        request.setHeader(HeaderName.contentType.value, ContentType.css.value)
         return self.cachedZippedResource(
             request, self.bootstrapSourceURL, self.bootstrapVersion,
             self.bootstrapVersion, *names
@@ -108,13 +107,13 @@ class ExternalMixIn(object):
 
 
     @route(URLs.jqueryJS.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def jqueryJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for jQuery.
         """
         request.setHeader(
-            HeaderName.contentType.value, ContentType.JavaScript.value
+            HeaderName.contentType.value, ContentType.javascript.value
         )
         return self.cachedResource(
             request, self.jqueryJSSourceURL,
@@ -123,12 +122,12 @@ class ExternalMixIn(object):
 
 
     @route(URLs.jqueryMap.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def jqueryMapResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for the jQuery map file.
         """
-        request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
+        request.setHeader(HeaderName.contentType.value, ContentType.json.value)
         return self.cachedResource(
             request, self.jqueryMapSourceURL,
             "{}.min.map".format(self.jqueryVersion),
@@ -138,7 +137,7 @@ class ExternalMixIn(object):
     @route(
         URLs.dataTablesBase.asText(), methods=("HEAD", "GET"), branch=True
     )
-    @staticResource
+    @static
     def dataTablesResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for DataTables.
@@ -148,7 +147,7 @@ class ExternalMixIn(object):
         # Remove URL prefix
         names = requestURL.path[len(URLs.dataTablesBase.path) - 1:]
 
-        request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
+        request.setHeader(HeaderName.contentType.value, ContentType.css.value)
         return self.cachedZippedResource(
             request, self.dataTablesSourceURL, self.dataTablesVersion,
             self.dataTablesVersion, *names
@@ -156,13 +155,13 @@ class ExternalMixIn(object):
 
 
     @route(URLs.momentJS.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def momentJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for moment.js.
         """
         request.setHeader(
-            HeaderName.contentType.value, ContentType.JavaScript.value
+            HeaderName.contentType.value, ContentType.javascript.value
         )
         return self.cachedResource(
             request, self.momentJSSourceURL,
@@ -171,13 +170,13 @@ class ExternalMixIn(object):
 
 
     @route(URLs.lscacheJS.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def lscacheJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for lscache.
         """
         request.setHeader(
-            HeaderName.contentType.value, ContentType.JavaScript.value
+            HeaderName.contentType.value, ContentType.javascript.value
         )
         return self.cachedResource(
             request, self.lscacheJSSourceURL,

@@ -27,12 +27,11 @@ from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.web.iweb import IRequest
 
-from ims.ext.klein import KleinRenderable
+from ims.ext.klein import ContentType, HeaderName, KleinRenderable
 
 from .config import Configuration
 from .eventsource import DataStoreEventSourceLogObserver
 from .external import ExternalMixIn
-from .http import ContentType, HeaderName
 from .json import JSONMixIn
 from .klein import KleinService
 from .web import WebMixIn
@@ -76,7 +75,7 @@ class WebService(KleinService, JSONMixIn, WebMixIn, ExternalMixIn):
         """
         Respond with a style sheet.
         """
-        request.setHeader(HeaderName.contentType.value, ContentType.CSS.value)
+        request.setHeader(HeaderName.contentType.value, ContentType.css.value)
         return self.builtInResource(request, name, *names)
 
 
@@ -87,7 +86,7 @@ class WebService(KleinService, JSONMixIn, WebMixIn, ExternalMixIn):
         Respond with JavaScript.
         """
         request.setHeader(
-            HeaderName.contentType.value, ContentType.JavaScript.value
+            HeaderName.contentType.value, ContentType.javascript.value
         )
         return self.builtInResource(request, name, *names)
 
@@ -98,7 +97,7 @@ class WebService(KleinService, JSONMixIn, WebMixIn, ExternalMixIn):
         """
         Respond with encoded JSON text.
         """
-        request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
+        request.setHeader(HeaderName.contentType.value, ContentType.json.value)
         if etag is not None:
             request.setHeader(HeaderName.etag.value, etag)
         return data
@@ -111,7 +110,7 @@ class WebService(KleinService, JSONMixIn, WebMixIn, ExternalMixIn):
         """
         Respond with a stream of JSON data.
         """
-        request.setHeader(HeaderName.contentType.value, ContentType.JSON.value)
+        request.setHeader(HeaderName.contentType.value, ContentType.json.value)
         if etag is not None:
             request.setHeader(HeaderName.etag.value, etag)
         for line in jsonStream:

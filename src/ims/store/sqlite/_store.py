@@ -32,6 +32,7 @@ from attr.validators import instance_of, optional
 
 from twisted.logger import Logger
 
+from ims.ext.json import objectFromJSONBytesIO
 from ims.ext.sqlite import (
     Connection, Cursor, ParameterValue, Parameters, Row, SQLiteError,
     createDB, openDB, printSchema,
@@ -40,6 +41,7 @@ from ims.model import (
     Event, Incident, IncidentPriority, IncidentState, Location, ReportEntry,
     RodGarettAddress,
 )
+from ims.model.json import IncidentJSONKey, modelObjectFromJSONObject
 
 from .._abc import IMSDataStore
 from .._exceptions import StorageError
@@ -137,6 +139,54 @@ class DataStore(IMSDataStore):
                 errorLogFormat, query=query, **parameters, error=e
             )
             raise StorageError(e)
+
+
+    def loadFromEventJSON(
+        self, event: Event, path: Path, trialRun: bool = False
+    ) -> None:
+        """
+        Load event data from a file containing JSON.
+        """
+        with path.open() as fileHandle:
+            eventJSON = objectFromJSONBytesIO(fileHandle)
+
+            self._log.info("Creating event: {event}", event=event)
+            self.createEvent(event)
+
+            # Load incidents
+            for incidentJSON in eventJSON:
+                try:
+                    eventID = incidentJSON.get(IncidentJSONKey.event.value)
+                    if eventID is None:
+                        incidentJSON[IncidentJSONKey.event.value] = event.id
+                    else:
+                        if eventID != event.id:
+                            raise ValueError(
+                                "Event ID {} != {}".format(eventID, event.id)
+                            )
+
+                    incident = modelObjectFromJSONObject(
+                        incidentJSON, Incident
+                    )
+                except ValueError as e:
+                    if trialRun:
+                        number = incidentJSON.get(IncidentJSONKey.number.value)
+                        self._log.critical(
+                            "Unable to load incident #{number}: {error}",
+                            number=number, error=e,
+                        )
+                    else:
+                        raise
+
+                for incidentType in incident.incidentTypes:
+                    self.createIncidentType(incidentType, hidden=True)
+
+                self._log.info(
+                    "Creating incident in {event}: {incident}",
+                    event=event, incident=incident
+                )
+                if not trialRun:
+                    self.importIncident(incident)
 
 
     async def events(self) -> Iterable[Event]:

@@ -28,12 +28,13 @@ from twisted.logger import Logger
 from twisted.python.filepath import FilePath
 from twisted.web.server import Session, Site
 
+from ims.model import Event
+from ims.store import StorageError
+from ims.store.sqlite import DataStore
+
 from .config import Configuration
 from .log import patchCombinedLogFormatter
 from .service import WebService
-from ..data.model import Event
-from ..store.sqlite import Storage
-from ...store import StorageError
 
 
 __all__ = (
@@ -186,78 +187,6 @@ class KleinTool(Executable):
 
 
 
-class LegacyLoadTool(Executable):
-    """
-    Incident Management System tool for loading data from a legacy file store
-    into to a database store.
-    """
-
-    log = Logger()
-
-    class Options(BaseOptions, ConfigOptionsMixIn):
-        """
-        Tool options.
-        """
-
-        optFlags: List[str] = []
-
-        optParameters: List[Any] = []
-
-
-        def __init__(self) -> None:
-            BaseOptions.__init__(self)
-            self.opt_log_file("-")
-
-
-        def getSynopsis(self) -> str:
-            """
-            See L{BaseOptions.getSynopsis}.
-            """
-            return "{} datadir [datadir ...]".format(
-                BaseOptions.getSynopsis(self)
-            )
-
-
-        def parseArgs(self, *datadirs: str) -> None:
-            """
-            See L{BaseOptions.parseArgs}.
-            """
-            BaseOptions.parseArgs(self)
-            self["fileStores"] = [FilePath(d) for d in datadirs]
-
-
-    def postOptions(self) -> None:
-        """
-        See L{Executable.postOptions}.
-        """
-        Executable.postOptions(self)
-
-        self.options.initConfig()
-
-
-    def whenRunning(self) -> None:
-        """
-        See L{Executable.whenRunning}.
-        """
-        try:
-            config = self.options["configuration"]
-
-            storage = Storage(config.DatabaseFile)
-
-            for storeFilePath in self.options["fileStores"]:
-                try:
-                    storage.loadFromFileStore(storeFilePath)
-                except StorageError as e:
-                    self.log.critical(
-                        "{error}", store=storeFilePath, error=e
-                    )
-                    break
-
-        finally:
-            from twisted.internet import reactor
-            reactor.stop()
-
-
 class JSONLoadTool(Executable):
     """
     Incident Management System tool for loading data from a JSON file into to a
@@ -329,7 +258,7 @@ class JSONLoadTool(Executable):
             filePath = self.options["filePath"]
             trialRun = self.options["trialRun"]
 
-            storage = Storage(config.DatabaseFile)
+            storage = DataStore(config.DatabaseFile)
 
             try:
                 storage.loadFromEventJSON(event, filePath, trialRun=trialRun)

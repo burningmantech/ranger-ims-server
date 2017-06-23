@@ -14,16 +14,26 @@ tmp="$(mktemp -t mypy.XXXX)";
 # JSONDecodeError has no attribute: https://github.com/python/mypy/issues/2981
 # Callable has no attribute "todo": ... uh, not sure that's a bug, but ...
 
-mypy "$@"                                                                  \
-    | grep -v                                                              \
-        -e ': error: "JSONDecodeError" has no attribute '                  \
-        -e ': error: Callable\[\[[^\]\+\], None\] has no attribute "todo"' \
-        -e ': error: Too many arguments for '                              \
-        -e ': error: Unexpected keyword argument '                         \
-        -e ': error: Unsupported left operand type for '                   \
+mypy "$@"                                                                                                \
+    | grep -v                                                                                            \
+        -e ": error: Cannot find module named 'attr.*'"                                                  \
+        -e ": error: Cannot find module named 'arrow.*'"                                                 \
+        -e ": error: Cannot find module named 'cattr.*'"                                                 \
+        -e ": error: Cannot find module named 'hypothesis.*'"                                            \
+        -e ": error: Cannot find module named 'klein.*'"                                                 \
+        -e ": error: Cannot find module named 'twext.*'"                                                 \
+        -e ': error: No library stub file for '                                                          \
+        -e ': note: (Perhaps setting MYPYPATH or using the "--ignore-missing-imports" flag would help)'  \
+        -e ': note: (Stub files are from https://github.com/python/typeshed)'                            \
+        -e ': error: "JSONDecodeError" has no attribute '                                                \
+        -e ': error: Callable\[\[[^\]\+\], None\] has no attribute "todo"'                               \
+        -e ': error: Too many arguments for '                                                            \
+        -e ': error: Unexpected keyword argument '                                                       \
+        -e ': error: Unsupported left operand type for '                                                 \
         -e '^src/ims/legacy/element/[^:]\+:[0-9:]\+: error: Function is missing a type annotation' \
         -e '^src/ims/legacy/element/[^:]\+:[0-9:]\+: error: Need type annotation for variable' \
         -e '^src/ims/legacy/service/[^:]\+:[0-9:]\+: error: ".\+MixIn" has no attribute ".\+"' \
+        -e '^src/ims/legacy/service/klein.py:[0-9:]\+: error: "KleinService" has no attribute "authenticateRequest"' \
         -e '^src/ims/ext/enum.py:[0-9:]\+: error: Function is missing a type annotation for one or more arguments' \
         -e '^src/ims/ext/enum.py:[0-9:]\+: error: Cannot assign to a method' \
         -e '^src/ims/ext/enum.py:[0-9:]\+: error: Incompatible types in assignment ' \

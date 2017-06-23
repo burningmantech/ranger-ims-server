@@ -18,8 +18,9 @@
 Dispatch queue page.
 """
 
+from ims.ext.json import jsonTextFromObject
+
 from .base import Element, renderer
-from ..data.json import jsonTextFromObject
 from ..service.auth import Authorization
 from ..service.urls import URLs
 

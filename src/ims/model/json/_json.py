@@ -24,7 +24,8 @@ from typing import Any, Type
 from cattr import Converter
 
 from ims.ext.json import (
-    dateTimeAsRFC3339Text, jsonTextFromObject, rfc3339TextAsDateTime
+    dateTimeAsRFC3339Text, jsonTextFromObject, objectFromJSONText,
+    rfc3339TextAsDateTime,
 )
 
 
@@ -55,7 +56,9 @@ def deserializeDateTime(obj: str, cl: Type) -> DateTime:
 registerDeserializer(DateTime, deserializeDateTime)
 
 
-def jsonTextFromModelObject(
-    object: Any, pretty: bool = False
-) -> str:
-    return jsonTextFromObject(jsonSerialize(object), pretty=pretty)
+def jsonObjectFromModelObject(object: Any) -> Any:
+    return jsonSerialize(object)
+
+
+def modelObjectFromJSONObject(object: Any, modelClass: type) -> Any:
+    return jsonDeserialize(object, modelClass)

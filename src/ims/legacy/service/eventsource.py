@@ -27,8 +27,8 @@ from twisted.web.iweb import IRequest
 
 from zope.interface import implementer
 
-from ..data.json import jsonTextFromObject
-from ..data.model import Incident
+from ims.ext.json import jsonTextFromObject
+from ims.model import Incident
 
 Deque, Set, Tuple  # silence linter
 

@@ -19,6 +19,7 @@ Incident Management System JSON API endpoints.
 """
 
 from datetime import datetime as DateTime, timezone as TimeZone
+from enum import Enum
 from typing import Any, Callable, Mapping, Optional, Tuple
 
 from twisted.internet.defer import Deferred
@@ -27,19 +28,21 @@ from twisted.python.constants import NamedConstant
 from twisted.python.failure import Failure
 from twisted.web.iweb import IRequest
 
-from ims.ext.klein import KleinRenderable
+from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
+from ims.ext.klein import KleinRenderable, ContentType, HeaderName, static
+from ims.model import (
+    Event, Incident, IncidentReport, IncidentState, ReportEntry
+)
+from ims.model.json import (
+    IncidentJSONKey, IncidentReportJSONKey, LocationJSONKey,
+    ReportEntryJSONKey, RodGarettAddressJSONKey, TextOnlyAddressJSONKey,
+    jsonObjectFromModelObject, modelObjectFromJSONObject
+)
 
 from .auth import Authorization
 from .error import NotAuthorizedError
-from .http import ContentType, HeaderName, staticResource
 from .klein import route
 from .urls import URLs
-from ..data.json import (
-    JSON, incidentAsJSON, incidentFromJSON, incidentReportAsJSON,
-    incidentReportFromJSON, jsonTextFromObject, objectFromJSONBytesIO,
-    rangerAsJSON,
-)
-from ..data.model import Event, IncidentState, InvalidDataError, ReportEntry
 from ...dms import DMSError
 
 
@@ -59,7 +62,7 @@ class JSONMixIn(object):
     #
 
     @route(URLs.ping.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def pingResource(self, request: IRequest) -> KleinRenderable:
         """
         Ping (health check) endpoint.
@@ -93,7 +96,9 @@ class JSONMixIn(object):
 
         return (
             self.buildJSONArray(
-                jsonTextFromObject(rangerAsJSON(ranger)).encode("utf-8")
+                jsonTextFromObject(
+                    jsonObjectFromModelObject(ranger)
+                ).encode("utf-8")
                 for ranger in personnel
             ),
             bytes(hash(personnel)),
@@ -199,7 +204,9 @@ class JSONMixIn(object):
         )
 
         stream = self.buildJSONArray(
-            jsonTextFromObject(incidentAsJSON(incident)).encode("utf-8")
+            jsonTextFromObject(
+                jsonObjectFromModelObject(incident)
+            ).encode("utf-8")
             for incident in self.storage.incidents(event)
         )
 
@@ -220,7 +227,7 @@ class JSONMixIn(object):
         )
 
         json = objectFromJSONBytesIO(request.content)
-        incident = incidentFromJSON(json, number=None, validate=False)
+        incident = modelObjectFromJSONObject(json, Incident)
 
         if incident.state is None:
             incident.state = IncidentState.new
@@ -260,9 +267,11 @@ class JSONMixIn(object):
             "User {author} created new incident #{incident.number} via JSON",
             author=author, incident=incident
         )
-        self.log.debug("New incident: {json}", json=incidentAsJSON(incident))
+        self.log.debug(
+            "New incident: {json}", json=jsonObjectFromModelObject(incident)
+        )
 
-        request.setHeader(HeaderName.incidentNumber.value, incident.number)
+        request.setHeader("Incident-Number", incident.number)
         request.setHeader(
             HeaderName.location.value,
             "{}/{}".format(URLs.incidentNumber.asText(), incident.number)
@@ -289,7 +298,7 @@ class JSONMixIn(object):
             return self.notFoundResource(request)
 
         incident = self.storage.incident(event, number)
-        text = jsonTextFromObject(incidentAsJSON(incident))
+        text = jsonTextFromObject(jsonObjectFromModelObject(incident))
 
         return (
             self.jsonBytes(request, text.encode("utf-8"), incident.version)
@@ -326,21 +335,21 @@ class JSONMixIn(object):
                 request, "JSON incident must be a dictionary"
             )
 
-        if edits.get(JSON.incident_number.value, number) != number:
+        if edits.get(IncidentJSONKey.number.value, number) != number:
             return self.badRequestResource(
                 request, "Incident number may not be modified"
             )
 
         UNSET = object()
 
-        created = edits.get(JSON.incident_created.value, UNSET)
+        created = edits.get(IncidentJSONKey.created.value, UNSET)
         if created is not UNSET:
             return self.badRequestResource(
                 request, "Incident created time may not be modified"
             )
 
         def applyEdit(
-            json: Mapping[str, Any], key: NamedConstant,
+            json: Mapping[str, Any], key: Enum,
             setter: Callable[[Event, int, Any, str], None],
             cast: Optional[Callable[[Any], Any]] = None
         ) -> None:
@@ -356,16 +365,16 @@ class JSONMixIn(object):
 
         storage = self.storage
 
-        applyEdit(edits, JSON.incident_priority, storage.setIncidentPriority)
+        applyEdit(edits, IncidentJSONKey.priority, storage.setIncidentPriority)
 
         applyEdit(
-            edits, JSON.incident_state,
-            storage.setIncidentState, IncidentState.lookupByName
+            edits, IncidentJSONKey.state,
+            storage.setIncidentState, lambda n: IncidentState[n]
         )
 
-        applyEdit(edits, JSON.incident_summary, storage.setIncidentSummary)
+        applyEdit(edits, IncidentJSONKey.summary, storage.setIncidentSummary)
 
-        location = edits.get(JSON.incident_location.value, UNSET)
+        location = edits.get(IncidentJSONKey.location.value, UNSET)
         if location is not UNSET:
             if location is None:
                 for setter in (
@@ -378,36 +387,40 @@ class JSONMixIn(object):
                     setter(event, number, None, author)
             else:
                 applyEdit(
-                    location, JSON.location_name,
+                    location, LocationJSONKey.name,
                     storage.setIncidentLocationName
                 )
                 applyEdit(
-                    location, JSON.location_garett_concentric,
+                    location, RodGarettAddressJSONKey.concentric,
                     storage.setIncidentLocationConcentricStreet
                 )
                 applyEdit(
-                    location, JSON.location_garett_radial_hour,
+                    location, RodGarettAddressJSONKey.radialHour,
                     storage.setIncidentLocationRadialHour
                 )
                 applyEdit(
-                    location, JSON.location_garett_radial_minute,
+                    location, RodGarettAddressJSONKey.radialMinute,
                     storage.setIncidentLocationRadialMinute
                 )
                 applyEdit(
-                    location, JSON.location_garett_description,
+                    location, RodGarettAddressJSONKey.description,
                     storage.setIncidentLocationDescription
                 )
 
-        applyEdit(edits, JSON.ranger_handles, storage.setIncidentRangers)
+        applyEdit(
+            edits, IncidentJSONKey.rangerHandles, storage.setIncidentRangers
+        )
 
-        applyEdit(edits, JSON.incident_types, storage.setIncidentTypes)
+        applyEdit(
+            edits, IncidentJSONKey.incidentTypes, storage.setIncidentTypes
+        )
 
-        entries = edits.get(JSON.report_entries.value, UNSET)
+        entries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)
         if entries is not UNSET:
             now = DateTime.now(TimeZone.utc)
 
             for entry in entries:
-                text = entry.get(JSON.entry_text.value, None)
+                text = entry.get(ReportEntryJSONKey.text.value, None)
                 if text:
                     storage.addIncidentReportEntry(
                         event, number,
@@ -432,6 +445,7 @@ class JSONMixIn(object):
         eventID        = self.queryValue(request, "event")
         incidentNumber = self.queryValue(request, "incident")
 
+        attachedTo: Optional[Tuple[Optional[Event], Optional[int]]]
         if eventID is None and incidentNumber is None:
             attachedTo = None
         elif eventID == incidentNumber == "":
@@ -440,10 +454,9 @@ class JSONMixIn(object):
             )
             attachedTo = (None, None)
         else:
-            event = Event(eventID)
             try:
-                event.validate()
-            except InvalidDataError:
+                event = Event(eventID)
+            except ValueError:
                 return self.invalidQueryResource(
                     request, "event", eventID
                 )
@@ -460,7 +473,7 @@ class JSONMixIn(object):
 
         stream = self.buildJSONArray(
             jsonTextFromObject(
-                incidentReportAsJSON(incidentReport)
+                jsonObjectFromModelObject(incidentReport)
             ).encode("utf-8")
             for incidentReport
             in self.storage.incidentReports(attachedTo=attachedTo)
@@ -481,9 +494,7 @@ class JSONMixIn(object):
         )
 
         json = objectFromJSONBytesIO(request.content)
-        incidentReport = incidentReportFromJSON(
-            json, number=None, validate=False
-        )
+        incidentReport = modelObjectFromJSONObject(json, IncidentReport)
 
         author = request.user.shortNames[0]
         now = DateTime.now(TimeZone.utc)
@@ -523,12 +534,10 @@ class JSONMixIn(object):
         )
         self.log.debug(
             "New incident report: {json}",
-            json=incidentReportAsJSON(incidentReport),
+            json=jsonObjectFromModelObject(incidentReport),
         )
 
-        request.setHeader(
-            HeaderName.incidentReportNumber.value, incidentReport.number
-        )
+        request.setHeader("Incident-Report-Number", incidentReport.number)
         request.setHeader(
             HeaderName.location.value,
             "{}/{}".format(URLs.incidentNumber.asText(), incidentReport.number)
@@ -551,7 +560,7 @@ class JSONMixIn(object):
         await self.authorizeRequestForIncidentReport(request, number)
 
         incidentReport = self.storage.incidentReport(number)
-        text = jsonTextFromObject(incidentReportAsJSON(incidentReport))
+        text = jsonTextFromObject(jsonObjectFromModelObject(incidentReport))
 
         return self.jsonBytes(
             request, text.encode("utf-8"), incidentReport.version()
@@ -585,10 +594,9 @@ class JSONMixIn(object):
             eventID        = self.queryValue(request, "event")
             incidentNumber = self.queryValue(request, "incident")
 
-            event = Event(eventID)
             try:
-                event.validate()
-            except InvalidDataError:
+                event = Event(eventID)
+            except ValueError:
                 return self.invalidQueryResource(request, "event", eventID)
 
             try:
@@ -619,14 +627,14 @@ class JSONMixIn(object):
                 request, "JSON incident report must be a dictionary"
             )
 
-        if edits.get(JSON.incident_report_number.value, number) != number:
+        if edits.get(IncidentReportJSONKey.number.value, number) != number:
             return self.badRequestResource(
                 request, "Incident report number may not be modified"
             )
 
         UNSET = object()
 
-        created = edits.get(JSON.incident_report_created.value, UNSET)
+        created = edits.get(IncidentReportJSONKey.created.value, UNSET)
         if created is not UNSET:
             return self.badRequestResource(
                 request, "Incident report created time may not be modified"
@@ -650,16 +658,16 @@ class JSONMixIn(object):
         storage = self.storage
 
         applyEdit(
-            edits, JSON.incident_report_summary,
+            edits, IncidentReportJSONKey.summary,
             storage.setIncidentReportSummary
         )
 
-        entries = edits.get(JSON.report_entries.value, UNSET)
+        entries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)
         if entries is not UNSET:
             now = DateTime.now(TimeZone.utc)
 
             for entry in entries:
-                text = entry.get(JSON.entry_text.value, None)
+                text = entry.get(ReportEntryJSONKey.text.value, None)
                 if text:
                     self.storage.addIncidentReportReportEntry(
                         number,

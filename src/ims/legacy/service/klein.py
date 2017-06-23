@@ -38,10 +38,11 @@ from werkzeug.exceptions import MethodNotAllowed, NotFound
 from werkzeug.routing import RequestRedirect
 
 from ims import __version__ as version
-from ims.ext.klein import KleinRenderable, KleinRouteMethod
-from .auth import AuthMixIn
+from ims.ext.klein import (
+    ContentType, HeaderName, KleinRenderable, KleinRouteMethod
+)
+
 from .error import NotAuthenticatedError, NotAuthorizedError
-from .http import ContentType, HeaderName
 from .urls import URLs
 from ..element.redirect import RedirectPage
 from ...dms import DMSError
@@ -109,7 +110,7 @@ def renderResponse(f: KleinRouteMethod) -> KleinRouteMethod:
 
 
 
-class KleinService(AuthMixIn):
+class KleinService(object):
     """
     Klein service.
     """
@@ -135,7 +136,7 @@ class KleinService(AuthMixIn):
 
         url = location.asText().encode("utf-8")
 
-        request.setHeader(HeaderName.contentType.value, ContentType.HTML.value)
+        request.setHeader(HeaderName.contentType.value, ContentType.html.value)
         request.setHeader(HeaderName.location.value, url)
         request.setResponseCode(http.FOUND)
 

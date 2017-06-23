@@ -27,7 +27,7 @@ from hypothesis.strategies import datetimes, floats, integers, text
 from ims.ext.json import dateTimeAsRFC3339Text, jsonTextFromObject
 from ims.ext.trial import TestCase
 
-from .._json import jsonDeserialize, jsonSerialize, jsonTextFromModelObject
+from .._json import jsonDeserialize, jsonSerialize, jsonObjectFromModelObject
 from ..._incident import Incident
 from ...strategies import incidents
 
@@ -194,9 +194,9 @@ class ModelSerializationTests(TestCase):
     @given(incidents())
     def test_incident(self, incident: Incident) -> None:
         """
-        :func:`jsonTextFromModelObject` serializes an incident as JSON text.
+        :func:`jsonObjectFromModelObject` serializes an incident as JSON text.
         """
         self.assertEqual(
-            jsonTextFromModelObject(incident),
-            jsonTextFromObject(jsonSerialize(incident))
+            jsonObjectFromModelObject(incident),
+            jsonSerialize(incident)
         )

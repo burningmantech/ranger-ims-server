@@ -18,28 +18,31 @@
 Incident Management System data model JSON serialization/deserialization
 """
 
-from . import _address
-from . import _entry
 from . import _event
-from . import _incident
-from . import _location
 from . import _priority
-from . import _report
 from . import _state
 from . import _type
-from ._json import jsonTextFromModelObject
 
-del _address
-del _entry
+from ._address import TextOnlyAddressJSONKey, RodGarettAddressJSONKey
+from ._entry import ReportEntryJSONKey
+from ._incident import IncidentJSONKey
+from ._json import jsonObjectFromModelObject, modelObjectFromJSONObject
+from ._location import LocationJSONKey
+from ._report import IncidentReportJSONKey
+
 del _event
-del _incident
-del _location
 del _priority
-del _report
 del _state
 del _type
 
 
 __all__ = (
-    "jsonTextFromModelObject",
+    "IncidentJSONKey",
+    "IncidentReportJSONKey",
+    "LocationJSONKey",
+    "ReportEntryJSONKey",
+    "RodGarettAddressJSONKey",
+    "TextOnlyAddressJSONKey",
+    "jsonObjectFromModelObject",
+    "modelObjectFromJSONObject",
 )

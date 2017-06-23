@@ -22,13 +22,12 @@ from typing import Optional
 
 from twisted.web.iweb import IRequest
 
-from ims.ext.klein import KleinRenderable
+from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
+from ims.model import Event
 
 from .auth import Authorization
-from .http import ContentType, HeaderName, staticResource
 from .klein import route
 from .urls import URLs
-from ..data.model import Event
 from ..element.admin import AdminPage
 from ..element.admin_acl import AdminAccessControlPage
 from ..element.admin_streets import AdminStreetsPage
@@ -60,7 +59,7 @@ class WebMixIn(object):
     #
 
     @route(URLs.styleSheet.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def styleSheetResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for global style sheet.
@@ -69,17 +68,17 @@ class WebMixIn(object):
 
 
     @route(URLs.logo.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def logoResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for logo.
         """
-        request.setHeader(HeaderName.contentType.value, ContentType.PNG.value)
+        request.setHeader(HeaderName.contentType.value, ContentType.png.value)
         return self.builtInResource(request, "logo.png")
 
 
     @route(URLs.imsJS.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def imsJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for C{ims.js}.
@@ -102,7 +101,7 @@ class WebMixIn(object):
 
 
     @route(URLs.prefix.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def applicationRootResource(self, request: IRequest) -> KleinRenderable:
         """
         Application root page.
@@ -123,7 +122,7 @@ class WebMixIn(object):
 
 
     @route(URLs.admin.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     async def adminPage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for admin page.
@@ -136,7 +135,7 @@ class WebMixIn(object):
 
 
     @route(URLs.adminJS.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def adminJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for C{admin.js}.
@@ -158,7 +157,7 @@ class WebMixIn(object):
 
 
     @route(URLs.adminAccessControlJS.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def adminAccessControlJSResource(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -183,7 +182,7 @@ class WebMixIn(object):
 
 
     @route(URLs.adminIncidentTypesJS.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def adminAdminIncidentTypesPageJSResource(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -206,7 +205,7 @@ class WebMixIn(object):
 
 
     @route(URLs.adminStreetsJS.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def adminStreetsJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for C{admin_streets.js}.
@@ -232,7 +231,7 @@ class WebMixIn(object):
 
 
     @route(URLs.viewDispatchQueueTemplate.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def viewDispatchQueueTemplatePage(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -243,7 +242,7 @@ class WebMixIn(object):
 
 
     @route(URLs.viewDispatchQueueJS.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def viewDispatchQueueJSResource(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -279,7 +278,7 @@ class WebMixIn(object):
 
 
     @route(URLs.viewIncidentNumberTemplate.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def viewIncidentNumberTemplatePage(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -290,7 +289,7 @@ class WebMixIn(object):
 
 
     @route(URLs.viewIncidentNumberJS.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def incidentJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for C{incident.js}.
@@ -326,7 +325,7 @@ class WebMixIn(object):
 
 
     @route(URLs.viewIncidentReportTemplate.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def viewIncidentReportTemplatePage(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -337,7 +336,7 @@ class WebMixIn(object):
 
 
     @route(URLs.viewIncidentReportJS.asText(), methods=("HEAD", "GET"))
-    @staticResource
+    @static
     def viewIncidentReportJSResource(
         self, request: IRequest
     ) -> KleinRenderable:
