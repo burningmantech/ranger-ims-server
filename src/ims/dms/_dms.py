@@ -19,7 +19,7 @@ Duty Management System.
 """
 
 from time import time
-from typing import Iterable, Mapping, Optional, Set, Sequence, Tuple
+from typing import Iterable, Mapping, Optional, Sequence, Set, Tuple
 
 from pymysql import (
     DatabaseError as SQLDatabaseError, OperationalError as SQLOperationalError
@@ -29,6 +29,8 @@ from twisted.enterprise import adbapi
 from twisted.logger import Logger
 
 from ims.model import Ranger, RangerStatus
+
+Set, Sequence  # silence linter
 
 
 __all__ = (

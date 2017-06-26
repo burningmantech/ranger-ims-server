@@ -27,7 +27,7 @@ from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
 from twisted.web.iweb import IRequest
 
-from ims.ext.klein import KleinRenderable, ContentType, HeaderName, static
+from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
 from .klein import route
 from .urls import URLs

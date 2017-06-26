@@ -27,6 +27,8 @@ from ims.ext.trial import TestCase
 from .. import DutyManagementSystem
 from .._dms import fullName
 
+MutableSequence  # silence linter
+
 
 __all__ = ()
 

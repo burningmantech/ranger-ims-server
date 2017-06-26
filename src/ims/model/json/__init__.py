@@ -23,7 +23,7 @@ from . import _priority
 from . import _state
 from . import _type
 
-from ._address import TextOnlyAddressJSONKey, RodGarettAddressJSONKey
+from ._address import RodGarettAddressJSONKey, TextOnlyAddressJSONKey
 from ._entry import ReportEntryJSONKey
 from ._incident import IncidentJSONKey
 from ._json import jsonObjectFromModelObject, modelObjectFromJSONObject

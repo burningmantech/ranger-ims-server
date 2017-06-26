@@ -24,10 +24,10 @@ from typing import Any
 from hypothesis import given
 from hypothesis.strategies import datetimes, floats, integers, text
 
-from ims.ext.json import dateTimeAsRFC3339Text, jsonTextFromObject
+from ims.ext.json import dateTimeAsRFC3339Text
 from ims.ext.trial import TestCase
 
-from .._json import jsonDeserialize, jsonSerialize, jsonObjectFromModelObject
+from .._json import jsonDeserialize, jsonObjectFromModelObject, jsonSerialize
 from ..._incident import Incident
 from ...strategies import incidents
 

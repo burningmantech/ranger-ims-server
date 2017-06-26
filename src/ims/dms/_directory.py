@@ -38,6 +38,8 @@ from ims.model import Ranger
 
 from ._dms import DatabaseError, DutyManagementSystem, Position
 
+Iterable  # silence linter
+
 
 __all__ = (
     "DirectoryService",

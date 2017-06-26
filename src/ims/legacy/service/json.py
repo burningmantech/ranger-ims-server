@@ -29,13 +29,13 @@ from twisted.python.failure import Failure
 from twisted.web.iweb import IRequest
 
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
-from ims.ext.klein import KleinRenderable, ContentType, HeaderName, static
+from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ims.model import (
     Event, Incident, IncidentReport, IncidentState, ReportEntry
 )
 from ims.model.json import (
     IncidentJSONKey, IncidentReportJSONKey, LocationJSONKey,
-    ReportEntryJSONKey, RodGarettAddressJSONKey, TextOnlyAddressJSONKey,
+    ReportEntryJSONKey, RodGarettAddressJSONKey,
     jsonObjectFromModelObject, modelObjectFromJSONObject
 )
 
