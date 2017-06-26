@@ -29,6 +29,7 @@ from twisted.web.iweb import IRequest
 
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable
 
+from .auth import AuthMixIn
 from .config import Configuration
 from .eventsource import DataStoreEventSourceLogObserver
 from .external import ExternalMixIn
@@ -43,7 +44,7 @@ __all__ = (
 
 
 
-class WebService(KleinService, JSONMixIn, WebMixIn, ExternalMixIn):
+class WebService(KleinService, AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
     """
     Incident Management System web service.
     """
