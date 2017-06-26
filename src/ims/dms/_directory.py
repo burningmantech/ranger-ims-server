@@ -19,6 +19,7 @@ Duty Management System directory service.
 """
 
 from hashlib import sha1
+from typing import Iterable, Optional
 
 from twext.who.idirectory import (
     FieldName as BaseFieldName, RecordType as BaseRecordType
@@ -33,7 +34,9 @@ from twext.who.util import ConstantsContainer
 from twisted.logger import Logger
 from twisted.python.constants import NamedConstant, Names
 
-from ._dms import DatabaseError
+from ims.model import Ranger
+
+from ._dms import DatabaseError, DutyManagementSystem, Position
 
 
 __all__ = (
@@ -74,7 +77,9 @@ class DirectoryService(BaseDirectoryService):
     ))
 
 
-    def __init__(self, dms, masterKey=None):
+    def __init__(
+        self, dms: DutyManagementSystem, masterKey: Optional[str] = None
+    ) -> None:
         """
         @param dms: The DMS to back the directory with.
 
@@ -83,13 +88,13 @@ class DirectoryService(BaseDirectoryService):
         BaseDirectoryService.__init__(self, realmName=noRealmName)
 
         self.dms = dms
-        self._personnel = None
-        self._positions = None
+        self._personnel: Iterable[Ranger] = ()
+        self._positions: Iterable[Position] = ()
         self._masterKey = masterKey
 
 
     @property
-    def realmName(self):
+    def realmName(self) -> str:
         """
         Look up the name of the directory realm.
         """
@@ -97,7 +102,7 @@ class DirectoryService(BaseDirectoryService):
 
 
     @realmName.setter
-    def realmName(self, value):
+    def realmName(self, value: str) -> None:
         """
         Set the name of the directory realm.
         """
@@ -105,7 +110,7 @@ class DirectoryService(BaseDirectoryService):
             raise AttributeError("realmName may not be set directly")
 
 
-    def loadRecords(self):
+    def loadRecords(self) -> None:
         """
         Load all records.
         """
@@ -116,7 +121,7 @@ class DirectoryService(BaseDirectoryService):
         self._loadRecordsFromPersonnel()
 
 
-    async def _loadRecordsFromPersonnel(self):
+    async def _loadRecordsFromPersonnel(self) -> None:
         try:
             personnel = await self.dms.personnel()
             positions = await self.dms.positions()
@@ -149,7 +154,7 @@ class RangerDirectoryRecord(BaseDirectoryRecord):
     Duty Management System (user) directory record for a Ranger.
     """
 
-    def __init__(self, service, ranger):
+    def __init__(self, service: DirectoryService, ranger: Ranger) -> None:
         uid = "person:{}".format(ranger.dmsID)
 
         if ranger.email is None:
@@ -176,7 +181,7 @@ class RangerDirectoryRecord(BaseDirectoryRecord):
     # Verifiers for twext.who.checker stuff.
     #
 
-    def verifyPlaintextPassword(self, password):
+    def verifyPlaintextPassword(self, password: str) -> bool:
         """
         Verify a password.
         """
@@ -207,7 +212,7 @@ class PositionDirectoryRecord(BaseDirectoryRecord):
     Duty Management System (group) directory record for a Position.
     """
 
-    def __init__(self, service, position):
+    def __init__(self, service: DirectoryService, position: Position) -> None:
         uid = "position:{}".format(position.positionID)
 
         memberUIDs = tuple(

@@ -19,12 +19,13 @@ Duty Management System.
 """
 
 from time import time
+from typing import Iterable, Mapping, Optional, Set, Sequence, Tuple
 
 from pymysql import (
     DatabaseError as SQLDatabaseError, OperationalError as SQLOperationalError
 )
 
-from twisted.enterprise import adbapi
+from twisted.enterprise.adbapi import ConnectionPool
 from twisted.logger import Logger
 
 from ims.model import Ranger, RangerStatus
@@ -69,7 +70,10 @@ class DutyManagementSystem(object):
     personnelCacheIntervalMax = 60 * 60 * 12  # 12 hours
 
 
-    def __init__(self, host, database, username, password):
+    def __init__(
+        self, host: str, database: str,
+        username: Optional[str], password: Optional[str],
+    ) -> None:
         """
         @param host: The name of the database host to connect to.
         @type host: L{str}
@@ -88,14 +92,14 @@ class DutyManagementSystem(object):
         self.username = username
         self.password = password
 
-        self._personnel = ()
-        self._personnelLastUpdated = 0
+        self._personnel: Sequence[Ranger] = ()
+        self._personnelLastUpdated = 0.0
         self._dbpool = None
         self._busy = False
 
 
     @property
-    def dbpool(self):
+    def dbpool(self) -> ConnectionPool:
         """
         Set up a database pool if needed and return it.
         """
@@ -110,7 +114,7 @@ class DutyManagementSystem(object):
                 dbpool = DummyConnectionPool("Dummy")
 
             else:
-                dbpool = adbapi.ConnectionPool(
+                dbpool = ConnectionPool(
                     "pymysql",
                     host=self.host,
                     database=self.database,
@@ -126,7 +130,7 @@ class DutyManagementSystem(object):
         return self._dbpool
 
 
-    async def _queryPositions(self):
+    async def _queryPositions(self) -> Mapping[str, Position]:
         self.log.info(
             "Retrieving positions from Duty Management System..."
         )
@@ -143,7 +147,7 @@ class DutyManagementSystem(object):
         )
 
 
-    async def _queryRangers(self):
+    async def _queryRangers(self) -> Mapping[str, Ranger]:
         self.log.info(
             "Retrieving personnel from Duty Management System..."
         )
@@ -178,7 +182,7 @@ class DutyManagementSystem(object):
         )
 
 
-    async def _queryPositionRangerJoin(self):
+    async def _queryPositionRangerJoin(self) -> Iterable[Tuple[str, str]]:
         self.log.info(
             "Retrieving position-personnel relations from "
             "Duty Management System..."
@@ -191,7 +195,7 @@ class DutyManagementSystem(object):
         )
 
 
-    async def positions(self):
+    async def positions(self) -> Iterable[Position]:
         """
         Look up all positions.
         """
@@ -201,7 +205,7 @@ class DutyManagementSystem(object):
         return self._positions
 
 
-    async def personnel(self):
+    async def personnel(self) -> Iterable[Ranger]:
         """
         Look up all personnel.
         """
@@ -261,14 +265,14 @@ class Position(object):
     A Ranger position.
     """
 
-    def __init__(self, positionID, name):
+    def __init__(self, positionID: str, name: str) -> None:
         self.positionID = positionID
         self.name = name
-        self.members = set()
+        self.members: Set[Ranger] = set()
 
 
 
-def fullName(first, middle, last):
+def fullName(first: str, middle: str, last: str) -> str:
     """
     Compose parts of a name into a full name.
     """
@@ -280,7 +284,7 @@ def fullName(first, middle, last):
     return format.format(first=first, middle=middle, last=last)
 
 
-def statusFromID(strValue: str):
+def statusFromID(strValue: str) -> RangerStatus:
     return {
         "active":      RangerStatus.active,
         "alpha":       RangerStatus.alpha,

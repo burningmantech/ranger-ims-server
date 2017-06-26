@@ -41,7 +41,6 @@ mypy "$@"                                                                       
         -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: Argument .\+ of ".\+" incompatible with supertype ".\+"' \
         -e '^src/ims/ext/sqlite.py:[0-9:]\+: error: Argument 2 to "connect" has incompatible type "Connection";' \
         -e '^src/ims/ext/test/test_sqlite.py:[0-9:]\+: error: Argument 2 to "execute" of "Connection" has incompatible type "Optional\[Mapping\[Any, Any\]\]"; expected Iterable\[Any\]' \
-        -e '^src/ims/dms/.\+: error: Function is missing a type annotation' \
         -e '^src/ims/store/sqlite/_store.py:[0-9:]\+: error: <nothing> has no attribute "__iter__"' \
         > "${tmp}" || true;
 

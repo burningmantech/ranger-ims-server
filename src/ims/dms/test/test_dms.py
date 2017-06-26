@@ -18,6 +18,8 @@
 Tests for L{ims.dms}.
 """
 
+from typing import MutableSequence
+
 from twisted.internet.defer import fail, succeed
 
 from ims.ext.trial import TestCase
@@ -35,7 +37,7 @@ class DutyManagementSystemTests(TestCase):
     Tests for L{ims.dms.DutyManagementSystem}.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """
         Patch adbapi module.
         """
@@ -45,7 +47,7 @@ class DutyManagementSystemTests(TestCase):
         self.patch(ims.dms._dms, "adbapi", self.dummyADBAPI)
 
 
-    def dms(self):
+    def dms(self) -> DutyManagementSystem:
         """
         Gimme a DMS.
         """
@@ -62,7 +64,7 @@ class DutyManagementSystemTests(TestCase):
         )
 
 
-    def test_init(self):
+    def test_init(self) -> None:
         """
         Initialized state is as expected.
         """
@@ -74,7 +76,7 @@ class DutyManagementSystemTests(TestCase):
         self.assertEquals(dms.password, self.password)
 
 
-    def test_dbpool(self):
+    def test_dbpool(self) -> None:
         """
         L{DutyManagementSystem.dbpool} returns a DB pool.
         """
@@ -90,7 +92,7 @@ class DutyManagementSystemTests(TestCase):
         self.assertEquals(dbpool.connkw["password"], self.password)
 
 
-    def test_personnel(self):
+    def test_personnel(self) -> None:
         """
         L{DutyManagementSystem.personnel} returns L{Ranger} objects.
         """
@@ -110,7 +112,7 @@ class UtilTests(TestCase):
     Tests for L{ims.dms}.
     """
 
-    def test_fullName(self):
+    def test_fullName(self) -> None:
         """
         L{fullName} combines first/middle/last correctly.
         """
@@ -124,12 +126,12 @@ class DummyQuery(object):
     Represents a call to C{runQuery}.
     """
 
-    def __init__(self, args, kwargs):
+    def __init__(self, args: tuple, kwargs: dict) -> None:
         self.args = args
         self.kwargs = kwargs
 
 
-    def sql(self):
+    def sql(self) -> str:
         """
         Produce normalized SQL for the query.
         """
@@ -147,13 +149,13 @@ class DummyConnectionPool(object):
     Mock for L{adbapi.ConnectionPool}.
     """
 
-    def __init__(self, dbapiname, **connkw):
+    def __init__(self, dbapiname: str, **connkw: dict) -> None:
         self.dbapiname = dbapiname
         self.connkw = connkw
-        self.queries = []
+        self.queries: MutableSequence[DummyQuery] = []
 
 
-    def runQuery(self, *args, **kw):
+    def runQuery(self, *args: tuple, **kw: dict) -> None:
         query = DummyQuery(args, kw)
 
         self.queries.append(query)
@@ -190,7 +192,7 @@ class DummyADBAPI(object):
     Mock for L{adbapi}.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.ConnectionPool = DummyConnectionPool
 
 
