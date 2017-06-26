@@ -25,7 +25,7 @@ from pymysql import (
     DatabaseError as SQLDatabaseError, OperationalError as SQLOperationalError
 )
 
-from twisted.enterprise.adbapi import ConnectionPool
+from twisted.enterprise import adbapi
 from twisted.logger import Logger
 
 from ims.model import Ranger, RangerStatus
@@ -94,12 +94,12 @@ class DutyManagementSystem(object):
 
         self._personnel: Sequence[Ranger] = ()
         self._personnelLastUpdated = 0.0
-        self._dbpool = None
+        self._dbpool: Optional[adbapi.ConnectionPool] = None
         self._busy = False
 
 
     @property
-    def dbpool(self) -> ConnectionPool:
+    def dbpool(self) -> adbapi.ConnectionPool:
         """
         Set up a database pool if needed and return it.
         """
@@ -114,7 +114,7 @@ class DutyManagementSystem(object):
                 dbpool = DummyConnectionPool("Dummy")
 
             else:
-                dbpool = ConnectionPool(
+                dbpool = adbapi.ConnectionPool(
                     "pymysql",
                     host=self.host,
                     database=self.database,
