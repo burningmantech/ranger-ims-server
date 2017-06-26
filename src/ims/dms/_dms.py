@@ -53,6 +53,18 @@ class DatabaseError(DMSError):
 
 
 
+class Position(object):
+    """
+    A Ranger position.
+    """
+
+    def __init__(self, positionID: str, name: str) -> None:
+        self.positionID = positionID
+        self.name = name
+        self.members: Set[Ranger] = set()
+
+
+
 class DutyManagementSystem(object):
     """
     Duty Management System
@@ -257,18 +269,6 @@ class DutyManagementSystem(object):
             return self._personnel
         except AttributeError:
             raise DMSError("No personnel data loaded.")
-
-
-
-class Position(object):
-    """
-    A Ranger position.
-    """
-
-    def __init__(self, positionID: str, name: str) -> None:
-        self.positionID = positionID
-        self.name = name
-        self.members: Set[Ranger] = set()
 
 
 
