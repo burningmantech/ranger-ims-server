@@ -18,15 +18,14 @@
 Tests for L{tools.feed}.
 """
 
-import twisted.trial.unittest
-
+from ims.ext.trial import TestCase
 from ims.legacy.data import Location, RodGarettAddress
 
 from tools.feed import parseLocation
 
 
 
-class ParseLocationTests(twisted.trial.unittest.TestCase):
+class ParseLocationTests(TestCase):
     """
     Tests for L{tools.feed.parseLocation}
     """

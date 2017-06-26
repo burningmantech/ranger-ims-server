@@ -18,8 +18,9 @@
 Tests for L{ims.dms}.
 """
 
-from twisted.internet.defer import fail, inlineCallbacks, succeed
-from twisted.trial import unittest
+from twisted.internet.defer import fail, succeed
+
+from ims.ext.trial import TestCase
 
 from .. import DutyManagementSystem
 from .._dms import fullName
@@ -29,7 +30,7 @@ __all__ = ()
 
 
 
-class DutyManagementSystemTests(unittest.TestCase):
+class DutyManagementSystemTests(TestCase):
     """
     Tests for L{ims.dms.DutyManagementSystem}.
     """
@@ -89,14 +90,13 @@ class DutyManagementSystemTests(unittest.TestCase):
         self.assertEquals(dbpool.connkw["password"], self.password)
 
 
-    @inlineCallbacks
     def test_personnel(self):
         """
         L{DutyManagementSystem.personnel} returns L{Ranger} objects.
         """
         dms = self.dms()
 
-        personnel = yield dms.personnel()
+        personnel = self.successResultOf(dms.personnel())
 
         self.assertEquals(
             [p.handle for p in personnel],
@@ -105,7 +105,7 @@ class DutyManagementSystemTests(unittest.TestCase):
 
 
 
-class UtilTests(unittest.TestCase):
+class UtilTests(TestCase):
     """
     Tests for L{ims.dms}.
     """

@@ -18,8 +18,9 @@
 Tests for L{ims.config}.
 """
 
-import twisted.trial.unittest
 from twisted.python.filepath import FilePath
+
+from ims.ext.trial import TestCase
 
 from ..config import Configuration
 
@@ -32,7 +33,7 @@ sampleConfigFile = FilePath(__file__).sibling("test.conf")
 
 
 
-class ConfigurationTests(twisted.trial.unittest.TestCase):
+class ConfigurationTests(TestCase):
     """
     Tests for L{ims.config.Configuration}
     """
