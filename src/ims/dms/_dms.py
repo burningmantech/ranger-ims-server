@@ -71,7 +71,7 @@ class DutyManagementSystem(object):
 
 
     def __init__(
-        self, host: str, database: str,
+        self, host: Optional[str], database: Optional[str],
         username: Optional[str], password: Optional[str],
     ) -> None:
         """
