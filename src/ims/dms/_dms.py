@@ -27,7 +27,7 @@ from pymysql import (
 from twisted.enterprise import adbapi
 from twisted.logger import Logger
 
-from ims.model import Ranger
+from ims.model import Ranger, RangerStatus
 
 
 __all__ = (
@@ -164,8 +164,8 @@ class DutyManagementSystem(object):
                 Ranger(
                     handle=handle,
                     name=fullName(first, middle, last),
-                    status=status,
-                    email=email,
+                    status=statusFromID(status),
+                    email=(email,),
                     onSite=bool(onSite),
                     dmsID=int(dmsID),
                     password=password,
@@ -278,3 +278,17 @@ def fullName(first, middle, last):
         format = "{first} {last}"
 
     return format.format(first=first, middle=middle, last=last)
+
+
+def statusFromID(strValue: str):
+    return {
+        "active":      RangerStatus.active,
+        "alpha":       RangerStatus.alpha,
+        "bonked":      RangerStatus.bonked,
+        "deceased":    RangerStatus.deceased,
+        "inactive":    RangerStatus.inactive,
+        "prospective": RangerStatus.prospective,
+        "retired":     RangerStatus.retired,
+        "uberbonked":  RangerStatus.uberbonked,
+        "vintage":     RangerStatus.vintage,
+    }.get(strValue, RangerStatus.other)
