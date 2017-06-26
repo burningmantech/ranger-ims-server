@@ -25,7 +25,6 @@ from pymysql import (
 )
 
 from twisted.enterprise import adbapi
-from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.logger import Logger
 
 from ims.model import Ranger
@@ -127,33 +126,29 @@ class DutyManagementSystem(object):
         return self._dbpool
 
 
-    def _queryPositions(self):
+    async def _queryPositions(self):
         self.log.info(
             "Retrieving positions from Duty Management System..."
         )
 
-        d = self.dbpool.runQuery(
+        rows = await self.dbpool.runQuery(
             """
             select id, title from position where all_rangers = 0
             """
         )
 
-        def gotRows(rows):
-            return dict(
-                (id, Position(id, title.decode("utf-8")))
-                for (id, title) in rows
-            )
-
-        d.addCallback(gotRows)
-        return d
+        return dict(
+            (id, Position(id, title.decode("utf-8")))
+            for (id, title) in rows
+        )
 
 
-    def _queryRangers(self):
+    async def _queryRangers(self):
         self.log.info(
             "Retrieving personnel from Duty Management System..."
         )
 
-        d = self.dbpool.runQuery(
+        rows = await self.dbpool.runQuery(
             """
             select
                 id,
@@ -163,57 +158,50 @@ class DutyManagementSystem(object):
             """
         )
 
-        def gotRows(rows):
-            return dict(
-                (
-                    dmsID,
-                    Ranger(
-                        handle=handle,
-                        name=fullName(first, middle, last),
-                        status=status,
-                        email=email,
-                        onSite=bool(onSite),
-                        dmsID=int(dmsID),
-                        password=password,
-                    )
+        return dict(
+            (
+                dmsID,
+                Ranger(
+                    handle=handle,
+                    name=fullName(first, middle, last),
+                    status=status,
+                    email=email,
+                    onSite=bool(onSite),
+                    dmsID=int(dmsID),
+                    password=password,
                 )
-                for (
-                    dmsID, handle, first, middle, last, email,
-                    status, onSite, password,
-                ) in rows
             )
+            for (
+                dmsID, handle, first, middle, last, email,
+                status, onSite, password,
+            ) in rows
+        )
 
-        d.addCallback(gotRows)
-        return d
 
-
-    def _queryPositionRangerJoin(self):
+    async def _queryPositionRangerJoin(self):
         self.log.info(
             "Retrieving position-personnel relations from "
             "Duty Management System..."
         )
 
-        d = self.dbpool.runQuery(
+        return await self.dbpool.runQuery(
             """
             select person_id, position_id from person_position
             """
         )
-        return d
 
 
-    def positions(self):
+    async def positions(self):
         """
         Look up all positions.
         """
         # Call self.personnel() to make sure we have current data, then return
         # self._positions, which will have been set.
-        d = self.personnel()
-        d.addCallback(lambda _: self._positions)
-        return d
+        await self.personnel()
+        return self._positions
 
 
-    @inlineCallbacks
-    def personnel(self):
+    async def personnel(self):
         """
         Look up all personnel.
         """
@@ -224,9 +212,9 @@ class DutyManagementSystem(object):
             self._busy = True
             try:
                 try:
-                    rangersByID = yield self._queryRangers()
-                    positionsByID = yield self._queryPositions()
-                    join = yield self._queryPositionRangerJoin()
+                    rangersByID = await self._queryRangers()
+                    positionsByID = await self._queryPositions()
+                    join = await self._queryPositionRangerJoin()
 
                     for rangerID, positionID in join:
                         position = positionsByID.get(positionID, None)
@@ -262,7 +250,7 @@ class DutyManagementSystem(object):
                 self._busy = False
 
         try:
-            returnValue(self._personnel)
+            return self._personnel
         except AttributeError:
             raise DMSError("No personnel data loaded.")
 

@@ -30,7 +30,6 @@ from twext.who.index import (
 )
 from twext.who.util import ConstantsContainer
 
-from twisted.internet.defer import inlineCallbacks
 from twisted.logger import Logger
 from twisted.python.constants import NamedConstant, Names
 
@@ -117,11 +116,10 @@ class DirectoryService(BaseDirectoryService):
         self._loadRecordsFromPersonnel()
 
 
-    @inlineCallbacks
-    def _loadRecordsFromPersonnel(self):
+    async def _loadRecordsFromPersonnel(self):
         try:
-            personnel = yield self.dms.personnel()
-            positions = yield self.dms.positions()
+            personnel = await self.dms.personnel()
+            positions = await self.dms.positions()
         except DatabaseError as e:
             self.log.error(
                 "Unable to look up personnel data: {error}", error=e
