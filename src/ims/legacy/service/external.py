@@ -209,7 +209,7 @@ class ExternalMixIn(object):
             else:
                 tmp.moveTo(destination)
 
-        returnValue(destination)
+        return destination
 
 
     async def cachedResource(
@@ -221,13 +221,13 @@ class ExternalMixIn(object):
         filePath = await self.cacheFromURL(url, name)
 
         try:
-            returnValue(filePath.getContent())
+            return filePath.getContent()
         except (OSError, IOError) as e:
             self.log.error(
                 "Unable to open file {filePath.path}: {error}",
                 filePath=filePath, error=e,
             )
-            returnValue(self.notFoundResource(request))
+            return self.notFoundResource(request)
 
 
     async def cachedZippedResource(
@@ -252,24 +252,24 @@ class ExternalMixIn(object):
                 archivePath.remove()
             except (OSError, IOError):
                 pass
-            returnValue(self.notFoundResource(request))
+            return self.notFoundResource(request)
         except (OSError, IOError) as e:
             self.log.error(
                 "Unable to open zip archive {archive.path}: {error}",
                 archive=archivePath, error=e,
             )
-            returnValue(self.notFoundResource(request))
+            return self.notFoundResource(request)
 
         filePath = filePath.child(name)
         for name in names:
             filePath = filePath.child(name)
 
         try:
-            returnValue(filePath.getContent())
+            return filePath.getContent()
         except KeyError:
             self.log.error(
                 "File not found in ZIP archive: {filePath.path}",
                 filePath=filePath,
                 archive=archivePath,
             )
-            returnValue(self.notFoundResource(request))
+            return self.notFoundResource(request)
