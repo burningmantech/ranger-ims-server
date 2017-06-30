@@ -26,7 +26,6 @@ from typing import Any, Callable, Iterable, Optional
 from klein import Klein
 from klein.resource import KleinResource
 
-from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.logger import Logger
 from twisted.python.failure import Failure
 from twisted.python.url import URL
@@ -69,8 +68,7 @@ def route(
     def decorator(f: KleinRouteMethod) -> KleinRouteMethod:
         @application.route(*args, **kwargs)
         @wraps(f)
-        @inlineCallbacks
-        def wrapper(
+        async def wrapper(
             self: Any, request: IRequest, *args: Any, **kwargs: Any
         ) -> KleinRenderable:
             request.setHeader(
@@ -83,8 +81,7 @@ def route(
             # require authentication.
             self.authenticateRequest(request, optional=True)
 
-            response = yield f(self, request, *args, **kwargs)
-            returnValue(response)
+            return await f(self, request, *args, **kwargs)
 
         return wrapper
     return decorator

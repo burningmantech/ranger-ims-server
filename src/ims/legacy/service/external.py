@@ -21,7 +21,6 @@ Incident Management System cached external resources.
 from typing import Any
 from zipfile import BadZipfile
 
-from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.python.url import URL
 from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
@@ -90,7 +89,7 @@ class ExternalMixIn(object):
 
     @route(URLs.bootstrapBase.asText(), methods=("HEAD", "GET"), branch=True)
     @static
-    def bootstrapResource(self, request: IRequest) -> KleinRenderable:
+    async def bootstrapResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for Bootstrap.
         """
@@ -100,7 +99,7 @@ class ExternalMixIn(object):
         names = requestURL.path[len(URLs.bootstrapBase.path) - 1:]
 
         request.setHeader(HeaderName.contentType.value, ContentType.css.value)
-        return self.cachedZippedResource(
+        return await self.cachedZippedResource(
             request, self.bootstrapSourceURL, self.bootstrapVersion,
             self.bootstrapVersion, *names
         )
@@ -108,14 +107,14 @@ class ExternalMixIn(object):
 
     @route(URLs.jqueryJS.asText(), methods=("HEAD", "GET"))
     @static
-    def jqueryJSResource(self, request: IRequest) -> KleinRenderable:
+    async def jqueryJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for jQuery.
         """
         request.setHeader(
             HeaderName.contentType.value, ContentType.javascript.value
         )
-        return self.cachedResource(
+        return await self.cachedResource(
             request, self.jqueryJSSourceURL,
             "{}.min.js".format(self.jqueryVersion),
         )
@@ -123,12 +122,12 @@ class ExternalMixIn(object):
 
     @route(URLs.jqueryMap.asText(), methods=("HEAD", "GET"))
     @static
-    def jqueryMapResource(self, request: IRequest) -> KleinRenderable:
+    async def jqueryMapResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for the jQuery map file.
         """
         request.setHeader(HeaderName.contentType.value, ContentType.json.value)
-        return self.cachedResource(
+        return await self.cachedResource(
             request, self.jqueryMapSourceURL,
             "{}.min.map".format(self.jqueryVersion),
         )
@@ -138,7 +137,7 @@ class ExternalMixIn(object):
         URLs.dataTablesBase.asText(), methods=("HEAD", "GET"), branch=True
     )
     @static
-    def dataTablesResource(self, request: IRequest) -> KleinRenderable:
+    async def dataTablesResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for DataTables.
         """
@@ -148,7 +147,7 @@ class ExternalMixIn(object):
         names = requestURL.path[len(URLs.dataTablesBase.path) - 1:]
 
         request.setHeader(HeaderName.contentType.value, ContentType.css.value)
-        return self.cachedZippedResource(
+        return await self.cachedZippedResource(
             request, self.dataTablesSourceURL, self.dataTablesVersion,
             self.dataTablesVersion, *names
         )
@@ -156,14 +155,14 @@ class ExternalMixIn(object):
 
     @route(URLs.momentJS.asText(), methods=("HEAD", "GET"))
     @static
-    def momentJSResource(self, request: IRequest) -> KleinRenderable:
+    async def momentJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for moment.js.
         """
         request.setHeader(
             HeaderName.contentType.value, ContentType.javascript.value
         )
-        return self.cachedResource(
+        return await self.cachedResource(
             request, self.momentJSSourceURL,
             "{}.min.js".format(self.momentVersion),
         )
@@ -171,21 +170,20 @@ class ExternalMixIn(object):
 
     @route(URLs.lscacheJS.asText(), methods=("HEAD", "GET"))
     @static
-    def lscacheJSResource(self, request: IRequest) -> KleinRenderable:
+    async def lscacheJSResource(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for lscache.
         """
         request.setHeader(
             HeaderName.contentType.value, ContentType.javascript.value
         )
-        return self.cachedResource(
+        return await self.cachedResource(
             request, self.lscacheJSSourceURL,
             "{}.min.js".format(self.lscacheVersion),
         )
 
 
-    @inlineCallbacks
-    def cacheFromURL(self, url: URL, name: str) -> KleinRenderable:
+    async def cacheFromURL(self, url: URL, name: str) -> KleinRenderable:
         """
         Download a resource and cache it.
         """
@@ -199,7 +197,7 @@ class ExternalMixIn(object):
         if not destination.exists():
             tmp = destination.temporarySibling(extension=".tmp")
             try:
-                yield downloadPage(
+                await downloadPage(
                     url.asText().encode("utf-8"), tmp.open("w")
                 )
             except BaseException:
@@ -214,14 +212,13 @@ class ExternalMixIn(object):
         returnValue(destination)
 
 
-    @inlineCallbacks
-    def cachedResource(
+    async def cachedResource(
         self, request: IRequest, url: URL, name: str
     ) -> KleinRenderable:
         """
         Retrieve a cached resource.
         """
-        filePath = yield self.cacheFromURL(url, name)
+        filePath = await self.cacheFromURL(url, name)
 
         try:
             returnValue(filePath.getContent())
@@ -233,15 +230,14 @@ class ExternalMixIn(object):
             returnValue(self.notFoundResource(request))
 
 
-    @inlineCallbacks
-    def cachedZippedResource(
+    async def cachedZippedResource(
         self, request: IRequest, url: URL, archiveName: str, name: str,
         *names: Any,
     ) -> KleinRenderable:
         """
         Retrieve a cached resource from a zip file.
         """
-        archivePath = yield self.cacheFromURL(
+        archivePath = await self.cacheFromURL(
             url, "{0}.zip".format(archiveName)
         )
 
