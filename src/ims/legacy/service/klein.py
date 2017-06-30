@@ -68,7 +68,7 @@ def route(
     def decorator(f: KleinRouteMethod) -> KleinRouteMethod:
         @application.route(*args, **kwargs)
         @wraps(f)
-        async def wrapper(
+        def wrapper(
             self: Any, request: IRequest, *args: Any, **kwargs: Any
         ) -> KleinRenderable:
             request.setHeader(
@@ -81,7 +81,7 @@ def route(
             # require authentication.
             self.authenticateRequest(request, optional=True)
 
-            return await f(self, request, *args, **kwargs)
+            return f(self, request, *args, **kwargs)
 
         return wrapper
     return decorator
