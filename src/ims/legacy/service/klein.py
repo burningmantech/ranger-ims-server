@@ -218,9 +218,10 @@ class KleinService(object):
         """
         Respond with the given text.
         """
-        message = message
         request.setHeader(HeaderName.contentType.value, ContentType.text.value)
-        request.setHeader(HeaderName.etag.value, bytes(hash(message)))
+        request.setHeader(
+            HeaderName.etag.value, str(hash(message)).encode("ascii")
+        )
         return message.encode("utf-8")
 
 
