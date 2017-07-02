@@ -117,6 +117,7 @@ install_requirements = [
     "attrs",
     "arrow",
     "Twisted>=16.6.0",
+    "pyOpenSSL",
     "klein",
     "PyMySQL",
     "twextpy",
