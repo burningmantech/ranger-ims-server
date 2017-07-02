@@ -93,7 +93,7 @@ class ExternalMixIn(object):
         """
         Endpoint for Bootstrap.
         """
-        requestURL = URL.fromText(request.uri)
+        requestURL = URL.fromText(request.uri.decode("ascii"))
 
         # Remove URL prefix
         names = requestURL.path[len(URLs.bootstrapBase.path) - 1:]
@@ -141,7 +141,7 @@ class ExternalMixIn(object):
         """
         Endpoint for DataTables.
         """
-        requestURL = URL.fromText(request.uri)
+        requestURL = URL.fromText(request.uri.decode("ascii"))
 
         # Remove URL prefix
         names = requestURL.path[len(URLs.dataTablesBase.path) - 1:]
