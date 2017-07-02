@@ -7,8 +7,8 @@
     arrow==0.10.0
 
     Twisted==17.1.0
-        zope.interface==4.4.1
-            setuptools==35.0.2
+        zope.interface==4.4.2
+            setuptools==36.0.1
 
     klein==17.2.0
         #twisted ...
