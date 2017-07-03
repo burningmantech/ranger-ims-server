@@ -74,7 +74,7 @@ class DutyManagementSystem(object):
     This class connects to an external system to get data.
     """
 
-    log = Logger()
+    _log = Logger()
 
     # DMS data changes rarely, so hour intervals between refreshing data should
     # be fine.
@@ -144,8 +144,8 @@ class DutyManagementSystem(object):
         return self._dbpool
 
 
-    async def _queryPositions(self) -> Mapping[str, Position]:
-        self.log.info(
+    async def _queryPositionsByID(self) -> Mapping[str, Position]:
+        self._log.info(
             "Retrieving positions from Duty Management System..."
         )
 
@@ -161,8 +161,8 @@ class DutyManagementSystem(object):
         )
 
 
-    async def _queryRangers(self) -> Mapping[str, Ranger]:
-        self.log.info(
+    async def _queryRangersByID(self) -> Mapping[str, Ranger]:
+        self._log.info(
             "Retrieving personnel from Duty Management System..."
         )
 
@@ -197,7 +197,7 @@ class DutyManagementSystem(object):
 
 
     async def _queryPositionRangerJoin(self) -> Iterable[Tuple[str, str]]:
-        self.log.info(
+        self._log.info(
             "Retrieving position-personnel relations from "
             "Duty Management System..."
         )
@@ -230,8 +230,8 @@ class DutyManagementSystem(object):
             self._busy = True
             try:
                 try:
-                    rangersByID = await self._queryRangers()
-                    positionsByID = await self._queryPositions()
+                    rangersByID = await self._queryRangersByID()
+                    positionsByID = await self._queryPositionsByID()
                     join = await self._queryPositionRangerJoin()
 
                     for rangerID, positionID in join:
@@ -252,12 +252,12 @@ class DutyManagementSystem(object):
                     self._dbpool = None
 
                     if isinstance(e, (SQLDatabaseError, SQLOperationalError)):
-                        self.log.warn(
+                        self._log.warn(
                             "Unable to load personnel data from DMS: {error}",
                             error=e
                         )
                     else:
-                        self.log.failure(
+                        self._log.failure(
                             "Unable to load personnel data from DMS"
                         )
 
