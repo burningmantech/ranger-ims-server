@@ -22,6 +22,7 @@ from typing import Any
 from zipfile import BadZipfile
 
 from twisted.python.url import URL
+from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
 from twisted.web.iweb import IRequest
@@ -183,7 +184,7 @@ class ExternalMixIn(object):
         )
 
 
-    async def cacheFromURL(self, url: URL, name: str) -> KleinRenderable:
+    async def cacheFromURL(self, url: URL, name: str) -> FilePath:
         """
         Download a resource and cache it.
         """
