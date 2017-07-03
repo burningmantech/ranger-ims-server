@@ -114,13 +114,12 @@ package_data = dict(
 setup_requirements = []
 
 install_requirements = [
-    "attrs",
     "arrow",
-    "Twisted>=16.6.0",
-    "pyOpenSSL",
+    "attrs",
     "klein",
     "PyMySQL",
     "twextpy",
+    "Twisted[TLS,http2]>=16.6.0",
 ]
 
 extras_requirements = {}
