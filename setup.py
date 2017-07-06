@@ -118,6 +118,7 @@ setup_requirements = []
 install_requirements = [
     "arrow",
     "attrs",
+    "hyperlink",
     "klein",
     "PyMySQL",
     "twextpy",
