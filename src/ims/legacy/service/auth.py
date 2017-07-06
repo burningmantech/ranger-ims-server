@@ -106,7 +106,7 @@ class User(object):
             self._log.error("Invalid DMS password for user {user}", user=self)
             return False
 
-        hashed = sha1(salt + password).encode("utf-8").hexdigest()
+        hashed = sha1((salt + password).encode("utf-8")).hexdigest()
 
         return hashed == hashValue
 
