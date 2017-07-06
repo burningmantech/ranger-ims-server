@@ -90,16 +90,12 @@ class DutyManagementSystem(object):
     ) -> None:
         """
         @param host: The name of the database host to connect to.
-        @type host: L{str}
 
         @param database: The name of the database to access.
-        @type database: L{str}
 
         @param username: The user name to use to access the database.
-        @type username: L{str}
 
         @param password: The password to use to access the database.
-        @type password: L{str}
         """
         self.host     = host
         self.database = database
