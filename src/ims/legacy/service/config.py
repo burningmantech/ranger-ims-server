@@ -28,7 +28,7 @@ from typing import Optional, Set, Tuple, cast
 from twisted.logger import Logger
 from twisted.python.filepath import FilePath
 
-from ims.dms import DirectoryService, DutyManagementSystem
+from ims.dms import DutyManagementSystem
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.store.sqlite import DataStore
 
@@ -220,7 +220,7 @@ class Configuration(object):
             user=self.DMSUsername, host=self.DMSHost, db=self.DMSDatabase,
         )
 
-        masterKey = valueFromConfig("Core", "MasterKey", None)
+        self.masterKey = valueFromConfig("Core", "MasterKey", None)
 
         #
         # Persist some objects
@@ -232,8 +232,6 @@ class Configuration(object):
             username=self.DMSUsername,
             password=self.DMSPassword,
         )
-
-        self.directory = DirectoryService(self.dms, masterKey=masterKey)
 
         self.storage = DataStore(Path(self.DatabaseFile.path))
 

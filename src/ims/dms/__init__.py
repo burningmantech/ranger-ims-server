@@ -18,7 +18,6 @@
 Duty Management System integration.
 """
 
-from ._directory import DirectoryService
 from ._dms import DMSError, DatabaseError, DutyManagementSystem
 
 
@@ -26,5 +25,4 @@ __all__ = (
     "DMSError",
     "DatabaseError",
     "DutyManagementSystem",
-    "DirectoryService",
 )

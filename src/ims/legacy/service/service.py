@@ -56,7 +56,6 @@ class WebService(KleinService, AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
         self.config = config
         self.storage = config.storage
         self.dms = config.dms
-        self.directory = config.directory
 
         self.storeObserver = DataStoreEventSourceLogObserver()
         globalLogPublisher.addObserver(self.storeObserver)

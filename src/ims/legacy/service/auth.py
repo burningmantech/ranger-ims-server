@@ -18,16 +18,19 @@
 Incident Management System authorization and authentication.
 """
 
-from typing import Container, Optional
+from hashlib import sha1
+from typing import Container, Optional, Sequence
 
-from twext.who.idirectory import FieldName, IDirectoryRecord, RecordType
+from attr import attrib, attrs
+from attr.validators import instance_of
 
+from twisted.logger import Logger
 from twisted.python.constants import FlagConstant, Flags
 from twisted.python.url import URL
 from twisted.web.iweb import IRequest
 
 from ims.ext.klein import KleinRenderable
-from ims.model import Event
+from ims.model import Event, Ranger
 
 from .error import NotAuthenticatedError, NotAuthorizedError
 from .klein import route
@@ -70,14 +73,51 @@ Authorization.all = (
 
 
 
+@attrs(frozen=True)
+class User(object):
+    """
+    Application user.
+    """
+
+    _log = Logger()
+
+
+    ranger = attrib(validator=instance_of(Ranger))  # type: Ranger
+
+
+    @property
+    def shortNames(self) -> Sequence[str]:
+        return (self.ranger.handle,)
+
+
+    def verifyPlaintextPassword(self, password: str) -> bool:
+        hashedPassword = self.ranger.password
+
+        if hashedPassword is None:
+            return False
+
+        # Reference Clubhouse code: standard/controllers/security.php#L457
+        try:
+            # DMS password field is a salt and a SHA-1 hash (hex digest),
+            # separated by ":".
+            salt, hashValue = hashedPassword.split(":")
+        except ValueError:
+            # Invalid password format, punt
+            self._log.error("Invalid DMS password for user {user}", user=self)
+            return False
+
+        hashed = sha1(salt + password).encode("utf-8").hexdigest()
+
+        return hashed == hashValue
+
+
+
 class AuthMixIn(object):
     """
     Mix-in for authentication and authorization support.
     """
 
-    async def verifyCredentials(
-        self, user: IDirectoryRecord, password: str
-    ) -> bool:
+    async def verifyCredentials(self, user: User, password: str) -> bool:
         """
         Verify a password for the given user.
         """
@@ -85,7 +125,13 @@ class AuthMixIn(object):
             authenticated = False
         else:
             try:
-                authenticated = await user.verifyPlaintextPassword(password)
+                if (
+                    self.config.masterKey is not None and
+                    password == self.config.masterKey
+                ):
+                    return True
+
+                authenticated = user.verifyPlaintextPassword(password)
             except Exception:
                 self.log.failure("Unable to check password")
                 authenticated = False
@@ -118,14 +164,12 @@ class AuthMixIn(object):
 
 
     async def authorizationsForUser(
-        self, user: IDirectoryRecord, event: Optional[Event]
+        self, user: User, event: Optional[Event]
     ) -> Authorization:
         """
         Look up the authorizations that a user has for a given event.
         """
-        async def matchACL(
-            user: IDirectoryRecord, acl: Container[str]
-        ) -> bool:
+        async def matchACL(user: User, acl: Container[str]) -> bool:
             if "*" in acl:
                 return True
 
@@ -227,31 +271,18 @@ class AuthMixIn(object):
             raise authFailure
 
 
-    def lookupUserName(self, username: str) -> IDirectoryRecord:
+    async def lookupUserName(self, username: str) -> Optional[User]:
         """
         Look up the user record for a user short name.
         """
-        return self.directory.recordWithShortName(RecordType.user, username)
-
-
-    async def lookupUserEmail(self, email: str) -> IDirectoryRecord:
-        """
-        Look up the user record for an email address.
-        """
-        user = None
-
-        # Try lookup by email address
-        for record in (await self.directory.recordsWithFieldValue(
-            FieldName.emailAddresses, email
-        )):
-            if user is not None:
-                # More than one record with the same email address.
-                # We can't know which is the right one, so none is.
-                user = None
+        # FIXME: a hash would be better (eg. rangersByHandle)
+        for ranger in await self.dms.personnel():
+            if ranger.handle == username or username in ranger.email:
                 break
-            user = record
+        else:
+            return None
 
-        return user
+        return User(ranger=ranger)
 
 
     @route(URLs.login.asText(), methods=("POST",))
@@ -266,8 +297,6 @@ class AuthMixIn(object):
             user = None
         else:
             user = await self.lookupUserName(username)
-            if user is None:
-                user = await self.lookupUserEmail(username)
 
         if user is None:
             self.log.debug(
