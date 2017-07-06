@@ -264,8 +264,10 @@ class Element(BaseElement):
 
 
     @renderer
-    def _events(self, request, tag, reverse_order=False):
-        events = sorted(event.id for event in self.service.storage.events())
+    async def _events(self, request, tag, reverse_order=False):
+        events = sorted(
+            event.id for event in await self.service.storage.events()
+        )
 
         if reverse_order:
             events = reversed(events)
