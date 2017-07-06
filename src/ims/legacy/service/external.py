@@ -21,7 +21,8 @@ Incident Management System cached external resources.
 from typing import Any
 from zipfile import BadZipfile
 
-from twisted.python.url import URL
+from hyperlink import URL
+
 from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
