@@ -121,6 +121,7 @@ install_requirements = [
     "hyperlink",
     "klein",
     "PyMySQL",
+    "twextpy",
     "Twisted[TLS,http2]>17.5.0",
 ]
 
