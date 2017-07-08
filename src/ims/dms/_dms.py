@@ -151,10 +151,7 @@ class DutyManagementSystem(object):
             """
         )
 
-        return dict(
-            (id, Position(id, title.decode("utf-8")))
-            for (id, title) in rows
-        )
+        return dict((id, Position(id, title)) for (id, title) in rows)
 
 
     async def _queryRangersByID(self) -> Mapping[str, Ranger]:
