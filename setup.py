@@ -102,6 +102,7 @@ package_data = dict(
     ims = [
         "legacy/element/*.css",
         "legacy/element/*.js",
+        "legacy/element/*.png",
         "legacy/element/*.xhtml",
         "legacy/service/test/*.conf",
         "store/sqlite/schema.sqlite",
