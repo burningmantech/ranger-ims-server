@@ -10,7 +10,6 @@
 
     #Twisted[TLS]==17.5.0
     git+https://github.com/twisted/twisted.git#egg=Twisted
-    --editable /Users/wsanchez/Developer/Twisted/twisted
         zope.interface==4.4.2
             setuptools==36.0.1
         pyOpenSSL==17.1.0
