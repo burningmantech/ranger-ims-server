@@ -82,7 +82,8 @@ class User(object):
     _log = Logger()
 
 
-    ranger = attrib(validator=instance_of(Ranger))  # type: Ranger
+    ranger: Ranger = attrib(validator=instance_of(Ranger))
+    groups: Sequence[str] = attrib(validator=instance_of(tuple))
 
 
     @property
@@ -163,7 +164,7 @@ class AuthMixIn(object):
             raise NotAuthenticatedError()
 
 
-    async def authorizationsForUser(
+    def authorizationsForUser(
         self, user: User, event: Optional[Event]
     ) -> Authorization:
         """
@@ -174,11 +175,11 @@ class AuthMixIn(object):
                 return True
 
             for shortName in user.shortNames:
-                if "person:{}".format(shortName) in acl:
+                if ("person:" + shortName) in acl:
                     return True
 
-            for group in (await user.groups()):
-                if "position:{}".format(group.fullNames[0]) in acl:
+            for group in user.groups:
+                if ("position:" + group) in acl:
                     return True
 
             return False
@@ -194,11 +195,11 @@ class AuthMixIn(object):
                     authorizations |= Authorization.imsAdmin
 
                 if event is not None:
-                    if (await matchACL(user, self.storage.writers(event))):
+                    if matchACL(user, self.storage.writers(event)):
                         authorizations |= Authorization.writeIncidents
                         authorizations |= Authorization.readIncidents
                     else:
-                        if (await matchACL(user, self.storage.readers(event))):
+                        if matchACL(user, self.storage.readers(event)):
                             authorizations |= Authorization.readIncidents
 
         self.log.debug(
@@ -276,13 +277,26 @@ class AuthMixIn(object):
         Look up the user record for a user short name.
         """
         # FIXME: a hash would be better (eg. rangersByHandle)
-        for ranger in await self.dms.personnel():
-            if ranger.handle == username or username in ranger.email:
+        rangers = tuple(await self.dms.personnel())
+
+        for ranger in rangers:
+            if ranger.handle == username:
                 break
         else:
-            return None
+            for ranger in rangers:
+                if username in ranger.email:
+                    break
+            else:
+                return None
 
-        return User(ranger=ranger)
+        positions = tuple(await self.dms.positions())
+
+        groups = tuple(
+            position.name for position in positions
+            if ranger in position.members
+        )
+
+        return User(ranger=ranger, groups=groups)
 
 
     @route(URLs.login.asText(), methods=("POST",))
