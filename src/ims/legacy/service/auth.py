@@ -104,12 +104,16 @@ class User(object):
             salt, hashValue = hashedPassword.split(":")
         except ValueError:
             # Invalid password format, punt
-            self._log.error("Invalid DMS password for user {user}", user=self)
+            self._log.error("Invalid password for {user}", user=self)
             return False
 
         hashed = sha1((salt + password).encode("utf-8")).hexdigest()
 
         return hashed == hashValue
+
+
+    def __str__(self) -> str:
+        return str(self.ranger)
 
 
 

@@ -55,6 +55,10 @@ class RangerStatus(Enum):
     other = -1
 
 
+    def __str__(self) -> str:
+        return self.name
+
+
     def __repr__(self) -> str:
         return "{}[{!r}]".format(self.__class__.__name__, self.name)
 
@@ -92,3 +96,20 @@ class Ranger(object):
     password = attrib(
         validator=optional(instance_of(str))
     )  # type: Optional[str]
+
+
+    def __str__(self) -> str:
+        return "{} {} ({})".format(
+            {
+                RangerStatus.prospective: "Prospective",
+                RangerStatus.alpha:       "Alpha",
+                RangerStatus.bonked:      "Bonked Prospective",
+                RangerStatus.active:      "Active Ranger",
+                RangerStatus.inactive:    "Inactive Ranger",
+                RangerStatus.retired:     "Retired Ranger",
+                RangerStatus.uberbonked:  "Uberbonked Participant",
+                RangerStatus.vintage:     "Vintage Ranger",
+                RangerStatus.deceased:    "Late Ranger",
+            }.get(self.status, "(Unknown Person Type)"),
+            self.handle, self.name,
+        )
