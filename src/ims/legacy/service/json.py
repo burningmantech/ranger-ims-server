@@ -68,7 +68,7 @@ class JSONMixIn(object):
         Ping (health check) endpoint.
         """
         ack = b'"ack"'
-        return self.jsonBytes(request, ack, bytes(hash(ack)))
+        return self.jsonBytes(request, ack, str(hash(ack)))
 
 
     @route(URLs.personnel.asText(), methods=("HEAD", "GET"))
@@ -101,7 +101,7 @@ class JSONMixIn(object):
                 ).encode("utf-8")
                 for ranger in personnel
             ),
-            bytes(hash(personnel)),
+            str(hash(personnel)),
         )
 
 
@@ -189,7 +189,7 @@ class JSONMixIn(object):
         )
 
         data = self.config.locationsJSONBytes
-        return self.jsonBytes(request, data, bytes(hash(data)))
+        return self.jsonBytes(request, data, str(hash(data)))
 
 
     @route(URLs.incidents.asText(), methods=("HEAD", "GET"))
