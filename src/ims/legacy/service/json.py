@@ -76,7 +76,7 @@ class JSONMixIn(object):
         """
         Personnel endpoint.
         """
-        await self.authorizeRequest(
+        self.authorizeRequest(
             request, None, Authorization.readPersonnel
         )
 
@@ -133,7 +133,7 @@ class JSONMixIn(object):
         """
         Incident types editing endpoint.
         """
-        await self.authorizeRequest(
+        self.authorizeRequest(
             request, None, Authorization.imsAdmin
         )
 
@@ -182,7 +182,7 @@ class JSONMixIn(object):
         """
         event = Event(eventID)
 
-        await self.authorizeRequest(
+        self.authorizeRequest(
             request, event, Authorization.readIncidents
         )
 
@@ -199,7 +199,7 @@ class JSONMixIn(object):
         """
         event = Event(eventID)
 
-        await self.authorizeRequest(
+        self.authorizeRequest(
             request, event, Authorization.readIncidents
         )
 
@@ -222,7 +222,7 @@ class JSONMixIn(object):
         """
         event = Event(eventID)
 
-        await self.authorizeRequest(
+        self.authorizeRequest(
             request, event, Authorization.writeIncidents
         )
 
@@ -288,7 +288,7 @@ class JSONMixIn(object):
         """
         event = Event(eventID)
 
-        await self.authorizeRequest(
+        self.authorizeRequest(
             request, event, Authorization.readIncidents
         )
 
@@ -314,7 +314,7 @@ class JSONMixIn(object):
         """
         event = Event(eventID)
 
-        await self.authorizeRequest(
+        self.authorizeRequest(
             request, event, Authorization.writeIncidents
         )
 
@@ -449,7 +449,7 @@ class JSONMixIn(object):
         if eventID is None and incidentNumber is None:
             attachedTo = None
         elif eventID == incidentNumber == "":
-            await self.authorizeRequest(
+            self.authorizeRequest(
                 request, None, Authorization.readIncidentReports
             )
             attachedTo = (None, None)
@@ -466,7 +466,7 @@ class JSONMixIn(object):
                 return self.invalidQueryResource(
                     request, "incident", incidentNumber
                 )
-            await self.authorizeRequest(
+            self.authorizeRequest(
                 request, event, Authorization.readIncidents
             )
             attachedTo = (event, incidentNumber)
@@ -489,7 +489,7 @@ class JSONMixIn(object):
         """
         New incident report endpoint.
         """
-        await self.authorizeRequest(
+        self.authorizeRequest(
             request, None, Authorization.writeIncidentReports
         )
 
@@ -557,7 +557,7 @@ class JSONMixIn(object):
         except ValueError:
             return self.notFoundResource(request)
 
-        await self.authorizeRequestForIncidentReport(request, number)
+        self.authorizeRequestForIncidentReport(request, number)
 
         incidentReport = self.storage.incidentReport(number)
         text = jsonTextFromObject(jsonObjectFromModelObject(incidentReport))
@@ -574,7 +574,7 @@ class JSONMixIn(object):
         """
         Incident report edit endpoint.
         """
-        await self.authorizeRequest(
+        self.authorizeRequest(
             request, None, Authorization.writeIncidentReports
         )
 
@@ -689,7 +689,7 @@ class JSONMixIn(object):
         """
         Admin access control endpoint.
         """
-        await self.authorizeRequest(request, None, Authorization.imsAdmin)
+        self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         acl = {}
         for event in self.storage.events():
@@ -707,7 +707,7 @@ class JSONMixIn(object):
         """
         Admin access control edit endpoint.
         """
-        await self.authorizeRequest(request, None, Authorization.imsAdmin)
+        self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         edits = objectFromJSONBytesIO(request.content)
 
@@ -726,7 +726,7 @@ class JSONMixIn(object):
         """
         Street list endpoint.
         """
-        await self.authorizeRequest(request, None, Authorization.imsAdmin)
+        self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         streets = {}
         for event in self.storage.events():
@@ -739,7 +739,7 @@ class JSONMixIn(object):
         """
         Street list edit endpoint.
         """
-        await self.authorizeRequest(request, None, Authorization.imsAdmin)
+        self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         edits = objectFromJSONBytesIO(request.content)
 
