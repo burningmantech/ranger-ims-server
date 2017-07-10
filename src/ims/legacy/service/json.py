@@ -299,12 +299,13 @@ class JSONMixIn(object):
         except ValueError:
             return self.notFoundResource(request)
 
-        incident = await self.storage.incident(event, number)
-        text = jsonTextFromObject(jsonObjectFromModelObject(incident))
-
-        return (
-            self.jsonBytes(request, text.encode("utf-8"), incident.version)
+        incident = await self.storage.incidentWithNumber(event, number)
+        data = (
+            jsonTextFromObject(jsonObjectFromModelObject(incident))
+            .encode("utf-8")
         )
+
+        return self.jsonBytes(request, data)
 
 
     @route(URLs.incidentNumber.asText(), methods=("POST",))
@@ -568,9 +569,7 @@ class JSONMixIn(object):
         incidentReport = await self.storage.incidentReport(number)
         text = jsonTextFromObject(jsonObjectFromModelObject(incidentReport))
 
-        return self.jsonBytes(
-            request, text.encode("utf-8"), incidentReport.version()
-        )
+        return self.jsonBytes(request, text.encode("utf-8"))
 
 
     @route(URLs.incidentReport.asText(), methods=("POST",))

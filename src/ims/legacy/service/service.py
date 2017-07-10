@@ -18,6 +18,7 @@
 Incident Management System web service.
 """
 
+from hashlib import sha1
 from typing import Any, Iterable, Optional
 from typing.io import BinaryIO
 from zipfile import BadZipfile
@@ -98,8 +99,9 @@ class WebService(KleinService, AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
         Respond with encoded JSON text.
         """
         request.setHeader(HeaderName.contentType.value, ContentType.json.value)
-        if etag is not None:
-            request.setHeader(HeaderName.etag.value, etag)
+        if etag is None:
+            etag = sha1(data).hexdigest()
+        request.setHeader(HeaderName.etag.value, etag)
         return data
 
 
