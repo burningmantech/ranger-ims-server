@@ -214,7 +214,7 @@ class AuthMixIn(object):
         return authorizations
 
 
-    async def authorizeRequest(
+    def authorizeRequest(
         self, request: IRequest, event: Optional[Event],
         requiredAuthorizations: Authorization,
     ) -> None:
@@ -224,7 +224,7 @@ class AuthMixIn(object):
         """
         self.authenticateRequest(request)
 
-        userAuthorizations = await self.authorizationsForUser(
+        userAuthorizations = self.authorizationsForUser(
             request.user, event
         )
         request.authorizations = userAuthorizations
@@ -241,7 +241,7 @@ class AuthMixIn(object):
             raise NotAuthorizedError()
 
 
-    async def authorizeRequestForIncidentReport(
+    def authorizeRequestForIncidentReport(
         self, request: IRequest, number: int
     ) -> None:
         """
@@ -258,7 +258,7 @@ class AuthMixIn(object):
             # Because it's possible for multiple incidents to be attached, if
             # one fails, keep trying the others in case they allow it.
             try:
-                await self.authorizeRequest(
+                self.authorizeRequest(
                     request, event, Authorization.readIncidents
                 )
             except NotAuthorizedError as e:
@@ -268,7 +268,7 @@ class AuthMixIn(object):
                 break
         else:
             # No incident attached
-            await self.authorizeRequest(
+            self.authorizeRequest(
                 request, None, Authorization.readIncidentReports
             )
 
