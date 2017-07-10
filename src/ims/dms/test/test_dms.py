@@ -18,6 +18,7 @@
 Tests for L{ims.dms}.
 """
 
+from hashlib import sha1
 from typing import MutableSequence
 
 from twisted.internet.defer import fail, succeed
@@ -164,6 +165,13 @@ class DummyConnectionPool(object):
 
         sql = query.sql()
 
+        def hashPassword(person):
+            listPerson = list(person)
+            listPerson[8] = (
+                ":" + sha1(listPerson[8].encode("utf-8")).hexdigest()
+            )
+            return iter(listPerson)
+
         if sql == (
             "select "
             "id, callsign, first_name, mi, last_name, "
@@ -171,7 +179,7 @@ class DummyConnectionPool(object):
             "from person where status in "
             "('active', 'inactive', 'vintage')"
         ):
-            return succeed(iter(cannedPersonnel))
+            return succeed(hashPassword(p) for p in cannedPersonnel)
 
         if sql == (
             "select id, title from position where all_rangers = 0"
