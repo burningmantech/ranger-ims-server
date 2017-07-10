@@ -303,3 +303,18 @@ def hashPassword(password: str, salt: Optional[str] = None) -> str:
         salt = urandom(16).decode("charmap")
 
     return salt + ":" + sha1(password.encode("utf-8")).hexdigest()
+
+
+def verifyPassword(password: str, hashedPassword: str) -> bool:
+    """
+    Verify a password against a hashed password.
+    """
+    # Reference Clubhouse code: standard/controllers/security.php#L457
+
+    # DMS password field is a salt and a SHA-1 hash (hex digest), separated by
+    # ":".
+    salt, hashValue = hashedPassword.split(":")
+
+    hashed = sha1((salt + password).encode("utf-8")).hexdigest()
+
+    return hashed == hashValue

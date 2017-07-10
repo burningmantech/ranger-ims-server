@@ -18,7 +18,6 @@
 Incident Management System authorization and authentication.
 """
 
-from hashlib import sha1
 from typing import Container, Optional, Sequence
 
 from attr import attrib, attrs
@@ -29,6 +28,7 @@ from twisted.python.constants import FlagConstant, Flags
 from twisted.python.url import URL
 from twisted.web.iweb import IRequest
 
+from ims.dms import verifyPassword
 from ims.ext.klein import KleinRenderable
 from ims.model import Event, Ranger
 
@@ -91,27 +91,6 @@ class User(object):
         return (self.ranger.handle,)
 
 
-    def verifyPlaintextPassword(self, password: str) -> bool:
-        hashedPassword = self.ranger.password
-
-        if hashedPassword is None:
-            return False
-
-        # Reference Clubhouse code: standard/controllers/security.php#L457
-        try:
-            # DMS password field is a salt and a SHA-1 hash (hex digest),
-            # separated by ":".
-            salt, hashValue = hashedPassword.split(":")
-        except ValueError:
-            # Invalid password format, punt
-            self._log.error("Invalid password for {user}", user=self)
-            return False
-
-        hashed = sha1((salt + password).encode("utf-8")).hexdigest()
-
-        return hashed == hashValue
-
-
     def __str__(self) -> str:
         return str(self.ranger)
 
@@ -136,7 +115,11 @@ class AuthMixIn(object):
                 ):
                     return True
 
-                authenticated = user.verifyPlaintextPassword(password)
+                hashedPassword = user.ranger.password
+                if hashedPassword is None:
+                    return False
+
+                authenticated = verifyPassword(password, hashedPassword)
             except Exception:
                 self.log.failure("Unable to check password")
                 authenticated = False
