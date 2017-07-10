@@ -84,7 +84,7 @@ class JSONMixIn(object):
         return self.jsonStream(request, stream, etag)
 
 
-    async def personnelData(self) -> Tuple[bytes, bytes]:
+    async def personnelData(self) -> Tuple[bytes, str]:
         """
         Data for personnel endpoint.
         """
