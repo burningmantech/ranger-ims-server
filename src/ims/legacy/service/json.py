@@ -20,7 +20,7 @@ Incident Management System JSON API endpoints.
 
 from datetime import datetime as DateTime, timezone as TimeZone
 from enum import Enum
-from typing import Any, Callable, Mapping, Optional, Tuple
+from typing import Any, Awaitable, Callable, Mapping, Optional, Tuple
 
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
@@ -106,7 +106,9 @@ class JSONMixIn(object):
 
 
     @route(URLs.incidentTypes.asText(), methods=("HEAD", "GET"))
-    def incidentTypesResource(self, request: IRequest) -> KleinRenderable:
+    async def incidentTypesResource(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
         Incident types endpoint.
         """
@@ -115,7 +117,7 @@ class JSONMixIn(object):
         hidden = self.queryValue(request, "hidden") == "true"
 
         incidentTypes = tuple(
-            self.storage.allIncidentTypes(includeHidden=hidden)
+            await self.storage.allIncidentTypes(includeHidden=hidden)
         )
 
         stream = self.buildJSONArray(
@@ -154,27 +156,27 @@ class JSONMixIn(object):
                     request, "add: expected a list."
                 )
             for incidentType in adds:
-                self.storage.createIncidentType(incidentType)
+                await self.storage.createIncidentType(incidentType)
 
         if show:
             if type(show) is not list:
                 return self.badRequestResource(
                     request, "show: expected a list."
                 )
-            self.storage.showIncidentTypes(show)
+            await self.storage.showIncidentTypes(show)
 
         if hide:
             if type(hide) is not list:
                 return self.badRequestResource(
                     request, "hide: expected a list."
                 )
-            self.storage.hideIncidentTypes(hide)
+            await self.storage.hideIncidentTypes(hide)
 
         return self.noContentResource(request)
 
 
     @route(URLs.locations.asText(), methods=("HEAD", "GET"))
-    async def locationsResource(
+    def locationsResource(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
         """
@@ -207,7 +209,7 @@ class JSONMixIn(object):
             jsonTextFromObject(
                 jsonObjectFromModelObject(incident)
             ).encode("utf-8")
-            for incident in self.storage.incidents(event)
+            for incident in await self.storage.incidents(event)
         )
 
         return self.jsonStream(request, stream, None)
@@ -259,7 +261,7 @@ class JSONMixIn(object):
                 .format(incident.created, now)
             )
 
-        self.storage.createIncident(event, incident, author)
+        await self.storage.createIncident(event, incident, author)
 
         assert incident.number is not None
 
@@ -297,7 +299,7 @@ class JSONMixIn(object):
         except ValueError:
             return self.notFoundResource(request)
 
-        incident = self.storage.incident(event, number)
+        incident = await self.storage.incident(event, number)
         text = jsonTextFromObject(jsonObjectFromModelObject(incident))
 
         return (
@@ -348,9 +350,9 @@ class JSONMixIn(object):
                 request, "Incident created time may not be modified"
             )
 
-        def applyEdit(
+        async def applyEdit(
             json: Mapping[str, Any], key: Enum,
-            setter: Callable[[Event, int, Any, str], None],
+            setter: Callable[[Event, int, Any, str], Awaitable[None]],
             cast: Optional[Callable[[Any], Any]] = None
         ) -> None:
             _cast: Callable[[Any], Any]
@@ -361,18 +363,22 @@ class JSONMixIn(object):
                 _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                setter(event, number, _cast(value), author)
+                await setter(event, number, _cast(value), author)
 
         storage = self.storage
 
-        applyEdit(edits, IncidentJSONKey.priority, storage.setIncidentPriority)
+        await applyEdit(
+            edits, IncidentJSONKey.priority, storage.setIncidentPriority
+        )
 
-        applyEdit(
+        await applyEdit(
             edits, IncidentJSONKey.state,
             storage.setIncidentState, lambda n: IncidentState[n]
         )
 
-        applyEdit(edits, IncidentJSONKey.summary, storage.setIncidentSummary)
+        await applyEdit(
+            edits, IncidentJSONKey.summary, storage.setIncidentSummary
+        )
 
         location = edits.get(IncidentJSONKey.location.value, UNSET)
         if location is not UNSET:
@@ -386,32 +392,32 @@ class JSONMixIn(object):
                 ):
                     setter(event, number, None, author)
             else:
-                applyEdit(
+                await applyEdit(
                     location, LocationJSONKey.name,
                     storage.setIncidentLocationName
                 )
-                applyEdit(
+                await applyEdit(
                     location, RodGarettAddressJSONKey.concentric,
                     storage.setIncidentLocationConcentricStreet
                 )
-                applyEdit(
+                await applyEdit(
                     location, RodGarettAddressJSONKey.radialHour,
                     storage.setIncidentLocationRadialHour
                 )
-                applyEdit(
+                await applyEdit(
                     location, RodGarettAddressJSONKey.radialMinute,
                     storage.setIncidentLocationRadialMinute
                 )
-                applyEdit(
+                await applyEdit(
                     location, RodGarettAddressJSONKey.description,
                     storage.setIncidentLocationDescription
                 )
 
-        applyEdit(
+        await applyEdit(
             edits, IncidentJSONKey.rangerHandles, storage.setIncidentRangers
         )
 
-        applyEdit(
+        await applyEdit(
             edits, IncidentJSONKey.incidentTypes, storage.setIncidentTypes
         )
 
@@ -422,7 +428,7 @@ class JSONMixIn(object):
             for entry in entries:
                 text = entry.get(ReportEntryJSONKey.text.value, None)
                 if text:
-                    storage.addIncidentReportEntry(
+                    await storage.addIncidentReportEntry(
                         event, number,
                         ReportEntry(
                             author=author,
@@ -476,7 +482,7 @@ class JSONMixIn(object):
                 jsonObjectFromModelObject(incidentReport)
             ).encode("utf-8")
             for incidentReport
-            in self.storage.incidentReports(attachedTo=attachedTo)
+            in await self.storage.incidentReports(attachedTo=attachedTo)
         )
 
         return self.jsonStream(request, stream, None)
@@ -523,7 +529,7 @@ class JSONMixIn(object):
                 .format(incidentReport.created, now)
             )
 
-        self.storage.createIncidentReport(incidentReport)
+        await self.storage.createIncidentReport(incidentReport)
 
         assert incidentReport.number is not None
 
@@ -559,7 +565,7 @@ class JSONMixIn(object):
 
         self.authorizeRequestForIncidentReport(request, number)
 
-        incidentReport = self.storage.incidentReport(number)
+        incidentReport = await self.storage.incidentReport(number)
         text = jsonTextFromObject(jsonObjectFromModelObject(incidentReport))
 
         return self.jsonBytes(
@@ -607,11 +613,11 @@ class JSONMixIn(object):
                 )
 
             if action == "attach":
-                self.storage.attachIncidentReportToIncident(
+                await self.storage.attachIncidentReportToIncident(
                     number, event, incidentNumber
                 )
             elif action == "detach":
-                self.storage.detachIncidentReportFromIncident(
+                await self.storage.detachIncidentReportFromIncident(
                     number, event, incidentNumber
                 )
             else:
@@ -640,9 +646,9 @@ class JSONMixIn(object):
                 request, "Incident report created time may not be modified"
             )
 
-        def applyEdit(
+        async def applyEdit(
             json: Mapping[str, Any], key: NamedConstant,
-            setter: Callable[[Event, int, Any, str], None],
+            setter: Callable[[Event, int, Any, str], Awaitable[None]],
             cast: Optional[Callable[[Any], Any]] = None
         ) -> None:
             _cast: Callable[[Any], Any]
@@ -653,11 +659,11 @@ class JSONMixIn(object):
                 _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                setter(event, number, _cast(value), author)
+                await setter(event, number, _cast(value), author)
 
         storage = self.storage
 
-        applyEdit(
+        await applyEdit(
             edits, IncidentReportJSONKey.summary,
             storage.setIncidentReportSummary
         )
@@ -669,7 +675,7 @@ class JSONMixIn(object):
             for entry in entries:
                 text = entry.get(ReportEntryJSONKey.text.value, None)
                 if text:
-                    self.storage.addIncidentReportReportEntry(
+                    await self.storage.addIncidentReportReportEntry(
                         number,
                         ReportEntry(
                             author=author,
@@ -692,10 +698,10 @@ class JSONMixIn(object):
         self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         acl = {}
-        for event in self.storage.events():
+        for event in await self.storage.events():
             acl[event.id] = dict(
-                readers=self.storage.readers(event),
-                writers=self.storage.writers(event),
+                readers=await self.storage.readers(event),
+                writers=await self.storage.writers(event),
             )
         return jsonTextFromObject(acl)
 
@@ -714,9 +720,9 @@ class JSONMixIn(object):
         for eventID, acl in edits.items():
             event = Event(eventID)
             if "readers" in acl:
-                self.storage.setReaders(event, acl["readers"])
+                await self.storage.setReaders(event, acl["readers"])
             if "writers" in acl:
-                self.storage.setWriters(event, acl["writers"])
+                await self.storage.setWriters(event, acl["writers"])
 
         return self.noContentResource(request)
 
@@ -729,8 +735,8 @@ class JSONMixIn(object):
         self.authorizeRequest(request, None, Authorization.imsAdmin)
 
         streets = {}
-        for event in self.storage.events():
-            streets[event.id] = self.storage.concentricStreetsByID(event)
+        for event in await self.storage.events():
+            streets[event.id] = await self.storage.concentricStreets(event)
         return jsonTextFromObject(streets)
 
 
@@ -745,18 +751,18 @@ class JSONMixIn(object):
 
         for eventID, _streets in edits.items():
             event = Event(eventID)
-            existing = self.storage.concentricStreetsByID(event)
+            existing = await self.storage.concentricStreets(event)
 
             for _streetID, _streetName in existing.items():
                 raise NotAuthorizedError("Removal of streets is not allowed.")
 
         for eventID, streets in edits.items():
             event = Event(eventID)
-            existing = self.storage.concentricStreetsByID(event)
+            existing = await self.storage.concentricStreets(event)
 
             for streetID, streetName in streets.items():
                 if streetID not in existing:
-                    self.storage.createConcentricStreet(
+                    await self.storage.createConcentricStreet(
                         event, streetID, streetName
                     )
 

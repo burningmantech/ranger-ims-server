@@ -99,9 +99,9 @@ class IncidentPage(Element):
 
 
     @renderer
-    def concentric_street_name_by_id(self, request, tag):
+    async def concentric_street_name_by_id(self, request, tag):
         """
         JSON dictionary: concentric streets by ID.
         """
-        namesByID = self.service.storage.concentricStreetsByID(self.event)
+        namesByID = await self.service.storage.concentricStreets(self.event)
         return jsonTextFromObject(namesByID)
