@@ -226,6 +226,106 @@ class DataStore(IMSDataStore):
     )
 
 
+    def _eventAccess(self, event: Event, mode: str) -> Iterable[str]:
+        return (
+            row["EXPRESSION"] for row in self._executeAndIterate(
+                self._query_eventAccess,
+                dict(eventID=event.id, mode=mode),
+                "Unable to look up {mode} access for event {eventID}",
+            )
+        )
+
+    _query_eventAccess = _query(
+        """
+        select EXPRESSION from EVENT_ACCESS
+        where EVENT = ({query_eventID}) and MODE = :mode
+        """
+    )
+
+
+    def _setEventAccess(
+        self, event: Event, mode: str, expressions: Iterable[str]
+    ) -> None:
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    self.log.info(
+                        "Clearing access: {event} {mode}",
+                        event=event, mode=mode
+                    )
+                    cursor.execute(
+                        self._query_clearEventAccess,
+                        dict(eventID=event.id, mode=mode),
+                    )
+                    for expression in frozenset(expressions):
+                        self.log.info(
+                            "Adding {mode} access for {expression} to {event}",
+                            mode=mode, expression=expression, event=event,
+                        )
+                        cursor.execute(
+                            self._query_addEventAccess, dict(
+                                eventID=event.id,
+                                expression=expression,
+                                mode=mode,
+                            )
+                        )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to set {mode} access for {event}: {error}",
+                event=event, mode=mode, expressions=expressions, error=e,
+            )
+            raise StorageError(e)
+
+    _query_clearEventAccess = _query(
+        """
+        delete from EVENT_ACCESS
+        where EVENT = ({query_eventID}) and MODE = :mode
+        """
+    )
+
+    _query_addEventAccess = _query(
+        """
+        insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)
+        values (({query_eventID}), :expression, :mode)
+        """
+    )
+
+
+    async def readers(self, event: Event) -> Iterable[str]:
+        """
+        See :meth:`IMSDataStore.readers`.
+        """
+        assert type(event) is Event
+
+        return self._eventAccess(event, "read")
+
+
+    def setReaders(self, event: Event, readers: Iterable[str]) -> None:
+        """
+        See :meth:`IMSDataStore.setReaders`.
+        """
+        return self._setEventAccess(event, "read", readers)
+
+
+    def writers(self, event: Event) -> Iterable[str]:
+        """
+        See :meth:`IMSDataStore.writers`.
+        """
+        assert type(event) is Event
+
+        return self._eventAccess(event, "write")
+
+
+    def setWriters(self, event: Event, writers: Iterable[str]) -> None:
+        """
+        See :meth:`IMSDataStore.setWriters`.
+        """
+        return self._setEventAccess(event, "write", writers)
+
+
     async def incidentTypes(
         self, includeHidden: bool = False
     ) -> Iterable[str]:
@@ -1079,106 +1179,6 @@ class DataStore(IMSDataStore):
             column="LOCATION_DESCRIPTION"
         )
     )
-
-
-    def _eventAccess(self, event: Event, mode: str) -> Iterable[str]:
-        return (
-            row["EXPRESSION"] for row in self._executeAndIterate(
-                self._query_eventAccess,
-                dict(eventID=event.id, mode=mode),
-                "Unable to look up {mode} access for event {eventID}",
-            )
-        )
-
-    _query_eventAccess = _query(
-        """
-        select EXPRESSION from EVENT_ACCESS
-        where EVENT = ({query_eventID}) and MODE = :mode
-        """
-    )
-
-
-    def _setEventAccess(
-        self, event: Event, mode: str, expressions: Iterable[str]
-    ) -> None:
-        try:
-            with self._db as db:
-                cursor = db.cursor()
-                try:
-                    self.log.info(
-                        "Clearing access: {event} {mode}",
-                        event=event, mode=mode
-                    )
-                    cursor.execute(
-                        self._query_clearEventAccess,
-                        dict(eventID=event.id, mode=mode),
-                    )
-                    for expression in frozenset(expressions):
-                        self.log.info(
-                            "Adding {mode} access for {expression} to {event}",
-                            mode=mode, expression=expression, event=event,
-                        )
-                        cursor.execute(
-                            self._query_addEventAccess, dict(
-                                eventID=event.id,
-                                expression=expression,
-                                mode=mode,
-                            )
-                        )
-                finally:
-                    cursor.close()
-        except SQLiteError as e:
-            self._log.critical(
-                "Unable to set {mode} access for {event}: {error}",
-                event=event, mode=mode, expressions=expressions, error=e,
-            )
-            raise StorageError(e)
-
-    _query_clearEventAccess = _query(
-        """
-        delete from EVENT_ACCESS
-        where EVENT = ({query_eventID}) and MODE = :mode
-        """
-    )
-
-    _query_addEventAccess = _query(
-        """
-        insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)
-        values (({query_eventID}), :expression, :mode)
-        """
-    )
-
-
-    async def readers(self, event: Event) -> Iterable[str]:
-        """
-        See :meth:`IMSDataStore.readers`.
-        """
-        assert type(event) is Event
-
-        return self._eventAccess(event, "read")
-
-
-    def setReaders(self, event: Event, readers: Iterable[str]) -> None:
-        """
-        See :meth:`IMSDataStore.setReaders`.
-        """
-        return self._setEventAccess(event, "read", readers)
-
-
-    def writers(self, event: Event) -> Iterable[str]:
-        """
-        See :meth:`IMSDataStore.writers`.
-        """
-        assert type(event) is Event
-
-        return self._eventAccess(event, "write")
-
-
-    def setWriters(self, event: Event, writers: Iterable[str]) -> None:
-        """
-        See :meth:`IMSDataStore.setWriters`.
-        """
-        return self._setEventAccess(event, "write", writers)
 
 
 
