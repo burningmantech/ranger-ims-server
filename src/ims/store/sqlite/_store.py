@@ -817,16 +817,17 @@ class DataStore(IMSDataStore):
             addEntry("location name", location.name)
 
         address = location.address
-        if address.description:
-            addEntry("location description", address.description)
+        if address is not None:
+            if address.description:
+                addEntry("location description", address.description)
 
-        if isinstance(address, RodGarettAddress):
-            if address.concentric is not None:
-                addEntry("location concentric street", address.concentric)
-            if address.radialHour is not None:
-                addEntry("location radial hour", address.radialHour)
-            if address.radialMinute is not None:
-                addEntry("location radial minute", address.radialMinute)
+            if isinstance(address, RodGarettAddress):
+                if address.concentric is not None:
+                    addEntry("location concentric street", address.concentric)
+                if address.radialHour is not None:
+                    addEntry("location radial hour", address.radialHour)
+                if address.radialMinute is not None:
+                    addEntry("location radial minute", address.radialMinute)
 
         if incident.rangerHandles:
             addEntry("Rangers", ", ".join(incident.rangerHandles))

@@ -713,12 +713,13 @@ class DataStoreTests(TestCase):
 
     def normalizeAddress(self, incident: Incident) -> Incident:
         # Normalize address to Rod Garett; DB schema only supports those.
-        if not isinstance(incident.location.address, RodGarettAddress):
+        address = incident.location.address
+        if address is not None and not isinstance(address, RodGarettAddress):
             incident = incident.replace(
                 location=Location(
                     name=incident.location.name,
                     address=RodGarettAddress(
-                        description=incident.location.address.description,
+                        description=address.description,
                     )
                 )
             )

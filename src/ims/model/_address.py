@@ -39,7 +39,7 @@ class Address(ABC):
     Location address
     """
 
-    description: str
+    description: Optional[str]
 
 
 
@@ -51,7 +51,9 @@ class TextOnlyAddress(Address):
     An address contains a description of a location.
     """
 
-    description: str = attrib(validator=instance_of(str))
+    description: Optional[str] = attrib(
+        validator=optional(instance_of(str)), default=None
+    )
 
 
     def _cmpValue(self) -> Any:
@@ -106,8 +108,8 @@ class RodGarettAddress(Address):
     Black Rock City.
     """
 
-    description: str = attrib(
-        validator=instance_of(str)
+    description: Optional[str] = attrib(
+        validator=optional(instance_of(str)), default=None
     )
     concentric: Optional[str] = attrib(
         validator=optional(instance_of(str)), default=None

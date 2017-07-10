@@ -18,10 +18,10 @@
 Location
 """
 
-from typing import Any, TypeVar
+from typing import Any, Optional, TypeVar
 
 from attr import asdict, attrib, attrs
-from attr.validators import instance_of
+from attr.validators import instance_of, optional
 
 from ._address import Address
 
@@ -39,8 +39,10 @@ class Location(Address):
     Location
     """
 
-    name: str = attrib(validator=instance_of(str))
-    address: Address = attrib(validator=instance_of(Address))
+    name: Optional[str] = attrib(validator=optional(instance_of(str)))
+    address: Optional[Address] = attrib(
+        validator=optional(instance_of(Address))
+    )
 
 
     def replace(self: TLocation, **kwargs: Any) -> TLocation:
