@@ -34,7 +34,7 @@ class ConnectionTests(TestCase):
             self.connections.append(database)
             return Connection(":memory:")
 
-        self.connections = []  # type: List[str]
+        self.connections: List[str] = []
         self.patch(sqlite, name, _connect)
 
 

@@ -44,18 +44,18 @@ class IncidentReport(object):
 
     # FIXME: better validator for reportEntries
 
-    number = attrib(
+    number: int = attrib(
         validator=instance_of(int)
-    )  # type: int
-    created = attrib(
+    )
+    created: DateTime = attrib(
         validator=instance_of(DateTime)
-    )  # type: DateTime
-    summary = attrib(
+    )
+    summary: Optional[str] = attrib(
         validator=optional(instance_of(str))
-    )  # type: Optional[str]
-    reportEntries = attrib(
+    )
+    reportEntries: Sequence = attrib(
         validator=instance_of(Iterable), convert=sorted_tuple
-    )  # type: Sequence
+    )
 
 
     def __str__(self) -> str:

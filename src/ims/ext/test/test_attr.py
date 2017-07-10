@@ -19,7 +19,7 @@ class NamedClass(object):
     Class for testing :func:`required` validator.
     """
 
-    name = attrib(validator=required)  # type: str
+    name: str = attrib(validator=required)
 
 
 
@@ -29,7 +29,7 @@ class MustBeNiceClass(object):
     Class for testing :func:`true` validator.
     """
 
-    nice = attrib(validator=true(instance_of(str)))  # type: str
+    nice: str = attrib(validator=true(instance_of(str)))
 
 
 

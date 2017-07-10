@@ -41,10 +41,10 @@ class ReportEntry(object):
     A report entry is text with an associated author and time stamp.
     """
 
-    created   = attrib(validator=instance_of(DateTime))   # type: DateTime
-    author    = attrib(validator=true(instance_of(str)))  # type: str
-    automatic = attrib(validator=instance_of(bool))       # type: bool
-    text      = attrib(validator=true(instance_of(str)))  # type: str
+    created: DateTime = attrib(validator=instance_of(DateTime))
+    author: str = attrib(validator=true(instance_of(str)))
+    automatic: bool = attrib(validator=instance_of(bool))
+    text: str = attrib(validator=true(instance_of(str)))
 
 
     def __str__(self) -> str:

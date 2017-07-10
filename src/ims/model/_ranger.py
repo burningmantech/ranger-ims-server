@@ -75,27 +75,27 @@ class Ranger(object):
 
     # FIXME: better validator for email
 
-    handle = attrib(
+    handle: str = attrib(
         validator=true(instance_of(str))
-    )  # type: str
-    name = attrib(
+    )
+    name: str = attrib(
         validator=true(instance_of(str))
-    )  # type: str
-    status = attrib(
+    )
+    status: RangerStatus = attrib(
         validator=instance_of(RangerStatus)
-    )  # type: RangerStatus
-    email = attrib(
+    )
+    email: AbstractSet[str] = attrib(
         validator=instance_of(Iterable), convert=frozenset
-    )  # type: AbstractSet[str]
-    onSite = attrib(
+    )
+    onSite: bool = attrib(
         validator=instance_of(bool)
-    )  # type: bool
-    dmsID = attrib(
+    )
+    dmsID: Optional[str] = attrib(
         validator=optional(instance_of(int))
-    )  # type: Optional[str]
-    password = attrib(
+    )
+    password: Optional[str] = attrib(
         validator=optional(instance_of(str))
-    )  # type: Optional[str]
+    )
 
 
     def __str__(self) -> str:

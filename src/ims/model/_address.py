@@ -51,7 +51,7 @@ class TextOnlyAddress(Address):
     An address contains a description of a location.
     """
 
-    description = attrib(validator=instance_of(str))  # type: str
+    description: str = attrib(validator=instance_of(str))
 
 
     def _cmpValue(self) -> Any:
@@ -106,18 +106,18 @@ class RodGarettAddress(Address):
     Black Rock City.
     """
 
-    description = attrib(
+    description: str = attrib(
         validator=instance_of(str)
-    )  # type: str
-    concentric = attrib(
+    )
+    concentric: Optional[str] = attrib(
         validator=optional(instance_of(str)), default=None
-    )  # type: Optional[str]
-    radialHour = attrib(
+    )
+    radialHour: Optional[int] = attrib(
         validator=optional(instance_of(int)), default=None
-    )  # type: Optional[int]
-    radialMinute = attrib(
+    )
+    radialMinute: Optional[int] = attrib(
         validator=optional(instance_of(int)), default=None
-    )  # type: Optional[int]
+    )
 
 
     def _cmpValue(self) -> Any:

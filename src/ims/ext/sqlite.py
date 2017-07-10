@@ -210,13 +210,13 @@ class QueryPlanExplanation(object):
         A line of information about a query plan.
         """
 
-        nestingOrder = attrib(
+        nestingOrder: Optional[int] = attrib(
             validator=optional(instance_of(int))
-        )  # type: Optional[int]
-        selectFrom = attrib(
+        )
+        selectFrom: Optional[int] = attrib(
             validator=optional(instance_of(int))
-        )  # type: Optional[int]
-        details = attrib(validator=instance_of(str))  # type: str
+        )
+        details: str = attrib(validator=instance_of(str))
 
         def __str__(self) -> str:
             return "[{},{}] {}".format(
@@ -224,9 +224,9 @@ class QueryPlanExplanation(object):
             )
 
 
-    name  = attrib(validator=instance_of(str))    # type: str
-    query = attrib(validator=instance_of(str))    # type: str
-    lines = attrib(validator=instance_of(tuple))  # type: Tuple[Line]
+    name: str = attrib(validator=instance_of(str))
+    query: str = attrib(validator=instance_of(str))
+    lines: Tuple[Line] = attrib(validator=instance_of(tuple))
 
 
     def __str__(self) -> str:
@@ -254,12 +254,12 @@ def explainQueryPlans(
     for query, name in queries:
         params = dict((x, x) for x in range(query.count(":")))  # Dummy params
         try:
-            lines = (
+            lines: Iterable[QueryPlanExplanation.Line] = (
                 QueryPlanExplanation.Line(nestingOrder, selectFrom, details)
                 for n, nestingOrder, selectFrom, details in (
                     db.execute("explain query plan {}".format(query), params)
                 )
-            )  # type: Iterable[QueryPlanExplanation.Line]
+            )
         except SQLiteError as e:
             lines = (QueryPlanExplanation.Line(None, None, "{}".format(e),),)
 

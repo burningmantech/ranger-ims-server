@@ -51,7 +51,7 @@ def jsonTextFromObject(obj: Any, pretty: bool = False) -> str:
     """
     if pretty:
         separators = (",", ": ")
-        indent = 2  # type: Optional[int]
+        indent: Optional[int] = 2
         sortKeys = True
     else:
         separators = (",", ":")

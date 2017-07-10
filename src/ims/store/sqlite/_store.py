@@ -79,8 +79,8 @@ class DataStore(IMSDataStore):
             default=None, init=False,
         )
 
-    dbPath = attrib(validator=instance_of(Path))           # type: Path
-    _state = attrib(default=Factory(_State), init=False)  # type: _State
+    dbPath: Path = attrib(validator=instance_of(Path))
+    _state: _State = attrib(default=Factory(_State), init=False)
 
 
     @classmethod

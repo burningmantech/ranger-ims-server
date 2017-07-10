@@ -51,37 +51,37 @@ class Incident(object):
 
     # FIXME: better validator for IterableABC attrs
 
-    event = attrib(
+    event: Event = attrib(
         validator=instance_of(Event)
-    )  # type: Event
-    number = attrib(
+    )
+    number: int = attrib(
         validator=instance_of(int)
-    )  # type: int
-    created = attrib(
+    )
+    created: DateTime = attrib(
         validator=instance_of(DateTime)
-    )  # type: DateTime
-    state = attrib(
+    )
+    state: IncidentState = attrib(
         validator=instance_of(IncidentState)
-    )  # type: IncidentState
-    priority = attrib(
+    )
+    priority: IncidentPriority = attrib(
         validator=instance_of(IncidentPriority)
-    )  # type: IncidentPriority
-    summary  = attrib(
+    )
+    summary: Optional[str] = attrib(
         validator=optional(instance_of(str))
-    )  # type: Optional[str]
-    location = attrib(
+    )
+    location: Location = attrib(
         validator=instance_of(Location)
-    )  # type: Location
+    )
 
-    rangerHandles = attrib(
+    rangerHandles: AbstractSet[str] = attrib(
         validator=instance_of(IterableABC), convert=frozenset
-    )  # type: AbstractSet[str]
-    incidentTypes = attrib(
+    )
+    incidentTypes: AbstractSet[str] = attrib(
         validator=instance_of(IterableABC), convert=frozenset
-    )  # type: AbstractSet[str]
-    reportEntries = attrib(
+    )
+    reportEntries: Sequence[ReportEntry] = attrib(
         validator=instance_of(IterableABC), convert=sorted_tuple
-    )  # type: Sequence[ReportEntry]
+    )
 
 
     def __str__(self) -> str:

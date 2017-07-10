@@ -39,8 +39,8 @@ class Location(Address):
     Location
     """
 
-    name    = attrib(validator=instance_of(str))      # type: str
-    address = attrib(validator=instance_of(Address))  # type: Address
+    name: str = attrib(validator=instance_of(str))
+    address: Address = attrib(validator=instance_of(Address))
 
 
     def replace(self: TLocation, **kwargs: Any) -> TLocation:
