@@ -215,3 +215,31 @@ class IMSDataStore(ABC):
         """
         Set the location description for the given incident in the given event.
         """
+
+
+    @abstractmethod
+    async def readers(self, event: Event) -> Iterable[str]:
+        """
+        Look up the allowed readers for the given event.
+        """
+
+
+    @abstractmethod
+    def setReaders(self, event: Event, readers: Iterable[str]) -> None:
+        """
+        Set the allowed readers for the given event.
+        """
+
+
+    @abstractmethod
+    def writers(self, event: Event) -> Iterable[str]:
+        """
+        Look up the allowed writers for the given event.
+        """
+
+
+    @abstractmethod
+    def setWriters(self, event: Event, writers: Iterable[str]) -> None:
+        """
+        Set the allowed writers for the given event.
+        """
