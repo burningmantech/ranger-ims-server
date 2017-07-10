@@ -18,6 +18,8 @@
 Duty Management System.
 """
 
+from hashlib import sha1
+from os import urandom
 from time import time
 from typing import Iterable, Mapping, Optional, Sequence, Set, Tuple
 
@@ -291,3 +293,13 @@ def statusFromID(strValue: str) -> RangerStatus:
         "uberbonked":  RangerStatus.uberbonked,
         "vintage":     RangerStatus.vintage,
     }.get(strValue, RangerStatus.other)
+
+
+def hashPassword(password: str, salt: Optional[str] = None) -> str:
+    """
+    Compute a has for the given password
+    """
+    if salt is None:
+        salt = urandom(16).decode("charmap")
+
+    return salt + ":" + sha1(password.encode("utf-8")).hexdigest()

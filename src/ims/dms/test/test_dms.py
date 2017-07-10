@@ -18,17 +18,16 @@
 Tests for L{ims.dms}.
 """
 
-from hashlib import sha1
-from typing import MutableSequence
+from typing import MutableSequence, Tuple
 
 from twisted.internet.defer import fail, succeed
 
 from ims.ext.trial import TestCase
 
 from .. import DutyManagementSystem
-from .._dms import fullName
+from .._dms import fullName, hashPassword
 
-MutableSequence  # silence linter
+MutableSequence, Tuple  # silence linter
 
 
 __all__ = ()
@@ -165,12 +164,13 @@ class DummyConnectionPool(object):
 
         sql = query.sql()
 
-        def hashPassword(person):
-            listPerson = list(person)
-            listPerson[8] = (
-                ":" + sha1(listPerson[8].encode("utf-8")).hexdigest()
+        def fixPassword(
+            person: Tuple[int, str, str, str, str, str, str, bool, str]
+        ) -> Tuple[int, str, str, str, str, str, str, bool, str]:
+            return (
+                person[0], person[1], person[2], person[3], person[4],
+                person[5], person[6], person[7], hashPassword(person[8]),
             )
-            return iter(listPerson)
 
         if sql == (
             "select "
@@ -179,7 +179,7 @@ class DummyConnectionPool(object):
             "from person where status in "
             "('active', 'inactive', 'vintage')"
         ):
-            return succeed(hashPassword(p) for p in cannedPersonnel)
+            return succeed(fixPassword(p) for p in cannedPersonnel)
 
         if sql == (
             "select id, title from position where all_rangers = 0"
