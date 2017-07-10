@@ -774,8 +774,6 @@ class JSONMixIn(object):
         """
         HTML5 EventSource endpoint.
         """
-        d = Deferred()
-
         self.log.info("Event source connected: {id}", id=id(request))
 
         request.setHeader(
@@ -796,4 +794,4 @@ class JSONMixIn(object):
         df = request.notifyFinish()
         df.addCallbacks(finished, disconnected)
 
-        return d
+        return Deferred()
