@@ -20,7 +20,7 @@ HTML5 EventSource support.
 
 from collections import deque
 from time import time
-from typing import Deque, Mapping, Optional, Set, Tuple
+from typing import Deque, List, Mapping, Optional, Set, Tuple
 
 from twisted.logger import ILogObserver, Logger
 from twisted.web.iweb import IRequest
@@ -30,7 +30,7 @@ from zope.interface import implementer
 from ims.ext.json import jsonTextFromObject
 from ims.model import Incident
 
-Deque, Set, Tuple  # silence linter
+Deque, List, Set, Tuple  # silence linter
 
 
 __all__ = (
@@ -99,7 +99,7 @@ class DataStoreEventSourceLogObserver(object):
         """
         Initialize.
         """
-        self._listeners: Set[IRequest] = set()
+        self._listeners: List[IRequest] = []
         self._events: Deque[Tuple[int, Event]] = deque(maxlen=1000)
         self._start = time()
         self._counter = 0
@@ -115,7 +115,7 @@ class DataStoreEventSourceLogObserver(object):
 
         self._playback(listener, lastEventID)
 
-        self._listeners.add(listener)
+        self._listeners.append(listener)
 
 
     def removeListener(self, listener: IRequest) -> None:
@@ -124,7 +124,7 @@ class DataStoreEventSourceLogObserver(object):
         """
         self.log.debug("Removing listener: {listener}", listener=listener)
 
-        self._listeners.add(listener)
+        self._listeners.remove(listener)
 
 
     def _transmogrify(
