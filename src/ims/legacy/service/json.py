@@ -117,7 +117,7 @@ class JSONMixIn(object):
         hidden = self.queryValue(request, "hidden") == "true"
 
         incidentTypes = tuple(
-            await self.storage.allIncidentTypes(includeHidden=hidden)
+            await self.storage.incidentTypes(includeHidden=hidden)
         )
 
         stream = self.buildJSONArray(
