@@ -38,8 +38,8 @@ from ims.ext.sqlite import (
     createDB, openDB, printSchema,
 )
 from ims.model import (
-    Event, Incident, IncidentPriority, IncidentState, Location, ReportEntry,
-    RodGarettAddress,
+    Event, Incident, IncidentPriority, IncidentReport, IncidentState,
+    Location, ReportEntry, RodGarettAddress,
 )
 from ims.model.json import IncidentJSONKey, modelObjectFromJSONObject
 
@@ -189,6 +189,11 @@ class DataStore(IMSDataStore):
                     self.importIncident(incident)
 
 
+    ###
+    # Events
+    ###
+
+
     async def events(self) -> Iterable[Event]:
         """
         See :meth:`IMSDataStore.events`.
@@ -326,6 +331,11 @@ class DataStore(IMSDataStore):
         return self._setEventAccess(event, "write", writers)
 
 
+    ###
+    # Incident Types
+    ###
+
+
     async def incidentTypes(
         self, includeHidden: bool = False
     ) -> Iterable[str]:
@@ -428,6 +438,11 @@ class DataStore(IMSDataStore):
         return self._hideShowIncidentTypes(incidentTypes, True)
 
 
+    ###
+    # Concentric Streets
+    ###
+
+
     async def concentricStreets(self, event: Event) -> Mapping[str, str]:
         """
         See :meth:`IMSDataStore.concentricStreets`.
@@ -474,6 +489,11 @@ class DataStore(IMSDataStore):
         values (({query_eventID}), :streetID, :streetName)
         """
     )
+
+
+    ###
+    # Incidents
+    ###
 
 
     def _fetchIncident(
@@ -1180,6 +1200,205 @@ class DataStore(IMSDataStore):
             column="LOCATION_DESCRIPTION"
         )
     )
+
+
+    ###
+    # Incident Reports
+    ###
+
+
+    def _fetchIncidentReport(
+        self, incidentReportNumber: int, cursor: Cursor
+    ) -> IncidentReport:
+        params: Parameters = dict(incidentReportNumber=incidentReportNumber)
+
+        cursor.execute(self._query_incidentReport, params)
+        row = cursor.fetchone()
+
+        reportEntries = tuple(
+            ReportEntry(
+                created=fromTimeStamp(row["CREATED"]),
+                author=row["AUTHOR"],
+                automatic=bool(row["GENERATED"]),
+                text=row["TEXT"],
+            )
+            for row in cursor.execute(
+                self._query_incidentReport_reportEntries, params
+            )
+        )
+
+        return IncidentReport(
+            number=incidentReportNumber,
+            created=fromTimeStamp(row["CREATED"]),
+            summary=row["SUMMARY"],
+            reportEntries=reportEntries,
+        )
+
+    _query_incidentReport = _query(
+        """
+        select CREATED, SUMMARY from INCIDENT_REPORT
+        where NUMBER = :incidentReportNumber
+        """
+    )
+
+    _query_incidentReport_reportEntries = _query(
+        """
+        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
+        where ID in (
+            select REPORT_ENTRY from INCIDENT_REPORT__REPORT_ENTRY
+            where INCIDENT_REPORT_NUMBER = :incidentReportNumber
+        )
+        """
+    )
+
+
+    def _fetchIncidentReportNumbers(self, cursor: Cursor) -> Iterable[int]:
+        return (
+            row["NUMBER"] for row in cursor.execute(
+                self._query_incidentReportNumbers, {}
+            )
+        )
+
+    _query_incidentReportNumbers = _query(
+        """
+        select NUMBER from INCIDENT_REPORT
+        """
+    )
+
+
+    def _fetchDetachedIncidentReportNumbers(
+        self, cursor: Cursor
+    ) -> Iterable[int]:
+        return (
+            row["NUMBER"] for row in cursor.execute(
+                self._query_detachedIncidentReportNumbers, {}
+            )
+        )
+
+    _query_detachedIncidentReportNumbers = _query(
+        """
+        select NUMBER from INCIDENT_REPORT
+        where NUMBER not in (
+            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
+        )
+        """
+    )
+
+
+    def _fetchAttachedIncidentReportNumbers(
+        self, event: Event, incidentNumber: int, cursor: Cursor
+    ) -> Iterable[int]:
+        return (
+            row["NUMBER"] for row in cursor.execute(
+                self._query_detachedIncidentReportNumbers,
+                dict(eventID=event.id, incidentNumber=incidentNumber)
+            )
+        )
+
+    _query_attachedIncidentReportNumbers = _query(
+        """
+        select NUMBER from INCIDENT_REPORT
+        where NUMBER in (
+            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
+            where
+                EVENT = ({query_eventID}) and
+                INCIDENT_NUMBER = :incidentNumber
+        )
+        """
+    )
+
+
+    async def incidentReports(self) -> Iterable[IncidentReport]:
+        """
+        See :meth:`IMSDataStore.incidentReports`.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    # FIXME: This should be an async generator
+                    return tuple(
+                        self._fetchIncidentReport(number, cursor)
+                        for number in self._fetchIncidentReportNumbers(cursor)
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to look up incident reports: {error}", error=e,
+            )
+            raise StorageError(e)
+
+
+    async def detachedIncidentReports(self) -> Iterable[IncidentReport]:
+        """
+        See :meth:`IMSDataStore.detachedIncidentReports`.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    # FIXME: This should be an async generator
+                    return tuple(
+                        self._fetchIncidentReport(number, cursor)
+                        for number in self._fetchDetachedIncidentReportNumbers(
+                            cursor
+                        )
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to look up detached incident reports: {error}",
+                error=e,
+            )
+            raise StorageError(e)
+
+
+    async def attachedIncidentReports(
+        self, event: Event, incidentNumber: int
+    ) -> Iterable[IncidentReport]:
+        """
+        See :meth:`IMSDataStore.attachedIncidentReports`.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    # FIXME: This should be an async generator
+                    return tuple(
+                        self._fetchIncidentReport(number, cursor)
+                        for number in self._fetchAttachedIncidentReportNumbers(
+                            event, incidentNumber, cursor
+                        )
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to look up attached incident reports: {error}",
+                error=e,
+            )
+            raise StorageError(e)
+
+
+    async def incidentReportWithNumber(self, number: int) -> IncidentReport:
+        """
+        See :meth:`IMSDataStore.incidentReportWithNumber`.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    return self._fetchIncidentReport(number, cursor)
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to look up incident report #{number}: {error}",
+                number=number, error=e,
+            )
+            raise StorageError(e)
 
 
 

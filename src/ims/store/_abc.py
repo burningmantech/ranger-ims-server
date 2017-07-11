@@ -21,7 +21,9 @@ Incident Management System data store abstract base classes.
 from abc import ABC, abstractmethod
 from typing import Iterable, Mapping
 
-from ims.model import Event, Incident, IncidentPriority, IncidentState
+from ims.model import (
+    Event, Incident, IncidentPriority, IncidentReport, IncidentState
+)
 
 
 __all__ = ()
@@ -32,6 +34,11 @@ class IMSDataStore(ABC):
     """
     Incident Management System data store abstract base class.
     """
+
+    ###
+    # Events
+    ###
+
 
     @abstractmethod
     async def events(self) -> Iterable[Event]:
@@ -75,6 +82,11 @@ class IMSDataStore(ABC):
         """
 
 
+    ###
+    # Incident Types
+    ###
+
+
     @abstractmethod
     async def incidentTypes(
         self, includeHidden: bool = False
@@ -107,6 +119,11 @@ class IMSDataStore(ABC):
         """
 
 
+    ###
+    # Concentric Streets
+    ###
+
+
     @abstractmethod
     async def concentricStreets(self, event: Event) -> Mapping[str, str]:
         """
@@ -122,6 +139,11 @@ class IMSDataStore(ABC):
         """
         Create a new concentric street and associated it with the given event.
         """
+
+
+    ###
+    # Incidents
+    ###
 
 
     @abstractmethod
@@ -242,4 +264,40 @@ class IMSDataStore(ABC):
     ) -> None:
         """
         Set the location description for the given incident in the given event.
+        """
+
+
+    ###
+    # Incident Reports
+    ###
+
+
+    @abstractmethod
+    async def incidentReports(self) -> Iterable[IncidentReport]:
+        """
+        Look up all incident reports.
+        """
+
+
+    @abstractmethod
+    async def detachedIncidentReports(self) -> Iterable[IncidentReport]:
+        """
+        Look up all detached incident reports.
+        """
+
+
+    @abstractmethod
+    async def attachedIncidentReports(
+        self, event: Event, incidentNumber: int
+    ) -> Iterable[IncidentReport]:
+        """
+        Look up all incident reports attached to the given incident in the
+        given event.
+        """
+
+
+    @abstractmethod
+    async def incidentReportWithNumber(self, number: int) -> IncidentReport:
+        """
+        Look up the incident report with the given number.
         """
