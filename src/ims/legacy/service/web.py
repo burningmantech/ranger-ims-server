@@ -130,7 +130,7 @@ class WebMixIn(object):
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        self.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.authorizeRequest(request, None, Authorization.imsAdmin)
         return AdminPage(self)
 
 
@@ -152,7 +152,7 @@ class WebMixIn(object):
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        self.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.authorizeRequest(request, None, Authorization.imsAdmin)
         return AdminAccessControlPage(self)
 
 
@@ -177,7 +177,7 @@ class WebMixIn(object):
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        self.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.authorizeRequest(request, None, Authorization.imsAdmin)
         return AdminIncidentTypesPage(self)
 
 
@@ -200,7 +200,7 @@ class WebMixIn(object):
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        self.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.authorizeRequest(request, None, Authorization.imsAdmin)
         return AdminStreetsPage(self)
 
 
@@ -224,7 +224,7 @@ class WebMixIn(object):
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        self.authorizeRequest(
+        await self.authorizeRequest(
             request, event, Authorization.readIncidents
         )
         return DispatchQueuePage(self, event)
@@ -272,7 +272,7 @@ class WebMixIn(object):
             except ValueError:
                 return self.notFoundResource(request)
 
-        self.authorizeRequest(request, event, authz)
+        await self.authorizeRequest(request, event, authz)
 
         return IncidentPage(self, event, numberValue)
 
@@ -309,7 +309,7 @@ class WebMixIn(object):
         """
         numberValue: Optional[int]
         if number == "new":
-            self.authorizeRequest(
+            await self.authorizeRequest(
                 request, None, Authorization.writeIncidentReports
             )
             numberValue = None
@@ -319,7 +319,7 @@ class WebMixIn(object):
             except ValueError:
                 return self.notFoundResource(request)
 
-            self.authorizeRequestForIncidentReport(request, numberValue)
+            await self.authorizeRequestForIncidentReport(request, numberValue)
 
         return IncidentReportPage(self, numberValue)
 
