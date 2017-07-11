@@ -20,9 +20,9 @@ Incident Report
 
 from collections.abc import Iterable
 from datetime import datetime as DateTime
-from typing import Optional, Sequence
+from typing import Any, Optional, Sequence, TypeVar
 
-from attr import attrib, attrs
+from attr import asdict, attrib, attrs
 from attr.validators import instance_of, optional
 
 from ims.ext.attr import sorted_tuple
@@ -33,6 +33,9 @@ Optional, Sequence  # Silence linter
 
 
 __all__ = ()
+
+
+TIncidentReport = TypeVar("TIncidentReport", bound="IncidentReport")
 
 
 
@@ -73,3 +76,13 @@ class IncidentReport(object):
         :obj:`None` or empty, or the first line of the first report entry.
         """
         return summaryFromReport(self.summary, self.reportEntries)
+
+
+    def replace(self: TIncidentReport, **kwargs: Any) -> TIncidentReport:
+        """
+        Return a new incident report with the same values, except those
+        specified by keyword arguments.
+        """
+        newArgs = asdict(self, recurse=False)
+        newArgs.update(kwargs)
+        return self.__class__(**newArgs)
