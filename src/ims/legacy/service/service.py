@@ -23,12 +23,17 @@ from typing import Any, Iterable, Optional
 from typing.io import BinaryIO
 from zipfile import BadZipfile
 
-from twisted.logger import globalLogPublisher
+from attr import Factory, attrib, attrs
+from attr.validators import instance_of
+
+from twisted.logger import ILogObserver, globalLogPublisher
 from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.web.iweb import IRequest
 
+from ims.dms import DutyManagementSystem
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable
+from ims.store import IMSDataStore
 
 from .auth import AuthMixIn
 from .config import Configuration
@@ -45,20 +50,29 @@ __all__ = (
 
 
 
+@attrs(frozen=True)
 class WebService(KleinService, AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
     """
     Incident Management System web service.
     """
 
-    def __init__(self, config: Configuration) -> None:
-        """
-        @param config: The configuration to use.
-        """
-        self.config = config
-        self.storage = config.storage
-        self.dms = config.dms
+    config: Configuration = attrib(validator=instance_of(Configuration))
+    storeObserver: ILogObserver = attrib(
+        default=Factory(DataStoreEventSourceLogObserver), init=False
+    )
 
-        self.storeObserver = DataStoreEventSourceLogObserver()
+
+    @property
+    def storage(self) -> IMSDataStore:
+        return self.config.storage
+
+
+    @property
+    def dms(self) -> DutyManagementSystem:
+        return self.config.dms
+
+
+    def __attrs_post_init__(self) -> None:
         globalLogPublisher.addObserver(self.storeObserver)
 
 
