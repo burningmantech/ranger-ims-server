@@ -62,21 +62,21 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    def setReaders(self, event: Event, readers: Iterable[str]) -> None:
+    async def setReaders(self, event: Event, readers: Iterable[str]) -> None:
         """
         Set the allowed readers for the given event.
         """
 
 
     @abstractmethod
-    def writers(self, event: Event) -> Iterable[str]:
+    async def writers(self, event: Event) -> Iterable[str]:
         """
         Look up the allowed writers for the given event.
         """
 
 
     @abstractmethod
-    def setWriters(self, event: Event, writers: Iterable[str]) -> None:
+    async def setWriters(self, event: Event, writers: Iterable[str]) -> None:
         """
         Set the allowed writers for the given event.
         """

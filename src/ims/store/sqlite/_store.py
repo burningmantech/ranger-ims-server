@@ -308,14 +308,14 @@ class DataStore(IMSDataStore):
         return self._eventAccess(event, "read")
 
 
-    def setReaders(self, event: Event, readers: Iterable[str]) -> None:
+    async def setReaders(self, event: Event, readers: Iterable[str]) -> None:
         """
         See :meth:`IMSDataStore.setReaders`.
         """
         return self._setEventAccess(event, "read", readers)
 
 
-    def writers(self, event: Event) -> Iterable[str]:
+    async def writers(self, event: Event) -> Iterable[str]:
         """
         See :meth:`IMSDataStore.writers`.
         """
@@ -324,7 +324,7 @@ class DataStore(IMSDataStore):
         return self._eventAccess(event, "write")
 
 
-    def setWriters(self, event: Event, writers: Iterable[str]) -> None:
+    async def setWriters(self, event: Event, writers: Iterable[str]) -> None:
         """
         See :meth:`IMSDataStore.setWriters`.
         """
