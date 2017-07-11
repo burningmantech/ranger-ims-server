@@ -28,7 +28,7 @@ from twisted.python.constants import FlagConstant, Flags
 from twisted.python.url import URL
 from twisted.web.iweb import IRequest
 
-from ims.dms import verifyPassword
+from ims.dms import DMSError, verifyPassword
 from ims.ext.klein import KleinRenderable
 from ims.model import Event, Ranger
 
@@ -264,7 +264,11 @@ class AuthMixIn(object):
         Look up the user record for a user short name.
         """
         # FIXME: a hash would be better (eg. rangersByHandle)
-        rangers = tuple(await self.dms.personnel())
+        try:
+            rangers = tuple(await self.dms.personnel())
+        except DMSError as e:
+            self.log.critical("Unable to load personnel: {error}", error=e)
+            return None
 
         for ranger in rangers:
             if ranger.handle == username:
