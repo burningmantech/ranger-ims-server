@@ -787,10 +787,14 @@ class JSONMixIn(object):
             self.storeObserver.removeListener(request)
 
         def finished(_: Any) -> None:
+            # We don't expect anything to fire the returned deferred, so
+            # this should never happen.
             self.storeObserver.removeListener(request)
             raise AssertionError("This was not expected")
 
-        df = request.notifyFinish()
-        df.addCallbacks(finished, disconnected)
+        # Handle disconnect
+        request.notifyFinish().addCallbacks(finished, disconnected)
 
+        # Return an unfired deferred, so the connection doesn't close on this
+        # end...
         return Deferred()
