@@ -24,7 +24,7 @@ from datetime import (
 from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
-from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, cast
+from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union, cast
 from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
@@ -810,7 +810,7 @@ class DataStore(IMSDataStore):
 
 
     def _initialReportEntries(
-        self, event: Event, incident: Incident, author: str
+        self, incident: Union[Incident, IncidentReport], author: str
     ) -> Iterable[ReportEntry]:
         created = DateTime.now(TimeZone.utc)
 
@@ -823,37 +823,42 @@ class DataStore(IMSDataStore):
                 )
             )
 
-        if incident.priority != IncidentPriority.normal:
-            addEntry("priority", incident.priority)
-
-        if incident.state != IncidentState.new:
-            addEntry("state", incident.state)
-
         if incident.summary:
             addEntry("summary", incident.summary)
 
-        location = incident.location
-        if location.name:
-            addEntry("location name", location.name)
+        if isinstance(incident, Incident):
+            if incident.priority != IncidentPriority.normal:
+                addEntry("priority", incident.priority)
 
-        address = location.address
-        if address is not None:
-            if address.description:
-                addEntry("location description", address.description)
+            if incident.state != IncidentState.new:
+                addEntry("state", incident.state)
 
-            if isinstance(address, RodGarettAddress):
-                if address.concentric is not None:
-                    addEntry("location concentric street", address.concentric)
-                if address.radialHour is not None:
-                    addEntry("location radial hour", address.radialHour)
-                if address.radialMinute is not None:
-                    addEntry("location radial minute", address.radialMinute)
+            location = incident.location
+            if location.name:
+                addEntry("location name", location.name)
 
-        if incident.rangerHandles:
-            addEntry("Rangers", ", ".join(incident.rangerHandles))
+            address = location.address
+            if address is not None:
+                if address.description:
+                    addEntry("location description", address.description)
 
-        if incident.incidentTypes:
-            addEntry("incident types", ", ".join(incident.incidentTypes))
+                if isinstance(address, RodGarettAddress):
+                    if address.concentric is not None:
+                        addEntry(
+                            "location concentric street", address.concentric
+                        )
+                    if address.radialHour is not None:
+                        addEntry("location radial hour", address.radialHour)
+                    if address.radialMinute is not None:
+                        addEntry(
+                            "location radial minute", address.radialMinute
+                        )
+
+            if incident.rangerHandles:
+                addEntry("Rangers", ", ".join(incident.rangerHandles))
+
+            if incident.incidentTypes:
+                addEntry("incident types", ", ".join(incident.incidentTypes))
 
         return tuple(reportEntries)
 
@@ -882,9 +887,7 @@ class DataStore(IMSDataStore):
                     )
 
             # Add initial report entries
-            reportEntries = self._initialReportEntries(
-                incident.event, incident, author
-            )
+            reportEntries = self._initialReportEntries(incident, author)
             incident = incident.replace(
                 reportEntries=(reportEntries + incident.reportEntries)
             )
@@ -1355,7 +1358,7 @@ class DataStore(IMSDataStore):
             raise StorageError(e)
 
 
-    async def attachedIncidentReports(
+    async def incidentReportsAttachedToIncident(
         self, event: Event, incidentNumber: int
     ) -> Iterable[IncidentReport]:
         """
@@ -1399,6 +1402,201 @@ class DataStore(IMSDataStore):
                 number=number, error=e,
             )
             raise StorageError(e)
+
+
+    async def _createIncidentReport(
+        self, incidentReport: IncidentReport, author: Optional[str],
+        directImport: bool,
+    ) -> IncidentReport:
+        if directImport:
+            if author is not None:
+                raise ValueError("author should be None for direct import")
+
+            if not incidentReport.number > 0:
+                raise ValueError("Imported incident report number must be > 0")
+        else:
+            if not author:
+                raise ValueError("author is required")
+
+            if incidentReport.number != 0:
+                raise ValueError("New incident report number must be zero")
+
+            for reportEntry in incidentReport.reportEntries:
+                if reportEntry.automatic:
+                    raise ValueError(
+                        "New incident report may not contain "
+                        "automatic report entries"
+                    )
+
+            # Add initial report entries
+            reportEntries = self._initialReportEntries(incidentReport, author)
+            incidentReport = incidentReport.replace(
+                reportEntries=(reportEntries + incidentReport.reportEntries)
+            )
+
+        self._log.info(
+            "Creating incident report: {incidentReport}",
+            incidentReport=incidentReport,
+        )
+
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    if not directImport:
+                        # Assign the incident number a number
+                        number = self._nextIncidentReportNumber(cursor)
+                        incidentReport = incidentReport.replace(number=number)
+
+                    # Write incident row
+                    cursor.execute(
+                        self._query_createIncidentReport, dict(
+                            incidentReportNumber=incidentReport.number,
+                            incidentReportCreated=asTimeStamp(
+                                incidentReport.created
+                            ),
+                            incidentReportSummary=incidentReport.summary,
+                        )
+                    )
+
+                    # Add report entries
+                    self._addAndAttachReportEntriesToIncidentReport(
+                        incidentReport.number, incidentReport.reportEntries,
+                        cursor,
+                    )
+
+                    return incidentReport
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to create incident report {incidentReport}: {error}",
+                incidentReport=incidentReport, author=author, error=e,
+            )
+            raise StorageError(e)
+
+    _query_createIncidentReport = _query(
+        """
+        insert into INCIDENT_REPORT (NUMBER, CREATED, SUMMARY)
+        values (
+            :incidentReportNumber,
+            :incidentReportCreated,
+            :incidentReportSummary
+        )
+        """
+    )
+
+
+    def _addAndAttachReportEntriesToIncidentReport(
+        self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
+        cursor: Cursor,
+    ) -> None:
+        for reportEntry in reportEntries:
+            self._createReportEntry(reportEntry, cursor)
+
+            self._log.info(
+                "Attaching report entry to incident report "
+                "#{incidentReportNumber}: {reportEntry}",
+                incidentReportNumber=incidentReportNumber,
+                reportEntry=reportEntry,
+            )
+
+            # Join to incident
+            cursor.execute(
+                self._query_attachReportEntryToIncidentReport, dict(
+                    incidentReportNumber=incidentReportNumber,
+                    reportEntryID=cursor.lastrowid,
+                )
+            )
+
+    _query_attachReportEntryToIncidentReport = _query(
+        """
+        insert into INCIDENT_REPORT__REPORT_ENTRY (
+            INCIDENT_REPORT_NUMBER, REPORT_ENTRY
+        )
+        values (:incidentReportNumber, :reportEntryID)
+        """
+    )
+
+
+    async def createIncidentReport(
+        self, incidentReport: IncidentReport, author: str
+    ) -> IncidentReport:
+        """
+        See :meth:`IMSDataStore.createIncidentReport`.
+        """
+        return await self._createIncidentReport(incidentReport, author, False)
+
+
+    def _setIncidentReportAttribute(
+        self, query: str, incidentReportNumber: int,
+        attribute: str, value: ParameterValue, author: str,
+    ) -> None:
+        autoEntry = self._automaticReportEntry(
+            author, DateTime.now(TimeZone.utc), attribute, value
+        )
+
+        self._log.info(
+            "Author {author} updating incident report "
+            "#{incidentReportNumber}: {attribute}={value}",
+            query=query,
+            incidentReportNumber=incidentReportNumber,
+            attribute=attribute,
+            value=value,
+            author=author,
+        )
+
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(query, dict(
+                        incidentReportNumber=incidentReportNumber,
+                        column=attribute,
+                        value=value,
+                    ))
+
+                    # Add report entries
+                    self._addAndAttachReportEntriesToIncidentReport(
+                        incidentReportNumber, (autoEntry,), cursor,
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Author {author} unable to update incident report "
+                "#{incidentReportNumber}: {attribute}={value}",
+                query=query,
+                incidentReportNumber=incidentReportNumber,
+                attribute=attribute,
+                value=value,
+                author=author,
+                error=e,
+            )
+            raise StorageError(e)
+
+    _template_setIncidentReportAttribute = _query(
+        """
+        update INCIDENT_REPORT set {{column}} = :value
+        where NUMBER = :incidentReportNumber
+        """
+    )
+
+
+    async def setIncidentReportSummary(
+        self, incidentReportNumber: int, summary: str, author: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncidentReportSummary`.
+        """
+        self._setIncidentReportAttribute(
+            self._query_setIncidentSummary,
+            incidentReportNumber, "summary", summary, author,
+        )
+
+    _query_setIncidentSummary = _template_setIncidentReportAttribute.format(
+        column="SUMMARY"
+    )
 
 
 

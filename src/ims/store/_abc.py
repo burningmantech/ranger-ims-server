@@ -167,11 +167,8 @@ class IMSDataStore(ABC):
         """
         Create a new incident and add it into the given event.
 
-        The incident number is determined by the database and must not be
-        specified by the given incident.
-
-        The incident's number must be zero, as it will be assigned by the data
-        store.
+        The incident number is determined by the database and must be specified
+        as zero in the given incident.
 
         The stored incident is returned with the incident number assigned to it
         by the data store, and with initial (automatic) report entries added.
@@ -287,7 +284,7 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def attachedIncidentReports(
+    async def incidentReportsAttachedToIncident(
         self, event: Event, incidentNumber: int
     ) -> Iterable[IncidentReport]:
         """
@@ -300,4 +297,29 @@ class IMSDataStore(ABC):
     async def incidentReportWithNumber(self, number: int) -> IncidentReport:
         """
         Look up the incident report with the given number.
+        """
+
+
+    @abstractmethod
+    async def createIncidentReport(
+        self, incidentReport: IncidentReport, author: str
+    ) -> IncidentReport:
+        """
+        Create a new incident report.
+
+        The incident report number is determined by the database and must be
+        specified as zero in the given incident report.
+
+        The stored incident report is returned with the incident report number
+        assigned to it by the data store, and with initial (automatic) report
+        entries added.
+        """
+
+
+    @abstractmethod
+    async def setIncidentReportSummary(
+        self, incidentReportNumber: int, summary: str, author: str
+    ) -> None:
+        """
+        Set the summary for the given incident report.
         """
