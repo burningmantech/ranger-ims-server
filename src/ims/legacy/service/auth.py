@@ -317,7 +317,7 @@ class AuthMixIn(object):
             )
         else:
             if password is None:
-                return self.app.invalidQueryResource(request, "password")
+                return self.invalidQueryResource(request, "password")
 
             authenticated = await self.verifyCredentials(user, password)
 
