@@ -234,7 +234,7 @@ class KleinService(object):
 
 
     def invalidQueryResource(
-        self, request: IRequest, arg: str, value: str
+        self, request: IRequest, arg: str, value: Optional[str] = None
     ) -> KleinRenderable:
         """
         Respond with a BAD REQUEST status due to an invalid query.
@@ -363,6 +363,7 @@ class KleinService(object):
         #    a browser, and that's just pitiful.
         self._log.failure("Request failed", failure)
         return self.internalErrorResource(request)
+
 
 
 #
