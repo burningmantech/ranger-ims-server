@@ -38,6 +38,7 @@ from ims.model.json import (
     ReportEntryJSONKey, RodGarettAddressJSONKey,
     jsonObjectFromModelObject, modelObjectFromJSONObject
 )
+from ims.store import NoSuchIncidentError
 
 from .auth import Authorization
 from .error import NotAuthorizedError
@@ -299,7 +300,11 @@ class JSONMixIn(object):
         except ValueError:
             return notFoundResource(request)
 
-        incident = await self.storage.incidentWithNumber(event, number)
+        try:
+            incident = await self.storage.incidentWithNumber(event, number)
+        except NoSuchIncidentError:
+            return notFoundResource(request)
+
         data = (
             jsonTextFromObject(jsonObjectFromModelObject(incident))
             .encode("utf-8")
