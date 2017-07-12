@@ -114,7 +114,7 @@ class KleinService(object):
     Klein service.
     """
 
-    log = Logger()
+    _log = Logger()
     app = application
 
     def resource(self) -> KleinResource:
@@ -173,7 +173,7 @@ class KleinService(object):
         """
         Respond with a NOT FOUND status.
         """
-        self.log.debug("Resource not found: {request.uri}", request=request)
+        self._log.debug("Resource not found: {request.uri}", request=request)
 
         # Require authentication.
         # This is because exposing what resources do or do not exist can expose
@@ -187,7 +187,7 @@ class KleinService(object):
         """
         Respond with a METHOD NOT ALLOWED status.
         """
-        self.log.debug(
+        self._log.debug(
             "Method {request.method} not allowed for resource: {request.uri}",
             request=request
         )
@@ -205,7 +205,7 @@ class KleinService(object):
         Respond with a FORBIDDEN status.
         """
         user = getattr(request, "user", None)
-        self.log.debug(
+        self._log.debug(
             "Forbidden resource for user {user}: {request.uri}",
             request=request, user=user
         )
@@ -220,7 +220,7 @@ class KleinService(object):
         """
         Respond with a BAD REQUEST status.
         """
-        self.log.debug(
+        self._log.debug(
             "Bad request for resource: {request.uri}: {message}",
             request=request, message=message
         )
@@ -255,7 +255,7 @@ class KleinService(object):
         """
         Respond with an INTERNAL SERVER ERROR status.
         """
-        self.log.critical(
+        self._log.critical(
             "Internal error for resource: {request.uri}: {message}",
             request=request, message=message
         )
@@ -337,7 +337,7 @@ class KleinService(object):
         """
         DMS error.
         """
-        self.log.failure("DMS error", failure)
+        self._log.failure("DMS error", failure)
         return self.internalErrorResource(request)
 
 
@@ -361,7 +361,7 @@ class KleinService(object):
         #  - The traceback is emitted after whatever else was sent with the
         #    request, which often means that it displays like a total mess in
         #    a browser, and that's just pitiful.
-        self.log.failure("Request failed", failure)
+        self._log.failure("Request failed", failure)
         return self.internalErrorResource(request)
 
 

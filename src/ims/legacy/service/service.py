@@ -26,7 +26,7 @@ from zipfile import BadZipfile
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of
 
-from twisted.logger import ILogObserver, globalLogPublisher
+from twisted.logger import ILogObserver, Logger, globalLogPublisher
 from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.web.iweb import IRequest
@@ -55,6 +55,8 @@ class WebService(KleinService, AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
     """
     Incident Management System web service.
     """
+
+    log = Logger()
 
     config: Configuration = attrib(validator=instance_of(Configuration))
     storeObserver: ILogObserver = attrib(
