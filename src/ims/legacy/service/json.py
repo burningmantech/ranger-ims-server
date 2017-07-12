@@ -41,7 +41,7 @@ from ims.model.json import (
 
 from .auth import Authorization
 from .error import NotAuthorizedError
-from .klein import route
+from .klein import queryValue, route
 from .urls import URLs
 from ...dms import DMSError
 
@@ -114,7 +114,7 @@ class JSONMixIn(object):
         """
         self.authenticateRequest(request)
 
-        hidden = self.queryValue(request, "hidden") == "true"
+        hidden = queryValue(request, "hidden") == "true"
 
         incidentTypes = tuple(
             await self.storage.incidentTypes(includeHidden=hidden)
@@ -449,41 +449,50 @@ class JSONMixIn(object):
         """
         Incident reports endpoint.
         """
-        eventID        = self.queryValue(request, "event")
-        incidentNumber = self.queryValue(request, "incident")
+        storage = self.storage
 
-        attachedTo: Optional[Tuple[Optional[Event], Optional[int]]]
-        if eventID is None and incidentNumber is None:
-            attachedTo = None
-        elif eventID == incidentNumber == "":
+        eventID = queryValue(request, "event")
+        incidentNumberText = queryValue(request, "incident")
+
+        if eventID is None:
+            return self.invalidQueryResource(request, "event")
+
+        if incidentNumberText is None:
+            return self.invalidQueryResource(request, "incident")
+
+        if eventID == incidentNumberText == "":
             await self.authorizeRequest(
                 request, None, Authorization.readIncidentReports
             )
-            attachedTo = (None, None)
+            incidentReports = await storage.detachedIncidentReports()
+
         else:
             try:
-                event = Event(eventID)
+                event = Event(id=eventID)
             except ValueError:
                 return self.invalidQueryResource(
                     request, "event", eventID
                 )
+
             try:
-                incidentNumber = int(incidentNumber)
+                incidentNumber = int(incidentNumberText)
             except ValueError:
                 return self.invalidQueryResource(
-                    request, "incident", incidentNumber
+                    request, "incident", incidentNumberText
                 )
+
             await self.authorizeRequest(
                 request, event, Authorization.readIncidents
             )
-            attachedTo = (event, incidentNumber)
+            incidentReports = await storage.incidentReportsAttachedToIncident(
+                event=event, incidentNumber=incidentNumber
+            )
 
         stream = self.buildJSONArray(
             jsonTextFromObject(
                 jsonObjectFromModelObject(incidentReport)
             ).encode("utf-8")
-            for incidentReport
-            in await self.storage.incidentReports(attachedTo=attachedTo)
+            for incidentReport in incidentReports
         )
 
         return self.jsonStream(request, stream, None)
@@ -593,22 +602,28 @@ class JSONMixIn(object):
         #
         # Attach to incident if requested
         #
-        action = self.queryValue(request, "action")
+        action = queryValue(request, "action")
 
         if action is not None:
-            eventID        = self.queryValue(request, "event")
-            incidentNumber = self.queryValue(request, "incident")
+            eventID            = queryValue(request, "event")
+            incidentNumberText = queryValue(request, "incident")
+
+            if eventID is None:
+                return self.invalidQueryResource(request, "event")
+
+            if incidentNumberText is None:
+                return self.invalidQueryResource(request, "incident")
 
             try:
-                event = Event(eventID)
+                event = Event(id=eventID)
             except ValueError:
                 return self.invalidQueryResource(request, "event", eventID)
 
             try:
-                incidentNumber = int(incidentNumber)
+                incidentNumber = int(incidentNumberText)
             except ValueError:
                 return self.invalidQueryResource(
-                    request, "incident", incidentNumber
+                    request, "incident", incidentNumberText
                 )
 
             if action == "attach":

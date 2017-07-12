@@ -33,7 +33,7 @@ from ims.ext.klein import KleinRenderable
 from ims.model import Event, Ranger
 
 from .error import NotAuthenticatedError, NotAuthorizedError
-from .klein import route
+from .klein import queryValue, route
 from .urls import URLs
 from ..element.login import LoginPage
 
@@ -300,8 +300,8 @@ class AuthMixIn(object):
         """
         Endpoint for a login form submission.
         """
-        username = self.queryValue(request, "username")
-        password = self.queryValue(request, "password", default="")
+        username = queryValue(request, "username")
+        password = queryValue(request, "password", default="")
 
         if username is None:
             user = None
@@ -313,13 +313,16 @@ class AuthMixIn(object):
                 "Login failed: no such user: {username}", username=username
             )
         else:
+            if password is None:
+                return self.app.invalidQueryResource(request, "password")
+
             authenticated = await self.verifyCredentials(user, password)
 
             if authenticated:
                 session = request.getSession()
                 session.user = user
 
-                url = self.queryValue(request, "o")
+                url = queryValue(request, "o")
                 if url is None:
                     location = URLs.prefix  # Default to application home
                 else:

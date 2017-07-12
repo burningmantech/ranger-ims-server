@@ -50,6 +50,8 @@ from ...dms import DMSError
 __all__ = (
     "application",
     "route",
+    "queryValue",
+    "queryValues",
     "KleinService",
 )
 
@@ -138,64 +140,6 @@ class KleinService(object):
         request.setResponseCode(http.FOUND)
 
         return RedirectPage(self, location)
-
-
-    #
-    # Query arguments
-    #
-
-    def queryValue(
-        self, request: IRequest, name: str, default: Optional[str] = None
-    ) -> Optional[str]:
-        """
-        Look up the value of a query parameter with the given name in the
-        given request.
-
-        @param request: The request to look into.
-
-        @param name: The name of the query parameter to find a value for.
-
-        @param default: The default value to return if no query parameter
-            specified by C{name} is found in C{request}.
-
-        @return: The value of the query parameter specified by C{name}, or
-            C{default} if there no such query parameter.
-            If more than one value is found, return the last value found.
-        """
-        values = request.args.get(name.encode("utf-8"))
-
-        if values is None:
-            return default
-
-        if len(values) > 0:
-            return values[-1].decode("utf-8")
-        else:
-            return default
-
-
-    def queryValues(
-        self, request: IRequest, name: str, default: Iterable[str] = ()
-    ) -> Iterable[str]:
-        """
-        Look up the values of a query parameter with the given name in the
-        given request.
-
-        @param request: The request to look into.
-
-        @param name: The name of the query parameter to find a value for.
-
-        @param default: The default values to return if no query parameter
-            specified by C{name} is found in C{request}.
-
-        @return: The values of the query parameter specified by C{name}, or
-            C{default} if there no such query parameter.
-        """
-        values = request.args.get(name)
-
-        if values is None:
-            return default
-
-        return (a.decode("utf-8") for a in values)
 
 
     #
@@ -419,3 +363,61 @@ class KleinService(object):
         #    a browser, and that's just pitiful.
         self.log.failure("Request failed", failure)
         return self.internalErrorResource(request)
+
+
+#
+# Query arguments
+#
+
+def queryValue(
+    request: IRequest, name: str, default: Optional[str] = None
+) -> Optional[str]:
+    """
+    Look up the value of a query parameter with the given name in the
+    given request.
+
+    @param request: The request to look into.
+
+    @param name: The name of the query parameter to find a value for.
+
+    @param default: The default value to return if no query parameter
+        specified by C{name} is found in C{request}.
+
+    @return: The value of the query parameter specified by C{name}, or
+        C{default} if there no such query parameter.
+        If more than one value is found, return the last value found.
+    """
+    values = request.args.get(name.encode("utf-8"))
+
+    if values is None:
+        return default
+
+    if len(values) > 0:
+        return values[-1].decode("utf-8")
+    else:
+        return default
+
+
+def queryValues(
+    request: IRequest, name: str, default: Iterable[str] = ()
+) -> Iterable[str]:
+    """
+    Look up the values of a query parameter with the given name in the
+    given request.
+
+    @param request: The request to look into.
+
+    @param name: The name of the query parameter to find a value for.
+
+    @param default: The default values to return if no query parameter
+        specified by C{name} is found in C{request}.
+
+    @return: The values of the query parameter specified by C{name}, or
+        C{default} if there no such query parameter.
+    """
+    values = request.args.get(name)
+
+    if values is None:
+        return default
+
+    return (a.decode("utf-8") for a in values)
