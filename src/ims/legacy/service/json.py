@@ -42,7 +42,7 @@ from ims.store import NoSuchIncidentError
 
 from .auth import Authorization
 from .error import NotAuthorizedError
-from .klein import notFoundResource, queryValue, route
+from .klein import notFoundResponse, queryValue, route
 from .urls import URLs
 from ...dms import DMSError
 
@@ -298,12 +298,12 @@ class JSONMixIn(object):
         try:
             number = int(number)
         except ValueError:
-            return notFoundResource(request)
+            return notFoundResponse(request)
 
         try:
             incident = await self.storage.incidentWithNumber(event, number)
         except NoSuchIncidentError:
-            return notFoundResource(request)
+            return notFoundResponse(request)
 
         data = (
             jsonTextFromObject(jsonObjectFromModelObject(incident))
@@ -331,7 +331,7 @@ class JSONMixIn(object):
         try:
             number = int(number)
         except ValueError:
-            return notFoundResource(request)
+            return notFoundResponse(request)
 
         #
         # Get the edits requested by the client
@@ -577,7 +577,7 @@ class JSONMixIn(object):
             number = int(number)
         except ValueError:
             self.authenticateRequest(request)
-            return notFoundResource(request)
+            return notFoundResponse(request)
 
         await self.authorizeRequestForIncidentReport(request, number)
 
@@ -603,7 +603,7 @@ class JSONMixIn(object):
         try:
             number = int(number)
         except ValueError:
-            return notFoundResource(request)
+            return notFoundResponse(request)
 
         #
         # Attach to incident if requested

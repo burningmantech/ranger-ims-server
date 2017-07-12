@@ -101,7 +101,7 @@ def renderResponse(f: KleinRouteMethod) -> KleinRouteMethod:
 # Error resources
 #
 
-def noContentResource(
+def noContentResponse(
     request: IRequest, etag: Optional[str] = None
 ) -> KleinRenderable:
     """
@@ -113,7 +113,7 @@ def noContentResource(
     return b""
 
 
-def textResource(request: IRequest, message: str) -> KleinRenderable:
+def textResponse(request: IRequest, message: str) -> KleinRenderable:
     """
     Respond with the given text.
     """
@@ -124,17 +124,17 @@ def textResource(request: IRequest, message: str) -> KleinRenderable:
     return message.encode("utf-8")
 
 
-def notFoundResource(request: IRequest) -> KleinRenderable:
+def notFoundResponse(request: IRequest) -> KleinRenderable:
     """
     Respond with a NOT FOUND status.
     """
     log.debug("Resource not found: {request.uri}", request=request)
 
     request.setResponseCode(http.NOT_FOUND)
-    return textResource(request, "Not found")
+    return textResponse(request, "Not found")
 
 
-def methodNotAllowedResource(request: IRequest) -> KleinRenderable:
+def methodNotAllowedResponse(request: IRequest) -> KleinRenderable:
     """
     Respond with a METHOD NOT ALLOWED status.
     """
@@ -144,10 +144,10 @@ def methodNotAllowedResource(request: IRequest) -> KleinRenderable:
     )
 
     request.setResponseCode(http.NOT_ALLOWED)
-    return textResource(request, "HTTP method not allowed")
+    return textResponse(request, "HTTP method not allowed")
 
 
-def forbiddenResource(request: IRequest) -> KleinRenderable:
+def forbiddenResponse(request: IRequest) -> KleinRenderable:
     """
     Respond with a FORBIDDEN status.
     """
@@ -157,10 +157,10 @@ def forbiddenResource(request: IRequest) -> KleinRenderable:
     )
 
     request.setResponseCode(http.FORBIDDEN)
-    return textResource(request, "Permission denied")
+    return textResponse(request, "Permission denied")
 
 
-def badRequestResource(
+def badRequestResponse(
     request: IRequest, message: Optional[str] = None
 ) -> KleinRenderable:
     """
@@ -176,26 +176,26 @@ def badRequestResource(
         message = "Bad request"
     else:
         message = "{}".format(message)
-    return textResource(request, message)
+    return textResponse(request, message)
 
 
-def invalidQueryResource(
+def invalidQueryResponse(
     request: IRequest, arg: str, value: Optional[str] = None
 ) -> KleinRenderable:
     """
     Respond with a BAD REQUEST status due to an invalid query.
     """
     if value is None:
-        return badRequestResource(
+        return badRequestResponse(
             request, "Invalid query: missing parameter {}".format(arg)
         )
     else:
-        return badRequestResource(
+        return badRequestResponse(
             request, "Invalid query: {}={}".format(arg, value)
         )
 
 
-def internalErrorResource(
+def internalErrorResponse(
     request: IRequest, message: Optional[str] = None
 ) -> KleinRenderable:
     """
@@ -211,7 +211,7 @@ def internalErrorResource(
         message = "Internal error"
     else:
         message = "{}".format(message)
-    return textResource(request, message)
+    return textResponse(request, message)
 
 
 #

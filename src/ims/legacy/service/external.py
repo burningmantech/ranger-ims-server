@@ -30,7 +30,7 @@ from twisted.web.iweb import IRequest
 
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
-from .klein import notFoundResource, route
+from .klein import notFoundResponse, route
 from .urls import URLs
 
 
@@ -229,7 +229,7 @@ class ExternalMixIn(object):
                 "Unable to open file {filePath.path}: {error}",
                 filePath=filePath, error=e,
             )
-            return notFoundResource(request)
+            return notFoundResponse(request)
 
 
     async def cachedZippedResource(
@@ -254,13 +254,13 @@ class ExternalMixIn(object):
                 archivePath.remove()
             except (OSError, IOError):
                 pass
-            return notFoundResource(request)
+            return notFoundResponse(request)
         except (OSError, IOError) as e:
             self.log.error(
                 "Unable to open zip archive {archive.path}: {error}",
                 archive=archivePath, error=e,
             )
-            return notFoundResource(request)
+            return notFoundResponse(request)
 
         filePath = filePath.child(name)
         for name in names:
@@ -274,4 +274,4 @@ class ExternalMixIn(object):
                 filePath=filePath,
                 archive=archivePath,
             )
-            return notFoundResource(request)
+            return notFoundResponse(request)

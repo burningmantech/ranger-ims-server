@@ -48,8 +48,8 @@ from .eventsource import DataStoreEventSourceLogObserver
 from .external import ExternalMixIn
 from .json import JSONMixIn
 from .klein import (
-    forbiddenResource, internalErrorResource, methodNotAllowedResource,
-    notFoundResource, renderResponse, router,
+    forbiddenResponse, internalErrorResponse, methodNotAllowedResponse,
+    notFoundResponse, renderResponse, router,
 )
 from .urls import URLs
 from .web import WebMixIn
@@ -145,7 +145,7 @@ class WebService(AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
         # This is because exposing what resources do or do not exist can expose
         # information that was not meant to be exposed.
         self.authenticateRequest(request)
-        return notFoundResource(request)
+        return notFoundResponse(request)
 
 
     @router.handle_errors(MethodNotAllowed)
@@ -160,7 +160,7 @@ class WebService(AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
         # This is because exposing what resources do or do not exist can expose
         # information that was not meant to be exposed.
         self.authenticateRequest(request)
-        return methodNotAllowedResource(request)
+        return methodNotAllowedResponse(request)
 
 
     @router.handle_errors(NotAuthorizedError)
@@ -171,7 +171,7 @@ class WebService(AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
         """
         Not authorized.
         """
-        return forbiddenResource(request)
+        return forbiddenResponse(request)
 
 
     @router.handle_errors(NotAuthenticatedError)
@@ -195,7 +195,7 @@ class WebService(AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
         DMS error.
         """
         self._log.failure("DMS error", failure)
-        return internalErrorResource(request)
+        return internalErrorResponse(request)
 
 
     @router.handle_errors
@@ -219,7 +219,7 @@ class WebService(AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
         #    request, which often means that it displays like a total mess in
         #    a browser, and that's just pitiful.
         self._log.failure("Request failed", failure)
-        return internalErrorResource(request)
+        return internalErrorResponse(request)
 
 
     #
@@ -318,4 +318,4 @@ class WebService(AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
             self.log.error(
                 "File not found: {filePath.path}", filePath=filePath
             )
-            return notFoundResource(request)
+            return notFoundResponse(request)
