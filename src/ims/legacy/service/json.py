@@ -42,7 +42,7 @@ from ims.store import NoSuchIncidentError
 
 from .auth import Authorization
 from .error import NotAuthorizedError
-from .klein import notFoundResponse, queryValue, route
+from .klein import invalidQueryResponse, notFoundResponse, queryValue, route
 from .urls import URLs
 from ...dms import DMSError
 
@@ -460,10 +460,10 @@ class JSONMixIn(object):
         incidentNumberText = queryValue(request, "incident")
 
         if eventID is None:
-            return self.invalidQueryResource(request, "event")
+            return invalidQueryResponse(request, "event")
 
         if incidentNumberText is None:
-            return self.invalidQueryResource(request, "incident")
+            return invalidQueryResponse(request, "incident")
 
         if eventID == incidentNumberText == "":
             await self.authorizeRequest(
@@ -475,14 +475,14 @@ class JSONMixIn(object):
             try:
                 event = Event(id=eventID)
             except ValueError:
-                return self.invalidQueryResource(
+                return invalidQueryResponse(
                     request, "event", eventID
                 )
 
             try:
                 incidentNumber = int(incidentNumberText)
             except ValueError:
-                return self.invalidQueryResource(
+                return invalidQueryResponse(
                     request, "incident", incidentNumberText
                 )
 
@@ -615,20 +615,20 @@ class JSONMixIn(object):
             incidentNumberText = queryValue(request, "incident")
 
             if eventID is None:
-                return self.invalidQueryResource(request, "event")
+                return invalidQueryResponse(request, "event")
 
             if incidentNumberText is None:
-                return self.invalidQueryResource(request, "incident")
+                return invalidQueryResponse(request, "incident")
 
             try:
                 event = Event(id=eventID)
             except ValueError:
-                return self.invalidQueryResource(request, "event", eventID)
+                return invalidQueryResponse(request, "event", eventID)
 
             try:
                 incidentNumber = int(incidentNumberText)
             except ValueError:
-                return self.invalidQueryResource(
+                return invalidQueryResponse(
                     request, "incident", incidentNumberText
                 )
 
@@ -641,7 +641,7 @@ class JSONMixIn(object):
                     number, event, incidentNumber
                 )
             else:
-                return self.invalidQueryResource(request, "action", action)
+                return invalidQueryResponse(request, "action", action)
 
         #
         # Get the edits requested by the client

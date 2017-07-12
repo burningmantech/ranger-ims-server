@@ -33,7 +33,7 @@ from ims.ext.klein import KleinRenderable
 from ims.model import Event, Ranger
 
 from .error import NotAuthenticatedError, NotAuthorizedError
-from .klein import queryValue, route
+from .klein import invalidQueryResponse, queryValue, route
 from .urls import URLs
 from ..element.login import LoginPage
 
@@ -317,7 +317,7 @@ class AuthMixIn(object):
             )
         else:
             if password is None:
-                return self.invalidQueryResource(request, "password")
+                return invalidQueryResponse(request, "password")
 
             authenticated = await self.verifyCredentials(user, password)
 
