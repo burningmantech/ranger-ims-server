@@ -25,22 +25,18 @@ from attr.validators import instance_of
 
 from twisted.logger import Logger
 from twisted.python.constants import FlagConstant, Flags
-from twisted.python.url import URL
 from twisted.web.iweb import IRequest
 
 from ims.dms import DMSError, verifyPassword
-from ims.ext.klein import KleinRenderable
 from ims.model import Event, Ranger
 
+from .config import Configuration
 from .error import NotAuthenticatedError, NotAuthorizedError
-from .klein import invalidQueryResponse, queryValue, route
-from .urls import URLs
-from ..element.login import LoginPage
 
 
 __all__ = (
+    "AuthProvider",
     "Authorization",
-    "AuthMixIn",
 )
 
 
@@ -96,12 +92,15 @@ class User(object):
 
 
 
-class AuthMixIn(object):
+@attrs(frozen=True)
+class AuthProvider(object):
     """
-    Mix-in for authentication and authorization support.
+    Provider for authentication and authorization support.
     """
 
     _log = Logger()
+
+    config: Configuration = attrib(validator=instance_of(Configuration))
 
 
     async def verifyCredentials(self, user: User, password: str) -> bool:
@@ -242,7 +241,7 @@ class AuthMixIn(object):
         authFailure = None
 
         for event, _incidentNumber in (
-            self.storage.incidentsAttachedToIncidentReport(number)
+            self.config.storage.incidentsAttachedToIncidentReport(number)
         ):
             # No incident attached; use the authorization for reading incidents
             # from the corresponding event.
@@ -271,9 +270,11 @@ class AuthMixIn(object):
         """
         Look up the user record for a user short name.
         """
+        dms = self.config.dms
+
         # FIXME: a hash would be better (eg. rangersByHandle)
         try:
-            rangers = tuple(await self.dms.personnel())
+            rangers = tuple(await dms.personnel())
         except DMSError as e:
             self._log.critical("Unable to load personnel: {error}", error=e)
             return None
@@ -288,7 +289,7 @@ class AuthMixIn(object):
             else:
                 return None
 
-        positions = tuple(await self.dms.positions())
+        positions = tuple(await dms.positions())
 
         groups = tuple(
             position.name for position in positions
@@ -296,70 +297,3 @@ class AuthMixIn(object):
         )
 
         return User(ranger=ranger, groups=groups)
-
-
-    @route(URLs.login.asText(), methods=("POST",))
-    async def loginSubmit(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for a login form submission.
-        """
-        username = queryValue(request, "username")
-        password = queryValue(request, "password", default="")
-
-        if username is None:
-            user = None
-        else:
-            user = await self.lookupUserName(username)
-
-        if user is None:
-            self._log.debug(
-                "Login failed: no such user: {username}", username=username
-            )
-        else:
-            if password is None:
-                return invalidQueryResponse(request, "password")
-
-            authenticated = await self.verifyCredentials(user, password)
-
-            if authenticated:
-                session = request.getSession()
-                session.user = user
-
-                url = queryValue(request, "o")
-                if url is None:
-                    location = URLs.prefix  # Default to application home
-                else:
-                    location = URL.fromText(url)
-
-                return self.redirect(request, location)
-            else:
-                self._log.debug(
-                    "Login failed: incorrect credentials for user: {user}",
-                    user=user
-                )
-
-        return self.login(request, failed=True)
-
-
-    @route(URLs.login.asText(), methods=("HEAD", "GET"))
-    def login(
-        self, request: IRequest, failed: bool = False
-    ) -> KleinRenderable:
-        """
-        Endpoint for the login page.
-        """
-        self.authenticateRequest(request, optional=True)
-
-        return LoginPage(self, failed=failed)
-
-
-    @route(URLs.logout.asText(), methods=("HEAD", "GET"))
-    def logout(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for logging out.
-        """
-        session = request.getSession()
-        session.expire()
-
-        # Redirect back to application home
-        return self.redirect(request, URLs.prefix)

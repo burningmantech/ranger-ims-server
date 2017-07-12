@@ -41,18 +41,20 @@ from ims.dms import DutyManagementSystem
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable
 from ims.store import IMSDataStore
 
-from .auth import AuthMixIn
+from .auth import AuthProvider
 from .config import Configuration
 from .error import NotAuthenticatedError, NotAuthorizedError
 from .eventsource import DataStoreEventSourceLogObserver
 from .external import ExternalMixIn
 from .json import JSONMixIn
 from .klein import (
-    forbiddenResponse, internalErrorResponse, methodNotAllowedResponse,
-    notFoundResponse, renderResponse, router,
+    forbiddenResponse, internalErrorResponse, invalidQueryResponse,
+    methodNotAllowedResponse, notFoundResponse,
+    queryValue, renderResponse, route, router,
 )
 from .urls import URLs
 from .web import WebMixIn
+from ..element.login import LoginPage
 from ..element.redirect import RedirectPage
 from ...dms import DMSError
 
@@ -65,12 +67,12 @@ __all__ = (
 
 
 @attrs(frozen=True)
-class WebService(AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
+class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
     """
     Incident Management System web service.
     """
 
-    log = Logger()
+    log = _log = Logger()
     router = router
 
 
@@ -78,6 +80,13 @@ class WebService(AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
 
     storeObserver: ILogObserver = attrib(
         default=Factory(DataStoreEventSourceLogObserver), init=False
+    )
+
+    auth: AuthProvider = attrib(
+        default=Factory(
+            lambda self: AuthProvider(config=self.config), takes_self=True
+        ),
+        init=False,
     )
 
 
@@ -118,6 +127,77 @@ class WebService(AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
 
 
     #
+    # Auth
+    #
+
+    @route(URLs.login.asText(), methods=("POST",))
+    async def loginSubmit(self, request: IRequest) -> KleinRenderable:
+        """
+        Endpoint for a login form submission.
+        """
+        username = queryValue(request, "username")
+        password = queryValue(request, "password", default="")
+
+        if username is None:
+            user = None
+        else:
+            user = await self.auth.lookupUserName(username)
+
+        if user is None:
+            self._log.debug(
+                "Login failed: no such user: {username}", username=username
+            )
+        else:
+            if password is None:
+                return invalidQueryResponse(request, "password")
+
+            authenticated = await self.auth.verifyCredentials(user, password)
+
+            if authenticated:
+                session = request.getSession()
+                session.user = user
+
+                url = queryValue(request, "o")
+                if url is None:
+                    location = URLs.prefix  # Default to application home
+                else:
+                    location = URL.fromText(url)
+
+                return self.redirect(request, location)
+            else:
+                self._log.debug(
+                    "Login failed: incorrect credentials for user: {user}",
+                    user=user
+                )
+
+        return self.login(request, failed=True)
+
+
+    @route(URLs.login.asText(), methods=("HEAD", "GET"))
+    def login(
+        self, request: IRequest, failed: bool = False
+    ) -> KleinRenderable:
+        """
+        Endpoint for the login page.
+        """
+        self.auth.authenticateRequest(request, optional=True)
+
+        return LoginPage(self, failed=failed)
+
+
+    @route(URLs.logout.asText(), methods=("HEAD", "GET"))
+    def logout(self, request: IRequest) -> KleinRenderable:
+        """
+        Endpoint for logging out.
+        """
+        session = request.getSession()
+        session.expire()
+
+        # Redirect back to application home
+        return self.redirect(request, URLs.prefix)
+
+
+    #
     # Error handlers
     #
 
@@ -144,7 +224,7 @@ class WebService(AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
         # Require authentication.
         # This is because exposing what resources do or do not exist can expose
         # information that was not meant to be exposed.
-        self.authenticateRequest(request)
+        self.auth.authenticateRequest(request)
         return notFoundResponse(request)
 
 
@@ -159,7 +239,7 @@ class WebService(AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
         # Require authentication.
         # This is because exposing what resources do or do not exist can expose
         # information that was not meant to be exposed.
-        self.authenticateRequest(request)
+        self.auth.authenticateRequest(request)
         return methodNotAllowedResponse(request)
 
 

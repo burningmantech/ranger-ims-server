@@ -77,7 +77,7 @@ class JSONMixIn(object):
         """
         Personnel endpoint.
         """
-        await self.authorizeRequest(
+        await self.auth.authorizeRequest(
             request, None, Authorization.readPersonnel
         )
 
@@ -113,7 +113,7 @@ class JSONMixIn(object):
         """
         Incident types endpoint.
         """
-        self.authenticateRequest(request)
+        self.auth.authenticateRequest(request)
 
         hidden = queryValue(request, "hidden") == "true"
 
@@ -136,7 +136,7 @@ class JSONMixIn(object):
         """
         Incident types editing endpoint.
         """
-        await self.authorizeRequest(
+        await self.auth.authorizeRequest(
             request, None, Authorization.imsAdmin
         )
 
@@ -185,7 +185,7 @@ class JSONMixIn(object):
         """
         event = Event(eventID)
 
-        await self.authorizeRequest(
+        await self.auth.authorizeRequest(
             request, event, Authorization.readIncidents
         )
 
@@ -202,7 +202,7 @@ class JSONMixIn(object):
         """
         event = Event(eventID)
 
-        await self.authorizeRequest(
+        await self.auth.authorizeRequest(
             request, event, Authorization.readIncidents
         )
 
@@ -225,7 +225,7 @@ class JSONMixIn(object):
         """
         event = Event(eventID)
 
-        await self.authorizeRequest(
+        await self.auth.authorizeRequest(
             request, event, Authorization.writeIncidents
         )
 
@@ -291,7 +291,7 @@ class JSONMixIn(object):
         """
         event = Event(eventID)
 
-        await self.authorizeRequest(
+        await self.auth.authorizeRequest(
             request, event, Authorization.readIncidents
         )
 
@@ -322,7 +322,7 @@ class JSONMixIn(object):
         """
         event = Event(eventID)
 
-        await self.authorizeRequest(
+        await self.auth.authorizeRequest(
             request, event, Authorization.writeIncidents
         )
 
@@ -466,7 +466,7 @@ class JSONMixIn(object):
             return invalidQueryResponse(request, "incident")
 
         if eventID == incidentNumberText == "":
-            await self.authorizeRequest(
+            await self.auth.authorizeRequest(
                 request, None, Authorization.readIncidentReports
             )
             incidentReports = await storage.detachedIncidentReports()
@@ -486,7 +486,7 @@ class JSONMixIn(object):
                     request, "incident", incidentNumberText
                 )
 
-            await self.authorizeRequest(
+            await self.auth.authorizeRequest(
                 request, event, Authorization.readIncidents
             )
             incidentReports = await storage.incidentReportsAttachedToIncident(
@@ -510,7 +510,7 @@ class JSONMixIn(object):
         """
         New incident report endpoint.
         """
-        await self.authorizeRequest(
+        await self.auth.authorizeRequest(
             request, None, Authorization.writeIncidentReports
         )
 
@@ -576,10 +576,10 @@ class JSONMixIn(object):
         try:
             number = int(number)
         except ValueError:
-            self.authenticateRequest(request)
+            self.auth.authenticateRequest(request)
             return notFoundResponse(request)
 
-        await self.authorizeRequestForIncidentReport(request, number)
+        await self.auth.authorizeRequestForIncidentReport(request, number)
 
         incidentReport = await self.storage.incidentReport(number)
         text = jsonTextFromObject(jsonObjectFromModelObject(incidentReport))

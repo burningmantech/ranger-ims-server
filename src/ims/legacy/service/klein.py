@@ -70,7 +70,7 @@ def route(
             # Capture authentication info if sent by the client, (ie. it's been
             # previously asked to authenticate), so we can log it, but don't
             # require authentication.
-            self.authenticateRequest(request, optional=True)
+            self.auth.authenticateRequest(request, optional=True)
 
             return f(self, request, *args, **kwargs)
 
