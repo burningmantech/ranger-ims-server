@@ -48,8 +48,8 @@ from ...dms import DMSError
 
 
 __all__ = (
-    "application",
     "route",
+    "router",
     "queryValue",
     "queryValues",
     "KleinService",
@@ -57,7 +57,7 @@ __all__ = (
 
 
 
-application = Klein()
+router = Klein()
 
 
 def route(
@@ -68,7 +68,7 @@ def route(
     all endpoints.
     """
     def decorator(f: KleinRouteMethod) -> KleinRouteMethod:
-        @application.route(*args, **kwargs)
+        @router.route(*args, **kwargs)
         @wraps(f)
         def wrapper(
             self: Any, request: IRequest, *args: Any, **kwargs: Any
@@ -115,7 +115,7 @@ class KleinService(object):
     """
 
     _log = Logger()
-    app = application
+    app = router
 
     def resource(self) -> KleinResource:
         """
