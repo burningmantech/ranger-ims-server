@@ -21,14 +21,12 @@ Incident Management System web service.
 from hashlib import sha1
 from typing import Any, Iterable, Optional
 from typing.io import BinaryIO
-from zipfile import BadZipfile
 
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of
 
 from twisted.logger import ILogObserver, Logger, globalLogPublisher
 from twisted.python.filepath import FilePath
-from twisted.python.zippath import ZipArchive
 from twisted.web.iweb import IRequest
 
 from ims.dms import DutyManagementSystem
@@ -40,7 +38,7 @@ from .config import Configuration
 from .eventsource import DataStoreEventSourceLogObserver
 from .external import ExternalMixIn
 from .json import JSONMixIn
-from .klein import KleinService
+from .klein import KleinService, notFoundResource
 from .web import WebMixIn
 
 
@@ -178,4 +176,4 @@ class WebService(KleinService, AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
             self.log.error(
                 "File not found: {filePath.path}", filePath=filePath
             )
-            return self.notFoundResource(request)
+            return notFoundResource(request)

@@ -57,6 +57,7 @@ __all__ = (
 
 
 router = Klein()
+log = Logger()
 
 
 def route(
@@ -136,132 +137,6 @@ class KleinService(object):
 
 
     #
-    # Error resources
-    #
-
-    def noContentResource(
-        self, request: IRequest, etag: Optional[str] = None
-    ) -> KleinRenderable:
-        """
-        Respond with no content.
-        """
-        request.setResponseCode(http.NO_CONTENT)
-        if etag is not None:
-            request.setHeader(HeaderName.etag.value, etag)
-        return b""
-
-
-    def textResource(self, request: IRequest, message: str) -> KleinRenderable:
-        """
-        Respond with the given text.
-        """
-        request.setHeader(HeaderName.contentType.value, ContentType.text.value)
-        request.setHeader(
-            HeaderName.etag.value, str(hash(message)).encode("ascii")
-        )
-        return message.encode("utf-8")
-
-
-    def notFoundResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Respond with a NOT FOUND status.
-        """
-        self._log.debug("Resource not found: {request.uri}", request=request)
-
-        # Require authentication.
-        # This is because exposing what resources do or do not exist can expose
-        # information that was not meant to be exposed.
-        self.authenticateRequest(request)
-        request.setResponseCode(http.NOT_FOUND)
-        return self.textResource(request, "Not found")
-
-
-    def methodNotAllowedResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Respond with a METHOD NOT ALLOWED status.
-        """
-        self._log.debug(
-            "Method {request.method} not allowed for resource: {request.uri}",
-            request=request
-        )
-
-        # Require authentication.
-        # This is because exposing what resources do or do not exist can expose
-        # information that was not meant to be exposed.
-        self.authenticateRequest(request)
-        request.setResponseCode(http.NOT_ALLOWED)
-        return self.textResource(request, "HTTP method not allowed")
-
-
-    def forbiddenResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Respond with a FORBIDDEN status.
-        """
-        user = getattr(request, "user", None)
-        self._log.debug(
-            "Forbidden resource for user {user}: {request.uri}",
-            request=request, user=user
-        )
-
-        request.setResponseCode(http.FORBIDDEN)
-        return self.textResource(request, "Permission denied")
-
-
-    def badRequestResource(
-        self, request: IRequest, message: Optional[str] = None
-    ) -> KleinRenderable:
-        """
-        Respond with a BAD REQUEST status.
-        """
-        self._log.debug(
-            "Bad request for resource: {request.uri}: {message}",
-            request=request, message=message
-        )
-
-        request.setResponseCode(http.BAD_REQUEST)
-        if message is None:
-            message = "Bad request"
-        else:
-            message = "{}".format(message)
-        return self.textResource(request, message)
-
-
-    def invalidQueryResource(
-        self, request: IRequest, arg: str, value: Optional[str] = None
-    ) -> KleinRenderable:
-        """
-        Respond with a BAD REQUEST status due to an invalid query.
-        """
-        if value is None:
-            return self.badRequestResource(
-                request, "Invalid query: missing parameter {}".format(arg)
-            )
-        else:
-            return self.badRequestResource(
-                request, "Invalid query: {}={}".format(arg, value)
-            )
-
-
-    def internalErrorResource(
-        self, request: IRequest, message: Optional[str] = None
-    ) -> KleinRenderable:
-        """
-        Respond with an INTERNAL SERVER ERROR status.
-        """
-        self._log.critical(
-            "Internal error for resource: {request.uri}: {message}",
-            request=request, message=message
-        )
-
-        request.setResponseCode(http.INTERNAL_SERVER_ERROR)
-        if message is None:
-            message = "Internal error"
-        else:
-            message = "{}".format(message)
-        return self.textResource(request, message)
-
-
-    #
     # Error handlers
     #
 
@@ -285,7 +160,11 @@ class KleinService(object):
         """
         Not found.
         """
-        return self.notFoundResource(request)
+        # Require authentication.
+        # This is because exposing what resources do or do not exist can expose
+        # information that was not meant to be exposed.
+        self.authenticateRequest(request)
+        return notFoundResource(request)
 
 
     @router.handle_errors(MethodNotAllowed)
@@ -296,7 +175,11 @@ class KleinService(object):
         """
         HTTP method not allowed.
         """
-        return self.methodNotAllowedResource(request)
+        # Require authentication.
+        # This is because exposing what resources do or do not exist can expose
+        # information that was not meant to be exposed.
+        self.authenticateRequest(request)
+        return methodNotAllowedResource(request)
 
 
     @router.handle_errors(NotAuthorizedError)
@@ -307,7 +190,7 @@ class KleinService(object):
         """
         Not authorized.
         """
-        return self.forbiddenResource(request)
+        return forbiddenResource(request)
 
 
     @router.handle_errors(NotAuthenticatedError)
@@ -331,7 +214,7 @@ class KleinService(object):
         DMS error.
         """
         self._log.failure("DMS error", failure)
-        return self.internalErrorResource(request)
+        return internalErrorResource(request)
 
 
     @router.handle_errors
@@ -355,8 +238,125 @@ class KleinService(object):
         #    request, which often means that it displays like a total mess in
         #    a browser, and that's just pitiful.
         self._log.failure("Request failed", failure)
-        return self.internalErrorResource(request)
+        return internalErrorResource(request)
 
+
+
+#
+# Error resources
+#
+
+def noContentResource(
+    request: IRequest, etag: Optional[str] = None
+) -> KleinRenderable:
+    """
+    Respond with no content.
+    """
+    request.setResponseCode(http.NO_CONTENT)
+    if etag is not None:
+        request.setHeader(HeaderName.etag.value, etag)
+    return b""
+
+
+def textResource(request: IRequest, message: str) -> KleinRenderable:
+    """
+    Respond with the given text.
+    """
+    request.setHeader(HeaderName.contentType.value, ContentType.text.value)
+    request.setHeader(
+        HeaderName.etag.value, str(hash(message)).encode("ascii")
+    )
+    return message.encode("utf-8")
+
+
+def notFoundResource(request: IRequest) -> KleinRenderable:
+    """
+    Respond with a NOT FOUND status.
+    """
+    log.debug("Resource not found: {request.uri}", request=request)
+
+    request.setResponseCode(http.NOT_FOUND)
+    return textResource(request, "Not found")
+
+
+def methodNotAllowedResource(request: IRequest) -> KleinRenderable:
+    """
+    Respond with a METHOD NOT ALLOWED status.
+    """
+    log.debug(
+        "Method {request.method} not allowed for resource: {request.uri}",
+        request=request
+    )
+
+    request.setResponseCode(http.NOT_ALLOWED)
+    return textResource(request, "HTTP method not allowed")
+
+
+def forbiddenResource(request: IRequest) -> KleinRenderable:
+    """
+    Respond with a FORBIDDEN status.
+    """
+    log.debug(
+        "Forbidden resource for user {user}: {request.uri}",
+        request=request, user=getattr(request, "user", None)
+    )
+
+    request.setResponseCode(http.FORBIDDEN)
+    return textResource(request, "Permission denied")
+
+
+def badRequestResource(
+    request: IRequest, message: Optional[str] = None
+) -> KleinRenderable:
+    """
+    Respond with a BAD REQUEST status.
+    """
+    log.debug(
+        "Bad request for resource: {request.uri}: {message}",
+        request=request, message=message
+    )
+
+    request.setResponseCode(http.BAD_REQUEST)
+    if message is None:
+        message = "Bad request"
+    else:
+        message = "{}".format(message)
+    return textResource(request, message)
+
+
+def invalidQueryResource(
+    request: IRequest, arg: str, value: Optional[str] = None
+) -> KleinRenderable:
+    """
+    Respond with a BAD REQUEST status due to an invalid query.
+    """
+    if value is None:
+        return badRequestResource(
+            request, "Invalid query: missing parameter {}".format(arg)
+        )
+    else:
+        return badRequestResource(
+            request, "Invalid query: {}={}".format(arg, value)
+        )
+
+
+def internalErrorResource(
+    request: IRequest, message: Optional[str] = None
+) -> KleinRenderable:
+    """
+    Respond with an INTERNAL SERVER ERROR status.
+    """
+    log.critical(
+        "Internal error for resource: {request.uri}: {message}",
+        request=request, message=message
+    )
+
+    request.setResponseCode(http.INTERNAL_SERVER_ERROR)
+    if message is None:
+        message = "Internal error"
+    else:
+        message = "{}".format(message)
+    return textResource(request, message)
 
 
 #

@@ -26,7 +26,7 @@ from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ims.model import Event
 
 from .auth import Authorization
-from .klein import route
+from .klein import notFoundResource, route
 from .urls import URLs
 from ..element.admin import AdminPage
 from ..element.admin_acl import AdminAccessControlPage
@@ -270,7 +270,7 @@ class WebMixIn(object):
             try:
                 numberValue = int(number)
             except ValueError:
-                return self.notFoundResource(request)
+                return notFoundResource(request)
 
         await self.authorizeRequest(request, event, authz)
 
@@ -317,7 +317,7 @@ class WebMixIn(object):
             try:
                 numberValue = int(number)
             except ValueError:
-                return self.notFoundResource(request)
+                return notFoundResource(request)
 
             await self.authorizeRequestForIncidentReport(request, numberValue)
 
