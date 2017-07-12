@@ -160,7 +160,7 @@ class AuthMixIn(object):
         """
         Look up the authorizations that a user has for a given event.
         """
-        async def matchACL(user: User, acl: Container[str]) -> bool:
+        def matchACL(user: User, acl: Container[str]) -> bool:
             if "*" in acl:
                 return True
 
