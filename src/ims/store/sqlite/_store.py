@@ -44,7 +44,7 @@ from ims.model import (
 from ims.model.json import IncidentJSONKey, modelObjectFromJSONObject
 
 from .._abc import IMSDataStore
-from .._exceptions import StorageError
+from .._exceptions import NoSuchIncidentError, StorageError
 
 Parameters  # Silence linter
 
@@ -505,6 +505,11 @@ class DataStore(IMSDataStore):
 
         cursor.execute(self._query_incident, params)
         row = cursor.fetchone()
+
+        if row is None:
+            raise NoSuchIncidentError(
+                "No incident #{} in event {}".format(incidentNumber, event)
+            )
 
         rangerHandles = tuple(
             row["RANGER_HANDLE"]
