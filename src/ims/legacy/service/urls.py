@@ -39,8 +39,9 @@ class URLs(object):
 
     logo = prefix.child("logo.png")
 
-    login  = prefix.child("login")
-    logout = prefix.child("logout")
+    auth   = prefix.child("auth")
+    login  = auth.child("login")
+    logout = auth.child("logout")
 
     jqueryBase = prefix.child("jquery").child("")
     jqueryJS   = jqueryBase.child("jquery.min.js")
