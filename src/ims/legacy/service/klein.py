@@ -24,7 +24,6 @@ from functools import wraps
 from typing import Any, Callable, Iterable, Optional
 
 from klein import Klein
-from klein.resource import KleinResource
 
 from twisted.logger import Logger
 from twisted.python.failure import Failure
@@ -116,12 +115,6 @@ class KleinService(object):
 
     _log = Logger()
     router = router
-
-    def resource(self) -> KleinResource:
-        """
-        Return the Klein resource.
-        """
-        return self.router.resource()
 
 
     def redirect(

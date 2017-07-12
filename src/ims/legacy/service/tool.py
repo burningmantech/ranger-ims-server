@@ -138,7 +138,7 @@ class WebTool(Executable):
             host=host, port=port,
         )
 
-        factory = Site(service.resource())
+        factory = Site(service.router.resource())
         factory.sessionFactory = IMSSession
 
         from twisted.internet import reactor
