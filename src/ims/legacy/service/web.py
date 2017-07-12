@@ -25,7 +25,7 @@ from twisted.web.iweb import IRequest
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ims.model import Event
 
-from .auth import Authorization
+from .auth import AuthProvider, Authorization
 from .klein import notFoundResponse, route
 from .urls import URLs
 from ..element.admin import AdminPage
@@ -53,6 +53,8 @@ class WebMixIn(object):
     """
     Mix-in for web interface.
     """
+
+    auth: AuthProvider
 
     #
     # Static content
