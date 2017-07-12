@@ -212,7 +212,7 @@ class AuthMixIn(object):
         """
         self.authenticateRequest(request)
 
-        userAuthorizations = self.authorizationsForUser(
+        userAuthorizations = await self.authorizationsForUser(
             request.user, event
         )
         request.authorizations = userAuthorizations
