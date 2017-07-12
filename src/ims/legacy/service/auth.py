@@ -101,6 +101,9 @@ class AuthMixIn(object):
     Mix-in for authentication and authorization support.
     """
 
+    _log = Logger()
+
+
     async def verifyCredentials(self, user: User, password: str) -> bool:
         """
         Verify a password for the given user.
@@ -121,10 +124,10 @@ class AuthMixIn(object):
 
                 authenticated = verifyPassword(password, hashedPassword)
             except Exception:
-                self.log.failure("Unable to check password")
+                self._log.failure("Unable to check password")
                 authenticated = False
 
-        self.log.debug(
+        self._log.debug(
             "Valid credentials for {user}: {result}",
             user=user, result=authenticated,
         )
@@ -147,7 +150,7 @@ class AuthMixIn(object):
         request.user = getattr(session, "user", None)
 
         if request.user is None and not optional:
-            self.log.debug("Authentication failed")
+            self._log.debug("Authentication failed")
             raise NotAuthenticatedError()
 
 
@@ -194,7 +197,7 @@ class AuthMixIn(object):
                         ):
                             authorizations |= Authorization.readIncidents
 
-        self.log.debug(
+        self._log.debug(
             "Authz for {user}: {authorizations}",
             user=user, authorizations=authorizations,
         )
@@ -218,7 +221,7 @@ class AuthMixIn(object):
         request.authorizations = userAuthorizations
 
         if not (requiredAuthorizations & userAuthorizations):
-            self.log.debug(
+            self._log.debug(
                 "Authorization failed for {request.user}. "
                 "Requires {requiredAuthorizations}, has {userAuthorizations}. "
                 "URI: {request.uri}",
@@ -272,7 +275,7 @@ class AuthMixIn(object):
         try:
             rangers = tuple(await self.dms.personnel())
         except DMSError as e:
-            self.log.critical("Unable to load personnel: {error}", error=e)
+            self._log.critical("Unable to load personnel: {error}", error=e)
             return None
 
         for ranger in rangers:
@@ -309,7 +312,7 @@ class AuthMixIn(object):
             user = await self.lookupUserName(username)
 
         if user is None:
-            self.log.debug(
+            self._log.debug(
                 "Login failed: no such user: {username}", username=username
             )
         else:
@@ -330,7 +333,7 @@ class AuthMixIn(object):
 
                 return self.redirect(request, location)
             else:
-                self.log.debug(
+                self._log.debug(
                     "Login failed: incorrect credentials for user: {user}",
                     user=user
                 )
