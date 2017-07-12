@@ -37,6 +37,7 @@ from ims.ext.klein import (
 
 
 __all__ = (
+    "Router",
     "route",
     "router",
     "queryValue",
@@ -44,38 +45,41 @@ __all__ = (
 )
 
 
-
-router = Klein()
 log = Logger()
 
 
-def route(
-    *args: Any, **kwargs: Any
-) -> Callable[[KleinRouteMethod], KleinRouteMethod]:
-    """
-    Decorator that applies a Klein route and anything else we want applied to
-    all endpoints.
-    """
-    def decorator(f: KleinRouteMethod) -> KleinRouteMethod:
-        @router.route(*args, **kwargs)
-        @wraps(f)
-        def wrapper(
-            self: Any, request: IRequest, *args: Any, **kwargs: Any
-        ) -> KleinRenderable:
-            request.setHeader(
-                HeaderName.server.value,
-                "Incident Management System/{}".format(version),
-            )
 
-            # Capture authentication info if sent by the client, (ie. it's been
-            # previously asked to authenticate), so we can log it, but don't
-            # require authentication.
-            self.auth.authenticateRequest(request, optional=True)
+class Router(Klein):
+    def route(
+        self, url: str, *args: Any, **kwargs: Any
+    ) -> Callable[[KleinRouteMethod], KleinRouteMethod]:
+        superRoute = super().route
 
-            return f(self, request, *args, **kwargs)
+        def decorator(f: KleinRouteMethod) -> KleinRouteMethod:
+            @superRoute(url, *args, **kwargs)
+            @wraps(f)
+            def wrapper(
+                app: Any, request: IRequest, *args: Any, **kwargs: Any
+            ) -> KleinRenderable:
+                request.setHeader(
+                    HeaderName.server.value,
+                    "Incident Management System/{}".format(version),
+                )
 
-        return wrapper
-    return decorator
+                # Capture authentication info if sent by the client, (ie. it's
+                # been previously asked to authenticate), so we can log it, but
+                # don't require authentication.
+                app.auth.authenticateRequest(request, optional=True)
+
+                return f(app, request, *args, **kwargs)
+
+            return wrapper
+        return decorator
+
+
+
+router = Router()
+route = router.route
 
 
 def renderResponse(f: KleinRouteMethod) -> KleinRouteMethod:
