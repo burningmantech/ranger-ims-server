@@ -23,15 +23,22 @@ from typing import Container, Optional, Sequence
 from attr import attrib, attrs
 from attr.validators import instance_of
 
+from hyperlink import URL
+
 from twisted.logger import Logger
 from twisted.python.constants import FlagConstant, Flags
 from twisted.web.iweb import IRequest
 
 from ims.dms import DMSError, verifyPassword
+from ims.ext.klein import KleinRenderable, KleinRouteMethod
 from ims.model import Event, Ranger
+from ims.store import IMSDataStore
 
 from .config import Configuration
 from .error import NotAuthenticatedError, NotAuthorizedError
+from .klein import Router, invalidQueryResponse, queryValue, redirect
+from .urls import URLs
+from ..element.login import LoginPage
 
 
 __all__ = (
@@ -297,3 +304,93 @@ class AuthProvider(object):
         )
 
         return User(ranger=ranger, groups=groups)
+
+
+
+@attrs(frozen=True)
+class AuthApplication(object):
+    """
+    Application with routes for login and logout pages.
+    """
+
+    _log = Logger()
+    router = Router()
+
+
+    auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
+
+    # FIXME: we need config for storage because element.base
+    config: Configuration = attrib(validator=instance_of(Configuration))
+
+    @property
+    def storage(self) -> IMSDataStore:
+        return self.config.storage
+
+
+    @router.route("/login", methods=("POST",))
+    async def loginSubmit(self, request: IRequest) -> KleinRenderable:
+        """
+        Endpoint for a login form submission.
+        """
+        username = queryValue(request, "username")
+        password = queryValue(request, "password", default="")
+
+        if username is None:
+            user = None
+        else:
+            user = await self.auth.lookupUserName(username)
+
+        if user is None:
+            self._log.debug(
+                "Login failed: no such user: {username}", username=username
+            )
+        else:
+            if password is None:
+                return invalidQueryResponse(request, "password")
+
+            authenticated = await self.auth.verifyCredentials(
+                user, password
+            )
+
+            if authenticated:
+                session = request.getSession()
+                session.user = user
+
+                url = queryValue(request, "o")
+                if url is None:
+                    location = URLs.prefix  # Default to application home
+                else:
+                    location = URL.fromText(url)
+
+                return redirect(request, location)
+            else:
+                self._log.debug(
+                    "Login failed: incorrect credentials for user: {user}",
+                    user=user
+                )
+
+        return self.login(request, failed=True)
+
+
+    @router.route("/login", methods=("HEAD", "GET"))
+    def login(
+        self, request: IRequest, failed: bool = False
+    ) -> KleinRenderable:
+        """
+        Endpoint for the login page.
+        """
+        self.auth.authenticateRequest(request, optional=True)
+
+        return LoginPage(self, failed=failed)
+
+
+    @router.route("/logout", methods=("HEAD", "GET"))
+    def logout(self, request: IRequest) -> KleinRenderable:
+        """
+        Endpoint for logging out.
+        """
+        session = request.getSession()
+        session.expire()
+
+        # Redirect back to application home
+        return redirect(request, URLs.prefix)

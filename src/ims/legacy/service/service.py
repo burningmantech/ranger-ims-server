@@ -30,7 +30,6 @@ from hyperlink import URL
 from twisted.logger import ILogObserver, Logger, globalLogPublisher
 from twisted.python.failure import Failure
 from twisted.python.filepath import FilePath
-from twisted.web import http
 from twisted.web.iweb import IRequest
 from twisted.web.template import renderElement
 
@@ -41,21 +40,18 @@ from ims.dms import DutyManagementSystem
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable
 from ims.store import IMSDataStore
 
-from .auth import AuthProvider
+from .auth import AuthApplication, AuthProvider
 from .config import Configuration
 from .error import NotAuthenticatedError, NotAuthorizedError
 from .eventsource import DataStoreEventSourceLogObserver
 from .external import ExternalMixIn
 from .json import JSONMixIn
 from .klein import (
-    forbiddenResponse, internalErrorResponse, invalidQueryResponse,
-    methodNotAllowedResponse, notFoundResponse,
-    queryValue, renderResponse, router,
+    forbiddenResponse, internalErrorResponse, methodNotAllowedResponse,
+    notFoundResponse, redirect, renderResponse, router,
 )
 from .urls import URLs
 from .web import WebMixIn
-from ..element.login import LoginPage
-from ..element.redirect import RedirectPage
 from ...dms import DMSError
 
 
@@ -84,7 +80,17 @@ class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
 
     auth: AuthProvider = attrib(
         default=Factory(
-            lambda self: AuthProvider(config=self.config), takes_self=True
+            lambda self: AuthProvider(config=self.config), takes_self=True,
+        ),
+        init=False,
+    )
+    _authApplication: AuthApplication = attrib(
+        default=Factory(
+            lambda self: AuthApplication(
+                auth=self.auth,
+                config=self.config,
+            ),
+            takes_self=True,
         ),
         init=False,
     )
@@ -108,93 +114,16 @@ class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
         globalLogPublisher.removeObserver(self.storeObserver)
 
 
-    def redirect(
-        self, request: IRequest, location: URL, origin: Optional[str] = None
-    ) -> KleinRenderable:
-        """
-        Perform a redirect.
-        """
-        if origin is not None:
-            location = location.set(origin, request.uri.decode("utf-8"))
-
-        url = location.asText().encode("utf-8")
-
-        request.setHeader(HeaderName.contentType.value, ContentType.html.value)
-        request.setHeader(HeaderName.location.value, url)
-        request.setResponseCode(http.FOUND)
-
-        return RedirectPage(self, location)
-
-
     #
     # Auth
     #
 
-    @router.route(URLs.login.asText(), methods=("POST",))
-    async def loginSubmit(self, request: IRequest) -> KleinRenderable:
+    @router.route(URLs.auth.asText(), branch=True)
+    def authApplication(self, request: IRequest) -> KleinRenderable:
         """
-        Endpoint for a login form submission.
+        Auth resource.
         """
-        username = queryValue(request, "username")
-        password = queryValue(request, "password", default="")
-
-        if username is None:
-            user = None
-        else:
-            user = await self.auth.lookupUserName(username)
-
-        if user is None:
-            self._log.debug(
-                "Login failed: no such user: {username}", username=username
-            )
-        else:
-            if password is None:
-                return invalidQueryResponse(request, "password")
-
-            authenticated = await self.auth.verifyCredentials(user, password)
-
-            if authenticated:
-                session = request.getSession()
-                session.user = user
-
-                url = queryValue(request, "o")
-                if url is None:
-                    location = URLs.prefix  # Default to application home
-                else:
-                    location = URL.fromText(url)
-
-                return self.redirect(request, location)
-            else:
-                self._log.debug(
-                    "Login failed: incorrect credentials for user: {user}",
-                    user=user
-                )
-
-        return self.login(request, failed=True)
-
-
-    @router.route(URLs.login.asText(), methods=("HEAD", "GET"))
-    def login(
-        self, request: IRequest, failed: bool = False
-    ) -> KleinRenderable:
-        """
-        Endpoint for the login page.
-        """
-        self.auth.authenticateRequest(request, optional=True)
-
-        return LoginPage(self, failed=failed)
-
-
-    @router.route(URLs.logout.asText(), methods=("HEAD", "GET"))
-    def logout(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for logging out.
-        """
-        session = request.getSession()
-        session.expire()
-
-        # Redirect back to application home
-        return self.redirect(request, URLs.prefix)
+        return self._authApplication.router.resource()
 
 
     #
@@ -210,7 +139,7 @@ class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
         Redirect.
         """
         url = URL.fromText(failure.value.args[0].decode("utf-8"))
-        return self.redirect(request, url)
+        return redirect(request, url)
 
 
     @router.handle_errors(NotFound)
@@ -262,7 +191,7 @@ class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
         """
         Not authenticated.
         """
-        element = self.redirect(request, URLs.login, origin="o")
+        element = redirect(request, URLs.login, origin="o")
         return renderElement(request, element)
 
 

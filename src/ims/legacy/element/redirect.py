@@ -32,12 +32,12 @@ class RedirectPage(Element):
     Redirect page.
     """
 
-    def __init__(self, service, location):
+    def __init__(self, location):
         """
         @param service: The service.
         @param location: The redirect target URI.
         """
-        Element.__init__(self, "redirect", service, title="Redirect")
+        Element.__init__(self, "redirect", None, title="Redirect")
         self.location = location
 
 

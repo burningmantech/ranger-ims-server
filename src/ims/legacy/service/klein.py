@@ -23,6 +23,8 @@ from __future__ import absolute_import
 from functools import wraps
 from typing import Any, Callable, Iterable, Optional
 
+from hyperlink import URL
+
 from klein import Klein
 
 from twisted.logger import Logger
@@ -34,6 +36,7 @@ from ims import __version__ as version
 from ims.ext.klein import (
     ContentType, HeaderName, KleinRenderable, KleinRouteMethod
 )
+from ..element.redirect import RedirectPage
 
 
 __all__ = (
@@ -97,6 +100,24 @@ def renderResponse(f: KleinRouteMethod) -> KleinRouteMethod:
         return response
 
     return wrapper
+
+
+def redirect(
+    request: IRequest, location: URL, origin: Optional[str] = None
+) -> KleinRenderable:
+    """
+    Perform a redirect.
+    """
+    if origin is not None:
+        location = location.set(origin, request.uri.decode("utf-8"))
+
+    url = location.asText().encode("utf-8")
+
+    request.setHeader(HeaderName.contentType.value, ContentType.html.value)
+    request.setHeader(HeaderName.location.value, url)
+    request.setResponseCode(http.FOUND)
+
+    return RedirectPage(location)
 
 
 #
