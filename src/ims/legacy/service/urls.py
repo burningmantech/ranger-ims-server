@@ -33,13 +33,13 @@ class URLs(object):
 
     root = URL.fromText("/")
 
-    prefix = URL.fromText("/ims/")
+    prefix = root.child("ims").child("")
 
     styleSheet = prefix.child("style.css")
 
     logo = prefix.child("logo.png")
 
-    auth   = prefix.child("auth")
+    auth   = prefix.child("auth").child("")
     login  = auth.child("login")
     logout = auth.child("logout")
 
