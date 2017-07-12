@@ -179,39 +179,3 @@ class WebService(KleinService, AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
                 "File not found: {filePath.path}", filePath=filePath
             )
             return self.notFoundResource(request)
-
-
-    def zippedResource(
-        self, request: IRequest, archiveName: str, name: str, *names: str
-    ) -> KleinRenderable:
-        """
-        Respond with data from within a local zip file.
-        """
-        archivePath = self._elementsRoot.child("{0}.zip".format(archiveName))
-
-        try:
-            filePath = ZipArchive(archivePath.path)
-        except IOError:
-            self.log.error(
-                "Zip archive not found: {archive.path}", archive=archivePath
-            )
-            return self.notFoundResource(request)
-        except BadZipfile:
-            self.log.error(
-                "Bad zip archive: {archive.path}", archive=archivePath
-            )
-            return self.notFoundResource(request)
-
-        filePath = filePath.child(name)
-        for name in names:
-            filePath = filePath.child(name)
-
-        try:
-            return filePath.getContent()
-        except KeyError:
-            self.log.error(
-                "File not found in ZIP archive: {filePath.path}",
-                filePath=filePath,
-                archive=archivePath,
-            )
-            return self.notFoundResource(request)
