@@ -175,7 +175,7 @@ class KleinTool(Executable):
         config = self.options["configuration"]
         service = WebService(config)
 
-        for rule in service.app.url_map.iter_rules():
+        for rule in service.router.url_map.iter_rules():
             methods = list(rule.methods)
             print(
                 "{rule.rule} {methods} -> {rule.endpoint}"

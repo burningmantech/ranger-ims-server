@@ -115,13 +115,13 @@ class KleinService(object):
     """
 
     _log = Logger()
-    app = router
+    router = router
 
     def resource(self) -> KleinResource:
         """
         Return the Klein resource.
         """
-        return self.app.resource()
+        return self.router.resource()
 
 
     def redirect(
@@ -272,7 +272,7 @@ class KleinService(object):
     # Error handlers
     #
 
-    @app.handle_errors(RequestRedirect)
+    @router.handle_errors(RequestRedirect)
     @renderResponse
     def requestRedirectError(
         self, request: IRequest, failure: Failure
@@ -284,7 +284,7 @@ class KleinService(object):
         return self.redirect(request, url)
 
 
-    @app.handle_errors(NotFound)
+    @router.handle_errors(NotFound)
     @renderResponse
     def notFoundError(
         self, request: IRequest, failure: Failure
@@ -295,7 +295,7 @@ class KleinService(object):
         return self.notFoundResource(request)
 
 
-    @app.handle_errors(MethodNotAllowed)
+    @router.handle_errors(MethodNotAllowed)
     @renderResponse
     def methodNotAllowedError(
         self, request: IRequest, failure: Failure
@@ -306,7 +306,7 @@ class KleinService(object):
         return self.methodNotAllowedResource(request)
 
 
-    @app.handle_errors(NotAuthorizedError)
+    @router.handle_errors(NotAuthorizedError)
     @renderResponse
     def notAuthorizedError(
         self, request: IRequest, failure: Failure
@@ -317,7 +317,7 @@ class KleinService(object):
         return self.forbiddenResource(request)
 
 
-    @app.handle_errors(NotAuthenticatedError)
+    @router.handle_errors(NotAuthenticatedError)
     @renderResponse
     def notAuthenticatedError(
         self, request: IRequest, failure: Failure
@@ -329,7 +329,7 @@ class KleinService(object):
         return renderElement(request, element)
 
 
-    @app.handle_errors(DMSError)
+    @router.handle_errors(DMSError)
     @renderResponse
     def dmsError(
         self, request: IRequest, failure: Failure
@@ -341,7 +341,7 @@ class KleinService(object):
         return self.internalErrorResource(request)
 
 
-    @app.handle_errors
+    @router.handle_errors
     @renderResponse
     def unknownError(
         self, request: IRequest, failure: Failure
