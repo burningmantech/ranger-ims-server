@@ -26,7 +26,7 @@ from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ims.model import Event
 
 from .auth import AuthProvider, Authorization
-from .klein import notFoundResponse, route
+from .klein import notFoundResponse, router
 from .urls import URLs
 from ..element.admin import AdminPage
 from ..element.admin_acl import AdminAccessControlPage
@@ -60,7 +60,7 @@ class WebMixIn(object):
     # Static content
     #
 
-    @route(URLs.styleSheet.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.styleSheet.asText(), methods=("HEAD", "GET"))
     @static
     def styleSheetResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -69,7 +69,7 @@ class WebMixIn(object):
         return self.styleSheet(request, "style.css")
 
 
-    @route(URLs.logo.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.logo.asText(), methods=("HEAD", "GET"))
     @static
     def logoResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -79,7 +79,7 @@ class WebMixIn(object):
         return self.builtInResource(request, "logo.png")
 
 
-    @route(URLs.imsJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.imsJS.asText(), methods=("HEAD", "GET"))
     @static
     def imsJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -92,7 +92,7 @@ class WebMixIn(object):
     # Web interface
     #
 
-    @route(URLs.root.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.root.asText(), methods=("HEAD", "GET"))
     def rootResource(self, request: IRequest) -> KleinRenderable:
         """
         Server root page.
@@ -102,7 +102,7 @@ class WebMixIn(object):
         return self.redirect(request, URLs.prefix)
 
 
-    @route(URLs.prefix.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.prefix.asText(), methods=("HEAD", "GET"))
     @static
     def applicationRootResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -111,7 +111,7 @@ class WebMixIn(object):
         return RootPage(self)
 
 
-    @route(URLs.viewEvent.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.viewEvent.asText(), methods=("HEAD", "GET"))
     def viewEventResource(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
@@ -123,7 +123,7 @@ class WebMixIn(object):
         return self.redirect(request, URLs.viewDispatchQueueRelative)
 
 
-    @route(URLs.admin.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.admin.asText(), methods=("HEAD", "GET"))
     @static
     async def adminPage(self, request: IRequest) -> KleinRenderable:
         """
@@ -136,7 +136,7 @@ class WebMixIn(object):
         return AdminPage(self)
 
 
-    @route(URLs.adminJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.adminJS.asText(), methods=("HEAD", "GET"))
     @static
     def adminJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -144,7 +144,7 @@ class WebMixIn(object):
         """
         return self.javaScript(request, "admin.js")
 
-    @route(URLs.adminAccessControl.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.adminAccessControl.asText(), methods=("HEAD", "GET"))
     async def adminAccessControlPage(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -158,7 +158,7 @@ class WebMixIn(object):
         return AdminAccessControlPage(self)
 
 
-    @route(URLs.adminAccessControlJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.adminAccessControlJS.asText(), methods=("HEAD", "GET"))
     @static
     def adminAccessControlJSResource(
         self, request: IRequest
@@ -169,7 +169,7 @@ class WebMixIn(object):
         return self.javaScript(request, "admin_acl.js")
 
 
-    @route(URLs.adminIncidentTypes.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.adminIncidentTypes.asText(), methods=("HEAD", "GET"))
     async def adminAdminIncidentTypesPagePage(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -183,7 +183,7 @@ class WebMixIn(object):
         return AdminIncidentTypesPage(self)
 
 
-    @route(URLs.adminIncidentTypesJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.adminIncidentTypesJS.asText(), methods=("HEAD", "GET"))
     @static
     def adminAdminIncidentTypesPageJSResource(
         self, request: IRequest
@@ -194,7 +194,7 @@ class WebMixIn(object):
         return self.javaScript(request, "admin_types.js")
 
 
-    @route(URLs.adminStreets.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.adminStreets.asText(), methods=("HEAD", "GET"))
     async def adminStreetsPage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for streets admin page.
@@ -206,7 +206,7 @@ class WebMixIn(object):
         return AdminStreetsPage(self)
 
 
-    @route(URLs.adminStreetsJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.adminStreetsJS.asText(), methods=("HEAD", "GET"))
     @static
     def adminStreetsJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -215,7 +215,7 @@ class WebMixIn(object):
         return self.javaScript(request, "admin_streets.js")
 
 
-    @route(URLs.viewDispatchQueue.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.viewDispatchQueue.asText(), methods=("HEAD", "GET"))
     async def viewDispatchQueuePage(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
@@ -232,7 +232,9 @@ class WebMixIn(object):
         return DispatchQueuePage(self, event)
 
 
-    @route(URLs.viewDispatchQueueTemplate.asText(), methods=("HEAD", "GET"))
+    @router.route(
+        URLs.viewDispatchQueueTemplate.asText(), methods=("HEAD", "GET")
+    )
     @static
     def viewDispatchQueueTemplatePage(
         self, request: IRequest
@@ -243,7 +245,7 @@ class WebMixIn(object):
         return DispatchQueueTemplatePage(self)
 
 
-    @route(URLs.viewDispatchQueueJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.viewDispatchQueueJS.asText(), methods=("HEAD", "GET"))
     @static
     def viewDispatchQueueJSResource(
         self, request: IRequest
@@ -254,7 +256,7 @@ class WebMixIn(object):
         return self.javaScript(request, "queue.js")
 
 
-    @route(URLs.viewIncidentNumber.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.viewIncidentNumber.asText(), methods=("HEAD", "GET"))
     async def viewIncidentPage(
         self, request: IRequest, eventID: str, number: str
     ) -> KleinRenderable:
@@ -279,7 +281,9 @@ class WebMixIn(object):
         return IncidentPage(self, event, numberValue)
 
 
-    @route(URLs.viewIncidentNumberTemplate.asText(), methods=("HEAD", "GET"))
+    @router.route(
+        URLs.viewIncidentNumberTemplate.asText(), methods=("HEAD", "GET")
+    )
     @static
     def viewIncidentNumberTemplatePage(
         self, request: IRequest
@@ -290,7 +294,7 @@ class WebMixIn(object):
         return IncidentTemplatePage(self)
 
 
-    @route(URLs.viewIncidentNumberJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.viewIncidentNumberJS.asText(), methods=("HEAD", "GET"))
     @static
     def incidentJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -302,7 +306,7 @@ class WebMixIn(object):
     # FIXME: viewIncidentReports
 
 
-    @route(URLs.viewIncidentReport.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.viewIncidentReport.asText(), methods=("HEAD", "GET"))
     async def viewIncidentReportPage(
         self, request: IRequest, number: str
     ) -> KleinRenderable:
@@ -328,7 +332,9 @@ class WebMixIn(object):
         return IncidentReportPage(self, numberValue)
 
 
-    @route(URLs.viewIncidentReportTemplate.asText(), methods=("HEAD", "GET"))
+    @router.route(
+        URLs.viewIncidentReportTemplate.asText(), methods=("HEAD", "GET")
+    )
     @static
     def viewIncidentReportTemplatePage(
         self, request: IRequest
@@ -339,7 +345,7 @@ class WebMixIn(object):
         return IncidentReportTemplatePage(self)
 
 
-    @route(URLs.viewIncidentReportJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.viewIncidentReportJS.asText(), methods=("HEAD", "GET"))
     @static
     def viewIncidentReportJSResource(
         self, request: IRequest

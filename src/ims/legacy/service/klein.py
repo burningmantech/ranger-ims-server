@@ -38,7 +38,6 @@ from ims.ext.klein import (
 
 __all__ = (
     "Router",
-    "route",
     "router",
     "queryValue",
     "queryValues",
@@ -79,7 +78,6 @@ class Router(Klein):
 
 
 router = Router()
-route = router.route
 
 
 def renderResponse(f: KleinRouteMethod) -> KleinRouteMethod:

@@ -42,7 +42,7 @@ from ims.store import NoSuchIncidentError
 
 from .auth import Authorization
 from .error import NotAuthorizedError
-from .klein import invalidQueryResponse, notFoundResponse, queryValue, route
+from .klein import invalidQueryResponse, notFoundResponse, queryValue, router
 from .urls import URLs
 from ...dms import DMSError
 
@@ -62,7 +62,7 @@ class JSONMixIn(object):
     # JSON API endpoints
     #
 
-    @route(URLs.ping.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.ping.asText(), methods=("HEAD", "GET"))
     @static
     def pingResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -72,7 +72,7 @@ class JSONMixIn(object):
         return self.jsonBytes(request, ack, str(hash(ack)))
 
 
-    @route(URLs.personnel.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.personnel.asText(), methods=("HEAD", "GET"))
     async def personnelResource(self, request: IRequest) -> KleinRenderable:
         """
         Personnel endpoint.
@@ -106,7 +106,7 @@ class JSONMixIn(object):
         )
 
 
-    @route(URLs.incidentTypes.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.incidentTypes.asText(), methods=("HEAD", "GET"))
     async def incidentTypesResource(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -129,7 +129,7 @@ class JSONMixIn(object):
         return self.jsonStream(request, stream, None)
 
 
-    @route(URLs.incidentTypes.asText(), methods=("POST",))
+    @router.route(URLs.incidentTypes.asText(), methods=("POST",))
     async def editIncidentTypesResource(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -176,7 +176,7 @@ class JSONMixIn(object):
         return self.noContentResource(request)
 
 
-    @route(URLs.locations.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.locations.asText(), methods=("HEAD", "GET"))
     async def locationsResource(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
@@ -193,7 +193,7 @@ class JSONMixIn(object):
         return self.jsonBytes(request, data, str(hash(data)))
 
 
-    @route(URLs.incidents.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.incidents.asText(), methods=("HEAD", "GET"))
     async def listIncidentsResource(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
@@ -216,7 +216,7 @@ class JSONMixIn(object):
         return self.jsonStream(request, stream, None)
 
 
-    @route(URLs.incidents.asText(), methods=("POST",))
+    @router.route(URLs.incidents.asText(), methods=("POST",))
     async def newIncidentResource(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
@@ -282,7 +282,7 @@ class JSONMixIn(object):
         return self.noContentResource(request)
 
 
-    @route(URLs.incidentNumber.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.incidentNumber.asText(), methods=("HEAD", "GET"))
     async def readIncidentResource(
         self, request: IRequest, eventID: str, number: int
     ) -> KleinRenderable:
@@ -313,7 +313,7 @@ class JSONMixIn(object):
         return self.jsonBytes(request, data)
 
 
-    @route(URLs.incidentNumber.asText(), methods=("POST",))
+    @router.route(URLs.incidentNumber.asText(), methods=("POST",))
     async def editIncidentResource(
         self, request: IRequest, eventID: str, number: int
     ) -> KleinRenderable:
@@ -447,7 +447,7 @@ class JSONMixIn(object):
         return self.noContentResource(request)
 
 
-    @route(URLs.incidentReports.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.incidentReports.asText(), methods=("HEAD", "GET"))
     async def listIncidentReportsResource(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -503,7 +503,7 @@ class JSONMixIn(object):
         return self.jsonStream(request, stream, None)
 
 
-    @route(URLs.incidentReports.asText(), methods=("POST",))
+    @router.route(URLs.incidentReports.asText(), methods=("POST",))
     async def newIncidentReportResource(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -566,7 +566,7 @@ class JSONMixIn(object):
         return self.noContentResource(request)
 
 
-    @route(URLs.incidentReport.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.incidentReport.asText(), methods=("HEAD", "GET"))
     async def readIncidentReportResource(
         self, request: IRequest, number: int
     ) -> KleinRenderable:
@@ -587,7 +587,7 @@ class JSONMixIn(object):
         return self.jsonBytes(request, text.encode("utf-8"))
 
 
-    @route(URLs.incidentReport.asText(), methods=("POST",))
+    @router.route(URLs.incidentReport.asText(), methods=("POST",))
     async def editIncidentReportResource(
         self, request: IRequest, number: int
     ) -> KleinRenderable:
@@ -708,7 +708,7 @@ class JSONMixIn(object):
         return self.noContentResource(request)
 
 
-    @route(URLs.acl.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.acl.asText(), methods=("HEAD", "GET"))
     async def readAdminAccessResource(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -726,7 +726,7 @@ class JSONMixIn(object):
         return jsonTextFromObject(acl)
 
 
-    @route(URLs.acl.asText(), methods=("POST",))
+    @router.route(URLs.acl.asText(), methods=("POST",))
     async def editAdminAccessResource(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -747,7 +747,7 @@ class JSONMixIn(object):
         return self.noContentResource(request)
 
 
-    @route(URLs.streets.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.streets.asText(), methods=("HEAD", "GET"))
     async def readStreetsResource(self, request: IRequest) -> KleinRenderable:
         """
         Street list endpoint.
@@ -760,7 +760,7 @@ class JSONMixIn(object):
         return jsonTextFromObject(streets)
 
 
-    @route(URLs.streets.asText(), methods=("POST",))
+    @router.route(URLs.streets.asText(), methods=("POST",))
     async def editStreetsResource(self, request: IRequest) -> KleinRenderable:
         """
         Street list edit endpoint.
@@ -789,7 +789,7 @@ class JSONMixIn(object):
         return self.noContentResource(request)
 
 
-    @route(URLs.eventSource.asText(), methods=("GET",))
+    @router.route(URLs.eventSource.asText(), methods=("GET",))
     def eventSourceResource(self, request: IRequest) -> KleinRenderable:
         """
         HTML5 EventSource endpoint.

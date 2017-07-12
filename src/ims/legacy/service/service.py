@@ -50,7 +50,7 @@ from .json import JSONMixIn
 from .klein import (
     forbiddenResponse, internalErrorResponse, invalidQueryResponse,
     methodNotAllowedResponse, notFoundResponse,
-    queryValue, renderResponse, route, router,
+    queryValue, renderResponse, router,
 )
 from .urls import URLs
 from .web import WebMixIn
@@ -130,7 +130,7 @@ class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
     # Auth
     #
 
-    @route(URLs.login.asText(), methods=("POST",))
+    @router.route(URLs.login.asText(), methods=("POST",))
     async def loginSubmit(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for a login form submission.
@@ -173,7 +173,7 @@ class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
         return self.login(request, failed=True)
 
 
-    @route(URLs.login.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.login.asText(), methods=("HEAD", "GET"))
     def login(
         self, request: IRequest, failed: bool = False
     ) -> KleinRenderable:
@@ -185,7 +185,7 @@ class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
         return LoginPage(self, failed=failed)
 
 
-    @route(URLs.logout.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.logout.asText(), methods=("HEAD", "GET"))
     def logout(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for logging out.

@@ -30,7 +30,7 @@ from twisted.web.iweb import IRequest
 
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
-from .klein import notFoundResponse, route
+from .klein import notFoundResponse, router
 from .urls import URLs
 
 
@@ -89,7 +89,9 @@ class ExternalMixIn(object):
     )
 
 
-    @route(URLs.bootstrapBase.asText(), methods=("HEAD", "GET"), branch=True)
+    @router.route(
+        URLs.bootstrapBase.asText(), methods=("HEAD", "GET"), branch=True
+    )
     @static
     async def bootstrapResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -107,7 +109,7 @@ class ExternalMixIn(object):
         )
 
 
-    @route(URLs.jqueryJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.jqueryJS.asText(), methods=("HEAD", "GET"))
     @static
     async def jqueryJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -122,7 +124,7 @@ class ExternalMixIn(object):
         )
 
 
-    @route(URLs.jqueryMap.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.jqueryMap.asText(), methods=("HEAD", "GET"))
     @static
     async def jqueryMapResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -135,7 +137,7 @@ class ExternalMixIn(object):
         )
 
 
-    @route(
+    @router.route(
         URLs.dataTablesBase.asText(), methods=("HEAD", "GET"), branch=True
     )
     @static
@@ -155,7 +157,7 @@ class ExternalMixIn(object):
         )
 
 
-    @route(URLs.momentJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.momentJS.asText(), methods=("HEAD", "GET"))
     @static
     async def momentJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -170,7 +172,7 @@ class ExternalMixIn(object):
         )
 
 
-    @route(URLs.lscacheJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.lscacheJS.asText(), methods=("HEAD", "GET"))
     @static
     async def lscacheJSResource(self, request: IRequest) -> KleinRenderable:
         """
