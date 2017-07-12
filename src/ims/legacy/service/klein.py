@@ -26,24 +26,14 @@ from typing import Any, Callable, Iterable, Optional
 from klein import Klein
 
 from twisted.logger import Logger
-from twisted.python.failure import Failure
-from twisted.python.url import URL
 from twisted.web import http
 from twisted.web.iweb import IRenderable, IRequest
 from twisted.web.template import renderElement
-
-from werkzeug.exceptions import MethodNotAllowed, NotFound
-from werkzeug.routing import RequestRedirect
 
 from ims import __version__ as version
 from ims.ext.klein import (
     ContentType, HeaderName, KleinRenderable, KleinRouteMethod
 )
-
-from .error import NotAuthenticatedError, NotAuthorizedError
-from .urls import URLs
-from ..element.redirect import RedirectPage
-from ...dms import DMSError
 
 
 __all__ = (
@@ -51,7 +41,6 @@ __all__ = (
     "router",
     "queryValue",
     "queryValues",
-    "KleinService",
 )
 
 
@@ -106,140 +95,6 @@ def renderResponse(f: KleinRouteMethod) -> KleinRouteMethod:
         return response
 
     return wrapper
-
-
-
-class KleinService(object):
-    """
-    Klein service.
-    """
-
-    _log = Logger()
-    router = router
-
-
-    def redirect(
-        self, request: IRequest, location: URL, origin: Optional[str] = None
-    ) -> KleinRenderable:
-        """
-        Perform a redirect.
-        """
-        if origin is not None:
-            location = location.set(origin, request.uri.decode("utf-8"))
-
-        url = location.asText().encode("utf-8")
-
-        request.setHeader(HeaderName.contentType.value, ContentType.html.value)
-        request.setHeader(HeaderName.location.value, url)
-        request.setResponseCode(http.FOUND)
-
-        return RedirectPage(self, location)
-
-
-    #
-    # Error handlers
-    #
-
-    @router.handle_errors(RequestRedirect)
-    @renderResponse
-    def requestRedirectError(
-        self, request: IRequest, failure: Failure
-    ) -> KleinRenderable:
-        """
-        Redirect.
-        """
-        url = URL.fromText(failure.value.args[0].decode("utf-8"))
-        return self.redirect(request, url)
-
-
-    @router.handle_errors(NotFound)
-    @renderResponse
-    def notFoundError(
-        self, request: IRequest, failure: Failure
-    ) -> KleinRenderable:
-        """
-        Not found.
-        """
-        # Require authentication.
-        # This is because exposing what resources do or do not exist can expose
-        # information that was not meant to be exposed.
-        self.authenticateRequest(request)
-        return notFoundResource(request)
-
-
-    @router.handle_errors(MethodNotAllowed)
-    @renderResponse
-    def methodNotAllowedError(
-        self, request: IRequest, failure: Failure
-    ) -> KleinRenderable:
-        """
-        HTTP method not allowed.
-        """
-        # Require authentication.
-        # This is because exposing what resources do or do not exist can expose
-        # information that was not meant to be exposed.
-        self.authenticateRequest(request)
-        return methodNotAllowedResource(request)
-
-
-    @router.handle_errors(NotAuthorizedError)
-    @renderResponse
-    def notAuthorizedError(
-        self, request: IRequest, failure: Failure
-    ) -> KleinRenderable:
-        """
-        Not authorized.
-        """
-        return forbiddenResource(request)
-
-
-    @router.handle_errors(NotAuthenticatedError)
-    @renderResponse
-    def notAuthenticatedError(
-        self, request: IRequest, failure: Failure
-    ) -> KleinRenderable:
-        """
-        Not authenticated.
-        """
-        element = self.redirect(request, URLs.login, origin="o")
-        return renderElement(request, element)
-
-
-    @router.handle_errors(DMSError)
-    @renderResponse
-    def dmsError(
-        self, request: IRequest, failure: Failure
-    ) -> KleinRenderable:
-        """
-        DMS error.
-        """
-        self._log.failure("DMS error", failure)
-        return internalErrorResource(request)
-
-
-    @router.handle_errors
-    @renderResponse
-    def unknownError(
-        self, request: IRequest, failure: Failure
-    ) -> KleinRenderable:
-        """
-        Deal with a request error caught by Klein.
-        """
-        # This logs the failure traceback for debugging.
-        # Klein normally will also display the traceback in the response.
-        # We don't do that for a few reasons:
-        #  - It's a poor security practice to explain to an attacker what
-        #    exactly is causing an internal error.
-        #  - Most users don't know what to do with that inforrmation.
-        #  - The admins should be able to find the errors in the logs.
-        #  - Klein doing that is a developer feature; developers can also watch
-        #    the logs.
-        #  - The traceback is emitted after whatever else was sent with the
-        #    request, which often means that it displays like a total mess in
-        #    a browser, and that's just pitiful.
-        self._log.failure("Request failed", failure)
-        return internalErrorResource(request)
-
 
 
 #

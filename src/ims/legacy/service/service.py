@@ -25,9 +25,17 @@ from typing.io import BinaryIO
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of
 
+from hyperlink import URL
+
 from twisted.logger import ILogObserver, Logger, globalLogPublisher
+from twisted.python.failure import Failure
 from twisted.python.filepath import FilePath
+from twisted.web import http
 from twisted.web.iweb import IRequest
+from twisted.web.template import renderElement
+
+from werkzeug.exceptions import MethodNotAllowed, NotFound
+from werkzeug.routing import RequestRedirect
 
 from ims.dms import DutyManagementSystem
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable
@@ -35,11 +43,18 @@ from ims.store import IMSDataStore
 
 from .auth import AuthMixIn
 from .config import Configuration
+from .error import NotAuthenticatedError, NotAuthorizedError
 from .eventsource import DataStoreEventSourceLogObserver
 from .external import ExternalMixIn
 from .json import JSONMixIn
-from .klein import KleinService, notFoundResource
+from .klein import (
+    forbiddenResource, internalErrorResource, methodNotAllowedResource,
+    notFoundResource, renderResponse, router,
+)
+from .urls import URLs
 from .web import WebMixIn
+from ..element.redirect import RedirectPage
+from ...dms import DMSError
 
 
 __all__ = (
@@ -48,15 +63,19 @@ __all__ = (
 
 
 
+
 @attrs(frozen=True)
-class WebService(KleinService, AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
+class WebService(AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
     """
     Incident Management System web service.
     """
 
     log = Logger()
+    router = router
+
 
     config: Configuration = attrib(validator=instance_of(Configuration))
+
     storeObserver: ILogObserver = attrib(
         default=Factory(DataStoreEventSourceLogObserver), init=False
     )
@@ -78,6 +97,129 @@ class WebService(KleinService, AuthMixIn, JSONMixIn, WebMixIn, ExternalMixIn):
 
     def __del__(self) -> None:
         globalLogPublisher.removeObserver(self.storeObserver)
+
+
+    def redirect(
+        self, request: IRequest, location: URL, origin: Optional[str] = None
+    ) -> KleinRenderable:
+        """
+        Perform a redirect.
+        """
+        if origin is not None:
+            location = location.set(origin, request.uri.decode("utf-8"))
+
+        url = location.asText().encode("utf-8")
+
+        request.setHeader(HeaderName.contentType.value, ContentType.html.value)
+        request.setHeader(HeaderName.location.value, url)
+        request.setResponseCode(http.FOUND)
+
+        return RedirectPage(self, location)
+
+
+    #
+    # Error handlers
+    #
+
+    @router.handle_errors(RequestRedirect)
+    @renderResponse
+    def requestRedirectError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
+        """
+        Redirect.
+        """
+        url = URL.fromText(failure.value.args[0].decode("utf-8"))
+        return self.redirect(request, url)
+
+
+    @router.handle_errors(NotFound)
+    @renderResponse
+    def notFoundError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
+        """
+        Not found.
+        """
+        # Require authentication.
+        # This is because exposing what resources do or do not exist can expose
+        # information that was not meant to be exposed.
+        self.authenticateRequest(request)
+        return notFoundResource(request)
+
+
+    @router.handle_errors(MethodNotAllowed)
+    @renderResponse
+    def methodNotAllowedError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
+        """
+        HTTP method not allowed.
+        """
+        # Require authentication.
+        # This is because exposing what resources do or do not exist can expose
+        # information that was not meant to be exposed.
+        self.authenticateRequest(request)
+        return methodNotAllowedResource(request)
+
+
+    @router.handle_errors(NotAuthorizedError)
+    @renderResponse
+    def notAuthorizedError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
+        """
+        Not authorized.
+        """
+        return forbiddenResource(request)
+
+
+    @router.handle_errors(NotAuthenticatedError)
+    @renderResponse
+    def notAuthenticatedError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
+        """
+        Not authenticated.
+        """
+        element = self.redirect(request, URLs.login, origin="o")
+        return renderElement(request, element)
+
+
+    @router.handle_errors(DMSError)
+    @renderResponse
+    def dmsError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
+        """
+        DMS error.
+        """
+        self._log.failure("DMS error", failure)
+        return internalErrorResource(request)
+
+
+    @router.handle_errors
+    @renderResponse
+    def unknownError(
+        self, request: IRequest, failure: Failure
+    ) -> KleinRenderable:
+        """
+        Deal with a request error caught by Klein.
+        """
+        # This logs the failure traceback for debugging.
+        # Klein normally will also display the traceback in the response.
+        # We don't do that for a few reasons:
+        #  - It's a poor security practice to explain to an attacker what
+        #    exactly is causing an internal error.
+        #  - Most users don't know what to do with that inforrmation.
+        #  - The admins should be able to find the errors in the logs.
+        #  - Klein doing that is a developer feature; developers can also watch
+        #    the logs.
+        #  - The traceback is emitted after whatever else was sent with the
+        #    request, which often means that it displays like a total mess in
+        #    a browser, and that's just pitiful.
+        self._log.failure("Request failed", failure)
+        return internalErrorResource(request)
 
 
     #
