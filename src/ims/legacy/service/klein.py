@@ -28,15 +28,23 @@ from hyperlink import URL
 from klein import Klein
 
 from twisted.logger import Logger
+from twisted.python.failure import Failure
 from twisted.web import http
 from twisted.web.iweb import IRenderable, IRequest
 from twisted.web.template import renderElement
+
+from werkzeug.exceptions import MethodNotAllowed, NotFound
+from werkzeug.routing import RequestRedirect
 
 from ims import __version__ as version
 from ims.ext.klein import (
     ContentType, HeaderName, KleinRenderable, KleinRouteMethod
 )
+
+from .error import NotAuthenticatedError, NotAuthorizedError
+from .urls import URLs
 from ..element.redirect import RedirectPage
+from ...dms import DMSError
 
 
 __all__ = (
@@ -48,39 +56,6 @@ __all__ = (
 
 
 log = Logger()
-
-
-
-class Router(Klein):
-    def route(
-        self, url: str, *args: Any, **kwargs: Any
-    ) -> Callable[[KleinRouteMethod], KleinRouteMethod]:
-        superRoute = super().route
-
-        def decorator(f: KleinRouteMethod) -> KleinRouteMethod:
-            @superRoute(url, *args, **kwargs)
-            @wraps(f)
-            def wrapper(
-                app: Any, request: IRequest, *args: Any, **kwargs: Any
-            ) -> KleinRenderable:
-                request.setHeader(
-                    HeaderName.server.value,
-                    "Incident Management System/{}".format(version),
-                )
-
-                # Capture authentication info if sent by the client, (ie. it's
-                # been previously asked to authenticate), so we can log it, but
-                # don't require authentication.
-                app.auth.authenticateRequest(request, optional=True)
-
-                return f(app, request, *args, **kwargs)
-
-            return wrapper
-        return decorator
-
-
-
-router = Router()
 
 
 def renderResponse(f: KleinRouteMethod) -> KleinRouteMethod:
@@ -293,3 +268,146 @@ def queryValues(
         return default
 
     return (a.decode("utf-8") for a in values)
+
+
+#
+# Router
+#
+
+class Router(Klein):
+    def __init__(self) -> None:
+        super().__init__()
+        self.registerHandlers()
+
+
+    def route(
+        self, url: str, *args: Any, **kwargs: Any
+    ) -> Callable[[KleinRouteMethod], KleinRouteMethod]:
+        superRoute = super().route
+
+        def decorator(f: KleinRouteMethod) -> KleinRouteMethod:
+            @superRoute(url, *args, **kwargs)
+            @wraps(f)
+            def wrapper(
+                app: Any, request: IRequest, *args: Any, **kwargs: Any
+            ) -> KleinRenderable:
+                request.setHeader(
+                    HeaderName.server.value,
+                    "Incident Management System/{}".format(version),
+                )
+
+                # Capture authentication info if sent by the client, (ie. it's
+                # been previously asked to authenticate), so we can log it, but
+                # don't require authentication.
+                app.auth.authenticateRequest(request, optional=True)
+
+                return f(app, request, *args, **kwargs)
+
+            return wrapper
+        return decorator
+
+
+    def registerHandlers(self) -> None:
+        @self.handle_errors(RequestRedirect)
+        @renderResponse
+        def requestRedirectError(
+            app: Any, request: IRequest, failure: Failure
+        ) -> KleinRenderable:
+            """
+            Redirect.
+            """
+            url = URL.fromText(failure.value.args[0].decode("utf-8"))
+            return redirect(request, url)
+
+
+        @self.handle_errors(NotFound)
+        @renderResponse
+        def notFoundError(
+            app: Any, request: IRequest, failure: Failure
+        ) -> KleinRenderable:
+            """
+            Not found.
+            """
+            # Require authentication.
+            # This is because exposing what resources do or do not exist can
+            # expose information that was not meant to be exposed.
+            app.auth.authenticateRequest(request)
+            return notFoundResponse(request)
+
+
+        @self.handle_errors(MethodNotAllowed)
+        @renderResponse
+        def methodNotAllowedError(
+            app: Any, request: IRequest, failure: Failure
+        ) -> KleinRenderable:
+            """
+            HTTP method not allowed.
+            """
+            # Require authentication.
+            # This is because exposing what resources do or do not exist can
+            # expose information that was not meant to be exposed.
+            app.auth.authenticateRequest(request)
+            return methodNotAllowedResponse(request)
+
+
+        @self.handle_errors(NotAuthorizedError)
+        @renderResponse
+        def notAuthorizedError(
+            app: Any, request: IRequest, failure: Failure
+        ) -> KleinRenderable:
+            """
+            Not authorized.
+            """
+            return forbiddenResponse(request)
+
+
+        @self.handle_errors(NotAuthenticatedError)
+        @renderResponse
+        def notAuthenticatedError(
+            app: Any, request: IRequest, failure: Failure
+        ) -> KleinRenderable:
+            """
+            Not authenticated.
+            """
+            element = redirect(request, URLs.login, origin="o")
+            return renderElement(request, element)
+
+
+        @self.handle_errors(DMSError)
+        @renderResponse
+        def dmsError(
+            app: Any, request: IRequest, failure: Failure
+        ) -> KleinRenderable:
+            """
+            DMS error.
+            """
+            log.failure("DMS error", failure)
+            return internalErrorResponse(request)
+
+
+        @self.handle_errors
+        @renderResponse
+        def unknownError(
+            app: Any, request: IRequest, failure: Failure
+        ) -> KleinRenderable:
+            """
+            Deal with a request error caught by Klein.
+            """
+            # This logs the failure traceback for debugging.
+            # Klein normally will also display the traceback in the response.
+            # We don't do that for a few reasons:
+            #  - It's a poor security practice to explain to an attacker what
+            #    exactly is causing an internal error.
+            #  - Most users don't know what to do with that inforrmation.
+            #  - The admins should be able to find the errors in the logs.
+            #  - Klein doing that is a developer feature; developers can also
+            #    watch the logs.
+            #  - The traceback is emitted after whatever else was sent with the
+            #    request, which often means that it displays like a total mess
+            #    in a browser, and that's just pitiful.
+            log.failure("Request failed", failure)
+            return internalErrorResponse(request)
+
+
+
+router = Router()

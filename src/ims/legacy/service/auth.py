@@ -30,7 +30,7 @@ from twisted.python.constants import FlagConstant, Flags
 from twisted.web.iweb import IRequest
 
 from ims.dms import DMSError, verifyPassword
-from ims.ext.klein import KleinRenderable, KleinRouteMethod
+from ims.ext.klein import KleinRenderable
 from ims.model import Event, Ranger
 from ims.store import IMSDataStore
 

@@ -26,7 +26,7 @@ from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ims.model import Event
 
 from .auth import AuthProvider, Authorization
-from .klein import notFoundResponse, router
+from .klein import notFoundResponse, redirect, router
 from .urls import URLs
 from ..element.admin import AdminPage
 from ..element.admin_acl import AdminAccessControlPage
@@ -99,7 +99,7 @@ class WebMixIn(object):
 
         This redirects to the application root page.
         """
-        return self.redirect(request, URLs.prefix)
+        return redirect(request, URLs.prefix)
 
 
     @router.route(URLs.prefix.asText(), methods=("HEAD", "GET"))
@@ -120,7 +120,7 @@ class WebMixIn(object):
 
         This redirects to the event's dispatch queue page.
         """
-        return self.redirect(request, URLs.viewDispatchQueueRelative)
+        return redirect(request, URLs.viewDispatchQueueRelative)
 
 
     @router.route(URLs.admin.asText(), methods=("HEAD", "GET"))
