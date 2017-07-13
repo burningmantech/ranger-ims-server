@@ -22,6 +22,9 @@ from collections import deque
 from time import time
 from typing import Deque, List, Mapping, Optional, Set, Tuple
 
+from attr import attrib, attrs
+from attr.validators import instance_of, optional
+
 from twisted.logger import ILogObserver, Logger
 from twisted.web.iweb import IRequest
 
@@ -39,28 +42,16 @@ __all__ = (
 
 
 
+@attrs(frozen=True)
 class Event(object):
     """
     HTML5 EventSource event.
     """
 
-    def __init__(
-        self, message: str, eventID: Optional[int] = None,
-        eventClass: Optional[str] = None, retry: Optional[int] = None
-    ) -> None:
-        """
-        @param message: The event message.
-
-        @param eventID: The event ID.
-
-        @param eventClass: The event class.
-
-        @param retry: The retry interval to suggest to the client.
-        """
-        self.message    = message
-        self.eventID    = eventID
-        self.eventClass = eventClass
-        self.retry      = retry
+    message: str = attrib(validator=instance_of(str))
+    eventID: Optional[str] = attrib(validator=optional(instance_of(int)))
+    eventClass: Optional[str] = attrib(validator=optional(instance_of(str)))
+    retry: Optional[int] = attrib(validator=optional(instance_of(int)))
 
 
     def render(self) -> str:
