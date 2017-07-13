@@ -20,7 +20,7 @@ Incident Management System URL schema.
 
 from attr import attrs
 
-from twisted.python.url import URL
+from hyperlink import URL
 
 __all__ = (
     "URLs",

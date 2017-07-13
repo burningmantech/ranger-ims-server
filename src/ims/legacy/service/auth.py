@@ -317,7 +317,7 @@ def _unprefix(url: URL) -> URL:
 @attrs(frozen=True)
 class AuthApplication(object):
     """
-    Application with routes for login and logout pages.
+    Application with login and logout endpoints.
     """
 
     _log = Logger()
