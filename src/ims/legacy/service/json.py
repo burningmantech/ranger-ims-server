@@ -24,6 +24,7 @@ from typing import Any, Awaitable, Callable, Mapping, Optional, Tuple
 
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
+from twisted.logger import Logger
 from twisted.python.constants import NamedConstant
 from twisted.python.failure import Failure
 from twisted.web.iweb import IRequest
@@ -57,6 +58,9 @@ class JSONMixIn(object):
     """
     Mix-in for JSON API endpoints.
     """
+
+    _log = Logger()
+
 
     #
     # JSON API endpoints
@@ -92,7 +96,7 @@ class JSONMixIn(object):
         try:
             personnel = await self.dms.personnel()
         except DMSError as e:
-            self.log.error("Unable to vend personnel: {failure}", failure=e)
+            self._log.error("Unable to vend personnel: {failure}", failure=e)
             personnel = ()
 
         return (
@@ -266,11 +270,11 @@ class JSONMixIn(object):
 
         assert incident.number is not None
 
-        self.log.info(
+        self._log.info(
             "User {author} created new incident #{incident.number} via JSON",
             author=author, incident=incident
         )
-        self.log.debug(
+        self._log.debug(
             "New incident: {json}", json=jsonObjectFromModelObject(incident)
         )
 
@@ -548,12 +552,12 @@ class JSONMixIn(object):
 
         assert incidentReport.number is not None
 
-        self.log.info(
+        self._log.info(
             "User {author} created new incident report "
             "#{incidentReport.number} via JSON",
             author=author, incidentReport=incidentReport
         )
-        self.log.debug(
+        self._log.debug(
             "New incident report: {json}",
             json=jsonObjectFromModelObject(incidentReport),
         )
@@ -794,7 +798,7 @@ class JSONMixIn(object):
         """
         HTML5 EventSource endpoint.
         """
-        self.log.info("Event source connected: {id}", id=id(request))
+        self._log.info("Event source connected: {id}", id=id(request))
 
         request.setHeader(
             HeaderName.contentType.value, ContentType.eventStream.value
@@ -804,7 +808,7 @@ class JSONMixIn(object):
 
         def disconnected(f: Failure) -> None:
             f.trap(ConnectionDone)
-            self.log.info("Event source disconnected: {id}", id=id(request))
+            self._log.info("Event source disconnected: {id}", id=id(request))
             self.storeObserver.removeListener(request)
 
         def finished(_: Any) -> None:
