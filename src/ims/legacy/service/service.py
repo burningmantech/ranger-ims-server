@@ -49,7 +49,6 @@ __all__ = (
 
 
 
-
 @attrs(frozen=True)
 class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
     """

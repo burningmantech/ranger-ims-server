@@ -18,6 +18,8 @@
 Incident Management System URL schema.
 """
 
+from attr import attrs
+
 from twisted.python.url import URL
 
 __all__ = (
@@ -26,6 +28,7 @@ __all__ = (
 
 
 
+@attrs(frozen=True)
 class URLs(object):
     """
     Incident Management System URL schema.
