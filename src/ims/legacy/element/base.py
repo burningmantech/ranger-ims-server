@@ -205,14 +205,13 @@ class Element(BaseElement):
         """
         user = getattr(request, "user", None)
 
-        if user is None:
-            return ""
-
-        for shortName in user.shortNames:
-            if shortName in self.service.config.IMSAdmins:
-                return tag
+        if user is not None and self.service is not None:
+            for shortName in user.shortNames:
+                if shortName in self.service.config.IMSAdmins:
+                    return tag
 
         return ""
+
 
     @renderer
     def logged_in_user(self, request, tag):
