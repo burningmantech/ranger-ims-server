@@ -89,9 +89,7 @@ class ExternalMixIn(object):
     )
 
 
-    @router.route(
-        URLs.bootstrapBase.asText(), methods=("HEAD", "GET"), branch=True
-    )
+    @router.route(URLs.bootstrapBase, methods=("HEAD", "GET"), branch=True)
     @static
     async def bootstrapResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -109,7 +107,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.jqueryJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.jqueryJS, methods=("HEAD", "GET"))
     @static
     async def jqueryJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -124,7 +122,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.jqueryMap.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.jqueryMap, methods=("HEAD", "GET"))
     @static
     async def jqueryMapResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -137,9 +135,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(
-        URLs.dataTablesBase.asText(), methods=("HEAD", "GET"), branch=True
-    )
+    @router.route(URLs.dataTablesBase, methods=("HEAD", "GET"), branch=True)
     @static
     async def dataTablesResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -157,7 +153,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.momentJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.momentJS, methods=("HEAD", "GET"))
     @static
     async def momentJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -172,7 +168,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.lscacheJS.asText(), methods=("HEAD", "GET"))
+    @router.route(URLs.lscacheJS, methods=("HEAD", "GET"))
     @static
     async def lscacheJSResource(self, request: IRequest) -> KleinRenderable:
         """

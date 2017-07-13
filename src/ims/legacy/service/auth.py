@@ -316,7 +316,6 @@ class AuthApplication(object):
     _log = Logger()
     router = Router()
 
-
     auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
 
     # FIXME: we need config for storage because element.base

@@ -103,7 +103,7 @@ class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
     # Auth
     #
 
-    @router.route(URLs.auth.asText(), branch=True)
+    @router.route(URLs.auth, branch=True)
     def authApplication(self, request: IRequest) -> KleinRenderable:
         """
         Auth resource.
