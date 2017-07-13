@@ -15,7 +15,7 @@
 ##
 
 """
-Incident Management System authorization and authentication.
+Incident Management System web application authentication endpoints.
 """
 
 from attr import attrib, attrs
@@ -26,14 +26,16 @@ from hyperlink import URL
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
-from ims.application.auth import AuthProvider
 from ims.ext.klein import KleinRenderable
+from ims.legacy.element.login import LoginPage
+from ims.legacy.service.config import Configuration
+from ims.legacy.service.klein import (
+    Router, invalidQueryResponse, queryValue, redirect
+)
+from ims.legacy.service.urls import URLs
 from ims.store import IMSDataStore
 
-from .config import Configuration
-from .klein import Router, invalidQueryResponse, queryValue, redirect
-from .urls import URLs
-from ..element.login import LoginPage
+from ._provider import AuthProvider
 
 
 __all__ = ()

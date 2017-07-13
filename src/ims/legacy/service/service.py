@@ -29,11 +29,11 @@ from twisted.logger import ILogObserver, Logger, globalLogPublisher
 from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
 
+from ims.application.auth import AuthApplication, AuthProvider
 from ims.dms import DutyManagementSystem
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable
 from ims.store import IMSDataStore
 
-from .auth import AuthApplication, AuthProvider
 from .config import Configuration
 from .eventsource import DataStoreEventSourceLogObserver
 from .external import ExternalMixIn
