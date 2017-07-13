@@ -307,6 +307,13 @@ class AuthProvider(object):
 
 
 
+def _unprefix(url: URL) -> URL:
+    prefix = URLs.auth.path[:-1]
+    assert url.path[:len(prefix)] == prefix, (url.path[len(prefix):], prefix)
+    return url.replace(path=url.path[len(prefix):])
+
+
+
 @attrs(frozen=True)
 class AuthApplication(object):
     """
@@ -315,6 +322,7 @@ class AuthApplication(object):
 
     _log = Logger()
     router = Router()
+
 
     auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
 
@@ -326,7 +334,19 @@ class AuthApplication(object):
         return self.config.storage
 
 
-    @router.route("/login", methods=("POST",))
+    @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
+    def login(
+        self, request: IRequest, failed: bool = False
+    ) -> KleinRenderable:
+        """
+        Endpoint for the login page.
+        """
+        self.auth.authenticateRequest(request, optional=True)
+
+        return LoginPage(self, failed=failed)
+
+
+    @router.route(_unprefix(URLs.login), methods=("POST",))
     async def loginSubmit(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for a login form submission.
@@ -371,19 +391,7 @@ class AuthApplication(object):
         return self.login(request, failed=True)
 
 
-    @router.route("/login", methods=("HEAD", "GET"))
-    def login(
-        self, request: IRequest, failed: bool = False
-    ) -> KleinRenderable:
-        """
-        Endpoint for the login page.
-        """
-        self.auth.authenticateRequest(request, optional=True)
-
-        return LoginPage(self, failed=failed)
-
-
-    @router.route("/logout", methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.logout), methods=("HEAD", "GET"))
     def logout(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for logging out.
