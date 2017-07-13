@@ -18,11 +18,10 @@
 Dispatch queue page.
 """
 
-from ims.application.auth import Authorization
+from ims.application import Authorization, URLs
 from ims.ext.json import jsonTextFromObject
 
 from .base import Element, renderer
-from ..service.urls import URLs
 
 
 __all__ = (

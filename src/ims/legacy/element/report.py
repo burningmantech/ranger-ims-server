@@ -18,7 +18,7 @@
 Incident report page.
 """
 
-from ims.application.auth import Authorization
+from ims.application import Authorization
 from ims.ext.json import jsonTextFromObject
 
 from .base import Element, renderer

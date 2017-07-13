@@ -28,10 +28,9 @@ from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
 from twisted.web.iweb import IRequest
 
+from ims.application._klein import notFoundResponse, router
+from ims.application._urls import URLs
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
-
-from .klein import notFoundResponse, router
-from .urls import URLs
 
 
 __all__ = (

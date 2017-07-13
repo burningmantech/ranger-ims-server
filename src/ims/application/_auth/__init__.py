@@ -21,9 +21,7 @@ Incident Management System web application authentication.
 from ._application import AuthApplication
 from ._provider import AuthProvider, Authorization
 
+AuthApplication, AuthProvider, Authorization  # Silence linter
 
-__all__ = (
-    "AuthApplication",
-    "AuthProvider",
-    "Authorization",
-)
+
+__all__ = ()

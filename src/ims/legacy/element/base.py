@@ -23,9 +23,8 @@ from twisted.web.template import (
     Element as BaseElement, XMLFile, renderer, tags
 )
 
+from ims.application import URLs
 from ims.ext.json import jsonTextFromObject
-
-from ..service.urls import URLs
 
 
 __all__ = (

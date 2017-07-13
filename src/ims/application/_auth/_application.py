@@ -27,15 +27,12 @@ from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
 from ims.ext.klein import KleinRenderable
-from ims.legacy.element.login import LoginPage
 from ims.legacy.service.config import Configuration
-from ims.legacy.service.klein import (
-    Router, invalidQueryResponse, queryValue, redirect
-)
-from ims.legacy.service.urls import URLs
 from ims.store import IMSDataStore
 
 from ._provider import AuthProvider
+from .._klein import Router, invalidQueryResponse, queryValue, redirect
+from .._urls import URLs
 
 
 __all__ = ()
@@ -75,6 +72,8 @@ class AuthApplication(object):
         """
         Endpoint for the login page.
         """
+        from ims.legacy.element.login import LoginPage
+
         self.auth.authenticateRequest(request, optional=True)
 
         return LoginPage(self, failed=failed)

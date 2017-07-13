@@ -22,12 +22,12 @@ from typing import Optional
 
 from twisted.web.iweb import IRequest
 
-from ims.application.auth import AuthProvider, Authorization
+from ims.application._auth import AuthProvider, Authorization
+from ims.application._klein import notFoundResponse, redirect, router
+from ims.application._urls import URLs
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ims.model import Event
 
-from .klein import notFoundResponse, redirect, router
-from .urls import URLs
 from ..element.admin import AdminPage
 from ..element.admin_acl import AdminAccessControlPage
 from ..element.admin_streets import AdminStreetsPage

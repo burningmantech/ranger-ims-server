@@ -29,7 +29,11 @@ from twisted.python.constants import NamedConstant
 from twisted.python.failure import Failure
 from twisted.web.iweb import IRequest
 
-from ims.application.auth import Authorization
+from ims.application._auth import Authorization
+from ims.application._klein import (
+    invalidQueryResponse, notFoundResponse, queryValue, router
+)
+from ims.application._urls import URLs
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ims.model import (
@@ -43,8 +47,6 @@ from ims.model.json import (
 from ims.store import NoSuchIncidentError
 
 from .error import NotAuthorizedError
-from .klein import invalidQueryResponse, notFoundResponse, queryValue, router
-from .urls import URLs
 from ...dms import DMSError
 
 

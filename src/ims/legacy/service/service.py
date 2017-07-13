@@ -29,7 +29,9 @@ from twisted.logger import ILogObserver, Logger, globalLogPublisher
 from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
 
-from ims.application.auth import AuthApplication, AuthProvider
+from ims.application._auth import AuthApplication, AuthProvider
+from ims.application._klein import notFoundResponse, router
+from ims.application._urls import URLs
 from ims.dms import DutyManagementSystem
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable
 from ims.store import IMSDataStore
@@ -38,8 +40,6 @@ from .config import Configuration
 from .eventsource import DataStoreEventSourceLogObserver
 from .external import ExternalMixIn
 from .json import JSONMixIn
-from .klein import notFoundResponse, router
-from .urls import URLs
 from .web import WebMixIn
 
 

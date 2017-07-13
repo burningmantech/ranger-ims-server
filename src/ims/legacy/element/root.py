@@ -18,8 +18,9 @@
 Server root page.
 """
 
+from ims.application import URLs
+
 from .base import Element, renderer
-from ..service.urls import URLs
 
 
 __all__ = (

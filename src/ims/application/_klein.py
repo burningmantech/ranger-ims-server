@@ -37,14 +37,13 @@ from werkzeug.exceptions import MethodNotAllowed, NotFound
 from werkzeug.routing import RequestRedirect
 
 from ims import __version__ as version
+from ims.dms import DMSError
 from ims.ext.klein import (
     ContentType, HeaderName, KleinRenderable, KleinRouteMethod
 )
+from ims.legacy.service.error import NotAuthenticatedError, NotAuthorizedError
 
-from .error import NotAuthenticatedError, NotAuthorizedError
-from .urls import URLs
-from ..element.redirect import RedirectPage
-from ...dms import DMSError
+from ._urls import URLs
 
 
 __all__ = (
@@ -83,6 +82,8 @@ def redirect(
     """
     Perform a redirect.
     """
+    from ims.legacy.element.redirect import RedirectPage
+
     if origin is not None:
         location = location.set(origin, request.uri.decode("utf-8"))
 
@@ -96,7 +97,7 @@ def redirect(
 
 
 #
-# Error resources
+# Error responses
 #
 
 def noContentResponse(
