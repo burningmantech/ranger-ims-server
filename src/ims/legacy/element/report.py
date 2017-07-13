@@ -18,10 +18,10 @@
 Incident report page.
 """
 
+from ims.application.auth import Authorization
 from ims.ext.json import jsonTextFromObject
 
 from .base import Element, renderer
-from ..service.auth import Authorization
 
 
 __all__ = (
