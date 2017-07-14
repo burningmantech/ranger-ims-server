@@ -22,6 +22,7 @@ from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
 from pathlib import Path
+from sys import stdout
 from textwrap import dedent
 from types import MappingProxyType
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union, cast
@@ -93,7 +94,7 @@ class DataStore(IMSDataStore):
 
 
     @classmethod
-    def printSchema(cls, out: TextIO) -> None:
+    def printSchema(cls, out: TextIO = stdout) -> None:
         """
         Print schema.
         """
