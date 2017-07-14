@@ -35,7 +35,7 @@ from twisted.logger import Logger
 from ims.ext.json import objectFromJSONBytesIO
 from ims.ext.sqlite import (
     Connection, Cursor, ParameterValue, Parameters, Row, SQLiteError,
-    createDB, openDB, printSchema,
+    createDB, explainQueryPlans, openDB, printSchema,
 )
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentReport, IncidentState,
@@ -99,6 +99,23 @@ class DataStore(IMSDataStore):
         """
         with createDB(None, cls._loadSchema()) as db:
             printSchema(db, out=out)
+
+
+    @classmethod
+    def printQueries(cls):
+        """
+        Print a summary of queries.
+        """
+        queries = [
+            (getattr(cls, k), k[7:])
+            for k in sorted(vars(cls))
+            if k.startswith("_query_")
+        ]
+
+        with createDB(None, cls._loadSchema()) as db:
+            for line in explainQueryPlans(db, queries):
+                print(line)
+                print()
 
 
     @property
