@@ -1617,8 +1617,8 @@ class DataStore(IMSDataStore):
             incidentReportNumber, "summary", summary, author,
         )
 
-    _query_setIncidentSummary = _template_setIncidentReportAttribute.format(
-        column="SUMMARY"
+    _query_setIncidentReportSummary = (
+        _template_setIncidentReportAttribute.format(column="SUMMARY")
     )
 
 
