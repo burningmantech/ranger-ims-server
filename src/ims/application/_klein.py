@@ -41,8 +41,8 @@ from ims.dms import DMSError
 from ims.ext.klein import (
     ContentType, HeaderName, KleinRenderable, KleinRouteMethod
 )
-from ims.legacy.service.error import NotAuthenticatedError, NotAuthorizedError
 
+from ._exceptions import NotAuthenticatedError, NotAuthorizedError
 from ._urls import URLs
 
 

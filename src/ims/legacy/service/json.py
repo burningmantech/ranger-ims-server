@@ -30,6 +30,7 @@ from twisted.python.failure import Failure
 from twisted.web.iweb import IRequest
 
 from ims.application._auth import Authorization
+from ims.application._exceptions import NotAuthorizedError
 from ims.application._klein import (
     invalidQueryResponse, notFoundResponse, queryValue, router
 )
@@ -46,7 +47,6 @@ from ims.model.json import (
 )
 from ims.store import NoSuchIncidentError
 
-from .error import NotAuthorizedError
 from ...dms import DMSError
 
 

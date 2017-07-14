@@ -29,8 +29,9 @@ from twisted.web.iweb import IRequest
 
 from ims.dms import DMSError, verifyPassword
 from ims.legacy.service.config import Configuration
-from ims.legacy.service.error import NotAuthenticatedError, NotAuthorizedError
 from ims.model import Event, Ranger
+
+from .._exceptions import NotAuthenticatedError, NotAuthorizedError
 
 
 __all__ = ()
