@@ -83,7 +83,7 @@ script_entry_points = {
     "web"         : ("ims.legacy.service.tool", "WebTool.main"),
     "endpoints"   : ("ims.legacy.service.tool", "KleinTool.main"),
     "schema"      : ("ims.legacy.store.sqlite", "Storage.printSchema"),
-    "queries"     : ("ims.legacy.store.sqlite", "Storage.printQueries"),
+    "queries"     : ("ims.store.sqlite", "DataStore.printQueries"),
     "load_legacy" : ("ims.legacy.service.tool", "LegacyLoadTool.main"),
     "load_json"   : ("ims.legacy.service.tool", "JSONLoadTool.main"),
 }
