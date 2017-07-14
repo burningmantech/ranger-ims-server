@@ -18,23 +18,18 @@
 Incident Management System web service.
 """
 
-from hashlib import sha1
-from typing import Any, Iterable, Optional
-from typing.io import BinaryIO
-
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of
 
 from twisted.logger import ILogObserver, Logger, globalLogPublisher
-from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
 
 from ims.application._auth import AuthApplication, AuthProvider
 from ims.application._eventsource import DataStoreEventSourceLogObserver
-from ims.application._klein import notFoundResponse, router
+from ims.application._klein import router
 from ims.application._urls import URLs
 from ims.dms import DutyManagementSystem
-from ims.ext.klein import ContentType, HeaderName, KleinRenderable
+from ims.ext.klein import KleinRenderable
 from ims.store import IMSDataStore
 
 from .config import Configuration
@@ -108,102 +103,3 @@ class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
         Auth resource.
         """
         return self._authApplication.router.resource()
-
-
-    #
-    # MIME type wrappers
-    #
-
-    def styleSheet(
-        self, request: IRequest, name: str, *names: str
-    ) -> KleinRenderable:
-        """
-        Respond with a style sheet.
-        """
-        request.setHeader(HeaderName.contentType.value, ContentType.css.value)
-        return self.builtInResource(request, name, *names)
-
-
-    def javaScript(
-        self, request: IRequest, name: str, *names: str
-    ) -> KleinRenderable:
-        """
-        Respond with JavaScript.
-        """
-        request.setHeader(
-            HeaderName.contentType.value, ContentType.javascript.value
-        )
-        return self.builtInResource(request, name, *names)
-
-
-    def jsonBytes(
-        self, request: IRequest, data: bytes, etag: Optional[str] = None
-    ) -> bytes:
-        """
-        Respond with encoded JSON text.
-        """
-        request.setHeader(HeaderName.contentType.value, ContentType.json.value)
-        if etag is None:
-            etag = sha1(data).hexdigest()
-        request.setHeader(HeaderName.etag.value, etag)
-        return data
-
-
-    def jsonStream(
-        self, request: IRequest, jsonStream: BinaryIO,
-        etag: Optional[str] = None,
-    ) -> None:
-        """
-        Respond with a stream of JSON data.
-        """
-        request.setHeader(HeaderName.contentType.value, ContentType.json.value)
-        if etag is not None:
-            request.setHeader(HeaderName.etag.value, etag)
-        for line in jsonStream:
-            request.write(line)
-
-
-    @staticmethod
-    def buildJSONArray(items: Iterable[Any]) -> Iterable[Any]:
-        """
-        Generate a JSON array from an iterable of JSON objects.
-        """
-        first = True
-
-        yield b'['
-
-        for item in items:
-            if first:
-                first = False
-            else:
-                yield b","
-
-            yield item
-
-        yield b']'
-
-
-    #
-    # File access
-    #
-
-    _elementsRoot = FilePath(__file__).parent().parent().child("element")
-
-    def builtInResource(
-        self, request: IRequest, name: str, *names: str
-    ) -> KleinRenderable:
-        """
-        Respond with data from a local file.
-        """
-        filePath = self._elementsRoot.child(name)
-
-        for name in names:
-            filePath = filePath.child(name)
-
-        try:
-            return filePath.getContent()
-        except IOError:
-            self.log.error(
-                "File not found: {filePath.path}", filePath=filePath
-            )
-            return notFoundResponse(request)

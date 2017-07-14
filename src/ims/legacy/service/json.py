@@ -20,7 +20,7 @@ Incident Management System JSON API endpoints.
 
 from datetime import datetime as DateTime, timezone as TimeZone
 from enum import Enum
-from typing import Any, Awaitable, Callable, Mapping, Optional, Tuple
+from typing import Any, Awaitable, Callable, Iterable, Mapping, Optional, Tuple
 
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
@@ -34,6 +34,7 @@ from ims.application._exceptions import NotAuthorizedError
 from ims.application._klein import (
     invalidQueryResponse, notFoundResponse, queryValue, router
 )
+from ims.application._static import buildJSONArray, jsonBytes, writeJSONStream
 from ims.application._urls import URLs
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
@@ -75,7 +76,7 @@ class JSONMixIn(object):
         Ping (health check) endpoint.
         """
         ack = b'"ack"'
-        return self.jsonBytes(request, ack, str(hash(ack)))
+        return jsonBytes(request, ack, str(hash(ack)))
 
 
     @router.route(URLs.personnel, methods=("HEAD", "GET"))
@@ -88,10 +89,11 @@ class JSONMixIn(object):
         )
 
         stream, etag = await self.personnelData()
-        return self.jsonStream(request, stream, etag)
+        writeJSONStream(request, stream, etag)
+        return None
 
 
-    async def personnelData(self) -> Tuple[bytes, str]:
+    async def personnelData(self) -> Tuple[Iterable[bytes], str]:
         """
         Data for personnel endpoint.
         """
@@ -102,7 +104,7 @@ class JSONMixIn(object):
             personnel = ()
 
         return (
-            self.buildJSONArray(
+            buildJSONArray(
                 jsonTextFromObject(
                     jsonObjectFromModelObject(ranger)
                 ).encode("utf-8")
@@ -115,7 +117,7 @@ class JSONMixIn(object):
     @router.route(URLs.incidentTypes, methods=("HEAD", "GET"))
     async def incidentTypesResource(
         self, request: IRequest
-    ) -> KleinRenderable:
+    ) -> None:
         """
         Incident types endpoint.
         """
@@ -127,12 +129,12 @@ class JSONMixIn(object):
             await self.storage.incidentTypes(includeHidden=hidden)
         )
 
-        stream = self.buildJSONArray(
+        stream = buildJSONArray(
             jsonTextFromObject(incidentType).encode("utf-8")
             for incidentType in incidentTypes
         )
 
-        return self.jsonStream(request, stream, None)
+        writeJSONStream(request, stream, None)
 
 
     @router.route(URLs.incidentTypes, methods=("POST",))
@@ -196,13 +198,13 @@ class JSONMixIn(object):
         )
 
         data = self.config.locationsJSONBytes
-        return self.jsonBytes(request, data, str(hash(data)))
+        return jsonBytes(request, data, str(hash(data)))
 
 
     @router.route(URLs.incidents, methods=("HEAD", "GET"))
     async def listIncidentsResource(
         self, request: IRequest, eventID: str
-    ) -> KleinRenderable:
+    ) -> None:
         """
         Incident list endpoint.
         """
@@ -212,14 +214,14 @@ class JSONMixIn(object):
             request, event, Authorization.readIncidents
         )
 
-        stream = self.buildJSONArray(
+        stream = buildJSONArray(
             jsonTextFromObject(
                 jsonObjectFromModelObject(incident)
             ).encode("utf-8")
             for incident in await self.storage.incidents(event)
         )
 
-        return self.jsonStream(request, stream, None)
+        writeJSONStream(request, stream, None)
 
 
     @router.route(URLs.incidents, methods=("POST",))
@@ -316,7 +318,7 @@ class JSONMixIn(object):
             .encode("utf-8")
         )
 
-        return self.jsonBytes(request, data)
+        return jsonBytes(request, data)
 
 
     @router.route(URLs.incidentNumber, methods=("POST",))
@@ -499,14 +501,15 @@ class JSONMixIn(object):
                 event=event, incidentNumber=incidentNumber
             )
 
-        stream = self.buildJSONArray(
+        stream = buildJSONArray(
             jsonTextFromObject(
                 jsonObjectFromModelObject(incidentReport)
             ).encode("utf-8")
             for incidentReport in incidentReports
         )
 
-        return self.jsonStream(request, stream, None)
+        writeJSONStream(request, stream, None)
+        return None
 
 
     @router.route(URLs.incidentReports, methods=("POST",))
@@ -590,7 +593,7 @@ class JSONMixIn(object):
         incidentReport = await self.storage.incidentReport(number)
         text = jsonTextFromObject(jsonObjectFromModelObject(incidentReport))
 
-        return self.jsonBytes(request, text.encode("utf-8"))
+        return jsonBytes(request, text.encode("utf-8"))
 
 
     @router.route(URLs.incidentReport, methods=("POST",))

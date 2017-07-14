@@ -24,6 +24,7 @@ from twisted.web.iweb import IRequest
 
 from ims.application._auth import AuthProvider, Authorization
 from ims.application._klein import notFoundResponse, redirect, router
+from ims.application._static import builtInResource, javaScript, styleSheet
 from ims.application._urls import URLs
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ims.model import Event
@@ -66,7 +67,7 @@ class WebMixIn(object):
         """
         Endpoint for global style sheet.
         """
-        return self.styleSheet(request, "style.css")
+        return styleSheet(request, "style.css")
 
 
     @router.route(URLs.logo, methods=("HEAD", "GET"))
@@ -76,7 +77,7 @@ class WebMixIn(object):
         Endpoint for logo.
         """
         request.setHeader(HeaderName.contentType.value, ContentType.png.value)
-        return self.builtInResource(request, "logo.png")
+        return builtInResource(request, "logo.png")
 
 
     @router.route(URLs.imsJS, methods=("HEAD", "GET"))
@@ -85,7 +86,7 @@ class WebMixIn(object):
         """
         Endpoint for C{ims.js}.
         """
-        return self.javaScript(request, "ims.js")
+        return javaScript(request, "ims.js")
 
 
     #
@@ -142,7 +143,7 @@ class WebMixIn(object):
         """
         Endpoint for C{admin.js}.
         """
-        return self.javaScript(request, "admin.js")
+        return javaScript(request, "admin.js")
 
     @router.route(URLs.adminAccessControl, methods=("HEAD", "GET"))
     async def adminAccessControlPage(
@@ -166,7 +167,7 @@ class WebMixIn(object):
         """
         Endpoint for C{admin_acl.js}.
         """
-        return self.javaScript(request, "admin_acl.js")
+        return javaScript(request, "admin_acl.js")
 
 
     @router.route(URLs.adminIncidentTypes, methods=("HEAD", "GET"))
@@ -191,7 +192,7 @@ class WebMixIn(object):
         """
         Endpoint for C{admin_types.js}.
         """
-        return self.javaScript(request, "admin_types.js")
+        return javaScript(request, "admin_types.js")
 
 
     @router.route(URLs.adminStreets, methods=("HEAD", "GET"))
@@ -212,7 +213,7 @@ class WebMixIn(object):
         """
         Endpoint for C{admin_streets.js}.
         """
-        return self.javaScript(request, "admin_streets.js")
+        return javaScript(request, "admin_streets.js")
 
 
     @router.route(URLs.viewDispatchQueue, methods=("HEAD", "GET"))
@@ -251,7 +252,7 @@ class WebMixIn(object):
         """
         Endpoint for C{queue.js}.
         """
-        return self.javaScript(request, "queue.js")
+        return javaScript(request, "queue.js")
 
 
     @router.route(URLs.viewIncidentNumber, methods=("HEAD", "GET"))
@@ -296,7 +297,7 @@ class WebMixIn(object):
         """
         Endpoint for C{incident.js}.
         """
-        return self.javaScript(request, "incident.js")
+        return javaScript(request, "incident.js")
 
 
     # FIXME: viewIncidentReports
@@ -347,4 +348,4 @@ class WebMixIn(object):
         """
         Endpoint for C{report.js}.
         """
-        return self.javaScript(request, "report.js")
+        return javaScript(request, "report.js")
