@@ -254,7 +254,7 @@ def explainQueryPlans(
     for query, name in queries:
         params = dict((x, x) for x in range(query.count(":")))  # Dummy params
         try:
-            lines: Iterable[QueryPlanExplanation.Line] = (
+            lines: Iterable[QueryPlanExplanation.Line] = tuple(
                 QueryPlanExplanation.Line(nestingOrder, selectFrom, details)
                 for n, nestingOrder, selectFrom, details in (
                     db.execute("explain query plan {}".format(query), params)
