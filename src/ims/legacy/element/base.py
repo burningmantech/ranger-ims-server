@@ -267,7 +267,8 @@ class Element(BaseElement):
             events = ()
         else:
             events = sorted(
-                event.id for event in await self.service.storage.events()
+                event.id for event in
+                await self.service.config.storage.events()
             )
 
         if reverse_order:

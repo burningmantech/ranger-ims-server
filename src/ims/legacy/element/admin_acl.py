@@ -48,4 +48,6 @@ class AdminAccessControlPage(Element):
         """
         JSON list of strings: events IDs.
         """
-        return jsonTextFromObject(e.id for e in self.service.storage.events())
+        return jsonTextFromObject(
+            e.id for e in self.service.config.storage.events()
+        )

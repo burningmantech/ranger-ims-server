@@ -48,4 +48,6 @@ class AdminIncidentTypesPage(Element):
         """
         JSON list of events IDs.
         """
-        return jsonTextFromObject(e.id for e in self.service.storage.events())
+        return jsonTextFromObject(
+            e.id for e in self.service.config.storage.events()
+        )

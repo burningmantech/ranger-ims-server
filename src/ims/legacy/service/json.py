@@ -126,7 +126,7 @@ class JSONMixIn(object):
         hidden = queryValue(request, "hidden") == "true"
 
         incidentTypes = tuple(
-            await self.storage.incidentTypes(includeHidden=hidden)
+            await self.config.storage.incidentTypes(includeHidden=hidden)
         )
 
         stream = buildJSONArray(
@@ -159,27 +159,29 @@ class JSONMixIn(object):
         show = json.get("show", [])
         hide = json.get("hide", [])
 
+        storage = self.config.storage
+
         if adds:
             if type(adds) is not list:
                 return self.badRequestResource(
                     request, "add: expected a list."
                 )
             for incidentType in adds:
-                await self.storage.createIncidentType(incidentType)
+                await storage.createIncidentType(incidentType)
 
         if show:
             if type(show) is not list:
                 return self.badRequestResource(
                     request, "show: expected a list."
                 )
-            await self.storage.showIncidentTypes(show)
+            await storage.showIncidentTypes(show)
 
         if hide:
             if type(hide) is not list:
                 return self.badRequestResource(
                     request, "hide: expected a list."
                 )
-            await self.storage.hideIncidentTypes(hide)
+            await storage.hideIncidentTypes(hide)
 
         return self.noContentResource(request)
 
@@ -218,7 +220,7 @@ class JSONMixIn(object):
             jsonTextFromObject(
                 jsonObjectFromModelObject(incident)
             ).encode("utf-8")
-            for incident in await self.storage.incidents(event)
+            for incident in await self.config.storage.incidents(event)
         )
 
         writeJSONStream(request, stream, None)
@@ -270,7 +272,7 @@ class JSONMixIn(object):
                 .format(incident.created, now)
             )
 
-        await self.storage.createIncident(event, incident, author)
+        await self.config.storage.createIncident(event, incident, author)
 
         assert incident.number is not None
 
@@ -309,7 +311,9 @@ class JSONMixIn(object):
             return notFoundResponse(request)
 
         try:
-            incident = await self.storage.incidentWithNumber(event, number)
+            incident = await self.config.storage.incidentWithNumber(
+                event, number
+            )
         except NoSuchIncidentError:
             return notFoundResponse(request)
 
@@ -379,7 +383,7 @@ class JSONMixIn(object):
             if value is not UNSET:
                 await setter(event, number, _cast(value), author)
 
-        storage = self.storage
+        storage = self.config.storage
 
         await applyEdit(
             edits, IncidentJSONKey.priority, storage.setIncidentPriority
@@ -462,7 +466,7 @@ class JSONMixIn(object):
         """
         Incident reports endpoint.
         """
-        storage = self.storage
+        storage = self.config.storage
 
         eventID = queryValue(request, "event")
         incidentNumberText = queryValue(request, "incident")
@@ -553,7 +557,7 @@ class JSONMixIn(object):
                 .format(incidentReport.created, now)
             )
 
-        await self.storage.createIncidentReport(incidentReport)
+        await self.config.storage.createIncidentReport(incidentReport)
 
         assert incidentReport.number is not None
 
@@ -590,7 +594,7 @@ class JSONMixIn(object):
 
         await self.auth.authorizeRequestForIncidentReport(request, number)
 
-        incidentReport = await self.storage.incidentReport(number)
+        incidentReport = await self.config.storage.incidentReport(number)
         text = jsonTextFromObject(jsonObjectFromModelObject(incidentReport))
 
         return jsonBytes(request, text.encode("utf-8"))
@@ -613,6 +617,8 @@ class JSONMixIn(object):
             number = int(number)
         except ValueError:
             return notFoundResponse(request)
+
+        storage = self.config.storage
 
         #
         # Attach to incident if requested
@@ -642,11 +648,11 @@ class JSONMixIn(object):
                 )
 
             if action == "attach":
-                await self.storage.attachIncidentReportToIncident(
+                await storage.attachIncidentReportToIncident(
                     number, event, incidentNumber
                 )
             elif action == "detach":
-                await self.storage.detachIncidentReportFromIncident(
+                await storage.detachIncidentReportFromIncident(
                     number, event, incidentNumber
                 )
             else:
@@ -690,8 +696,6 @@ class JSONMixIn(object):
             if value is not UNSET:
                 await setter(event, number, _cast(value), author)
 
-        storage = self.storage
-
         await applyEdit(
             edits, IncidentReportJSONKey.summary,
             storage.setIncidentReportSummary
@@ -704,7 +708,7 @@ class JSONMixIn(object):
             for entry in entries:
                 text = entry.get(ReportEntryJSONKey.text.value, None)
                 if text:
-                    await self.storage.addIncidentReportReportEntry(
+                    await storage.addIncidentReportReportEntry(
                         number,
                         ReportEntry(
                             author=author,
@@ -726,11 +730,13 @@ class JSONMixIn(object):
         """
         await self.authorizeRequest(request, None, Authorization.imsAdmin)
 
+        storage = self.config.storage
+
         acl = {}
-        for event in await self.storage.events():
+        for event in await storage.events():
             acl[event.id] = dict(
-                readers=await self.storage.readers(event),
-                writers=await self.storage.writers(event),
+                readers=await storage.readers(event),
+                writers=await storage.writers(event),
             )
         return jsonTextFromObject(acl)
 
@@ -744,14 +750,16 @@ class JSONMixIn(object):
         """
         await self.authorizeRequest(request, None, Authorization.imsAdmin)
 
+        storage = self.config.storage
+
         edits = objectFromJSONBytesIO(request.content)
 
         for eventID, acl in edits.items():
             event = Event(eventID)
             if "readers" in acl:
-                await self.storage.setReaders(event, acl["readers"])
+                await storage.setReaders(event, acl["readers"])
             if "writers" in acl:
-                await self.storage.setWriters(event, acl["writers"])
+                await storage.setWriters(event, acl["writers"])
 
         return self.noContentResource(request)
 
@@ -763,9 +771,11 @@ class JSONMixIn(object):
         """
         await self.authorizeRequest(request, None, Authorization.imsAdmin)
 
+        storage = self.config.storage
+
         streets = {}
-        for event in await self.storage.events():
-            streets[event.id] = await self.storage.concentricStreets(event)
+        for event in await storage.events():
+            streets[event.id] = await storage.concentricStreets(event)
         return jsonTextFromObject(streets)
 
 
@@ -776,22 +786,24 @@ class JSONMixIn(object):
         """
         await self.authorizeRequest(request, None, Authorization.imsAdmin)
 
+        storage = self.config.storage
+
         edits = objectFromJSONBytesIO(request.content)
 
         for eventID, _streets in edits.items():
             event = Event(eventID)
-            existing = await self.storage.concentricStreets(event)
+            existing = await storage.concentricStreets(event)
 
             for _streetID, _streetName in existing.items():
                 raise NotAuthorizedError("Removal of streets is not allowed.")
 
         for eventID, streets in edits.items():
             event = Event(eventID)
-            existing = await self.storage.concentricStreets(event)
+            existing = await storage.concentricStreets(event)
 
             for streetID, streetName in streets.items():
                 if streetID not in existing:
-                    await self.storage.createConcentricStreet(
+                    await storage.createConcentricStreet(
                         event, streetID, streetName
                     )
 

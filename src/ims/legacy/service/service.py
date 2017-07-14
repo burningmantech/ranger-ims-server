@@ -30,7 +30,6 @@ from ims.application._klein import router
 from ims.application._urls import URLs
 from ims.dms import DutyManagementSystem
 from ims.ext.klein import KleinRenderable
-from ims.store import IMSDataStore
 
 from .config import Configuration
 from .external import ExternalMixIn
@@ -73,11 +72,6 @@ class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
         ),
         init=False,
     )
-
-
-    @property
-    def storage(self) -> IMSDataStore:
-        return self.config.storage
 
 
     @property

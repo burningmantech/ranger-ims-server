@@ -27,8 +27,6 @@ from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
 from ims.ext.klein import KleinRenderable
-from ims.legacy.service.config import Configuration
-from ims.store import IMSDataStore
 
 from ._provider import AuthProvider
 from .._klein import Router, invalidQueryResponse, queryValue, redirect
@@ -56,13 +54,6 @@ class AuthApplication(object):
 
 
     auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
-
-    # FIXME: we need config for storage because element.base
-    config: Configuration = attrib(validator=instance_of(Configuration))
-
-    @property
-    def storage(self) -> IMSDataStore:
-        return self.config.storage
 
 
     @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
