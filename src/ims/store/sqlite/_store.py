@@ -103,7 +103,7 @@ class DataStore(IMSDataStore):
 
 
     @classmethod
-    def printQueries(cls):
+    def printQueries(cls) -> None:
         """
         Print a summary of queries.
         """
