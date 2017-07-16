@@ -165,7 +165,8 @@ class IMSDataStore(ABC):
         self, incident: Incident, author: str
     ) -> Incident:
         """
-        Create a new incident and add it into the given event.
+        Create a new incident and add it into the event referenced by the
+        incident.
 
         The incident number is determined by the database and must be specified
         as zero in the given incident.

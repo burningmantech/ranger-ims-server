@@ -20,22 +20,29 @@ Incident Management System JSON API endpoints.
 
 from datetime import datetime as DateTime, timezone as TimeZone
 from enum import Enum
-from typing import Any, Awaitable, Callable, Iterable, Mapping, Optional, Tuple
+from typing import (
+    Any, Awaitable, Callable, Iterable, Mapping, Optional, Tuple, cast
+)
+
+from attr import attrib, attrs
+from attr.validators import instance_of, provides
 
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
-from twisted.logger import Logger
+from twisted.logger import ILogObserver, Logger
 from twisted.python.constants import NamedConstant
 from twisted.python.failure import Failure
 from twisted.web.iweb import IRequest
 
-from ims.application._auth import Authorization
+from ims.application._auth import AuthProvider, Authorization
 from ims.application._exceptions import NotAuthorizedError
 from ims.application._klein import (
-    invalidQueryResponse, notFoundResponse, queryValue, router
+    Router, badRequestResponse, invalidQueryResponse, noContentResponse,
+    notFoundResponse, queryValue
 )
 from ims.application._static import buildJSONArray, jsonBytes, writeJSONStream
 from ims.application._urls import URLs
+from ims.dms import DMSError
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ims.model import (
@@ -48,26 +55,29 @@ from ims.model.json import (
 )
 from ims.store import NoSuchIncidentError
 
-from ...dms import DMSError
+from .config import Configuration
 
 
 __all__ = (
-    "JSONMixIn",
+    "APIApplication",
 )
 
 
 
-class JSONMixIn(object):
+@attrs(frozen=True)
+class APIApplication(object):
     """
-    Mix-in for JSON API endpoints.
+    Application with JSON API endpoints.
     """
 
     _log = Logger()
+    router = Router()
 
 
-    #
-    # JSON API endpoints
-    #
+    auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
+    config: Configuration = attrib(validator=instance_of(Configuration))
+    storeObserver: ILogObserver = attrib(validator=provides(ILogObserver))
+
 
     @router.route(URLs.ping, methods=("HEAD", "GET"))
     @static
@@ -98,7 +108,7 @@ class JSONMixIn(object):
         Data for personnel endpoint.
         """
         try:
-            personnel = await self.dms.personnel()
+            personnel = await self.config.dms.personnel()
         except DMSError as e:
             self._log.error("Unable to vend personnel: {failure}", failure=e)
             personnel = ()
@@ -151,7 +161,7 @@ class JSONMixIn(object):
         json = objectFromJSONBytesIO(request.content)
 
         if type(json) is not dict:
-            return self.badRequestResource(
+            return badRequestResponse(
                 request, "root: expected a dictionary."
             )
 
@@ -163,7 +173,7 @@ class JSONMixIn(object):
 
         if adds:
             if type(adds) is not list:
-                return self.badRequestResource(
+                return badRequestResponse(
                     request, "add: expected a list."
                 )
             for incidentType in adds:
@@ -171,19 +181,19 @@ class JSONMixIn(object):
 
         if show:
             if type(show) is not list:
-                return self.badRequestResource(
+                return badRequestResponse(
                     request, "show: expected a list."
                 )
             await storage.showIncidentTypes(show)
 
         if hide:
             if type(hide) is not list:
-                return self.badRequestResource(
+                return badRequestResponse(
                     request, "hide: expected a list."
                 )
             await storage.hideIncidentTypes(hide)
 
-        return self.noContentResource(request)
+        return noContentResponse(request)
 
 
     @router.route(URLs.locations, methods=("HEAD", "GET"))
@@ -242,6 +252,13 @@ class JSONMixIn(object):
         json = objectFromJSONBytesIO(request.content)
         incident = modelObjectFromJSONObject(json, Incident)
 
+        if incident.event != event:
+            return badRequestResponse(
+                request,
+                "Incident's event {} does not match event in URL {}"
+                .format(incident.event, event)
+            )
+
         if incident.state is None:
             incident.state = IncidentState.new
 
@@ -266,13 +283,13 @@ class JSONMixIn(object):
             incident.created = created
 
         elif incident.created > now:
-            return self.badRequestResource(
+            return badRequestResponse(
                 request,
                 "Created time {} is in the future. Current time is {}."
                 .format(incident.created, now)
             )
 
-        await self.config.storage.createIncident(event, incident, author)
+        await self.config.storage.createIncident(incident, author)
 
         assert incident.number is not None
 
@@ -289,7 +306,7 @@ class JSONMixIn(object):
             HeaderName.location.value,
             "{}/{}".format(URLs.incidentNumber.asText(), incident.number)
         )
-        return self.noContentResource(request)
+        return noContentResponse(request)
 
 
     @router.route(URLs.incidentNumber, methods=("HEAD", "GET"))
@@ -351,12 +368,12 @@ class JSONMixIn(object):
         edits = objectFromJSONBytesIO(request.content)
 
         if not isinstance(edits, dict):
-            return self.badRequestResource(
+            return badRequestResponse(
                 request, "JSON incident must be a dictionary"
             )
 
         if edits.get(IncidentJSONKey.number.value, number) != number:
-            return self.badRequestResource(
+            return badRequestResponse(
                 request, "Incident number may not be modified"
             )
 
@@ -364,13 +381,17 @@ class JSONMixIn(object):
 
         created = edits.get(IncidentJSONKey.created.value, UNSET)
         if created is not UNSET:
-            return self.badRequestResource(
+            return badRequestResponse(
                 request, "Incident created time may not be modified"
             )
 
+        IncidentAttributeSetter = (
+            Callable[[Event, int, Any, str], Awaitable[None]]
+        )
+
         async def applyEdit(
             json: Mapping[str, Any], key: Enum,
-            setter: Callable[[Event, int, Any, str], Awaitable[None]],
+            setter: IncidentAttributeSetter,
             cast: Optional[Callable[[Any], Any]] = None
         ) -> None:
             _cast: Callable[[Any], Any]
@@ -408,7 +429,9 @@ class JSONMixIn(object):
                     storage.setIncidentLocationRadialMinute,
                     storage.setIncidentLocationDescription,
                 ):
-                    setter(event, number, None, author)
+                    cast(IncidentAttributeSetter, setter)(
+                        event, number, None, author
+                    )
             else:
                 await applyEdit(
                     location, LocationJSONKey.name,
@@ -456,7 +479,7 @@ class JSONMixIn(object):
                         )
                     )
 
-        return self.noContentResource(request)
+        return noContentResponse(request)
 
 
     @router.route(URLs.incidentReports, methods=("HEAD", "GET"))
@@ -551,13 +574,13 @@ class JSONMixIn(object):
             incidentReport.created = created
 
         elif incidentReport.created > now:
-            return self.badRequestResource(
+            return badRequestResponse(
                 request,
                 "Created time {} is in the future. Current time is {}."
                 .format(incidentReport.created, now)
             )
 
-        await self.config.storage.createIncidentReport(incidentReport)
+        await self.config.storage.createIncidentReport(incidentReport, author)
 
         assert incidentReport.number is not None
 
@@ -576,7 +599,7 @@ class JSONMixIn(object):
             HeaderName.location.value,
             "{}/{}".format(URLs.incidentNumber.asText(), incidentReport.number)
         )
-        return self.noContentResource(request)
+        return noContentResponse(request)
 
 
     @router.route(URLs.incidentReport, methods=("HEAD", "GET"))
@@ -594,7 +617,9 @@ class JSONMixIn(object):
 
         await self.auth.authorizeRequestForIncidentReport(request, number)
 
-        incidentReport = await self.config.storage.incidentReport(number)
+        incidentReport = await self.config.storage.incidentReportWithNumber(
+            number
+        )
         text = jsonTextFromObject(jsonObjectFromModelObject(incidentReport))
 
         return jsonBytes(request, text.encode("utf-8"))
@@ -607,7 +632,7 @@ class JSONMixIn(object):
         """
         Incident report edit endpoint.
         """
-        await self.authorizeRequest(
+        await self.auth.authorizeRequest(
             request, None, Authorization.writeIncidentReports
         )
 
@@ -664,12 +689,12 @@ class JSONMixIn(object):
         edits = objectFromJSONBytesIO(request.content)
 
         if not isinstance(edits, dict):
-            return self.badRequestResource(
+            return badRequestResponse(
                 request, "JSON incident report must be a dictionary"
             )
 
         if edits.get(IncidentReportJSONKey.number.value, number) != number:
-            return self.badRequestResource(
+            return badRequestResponse(
                 request, "Incident report number may not be modified"
             )
 
@@ -677,13 +702,13 @@ class JSONMixIn(object):
 
         created = edits.get(IncidentReportJSONKey.created.value, UNSET)
         if created is not UNSET:
-            return self.badRequestResource(
+            return badRequestResponse(
                 request, "Incident report created time may not be modified"
             )
 
         async def applyEdit(
             json: Mapping[str, Any], key: NamedConstant,
-            setter: Callable[[Event, int, Any, str], Awaitable[None]],
+            setter: Callable[[int, Any, str], Awaitable[None]],
             cast: Optional[Callable[[Any], Any]] = None
         ) -> None:
             _cast: Callable[[Any], Any]
@@ -694,7 +719,7 @@ class JSONMixIn(object):
                 _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                await setter(event, number, _cast(value), author)
+                await setter(number, _cast(value), author)
 
         await applyEdit(
             edits, IncidentReportJSONKey.summary,
@@ -718,7 +743,7 @@ class JSONMixIn(object):
                         )
                     )
 
-        return self.noContentResource(request)
+        return noContentResponse(request)
 
 
     @router.route(URLs.acl, methods=("HEAD", "GET"))
@@ -728,7 +753,7 @@ class JSONMixIn(object):
         """
         Admin access control endpoint.
         """
-        await self.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
 
         storage = self.config.storage
 
@@ -748,7 +773,7 @@ class JSONMixIn(object):
         """
         Admin access control edit endpoint.
         """
-        await self.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
 
         storage = self.config.storage
 
@@ -761,7 +786,7 @@ class JSONMixIn(object):
             if "writers" in acl:
                 await storage.setWriters(event, acl["writers"])
 
-        return self.noContentResource(request)
+        return noContentResponse(request)
 
 
     @router.route(URLs.streets, methods=("HEAD", "GET"))
@@ -769,7 +794,7 @@ class JSONMixIn(object):
         """
         Street list endpoint.
         """
-        await self.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
 
         storage = self.config.storage
 
@@ -784,7 +809,7 @@ class JSONMixIn(object):
         """
         Street list edit endpoint.
         """
-        await self.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
 
         storage = self.config.storage
 
@@ -807,7 +832,7 @@ class JSONMixIn(object):
                         event, streetID, streetName
                     )
 
-        return self.noContentResource(request)
+        return noContentResponse(request)
 
 
     @router.route(URLs.eventSource, methods=("GET",))

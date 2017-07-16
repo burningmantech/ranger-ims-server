@@ -33,7 +33,7 @@ from ims.ext.klein import KleinRenderable
 
 from .config import Configuration
 from .external import ExternalMixIn
-from .json import JSONMixIn
+from .json import APIApplication
 from .web import WebMixIn
 
 
@@ -44,7 +44,7 @@ __all__ = (
 
 
 @attrs(frozen=True)
-class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
+class WebService(WebMixIn, ExternalMixIn):
     """
     Incident Management System web service.
     """
@@ -68,6 +68,17 @@ class WebService(JSONMixIn, WebMixIn, ExternalMixIn):
     _authApplication: AuthApplication = attrib(
         default=Factory(
             lambda self: AuthApplication(auth=self.auth, config=self.config),
+            takes_self=True,
+        ),
+        init=False,
+    )
+
+    _apiApplication: APIApplication = attrib(
+        default=Factory(
+            lambda self: APIApplication(
+                auth=self.auth, config=self.config,
+                storeObserver=self.storeObserver,
+            ),
             takes_self=True,
         ),
         init=False,
