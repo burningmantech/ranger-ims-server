@@ -21,9 +21,9 @@ Report entry
 """
 
 from datetime import datetime as DateTime
-from typing import Any
+from typing import Any, TypeVar
 
-from attr import attrib, attrs
+from attr import asdict, attrib, attrs
 from attr.validators import instance_of
 
 from ims.ext.attr import true
@@ -31,6 +31,9 @@ from ims.ext.attr import true
 
 __all__ = ()
 
+
+
+TReportEntry = TypeVar("TReportEntry", bound="ReportEntry")
 
 
 @attrs(frozen=True, cmp=False)
@@ -98,3 +101,13 @@ class ReportEntry(object):
 
     def __ge__(self, other: Any) -> bool:
         return self._cmp(other, "__ge__")
+
+
+    def replace(self: TReportEntry, **kwargs: Any) -> TReportEntry:
+        """
+        Return a new report entry with the same values, except those specified
+        by keyword arguments.
+        """
+        newArgs = asdict(self, recurse=False)
+        newArgs.update(kwargs)
+        return self.__class__(**newArgs)

@@ -24,6 +24,9 @@ from twisted.python.compat import cmp
 
 from ims.ext.trial import TestCase
 
+from .._event import Event
+from ..strategies import events
+
 
 __all__ = ()
 
