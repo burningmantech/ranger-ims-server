@@ -100,7 +100,7 @@ class ReportEntryTests(TestCase):
 
 
     @given(reportEntries())
-    def test_eq(self, reportEntry: ReportEntry) -> None:
+    def test_neq(self, reportEntry: ReportEntry) -> None:
         """
         Test equality with another type.
         """
