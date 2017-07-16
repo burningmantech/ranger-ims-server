@@ -29,7 +29,6 @@ from hypothesis.strategies import iterables
 from ims.ext.trial import TestCase
 
 from .datetimes import dt1, dt2
-from .events import eventA
 from .locations import theMan
 from .rangers import rangerHubcap
 from .._entry import ReportEntry
@@ -75,7 +74,7 @@ class IncidentTests(TestCase):
         string.
         """
         incident = Incident(
-            event=eventA,
+            event=Event("foo"),
             number=123,
             created=dt1,
             state=IncidentState.new,
@@ -96,7 +95,7 @@ class IncidentTests(TestCase):
         string.
         """
         incident = Incident(
-            event=eventA,
+            event=Event("foo"),
             number=321,
             created=dt1,
             state=IncidentState.new,
