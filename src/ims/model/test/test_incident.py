@@ -24,7 +24,7 @@ from typing import Any, Iterable
 from attr import asdict
 
 from hypothesis import given
-from hypothesis.strategies import iterables, lists, sampled_from, text
+from hypothesis.strategies import lists, sampled_from, text
 
 from ims.ext.trial import TestCase
 
@@ -162,7 +162,7 @@ class IncidentTests(TestCase):
         self._test_replace(incident, "location", location)
 
 
-    @given(incidents(), iterables(rangerHandles()))
+    @given(incidents(), lists(rangerHandles()))
     def test_replace_rangerHandles(
         self, incident: Incident, rangerHandles: Iterable[str]
     ) -> None:
@@ -170,10 +170,10 @@ class IncidentTests(TestCase):
         :meth:`Incident.replace` with a rangerHandles argument replaces the
         Ranger handles.
         """
-        self._test_replace(incident, "rangerHandles", rangerHandles)
+        self._test_replace(incident, "rangerHandles", frozenset(rangerHandles))
 
 
-    @given(incidents(), iterables(incidentTypes()))
+    @given(incidents(), lists(incidentTypes()))
     def test_replace_incidentTypes(
         self, incident: Incident, incidentTypes: Iterable[str]
     ) -> None:
@@ -181,10 +181,10 @@ class IncidentTests(TestCase):
         :meth:`Incident.replace` with a incidentTypes argument replaces the
         incident types.
         """
-        self._test_replace(incident, "incidentTypes", incidentTypes)
+        self._test_replace(incident, "incidentTypes", frozenset(incidentTypes))
 
 
-    @given(incidents(), iterables(reportEntries()))
+    @given(incidents(), lists(reportEntries()))
     def test_replace_reportEntries(
         self, incident: Incident, reportEntries: Iterable[ReportEntry]
     ) -> None:

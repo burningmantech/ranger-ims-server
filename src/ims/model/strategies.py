@@ -24,7 +24,7 @@ from datetime import (
 from typing import Callable, Optional
 
 from hypothesis.strategies import (
-    booleans, composite, datetimes as _datetimes, integers, iterables, none,
+    booleans, composite, datetimes as _datetimes, integers, lists, none,
     one_of, sampled_from, text,
 )
 
@@ -202,9 +202,9 @@ def incidents(draw: Callable, new: bool = False) -> Incident:
         priority=draw(incidentPriorities()),
         summary=draw(incidentSummaries()),
         location=draw(locations()),
-        rangerHandles=draw(iterables(rangerHandles())),
-        incidentTypes=draw(iterables(incidentTypesText())),
-        reportEntries=draw(iterables(reportEntries(automatic=automatic))),
+        rangerHandles=draw(lists(rangerHandles())),
+        incidentTypes=draw(lists(incidentTypesText())),
+        reportEntries=draw(lists(reportEntries(automatic=automatic))),
     )
 
 
@@ -246,7 +246,7 @@ def rangers(draw: Callable) -> Ranger:
         handle=draw(rangerHandles()),
         name=draw(text(min_size=1)),
         status=draw(sampled_from(RangerStatus)),
-        email=draw(iterables(text(min_size=1))),
+        email=draw(lists(text(min_size=1))),
         onSite=draw(booleans()),
         dmsID=draw(one_of(none(), integers())),
         password=draw(one_of(none(), text())),
@@ -268,7 +268,7 @@ def incidentReports(draw: Callable) -> IncidentReport:
         number=draw(incidentReportNumbers()),
         created=draw(dateTimes()),
         summary=draw(text(min_size=1)),
-        reportEntries=sorted(draw(iterables(reportEntries()))),
+        reportEntries=sorted(draw(lists(reportEntries()))),
     )
 
 
