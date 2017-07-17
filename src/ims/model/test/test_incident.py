@@ -63,7 +63,7 @@ class IncidentTests(TestCase):
 
 
     @given(incidents(), sampled_from((None, "")))
-    def test_str_noSummary(self, incident: Incident, summary) -> None:
+    def test_str_noSummary(self, incident: Incident, summary: str) -> None:
         """
         :meth:`Incident.__str__` renders an incident without a summary as a
         string.
