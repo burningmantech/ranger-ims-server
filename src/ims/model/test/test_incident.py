@@ -28,9 +28,6 @@ from hypothesis.strategies import lists, sampled_from, text
 
 from ims.ext.trial import TestCase
 
-from .datetimes import dt1, dt2
-from .locations import theMan
-from .rangers import rangerHubcap
 from .._entry import ReportEntry
 from .._event import Event
 from .._incident import Incident, summaryFromReport
@@ -217,7 +214,9 @@ class SummaryFromReportTests(TestCase):
 
 
     @given(lists(reportEntries()))
-    def test_entryAutomatic(self, reportEntries: Iterable[ReportEntry]) -> None:
+    def test_entryAutomatic(
+        self, reportEntries: Iterable[ReportEntry]
+    ) -> None:
         """
         :func:`summaryFromReport` skips automatic entries.
         """
@@ -231,7 +230,9 @@ class SummaryFromReportTests(TestCase):
 
 
     @given(lists(reportEntries(), min_size=1))
-    def test_entryNotAutomatic(self, reportEntries: Iterable[ReportEntry]) -> None:
+    def test_entryNotAutomatic(
+        self, reportEntries: Iterable[ReportEntry]
+    ) -> None:
         """
         :func:`summaryFromReport` uses the first line of text from the first
         non-automatic entry.

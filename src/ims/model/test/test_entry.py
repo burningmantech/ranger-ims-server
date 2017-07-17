@@ -18,15 +18,15 @@
 Tests for :mod:`ranger-ims-server.model._entry`
 """
 
-from datetime import datetime as DateTime, timezone as TimeZone
+from datetime import datetime as DateTime
 
 from hypothesis import given
 from hypothesis.strategies import booleans
 
 from ims.ext.trial import TestCase
 
-from ..strategies import dateTimes, rangerHandles, reportEntries
 from .._entry import ReportEntry
+from ..strategies import dateTimes, rangerHandles, reportEntries
 
 
 __all__ = ()
