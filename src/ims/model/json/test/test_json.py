@@ -27,7 +27,10 @@ from hypothesis.strategies import datetimes, floats, integers, text
 from ims.ext.json import dateTimeAsRFC3339Text
 from ims.ext.trial import TestCase
 
-from .._json import jsonDeserialize, jsonObjectFromModelObject, jsonSerialize
+from .._json import (
+    jsonDeserialize, jsonObjectFromModelObject, jsonSerialize,
+    modelObjectFromJSONObject,
+)
 from ..._incident import Incident
 from ...strategies import incidents
 
@@ -194,9 +197,25 @@ class ModelSerializationTests(TestCase):
     @given(incidents())
     def test_incident(self, incident: Incident) -> None:
         """
-        :func:`jsonObjectFromModelObject` serializes an incident as JSON text.
+        :func:`jsonObjectFromModelObject` serializes an incident as JSON
+        objects.
         """
         self.assertEqual(
-            jsonObjectFromModelObject(incident),
-            jsonSerialize(incident)
+            jsonObjectFromModelObject(incident), jsonSerialize(incident)
         )
+
+
+class ModelDeserializationTests(TestCase):
+    """
+    Tests for deserialization of model objects
+    """
+
+    @given(incidents())
+    def test_incident(self, incident: Incident) -> None:
+        """
+        :func:`modelObjectFromJSONObject` deserializes an incident from JSON
+        objects.
+        """
+        json = jsonSerialize(incident)
+
+        self.assertEqual(modelObjectFromJSONObject(json, Incident), incident)
