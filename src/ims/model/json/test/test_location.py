@@ -67,8 +67,7 @@ class LocationDeserializationTests(TestCase):
         :func:`jsonDeserialize` returns a location with the correct data.
         """
         json = jsonFromLocation(Location(
-            name = "Foo",
-            address = TextOnlyAddress(description="Over there")
+            name="Foo", address=TextOnlyAddress(description="Over there")
         ))
 
         json["address"]["type"] = "* not a valid type *"

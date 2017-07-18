@@ -107,7 +107,7 @@ class ComparisonMixInTests(TestCase):
         self.assertIdentical(Comparable(1).__gt__(object()), NotImplemented)
 
 
-    def test_le(self) -> None:
+    def test_ge(self) -> None:
         """
         Less-than-or-equal-to comparison.
         """
