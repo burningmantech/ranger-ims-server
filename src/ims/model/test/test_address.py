@@ -57,3 +57,35 @@ class AddressTests(TestCase):
             hash(TextOnlyAddress(description=description)),
             hash(RodGarettAddress(description=description, radialHour=1)),
         )
+
+
+    @given(text())
+    def test_eq(self, description: str) -> None:
+        """
+        :class:`RodGarettAddress` and :class:`TextOnlyAddress` can compare
+        with each other.
+        """
+        self.assertEqual(
+            TextOnlyAddress(description=description),
+            RodGarettAddress(description=description),
+        )
+        self.assertEqual(
+            TextOnlyAddress(description=description),
+            TextOnlyAddress(description=description),
+        )
+        self.assertEqual(
+            RodGarettAddress(description=description),
+            RodGarettAddress(description=description),
+        )
+        self.assertNotEqual(
+            TextOnlyAddress(description=description),
+            RodGarettAddress(description=description, concentric="1"),
+        )
+        self.assertNotEqual(
+            TextOnlyAddress(description=description),
+            RodGarettAddress(description=description, radialMinute=1),
+        )
+        self.assertNotEqual(
+            TextOnlyAddress(description=description),
+            RodGarettAddress(description=description, radialHour=1),
+        )
