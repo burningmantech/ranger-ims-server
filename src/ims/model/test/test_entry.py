@@ -41,6 +41,22 @@ class ReportEntryTests(TestCase):
     text = "Hello"
 
 
+    @given(reportEntries())
+    def test_str(self, reportEntry: ReportEntry) -> None:
+        """
+        Report entry renders as a string.
+        """
+        self.assertEqual(
+            str(reportEntry),
+            "{} {}{}: {}".format(
+                reportEntry.created,
+                reportEntry.author,
+                "*" if reportEntry.automatic else "",
+                reportEntry.text,
+            )
+        )
+
+
     @given(reportEntries(), dateTimes(), dateTimes())
     def test_ordering_created(
         self, reportEntry: ReportEntry, createdA: DateTime, createdB: DateTime
