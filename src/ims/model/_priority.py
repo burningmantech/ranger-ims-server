@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_priority -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
