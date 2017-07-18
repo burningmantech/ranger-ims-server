@@ -45,6 +45,7 @@ statusDescriptions = dict(
     uberbonked="Uberbonked Participant",
     vintage="Vintage Ranger",
     deceased="Late Ranger",
+    other="(Unknown Person Type)",
 )
 
 
@@ -75,9 +76,7 @@ class RangerStatus(Enum):
 
 
     def __str__(self) -> str:
-        return statusDescriptions.get(
-            self.name, "(Unknown Person Type: {})".format(self.name)
-        )
+        return statusDescriptions[self.name]
 
 
 

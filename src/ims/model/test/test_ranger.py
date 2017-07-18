@@ -51,11 +51,7 @@ class RangerStatusTests(TestCase):
         Ranger status renders as a string.
         """
         for status in RangerStatus:
-            self.assertEqual(
-                str(status), statusDescriptions.get(
-                    status.name, "(Unknown Person Type: {})".format(status.name)
-                )
-            )
+            self.assertEqual(str(status), statusDescriptions[status.name])
 
 
 
