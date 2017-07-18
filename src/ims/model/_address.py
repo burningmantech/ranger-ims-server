@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_address -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -21,10 +23,11 @@ Address
 from abc import ABC
 from typing import Any, Optional, TypeVar
 
-from attr import asdict, attrib, attrs
+from attr import attrib, attrs
 from attr.validators import instance_of, optional
 
 from ._cmp import ComparisonMixIn
+from ._replace import ReplaceMixIn
 
 Optional  # Silence linter
 
@@ -64,7 +67,7 @@ class TextOnlyAddress(Address, ComparisonMixIn):
 
 
 @attrs(frozen=True, cmp=False)
-class RodGarettAddress(Address, ComparisonMixIn):
+class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
     """
     Rod Garett Address
 
@@ -114,13 +117,3 @@ class RodGarettAddress(Address, ComparisonMixIn):
             return hash(self.description)
 
         return ComparisonMixIn.__hash__(self)
-
-
-    def replace(self: TRodGarettAddress, **kwargs: Any) -> TRodGarettAddress:
-        """
-        Return a new address with the same values, except those specified by
-        keyword arguments.
-        """
-        newArgs = asdict(self, recurse=False)
-        newArgs.update(kwargs)
-        return self.__class__(**newArgs)

@@ -15,28 +15,31 @@
 ##
 
 """
-Location
+Replace mix-in
 """
 
-from typing import Optional
+from typing import Any, TypeVar
 
-from attr import attrib, attrs
-from attr.validators import instance_of, optional
+from attr import asdict
 
-from ._address import Address
-from ._replace import ReplaceMixIn
 
 __all__ = ()
 
 
+TAttrsObject = TypeVar("TAttrsObject")
 
-@attrs(frozen=True)
-class Location(Address, ReplaceMixIn):
+
+
+class ReplaceMixIn():
     """
-    Location
+    Mix-in class with replace method for :mod:`attr` classes.
     """
 
-    name: Optional[str] = attrib(validator=optional(instance_of(str)))
-    address: Optional[Address] = attrib(
-        validator=optional(instance_of(Address))
-    )
+    def replace(self: TAttrsObject, **kwargs: Any) -> TAttrsObject:
+        """
+        Return a new address with the same values, except those specified by
+        keyword arguments.
+        """
+        newArgs = asdict(self, recurse=False)
+        newArgs.update(kwargs)
+        return self.__class__(**newArgs)
