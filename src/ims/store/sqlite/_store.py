@@ -789,11 +789,14 @@ class DataStore(IMSDataStore):
     )
 
 
-    def _addAndAttachReportEntriesToIncident(
+    def _createAndAttachReportEntriesToIncident(
         self, event: Event, incidentNumber: int,
         reportEntries: Iterable[ReportEntry], cursor: Cursor,
     ) -> None:
         for reportEntry in reportEntries:
+            if not reportEntry.text:
+                continue
+
             self._createReportEntry(reportEntry, cursor)
 
             self._log.info(
@@ -971,7 +974,7 @@ class DataStore(IMSDataStore):
                     )
 
                     # Add report entries
-                    self._addAndAttachReportEntriesToIncident(
+                    self._createAndAttachReportEntriesToIncident(
                         incident.event, incident.number,
                         incident.reportEntries, cursor,
                     )
@@ -1067,7 +1070,7 @@ class DataStore(IMSDataStore):
                     ))
 
                     # Add report entries
-                    self._addAndAttachReportEntriesToIncident(
+                    self._createAndAttachReportEntriesToIncident(
                         event, incidentNumber, (autoEntry,), cursor,
                     )
                 finally:
@@ -1226,6 +1229,39 @@ class DataStore(IMSDataStore):
             column="LOCATION_DESCRIPTION"
         )
     )
+
+
+    async def addReportEntriesToIncident(
+        self, event: Event, incidentNumber: int,
+        reportEntries: Iterable[ReportEntry], author: str,
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.addReportEntriesToIncident`.
+        """
+        reportEntries = tuple(reportEntries)
+
+        for reportEntry in reportEntries:
+            if reportEntry.author != author:
+                raise ValueError(
+                    "Report entry {} has author != {}"
+                    .format(reportEntry, author)
+                )
+
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    self._createAndAttachReportEntriesToIncident(
+                        event, incidentNumber, reportEntries, cursor
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Author {author} unable to create report entries {} to "
+                "incident #{} in event {}"
+            )
+            raise StorageError(e)
 
 
     ###
@@ -1389,7 +1425,7 @@ class DataStore(IMSDataStore):
                     )
 
                     # Add report entries
-                    self._addAndAttachReportEntriesToIncidentReport(
+                    self._createAndAttachReportEntriesToIncidentReport(
                         incidentReport.number, incidentReport.reportEntries,
                         cursor,
                     )
@@ -1416,11 +1452,14 @@ class DataStore(IMSDataStore):
     )
 
 
-    def _addAndAttachReportEntriesToIncidentReport(
+    def _createAndAttachReportEntriesToIncidentReport(
         self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
         cursor: Cursor,
     ) -> None:
         for reportEntry in reportEntries:
+            if not reportEntry.text:
+                continue
+
             self._createReportEntry(reportEntry, cursor)
 
             self._log.info(
@@ -1486,7 +1525,7 @@ class DataStore(IMSDataStore):
                     ))
 
                     # Add report entries
-                    self._addAndAttachReportEntriesToIncidentReport(
+                    self._createAndAttachReportEntriesToIncidentReport(
                         incidentReportNumber, (autoEntry,), cursor,
                     )
                 finally:
@@ -1526,6 +1565,39 @@ class DataStore(IMSDataStore):
     _query_setIncidentReportSummary = (
         _template_setIncidentReportAttribute.format(column="SUMMARY")
     )
+
+
+    async def addReportEntriesToIncidentReport(
+        self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
+        author: str,
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.addReportEntriesToIncidentReport`.
+        """
+        reportEntries = tuple(reportEntries)
+
+        for reportEntry in reportEntries:
+            if reportEntry.author != author:
+                raise ValueError(
+                    "Report entry {} has author != {}"
+                    .format(reportEntry, author)
+                )
+
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    self._createAndAttachReportEntriesToIncidentReport(
+                        incidentReportNumber, reportEntries, cursor
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Author {author} unable to create report entries {} to "
+                "incident report #{}"
+            )
+            raise StorageError(e)
 
 
     ###

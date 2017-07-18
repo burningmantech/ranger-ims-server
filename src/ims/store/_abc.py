@@ -22,7 +22,8 @@ from abc import ABC, abstractmethod
 from typing import Iterable, Mapping
 
 from ims.model import (
-    Event, Incident, IncidentPriority, IncidentReport, IncidentState
+    Event, Incident, IncidentPriority, IncidentReport, IncidentState,
+    ReportEntry,
 )
 
 
@@ -205,7 +206,7 @@ class IMSDataStore(ABC):
         author: str,
     ) -> None:
         """
-        Set the state for the given incident in the given event.
+        Set the state for the incident with the given number in the given event.
         """
 
 
@@ -214,7 +215,8 @@ class IMSDataStore(ABC):
         self, event: Event, incidentNumber: int, summary: str, author: str
     ) -> None:
         """
-        Set the summary for the given incident in the given event.
+        Set the summary for the incident with the given number in the given
+        event.
         """
 
 
@@ -223,7 +225,8 @@ class IMSDataStore(ABC):
         self, event: Event, incidentNumber: int, name: str, author: str
     ) -> None:
         """
-        Set the location name for the given incident in the given event.
+        Set the location name for the incident with the given number in the
+        given event.
         """
 
 
@@ -232,8 +235,8 @@ class IMSDataStore(ABC):
         self, event: Event, incidentNumber: int, streetID: str, author: str
     ) -> None:
         """
-        Set the location concentric street for the given incident in the given
-        event.
+        Set the location concentric street for the incident with the given
+        number in the given event.
         """
 
 
@@ -242,7 +245,8 @@ class IMSDataStore(ABC):
         self, event: Event, incidentNumber: int, hour: int, author: str
     ) -> None:
         """
-        Set the location radial hour for the given incident in the given event.
+        Set the location radial hour for the incident with the given number in
+        the given event.
         """
 
 
@@ -251,7 +255,8 @@ class IMSDataStore(ABC):
         self, event: Event, incidentNumber: int, minute: int, author: str
     ) -> None:
         """
-        Set the location radial minute for the given incident in the given
+        Set the location radial minute for the incident with the given number
+        in the given
         event.
         """
 
@@ -261,7 +266,19 @@ class IMSDataStore(ABC):
         self, event: Event, incidentNumber: int, description: str, author: str
     ) -> None:
         """
-        Set the location description for the given incident in the given event.
+        Set the location description for the incident with the given number in
+        the given event.
+        """
+
+
+    @abstractmethod
+    async def addReportEntriesToIncident(
+        self, event: Event, incidentNumber: int,
+        reportEntries: Iterable[ReportEntry], author: str,
+    ) -> None:
+        """
+        Add the given report entries to incident with the given number in the
+        given event.
         """
 
 
@@ -305,7 +322,7 @@ class IMSDataStore(ABC):
         self, incidentReportNumber: int, summary: str, author: str
     ) -> None:
         """
-        Set the summary for the given incident report.
+        Set the summary for the incident report with the given number.
         """
 
 
@@ -326,6 +343,16 @@ class IMSDataStore(ABC):
         self, event: Event, incidentNumber: int
     ) -> Iterable[IncidentReport]:
         """
-        Look up all incident reports attached to the given incident in the
-        given event.
+        Look up all incident reports attached to the incident report with the
+        given number.
+        """
+
+
+    @abstractmethod
+    async def addReportEntriesToIncidentReport(
+        self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
+        author: str,
+    ) -> None:
+        """
+        Add the given report entries to incident report with the given number.
         """

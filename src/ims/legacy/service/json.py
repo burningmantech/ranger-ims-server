@@ -462,22 +462,23 @@ class APIApplication(object):
             edits, IncidentJSONKey.incidentTypes, storage.setIncidentTypes
         )
 
-        entries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)
-        if entries is not UNSET:
+        jsonEntries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)
+        if jsonEntries is not UNSET:
             now = DateTime.now(TimeZone.utc)
 
-            for entry in entries:
-                text = entry.get(ReportEntryJSONKey.text.value, None)
-                if text:
-                    await storage.addIncidentReportEntry(
-                        event, number,
-                        ReportEntry(
-                            author=author,
-                            text=text,
-                            created=now,
-                            system_entry=False,
-                        )
-                    )
+            entries = (
+                ReportEntry(
+                    author=author,
+                    text=jsonEntry[ReportEntryJSONKey.text.value],
+                    created=now,
+                    system_entry=False,
+                )
+                for jsonEntry in jsonEntries
+            )
+
+            await storage.addReportEntriesToIncident(
+                event, number, entries, author
+            )
 
         return noContentResponse(request)
 
@@ -726,22 +727,23 @@ class APIApplication(object):
             storage.setIncidentReportSummary
         )
 
-        entries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)
-        if entries is not UNSET:
+        jsonEntries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)
+        if jsonEntries is not UNSET:
             now = DateTime.now(TimeZone.utc)
 
-            for entry in entries:
-                text = entry.get(ReportEntryJSONKey.text.value, None)
-                if text:
-                    await storage.addIncidentReportReportEntry(
-                        number,
-                        ReportEntry(
-                            author=author,
-                            text=text,
-                            created=now,
-                            system_entry=False,
-                        )
-                    )
+            entries = (
+                ReportEntry(
+                    author=author,
+                    text=jsonEntry[ReportEntryJSONKey.text.value],
+                    created=now,
+                    system_entry=False,
+                )
+                for jsonEntry in jsonEntries
+            )
+
+            await storage.addReportEntriesToIncidentReport(
+                number, entries, author
+            )
 
         return noContentResponse(request)
 
