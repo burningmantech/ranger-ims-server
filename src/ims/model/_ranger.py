@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_ranger -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -33,6 +35,19 @@ AbstractSet, Optional  # silence linter
 __all__ = ()
 
 
+statusDescriptions = dict(
+    prospective="Prospective",
+    alpha="Alpha",
+    bonked="Bonked Prospective",
+    active="Active Ranger",
+    inactive="Inactive Ranger",
+    retired="Retired Ranger",
+    uberbonked="Uberbonked Participant",
+    vintage="Vintage Ranger",
+    deceased="Late Ranger",
+)
+
+
 
 @unique
 class RangerStatus(Enum):
@@ -55,12 +70,14 @@ class RangerStatus(Enum):
     other = -1
 
 
-    def __str__(self) -> str:
-        return self.name
-
-
     def __repr__(self) -> str:
         return "{}[{!r}]".format(self.__class__.__name__, self.name)
+
+
+    def __str__(self) -> str:
+        return statusDescriptions.get(
+            self.name, "(Unknown Person Type: {})".format(self.name)
+        )
 
 
 
@@ -99,17 +116,4 @@ class Ranger(object):
 
 
     def __str__(self) -> str:
-        return "{} {} ({})".format(
-            {
-                RangerStatus.prospective: "Prospective",
-                RangerStatus.alpha:       "Alpha",
-                RangerStatus.bonked:      "Bonked Prospective",
-                RangerStatus.active:      "Active Ranger",
-                RangerStatus.inactive:    "Inactive Ranger",
-                RangerStatus.retired:     "Retired Ranger",
-                RangerStatus.uberbonked:  "Uberbonked Participant",
-                RangerStatus.vintage:     "Vintage Ranger",
-                RangerStatus.deceased:    "Late Ranger",
-            }.get(self.status, "(Unknown Person Type)"),
-            self.handle, self.name,
-        )
+        return "{} {} ({})".format(self.status, self.handle, self.name)

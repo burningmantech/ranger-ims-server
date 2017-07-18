@@ -34,7 +34,7 @@ from ._event import Event
 from ._incident import Incident
 from ._location import Location
 from ._priority import IncidentPriority
-# from ._ranger import Ranger, RangerStatus
+from ._ranger import Ranger, RangerStatus
 from ._report import IncidentReport
 from ._state import IncidentState
 from ._type import KnownIncidentType
@@ -60,7 +60,7 @@ __all__ = (
     "radialHours",
     "radialMinutes",
     "rangerHandles",
-    # "rangers",
+    "rangers",
     "reportEntries",
     "rodGarettAddresses",
     "textOnlyAddresses",
@@ -240,17 +240,17 @@ def rangerHandles(draw: Callable) -> str:
     return draw(text(min_size=1))
 
 
-# @composite
-# def rangers(draw: Callable) -> Ranger:
-#     return Ranger(
-#         handle=draw(rangerHandles()),
-#         name=draw(text(min_size=1)),
-#         status=draw(sampled_from(RangerStatus)),
-#         email=draw(lists(text(min_size=1))),
-#         onSite=draw(booleans()),
-#         dmsID=draw(one_of(none(), integers())),
-#         password=draw(one_of(none(), text())),
-#     )
+@composite
+def rangers(draw: Callable) -> Ranger:
+    return Ranger(
+        handle=draw(rangerHandles()),
+        name=draw(text(min_size=1)),
+        status=draw(sampled_from(RangerStatus)),
+        email=draw(lists(text(min_size=1))),
+        onSite=draw(booleans()),
+        dmsID=draw(one_of(none(), integers())),
+        password=draw(one_of(none(), text())),
+    )
 
 
 ##
