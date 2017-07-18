@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_state -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -22,6 +24,15 @@ from ims.ext.enum import Enum, enumOrdering, unique
 
 
 __all__ = ()
+
+
+stateDescriptions = {
+    "new":        "new",
+    "onHold":     "on hold",
+    "dispatched": "dispatched",
+    "onScene":    "on scene",
+    "closed":     "closed",
+}
 
 
 
@@ -61,7 +72,4 @@ class IncidentState(Enum):
 
 
     def __str__(self) -> str:
-        return dict(
-            onHold="on hold",
-            onScene="on scene",
-        ).get(self.name, self.name)
+        return stateDescriptions[self.name]
