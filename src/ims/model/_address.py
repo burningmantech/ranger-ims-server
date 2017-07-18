@@ -94,12 +94,6 @@ class RodGarettAddress(Address, ComparisonMixIn):
 
 
     def _cmp(self, other: Any, methodName: str) -> bool:
-        if other.__class__ is self.__class__:
-            selfValue = self._cmpValue()
-            otherValue = other._cmpValue()
-            selfValueCmp = getattr(selfValue, methodName)
-            return selfValueCmp(otherValue)
-
         if other.__class__ is TextOnlyAddress:
             if (
                 self.concentric is None and
@@ -108,7 +102,7 @@ class RodGarettAddress(Address, ComparisonMixIn):
             ):
                 return getattr(self.description, methodName)(other.description)
 
-        return NotImplemented
+        return ComparisonMixIn._cmp(self, other, methodName)
 
 
     def __hash__(self) -> int:
@@ -119,10 +113,7 @@ class RodGarettAddress(Address, ComparisonMixIn):
         ):
             return hash(self.description)
 
-        return hash((
-            self.concentric, self.radialHour, self.radialMinute,
-            self.description
-        ))
+        return ComparisonMixIn.__hash__(self)
 
 
     def replace(self: TRodGarettAddress, **kwargs: Any) -> TRodGarettAddress:
