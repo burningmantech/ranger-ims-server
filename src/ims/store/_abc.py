@@ -278,23 +278,6 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def detachedIncidentReports(self) -> Iterable[IncidentReport]:
-        """
-        Look up all detached incident reports.
-        """
-
-
-    @abstractmethod
-    async def incidentReportsAttachedToIncident(
-        self, event: Event, incidentNumber: int
-    ) -> Iterable[IncidentReport]:
-        """
-        Look up all incident reports attached to the given incident in the
-        given event.
-        """
-
-
-    @abstractmethod
     async def incidentReportWithNumber(self, number: int) -> IncidentReport:
         """
         Look up the incident report with the given number.
@@ -323,4 +306,26 @@ class IMSDataStore(ABC):
     ) -> None:
         """
         Set the summary for the given incident report.
+        """
+
+
+    ###
+    # Incident to Incident Report Relationships
+    ###
+
+
+    @abstractmethod
+    async def detachedIncidentReports(self) -> Iterable[IncidentReport]:
+        """
+        Look up all detached incident reports.
+        """
+
+
+    @abstractmethod
+    async def incidentReportsAttachedToIncident(
+        self, event: Event, incidentNumber: int
+    ) -> Iterable[IncidentReport]:
+        """
+        Look up all incident reports attached to the given incident in the
+        given event.
         """

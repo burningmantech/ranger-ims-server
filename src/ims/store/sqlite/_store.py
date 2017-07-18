@@ -1292,48 +1292,6 @@ class DataStore(IMSDataStore):
     )
 
 
-    def _fetchDetachedIncidentReportNumbers(
-        self, cursor: Cursor
-    ) -> Iterable[int]:
-        return (
-            row["NUMBER"] for row in cursor.execute(
-                self._query_detachedIncidentReportNumbers, {}
-            )
-        )
-
-    _query_detachedIncidentReportNumbers = _query(
-        """
-        select NUMBER from INCIDENT_REPORT
-        where NUMBER not in (
-            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
-        )
-        """
-    )
-
-
-    def _fetchAttachedIncidentReportNumbers(
-        self, event: Event, incidentNumber: int, cursor: Cursor
-    ) -> Iterable[int]:
-        return (
-            row["NUMBER"] for row in cursor.execute(
-                self._query_detachedIncidentReportNumbers,
-                dict(eventID=event.id, incidentNumber=incidentNumber)
-            )
-        )
-
-    _query_attachedIncidentReportNumbers = _query(
-        """
-        select NUMBER from INCIDENT_REPORT
-        where NUMBER in (
-            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
-            where
-                EVENT = ({query_eventID}) and
-                INCIDENT_NUMBER = :incidentNumber
-        )
-        """
-    )
-
-
     async def incidentReports(self) -> Iterable[IncidentReport]:
         """
         See :meth:`IMSDataStore.incidentReports`.
@@ -1352,58 +1310,6 @@ class DataStore(IMSDataStore):
         except SQLiteError as e:
             self._log.critical(
                 "Unable to look up incident reports: {error}", error=e,
-            )
-            raise StorageError(e)
-
-
-    async def detachedIncidentReports(self) -> Iterable[IncidentReport]:
-        """
-        See :meth:`IMSDataStore.detachedIncidentReports`.
-        """
-        try:
-            with self._db as db:
-                cursor = db.cursor()
-                try:
-                    # FIXME: This should be an async generator
-                    return tuple(
-                        self._fetchIncidentReport(number, cursor)
-                        for number in self._fetchDetachedIncidentReportNumbers(
-                            cursor
-                        )
-                    )
-                finally:
-                    cursor.close()
-        except SQLiteError as e:
-            self._log.critical(
-                "Unable to look up detached incident reports: {error}",
-                error=e,
-            )
-            raise StorageError(e)
-
-
-    async def incidentReportsAttachedToIncident(
-        self, event: Event, incidentNumber: int
-    ) -> Iterable[IncidentReport]:
-        """
-        See :meth:`IMSDataStore.attachedIncidentReports`.
-        """
-        try:
-            with self._db as db:
-                cursor = db.cursor()
-                try:
-                    # FIXME: This should be an async generator
-                    return tuple(
-                        self._fetchIncidentReport(number, cursor)
-                        for number in self._fetchAttachedIncidentReportNumbers(
-                            event, incidentNumber, cursor
-                        )
-                    )
-                finally:
-                    cursor.close()
-        except SQLiteError as e:
-            self._log.critical(
-                "Unable to look up attached incident reports: {error}",
-                error=e,
             )
             raise StorageError(e)
 
@@ -1620,6 +1526,105 @@ class DataStore(IMSDataStore):
     _query_setIncidentReportSummary = (
         _template_setIncidentReportAttribute.format(column="SUMMARY")
     )
+
+
+    ###
+    # Incident to Incident Report Relationships
+    ###
+
+
+    def _fetchDetachedIncidentReportNumbers(
+        self, cursor: Cursor
+    ) -> Iterable[int]:
+        return (
+            row["NUMBER"] for row in cursor.execute(
+                self._query_detachedIncidentReportNumbers, {}
+            )
+        )
+
+    _query_detachedIncidentReportNumbers = _query(
+        """
+        select NUMBER from INCIDENT_REPORT
+        where NUMBER not in (
+            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
+        )
+        """
+    )
+
+
+    def _fetchAttachedIncidentReportNumbers(
+        self, event: Event, incidentNumber: int, cursor: Cursor
+    ) -> Iterable[int]:
+        return (
+            row["NUMBER"] for row in cursor.execute(
+                self._query_detachedIncidentReportNumbers,
+                dict(eventID=event.id, incidentNumber=incidentNumber)
+            )
+        )
+
+    _query_attachedIncidentReportNumbers = _query(
+        """
+        select NUMBER from INCIDENT_REPORT
+        where NUMBER in (
+            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
+            where
+                EVENT = ({query_eventID}) and
+                INCIDENT_NUMBER = :incidentNumber
+        )
+        """
+    )
+
+
+    async def detachedIncidentReports(self) -> Iterable[IncidentReport]:
+        """
+        See :meth:`IMSDataStore.detachedIncidentReports`.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    # FIXME: This should be an async generator
+                    return tuple(
+                        self._fetchIncidentReport(number, cursor)
+                        for number in self._fetchDetachedIncidentReportNumbers(
+                            cursor
+                        )
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to look up detached incident reports: {error}",
+                error=e,
+            )
+            raise StorageError(e)
+
+
+    async def incidentReportsAttachedToIncident(
+        self, event: Event, incidentNumber: int
+    ) -> Iterable[IncidentReport]:
+        """
+        See :meth:`IMSDataStore.attachedIncidentReports`.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    # FIXME: This should be an async generator
+                    return tuple(
+                        self._fetchIncidentReport(number, cursor)
+                        for number in self._fetchAttachedIncidentReportNumbers(
+                            event, incidentNumber, cursor
+                        )
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to look up attached incident reports: {error}",
+                error=e,
+            )
+            raise StorageError(e)
 
 
 
