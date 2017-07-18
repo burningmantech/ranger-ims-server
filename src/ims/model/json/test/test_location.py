@@ -24,6 +24,7 @@ from ims.ext.trial import TestCase
 
 from .json import jsonFromLocation
 from .._json import jsonDeserialize, jsonSerialize
+from ..._address import TextOnlyAddress
 from ..._location import Location
 from ...strategies import locations
 
@@ -59,3 +60,17 @@ class LocationDeserializationTests(TestCase):
         self.assertEqual(
             jsonDeserialize(jsonFromLocation(location), Location), location
         )
+
+
+    def test_deserialize_invalidType(self) -> None:
+        """
+        :func:`jsonDeserialize` returns a location with the correct data.
+        """
+        json = jsonFromLocation(Location(
+            name = "Foo",
+            address = TextOnlyAddress(description="Over there")
+        ))
+
+        json["address"]["type"] = "* not a valid type *"
+
+        self.assertRaises(ValueError, jsonDeserialize, json, Location)
