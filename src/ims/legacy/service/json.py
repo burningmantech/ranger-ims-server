@@ -270,7 +270,7 @@ class APIApplication(object):
 
             # Right now is a decent default, but if there's a report entry
             # that's older than now, that's a better pick.
-            created = DateTime.now(TimeZone.utc)
+            created = now
             if incident.reportEntries is not None:
                 for entry in incident.reportEntries:
                     if entry.author is None:
@@ -562,7 +562,7 @@ class APIApplication(object):
 
             # Right now is a decent default, but if there's a report entry
             # that's older than now, that's a better pick.
-            created = DateTime.now(TimeZone.utc)
+            created = now
             if incidentReport.reportEntries is not None:
                 for entry in incidentReport.reportEntries:
                     if entry.author is None:
