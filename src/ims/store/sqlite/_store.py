@@ -1815,6 +1815,46 @@ class DataStore(IMSDataStore):
             raise StorageError(e)
 
 
+    async def attachIncidentReportToIncident(
+        self, incidentReportNumber: int, event: Event, incidentNumber: int
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.attachIncidentReportToIncident`.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(
+                        self._query_attachIncidentReportToIncident, dict(
+                            eventID=event.id,
+                            incidentNumber=incidentNumber,
+                            incidentReportNumber=incidentReportNumber,
+                        )
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to attached incident report #{incidentReportNumber} "
+                "to incident #{incidentNumber} in event {event}: {error}",
+                incidentReportNumber=incidentReportNumber,
+                incidentNumber=incidentNumber,
+                event=event,
+                error=e,
+            )
+            raise StorageError(e)
+
+    _query_attachIncidentReportToIncident = _query(
+        """
+        insert into INCIDENT_INCIDENT_REPORT (
+            EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER
+        )
+        values (({query_eventID}), :incidentNumber, :incidentReportNumber)
+        """
+    )
+
+
 
 zeroTimeDelta = TimeDelta(0)
 

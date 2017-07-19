@@ -368,3 +368,13 @@ class IMSDataStore(ABC):
         Look up all incident reports attached to the incident report with the
         given number.
         """
+
+
+    @abstractmethod
+    async def attachIncidentReportToIncident(
+        self, incidentReportNumber: int, event: Event, incidentNumber: int
+    ) -> None:
+        """
+        Attach the incident report with the given number to the incident with
+        the given number in the given event.
+        """
