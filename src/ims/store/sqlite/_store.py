@@ -1078,7 +1078,7 @@ class DataStore(IMSDataStore):
         except SQLiteError as e:
             self._log.critical(
                 "Author {author} unable to update incident #{incidentNumber} "
-                "in event {event}: {attribute}={value}",
+                "in event {event} ({attribute}={value}): {error}",
                 query=query,
                 event=event,
                 incidentNumber=incidentNumber,
@@ -1258,8 +1258,14 @@ class DataStore(IMSDataStore):
                     cursor.close()
         except SQLiteError as e:
             self._log.critical(
-                "Author {author} unable to create report entries {} to "
-                "incident #{} in event {}"
+                "Author {author} unable to create report entries "
+                "{reportEntries} to incident #{incidentNumber} in event "
+                "{event}: {error}",
+                author=author,
+                reportEntries=reportEntries,
+                incidentNumber=incidentNumber,
+                event=event,
+                error=e,
             )
             raise StorageError(e)
 
@@ -1533,7 +1539,7 @@ class DataStore(IMSDataStore):
         except SQLiteError as e:
             self._log.critical(
                 "Author {author} unable to update incident report "
-                "#{incidentReportNumber}: {attribute}={value}",
+                "#{incidentReportNumber} ({attribute}={value}): {error}",
                 query=query,
                 incidentReportNumber=incidentReportNumber,
                 attribute=attribute,
@@ -1594,8 +1600,13 @@ class DataStore(IMSDataStore):
                     cursor.close()
         except SQLiteError as e:
             self._log.critical(
-                "Author {author} unable to create report entries {} to "
-                "incident report #{}"
+                "Author {author} unable to create report entries "
+                "{reportEntries} to incident report #{incidentReportNumber}: "
+                "{error}",
+                author=author,
+                reportEntries=reportEntries,
+                incidentReportNumber=incidentReportNumber,
+                error=e,
             )
             raise StorageError(e)
 
