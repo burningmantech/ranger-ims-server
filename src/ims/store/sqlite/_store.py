@@ -273,19 +273,11 @@ class DataStore(IMSDataStore):
             with self._db as db:
                 cursor = db.cursor()
                 try:
-                    self.log.info(
-                        "Clearing access: {event} {mode}",
-                        event=event, mode=mode
-                    )
                     cursor.execute(
                         self._query_clearEventAccess,
                         dict(eventID=event.id, mode=mode),
                     )
                     for expression in frozenset(expressions):
-                        self.log.info(
-                            "Adding {mode} access for {expression} to {event}",
-                            mode=mode, expression=expression, event=event,
-                        )
                         cursor.execute(
                             self._query_addEventAccess, dict(
                                 eventID=event.id,
