@@ -338,6 +338,16 @@ class IMSDataStore(ABC):
         """
 
 
+    @abstractmethod
+    async def addReportEntriesToIncidentReport(
+        self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
+        author: str,
+    ) -> None:
+        """
+        Add the given report entries to incident report with the given number.
+        """
+
+
     ###
     # Incident to Incident Report Relationships
     ###
@@ -357,14 +367,4 @@ class IMSDataStore(ABC):
         """
         Look up all incident reports attached to the incident report with the
         given number.
-        """
-
-
-    @abstractmethod
-    async def addReportEntriesToIncidentReport(
-        self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
-        author: str,
-    ) -> None:
-        """
-        Add the given report entries to incident report with the given number.
         """
