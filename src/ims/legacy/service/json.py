@@ -459,7 +459,8 @@ class APIApplication(object):
         )
 
         await applyEdit(
-            edits, IncidentJSONKey.incidentTypes, storage.setIncidentTypes
+            edits, IncidentJSONKey.incidentTypes,
+            storage.setIncidentIncidentTypes,
         )
 
         jsonEntries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)

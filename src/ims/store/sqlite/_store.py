@@ -1283,6 +1283,59 @@ class DataStore(IMSDataStore):
     )
 
 
+    async def setIncidentIncidentTypes(
+        self, event: Event, incidentNumber: int, incidentTypes: Iterable[str],
+        author: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncidentIncidentTypes`.
+        """
+        incidentTypes = tuple(incidentTypes)
+
+        autoEntry = self._automaticReportEntry(
+            author, now(), "incident types", incidentTypes
+        )
+
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(
+                        self._query_clearIncidentIncidentTypes,
+                        dict(eventID=event.id, incidentNumber=incidentNumber)
+                    )
+
+                    self._attachIncidentTypesToIncident(
+                        event, incidentNumber, incidentTypes, cursor
+                    )
+
+                    # Add automatic report entry
+                    self._createAndAttachReportEntriesToIncident(
+                        event, incidentNumber, (autoEntry,), cursor,
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Author {author} unable to attach incident types "
+                "{incidentTypes} to incident #{incidentNumber} in event "
+                "{event}: {error}",
+                author=author,
+                incidentTypes=incidentTypes,
+                incidentNumber=incidentNumber,
+                event=event,
+                error=e,
+            )
+            raise StorageError(e)
+
+    _query_clearIncidentIncidentTypes = _query(
+        """
+        delete from INCIDENT__INCIDENT_TYPE
+        where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber
+        """
+    )
+
+
     async def addReportEntriesToIncident(
         self, event: Event, incidentNumber: int,
         reportEntries: Iterable[ReportEntry], author: str,
