@@ -407,27 +407,27 @@ class APIApplication(object):
         storage = self.config.storage
 
         await applyEdit(
-            edits, IncidentJSONKey.priority, storage.setIncidentPriority
+            edits, IncidentJSONKey.priority, storage.setIncident_priority
         )
 
         await applyEdit(
             edits, IncidentJSONKey.state,
-            storage.setIncidentState, lambda n: IncidentState[n]
+            storage.setIncident_state, lambda n: IncidentState[n]
         )
 
         await applyEdit(
-            edits, IncidentJSONKey.summary, storage.setIncidentSummary
+            edits, IncidentJSONKey.summary, storage.setIncident_summary
         )
 
         location = edits.get(IncidentJSONKey.location.value, UNSET)
         if location is not UNSET:
             if location is None:
                 for setter in (
-                    storage.setIncidentLocationName,
-                    storage.setIncidentLocationConcentricStreet,
-                    storage.setIncidentLocationRadialHour,
-                    storage.setIncidentLocationRadialMinute,
-                    storage.setIncidentLocationDescription,
+                    storage.setIncident_locationName,
+                    storage.setIncident_locationConcentricStreet,
+                    storage.setIncident_locationRadialHour,
+                    storage.setIncident_locationRadialMinute,
+                    storage.setIncident_locationDescription,
                 ):
                     cast(IncidentAttributeSetter, setter)(
                         event, number, None, author
@@ -435,27 +435,27 @@ class APIApplication(object):
             else:
                 await applyEdit(
                     location, LocationJSONKey.name,
-                    storage.setIncidentLocationName
+                    storage.setIncident_locationName
                 )
                 await applyEdit(
                     location, RodGarettAddressJSONKey.concentric,
-                    storage.setIncidentLocationConcentricStreet
+                    storage.setIncident_locationConcentricStreet
                 )
                 await applyEdit(
                     location, RodGarettAddressJSONKey.radialHour,
-                    storage.setIncidentLocationRadialHour
+                    storage.setIncident_locationRadialHour
                 )
                 await applyEdit(
                     location, RodGarettAddressJSONKey.radialMinute,
-                    storage.setIncidentLocationRadialMinute
+                    storage.setIncident_locationRadialMinute
                 )
                 await applyEdit(
                     location, RodGarettAddressJSONKey.description,
-                    storage.setIncidentLocationDescription
+                    storage.setIncident_locationDescription
                 )
 
         await applyEdit(
-            edits, IncidentJSONKey.rangerHandles, storage.setIncidentRangers
+            edits, IncidentJSONKey.rangerHandles, storage.setIncident_rangers
         )
 
         await applyEdit(
@@ -725,7 +725,7 @@ class APIApplication(object):
 
         await applyEdit(
             edits, IncidentReportJSONKey.summary,
-            storage.setIncidentReportSummary
+            storage.setIncidentReport_summary
         )
 
         jsonEntries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)

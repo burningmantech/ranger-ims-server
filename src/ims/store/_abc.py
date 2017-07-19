@@ -190,7 +190,7 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def setIncidentPriority(
+    async def setIncident_priority(
         self, event: Event, incidentNumber: int, priority: IncidentPriority,
         author: str,
     ) -> None:
@@ -201,7 +201,7 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def setIncidentState(
+    async def setIncident_state(
         self, event: Event, incidentNumber: int, state: IncidentState,
         author: str,
     ) -> None:
@@ -212,7 +212,7 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def setIncidentSummary(
+    async def setIncident_summary(
         self, event: Event, incidentNumber: int, summary: str, author: str
     ) -> None:
         """
@@ -222,7 +222,7 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def setIncidentLocationName(
+    async def setIncident_locationName(
         self, event: Event, incidentNumber: int, name: str, author: str
     ) -> None:
         """
@@ -232,7 +232,7 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def setIncidentLocationConcentricStreet(
+    async def setIncident_locationConcentricStreet(
         self, event: Event, incidentNumber: int, streetID: str, author: str
     ) -> None:
         """
@@ -242,7 +242,7 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def setIncidentLocationRadialHour(
+    async def setIncident_locationRadialHour(
         self, event: Event, incidentNumber: int, hour: int, author: str
     ) -> None:
         """
@@ -252,7 +252,7 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def setIncidentLocationRadialMinute(
+    async def setIncident_locationRadialMinute(
         self, event: Event, incidentNumber: int, minute: int, author: str
     ) -> None:
         """
@@ -263,7 +263,7 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def setIncidentLocationDescription(
+    async def setIncident_locationDescription(
         self, event: Event, incidentNumber: int, description: str, author: str
     ) -> None:
         """
@@ -273,7 +273,7 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def setIncidentRangers(
+    async def setIncident_rangers(
         self, event: Event, incidentNumber: int, rangerHandles: Iterable[str],
         author: str
     ) -> None:
@@ -330,7 +330,7 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def setIncidentReportSummary(
+    async def setIncidentReport_summary(
         self, incidentReportNumber: int, summary: str, author: str
     ) -> None:
         """

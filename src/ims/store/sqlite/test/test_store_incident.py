@@ -179,110 +179,110 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(incidents(new=True), incidentPriorities())
-    def test_setIncidentPriority(
+    def test_setIncident_priority(
         self, incident: Incident, priority: IncidentPriority
     ) -> None:
         """
-        :meth:`DataStore.setIncidentPriority` updates the priority for the
+        :meth:`DataStore.setIncident_priority` updates the priority for the
         incident with the given number in the data store.
         """
         self._test_setIncidentAttribute(
-            incident, "setIncidentPriority", "priority", priority
+            incident, "setIncident_priority", "priority", priority
         )
 
 
     @given(incidents(new=True), incidentStates())
-    def test_setIncidentState(
+    def test_setIncident_state(
         self, incident: Incident, state: IncidentState
     ) -> None:
         """
-        :meth:`DataStore.setIncidentState` updates the state for the incident
+        :meth:`DataStore.setIncident_state` updates the state for the incident
         with the given number in the data store.
         """
         self._test_setIncidentAttribute(
-            incident, "setIncidentState", "state", state
+            incident, "setIncident_state", "state", state
         )
 
 
     @given(incidents(new=True), incidentSummaries())
-    def test_setIncidentSummary(
+    def test_setIncident_summary(
         self, incident: Incident, summary: str
     ) -> None:
         """
-        :meth:`DataStore.setIncidentSummary` updates the summary for the
+        :meth:`DataStore.setIncident_summary` updates the summary for the
         incident with the given number in the data store.
         """
         self._test_setIncidentAttribute(
-            incident, "setIncidentSummary", "summary", summary
+            incident, "setIncident_summary", "summary", summary
         )
 
 
     @given(incidents(new=True), locationNames())
-    def test_setIncidentLocationName(
+    def test_setIncident_locationName(
         self, incident: Incident, name: str
     ) -> None:
         """
-        :meth:`DataStore.setIncidentLocationName` updates the location name for
-        the incident with the given number in the data store.
+        :meth:`DataStore.setIncident_locationName` updates the location name
+        for the incident with the given number in the data store.
         """
         self._test_setIncidentAttribute(
-            incident, "setIncidentLocationName", "location.name", name
+            incident, "setIncident_locationName", "location.name", name
         )
 
 
     @given(incidents(new=True), concentricStreetIDs())
-    def test_setIncidentLocationConcentricStreet(
+    def test_setIncident_locationConcentricStreet(
         self, incident: Incident, streetID: str
     ) -> None:
         """
-        :meth:`DataStore.setIncidentLocationConcentricStreet` updates the
+        :meth:`DataStore.setIncident_locationConcentricStreet` updates the
         location concentric street for the incident with the given number in
         the data store.
         """
         self._test_setIncidentAttribute(
-            incident, "setIncidentLocationConcentricStreet",
+            incident, "setIncident_locationConcentricStreet",
             "location.address.concentric", streetID,
         )
 
 
     @given(incidents(new=True), radialHours())
-    def test_setIncidentLocationRadialHour(
+    def test_setIncident_locationRadialHour(
         self, incident: Incident, radialHour: int
     ) -> None:
         """
-        :meth:`DataStore.setIncidentLocationRadialHour` updates the location
+        :meth:`DataStore.setIncident_locationRadialHour` updates the location
         radial hour for the incident with the given number in the data store.
         """
         self._test_setIncidentAttribute(
-            incident, "setIncidentLocationRadialHour",
+            incident, "setIncident_locationRadialHour",
             "location.address.radialHour", radialHour,
         )
 
 
     @given(incidents(new=True), radialMinutes())
-    def test_setIncidentLocationRadialMinute(
+    def test_setIncident_locationRadialMinute(
         self, incident: Incident, radialMinute: int
     ) -> None:
         """
-        :meth:`DataStore.setIncidentLocationRadialMinute` updates the location
+        :meth:`DataStore.setIncident_locationRadialMinute` updates the location
         radial minute for the incident with the given number in the data store.
         """
         self._test_setIncidentAttribute(
-            incident, "setIncidentLocationRadialMinute",
+            incident, "setIncident_locationRadialMinute",
             "location.address.radialMinute", radialMinute,
         )
 
 
     @given(incidents(new=True), text())
-    def test_setIncidentLocationDescription(
+    def test_setIncident_locationDescription(
         self, incident: Incident, description: str
     ) -> None:
         """
-        :meth:`DataStore.setIncidentLocationDescription` updates the location
+        :meth:`DataStore.setIncident_locationDescription` updates the location
         description for the incident with the given number in the data store.
         """
         self._test_setIncidentAttribute(
-            incident, "setIncidentLocationDescription",
+            incident, "setIncident_locationDescription",
             "location.address.description", description,
         )
 

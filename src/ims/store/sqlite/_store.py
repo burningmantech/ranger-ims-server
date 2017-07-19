@@ -1097,146 +1097,146 @@ class DataStore(IMSDataStore):
     )
 
 
-    async def setIncidentPriority(
+    async def setIncident_priority(
         self, event: Event, incidentNumber: int, priority: IncidentPriority,
         author: str,
     ) -> None:
         """
-        See :meth:`IMSDataStore.setIncidentPriority`.
+        See :meth:`IMSDataStore.setIncident_priority`.
         """
         self._setIncidentAttribute(
-            self._query_setIncidentPriority,
+            self._query_setIncident_priority,
             event, incidentNumber, "priority", priorityAsID(priority), author,
         )
 
-    _query_setIncidentPriority = _template_setIncidentAttribute.format(
+    _query_setIncident_priority = _template_setIncidentAttribute.format(
         column="PRIORITY"
     )
 
 
-    async def setIncidentState(
+    async def setIncident_state(
         self, event: Event, incidentNumber: int, state: IncidentState,
         author: str,
     ) -> None:
         """
-        See :meth:`IMSDataStore.setIncidentState`.
+        See :meth:`IMSDataStore.setIncident_state`.
         """
         self._setIncidentAttribute(
-            self._query_setIncidentState,
+            self._query_setIncident_state,
             event, incidentNumber, "state", incidentStateAsID(state), author,
         )
 
-    _query_setIncidentState = _template_setIncidentAttribute.format(
+    _query_setIncident_state = _template_setIncidentAttribute.format(
         column="STATE"
     )
 
 
-    async def setIncidentSummary(
+    async def setIncident_summary(
         self, event: Event, incidentNumber: int, summary: str, author: str
     ) -> None:
         """
-        See :meth:`IMSDataStore.setIncidentSummary`.
+        See :meth:`IMSDataStore.setIncident_summary`.
         """
         self._setIncidentAttribute(
-            self._query_setIncidentSummary,
+            self._query_setIncident_summary,
             event, incidentNumber, "summary", summary, author,
         )
 
-    _query_setIncidentSummary = _template_setIncidentAttribute.format(
+    _query_setIncident_summary = _template_setIncidentAttribute.format(
         column="SUMMARY"
     )
 
 
-    async def setIncidentLocationName(
+    async def setIncident_locationName(
         self, event: Event, incidentNumber: int, name: str, author: str
     ) -> None:
         """
-        See :meth:`IMSDataStore.setIncidentLocationName`.
+        See :meth:`IMSDataStore.setIncident_locationName`.
         """
         self._setIncidentAttribute(
-            self._query_setIncidentLocationName,
+            self._query_setIncident_locationName,
             event, incidentNumber, "location name", name, author,
         )
 
-    _query_setIncidentLocationName = _template_setIncidentAttribute.format(
+    _query_setIncident_locationName = _template_setIncidentAttribute.format(
         column="LOCATION_NAME"
     )
 
 
-    async def setIncidentLocationConcentricStreet(
+    async def setIncident_locationConcentricStreet(
         self, event: Event, incidentNumber: int, streetID: str, author: str
     ) -> None:
         """
-        See :meth:`IMSDataStore.setIncidentLocationConcentricStreet`.
+        See :meth:`IMSDataStore.setIncident_locationConcentricStreet`.
         """
         self._setIncidentAttribute(
-            self._query_setIncidentLocationConcentricStreet,
+            self._query_setIncident_locationConcentricStreet,
             event, incidentNumber, "location concentric street", streetID,
             author,
         )
 
-    _query_setIncidentLocationConcentricStreet = (
+    _query_setIncident_locationConcentricStreet = (
         _template_setIncidentAttribute.format(column="LOCATION_CONCENTRIC")
     )
 
 
-    async def setIncidentLocationRadialHour(
+    async def setIncident_locationRadialHour(
         self, event: Event, incidentNumber: int, hour: int, author: str
     ) -> None:
         """
-        See :meth:`IMSDataStore.setIncidentLocationRadialHour`.
+        See :meth:`IMSDataStore.setIncident_locationRadialHour`.
         """
         self._setIncidentAttribute(
-            self._query_setIncidentLocationRadialHour,
+            self._query_setIncident_locationRadialHour,
             event, incidentNumber, "location radial hour", hour, author,
         )
 
-    _query_setIncidentLocationRadialHour = (
+    _query_setIncident_locationRadialHour = (
         _template_setIncidentAttribute.format(column="LOCATION_RADIAL_HOUR")
     )
 
 
-    async def setIncidentLocationRadialMinute(
+    async def setIncident_locationRadialMinute(
         self, event: Event, incidentNumber: int, minute: int, author: str
     ) -> None:
         """
-        See :meth:`IMSDataStore.setIncidentLocationRadialMinute`.
+        See :meth:`IMSDataStore.setIncident_locationRadialMinute`.
         """
         self._setIncidentAttribute(
-            self._query_setIncidentLocationRadialMinute,
+            self._query_setIncident_locationRadialMinute,
             event, incidentNumber, "location radial minute", minute, author,
         )
 
-    _query_setIncidentLocationRadialMinute = (
+    _query_setIncident_locationRadialMinute = (
         _template_setIncidentAttribute.format(column="LOCATION_RADIAL_MINUTE")
     )
 
 
-    async def setIncidentLocationDescription(
+    async def setIncident_locationDescription(
         self, event: Event, incidentNumber: int, description: str, author: str
     ) -> None:
         """
-        See :meth:`IMSDataStore.setIncidentLocationDescription`.
+        See :meth:`IMSDataStore.setIncident_locationDescription`.
         """
         self._setIncidentAttribute(
-            self._query_setIncidentLocationRadialDescription,
+            self._query_setIncident_locationRadialDescription,
             event, incidentNumber, "location description", description,
             author,
         )
 
-    _query_setIncidentLocationRadialDescription = (
+    _query_setIncident_locationRadialDescription = (
         _template_setIncidentAttribute.format(
             column="LOCATION_DESCRIPTION"
         )
     )
 
 
-    async def setIncidentRangers(
+    async def setIncident_rangers(
         self, event: Event, incidentNumber: int, rangerHandles: Iterable[str],
         author: str
     ) -> None:
         """
-        See :meth:`IMSDataStore.setIncidentRangers`.
+        See :meth:`IMSDataStore.setIncident_rangers`.
         """
         rangerHandles = tuple(rangerHandles)
 
@@ -1662,18 +1662,18 @@ class DataStore(IMSDataStore):
     )
 
 
-    async def setIncidentReportSummary(
+    async def setIncidentReport_summary(
         self, incidentReportNumber: int, summary: str, author: str
     ) -> None:
         """
-        See :meth:`IMSDataStore.setIncidentReportSummary`.
+        See :meth:`IMSDataStore.setIncidentReport_summary`.
         """
         self._setIncidentReportAttribute(
-            self._query_setIncidentReportSummary,
+            self._query_setIncidentReport_summary,
             incidentReportNumber, "summary", summary, author,
         )
 
-    _query_setIncidentReportSummary = (
+    _query_setIncidentReport_summary = (
         _template_setIncidentReportAttribute.format(column="SUMMARY")
     )
 
