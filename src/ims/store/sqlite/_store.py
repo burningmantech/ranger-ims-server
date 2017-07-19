@@ -1669,7 +1669,7 @@ class DataStore(IMSDataStore):
         See :meth:`IMSDataStore.setIncidentReportSummary`.
         """
         self._setIncidentReportAttribute(
-            self._query_setIncidentSummary,
+            self._query_setIncidentReportSummary,
             incidentReportNumber, "summary", summary, author,
         )
 
