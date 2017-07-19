@@ -838,7 +838,7 @@ class DataStore(IMSDataStore):
     def _initialReportEntries(
         self, incident: Union[Incident, IncidentReport], author: str
     ) -> Iterable[ReportEntry]:
-        created = DateTime.now(TimeZone.utc)
+        created = now()
 
         reportEntries = []
 
@@ -1044,7 +1044,7 @@ class DataStore(IMSDataStore):
         attribute: str, value: ParameterValue, author: str,
     ) -> None:
         autoEntry = self._automaticReportEntry(
-            author, DateTime.now(TimeZone.utc), attribute, value
+            author, now(), attribute, value
         )
 
         self._log.info(
@@ -1501,7 +1501,7 @@ class DataStore(IMSDataStore):
         attribute: str, value: ParameterValue, author: str,
     ) -> None:
         autoEntry = self._automaticReportEntry(
-            author, DateTime.now(TimeZone.utc), attribute, value
+            author, now(), attribute, value
         )
 
         self._log.info(
@@ -1701,6 +1701,10 @@ class DataStore(IMSDataStore):
 
 
 zeroTimeDelta = TimeDelta(0)
+
+
+def now() -> DateTime:
+    return DateTime.now(TimeZone.utc)
 
 
 def asTimeStamp(dateTime: DateTime) -> float:
