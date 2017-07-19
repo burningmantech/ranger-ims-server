@@ -1828,8 +1828,8 @@ class DataStore(IMSDataStore):
                     cursor.close()
         except SQLiteError as e:
             self._log.critical(
-                "Unable to attached incident report #{incidentReportNumber} "
-                "to incident #{incidentNumber} in event {event}: {error}",
+                "Unable to attach incident report #{incidentReportNumber} to "
+                "incident #{incidentNumber} in event {event}: {error}",
                 incidentReportNumber=incidentReportNumber,
                 incidentNumber=incidentNumber,
                 event=event,
@@ -1843,6 +1843,47 @@ class DataStore(IMSDataStore):
             EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER
         )
         values (({query_eventID}), :incidentNumber, :incidentReportNumber)
+        """
+    )
+
+
+    async def detachIncidentReportFromIncident(
+        self, incidentReportNumber: int, event: Event, incidentNumber: int
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.detachIncidentReportFromIncident`.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(
+                        self._query_detachIncidentReportFromIncident, dict(
+                            eventID=event.id,
+                            incidentNumber=incidentNumber,
+                            incidentReportNumber=incidentReportNumber,
+                        )
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to detach incident report #{incidentReportNumber} "
+                "from incident #{incidentNumber} in event {event}: {error}",
+                incidentReportNumber=incidentReportNumber,
+                incidentNumber=incidentNumber,
+                event=event,
+                error=e,
+            )
+            raise StorageError(e)
+
+    _query_detachIncidentReportFromIncident = _query(
+        """
+        delete from INCIDENT_INCIDENT_REPORT
+        where
+            EVENT = ({query_eventID}) and
+            INCIDENT_NUMBER = :incidentNumber and
+            INCIDENT_REPORT_NUMBER = :incidentReportNumber
         """
     )
 

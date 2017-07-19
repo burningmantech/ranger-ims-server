@@ -378,3 +378,13 @@ class IMSDataStore(ABC):
         Attach the incident report with the given number to the incident with
         the given number in the given event.
         """
+
+
+    @abstractmethod
+    async def detachIncidentReportFromIncident(
+        self, incidentReportNumber: int, event: Event, incidentNumber: int
+    ) -> None:
+        """
+        Detach the incident report with the given number from the incident with
+        the given number in the given event.
+        """
