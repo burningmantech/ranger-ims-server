@@ -206,7 +206,8 @@ class IMSDataStore(ABC):
         author: str,
     ) -> None:
         """
-        Set the state for the incident with the given number in the given event.
+        Set the state for the incident with the given number in the given
+        event.
         """
 
 
@@ -268,6 +269,17 @@ class IMSDataStore(ABC):
         """
         Set the location description for the incident with the given number in
         the given event.
+        """
+
+
+    @abstractmethod
+    async def setIncidentRangers(
+        self, event: Event, incidentNumber: int, rangerHandles: Iterable[str],
+        author: str
+    ) -> None:
+        """
+        Set the Rangers attached to the incident with the given number in the
+        given event.
         """
 
 

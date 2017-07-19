@@ -1069,7 +1069,7 @@ class DataStore(IMSDataStore):
                         value=value,
                     ))
 
-                    # Add report entries
+                    # Add automatic report entry
                     self._createAndAttachReportEntriesToIncident(
                         event, incidentNumber, (autoEntry,), cursor,
                     )
@@ -1228,6 +1228,58 @@ class DataStore(IMSDataStore):
         _template_setIncidentAttribute.format(
             column="LOCATION_DESCRIPTION"
         )
+    )
+
+
+    async def setIncidentRangers(
+        self, event: Event, incidentNumber: int, rangerHandles: Iterable[str],
+        author: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncidentRangers`.
+        """
+        rangerHandles = tuple(rangerHandles)
+
+        autoEntry = self._automaticReportEntry(
+            author, now(), "Rangers", rangerHandles
+        )
+
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    cursor.execute(
+                        self._query_clearIncidentRangers,
+                        dict(eventID=event.id, incidentNumber=incidentNumber)
+                    )
+
+                    self._attachRangeHandlesToIncident(
+                        event, incidentNumber, rangerHandles, cursor
+                    )
+
+                    # Add automatic report entry
+                    self._createAndAttachReportEntriesToIncident(
+                        event, incidentNumber, (autoEntry,), cursor,
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Author {author} unable to attach Rangers {rangerHandles} to "
+                "incident #{incidentNumber} in event {event}: {error}",
+                author=author,
+                rangerHandles=rangerHandles,
+                incidentNumber=incidentNumber,
+                event=event,
+                error=e,
+            )
+            raise StorageError(e)
+
+    _query_clearIncidentRangers = _query(
+        """
+        delete from INCIDENT__RANGER
+        where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber
+        """
     )
 
 
