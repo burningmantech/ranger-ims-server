@@ -1275,7 +1275,7 @@ class DataStore(IMSDataStore):
     )
 
 
-    async def setIncidentIncidentTypes(
+    async def setIncident_incidentTypes(
         self, event: Event, incidentNumber: int, incidentTypes: Iterable[str],
         author: str
     ) -> None:

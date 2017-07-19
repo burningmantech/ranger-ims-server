@@ -284,6 +284,17 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
+    async def setIncident_incidentTypes(
+        self, event: Event, incidentNumber: int, incidentTypes: Iterable[str],
+        author: str
+    ) -> None:
+        """
+        Set the incident types attached to the incident with the given number
+        in the given event.
+        """
+
+
+    @abstractmethod
     async def addReportEntriesToIncident(
         self, event: Event, incidentNumber: int,
         reportEntries: Iterable[ReportEntry], author: str,

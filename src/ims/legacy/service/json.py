@@ -460,7 +460,7 @@ class APIApplication(object):
 
         await applyEdit(
             edits, IncidentJSONKey.incidentTypes,
-            storage.setIncidentIncidentTypes,
+            storage.setIncident_incidentTypes,
         )
 
         jsonEntries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)
