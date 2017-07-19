@@ -19,7 +19,7 @@ Incident Management System data store abstract base classes.
 """
 
 from abc import ABC, abstractmethod
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, Tuple
 
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentReport, IncidentState,
@@ -365,8 +365,19 @@ class IMSDataStore(ABC):
         self, event: Event, incidentNumber: int
     ) -> Iterable[IncidentReport]:
         """
-        Look up all incident reports attached to the incident report with the
-        given number.
+        Look up all incident reports attached to the incident with the given
+        number in the given event.
+        """
+
+
+    @abstractmethod
+    async def incidentsAttachedToIncidentReport(
+        self, incidentReportNumber: int
+    ) -> Iterable[Tuple[Event, int]]:
+        """
+        Look up all incidents attached to the incident report with the given
+        number.
+        Incidents are returned as tuples of `(event, incidentNumber)`,
         """
 
 

@@ -237,11 +237,14 @@ class AuthProvider(object):
         """
         authFailure = None
 
-        for event, _incidentNumber in (
-            self.config.storage.incidentsAttachedToIncidentReport(number)
-        ):
-            # No incident attached; use the authorization for reading incidents
-            # from the corresponding event.
+        events = frozenset(
+            event for event, _incidentNumber in
+            await self.config.storage.incidentsAttachedToIncidentReport(number)
+        )
+
+        for event in events:
+            # There are incident attached; use the authorization for reading
+            # incidents from the corresponding events.
             # Because it's possible for multiple incidents to be attached, if
             # one fails, keep trying the others in case they allow it.
             try:

@@ -1801,10 +1801,52 @@ class DataStore(IMSDataStore):
                     cursor.close()
         except SQLiteError as e:
             self._log.critical(
-                "Unable to look up attached incident reports: {error}",
+                "Unable to look up incident reports attached to incident "
+                "#{incidentNumber} in event {event}: {error}",
+                incidentNumber=incidentNumber,
+                event=event,
                 error=e,
             )
             raise StorageError(e)
+
+
+    async def incidentsAttachedToIncidentReport(
+        self, incidentReportNumber: int
+    ) -> Iterable[Tuple[Event, int]]:
+        """
+        See :meth:`IMSDataStore.incidentsAttachedToIncidentReport`.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    # FIXME: This should be an async generator
+                    return tuple(
+                        (Event(row["EVENT"]), row["INCIDENT_NUMBER"])
+                        for row in cursor.execute(
+                            self._query_incidentsAttachedToIncidentReport,
+                            dict(incidentReportNumber=incidentReportNumber)
+                        )
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to look up incidents attached to incident report "
+                "#{incidentReportNumber}: {error}",
+                incidentReportNumber=incidentReportNumber,
+                error=e,
+            )
+            raise StorageError(e)
+
+    _query_incidentsAttachedToIncidentReport = _query(
+        """
+        select e.NAME as EVENT, iir.INCIDENT_NUMBER as INCIDENT_NUMBER
+        from INCIDENT_INCIDENT_REPORT iir
+        join EVENT e on e.ID = iir.EVENT
+        where iir.INCIDENT_REPORT_NUMBER = :incidentReportNumber
+        """
+    )
 
 
     async def attachIncidentReportToIncident(
