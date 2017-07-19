@@ -30,9 +30,10 @@ from twisted.python.filepath import FilePath
 
 from ims.dms import DutyManagementSystem
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
+from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore
 
-Set  # silence linter
+IMSDataStore, Set  # silence linter
 
 
 __all__ = (
@@ -233,7 +234,7 @@ class Configuration(object):
             password=self.DMSPassword,
         )
 
-        self.storage = DataStore(Path(self.DatabaseFile.path))
+        self.storage: IMSDataStore = DataStore(Path(self.DatabaseFile.path))
 
         locationsFile = self.ConfigRoot.sibling("locations.json")
 
