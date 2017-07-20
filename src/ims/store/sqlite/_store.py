@@ -122,10 +122,7 @@ class DataStore(IMSDataStore):
     @property
     def _db(self) -> Connection:
         if self._state.db is None:
-            try:
-                db = openDB(self.dbPath, schema=self._loadSchema())
-            except SQLiteError as e:
-                raise StorageError(e)
+            db = openDB(self.dbPath, schema=self._loadSchema())
             self._state.db = db
 
         return self._state.db
