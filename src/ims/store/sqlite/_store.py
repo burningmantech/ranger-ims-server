@@ -103,7 +103,7 @@ class DataStore(IMSDataStore):
 
 
     @classmethod
-    def printQueries(cls) -> None:
+    def printQueries(cls, out: TextIO = stdout) -> None:
         """
         Print a summary of queries.
         """
@@ -115,8 +115,8 @@ class DataStore(IMSDataStore):
 
         with createDB(None, cls._loadSchema()) as db:
             for line in explainQueryPlans(db, queries):
-                print(line)
-                print()
+                print(line, file=out)
+                print(file=out)
 
 
     @property

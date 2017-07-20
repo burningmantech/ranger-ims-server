@@ -64,6 +64,26 @@ class TestCase(SynchronousTestCase):
         return values[0]
 
 
+    def assertStartsWith(self, string: str, prefix: str) -> None:
+        """
+        Assert that the given string starts with the given prefix.
+        """
+        if len(prefix) < len(string):
+            self.assertEqual(prefix, string[:len(prefix)])
+        else:
+            self.assertEqual(prefix, string)
+
+
+    def assertEndsWith(self, string: str, prefix: str) -> None:
+        """
+        Assert that the given string starts with the given prefix.
+        """
+        if len(prefix) < len(string):
+            self.assertEqual(prefix, string[len(prefix):])
+        else:
+            self.assertEqual(prefix, string)
+
+
     def assertResponseCode(self, request: IRequest, code: int) -> None:
         """
         Assert that the response code on a request matches the given code.

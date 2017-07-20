@@ -19,7 +19,7 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
 from io import StringIO
-from textwrap import dedent
+from textwrap import dedent, indent
 from typing import Dict, Set
 
 from ims.ext.sqlite import Connection
@@ -130,6 +130,31 @@ class DataStoreCoreTests(DataStoreTests):
                   0: VERSION(integer) not null
                 """[1:]
             )
+        )
+
+
+    def test_printQueries(self) -> None:
+        """
+        :meth:`DataStore.printQueries` prints the queries in use.
+        """
+        out = StringIO()
+        DataStore.printQueries(out)
+        queryInfo = out.getvalue()
+        self.assertStartsWith(
+            queryInfo,
+            "addEventAccess:\n\n"
+            "  -- query --\n\n"
+            "    insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)\n"
+            "    values ((select ID from EVENT where NAME = :eventID), "
+            ":expression, :mode)\n\n"
+            "  -- query plan --\n\n"
+            "    [None,None] You did not supply a value for binding 1.\n\n"
+            "addReportEntry:\n\n"
+            "  -- query --\n\n"
+            "    insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)\n"
+            "    values (:author, :text, :created, :generated)\n\n"
+            "  -- query plan --\n\n"
+            "    [None,None] You did not supply a value for binding 1.\n\n"
         )
 
 
