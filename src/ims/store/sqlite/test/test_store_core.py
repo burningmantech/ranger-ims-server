@@ -19,7 +19,7 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
 from io import StringIO
-from textwrap import dedent, indent
+from textwrap import dedent
 from typing import Dict, Set
 
 from ims.ext.sqlite import Connection
