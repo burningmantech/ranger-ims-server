@@ -510,13 +510,19 @@ class DataStore(IMSDataStore):
             eventID=event.id, incidentNumber=incidentNumber
         )
 
-        cursor.execute(self._query_incident, params)
-        row = cursor.fetchone()
-
-        if row is None:
+        def notFound():
             raise NoSuchIncidentError(
                 "No incident #{} in event {}".format(incidentNumber, event)
             )
+
+        try:
+            cursor.execute(self._query_incident, params)
+        except OverflowError:
+            notFound()
+
+        row = cursor.fetchone()
+        if row is None:
+            notFound()
 
         rangerHandles = tuple(
             row["RANGER_HANDLE"]
