@@ -40,7 +40,7 @@ from ims.model.strategies import (
 )
 
 from .base import DataStoreTests
-from ..._exceptions import StorageError
+from ..._exceptions import NoSuchIncidentError, StorageError
 
 Dict, Event, Set  # silence linter
 
@@ -109,6 +109,37 @@ class DataStoreIncidentTests(DataStoreTests):
         )
 
         self.assertIncidentsEqual(retrieved, incident)
+
+
+    def test_incidentWithNumber_notFound(self) -> None:
+        """
+        :meth:`DataStore.incidentWithNumber` raises :exc:`NoSuchIncidentError`
+        when the given incident number is not found.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+
+        f = self.failureResultOf(
+            store.incidentWithNumber(event, 1)
+        )
+        self.assertEqual(f.type, NoSuchIncidentError, f)
+
+
+    def test_incidentWithNumber_tooBig(self) -> None:
+        """
+        :meth:`DataStore.incidentWithNumber` raises :exc:`NoSuchIncidentError`
+        when the given incident number is too large for SQLite.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+
+        f = self.failureResultOf(
+            store.incidentWithNumber(event, SQLITE_MAX_INT + 1)
+        )
+        f.printTraceback()
+        self.assertEqual(f.type, NoSuchIncidentError, f)
 
 
     def test_incidentWithNumber_error(self) -> None:
