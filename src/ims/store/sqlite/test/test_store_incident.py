@@ -19,7 +19,9 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
 from collections import defaultdict
-from datetime import datetime as DateTime, timedelta as TimeDelta
+from datetime import (
+    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+)
 from typing import Any, Dict, Set, Tuple
 
 from attr import fields as attrFields
@@ -29,7 +31,8 @@ from hypothesis.strategies import text, tuples
 
 from ims.ext.sqlite import SQLITE_MAX_INT
 from ims.model import (
-    Event, Incident, IncidentPriority, IncidentState, RodGarettAddress
+    Event, Incident, IncidentPriority, IncidentState, Location,
+    RodGarettAddress,
 )
 from ims.model.strategies import (
     concentricStreetIDs, incidentPriorities, incidentStates, incidentSummaries,
@@ -37,6 +40,7 @@ from ims.model.strategies import (
 )
 
 from .base import DataStoreTests
+from ..._exceptions import StorageError
 
 Dict, Event, Set  # silence linter
 
@@ -76,6 +80,19 @@ class DataStoreIncidentTests(DataStoreTests):
                 )
 
 
+    def test_incidents_error(self) -> None:
+        """
+        :meth:`DataStore.incidents` raises :exc:`StorageError` when SQLite
+        raises an exception.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        store.bringThePain()
+        f = self.failureResultOf(store.incidents(event))
+        self.assertEqual(f.type, StorageError, f)
+
+
     @given(incidents())
     def test_incidentWithNumber(self, incident: Incident) -> None:
         """
@@ -92,6 +109,19 @@ class DataStoreIncidentTests(DataStoreTests):
         )
 
         self.assertIncidentsEqual(retrieved, incident)
+
+
+    def test_incidentWithNumber_error(self) -> None:
+        """
+        :meth:`DataStore.incidentWithNumber` raises :exc:`StorageError` when
+        SQLite raises an exception.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        store.bringThePain()
+        f = self.failureResultOf(store.incidentWithNumber(event, 1))
+        self.assertEqual(f.type, StorageError, f)
 
 
     @given(incidents(new=True), rangerHandles())
@@ -132,6 +162,30 @@ class DataStoreIncidentTests(DataStoreTests):
         )
         self.assertEqual(len(storedIncidents), 1)
         self.assertIncidentsEqual(storedIncidents[0], returnedIncident)
+
+
+    def test_createIncident_error(self) -> None:
+        """
+        :meth:`DataStore.createIncident` raises :exc:`StorageError` when SQLite
+        raises an exception.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        store.bringThePain()
+        f = self.failureResultOf(store.createIncident(
+            Incident(
+                event=Event("foo"),
+                number=0,
+                created=DateTime.now(TimeZone.utc),
+                state=IncidentState.new, priority=IncidentPriority.normal,
+                summary="A thing happened",
+                location=Location(name="There", address=None),
+                rangerHandles=(), incidentTypes=(), reportEntries=(),
+            ),
+            "Hubcap")
+        )
+        self.assertEqual(f.type, StorageError, f)
 
 
     def _test_setIncidentAttribute(

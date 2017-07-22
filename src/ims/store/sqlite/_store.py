@@ -75,7 +75,7 @@ class DataStore(IMSDataStore):
         Internal mutable state for :class:`Connection`.
         """
 
-        db = attrib(
+        db: Connection = attrib(
             validator=optional(instance_of(Connection)),
             default=None, init=False,
         )
@@ -138,7 +138,7 @@ class DataStore(IMSDataStore):
                     db.execute(query, parameters)
         except SQLiteError as e:
             self._log.critical(
-                errorLogFormat, query=query, **parameters, error=e
+                errorLogFormat, queries=queries, error=e
             )
             raise StorageError(e)
 

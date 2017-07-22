@@ -19,9 +19,10 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
 from textwrap import dedent
-from typing import Dict, Set
+from typing import Dict, Iterable, Set
 
 from hypothesis import given
+from hypothesis.strategies import frozensets, text
 
 from ims.model import Event
 from ims.model.strategies import events
@@ -41,7 +42,7 @@ class DataStoreEventTests(DataStoreTests):
     Tests for :class:`DataStore` event access.
     """
 
-    def test_events(self) -> None:
+    def test_events(self, broken: bool = False) -> None:
         """
         :meth:`DataStore.events` returns all events.
         """
@@ -55,9 +56,21 @@ class DataStoreEventTests(DataStoreTests):
             )
         )
 
+        if broken:
+            store.bringThePain()
+
         events = frozenset(self.successResultOf(store.events()))
 
         self.assertEqual(events, {Event("Event A"), Event("Event B")})
+
+        return None
+
+
+    def test_events_error(self) -> None:
+        """
+        :meth:`DataStore.events` raises `StorageError` if SQLite raises.
+        """
+        self.assertRaises(StorageError, self.test_events, broken=True)
 
 
     @given(events())
@@ -71,6 +84,18 @@ class DataStoreEventTests(DataStoreTests):
         self.assertEqual(stored, frozenset((event,)))
 
 
+    def test_createEvent_error(self) -> None:
+        """
+        :meth:`DataStore.createEvent` raises `StorageError` if SQLite raises.
+        """
+        store = self.store()
+        store.bringThePain()
+
+        f = self.failureResultOf(store.createEvent(Event("x")))
+        f.printTraceback()
+        self.assertEqual(f.type, StorageError, f)
+
+
     def test_createEvent_duplicate(self) -> None:
         """
         :meth:`DataStore.createEvent` raises :exc:`StorageError` when given an
@@ -80,4 +105,54 @@ class DataStoreEventTests(DataStoreTests):
         store = self.store()
         self.successResultOf(store.createEvent(event))
         f = self.failureResultOf(store.createEvent(event))
-        self.assertEqual(f.type, StorageError)
+        self.assertEqual(f.type, StorageError, f)
+
+
+    @given(events(), frozensets(text()))
+    def test_setReaders(self, event: Event, readers: Iterable[str]) -> None:
+        """
+        :meth:`DataStore.setReaders` sets the read ACL for an event.
+        """
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        self.successResultOf(store.setReaders(event, readers))
+        result = frozenset(self.successResultOf(store.readers(event)))
+        self.assertEqual(result, readers)
+
+
+    def test_setReaders_error(self) -> None:
+        """
+        :meth:`DataStore.setReaders` raises :exc:`StorageError` when SQLite
+        raises an exception.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        store.bringThePain()
+        f = self.failureResultOf(store.setReaders(event, ()))
+        self.assertEqual(f.type, StorageError, f)
+
+
+    @given(events(), frozensets(text()))
+    def test_setWriters(self, event: Event, writers: Iterable[str]) -> None:
+        """
+        :meth:`DataStore.setWriters` sets the write ACL for an event.
+        """
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        self.successResultOf(store.setWriters(event, writers))
+        result = frozenset(self.successResultOf(store.writers(event)))
+        self.assertEqual(result, writers)
+
+
+    def test_setWriters_error(self) -> None:
+        """
+        :meth:`DataStore.setWriters` raises :exc:`StorageError` when SQLite
+        raises an exception.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        store.bringThePain()
+        f = self.failureResultOf(store.setWriters(event, ()))
+        self.assertEqual(f.type, StorageError, f)

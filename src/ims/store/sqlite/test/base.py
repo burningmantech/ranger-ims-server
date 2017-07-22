@@ -22,7 +22,9 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Dict, Set, Union, cast
 
-from ims.ext.sqlite import Connection, Cursor
+from attr import attrs
+
+from ims.ext.sqlite import Connection, Cursor, SQLiteError
 from ims.ext.trial import TestCase
 from ims.model import Event, Incident, Location, RodGarettAddress
 
@@ -35,13 +37,34 @@ __all__ = ()
 
 
 
+@attrs(frozen=True)
+class TestDataStore(DataStore):
+    """
+    :class:`DataStore` subclass that raises SQLiteError when things get
+    interesting.
+    """
+
+    @property
+    def _db(self) -> Connection:
+        if getattr(self._state, "broken", False):
+            raise SQLiteError("I'm broken, yo")
+
+        return cast(property, DataStore._db).fget(self)
+
+
+    def bringThePain(self) -> None:
+        setattr(self._state, "broken", True)
+        assert getattr(self._state, "broken")
+
+
+
 class DataStoreTests(TestCase):
     """
     Tests for :class:`DataStore` base functionality.
     """
 
-    def store(self) -> DataStore:
-        return DataStore(dbPath=Path(self.mktemp()))
+    def store(self) -> TestDataStore:
+        return TestDataStore(dbPath=Path(self.mktemp()))
 
 
     # FIXME: A better plan here would be to create a mock DB object that yields

@@ -20,7 +20,7 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 
 from io import StringIO
 from textwrap import dedent
-from typing import Dict, Set
+from typing import Dict, Set, cast
 
 from ims.ext.sqlite import Connection
 
@@ -45,13 +45,15 @@ class DataStoreCoreTests(DataStoreTests):
         """
         store = self.store()
 
-        DataStore._schema = None  # Reset in case previously cached
+        cls = cast(DataStore, store.__class__)
+
+        cls._schema = None  # Reset in case previously cached
         schema = store._loadSchema()
-        self.assertIsInstance(schema, str)
+        self.assertStartsWith(schema, "create table SCHEMA_INFO (")
 
         # Check that class and instance access are the same object
         self.assertIdentical(schema, store._schema)
-        self.assertIdentical(schema, DataStore._schema)
+        self.assertIdentical(schema, cls._schema)
 
 
     def test_printSchema(self) -> None:
