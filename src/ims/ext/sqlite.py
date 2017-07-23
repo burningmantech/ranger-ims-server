@@ -112,6 +112,27 @@ class Connection(BaseConnection):
         return cast(TCursor, super().cursor(factory=factory))
 
 
+    def executeAndPrint(
+        self, sql: str, parameters: Optional[Parameters] = None
+    ) -> None:
+        """
+        Execute the given SQL and print the results in a table format.
+        """
+        def emit(row: Iterable) -> None:
+            print(" | ".join(str(i) for i in row))
+
+        printHeader = True
+
+        for row in cast(
+            Iterable[Row],
+            self.execute(sql, cast(Any, parameters))
+        ):
+            if printHeader:
+                emit(row.keys())
+                printHeader = False
+            emit(cast(Iterable, row))
+
+
     def commit(self) -> None:
         """
         See :meth:`sqlite3.Cursor.commit`.
