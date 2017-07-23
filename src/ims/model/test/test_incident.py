@@ -58,7 +58,8 @@ class IncidentTests(TestCase):
         incident = incident.replace(summary=summary)
 
         self.assertEqual(
-            str(incident), "{}: {}".format(incident.number, summary)
+            str(incident),
+            "{} #{}: {}".format(incident.event, incident.number, summary),
         )
 
 
@@ -72,8 +73,8 @@ class IncidentTests(TestCase):
 
         self.assertEqual(
             str(incident),
-            "{}: {}".format(
-                incident.number,
+            "{} #{}: {}".format(
+                incident.event, incident.number,
                 summaryFromReport(None, incident.reportEntries),
             )
         )

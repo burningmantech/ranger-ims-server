@@ -86,7 +86,7 @@ class Incident(ReplaceMixIn):
 
     def __str__(self) -> str:
         return (
-            "{self.number}: {summary}".format(
+            "{self.event} #{self.number}: {summary}".format(
                 self=self,
                 summary=self.summaryFromReport()
             )
