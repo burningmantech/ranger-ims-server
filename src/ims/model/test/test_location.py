@@ -15,36 +15,29 @@
 ##
 
 """
-Location
+Tests for :mod:`ranger-ims-server.model._location`
 """
 
-from typing import Optional
+from ims.ext.trial import TestCase
 
-from attr import attrib, attrs
-from attr.validators import instance_of, optional
+from .._address import TextOnlyAddress
+from .._location import Location
 
-from ._address import Address, TextOnlyAddress
-from ._replace import ReplaceMixIn
 
 __all__ = ()
 
 
-def convertAddress(address: Optional[Address]) -> Address:
-    if address is None:
-        address = TextOnlyAddress(description=None)
 
-    return address
-
-
-
-@attrs(frozen=True)
-class Location(Address, ReplaceMixIn):
+class LocationTests(TestCase):
     """
-    Location
+    Tests for :class:`Location`
     """
 
-    name: Optional[str] = attrib(validator=optional(instance_of(str)))
-    address: Optional[Address] = attrib(
-        validator=optional(instance_of(Address)),
-        convert=convertAddress,
-    )
+    def test_addressNone(self) -> None:
+        """
+        :class:`Location` converts a :obj:`None` address to a
+        :class:`TextOnlyAddress`.
+        """
+        location = Location(name="Foo", address=None)
+
+        self.assertEqual(location.address, TextOnlyAddress(description=None))
