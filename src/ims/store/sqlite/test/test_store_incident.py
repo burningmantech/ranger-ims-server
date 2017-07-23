@@ -193,6 +193,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
         createdEvents: Set[Event] = set()
         createdIncidentTypes: Set[str] = set()
+        createdConcentricStreets: Dict[Event, Set[str]] = defaultdict(set)
 
         expectedStoredIncidents: Set[Incident] = set()
         nextNumbers: Dict[Event, int] = {}
@@ -212,15 +213,18 @@ class DataStoreIncidentTests(DataStoreTests):
                     createdIncidentTypes.add(incidentType)
 
             address = incident.location.address
-            if (
-                isinstance(address, RodGarettAddress) and
-                address.concentric is not None
-            ):
-                self.successResultOf(
-                    store.createConcentricStreet(
-                        event, address.concentric, "Sesame Street"
+            if isinstance(address, RodGarettAddress):
+                concentric = address.concentric
+                if (
+                    concentric is not None and
+                    concentric not in createdConcentricStreets[event]
+                ):
+                    self.successResultOf(
+                        store.createConcentricStreet(
+                            event, concentric, "Sesame Street"
+                        )
                     )
-                )
+                    createdConcentricStreets[event].add(concentric)
 
             returnedIncident = self.successResultOf(
                 store.createIncident(incident=incident, author=author)
@@ -236,7 +240,6 @@ class DataStoreIncidentTests(DataStoreTests):
             )
 
             # Add to set of stored incidents
-            print(id(data), "adding:", expectedStoredIncident)
             expectedStoredIncidents.add(expectedStoredIncident)
             nextNumbers[event] += 1
 
@@ -497,12 +500,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 if name == "reportEntries":
                     if ignoreInitial:
                         # Remove automatic entries
-                        _valueA = tuple(e for e in valueA if not e.automatic)
-
-                        if _valueA == valueA:
-                            self.fail("No initial report entries found.")
-
-                        valueA = _valueA
+                        valueA = tuple(e for e in valueA if not e.automatic)
 
                     if len(valueA) == len(valueB):
                         for entryA, entryB in zip(valueA, valueB):
