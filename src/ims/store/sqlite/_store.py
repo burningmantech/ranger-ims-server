@@ -683,7 +683,7 @@ class DataStore(IMSDataStore):
         Look up the next available incident number.
         """
         cursor.execute(self._query_maxIncidentNumber, dict(eventID=event.id))
-        number = cursor.fetchone().get("NUMBER", None)
+        number = cursor.fetchone()["max(NUMBER)"]
         if number is None:
             return 1
         else:
