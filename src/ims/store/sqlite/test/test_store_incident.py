@@ -22,7 +22,7 @@ from collections import defaultdict
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
-from typing import Any, Dict, Iterable, Set, Tuple
+from typing import Any, Dict, Iterable, Optional, Set, Tuple
 
 from attr import fields as attrFields
 
@@ -43,7 +43,7 @@ from ims.model.strategies import (
 from .base import DataStoreTests
 from ..._exceptions import NoSuchIncidentError, StorageError
 
-Dict, Event, Set  # silence linter
+Dict, Event, Optional, Set  # silence linter
 
 
 __all__ = ()
@@ -182,44 +182,88 @@ class DataStoreIncidentTests(DataStoreTests):
         self.assertEqual(f.type, StorageError)
 
 
-    @given(incidents(new=True), rangerHandles())
-    def test_createIncident(self, incident: Incident, author: str) -> None:
+    @given(lists(tuples(incidents(new=True), rangerHandles()), average_size=2))
+    def test_createIncident(
+        self, data: Iterable[Tuple[Incident, str]]
+    ) -> None:
         """
         :meth:`DataStore.createIncident` creates the given incident.
         """
         store = self.store()
 
-        self.successResultOf(store.createEvent(incident.event))
+        createdEvents: Set[Event] = set()
+        createdIncidentTypes: Set[str] = set()
 
-        for incidentType in incident.incidentTypes:
-            self.successResultOf(store.createIncidentType(incidentType))
+        expectedStoredIncidents: Set[Incident] = set()
+        nextNumbers: Dict[Event, int] = {}
 
-        address = incident.location.address
-        if (
-            isinstance(address, RodGarettAddress) and
-            address.concentric is not None
-        ):
-            self.successResultOf(
-                store.createConcentricStreet(
-                    incident.event, address.concentric, "Sesame Street"
+        for incident, author in data:
+            event = incident.event
+
+            if event not in createdEvents:
+                self.successResultOf(store.createEvent(event))
+                createdEvents.add(event)
+
+            for incidentType in incident.incidentTypes:
+                if incidentType not in createdIncidentTypes:
+                    self.successResultOf(
+                        store.createIncidentType(incidentType)
+                    )
+                    createdIncidentTypes.add(incidentType)
+
+            address = incident.location.address
+            if (
+                isinstance(address, RodGarettAddress) and
+                address.concentric is not None
+            ):
+                self.successResultOf(
+                    store.createConcentricStreet(
+                        event, address.concentric, "Sesame Street"
+                    )
                 )
+
+            returnedIncident = self.successResultOf(
+                store.createIncident(incident=incident, author=author)
             )
 
-        # The returned incident should be the same, except for modified number
-        returnedIncident = self.successResultOf(
-            store.createIncident(incident=incident, author=author)
-        )
-        self.assertIncidentsEqual(
-            returnedIncident.replace(number=0), incident, True
-        )
-        self.assertNotEqual(returnedIncident.number, 0)
+            # The returned incident should be the same, except for modified
+            # number
+            expectedStoredIncident = incident.replace(
+                number=nextNumbers.setdefault(event, 1)
+            )
+            self.assertIncidentsEqual(
+                returnedIncident, expectedStoredIncident, True
+            )
 
-        # Stored incidents should be contain only the returned incident above
-        storedIncidents = tuple(
-            self.successResultOf(store.incidents(event=incident.event))
-        )
-        self.assertEqual(len(storedIncidents), 1)
-        self.assertIncidentsEqual(storedIncidents[0], returnedIncident)
+            # Add to set of stored incidents
+            print(id(data), "adding:", expectedStoredIncident)
+            expectedStoredIncidents.add(expectedStoredIncident)
+            nextNumbers[event] += 1
+
+        # Stored incidents should be contain incidents stored above
+        for event in createdEvents:
+            expectedIncidents = sorted(
+                i for i in expectedStoredIncidents if i.event == event
+            )
+            storedIncidents = sorted(
+                self.successResultOf(store.incidents(event=event))
+            )
+
+            if len(storedIncidents) != len(expectedIncidents):
+                import pdb
+                pdb.set_trace()
+
+            storedIncidents = sorted(
+                self.successResultOf(store.incidents(event=event))
+            )
+
+            self.assertEqual(
+                len(storedIncidents), len(expectedIncidents),
+                "{} != {}".format(storedIncidents, expectedIncidents)
+            )
+
+            for stored, expected in zip(storedIncidents, expectedIncidents):
+                self.assertIncidentsEqual(stored, expected, ignoreInitial=True)
 
 
     def test_createIncident_error(self) -> None:
