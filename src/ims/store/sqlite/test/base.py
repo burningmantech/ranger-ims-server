@@ -129,7 +129,7 @@ class DataStoreTests(TestCase):
         address = cast(RodGarettAddress, location.address)
 
         cursor.execute(
-            "insert into EVENT (NAME) values (:eventID);",
+            "insert or ignore into EVENT (NAME) values (:eventID);",
             dict(eventID=incident.event.id)
         )
 
@@ -146,7 +146,8 @@ class DataStoreTests(TestCase):
 
             if address.concentric is not None:
                 self.storeConcentricStreet(
-                    cursor, incident.event, address.concentric, "Some Street"
+                    cursor, incident.event, address.concentric, "Some Street",
+                    ignoreDuplicates=True,
                 )
 
         cursor.execute(
@@ -214,7 +215,7 @@ class DataStoreTests(TestCase):
             cursor.execute(
                 dedent(
                     """
-                    insert into INCIDENT_TYPE (NAME, HIDDEN)
+                    insert or ignore into INCIDENT_TYPE (NAME, HIDDEN)
                     values (:incidentType, 0)
                     """
                 ),
