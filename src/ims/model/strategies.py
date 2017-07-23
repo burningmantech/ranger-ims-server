@@ -21,7 +21,7 @@ Test strategies for model data.
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
-from typing import Callable, Optional
+from typing import Callable, Hashable, List, Optional
 
 from hypothesis.strategies import (
     booleans, composite, datetimes as _datetimes, integers, lists, none,
@@ -214,6 +214,25 @@ def incidents(
         incidentTypes=draw(lists(incidentTypesText())),
         reportEntries=draw(lists(reportEntries(automatic=automatic))),
     )
+
+
+@composite
+def incidentLists(
+    draw: Callable,
+    event: Optional[Event] = None,
+    maxNumber: Optional[int] = None,
+    minSize: Optional[int] = None,
+    maxSize: Optional[int] = None,
+    averageSize: Optional[int] = None,
+) -> List[Incident]:
+    def uniqueBy(incident: Incident) -> Hashable:
+        return (incident.event, incident.number)
+
+    return draw(lists(
+        incidents(event=event, maxNumber=maxNumber),
+        min_size=minSize, max_size=maxSize, average_size=averageSize,
+        unique_by=uniqueBy
+    ))
 
 
 ##
