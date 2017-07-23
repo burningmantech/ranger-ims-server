@@ -175,8 +175,8 @@ def events(draw: Callable) -> Event:
 ##
 
 @composite
-def incidentNumbers(draw: Callable) -> str:
-    return draw(integers(min_value=1))
+def incidentNumbers(draw: Callable, max: Optional[int] = None) -> str:
+    return draw(integers(min_value=1, max_value=max))
 
 
 @composite
@@ -185,17 +185,25 @@ def incidentSummaries(draw: Callable) -> str:
 
 
 @composite
-def incidents(draw: Callable, new: bool = False) -> Incident:
+def incidents(
+    draw: Callable,
+    new: bool = False,
+    event: Optional[Event] = None,
+    maxNumber: Optional[int] = None,
+) -> Incident:
     automatic: Optional[bool]
     if new:
         number = 0
         automatic = False
     else:
-        number = draw(incidentNumbers())
+        number = draw(incidentNumbers(max=maxNumber))
         automatic = None
 
+    if event is None:
+        event = draw(events())
+
     return Incident(
-        event=draw(events()),
+        event=event,
         number=number,
         created=draw(dateTimes()),
         state=draw(incidentStates()),
@@ -213,7 +221,7 @@ def incidents(draw: Callable, new: bool = False) -> Incident:
 ##
 
 @composite
-def locationNames(draw: Callable) -> Location:
+def locationNames(draw: Callable) -> str:
     return draw(text())
 
 
