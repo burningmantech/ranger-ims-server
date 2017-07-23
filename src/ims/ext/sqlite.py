@@ -112,6 +112,7 @@ class Connection(BaseConnection):
         return cast(TCursor, super().cursor(factory=factory))
 
 
+    def executeAndPrint(
     def commit(self) -> None:
         """
         See :meth:`sqlite3.Cursor.commit`.
