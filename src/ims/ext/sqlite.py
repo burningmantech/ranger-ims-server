@@ -52,7 +52,9 @@ class Row(BaseRow):
     method.
     """
 
-    def get(self, key: str, default: ParameterValue = None) -> ParameterValue:
+    def get(
+        self, key: str, default: Optional[ParameterValue] = None
+    ) -> ParameterValue:
         if key in self.keys():
             return self[key]
         else:
@@ -77,7 +79,9 @@ class Cursor(BaseCursor):
         return cast(TCursor, super().executescript(sql_script))
 
 
-    def execute(self, sql: str, parameters: Parameters = None) -> TCursor:
+    def execute(
+        self, sql: str, parameters: Optional[Parameters] = None
+    ) -> TCursor:
         """
         See :meth:`sqlite3.Cursor.execute`.
         """
@@ -158,7 +162,7 @@ def createDB(path: Optional[Path], schema: str) -> Connection:
     return db
 
 
-def openDB(path: Path, schema: str = None) -> Connection:
+def openDB(path: Path, schema: Optional[str] = None) -> Connection:
     """
     Open an SQLite DB with the schema for this application.
     """
