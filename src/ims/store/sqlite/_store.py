@@ -510,7 +510,7 @@ class DataStore(IMSDataStore):
             eventID=event.id, incidentNumber=incidentNumber
         )
 
-        def notFound():
+        def notFound() -> None:
             raise NoSuchIncidentError(
                 "No incident #{} in event {}".format(incidentNumber, event)
             )
@@ -917,6 +917,11 @@ class DataStore(IMSDataStore):
         location = incident.location
         address = location.address
 
+        if address is None:
+            locationDescription = None
+        else:
+            locationDescription = address.description
+
         if isinstance(address, RodGarettAddress):
             locationConcentric   = address.concentric
             locationRadialHour   = address.radialHour
@@ -952,7 +957,7 @@ class DataStore(IMSDataStore):
                             locationConcentric=locationConcentric,
                             locationRadialHour=locationRadialHour,
                             locationRadialMinute=locationRadialMinute,
-                            locationDescription=address.description,
+                            locationDescription=locationDescription,
                         )
                     )
 

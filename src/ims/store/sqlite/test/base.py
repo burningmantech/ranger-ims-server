@@ -133,10 +133,21 @@ class DataStoreTests(TestCase):
             dict(eventID=incident.event.id)
         )
 
-        if address.concentric is not None:
-            self.storeConcentricStreet(
-                cursor, incident.event, address.concentric, "Some Street"
-            )
+        if address is None:
+            locationConcentric   = None
+            locationRadialHour   = None
+            locationRadialMinute = None
+            locationDescription  = None
+        else:
+            locationConcentric   = address.concentric
+            locationRadialHour   = address.radialHour
+            locationRadialMinute = address.radialMinute
+            locationDescription  = address.description
+
+            if address.concentric is not None:
+                self.storeConcentricStreet(
+                    cursor, incident.event, address.concentric, "Some Street"
+                )
 
         cursor.execute(
             dedent(
@@ -172,10 +183,10 @@ class DataStoreTests(TestCase):
                 incidentPriority=priorityAsID(incident.priority),
                 incidentState=incidentStateAsID(incident.state),
                 locationName=location.name,
-                locationConcentric=address.concentric,
-                locationRadialHour=address.radialHour,
-                locationRadialMinute=address.radialMinute,
-                locationDescription=address.description,
+                locationConcentric=locationConcentric,
+                locationRadialHour=locationRadialHour,
+                locationRadialMinute=locationRadialMinute,
+                locationDescription=locationDescription,
             )
         )
 
