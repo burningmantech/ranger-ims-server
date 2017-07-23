@@ -60,7 +60,7 @@ class AddressTests(TestCase):
 
 
     @given(text())
-    def test_eq(self, description: str) -> None:
+    def test_eq_address(self, description: str) -> None:
         """
         :class:`RodGarettAddress` and :class:`TextOnlyAddress` can compare
         with each other.
@@ -88,4 +88,21 @@ class AddressTests(TestCase):
         self.assertNotEqual(
             TextOnlyAddress(description=description),
             RodGarettAddress(description=description, radialHour=1),
+        )
+
+
+    def test_eq_none(self) -> None:
+        """
+        :class:`RodGarettAddress` and :class:`TextOnlyAddress` can compare
+        with :obj:`None`.
+        """
+        self.assertEqual(TextOnlyAddress(description=None), None)
+        self.assertEqual(
+            RodGarettAddress(
+                description=None,
+                concentric=None,
+                radialMinute=None,
+                radialHour=None,
+            ),
+            None,
         )
