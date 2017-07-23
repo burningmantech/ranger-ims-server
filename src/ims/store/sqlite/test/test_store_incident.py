@@ -22,21 +22,22 @@ from collections import defaultdict
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
-from typing import Any, Dict, Set, Tuple
+from typing import Any, Dict, Iterable, Set, Tuple
 
 from attr import fields as attrFields
 
 from hypothesis import assume, given
-from hypothesis.strategies import text, tuples
+from hypothesis.strategies import lists, text, tuples
 
 from ims.ext.sqlite import SQLITE_MAX_INT
 from ims.model import (
-    Event, Incident, IncidentPriority, IncidentState, Location,
-    RodGarettAddress,
+    Event, Incident, IncidentPriority, IncidentState,
+    Location, RodGarettAddress,
 )
 from ims.model.strategies import (
-    concentricStreetIDs, incidentPriorities, incidentStates, incidentSummaries,
-    incidents, locationNames, radialHours, radialMinutes, rangerHandles,
+    concentricStreetIDs, incidentLists, incidentPriorities, incidentStates,
+    incidentSummaries, incidents, locationNames, radialHours, radialMinutes,
+    rangerHandles,
 )
 
 from .base import DataStoreTests
@@ -54,8 +55,8 @@ class DataStoreIncidentTests(DataStoreTests):
     Tests for :class:`DataStore` incident access.
     """
 
-    @given(tuples(incidents()))
-    def test_incidents(self, incidents: Tuple[Incident]) -> None:
+    @given(incidentLists(maxNumber=SQLITE_MAX_INT, averageSize=3))
+    def test_incidents(self, incidents: Iterable[Incident]) -> None:
         """
         :meth:`DataStore.incidents` returns all incidents.
         """
@@ -64,7 +65,6 @@ class DataStoreIncidentTests(DataStoreTests):
         store = self.store()
 
         for incident in incidents:
-            assume(incident.number <= SQLITE_MAX_INT)
             assume(incident.number not in events[incident.event])
 
             self.storeIncident(store, incident)
@@ -76,8 +76,37 @@ class DataStoreIncidentTests(DataStoreTests):
                 store.incidents(event)
             ):
                 self.assertIncidentsEqual(
-                    retrieved, events[incident.event][retrieved.number]
+                    retrieved, events[event][retrieved.number]
                 )
+
+
+    @given(
+        incidentLists(
+            event=Event("Foo"), maxNumber=SQLITE_MAX_INT,
+            minSize=2, averageSize=3,
+        ),
+    )
+    def test_incidents_sameEvent(self, incidents: Iterable[Incident]) -> None:
+        """
+        :meth:`DataStore.incidents` returns all incidents.
+        """
+        incidents = frozenset(incidents)
+
+        store = self.store()
+
+        event: Optional[Event] = None
+
+        for incident in incidents:
+            event = incident.event
+
+            self.storeIncident(store, incident)
+
+        assert event is not None
+
+        retrieved = self.successResultOf(store.incidents(event))
+
+        for r, i in zip(sorted(retrieved), sorted(incidents)):
+            self.assertIncidentsEqual(r, i)
 
 
     def test_incidents_error(self) -> None:
@@ -93,13 +122,11 @@ class DataStoreIncidentTests(DataStoreTests):
         self.assertEqual(f.type, StorageError)
 
 
-    @given(incidents())
+    @given(incidents(maxNumber=SQLITE_MAX_INT))
     def test_incidentWithNumber(self, incident: Incident) -> None:
         """
         :meth:`DataStore.incidentWithNumber` return the specified incident.
         """
-        assume(incident.number <= SQLITE_MAX_INT)
-
         store = self.store()
 
         self.storeIncident(store, incident)
@@ -215,6 +242,34 @@ class DataStoreIncidentTests(DataStoreTests):
                 rangerHandles=(), incidentTypes=(), reportEntries=(),
             ),
             "Hubcap")
+        )
+        self.assertEqual(f.type, StorageError)
+
+
+    def test_setIncident_priority_error(self) -> None:
+        """
+        :meth:`DataStore.setIncident_priority` raises ...
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        incident = self.successResultOf(store.createIncident(
+            Incident(
+                event=Event("foo"),
+                number=0,
+                created=DateTime.now(TimeZone.utc),
+                state=IncidentState.new, priority=IncidentPriority.normal,
+                summary="A thing happened",
+                location=Location(name="There", address=None),
+                rangerHandles=(), incidentTypes=(), reportEntries=(),
+            ),
+            "Hubcap")
+        )
+        store.bringThePain()
+        f = self.failureResultOf(
+            store.setIncident_priority(
+                event, incident.number, IncidentPriority.high, "Bucket"
+            )
         )
         self.assertEqual(f.type, StorageError)
 
