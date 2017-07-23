@@ -21,7 +21,7 @@ Test strategies for model data.
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
-from typing import Callable, Hashable, List, Optional
+from typing import Callable, Hashable, List, Optional, cast
 
 from hypothesis.strategies import (
     booleans, composite, datetimes as _datetimes, integers, lists, none,
@@ -80,8 +80,7 @@ def timeZones(draw: Callable) -> TimeZone:
     return timeZone
 
 
-@composite
-def dateTimes(draw: Callable) -> DateTime:
+def dateTimes() -> DateTime:
     #
     # min_datetime >= UTC epoch because otherwise we can't store dates as UTC
     # timestamps.
@@ -92,10 +91,10 @@ def dateTimes(draw: Callable) -> DateTime:
     # For all current uses of model date-times in model objects in this module,
     # limiting values to those past the is totally OK.
     #
-    return draw(_datetimes(
+    return _datetimes(
         min_datetime=DateTime(1970, 1, 2),
         timezones=timeZones(),
-    ))
+    )
 
 
 ##
@@ -107,24 +106,20 @@ def textOnlyAddresses(draw: Callable) -> TextOnlyAddress:
     return TextOnlyAddress(description=draw(text()))
 
 
-@composite
-def concentricStreetIDs(draw: Callable) -> str:
-    return draw(text())
+def concentricStreetIDs() -> str:
+    return text()
 
 
-@composite
-def concentricStreetNames(draw: Callable) -> str:
-    return draw(text())
+def concentricStreetNames() -> str:
+    return text()
 
 
-@composite
-def radialHours(draw: Callable) -> str:
-    return draw(integers(min_value=1, max_value=12))
+def radialHours() -> int:
+    return integers(min_value=1, max_value=12)
 
 
-@composite
-def radialMinutes(draw: Callable) -> str:
-    return draw(integers(min_value=0, max_value=59))
+def radialMinutes() -> str:
+    return integers(min_value=0, max_value=59)
 
 
 @composite
@@ -137,9 +132,8 @@ def rodGarettAddresses(draw: Callable) -> RodGarettAddress:
     )
 
 
-@composite
-def addresses(draw: Callable) -> Address:
-    return draw(one_of(none(), textOnlyAddresses(), rodGarettAddresses()))
+def addresses() -> Address:
+    return one_of(none(), textOnlyAddresses(), rodGarettAddresses())
 
 
 ##
@@ -174,14 +168,12 @@ def events(draw: Callable) -> Event:
 # Incident
 ##
 
-@composite
-def incidentNumbers(draw: Callable, max: Optional[int] = None) -> str:
-    return draw(integers(min_value=1, max_value=max))
+def incidentNumbers(max: Optional[int] = None) -> str:
+    return integers(min_value=1, max_value=max)
 
 
-@composite
-def incidentSummaries(draw: Callable) -> str:
-    return draw(one_of(none(), text()))
+def incidentSummaries() -> str:
+    return one_of(none(), text())
 
 
 @composite
@@ -216,9 +208,7 @@ def incidents(
     )
 
 
-@composite
 def incidentLists(
-    draw: Callable,
     event: Optional[Event] = None,
     maxNumber: Optional[int] = None,
     minSize: Optional[int] = None,
@@ -226,22 +216,21 @@ def incidentLists(
     averageSize: Optional[int] = None,
 ) -> List[Incident]:
     def uniqueBy(incident: Incident) -> Hashable:
-        return (incident.event, incident.number)
+        return cast(Hashable, (incident.event, incident.number))
 
-    return draw(lists(
+    return lists(
         incidents(event=event, maxNumber=maxNumber),
         min_size=minSize, max_size=maxSize, average_size=averageSize,
         unique_by=uniqueBy
-    ))
+    )
 
 
 ##
 # Location
 ##
 
-@composite
-def locationNames(draw: Callable) -> str:
-    return draw(text())
+def locationNames() -> str:
+    return text()
 
 
 @composite
@@ -253,18 +242,16 @@ def locations(draw: Callable) -> Location:
 # Priority
 ##
 
-@composite
-def incidentPriorities(draw: Callable) -> IncidentPriority:
-    return draw(sampled_from(IncidentPriority))
+def incidentPriorities() -> IncidentPriority:
+    return sampled_from(IncidentPriority)
 
 
 ##
 # Ranger
 ##
 
-@composite
-def rangerHandles(draw: Callable) -> str:
-    return draw(text(min_size=1))
+def rangerHandles() -> str:
+    return text(min_size=1)
 
 
 @composite
@@ -284,9 +271,8 @@ def rangers(draw: Callable) -> Ranger:
 # Report
 ##
 
-@composite
-def incidentReportNumbers(draw: Callable) -> str:
-    return draw(integers(min_value=0))
+def incidentReportNumbers() -> str:
+    return integers(min_value=0)
 
 
 @composite
@@ -303,20 +289,17 @@ def incidentReports(draw: Callable) -> IncidentReport:
 # State
 ##
 
-@composite
-def incidentStates(draw: Callable) -> IncidentState:
-    return draw(sampled_from(IncidentState))
+def incidentStates() -> IncidentState:
+    return sampled_from(IncidentState)
 
 
 ##
 # Type
 ##
 
-@composite
-def incidentTypesText(draw: Callable) -> str:
-    return draw(text(min_size=1))
+def incidentTypesText() -> str:
+    return text(min_size=1)
 
 
-@composite
-def incidentTypes(draw: Callable) -> KnownIncidentType:
-    return draw(sampled_from(KnownIncidentType))
+def incidentTypes() -> KnownIncidentType:
+    return sampled_from(KnownIncidentType)
