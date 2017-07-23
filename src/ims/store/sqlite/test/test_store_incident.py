@@ -90,7 +90,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self.successResultOf(store.createEvent(event))
         store.bringThePain()
         f = self.failureResultOf(store.incidents(event))
-        self.assertEqual(f.type, StorageError, f)
+        self.assertEqual(f.type, StorageError)
 
 
     @given(incidents())
@@ -123,7 +123,7 @@ class DataStoreIncidentTests(DataStoreTests):
         f = self.failureResultOf(
             store.incidentWithNumber(event, 1)
         )
-        self.assertEqual(f.type, NoSuchIncidentError, f)
+        self.assertEqual(f.type, NoSuchIncidentError)
 
 
     def test_incidentWithNumber_tooBig(self) -> None:
@@ -139,7 +139,7 @@ class DataStoreIncidentTests(DataStoreTests):
             store.incidentWithNumber(event, SQLITE_MAX_INT + 1)
         )
         f.printTraceback()
-        self.assertEqual(f.type, NoSuchIncidentError, f)
+        self.assertEqual(f.type, NoSuchIncidentError)
 
 
     def test_incidentWithNumber_error(self) -> None:
@@ -152,7 +152,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self.successResultOf(store.createEvent(event))
         store.bringThePain()
         f = self.failureResultOf(store.incidentWithNumber(event, 1))
-        self.assertEqual(f.type, StorageError, f)
+        self.assertEqual(f.type, StorageError)
 
 
     @given(incidents(new=True), rangerHandles())
@@ -216,7 +216,7 @@ class DataStoreIncidentTests(DataStoreTests):
             ),
             "Hubcap")
         )
-        self.assertEqual(f.type, StorageError, f)
+        self.assertEqual(f.type, StorageError)
 
 
     def _test_setIncidentAttribute(
@@ -245,6 +245,8 @@ class DataStoreIncidentTests(DataStoreTests):
         )
 
         # Normalize location if we're updating the address.
+        # Don't normalize before calling the setter; we want to test that
+        # giving it un-normalized data works.
         if attributeName.startswith("location.address."):
             incident = self.normalizeAddress(incident)
 

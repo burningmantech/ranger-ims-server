@@ -93,7 +93,7 @@ class DataStoreEventTests(DataStoreTests):
 
         f = self.failureResultOf(store.createEvent(Event("x")))
         f.printTraceback()
-        self.assertEqual(f.type, StorageError, f)
+        self.assertEqual(f.type, StorageError)
 
 
     def test_createEvent_duplicate(self) -> None:
@@ -105,7 +105,7 @@ class DataStoreEventTests(DataStoreTests):
         store = self.store()
         self.successResultOf(store.createEvent(event))
         f = self.failureResultOf(store.createEvent(event))
-        self.assertEqual(f.type, StorageError, f)
+        self.assertEqual(f.type, StorageError)
 
 
     @given(events(), frozensets(text()))
@@ -130,7 +130,7 @@ class DataStoreEventTests(DataStoreTests):
         self.successResultOf(store.createEvent(event))
         store.bringThePain()
         f = self.failureResultOf(store.setReaders(event, ()))
-        self.assertEqual(f.type, StorageError, f)
+        self.assertEqual(f.type, StorageError)
 
 
     @given(events(), frozensets(text()))
@@ -155,4 +155,4 @@ class DataStoreEventTests(DataStoreTests):
         self.successResultOf(store.createEvent(event))
         store.bringThePain()
         f = self.failureResultOf(store.setWriters(event, ()))
-        self.assertEqual(f.type, StorageError, f)
+        self.assertEqual(f.type, StorageError)

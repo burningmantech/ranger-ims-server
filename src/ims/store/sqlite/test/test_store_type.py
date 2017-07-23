@@ -127,7 +127,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         store = self.store()
         self.successResultOf(store.createIncidentType(incidentType))
         f = self.failureResultOf(store.createIncidentType(incidentType))
-        self.assertEqual(f.type, StorageError, f)
+        self.assertEqual(f.type, StorageError)
 
 
     def test_showIncidentTypes(self) -> None:
