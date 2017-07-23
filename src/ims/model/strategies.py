@@ -139,7 +139,7 @@ def rodGarettAddresses(draw: Callable) -> RodGarettAddress:
 
 @composite
 def addresses(draw: Callable) -> Address:
-    return draw(one_of((textOnlyAddresses(), rodGarettAddresses())))
+    return draw(one_of(none(), textOnlyAddresses(), rodGarettAddresses()))
 
 
 ##
