@@ -330,3 +330,55 @@ def normalizeAddress(incident: Incident) -> Incident:
             )
         )
     return incident
+
+
+def storeIncidentReport(
+    cursor: Cursor, incidentReport: IncidentReport
+) -> None:
+    cursor.execute(
+        dedent(
+            """
+            insert into INCIDENT_REPORT (NUMBER, CREATED, SUMMARY)
+            values (
+                :incidentReportNumber,
+                :incidentReportCreated,
+                :incidentReportSummary
+            )
+            """
+        ),
+        dict(
+            incidentReportCreated=asTimeStamp(incidentReport.created),
+            incidentReportNumber=incidentReport.number,
+            incidentReportSummary=incidentReport.summary,
+        )
+    )
+
+    for reportEntry in incidentReport.reportEntries:
+        cursor.execute(
+            dedent(
+                """
+                insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
+                values (:author, :text, :created, :automatic)
+                """
+            ),
+            dict(
+                created=asTimeStamp(reportEntry.created),
+                author=reportEntry.author,
+                automatic=reportEntry.automatic,
+                text=reportEntry.text,
+            )
+        )
+        cursor.execute(
+            dedent(
+                """
+                insert into INCIDENT_REPORT__REPORT_ENTRY (
+                    INCIDENT_REPORT_NUMBER, REPORT_ENTRY
+                )
+                values (:incidentReportNumber, :reportEntryID)
+                """
+            ),
+            dict(
+                incidentReportNumber=incidentReport.number,
+                reportEntryID=cursor.lastrowid
+            )
+        )
