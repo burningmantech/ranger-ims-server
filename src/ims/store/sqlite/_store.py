@@ -888,23 +888,14 @@ class DataStore(IMSDataStore):
         directImport: bool,
     ) -> Incident:
         if directImport:
-            if author is not None:
-                raise ValueError("author should be None for direct import")
-
-            if not incident.number > 0:
-                raise ValueError("Imported incident number must be > 0")
+            assert not author
+            assert incident.number > 0
         else:
-            if not author:
-                raise ValueError("author is required")
-
-            if incident.number != 0:
-                raise ValueError("New incident number must be zero")
+            assert author
+            assert incident.number == 0
 
             for reportEntry in incident.reportEntries:
-                if reportEntry.automatic:
-                    raise ValueError(
-                        "New incident may not contain automatic report entries"
-                    )
+                assert not reportEntry.automatic
 
             # Add initial report entries
             reportEntries = self._initialReportEntries(incident, author)
@@ -916,10 +907,9 @@ class DataStore(IMSDataStore):
         location = incident.location
         address = location.address
 
-        if address is None:
-            locationDescription = None
-        else:
-            locationDescription = address.description
+        assert address is not None
+
+        locationDescription = address.description
 
         if isinstance(address, RodGarettAddress):
             locationConcentric   = address.concentric
