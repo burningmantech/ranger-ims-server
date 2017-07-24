@@ -18,7 +18,7 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from typing import Iterable
+from typing import Iterable, Set
 
 from attr import fields as attrFields
 
@@ -26,10 +26,12 @@ from hypothesis import given
 
 from ims.ext.sqlite import SQLITE_MAX_INT
 from ims.model import IncidentReport
-from ims.model.strategies import incidentReports, incidentReportLists
+from ims.model.strategies import incidentReportLists, incidentReports
 
 from .base import DataStoreTests, dateTimesEqualish, reportEntriesEqualish
 from ..._exceptions import NoSuchIncidentReportError, StorageError
+
+Set  # silence linter
 
 
 __all__ = ()
