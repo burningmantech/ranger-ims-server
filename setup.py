@@ -123,7 +123,7 @@ install_requirements = [
     "klein",
     "PyMySQL",
     "twextpy",
-    "Twisted[TLS,http2]>17.5.0",
+    "Twisted[TLS,http2]>=17.5.0",
 ]
 
 extras_requirements = {}
