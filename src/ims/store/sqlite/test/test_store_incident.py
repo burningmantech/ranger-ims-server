@@ -22,22 +22,24 @@ from collections import defaultdict
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
-from typing import Any, Dict, Iterable, Optional, Set, Sequence, Tuple
+from typing import (
+    Any, Dict, FrozenSet, Iterable, Optional, Sequence, Set, Tuple
+)
 
 from attr import fields as attrFields
 
 from hypothesis import assume, given
-from hypothesis.strategies import lists, text, tuples
+from hypothesis.strategies import frozensets, lists, text, tuples
 
 from ims.ext.sqlite import SQLITE_MAX_INT
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentState,
-    Location, RodGarettAddress,
+    Location, ReportEntry, RodGarettAddress,
 )
 from ims.model.strategies import (
     concentricStreetIDs, incidentLists, incidentPriorities, incidentStates,
     incidentSummaries, incidentTypesText, incidents, locationNames,
-    radialHours, radialMinutes, rangerHandles,
+    radialHours, radialMinutes, rangerHandles, reportEntries,
 )
 
 from .base import DataStoreTests
@@ -567,6 +569,53 @@ class DataStoreIncidentTests(DataStoreTests):
             )
         )
         self.assertEqual(f.type, StorageError)
+
+
+    @given(
+        incidents(new=True), frozensets(reportEntries(automatic=False)),
+        rangerHandles(),
+    )
+    def test_addReportEntriesToIncident(
+        self, incident: Incident, reportEntries: FrozenSet[ReportEntry],
+        author: str
+    ) -> None:
+        # Change author in report entries to match the author so we will use to
+        # add them
+        reportEntries = frozenset(
+            r.replace(author=author) for r in reportEntries
+        )
+
+        # Store test data
+        store = self.store()
+        self.successResultOf(store.createEvent(incident.event))
+        self.storeIncident(store, incident)
+
+        # Fetch incident back so we're looking at the version from the DB
+        incident = self.successResultOf(
+            store.incidentWithNumber(incident.event, incident.number)
+        )
+        originalEntries = frozenset(incident.reportEntries)
+
+        # Add report entries
+        self.successResultOf(
+            store.addReportEntriesToIncident(
+                incident.event, incident.number, reportEntries, author
+            )
+        )
+
+        # Get the updated incident with the new report entries
+        updated = self.successResultOf(
+            store.incidentWithNumber(incident.event, incident.number)
+        )
+        updatedEntries = frozenset(updated.reportEntries)
+
+        # Updated entries minus the original entries == the added entries
+        updatedNewEntries = updatedEntries - originalEntries
+        self.assertTrue(
+            reportEntriesEqualish(
+                sorted(updatedNewEntries), sorted(reportEntries)
+            )
+        )
 
 
     def assertIncidentsEqual(
