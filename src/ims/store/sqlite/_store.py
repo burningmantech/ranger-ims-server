@@ -1279,7 +1279,7 @@ class DataStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.setIncidentIncidentTypes`.
         """
-        incidentTypes = tuple(incidentTypes)
+        incidentTypes = frozenset(incidentTypes)
 
         autoEntry = self._automaticReportEntry(
             author, now(), "incident types", incidentTypes
