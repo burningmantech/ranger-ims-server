@@ -791,9 +791,6 @@ class DataStore(IMSDataStore):
         reportEntries: Iterable[ReportEntry], cursor: Cursor,
     ) -> None:
         for reportEntry in reportEntries:
-            if not reportEntry.text:
-                continue
-
             self._createReportEntry(reportEntry, cursor)
 
             self._log.info(
