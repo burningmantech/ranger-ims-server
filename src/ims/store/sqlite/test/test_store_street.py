@@ -27,7 +27,7 @@ from ims.model.strategies import (
     concentricStreetIDs, concentricStreetNames, events
 )
 
-from .base import DataStoreTests
+from .base import DataStoreTests, storeConcentricStreet
 
 Dict, Set  # silence linter
 
@@ -53,7 +53,7 @@ class DataStoreConcentricStreetTests(DataStoreTests):
 
         self.successResultOf(store.createEvent(event))
 
-        self.storeConcentricStreet(store._db, event, streetID, streetName)
+        storeConcentricStreet(store._db, event, streetID, streetName)
 
         concentricStreets = self.successResultOf(
             store.concentricStreets(event)
