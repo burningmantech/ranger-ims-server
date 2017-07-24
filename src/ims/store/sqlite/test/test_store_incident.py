@@ -135,7 +135,7 @@ class DataStoreIncidentTests(DataStoreTests):
     @given(incidents(maxNumber=SQLITE_MAX_INT))
     def test_incidentWithNumber(self, incident: Incident) -> None:
         """
-        :meth:`DataStore.incidentWithNumber` return the specified incident.
+        :meth:`DataStore.incidentWithNumber` returns the specified incident.
         """
         store = self.store()
 

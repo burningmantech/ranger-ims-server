@@ -26,9 +26,10 @@ from hypothesis import given
 
 from ims.ext.sqlite import SQLITE_MAX_INT
 from ims.model import IncidentReport
-from ims.model.strategies import incidentReportLists
+from ims.model.strategies import incidentReports, incidentReportLists
 
 from .base import DataStoreTests, dateTimesEqualish, reportEntriesEqualish
+from ..._exceptions import NoSuchIncidentReportError, StorageError
 
 
 __all__ = ()
@@ -44,7 +45,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         self, incidentReports: Iterable[IncidentReport]
     ) -> None:
         """
-        :meth:`DataStore.incidents` returns all incidents.
+        :meth:`DataStore.incidentReports` returns all incidents.
         """
         incidentReports = tuple(incidentReports)
         incidentReportsByNumber = {r.number: r for r in incidentReports}
@@ -63,6 +64,52 @@ class DataStoreIncidentReportTests(DataStoreTests):
             found.add(retrieved.number)
 
         self.assertEqual(found, set(r.number for r in incidentReports))
+
+
+    def test_incidentReports_error(self) -> None:
+        """
+        :meth:`DataStore.incidentReports` raises :exc:`StorageError` when
+        SQLite raises an exception.
+        """
+        store = self.store()
+        store.bringThePain()
+
+        f = self.failureResultOf(store.incidentReports())
+        self.assertEqual(f.type, StorageError)
+
+
+    @given(incidentReports(maxNumber=SQLITE_MAX_INT))
+    def test_incidentReportWithNumber(
+        self, incidentReport: IncidentReport
+    ) -> None:
+        """
+        :meth:`DataStore.incidentReportWithNumber` returns the specified
+        incident report.
+        """
+        store = self.store()
+
+        self.storeIncidentReport(store, incidentReport)
+
+        retrieved = self.successResultOf(
+            store.incidentReportWithNumber(incidentReport.number)
+        )
+
+        self.assertIncidentReportsEqual(retrieved, incidentReport)
+
+
+    def test_incidentReportWithNumber_notFound(self) -> None:
+        """
+        :meth:`DataStore.incidentReportWithNumber` raises
+        :exc:`NoSuchIncidentReportError` when the given incident report number
+        is not found.
+        """
+        store = self.store()
+
+        f = self.failureResultOf(
+            store.incidentReportWithNumber(1)
+        )
+        f.printTraceback()
+        self.assertEqual(f.type, NoSuchIncidentReportError)
 
 
     def assertIncidentReportsEqual(
