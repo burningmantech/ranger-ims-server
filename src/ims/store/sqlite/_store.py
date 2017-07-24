@@ -647,9 +647,8 @@ class DataStore(IMSDataStore):
                     # FIXME: This should be an async generator
                     return tuple(
                         self._fetchIncident(event, number, cursor)
-                        for number in tuple(
-                            self._fetchIncidentNumbers(event, cursor)
-                        )
+                        for number in
+                        tuple(self._fetchIncidentNumbers(event, cursor))
                     )
                 finally:
                     cursor.close()
@@ -1439,7 +1438,8 @@ class DataStore(IMSDataStore):
                     # FIXME: This should be an async generator
                     return tuple(
                         self._fetchIncidentReport(number, cursor)
-                        for number in self._fetchIncidentReportNumbers(cursor)
+                        for number
+                        in tuple(self._fetchIncidentReportNumbers(cursor))
                     )
                 finally:
                     cursor.close()
@@ -1769,9 +1769,8 @@ class DataStore(IMSDataStore):
                     # FIXME: This should be an async generator
                     return tuple(
                         self._fetchIncidentReport(number, cursor)
-                        for number in self._fetchDetachedIncidentReportNumbers(
-                            cursor
-                        )
+                        for number
+                        in self._fetchDetachedIncidentReportNumbers(cursor)
                     )
                 finally:
                     cursor.close()
