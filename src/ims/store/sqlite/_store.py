@@ -45,7 +45,9 @@ from ims.model import (
 from ims.model.json import IncidentJSONKey, modelObjectFromJSONObject
 
 from .._abc import IMSDataStore
-from .._exceptions import NoSuchIncidentError, StorageError
+from .._exceptions import (
+    NoSuchIncidentError, NoSuchIncidentReportError, StorageError
+)
 
 Parameters  # Silence linter
 
@@ -1373,8 +1375,20 @@ class DataStore(IMSDataStore):
     ) -> IncidentReport:
         params: Parameters = dict(incidentReportNumber=incidentReportNumber)
 
-        cursor.execute(self._query_incidentReport, params)
+        def notFound() -> None:
+            raise NoSuchIncidentReportError(
+                "No incident report #{}".format(incidentReportNumber)
+            )
+
+        try:
+            cursor.execute(self._query_incidentReport, params)
+        except OverflowError:
+            notFound()
+
         row = cursor.fetchone()
+        if row is None:
+            notFound()
+
 
         reportEntries = tuple(
             ReportEntry(
