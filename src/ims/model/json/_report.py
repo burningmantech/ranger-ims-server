@@ -20,7 +20,7 @@ JSON serialization/deserialization for incident reports
 
 from datetime import datetime as DateTime
 from enum import Enum, unique
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Optional, Type
 
 from ._json import (
     jsonDeserialize, jsonSerialize, registerDeserializer, registerSerializer
@@ -53,7 +53,7 @@ class IncidentReportJSONType(Enum):
 
     number        = int
     created       = DateTime
-    summary       = str
+    summary       = Optional[str]
     reportEntries = List[ReportEntry]
 
 
