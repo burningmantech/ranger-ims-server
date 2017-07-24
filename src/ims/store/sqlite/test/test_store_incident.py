@@ -22,7 +22,7 @@ from collections import defaultdict
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
-from typing import Any, Dict, Iterable, Optional, Set, Tuple
+from typing import Any, Dict, Iterable, Optional, Set, Sequence, Tuple
 
 from attr import fields as attrFields
 
@@ -236,7 +236,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 number=nextNumbers.setdefault(event, 1)
             )
             self.assertIncidentsEqual(
-                returnedIncident, expectedStoredIncident, True
+                returnedIncident, expectedStoredIncident, ignoreAutomatic=True
             )
 
             # Add to set of stored incidents
@@ -266,7 +266,9 @@ class DataStoreIncidentTests(DataStoreTests):
             )
 
             for stored, expected in zip(storedIncidents, expectedIncidents):
-                self.assertIncidentsEqual(stored, expected, ignoreInitial=True)
+                self.assertIncidentsEqual(
+                    stored, expected, ignoreAutomatic=True
+                )
 
 
     def test_createIncident_error(self) -> None:
@@ -371,7 +373,7 @@ class DataStoreIncidentTests(DataStoreTests):
             values[-1] = values[-1].replace(**{a: v})
         incident = values[0]
 
-        self.assertIncidentsEqual(retrieved, incident, ignoreInitial=True)
+        self.assertIncidentsEqual(retrieved, incident, ignoreAutomatic=True)
 
 
     @given(incidents(new=True), incidentPriorities())
@@ -569,7 +571,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def assertIncidentsEqual(
         self, incidentA: Incident, incidentB: Incident,
-        ignoreInitial: bool = False,
+        ignoreAutomatic: bool = False,
     ) -> None:
         if incidentA != incidentB:
             messages = []
@@ -587,27 +589,9 @@ class DataStoreIncidentTests(DataStoreTests):
                             "{name} delta: {delta}"
                             .format(name=name, delta=valueA - valueB)
                         )
-
-                if name == "reportEntries":
-                    if ignoreInitial:
-                        # Remove automatic entries
-                        valueA = tuple(e for e in valueA if not e.automatic)
-
-                    if len(valueA) == len(valueB):
-                        for entryA, entryB in zip(valueA, valueB):
-                            if entryA != entryB:
-                                if entryA.author != entryB.author:
-                                    break
-                                if entryA.automatic != entryB.automatic:
-                                    break
-                                if entryA.text != entryB.text:
-                                    break
-                                if not dateTimesEqualish(
-                                    entryA.created, entryB.created
-                                ):
-                                    break
-                        else:
-                            continue
+                elif name == "reportEntries":
+                    if reportEntriesEqualish(valueA, valueB, ignoreAutomatic):
+                        continue
 
                 if valueA != valueB:
                     messages.append(
@@ -626,3 +610,32 @@ def dateTimesEqualish(a: DateTime, b: DateTime) -> bool:
     Because floating point math, apply some "close enough" logic.
     """
     return a - b < TimeDelta(microseconds=20)
+
+
+def reportEntriesEqualish(
+    reportEntriesA: Sequence[ReportEntry],
+    reportEntriesB: Sequence[ReportEntry],
+    ignoreAutomatic: bool = False,
+) -> bool:
+    if ignoreAutomatic:
+        reportEntriesA = tuple(
+            e for e in reportEntriesA if not e.automatic
+        )
+
+    if len(reportEntriesA) != len(reportEntriesB):
+        return False
+
+    for entryA, entryB in zip(reportEntriesA, reportEntriesB):
+        if entryA != entryB:
+            if entryA.author != entryB.author:
+                return False
+            if entryA.automatic != entryB.automatic:
+                return False
+            if entryA.text != entryB.text:
+                return False
+            if not dateTimesEqualish(
+                entryA.created, entryB.created
+            ):
+                return False
+
+    return True
