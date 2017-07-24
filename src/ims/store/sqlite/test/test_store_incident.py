@@ -36,8 +36,8 @@ from ims.model import (
 )
 from ims.model.strategies import (
     concentricStreetIDs, incidentLists, incidentPriorities, incidentStates,
-    incidentSummaries, incidents, locationNames, radialHours, radialMinutes,
-    rangerHandles,
+    incidentSummaries, incidentTypesText, incidents, locationNames,
+    radialHours, radialMinutes, rangerHandles,
 )
 
 from .base import DataStoreTests
@@ -338,6 +338,13 @@ class DataStoreIncidentTests(DataStoreTests):
                 ignoreDuplicates=True,
             )
 
+        # For incident types, we need to make sure they exist first.
+        if attributeName == "incidentTypes":
+            for incidentType in (
+                frozenset(value) - frozenset(incident.incidentTypes)
+            ):
+                self.successResultOf(store.createIncidentType(incidentType))
+
         self.successResultOf(
             setter(incident.event, incident.number, value, "Hubcap")
         )
@@ -486,6 +493,78 @@ class DataStoreIncidentTests(DataStoreTests):
         self._test_setIncidentAttribute(
             incident, "setIncident_rangers", "rangerHandles", rangerHandles,
         )
+
+
+    def test_setIncident_rangers_error(self) -> None:
+        """
+        :meth:`DataStore.setIncident_rangers` raises :exc:`StorageError` when
+        SQLite raises an exception.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        incident = self.successResultOf(store.createIncident(
+            Incident(
+                event=Event("foo"),
+                number=0,
+                created=DateTime.now(TimeZone.utc),
+                state=IncidentState.new, priority=IncidentPriority.normal,
+                summary="A thing happened",
+                location=Location(name="There", address=None),
+                rangerHandles=(), incidentTypes=(), reportEntries=(),
+            ),
+            "Hubcap")
+        )
+        store.bringThePain()
+        f = self.failureResultOf(
+            store.setIncident_rangers(
+                event, incident.number, ("Hubcap", "Dingle"), "Bucket"
+            )
+        )
+        self.assertEqual(f.type, StorageError)
+
+
+    @given(incidents(new=True), lists(incidentTypesText()))
+    def test_setIncident_incidentTypes(
+        self, incident: Incident, incidentTypes: Iterable[str]
+    ) -> None:
+        """
+        :meth:`DataStore.setIncident_rangers` updates the ranger handles for
+        the given incident in the data store.
+        """
+        self._test_setIncidentAttribute(
+            incident, "setIncident_incidentTypes",
+            "incidentTypes", incidentTypes,
+        )
+
+
+    def test_setIncident_incidentTypes_error(self) -> None:
+        """
+        :meth:`DataStore.setIncident_incidentTypes` raises :exc:`StorageError`
+        when SQLite raises an exception.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        incident = self.successResultOf(store.createIncident(
+            Incident(
+                event=Event("foo"),
+                number=0,
+                created=DateTime.now(TimeZone.utc),
+                state=IncidentState.new, priority=IncidentPriority.normal,
+                summary="A thing happened",
+                location=Location(name="There", address=None),
+                rangerHandles=(), incidentTypes=(), reportEntries=(),
+            ),
+            "Hubcap")
+        )
+        store.bringThePain()
+        f = self.failureResultOf(
+            store.setIncident_incidentTypes(
+                event, incident.number, ("Fun", "Boring"), "Bucket"
+            )
+        )
+        self.assertEqual(f.type, StorageError)
 
 
     def assertIncidentsEqual(
