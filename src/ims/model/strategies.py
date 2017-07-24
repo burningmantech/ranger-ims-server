@@ -48,8 +48,10 @@ __all__ = (
     "concentricStreetNames",
     "dateTimes",
     "events",
+    "incidentLists",
     "incidentNumbers",
     "incidentPriorities",
+    "incidentReportLists",
     "incidentReportNumbers",
     "incidentReports",
     "incidentStates",
@@ -297,17 +299,48 @@ def rangers(draw: Callable) -> Ranger:
 # Report
 ##
 
-def incidentReportNumbers() -> str:
-    return integers(min_value=0)
+incidentReportNumbers = incidentNumbers
+incidentReportSummaries = incidentSummaries
 
 
 @composite
-def incidentReports(draw: Callable) -> IncidentReport:
+def incidentReports(
+    draw: Callable,
+    new: bool = False,
+    maxNumber: Optional[int] = None,
+    beforeNow: bool = False, fromNow: bool = False,
+) -> IncidentReport:
+    automatic: Optional[bool]
+    if new:
+        number = 0
+        automatic = False
+    else:
+        number = draw(incidentNumbers(max=maxNumber))
+        automatic = None
+
     return IncidentReport(
-        number=draw(incidentReportNumbers()),
-        created=draw(dateTimes()),
-        summary=draw(text(min_size=1)),
-        reportEntries=sorted(draw(lists(reportEntries()))),
+        number=number,
+        created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
+        summary=draw(incidentReportSummaries()),
+        reportEntries=draw(lists(reportEntries(
+            automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
+        ))),
+    )
+
+
+def incidentReportLists(
+    maxNumber: Optional[int] = None,
+    minSize: Optional[int] = None,
+    maxSize: Optional[int] = None,
+    averageSize: Optional[int] = None,
+) -> List[IncidentReport]:
+    def uniqueBy(incidentReport: IncidentReport) -> Hashable:
+        return cast(Hashable, incidentReport.number)
+
+    return lists(
+        incidentReports(maxNumber=maxNumber),
+        min_size=minSize, max_size=maxSize, average_size=averageSize,
+        unique_by=uniqueBy
     )
 
 
