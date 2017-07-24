@@ -10,10 +10,6 @@ branches:
     - master
 
 
-install:
-  - pip install tox
-
-
 matrix:
   include:
     - python: 3.6
