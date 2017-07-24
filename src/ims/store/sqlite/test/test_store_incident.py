@@ -373,7 +373,7 @@ class DataStoreIncidentTests(DataStoreTests):
     ) -> None:
         """
         :meth:`DataStore.setIncident_priority` updates the priority for the
-        incident with the given number in the data store.
+        given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_priority", "priority", priority
@@ -399,7 +399,7 @@ class DataStoreIncidentTests(DataStoreTests):
     ) -> None:
         """
         :meth:`DataStore.setIncident_summary` updates the summary for the
-        incident with the given number in the data store.
+        given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_summary", "summary", summary
@@ -412,7 +412,7 @@ class DataStoreIncidentTests(DataStoreTests):
     ) -> None:
         """
         :meth:`DataStore.setIncident_locationName` updates the location name
-        for the incident with the given number in the data store.
+        for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_locationName", "location.name", name
@@ -425,8 +425,7 @@ class DataStoreIncidentTests(DataStoreTests):
     ) -> None:
         """
         :meth:`DataStore.setIncident_locationConcentricStreet` updates the
-        location concentric street for the incident with the given number in
-        the data store.
+        location concentric street for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_locationConcentricStreet",
@@ -440,7 +439,7 @@ class DataStoreIncidentTests(DataStoreTests):
     ) -> None:
         """
         :meth:`DataStore.setIncident_locationRadialHour` updates the location
-        radial hour for the incident with the given number in the data store.
+        radial hour for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_locationRadialHour",
@@ -454,7 +453,7 @@ class DataStoreIncidentTests(DataStoreTests):
     ) -> None:
         """
         :meth:`DataStore.setIncident_locationRadialMinute` updates the location
-        radial minute for the incident with the given number in the data store.
+        radial minute for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_locationRadialMinute",
@@ -468,11 +467,24 @@ class DataStoreIncidentTests(DataStoreTests):
     ) -> None:
         """
         :meth:`DataStore.setIncident_locationDescription` updates the location
-        description for the incident with the given number in the data store.
+        description for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_locationDescription",
             "location.address.description", description,
+        )
+
+
+    @given(incidents(new=True), lists(rangerHandles()))
+    def test_setIncident_rangers(
+        self, incident: Incident, rangerHandles: Iterable[str]
+    ) -> None:
+        """
+        :meth:`DataStore.setIncident_rangers` updates the ranger handles for
+        the given incident in the data store.
+        """
+        self._test_setIncidentAttribute(
+            incident, "setIncident_rangers", "rangerHandles", rangerHandles,
         )
 
 
