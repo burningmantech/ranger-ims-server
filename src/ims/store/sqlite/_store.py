@@ -1237,7 +1237,7 @@ class DataStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.setIncident_rangers`.
         """
-        rangerHandles = tuple(rangerHandles)
+        rangerHandles = frozenset(rangerHandles)
 
         autoEntry = self._automaticReportEntry(
             author, now(), "Rangers", rangerHandles
