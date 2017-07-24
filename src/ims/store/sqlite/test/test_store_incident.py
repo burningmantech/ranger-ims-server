@@ -120,6 +120,7 @@ class DataStoreIncidentTests(DataStoreTests):
         store = self.store()
         self.successResultOf(store.createEvent(event))
         store.bringThePain()
+
         f = self.failureResultOf(store.incidents(event))
         self.assertEqual(f.type, StorageError)
 
@@ -180,6 +181,7 @@ class DataStoreIncidentTests(DataStoreTests):
         store = self.store()
         self.successResultOf(store.createEvent(event))
         store.bringThePain()
+
         f = self.failureResultOf(store.incidentWithNumber(event, 1))
         self.assertEqual(f.type, StorageError)
 
@@ -282,6 +284,7 @@ class DataStoreIncidentTests(DataStoreTests):
         store = self.store()
         self.successResultOf(store.createEvent(event))
         store.bringThePain()
+
         f = self.failureResultOf(store.createIncident(
             Incident(
                 event=Event("foo"),
@@ -317,6 +320,7 @@ class DataStoreIncidentTests(DataStoreTests):
             "Hubcap")
         )
         store.bringThePain()
+
         f = self.failureResultOf(
             store.setIncident_priority(
                 event, incident.number, IncidentPriority.high, "Bucket"
@@ -520,6 +524,7 @@ class DataStoreIncidentTests(DataStoreTests):
             "Hubcap")
         )
         store.bringThePain()
+
         f = self.failureResultOf(
             store.setIncident_rangers(
                 event, incident.number, ("Hubcap", "Dingle"), "Bucket"
@@ -563,6 +568,7 @@ class DataStoreIncidentTests(DataStoreTests):
             "Hubcap")
         )
         store.bringThePain()
+
         f = self.failureResultOf(
             store.setIncident_incidentTypes(
                 event, incident.number, ("Fun", "Boring"), "Bucket"
@@ -579,6 +585,10 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident, reportEntries: FrozenSet[ReportEntry],
         author: str
     ) -> None:
+        """
+        :meth:`DataStore.addReportEntriesToIncident` adds the given report
+        entries to the given incident in the data store.
+        """
         # Change author in report entries to match the author so we will use to
         # add them
         reportEntries = frozenset(
@@ -616,6 +626,81 @@ class DataStoreIncidentTests(DataStoreTests):
                 sorted(updatedNewEntries), sorted(reportEntries)
             )
         )
+
+
+    def test_addReportEntriesToIncident_wrongAuthor(self) -> None:
+        """
+        :meth:`DataStore.addReportEntriesToIncident` raises :exc:`ValueError`
+        when given report entries with an author that does not match the author
+        that is adding the entries.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        incident = self.successResultOf(store.createIncident(
+            Incident(
+                event=Event("foo"),
+                number=0,
+                created=DateTime.now(TimeZone.utc),
+                state=IncidentState.new, priority=IncidentPriority.normal,
+                summary="A thing happened",
+                location=Location(name="There", address=None),
+                rangerHandles=(), incidentTypes=(), reportEntries=(),
+            ),
+            "Hubcap")
+        )
+
+        reportEntry = ReportEntry(
+            created=DateTime.now(TimeZone.utc),
+            author="Hubcap",
+            automatic=False,
+            text="Hello",
+        )
+
+        f = self.failureResultOf(
+            store.addReportEntriesToIncident(
+                event, incident.number, (reportEntry,), "Bucket"
+            )
+        )
+        self.assertEqual(f.type, ValueError)
+
+
+    def test_addReportEntriesToIncident_error(self) -> None:
+        """
+        :meth:`DataStore.addReportEntriesToIncident` raises :exc:`ValueError`
+        when given report entries with an author that does not match the author
+        that is adding the entries.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        incident = self.successResultOf(store.createIncident(
+            Incident(
+                event=Event("foo"),
+                number=0,
+                created=DateTime.now(TimeZone.utc),
+                state=IncidentState.new, priority=IncidentPriority.normal,
+                summary="A thing happened",
+                location=Location(name="There", address=None),
+                rangerHandles=(), incidentTypes=(), reportEntries=(),
+            ),
+            "Hubcap")
+        )
+        store.bringThePain()
+
+        reportEntry = ReportEntry(
+            created=DateTime.now(TimeZone.utc),
+            author="Bucket",
+            automatic=False,
+            text="Hello",
+        )
+
+        f = self.failureResultOf(
+            store.addReportEntriesToIncident(
+                event, incident.number, (reportEntry,), "Bucket"
+            )
+        )
+        self.assertEqual(f.type, StorageError)
 
 
     def assertIncidentsEqual(
