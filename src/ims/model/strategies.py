@@ -80,20 +80,33 @@ def timeZones(draw: Callable) -> TimeZone:
     return timeZone
 
 
-def dateTimes() -> DateTime:
+def dateTimes(beforeNow: bool = False, fromNow: bool = False) -> DateTime:
+    assert not (beforeNow and fromNow)
+
     #
     # min_datetime >= UTC epoch because otherwise we can't store dates as UTC
     # timestamps.
     #
-    # We actually add a day below because min_datetime doesn't allow non-naive
-    # values (?!) so that ensures we have a value after the epoch
+    # We actually add a day of fuzz below because min_datetime doesn't allow
+    # non-naive values (?!) so that ensures we have a value after the epoch
     #
     # For all current uses of model date-times in model objects in this module,
     # limiting values to those past the is totally OK.
     #
+    fuzz = TimeDelta(days=1)
+
+    if beforeNow:
+        max = DateTime.now() - fuzz
+    else:
+        max = DateTime(9999, 12, 31, 23, 59, 59, 999999)
+
+    if fromNow:
+        min = DateTime.now() + fuzz
+    else:
+        min = DateTime(1970, 1, 1) + fuzz
+
     return _datetimes(
-        min_datetime=DateTime(1970, 1, 2),
-        timezones=timeZones(),
+        min_datetime=min, max_datetime=max, timezones=timeZones()
     )
 
 
@@ -142,13 +155,14 @@ def addresses() -> Address:
 
 @composite
 def reportEntries(
-    draw: Callable, automatic: Optional[bool] = None
+    draw: Callable, automatic: Optional[bool] = None,
+    beforeNow: bool = False, fromNow: bool = False,
 ) -> ReportEntry:
     if automatic is None:
         automatic = draw(booleans())
 
     return ReportEntry(
-        created=draw(dateTimes()),
+        created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
         author=draw(text(min_size=1)),
         automatic=automatic,
         text=draw(text(min_size=1)),
@@ -182,6 +196,7 @@ def incidents(
     new: bool = False,
     event: Optional[Event] = None,
     maxNumber: Optional[int] = None,
+    beforeNow: bool = False, fromNow: bool = False,
 ) -> Incident:
     automatic: Optional[bool]
     if new:
@@ -197,14 +212,16 @@ def incidents(
     return Incident(
         event=event,
         number=number,
-        created=draw(dateTimes()),
+        created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
         state=draw(incidentStates()),
         priority=draw(incidentPriorities()),
         summary=draw(incidentSummaries()),
         location=draw(locations()),
         rangerHandles=draw(lists(rangerHandles())),
         incidentTypes=draw(lists(incidentTypesText())),
-        reportEntries=draw(lists(reportEntries(automatic=automatic))),
+        reportEntries=draw(lists(reportEntries(
+            automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
+        ))),
     )
 
 
