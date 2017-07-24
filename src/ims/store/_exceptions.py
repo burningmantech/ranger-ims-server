@@ -33,3 +33,10 @@ class NoSuchIncidentError(StorageError):
     """
     No such incident.
     """
+
+
+
+class NoSuchIncidentReportError(StorageError):
+    """
+    No such incident.
+    """

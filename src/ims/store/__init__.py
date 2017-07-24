@@ -25,5 +25,6 @@ from ._exceptions import NoSuchIncidentError, StorageError
 __all__ = (
     "IMSDataStore",
     "NoSuchIncidentError",
+    "NoSuchIncidentReportError",
     "StorageError",
 )
