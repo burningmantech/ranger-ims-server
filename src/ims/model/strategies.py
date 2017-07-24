@@ -23,6 +23,7 @@ from datetime import (
 )
 from typing import Callable, Hashable, List, Optional, cast
 
+from hypothesis import HealthCheck, settings
 from hypothesis.strategies import (
     booleans, composite, datetimes as _datetimes, integers, lists, none,
     one_of, sampled_from, text,
@@ -65,6 +66,13 @@ __all__ = (
     "rodGarettAddresses",
     "textOnlyAddresses",
 )
+
+
+settings.register_profile(
+    "ci", settings(suppress_health_check=[HealthCheck.too_slow])
+)
+if getenv("CI") == "true":
+    settings.load_profile("ci")
 
 
 ##
