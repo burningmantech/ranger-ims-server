@@ -18,15 +18,18 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
+from datetime import datetime as DateTime, timedelta as TimeDelta
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict, Set, Union, cast
+from typing import Dict, Sequence, Set, Union, cast
 
 from attr import attrs
 
 from ims.ext.sqlite import Connection, Cursor, SQLiteError
 from ims.ext.trial import TestCase
-from ims.model import Event, Incident, Location, RodGarettAddress
+from ims.model import (
+    Event, Incident, IncidentReport, Location, ReportEntry, RodGarettAddress
+)
 
 from .._store import DataStore, asTimeStamp, incidentStateAsID, priorityAsID
 
@@ -72,47 +75,6 @@ class DataStoreTests(TestCase):
     # Since it's SQLite, which isn't actually async, that's not a huge deal,
     # except there's a lot of fragile code below.
 
-    def storeConcentricStreet(
-        self, cursor: Union[Connection, Cursor], event: Event, streetID: str,
-        streetName: str, ignoreDuplicates: bool = False,
-    ) -> None:
-        if ignoreDuplicates:
-            ignore = " or ignore"
-        else:
-            ignore = ""
-
-        cursor.execute(
-            dedent(
-                """
-                insert{ignore} into CONCENTRIC_STREET (EVENT, ID, NAME)
-                values (
-                    (select ID from EVENT where NAME = :eventID),
-                    :streetID,
-                    :streetName
-                )
-                """.format(ignore=ignore)
-            ),
-            dict(
-                eventID=event.id, streetID=streetID, streetName=streetName
-            )
-        )
-
-
-    def normalizeAddress(self, incident: Incident) -> Incident:
-        # Normalize address to Rod Garett; DB schema only supports those.
-        address = incident.location.address
-        if address is not None and not isinstance(address, RodGarettAddress):
-            incident = incident.replace(
-                location=Location(
-                    name=incident.location.name,
-                    address=RodGarettAddress(
-                        description=address.description,
-                    )
-                )
-            )
-        return incident
-
-
     def storeIncident(self, store: DataStore, incident: Incident) -> None:
         with store._db as db:
             cursor = db.cursor()
@@ -123,7 +85,7 @@ class DataStoreTests(TestCase):
 
 
     def _storeIncident(self, cursor: Cursor, incident: Incident) -> None:
-        incident = self.normalizeAddress(incident)
+        incident = normalizeAddress(incident)
 
         location = incident.location
         address = cast(RodGarettAddress, location.address)
@@ -145,7 +107,7 @@ class DataStoreTests(TestCase):
             locationDescription  = address.description
 
             if address.concentric is not None:
-                self.storeConcentricStreet(
+                storeConcentricStreet(
                     cursor, incident.event, address.concentric, "Some Street",
                     ignoreDuplicates=True,
                 )
@@ -277,3 +239,94 @@ class DataStoreTests(TestCase):
                     reportEntryID=cursor.lastrowid
                 )
             )
+
+
+    def storeIncidentReport(
+        self, store: DataStore, incidentReport: IncidentReport
+    ) -> None:
+        with store._db as db:
+            cursor = db.cursor()
+            try:
+                storeIncidentReport(cursor, incidentReport)
+            finally:
+                cursor.close()
+
+
+
+def dateTimesEqualish(a: DateTime, b: DateTime) -> bool:
+    """
+    Compare two :class:`DateTimes`.
+    Because floating point math, apply some "close enough" logic to deal with
+    the fact that floats stored in SQLite may be slightly off when retrieved.
+    """
+    return a - b < TimeDelta(microseconds=20)
+
+
+def reportEntriesEqualish(
+    reportEntriesA: Sequence[ReportEntry],
+    reportEntriesB: Sequence[ReportEntry],
+    ignoreAutomatic: bool = False,
+) -> bool:
+    if ignoreAutomatic:
+        reportEntriesA = tuple(
+            e for e in reportEntriesA if not e.automatic
+        )
+
+    if len(reportEntriesA) != len(reportEntriesB):
+        return False
+
+    for entryA, entryB in zip(reportEntriesA, reportEntriesB):
+        if entryA != entryB:
+            if entryA.author != entryB.author:
+                return False
+            if entryA.automatic != entryB.automatic:
+                return False
+            if entryA.text != entryB.text:
+                return False
+            if not dateTimesEqualish(
+                entryA.created, entryB.created
+            ):
+                return False
+
+    return True
+
+
+def storeConcentricStreet(
+    cursor: Union[Connection, Cursor], event: Event, streetID: str,
+    streetName: str, ignoreDuplicates: bool = False,
+) -> None:
+    if ignoreDuplicates:
+        ignore = " or ignore"
+    else:
+        ignore = ""
+
+    cursor.execute(
+        dedent(
+            """
+            insert{ignore} into CONCENTRIC_STREET (EVENT, ID, NAME)
+            values (
+                (select ID from EVENT where NAME = :eventID),
+                :streetID,
+                :streetName
+            )
+            """.format(ignore=ignore)
+        ),
+        dict(
+            eventID=event.id, streetID=streetID, streetName=streetName
+        )
+    )
+
+
+def normalizeAddress(incident: Incident) -> Incident:
+    # Normalize address to Rod Garett; DB schema only supports those.
+    address = incident.location.address
+    if address is not None and not isinstance(address, RodGarettAddress):
+        incident = incident.replace(
+            location=Location(
+                name=incident.location.name,
+                address=RodGarettAddress(
+                    description=address.description,
+                )
+            )
+        )
+    return incident

@@ -19,11 +19,9 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
 from collections import defaultdict
-from datetime import (
-    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
-)
+from datetime import datetime as DateTime, timezone as TimeZone
 from typing import (
-    Any, Dict, FrozenSet, Iterable, Optional, Sequence, Set, Tuple
+    Any, Dict, FrozenSet, Iterable, Optional, Set, Tuple
 )
 
 from attr import fields as attrFields
@@ -42,7 +40,10 @@ from ims.model.strategies import (
     radialHours, radialMinutes, rangerHandles, reportEntries,
 )
 
-from .base import DataStoreTests
+from .base import (
+    DataStoreTests, dateTimesEqualish, normalizeAddress, reportEntriesEqualish,
+    storeConcentricStreet,
+)
 from ..._exceptions import NoSuchIncidentError, StorageError
 
 Dict, Event, Optional, Set  # silence linter
@@ -62,6 +63,8 @@ class DataStoreIncidentTests(DataStoreTests):
         """
         :meth:`DataStore.incidents` returns all incidents.
         """
+        incidents = tuple(incidents)
+
         events: Dict[Event, Dict[int, Incident]] = defaultdict(defaultdict)
 
         store = self.store()
@@ -73,6 +76,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
             events[incident.event][incident.number] = incident
 
+        found: Set[Tuple[Event, int]] = set()
         for event in events:
             for retrieved in self.successResultOf(
                 store.incidents(event)
@@ -80,6 +84,9 @@ class DataStoreIncidentTests(DataStoreTests):
                 self.assertIncidentsEqual(
                     retrieved, events[event][retrieved.number]
                 )
+                found.add((event, retrieved.number))
+
+        self.assertEqual(found, set(((i.event, i.number) for i in incidents)))
 
 
     @given(
@@ -341,7 +348,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
         # For concentric streets, we need to make sure they exist first.
         if attributeName == "location.address.concentric":
-            self.storeConcentricStreet(
+            storeConcentricStreet(
                 store._db, incident.event, value, "Concentric Street",
                 ignoreDuplicates=True,
             )
@@ -365,7 +372,7 @@ class DataStoreIncidentTests(DataStoreTests):
         # Don't normalize before calling the setter; we want to test that
         # giving it un-normalized data works.
         if attributeName.startswith("location.address."):
-            incident = self.normalizeAddress(incident)
+            incident = normalizeAddress(incident)
 
         # Replace the specified incident attribute with the given value.
         # This is a bit complex because we're recursing into sub-attributes.
@@ -735,41 +742,3 @@ class DataStoreIncidentTests(DataStoreTests):
 
             if messages:
                 self.fail("Incidents do not match:\n" + "\n".join(messages))
-
-
-
-def dateTimesEqualish(a: DateTime, b: DateTime) -> bool:
-    """
-    Compare two :class:`DateTimes`.
-    Because floating point math, apply some "close enough" logic.
-    """
-    return a - b < TimeDelta(microseconds=20)
-
-
-def reportEntriesEqualish(
-    reportEntriesA: Sequence[ReportEntry],
-    reportEntriesB: Sequence[ReportEntry],
-    ignoreAutomatic: bool = False,
-) -> bool:
-    if ignoreAutomatic:
-        reportEntriesA = tuple(
-            e for e in reportEntriesA if not e.automatic
-        )
-
-    if len(reportEntriesA) != len(reportEntriesB):
-        return False
-
-    for entryA, entryB in zip(reportEntriesA, reportEntriesB):
-        if entryA != entryB:
-            if entryA.author != entryB.author:
-                return False
-            if entryA.automatic != entryB.automatic:
-                return False
-            if entryA.text != entryB.text:
-                return False
-            if not dateTimesEqualish(
-                entryA.created, entryB.created
-            ):
-                return False
-
-    return True
