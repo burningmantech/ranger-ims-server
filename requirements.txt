@@ -8,7 +8,7 @@
 
     hyperlink==17.2.1
 
-    #Twisted[TLS]==17.5.0
+    #Twisted[TLS,http2]==17.5.0
     git+https://github.com/twisted/twisted.git#egg=Twisted
         zope.interface==4.4.2
             setuptools==36.0.1
