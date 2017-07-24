@@ -1687,6 +1687,12 @@ class DataStore(IMSDataStore):
         reportEntries = tuple(reportEntries)
 
         for reportEntry in reportEntries:
+            if reportEntry.automatic:
+                raise ValueError(
+                    "Automatic report entry {} may not be created by user {}"
+                    .format(reportEntry, author)
+                )
+
             if reportEntry.author != author:
                 raise ValueError(
                     "Report entry {} has author != {}"
