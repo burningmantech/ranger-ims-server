@@ -486,7 +486,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
             ))
             self.assertMultipleIncidentReportsEqual(storedAttached, reports)
 
-
             foundIncidentNumbers.add(incident.number)
 
         storedDetached = tuple(
