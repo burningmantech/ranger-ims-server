@@ -2,9 +2,11 @@
 Tests for :mod:`ranger-ims-server.ext.klein`
 """
 
+from klein.test.test_resource import Klein, requestMock
+
 from twisted.web.iweb import IRequest
 
-from ..klein import Klein, KleinRenderable, requestMock, static
+from ..klein import KleinRenderable, static
 from ..trial import TestCase
 
 

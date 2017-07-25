@@ -20,11 +20,12 @@ Tests for :mod:`ranger-ims-server.model.json._address`
 
 from hypothesis import given
 
+from ims.ext.trial import TestCase
+
 from .json import jsonFromRodGarettAddress, jsonFromTextOnlyAddress
-from .strategies import rodGarettAddresses, textOnlyAddresses
 from .._json import jsonDeserialize, jsonSerialize
 from ..._address import RodGarettAddress, TextOnlyAddress
-from ....ext.trial import TestCase
+from ...strategies import rodGarettAddresses, textOnlyAddresses
 
 
 __all__ = ()

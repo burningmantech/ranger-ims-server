@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_report -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -20,9 +22,17 @@ Incident Report
 
 from collections.abc import Iterable
 from datetime import datetime as DateTime
+from typing import Optional, Sequence
+
+from attr import attrib, attrs
+from attr.validators import instance_of, optional
+
+from ims.ext.attr import sorted_tuple
 
 from ._incident import summaryFromReport
-from ..ext.attr import attrib, attrs, instanceOf, optional, sortedTuple
+from ._replace import ReplaceMixIn
+
+Optional, Sequence  # Silence linter
 
 
 __all__ = ()
@@ -30,17 +40,25 @@ __all__ = ()
 
 
 @attrs(frozen=True)
-class IncidentReport(object):
+class IncidentReport(ReplaceMixIn):
     """
     Incident
     """
 
     # FIXME: better validator for reportEntries
 
-    number        = attrib(validator=instanceOf(int))
-    created       = attrib(validator=instanceOf(DateTime))
-    summary       = attrib(validator=optional(instanceOf(str)))
-    reportEntries = attrib(validator=instanceOf(Iterable), convert=sortedTuple)
+    number: int = attrib(
+        validator=instance_of(int)
+    )
+    created: DateTime = attrib(
+        validator=instance_of(DateTime)
+    )
+    summary: Optional[str] = attrib(
+        validator=optional(instance_of(str))
+    )
+    reportEntries: Sequence = attrib(
+        validator=instance_of(Iterable), convert=sorted_tuple
+    )
 
 
     def __str__(self) -> str:

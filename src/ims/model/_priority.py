@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_priority -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -18,7 +20,7 @@
 Incident priority
 """
 
-from ..ext.enum import Enum, enumOrdering, unique
+from ims.ext.enum import Enum, enumOrdering, unique
 
 
 __all__ = ()
@@ -38,3 +40,11 @@ class IncidentPriority(Enum):
     high   = object()
     normal = object()
     low    = object()
+
+
+    def __repr__(self) -> str:
+        return "{}[{!r}]".format(self.__class__.__name__, self.name)
+
+
+    def __str__(self) -> str:
+        return self.name

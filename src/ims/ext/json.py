@@ -4,8 +4,10 @@ Extensions to :mod:`json`
 """
 
 from datetime import date as Date, datetime as DateTime
-from json import JSONDecodeError, JSONEncoder, dumps, loads
+from io import TextIOWrapper
+from json import JSONDecodeError, JSONEncoder, dumps, load, loads
 from typing import Any, Optional
+from typing.io import BinaryIO
 
 from arrow.parser import DateTimeParser
 
@@ -49,7 +51,7 @@ def jsonTextFromObject(obj: Any, pretty: bool = False) -> str:
     """
     if pretty:
         separators = (",", ": ")
-        indent = 2  # type: Optional[int]
+        indent: Optional[int] = 2
         sortKeys = True
     else:
         separators = (",", ":")
@@ -79,6 +81,15 @@ def objectFromJSONText(text: str) -> Any:
             doc=e.doc,
             pos=e.pos,
         )
+
+
+
+def objectFromJSONBytesIO(io: BinaryIO, encoding: str = "utf-8") -> Any:
+    """
+    Covert JSON text from a byte stream into an object.
+    """
+    textIO = TextIOWrapper(io, encoding=encoding, newline="")
+    return load(textIO)
 
 
 

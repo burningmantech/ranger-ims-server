@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_state -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -18,10 +20,19 @@
 Incident state
 """
 
-from ..ext.enum import Enum, enumOrdering, unique
+from ims.ext.enum import Enum, enumOrdering, unique
 
 
 __all__ = ()
+
+
+stateDescriptions = {
+    "new":        "new",
+    "onHold":     "on hold",
+    "dispatched": "dispatched",
+    "onScene":    "on scene",
+    "closed":     "closed",
+}
 
 
 
@@ -54,3 +65,11 @@ class IncidentState(Enum):
     dispatched = object()
     onScene    = object()
     closed     = object()
+
+
+    def __repr__(self) -> str:
+        return "{}[{!r}]".format(self.__class__.__name__, self.name)
+
+
+    def __str__(self) -> str:
+        return stateDescriptions[self.name]

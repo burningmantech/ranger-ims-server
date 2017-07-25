@@ -1,16 +1,24 @@
 --editable .  # Get self and dependencies from setup.py
 
-    attrs==17.1.0
-    cattrs==0.2.0
+    attrs==17.2.0
+    #cattrs==0.3.0
+    git+https://github.com/Tinche/cattrs.git@5105dc7f91df6c08d90382e29add0d458ad9eb5c#egg=cattrs
 
     arrow==0.10.0
 
-    Twisted==17.1.0
-        zope.interface==4.4.1
-            setuptools==35.0.2
+    hyperlink==17.2.1
+
+    #Twisted[TLS,http2]==17.5.0
+    git+https://github.com/twisted/twisted.git#egg=Twisted
+        zope.interface==4.4.2
+            setuptools==36.0.1
+        pyOpenSSL==17.1.0
+        service_identity==17.0.0
+        h2==3.0.1
+        priority==1.3.0
 
     klein==17.2.0
-        #twisted ...
+        #Twisted ...
         Werkzeug==0.12.2
 
     # MySQL
@@ -18,4 +26,4 @@
 
     --editable git+https://github.com/apple/ccs-twistedextensions.git#egg=twextpy
         cffi==1.10.0
-        #twisted ...
+        #Twisted ...

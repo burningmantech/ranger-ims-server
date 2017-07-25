@@ -29,7 +29,7 @@ from ..._location import Location
 from ..._priority import IncidentPriority
 from ..._report import IncidentReport
 from ..._state import IncidentState
-from ..._type import IncidentType
+from ..._type import KnownIncidentType
 
 
 __all__ = ()
@@ -87,7 +87,9 @@ def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
         priority=jsonSerialize(incident.priority),
         summary=jsonSerialize(incident.summary),
         location=jsonSerialize(incident.location),
-        ranger_handles=frozenset(jsonSerialize(r) for r in incident.rangers),
+        ranger_handles=frozenset(
+            jsonSerialize(r) for r in incident.rangerHandles
+        ),
         incident_types=frozenset(
             jsonSerialize(t) for t in incident.incidentTypes
         ),
@@ -151,5 +153,5 @@ def jsonFromIncidentState(state: IncidentState) -> str:
 # Type
 ##
 
-def jsonFromIncidentType(incidentType: IncidentType) -> str:
+def jsonFromKnownIncidentType(incidentType: KnownIncidentType) -> str:
     return incidentType.value

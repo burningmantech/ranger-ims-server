@@ -23,7 +23,13 @@ Report entry
 from datetime import datetime as DateTime
 from typing import Any
 
-from ..ext.attr import attrib, attrs, instanceOf, true
+from attr import attrib, attrs
+from attr.validators import instance_of
+
+from ims.ext.attr import true
+
+from ._cmp import ComparisonMixIn
+from ._replace import ReplaceMixIn
 
 
 __all__ = ()
@@ -31,52 +37,29 @@ __all__ = ()
 
 
 @attrs(frozen=True, cmp=False)
-class ReportEntry(object):
+class ReportEntry(ComparisonMixIn, ReplaceMixIn):
     """
     Report entry
 
     A report entry is text with an associated author and time stamp.
     """
 
-    created   = attrib(validator=instanceOf(DateTime))
-    author    = attrib(validator=true(instanceOf(str)))
-    automatic = attrib(validator=instanceOf(bool))
-    text      = attrib(validator=true(instanceOf(str)))
+    created: DateTime = attrib(validator=instance_of(DateTime))
+    author: str = attrib(validator=true(instance_of(str)))
+    automatic: bool = attrib(validator=instance_of(bool))
+    text: str = attrib(validator=true(instance_of(str)))
 
 
-    def _cmpKey(self) -> Any:
-        return (self.created, self.author, not self.automatic, self.text)
-
-
-    def _cmp(self, other: Any, methodName: str) -> bool:
-        if other.__class__ is self.__class__:
-            selfKey = self._cmpKey()
-            otherKey = other._cmpKey()
-            selfKeyCmp = getattr(selfKey, methodName)
-            return selfKeyCmp(otherKey)
+    def __str__(self) -> str:
+        if self.automatic:
+            automatic = "*"
         else:
-            return NotImplemented
+            automatic = ""
+
+        return "{} {}{}: {}".format(
+            self.created, self.author, automatic, self.text
+        )
 
 
-    def __eq__(self, other: Any) -> bool:
-        return self._cmp(other, "__eq__")
-
-
-    def __ne__(self, other: Any) -> bool:
-        return self._cmp(other, "__ne__")
-
-
-    def __lt__(self, other: Any) -> bool:
-        return self._cmp(other, "__lt__")
-
-
-    def __le__(self, other: Any) -> bool:
-        return self._cmp(other, "__le__")
-
-
-    def __gt__(self, other: Any) -> bool:
-        return self._cmp(other, "__gt__")
-
-
-    def __ge__(self, other: Any) -> bool:
-        return self._cmp(other, "__ge__")
+    def _cmpValue(self) -> Any:
+        return (self.created, self.author, not self.automatic, self.text)

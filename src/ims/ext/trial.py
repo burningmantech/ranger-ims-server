@@ -11,7 +11,7 @@ from twisted.trial.unittest import SynchronousTestCase
 from twisted.web import http
 from twisted.web.iweb import IRequest
 
-from ..ext.klein import ContentType
+from .klein import ContentType
 
 
 __all__ = (
@@ -62,6 +62,26 @@ class TestCase(SynchronousTestCase):
             return None
         self.assertEqual(len(values), 1)
         return values[0]
+
+
+    def assertStartsWith(self, string: str, prefix: str) -> None:
+        """
+        Assert that the given string starts with the given prefix.
+        """
+        if len(prefix) < len(string):
+            self.assertEqual(prefix, string[:len(prefix)])
+        else:
+            self.assertEqual(prefix, string)
+
+
+    def assertEndsWith(self, string: str, suffix: str) -> None:
+        """
+        Assert that the given string ends with the given suffix.
+        """
+        if len(suffix) < len(string):
+            self.assertEqual(suffix, string[-len(suffix):])
+        else:
+            self.assertEqual(suffix, string)
 
 
     def assertResponseCode(self, request: IRequest, code: int) -> None:

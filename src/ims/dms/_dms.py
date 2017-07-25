@@ -18,17 +18,21 @@
 Duty Management System.
 """
 
+from hashlib import sha1
+from os import urandom
 from time import time
+from typing import Iterable, Mapping, Optional, Sequence, Set, Tuple
 
 from pymysql import (
     DatabaseError as SQLDatabaseError, OperationalError as SQLOperationalError
 )
 
 from twisted.enterprise import adbapi
-from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.logger import Logger
 
-from ..data.model import Ranger
+from ims.model import Ranger, RangerStatus
+
+Set, Sequence  # silence linter
 
 
 __all__ = (
@@ -53,6 +57,18 @@ class DatabaseError(DMSError):
 
 
 
+class Position(object):
+    """
+    A Ranger position.
+    """
+
+    def __init__(self, positionID: str, name: str) -> None:
+        self.positionID = positionID
+        self.name = name
+        self.members: Set[Ranger] = set()
+
+
+
 class DutyManagementSystem(object):
     """
     Duty Management System
@@ -60,7 +76,7 @@ class DutyManagementSystem(object):
     This class connects to an external system to get data.
     """
 
-    log = Logger()
+    _log = Logger()
 
     # DMS data changes rarely, so hour intervals between refreshing data should
     # be fine.
@@ -70,33 +86,32 @@ class DutyManagementSystem(object):
     personnelCacheIntervalMax = 60 * 60 * 12  # 12 hours
 
 
-    def __init__(self, host, database, username, password):
+    def __init__(
+        self, host: Optional[str], database: Optional[str],
+        username: Optional[str], password: Optional[str],
+    ) -> None:
         """
         @param host: The name of the database host to connect to.
-        @type host: L{str}
 
         @param database: The name of the database to access.
-        @type database: L{str}
 
         @param username: The user name to use to access the database.
-        @type username: L{str}
 
         @param password: The password to use to access the database.
-        @type password: L{str}
         """
         self.host     = host
         self.database = database
         self.username = username
         self.password = password
 
-        self._personnel = ()
-        self._personnelLastUpdated = 0
-        self._dbpool = None
+        self._personnel: Sequence[Ranger] = ()
+        self._personnelLastUpdated = 0.0
+        self._dbpool: Optional[adbapi.ConnectionPool] = None
         self._busy = False
 
 
     @property
-    def dbpool(self):
+    def dbpool(self) -> adbapi.ConnectionPool:
         """
         Set up a database pool if needed and return it.
         """
@@ -127,33 +142,26 @@ class DutyManagementSystem(object):
         return self._dbpool
 
 
-    def _queryPositions(self):
-        self.log.info(
+    async def _queryPositionsByID(self) -> Mapping[str, Position]:
+        self._log.info(
             "Retrieving positions from Duty Management System..."
         )
 
-        d = self.dbpool.runQuery(
+        rows = await self.dbpool.runQuery(
             """
             select id, title from position where all_rangers = 0
             """
         )
 
-        def gotRows(rows):
-            return dict(
-                (id, Position(id, title.decode("utf-8")))
-                for (id, title) in rows
-            )
-
-        d.addCallback(gotRows)
-        return d
+        return dict((id, Position(id, title)) for (id, title) in rows)
 
 
-    def _queryRangers(self):
-        self.log.info(
+    async def _queryRangersByID(self) -> Mapping[str, Ranger]:
+        self._log.info(
             "Retrieving personnel from Duty Management System..."
         )
 
-        d = self.dbpool.runQuery(
+        rows = await self.dbpool.runQuery(
             """
             select
                 id,
@@ -163,55 +171,50 @@ class DutyManagementSystem(object):
             """
         )
 
-        def gotRows(rows):
-            return dict(
-                (
-                    dmsID,
-                    Ranger(
-                        handle, fullName(first, middle, last), status,
-                        dmsID=int(dmsID),
-                        email=email,
-                        onSite=bool(onSite),
-                        password=password,
-                    )
+        return dict(
+            (
+                dmsID,
+                Ranger(
+                    handle=handle,
+                    name=fullName(first, middle, last),
+                    status=statusFromID(status),
+                    email=(email,),
+                    onSite=bool(onSite),
+                    dmsID=int(dmsID),
+                    password=password,
                 )
-                for (
-                    dmsID, handle, first, middle, last, email,
-                    status, onSite, password,
-                ) in rows
             )
+            for (
+                dmsID, handle, first, middle, last, email,
+                status, onSite, password,
+            ) in rows
+        )
 
-        d.addCallback(gotRows)
-        return d
 
-
-    def _queryPositionRangerJoin(self):
-        self.log.info(
+    async def _queryPositionRangerJoin(self) -> Iterable[Tuple[str, str]]:
+        self._log.info(
             "Retrieving position-personnel relations from "
             "Duty Management System..."
         )
 
-        d = self.dbpool.runQuery(
+        return await self.dbpool.runQuery(
             """
             select person_id, position_id from person_position
             """
         )
-        return d
 
 
-    def positions(self):
+    async def positions(self) -> Iterable[Position]:
         """
         Look up all positions.
         """
         # Call self.personnel() to make sure we have current data, then return
         # self._positions, which will have been set.
-        d = self.personnel()
-        d.addCallback(lambda _: self._positions)
-        return d
+        await self.personnel()
+        return self._positions
 
 
-    @inlineCallbacks
-    def personnel(self):
+    async def personnel(self) -> Iterable[Ranger]:
         """
         Look up all personnel.
         """
@@ -222,9 +225,9 @@ class DutyManagementSystem(object):
             self._busy = True
             try:
                 try:
-                    rangersByID = yield self._queryRangers()
-                    positionsByID = yield self._queryPositions()
-                    join = yield self._queryPositionRangerJoin()
+                    rangersByID = await self._queryRangersByID()
+                    positionsByID = await self._queryPositionsByID()
+                    join = await self._queryPositionRangerJoin()
 
                     for rangerID, positionID in join:
                         position = positionsByID.get(positionID, None)
@@ -244,12 +247,12 @@ class DutyManagementSystem(object):
                     self._dbpool = None
 
                     if isinstance(e, (SQLDatabaseError, SQLOperationalError)):
-                        self.log.warn(
+                        self._log.warn(
                             "Unable to load personnel data from DMS: {error}",
                             error=e
                         )
                     else:
-                        self.log.failure(
+                        self._log.failure(
                             "Unable to load personnel data from DMS"
                         )
 
@@ -260,25 +263,13 @@ class DutyManagementSystem(object):
                 self._busy = False
 
         try:
-            returnValue(self._personnel)
+            return self._personnel
         except AttributeError:
             raise DMSError("No personnel data loaded.")
 
 
 
-class Position(object):
-    """
-    A Ranger position.
-    """
-
-    def __init__(self, positionID, name):
-        self.positionID = positionID
-        self.name = name
-        self.members = set()
-
-
-
-def fullName(first, middle, last):
+def fullName(first: str, middle: str, last: str) -> str:
     """
     Compose parts of a name into a full name.
     """
@@ -288,3 +279,42 @@ def fullName(first, middle, last):
         format = "{first} {last}"
 
     return format.format(first=first, middle=middle, last=last)
+
+
+def statusFromID(strValue: str) -> RangerStatus:
+    return {
+        "active":      RangerStatus.active,
+        "alpha":       RangerStatus.alpha,
+        "bonked":      RangerStatus.bonked,
+        "deceased":    RangerStatus.deceased,
+        "inactive":    RangerStatus.inactive,
+        "prospective": RangerStatus.prospective,
+        "retired":     RangerStatus.retired,
+        "uberbonked":  RangerStatus.uberbonked,
+        "vintage":     RangerStatus.vintage,
+    }.get(strValue, RangerStatus.other)
+
+
+def hashPassword(password: str, salt: Optional[str] = None) -> str:
+    """
+    Compute a has for the given password
+    """
+    if salt is None:
+        salt = urandom(16).decode("charmap")
+
+    return salt + ":" + sha1(password.encode("utf-8")).hexdigest()
+
+
+def verifyPassword(password: str, hashedPassword: str) -> bool:
+    """
+    Verify a password against a hashed password.
+    """
+    # Reference Clubhouse code: standard/controllers/security.php#L457
+
+    # DMS password field is a salt and a SHA-1 hash (hex digest), separated by
+    # ":".
+    salt, hashValue = hashedPassword.split(":")
+
+    hashed = sha1((salt + password).encode("utf-8")).hexdigest()
+
+    return hashed == hashValue

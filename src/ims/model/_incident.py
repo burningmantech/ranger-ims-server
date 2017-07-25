@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_incident -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -20,14 +22,21 @@ Incident
 
 from collections.abc import Iterable as IterableABC
 from datetime import datetime as DateTime
-from typing import Iterable, Optional
+from typing import AbstractSet, Iterable, Optional, Sequence
+
+from attr import attrib, attrs
+from attr.validators import instance_of, optional
+
+from ims.ext.attr import sorted_tuple
 
 from ._entry import ReportEntry
 from ._event import Event
 from ._location import Location
 from ._priority import IncidentPriority
+from ._replace import ReplaceMixIn
 from ._state import IncidentState
-from ..ext.attr import attrib, attrs, instanceOf, optional, sortedTuple
+
+AbstractSet, Sequence  # silence linter
 
 
 __all__ = ()
@@ -35,35 +44,49 @@ __all__ = ()
 
 
 @attrs(frozen=True)
-class Incident(object):
+class Incident(ReplaceMixIn):
     """
     Incident
     """
 
     # FIXME: better validator for IterableABC attrs
 
-    event    = attrib(validator=instanceOf(Event))
-    number   = attrib(validator=instanceOf(int))
-    created  = attrib(validator=instanceOf(DateTime))
-    state    = attrib(validator=instanceOf(IncidentState))
-    priority = attrib(validator=instanceOf(IncidentPriority))
-    summary  = attrib(validator=optional(instanceOf(str)))
-    location = attrib(validator=instanceOf(Location))
+    event: Event = attrib(
+        validator=instance_of(Event)
+    )
+    number: int = attrib(
+        validator=instance_of(int)
+    )
+    created: DateTime = attrib(
+        validator=instance_of(DateTime)
+    )
+    state: IncidentState = attrib(
+        validator=instance_of(IncidentState)
+    )
+    priority: IncidentPriority = attrib(
+        validator=instance_of(IncidentPriority)
+    )
+    summary: Optional[str] = attrib(
+        validator=optional(instance_of(str))
+    )
+    location: Location = attrib(
+        validator=instance_of(Location)
+    )
 
-    rangers = attrib(
-        validator=instanceOf(IterableABC), convert=frozenset
+    rangerHandles: AbstractSet[str] = attrib(
+        validator=instance_of(IterableABC), convert=frozenset
     )
-    incidentTypes = attrib(
-        validator=instanceOf(IterableABC), convert=frozenset
+    incidentTypes: AbstractSet[str] = attrib(
+        validator=instance_of(IterableABC), convert=frozenset
     )
-    reportEntries = attrib(
-        validator=instanceOf(IterableABC), convert=sortedTuple
+    reportEntries: Sequence[ReportEntry] = attrib(
+        validator=instance_of(IterableABC), convert=sorted_tuple
     )
 
 
     def __str__(self) -> str:
         return (
-            "{self.number}: {summary}".format(
+            "{self.event} #{self.number}: {summary}".format(
                 self=self,
                 summary=self.summaryFromReport()
             )

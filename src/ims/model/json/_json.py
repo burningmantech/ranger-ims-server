@@ -23,20 +23,18 @@ from typing import Any, Type
 
 from cattr import Converter
 
-from ...ext.json import (
-    dateTimeAsRFC3339Text, jsonTextFromObject, rfc3339TextAsDateTime
-)
+from ims.ext.json import dateTimeAsRFC3339Text, rfc3339TextAsDateTime
 
 
 __all__ = ()
 
 
 converter = Converter()
-jsonSerialize = converter.dumps
-jsonDeserialize = converter.loads
+jsonSerialize = converter.unstructure
+jsonDeserialize = converter.structure
 
-registerSerializer = converter.register_dumps_hook
-registerDeserializer = converter.register_loads_hook
+registerSerializer = converter.register_unstructure_hook
+registerDeserializer = converter.register_structure_hook
 
 
 # Serialization hooks
@@ -46,7 +44,7 @@ registerSerializer(DateTime, dateTimeAsRFC3339Text)
 
 # Deserialization hooks
 
-def deserializeDateTime(cl: Type, obj: str) -> DateTime:
+def deserializeDateTime(obj: str, cl: Type) -> DateTime:
     assert cl is DateTime, (cl, obj)
 
     return rfc3339TextAsDateTime(obj)
@@ -55,7 +53,9 @@ def deserializeDateTime(cl: Type, obj: str) -> DateTime:
 registerDeserializer(DateTime, deserializeDateTime)
 
 
-def jsonTextFromModelObject(
-    object: Any, pretty: bool = False
-) -> str:
-    return jsonTextFromObject(jsonSerialize(object), pretty=pretty)
+def jsonObjectFromModelObject(object: Any) -> Any:
+    return jsonSerialize(object)
+
+
+def modelObjectFromJSONObject(object: Any, modelClass: type) -> Any:
+    return jsonDeserialize(object, modelClass)

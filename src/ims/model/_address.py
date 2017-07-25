@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_address -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -19,11 +21,21 @@ Address
 """
 
 from abc import ABC
+from typing import Any, Optional, TypeVar
 
-from ..ext.attr import attrib, attrs, instanceOf
+from attr import attrib, attrs
+from attr.validators import instance_of, optional
+
+from ._cmp import ComparisonMixIn
+from ._replace import ReplaceMixIn
+
+Optional  # Silence linter
 
 
 __all__ = ()
+
+
+TRodGarettAddress = TypeVar("TRodGarettAddress", bound="RodGarettAddress")
 
 
 
@@ -32,22 +44,37 @@ class Address(ABC):
     Location address
     """
 
+    description: Optional[str]
 
 
-@attrs(frozen=True)
-class TextOnlyAddress(Address):
+
+@attrs(frozen=True, cmp=False)
+class TextOnlyAddress(Address, ComparisonMixIn):
     """
     Address
 
     An address contains a description of a location.
     """
 
-    description = attrib(validator=instanceOf(str))
+    description: Optional[str] = attrib(
+        validator=optional(instance_of(str)), default=None
+    )
+
+
+    def _cmpValue(self) -> Any:
+        return self.description
+
+
+    def _cmp(self, other: Any, methodName: str) -> bool:
+        if other is None:
+            return self.description is None
+
+        return ComparisonMixIn._cmp(self, other, methodName)
 
 
 
-@attrs(frozen=True)
-class RodGarettAddress(Address):
+@attrs(frozen=True, cmp=False)
+class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
     """
     Rod Garett Address
 
@@ -55,7 +82,48 @@ class RodGarettAddress(Address):
     Black Rock City.
     """
 
-    concentric   = attrib(validator=instanceOf(int))  # FIXME: validator
-    radialHour   = attrib(validator=instanceOf(int))  # FIXME: validator
-    radialMinute = attrib(validator=instanceOf(int))  # FIXME: validator
-    description  = attrib(validator=instanceOf(str))
+    description: Optional[str] = attrib(
+        validator=optional(instance_of(str)), default=None
+    )
+    concentric: Optional[str] = attrib(
+        validator=optional(instance_of(str)), default=None
+    )
+    radialHour: Optional[int] = attrib(
+        validator=optional(instance_of(int)), default=None
+    )
+    radialMinute: Optional[int] = attrib(
+        validator=optional(instance_of(int)), default=None
+    )
+
+
+    def _allNone(self) -> bool:
+        return (
+            self.concentric is None and
+            self.radialHour is None and
+            self.radialMinute is None
+        )
+
+
+    def _cmpValue(self) -> Any:
+        return (
+            self.concentric, self.radialHour, self.radialMinute,
+            self.description,
+        )
+
+
+    def _cmp(self, other: Any, methodName: str) -> bool:
+        if other is None:
+            return self._allNone()
+
+        if other.__class__ is TextOnlyAddress:
+            if self._allNone():
+                return getattr(self.description, methodName)(other.description)
+
+        return ComparisonMixIn._cmp(self, other, methodName)
+
+
+    def __hash__(self) -> int:
+        if self._allNone():
+            return hash(self.description)
+
+        return ComparisonMixIn.__hash__(self)

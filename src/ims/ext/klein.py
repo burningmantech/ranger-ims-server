@@ -7,9 +7,6 @@ from enum import Enum
 from functools import wraps
 from typing import Any, Awaitable, Callable, Union
 
-from klein import Klein as SuperKlein
-from klein.test.test_resource import _render as renderRequest, requestMock
-
 from twisted.web.iweb import IRenderable, IRequest
 from twisted.web.resource import IResource
 
@@ -19,12 +16,9 @@ from .. import __version__ as version
 __all__ = (
     "ContentType",
     "HeaderName",
-    "Klein",
     "KleinRenderable",
     "KleinRouteMethod",
     "Method",
-    "renderRequest",
-    "requestMock",
     "static",
 )
 
@@ -34,17 +28,6 @@ KleinRenderable = Union[str, IResource, IRenderable]
 KleinRouteMethod = Callable[
     ..., Union[KleinRenderable, Awaitable[KleinRenderable]]
 ]
-
-
-# Subclass Klein so that we can override its documentation to work with Sphinx;
-# Klein uses epydoc syntax, which is not compatible, and because the router
-# is an attribute of each application, its doc string shows up in our
-# documentation.
-
-class Klein(SuperKlein):
-    """
-    Request router.
-    """
 
 
 

@@ -22,8 +22,8 @@ Setuptools configuration
 
 import sys
 
-if sys.version_info < (3, 5, 0):
-    sys.stderr.write("ERROR: Python 3.5 or later is required.\n")
+if sys.version_info < (3, 6, 0):
+    sys.stderr.write("ERROR: Python 3.6 or later is required.\n")
     exit(1)
 
 from pathlib import Path  # noqa
@@ -80,12 +80,12 @@ entry_points = {
 }
 
 script_entry_points = {
-    "web"         : ("ims.service.tool", "WebTool.main"),
-    "endpoints"   : ("ims.service.tool", "KleinTool.main"),
-    "schema"      : ("ims.store.sqlite", "Storage.printSchema"),
-    "queries"     : ("ims.store.sqlite", "Storage.printQueries"),
-    "load_legacy" : ("ims.service.tool", "LegacyLoadTool.main"),
-    "load_json"   : ("ims.service.tool", "JSONLoadTool.main"),
+    "web"         : ("ims.legacy.service.tool", "WebTool.main"),
+    "endpoints"   : ("ims.legacy.service.tool", "KleinTool.main"),
+    "schema"      : ("ims.store.sqlite", "DataStore.printSchema"),
+    "queries"     : ("ims.store.sqlite", "DataStore.printQueries"),
+    "load_legacy" : ("ims.legacy.service.tool", "LegacyLoadTool.main"),
+    "load_json"   : ("ims.legacy.service.tool", "JSONLoadTool.main"),
 }
 
 for tool, (module, function) in script_entry_points.items():
@@ -100,9 +100,12 @@ for tool, (module, function) in script_entry_points.items():
 
 package_data = dict(
     ims = [
-        "service/test/empty.conf",
-        "service/test/test.conf",
-        "store/schema.sqlite",
+        "legacy/element/*.css",
+        "legacy/element/*.js",
+        "legacy/element/*.png",
+        "legacy/element/*.xhtml",
+        "legacy/service/test/*.conf",
+        "store/sqlite/schema.sqlite",
     ],
 )
 
@@ -114,12 +117,13 @@ package_data = dict(
 setup_requirements = []
 
 install_requirements = [
-    "attr",
     "arrow",
-    "Twisted>=16.6.0",
+    "attrs",
+    "hyperlink",
     "klein",
     "PyMySQL",
     "twextpy",
+    "Twisted[TLS,http2]>=17.5.0",
 ]
 
 extras_requirements = {}

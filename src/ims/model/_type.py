@@ -26,9 +26,9 @@ __all__ = ()
 
 
 @unique
-class IncidentType(Enum):
+class KnownIncidentType(Enum):
     """
-    Incident types
+    Known incident types
 
     Incident types are a means to categorize incidents.
     Incident types are generally represented as (arbitrary) strings.

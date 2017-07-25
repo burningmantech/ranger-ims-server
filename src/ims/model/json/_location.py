@@ -18,6 +18,7 @@
 JSON serialization/deserialization for addresses
 """
 
+from enum import Enum, unique
 from typing import Any, Dict, Type
 
 from ._json import jsonDeserialize, registerDeserializer
@@ -28,30 +29,44 @@ from .._location import Location
 __all__ = ()
 
 
+@unique
+class LocationJSONKey(Enum):
+    """
+    Location JSON keys
+    """
+
+    name                 = "name"
+    address              = "address"
+    addressType          = "type"
+    addressTypeText      = "text"
+    addressTypeRodGarett = "garett"
+
+
 # cattrs default serialization works.
 # We need custom deserialization because Address is an ABC and we need to
 # figure out which subclass to deserialize into.
 
 
 
-def deserializeLocation(
-    cl: Type, obj: Dict[str, Any]
-) -> Location:
+def deserializeLocation(obj: Dict[str, Any], cl: Type) -> Location:
     assert cl is Location, (cl, obj)
 
-    jsonAddress = obj["address"]
-    addressType = jsonAddress["type"]
+    jsonAddress = obj[LocationJSONKey.address.value]
+    addressType = jsonAddress[LocationJSONKey.addressType.value]
 
-    if addressType == "garett":
-        addressClass = RodGarettAddress  # type: Type
-    elif addressType == "text":
+    addressClass: Type
+    if addressType == LocationJSONKey.addressTypeRodGarett.value:
+        addressClass = RodGarettAddress
+    elif addressType == LocationJSONKey.addressTypeText.value:
         addressClass = TextOnlyAddress
     else:
-        raise ValueError("unknown address type: {}".format(addressType))
+        raise ValueError("Unknown address type: {}".format(addressType))
 
     return Location(
-        name=obj["name"],
-        address=jsonDeserialize(obj["address"], addressClass),
+        name=obj[LocationJSONKey.name.value],
+        address=jsonDeserialize(
+            obj[LocationJSONKey.address.value], addressClass
+        ),
     )
 
 

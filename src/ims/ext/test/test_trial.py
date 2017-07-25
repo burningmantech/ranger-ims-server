@@ -2,7 +2,8 @@
 Tests for :mod:`ranger-ims-server.ext.trial`
 """
 
-from ..klein import requestMock
+from klein.test.test_resource import requestMock
+
 from ..trial import TestCase
 
 

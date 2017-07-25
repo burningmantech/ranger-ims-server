@@ -8,10 +8,12 @@ from datetime import (
 )
 from json import JSONDecodeError
 from textwrap import dedent
-from typing import cast
+from typing import Callable, cast
 
 from hypothesis import given
-from hypothesis.extra.datetime import dates, datetimes
+from hypothesis.strategies import (
+    composite, dates, datetimes as _datetimes, integers
+)
 
 from ..json import (
     dateAsRFC3339Text, dateTimeAsRFC3339Text,
@@ -22,6 +24,20 @@ from ..trial import TestCase
 
 
 __all__ = ()
+
+
+
+@composite
+def timezones(draw: Callable) -> TimeZone:
+    offset = draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
+    timeDelta = TimeDelta(minutes=offset)
+    timeZone = TimeZone(offset=timeDelta, name="{}s".format(offset))
+    return timeZone
+
+
+@composite
+def datetimes(draw: Callable) -> DateTime:
+    return draw(_datetimes(timezones=timezones()))
 
 
 

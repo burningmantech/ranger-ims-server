@@ -18,23 +18,28 @@
 Tests for L{ims.dms}.
 """
 
-from twisted.internet.defer import fail, inlineCallbacks, succeed
-from twisted.trial import unittest
+from typing import MutableSequence, Tuple
+
+from twisted.internet.defer import fail, succeed
+
+from ims.ext.trial import TestCase
 
 from .. import DutyManagementSystem
-from .._dms import fullName
+from .._dms import fullName, hashPassword
+
+MutableSequence, Tuple  # silence linter
 
 
 __all__ = ()
 
 
 
-class DutyManagementSystemTests(unittest.TestCase):
+class DutyManagementSystemTests(TestCase):
     """
     Tests for L{ims.dms.DutyManagementSystem}.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """
         Patch adbapi module.
         """
@@ -44,7 +49,7 @@ class DutyManagementSystemTests(unittest.TestCase):
         self.patch(ims.dms._dms, "adbapi", self.dummyADBAPI)
 
 
-    def dms(self):
+    def dms(self) -> DutyManagementSystem:
         """
         Gimme a DMS.
         """
@@ -61,7 +66,7 @@ class DutyManagementSystemTests(unittest.TestCase):
         )
 
 
-    def test_init(self):
+    def test_init(self) -> None:
         """
         Initialized state is as expected.
         """
@@ -73,7 +78,7 @@ class DutyManagementSystemTests(unittest.TestCase):
         self.assertEquals(dms.password, self.password)
 
 
-    def test_dbpool(self):
+    def test_dbpool(self) -> None:
         """
         L{DutyManagementSystem.dbpool} returns a DB pool.
         """
@@ -89,14 +94,13 @@ class DutyManagementSystemTests(unittest.TestCase):
         self.assertEquals(dbpool.connkw["password"], self.password)
 
 
-    @inlineCallbacks
-    def test_personnel(self):
+    def test_personnel(self) -> None:
         """
         L{DutyManagementSystem.personnel} returns L{Ranger} objects.
         """
         dms = self.dms()
 
-        personnel = yield dms.personnel()
+        personnel = self.successResultOf(dms.personnel())
 
         self.assertEquals(
             [p.handle for p in personnel],
@@ -105,12 +109,12 @@ class DutyManagementSystemTests(unittest.TestCase):
 
 
 
-class UtilTests(unittest.TestCase):
+class UtilTests(TestCase):
     """
     Tests for L{ims.dms}.
     """
 
-    def test_fullName(self):
+    def test_fullName(self) -> None:
         """
         L{fullName} combines first/middle/last correctly.
         """
@@ -124,12 +128,12 @@ class DummyQuery(object):
     Represents a call to C{runQuery}.
     """
 
-    def __init__(self, args, kwargs):
+    def __init__(self, args: tuple, kwargs: dict) -> None:
         self.args = args
         self.kwargs = kwargs
 
 
-    def sql(self):
+    def sql(self) -> str:
         """
         Produce normalized SQL for the query.
         """
@@ -147,18 +151,26 @@ class DummyConnectionPool(object):
     Mock for L{adbapi.ConnectionPool}.
     """
 
-    def __init__(self, dbapiname, **connkw):
+    def __init__(self, dbapiname: str, **connkw: dict) -> None:
         self.dbapiname = dbapiname
         self.connkw = connkw
-        self.queries = []
+        self.queries: MutableSequence[DummyQuery] = []
 
 
-    def runQuery(self, *args, **kw):
+    def runQuery(self, *args: tuple, **kw: dict) -> None:
         query = DummyQuery(args, kw)
 
         self.queries.append(query)
 
         sql = query.sql()
+
+        def fixPassword(
+            person: Tuple[int, str, str, str, str, str, str, bool, str]
+        ) -> Tuple[int, str, str, str, str, str, str, bool, str]:
+            return (
+                person[0], person[1], person[2], person[3], person[4],
+                person[5], person[6], person[7], hashPassword(person[8]),
+            )
 
         if sql == (
             "select "
@@ -167,7 +179,7 @@ class DummyConnectionPool(object):
             "from person where status in "
             "('active', 'inactive', 'vintage')"
         ):
-            return succeed(iter(cannedPersonnel))
+            return succeed(fixPassword(p) for p in cannedPersonnel)
 
         if sql == (
             "select id, title from position where all_rangers = 0"
@@ -190,7 +202,7 @@ class DummyADBAPI(object):
     Mock for L{adbapi}.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.ConnectionPool = DummyConnectionPool
 
 

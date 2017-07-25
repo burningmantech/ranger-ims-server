@@ -18,11 +18,12 @@
 Tests for :mod:`ranger-ims-server.model._report`
 """
 
+from ims.ext.trial import TestCase
+
 from .datetimes import dt1
 from .rangers import rangerHubcap
 from .._entry import ReportEntry
 from .._report import IncidentReport
-from ...ext.trial import TestCase
 
 
 __all__ = ()

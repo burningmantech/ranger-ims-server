@@ -18,82 +18,181 @@
 Tests for :mod:`ranger-ims-server.model._incident`
 """
 
-from .datetimes import dt1, dt2
-from .events import eventA
-from .locations import theMan
-from .rangers import rangerHubcap
+from datetime import datetime as DateTime
+from typing import Any, Iterable
+
+from attr import asdict
+
+from hypothesis import given
+from hypothesis.strategies import lists, sampled_from, text
+
+from ims.ext.trial import TestCase
+
 from .._entry import ReportEntry
+from .._event import Event
 from .._incident import Incident, summaryFromReport
+from .._location import Location
 from .._priority import IncidentPriority
 from .._state import IncidentState
-from ...ext.trial import TestCase
-
+from ..strategies import (
+    dateTimes, events, incidentNumbers, incidentPriorities, incidentStates,
+    incidentSummaries, incidentTypes, incidents, locations, rangerHandles,
+    reportEntries,
+)
 
 __all__ = ()
 
 
 
-entryA = ReportEntry(
-    created=dt1,
-    author=rangerHubcap.handle,
-    automatic=True,
-    text="State changed to: new",
-)
-
-entryB = ReportEntry(
-    created=dt2,
-    author=rangerHubcap.handle,
-    automatic=False,
-    text="A different thing happened",
-)
-
-
-
-class EventTests(TestCase):
+class IncidentTests(TestCase):
     """
     Tests for :class:`Incident`
     """
 
-    def test_str_summary(self) -> None:
+    @given(incidents(), text(min_size=1))
+    def test_str_summary(self, incident: Incident, summary: str) -> None:
         """
-        :meth:`Incident.__str__` renders an incident with a summary as a
-        string.
+        :meth:`Incident.__str__` renders an incident with a non-empty summary
+        as a string consisting of the incident number and summary.
         """
-        incident = Incident(
-            event=eventA,
-            number=123,
-            created=dt1,
-            state=IncidentState.new,
-            priority=IncidentPriority.normal,
-            summary="A thing happened",
-            rangers=(),
-            incidentTypes=(),
-            location=theMan,
-            reportEntries=(),
+        incident = incident.replace(summary=summary)
+
+        self.assertEqual(
+            str(incident),
+            "{} #{}: {}".format(incident.event, incident.number, summary),
         )
 
-        self.assertEqual(str(incident), "123: A thing happened")
 
-
-    def test_str_report(self) -> None:
+    @given(incidents(), sampled_from((None, "")))
+    def test_str_noSummary(self, incident: Incident, summary: str) -> None:
         """
         :meth:`Incident.__str__` renders an incident without a summary as a
         string.
         """
-        incident = Incident(
-            event=eventA,
-            number=321,
-            created=dt1,
-            state=IncidentState.new,
-            priority=IncidentPriority.normal,
-            summary=None,
-            rangers=(),
-            incidentTypes=(),
-            location=theMan,
-            reportEntries=(entryB,),
+        incident = incident.replace(summary=summary)
+
+        self.assertEqual(
+            str(incident),
+            "{} #{}: {}".format(
+                incident.event, incident.number,
+                summaryFromReport(None, incident.reportEntries),
+            )
         )
 
-        self.assertEqual(str(incident), "321: A different thing happened")
+
+    def _test_replace(self, incident: Incident, name: str, value: Any) -> None:
+        mod = {name: value}
+        new = incident.replace(**mod)
+
+        expected = asdict(incident, recurse=False)
+        expected.update(mod)
+
+        self.assertEqual(asdict(new, recurse=False), expected)
+
+
+    @given(incidents(), events())
+    def test_replace_event(self, incident: Incident, event: Event) -> None:
+        """
+        :meth:`Incident.replace` with an event argument replaces the event.
+        """
+        self._test_replace(incident, "event", event)
+
+
+    @given(incidents(), incidentNumbers())
+    def test_replace_number(self, incident: Incident, number: int) -> None:
+        """
+        :meth:`Incident.replace` with a number argument replaces the
+        incident number.
+        """
+        self._test_replace(incident, "number", number)
+
+
+    @given(incidents(), dateTimes())
+    def test_replace_created(
+        self, incident: Incident, created: DateTime
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a created argument replaces the created
+        time.
+        """
+        self._test_replace(incident, "created", created)
+
+
+    @given(incidents(), incidentStates())
+    def test_replace_state(
+        self, incident: Incident, state: IncidentState
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a state argument replaces the incident
+        state.
+        """
+        self._test_replace(incident, "state", state)
+
+
+    @given(incidents(), incidentPriorities())
+    def test_replace_priority(
+        self, incident: Incident, priority: IncidentPriority
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a priority argument replaces the incident
+        priority.
+        """
+        self._test_replace(incident, "priority", priority)
+
+
+    @given(incidents(), incidentSummaries())
+    def test_replace_summary(self, incident: Incident, summary: str) -> None:
+        """
+        :meth:`Incident.replace` with a summary argument replaces the incident
+        summary.
+        """
+        self._test_replace(incident, "summary", summary)
+
+
+    @given(incidents(), locations())
+    def test_replace_location(
+        self, incident: Incident, location: Location
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a location argument replaces the
+        location.
+        """
+        self._test_replace(incident, "location", location)
+
+
+    @given(incidents(), lists(rangerHandles()))
+    def test_replace_rangerHandles(
+        self, incident: Incident, rangerHandles: Iterable[str]
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a rangerHandles argument replaces the
+        Ranger handles.
+        """
+        self._test_replace(incident, "rangerHandles", frozenset(rangerHandles))
+
+
+    @given(incidents(), lists(incidentTypes()))
+    def test_replace_incidentTypes(
+        self, incident: Incident, incidentTypes: Iterable[str]
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a incidentTypes argument replaces the
+        incident types.
+        """
+        self._test_replace(incident, "incidentTypes", frozenset(incidentTypes))
+
+
+    @given(incidents(), lists(reportEntries()))
+    def test_replace_reportEntries(
+        self, incident: Incident, reportEntries: Iterable[ReportEntry]
+    ) -> None:
+        """
+        :meth:`Incident.replace` with a reportEntries argument replaces the
+        report entries.
+        """
+        self._test_replace(
+            incident, "reportEntries", tuple(sorted(reportEntries))
+        )
 
 
 
@@ -114,28 +213,42 @@ class SummaryFromReportTests(TestCase):
         self.assertEqual(result, "A thing happened")
 
 
-    def test_entryAutomatic(self) -> None:
+
+    @given(lists(reportEntries()))
+    def test_entryAutomatic(
+        self, reportEntries: Iterable[ReportEntry]
+    ) -> None:
         """
         :func:`summaryFromReport` skips automatic entries.
         """
-        result = summaryFromReport(
-            summary="",
-            reportEntries=(entryA, entryB),
+        self.assertEqual(
+            summaryFromReport(summary="", reportEntries=reportEntries),
+            summaryFromReport(
+                summary="",
+                reportEntries=(r for r in reportEntries if not r.automatic),
+            )
         )
 
-        self.assertEqual(result, entryB.text)
 
+    @given(lists(reportEntries(), min_size=1))
+    def test_entryNotAutomatic(
+        self, reportEntries: Iterable[ReportEntry]
+    ) -> None:
+        """
+        :func:`summaryFromReport` uses the first line of text from the first
+        non-automatic entry.
+        """
+        for entry in reportEntries:
+            if not entry.automatic:
+                expectedSummary = entry.text.split("\n")[0]
+                break
+        else:
+            expectedSummary = ""
 
-    def test_entryNotAutomatic(self) -> None:
-        """
-        :func:`summaryFromReport` uses first entry.
-        """
-        result = summaryFromReport(
-            summary="",
-            reportEntries=(entryB,),
+        self.assertEqual(
+            summaryFromReport(summary="", reportEntries=reportEntries),
+            expectedSummary,
         )
-
-        self.assertEqual(result, entryB.text)
 
 
     def test_entryNone(self) -> None:

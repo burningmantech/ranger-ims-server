@@ -18,19 +18,33 @@
 Location
 """
 
-from ._address import Address
-from ..ext.attr import attrib, attrs, instanceOf
+from typing import Optional
 
+from attr import attrib, attrs
+from attr.validators import instance_of, optional
+
+from ._address import Address, TextOnlyAddress
+from ._replace import ReplaceMixIn
 
 __all__ = ()
 
 
+def convertAddress(address: Optional[Address]) -> Address:
+    if address is None:
+        address = TextOnlyAddress(description=None)
+
+    return address
+
+
 
 @attrs(frozen=True)
-class Location(Address):
+class Location(Address, ReplaceMixIn):
     """
     Location
     """
 
-    name    = attrib(validator=instanceOf(str))
-    address = attrib(validator=instanceOf(Address))
+    name: Optional[str] = attrib(validator=optional(instance_of(str)))
+    address: Optional[Address] = attrib(
+        validator=optional(instance_of(Address)),
+        convert=convertAddress,
+    )

@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_ranger -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -20,11 +22,31 @@ Ranger
 
 from collections.abc import Iterable
 from enum import Enum, unique
+from typing import AbstractSet, Optional
 
-from ..ext.attr import attrib, attrs, instanceOf, optional, true
+from attr import attrib, attrs
+from attr.validators import instance_of, optional
+
+from ims.ext.attr import true
+
+AbstractSet, Optional  # silence linter
 
 
 __all__ = ()
+
+
+statusDescriptions = dict(
+    prospective="Prospective",
+    alpha="Alpha",
+    bonked="Bonked Prospective",
+    active="Active Ranger",
+    inactive="Inactive Ranger",
+    retired="Retired Ranger",
+    uberbonked="Uberbonked Participant",
+    vintage="Vintage Ranger",
+    deceased="Late Ranger",
+    other="(Unknown Person Type)",
+)
 
 
 
@@ -49,6 +71,14 @@ class RangerStatus(Enum):
     other = -1
 
 
+    def __repr__(self) -> str:
+        return "{}[{!r}]".format(self.__class__.__name__, self.name)
+
+
+    def __str__(self) -> str:
+        return statusDescriptions[self.name]
+
+
 
 @attrs(frozen=True)
 class Ranger(object):
@@ -61,10 +91,28 @@ class Ranger(object):
 
     # FIXME: better validator for email
 
-    handle   = attrib(validator=true(instanceOf(str)))
-    name     = attrib(validator=true(instanceOf(str)))
-    status   = attrib(validator=instanceOf(RangerStatus))
-    email    = attrib(validator=instanceOf(Iterable), convert=frozenset)
-    onSite   = attrib(validator=instanceOf(bool))
-    dmsID    = attrib(validator=optional(instanceOf(int)))
-    password = attrib(validator=optional(instanceOf(str)))
+    handle: str = attrib(
+        validator=true(instance_of(str))
+    )
+    name: str = attrib(
+        validator=true(instance_of(str))
+    )
+    status: RangerStatus = attrib(
+        validator=instance_of(RangerStatus)
+    )
+    email: AbstractSet[str] = attrib(
+        validator=instance_of(Iterable), convert=frozenset
+    )
+    onSite: bool = attrib(
+        validator=instance_of(bool)
+    )
+    dmsID: Optional[str] = attrib(
+        validator=optional(instance_of(int))
+    )
+    password: Optional[str] = attrib(
+        validator=optional(instance_of(str))
+    )
+
+
+    def __str__(self) -> str:
+        return "{} {} ({})".format(self.status, self.handle, self.name)

@@ -18,10 +18,14 @@
 Tests for :mod:`ranger-ims-server.model._event`
 """
 
+from hypothesis import given
+
 from twisted.python.compat import cmp
 
-from .events import eventA, eventB
-from ...ext.trial import TestCase
+from ims.ext.trial import TestCase
+
+from .._event import Event
+from ..strategies import events
 
 
 __all__ = ()
@@ -33,14 +37,16 @@ class EventTests(TestCase):
     Tests for :class:`Event`
     """
 
-    def test_str(self) -> None:
+    @given(events())
+    def test_str(self, event: Event) -> None:
         """
         :meth:`Event.__str__` renders the event as a string.
         """
-        self.assertEqual(str(eventA), eventA.id)
+        self.assertEqual(str(event), event.id)
 
 
-    def test_ordering(self) -> None:
+    @given(events(), events())
+    def test_ordering(self, eventA: Event, eventB: Event) -> None:
         """
         Event ordering corresponds to event ID ordering.
         """

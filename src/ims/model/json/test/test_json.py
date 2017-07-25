@@ -22,14 +22,17 @@ from datetime import datetime as DateTime
 from typing import Any
 
 from hypothesis import given
-from hypothesis.extra.datetime import datetimes
-from hypothesis.strategies import floats, integers, text
+from hypothesis.strategies import datetimes, floats, integers, text
 
-from .strategies import incidents
-from .._json import jsonDeserialize, jsonSerialize, jsonTextFromModelObject
+from ims.ext.json import dateTimeAsRFC3339Text
+from ims.ext.trial import TestCase
+
+from .._json import (
+    jsonDeserialize, jsonObjectFromModelObject, jsonSerialize,
+    modelObjectFromJSONObject,
+)
 from ..._incident import Incident
-from ....ext.json import dateTimeAsRFC3339Text, jsonTextFromObject
-from ....ext.trial import TestCase
+from ...strategies import incidents
 
 
 __all__ = ()
@@ -194,9 +197,25 @@ class ModelSerializationTests(TestCase):
     @given(incidents())
     def test_incident(self, incident: Incident) -> None:
         """
-        :func:`jsonTextFromModelObject` serializes an incident as JSON text.
+        :func:`jsonObjectFromModelObject` serializes an incident as JSON
+        objects.
         """
         self.assertEqual(
-            jsonTextFromModelObject(incident),
-            jsonTextFromObject(jsonSerialize(incident))
+            jsonObjectFromModelObject(incident), jsonSerialize(incident)
         )
+
+
+class ModelDeserializationTests(TestCase):
+    """
+    Tests for deserialization of model objects
+    """
+
+    @given(incidents())
+    def test_incident(self, incident: Incident) -> None:
+        """
+        :func:`modelObjectFromJSONObject` deserializes an incident from JSON
+        objects.
+        """
+        json = jsonSerialize(incident)
+
+        self.assertEqual(modelObjectFromJSONObject(json, Incident), incident)

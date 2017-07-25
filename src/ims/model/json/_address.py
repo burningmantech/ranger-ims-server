@@ -19,7 +19,7 @@ JSON serialization/deserialization for addresses
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, Type
+from typing import Any, Dict, Optional, Type
 
 from ._json import (
     jsonDeserialize, jsonSerialize, registerDeserializer, registerSerializer
@@ -50,7 +50,7 @@ class TextOnlyAddressJSONType(Enum):
     Text-only address attribute types
     """
 
-    description = str
+    description = Optional[str]
 
 
 
@@ -72,10 +72,10 @@ class RodGarettAddressJSONType(Enum):
     Rod Garett address JSON keys
     """
 
-    concentric   = int
+    concentric   = str
     radialHour   = int
     radialMinute = int
-    description  = str
+    description  = Optional[str]
 
 
 
@@ -106,7 +106,7 @@ registerSerializer(RodGarettAddress, serializeRodGarettAddress)
 
 
 def deserializeTextOnlyAddress(
-    cl: Type, obj: Dict[str, Any]
+    obj: Dict[str, Any], cl: Type
 ) -> TextOnlyAddress:
     assert cl is TextOnlyAddress, (cl, obj)
 
@@ -129,7 +129,7 @@ registerDeserializer(TextOnlyAddress, deserializeTextOnlyAddress)
 
 
 def deserializeRodGarettAddress(
-    cl: Type, obj: Dict[str, Any]
+    obj: Dict[str, Any], cl: Type
 ) -> RodGarettAddress:
     assert cl is RodGarettAddress, (cl, obj)
 
