@@ -53,6 +53,7 @@ __all__ = (
     "incidentPriorities",
     "incidentReportLists",
     "incidentReportNumbers",
+    "incidentReportSummaries",
     "incidentReports",
     "incidentStates",
     "incidentSummaries",
