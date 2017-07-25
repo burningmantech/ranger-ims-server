@@ -10,13 +10,11 @@ set -u
 tmp="$(mktemp -t mypy.XXXX)";
 
 # Bugs filed:
-# Too many arguments for: https://github.com/python/mypy/issues/2088
-# JSONDecodeError has no attribute: https://github.com/python/mypy/issues/2981
 # Callable has no attribute "todo": ... uh, not sure that's a bug, but ...
+# Too many arguments for: https://github.com/python/mypy/issues/2088
 
 mypy "$@"                                                                                                \
     | grep -v                                                                                            \
-        -e ': error: "JSONDecodeError" has no attribute '                                                \
         -e ': error: Callable\[\[[^\]\+\], None\] has no attribute "todo"'                               \
         -e ': error: Too many arguments for '                                                            \
         -e ': error: Unexpected keyword argument '                                                       \
