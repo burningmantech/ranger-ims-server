@@ -16,12 +16,6 @@ tmp="$(mktemp -t mypy.XXXX)";
 
 mypy "$@"                                                                                                \
     | grep -v                                                                                            \
-        -e ": error: Cannot find module named 'attr.*'"                                                  \
-        -e ": error: Cannot find module named 'arrow.*'"                                                 \
-        -e ": error: Cannot find module named 'cattr.*'"                                                 \
-        -e ": error: Cannot find module named 'hypothesis.*'"                                            \
-        -e ": error: Cannot find module named 'klein.*'"                                                 \
-        -e ": error: Cannot find module named 'twext.*'"                                                 \
         -e ': error: No library stub file for '                                                          \
         -e ': note: (Perhaps setting MYPYPATH or using the "--ignore-missing-imports" flag would help)'  \
         -e ': note: (Stub files are from https://github.com/python/typeshed)'                            \
