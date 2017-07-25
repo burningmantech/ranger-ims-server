@@ -18,15 +18,20 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from typing import Iterable, Set
+from datetime import datetime as DateTime, timezone as TimeZone
+from typing import Any, FrozenSet, Iterable, Set, Tuple
 
 from attr import fields as attrFields
 
 from hypothesis import given
+from hypothesis.strategies import frozensets, lists, tuples
 
 from ims.ext.sqlite import SQLITE_MAX_INT
-from ims.model import IncidentReport
-from ims.model.strategies import incidentReportLists, incidentReports
+from ims.model import IncidentReport, ReportEntry
+from ims.model.strategies import (
+    incidentReportLists, incidentReportSummaries, incidentReports,
+    rangerHandles, reportEntries,
+)
 
 from .base import DataStoreTests, dateTimesEqualish, reportEntriesEqualish
 from ..._exceptions import NoSuchIncidentReportError, StorageError
@@ -89,7 +94,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
         incident report.
         """
         store = self.store()
-
         self.storeIncidentReport(store, incidentReport)
 
         retrieved = self.successResultOf(
@@ -112,6 +116,322 @@ class DataStoreIncidentReportTests(DataStoreTests):
         )
         f.printTraceback()
         self.assertEqual(f.type, NoSuchIncidentReportError)
+
+
+    def test_incidentReportWithNumber_tooBig(self) -> None:
+        """
+        :meth:`DataStore.incidentReportWithNumber` raises
+        :exc:`NoSuchIncidentReportError` when the given incident report number
+        is too large for SQLite.
+        """
+        store = self.store()
+
+        f = self.failureResultOf(
+            store.incidentReportWithNumber(SQLITE_MAX_INT + 1)
+        )
+        self.assertEqual(f.type, NoSuchIncidentReportError)
+
+
+    def test_incidentReportWithNumber_error(self) -> None:
+        """
+        :meth:`DataStore.incidentReportWithNumber` raises
+        :exc:`NoSuchIncidentReportError` when the given incident report number
+        is too large for SQLite.
+        """
+        store = self.store()
+        store.bringThePain()
+
+        f = self.failureResultOf(store.incidentReportWithNumber(1))
+        self.assertEqual(f.type, StorageError)
+
+
+    @given(
+        lists(
+            tuples(incidentReports(new=True), rangerHandles()),
+            average_size=2
+        ),
+    )
+    def test_createIncidentReport(
+        self, data: Iterable[Tuple[IncidentReport, str]]
+    ) -> None:
+        """
+        :meth:`DataStore.createIncidentReport` creates the given incident
+        report.
+        """
+        store = self.store()
+
+        expectedStoredIncidentReports: Set[IncidentReport] = set()
+        nextNumber = 1
+
+        for incidentReport, author in data:
+            retrieved = self.successResultOf(
+                store.createIncidentReport(
+                    incidentReport=incidentReport, author=author
+                )
+            )
+            expected = incidentReport.replace(number=nextNumber)
+
+            self.assertIncidentReportsEqual(
+                retrieved, expected, ignoreAutomatic=True
+            )
+
+            expectedStoredIncidentReports.add(expected)
+            nextNumber += 1
+
+        storedIncidentReports = sorted(
+            self.successResultOf(store.incidentReports())
+        )
+
+        self.assertEqual(
+            len(storedIncidentReports), len(expectedStoredIncidentReports)
+        )
+
+        for stored, expected in zip(
+            storedIncidentReports, sorted(expectedStoredIncidentReports)
+        ):
+            self.assertIncidentReportsEqual(
+                stored, expected, ignoreAutomatic=True
+            )
+
+
+    def test_createIncidentReport_error(self) -> None:
+        """
+        :meth:`DataStore.createIncidentReport` raises :exc:`StorageError` when
+        SQLite raises an exception.
+        """
+        store = self.store()
+        store.bringThePain()
+
+        f = self.failureResultOf(store.createIncidentReport(
+            IncidentReport(
+                number=0,
+                created=DateTime.now(TimeZone.utc),
+                summary="A thing happened",
+                reportEntries=(),
+            ),
+            "Hubcap"
+        ))
+        self.assertEqual(f.type, StorageError)
+
+
+    def test_setIncidentReport_summary_error(self) -> None:
+        """
+        :meth:`DataStore.setIncident_summary` raises :exc:`StorageError` when
+        SQLite raises an exception.
+        """
+        store = self.store()
+        incidentReport = self.successResultOf(store.createIncidentReport(
+            IncidentReport(
+                number=0,
+                created=DateTime.now(TimeZone.utc),
+                summary="A thing happened",
+                reportEntries=(),
+            ),
+            "Hubcap"
+        ))
+        store.bringThePain()
+
+        f = self.failureResultOf(
+            store.setIncidentReport_summary(
+                incidentReport.number, "Never mind", "Bucket"
+            )
+        )
+        self.assertEqual(f.type, StorageError)
+
+
+    def _test_setIncidentReportAttribute(
+        self, incidentReport: IncidentReport,
+        methodName: str, attributeName: str, value: Any
+    ) -> None:
+        store = self.store()
+
+        self.storeIncidentReport(store, incidentReport)
+
+        setter = getattr(store, methodName)
+
+        self.successResultOf(
+            setter(incidentReport.number, value, "Hubcap")
+        )
+
+        retrieved = self.successResultOf(
+            store.incidentReportWithNumber(incidentReport.number)
+        )
+
+        # Replace the specified incident attribute with the given value.
+        # This is a bit complex because we're recursing into sub-attributes.
+        attrPath = attributeName.split(".")
+        values = [incidentReport]
+        for a in attrPath[:-1]:
+            values.append(getattr(values[-1], a))
+        values.append(value)
+        for a in reversed(attrPath):
+            v = values.pop()
+            values[-1] = values[-1].replace(**{a: v})
+        incidentReport = values[0]
+
+        self.assertIncidentReportsEqual(
+            retrieved, incidentReport, ignoreAutomatic=True
+        )
+
+
+    @given(incidentReports(new=True), incidentReportSummaries())
+    def test_setIncidentReport_summary(
+        self, incidentReport: IncidentReport, summary: str
+    ) -> None:
+        """
+        :meth:`DataStore.setIncidentReport_summary` updates the summary for the
+        given incident report in the data store.
+        """
+        self._test_setIncidentReportAttribute(
+            incidentReport, "setIncidentReport_summary", "summary", summary
+        )
+
+
+    @given(
+        incidentReports(new=True), frozensets(reportEntries(automatic=False)),
+        rangerHandles(),
+    )
+    def test_addReportEntriesToIncidentReport(
+        self, incidentReport: IncidentReport,
+        reportEntries: FrozenSet[ReportEntry], author: str
+    ) -> None:
+        """
+        :meth:`DataStore.addReportEntriesToIncidentReport` adds the given
+        report entries to the given incident report in the data store.
+        """
+        # Change author in report entries to match the author so we will use to
+        # add them
+        reportEntries = frozenset(
+            r.replace(author=author) for r in reportEntries
+        )
+
+        # Store test data
+        store = self.store()
+        self.storeIncidentReport(store, incidentReport)
+
+        # Fetch incident report back so we have the version from the DB
+        incidentReport = self.successResultOf(
+            store.incidentReportWithNumber(incidentReport.number)
+        )
+        originalEntries = frozenset(incidentReport.reportEntries)
+
+        # Add report entries
+        self.successResultOf(
+            store.addReportEntriesToIncidentReport(
+                incidentReport.number, reportEntries, author
+            )
+        )
+
+        # Get the updated incident report with the new report entries
+        updated = self.successResultOf(
+            store.incidentReportWithNumber(incidentReport.number)
+        )
+        updatedEntries = frozenset(updated.reportEntries)
+
+        # Updated entries minus the original entries == the added entries
+        updatedNewEntries = updatedEntries - originalEntries
+        self.assertTrue(
+            reportEntriesEqualish(
+                sorted(updatedNewEntries), sorted(reportEntries)
+            )
+        )
+
+
+    def test_addReportEntriesToIncidentReport_automatic(self) -> None:
+        """
+        :meth:`DataStore.addReportEntriesToIncidentReport` raises
+        :exc:`ValueError` when given automatic report entries.
+        """
+        store = self.store()
+        incidentReport = self.successResultOf(store.createIncidentReport(
+            IncidentReport(
+                number=0,
+                created=DateTime.now(TimeZone.utc),
+                summary="A thing happened",
+                reportEntries=(),
+            ),
+            "Hubcap"
+        ))
+
+        reportEntry = ReportEntry(
+            created=DateTime.now(TimeZone.utc),
+            author="Bucket",
+            automatic=True,
+            text="Hello",
+        )
+
+        f = self.failureResultOf(
+            store.addReportEntriesToIncidentReport(
+                incidentReport.number, (reportEntry,), "Bucket"
+            )
+        )
+        self.assertEqual(f.type, ValueError)
+        self.assertIn(" may not be created by user ", f.getErrorMessage())
+
+
+    def test_addReportEntriesToIncidentReport_wrongAuthor(self) -> None:
+        """
+        :meth:`DataStore.addReportEntriesToIncidentReport` raises
+        :exc:`ValueError` when given report entries with an author that does
+        not match the author that is adding the entries.
+        """
+        store = self.store()
+        incidentReport = self.successResultOf(store.createIncidentReport(
+            IncidentReport(
+                number=0,
+                created=DateTime.now(TimeZone.utc),
+                summary="A thing happened",
+                reportEntries=(),
+            ),
+            "Hubcap"
+        ))
+
+        reportEntry = ReportEntry(
+            created=DateTime.now(TimeZone.utc),
+            author="Hubcap",
+            automatic=False,
+            text="Hello",
+        )
+
+        f = self.failureResultOf(
+            store.addReportEntriesToIncidentReport(
+                incidentReport.number, (reportEntry,), "Bucket"
+            )
+        )
+        self.assertEqual(f.type, ValueError)
+        self.assertEndsWith(f.getErrorMessage(), " has author != Bucket")
+
+
+    def test_addReportEntriesToIncidentReport_error(self) -> None:
+        """
+        :meth:`DataStore.addReportEntriesToIncidentReport` raises
+        :exc:`StorageError` when SQLite raises an exception.
+        """
+        store = self.store()
+        incidentReport = self.successResultOf(store.createIncidentReport(
+            IncidentReport(
+                number=0,
+                created=DateTime.now(TimeZone.utc),
+                summary="A thing happened",
+                reportEntries=(),
+            ),
+            "Hubcap"
+        ))
+        store.bringThePain()
+
+        reportEntry = ReportEntry(
+            created=DateTime.now(TimeZone.utc),
+            author="Bucket",
+            automatic=False,
+            text="Hello",
+        )
+
+        f = self.failureResultOf(
+            store.addReportEntriesToIncidentReport(
+                incidentReport.number, (reportEntry,), "Bucket"
+            )
+        )
+        self.assertEqual(f.type, StorageError)
 
 
     def assertIncidentReportsEqual(

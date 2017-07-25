@@ -1336,6 +1336,12 @@ class DataStore(IMSDataStore):
         reportEntries = tuple(reportEntries)
 
         for reportEntry in reportEntries:
+            if reportEntry.automatic:
+                raise ValueError(
+                    "Automatic report entry {} may not be created by user {}"
+                    .format(reportEntry, author)
+                )
+
             if reportEntry.author != author:
                 raise ValueError(
                     "Report entry {} has author != {}"
@@ -1483,29 +1489,37 @@ class DataStore(IMSDataStore):
             raise StorageError(e)
 
 
+    def _nextIncidentReportNumber(self, cursor: Cursor) -> int:
+        """
+        Look up the next available incident report number.
+        """
+        cursor.execute(self._query_maxIncidentReportNumber, {})
+        number = cursor.fetchone()["max(NUMBER)"]
+        if number is None:
+            return 1
+        else:
+            return number + 1
+
+    _query_maxIncidentReportNumber = _query(
+        """
+        select max(NUMBER) from INCIDENT_REPORT
+        """
+    )
+
+
     async def _createIncidentReport(
         self, incidentReport: IncidentReport, author: Optional[str],
         directImport: bool,
     ) -> IncidentReport:
         if directImport:
-            if author is not None:
-                raise ValueError("author should be None for direct import")
-
-            if not incidentReport.number > 0:
-                raise ValueError("Imported incident report number must be > 0")
+            assert author is None
+            assert incidentReport.number > 0
         else:
-            if not author:
-                raise ValueError("author is required")
-
-            if incidentReport.number != 0:
-                raise ValueError("New incident report number must be zero")
+            assert author
+            assert incidentReport.number == 0
 
             for reportEntry in incidentReport.reportEntries:
-                if reportEntry.automatic:
-                    raise ValueError(
-                        "New incident report may not contain "
-                        "automatic report entries"
-                    )
+                assert not reportEntry.automatic
 
             # Add initial report entries
             reportEntries = self._initialReportEntries(incidentReport, author)
@@ -1571,9 +1585,6 @@ class DataStore(IMSDataStore):
         cursor: Cursor,
     ) -> None:
         for reportEntry in reportEntries:
-            if not reportEntry.text:
-                continue
-
             self._createReportEntry(reportEntry, cursor)
 
             self._log.info(

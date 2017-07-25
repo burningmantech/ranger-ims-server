@@ -301,8 +301,8 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def test_setIncident_priority_error(self) -> None:
         """
-        :meth:`DataStore.setIncident_priority` raises StorageError when SQLite
-        raises an exception.
+        :meth:`DataStore.setIncident_priority` raises :exc:`StorageError` when
+        SQLite raises an exception.
         """
         event = Event(id="foo")
         store = self.store()
@@ -521,8 +521,8 @@ class DataStoreIncidentTests(DataStoreTests):
                 location=Location(name="There", address=None),
                 rangerHandles=(), incidentTypes=(), reportEntries=(),
             ),
-            "Hubcap")
-        )
+            "Hubcap"
+        ))
         store.bringThePain()
 
         f = self.failureResultOf(
@@ -565,8 +565,8 @@ class DataStoreIncidentTests(DataStoreTests):
                 location=Location(name="There", address=None),
                 rangerHandles=(), incidentTypes=(), reportEntries=(),
             ),
-            "Hubcap")
-        )
+            "Hubcap"
+        ))
         store.bringThePain()
 
         f = self.failureResultOf(
@@ -628,6 +628,43 @@ class DataStoreIncidentTests(DataStoreTests):
         )
 
 
+    def test_addReportEntriesToIncident_automatic(self) -> None:
+        """
+        :meth:`DataStore.addReportEntriesToIncident` raises :exc:`ValueError`
+        when given automatic report entries.
+        """
+        event = Event(id="foo")
+        store = self.store()
+        self.successResultOf(store.createEvent(event))
+        incident = self.successResultOf(store.createIncident(
+            Incident(
+                event=event,
+                number=0,
+                created=DateTime.now(TimeZone.utc),
+                state=IncidentState.new, priority=IncidentPriority.normal,
+                summary="A thing happened",
+                location=Location(name="There", address=None),
+                rangerHandles=(), incidentTypes=(), reportEntries=(),
+            ),
+            "Hubcap"
+        ))
+
+        reportEntry = ReportEntry(
+            created=DateTime.now(TimeZone.utc),
+            author="Bucket",
+            automatic=True,
+            text="Hello",
+        )
+
+        f = self.failureResultOf(
+            store.addReportEntriesToIncident(
+                event, incident.number, (reportEntry,), "Bucket"
+            )
+        )
+        self.assertEqual(f.type, ValueError)
+        self.assertIn(" may not be created by user ", f.getErrorMessage())
+
+
     def test_addReportEntriesToIncident_wrongAuthor(self) -> None:
         """
         :meth:`DataStore.addReportEntriesToIncident` raises :exc:`ValueError`
@@ -639,7 +676,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self.successResultOf(store.createEvent(event))
         incident = self.successResultOf(store.createIncident(
             Incident(
-                event=Event("foo"),
+                event=event,
                 number=0,
                 created=DateTime.now(TimeZone.utc),
                 state=IncidentState.new, priority=IncidentPriority.normal,
@@ -647,8 +684,8 @@ class DataStoreIncidentTests(DataStoreTests):
                 location=Location(name="There", address=None),
                 rangerHandles=(), incidentTypes=(), reportEntries=(),
             ),
-            "Hubcap")
-        )
+            "Hubcap"
+        ))
 
         reportEntry = ReportEntry(
             created=DateTime.now(TimeZone.utc),
@@ -663,13 +700,13 @@ class DataStoreIncidentTests(DataStoreTests):
             )
         )
         self.assertEqual(f.type, ValueError)
+        self.assertEndsWith(f.getErrorMessage(), " has author != Bucket")
 
 
     def test_addReportEntriesToIncident_error(self) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncident` raises :exc:`ValueError`
-        when given report entries with an author that does not match the author
-        that is adding the entries.
+        :meth:`DataStore.addReportEntriesToIncident` raises :exc:`StorageError`
+        when SQLite raises an exception.
         """
         event = Event(id="foo")
         store = self.store()
@@ -684,8 +721,8 @@ class DataStoreIncidentTests(DataStoreTests):
                 location=Location(name="There", address=None),
                 rangerHandles=(), incidentTypes=(), reportEntries=(),
             ),
-            "Hubcap")
-        )
+            "Hubcap"
+        ))
         store.bringThePain()
 
         reportEntry = ReportEntry(
