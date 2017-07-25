@@ -263,14 +263,6 @@ class DataStoreIncidentTests(DataStoreTests):
                 self.successResultOf(store.incidents(event=event))
             )
 
-            if len(storedIncidents) != len(expectedIncidents):
-                import pdb
-                pdb.set_trace()
-
-            storedIncidents = sorted(
-                self.successResultOf(store.incidents(event=event))
-            )
-
             self.assertEqual(
                 len(storedIncidents), len(expectedIncidents),
                 "{} != {}".format(storedIncidents, expectedIncidents)
