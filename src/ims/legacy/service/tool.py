@@ -175,12 +175,26 @@ class KleinTool(Executable):
         config = self.options["configuration"]
         service = WebService(config)
 
-        for rule in service.router.url_map.iter_rules():
-            methods = list(rule.methods)
-            print(
-                "{rule.rule} {methods} -> {rule.endpoint}"
-                .format(rule=rule, methods=methods)
-            )
+        application: Any
+        for application in (
+            service,
+            service.authApplication,
+            service.apiApplication,
+            service.webApplication,
+        ):
+            for rule in application.router.url_map.iter_rules():
+                if rule.methods is None:
+                    methods = "<default>"
+                else:
+                    methods = str(list(rule.methods))
+                print(
+                    "{rule.rule} {methods} -> {application}.{rule.endpoint}"
+                    .format(
+                        rule=rule,
+                        methods=methods,
+                        application=application.__class__.__name__,
+                    )
+                )
 
         exit(ExitStatus.EX_OK)
 

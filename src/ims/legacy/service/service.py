@@ -26,15 +26,16 @@ from twisted.web.iweb import IRequest
 
 from ims.application._auth import AuthApplication, AuthProvider
 from ims.application._eventsource import DataStoreEventSourceLogObserver
-from ims.application._klein import router
+from ims.application._klein import redirect, router
+from ims.application._static import builtInResource, javaScript, styleSheet
 from ims.application._urls import URLs
 from ims.dms import DutyManagementSystem
-from ims.ext.klein import KleinRenderable
+from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
 from .config import Configuration
 from .external import ExternalMixIn
 from .json import APIApplication
-from .web import WebMixIn
+from .web import WebApplication
 
 
 __all__ = (
@@ -44,7 +45,7 @@ __all__ = (
 
 
 @attrs(frozen=True)
-class WebService(WebMixIn, ExternalMixIn):
+class WebService(ExternalMixIn):
     """
     Incident Management System web service.
     """
@@ -65,19 +66,31 @@ class WebService(WebMixIn, ExternalMixIn):
         ),
         init=False,
     )
-    _authApplication: AuthApplication = attrib(
+
+    authApplication: AuthApplication = attrib(
         default=Factory(
-            lambda self: AuthApplication(auth=self.auth, config=self.config),
+            lambda self: AuthApplication(auth=self.auth), takes_self=True
+        ),
+        init=False,
+    )
+
+    apiApplication: APIApplication = attrib(
+        default=Factory(
+            lambda self: APIApplication(
+                config=self.config,
+                storeObserver=self.storeObserver,
+                auth=self.auth,
+            ),
             takes_self=True,
         ),
         init=False,
     )
 
-    _apiApplication: APIApplication = attrib(
+    webApplication: WebApplication = attrib(
         default=Factory(
-            lambda self: APIApplication(
-                auth=self.auth, config=self.config,
-                storeObserver=self.storeObserver,
+            lambda self: WebApplication(
+                config=self.config,
+                auth=self.auth,
             ),
             takes_self=True,
         ),
@@ -99,12 +112,70 @@ class WebService(WebMixIn, ExternalMixIn):
 
 
     #
-    # Auth
+    # Static content
+    #
+
+    @router.route(URLs.root, methods=("HEAD", "GET"))
+    def rootResource(self, request: IRequest) -> KleinRenderable:
+        """
+        Server root page.
+
+        This redirects to the application root page.
+        """
+        return redirect(request, URLs.app)
+
+
+    @router.route(URLs.styleSheet, methods=("HEAD", "GET"))
+    @static
+    def styleSheetResource(self, request: IRequest) -> KleinRenderable:
+        """
+        Endpoint for global style sheet.
+        """
+        return styleSheet(request, "style.css")
+
+
+    @router.route(URLs.logo, methods=("HEAD", "GET"))
+    @static
+    def logoResource(self, request: IRequest) -> KleinRenderable:
+        """
+        Endpoint for logo.
+        """
+        request.setHeader(HeaderName.contentType.value, ContentType.png.value)
+        return builtInResource(request, "logo.png")
+
+
+    @router.route(URLs.imsJS, methods=("HEAD", "GET"))
+    @static
+    def imsJSResource(self, request: IRequest) -> KleinRenderable:
+        """
+        Endpoint for C{ims.js}.
+        """
+        return javaScript(request, "ims.js")
+
+
+    #
+    # Child application endpoints
     #
 
     @router.route(URLs.auth, branch=True)
-    def authApplication(self, request: IRequest) -> KleinRenderable:
+    def authApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
-        Auth resource.
+        Auth application resource.
         """
-        return self._authApplication.router.resource()
+        return self.authApplication.router.resource()
+
+
+    @router.route(URLs.api, branch=True)
+    def apiApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
+        """
+        API application resource.
+        """
+        return self.apiApplication.router.resource()
+
+
+    @router.route(URLs.app, branch=True)
+    def webApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
+        """
+        Web application resource.
+        """
+        return self.webApplication.router.resource()

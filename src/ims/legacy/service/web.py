@@ -20,90 +20,64 @@ Incident Management System web interface.
 
 from typing import Optional
 
+from attr import attrib, attrs
+from attr.validators import instance_of
+
+from hyperlink import URL
+
 from twisted.web.iweb import IRequest
 
 from ims.application._auth import AuthProvider, Authorization
-from ims.application._klein import notFoundResponse, redirect, router
-from ims.application._static import builtInResource, javaScript, styleSheet
+from ims.application._klein import Router, notFoundResponse, redirect
+from ims.application._static import javaScript
 from ims.application._urls import URLs
-from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
+from ims.ext.klein import KleinRenderable, static
+from ims.legacy.element.admin import AdminPage
+from ims.legacy.element.admin_acl import AdminAccessControlPage
+from ims.legacy.element.admin_streets import AdminStreetsPage
+from ims.legacy.element.admin_types import AdminIncidentTypesPage
+from ims.legacy.element.incident import IncidentPage
+from ims.legacy.element.incident_template import IncidentTemplatePage
+from ims.legacy.element.queue import DispatchQueuePage
+from ims.legacy.element.queue_template import DispatchQueueTemplatePage
+from ims.legacy.element.report import IncidentReportPage
+from ims.legacy.element.report_template import IncidentReportTemplatePage
+from ims.legacy.element.root import RootPage
 from ims.model import Event
 
-from ..element.admin import AdminPage
-from ..element.admin_acl import AdminAccessControlPage
-from ..element.admin_streets import AdminStreetsPage
-from ..element.admin_types import AdminIncidentTypesPage
-from ..element.incident import IncidentPage
-from ..element.incident_template import IncidentTemplatePage
-from ..element.queue import DispatchQueuePage
-from ..element.queue_template import DispatchQueueTemplatePage
-from ..element.report import IncidentReportPage
-from ..element.report_template import IncidentReportTemplatePage
-from ..element.root import RootPage
+from .config import Configuration
 
 Optional  # silence linter
 
 
 __all__ = (
-    "WebMixIn",
+    "WebApplication",
 )
 
 
+def _unprefix(url: URL) -> URL:
+    prefix = URLs.app.path[:-1]
+    assert url.path[:len(prefix)] == prefix, (url.path[len(prefix):], prefix)
+    return url.replace(path=url.path[len(prefix):])
 
-class WebMixIn(object):
+
+
+@attrs(frozen=True)
+class WebApplication(object):
     """
-    Mix-in for web interface.
+    Application with web interface endpoints.
     """
 
-    auth: AuthProvider
+    router = Router()
 
-    #
-    # Static content
-    #
-
-    @router.route(URLs.styleSheet, methods=("HEAD", "GET"))
-    @static
-    def styleSheetResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for global style sheet.
-        """
-        return styleSheet(request, "style.css")
-
-
-    @router.route(URLs.logo, methods=("HEAD", "GET"))
-    @static
-    def logoResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for logo.
-        """
-        request.setHeader(HeaderName.contentType.value, ContentType.png.value)
-        return builtInResource(request, "logo.png")
-
-
-    @router.route(URLs.imsJS, methods=("HEAD", "GET"))
-    @static
-    def imsJSResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for C{ims.js}.
-        """
-        return javaScript(request, "ims.js")
-
+    auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
+    config: Configuration = attrib(validator=instance_of(Configuration))
 
     #
     # Web interface
     #
 
-    @router.route(URLs.root, methods=("HEAD", "GET"))
-    def rootResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Server root page.
-
-        This redirects to the application root page.
-        """
-        return redirect(request, URLs.prefix)
-
-
-    @router.route(URLs.prefix, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.app), methods=("HEAD", "GET"))
     @static
     def applicationRootResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -112,7 +86,7 @@ class WebMixIn(object):
         return RootPage(self)
 
 
-    @router.route(URLs.viewEvent, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.viewEvent), methods=("HEAD", "GET"))
     def viewEventResource(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
@@ -124,7 +98,7 @@ class WebMixIn(object):
         return redirect(request, URLs.viewDispatchQueueRelative)
 
 
-    @router.route(URLs.admin, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.admin), methods=("HEAD", "GET"))
     @static
     async def adminPage(self, request: IRequest) -> KleinRenderable:
         """
@@ -137,7 +111,7 @@ class WebMixIn(object):
         return AdminPage(self)
 
 
-    @router.route(URLs.adminJS, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.adminJS), methods=("HEAD", "GET"))
     @static
     def adminJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -145,7 +119,7 @@ class WebMixIn(object):
         """
         return javaScript(request, "admin.js")
 
-    @router.route(URLs.adminAccessControl, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.adminAccessControl), methods=("HEAD", "GET"))
     async def adminAccessControlPage(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -159,7 +133,9 @@ class WebMixIn(object):
         return AdminAccessControlPage(self)
 
 
-    @router.route(URLs.adminAccessControlJS, methods=("HEAD", "GET"))
+    @router.route(
+        _unprefix(URLs.adminAccessControlJS), methods=("HEAD", "GET")
+    )
     @static
     def adminAccessControlJSResource(
         self, request: IRequest
@@ -170,7 +146,7 @@ class WebMixIn(object):
         return javaScript(request, "admin_acl.js")
 
 
-    @router.route(URLs.adminIncidentTypes, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.adminIncidentTypes), methods=("HEAD", "GET"))
     async def adminAdminIncidentTypesPagePage(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -184,7 +160,9 @@ class WebMixIn(object):
         return AdminIncidentTypesPage(self)
 
 
-    @router.route(URLs.adminIncidentTypesJS, methods=("HEAD", "GET"))
+    @router.route(
+        _unprefix(URLs.adminIncidentTypesJS), methods=("HEAD", "GET")
+    )
     @static
     def adminAdminIncidentTypesPageJSResource(
         self, request: IRequest
@@ -195,7 +173,7 @@ class WebMixIn(object):
         return javaScript(request, "admin_types.js")
 
 
-    @router.route(URLs.adminStreets, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.adminStreets), methods=("HEAD", "GET"))
     async def adminStreetsPage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for streets admin page.
@@ -207,7 +185,7 @@ class WebMixIn(object):
         return AdminStreetsPage(self)
 
 
-    @router.route(URLs.adminStreetsJS, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.adminStreetsJS), methods=("HEAD", "GET"))
     @static
     def adminStreetsJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -216,7 +194,7 @@ class WebMixIn(object):
         return javaScript(request, "admin_streets.js")
 
 
-    @router.route(URLs.viewDispatchQueue, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.viewDispatchQueue), methods=("HEAD", "GET"))
     async def viewDispatchQueuePage(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
@@ -233,7 +211,9 @@ class WebMixIn(object):
         return DispatchQueuePage(self, event)
 
 
-    @router.route(URLs.viewDispatchQueueTemplate, methods=("HEAD", "GET"))
+    @router.route(
+        _unprefix(URLs.viewDispatchQueueTemplate), methods=("HEAD", "GET")
+    )
     @static
     def viewDispatchQueueTemplatePage(
         self, request: IRequest
@@ -244,7 +224,7 @@ class WebMixIn(object):
         return DispatchQueueTemplatePage(self)
 
 
-    @router.route(URLs.viewDispatchQueueJS, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.viewDispatchQueueJS), methods=("HEAD", "GET"))
     @static
     def viewDispatchQueueJSResource(
         self, request: IRequest
@@ -255,7 +235,7 @@ class WebMixIn(object):
         return javaScript(request, "queue.js")
 
 
-    @router.route(URLs.viewIncidentNumber, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.viewIncidentNumber), methods=("HEAD", "GET"))
     async def viewIncidentPage(
         self, request: IRequest, eventID: str, number: str
     ) -> KleinRenderable:
@@ -280,7 +260,9 @@ class WebMixIn(object):
         return IncidentPage(self, event, numberValue)
 
 
-    @router.route(URLs.viewIncidentNumberTemplate, methods=("HEAD", "GET"))
+    @router.route(
+        _unprefix(URLs.viewIncidentNumberTemplate), methods=("HEAD", "GET")
+    )
     @static
     def viewIncidentNumberTemplatePage(
         self, request: IRequest
@@ -291,7 +273,9 @@ class WebMixIn(object):
         return IncidentTemplatePage(self)
 
 
-    @router.route(URLs.viewIncidentNumberJS, methods=("HEAD", "GET"))
+    @router.route(
+        _unprefix(URLs.viewIncidentNumberJS), methods=("HEAD", "GET")
+    )
     @static
     def incidentJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -303,7 +287,7 @@ class WebMixIn(object):
     # FIXME: viewIncidentReports
 
 
-    @router.route(URLs.viewIncidentReport, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.viewIncidentReport), methods=("HEAD", "GET"))
     async def viewIncidentReportPage(
         self, request: IRequest, number: str
     ) -> KleinRenderable:
@@ -329,7 +313,9 @@ class WebMixIn(object):
         return IncidentReportPage(self, numberValue)
 
 
-    @router.route(URLs.viewIncidentReportTemplate, methods=("HEAD", "GET"))
+    @router.route(
+        _unprefix(URLs.viewIncidentReportTemplate), methods=("HEAD", "GET")
+    )
     @static
     def viewIncidentReportTemplatePage(
         self, request: IRequest
@@ -340,7 +326,9 @@ class WebMixIn(object):
         return IncidentReportTemplatePage(self)
 
 
-    @router.route(URLs.viewIncidentReportJS, methods=("HEAD", "GET"))
+    @router.route(
+        _unprefix(URLs.viewIncidentReportJS), methods=("HEAD", "GET")
+    )
     @static
     def viewIncidentReportJSResource(
         self, request: IRequest

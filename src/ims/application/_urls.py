@@ -85,10 +85,12 @@ class URLs(object):
 
     eventSource      = api.child("eventsource")
 
-    # Web UI
-    imsJS                      = prefix.child("ims.js")
+    # Web application
+    app                        = prefix.child("app").child("")
 
-    admin                      = prefix.child("admin").child("")
+    imsJS                      = app.child("ims.js")
+
+    admin                      = app.child("admin").child("")
     adminJS                    = admin.child("admin.js")
 
     adminAccessControl         = admin.child("access")
@@ -100,20 +102,20 @@ class URLs(object):
     adminStreets               = admin.child("streets")
     adminStreetsJS             = admin.child("streets.js")
 
-    viewEvents                 = prefix.child("events").child("")
+    viewEvents                 = app.child("events").child("")
     viewEvent                  = viewEvents.child("<eventID>").child("")
 
     viewDispatchQueue          = viewEvent.child("queue")
-    viewDispatchQueueTemplate  = prefix.child("queue.html")
-    viewDispatchQueueJS        = prefix.child("queue.js")
+    viewDispatchQueueTemplate  = app.child("queue.html")
+    viewDispatchQueueJS        = app.child("queue.js")
     viewDispatchQueueRelative  = URL.fromText("queue")
 
     viewIncidents              = viewEvent.child("incidents").child("")
     viewIncidentNumber         = viewIncidents.child("<number>")
-    viewIncidentNumberTemplate = prefix.child("incident.html")
-    viewIncidentNumberJS       = prefix.child("incident.js")
+    viewIncidentNumberTemplate = app.child("incident.html")
+    viewIncidentNumberJS       = app.child("incident.js")
 
-    viewIncidentReports        = prefix.child("incident_reports").child("")
+    viewIncidentReports        = app.child("incident_reports").child("")
     viewIncidentReport         = viewIncidentReports.child("<number>")
-    viewIncidentReportTemplate = prefix.child("incident_report.html")
-    viewIncidentReportJS       = prefix.child("incident_report.js")
+    viewIncidentReportTemplate = app.child("incident_report.html")
+    viewIncidentReportJS       = app.child("incident_report.js")
