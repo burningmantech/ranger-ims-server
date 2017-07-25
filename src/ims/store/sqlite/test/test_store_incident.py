@@ -237,7 +237,7 @@ class DataStoreIncidentTests(DataStoreTests):
                     )
                     createdConcentricStreets[event].add(concentric)
 
-            returnedIncident = self.successResultOf(
+            retrieved = self.successResultOf(
                 store.createIncident(incident=incident, author=author)
             )
 
@@ -247,7 +247,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 number=nextNumbers.setdefault(event, 1)
             )
             self.assertIncidentsEqual(
-                returnedIncident, expectedStoredIncident, ignoreAutomatic=True
+                retrieved, expectedStoredIncident, ignoreAutomatic=True
             )
 
             # Add to set of stored incidents
@@ -294,14 +294,15 @@ class DataStoreIncidentTests(DataStoreTests):
                 location=Location(name="There", address=None),
                 rangerHandles=(), incidentTypes=(), reportEntries=(),
             ),
-            "Hubcap")
-        )
+            "Hubcap"
+        ))
         self.assertEqual(f.type, StorageError)
 
 
     def test_setIncident_priority_error(self) -> None:
         """
-        :meth:`DataStore.setIncident_priority` raises ...
+        :meth:`DataStore.setIncident_priority` raises StorageError when SQLite
+        raises an exception.
         """
         event = Event(id="foo")
         store = self.store()
@@ -316,8 +317,8 @@ class DataStoreIncidentTests(DataStoreTests):
                 location=Location(name="There", address=None),
                 rangerHandles=(), incidentTypes=(), reportEntries=(),
             ),
-            "Hubcap")
-        )
+            "Hubcap"
+        ))
         store.bringThePain()
 
         f = self.failureResultOf(
@@ -599,7 +600,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self.successResultOf(store.createEvent(incident.event))
         self.storeIncident(store, incident)
 
-        # Fetch incident back so we're looking at the version from the DB
+        # Fetch incident back so we have the version from the DB
         incident = self.successResultOf(
             store.incidentWithNumber(incident.event, incident.number)
         )
