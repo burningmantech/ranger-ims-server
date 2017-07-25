@@ -490,7 +490,7 @@ class DataStoreIncidentTests(DataStoreTests):
         )
 
 
-    @given(incidents(new=True), lists(rangerHandles()))
+    @given(incidents(new=True), lists(rangerHandles(), average_size=2))
     def test_setIncident_rangers(
         self, incident: Incident, rangerHandles: Iterable[str]
     ) -> None:
@@ -533,7 +533,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self.assertEqual(f.type, StorageError)
 
 
-    @given(incidents(new=True), lists(incidentTypesText()))
+    @given(incidents(new=True), lists(incidentTypesText(), average_size=2))
     def test_setIncident_incidentTypes(
         self, incident: Incident, incidentTypes: Iterable[str]
     ) -> None:
@@ -578,7 +578,8 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(
-        incidents(new=True), frozensets(reportEntries(automatic=False)),
+        incidents(new=True),
+        frozensets(reportEntries(automatic=False), average_size=2),
         rangerHandles(),
     )
     def test_addReportEntriesToIncident(
