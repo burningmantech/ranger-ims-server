@@ -74,14 +74,14 @@ class TestCase(SynchronousTestCase):
             self.assertEqual(prefix, string)
 
 
-    def assertEndsWith(self, string: str, prefix: str) -> None:
+    def assertEndsWith(self, string: str, suffix: str) -> None:
         """
-        Assert that the given string starts with the given prefix.
+        Assert that the given string ends with the given suffix.
         """
-        if len(prefix) < len(string):
-            self.assertEqual(prefix, string[len(prefix):])
+        if len(suffix) < len(string):
+            self.assertEqual(suffix, string[-len(suffix):])
         else:
-            self.assertEqual(prefix, string)
+            self.assertEqual(suffix, string)
 
 
     def assertResponseCode(self, request: IRequest, code: int) -> None:
