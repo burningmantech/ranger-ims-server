@@ -43,9 +43,8 @@ from ims.legacy.element.queue_template import DispatchQueueTemplatePage
 from ims.legacy.element.report import IncidentReportPage
 from ims.legacy.element.report_template import IncidentReportTemplatePage
 from ims.legacy.element.root import RootPage
+from ims.legacy.service.config import Configuration
 from ims.model import Event
-
-from .config import Configuration
 
 Optional  # silence linter
 

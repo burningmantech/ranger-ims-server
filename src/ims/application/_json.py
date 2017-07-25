@@ -47,6 +47,7 @@ from ims.application._urls import URLs
 from ims.dms import DMSError
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
+from ims.legacy.service.config import Configuration
 from ims.model import (
     Event, Incident, IncidentReport, IncidentState, ReportEntry
 )
@@ -56,8 +57,6 @@ from ims.model.json import (
     jsonObjectFromModelObject, modelObjectFromJSONObject
 )
 from ims.store import NoSuchIncidentError
-
-from .config import Configuration
 
 
 __all__ = (

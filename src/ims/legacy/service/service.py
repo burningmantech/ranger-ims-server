@@ -26,16 +26,16 @@ from twisted.web.iweb import IRequest
 
 from ims.application._auth import AuthApplication, AuthProvider
 from ims.application._eventsource import DataStoreEventSourceLogObserver
+from ims.application._json import APIApplication
 from ims.application._klein import redirect, router
 from ims.application._static import builtInResource, javaScript, styleSheet
 from ims.application._urls import URLs
+from ims.application._web import WebApplication
 from ims.dms import DutyManagementSystem
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
 from .config import Configuration
 from .external import ExternalMixIn
-from .json import APIApplication
-from .web import WebApplication
 
 
 __all__ = (
