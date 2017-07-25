@@ -266,10 +266,13 @@ class Element(BaseElement):
         if self.service is None:
             events = ()
         else:
-            events = sorted(
-                event.id for event in
-                await self.service.config.storage.events()
-            )
+            if hasattr(self.service, "config"):
+                events = sorted(
+                    event.id for event in
+                    await self.service.config.storage.events()
+                )
+            else:
+                events = ()
 
         if reverse_order:
             events = reversed(events)
