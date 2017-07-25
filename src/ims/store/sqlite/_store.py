@@ -1765,7 +1765,7 @@ class DataStore(IMSDataStore):
     ) -> Iterable[int]:
         return (
             row["NUMBER"] for row in cursor.execute(
-                self._query_detachedIncidentReportNumbers,
+                self._query_attachedIncidentReportNumbers,
                 dict(eventID=event.id, incidentNumber=incidentNumber)
             )
         )
