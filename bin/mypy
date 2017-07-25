@@ -16,9 +16,6 @@ tmp="$(mktemp -t mypy.XXXX)";
 
 mypy "$@"                                                                                                \
     | grep -v                                                                                            \
-        -e ': error: No library stub file for '                                                          \
-        -e ': note: (Perhaps setting MYPYPATH or using the "--ignore-missing-imports" flag would help)'  \
-        -e ': note: (Stub files are from https://github.com/python/typeshed)'                            \
         -e ': error: "JSONDecodeError" has no attribute '                                                \
         -e ': error: Callable\[\[[^\]\+\], None\] has no attribute "todo"'                               \
         -e ': error: Too many arguments for '                                                            \
