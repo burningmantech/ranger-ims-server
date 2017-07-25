@@ -19,18 +19,18 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
 from datetime import datetime as DateTime, timezone as TimeZone
-from typing import Any, FrozenSet, Iterable, Set, Tuple
+from typing import Any, FrozenSet, Iterable, List, Sequence, Set, Tuple
 
 from attr import fields as attrFields
 
-from hypothesis import given
+from hypothesis import assume, given
 from hypothesis.strategies import frozensets, lists, tuples
 
 from ims.ext.sqlite import SQLITE_MAX_INT
-from ims.model import IncidentReport, ReportEntry
+from ims.model import Incident, IncidentReport, ReportEntry
 from ims.model.strategies import (
     incidentReportLists, incidentReportSummaries, incidentReports,
-    rangerHandles, reportEntries,
+    incidents, rangerHandles, reportEntries,
 )
 
 from .base import DataStoreTests, dateTimesEqualish, reportEntriesEqualish
@@ -288,7 +288,8 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
 
     @given(
-        incidentReports(new=True), frozensets(reportEntries(automatic=False)),
+        incidentReports(new=True),
+        frozensets(reportEntries(automatic=False), average_size=2),
         rangerHandles(),
     )
     def test_addReportEntriesToIncidentReport(
@@ -432,6 +433,79 @@ class DataStoreIncidentReportTests(DataStoreTests):
             )
         )
         self.assertEqual(f.type, StorageError)
+
+
+    @given(
+        incidentReportLists(averageSize=2),
+        lists(
+            tuples(
+                incidents(new=True),
+                incidentReportLists(averageSize=2),
+            ),
+            average_size=2,
+        ),
+    )
+    def test_detachedAndAttachedIncidentReports(
+        self,
+        detached: List[IncidentReport],
+        attached: Iterable[Tuple[Incident, List[IncidentReport]]],
+    ) -> None:
+        """
+        """
+        store = self.store()
+
+        foundIncidentNumbers: Set[int] = set()
+        foundIncidentReportNumbers: Set[int] = set()
+        attachedReports: Set[IncidentReport] = set()
+
+        for incidentReport in detached:
+            self.storeIncidentReport(store, incidentReport)
+            foundIncidentReportNumbers.add(incidentReport.number)
+
+        for incident, reports in attached:
+            assume(incident.number not in foundIncidentNumbers)
+
+            self.storeIncident(store, incident)
+            for incidentReport in reports:
+                assume(incidentReport.number not in foundIncidentReportNumbers)
+
+                self.storeIncidentReport(store, incidentReport)
+                self.successResultOf(
+                    store.attachIncidentReportToIncident(
+                        incidentReport.number, incident.event, incident.number
+                    )
+                )
+                attachedReports.add(incidentReport)
+
+                foundIncidentReportNumbers.add(incidentReport.number)
+
+            storedAttached = tuple(self.successResultOf(
+                store.incidentReportsAttachedToIncident(
+                    incident.event, incident.number
+                )
+            ))
+            self.assertMultipleIncidentReportsEqual(storedAttached, reports)
+
+
+            foundIncidentNumbers.add(incident.number)
+
+        storedDetached = tuple(
+            self.successResultOf(store.detachedIncidentReports())
+        )
+        self.assertMultipleIncidentReportsEqual(storedDetached, detached)
+
+
+    def assertMultipleIncidentReportsEqual(
+        self, groupA: Sequence[IncidentReport],
+        groupB: Sequence[IncidentReport], ignoreAutomatic: bool = False,
+    ) -> None:
+        self.assertEqual(len(groupA), len(groupB))
+
+        bByNumber = {r.number: r for r in groupB}
+
+        for a in groupA:
+            self.assertIn(a.number, bByNumber)
+            self.assertIncidentReportsEqual(a, bByNumber[a.number])
 
 
     def assertIncidentReportsEqual(
