@@ -18,54 +18,57 @@
 Login page.
 """
 
-from .base import Element, renderer
+from twisted.web.iweb import IRequest
+from twisted.web.template import Tag, renderer, tags
+
+from ims.ext.klein import KleinRenderable
+
+from .._element import Page
 
 
-__all__ = (
-    "LoginPage",
-)
+__all__ = ()
 
 
 
-class LoginPage(Element):
+class LoginPage(Page):
     """
     Login page.
     """
 
-    def __init__(self, service, failed=False):
-        """
-        @param service: The service.
-        @param failed: Whether to indicate that a prior login attempt failed.
-        """
-        Element.__init__(self, "login", service, title="Log In")
+    def __init__(self, urls: type, failed: bool = False) -> None:
+        super().__init__(urls=urls, title="Log In")
         self.failed = failed
 
 
     @renderer
-    def if_authn_failed(self, request, tag):
+    def if_authn_failed(
+        self, request: IRequest, tag: Tag = tags.div
+    ) -> KleinRenderable:
         """
         Render conditionally if the user failed to authenticate.
         """
         if self.failed:
             return tag
         else:
-            return ()
+            return ""
 
 
     @renderer
-    def if_authz_failed(self, request, tag):
+    def if_authz_failed(
+        self, request: IRequest, tag: Tag = tags.div
+    ) -> KleinRenderable:
         """
         Render conditionally if the user failed to authorize.
         """
         if self.failed:
             # authn failed, not authz
-            return ()
+            return ""
 
         session = request.getSession()
         user = getattr(session, "user", None)
 
         if user is None:
-            return ()
+            return ""
 
         # We have a user but still got sent to login page
         return tag

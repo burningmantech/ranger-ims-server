@@ -26,6 +26,7 @@ from hyperlink import URL
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
+from ims.element.login import LoginPage
 from ims.ext.klein import KleinRenderable
 
 from ._provider import AuthProvider
@@ -63,11 +64,9 @@ class AuthApplication(object):
         """
         Endpoint for the login page.
         """
-        from ims.legacy.element.login import LoginPage
-
         self.auth.authenticateRequest(request, optional=True)
 
-        return LoginPage(self, failed=failed)
+        return LoginPage(URLs, failed=failed)
 
 
     @router.route(_unprefix(URLs.login), methods=("POST",))
