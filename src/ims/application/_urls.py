@@ -33,6 +33,8 @@ class URLs(object):
     Incident Management System URL schema.
     """
 
+    # Main application
+
     root = URL.fromText("/")
 
     prefix = root.child("ims").child("")
@@ -41,34 +43,41 @@ class URLs(object):
 
     logo = prefix.child("logo.png")
 
+    # Auth application
+
     auth   = prefix.child("auth").child("")
     login  = auth.child("login")
     logout = auth.child("logout")
 
-    jqueryBase = prefix.child("jquery").child("")
+    # External application
+
+    external = prefix.child("ext").child("")
+
+    jqueryBase = external.child("jquery").child("")
     jqueryJS   = jqueryBase.child("jquery.min.js")
     jqueryMap  = jqueryBase.child("jquery.min.map")
 
-    bootstrapBase = prefix.child("bootstrap").child("")
+    bootstrapBase = external.child("bootstrap").child("")
     bootstrapCSS  = bootstrapBase.child("css", "bootstrap.min.css")
     bootstrapJS   = bootstrapBase.child("js", "bootstrap.min.js")
 
-    dataTablesBase = prefix.child("datatables").child("")
+    dataTablesBase = external.child("datatables").child("")
     dataTablesJS = dataTablesBase.child(
         "media", "js", "jquery.dataTables.min.js"
     )
-    dataTablesbootstrapCSS = dataTablesBase.child(
+    dataTablesBootstrapCSS = dataTablesBase.child(
         "media", "css", "dataTables.bootstrap.min.css"
     )
-    dataTablesbootstrapJS = dataTablesBase.child(
+    dataTablesBootstrapJS = dataTablesBase.child(
         "media", "js", "dataTables.bootstrap.min.js"
     )
 
-    momentJS = prefix.child("moment.min.js")
+    momentJS = external.child("moment.min.js")
 
-    lscacheJS = prefix.child("lscache.min.js")
+    lscacheJS = external.child("lscache.min.js")
 
-    # API endpoints
+    # API application
+
     api              = prefix.child("api").child("")
     ping             = api.child("ping").child("")
     acl              = api.child("access")
@@ -85,10 +94,13 @@ class URLs(object):
 
     eventSource      = api.child("eventsource")
 
-    # Web UI
-    imsJS                      = prefix.child("ims.js")
+    # Web application
 
-    admin                      = prefix.child("admin").child("")
+    app                        = prefix.child("app").child("")
+
+    imsJS                      = app.child("ims.js")
+
+    admin                      = app.child("admin").child("")
     adminJS                    = admin.child("admin.js")
 
     adminAccessControl         = admin.child("access")
@@ -100,20 +112,20 @@ class URLs(object):
     adminStreets               = admin.child("streets")
     adminStreetsJS             = admin.child("streets.js")
 
-    viewEvents                 = prefix.child("events").child("")
+    viewEvents                 = app.child("events").child("")
     viewEvent                  = viewEvents.child("<eventID>").child("")
 
     viewDispatchQueue          = viewEvent.child("queue")
-    viewDispatchQueueTemplate  = prefix.child("queue.html")
-    viewDispatchQueueJS        = prefix.child("queue.js")
+    viewDispatchQueueTemplate  = app.child("queue.html")
+    viewDispatchQueueJS        = app.child("queue.js")
     viewDispatchQueueRelative  = URL.fromText("queue")
 
     viewIncidents              = viewEvent.child("incidents").child("")
     viewIncidentNumber         = viewIncidents.child("<number>")
-    viewIncidentNumberTemplate = prefix.child("incident.html")
-    viewIncidentNumberJS       = prefix.child("incident.js")
+    viewIncidentNumberTemplate = app.child("incident.html")
+    viewIncidentNumberJS       = app.child("incident.js")
 
-    viewIncidentReports        = prefix.child("incident_reports").child("")
+    viewIncidentReports        = app.child("incident_reports").child("")
     viewIncidentReport         = viewIncidentReports.child("<number>")
-    viewIncidentReportTemplate = prefix.child("incident_report.html")
-    viewIncidentReportJS       = prefix.child("incident_report.js")
+    viewIncidentReportTemplate = app.child("incident_report.html")
+    viewIncidentReportJS       = app.child("incident_report.js")

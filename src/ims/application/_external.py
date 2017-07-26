@@ -21,28 +21,48 @@ Incident Management System cached external resources.
 from typing import Any
 from zipfile import BadZipfile
 
+from attr import attrib, attrs
+from attr.validators import instance_of
+
 from hyperlink import URL
 
+from twisted.logger import Logger
 from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
 from twisted.web.iweb import IRequest
 
-from ims.application._klein import notFoundResponse, router
-from ims.application._urls import URLs
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
+
+from ._auth import AuthProvider
+from ._config import Configuration
+from ._klein import Router, notFoundResponse
+from ._urls import URLs
 
 
 __all__ = (
-    "ExternalMixIn",
+    "ExternalApplication",
 )
 
 
+def _unprefix(url: URL) -> URL:
+    prefix = URLs.external.path[:-1]
+    assert url.path[:len(prefix)] == prefix, (url.path[len(prefix):], prefix)
+    return url.replace(path=url.path[len(prefix):])
 
-class ExternalMixIn(object):
+
+
+@attrs(frozen=True)
+class ExternalApplication(object):
     """
-    Mix-in for cached external resources.
+    Application with endpoints for cached external resources.
     """
+
+    _log = Logger()
+    router = Router()
+
+    auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
+    config: Configuration = attrib(validator=instance_of(Configuration))
 
     bootstrapVersionNumber  = "3.3.7"
     jqueryVersionNumber     = "3.1.0"
@@ -88,7 +108,9 @@ class ExternalMixIn(object):
     )
 
 
-    @router.route(URLs.bootstrapBase, methods=("HEAD", "GET"), branch=True)
+    @router.route(
+        _unprefix(URLs.bootstrapBase), methods=("HEAD", "GET"), branch=True
+    )
     @static
     async def bootstrapResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -106,7 +128,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.jqueryJS, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.jqueryJS), methods=("HEAD", "GET"))
     @static
     async def jqueryJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -121,7 +143,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.jqueryMap, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.jqueryMap), methods=("HEAD", "GET"))
     @static
     async def jqueryMapResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -134,7 +156,9 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.dataTablesBase, methods=("HEAD", "GET"), branch=True)
+    @router.route(
+        _unprefix(URLs.dataTablesBase), methods=("HEAD", "GET"), branch=True
+    )
     @static
     async def dataTablesResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -152,7 +176,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.momentJS, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.momentJS), methods=("HEAD", "GET"))
     @static
     async def momentJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -167,7 +191,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.lscacheJS, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.lscacheJS), methods=("HEAD", "GET"))
     @static
     async def lscacheJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -200,7 +224,7 @@ class ExternalMixIn(object):
                     url.asText().encode("utf-8"), tmp.open("w")
                 )
             except BaseException:
-                self.log.failure("Download failed for {url}", url=url)
+                self._log.failure("Download failed for {url}", url=url)
                 try:
                     tmp.remove()
                 except (OSError, IOError):
@@ -222,7 +246,7 @@ class ExternalMixIn(object):
         try:
             return filePath.getContent()
         except (OSError, IOError) as e:
-            self.log.error(
+            self._log.error(
                 "Unable to open file {filePath.path}: {error}",
                 filePath=filePath, error=e,
             )
@@ -243,7 +267,7 @@ class ExternalMixIn(object):
         try:
             filePath = ZipArchive(archivePath.path)
         except BadZipfile as e:
-            self.log.error(
+            self._log.error(
                 "Corrupt zip archive {archive.path}: {error}",
                 archive=archivePath, error=e,
             )
@@ -253,7 +277,7 @@ class ExternalMixIn(object):
                 pass
             return notFoundResponse(request)
         except (OSError, IOError) as e:
-            self.log.error(
+            self._log.error(
                 "Unable to open zip archive {archive.path}: {error}",
                 archive=archivePath, error=e,
             )
@@ -266,7 +290,7 @@ class ExternalMixIn(object):
         try:
             return filePath.getContent()
         except KeyError:
-            self.log.error(
+            self._log.error(
                 "File not found in ZIP archive: {filePath.path}",
                 filePath=filePath,
                 archive=archivePath,

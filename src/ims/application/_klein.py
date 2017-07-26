@@ -87,6 +87,10 @@ def redirect(
     if origin is not None:
         location = location.set(origin, request.uri.decode("utf-8"))
 
+    log.debug(
+        "Redirect {source} -> {destination}",
+        source=request.uri.decode("utf-8"), destination=location.asText(),
+    )
     url = location.asText().encode("utf-8")
 
     request.setHeader(HeaderName.contentType.value, ContentType.html.value)

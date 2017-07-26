@@ -28,13 +28,12 @@ from twisted.logger import Logger
 from twisted.python.filepath import FilePath
 from twisted.web.server import Session, Site
 
+from ims.application._config import Configuration
+from ims.application._log import patchCombinedLogFormatter
+from ims.application._main import MainApplication
 from ims.model import Event
 from ims.store import StorageError
 from ims.store.sqlite import DataStore
-
-from .config import Configuration
-from .log import patchCombinedLogFormatter
-from .service import WebService
 
 
 __all__ = (
@@ -128,7 +127,7 @@ class WebTool(Executable):
         See L{Executable.whenRunning}.
         """
         config = self.options["configuration"]
-        service = WebService(config)
+        service = MainApplication(config)
 
         host = self.options.get("host", "localhost")
         port = int(self.options["port"])
@@ -173,14 +172,28 @@ class KleinTool(Executable):
         self.options.initConfig()
 
         config = self.options["configuration"]
-        service = WebService(config)
+        service = MainApplication(config)
 
-        for rule in service.router.url_map.iter_rules():
-            methods = list(rule.methods)
-            print(
-                "{rule.rule} {methods} -> {rule.endpoint}"
-                .format(rule=rule, methods=methods)
-            )
+        application: Any
+        for application in (
+            service,
+            service.authApplication,
+            service.apiApplication,
+            service.webApplication,
+        ):
+            for rule in application.router.url_map.iter_rules():
+                if rule.methods is None:
+                    methods = "<default>"
+                else:
+                    methods = str(list(rule.methods))
+                print(
+                    "{rule.rule} {methods} -> {application}.{rule.endpoint}"
+                    .format(
+                        rule=rule,
+                        methods=methods,
+                        application=application.__class__.__name__,
+                    )
+                )
 
         exit(ExitStatus.EX_OK)
 
