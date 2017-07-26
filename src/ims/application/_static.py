@@ -27,8 +27,9 @@ from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
 
 import ims.legacy.element
-from ims.application._klein import notFoundResponse
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable
+
+from ._klein import notFoundResponse
 
 
 __all__ = ()

@@ -28,11 +28,11 @@ from twisted.logger import Logger
 from twisted.python.filepath import FilePath
 from twisted.web.server import Session, Site
 
+from ims.application._config import Configuration
 from ims.model import Event
 from ims.store import StorageError
 from ims.store.sqlite import DataStore
 
-from .config import Configuration
 from .log import patchCombinedLogFormatter
 from .service import WebService
 

@@ -27,10 +27,6 @@ from hyperlink import URL
 
 from twisted.web.iweb import IRequest
 
-from ims.application._auth import AuthProvider, Authorization
-from ims.application._klein import Router, notFoundResponse, redirect
-from ims.application._static import javaScript
-from ims.application._urls import URLs
 from ims.ext.klein import KleinRenderable, static
 from ims.legacy.element.admin import AdminPage
 from ims.legacy.element.admin_acl import AdminAccessControlPage
@@ -43,8 +39,13 @@ from ims.legacy.element.queue_template import DispatchQueueTemplatePage
 from ims.legacy.element.report import IncidentReportPage
 from ims.legacy.element.report_template import IncidentReportTemplatePage
 from ims.legacy.element.root import RootPage
-from ims.legacy.service.config import Configuration
 from ims.model import Event
+
+from ._auth import AuthProvider, Authorization
+from ._config import Configuration
+from ._klein import Router, notFoundResponse, redirect
+from ._static import javaScript
+from ._urls import URLs
 
 Optional  # silence linter
 
