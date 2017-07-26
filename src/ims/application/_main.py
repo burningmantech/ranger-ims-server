@@ -38,13 +38,13 @@ from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
 
 __all__ = (
-    "WebService",
+    "MainApplication",
 )
 
 
 
 @attrs(frozen=True)
-class WebService(object):
+class MainApplication(object):
     """
     Incident Management System web service.
     """

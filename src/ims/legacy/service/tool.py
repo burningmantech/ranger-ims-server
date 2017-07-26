@@ -34,7 +34,7 @@ from ims.model import Event
 from ims.store import StorageError
 from ims.store.sqlite import DataStore
 
-from .service import WebService
+from ims.application._main import MainApplication
 
 
 __all__ = (
@@ -128,7 +128,7 @@ class WebTool(Executable):
         See L{Executable.whenRunning}.
         """
         config = self.options["configuration"]
-        service = WebService(config)
+        service = MainApplication(config)
 
         host = self.options.get("host", "localhost")
         port = int(self.options["port"])
@@ -173,7 +173,7 @@ class KleinTool(Executable):
         self.options.initConfig()
 
         config = self.options["configuration"]
-        service = WebService(config)
+        service = MainApplication(config)
 
         application: Any
         for application in (
