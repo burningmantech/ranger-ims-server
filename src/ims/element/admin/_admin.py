@@ -15,27 +15,22 @@
 ##
 
 """
-Admin root page.
+Admin page.
 """
 
-from .base import Element
+from ims.application._config import Configuration
+
+from .._page import Page
 
 
-__all__ = (
-    "AdminPage",
-)
+__all__ = ()
 
 
 
-class AdminPage(Element):
+class AdminPage(Page):
     """
-    Admin root page.
+    Admin page.
     """
 
-    def __init__(self, service):
-        """
-        @param service: The service.
-        """
-        Element.__init__(
-            self, "admin", service, title="Admin"
-        )
+    def __init__(self, config: Configuration) -> None:
+        super().__init__(config=config, title="Administration Tools")
