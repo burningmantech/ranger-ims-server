@@ -201,7 +201,7 @@ class WebApplication(object):
         """
         Endpoint for the dispatch queue page.
         """
-        event = Event(eventID)
+        event = Event(id=eventID)
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
@@ -242,7 +242,7 @@ class WebApplication(object):
         """
         Endpoint for the incident page.
         """
-        event = Event(eventID)
+        event = Event(id=eventID)
 
         numberValue: Optional[int]
         if number == "new":

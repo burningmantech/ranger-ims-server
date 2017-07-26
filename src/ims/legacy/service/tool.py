@@ -127,7 +127,7 @@ class WebTool(Executable):
         See L{Executable.whenRunning}.
         """
         config = self.options["configuration"]
-        service = MainApplication(config)
+        service = MainApplication(config=config)
 
         host = self.options.get("host", "localhost")
         port = int(self.options["port"])
@@ -172,7 +172,7 @@ class KleinTool(Executable):
         self.options.initConfig()
 
         config = self.options["configuration"]
-        service = MainApplication(config)
+        service = MainApplication(config=config)
 
         application: Any
         for application in (
@@ -247,7 +247,7 @@ class JSONLoadTool(Executable):
             """
             BaseOptions.parseArgs(self)
 
-            self["event"] = Event(eventID)
+            self["event"] = Event(id=eventID)
             self["filePath"] = FilePath(fileName)
 
 
@@ -270,7 +270,7 @@ class JSONLoadTool(Executable):
             filePath = self.options["filePath"]
             trialRun = self.options["trialRun"]
 
-            storage = DataStore(config.DatabaseFile)
+            storage = DataStore(dbPath=config.DatabaseFile)
 
             try:
                 storage.loadFromEventJSON(event, filePath, trialRun=trialRun)

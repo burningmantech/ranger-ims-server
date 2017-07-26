@@ -216,7 +216,7 @@ class DataStore(IMSDataStore):
         See :meth:`IMSDataStore.events`.
         """
         return (
-            Event(row["name"]) for row in self._executeAndIterate(
+            Event(id=row["name"]) for row in self._executeAndIterate(
                 self._query_events, {}, "Unable to look up events"
             )
         )

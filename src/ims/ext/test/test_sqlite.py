@@ -188,7 +188,9 @@ class DebugToolsTests(TestCase):
         """
         :meth:`QueryPlanExplanation.Line.__str__` emits the expected string.
         """
-        line = QueryPlanExplanation.Line(12, 34, "Blah blah")
+        line = QueryPlanExplanation.Line(
+            nestingOrder=12, selectFrom=34, details="Blah blah"
+        )
         self.assertEqual(str(line), "[12,34] Blah blah")
 
 
@@ -198,7 +200,12 @@ class DebugToolsTests(TestCase):
         string.
         """
         explanation = QueryPlanExplanation(
-            "foo", "select * from FOO", (QueryPlanExplanation.Line(0, 0, "X"),)
+            name="foo", query="select * from FOO",
+            lines=(
+                QueryPlanExplanation.Line(
+                    nestingOrder=0, selectFrom=0, details="X"
+                ),
+            )
         )
         self.assertEqual(
             str(explanation),
@@ -217,7 +224,9 @@ class DebugToolsTests(TestCase):
         :meth:`QueryPlanExplanation.__str__` without lines emits the expected
         string.
         """
-        explanation = QueryPlanExplanation("foo", "select * from FOO", ())
+        explanation = QueryPlanExplanation(
+            name="foo", query="select * from FOO", lines=()
+        )
         self.assertEqual(
             str(explanation),
             (
