@@ -28,14 +28,13 @@ from ims.application._api import APIApplication
 from ims.application._auth import AuthApplication, AuthProvider
 from ims.application._config import Configuration
 from ims.application._eventsource import DataStoreEventSourceLogObserver
+from ims.application._external import ExternalApplication
 from ims.application._klein import redirect, router
 from ims.application._static import builtInResource, javaScript, styleSheet
 from ims.application._urls import URLs
 from ims.application._web import WebApplication
 from ims.dms import DutyManagementSystem
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
-
-from .external import ExternalApplication
 
 
 __all__ = (

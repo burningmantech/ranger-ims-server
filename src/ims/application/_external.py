@@ -31,11 +31,12 @@ from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
 from twisted.web.iweb import IRequest
 
-from ims.application._auth import AuthProvider
-from ims.application._klein import Router, notFoundResponse
-from ims.application._config import Configuration
-from ims.application._urls import URLs
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
+
+from ._auth import AuthProvider
+from ._klein import Router, notFoundResponse
+from ._config import Configuration
+from ._urls import URLs
 
 
 __all__ = (
