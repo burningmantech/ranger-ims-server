@@ -24,10 +24,10 @@ from attr.validators import instance_of
 from twisted.logger import ILogObserver, Logger, globalLogPublisher
 from twisted.web.iweb import IRequest
 
+from ims.application._api import APIApplication
 from ims.application._auth import AuthApplication, AuthProvider
 from ims.application._config import Configuration
 from ims.application._eventsource import DataStoreEventSourceLogObserver
-from ims.application._json import APIApplication
 from ims.application._klein import redirect, router
 from ims.application._static import builtInResource, javaScript, styleSheet
 from ims.application._urls import URLs
