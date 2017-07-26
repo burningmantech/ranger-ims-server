@@ -480,7 +480,7 @@ class APIApplication(object):
                     author=author,
                     text=jsonEntry[ReportEntryJSONKey.text.value],
                     created=now,
-                    system_entry=False,
+                    automatic=False,
                 )
                 for jsonEntry in jsonEntries
             )
@@ -745,7 +745,7 @@ class APIApplication(object):
                     author=author,
                     text=jsonEntry[ReportEntryJSONKey.text.value],
                     created=now,
-                    system_entry=False,
+                    automatic=False,
                 )
                 for jsonEntry in jsonEntries
             )
