@@ -100,11 +100,11 @@ for tool, (module, function) in script_entry_points.items():
 
 package_data = dict(
     ims = [
+        "application/test/*.conf",
         "legacy/element/*.css",
         "legacy/element/*.js",
         "legacy/element/*.png",
         "legacy/element/*.xhtml",
-        "legacy/service/test/*.conf",
         "store/sqlite/schema.sqlite",
     ],
 )

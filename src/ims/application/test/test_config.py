@@ -15,14 +15,14 @@
 ##
 
 """
-Tests for L{ims.config}.
+Tests for L{ims.application._config}.
 """
 
 from twisted.python.filepath import FilePath
 
 from ims.ext.trial import TestCase
 
-from ..config import Configuration
+from .._config import Configuration
 
 
 __all__ = ()
