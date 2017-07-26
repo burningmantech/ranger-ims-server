@@ -18,33 +18,31 @@
 Admin access control page.
 """
 
+from twisted.web.iweb import IRequest
+from twisted.web.template import Tag, renderer
+
+from ims.application._config import Configuration
 from ims.ext.json import jsonTextFromObject
+from ims.ext.klein import KleinRenderable
 
-from .base import Element, renderer
-
-
-__all__ = (
-    "AdminAccessControlPage",
-)
+from .._page import Page
 
 
+__all__ = ()
 
-class AdminAccessControlPage(Element):
+
+
+class AdminAccessControlPage(Page):
     """
     Admin access control page.
     """
 
-    def __init__(self, service):
-        """
-        @param service: The service.
-        """
-        Element.__init__(
-            self, "admin_acl", service, title="Admin: Event Access Control"
-        )
+    def __init__(self, config: Configuration) -> None:
+        super().__init__(config=config, title="Event Access Control")
 
 
     @renderer
-    def eventNames(self, request, tag):
+    def events_list(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         JSON list of strings: events IDs.
         """
