@@ -102,7 +102,7 @@ class AuthApplication(object):
 
                 url = queryValue(request, "o")
                 if url is None:
-                    location = URLs.prefix  # Default to application home
+                    location = URLs.app  # Default to application home
                 else:
                     location = URL.fromText(url)
 
@@ -125,4 +125,4 @@ class AuthApplication(object):
         session.expire()
 
         # Redirect back to application home
-        return redirect(request, URLs.prefix)
+        return redirect(request, URLs.app)
