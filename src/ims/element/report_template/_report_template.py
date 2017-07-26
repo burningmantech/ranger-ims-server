@@ -15,27 +15,24 @@
 ##
 
 """
-Incident report page template.
+Incident report template page.
 """
 
-from .base import Element
+from ims.application._config import Configuration
+
+from .._page import Page
 
 
-__all__ = (
-    "IncidentReportTemplatePage",
-)
+__all__ = ()
 
 
+title = "Incident Report Details"
 
-class IncidentReportTemplatePage(Element):
+
+class IncidentReportTemplatePage(Page):
     """
-    Incident report page template.
+    Incident report template page.
     """
 
-    def __init__(self, service):
-        """
-        @param service: The service.
-        """
-        Element.__init__(
-            self, "report_template", service, title="Incident Report Details"
-        )
+    def __init__(self, config: Configuration) -> None:
+        super().__init__(config=config, title=title)

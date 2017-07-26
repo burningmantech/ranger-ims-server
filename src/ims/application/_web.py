@@ -27,17 +27,17 @@ from hyperlink import URL
 
 from twisted.web.iweb import IRequest
 
+from ims.element.incident_template import IncidentTemplatePage
+from ims.element.queue_template import DispatchQueueTemplatePage
+from ims.element.report_template import IncidentReportTemplatePage
 from ims.ext.klein import KleinRenderable, static
 from ims.legacy.element.admin import AdminPage
 from ims.legacy.element.admin_acl import AdminAccessControlPage
 from ims.legacy.element.admin_streets import AdminStreetsPage
 from ims.legacy.element.admin_types import AdminIncidentTypesPage
 from ims.legacy.element.incident import IncidentPage
-from ims.legacy.element.incident_template import IncidentTemplatePage
 from ims.legacy.element.queue import DispatchQueuePage
-from ims.legacy.element.queue_template import DispatchQueueTemplatePage
 from ims.legacy.element.report import IncidentReportPage
-from ims.legacy.element.report_template import IncidentReportTemplatePage
 from ims.legacy.element.root import RootPage
 from ims.model import Event
 
@@ -221,7 +221,7 @@ class WebApplication(object):
         """
         Endpoint for the dispatch queue page template.
         """
-        return DispatchQueueTemplatePage(self)
+        return DispatchQueueTemplatePage(self.config)
 
 
     @router.route(_unprefix(URLs.viewDispatchQueueJS), methods=("HEAD", "GET"))
@@ -270,7 +270,7 @@ class WebApplication(object):
         """
         Endpoint for the incident page template.
         """
-        return IncidentTemplatePage(self)
+        return IncidentTemplatePage(self.config)
 
 
     @router.route(
@@ -323,7 +323,7 @@ class WebApplication(object):
         """
         Endpoint for the incident page template.
         """
-        return IncidentReportTemplatePage(self)
+        return IncidentReportTemplatePage(self.config)
 
 
     @router.route(

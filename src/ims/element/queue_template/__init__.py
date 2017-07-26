@@ -15,27 +15,12 @@
 ##
 
 """
-Dispatch queue page template.
+Dispatch queue template page element.
 """
 
-from .base import Element
+from ._queue_template import DispatchQueueTemplatePage
 
 
 __all__ = (
     "DispatchQueueTemplatePage",
 )
-
-
-
-class DispatchQueueTemplatePage(Element):
-    """
-    Queue page template.
-    """
-
-    def __init__(self, service):
-        """
-        @param service: The service.
-        """
-        Element.__init__(
-            self, "queue_template", service, title="Dispatch Queue"
-        )
