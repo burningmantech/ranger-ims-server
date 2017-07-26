@@ -26,6 +26,7 @@ from attr.validators import instance_of
 
 from hyperlink import URL
 
+from twisted.logger import Logger
 from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
@@ -34,8 +35,8 @@ from twisted.web.iweb import IRequest
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
 from ._auth import AuthProvider
-from ._klein import Router, notFoundResponse
 from ._config import Configuration
+from ._klein import Router, notFoundResponse
 from ._urls import URLs
 
 
@@ -57,6 +58,7 @@ class ExternalApplication(object):
     Application with endpoints for cached external resources.
     """
 
+    _log = Logger()
     router = Router()
 
     auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
@@ -222,7 +224,7 @@ class ExternalApplication(object):
                     url.asText().encode("utf-8"), tmp.open("w")
                 )
             except BaseException:
-                self.log.failure("Download failed for {url}", url=url)
+                self._log.failure("Download failed for {url}", url=url)
                 try:
                     tmp.remove()
                 except (OSError, IOError):
@@ -244,7 +246,7 @@ class ExternalApplication(object):
         try:
             return filePath.getContent()
         except (OSError, IOError) as e:
-            self.log.error(
+            self._log.error(
                 "Unable to open file {filePath.path}: {error}",
                 filePath=filePath, error=e,
             )
@@ -265,7 +267,7 @@ class ExternalApplication(object):
         try:
             filePath = ZipArchive(archivePath.path)
         except BadZipfile as e:
-            self.log.error(
+            self._log.error(
                 "Corrupt zip archive {archive.path}: {error}",
                 archive=archivePath, error=e,
             )
@@ -275,7 +277,7 @@ class ExternalApplication(object):
                 pass
             return notFoundResponse(request)
         except (OSError, IOError) as e:
-            self.log.error(
+            self._log.error(
                 "Unable to open zip archive {archive.path}: {error}",
                 archive=archivePath, error=e,
             )
@@ -288,7 +290,7 @@ class ExternalApplication(object):
         try:
             return filePath.getContent()
         except KeyError:
-            self.log.error(
+            self._log.error(
                 "File not found in ZIP archive: {filePath.path}",
                 filePath=filePath,
                 archive=archivePath,

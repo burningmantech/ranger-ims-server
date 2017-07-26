@@ -30,11 +30,10 @@ from twisted.web.server import Session, Site
 
 from ims.application._config import Configuration
 from ims.application._log import patchCombinedLogFormatter
+from ims.application._main import MainApplication
 from ims.model import Event
 from ims.store import StorageError
 from ims.store.sqlite import DataStore
-
-from ims.application._main import MainApplication
 
 
 __all__ = (

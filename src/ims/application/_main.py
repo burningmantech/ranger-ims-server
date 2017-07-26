@@ -24,17 +24,18 @@ from attr.validators import instance_of
 from twisted.logger import ILogObserver, Logger, globalLogPublisher
 from twisted.web.iweb import IRequest
 
-from ims.application._api import APIApplication
-from ims.application._auth import AuthApplication, AuthProvider
-from ims.application._config import Configuration
-from ims.application._eventsource import DataStoreEventSourceLogObserver
-from ims.application._external import ExternalApplication
-from ims.application._klein import redirect, router
-from ims.application._static import builtInResource, javaScript, styleSheet
-from ims.application._urls import URLs
-from ims.application._web import WebApplication
 from ims.dms import DutyManagementSystem
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
+
+from ._api import APIApplication
+from ._auth import AuthApplication, AuthProvider
+from ._config import Configuration
+from ._eventsource import DataStoreEventSourceLogObserver
+from ._external import ExternalApplication
+from ._klein import redirect, router
+from ._static import builtInResource, javaScript, styleSheet
+from ._urls import URLs
+from ._web import WebApplication
 
 
 __all__ = (
@@ -46,7 +47,7 @@ __all__ = (
 @attrs(frozen=True)
 class MainApplication(object):
     """
-    Incident Management System web service.
+    Incident Management System main application.
     """
 
     log = _log = Logger()
