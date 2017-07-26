@@ -10,22 +10,11 @@ set -u
 tmp="$(mktemp -t mypy.XXXX)";
 
 # Bugs filed:
-# Too many arguments for: https://github.com/python/mypy/issues/2088
-# JSONDecodeError has no attribute: https://github.com/python/mypy/issues/2981
 # Callable has no attribute "todo": ... uh, not sure that's a bug, but ...
+# Too many arguments for: https://github.com/python/mypy/issues/2088
 
 mypy "$@"                                                                                                \
     | grep -v                                                                                            \
-        -e ": error: Cannot find module named 'attr.*'"                                                  \
-        -e ": error: Cannot find module named 'arrow.*'"                                                 \
-        -e ": error: Cannot find module named 'cattr.*'"                                                 \
-        -e ": error: Cannot find module named 'hypothesis.*'"                                            \
-        -e ": error: Cannot find module named 'klein.*'"                                                 \
-        -e ": error: Cannot find module named 'twext.*'"                                                 \
-        -e ': error: No library stub file for '                                                          \
-        -e ': note: (Perhaps setting MYPYPATH or using the "--ignore-missing-imports" flag would help)'  \
-        -e ': note: (Stub files are from https://github.com/python/typeshed)'                            \
-        -e ': error: "JSONDecodeError" has no attribute '                                                \
         -e ': error: Callable\[\[[^\]\+\], None\] has no attribute "todo"'                               \
         -e ': error: Too many arguments for '                                                            \
         -e ': error: Unexpected keyword argument '                                                       \
