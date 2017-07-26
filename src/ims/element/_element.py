@@ -18,13 +18,17 @@
 Element base classes.
 """
 
+from typing import Iterable
+
 from twisted.python.filepath import FilePath
 from twisted.python.reflect import namedModule
 from twisted.web.iweb import IRequest, ITemplateLoader
 from twisted.web.template import (
-    Element as BaseElement, Tag, XMLFile, renderer, tags
+    Element as _Element, Tag, XMLFile, renderer, tags
 )
 
+from ims.application._config import Configuration
+from ims.ext.json import jsonTextFromObject
 from ims.ext.klein import KleinRenderable
 
 
@@ -32,7 +36,7 @@ __all__ = ()
 
 
 
-class Element(BaseElement):
+class BaseElement(_Element):
     """
     XHTML element.
     """
@@ -51,19 +55,22 @@ class Element(BaseElement):
 
 
 
-class Page(Element):
+class Element(BaseElement):
     """
-    XHTML page element.
+    XHTML element.
     """
 
-    def __init__(self, urls: type, title: str) -> None:
+    def __init__(self, config: Configuration) -> None:
         super().__init__()
-        self.urls = urls
-        self.titleText = title
+        self.config = config
 
+
+    ##
+    # Main document elements
+    ##
 
     @renderer
-    def root(self, request: IRequest, tag: Tag = tags.html) -> KleinRenderable:
+    def root(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         Root element.
         """
@@ -83,114 +90,165 @@ class Page(Element):
         return tag
 
 
+    ##
+    # Logged in state
+    ##
+
+    def isAuthenticated(self, request: IRequest) -> bool:
+        return getattr(request, "user", None) is not None
+
+
+    def isAdmin(self, request: IRequest) -> bool:
+        user = getattr(request, "user", None)
+
+        if user is not None:
+            for shortName in user.shortNames:
+                if shortName in self.config.IMSAdmins:
+                    return True
+
+        return False
+
+
     @renderer
-    def title(
-        self, request: IRequest, tag: Tag = tags.title
-    ) -> KleinRenderable:
+    def if_logged_in(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
-        `<title>` element.
+        Render conditionally if the user is logged in.
         """
-        if self.titleText is None:
-            titleText = ""
+        if self.isAuthenticated(request):
+            return tag
+        return ""
+
+
+    @renderer
+    def if_not_logged_in(self, request: IRequest, tag: Tag) -> KleinRenderable:
+        """
+        Render conditionally if the user is not logged in.
+        """
+        if self.isAuthenticated(request):
+            return ""
+        return tag
+
+
+    @renderer
+    def if_admin(self, request: IRequest, tag: Tag) -> KleinRenderable:
+        """
+        Render conditionally if the user is an admin.
+        """
+        if self.isAdmin(request):
+            return tag
         else:
-            titleText = self.titleText
-
-        return tag(titleText)
+            return ""
 
 
     @renderer
-    def head(self, request: IRequest, tag: Tag = tags.head) -> KleinRenderable:
+    def logged_in_user(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
-        <head> element.
+        Embed the logged in user into an element content.
         """
-        urls = self.urls
+        user = getattr(request, "user", None)
+        if user is None:
+            username = "(anonymous user)"
+        else:
+            try:
+                username = user.shortNames[0]
+            except IndexError:
+                username = "* NO USER NAME *"
 
-        children = tag.children
-        tag.children = []
+        if tag.tagName == "text":
+            return username
+        else:
+            return tag(username)
 
-        return tag(
-            tags.meta(charset="utf-8"),
-            tags.meta(
-                name="viewport", content="width=device-width, initial-scale=1"
-            ),
-            tags.link(
-                type="image/png", rel="icon",
-                href=urls.logo.asText(),
-            ),
-            tags.link(
-                type="text/css", rel="stylesheet", media="screen",
-                href=urls.bootstrapCSS.asText(),
-            ),
-            tags.link(
-                type="text/css", rel="stylesheet", media="screen",
-                href=urls.styleSheet.asText(),
-            ),
-            tags.script(src=urls.jqueryJS.asText()),
-            tags.script(src=urls.bootstrapJS.asText()),
-            self.title(request),
-            children,
+
+    ##
+    # Data
+    ##
+
+    @renderer
+    def url(self, request: IRequest, tag: Tag) -> KleinRenderable:
+        """
+        Look up a URL with the name specified by the given tag's C{"url"}
+        attribute, which will be removed.
+        If the tag has an C{"attr"} attribute, remove it and add the URL to the
+        tag in the attribute named by the (removed) C{"attr"} attribute and
+        return the tag.
+        For C{"a"} tags, C{"attr"} defaults to C{"href"}.
+        For C{"img"} tags, C{"attr"} defaults to C{"src"}.
+        If the C{"attr"} attribute is defined C{""}, return the URL as text.
+        """
+        name = tag.attributes.pop("url", None)
+
+        if name is None:
+            raise ValueError("Rendered URL must have a url attribute")
+
+        try:
+            url = getattr(self.config.urls, name)
+        except AttributeError:
+            raise ValueError("Unknown URL name: {}".format(name))
+
+        text = url.asText()
+
+        if tag.tagName == "json":
+            return jsonTextFromObject(text)
+
+        attributeName = tag.attributes.pop("attr", None)
+        if attributeName is None:
+            if tag.tagName in ("a", "link"):
+                attributeName = "href"
+            elif tag.tagName in ("script", "img"):
+                attributeName = "src"
+            else:
+                raise ValueError("Rendered URL must have an attr attribute")
+
+        if attributeName == "":
+            return text
+        else:
+            tag.attributes[attributeName] = text
+            return tag
+
+
+    @renderer
+    async def _events(
+        self, request: IRequest, tag: Tag, reverse_order: bool = False
+    ) -> KleinRenderable:
+        if reverse_order:
+            def order(i: Iterable) -> Iterable:
+                return reversed(sorted(i))
+        else:
+            def order(i: Iterable) -> Iterable:
+                return sorted(i)
+
+        eventIDs = order(
+            event.id for event in
+            await self.config.storage.events()
         )
 
-
-    @renderer
-    def container(
-        self, request: IRequest, tag: Tag = tags.div
-    ) -> KleinRenderable:
-        """
-        App container.
-        """
-        tag.children.insert(0, self.top(request))
-        return tag(self.bottom(request), Class="container-fluid")
-
-
-    @renderer
-    def top(self, request: IRequest, tag: Tag = tags.div) -> KleinRenderable:
-        """
-        Top elements.
-        """
-        return (
-            self.nav(request),
-            self.header(request),
-            self.title(request, tags.h1),
-        )
+        if eventIDs:
+            queue = self.config.urls.viewDispatchQueue.asText()
+            return (
+                tag.clone()(
+                    tags.a(
+                        eventID, href=queue.replace("<eventID>", eventID)
+                    )
+                )
+                for eventID in eventIDs
+            )
+        else:
+            return tag("No events found.")
 
 
     @renderer
-    def bottom(
-        self, request: IRequest, tag: Tag = tags.div
-    ) -> KleinRenderable:
+    def events(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
-        Bottom elements.
+        Repeat an element once for each event, embedding the event ID.
         """
-        return (self.footer(request),)
+        return self._events(request, tag)
 
 
     @renderer
-    def nav(self, request: IRequest, tag: Tag = tags.nav) -> KleinRenderable:
+    def events_reversed(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
-        <nav> element.
+        Repeat an element once for each event in reverse order, embedding the
+        event ID.
         """
-        return ""
-        # return Element("base_nav", self.service)
-
-
-    @renderer
-    def header(
-        self, request: IRequest, tag: Tag = tags.header
-    ) -> KleinRenderable:
-        """
-        <header> element.
-        """
-        return ""
-        # return Element("base_header", self.service)
-
-
-    @renderer
-    def footer(
-        self, request: IRequest, tag: Tag = tags.footer
-    ) -> KleinRenderable:
-        """
-        <footer> element.
-        """
-        return ""
-        # return Element("base_footer", self.service)
+        return self._events(request, tag, reverse_order=True)

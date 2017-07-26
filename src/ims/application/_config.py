@@ -33,6 +33,8 @@ from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore
 
+from ._urls import URLs
+
 IMSDataStore, Set  # silence linter
 
 
@@ -140,6 +142,8 @@ class Configuration(object):
             return fp
 
         readConfig(self.ConfigFile)
+
+        self.urls = URLs
 
         if self.ConfigFile is None:
             defaultRoot = FilePath(getcwd())

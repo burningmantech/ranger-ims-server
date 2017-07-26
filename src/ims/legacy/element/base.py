@@ -24,6 +24,9 @@ from twisted.web.template import (
 )
 
 from ims.application import URLs
+from ims.element.footer import FooterElement
+from ims.element.header import HeaderElement
+from ims.element.nav import NavElement
 from ims.ext.json import jsonTextFromObject
 
 
@@ -154,7 +157,7 @@ class Element(BaseElement):
         """
         <nav> element.
         """
-        return Element("base_nav", self.service)
+        return NavElement(self.service.config)
 
 
     @renderer
@@ -162,7 +165,7 @@ class Element(BaseElement):
         """
         <header> element.
         """
-        return Element("base_header", self.service)
+        return HeaderElement(self.service.config)
 
 
     @renderer
@@ -170,7 +173,7 @@ class Element(BaseElement):
         """
         <footer> element.
         """
-        return Element("base_footer", self.service)
+        return FooterElement(self.service.config)
 
 
     ##

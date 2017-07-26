@@ -81,7 +81,8 @@ class MainApplication(object):
 
     authApplication: AuthApplication = attrib(
         default=Factory(
-            lambda self: AuthApplication(auth=self.auth), takes_self=True
+            lambda self: AuthApplication(config=self.config, auth=self.auth),
+            takes_self=True,
         ),
         init=False,
     )

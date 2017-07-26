@@ -15,35 +15,22 @@
 ##
 
 """
-Redirect page.
+<footer> Element.
 """
 
-from .base import Element, renderer
+from ims.application._config import Configuration
+
+from .._element import Element
 
 
-__all__ = (
-    "RedirectPage",
-)
+__all__ = ()
 
 
 
-class RedirectPage(Element):
+class FooterElement(Element):
     """
-    Redirect page.
+    <footer> Element.
     """
 
-    def __init__(self, location):
-        """
-        @param service: The service.
-        @param location: The redirect target URI.
-        """
-        Element.__init__(self, "redirect", None, title="Redirect")
-        self.location = location
-
-
-    @renderer
-    def destination(self, request, tag):
-        """
-        JSON string: URL for the redirect destination.
-        """
-        return tag.fillSlots(destination_url=self.location.asText())
+    def __init__(self, config: Configuration) -> None:
+        super().__init__(config=config)

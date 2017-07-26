@@ -21,9 +21,10 @@ Login page.
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer, tags
 
+from ims.application._config import Configuration
 from ims.ext.klein import KleinRenderable
 
-from .._element import Page
+from .._page import Page
 
 
 __all__ = ()
@@ -35,8 +36,8 @@ class LoginPage(Page):
     Login page.
     """
 
-    def __init__(self, urls: type, failed: bool = False) -> None:
-        super().__init__(urls=urls, title="Log In")
+    def __init__(self, config: Configuration, failed: bool = False) -> None:
+        super().__init__(config=config, title="Log In")
         self.failed = failed
 
 

@@ -30,6 +30,7 @@ from ims.element.login import LoginPage
 from ims.ext.klein import KleinRenderable
 
 from ._provider import AuthProvider
+from .._config import Configuration
 from .._klein import Router, invalidQueryResponse, queryValue, redirect
 from .._urls import URLs
 
@@ -55,6 +56,7 @@ class AuthApplication(object):
 
 
     auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
+    config: Configuration = attrib(validator=instance_of(Configuration))
 
 
     @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
@@ -66,7 +68,7 @@ class AuthApplication(object):
         """
         self.auth.authenticateRequest(request, optional=True)
 
-        return LoginPage(URLs, failed=failed)
+        return LoginPage(self.config, failed=failed)
 
 
     @router.route(_unprefix(URLs.login), methods=("POST",))

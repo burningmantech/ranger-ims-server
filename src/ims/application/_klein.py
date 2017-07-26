@@ -38,6 +38,7 @@ from werkzeug.routing import RequestRedirect
 
 from ims import __version__ as version
 from ims.dms import DMSError
+from ims.element.redirect import RedirectPage
 from ims.ext.klein import (
     ContentType, HeaderName, KleinRenderable, KleinRouteMethod
 )
@@ -82,8 +83,6 @@ def redirect(
     """
     Perform a redirect.
     """
-    from ims.legacy.element.redirect import RedirectPage
-
     if origin is not None:
         location = location.set(origin, request.uri.decode("utf-8"))
 

@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
-  <head t:render="head" />
-
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Document Moved</title>
+  </head>
   <body>
-    <div t:render="container">
-
+    <h1>Document Moved</h1>
     <p>
-      Destination:
+      This document has moved to a new location:
       <a t:render="destination">
        <t:attr name="href"><t:slot name="destination_url" /></t:attr>
        <t:slot name="destination_url" />
       </a>
     </p>
-
-    </div>
   </body>
 </html>
