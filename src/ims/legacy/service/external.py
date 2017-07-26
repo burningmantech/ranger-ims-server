@@ -21,6 +21,9 @@ Incident Management System cached external resources.
 from typing import Any
 from zipfile import BadZipfile
 
+from attr import attrib, attrs
+from attr.validators import instance_of
+
 from hyperlink import URL
 
 from twisted.python.filepath import FilePath
@@ -28,21 +31,35 @@ from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
 from twisted.web.iweb import IRequest
 
-from ims.application._klein import notFoundResponse, router
+from ims.application._auth import AuthProvider
+from ims.application._klein import Router, notFoundResponse
+from ims.application._config import Configuration
 from ims.application._urls import URLs
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
 
 __all__ = (
-    "ExternalMixIn",
+    "ExternalApplication",
 )
 
 
+def _unprefix(url: URL) -> URL:
+    prefix = URLs.external.path[:-1]
+    assert url.path[:len(prefix)] == prefix, (url.path[len(prefix):], prefix)
+    return url.replace(path=url.path[len(prefix):])
 
-class ExternalMixIn(object):
+
+
+@attrs(frozen=True)
+class ExternalApplication(object):
     """
-    Mix-in for cached external resources.
+    Application with endpoints for cached external resources.
     """
+
+    router = Router()
+
+    auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
+    config: Configuration = attrib(validator=instance_of(Configuration))
 
     bootstrapVersionNumber  = "3.3.7"
     jqueryVersionNumber     = "3.1.0"
@@ -88,7 +105,9 @@ class ExternalMixIn(object):
     )
 
 
-    @router.route(URLs.bootstrapBase, methods=("HEAD", "GET"), branch=True)
+    @router.route(
+        _unprefix(URLs.bootstrapBase), methods=("HEAD", "GET"), branch=True
+    )
     @static
     async def bootstrapResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -106,7 +125,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.jqueryJS, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.jqueryJS), methods=("HEAD", "GET"))
     @static
     async def jqueryJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -121,7 +140,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.jqueryMap, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.jqueryMap), methods=("HEAD", "GET"))
     @static
     async def jqueryMapResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -134,7 +153,9 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.dataTablesBase, methods=("HEAD", "GET"), branch=True)
+    @router.route(
+        _unprefix(URLs.dataTablesBase), methods=("HEAD", "GET"), branch=True
+    )
     @static
     async def dataTablesResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -152,7 +173,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.momentJS, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.momentJS), methods=("HEAD", "GET"))
     @static
     async def momentJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -167,7 +188,7 @@ class ExternalMixIn(object):
         )
 
 
-    @router.route(URLs.lscacheJS, methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.lscacheJS), methods=("HEAD", "GET"))
     @static
     async def lscacheJSResource(self, request: IRequest) -> KleinRenderable:
         """

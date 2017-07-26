@@ -35,7 +35,7 @@ from ims.application._web import WebApplication
 from ims.dms import DutyManagementSystem
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
-from .external import ExternalMixIn
+from .external import ExternalApplication
 
 
 __all__ = (
@@ -45,7 +45,7 @@ __all__ = (
 
 
 @attrs(frozen=True)
-class WebService(ExternalMixIn):
+class WebService(object):
     """
     Incident Management System web service.
     """
@@ -67,13 +67,6 @@ class WebService(ExternalMixIn):
         init=False,
     )
 
-    authApplication: AuthApplication = attrib(
-        default=Factory(
-            lambda self: AuthApplication(auth=self.auth), takes_self=True
-        ),
-        init=False,
-    )
-
     apiApplication: APIApplication = attrib(
         default=Factory(
             lambda self: APIApplication(
@@ -86,12 +79,26 @@ class WebService(ExternalMixIn):
         init=False,
     )
 
+    authApplication: AuthApplication = attrib(
+        default=Factory(
+            lambda self: AuthApplication(auth=self.auth), takes_self=True
+        ),
+        init=False,
+    )
+
+    externalApplication: ExternalApplication = attrib(
+        default=Factory(
+            lambda self: ExternalApplication(
+                config=self.config, auth=self.auth
+            ),
+            takes_self=True,
+        ),
+        init=False,
+    )
+
     webApplication: WebApplication = attrib(
         default=Factory(
-            lambda self: WebApplication(
-                config=self.config,
-                auth=self.auth,
-            ),
+            lambda self: WebApplication(config=self.config, auth=self.auth),
             takes_self=True,
         ),
         init=False,
@@ -157,6 +164,14 @@ class WebService(ExternalMixIn):
     # Child application endpoints
     #
 
+    @router.route(URLs.api, branch=True)
+    def apiApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
+        """
+        API application resource.
+        """
+        return self.apiApplication.router.resource()
+
+
     @router.route(URLs.auth, branch=True)
     def authApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
@@ -165,12 +180,14 @@ class WebService(ExternalMixIn):
         return self.authApplication.router.resource()
 
 
-    @router.route(URLs.api, branch=True)
-    def apiApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
+    @router.route(URLs.external, branch=True)
+    def externalApplicationEndpoint(
+        self, request: IRequest
+    ) -> KleinRenderable:
         """
-        API application resource.
+        External application resource.
         """
-        return self.apiApplication.router.resource()
+        return self.externalApplication.router.resource()
 
 
     @router.route(URLs.app, branch=True)
