@@ -119,6 +119,7 @@ class WebApplication(object):
         """
         return javaScript(request, "admin.js")
 
+
     @router.route(_unprefix(URLs.adminAccessControl), methods=("HEAD", "GET"))
     async def adminAccessControlPage(
         self, request: IRequest
