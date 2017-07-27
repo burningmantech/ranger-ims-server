@@ -252,3 +252,15 @@ class Element(BaseElement):
         event ID.
         """
         return self._events(request, tag, reverse_order=True)
+
+
+    @renderer
+    async def events_list(
+        self, request: IRequest, tag: Tag
+    ) -> KleinRenderable:
+        """
+        JSON list of strings: events IDs.
+        """
+        return jsonTextFromObject(
+            e.id for e in await self.config.storage.events()
+        )

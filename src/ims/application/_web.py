@@ -29,11 +29,11 @@ from twisted.web.iweb import IRequest
 
 from ims.element.admin import AdminPage
 from ims.element.admin_acl import AdminAccessControlPage
+from ims.element.admin_streets import AdminStreetsPage
 from ims.element.incident_template import IncidentTemplatePage
 from ims.element.queue_template import DispatchQueueTemplatePage
 from ims.element.report_template import IncidentReportTemplatePage
 from ims.ext.klein import KleinRenderable, static
-from ims.legacy.element.admin_streets import AdminStreetsPage
 from ims.legacy.element.admin_types import AdminIncidentTypesPage
 from ims.legacy.element.incident import IncidentPage
 from ims.legacy.element.queue import DispatchQueuePage
@@ -182,7 +182,7 @@ class WebApplication(object):
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
         await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
-        return AdminStreetsPage(self)
+        return AdminStreetsPage(self.config)
 
 
     @router.route(_unprefix(URLs.adminStreetsJS), methods=("HEAD", "GET"))

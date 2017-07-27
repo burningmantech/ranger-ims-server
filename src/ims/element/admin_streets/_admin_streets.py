@@ -18,37 +18,19 @@
 Admin streets page.
 """
 
-from ims.ext.json import jsonTextFromObject
+from ims.application._config import Configuration
 
-from .base import Element, renderer
+from .._page import Page
 
 
-__all__ = (
-    "AdminStreetsPage",
-)
+__all__ = ()
 
 
 
-class AdminStreetsPage(Element):
+class AdminStreetsPage(Page):
     """
     Admin streets page.
     """
 
-    def __init__(self, service):
-        """
-        @param service: The service.
-        """
-        Element.__init__(
-            self, "admin_streets", service,
-            title="Admin: Event Concentric Streets",
-        )
-
-
-    @renderer
-    def eventNames(self, request, tag):
-        """
-        JSON list of events IDs.
-        """
-        return jsonTextFromObject(
-            e.id for e in self.service.config.storage.events()
-        )
+    def __init__(self, config: Configuration) -> None:
+        super().__init__(config=config, title="Event Concentric Streets")
