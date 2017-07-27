@@ -33,7 +33,7 @@ from ._config import Configuration
 from ._eventsource import DataStoreEventSourceLogObserver
 from ._external import ExternalApplication
 from ._klein import redirect, router
-from ._static import builtInResource, javaScript, styleSheet
+from ._static import styleSheet
 from ._urls import URLs
 from ._web import WebApplication
 
@@ -41,6 +41,9 @@ from ._web import WebApplication
 __all__ = (
     "MainApplication",
 )
+
+
+resourcesDirectory = FilePath(ims.element.__file__).parent().child("static")
 
 
 
@@ -133,32 +136,9 @@ class MainApplication(object):
         return redirect(request, URLs.app)
 
 
-    @router.route(URLs.styleSheet, methods=("HEAD", "GET"))
-    @static
-    def styleSheetResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for global style sheet.
-        """
-        return styleSheet(request, "style.css")
-
-
-    @router.route(URLs.logo, methods=("HEAD", "GET"))
-    @static
-    def logoResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for logo.
-        """
-        request.setHeader(HeaderName.contentType.value, ContentType.png.value)
-        return builtInResource(request, "logo.png")
-
-
-    @router.route(URLs.imsJS, methods=("HEAD", "GET"))
-    @static
-    def imsJSResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for C{ims.js}.
-        """
-        return javaScript(request, "ims.js")
+    @router.route(URLs.static, branch=True)
+    def static(request):
+        return File(resourcesDirectory)
 
 
     #

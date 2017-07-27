@@ -99,19 +99,19 @@ class URLs(object):
 
     app                        = prefix.child("app").child("")
 
-    imsJS                      = app.child("ims.js")
+    imsJS                      = static.child("ims.js")
 
     admin                      = app.child("admin").child("")
-    adminJS                    = admin.child("admin.js")
+    adminJS                    = static.child("admin.js")
 
     adminAccessControl         = admin.child("access")
-    adminAccessControlJS       = admin.child("access.js")
+    adminAccessControlJS       = static.child("access.js")
 
     adminIncidentTypes         = admin.child("types")
-    adminIncidentTypesJS       = admin.child("types.js")
+    adminIncidentTypesJS       = static.child("types.js")
 
     adminStreets               = admin.child("streets")
-    adminStreetsJS             = admin.child("streets.js")
+    adminStreetsJS             = static.child("streets.js")
 
     viewEvents                 = app.child("events").child("")
     viewEvent                  = viewEvents.child("<eventID>").child("")

@@ -42,28 +42,6 @@ log = Logger()
 # MIME type wrappers
 #
 
-def styleSheet(
-    request: IRequest, name: str, *names: str
-) -> KleinRenderable:
-    """
-    Respond with a style sheet.
-    """
-    request.setHeader(HeaderName.contentType.value, ContentType.css.value)
-    return builtInResource(request, name, *names)
-
-
-def javaScript(
-    request: IRequest, name: str, *names: str
-) -> KleinRenderable:
-    """
-    Respond with JavaScript.
-    """
-    request.setHeader(
-        HeaderName.contentType.value, ContentType.javascript.value
-    )
-    return builtInResource(request, name, *names)
-
-
 def jsonBytes(
     request: IRequest, data: bytes, etag: Optional[str] = None
 ) -> bytes:
@@ -108,29 +86,3 @@ def buildJSONArray(items: Iterable[Any]) -> Iterable[bytes]:
         yield item
 
     yield b']'
-
-
-#
-# File access
-#
-
-_resourcesDirectory = FilePath(ims.element.__file__).parent().child("static")
-
-def builtInResource(
-    request: IRequest, name: str, *names: str
-) -> KleinRenderable:
-    """
-    Respond with data from a local file.
-    """
-    filePath = _resourcesDirectory.child(name)
-
-    for name in names:
-        filePath = filePath.child(name)
-
-    try:
-        return filePath.getContent()
-    except IOError:
-        log.error(
-            "File not found: {filePath.path}", filePath=filePath
-        )
-        return notFoundResponse(request)

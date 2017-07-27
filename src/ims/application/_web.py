@@ -44,7 +44,6 @@ from ims.model import Event
 from ._auth import AuthProvider, Authorization
 from ._config import Configuration
 from ._klein import Router, notFoundResponse, redirect
-from ._static import javaScript
 from ._urls import URLs
 
 Optional  # silence linter
@@ -111,15 +110,6 @@ class WebApplication(object):
         return AdminPage(self.config)
 
 
-    @router.route(_unprefix(URLs.adminJS), methods=("HEAD", "GET"))
-    @static
-    def adminJSResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for C{admin.js}.
-        """
-        return javaScript(request, "admin.js")
-
-
     @router.route(_unprefix(URLs.adminAccessControl), methods=("HEAD", "GET"))
     async def adminAccessControlPage(
         self, request: IRequest
@@ -132,19 +122,6 @@ class WebApplication(object):
         # But the error you get is stupid, so let's avoid that for now.
         await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
         return AdminAccessControlPage(self.config)
-
-
-    @router.route(
-        _unprefix(URLs.adminAccessControlJS), methods=("HEAD", "GET")
-    )
-    @static
-    def adminAccessControlJSResource(
-        self, request: IRequest
-    ) -> KleinRenderable:
-        """
-        Endpoint for C{admin_acl.js}.
-        """
-        return javaScript(request, "admin_acl.js")
 
 
     @router.route(_unprefix(URLs.adminIncidentTypes), methods=("HEAD", "GET"))
@@ -161,19 +138,6 @@ class WebApplication(object):
         return AdminIncidentTypesPage(self.config)
 
 
-    @router.route(
-        _unprefix(URLs.adminIncidentTypesJS), methods=("HEAD", "GET")
-    )
-    @static
-    def adminAdminIncidentTypesPageJSResource(
-        self, request: IRequest
-    ) -> KleinRenderable:
-        """
-        Endpoint for C{admin_types.js}.
-        """
-        return javaScript(request, "admin_types.js")
-
-
     @router.route(_unprefix(URLs.adminStreets), methods=("HEAD", "GET"))
     async def adminStreetsPage(self, request: IRequest) -> KleinRenderable:
         """
@@ -184,15 +148,6 @@ class WebApplication(object):
         # But the error you get is stupid, so let's avoid that for now.
         await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
         return AdminStreetsPage(self.config)
-
-
-    @router.route(_unprefix(URLs.adminStreetsJS), methods=("HEAD", "GET"))
-    @static
-    def adminStreetsJSResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for C{admin_streets.js}.
-        """
-        return javaScript(request, "admin_streets.js")
 
 
     @router.route(_unprefix(URLs.viewDispatchQueue), methods=("HEAD", "GET"))
@@ -223,17 +178,6 @@ class WebApplication(object):
         Endpoint for the dispatch queue page template.
         """
         return DispatchQueueTemplatePage(self.config)
-
-
-    @router.route(_unprefix(URLs.viewDispatchQueueJS), methods=("HEAD", "GET"))
-    @static
-    def viewDispatchQueueJSResource(
-        self, request: IRequest
-    ) -> KleinRenderable:
-        """
-        Endpoint for C{queue.js}.
-        """
-        return javaScript(request, "queue.js")
 
 
     @router.route(_unprefix(URLs.viewIncidentNumber), methods=("HEAD", "GET"))
@@ -272,17 +216,6 @@ class WebApplication(object):
         Endpoint for the incident page template.
         """
         return IncidentTemplatePage(self.config)
-
-
-    @router.route(
-        _unprefix(URLs.viewIncidentNumberJS), methods=("HEAD", "GET")
-    )
-    @static
-    def incidentJSResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for C{incident.js}.
-        """
-        return javaScript(request, "incident.js")
 
 
     # FIXME: viewIncidentReports
@@ -325,16 +258,3 @@ class WebApplication(object):
         Endpoint for the incident page template.
         """
         return IncidentReportTemplatePage(self.config)
-
-
-    @router.route(
-        _unprefix(URLs.viewIncidentReportJS), methods=("HEAD", "GET")
-    )
-    @static
-    def viewIncidentReportJSResource(
-        self, request: IRequest
-    ) -> KleinRenderable:
-        """
-        Endpoint for C{report.js}.
-        """
-        return javaScript(request, "report.js")
