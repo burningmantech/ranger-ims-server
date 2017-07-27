@@ -851,7 +851,7 @@ class APIApplication(object):
         """
         HTML5 EventSource endpoint.
         """
-        self._log.info("Event source connected: {id}", id=id(request))
+        self._log.debug("Event source connected: {id}", id=id(request))
 
         request.setHeader(
             HeaderName.contentType.value, ContentType.eventStream.value
@@ -861,7 +861,7 @@ class APIApplication(object):
 
         def disconnected(f: Failure) -> None:
             f.trap(ConnectionDone)
-            self._log.info("Event source disconnected: {id}", id=id(request))
+            self._log.debug("Event source disconnected: {id}", id=id(request))
             self.storeObserver.removeListener(request)
 
         def finished(_: Any) -> None:
