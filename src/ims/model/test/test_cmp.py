@@ -50,69 +50,83 @@ class ComparisonMixInTests(TestCase):
         """
         Hash.
         """
-        self.assertEqual(hash(Comparable(1)), hash(Comparable(1)))
-        self.assertNotEqual(hash(Comparable(1)), hash(Comparable(2)))
+        self.assertEqual(hash(Comparable(value=1)), hash(Comparable(value=1)))
+        self.assertNotEqual(
+            hash(Comparable(value=1)), hash(Comparable(value=2))
+        )
 
 
     def test_eq(self) -> None:
         """
         Equality.
         """
-        self.assertTrue(Comparable(1).__eq__(Comparable(1)))
-        self.assertFalse(Comparable(1).__eq__(Comparable(2)))
+        self.assertTrue(Comparable(value=1).__eq__(Comparable(value=1)))
+        self.assertFalse(Comparable(value=1).__eq__(Comparable(value=2)))
 
-        self.assertIdentical(Comparable(1).__eq__(object()), NotImplemented)
+        self.assertIdentical(
+            Comparable(value=1).__eq__(object()), NotImplemented
+        )
 
 
     def test_ne(self) -> None:
         """
         Inequality.
         """
-        self.assertFalse(Comparable(1).__ne__(Comparable(1)))
-        self.assertTrue(Comparable(1).__ne__(Comparable(2)))
+        self.assertFalse(Comparable(value=1).__ne__(Comparable(value=1)))
+        self.assertTrue(Comparable(value=1).__ne__(Comparable(value=2)))
 
-        self.assertIdentical(Comparable(1).__ne__(object()), NotImplemented)
+        self.assertIdentical(
+            Comparable(value=1).__ne__(object()), NotImplemented
+        )
 
 
     def test_lt(self) -> None:
         """
         Less-than comparison.
         """
-        self.assertFalse(Comparable(1).__lt__(Comparable(1)))
-        self.assertTrue(Comparable(1).__lt__(Comparable(2)))
-        self.assertFalse(Comparable(2).__lt__(Comparable(1)))
+        self.assertFalse(Comparable(value=1).__lt__(Comparable(value=1)))
+        self.assertTrue(Comparable(value=1).__lt__(Comparable(value=2)))
+        self.assertFalse(Comparable(value=2).__lt__(Comparable(value=1)))
 
-        self.assertIdentical(Comparable(1).__lt__(object()), NotImplemented)
+        self.assertIdentical(
+            Comparable(value=1).__lt__(object()), NotImplemented
+        )
 
 
     def test_le(self) -> None:
         """
         Less-than-or-equal-to comparison.
         """
-        self.assertTrue(Comparable(1).__le__(Comparable(1)))
-        self.assertTrue(Comparable(1).__le__(Comparable(2)))
-        self.assertFalse(Comparable(2).__le__(Comparable(1)))
+        self.assertTrue(Comparable(value=1).__le__(Comparable(value=1)))
+        self.assertTrue(Comparable(value=1).__le__(Comparable(value=2)))
+        self.assertFalse(Comparable(value=2).__le__(Comparable(value=1)))
 
-        self.assertIdentical(Comparable(1).__le__(object()), NotImplemented)
+        self.assertIdentical(
+            Comparable(value=1).__le__(object()), NotImplemented
+        )
 
 
     def test_gt(self) -> None:
         """
         Less-than comparison.
         """
-        self.assertFalse(Comparable(1).__gt__(Comparable(1)))
-        self.assertFalse(Comparable(1).__gt__(Comparable(2)))
-        self.assertTrue(Comparable(2).__gt__(Comparable(1)))
+        self.assertFalse(Comparable(value=1).__gt__(Comparable(value=1)))
+        self.assertFalse(Comparable(value=1).__gt__(Comparable(value=2)))
+        self.assertTrue(Comparable(value=2).__gt__(Comparable(value=1)))
 
-        self.assertIdentical(Comparable(1).__gt__(object()), NotImplemented)
+        self.assertIdentical(
+            Comparable(value=1).__gt__(object()), NotImplemented
+        )
 
 
     def test_ge(self) -> None:
         """
         Less-than-or-equal-to comparison.
         """
-        self.assertTrue(Comparable(1).__ge__(Comparable(1)))
-        self.assertFalse(Comparable(1).__ge__(Comparable(2)))
-        self.assertTrue(Comparable(2).__ge__(Comparable(1)))
+        self.assertTrue(Comparable(value=1).__ge__(Comparable(value=1)))
+        self.assertFalse(Comparable(value=1).__ge__(Comparable(value=2)))
+        self.assertTrue(Comparable(value=2).__ge__(Comparable(value=1)))
 
-        self.assertIdentical(Comparable(1).__le__(object()), NotImplemented)
+        self.assertIdentical(
+            Comparable(value=1).__le__(object()), NotImplemented
+        )

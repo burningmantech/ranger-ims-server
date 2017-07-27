@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
+  <head t:render="head" />
+
+  <body>
+    <div t:render="container">
+
+      <p>This service hosts the Ranger Incident Management System (IMS).</p>
+
+      <h2>Web Interface</h2>
+      <ul>
+        <li>
+          <a t:render="url" url="viewIncidentReportsNew">
+            Create a new incident report
+          </a>
+        </li>
+        <li>Events:</li>
+        <ul>
+          <li t:render="events_reversed" />
+        </ul>
+      </ul>
+
+    </div>
+  </body>
+</html>

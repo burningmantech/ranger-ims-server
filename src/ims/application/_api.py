@@ -211,7 +211,7 @@ class APIApplication(object):
         """
         Location list endpoint.
         """
-        event = Event(eventID)
+        event = Event(id=eventID)
 
         await self.auth.authorizeRequest(
             request, event, Authorization.readIncidents
@@ -228,7 +228,7 @@ class APIApplication(object):
         """
         Incident list endpoint.
         """
-        event = Event(eventID)
+        event = Event(id=eventID)
 
         await self.auth.authorizeRequest(
             request, event, Authorization.readIncidents
@@ -251,7 +251,7 @@ class APIApplication(object):
         """
         New incident endpoint.
         """
-        event = Event(eventID)
+        event = Event(id=eventID)
 
         await self.auth.authorizeRequest(
             request, event, Authorization.writeIncidents
@@ -324,7 +324,7 @@ class APIApplication(object):
         """
         Incident endpoint.
         """
-        event = Event(eventID)
+        event = Event(id=eventID)
 
         await self.auth.authorizeRequest(
             request, event, Authorization.readIncidents
@@ -357,7 +357,7 @@ class APIApplication(object):
         """
         Incident edit endpoint.
         """
-        event = Event(eventID)
+        event = Event(id=eventID)
 
         await self.auth.authorizeRequest(
             request, event, Authorization.writeIncidents
@@ -480,7 +480,7 @@ class APIApplication(object):
                     author=author,
                     text=jsonEntry[ReportEntryJSONKey.text.value],
                     created=now,
-                    system_entry=False,
+                    automatic=False,
                 )
                 for jsonEntry in jsonEntries
             )
@@ -745,7 +745,7 @@ class APIApplication(object):
                     author=author,
                     text=jsonEntry[ReportEntryJSONKey.text.value],
                     created=now,
-                    system_entry=False,
+                    automatic=False,
                 )
                 for jsonEntry in jsonEntries
             )
@@ -791,7 +791,7 @@ class APIApplication(object):
         edits = objectFromJSONBytesIO(request.content)
 
         for eventID, acl in edits.items():
-            event = Event(eventID)
+            event = Event(id=eventID)
             if "readers" in acl:
                 await storage.setReaders(event, acl["readers"])
             if "writers" in acl:
@@ -827,14 +827,14 @@ class APIApplication(object):
         edits = objectFromJSONBytesIO(request.content)
 
         for eventID, _streets in edits.items():
-            event = Event(eventID)
+            event = Event(id=eventID)
             existing = await storage.concentricStreets(event)
 
             for _streetID, _streetName in existing.items():
                 raise NotAuthorizedError("Removal of streets is not allowed.")
 
         for eventID, streets in edits.items():
-            event = Event(eventID)
+            event = Event(id=eventID)
             existing = await storage.concentricStreets(event)
 
             for streetID, streetName in streets.items():
@@ -851,7 +851,7 @@ class APIApplication(object):
         """
         HTML5 EventSource endpoint.
         """
-        self._log.info("Event source connected: {id}", id=id(request))
+        self._log.debug("Event source connected: {id}", id=id(request))
 
         request.setHeader(
             HeaderName.contentType.value, ContentType.eventStream.value
@@ -861,7 +861,7 @@ class APIApplication(object):
 
         def disconnected(f: Failure) -> None:
             f.trap(ConnectionDone)
-            self._log.info("Event source disconnected: {id}", id=id(request))
+            self._log.debug("Event source disconnected: {id}", id=id(request))
             self.storeObserver.removeListener(request)
 
         def finished(_: Any) -> None:

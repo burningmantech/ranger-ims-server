@@ -26,9 +26,11 @@ from hyperlink import URL
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
+from ims.element.login import LoginPage
 from ims.ext.klein import KleinRenderable
 
 from ._provider import AuthProvider
+from .._config import Configuration
 from .._klein import Router, invalidQueryResponse, queryValue, redirect
 from .._urls import URLs
 
@@ -54,6 +56,7 @@ class AuthApplication(object):
 
 
     auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
+    config: Configuration = attrib(validator=instance_of(Configuration))
 
 
     @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
@@ -63,11 +66,9 @@ class AuthApplication(object):
         """
         Endpoint for the login page.
         """
-        from ims.legacy.element.login import LoginPage
-
         self.auth.authenticateRequest(request, optional=True)
 
-        return LoginPage(self, failed=failed)
+        return LoginPage(self.config, failed=failed)
 
 
     @router.route(_unprefix(URLs.login), methods=("POST",))
@@ -101,7 +102,7 @@ class AuthApplication(object):
 
                 url = queryValue(request, "o")
                 if url is None:
-                    location = URLs.prefix  # Default to application home
+                    location = URLs.app  # Default to application home
                 else:
                     location = URL.fromText(url)
 
@@ -124,4 +125,4 @@ class AuthApplication(object):
         session.expire()
 
         # Redirect back to application home
-        return redirect(request, URLs.prefix)
+        return redirect(request, URLs.app)

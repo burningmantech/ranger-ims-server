@@ -280,12 +280,18 @@ def explainQueryPlans(
         params = dict((x, x) for x in range(query.count(":")))  # Dummy params
         try:
             lines: Iterable[QueryPlanExplanation.Line] = tuple(
-                QueryPlanExplanation.Line(nestingOrder, selectFrom, details)
+                QueryPlanExplanation.Line(
+                    nestingOrder=nestingOrder,
+                    selectFrom=selectFrom,
+                    details=details,
+                )
                 for n, nestingOrder, selectFrom, details in (
                     db.execute("explain query plan {}".format(query), params)
                 )
             )
         except SQLiteError as e:
-            lines = (QueryPlanExplanation.Line(None, None, "{}".format(e),),)
+            lines = (QueryPlanExplanation.Line(
+                nestingOrder=None, selectFrom=None, details="{}".format(e),
+            ),)
 
-        yield QueryPlanExplanation(name, query, lines)
+        yield QueryPlanExplanation(name=name, query=query, lines=lines)

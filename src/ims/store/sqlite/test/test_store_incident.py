@@ -91,7 +91,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
     @given(
         incidentLists(
-            event=Event("Foo"), maxNumber=SQLITE_MAX_INT,
+            event=Event(id="Foo"), maxNumber=SQLITE_MAX_INT,
             minSize=2, averageSize=3,
         ),
     )
@@ -286,7 +286,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
         f = self.failureResultOf(store.createIncident(
             Incident(
-                event=Event("foo"),
+                event=Event(id="foo"),
                 number=0,
                 created=DateTime.now(TimeZone.utc),
                 state=IncidentState.new, priority=IncidentPriority.normal,
@@ -309,7 +309,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self.successResultOf(store.createEvent(event))
         incident = self.successResultOf(store.createIncident(
             Incident(
-                event=Event("foo"),
+                event=Event(id="foo"),
                 number=0,
                 created=DateTime.now(TimeZone.utc),
                 state=IncidentState.new, priority=IncidentPriority.normal,
@@ -513,7 +513,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self.successResultOf(store.createEvent(event))
         incident = self.successResultOf(store.createIncident(
             Incident(
-                event=Event("foo"),
+                event=Event(id="foo"),
                 number=0,
                 created=DateTime.now(TimeZone.utc),
                 state=IncidentState.new, priority=IncidentPriority.normal,
@@ -557,7 +557,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self.successResultOf(store.createEvent(event))
         incident = self.successResultOf(store.createIncident(
             Incident(
-                event=Event("foo"),
+                event=Event(id="foo"),
                 number=0,
                 created=DateTime.now(TimeZone.utc),
                 state=IncidentState.new, priority=IncidentPriority.normal,
@@ -714,7 +714,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self.successResultOf(store.createEvent(event))
         incident = self.successResultOf(store.createIncident(
             Incident(
-                event=Event("foo"),
+                event=Event(id="foo"),
                 number=0,
                 created=DateTime.now(TimeZone.utc),
                 state=IncidentState.new, priority=IncidentPriority.normal,

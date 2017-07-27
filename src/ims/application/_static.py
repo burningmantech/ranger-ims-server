@@ -23,13 +23,9 @@ from typing import Any, Iterable, Optional
 from typing.io import BinaryIO
 
 from twisted.logger import Logger
-from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
 
-import ims.legacy.element
-from ims.ext.klein import ContentType, HeaderName, KleinRenderable
-
-from ._klein import notFoundResponse
+from ims.ext.klein import ContentType, HeaderName
 
 
 __all__ = ()
@@ -41,28 +37,6 @@ log = Logger()
 #
 # MIME type wrappers
 #
-
-def styleSheet(
-    request: IRequest, name: str, *names: str
-) -> KleinRenderable:
-    """
-    Respond with a style sheet.
-    """
-    request.setHeader(HeaderName.contentType.value, ContentType.css.value)
-    return builtInResource(request, name, *names)
-
-
-def javaScript(
-    request: IRequest, name: str, *names: str
-) -> KleinRenderable:
-    """
-    Respond with JavaScript.
-    """
-    request.setHeader(
-        HeaderName.contentType.value, ContentType.javascript.value
-    )
-    return builtInResource(request, name, *names)
-
 
 def jsonBytes(
     request: IRequest, data: bytes, etag: Optional[str] = None
@@ -108,29 +82,3 @@ def buildJSONArray(items: Iterable[Any]) -> Iterable[bytes]:
         yield item
 
     yield b']'
-
-
-#
-# File access
-#
-
-_resourcesDirectory = FilePath(ims.legacy.element.__file__).parent()
-
-def builtInResource(
-    request: IRequest, name: str, *names: str
-) -> KleinRenderable:
-    """
-    Respond with data from a local file.
-    """
-    filePath = _resourcesDirectory.child(name)
-
-    for name in names:
-        filePath = filePath.child(name)
-
-    try:
-        return filePath.getContent()
-    except IOError:
-        log.error(
-            "File not found: {filePath.path}", filePath=filePath
-        )
-        return notFoundResponse(request)

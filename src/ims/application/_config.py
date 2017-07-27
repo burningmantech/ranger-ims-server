@@ -33,6 +33,8 @@ from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore
 
+from ._urls import URLs
+
 IMSDataStore, Set  # silence linter
 
 
@@ -47,7 +49,9 @@ class Configuration(object):
     Configuration
     """
 
-    log = Logger()
+    _log = Logger()
+
+    urls = URLs
 
 
     def __init__(self, configFile: FilePath) -> None:
@@ -89,17 +93,17 @@ class Configuration(object):
 
         def readConfig(configFile: FilePath) -> None:
             if configFile is None:
-                self.log.info("No configuration file specified.")
+                self._log.info("No configuration file specified.")
                 return
 
             for _okFile in configParser.read(configFile.path,):
-                self.log.info(
+                self._log.info(
                     "Read configuration file: {configFile.path}",
                     configFile=configFile
                 )
                 break
             else:
-                self.log.error(
+                self._log.error(
                     "Unable to read configuration file: {file.path}",
                     file=configFile
                 )
@@ -149,56 +153,56 @@ class Configuration(object):
         self.ServerRoot = filePathFromConfig(
             "Core", "ServerRoot", defaultRoot, cast(Tuple[str], ())
         )
-        self.log.info(
+        self._log.info(
             "Server root: {serverRoot.path}", serverRoot=self.ServerRoot
         )
 
         self.ConfigRoot = filePathFromConfig(
             "Core", "ConfigRoot", self.ServerRoot, ("conf",)
         )
-        self.log.info(
+        self._log.info(
             "Config root: {configRoot.path}", configRoot=self.ConfigRoot
         )
 
         self.DataRoot = filePathFromConfig(
             "Core", "DataRoot", self.ServerRoot, ("data",)
         )
-        self.log.info(
+        self._log.info(
             "Data root: {dataRoot.path}", dataRoot=self.DataRoot
         )
 
         self.DatabaseFile = filePathFromConfig(
             "Core", "Database", self.DataRoot, ("db.sqlite",)
         )
-        self.log.info(
+        self._log.info(
             "Database: {db.path}", db=self.DatabaseFile
         )
 
         self.CachedResources = filePathFromConfig(
             "Core", "CachedResources", self.ServerRoot, ("cached",)
         )
-        self.log.info(
+        self._log.info(
             "CachedResources: {cachedResources.path}",
             cachedResources=self.CachedResources
         )
 
         self.LogLevel = valueFromConfig("Core", "LogLevel", "info")
-        self.log.info("LogLevel: {logLevel}", logLevel=self.LogLevel)
+        self._log.info("LogLevel: {logLevel}", logLevel=self.LogLevel)
 
         self.LogFormat = valueFromConfig("Core", "LogFormat", "text")
-        self.log.info("LogFormat: {logFormat}", logFormat=self.LogFormat)
+        self._log.info("LogFormat: {logFormat}", logFormat=self.LogFormat)
 
         self.LogFile = filePathFromConfig(
             "Core", "LogFile", self.DataRoot, ("{}.log".format(command),)
         ).path
-        self.log.info(
+        self._log.info(
             "LogFile: {logFile}", logFile=self.LogFile
         )
 
         self.PIDFile = filePathFromConfig(
             "Core", "PIDFile", self.DataRoot, ("{}.pid".format(command),)
         ).path
-        self.log.info(
+        self._log.info(
             "PIDFile: {pidFile}", pidFile=self.PIDFile
         )
 
@@ -207,7 +211,7 @@ class Configuration(object):
             self.IMSAdmins: Set[str] = set()
         else:
             self.IMSAdmins = set(a.strip() for a in admins.split(","))
-        self.log.info(
+        self._log.info(
             "Admins: {admins}", admins=self.IMSAdmins
         )
 
@@ -216,7 +220,7 @@ class Configuration(object):
         self.DMSUsername = valueFromConfig("DMS", "Username", None)
         self.DMSPassword = valueFromConfig("DMS", "Password", None)
 
-        self.log.info(
+        self._log.info(
             "Database: {user}@{host}/{db}",
             user=self.DMSUsername, host=self.DMSHost, db=self.DMSDatabase,
         )
@@ -234,15 +238,19 @@ class Configuration(object):
             password=self.DMSPassword,
         )
 
-        self.storage: IMSDataStore = DataStore(Path(self.DatabaseFile.path))
+        self.storage: IMSDataStore = DataStore(
+            dbPath=Path(self.DatabaseFile.path)
+        )
 
         locationsFile = self.ConfigRoot.sibling("locations.json")
 
         if locationsFile.isfile():
             with locationsFile.open() as jsonStrem:
                 json = objectFromJSONBytesIO(jsonStrem)
-            self.log.info("{count} locations", count=len(json))
+            self._log.info("{count} locations", count=len(json))
             self.locationsJSONBytes = jsonTextFromObject(json).encode("utf-8")
         else:
-            self.log.info("No locations file: {file.path}", file=locationsFile)
+            self._log.info(
+                "No locations file: {file.path}", file=locationsFile
+            )
             self.locationsJSONBytes = jsonTextFromObject([]).encode("utf-8")

@@ -39,9 +39,10 @@ class URLs(object):
 
     prefix = root.child("ims").child("")
 
-    styleSheet = prefix.child("style.css")
-
-    logo = prefix.child("logo.png")
+    # Static resources
+    static     = prefix.child("static")
+    styleSheet = static.child("style.css")
+    logo       = static.child("logo.png")
 
     # Auth application
 
@@ -98,34 +99,35 @@ class URLs(object):
 
     app                        = prefix.child("app").child("")
 
-    imsJS                      = app.child("ims.js")
+    imsJS                      = static.child("ims.js")
 
     admin                      = app.child("admin").child("")
-    adminJS                    = admin.child("admin.js")
+    adminJS                    = static.child("admin.js")
 
     adminAccessControl         = admin.child("access")
-    adminAccessControlJS       = admin.child("access.js")
+    adminAccessControlJS       = static.child("access.js")
 
     adminIncidentTypes         = admin.child("types")
-    adminIncidentTypesJS       = admin.child("types.js")
+    adminIncidentTypesJS       = static.child("types.js")
 
     adminStreets               = admin.child("streets")
-    adminStreetsJS             = admin.child("streets.js")
+    adminStreetsJS             = static.child("streets.js")
 
     viewEvents                 = app.child("events").child("")
     viewEvent                  = viewEvents.child("<eventID>").child("")
 
     viewDispatchQueue          = viewEvent.child("queue")
     viewDispatchQueueTemplate  = app.child("queue.html")
-    viewDispatchQueueJS        = app.child("queue.js")
+    viewDispatchQueueJS        = static.child("queue.js")
     viewDispatchQueueRelative  = URL.fromText("queue")
 
     viewIncidents              = viewEvent.child("incidents").child("")
     viewIncidentNumber         = viewIncidents.child("<number>")
     viewIncidentNumberTemplate = app.child("incident.html")
-    viewIncidentNumberJS       = app.child("incident.js")
+    viewIncidentNumberJS       = static.child("incident.js")
 
     viewIncidentReports        = app.child("incident_reports").child("")
+    viewIncidentReportsNew     = viewIncidentReports.child("new")
     viewIncidentReport         = viewIncidentReports.child("<number>")
     viewIncidentReportTemplate = app.child("incident_report.html")
-    viewIncidentReportJS       = app.child("incident_report.js")
+    viewIncidentReportJS       = static.child("incident_report.js")

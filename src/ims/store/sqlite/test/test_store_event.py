@@ -61,7 +61,7 @@ class DataStoreEventTests(DataStoreTests):
 
         events = frozenset(self.successResultOf(store.events()))
 
-        self.assertEqual(events, {Event("Event A"), Event("Event B")})
+        self.assertEqual(events, {Event(id="Event A"), Event(id="Event B")})
 
         return None
 
@@ -91,7 +91,7 @@ class DataStoreEventTests(DataStoreTests):
         store = self.store()
         store.bringThePain()
 
-        f = self.failureResultOf(store.createEvent(Event("x")))
+        f = self.failureResultOf(store.createEvent(Event(id="x")))
         f.printTraceback()
         self.assertEqual(f.type, StorageError)
 

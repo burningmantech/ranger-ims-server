@@ -22,10 +22,13 @@ from attr import Factory, attrib, attrs
 from attr.validators import instance_of
 
 from twisted.logger import ILogObserver, Logger, globalLogPublisher
+from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
+from twisted.web.static import File
 
+import ims.element
 from ims.dms import DutyManagementSystem
-from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
+from ims.ext.klein import KleinRenderable
 
 from ._api import APIApplication
 from ._auth import AuthApplication, AuthProvider
@@ -33,7 +36,6 @@ from ._config import Configuration
 from ._eventsource import DataStoreEventSourceLogObserver
 from ._external import ExternalApplication
 from ._klein import redirect, router
-from ._static import builtInResource, javaScript, styleSheet
 from ._urls import URLs
 from ._web import WebApplication
 
@@ -41,6 +43,9 @@ from ._web import WebApplication
 __all__ = (
     "MainApplication",
 )
+
+
+resourcesDirectory = FilePath(ims.element.__file__).parent().child("static")
 
 
 
@@ -81,7 +86,8 @@ class MainApplication(object):
 
     authApplication: AuthApplication = attrib(
         default=Factory(
-            lambda self: AuthApplication(auth=self.auth), takes_self=True
+            lambda self: AuthApplication(config=self.config, auth=self.auth),
+            takes_self=True,
         ),
         init=False,
     )
@@ -132,32 +138,9 @@ class MainApplication(object):
         return redirect(request, URLs.app)
 
 
-    @router.route(URLs.styleSheet, methods=("HEAD", "GET"))
-    @static
-    def styleSheetResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for global style sheet.
-        """
-        return styleSheet(request, "style.css")
-
-
-    @router.route(URLs.logo, methods=("HEAD", "GET"))
-    @static
-    def logoResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for logo.
-        """
-        request.setHeader(HeaderName.contentType.value, ContentType.png.value)
-        return builtInResource(request, "logo.png")
-
-
-    @router.route(URLs.imsJS, methods=("HEAD", "GET"))
-    @static
-    def imsJSResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for C{ims.js}.
-        """
-        return javaScript(request, "ims.js")
+    @router.route(URLs.static, branch=True)
+    def static(self, request: IRequest) -> KleinRenderable:
+        return File(resourcesDirectory.path)
 
 
     #

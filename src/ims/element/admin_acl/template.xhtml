@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
+
+  <head t:render="head">
+    <script t:render="url" url="momentJS" />
+    <script t:render="url" url="imsJS" />
+    <script t:render="url" url="adminAccessControlJS" />
+  </head>
+
+  <body>
+    <div t:render="container">
+      <div class="row" id="event_access_container">
+
+        <div class="col-sm-12 event_access">
+          <label>Access for <span class="event_name" /> (<span class="access_mode" />):</label>
+          <div class="well well-sm">
+            <ul class="list-group list-group-small">
+              <li class="list-group-item">
+                <span class="badge remove-badge" onclick="removeAccess(this)">
+                  <span class="glyphicon glyphicon-remove" />
+                </span>
+              </li>
+            </ul>
+
+          <div>
+              <label>Add:</label>
+              <input
+                id="access_add"
+                class="form-control input-sm auto-width"
+                type="text" inputmode="verbatim"
+                placeholder="person:Tool"
+                onchange="addAccess(this)"
+              />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </body>
+
+  <script>
+    var events    = <json t:render="events_list" />;
+    var accessURL = <json t:render="url" url="acl" />;
+
+    initPage();
+  </script>
+
+</html>
