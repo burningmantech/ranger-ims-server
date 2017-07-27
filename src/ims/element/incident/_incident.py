@@ -15,8 +15,10 @@
 ##
 
 """
-Dispatch queue page.
+Incident page.
 """
+
+from typing import Optional
 
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
@@ -28,21 +30,24 @@ from ims.ext.klein import KleinRenderable
 from ims.model import Event
 
 from .._page import Page
-from ..queue_template._queue_template import title
+from ..incident_template._incident_template import title
 
 
 __all__ = ()
 
 
 
-class DispatchQueuePage(Page):
+class IncidentPage(Page):
     """
-    Dispatch queue page.
+    Incident page.
     """
 
-    def __init__(self, config: Configuration, event: Event) -> None:
+    def __init__(
+        self, config: Configuration, event: Event, number: Optional[int]
+    ) -> None:
         super().__init__(config=config, title=title)
         self.event = event
+        self.number = number
 
 
     @renderer
@@ -65,7 +70,15 @@ class DispatchQueuePage(Page):
 
 
     @renderer
-    def data_url(self, request: IRequest, tag: Tag) -> KleinRenderable:
+    def incident_number(self, request: IRequest, tag: Tag) -> KleinRenderable:
+        """
+        JSON integer: incident number.
+        """
+        return jsonTextFromObject(self.number)
+
+
+    @renderer
+    def incidents_url(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         JSON string: URL for incidents endpoint for the event.
         """

@@ -31,13 +31,13 @@ from ims.element.admin import AdminPage
 from ims.element.admin_acl import AdminAccessControlPage
 from ims.element.admin_streets import AdminStreetsPage
 from ims.element.admin_types import AdminIncidentTypesPage
+from ims.element.incident import IncidentPage
 from ims.element.incident_template import IncidentTemplatePage
 from ims.element.queue import DispatchQueuePage
 from ims.element.queue_template import DispatchQueueTemplatePage
 from ims.element.report_template import IncidentReportTemplatePage
 from ims.element.root import RootPage
 from ims.ext.klein import KleinRenderable, static
-from ims.legacy.element.incident import IncidentPage
 from ims.legacy.element.report import IncidentReportPage
 from ims.model import Event
 
@@ -257,7 +257,7 @@ class WebApplication(object):
 
         await self.auth.authorizeRequest(request, event, authz)
 
-        return IncidentPage(self, event, numberValue)
+        return IncidentPage(self.config, event, numberValue)
 
 
     @router.route(
