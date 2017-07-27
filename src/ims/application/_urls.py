@@ -118,16 +118,16 @@ class URLs(object):
 
     viewDispatchQueue          = viewEvent.child("queue")
     viewDispatchQueueTemplate  = app.child("queue.html")
-    viewDispatchQueueJS        = app.child("queue.js")
+    viewDispatchQueueJS        = static.child("queue.js")
     viewDispatchQueueRelative  = URL.fromText("queue")
 
     viewIncidents              = viewEvent.child("incidents").child("")
     viewIncidentNumber         = viewIncidents.child("<number>")
     viewIncidentNumberTemplate = app.child("incident.html")
-    viewIncidentNumberJS       = app.child("incident.js")
+    viewIncidentNumberJS       = static.child("incident.js")
 
     viewIncidentReports        = app.child("incident_reports").child("")
     viewIncidentReportsNew     = viewIncidentReports.child("new")
     viewIncidentReport         = viewIncidentReports.child("<number>")
     viewIncidentReportTemplate = app.child("incident_report.html")
-    viewIncidentReportJS       = app.child("incident_report.js")
+    viewIncidentReportJS       = static.child("incident_report.js")

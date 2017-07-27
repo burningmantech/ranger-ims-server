@@ -23,13 +23,9 @@ from typing import Any, Iterable, Optional
 from typing.io import BinaryIO
 
 from twisted.logger import Logger
-from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
 
-import ims.element
-from ims.ext.klein import ContentType, HeaderName, KleinRenderable
-
-from ._klein import notFoundResponse
+from ims.ext.klein import ContentType, HeaderName
 
 
 __all__ = ()
