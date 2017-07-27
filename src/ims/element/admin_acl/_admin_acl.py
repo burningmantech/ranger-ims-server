@@ -33,4 +33,4 @@ class AdminAccessControlPage(Page):
     """
 
     def __init__(self, config: Configuration) -> None:
-        super().__init__(config=config, title="Event Access Control")
+        super().__init__(config=config, title="Edit Event Access Control")

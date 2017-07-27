@@ -33,4 +33,4 @@ class AdminIncidentTypesPage(Page):
     """
 
     def __init__(self, config: Configuration) -> None:
-        super().__init__(config=config, title="Incident Types")
+        super().__init__(config=config, title="Edit Incident Types")

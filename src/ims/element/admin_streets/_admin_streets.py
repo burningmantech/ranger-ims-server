@@ -33,4 +33,4 @@ class AdminStreetsPage(Page):
     """
 
     def __init__(self, config: Configuration) -> None:
-        super().__init__(config=config, title="Event Concentric Streets")
+        super().__init__(config=config, title="Edit Event Concentric Streets")
