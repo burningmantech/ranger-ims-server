@@ -15,39 +15,12 @@
 ##
 
 """
-Admin incident types page.
+Admin streets page.
 """
 
-from ims.ext.json import jsonTextFromObject
-
-from .base import Element, renderer
+from ._admin_types import AdminIncidentTypesPage
 
 
 __all__ = (
     "AdminIncidentTypesPage",
 )
-
-
-
-class AdminIncidentTypesPage(Element):
-    """
-    Admin incident types page.
-    """
-
-    def __init__(self, service):
-        """
-        @param service: The service.
-        """
-        Element.__init__(
-            self, "admin_types", service, title="Admin: Incident Types"
-        )
-
-
-    @renderer
-    def eventNames(self, request, tag):
-        """
-        JSON list of events IDs.
-        """
-        return jsonTextFromObject(
-            e.id for e in self.service.config.storage.events()
-        )
