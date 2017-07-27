@@ -15,52 +15,49 @@
 ##
 
 """
-Dispatch queue page.
+Admin page.
 """
 
-from ims.application import Authorization, URLs
+from twisted.web.iweb import IRequest
+from twisted.web.template import Tag, renderer
+
+from ims.application import Authorization
+from ims.application._config import Configuration
 from ims.ext.json import jsonTextFromObject
+from ims.ext.klein import KleinRenderable
+from ims.model import Event
 
-from .base import Element, renderer
-
-
-__all__ = (
-    "DispatchQueuePage",
-)
+from .._page import Page
+from ..queue_template._queue_template import title
 
 
+__all__ = ()
 
-class DispatchQueuePage(Element):
+
+
+class DispatchQueuePage(Page):
     """
-    Dispatch queue page.
+    Admin page.
     """
 
-    def __init__(self, service, event):
-        """
-        @param service: The service.
-        @param: The event ID.
-        """
-        Element.__init__(
-            self, "queue", service,
-            title="{} Dispatch Queue".format(event),
-        )
-
+    def __init__(self, config: Configuration, event: Event) -> None:
+        super().__init__(config=config, title=title)
         self.event = event
 
 
     @renderer
-    def editing_allowed(self, request, tag):
+    def editing_allowed(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         JSON boolean, true if editing is allowed.
         """
         if (request.authorizations & Authorization.writeIncidents):
-            return jsonTextFromObject(True)
+            return jsonTrue
         else:
-            return jsonTextFromObject(False)
+            return jsonFalse
 
 
     @renderer
-    def event_id(self, request, tag):
+    def event_id(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         JSON string: event ID.
         """
@@ -68,33 +65,39 @@ class DispatchQueuePage(Element):
 
 
     @renderer
-    def data_url(self, request, tag):
+    def data_url(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         JSON string: URL for incidents endpoint for the event.
         """
         return jsonTextFromObject(
-            URLs.incidents.asText()
-            .replace("<eventID>", self.event.id)
+            self.config.urls.incidents.asText().replace("<eventID>", self.event.id)
         )
 
 
     @renderer
-    def view_incidents_url(self, request, tag):
+    def view_incidents_url(
+        self, request: IRequest, tag: Tag
+    ) -> KleinRenderable:
         """
         JSON string: URL for incidents page for the event.
         """
         return jsonTextFromObject(
-            URLs.viewIncidents.asText()
+            self.config.urls.viewIncidents.asText()
             .replace("<eventID>", self.event.id)
         )
 
 
     @renderer
-    async def concentric_street_name_by_id(self, request, tag):
+    async def concentric_street_name_by_id(
+        self, request: IRequest, tag: Tag
+    ) -> KleinRenderable:
         """
         JSON dictionary: concentric streets by ID.
         """
-        namesByID = await self.service.config.storage.concentricStreets(
-            self.event
-        )
+        namesByID = await self.config.storage.concentricStreets(self.event)
         return jsonTextFromObject(namesByID)
+
+
+
+jsonTrue  = jsonTextFromObject(True)
+jsonFalse = jsonTextFromObject(False)
