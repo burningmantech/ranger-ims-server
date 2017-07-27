@@ -35,10 +35,10 @@ from ims.element.incident import IncidentPage
 from ims.element.incident_template import IncidentTemplatePage
 from ims.element.queue import DispatchQueuePage
 from ims.element.queue_template import DispatchQueueTemplatePage
+from ims.element.report import IncidentReportPage
 from ims.element.report_template import IncidentReportTemplatePage
 from ims.element.root import RootPage
 from ims.ext.klein import KleinRenderable, static
-from ims.legacy.element.report import IncidentReportPage
 from ims.model import Event
 
 from ._auth import AuthProvider, Authorization
@@ -310,7 +310,7 @@ class WebApplication(object):
                 request, numberValue
             )
 
-        return IncidentReportPage(self, numberValue)
+        return IncidentReportPage(self.config, numberValue)
 
 
     @router.route(

@@ -18,50 +18,57 @@
 Incident report page.
 """
 
+from typing import Optional
+
+from twisted.web.iweb import IRequest
+from twisted.web.template import Tag, renderer
+
 from ims.application import Authorization
+from ims.application._config import Configuration
 from ims.ext.json import jsonTextFromObject
+from ims.ext.klein import KleinRenderable
 
-from .base import Element, renderer
-
-
-__all__ = (
-    "IncidentReportPage",
-)
+from .._page import Page
+from ..incident_template._incident_template import title
 
 
+__all__ = ()
 
-class IncidentReportPage(Element):
+
+
+class IncidentReportPage(Page):
     """
     Incident report page.
     """
 
-    def __init__(self, service, number):
-        """
-        @param service: The service.
-        @param number: The incident report number.
-        """
-        Element.__init__(
-            self, "report", service,
-            title="Incident Report #{}".format(number),
-        )
-
+    def __init__(
+        self, config: Configuration, number: Optional[int]
+    ) -> None:
+        super().__init__(config=config, title=title)
         self.number = number
 
 
     @renderer
-    def editing_allowed(self, request, tag):
+    def editing_allowed(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         JSON boolean, true if editing is allowed.
         """
-        if (request.authorizations & Authorization.writeIncidentReports):
-            return jsonTextFromObject(True)
+        if (request.authorizations & Authorization.writeIncidents):
+            return jsonTrue
         else:
-            return jsonTextFromObject(False)
+            return jsonFalse
 
 
     @renderer
-    def incident_report_number(self, request, tag):
+    def incident_report_number(
+        self, request: IRequest, tag: Tag
+    ) -> KleinRenderable:
         """
         JSON integer: incident report number.
         """
         return jsonTextFromObject(self.number)
+
+
+
+jsonTrue  = jsonTextFromObject(True)
+jsonFalse = jsonTextFromObject(False)
