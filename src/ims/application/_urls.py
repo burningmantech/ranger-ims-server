@@ -126,6 +126,7 @@ class URLs(object):
     viewIncidentNumberJS       = app.child("incident.js")
 
     viewIncidentReports        = app.child("incident_reports").child("")
+    viewIncidentReportsNew     = viewIncidentReports.child("new")
     viewIncidentReport         = viewIncidentReports.child("<number>")
     viewIncidentReportTemplate = app.child("incident_report.html")
     viewIncidentReportJS       = app.child("incident_report.js")
