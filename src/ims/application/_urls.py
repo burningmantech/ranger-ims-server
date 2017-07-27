@@ -39,9 +39,10 @@ class URLs(object):
 
     prefix = root.child("ims").child("")
 
-    styleSheet = prefix.child("style.css")
-
-    logo = prefix.child("logo.png")
+    # Static resources
+    static     = prefix.child("static")
+    styleSheet = static.child("style.css")
+    logo       = static.child("logo.png")
 
     # Auth application
 
