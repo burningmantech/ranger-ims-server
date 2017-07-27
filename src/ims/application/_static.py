@@ -26,7 +26,7 @@ from twisted.logger import Logger
 from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
 
-import ims.legacy.element
+import ims.element
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable
 
 from ._klein import notFoundResponse
@@ -114,7 +114,7 @@ def buildJSONArray(items: Iterable[Any]) -> Iterable[bytes]:
 # File access
 #
 
-_resourcesDirectory = FilePath(ims.legacy.element.__file__).parent()
+_resourcesDirectory = FilePath(ims.element.__file__).parent().child("static")
 
 def builtInResource(
     request: IRequest, name: str, *names: str

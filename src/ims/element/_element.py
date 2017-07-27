@@ -47,10 +47,7 @@ class BaseElement(_Element):
 
     def _loader(self) -> ITemplateLoader:
         module = namedModule(self.__class__.__module__)
-        filePath = FilePath(module.__file__)
-        if filePath.isfile():
-            filePath = filePath.parent()
-        filePath = filePath.child("template.xhtml")
+        filePath = FilePath(module.__file__).parent().child("template.xhtml")
         return XMLFile(filePath)
 
 
