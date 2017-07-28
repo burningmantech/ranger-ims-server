@@ -29,12 +29,17 @@ Optional  # pyflakes
 
 class Encoder(JSONEncoder):
     """
-    JSON encoder that converts treats any iterable as a list.
+    JSON encoder that attempts to convert :class:`Mapping` to :class:`dict`,
+    and other types of :class:`Iterable` to :class:`list`.
     """
 
     def default(self, obj: Any) -> Any:
         iterate = getattr(obj, "__iter__", None)
         if iterate is not None:
+            # We have an Iterable
+            if hasattr(obj, "__getitem__"):
+                # We have a Mapping
+                return dict(obj)
             return list(iterate())
 
         return JSONEncoder.default(self, obj)
