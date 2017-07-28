@@ -17,6 +17,37 @@
 r"""
 JSON serialization/deserialization for incidents
 
+2017 JSON incident schema makes location.concentric a string.
+    {
+        "number": 101,                              // int >= 0
+        "priority": 3,                              // int {1,3,5}
+        "summary": "Diapers, please",               // one line
+        "location": {
+            "name": "Camp Fishes",                  // one line
+            "type": "garett",                       // {"text","garett"}
+            "concentric": "11",                     // string ID
+            "radial_hour": 8,                       // int 2-10 (garett)
+            "radial_minute": 15,                    // int 0-59 (garett)
+            "description": "Large dome, red flags"  // one line (garett,text)
+        }
+        "ranger_handles": [
+            "Santa Cruz"                            // handle in Clubhouse
+        ],
+        "incident_types": [
+            "Law Enforcement"                       // from list in config
+        ],
+        "report_entries": [
+            {
+                "author": "Hot Yogi",               // handle in Clubhouse
+                "created": "2014-08-30T21:12:50Z",  // RFC 3339, Zulu
+                "system_entry": false,              // boolean
+                "text": "Need diapers\nPronto"      // multi-line
+            }
+        ],
+        "timestamp": "2014-08-30T21:38:11Z"         // RFC 3339, Zulu
+        "state": "closed",                          // from JSON.state_*
+    }
+
 2015 JSON incident schema replaces top-level location attributes with a
 dictionary.
     {
@@ -48,6 +79,7 @@ dictionary.
         "timestamp": "2014-08-30T21:38:11Z"         // RFC 3339, Zulu
         "state": "closed",                          // from JSON.state_*
     }
+
 2014 JSON incident schema replaces per-state time stamp attributes with a
 created time stamp plus a state attribute:
     {
@@ -73,6 +105,7 @@ created time stamp plus a state attribute:
         "timestamp": "2014-08-30T21:38:11Z"         // RFC 3339, Zulu
         "state": "closed",                          // from JSON.state_*
     }
+
 2013 JSON incident schema:
     {
         "number": 101,                              // int >= 0

@@ -21,7 +21,7 @@ Expected JSON encoding for model data.
 from typing import Any, Dict
 
 from .._json import jsonSerialize
-from ..._address import RodGarettAddress, TextOnlyAddress
+from ..._address import Address, RodGarettAddress, TextOnlyAddress
 from ..._entry import ReportEntry
 from ..._event import Event
 from ..._incident import Incident
@@ -39,6 +39,17 @@ __all__ = ()
 ##
 # Address
 ##
+
+def jsonFromAddress(address: Address) -> Dict[str, Any]:
+    if isinstance(address, TextOnlyAddress):
+        return jsonFromTextOnlyAddress(address)
+    elif isinstance(address, RodGarettAddress):
+        return jsonFromRodGarettAddress(address)
+    else:
+        raise TypeError(
+            "Unknown address type {!r}".format(address)
+        )
+
 
 def jsonFromTextOnlyAddress(address: TextOnlyAddress) -> Dict[str, Any]:
     return dict(type="text", description=jsonSerialize(address.description))
@@ -105,10 +116,14 @@ def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
 ##
 
 def jsonFromLocation(location: Location) -> Dict[str, Any]:
-    return dict(
-        name=jsonSerialize(location.name),
-        address=jsonSerialize(location.address),
-    )
+    json = dict(name=location.name)
+
+    address = location.address
+    if address is not None:
+        addressJSON = jsonFromAddress(address)
+        json.update(addressJSON)
+
+    return json
 
 
 ##
