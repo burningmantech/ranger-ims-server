@@ -420,7 +420,8 @@ class APIApplication(object):
 
         await applyEdit(
             edits, IncidentJSONKey.state,
-            storage.setIncident_state, lambda n: IncidentState[n]
+            storage.setIncident_state,
+            lambda n: modelObjectFromJSONObject(n, IncidentState),
         )
 
         await applyEdit(
