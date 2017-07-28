@@ -42,6 +42,7 @@ mypy "$@"                                                                   \
         -e '^src/ims/ext/sqlite.py:[0-9:]\+: error: Argument 2 to "connect" has incompatible type "Connection";' \
         -e '^src/ims/ext/test/test_sqlite.py:[0-9:]\+: error: Argument 2 to "execute" of "Connection" has incompatible type "Optional\[Mapping\[Any, Any\]\]"; expected Iterable\[Any\]' \
         -e '^src/ims/legacy/service/tool.py:[0-9:]\+: error: "ConfigOptionsMixIn" has no attribute ".\+"' \
+        -e "^src/ims/model/json/_ranger.py:[0-9:]\+: error: Incompatible types in assignment "               \
         -e '^src/ims/store/sqlite/_store.py:[0-9:]\+: error: <nothing> has no attribute "__iter__"' \
         > "${tmp}" || true;
 

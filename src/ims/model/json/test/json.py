@@ -27,6 +27,7 @@ from ..._event import Event
 from ..._incident import Incident
 from ..._location import Location
 from ..._priority import IncidentPriority
+from ..._ranger import Ranger, RangerStatus
 from ..._report import IncidentReport
 from ..._state import IncidentState
 from ..._type import KnownIncidentType
@@ -116,10 +117,40 @@ def jsonFromLocation(location: Location) -> Dict[str, Any]:
 
 def jsonFromIncidentPriority(priority: IncidentPriority) -> int:
     return {
-        IncidentPriority.high: 1,
+        IncidentPriority.high:   1,
         IncidentPriority.normal: 3,
-        IncidentPriority.low: 5,
+        IncidentPriority.low:    5,
     }[priority]
+
+
+##
+# Ranger
+##
+
+def jsonFromRangerStatus(status: RangerStatus) -> str:
+    return {
+        RangerStatus.prospective: "prospective",
+        RangerStatus.alpha:       "alpha",
+        RangerStatus.bonked:      "bonked",
+        RangerStatus.active:      "active",
+        RangerStatus.inactive:    "inactive",
+        RangerStatus.retired:     "retired",
+        RangerStatus.uberbonked:  "uberbonked",
+        RangerStatus.vintage:     "vintage",
+        RangerStatus.deceased:    "deceased",
+        RangerStatus.other:       "(unknown)",
+    }[status]
+
+
+def jsonFromRanger(ranger: Ranger) -> Dict[str, Any]:
+    return dict(
+        handle=ranger.handle,
+        name=ranger.name,
+        status=jsonFromRangerStatus(ranger.status),
+        dms_id=ranger.dmsID,
+        email=ranger.email,
+        on_site=ranger.onSite,
+    )
 
 
 ##
