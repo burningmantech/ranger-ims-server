@@ -106,7 +106,7 @@ class Ranger(object):
     onSite: bool = attrib(
         validator=instance_of(bool)
     )
-    dmsID: Optional[str] = attrib(
+    dmsID: Optional[int] = attrib(
         validator=optional(instance_of(int))
     )
     password: Optional[str] = attrib(
