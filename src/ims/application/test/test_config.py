@@ -35,7 +35,7 @@ sampleConfigFile = FilePath(__file__).sibling("test.conf")
 
 class ConfigurationTests(TestCase):
     """
-    Tests for L{ims.config.Configuration}
+    Tests for :class:`Configuration`
     """
 
     def test_defaults(self) -> None:
