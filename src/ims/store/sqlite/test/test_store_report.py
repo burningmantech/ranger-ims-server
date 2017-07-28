@@ -34,12 +34,21 @@ from ims.model.strategies import (
 )
 
 from .base import DataStoreTests, dateTimesEqualish, reportEntriesEqualish
+from .test_store_incident import aReportEntry, anIncident
 from ..._exceptions import NoSuchIncidentReportError, StorageError
 
 Set  # silence linter
 
 
 __all__ = ()
+
+
+anIncidentReport = IncidentReport(
+    number=0,
+    created=DateTime.now(TimeZone.utc),
+    summary="A thing happened",
+    reportEntries=(),
+)
 
 
 
@@ -202,15 +211,9 @@ class DataStoreIncidentReportTests(DataStoreTests):
         store = self.store()
         store.bringThePain()
 
-        f = self.failureResultOf(store.createIncidentReport(
-            IncidentReport(
-                number=0,
-                created=DateTime.now(TimeZone.utc),
-                summary="A thing happened",
-                reportEntries=(),
-            ),
-            "Hubcap"
-        ))
+        f = self.failureResultOf(
+            store.createIncidentReport(anIncidentReport, "Hubcap")
+        )
         self.assertEqual(f.type, StorageError)
 
 
@@ -220,15 +223,9 @@ class DataStoreIncidentReportTests(DataStoreTests):
         SQLite raises an exception.
         """
         store = self.store()
-        incidentReport = self.successResultOf(store.createIncidentReport(
-            IncidentReport(
-                number=0,
-                created=DateTime.now(TimeZone.utc),
-                summary="A thing happened",
-                reportEntries=(),
-            ),
-            "Hubcap"
-        ))
+        incidentReport = self.successResultOf(
+            store.createIncidentReport(anIncidentReport, "Hubcap")
+        )
         store.bringThePain()
 
         f = self.failureResultOf(
@@ -344,26 +341,15 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :exc:`ValueError` when given automatic report entries.
         """
         store = self.store()
-        incidentReport = self.successResultOf(store.createIncidentReport(
-            IncidentReport(
-                number=0,
-                created=DateTime.now(TimeZone.utc),
-                summary="A thing happened",
-                reportEntries=(),
-            ),
-            "Hubcap"
-        ))
-
-        reportEntry = ReportEntry(
-            created=DateTime.now(TimeZone.utc),
-            author="Bucket",
-            automatic=True,
-            text="Hello",
+        incidentReport = self.successResultOf(
+            store.createIncidentReport(anIncidentReport, "Hubcap")
         )
+
+        reportEntry = aReportEntry.replace(automatic=True)
 
         f = self.failureResultOf(
             store.addReportEntriesToIncidentReport(
-                incidentReport.number, (reportEntry,), "Bucket"
+                incidentReport.number, (reportEntry,), reportEntry.author
             )
         )
         self.assertEqual(f.type, ValueError)
@@ -377,30 +363,21 @@ class DataStoreIncidentReportTests(DataStoreTests):
         not match the author that is adding the entries.
         """
         store = self.store()
-        incidentReport = self.successResultOf(store.createIncidentReport(
-            IncidentReport(
-                number=0,
-                created=DateTime.now(TimeZone.utc),
-                summary="A thing happened",
-                reportEntries=(),
-            ),
-            "Hubcap"
-        ))
-
-        reportEntry = ReportEntry(
-            created=DateTime.now(TimeZone.utc),
-            author="Hubcap",
-            automatic=False,
-            text="Hello",
+        incidentReport = self.successResultOf(
+            store.createIncidentReport(anIncidentReport, "Hubcap")
         )
+
+        otherAuthor = "not{}".format(aReportEntry.author)
 
         f = self.failureResultOf(
             store.addReportEntriesToIncidentReport(
-                incidentReport.number, (reportEntry,), "Bucket"
+                incidentReport.number, (aReportEntry,), otherAuthor
             )
         )
         self.assertEqual(f.type, ValueError)
-        self.assertEndsWith(f.getErrorMessage(), " has author != Bucket")
+        self.assertEndsWith(
+            f.getErrorMessage(), " has author != {}".format(otherAuthor),
+        )
 
 
     def test_addReportEntriesToIncidentReport_error(self) -> None:
@@ -409,27 +386,16 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :exc:`StorageError` when SQLite raises an exception.
         """
         store = self.store()
-        incidentReport = self.successResultOf(store.createIncidentReport(
-            IncidentReport(
-                number=0,
-                created=DateTime.now(TimeZone.utc),
-                summary="A thing happened",
-                reportEntries=(),
-            ),
-            "Hubcap"
-        ))
+        incidentReport = self.successResultOf(
+            store.createIncidentReport(anIncidentReport, "Hubcap")
+        )
         store.bringThePain()
 
-        reportEntry = ReportEntry(
-            created=DateTime.now(TimeZone.utc),
-            author="Bucket",
-            automatic=False,
-            text="Hello",
-        )
+        aReportEntry
 
         f = self.failureResultOf(
             store.addReportEntriesToIncidentReport(
-                incidentReport.number, (reportEntry,), "Bucket"
+                incidentReport.number, (aReportEntry,), aReportEntry.author
             )
         )
         self.assertEqual(f.type, StorageError)
@@ -440,7 +406,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         lists(
             tuples(
                 incidents(new=True),
-                incidentReportLists(averageSize=2),
+                incidentReportLists(minSize=1, averageSize=2),
             ),
             average_size=2,
         ),
@@ -448,9 +414,15 @@ class DataStoreIncidentReportTests(DataStoreTests):
     def test_detachedAndAttachedIncidentReports(
         self,
         detached: List[IncidentReport],
-        attached: Iterable[Tuple[Incident, List[IncidentReport]]],
+        attached: Sequence[Tuple[Incident, List[IncidentReport]]],
     ) -> None:
         """
+        :meth:`DataStore.attachIncidentReportToIncident` attaches the given
+        incident report to the given incident,
+        :meth:`DataStore.incidentReportsAttachedToIncident` retrieves the
+        attached incident reports, and
+        :meth:`DataStore.detachedIncidentReports` retrieves unattached incident
+        reports.
         """
         store = self.store()
 
@@ -458,10 +430,13 @@ class DataStoreIncidentReportTests(DataStoreTests):
         foundIncidentReportNumbers: Set[int] = set()
         attachedReports: Set[IncidentReport] = set()
 
+        # Create some detached incident reports
         for incidentReport in detached:
             self.storeIncidentReport(store, incidentReport)
             foundIncidentReportNumbers.add(incidentReport.number)
 
+        # Create some incidents and, for each, create some incident reports
+        # and attached them to the incident.
         for incident, reports in attached:
             assume(incident.number not in foundIncidentNumbers)
 
@@ -479,19 +454,160 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
                 foundIncidentReportNumbers.add(incidentReport.number)
 
+                # Verify that the same attached incident comes back from the
+                # store.
+                storedAttachedIncidents = tuple(self.successResultOf(
+                    store.incidentsAttachedToIncidentReport(
+                        incidentReport.number
+                    )
+                ))
+                self.assertEqual(len(storedAttachedIncidents), 1)
+                self.assertEqual(
+                    storedAttachedIncidents[0],
+                    (incident.event, incident.number),
+                )
+
             storedAttached = tuple(self.successResultOf(
                 store.incidentReportsAttachedToIncident(
                     incident.event, incident.number
                 )
             ))
+
+            # Verify that the same attached reports come back from the store.
             self.assertMultipleIncidentReportsEqual(storedAttached, reports)
 
             foundIncidentNumbers.add(incident.number)
 
+        # Verify that the same detached reports come back from the store.
         storedDetached = tuple(
             self.successResultOf(store.detachedIncidentReports())
         )
         self.assertMultipleIncidentReportsEqual(storedDetached, detached)
+
+        # Detach everything
+        for incident, reports in attached:
+            for incidentReport in reports:
+                self.successResultOf(
+                    store.detachIncidentReportFromIncident(
+                        incidentReport.number, incident.event, incident.number
+                    )
+                )
+
+                # Verify report is detached
+                storedAttachedIncidents = tuple(self.successResultOf(
+                    store.incidentsAttachedToIncidentReport(
+                        incidentReport.number
+                    )
+                ))
+                self.assertEqual(len(storedAttachedIncidents), 0)
+
+            # Verify no attached reports
+            storedAttached = tuple(self.successResultOf(
+                store.incidentReportsAttachedToIncident(
+                    incident.event, incident.number
+                )
+            ))
+            self.assertEqual(len(storedAttached), 0)
+
+
+    def test_detachedIncidentReports_error(self) -> None:
+        """
+        :meth:`DataStore.detachedIncidentReports` raises :exc:`StorageError`
+        when SQLite raises an exception.
+        """
+        store = self.store()
+        store.bringThePain()
+
+        f = self.failureResultOf(store.detachedIncidentReports())
+        self.assertEqual(f.type, StorageError)
+
+
+    def test_incidentReportsAttachedToIncident_error(self) -> None:
+        """
+        :meth:`DataStore.incidentReportsAttachedToIncident` raises
+        :exc:`StorageError` when SQLite raises an exception.
+        """
+        store = self.store()
+        self.successResultOf(store.createEvent(anIncident.event))
+        incident = self.successResultOf(
+            store.createIncident(anIncident, "Hubcap")
+        )
+        store.bringThePain()
+
+        f = self.failureResultOf(
+            store.incidentReportsAttachedToIncident(
+                incident.event, incident.number
+            )
+        )
+        self.assertEqual(f.type, StorageError)
+
+
+    def test_incidentsAttachedToIncidentReport_error(self) -> None:
+        """
+        :meth:`DataStore.incidentsAttachedToIncidentReport` raises
+        :exc:`StorageError` when SQLite raises an exception.
+        """
+        store = self.store()
+        incidentReport = self.successResultOf(
+            store.createIncidentReport(anIncidentReport, "Hubcap")
+        )
+        store.bringThePain()
+
+        f = self.failureResultOf(
+            store.incidentsAttachedToIncidentReport(incidentReport.number)
+        )
+        self.assertEqual(f.type, StorageError)
+
+
+    def test_attachIncidentReportToIncident_error(self) -> None:
+        """
+        :meth:`DataStore.attachIncidentReportToIncident` raises
+        :exc:`StorageError` when SQLite raises an exception.
+        """
+        store = self.store()
+        self.successResultOf(store.createEvent(anIncident.event))
+        incident = self.successResultOf(
+            store.createIncident(anIncident, "Hubcap")
+        )
+        incidentReport = self.successResultOf(
+            store.createIncidentReport(anIncidentReport, "Hubcap")
+        )
+        store.bringThePain()
+
+        f = self.failureResultOf(
+            store.attachIncidentReportToIncident(
+                incidentReport.number, incident.event, incident.number
+            )
+        )
+        self.assertEqual(f.type, StorageError)
+
+
+    def test_detachIncidentReportFromIncident_error(self) -> None:
+        """
+        :meth:`DataStore.detachIncidentReportFromIncident` raises
+        :exc:`StorageError` when SQLite raises an exception.
+        """
+        store = self.store()
+        self.successResultOf(store.createEvent(anIncident.event))
+        incident = self.successResultOf(
+            store.createIncident(anIncident, "Hubcap")
+        )
+        incidentReport = self.successResultOf(
+            store.createIncidentReport(anIncidentReport, "Hubcap")
+        )
+        self.successResultOf(
+            store.attachIncidentReportToIncident(
+                incidentReport.number, incident.event, incident.number
+            )
+        )
+        store.bringThePain()
+
+        f = self.failureResultOf(
+            store.detachIncidentReportFromIncident(
+                incidentReport.number, incident.event, incident.number
+            )
+        )
+        self.assertEqual(f.type, StorageError)
 
 
     def assertMultipleIncidentReportsEqual(

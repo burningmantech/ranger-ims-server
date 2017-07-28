@@ -52,6 +52,26 @@ Dict, Event, Optional, Set  # silence linter
 __all__ = ()
 
 
+anEvent = Event(id="foo")
+
+anIncident = Incident(
+    event=anEvent,
+    number=0,
+    created=DateTime.now(TimeZone.utc),
+    state=IncidentState.new, priority=IncidentPriority.normal,
+    summary="A thing happened",
+    location=Location(name="There", address=None),
+    rangerHandles=(), incidentTypes=(), reportEntries=(),
+)
+
+aReportEntry = ReportEntry(
+    created=DateTime.now(TimeZone.utc),
+    author="Hubcap",
+    automatic=False,
+    text="Hello",
+)
+
+
 
 class DataStoreIncidentTests(DataStoreTests):
     """
@@ -91,7 +111,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
     @given(
         incidentLists(
-            event=Event(id="Foo"), maxNumber=SQLITE_MAX_INT,
+            event=anEvent, maxNumber=SQLITE_MAX_INT,
             minSize=2, averageSize=3,
         ),
     )
@@ -123,12 +143,11 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.incidents` raises :exc:`StorageError` when SQLite
         raises an exception.
         """
-        event = Event(id="foo")
         store = self.store()
-        self.successResultOf(store.createEvent(event))
+        self.successResultOf(store.createEvent(anEvent))
         store.bringThePain()
 
-        f = self.failureResultOf(store.incidents(event))
+        f = self.failureResultOf(store.incidents(anEvent))
         self.assertEqual(f.type, StorageError)
 
 
@@ -153,12 +172,11 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.incidentWithNumber` raises :exc:`NoSuchIncidentError`
         when the given incident number is not found.
         """
-        event = Event(id="foo")
         store = self.store()
-        self.successResultOf(store.createEvent(event))
+        self.successResultOf(store.createEvent(anEvent))
 
         f = self.failureResultOf(
-            store.incidentWithNumber(event, 1)
+            store.incidentWithNumber(anEvent, 1)
         )
         self.assertEqual(f.type, NoSuchIncidentError)
 
@@ -168,12 +186,11 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.incidentWithNumber` raises :exc:`NoSuchIncidentError`
         when the given incident number is too large for SQLite.
         """
-        event = Event(id="foo")
         store = self.store()
-        self.successResultOf(store.createEvent(event))
+        self.successResultOf(store.createEvent(anEvent))
 
         f = self.failureResultOf(
-            store.incidentWithNumber(event, SQLITE_MAX_INT + 1)
+            store.incidentWithNumber(anEvent, SQLITE_MAX_INT + 1)
         )
         f.printTraceback()
         self.assertEqual(f.type, NoSuchIncidentError)
@@ -184,12 +201,11 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.incidentWithNumber` raises :exc:`StorageError` when
         SQLite raises an exception.
         """
-        event = Event(id="foo")
         store = self.store()
-        self.successResultOf(store.createEvent(event))
+        self.successResultOf(store.createEvent(anEvent))
         store.bringThePain()
 
-        f = self.failureResultOf(store.incidentWithNumber(event, 1))
+        f = self.failureResultOf(store.incidentWithNumber(anEvent, 1))
         self.assertEqual(f.type, StorageError)
 
 
@@ -279,23 +295,11 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.createIncident` raises :exc:`StorageError` when SQLite
         raises an exception.
         """
-        event = Event(id="foo")
         store = self.store()
-        self.successResultOf(store.createEvent(event))
+        self.successResultOf(store.createEvent(anIncident.event))
         store.bringThePain()
 
-        f = self.failureResultOf(store.createIncident(
-            Incident(
-                event=Event(id="foo"),
-                number=0,
-                created=DateTime.now(TimeZone.utc),
-                state=IncidentState.new, priority=IncidentPriority.normal,
-                summary="A thing happened",
-                location=Location(name="There", address=None),
-                rangerHandles=(), incidentTypes=(), reportEntries=(),
-            ),
-            "Hubcap"
-        ))
+        f = self.failureResultOf(store.createIncident(anIncident, "Hubcap"))
         self.assertEqual(f.type, StorageError)
 
 
@@ -304,26 +308,17 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.setIncident_priority` raises :exc:`StorageError` when
         SQLite raises an exception.
         """
-        event = Event(id="foo")
         store = self.store()
-        self.successResultOf(store.createEvent(event))
-        incident = self.successResultOf(store.createIncident(
-            Incident(
-                event=Event(id="foo"),
-                number=0,
-                created=DateTime.now(TimeZone.utc),
-                state=IncidentState.new, priority=IncidentPriority.normal,
-                summary="A thing happened",
-                location=Location(name="There", address=None),
-                rangerHandles=(), incidentTypes=(), reportEntries=(),
-            ),
-            "Hubcap"
-        ))
+        self.successResultOf(store.createEvent(anIncident.event))
+        incident = self.successResultOf(
+            store.createIncident(anIncident, "Hubcap")
+        )
         store.bringThePain()
 
         f = self.failureResultOf(
             store.setIncident_priority(
-                event, incident.number, IncidentPriority.high, "Bucket"
+                incident.event, incident.number, IncidentPriority.high,
+                "Bucket",
             )
         )
         self.assertEqual(f.type, StorageError)
@@ -508,26 +503,16 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.setIncident_rangers` raises :exc:`StorageError` when
         SQLite raises an exception.
         """
-        event = Event(id="foo")
         store = self.store()
-        self.successResultOf(store.createEvent(event))
-        incident = self.successResultOf(store.createIncident(
-            Incident(
-                event=Event(id="foo"),
-                number=0,
-                created=DateTime.now(TimeZone.utc),
-                state=IncidentState.new, priority=IncidentPriority.normal,
-                summary="A thing happened",
-                location=Location(name="There", address=None),
-                rangerHandles=(), incidentTypes=(), reportEntries=(),
-            ),
-            "Hubcap"
-        ))
+        self.successResultOf(store.createEvent(anIncident.event))
+        incident = self.successResultOf(
+            store.createIncident(anIncident, "Hubcap")
+        )
         store.bringThePain()
 
         f = self.failureResultOf(
             store.setIncident_rangers(
-                event, incident.number, ("Hubcap", "Dingle"), "Bucket"
+                incident.event, incident.number, ("Hubcap", "Dingle"), "Bucket"
             )
         )
         self.assertEqual(f.type, StorageError)
@@ -552,26 +537,16 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.setIncident_incidentTypes` raises :exc:`StorageError`
         when SQLite raises an exception.
         """
-        event = Event(id="foo")
         store = self.store()
-        self.successResultOf(store.createEvent(event))
-        incident = self.successResultOf(store.createIncident(
-            Incident(
-                event=Event(id="foo"),
-                number=0,
-                created=DateTime.now(TimeZone.utc),
-                state=IncidentState.new, priority=IncidentPriority.normal,
-                summary="A thing happened",
-                location=Location(name="There", address=None),
-                rangerHandles=(), incidentTypes=(), reportEntries=(),
-            ),
-            "Hubcap"
-        ))
+        self.successResultOf(store.createEvent(anEvent))
+        incident = self.successResultOf(
+            store.createIncident(anIncident, "Hubcap")
+        )
         store.bringThePain()
 
         f = self.failureResultOf(
             store.setIncident_incidentTypes(
-                event, incident.number, ("Fun", "Boring"), "Bucket"
+                anEvent, incident.number, ("Fun", "Boring"), "Bucket"
             )
         )
         self.assertEqual(f.type, StorageError)
@@ -634,32 +609,18 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.addReportEntriesToIncident` raises :exc:`ValueError`
         when given automatic report entries.
         """
-        event = Event(id="foo")
         store = self.store()
-        self.successResultOf(store.createEvent(event))
-        incident = self.successResultOf(store.createIncident(
-            Incident(
-                event=event,
-                number=0,
-                created=DateTime.now(TimeZone.utc),
-                state=IncidentState.new, priority=IncidentPriority.normal,
-                summary="A thing happened",
-                location=Location(name="There", address=None),
-                rangerHandles=(), incidentTypes=(), reportEntries=(),
-            ),
-            "Hubcap"
-        ))
-
-        reportEntry = ReportEntry(
-            created=DateTime.now(TimeZone.utc),
-            author="Bucket",
-            automatic=True,
-            text="Hello",
+        self.successResultOf(store.createEvent(anIncident.event))
+        incident = self.successResultOf(
+            store.createIncident(anIncident, "Hubcap")
         )
+
+        reportEntry = aReportEntry.replace(automatic=True)
 
         f = self.failureResultOf(
             store.addReportEntriesToIncident(
-                event, incident.number, (reportEntry,), "Bucket"
+                incident.event, incident.number,
+                (reportEntry,), reportEntry.author,
             )
         )
         self.assertEqual(f.type, ValueError)
@@ -672,36 +633,23 @@ class DataStoreIncidentTests(DataStoreTests):
         when given report entries with an author that does not match the author
         that is adding the entries.
         """
-        event = Event(id="foo")
         store = self.store()
-        self.successResultOf(store.createEvent(event))
-        incident = self.successResultOf(store.createIncident(
-            Incident(
-                event=event,
-                number=0,
-                created=DateTime.now(TimeZone.utc),
-                state=IncidentState.new, priority=IncidentPriority.normal,
-                summary="A thing happened",
-                location=Location(name="There", address=None),
-                rangerHandles=(), incidentTypes=(), reportEntries=(),
-            ),
-            "Hubcap"
-        ))
-
-        reportEntry = ReportEntry(
-            created=DateTime.now(TimeZone.utc),
-            author="Hubcap",
-            automatic=False,
-            text="Hello",
+        self.successResultOf(store.createEvent(anIncident.event))
+        incident = self.successResultOf(
+            store.createIncident(anIncident, "Hubcap")
         )
+
+        otherAuthor = "not{}".format(aReportEntry.author)
 
         f = self.failureResultOf(
             store.addReportEntriesToIncident(
-                event, incident.number, (reportEntry,), "Bucket"
+                incident.event, incident.number, (aReportEntry,), otherAuthor
             )
         )
         self.assertEqual(f.type, ValueError)
-        self.assertEndsWith(f.getErrorMessage(), " has author != Bucket")
+        self.assertEndsWith(
+            f.getErrorMessage(), " has author != {}".format(otherAuthor),
+        )
 
 
     def test_addReportEntriesToIncident_error(self) -> None:
@@ -709,33 +657,17 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.addReportEntriesToIncident` raises :exc:`StorageError`
         when SQLite raises an exception.
         """
-        event = Event(id="foo")
         store = self.store()
-        self.successResultOf(store.createEvent(event))
-        incident = self.successResultOf(store.createIncident(
-            Incident(
-                event=Event(id="foo"),
-                number=0,
-                created=DateTime.now(TimeZone.utc),
-                state=IncidentState.new, priority=IncidentPriority.normal,
-                summary="A thing happened",
-                location=Location(name="There", address=None),
-                rangerHandles=(), incidentTypes=(), reportEntries=(),
-            ),
-            "Hubcap"
-        ))
-        store.bringThePain()
-
-        reportEntry = ReportEntry(
-            created=DateTime.now(TimeZone.utc),
-            author="Bucket",
-            automatic=False,
-            text="Hello",
+        self.successResultOf(store.createEvent(anIncident.event))
+        incident = self.successResultOf(
+            store.createIncident(anIncident, "Hubcap")
         )
+        store.bringThePain()
 
         f = self.failureResultOf(
             store.addReportEntriesToIncident(
-                event, incident.number, (reportEntry,), "Bucket"
+                incident.event, incident.number,
+                (aReportEntry,), aReportEntry.author,
             )
         )
         self.assertEqual(f.type, StorageError)
