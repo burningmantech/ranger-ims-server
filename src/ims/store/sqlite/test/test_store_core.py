@@ -18,6 +18,9 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
+from datetime import (
+    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+)
 from io import StringIO
 from textwrap import dedent
 from typing import Dict, Set, cast
@@ -25,7 +28,8 @@ from typing import Dict, Set, cast
 from ims.ext.sqlite import Connection
 
 from .base import DataStoreTests
-from .._store import DataStore
+from .._store import DataStore, asTimeStamp
+from ..._exceptions import StorageError
 
 Dict, Set  # silence linter
 
@@ -166,3 +170,22 @@ class DataStoreCoreTests(DataStoreTests):
         """
         store = self.store()
         self.assertIsInstance(store._db, Connection)
+
+
+
+class DataStoreHelperTests(DataStoreTests):
+    """
+    Tests for :class:`DataStore` helper functions.
+    """
+
+    def test_asTimeStamp_preEpoch(self) -> None:
+        """
+        :func:`asTimeStamp` raises :exc:`StorageError` when given a time stamp
+        before the UTC Epoch.
+        """
+        epoch = DateTime(
+            year=1970, month=1, day=1, hour=0, minute=0, tzinfo=TimeZone.utc
+        )
+        preEpoch = epoch - TimeDelta(seconds=1)
+
+        self.assertRaises(StorageError, asTimeStamp, preEpoch)
