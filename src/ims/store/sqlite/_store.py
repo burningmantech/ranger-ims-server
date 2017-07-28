@@ -545,7 +545,7 @@ class DataStore(IMSDataStore):
             )
             for row in cursor.execute(
                 self._query_incident_reportEntries, params
-            )
+            ) if row["TEXT"]
         )
 
         # FIXME: This is because schema thinks concentric is an int
