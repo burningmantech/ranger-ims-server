@@ -49,10 +49,8 @@ def serializeLocation(location: Location) -> Dict[str, Any]:
         for key in LocationJSONKey
     )
 
-    address = location.address
-    if address is not None:
-        addressJSON = serializeAddress(address)
-        locationJSON.update(addressJSON)
+    addressJSON = serializeAddress(location.address)
+    locationJSON.update(addressJSON)
 
     return locationJSON
 

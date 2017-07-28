@@ -118,10 +118,8 @@ def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
 def jsonFromLocation(location: Location) -> Dict[str, Any]:
     json = dict(name=location.name)
 
-    address = location.address
-    if address is not None:
-        addressJSON = jsonFromAddress(address)
-        json.update(addressJSON)
+    addressJSON = jsonFromAddress(location.address)
+    json.update(addressJSON)
 
     return json
 
