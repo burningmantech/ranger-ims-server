@@ -29,6 +29,8 @@ from attr.validators import instance_of, optional
 
 from ims.ext.attr import true
 
+from ._replace import ReplaceMixIn
+
 AbstractSet, Optional  # silence linter
 
 
@@ -81,7 +83,7 @@ class RangerStatus(Enum):
 
 
 @attrs(frozen=True)
-class Ranger(object):
+class Ranger(ReplaceMixIn):
     """
     Ranger
 
