@@ -40,7 +40,8 @@ from ims.dms import DMSError
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ims.model import (
-    Event, Incident, IncidentReport, IncidentState, ReportEntry
+    Event, Incident, IncidentPriority, IncidentReport, IncidentState,
+    ReportEntry,
 )
 from ims.model.json import (
     IncidentJSONKey, IncidentReportJSONKey, LocationJSONKey,
@@ -415,13 +416,14 @@ class APIApplication(object):
         storage = self.config.storage
 
         await applyEdit(
-            edits, IncidentJSONKey.priority, storage.setIncident_priority
+            edits, IncidentJSONKey.priority, storage.setIncident_priority,
+            lambda json: modelObjectFromJSONObject(json, IncidentPriority),
         )
 
         await applyEdit(
             edits, IncidentJSONKey.state,
             storage.setIncident_state,
-            lambda n: modelObjectFromJSONObject(n, IncidentState),
+            lambda json: modelObjectFromJSONObject(json, IncidentState),
         )
 
         await applyEdit(
