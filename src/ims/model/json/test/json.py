@@ -21,12 +21,13 @@ Expected JSON encoding for model data.
 from typing import Any, Dict
 
 from .._json import jsonSerialize
-from ..._address import RodGarettAddress, TextOnlyAddress
+from ..._address import Address, RodGarettAddress, TextOnlyAddress
 from ..._entry import ReportEntry
 from ..._event import Event
 from ..._incident import Incident
 from ..._location import Location
 from ..._priority import IncidentPriority
+from ..._ranger import Ranger, RangerStatus
 from ..._report import IncidentReport
 from ..._state import IncidentState
 from ..._type import KnownIncidentType
@@ -38,6 +39,17 @@ __all__ = ()
 ##
 # Address
 ##
+
+def jsonFromAddress(address: Address) -> Dict[str, Any]:
+    if isinstance(address, TextOnlyAddress):
+        return jsonFromTextOnlyAddress(address)
+    elif isinstance(address, RodGarettAddress):
+        return jsonFromRodGarettAddress(address)
+    else:
+        raise TypeError(
+            "Unknown address type {!r}".format(address)
+        )
+
 
 def jsonFromTextOnlyAddress(address: TextOnlyAddress) -> Dict[str, Any]:
     return dict(type="text", description=jsonSerialize(address.description))
@@ -104,10 +116,12 @@ def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
 ##
 
 def jsonFromLocation(location: Location) -> Dict[str, Any]:
-    return dict(
-        name=jsonSerialize(location.name),
-        address=jsonSerialize(location.address),
-    )
+    json = dict(name=location.name)
+
+    addressJSON = jsonFromAddress(location.address)
+    json.update(addressJSON)
+
+    return json
 
 
 ##
@@ -116,10 +130,40 @@ def jsonFromLocation(location: Location) -> Dict[str, Any]:
 
 def jsonFromIncidentPriority(priority: IncidentPriority) -> int:
     return {
-        IncidentPriority.high: 1,
+        IncidentPriority.high:   1,
         IncidentPriority.normal: 3,
-        IncidentPriority.low: 5,
+        IncidentPriority.low:    5,
     }[priority]
+
+
+##
+# Ranger
+##
+
+def jsonFromRangerStatus(status: RangerStatus) -> str:
+    return {
+        RangerStatus.prospective: "prospective",
+        RangerStatus.alpha:       "alpha",
+        RangerStatus.bonked:      "bonked",
+        RangerStatus.active:      "active",
+        RangerStatus.inactive:    "inactive",
+        RangerStatus.retired:     "retired",
+        RangerStatus.uberbonked:  "uberbonked",
+        RangerStatus.vintage:     "vintage",
+        RangerStatus.deceased:    "deceased",
+        RangerStatus.other:       "(unknown)",
+    }[status]
+
+
+def jsonFromRanger(ranger: Ranger) -> Dict[str, Any]:
+    return dict(
+        handle=ranger.handle,
+        name=ranger.name,
+        status=jsonFromRangerStatus(ranger.status),
+        dms_id=ranger.dmsID,
+        email=ranger.email,
+        on_site=ranger.onSite,
+    )
 
 
 ##

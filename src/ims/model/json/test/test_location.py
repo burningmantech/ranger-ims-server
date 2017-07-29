@@ -70,6 +70,9 @@ class LocationDeserializationTests(TestCase):
             name="Foo", address=TextOnlyAddress(description="Over there")
         ))
 
-        json["address"]["type"] = "* not a valid type *"
+        # jsonAddress = json["address"]
+        jsonAddress = json
+
+        jsonAddress["type"] = "* not a valid type *"
 
         self.assertRaises(ValueError, jsonDeserialize, json, Location)

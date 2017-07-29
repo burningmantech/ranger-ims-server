@@ -29,6 +29,8 @@ from attr.validators import instance_of, optional
 
 from ims.ext.attr import true
 
+from ._replace import ReplaceMixIn
+
 AbstractSet, Optional  # silence linter
 
 
@@ -81,7 +83,7 @@ class RangerStatus(Enum):
 
 
 @attrs(frozen=True)
-class Ranger(object):
+class Ranger(ReplaceMixIn):
     """
     Ranger
 
@@ -106,7 +108,7 @@ class Ranger(object):
     onSite: bool = attrib(
         validator=instance_of(bool)
     )
-    dmsID: Optional[str] = attrib(
+    dmsID: Optional[int] = attrib(
         validator=optional(instance_of(int))
     )
     password: Optional[str] = attrib(

@@ -21,7 +21,10 @@ JSON serialization/deserialization for addresses
 from enum import Enum, unique
 from typing import Any, Dict, Type
 
-from ._json import jsonDeserialize, registerDeserializer
+from ._address import AddressJSONKey, AddressTypeJSONValue, serializeAddress
+from ._json import (
+    jsonDeserialize, jsonSerialize, registerDeserializer, registerSerializer
+)
 from .._address import RodGarettAddress, TextOnlyAddress
 from .._location import Location
 
@@ -35,38 +38,46 @@ class LocationJSONKey(Enum):
     Location JSON keys
     """
 
-    name                 = "name"
-    address              = "address"
-    addressType          = "type"
-    addressTypeText      = "text"
-    addressTypeRodGarett = "garett"
+    name = "name"
 
 
-# cattrs default serialization works.
-# We need custom deserialization because Address is an ABC and we need to
-# figure out which subclass to deserialize into.
 
+def serializeLocation(location: Location) -> Dict[str, Any]:
+    # Map Location attribute names to JSON dict key names
+    locationJSON = dict(
+        (key.value, jsonSerialize(getattr(location, key.name)))
+        for key in LocationJSONKey
+    )
+
+    addressJSON = serializeAddress(location.address)
+    locationJSON.update(addressJSON)
+
+    return locationJSON
+
+
+registerSerializer(Location, serializeLocation)
 
 
 def deserializeLocation(obj: Dict[str, Any], cl: Type) -> Location:
     assert cl is Location, (cl, obj)
 
-    jsonAddress = obj[LocationJSONKey.address.value]
-    addressType = jsonAddress[LocationJSONKey.addressType.value]
+    # If address were a nested dict, we'd do this:
+    # jsonAddress = obj[LocationJSONKey.address.value]
+    # But we flatten the JSON schema, so:
+    jsonAddress = obj
+    addressType = jsonAddress[AddressJSONKey.addressType.value]
 
     addressClass: Type
-    if addressType == LocationJSONKey.addressTypeRodGarett.value:
+    if addressType == AddressTypeJSONValue.rodGarett.value:
         addressClass = RodGarettAddress
-    elif addressType == LocationJSONKey.addressTypeText.value:
+    elif addressType == AddressTypeJSONValue.text.value:
         addressClass = TextOnlyAddress
     else:
         raise ValueError("Unknown address type: {}".format(addressType))
 
     return Location(
         name=obj[LocationJSONKey.name.value],
-        address=jsonDeserialize(
-            obj[LocationJSONKey.address.value], addressClass
-        ),
+        address=jsonDeserialize(jsonAddress, addressClass),
     )
 
 

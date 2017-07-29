@@ -20,6 +20,7 @@ Incident Management System data model JSON serialization/deserialization
 
 from . import _event
 from . import _priority
+from . import _ranger
 from . import _state
 from . import _type
 
@@ -32,6 +33,7 @@ from ._report import IncidentReportJSONKey
 
 del _event
 del _priority
+del _ranger
 del _state
 del _type
 
