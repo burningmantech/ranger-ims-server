@@ -149,21 +149,6 @@ def serializeRodGarettAddress(address: RodGarettAddress) -> Dict[str, Any]:
 registerSerializer(RodGarettAddress, serializeRodGarettAddress)
 
 
-def deserializeAddress(
-    obj: Dict[str, Any], cl: Type
-) -> TextOnlyAddress:
-    assert cl is Address, (cl, obj)
-
-    if isinstance(obj, TextOnlyAddress):
-        return deserializeTextOnlyAddress(obj)
-    elif isinstance(obj, RodGarettAddress):
-        return deserializeRodGarettAddress(obj)
-    else:
-        raise TypeError("Unknown address type {!r}".format(obj))
-
-
-# registerDeserializer(Address, deserializeAddress)
-
 
 def deserializeTextOnlyAddress(
     obj: Dict[str, Any], cl: Type
