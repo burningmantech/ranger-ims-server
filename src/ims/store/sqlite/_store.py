@@ -69,7 +69,6 @@ class DataStore(IMSDataStore):
     """
 
     _log = Logger()
-    _schema = None
     _schemaVersion = 2
 
     @attrs(frozen=False)
@@ -117,12 +116,9 @@ class DataStore(IMSDataStore):
 
     @classmethod
     def _loadSchema(cls, version: int = _schemaVersion) -> str:
-        if cls._schema is None:
-            name = "schema.{}.sqlite".format(version)
-            path = Path(__file__).parent / name
-            schema = path.read_text()
-            cls._schema = schema
-        return cls._schema
+        name = "schema.{}.sqlite".format(version)
+        path = Path(__file__).parent / name
+        return path.read_text()
 
 
     @classmethod

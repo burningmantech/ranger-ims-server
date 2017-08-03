@@ -51,13 +51,8 @@ class DataStoreCoreTests(DataStoreTests):
 
         cls = cast(DataStore, store.__class__)
 
-        cls._schema = None  # Reset in case previously cached
         schema = store._loadSchema()
         self.assertStartsWith(schema, "create table SCHEMA_INFO (")
-
-        # Check that class and instance access are the same object
-        self.assertIdentical(schema, store._schema)
-        self.assertIdentical(schema, cls._schema)
 
 
     def test_printSchema(self) -> None:
