@@ -71,6 +71,7 @@ class DataStoreCoreTests(DataStoreTests):
             schemaInfo,
             dedent(
                 """
+                Version: 2
                 ACCESS_MODE:
                   0: ID(text) not null *1
                 CONCENTRIC_STREET:

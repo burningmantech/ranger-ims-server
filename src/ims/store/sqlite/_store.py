@@ -116,6 +116,8 @@ class DataStore(IMSDataStore):
         Print schema.
         """
         with createDB(None, cls._loadSchema()) as db:
+            version = cls._version(db)
+            print("Version: {}".format(version), file=out)
             printSchema(db, out=out)
 
 
