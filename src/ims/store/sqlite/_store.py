@@ -101,6 +101,21 @@ class DataStore(IMSDataStore):
 
 
     @classmethod
+    def _upgradeSchema(cls, db: Connection) -> bool:
+        version = cls._version(db)
+
+        if version == cls._schemaVersion:
+            return False
+
+        if version == 1:
+            raise NotImplementedError()
+
+        raise StorageError(
+            "No upgrade path from schema version {}".format(version)
+        )
+
+
+    @classmethod
     def _loadSchema(cls, version: int = _schemaVersion) -> str:
         if cls._schema is None:
             name = "schema.{}.sqlite".format(version)
@@ -142,14 +157,12 @@ class DataStore(IMSDataStore):
     def _db(self) -> Connection:
         if self._state.db is None:
             db = openDB(self.dbPath, schema=self._loadSchema())
-            self._state.db = db
 
-            version = self._version(db)
-            if version != self._schemaVersion:
-                raise StorageError(
-                    "Schema version {} != {}"
-                    .format(version, self._schemaVersion)
-                )
+            if self._upgradeSchema(db):
+                # Re-connect to get new schema
+                db = openDB(self.dbPath)
+
+            self._state.db = db
 
         return self._state.db
 
