@@ -44,7 +44,7 @@ create table REPORT_ENTRY (
     ID        integer not null,
     AUTHOR    text    not null,
     TEXT      text    not null,
-    CREATED   real    not null,  -- Was integer in v1
+    CREATED   real    not null,
     GENERATED numeric not null,
 
     -- FIXME: AUTHOR is an external non-primary key.
@@ -58,13 +58,13 @@ create table INCIDENT (
     EVENT    integer not null,
     NUMBER   integer not null,
     VERSION  integer not null,
-    CREATED  real    not null,  -- Was integer in v1
+    CREATED  real    not null,
     PRIORITY integer not null,
     STATE    text    not null,
     SUMMARY  text,
 
     LOCATION_NAME          text,
-    LOCATION_CONCENTRIC    text,  -- Was integer in v1
+    LOCATION_CONCENTRIC    text,
     LOCATION_RADIAL_HOUR   integer,
     LOCATION_RADIAL_MINUTE integer,
     LOCATION_DESCRIPTION   text,
@@ -150,7 +150,7 @@ create table EVENT_ACCESS (
 
 create table INCIDENT_REPORT (
     NUMBER   integer not null,
-    CREATED  real    not null,  -- Was integer in v1
+    CREATED  real    not null,
     SUMMARY  text,
 
     primary key (NUMBER)
