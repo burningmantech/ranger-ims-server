@@ -101,9 +101,9 @@ class DataStore(IMSDataStore):
 
 
     @classmethod
-    def _loadSchema(cls) -> str:
+    def _loadSchema(cls, version: int = _schemaVersion) -> str:
         if cls._schema is None:
-            name = "schema.{}.sqlite".format(cls._schemaVersion)
+            name = "schema.{}.sqlite".format(version)
             path = Path(__file__).parent / name
             schema = path.read_text()
             cls._schema = schema
