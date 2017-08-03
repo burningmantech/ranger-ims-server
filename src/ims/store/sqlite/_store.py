@@ -87,6 +87,19 @@ class DataStore(IMSDataStore):
     _state: _State = attrib(default=Factory(_State), init=False)
 
 
+    @staticmethod
+    def _version(db: Connection) -> int:
+        try:
+            rows = db.execute("select VERSION from SCHEMA_INFO")
+            row = next(rows, None)
+            if row is None:
+                raise StorageError("Invalid schema: no version")
+            return row["VERSION"]
+        except SQLiteError as e:
+            self._log.critical("Unable to look up schema version.")
+            raise StorageError(e)
+
+
     @classmethod
     def _loadSchema(cls) -> str:
         if cls._schema is None:
@@ -123,26 +136,13 @@ class DataStore(IMSDataStore):
                 print(file=out)
 
 
-    @staticmethod
-    def version(db: Connection) -> int:
-        try:
-            rows = db.execute("select VERSION from SCHEMA_INFO")
-            row = next(rows, None)
-            if row is None:
-                raise StorageError("Invalid schema: no version")
-            return row["VERSION"]
-        except SQLiteError as e:
-            self._log.critical("Unable to look up schema version.")
-            raise StorageError(e)
-
-
     @property
     def _db(self) -> Connection:
         if self._state.db is None:
             db = openDB(self.dbPath, schema=self._loadSchema())
             self._state.db = db
 
-            version = self.version(db)
+            version = self._version(db)
             if version != self._schemaVersion:
                 raise StorageError(
                     "Schema version {} != {}"
