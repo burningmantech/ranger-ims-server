@@ -86,34 +86,6 @@ class DataStore(IMSDataStore):
     _state: _State = attrib(default=Factory(_State), init=False)
 
 
-    @staticmethod
-    def _version(db: Connection) -> int:
-        try:
-            rows = db.execute("select VERSION from SCHEMA_INFO")
-            row = next(rows, None)
-            if row is None:
-                raise StorageError("Invalid schema: no version")
-            return row["VERSION"]
-        except SQLiteError as e:
-            self._log.critical("Unable to look up schema version.")
-            raise StorageError(e)
-
-
-    @classmethod
-    def _upgradeSchema(cls, db: Connection) -> bool:
-        version = cls._version(db)
-
-        if version == cls._schemaVersion:
-            return False
-
-        if version == 1:
-            raise NotImplementedError()
-
-        raise StorageError(
-            "No upgrade path from schema version {}".format(version)
-        )
-
-
     @classmethod
     def _loadSchema(cls, version: int = _schemaVersion) -> str:
         name = "schema.{}.sqlite".format(version)
@@ -147,6 +119,34 @@ class DataStore(IMSDataStore):
             for line in explainQueryPlans(db, queries):
                 print(line, file=out)
                 print(file=out)
+
+
+    @staticmethod
+    def _version(db: Connection) -> int:
+        try:
+            rows = db.execute("select VERSION from SCHEMA_INFO")
+            row = next(rows, None)
+            if row is None:
+                raise StorageError("Invalid schema: no version")
+            return row["VERSION"]
+        except SQLiteError as e:
+            self._log.critical("Unable to look up schema version.")
+            raise StorageError(e)
+
+
+    @classmethod
+    def _upgradeSchema(cls, db: Connection) -> bool:
+        version = cls._version(db)
+
+        if version == cls._schemaVersion:
+            return False
+
+        if version == 1:
+            raise NotImplementedError()
+
+        raise StorageError(
+            "No upgrade path from schema version {}".format(version)
+        )
 
 
     @property
