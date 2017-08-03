@@ -22,10 +22,11 @@ from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
 from io import StringIO
+from pathlib import Path
 from textwrap import dedent
 from typing import Dict, Set, cast
 
-from ims.ext.sqlite import Connection
+from ims.ext.sqlite import Connection, createDB, printSchema
 
 from .base import DataStoreTests
 from .._store import DataStore, asTimeStamp
@@ -160,12 +161,51 @@ class DataStoreCoreTests(DataStoreTests):
         )
 
 
+    def test_version(self):
+        """
+        :meth:`DataStore._version` returns the schema version for the given
+        database.
+        """
+        for version in range(1, DataStore._schemaVersion + 1):
+            db = createDB(None, DataStore._loadSchema(version=version))
+            self.assertEqual(DataStore._version(db), version)
+
+
     def test_db(self) -> None:
         """
         :meth:`DataStore._db` returns a :class:`Connection`.
         """
         store = self.store()
         self.assertIsInstance(store._db, Connection)
+
+
+    def test_schemaUpgrade(self):
+        """
+        A database with an old schema is automatically upgraded to the current
+        version.
+        """
+        def getSchemaInfo(db: Connection) -> str:
+            out = StringIO()
+            printSchema(db, out)
+            return out.getvalue()
+
+        with createDB(
+            None, DataStore._loadSchema(version=DataStore._schemaVersion)
+        ) as db:
+            currentSchemaInfo = getSchemaInfo(db)
+
+        for version in range(1, DataStore._schemaVersion):
+            path = Path(self.mktemp())
+            createDB(path, DataStore._loadSchema(version=version))
+            store = DataStore(dbPath=path)
+
+            self.assertEqual(store._version(store._db))
+
+            schemaInfo = getSchemaInfo(store._db)
+
+            self.assertEqual(schemaInfo, currentSchemaInfo)
+
+    test_schemaUpgrade.todo = "not implemented"
 
 
 

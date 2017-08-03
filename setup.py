@@ -105,7 +105,7 @@ package_data = dict(
         "element/static/*.css",
         "element/static/*.js",
         "element/static/*.png",
-        "store/sqlite/schema.2.sqlite",
+        "store/sqlite/schema.*.sqlite",
     ],
 )
 
