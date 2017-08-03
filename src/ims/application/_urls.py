@@ -105,13 +105,13 @@ class URLs(object):
     adminJS                    = static.child("admin.js")
 
     adminAccessControl         = admin.child("access")
-    adminAccessControlJS       = static.child("access.js")
+    adminAccessControlJS       = static.child("admin_access.js")
 
     adminIncidentTypes         = admin.child("types")
-    adminIncidentTypesJS       = static.child("types.js")
+    adminIncidentTypesJS       = static.child("admin_types.js")
 
     adminStreets               = admin.child("streets")
-    adminStreetsJS             = static.child("streets.js")
+    adminStreetsJS             = static.child("admin_streets.js")
 
     viewEvents                 = app.child("events").child("")
     viewEvent                  = viewEvents.child("<eventID>").child("")
