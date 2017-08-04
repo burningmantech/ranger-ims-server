@@ -151,14 +151,21 @@ class Connection(BaseConnection):
         for referent, rowid, referred, constraint in (
             self.execute("pragma foreign_key_check")
         ):
+            row = self.execute(
+                "select * from {} where ROWID=:rowid".format(referent),
+                dict(rowid=rowid)
+            ).fetchone()
             self._log.critical(
-                "Foreign key constraint {constraint} from table "
-                "{referent}, row {rowid} to table {referred} violated",
+                "Foreign key constraint {constraint} violated by "
+                "table {referent}, row {rowid} to table {referred}\n"
+                "Row: {row}",
                 referent=referent,
                 rowid=rowid,
                 referred=referred,
                 constraint=constraint,
+                row={k: row[k] for k in row.keys()},
             )
+
             valid = False
 
         if not valid:
@@ -190,7 +197,7 @@ def connect(path: Optional[Path]) -> Connection:
 
     db = cast(Connection, sqliteConnect(endpoint, factory=Connection))
     db.row_factory = Row
-    db.execute("pragma foreign_keys = ON")
+    db.execute("pragma foreign_keys = true")
 
     return db
 
