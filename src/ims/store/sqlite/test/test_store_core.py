@@ -24,7 +24,7 @@ from datetime import (
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict, Set, cast
+from typing import Dict, Set
 
 from ims.ext.sqlite import Connection, createDB, printSchema
 
@@ -49,10 +49,8 @@ class DataStoreCoreTests(DataStoreTests):
         :meth:`DataStore.loadSchema` caches and returns the schema.
         """
         store = self.store()
-
-        cls = cast(DataStore, store.__class__)
-
         schema = store._loadSchema()
+
         self.assertStartsWith(schema, "create table SCHEMA_INFO (")
 
 
@@ -63,6 +61,7 @@ class DataStoreCoreTests(DataStoreTests):
         out = StringIO()
         DataStore.printSchema(out)
         schemaInfo = out.getvalue()
+
         self.maxDiff = None
         self.assertEqual(
             schemaInfo,
@@ -144,6 +143,7 @@ class DataStoreCoreTests(DataStoreTests):
         out = StringIO()
         DataStore.printQueries(out)
         queryInfo = out.getvalue()
+
         self.assertStartsWith(
             queryInfo,
             "addEventAccess:\n\n"
@@ -162,13 +162,14 @@ class DataStoreCoreTests(DataStoreTests):
         )
 
 
-    def test_version(self):
+    def test_version(self) -> None:
         """
         :meth:`DataStore._version` returns the schema version for the given
         database.
         """
         for version in range(1, DataStore._schemaVersion + 1):
             db = createDB(None, DataStore._loadSchema(version=version))
+
             self.assertEqual(DataStore._version(db), version)
 
 
@@ -177,10 +178,11 @@ class DataStoreCoreTests(DataStoreTests):
         :meth:`DataStore._db` returns a :class:`Connection`.
         """
         store = self.store()
+
         self.assertIsInstance(store._db, Connection)
 
 
-    def test_schemaUpgrade(self):
+    def test_schemaUpgrade(self) -> None:
         """
         A database with an old schema is automatically upgraded to the current
         version.

@@ -10,9 +10,11 @@ create table REPORT_ENTRY_TEMP (
     primary key (ID)
 );
 
+pragma foreign_keys = false;
 insert into REPORT_ENTRY_TEMP select * from REPORT_ENTRY;
 drop table REPORT_ENTRY;
 alter table REPORT_ENTRY_TEMP rename to REPORT_ENTRY;
+pragma foreign_keys = true;
 
 
 -- Change CREATED column in INCIDENT from integer to real
@@ -42,9 +44,11 @@ create table INCIDENT_TEMP (
     primary key (EVENT, NUMBER)
 );
 
+pragma foreign_keys = false;
 insert into INCIDENT_TEMP select * from INCIDENT;
 drop table INCIDENT;
 alter table INCIDENT_TEMP rename to INCIDENT;
+pragma foreign_keys = true;
 
 
 -- Change CREATED column in INCIDENT_REPORT from integer to real
@@ -57,9 +61,11 @@ create table INCIDENT_REPORT_TEMP (
     primary key (NUMBER)
 );
 
+pragma foreign_keys = false;
 insert into INCIDENT_REPORT_TEMP select * from INCIDENT_REPORT;
 drop table INCIDENT_REPORT;
 alter table INCIDENT_REPORT_TEMP rename to INCIDENT_REPORT;
+pragma foreign_keys = true;
 
 
 -- Rename INCIDENT_INCIDENT_REPORT to INCIDENT__INCIDENT_REPORT

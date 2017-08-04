@@ -6,7 +6,7 @@ SQLite utilities
 from pathlib import Path
 from sqlite3 import (
     Connection as BaseConnection, Cursor as BaseCursor, Error as SQLiteError,
-    Row as BaseRow, connect as sqliteConnect,
+    IntegrityError, Row as BaseRow, connect as sqliteConnect,
 )
 from typing import (
     Any, Callable, Iterable, Mapping, Optional, Tuple, TypeVar, Union, cast
@@ -139,6 +139,30 @@ class Connection(BaseConnection):
         """
         self._log.debug("COMMIT")
         super().commit()
+
+
+    def validateConstraints(self) -> None:
+        self.validateForeignKeys()
+
+
+    def validateForeignKeys(self) -> None:
+        valid = True
+
+        for referent, rowid, referred, constraint in (
+            self.execute("pragma foreign_key_check")
+        ):
+            self._log.critical(
+                "Foreign key constraint {constraint} from table "
+                "{referent}, row {rowid} to table {referred} violated",
+                referent=referent,
+                rowid=rowid,
+                referred=referred,
+                constraint=constraint,
+            )
+            valid = False
+
+        if not valid:
+            raise IntegrityError("Foreign key constraints violated")
 
 
     def __enter__(self: TConnection) -> TConnection:

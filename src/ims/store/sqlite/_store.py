@@ -87,7 +87,7 @@ class DataStore(IMSDataStore):
 
 
     @classmethod
-    def _loadSchema(cls, version: int = _schemaVersion) -> str:
+    def _loadSchema(cls, version: Union[int, str] = _schemaVersion) -> str:
         name = "schema.{}.sqlite".format(version)
         path = Path(__file__).parent / name
         return path.read_text()
@@ -121,8 +121,8 @@ class DataStore(IMSDataStore):
                 print(file=out)
 
 
-    @staticmethod
-    def _version(db: Connection) -> int:
+    @classmethod
+    def _version(cls, db: Connection) -> int:
         try:
             rows = db.execute("select VERSION from SCHEMA_INFO")
             row = next(rows, None)
@@ -130,7 +130,7 @@ class DataStore(IMSDataStore):
                 raise StorageError("Invalid schema: no version")
             return row["VERSION"]
         except SQLiteError as e:
-            self._log.critical("Unable to look up schema version.")
+            cls._log.critical("Unable to look up schema version.")
             raise StorageError(e)
 
 
@@ -138,10 +138,21 @@ class DataStore(IMSDataStore):
     def _upgradeSchema(cls, db: Connection) -> bool:
         version = cls._version(db)
 
-        if version == 1:
-            sql = cls._loadSchema(version="2-from-1")
+        def sqlUpgrade(fromVersion: int, toVersion: int) -> None:
+            cls._log.info(
+                "Upgrading database schema from version {fromVersion} to "
+                "version {toVersion}",
+                fromVersion=fromVersion, toVersion=toVersion,
+            )
+            sql = cls._loadSchema(
+                version="{}-from-{}".format(toVersion, fromVersion)
+            )
             with db:
                 db.executescript(sql)
+                db.validateConstraints()
+
+        if version == 1:
+            sqlUpgrade(1, 2)
             version = 2
 
         if version == cls._schemaVersion:
@@ -156,6 +167,8 @@ class DataStore(IMSDataStore):
     def _db(self) -> Connection:
         if self._state.db is None:
             db = openDB(self.dbPath, schema=self._loadSchema())
+
+            db.validateConstraints()
 
             if self._upgradeSchema(db):
                 # Re-connect to get new schema
