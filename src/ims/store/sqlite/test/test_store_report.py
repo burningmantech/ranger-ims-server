@@ -57,6 +57,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
     Tests for :class:`DataStore` incident report access.
     """
     @given(incidentReportLists(maxNumber=SQLITE_MAX_INT, averageSize=3))
+    @settings(max_examples=100)
     def test_incidentReports(
         self, incidentReports: Iterable[IncidentReport]
     ) -> None:
@@ -411,7 +412,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
             average_size=2,
         ),
     )
-    @settings(max_examples=150)
+    @settings(max_examples=100)
     def test_detachedAndAttachedIncidentReports(
         self,
         detached: List[IncidentReport],
