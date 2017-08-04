@@ -27,7 +27,7 @@ from hypothesis.strategies import frozensets, text
 from ims.model import Event
 from ims.model.strategies import events
 
-from .base import DataStoreTests
+from .base import DataStoreTests, TestDataStore
 from ..._exceptions import StorageError
 
 Dict, Set  # silence linter
@@ -63,14 +63,13 @@ class DataStoreEventTests(DataStoreTests):
 
         self.assertEqual(events, {Event(id="Event A"), Event(id="Event B")})
 
-        return None
-
 
     def test_events_error(self) -> None:
         """
         :meth:`DataStore.events` raises `StorageError` if SQLite raises.
         """
-        self.assertRaises(StorageError, self.test_events, broken=True)
+        e = self.assertRaises(StorageError, self.test_events, broken=True)
+        self.assertEqual(str(e), TestDataStore.brokenErrorMessage)
 
 
     @given(events())

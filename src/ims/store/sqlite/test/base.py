@@ -47,10 +47,13 @@ class TestDataStore(DataStore):
     interesting.
     """
 
+    brokenErrorMessage = "I'm broken, yo"
+
+
     @property
     def _db(self) -> Connection:
         if getattr(self._state, "broken", False):
-            raise SQLiteError("I'm broken, yo")
+            raise SQLiteError(self.brokenErrorMessage)
 
         return cast(property, DataStore._db).fget(self)
 
