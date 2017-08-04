@@ -206,7 +206,6 @@ class DataStoreCoreTests(DataStoreTests):
         )
 
 
-
     def test_db_schemaUpgrade(self) -> None:
         """
         A database with an old schema is automatically upgraded to the current
@@ -272,7 +271,7 @@ class DataStoreCoreTests(DataStoreTests):
 
 
     @given(integers(max_value=0))
-    def test_db_fromVersionTooLow(self, version) -> None:
+    def test_db_fromVersionTooLow(self, version: int) -> None:
         """
         :meth:`DataStore._db` raises :exc:`StorageError` when the database
         has a schema version of zero or less.
@@ -295,7 +294,7 @@ class DataStoreCoreTests(DataStoreTests):
 
 
     @given(integers(min_value=DataStore._schemaVersion + 1))
-    def test_db_fromVersionTooHigh(self, version) -> None:
+    def test_db_fromVersionTooHigh(self, version: int) -> None:
         """
         :meth:`DataStore._db` raises :exc:`StorageError` when the database
         has a schema version of greater than the current schema version.
