@@ -138,11 +138,14 @@ class DataStore(IMSDataStore):
     def _upgradeSchema(cls, db: Connection) -> bool:
         version = cls._version(db)
 
+        if version == 1:
+            sql = cls._loadSchema(version="2-from-1")
+            with db:
+                db.executescript(sql)
+            version = 2
+
         if version == cls._schemaVersion:
             return False
-
-        if version == 1:
-            raise NotImplementedError()
 
         raise StorageError(
             "No upgrade path from schema version {}".format(version)

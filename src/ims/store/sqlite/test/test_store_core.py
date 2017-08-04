@@ -189,23 +189,25 @@ class DataStoreCoreTests(DataStoreTests):
             printSchema(db, out)
             return out.getvalue()
 
+        currentVersion = DataStore._schemaVersion
+
         with createDB(
-            None, DataStore._loadSchema(version=DataStore._schemaVersion)
+            None, DataStore._loadSchema(version=currentVersion)
         ) as db:
             currentSchemaInfo = getSchemaInfo(db)
 
-        for version in range(1, DataStore._schemaVersion):
+        for version in range(1, currentVersion):
             path = Path(self.mktemp())
             createDB(path, DataStore._loadSchema(version=version))
+
             store = DataStore(dbPath=path)
 
-            self.assertEqual(store._version(store._db))
+            self.assertEqual(store._version(store._db), currentVersion)
 
             schemaInfo = getSchemaInfo(store._db)
 
+            self.maxDiff = None
             self.assertEqual(schemaInfo, currentSchemaInfo)
-
-    test_schemaUpgrade.todo = "not implemented"
 
 
 
