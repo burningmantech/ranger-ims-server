@@ -23,7 +23,7 @@ from typing import Any, FrozenSet, Iterable, List, Sequence, Set, Tuple
 
 from attr import fields as attrFields
 
-from hypothesis import assume, given
+from hypothesis import assume, given, settings
 from hypothesis.strategies import frozensets, lists, tuples
 
 from ims.ext.sqlite import SQLITE_MAX_INT
@@ -411,6 +411,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
             average_size=2,
         ),
     )
+    @settings(max_examples=150)
     def test_detachedAndAttachedIncidentReports(
         self,
         detached: List[IncidentReport],
