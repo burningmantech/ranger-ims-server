@@ -168,7 +168,7 @@ create table INCIDENT_REPORT__REPORT_ENTRY (
 );
 
 
-create table INCIDENT_INCIDENT_REPORT (
+create table INCIDENT__INCIDENT_REPORT (
     EVENT                  integer not null,
     INCIDENT_NUMBER        integer not null,
     INCIDENT_REPORT_NUMBER integer not null,

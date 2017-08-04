@@ -62,6 +62,11 @@ drop table INCIDENT_REPORT;
 alter table INCIDENT_REPORT_TEMP rename to INCIDENT_REPORT;
 
 
+-- Rename INCIDENT_INCIDENT_REPORT to INCIDENT__INCIDENT_REPORT
+
+alter table INCIDENT_INCIDENT_REPORT rename to INCIDENT__INCIDENT_REPORT;
+
+
 -- Update schema version
 
 update SCHEMA_INFO set version = 2;

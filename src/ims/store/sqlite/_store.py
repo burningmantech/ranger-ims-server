@@ -1790,7 +1790,7 @@ class DataStore(IMSDataStore):
         """
         select NUMBER from INCIDENT_REPORT
         where NUMBER not in (
-            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
+            select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
         )
         """
     )
@@ -1810,7 +1810,7 @@ class DataStore(IMSDataStore):
         """
         select NUMBER from INCIDENT_REPORT
         where NUMBER in (
-            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
+            select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
             where
                 EVENT = ({query_eventID}) and
                 INCIDENT_NUMBER = :incidentNumber
@@ -1908,7 +1908,7 @@ class DataStore(IMSDataStore):
     _query_incidentsAttachedToIncidentReport = _query(
         """
         select e.NAME as EVENT, iir.INCIDENT_NUMBER as INCIDENT_NUMBER
-        from INCIDENT_INCIDENT_REPORT iir
+        from INCIDENT__INCIDENT_REPORT iir
         join EVENT e on e.ID = iir.EVENT
         where iir.INCIDENT_REPORT_NUMBER = :incidentReportNumber
         """
@@ -1947,7 +1947,7 @@ class DataStore(IMSDataStore):
 
     _query_attachIncidentReportToIncident = _query(
         """
-        insert into INCIDENT_INCIDENT_REPORT (
+        insert into INCIDENT__INCIDENT_REPORT (
             EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER
         )
         values (({query_eventID}), :incidentNumber, :incidentReportNumber)
@@ -1987,7 +1987,7 @@ class DataStore(IMSDataStore):
 
     _query_detachIncidentReportFromIncident = _query(
         """
-        delete from INCIDENT_INCIDENT_REPORT
+        delete from INCIDENT__INCIDENT_REPORT
         where
             EVENT = ({query_eventID}) and
             INCIDENT_NUMBER = :incidentNumber and

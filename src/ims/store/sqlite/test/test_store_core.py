@@ -63,6 +63,7 @@ class DataStoreCoreTests(DataStoreTests):
         out = StringIO()
         DataStore.printSchema(out)
         schemaInfo = out.getvalue()
+        self.maxDiff = None
         self.assertEqual(
             schemaInfo,
             dedent(
@@ -94,10 +95,6 @@ class DataStoreCoreTests(DataStoreTests):
                   9: LOCATION_RADIAL_HOUR(integer)
                   10: LOCATION_RADIAL_MINUTE(integer)
                   11: LOCATION_DESCRIPTION(text)
-                INCIDENT_INCIDENT_REPORT:
-                  0: EVENT(integer) not null *1
-                  1: INCIDENT_NUMBER(integer) not null *2
-                  2: INCIDENT_REPORT_NUMBER(integer) not null *3
                 INCIDENT_REPORT:
                   0: NUMBER(integer) not null *1
                   1: CREATED(real) not null
@@ -111,6 +108,10 @@ class DataStoreCoreTests(DataStoreTests):
                   0: ID(integer) not null *1
                   1: NAME(text) not null
                   2: HIDDEN(numeric) not null
+                INCIDENT__INCIDENT_REPORT:
+                  0: EVENT(integer) not null *1
+                  1: INCIDENT_NUMBER(integer) not null *2
+                  2: INCIDENT_REPORT_NUMBER(integer) not null *3
                 INCIDENT__INCIDENT_TYPE:
                   0: EVENT(integer) not null *1
                   1: INCIDENT_NUMBER(integer) not null *2
