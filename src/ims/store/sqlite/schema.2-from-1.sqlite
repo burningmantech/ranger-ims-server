@@ -1,0 +1,78 @@
+-- Change CREATED column in REPORT_ENTRY from integer to real
+
+create table REPORT_ENTRY_TEMP (
+    ID        integer not null,
+    AUTHOR    text    not null,
+    TEXT      text    not null,
+    CREATED   real    not null,
+    GENERATED numeric not null,
+
+    primary key (ID)
+);
+
+pragma foreign_keys = false;
+insert into REPORT_ENTRY_TEMP select * from REPORT_ENTRY;
+drop table REPORT_ENTRY;
+alter table REPORT_ENTRY_TEMP rename to REPORT_ENTRY;
+pragma foreign_keys = true;
+
+
+-- Change CREATED column in INCIDENT from integer to real
+-- Change CREATED column in LOCATION_CONCENTRIC from integer to text
+
+create table INCIDENT_TEMP (
+    EVENT    integer not null,
+    NUMBER   integer not null,
+    VERSION  integer not null,
+    CREATED  real    not null,
+    PRIORITY integer not null,
+    STATE    text    not null,
+    SUMMARY  text,
+
+    LOCATION_NAME          text,
+    LOCATION_CONCENTRIC    text,
+    LOCATION_RADIAL_HOUR   integer,
+    LOCATION_RADIAL_MINUTE integer,
+    LOCATION_DESCRIPTION   text,
+
+    foreign key (EVENT) references EVENT(ID),
+    foreign key (STATE) references INCIDENT_STATE(ID),
+
+    foreign key (EVENT, LOCATION_CONCENTRIC)
+    references CONCENTRIC_STREET(EVENT, ID),
+
+    primary key (EVENT, NUMBER)
+);
+
+pragma foreign_keys = false;
+insert into INCIDENT_TEMP select * from INCIDENT;
+drop table INCIDENT;
+alter table INCIDENT_TEMP rename to INCIDENT;
+pragma foreign_keys = true;
+
+
+-- Change CREATED column in INCIDENT_REPORT from integer to real
+
+create table INCIDENT_REPORT_TEMP (
+    NUMBER   integer not null,
+    CREATED  real    not null,
+    SUMMARY  text,
+
+    primary key (NUMBER)
+);
+
+pragma foreign_keys = false;
+insert into INCIDENT_REPORT_TEMP select * from INCIDENT_REPORT;
+drop table INCIDENT_REPORT;
+alter table INCIDENT_REPORT_TEMP rename to INCIDENT_REPORT;
+pragma foreign_keys = true;
+
+
+-- Rename INCIDENT_INCIDENT_REPORT to INCIDENT__INCIDENT_REPORT
+
+alter table INCIDENT_INCIDENT_REPORT rename to INCIDENT__INCIDENT_REPORT;
+
+
+-- Update schema version
+
+update SCHEMA_INFO set version = 2;

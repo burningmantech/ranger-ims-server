@@ -21,7 +21,7 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 from datetime import datetime as DateTime, timedelta as TimeDelta
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict, Sequence, Set, Union, cast
+from typing import Dict, Optional, Sequence, Set, Union, cast
 
 from attr import attrs
 
@@ -47,10 +47,13 @@ class TestDataStore(DataStore):
     interesting.
     """
 
+    brokenErrorMessage = "I'm broken, yo"
+
+
     @property
     def _db(self) -> Connection:
         if getattr(self._state, "broken", False):
-            raise SQLiteError("I'm broken, yo")
+            raise SQLiteError(self.brokenErrorMessage)
 
         return cast(property, DataStore._db).fget(self)
 
@@ -66,8 +69,10 @@ class DataStoreTests(TestCase):
     Tests for :class:`DataStore` base functionality.
     """
 
-    def store(self) -> TestDataStore:
-        return TestDataStore(dbPath=Path(self.mktemp()))
+    def store(self, dbPath: Optional[Path] = None) -> TestDataStore:
+        if dbPath is None:
+            dbPath = Path(self.mktemp())
+        return TestDataStore(dbPath)
 
 
     # FIXME: A better plan here would be to create a mock DB object that yields

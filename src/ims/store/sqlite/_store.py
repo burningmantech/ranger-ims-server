@@ -69,7 +69,7 @@ class DataStore(IMSDataStore):
     """
 
     _log = Logger()
-    _schema = None
+    _schemaVersion = 2
 
     @attrs(frozen=False)
     class _State(object):
@@ -87,12 +87,10 @@ class DataStore(IMSDataStore):
 
 
     @classmethod
-    def _loadSchema(cls) -> str:
-        if cls._schema is None:
-            path = Path(__file__).parent / "schema.sqlite"
-            schema = path.read_text()
-            cls._schema = schema
-        return cls._schema
+    def _loadSchema(cls, version: Union[int, str] = _schemaVersion) -> str:
+        name = "schema.{}.sqlite".format(version)
+        path = Path(__file__).parent / name
+        return path.read_text()
 
 
     @classmethod
@@ -101,6 +99,8 @@ class DataStore(IMSDataStore):
         Print schema.
         """
         with createDB(None, cls._loadSchema()) as db:
+            version = cls._version(db)
+            print("Version: {}".format(version), file=out)
             printSchema(db, out=out)
 
 
@@ -121,11 +121,81 @@ class DataStore(IMSDataStore):
                 print(file=out)
 
 
+    @classmethod
+    def _version(cls, db: Connection) -> int:
+        try:
+            rows = db.execute("select VERSION from SCHEMA_INFO")
+            row = next(rows, None)
+            if row is None:
+                raise StorageError("Invalid schema: no version")
+            return row["VERSION"]
+        except SQLiteError as e:
+            cls._log.critical(
+                "Unable to look up schema version: {error}", error=e
+            )
+            raise StorageError(
+                "Unable to look up schema version: {}".format(e)
+            )
+
+
+    @classmethod
+    def _upgradeSchema(cls, db: Connection) -> bool:
+        currentVersion = cls._schemaVersion
+        version = cls._version(db)
+
+        if version == currentVersion:
+            # No upgrade needed
+            return False
+
+        if version > currentVersion:
+            raise StorageError("Schema version {} is too new".format(version))
+
+        def sqlUpgrade(fromVersion: int, toVersion: int) -> None:
+            cls._log.info(
+                "Upgrading database schema from version {fromVersion} to "
+                "version {toVersion}",
+                fromVersion=fromVersion, toVersion=toVersion,
+            )
+            sql = cls._loadSchema(
+                version="{}-from-{}".format(toVersion, fromVersion)
+            )
+            db.executescript(sql)
+            db.validateConstraints()
+            db.commit()
+
+        if version == 1:
+            sqlUpgrade(1, 2)
+            version = 2
+
+        if version == currentVersion:
+            # Successfully upgraded to the current version
+            return True
+
+        raise StorageError(
+            "No upgrade path from schema version {}".format(version)
+        )
+
+
     @property
     def _db(self) -> Connection:
         if self._state.db is None:
-            db = openDB(self.dbPath, schema=self._loadSchema())
-            self._state.db = db
+            try:
+                db = openDB(self.dbPath, schema=self._loadSchema())
+                db.validateConstraints()
+
+                if self._upgradeSchema(db):
+                    # Re-connect to get new schema
+                    db = openDB(self.dbPath)
+
+                self._state.db = db
+
+            except SQLiteError as e:
+                self._log.critical(
+                    "Unable to open SQLite database: {error}", error=e
+                )
+                raise StorageError(
+                    "Unable to open SQLite database: {error}".format(error=e)
+                )
 
         return self._state.db
 
@@ -1754,7 +1824,7 @@ class DataStore(IMSDataStore):
         """
         select NUMBER from INCIDENT_REPORT
         where NUMBER not in (
-            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
+            select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
         )
         """
     )
@@ -1774,7 +1844,7 @@ class DataStore(IMSDataStore):
         """
         select NUMBER from INCIDENT_REPORT
         where NUMBER in (
-            select INCIDENT_REPORT_NUMBER from INCIDENT_INCIDENT_REPORT
+            select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
             where
                 EVENT = ({query_eventID}) and
                 INCIDENT_NUMBER = :incidentNumber
@@ -1872,7 +1942,7 @@ class DataStore(IMSDataStore):
     _query_incidentsAttachedToIncidentReport = _query(
         """
         select e.NAME as EVENT, iir.INCIDENT_NUMBER as INCIDENT_NUMBER
-        from INCIDENT_INCIDENT_REPORT iir
+        from INCIDENT__INCIDENT_REPORT iir
         join EVENT e on e.ID = iir.EVENT
         where iir.INCIDENT_REPORT_NUMBER = :incidentReportNumber
         """
@@ -1911,7 +1981,7 @@ class DataStore(IMSDataStore):
 
     _query_attachIncidentReportToIncident = _query(
         """
-        insert into INCIDENT_INCIDENT_REPORT (
+        insert into INCIDENT__INCIDENT_REPORT (
             EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER
         )
         values (({query_eventID}), :incidentNumber, :incidentReportNumber)
@@ -1951,7 +2021,7 @@ class DataStore(IMSDataStore):
 
     _query_detachIncidentReportFromIncident = _query(
         """
-        delete from INCIDENT_INCIDENT_REPORT
+        delete from INCIDENT__INCIDENT_REPORT
         where
             EVENT = ({query_eventID}) and
             INCIDENT_NUMBER = :incidentNumber and

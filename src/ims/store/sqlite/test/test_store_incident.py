@@ -26,7 +26,7 @@ from typing import (
 
 from attr import fields as attrFields
 
-from hypothesis import assume, given
+from hypothesis import assume, given, settings
 from hypothesis.strategies import frozensets, lists, text, tuples
 
 from ims.ext.sqlite import SQLITE_MAX_INT
@@ -79,6 +79,7 @@ class DataStoreIncidentTests(DataStoreTests):
     """
 
     @given(incidentLists(maxNumber=SQLITE_MAX_INT, averageSize=3))
+    @settings(max_examples=100)
     def test_incidents(self, incidents: Iterable[Incident]) -> None:
         """
         :meth:`DataStore.incidents` returns all incidents.
@@ -115,6 +116,7 @@ class DataStoreIncidentTests(DataStoreTests):
             minSize=2, averageSize=3,
         ),
     )
+    @settings(max_examples=100)
     def test_incidents_sameEvent(self, incidents: Iterable[Incident]) -> None:
         """
         :meth:`DataStore.incidents` returns all incidents.
@@ -152,6 +154,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(incidents(maxNumber=SQLITE_MAX_INT))
+    @settings(max_examples=200)
     def test_incidentWithNumber(self, incident: Incident) -> None:
         """
         :meth:`DataStore.incidentWithNumber` returns the specified incident.
@@ -210,6 +213,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(lists(tuples(incidents(new=True), rangerHandles()), average_size=2))
+    @settings(max_examples=200)
     def test_createIncident(
         self, data: Iterable[Tuple[Incident, str]]
     ) -> None:
@@ -378,6 +382,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(incidents(new=True), incidentPriorities())
+    @settings(max_examples=200)
     def test_setIncident_priority(
         self, incident: Incident, priority: IncidentPriority
     ) -> None:
@@ -391,6 +396,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(incidents(new=True), incidentStates())
+    @settings(max_examples=200)
     def test_setIncident_state(
         self, incident: Incident, state: IncidentState
     ) -> None:
@@ -404,6 +410,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(incidents(new=True), incidentSummaries())
+    @settings(max_examples=200)
     def test_setIncident_summary(
         self, incident: Incident, summary: str
     ) -> None:
@@ -417,6 +424,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(incidents(new=True), locationNames())
+    @settings(max_examples=200)
     def test_setIncident_locationName(
         self, incident: Incident, name: str
     ) -> None:
@@ -430,6 +438,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(incidents(new=True), concentricStreetIDs())
+    @settings(max_examples=200)
     def test_setIncident_locationConcentricStreet(
         self, incident: Incident, streetID: str
     ) -> None:
@@ -444,6 +453,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(incidents(new=True), radialHours())
+    @settings(max_examples=200)
     def test_setIncident_locationRadialHour(
         self, incident: Incident, radialHour: int
     ) -> None:
@@ -458,6 +468,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(incidents(new=True), radialMinutes())
+    @settings(max_examples=200)
     def test_setIncident_locationRadialMinute(
         self, incident: Incident, radialMinute: int
     ) -> None:
@@ -472,6 +483,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(incidents(new=True), text())
+    @settings(max_examples=200)
     def test_setIncident_locationDescription(
         self, incident: Incident, description: str
     ) -> None:
@@ -486,6 +498,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(incidents(new=True), lists(rangerHandles(), average_size=2))
+    @settings(max_examples=200)
     def test_setIncident_rangers(
         self, incident: Incident, rangerHandles: Iterable[str]
     ) -> None:
@@ -519,6 +532,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     @given(incidents(new=True), lists(incidentTypesText(), average_size=2))
+    @settings(max_examples=200)
     def test_setIncident_incidentTypes(
         self, incident: Incident, incidentTypes: Iterable[str]
     ) -> None:
@@ -557,6 +571,7 @@ class DataStoreIncidentTests(DataStoreTests):
         frozensets(reportEntries(automatic=False), average_size=2),
         rangerHandles(),
     )
+    @settings(max_examples=200)
     def test_addReportEntriesToIncident(
         self, incident: Incident, reportEntries: FrozenSet[ReportEntry],
         author: str

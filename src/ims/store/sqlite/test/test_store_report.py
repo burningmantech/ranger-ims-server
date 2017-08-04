@@ -23,7 +23,7 @@ from typing import Any, FrozenSet, Iterable, List, Sequence, Set, Tuple
 
 from attr import fields as attrFields
 
-from hypothesis import assume, given
+from hypothesis import assume, given, settings
 from hypothesis.strategies import frozensets, lists, tuples
 
 from ims.ext.sqlite import SQLITE_MAX_INT
@@ -57,6 +57,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
     Tests for :class:`DataStore` incident report access.
     """
     @given(incidentReportLists(maxNumber=SQLITE_MAX_INT, averageSize=3))
+    @settings(max_examples=100)
     def test_incidentReports(
         self, incidentReports: Iterable[IncidentReport]
     ) -> None:
@@ -411,6 +412,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
             average_size=2,
         ),
     )
+    @settings(max_examples=100)
     def test_detachedAndAttachedIncidentReports(
         self,
         detached: List[IncidentReport],
