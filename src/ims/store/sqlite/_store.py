@@ -147,9 +147,9 @@ class DataStore(IMSDataStore):
             sql = cls._loadSchema(
                 version="{}-from-{}".format(toVersion, fromVersion)
             )
-            with db:
-                db.executescript(sql)
-                db.validateConstraints()
+            db.executescript(sql)
+            db.validateConstraints()
+            db.commit()
 
         if version == 1:
             sqlUpgrade(1, 2)
@@ -166,13 +166,19 @@ class DataStore(IMSDataStore):
     @property
     def _db(self) -> Connection:
         if self._state.db is None:
-            db = openDB(self.dbPath, schema=self._loadSchema())
+            try:
+                db = openDB(self.dbPath, schema=self._loadSchema())
 
-            db.validateConstraints()
+                db.validateConstraints()
 
-            if self._upgradeSchema(db):
-                # Re-connect to get new schema
-                db = openDB(self.dbPath)
+                if self._upgradeSchema(db):
+                    # Re-connect to get new schema
+                    db = openDB(self.dbPath)
+
+            except SQLiteError as e:
+                self._log.critical(
+                    "Unable to open SQLite database: {error}", error=e
+                )
 
             self._state.db = db
 
