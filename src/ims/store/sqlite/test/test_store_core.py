@@ -24,11 +24,15 @@ from datetime import (
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict, Set
+from typing import Dict, Optional, Set
 
-from ims.ext.sqlite import Connection, createDB, printSchema
+from hypothesis import given
+from hypothesis.strategies import integers
+
+from ims.ext.sqlite import Connection, SQLiteError, createDB, printSchema
 
 from .base import DataStoreTests
+from .. import _store
 from .._store import DataStore, asTimeStamp
 from ..._exceptions import StorageError
 
@@ -182,7 +186,28 @@ class DataStoreCoreTests(DataStoreTests):
         self.assertIsInstance(store._db, Connection)
 
 
-    def test_schemaUpgrade(self) -> None:
+    def test_db_error(self) -> None:
+        """
+        :meth:`DataStore._db` raises :exc:`StorageError` when SQLite raises
+        an exception.
+        """
+        message = "Nyargh"
+
+        def oops(path: Path, schema: Optional[str] = None) -> Connection:
+            raise SQLiteError(message)
+
+        self.patch(_store, "openDB", oops)
+
+        store = self.store()
+
+        e = self.assertRaises(StorageError, lambda: store._db)
+        self.assertEqual(
+            str(e), "Unable to open SQLite database: {}".format(message)
+        )
+
+
+
+    def test_db_schemaUpgrade(self) -> None:
         """
         A database with an old schema is automatically upgraded to the current
         version.
@@ -213,6 +238,84 @@ class DataStoreCoreTests(DataStoreTests):
             self.assertEqual(schemaInfo, currentSchemaInfo)
 
 
+    def test_db_noSchemaInfo(self) -> None:
+        """
+        :meth:`DataStore._db` raises :exc:`StorageError` when the database
+        has no SCHEMA_INFO table.
+        """
+        # Load valid schema, then drop SCHEMA_INFO
+        dbPath = Path(self.mktemp())
+        with createDB(dbPath, DataStore._loadSchema()) as db:
+            db.execute("drop table SCHEMA_INFO")
+
+        store = self.store(dbPath=dbPath)
+
+        e = self.assertRaises(StorageError, lambda: store._db)
+        self.assertStartsWith(str(e), "Unable to look up schema version: ")
+        self.assertIn("SCHEMA_INFO", str(e))
+
+
+    def test_db_noSchemaVersion(self) -> None:
+        """
+        :meth:`DataStore._db` raises :exc:`StorageError` when the SCHEMA_INFO
+        table has no rows.
+        """
+        # Load valid schema, then delete SCHEMA_INFO rows.
+        dbPath = Path(self.mktemp())
+        with createDB(dbPath, DataStore._loadSchema()) as db:
+            db.execute("delete from SCHEMA_INFO")
+
+        store = self.store(dbPath=dbPath)
+
+        e = self.assertRaises(StorageError, lambda: store._db)
+        self.assertEqual(str(e), "Invalid schema: no version")
+
+
+    @given(integers(max_value=0))
+    def test_db_fromVersionTooLow(self, version) -> None:
+        """
+        :meth:`DataStore._db` raises :exc:`StorageError` when the database
+        has a schema version of zero or less.
+        (Version numbering started at 1.)
+        """
+        # Load valid schema, then set schema version
+        dbPath = Path(self.mktemp())
+        with createDB(dbPath, DataStore._loadSchema()) as db:
+            db.execute(
+                "update SCHEMA_INFO set VERSION = :version",
+                dict(version=version)
+            )
+
+        store = self.store(dbPath=dbPath)
+
+        e = self.assertRaises(StorageError, lambda: store._db)
+        self.assertEqual(
+            str(e), "No upgrade path from schema version {}".format(version)
+        )
+
+
+    @given(integers(min_value=DataStore._schemaVersion + 1))
+    def test_db_fromVersionTooHigh(self, version) -> None:
+        """
+        :meth:`DataStore._db` raises :exc:`StorageError` when the database
+        has a schema version of greater than the current schema version.
+        """
+        # Load valid schema, then set schema version
+        dbPath = Path(self.mktemp())
+        with createDB(dbPath, DataStore._loadSchema()) as db:
+            db.execute(
+                "update SCHEMA_INFO set VERSION = :version",
+                dict(version=version)
+            )
+
+        store = self.store(dbPath=dbPath)
+
+        e = self.assertRaises(StorageError, lambda: store._db)
+        self.assertEqual(
+            str(e), "Schema version {} is too new".format(version)
+        )
+
+
 
 class DataStoreHelperTests(DataStoreTests):
     """
@@ -229,4 +332,5 @@ class DataStoreHelperTests(DataStoreTests):
         )
         preEpoch = epoch - TimeDelta(seconds=1)
 
-        self.assertRaises(StorageError, asTimeStamp, preEpoch)
+        e = self.assertRaises(StorageError, asTimeStamp, preEpoch)
+        self.assertStartsWith(str(e), "DateTime is before the UTC epoch: ")

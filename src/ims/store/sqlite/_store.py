@@ -130,13 +130,25 @@ class DataStore(IMSDataStore):
                 raise StorageError("Invalid schema: no version")
             return row["VERSION"]
         except SQLiteError as e:
-            cls._log.critical("Unable to look up schema version.")
-            raise StorageError(e)
+            cls._log.critical(
+                "Unable to look up schema version: {error}", error=e
+            )
+            raise StorageError(
+                "Unable to look up schema version: {}".format(e)
+            )
 
 
     @classmethod
     def _upgradeSchema(cls, db: Connection) -> bool:
+        currentVersion = cls._schemaVersion
         version = cls._version(db)
+
+        if version == currentVersion:
+            # No upgrade needed
+            return False
+
+        if version > currentVersion:
+            raise StorageError("Schema version {} is too new".format(version))
 
         def sqlUpgrade(fromVersion: int, toVersion: int) -> None:
             cls._log.info(
@@ -155,8 +167,9 @@ class DataStore(IMSDataStore):
             sqlUpgrade(1, 2)
             version = 2
 
-        if version == cls._schemaVersion:
-            return False
+        if version == currentVersion:
+            # Successfully upgraded to the current version
+            return True
 
         raise StorageError(
             "No upgrade path from schema version {}".format(version)
@@ -168,19 +181,21 @@ class DataStore(IMSDataStore):
         if self._state.db is None:
             try:
                 db = openDB(self.dbPath, schema=self._loadSchema())
-
                 db.validateConstraints()
 
                 if self._upgradeSchema(db):
                     # Re-connect to get new schema
                     db = openDB(self.dbPath)
 
+                self._state.db = db
+
             except SQLiteError as e:
                 self._log.critical(
                     "Unable to open SQLite database: {error}", error=e
                 )
-
-            self._state.db = db
+                raise StorageError(
+                    "Unable to open SQLite database: {error}".format(error=e)
+                )
 
         return self._state.db
 
