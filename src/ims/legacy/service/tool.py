@@ -127,6 +127,9 @@ class WebTool(Executable):
         See L{Executable.whenRunning}.
         """
         config = self.options["configuration"]
+
+        config.storage.validate()
+
         service = MainApplication(config=config)
 
         host = self.options.get("host", "localhost")
