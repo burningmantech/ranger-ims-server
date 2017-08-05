@@ -230,8 +230,7 @@ class DataStore(IMSDataStore):
 
     def validate(self) -> None:
         """
-        Perform some data integrity checks and raise :exc:`ValueError` if there
-        are problems.
+        See :meth:`IMSDataStore.validate`.
         """
         self._log.info("Validating data store...")
 
