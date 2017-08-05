@@ -23,7 +23,3 @@
 
     # MySQL
     PyMySQL==0.7.11
-
-    --editable git+https://github.com/apple/ccs-twistedextensions.git#egg=twextpy
-        cffi==1.10.0
-        #Twisted ...

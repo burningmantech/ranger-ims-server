@@ -36,6 +36,14 @@ class IMSDataStore(ABC):
     Incident Management System data store abstract base class.
     """
 
+    @abstractmethod
+    def validate(self) -> None:
+        """
+        Perform some data integrity checks and raise :exc:`StorageError` if
+        there are any problems detected.
+        """
+
+
     ###
     # Events
     ###

@@ -24,7 +24,6 @@ mypy "$@"                                                                   \
         -e ": error: Cannot find module named 'hypothesis.strategies'"      \
         -e ": error: Cannot find module named 'klein'"                      \
         -e ": error: Cannot find module named 'klein.test.test_resource'"   \
-        -e ": error: Cannot find module named 'twext.python.usage'"         \
         -e ": error: Cannot find module named 'twisted'"                    \
         -e ": error: Cannot find module named 'typing.io'"                  \
         -e ": error: No library stub file for "                             \

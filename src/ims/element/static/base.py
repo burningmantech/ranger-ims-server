@@ -52,7 +52,7 @@ class Element(BaseElement):
         @param loader: The page loader.
         @param tag: The element tag.
         """
-        BaseElement.__init__(self, loader=self._loader(name))
+        super().__init__(loader=self._loader(name))
 
         self.elementName = name
         self.elementTitle = str(title)

@@ -228,6 +228,26 @@ class DataStore(IMSDataStore):
             raise StorageError(e)
 
 
+    def validate(self) -> None:
+        """
+        See :meth:`IMSDataStore.validate`.
+        """
+        self._log.info("Validating data store...")
+
+        valid = True
+
+        # Check for detached report entries
+        for reportEntry in self.detachedReportEntries():
+            self._log.critical(
+                "Found detached report entry: {reportEntry}",
+                reportEntry=reportEntry,
+            )
+            valid = False
+
+        if not valid:
+            raise StorageError("Data store validation failed")
+
+
     def loadFromEventJSON(
         self, event: Event, path: Path, trialRun: bool = False
     ) -> None:
@@ -566,6 +586,52 @@ class DataStore(IMSDataStore):
         """
         insert into CONCENTRIC_STREET (EVENT, ID, NAME)
         values (({query_eventID}), :streetID, :streetName)
+        """
+    )
+
+
+    ##
+    # Report Entries
+    ##
+
+    def detachedReportEntries(self) -> Iterable[ReportEntry]:
+        """
+        Look up all report entries that are not attached to either an incident
+        or an incident report.
+        There shouldn't be any of these; so if there are any, it's an
+        indication of a bug.
+        """
+        try:
+            with self._db as db:
+                cursor = db.cursor()
+                try:
+                    # FIXME: This should be an async generator
+                    return tuple(
+                        ReportEntry(
+                            created=fromTimeStamp(row["CREATED"]),
+                            author=row["AUTHOR"],
+                            automatic=bool(row["GENERATED"]),
+                            text=row["TEXT"],
+                        )
+                        for row in cursor.execute(
+                            self._query_detachedReportEntries, {}
+                        ) if row["TEXT"]
+                    )
+                finally:
+                    cursor.close()
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to look up detached report entries: {error}",
+                error=e,
+            )
+            raise StorageError(e)
+
+    _query_detachedReportEntries = _query(
+        """
+        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
+        where
+            ID not in (select REPORT_ENTRY from INCIDENT__REPORT_ENTRY) and
+            ID not in (select REPORT_ENTRY from INCIDENT_REPORT__REPORT_ENTRY)
         """
     )
 
