@@ -80,12 +80,12 @@ entry_points = {
 }
 
 script_entry_points = {
-    "web"         : ("ims.legacy.service.tool", "WebTool.main"),
-    "endpoints"   : ("ims.legacy.service.tool", "KleinTool.main"),
-    "schema"      : ("ims.store.sqlite", "DataStore.printSchema"),
-    "queries"     : ("ims.store.sqlite", "DataStore.printQueries"),
-    "load_legacy" : ("ims.legacy.service.tool", "LegacyLoadTool.main"),
-    "load_json"   : ("ims.legacy.service.tool", "JSONLoadTool.main"),
+    "server"      : ("ims.run", "Server.main"),
+    # "endpoints"   : ("ims.legacy.service.tool", "KleinTool.main"),
+    # "schema"      : ("ims.store.sqlite", "DataStore.printSchema"),
+    # "queries"     : ("ims.store.sqlite", "DataStore.printQueries"),
+    # "load_legacy" : ("ims.legacy.service.tool", "LegacyLoadTool.main"),
+    # "load_json"   : ("ims.legacy.service.tool", "JSONLoadTool.main"),
 }
 
 for tool, (module, function) in script_entry_points.items():
@@ -122,7 +122,6 @@ install_requirements = [
     "hyperlink",
     "klein",
     "PyMySQL",
-    "twextpy",
     "Twisted[TLS,http2]>=17.5.0",
 ]
 

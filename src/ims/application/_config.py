@@ -66,13 +66,16 @@ class Configuration(object):
         return (
             "Configuration file: {self.ConfigFile}\n"
             "\n"
+            "Core.Host: {self.HostName}\n"
+            "Core.Port: {self.PortNumber}\n"
+            "\n"
             "Core.ServerRoot: {self.ServerRoot}\n"
             "Core.ConfigRoot: {self.ConfigRoot}\n"
             "Core.DataRoot: {self.DataRoot}\n"
             "Core.DatabaseFile: {self.DatabaseFile}\n"
             "Core.CachedResources: {self.CachedResources}\n"
             "Core.LogLevel: {self.LogLevel}\n"
-            "Core.LogFile: {self.LogFile}\n"
+            "Core.LogFile: {self.LogFileName}\n"
             "Core.LogFormat: {self.LogFormat}\n"
             "Core.PIDFile: {self.PIDFile}\n"
             "\n"
@@ -150,6 +153,12 @@ class Configuration(object):
         else:
             defaultRoot = self.ConfigFile.parent().parent()
 
+        self.HostName = valueFromConfig("Core", "Host", "localhost")
+        self._log.info("HostName: {hostName}", hostName=self.HostName)
+
+        self.Port = int(cast(str, valueFromConfig("Core", "Port", "8080")))
+        self._log.info("Port: {port}", port=self.Port)
+
         self.ServerRoot = filePathFromConfig(
             "Core", "ServerRoot", defaultRoot, cast(Tuple[str], ())
         )
@@ -186,17 +195,17 @@ class Configuration(object):
             cachedResources=self.CachedResources
         )
 
-        self.LogLevel = valueFromConfig("Core", "LogLevel", "info")
-        self._log.info("LogLevel: {logLevel}", logLevel=self.LogLevel)
+        self.LogLevelName = valueFromConfig("Core", "LogLevel", "info")
+        self._log.info("LogLevel: {logLevel}", logLevel=self.LogLevelName)
 
         self.LogFormat = valueFromConfig("Core", "LogFormat", "text")
         self._log.info("LogFormat: {logFormat}", logFormat=self.LogFormat)
 
-        self.LogFile = filePathFromConfig(
+        self.LogFileName = filePathFromConfig(
             "Core", "LogFile", self.DataRoot, ("{}.log".format(command),)
         ).path
         self._log.info(
-            "LogFile: {logFile}", logFile=self.LogFile
+            "LogFile: {logFile}", logFile=self.LogFileName
         )
 
         self.PIDFile = filePathFromConfig(
