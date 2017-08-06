@@ -119,7 +119,7 @@ setup_requirements = []
 install_requirements = [
     "arrow",
     "attrs",
-    "cattrs==0.3.0",
+    "cattrs>=0.4.0",
     "hyperlink",
     "klein",
     "PyMySQL",
