@@ -1,8 +1,7 @@
 --editable .  # Get self and dependencies from setup.py
 
     attrs==17.2.0
-    #cattrs==0.3.0
-    git+https://github.com/Tinche/cattrs.git@5105dc7f91df6c08d90382e29add0d458ad9eb5c#egg=cattrs
+    cattrs==0.4.0
 
     arrow==0.10.0
 
