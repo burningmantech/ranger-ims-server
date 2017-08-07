@@ -117,13 +117,24 @@ package_data = dict(
 setup_requirements = []
 
 install_requirements = [
-    "arrow",
-    "attrs",
-    "cattrs>=0.4.0",
-    "hyperlink",
-    "klein",
-    "PyMySQL",
-    "Twisted[TLS,http2]>=17.5.0",
+    "arrow==0.10.0",
+    "attrs==17.2.0",
+    "Automat==0.6.0",
+    "cattrs==0.4.0",
+    "constantly==15.1.0",
+    "hyperlink==17.3.0",
+    "incremental==17.5.0",
+    "klein==17.2.0",
+    "PyMySQL==0.7.11",
+    "python-dateutil==2.6.1",
+    "ranger-ims-server==1.0",
+    "six==1.10.0",
+    #"Twisted==17.5.0",
+    "Werkzeug==0.12.2",
+    "zope.interface==4.4.2",
+]
+dependency_links=[
+    "https://github.com/twisted/twisted/tarball/trunk#egg=Twisted",
 ]
 
 extras_requirements = {}
