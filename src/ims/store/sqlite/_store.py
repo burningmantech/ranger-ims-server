@@ -191,10 +191,12 @@ class DataStore(IMSDataStore):
 
             except SQLiteError as e:
                 self._log.critical(
-                    "Unable to open SQLite database: {error}", error=e
+                    "Unable to open SQLite database {dbPath}: {error}",
+                    dbPath=dbPath, error=e,
                 )
                 raise StorageError(
-                    "Unable to open SQLite database: {error}".format(error=e)
+                    "Unable to open SQLite database {dbPath}: {error}"
+                    .format(dbPath=dbPath, error=e)
                 )
 
         return self._state.db
