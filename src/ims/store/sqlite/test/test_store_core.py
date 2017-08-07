@@ -202,7 +202,10 @@ class DataStoreCoreTests(DataStoreTests):
 
         e = self.assertRaises(StorageError, lambda: store._db)
         self.assertEqual(
-            str(e), "Unable to open SQLite database: {}".format(message)
+            str(e),
+            "Unable to open SQLite database {}: {}".format(
+                store.dbPath, message
+            )
         )
 
 

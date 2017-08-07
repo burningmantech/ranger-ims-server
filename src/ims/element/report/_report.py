@@ -52,7 +52,7 @@ class IncidentReportPage(Page):
         """
         JSON boolean, true if editing is allowed.
         """
-        if (request.authorizations & Authorization.writeIncidents):
+        if (request.authorizations & Authorization.writeIncidentReports):
             return jsonTrue
         else:
             return jsonFalse
