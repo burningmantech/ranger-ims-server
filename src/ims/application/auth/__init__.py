@@ -18,10 +18,4 @@
 Incident Management System web application authentication.
 """
 
-from ._application import AuthApplication
-from ._provider import AuthProvider, Authorization
-
-AuthApplication, AuthProvider, Authorization  # Silence linter
-
-
 __all__ = ()

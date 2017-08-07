@@ -18,11 +18,13 @@
 Incident Management System web application.
 """
 
-from ._auth import Authorization
+from ._config import Configuration
 from ._urls import URLs
+from .auth._provider import Authorization
 
 
 __all__ = (
     "Authorization",
+    "Configuration",
     "URLs",
 )

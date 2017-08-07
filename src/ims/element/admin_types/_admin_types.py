@@ -18,7 +18,7 @@
 Admin incident types page.
 """
 
-from ims.application._config import Configuration
+from ims.application import Configuration
 
 from .._page import Page
 

@@ -30,7 +30,7 @@ from twisted.python.filepath import FilePath
 from twisted.python.usage import Options, UsageError
 
 from ims import __version__ as version
-from ims.application._config import Configuration
+from ims.application import Configuration
 
 
 __all__ = ()

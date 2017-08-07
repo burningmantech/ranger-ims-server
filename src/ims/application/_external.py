@@ -34,10 +34,10 @@ from twisted.web.iweb import IRequest
 
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
-from ._auth import AuthProvider
 from ._config import Configuration
 from ._klein import Router, notFoundResponse
 from ._urls import URLs
+from .auth._provider import AuthProvider
 
 
 __all__ = (

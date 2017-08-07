@@ -50,7 +50,6 @@ from ims.model.json import (
 )
 from ims.store import NoSuchIncidentError
 
-from ._auth import AuthProvider, Authorization
 from ._config import Configuration
 from ._exceptions import NotAuthorizedError
 from ._klein import (
@@ -59,6 +58,7 @@ from ._klein import (
 )
 from ._static import buildJSONArray, jsonBytes, writeJSONStream
 from ._urls import URLs
+from .auth._provider import AuthProvider, Authorization
 
 
 __all__ = (

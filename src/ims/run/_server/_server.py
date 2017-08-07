@@ -28,7 +28,7 @@ from twisted.logger import Logger
 from twisted.python.usage import UsageError
 from twisted.web.server import Session, Site
 
-from ims.application._config import Configuration
+from ims.application import Configuration
 from ims.application._log import patchCombinedLogFormatter
 from ims.application._main import MainApplication
 

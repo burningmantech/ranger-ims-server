@@ -41,10 +41,10 @@ from ims.element.root import RootPage
 from ims.ext.klein import KleinRenderable, static
 from ims.model import Event
 
-from ._auth import AuthProvider, Authorization
 from ._config import Configuration
 from ._klein import Router, notFoundResponse, redirect
 from ._urls import URLs
+from .auth._provider import AuthProvider, Authorization
 
 Optional  # silence linter
 
