@@ -204,7 +204,7 @@ class DataStoreCoreTests(DataStoreTests):
         self.assertEqual(
             str(e),
             "Unable to open SQLite database {}: {}".format(
-              store.dbPath, message
+                store.dbPath, message
             )
         )
 
