@@ -188,7 +188,7 @@ class Configuration(object):
         )
 
         self.CachedResources = filePathFromConfig(
-            "Core", "CachedResources", self.ServerRoot, ("cached",)
+            "Core", "CachedResources", self.DataRoot, ("cache",)
         )
         self._log.info(
             "CachedResources: {cachedResources.path}",
