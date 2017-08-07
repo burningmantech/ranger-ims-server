@@ -27,16 +27,16 @@ from twisted.web.iweb import IRequest
 from twisted.web.static import File
 
 import ims.element
+from ims.auth import AuthProvider
+from ims.config import Configuration, URLs
 from ims.dms import DutyManagementSystem
 from ims.ext.klein import KleinRenderable
 
 from ._api import APIApplication
-from ._auth import AuthApplication, AuthProvider
-from ._config import Configuration
+from ._auth import AuthApplication
 from ._eventsource import DataStoreEventSourceLogObserver
 from ._external import ExternalApplication
 from ._klein import redirect, router
-from ._urls import URLs
 from ._web import WebApplication
 
 

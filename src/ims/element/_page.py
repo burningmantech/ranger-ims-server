@@ -21,7 +21,7 @@ Element base classes.
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer, tags
 
-from ims.application._config import Configuration
+from ims.config import Configuration
 from ims.ext.klein import KleinRenderable
 
 from ._element import Element

@@ -28,10 +28,10 @@ from twisted.logger import Logger
 from twisted.python.usage import UsageError
 from twisted.web.server import Session, Site
 
-from ims.application._config import Configuration
-from ims.application._log import patchCombinedLogFormatter
-from ims.application._main import MainApplication
+from ims.application import Application
+from ims.config import Configuration
 
+from ._log import patchCombinedLogFormatter
 from ._options import ServerOptions
 
 
@@ -76,7 +76,7 @@ class Server(object):
         host = config.HostName
         port = config.Port
 
-        application = MainApplication(config=config)
+        application = Application(config=config)
 
         cls.log.info(
             "Setting up web service at http://{host}:{port}/",

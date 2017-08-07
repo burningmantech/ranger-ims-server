@@ -23,8 +23,8 @@ from typing import Optional
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 
-from ims.application import Authorization
-from ims.application._config import Configuration
+from ims.auth import Authorization
+from ims.config import Configuration
 from ims.ext.json import jsonTextFromObject
 from ims.ext.klein import KleinRenderable
 from ims.model import Event

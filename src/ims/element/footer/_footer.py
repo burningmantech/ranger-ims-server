@@ -18,7 +18,7 @@
 <footer> Element.
 """
 
-from ims.application._config import Configuration
+from ims.config import Configuration
 
 from .._element import Element
 

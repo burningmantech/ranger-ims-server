@@ -37,14 +37,13 @@ from werkzeug.exceptions import MethodNotAllowed, NotFound
 from werkzeug.routing import RequestRedirect
 
 from ims import __version__ as version
+from ims.auth import NotAuthenticatedError, NotAuthorizedError
+from ims.config import URLs
 from ims.dms import DMSError
 from ims.element.redirect import RedirectPage
 from ims.ext.klein import (
     ContentType, HeaderName, KleinRenderable, KleinRouteMethod
 )
-
-from ._exceptions import NotAuthenticatedError, NotAuthorizedError
-from ._urls import URLs
 
 
 __all__ = (

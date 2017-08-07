@@ -27,11 +27,11 @@ from twisted.logger import Logger
 from twisted.python.constants import FlagConstant, Flags
 from twisted.web.iweb import IRequest
 
+from ims.config import Configuration
 from ims.dms import DMSError, verifyPassword
 from ims.model import Event, Ranger
 
-from .._config import Configuration
-from .._exceptions import NotAuthenticatedError, NotAuthorizedError
+from ._exceptions import NotAuthenticatedError, NotAuthorizedError
 
 
 __all__ = ()

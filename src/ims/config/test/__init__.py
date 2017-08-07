@@ -15,13 +15,5 @@
 ##
 
 """
-Incident Management System web application authentication.
+Tests for L{ims.config}.
 """
-
-from ._application import AuthApplication
-from ._provider import AuthProvider, Authorization
-
-AuthApplication, AuthProvider, Authorization  # Silence linter
-
-
-__all__ = ()

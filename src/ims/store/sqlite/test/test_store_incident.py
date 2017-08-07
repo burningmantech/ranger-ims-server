@@ -78,7 +78,7 @@ class DataStoreIncidentTests(DataStoreTests):
     Tests for :class:`DataStore` incident access.
     """
 
-    @given(incidentLists(maxNumber=SQLITE_MAX_INT, averageSize=3))
+    @given(incidentLists(maxNumber=SQLITE_MAX_INT, averageSize=3, maxSize=10))
     @settings(max_examples=100)
     def test_incidents(self, incidents: Iterable[Incident]) -> None:
         """

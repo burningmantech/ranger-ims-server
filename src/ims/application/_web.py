@@ -27,6 +27,8 @@ from hyperlink import URL
 
 from twisted.web.iweb import IRequest
 
+from ims.auth import AuthProvider, Authorization
+from ims.config import Configuration, URLs
 from ims.element.admin import AdminPage
 from ims.element.admin_acl import AdminAccessControlPage
 from ims.element.admin_streets import AdminStreetsPage
@@ -41,10 +43,7 @@ from ims.element.root import RootPage
 from ims.ext.klein import KleinRenderable, static
 from ims.model import Event
 
-from ._auth import AuthProvider, Authorization
-from ._config import Configuration
 from ._klein import Router, notFoundResponse, redirect
-from ._urls import URLs
 
 Optional  # silence linter
 
