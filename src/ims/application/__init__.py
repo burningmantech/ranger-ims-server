@@ -19,6 +19,7 @@ Incident Management System web application.
 """
 
 from ._config import Configuration
+from ._log import patchCombinedLogFormatter
 from ._urls import URLs
 from .auth._provider import Authorization
 
@@ -27,4 +28,5 @@ __all__ = (
     "Authorization",
     "Configuration",
     "URLs",
+    "patchCombinedLogFormatter",
 )
