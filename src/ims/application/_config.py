@@ -29,7 +29,6 @@ from twisted.logger import Logger
 from twisted.python.filepath import FilePath
 
 from ims.dms import DutyManagementSystem
-from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore
 
