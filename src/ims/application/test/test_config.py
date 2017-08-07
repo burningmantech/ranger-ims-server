@@ -49,7 +49,7 @@ class ConfigurationTests(TestCase):
         serverRoot = FilePath(__file__).parent().parent()
         configRoot = serverRoot.child("conf")
         dataRoot   = serverRoot.child("data")
-        cached     = serverRoot.child("cached")
+        cached     = dataRoot.child("cache")
 
         self.assertEquals(config.ServerRoot, serverRoot)
         self.assertEquals(config.ConfigRoot, configRoot)
@@ -73,7 +73,7 @@ class ConfigurationTests(TestCase):
         serverRoot = sampleConfigFile.parent().parent()
         configRoot = serverRoot.child("conf")
         dataRoot   = serverRoot.child("data")
-        cached     = serverRoot.child("cached")
+        cached     = dataRoot.child("cache")
 
         self.assertEquals(config.ServerRoot, serverRoot)
         self.assertEquals(config.ConfigRoot, configRoot)
