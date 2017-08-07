@@ -249,3 +249,16 @@ class Configuration(object):
         self.storage: IMSDataStore = DataStore(
             dbPath=Path(self.DatabaseFile.path)
         )
+
+        locationsFile = self.ConfigRoot.sibling("locations.json")
+
+        if locationsFile.isfile():
+            with locationsFile.open() as jsonStrem:
+                json = objectFromJSONBytesIO(jsonStrem)
+            self._log.info("{count} locations", count=len(json))
+            self.locationsJSONBytes = jsonTextFromObject(json).encode("utf-8")
+        else:
+            self._log.info(
+                "No locations file: {file.path}", file=locationsFile
+            )
+            self.locationsJSONBytes = jsonTextFromObject([]).encode("utf-8")
