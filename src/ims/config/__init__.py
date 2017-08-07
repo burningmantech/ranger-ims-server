@@ -15,11 +15,14 @@
 ##
 
 """
-Incident Management System web application.
+Incident Management System configuration.
 """
 
-from ._main import MainApplication as Application
+from ._config import Configuration
+from ._urls import URLs
+
 
 __all__ = (
-    "Application",
+    "Configuration",
+    "URLs",
 )

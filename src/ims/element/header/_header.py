@@ -18,7 +18,7 @@
 <header> Element.
 """
 
-from ims.application import Configuration
+from ims.config import Configuration
 
 from .._element import Element
 

@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for L{ims.application._config}.
+Tests for L{ims.config._config}.
 """
 
 from twisted.python.filepath import FilePath

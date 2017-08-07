@@ -15,7 +15,5 @@
 ##
 
 """
-Incident Management System web application authentication.
+Tests for L{ims.config}.
 """
-
-__all__ = ()

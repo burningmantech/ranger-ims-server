@@ -15,5 +15,16 @@
 ##
 
 """
-Tests for L{ims.application}.
+Incident Management System web authentication.
 """
+
+from ._exceptions import NotAuthenticatedError, NotAuthorizedError
+from ._provider import AuthProvider, Authorization
+
+
+__all__ = (
+    "AuthProvider",
+    "Authorization",
+    "NotAuthenticatedError",
+    "NotAuthorizedError",
+)

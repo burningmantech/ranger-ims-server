@@ -15,7 +15,7 @@
 ##
 
 """
-Server
+IMS configuration
 """
 
 from configparser import ConfigParser, NoOptionError, NoSectionError

@@ -18,7 +18,7 @@
 Server root page.
 """
 
-from ims.application import Configuration
+from ims.config import Configuration
 
 from .._page import Page
 

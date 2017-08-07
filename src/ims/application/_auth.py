@@ -26,12 +26,11 @@ from hyperlink import URL
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
+from ims.auth import AuthProvider
+from ims.config import Configuration, URLs
 from ims.ext.klein import KleinRenderable
 
-from ._provider import AuthProvider
-from .._config import Configuration
-from .._klein import Router, invalidQueryResponse, queryValue, redirect
-from .._urls import URLs
+from ._klein import Router, invalidQueryResponse, queryValue, redirect
 
 
 __all__ = ()

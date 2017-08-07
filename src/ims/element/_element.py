@@ -27,7 +27,7 @@ from twisted.web.template import (
     Element as _Element, Tag, XMLFile, renderer, tags
 )
 
-from ims.application import Configuration
+from ims.config import Configuration
 from ims.ext.json import jsonTextFromObject
 from ims.ext.klein import KleinRenderable
 
