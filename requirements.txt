@@ -1,1 +1,3 @@
 --editable .  # Get self and dependencies from setup.py
+
+https://github.com/twisted/twisted/archive/trunk.zip#egg=Twisted

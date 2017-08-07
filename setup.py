@@ -129,12 +129,9 @@ install_requirements = [
     "python-dateutil==2.6.1",
     "ranger-ims-server==1.0",
     "six==1.10.0",
-    #"Twisted==17.5.0",
+    #"Twisted>=17.5.0",
     "Werkzeug==0.12.2",
     "zope.interface==4.4.2",
-]
-dependency_links=[
-    "https://github.com/twisted/twisted/tarball/trunk#egg=Twisted",
 ]
 
 extras_requirements = {}
