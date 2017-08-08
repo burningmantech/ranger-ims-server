@@ -561,39 +561,83 @@ class APIApplication(object):
             request, None, Authorization.writeIncidentReports
         )
 
+        author = request.user.shortNames[0]
         json = objectFromJSONBytesIO(request.content)
+
+        # Set JSON incident number to 0
+
+        if IncidentReportJSONKey.number.value in json:
+            return badRequestResponse(
+                request, "New incident report may not specify number"
+            )
+
+        json[IncidentReportJSONKey.number.value] = 0
+
+        # Set JSON incident created time to now
+
+        now = DateTime.now(TimeZone.utc)
+        jsonNow = jsonObjectFromModelObject(now)
+
+        if IncidentReportJSONKey.created.value in json:
+            return badRequestResponse(
+                request, "New incident report may not specify created time"
+            )
+
+        json[IncidentReportJSONKey.created.value] = jsonNow
+
+        # If not provided, set JSON report entries to an empty list
+
+        if IncidentReportJSONKey.reportEntries.value not in json:
+            json[IncidentReportJSONKey.reportEntries.value] = []
+
+        # Set JSON report entry created time to now
+        # Set JSON report entry author
+        # Set JSON report entry automatic=False
+
+        for entryJSON in json[IncidentReportJSONKey.reportEntries.value]:
+            for key in (
+                ReportEntryJSONKey.created,
+                ReportEntryJSONKey.author,
+                ReportEntryJSONKey.automatic,
+            ):
+                if key.value in entryJSON:
+                    return badRequestResponse(
+                        request,
+                        f"New report entry may not specify {key.value}"
+                    )
+
+            entryJSON[ReportEntryJSONKey.created.value] = jsonNow
+            entryJSON[ReportEntryJSONKey.author.value] = author
+            entryJSON[ReportEntryJSONKey.automatic.value] = False
+
+        # Deserialize JSON
+
         incidentReport = modelObjectFromJSONObject(json, IncidentReport)
 
-        author = request.user.shortNames[0]
-        now = DateTime.now(TimeZone.utc)
+        # Validate data
 
-        if incidentReport.created is None:
-            # No created timestamp provided; add one.
-
-            # Right now is a decent default, but if there's a report entry
-            # that's older than now, that's a better pick.
-            created = now
-            if incidentReport.reportEntries is not None:
-                for entry in incidentReport.reportEntries:
-                    if entry.author is None:
-                        entry.author = author
-                    if entry.created is None:
-                        entry.created = now
-                    elif entry.created < created:
-                        created = entry.created
-
-            incidentReport.created = created
-
-        elif incidentReport.created > now:
+        if incidentReport.created > now:
             return badRequestResponse(
                 request,
-                "Created time {} is in the future. Current time is {}."
+                "Incident report created time {} is in the future. "
+                "(Current time is {}.)"
                 .format(incidentReport.created, now)
             )
 
-        await self.config.storage.createIncidentReport(incidentReport, author)
+        for reportEntry in incidentReport.reportEntries:
+            if reportEntry.created > now:
+                return badRequestResponse(
+                    request,
+                    "Report entry created time {} is in the future. "
+                    "(Current time is {}.)"
+                    .format(reportEntry.created, now)
+                )
 
-        assert incidentReport.number is not None
+        # Store the incident report
+
+        incidentReport = await self.config.storage.createIncidentReport(
+            incidentReport, author
+        )
 
         self._log.info(
             "User {author} created new incident report "
@@ -737,7 +781,9 @@ class APIApplication(object):
             storage.setIncidentReport_summary
         )
 
-        jsonEntries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)
+        jsonEntries = edits.get(
+            IncidentReportJSONKey.reportEntries.value, UNSET
+        )
         if jsonEntries is not UNSET:
             now = DateTime.now(TimeZone.utc)
 
