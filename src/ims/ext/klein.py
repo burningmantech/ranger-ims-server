@@ -24,7 +24,7 @@ __all__ = (
 
 
 # Expected return types for route methods
-KleinRenderable = Union[str, IResource, IRenderable]
+KleinRenderable = Union[str, bytes, IResource, IRenderable]
 KleinRouteMethod = Callable[
     ..., Union[KleinRenderable, Awaitable[KleinRenderable]]
 ]

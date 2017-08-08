@@ -100,7 +100,7 @@ for tool, (module, function) in script_entry_points.items():
 
 package_data = dict(
     ims = [
-        "application/test/*.conf",
+        "config/test/*.conf",
         "element/*/template.xhtml",
         "element/static/*.css",
         "element/static/*.js",
