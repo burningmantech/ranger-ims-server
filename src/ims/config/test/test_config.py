@@ -18,7 +18,7 @@
 Tests for L{ims.config._config}.
 """
 
-from twisted.python.filepath import FilePath
+from pathlib import Path
 
 from ims.ext.trial import TestCase
 
@@ -28,8 +28,8 @@ from .._config import Configuration
 __all__ = ()
 
 
-emptyConfigFile  = FilePath(__file__).sibling("empty.conf")
-sampleConfigFile = FilePath(__file__).sibling("test.conf")
+emptyConfigFile  = Path(__file__).parent / "empty.conf"
+sampleConfigFile = Path(__file__).parent / "test.conf"
 
 
 
@@ -42,19 +42,19 @@ class ConfigurationTests(TestCase):
         """
         Check defaults.
         """
-        assert emptyConfigFile.isfile(), emptyConfigFile.path
+        assert emptyConfigFile.is_file(), emptyConfigFile
 
         config = Configuration(emptyConfigFile)
 
-        serverRoot = FilePath(__file__).parent().parent()
-        configRoot = serverRoot.child("conf")
-        dataRoot   = serverRoot.child("data")
-        cached     = dataRoot.child("cache")
+        serverRoot = Path(__file__).parent.parent
+        configRoot = serverRoot / "conf"
+        dataRoot   = serverRoot / "data"
+        cached     = dataRoot / "cache"
 
         self.assertEquals(config.ServerRoot, serverRoot)
         self.assertEquals(config.ConfigRoot, configRoot)
         self.assertEquals(config.DataRoot, dataRoot)
-        self.assertEquals(config.CachedResources, cached)
+        self.assertEquals(config.CachedResourcesPath, cached)
 
         self.assertEquals(config.DMSHost, None)
         self.assertEquals(config.DMSDatabase, None)
@@ -66,19 +66,19 @@ class ConfigurationTests(TestCase):
         """
         Check sample config.
         """
-        assert sampleConfigFile.isfile(), sampleConfigFile.path
+        assert sampleConfigFile.is_file(), sampleConfigFile
 
         config = Configuration(sampleConfigFile)
 
-        serverRoot = sampleConfigFile.parent().parent()
-        configRoot = serverRoot.child("conf")
-        dataRoot   = serverRoot.child("data")
-        cached     = dataRoot.child("cache")
+        serverRoot = sampleConfigFile.parent.parent
+        configRoot = serverRoot / "conf"
+        dataRoot   = serverRoot / "data"
+        cached     = dataRoot / "cache"
 
         self.assertEquals(config.ServerRoot, serverRoot)
         self.assertEquals(config.ConfigRoot, configRoot)
         self.assertEquals(config.DataRoot, dataRoot)
-        self.assertEquals(config.CachedResources, cached)
+        self.assertEquals(config.CachedResourcesPath, cached)
 
         # self.assertEquals(config.DMSHost, "dms.rangers.example.com")
         self.assertEquals(config.DMSDatabase, "rangers")

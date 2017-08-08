@@ -26,7 +26,6 @@ from sys import argv
 from typing import Optional, Set, Tuple, cast
 
 from twisted.logger import Logger
-from twisted.python.filepath import FilePath
 
 from ims.dms import DutyManagementSystem
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
@@ -54,7 +53,7 @@ class Configuration(object):
     urls = URLs
 
 
-    def __init__(self, configFile: FilePath) -> None:
+    def __init__(self, configFile: Optional[Path]) -> None:
         """
         @param configFile: The configuration file to load.
         """
@@ -72,12 +71,11 @@ class Configuration(object):
             "Core.ServerRoot: {self.ServerRoot}\n"
             "Core.ConfigRoot: {self.ConfigRoot}\n"
             "Core.DataRoot: {self.DataRoot}\n"
-            "Core.DatabaseFile: {self.DatabaseFile}\n"
-            "Core.CachedResources: {self.CachedResources}\n"
+            "Core.DatabaseFile: {self.DatabasePath}\n"
+            "Core.CachedResources: {self.CachedResourcesPath}\n"
             "Core.LogLevel: {self.LogLevel}\n"
-            "Core.LogFile: {self.LogFileName}\n"
+            "Core.LogFile: {self.LogFilePath}\n"
             "Core.LogFormat: {self.LogFormat}\n"
-            "Core.PIDFile: {self.PIDFile}\n"
             "\n"
             "DMS.Hostname: {self.DMSHost}\n"
             "DMS.Database: {self.DMSDatabase}\n"
@@ -94,21 +92,19 @@ class Configuration(object):
 
         configParser = ConfigParser()
 
-        def readConfig(configFile: FilePath) -> None:
-            if configFile is None:
+        def readConfig(path: Optional[Path]) -> None:
+            if path is None:
                 self._log.info("No configuration file specified.")
                 return
 
-            for _okFile in configParser.read(configFile.path,):
+            for _okFile in configParser.read(str(path)):
                 self._log.info(
-                    "Read configuration file: {configFile.path}",
-                    configFile=configFile
+                    "Read configuration file: {path}", path=path
                 )
                 break
             else:
                 self._log.error(
-                    "Unable to read configuration file: {file.path}",
-                    file=configFile
+                    "Unable to read configuration file: {path}", path=path
                 )
 
         def valueFromConfig(
@@ -123,35 +119,35 @@ class Configuration(object):
             except (NoSectionError, NoOptionError):
                 return default
 
-        def filePathFromConfig(
-            section: str, option: str, root: FilePath, segments: Tuple[str]
-        ) -> FilePath:
+        def pathFromConfig(
+            section: str, option: str, root: Path, segments: Tuple[str]
+        ) -> Path:
             if section is None:
-                path = None
+                text = None
             else:
-                path = valueFromConfig(section, option, None)
+                text = valueFromConfig(section, option, None)
 
-            if path is None:
-                fp = root
+            if text is None:
+                path = root
                 for segment in segments:
-                    fp = fp.child(segment)
+                    path = path / segment
 
-            elif path.startswith("/"):
-                fp = FilePath(path)
+            elif text.startswith("/"):
+                path = Path(text)
 
             else:
-                fp = root
-                for segment in path.split(pathsep):
-                    fp = fp.child(segment)
+                path = root
+                for segment in text.split(pathsep):
+                    path = path / segment
 
-            return fp
+            return path
 
         readConfig(self.ConfigFile)
 
         if self.ConfigFile is None:
-            defaultRoot = FilePath(getcwd())
+            defaultRoot = Path(getcwd())
         else:
-            defaultRoot = self.ConfigFile.parent().parent()
+            defaultRoot = self.ConfigFile.parent.parent
 
         self.HostName = valueFromConfig("Core", "Host", "localhost")
         self._log.info("HostName: {hostName}", hostName=self.HostName)
@@ -159,40 +155,31 @@ class Configuration(object):
         self.Port = int(cast(str, valueFromConfig("Core", "Port", "8080")))
         self._log.info("Port: {port}", port=self.Port)
 
-        self.ServerRoot = filePathFromConfig(
+        self.ServerRoot = pathFromConfig(
             "Core", "ServerRoot", defaultRoot, cast(Tuple[str], ())
         )
-        self._log.info(
-            "Server root: {serverRoot.path}", serverRoot=self.ServerRoot
-        )
+        self._log.info("Server root: {path}", path=self.ServerRoot)
 
-        self.ConfigRoot = filePathFromConfig(
+        self.ConfigRoot = pathFromConfig(
             "Core", "ConfigRoot", self.ServerRoot, ("conf",)
         )
-        self._log.info(
-            "Config root: {configRoot.path}", configRoot=self.ConfigRoot
-        )
+        self._log.info("Config root: {path}", path=self.ConfigRoot)
 
-        self.DataRoot = filePathFromConfig(
+        self.DataRoot = pathFromConfig(
             "Core", "DataRoot", self.ServerRoot, ("data",)
         )
-        self._log.info(
-            "Data root: {dataRoot.path}", dataRoot=self.DataRoot
-        )
+        self._log.info("Data root: {path}", path=self.DataRoot)
 
-        self.DatabaseFile = filePathFromConfig(
+        self.DatabasePath = pathFromConfig(
             "Core", "Database", self.DataRoot, ("db.sqlite",)
         )
-        self._log.info(
-            "Database: {db.path}", db=self.DatabaseFile
-        )
+        self._log.info("Database: {path}", path=self.DatabasePath)
 
-        self.CachedResources = filePathFromConfig(
+        self.CachedResourcesPath = pathFromConfig(
             "Core", "CachedResources", self.DataRoot, ("cache",)
         )
         self._log.info(
-            "CachedResources: {cachedResources.path}",
-            cachedResources=self.CachedResources
+            "CachedResourcesPath: {path}", path=self.CachedResourcesPath
         )
 
         self.LogLevelName = valueFromConfig("Core", "LogLevel", "info")
@@ -201,28 +188,17 @@ class Configuration(object):
         self.LogFormat = valueFromConfig("Core", "LogFormat", "text")
         self._log.info("LogFormat: {logFormat}", logFormat=self.LogFormat)
 
-        self.LogFileName = filePathFromConfig(
+        self.LogFilePath = pathFromConfig(
             "Core", "LogFile", self.DataRoot, ("{}.log".format(command),)
-        ).path
-        self._log.info(
-            "LogFile: {logFile}", logFile=self.LogFileName
         )
-
-        self.PIDFile = filePathFromConfig(
-            "Core", "PIDFile", self.DataRoot, ("{}.pid".format(command),)
-        ).path
-        self._log.info(
-            "PIDFile: {pidFile}", pidFile=self.PIDFile
-        )
+        self._log.info("LogFile: {path}", path=self.LogFilePath)
 
         admins = valueFromConfig("Core", "Admins", "")
         if admins is None:
             self.IMSAdmins: Set[str] = set()
         else:
             self.IMSAdmins = set(a.strip() for a in admins.split(","))
-        self._log.info(
-            "Admins: {admins}", admins=self.IMSAdmins
-        )
+        self._log.info("Admins: {admins}", admins=self.IMSAdmins)
 
         self.DMSHost     = valueFromConfig("DMS", "Hostname", None)
         self.DMSDatabase = valueFromConfig("DMS", "Database", None)
@@ -247,19 +223,15 @@ class Configuration(object):
             password=self.DMSPassword,
         )
 
-        self.storage: IMSDataStore = DataStore(
-            dbPath=Path(self.DatabaseFile.path)
-        )
+        self.storage: IMSDataStore = DataStore(dbPath=self.DatabasePath)
 
-        locationsFile = self.ConfigRoot.sibling("locations.json")
+        locationsPath = self.DataRoot / "locations.json"
 
-        if locationsFile.isfile():
-            with locationsFile.open() as jsonStrem:
+        if locationsPath.is_file():
+            with locationsPath.open() as jsonStrem:
                 json = objectFromJSONBytesIO(jsonStrem)
             self._log.info("{count} locations", count=len(json))
             self.locationsJSONBytes = jsonTextFromObject(json).encode("utf-8")
         else:
-            self._log.info(
-                "No locations file: {file.path}", file=locationsFile
-            )
+            self._log.info("No locations file: {path}", path=locationsPath)
             self.locationsJSONBytes = jsonTextFromObject([]).encode("utf-8")
