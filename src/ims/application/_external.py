@@ -18,6 +18,8 @@
 Incident Management System cached external resources.
 """
 
+from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Any
 from zipfile import BadZipfile
 
@@ -27,7 +29,6 @@ from attr.validators import instance_of
 from hyperlink import URL
 
 from twisted.logger import Logger
-from twisted.python.filepath import FilePath
 from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
 from twisted.web.iweb import IRequest
@@ -36,7 +37,7 @@ from ims.auth import AuthProvider
 from ims.config import Configuration, URLs
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
-from ._klein import Router, notFoundResponse
+from ._klein import Router, internalErrorResponse, notFoundResponse
 
 
 __all__ = (
@@ -205,31 +206,37 @@ class ExternalApplication(object):
         )
 
 
-    async def cacheFromURL(self, url: URL, name: str) -> FilePath:
+    async def cacheFromURL(self, url: URL, name: str) -> Path:
         """
         Download a resource and cache it.
         """
-        cacheDir = self.config.CachedResources
+        cacheDir = self.config.CachedResourcesPath
+        cacheDir.mkdir(exist_ok=True)
 
-        if not cacheDir.isdir():
-            cacheDir.createDirectory()
-
-        destination = cacheDir.child(name)
+        destination = cacheDir / name
 
         if not destination.exists():
-            tmp = destination.temporarySibling(extension=".tmp")
-            try:
-                await downloadPage(
-                    url.asText().encode("utf-8"), tmp.open("w")
-                )
-            except BaseException:
-                self._log.failure("Download failed for {url}", url=url)
+            with NamedTemporaryFile(
+                dir=str(cacheDir), delete=False, suffix=".tmp"
+            ) as tmp:
+                path = Path(tmp.name)
                 try:
-                    tmp.remove()
-                except (OSError, IOError):
-                    pass
-            else:
-                tmp.moveTo(destination)
+                    await downloadPage(
+                        url.asText().encode("utf-8"), tmp
+                    )
+                except BaseException as e:
+                    self._log.failure(
+                        "Download failed for {url}: {error}", url=url, error=e
+                    )
+                    try:
+                        path.unlink()
+                    except (OSError, IOError) as e:
+                        self._log.critical(
+                            "Failed to remove temporary file {path}: {error}",
+                            path=path, error=e
+                        )
+                else:
+                    path.rename(destination)
 
         return destination
 
@@ -240,14 +247,13 @@ class ExternalApplication(object):
         """
         Retrieve a cached resource.
         """
-        filePath = await self.cacheFromURL(url, name)
+        path = await self.cacheFromURL(url, name)
 
         try:
-            return filePath.getContent()
+            return path.read_bytes()
         except (OSError, IOError) as e:
             self._log.error(
-                "Unable to open file {filePath.path}: {error}",
-                filePath=filePath, error=e,
+                "Unable to open file {path}: {error}", path=path, error=e
             )
             return notFoundResponse(request)
 
@@ -264,21 +270,24 @@ class ExternalApplication(object):
         )
 
         try:
-            filePath = ZipArchive(archivePath.path)
+            filePath = ZipArchive(str(archivePath))
         except BadZipfile as e:
             self._log.error(
-                "Corrupt zip archive {archive.path}: {error}",
-                archive=archivePath, error=e,
+                "Corrupt zip archive {path}: {error}",
+                path=archivePath, error=e,
             )
             try:
-                archivePath.remove()
-            except (OSError, IOError):
-                pass
-            return notFoundResponse(request)
+                archivePath.unlink()
+            except (OSError, IOError) as e:
+                self._log.critical(
+                    "Failed to remove corrupt zip archive {path}: {error}",
+                    path=archivePath, error=e,
+                )
+            return internalErrorResponse(request)
         except (OSError, IOError) as e:
-            self._log.error(
-                "Unable to open zip archive {archive.path}: {error}",
-                archive=archivePath, error=e,
+            self._log.critical(
+                "Unable to open zip archive {path}: {error}",
+                path=archivePath, error=e,
             )
             return notFoundResponse(request)
 
@@ -291,7 +300,6 @@ class ExternalApplication(object):
         except KeyError:
             self._log.error(
                 "File not found in ZIP archive: {filePath.path}",
-                filePath=filePath,
-                archive=archivePath,
+                filePath=filePath, archive=archivePath,
             )
             return notFoundResponse(request)

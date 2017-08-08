@@ -18,6 +18,7 @@
 Command line options for the IMS server.
 """
 
+from pathlib import Path
 from sys import stderr, stdout
 from textwrap import dedent
 from typing import Mapping, MutableMapping, Optional, Sequence, cast
@@ -70,21 +71,21 @@ class ServerOptions(Options):
 
     def initConfig(self) -> None:
         try:
-            configFile = cast(Mapping, self).get("configFile")
+            configFile = cast(Path, cast(Mapping, self).get("configFile"))
 
             if configFile is None:
                 configuration = Configuration(None)
             else:
-                if not configFile.isfile():
+                if not configFile.is_file():
                     exit(ExitStatus.EX_CONFIG, "Config file not found.")
                 configuration = Configuration(configFile)
 
             options = cast(Mapping, self)
 
             if "logFileName" in options:
-                configuration.LogFileName = self["logFileName"]
+                configuration.LogFilePath = Path(self["logFileName"])
             else:
-                self.opt_log_file(configuration.LogFileName)
+                self.opt_log_file(str(configuration.LogFilePath))
 
             if "logFormat" in options:
                 configuration.LogFormat = self["logFormat"]
