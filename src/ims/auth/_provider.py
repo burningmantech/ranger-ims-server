@@ -181,15 +181,15 @@ class AuthProvider(object):
                     authorizations |= Authorization.imsAdmin
 
                 if event is not None:
-                    storage = self.config.storage
+                    store = self.config.store
                     if matchACL(
-                        user, frozenset(await storage.writers(event))
+                        user, frozenset(await store.writers(event))
                     ):
                         authorizations |= Authorization.writeIncidents
                         authorizations |= Authorization.readIncidents
                     else:
                         if matchACL(
-                            user, frozenset(await storage.readers(event))
+                            user, frozenset(await store.readers(event))
                         ):
                             authorizations |= Authorization.readIncidents
 
@@ -239,7 +239,7 @@ class AuthProvider(object):
 
         events = frozenset(
             event for event, _incidentNumber in
-            await self.config.storage.incidentsAttachedToIncidentReport(number)
+            await self.config.store.incidentsAttachedToIncidentReport(number)
         )
 
         for event in events:
