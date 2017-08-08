@@ -129,6 +129,7 @@ install_requirements = [
     "pyOpenSSL==17.2.0",
     "python-dateutil==2.6.1",
     "ranger-ims-server==1.0",
+    "service_identity==17.0.0",
     "six==1.10.0",
     #"Twisted>=17.5.0",
     "Werkzeug==0.12.2",
