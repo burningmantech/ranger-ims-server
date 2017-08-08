@@ -27,7 +27,6 @@ from twisted.application.runner._exit import ExitStatus, exit
 from twisted.logger import (
     InvalidLogLevelError, LogLevel, jsonFileLogObserver, textFileLogObserver
 )
-from twisted.python.filepath import FilePath
 from twisted.python.usage import Options, UsageError
 
 from ims import __version__ as version
@@ -66,7 +65,7 @@ class ServerOptions(Options):
         """
         Location of configuration file.
         """
-        cast(MutableMapping, self)["configFile"] = FilePath(path)
+        cast(MutableMapping, self)["configFile"] = Path(path)
 
 
     def initConfig(self) -> None:
