@@ -100,7 +100,7 @@ for tool, (module, function) in script_entry_points.items():
 
 package_data = dict(
     ims = [
-        "application/test/*.conf",
+        "config/test/*.conf",
         "element/*/template.xhtml",
         "element/static/*.css",
         "element/static/*.js",
@@ -126,8 +126,10 @@ install_requirements = [
     "incremental==17.5.0",
     "klein==17.2.0",
     "PyMySQL==0.7.11",
+    "pyOpenSSL==17.2.0",
     "python-dateutil==2.6.1",
     "ranger-ims-server==1.0",
+    "service_identity==17.0.0",
     "six==1.10.0",
     #"Twisted>=17.5.0",
     "Werkzeug==0.12.2",
