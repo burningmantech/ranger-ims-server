@@ -402,7 +402,6 @@ function summarizeIncident(incident) {
 
     if (summary == undefined || summary == "") {
         if (reportEntries == undefined) {
-            console.warn("No summary provided.");
             return "";
         }
         else {
