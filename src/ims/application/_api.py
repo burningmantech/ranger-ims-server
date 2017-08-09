@@ -337,21 +337,6 @@ class APIApplication(object):
                 f"URL {event}"
             )
 
-        if incident.created > now:
-            return badRequestResponse(
-                request,
-                f"Incident created time {incident.created} is in the future. "
-                f"(Current time is {now}.)"
-            )
-
-        for reportEntry in incident.reportEntries:
-            if reportEntry.created > now:
-                return badRequestResponse(
-                    request,
-                    f"Report entry created time {reportEntry.created} is in "
-                    f"the future. (Current time is {now}.)"
-                )
-
         # Store the incident
 
         incident = await self.config.store.createIncident(incident, author)
@@ -668,23 +653,6 @@ class APIApplication(object):
         # Deserialize JSON incident report
 
         incidentReport = modelObjectFromJSONObject(json, IncidentReport)
-
-        # Validate data
-
-        if incidentReport.created > now:
-            return badRequestResponse(
-                request,
-                f"Incident report created time {incidentReport.created} is in "
-                f"the future. (Current time is {now}.)"
-            )
-
-        for reportEntry in incidentReport.reportEntries:
-            if reportEntry.created > now:
-                return badRequestResponse(
-                    request,
-                    f"Report entry created time {reportEntry.created} is in "
-                    f"the future. (Current time is {now}.)"
-                )
 
         # Store the incident report
 
