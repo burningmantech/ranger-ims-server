@@ -18,7 +18,7 @@
 Incident Management System web application authentication provider.
 """
 
-from typing import Container, Optional, Sequence
+from typing import Container, FrozenSet, Optional, Sequence
 
 from attr import attrib, attrs
 from attr.validators import instance_of
@@ -27,9 +27,9 @@ from twisted.logger import Logger
 from twisted.python.constants import FlagConstant, Flags
 from twisted.web.iweb import IRequest
 
-from ims.config import Configuration
-from ims.dms import DMSError, verifyPassword
+from ims.dms import DMSError, DutyManagementSystem, verifyPassword
 from ims.model import Event, Ranger
+from ims.store import IMSDataStore
 
 from ._exceptions import NotAuthenticatedError, NotAuthorizedError
 
@@ -97,7 +97,15 @@ class AuthProvider(object):
 
     _log = Logger()
 
-    config: Configuration = attrib(validator=instance_of(Configuration))
+    masterKey: str = attrib(validator=instance_of(str))
+
+    adminUsers: FrozenSet[str] = attrib()
+
+    store: IMSDataStore = attrib(validator=instance_of(IMSDataStore))
+
+    dms: DutyManagementSystem = attrib(
+        validator=instance_of(DutyManagementSystem)
+    )
 
 
     async def verifyCredentials(self, user: User, password: str) -> bool:
@@ -109,8 +117,8 @@ class AuthProvider(object):
         else:
             try:
                 if (
-                    self.config.masterKey is not None and
-                    password == self.config.masterKey
+                    self.masterKey is not None and
+                    password == self.masterKey
                 ):
                     return True
 
@@ -177,19 +185,18 @@ class AuthProvider(object):
 
         if user is not None:
             for shortName in user.shortNames:
-                if shortName in self.config.IMSAdmins:
+                if shortName in self.adminUsers:
                     authorizations |= Authorization.imsAdmin
 
                 if event is not None:
-                    store = self.config.store
                     if matchACL(
-                        user, frozenset(await store.writers(event))
+                        user, frozenset(await self.store.writers(event))
                     ):
                         authorizations |= Authorization.writeIncidents
                         authorizations |= Authorization.readIncidents
                     else:
                         if matchACL(
-                            user, frozenset(await store.readers(event))
+                            user, frozenset(await self.store.readers(event))
                         ):
                             authorizations |= Authorization.readIncidents
 
@@ -239,7 +246,7 @@ class AuthProvider(object):
 
         events = frozenset(
             event for event, _incidentNumber in
-            await self.config.store.incidentsAttachedToIncidentReport(number)
+            await self.store.incidentsAttachedToIncidentReport(number)
         )
 
         for event in events:
@@ -270,7 +277,7 @@ class AuthProvider(object):
         """
         Look up the user record for a user short name.
         """
-        dms = self.config.dms
+        dms = self.dms
 
         # FIXME: a hash would be better (eg. rangersByHandle)
         try:

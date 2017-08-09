@@ -27,7 +27,6 @@ from twisted.web.iweb import IRequest
 from twisted.web.static import File
 
 import ims.element
-from ims.auth import AuthProvider
 from ims.config import Configuration, URLs
 from ims.dms import DutyManagementSystem
 from ims.ext.klein import KleinRenderable
@@ -65,19 +64,11 @@ class MainApplication(object):
         default=Factory(DataStoreEventSourceLogObserver), init=False
     )
 
-    auth: AuthProvider = attrib(
-        default=Factory(
-            lambda self: AuthProvider(config=self.config), takes_self=True
-        ),
-        init=False,
-    )
-
     apiApplication: APIApplication = attrib(
         default=Factory(
             lambda self: APIApplication(
                 config=self.config,
                 storeObserver=self.storeObserver,
-                auth=self.auth,
             ),
             takes_self=True,
         ),
@@ -86,7 +77,7 @@ class MainApplication(object):
 
     authApplication: AuthApplication = attrib(
         default=Factory(
-            lambda self: AuthApplication(config=self.config, auth=self.auth),
+            lambda self: AuthApplication(config=self.config),
             takes_self=True,
         ),
         init=False,
@@ -94,9 +85,7 @@ class MainApplication(object):
 
     externalApplication: ExternalApplication = attrib(
         default=Factory(
-            lambda self: ExternalApplication(
-                config=self.config, auth=self.auth
-            ),
+            lambda self: ExternalApplication(config=self.config),
             takes_self=True,
         ),
         init=False,
@@ -104,7 +93,7 @@ class MainApplication(object):
 
     webApplication: WebApplication = attrib(
         default=Factory(
-            lambda self: WebApplication(config=self.config, auth=self.auth),
+            lambda self: WebApplication(config=self.config),
             takes_self=True,
         ),
         init=False,

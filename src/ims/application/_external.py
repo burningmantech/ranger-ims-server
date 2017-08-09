@@ -33,7 +33,6 @@ from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
 from twisted.web.iweb import IRequest
 
-from ims.auth import AuthProvider
 from ims.config import Configuration, URLs
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
@@ -61,7 +60,6 @@ class ExternalApplication(object):
     _log = Logger()
     router = Router()
 
-    auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
     config: Configuration = attrib(validator=instance_of(Configuration))
 
     bootstrapVersionNumber  = "3.3.7"

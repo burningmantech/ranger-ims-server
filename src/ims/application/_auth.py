@@ -26,7 +26,6 @@ from hyperlink import URL
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
-from ims.auth import AuthProvider
 from ims.config import Configuration, URLs
 from ims.ext.klein import KleinRenderable
 
@@ -53,7 +52,6 @@ class AuthApplication(object):
     router = Router()
 
 
-    auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
     config: Configuration = attrib(validator=instance_of(Configuration))
 
 
@@ -64,7 +62,7 @@ class AuthApplication(object):
         """
         Endpoint for the login page.
         """
-        self.auth.authenticateRequest(request, optional=True)
+        self.config.authProvider.authenticateRequest(request, optional=True)
 
         from ims.element.login import LoginPage
         return LoginPage(self.config, failed=failed)
@@ -81,7 +79,7 @@ class AuthApplication(object):
         if username is None:
             user = None
         else:
-            user = await self.auth.lookupUserName(username)
+            user = await self.config.authProvider.lookupUserName(username)
 
         if user is None:
             self._log.debug(
@@ -91,7 +89,7 @@ class AuthApplication(object):
             if password is None:
                 return invalidQueryResponse(request, "password")
 
-            authenticated = await self.auth.verifyCredentials(
+            authenticated = await self.config.authProvider.verifyCredentials(
                 user, password
             )
 
