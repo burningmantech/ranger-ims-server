@@ -49,7 +49,7 @@ class Event(object):
     """
 
     message: str = attrib(validator=instance_of(str))
-    eventID: Optional[str] = attrib(validator=optional(instance_of(int)))
+    eventID: Optional[int] = attrib(validator=optional(instance_of(int)))
     eventClass: Optional[str] = attrib(validator=optional(instance_of(str)))
     retry: Optional[int] = attrib(validator=optional(instance_of(int)))
 

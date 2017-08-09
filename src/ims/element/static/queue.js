@@ -32,7 +32,7 @@ function initDispatchQueuePage() {
                 command = true;
             }
 
-            console.warn(keyCode);
+            // console.warn(keyCode);
         }
 
         function addFieldKeyUp() {
@@ -48,7 +48,7 @@ function initDispatchQueuePage() {
                 $("#new_incident").click();
             }
 
-            if (command) { console.warn(keyCode); }
+            // if (command) { console.warn(keyCode); }
         }
 
         document.onkeydown = addFieldKeyDown;

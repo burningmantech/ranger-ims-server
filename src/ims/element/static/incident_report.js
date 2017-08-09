@@ -39,7 +39,7 @@ function initIncidentReportPage() {
                 command = true;
             }
 
-            console.warn(keyCode);
+            // console.warn(keyCode);
         }
 
         function addFieldKeyUp() {
