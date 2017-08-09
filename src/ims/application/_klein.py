@@ -320,7 +320,7 @@ class Router(Klein):
             """
             Redirect.
             """
-            url = URL.fromText(failure.value.args[0].decode("utf-8"))
+            url = URL.fromText(failure.value.args[0])
             return redirect(request, url)
 
 

@@ -46,7 +46,8 @@ from ims.model import (
     ReportEntry,
 )
 from ims.model.json import (
-    IncidentJSONKey, IncidentReportJSONKey, LocationJSONKey,
+    IncidentJSONKey, IncidentPriorityJSONValue, IncidentReportJSONKey,
+    IncidentStateJSONValue, LocationJSONKey,
     ReportEntryJSONKey, RodGarettAddressJSONKey,
     jsonObjectFromModelObject, modelObjectFromJSONObject
 )
@@ -256,8 +257,78 @@ class APIApplication(object):
             request, event, Authorization.writeIncidents
         )
 
+        author = request.user.shortNames[0]
         json = objectFromJSONBytesIO(request.content)
+        now = DateTime.now(TimeZone.utc)
+        jsonNow = jsonObjectFromModelObject(now)
+
+        # Set JSON incident number to 0
+        # Set JSON incident created time to now
+
+        for incidentKey in (
+            IncidentJSONKey.number,
+            IncidentJSONKey.created,
+        ):
+            if incidentKey.value in json:
+                return badRequestResponse(
+                    request,
+                    f"New incident may not specify {incidentKey.value}"
+                )
+
+        json[IncidentJSONKey.number.value] = 0
+        json[IncidentJSONKey.created.value] = jsonNow
+
+        # If not provided, set JSON event, state to new, priority to normal
+
+        if IncidentJSONKey.event.value not in json:
+            json[IncidentJSONKey.event.value] = event.id
+
+        if IncidentJSONKey.state.value not in json:
+            json[IncidentJSONKey.state.value] = (
+                IncidentStateJSONValue.new.value
+            )
+
+        if IncidentJSONKey.priority.value not in json:
+            json[IncidentJSONKey.priority.value] = (
+                IncidentPriorityJSONValue.normal.value
+            )
+
+        # If not provided, set JSON handles, types, entries to an empty list
+
+        for incidentKey in (
+            IncidentJSONKey.rangerHandles,
+            IncidentJSONKey.incidentTypes,
+            IncidentJSONKey.reportEntries,
+        ):
+            if incidentKey.value not in json:
+                json[incidentKey.value] = []
+
+        # Set JSON report entry created time to now
+        # Set JSON report entry author
+        # Set JSON report entry automatic=False
+
+        for entryJSON in json[IncidentJSONKey.reportEntries.value]:
+            for reportEntryKey in (
+                ReportEntryJSONKey.created,
+                ReportEntryJSONKey.author,
+                ReportEntryJSONKey.automatic,
+            ):
+                if reportEntryKey.value in entryJSON:
+                    return badRequestResponse(
+                        request,
+                        f"New report entry may not specify "
+                        f"{reportEntryKey.value}"
+                    )
+
+            entryJSON[ReportEntryJSONKey.created.value] = jsonNow
+            entryJSON[ReportEntryJSONKey.author.value] = author
+            entryJSON[ReportEntryJSONKey.automatic.value] = False
+
+        # Deserialize JSON incident
+
         incident = modelObjectFromJSONObject(json, Incident)
+
+        # Validate data
 
         if incident.event != event:
             return badRequestResponse(
@@ -266,39 +337,9 @@ class APIApplication(object):
                 f"URL {event}"
             )
 
-        if incident.state is None:
-            incident.state = IncidentState.new
+        # Store the incident
 
-        author = request.user.shortNames[0]
-        now = DateTime.now(TimeZone.utc)
-
-        if incident.created is None:
-            # No created timestamp provided; add one.
-
-            # Right now is a decent default, but if there's a report entry
-            # that's older than now, that's a better pick.
-            created = now
-            if incident.reportEntries is not None:
-                for entry in incident.reportEntries:
-                    if entry.author is None:
-                        entry.author = author
-                    if entry.created is None:
-                        entry.created = now
-                    elif entry.created < created:
-                        created = entry.created
-
-            incident.created = created
-
-        elif incident.created > now:
-            return badRequestResponse(
-                request,
-                f"Created time {incident.created} is in the future. "
-                f"(Current time is {now}.)"
-            )
-
-        await self.config.store.createIncident(incident, author)
-
-        assert incident.number is not None
+        incident = await self.config.store.createIncident(incident, author)
 
         self._log.info(
             "User {author} created new incident #{incident.number} via JSON",
@@ -563,26 +604,24 @@ class APIApplication(object):
 
         author = request.user.shortNames[0]
         json = objectFromJSONBytesIO(request.content)
-
-        # Set JSON incident number to 0
-
-        if IncidentReportJSONKey.number.value in json:
-            return badRequestResponse(
-                request, "New incident report may not specify number"
-            )
-
-        json[IncidentReportJSONKey.number.value] = 0
-
-        # Set JSON incident created time to now
-
         now = DateTime.now(TimeZone.utc)
         jsonNow = jsonObjectFromModelObject(now)
 
-        if IncidentReportJSONKey.created.value in json:
-            return badRequestResponse(
-                request, "New incident report may not specify created time"
-            )
+        # Set JSON incident report number to 0
+        # Set JSON incident report created time to now
 
+        for incidentReportKey in (
+            IncidentReportJSONKey.number,
+            IncidentReportJSONKey.created,
+        ):
+            if incidentReportKey.value in json:
+                return badRequestResponse(
+                    request,
+                    f"New incident report may not specify "
+                    f"{incidentReportKey.value}"
+                )
+
+        json[IncidentReportJSONKey.number.value] = 0
         json[IncidentReportJSONKey.created.value] = jsonNow
 
         # If not provided, set JSON report entries to an empty list
@@ -595,41 +634,25 @@ class APIApplication(object):
         # Set JSON report entry automatic=False
 
         for entryJSON in json[IncidentReportJSONKey.reportEntries.value]:
-            for key in (
+            for reportEntryKey in (
                 ReportEntryJSONKey.created,
                 ReportEntryJSONKey.author,
                 ReportEntryJSONKey.automatic,
             ):
-                if key.value in entryJSON:
+                if reportEntryKey.value in entryJSON:
                     return badRequestResponse(
                         request,
-                        f"New report entry may not specify {key.value}"
+                        f"New report entry may not specify "
+                        f"{reportEntryKey.value}"
                     )
 
             entryJSON[ReportEntryJSONKey.created.value] = jsonNow
             entryJSON[ReportEntryJSONKey.author.value] = author
             entryJSON[ReportEntryJSONKey.automatic.value] = False
 
-        # Deserialize JSON
+        # Deserialize JSON incident report
 
         incidentReport = modelObjectFromJSONObject(json, IncidentReport)
-
-        # Validate data
-
-        if incidentReport.created > now:
-            return badRequestResponse(
-                request,
-                f"Incident report created time {incidentReport.created} is in "
-                f"the future. (Current time is {now}.)"
-            )
-
-        for reportEntry in incidentReport.reportEntries:
-            if reportEntry.created > now:
-                return badRequestResponse(
-                    request,
-                    f"Report entry created time {reportEntry.created} is in "
-                    f"the future. (Current time is {now}.)"
-                )
 
         # Store the incident report
 
