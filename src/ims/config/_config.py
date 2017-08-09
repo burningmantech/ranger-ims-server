@@ -23,10 +23,11 @@ from os import getcwd
 from os.path import basename, sep as pathsep
 from pathlib import Path
 from sys import argv
-from typing import Optional, Set, Tuple, cast
+from typing import FrozenSet, Optional, Set, Tuple, cast
 
 from twisted.logger import Logger
 
+from ims.auth import AuthProvider
 from ims.dms import DutyManagementSystem
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.store import IMSDataStore
@@ -34,7 +35,7 @@ from ims.store.sqlite import DataStore
 
 from ._urls import URLs
 
-IMSDataStore, Set  # silence linter
+FrozenSet, IMSDataStore, Set  # silence linter
 
 
 __all__ = (
@@ -193,11 +194,10 @@ class Configuration(object):
         )
         self._log.info("LogFile: {path}", path=self.LogFilePath)
 
-        admins = valueFromConfig("Core", "Admins", "")
-        if admins is None:
-            self.IMSAdmins: Set[str] = set()
-        else:
-            self.IMSAdmins = set(a.strip() for a in admins.split(","))
+        admins = cast(str, valueFromConfig("Core", "Admins", ""))
+        self.IMSAdmins: FrozenSet[str] = frozenset(
+            a.strip() for a in admins.split(",")
+        )
         self._log.info("Admins: {admins}", admins=self.IMSAdmins)
 
         self.DMSHost     = valueFromConfig("DMS", "Hostname", None)
@@ -210,7 +210,7 @@ class Configuration(object):
             user=self.DMSUsername, host=self.DMSHost, db=self.DMSDatabase,
         )
 
-        self.masterKey = valueFromConfig("Core", "MasterKey", None)
+        self.MasterKey = valueFromConfig("Core", "MasterKey", None)
 
         #
         # Persist some objects
@@ -224,6 +224,11 @@ class Configuration(object):
         )
 
         self.store: IMSDataStore = DataStore(dbPath=self.DatabasePath)
+
+        self.authProvider = AuthProvider(
+            masterKey=self.MasterKey, adminUsers=self.IMSAdmins,
+            store=self.store, dms=self.dms,
+        )
 
         locationsPath = self.DataRoot / "locations.json"
 

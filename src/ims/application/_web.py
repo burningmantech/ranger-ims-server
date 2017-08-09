@@ -27,7 +27,7 @@ from hyperlink import URL
 
 from twisted.web.iweb import IRequest
 
-from ims.auth import AuthProvider, Authorization
+from ims.auth import Authorization
 from ims.config import Configuration, URLs
 from ims.element.admin import AdminPage
 from ims.element.admin_acl import AdminAccessControlPage
@@ -68,7 +68,6 @@ class WebApplication(object):
 
     router = Router()
 
-    auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
     config: Configuration = attrib(validator=instance_of(Configuration))
 
     #
@@ -105,7 +104,9 @@ class WebApplication(object):
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.config.authProvider.authorizeRequest(
+            request, None, Authorization.imsAdmin
+        )
         return AdminPage(self.config)
 
 
@@ -119,7 +120,9 @@ class WebApplication(object):
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.config.authProvider.authorizeRequest(
+            request, None, Authorization.imsAdmin
+        )
         return AdminAccessControlPage(self.config)
 
 
@@ -133,7 +136,9 @@ class WebApplication(object):
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.config.authProvider.authorizeRequest(
+            request, None, Authorization.imsAdmin
+        )
         return AdminIncidentTypesPage(self.config)
 
 
@@ -145,7 +150,9 @@ class WebApplication(object):
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.config.authProvider.authorizeRequest(
+            request, None, Authorization.imsAdmin
+        )
         return AdminStreetsPage(self.config)
 
 
@@ -160,7 +167,7 @@ class WebApplication(object):
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
-        await self.auth.authorizeRequest(
+        await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
         )
         return DispatchQueuePage(self.config, event)
@@ -199,7 +206,7 @@ class WebApplication(object):
             except ValueError:
                 return notFoundResponse(request)
 
-        await self.auth.authorizeRequest(request, event, authz)
+        await self.config.authProvider.authorizeRequest(request, event, authz)
 
         return IncidentPage(self.config, event, numberValue)
 
@@ -229,7 +236,7 @@ class WebApplication(object):
         """
         numberValue: Optional[int]
         if number == "new":
-            await self.auth.authorizeRequest(
+            await self.config.authProvider.authorizeRequest(
                 request, None, Authorization.writeIncidentReports
             )
             numberValue = None
@@ -239,7 +246,7 @@ class WebApplication(object):
             except ValueError:
                 return notFoundResponse(request)
 
-            await self.auth.authorizeRequestForIncidentReport(
+            await self.config.authProvider.authorizeRequestForIncidentReport(
                 request, numberValue
             )
 

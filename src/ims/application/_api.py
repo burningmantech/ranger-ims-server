@@ -36,7 +36,7 @@ from twisted.python.constants import NamedConstant
 from twisted.python.failure import Failure
 from twisted.web.iweb import IRequest
 
-from ims.auth import AuthProvider, Authorization, NotAuthorizedError
+from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
 from ims.dms import DMSError
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
@@ -82,7 +82,6 @@ class APIApplication(object):
     router = Router()
 
 
-    auth: AuthProvider = attrib(validator=instance_of(AuthProvider))
     config: Configuration = attrib(validator=instance_of(Configuration))
     storeObserver: ILogObserver = attrib(validator=provides(ILogObserver))
 
@@ -102,7 +101,7 @@ class APIApplication(object):
         """
         Personnel endpoint.
         """
-        await self.auth.authorizeRequest(
+        await self.config.authProvider.authorizeRequest(
             request, None, Authorization.readPersonnel
         )
 
@@ -139,7 +138,7 @@ class APIApplication(object):
         """
         Incident types endpoint.
         """
-        self.auth.authenticateRequest(request)
+        self.config.authProvider.authenticateRequest(request)
 
         hidden = queryValue(request, "hidden") == "true"
 
@@ -162,7 +161,7 @@ class APIApplication(object):
         """
         Incident types editing endpoint.
         """
-        await self.auth.authorizeRequest(
+        await self.config.authProvider.authorizeRequest(
             request, None, Authorization.imsAdmin
         )
 
@@ -213,7 +212,7 @@ class APIApplication(object):
         """
         event = Event(id=eventID)
 
-        await self.auth.authorizeRequest(
+        await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
         )
 
@@ -230,7 +229,7 @@ class APIApplication(object):
         """
         event = Event(id=eventID)
 
-        await self.auth.authorizeRequest(
+        await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
         )
 
@@ -253,7 +252,7 @@ class APIApplication(object):
         """
         event = Event(id=eventID)
 
-        await self.auth.authorizeRequest(
+        await self.config.authProvider.authorizeRequest(
             request, event, Authorization.writeIncidents
         )
 
@@ -366,7 +365,7 @@ class APIApplication(object):
         """
         event = Event(id=eventID)
 
-        await self.auth.authorizeRequest(
+        await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
         )
 
@@ -399,7 +398,7 @@ class APIApplication(object):
         """
         event = Event(id=eventID)
 
-        await self.auth.authorizeRequest(
+        await self.config.authProvider.authorizeRequest(
             request, event, Authorization.writeIncidents
         )
 
@@ -553,7 +552,7 @@ class APIApplication(object):
             return invalidQueryResponse(request, "incident")
 
         if eventID == incidentNumberText == "":
-            await self.auth.authorizeRequest(
+            await self.config.authProvider.authorizeRequest(
                 request, None, Authorization.readIncidentReports
             )
             incidentReports = await store.detachedIncidentReports()
@@ -573,7 +572,7 @@ class APIApplication(object):
                     request, "incident", incidentNumberText
                 )
 
-            await self.auth.authorizeRequest(
+            await self.config.authProvider.authorizeRequest(
                 request, event, Authorization.readIncidents
             )
             incidentReports = await store.incidentReportsAttachedToIncident(
@@ -598,7 +597,7 @@ class APIApplication(object):
         """
         New incident report endpoint.
         """
-        await self.auth.authorizeRequest(
+        await self.config.authProvider.authorizeRequest(
             request, None, Authorization.writeIncidentReports
         )
 
@@ -688,10 +687,12 @@ class APIApplication(object):
         try:
             number = int(number)
         except ValueError:
-            self.auth.authenticateRequest(request)
+            self.config.authProvider.authenticateRequest(request)
             return notFoundResponse(request)
 
-        await self.auth.authorizeRequestForIncidentReport(request, number)
+        await self.config.authProvider.authorizeRequestForIncidentReport(
+            request, number
+        )
 
         incidentReport = await self.config.store.incidentReportWithNumber(
             number
@@ -708,7 +709,7 @@ class APIApplication(object):
         """
         Incident report edit endpoint.
         """
-        await self.auth.authorizeRequest(
+        await self.config.authProvider.authorizeRequest(
             request, None, Authorization.writeIncidentReports
         )
 
@@ -832,7 +833,9 @@ class APIApplication(object):
         """
         Admin access control endpoint.
         """
-        await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.config.authProvider.authorizeRequest(
+            request, None, Authorization.imsAdmin
+        )
 
         store = self.config.store
 
@@ -852,7 +855,9 @@ class APIApplication(object):
         """
         Admin access control edit endpoint.
         """
-        await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.config.authProvider.authorizeRequest(
+            request, None, Authorization.imsAdmin
+        )
 
         store = self.config.store
 
@@ -873,7 +878,9 @@ class APIApplication(object):
         """
         Street list endpoint.
         """
-        await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.config.authProvider.authorizeRequest(
+            request, None, Authorization.imsAdmin
+        )
 
         store = self.config.store
 
@@ -888,7 +895,9 @@ class APIApplication(object):
         """
         Street list edit endpoint.
         """
-        await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
+        await self.config.authProvider.authorizeRequest(
+            request, None, Authorization.imsAdmin
+        )
 
         store = self.config.store
 

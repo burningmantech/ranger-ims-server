@@ -42,6 +42,21 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
     referrer = _escape(request.getHeader("referer") or "-")
     agent = _escape(request.getHeader("user-agent") or "-")
 
+    clientIP = request.getClientIP()
+
+    forwardedFor = (
+        request.requestHeaders
+        .getRawHeaders(b"x-forwarded-for", [b""])[0]
+        .split(b",")[0]
+        .strip()
+    )
+
+    if forwardedFor:
+        ip = "{forwardedFor} > {clientIP}"
+    else:
+        ip = clientIP
+
+
     if hasattr(request, "user") and request.user is not None:
         username = request.user.shortNames[0]
         try:
@@ -54,7 +69,7 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
     line = (
         '"{ip}" {user} - {timestamp} "{method} {uri} {protocol}" '
         '{code} {length} "{referrer}" "{agent}"'.format(
-            ip=_escape(request.getClientIP() or "-"),
+            ip=_escape(ip or "-"),
             timestamp=timestamp,
             method=_escape(request.method),
             uri=_escape(request.uri),

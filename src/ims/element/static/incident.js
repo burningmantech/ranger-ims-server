@@ -776,19 +776,25 @@ function drawAttachedIncidentReports() {
 
 
 function drawIncidentReportsToAttach() {
+    var container = $("#attached_incident_report_add_container");
     var select = $("#attached_incident_report_add");
 
     select.empty();
     select.append($("<option />"));
 
-    for (var i in unattachedIncidentReports) {
-        var report = unattachedIncidentReports[i];
+    if (unattachedIncidentReports.length == 0) {
+        container.addClass("hidden");
+    } else {
+        for (var i in unattachedIncidentReports) {
+            var report = unattachedIncidentReports[i];
 
-        var option = $("<option />");
-        option.val(report.number);
-        option.text(summarizeIncidentReport(report));
+            var option = $("<option />");
+            option.val(report.number);
+            option.text(summarizeIncidentReport(report));
 
-        select.append(option);
+            select.append(option);
+        }
+        container.removeClass("hidden");
     }
 }
 
