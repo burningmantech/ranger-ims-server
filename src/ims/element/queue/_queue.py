@@ -95,7 +95,7 @@ class DispatchQueuePage(Page):
         """
         JSON dictionary: concentric streets by ID.
         """
-        namesByID = await self.config.storage.concentricStreets(self.event)
+        namesByID = await self.config.store.concentricStreets(self.event)
         return jsonTextFromObject(namesByID)
 
 

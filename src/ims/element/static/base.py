@@ -272,7 +272,7 @@ class Element(BaseElement):
             if hasattr(self.service, "config"):
                 events = sorted(
                     event.id for event in
-                    await self.service.config.storage.events()
+                    await self.service.config.store.events()
                 )
             else:
                 events = ()
