@@ -217,7 +217,7 @@ class Element(BaseElement):
 
         eventIDs = order(
             event.id for event in
-            await self.config.storage.events()
+            await self.config.store.events()
         )
 
         if eventIDs:
@@ -259,5 +259,5 @@ class Element(BaseElement):
         JSON list of strings: events IDs.
         """
         return jsonTextFromObject(
-            e.id for e in await self.config.storage.events()
+            e.id for e in await self.config.store.events()
         )

@@ -223,7 +223,7 @@ class Configuration(object):
             password=self.DMSPassword,
         )
 
-        self.storage: IMSDataStore = DataStore(dbPath=self.DatabasePath)
+        self.store: IMSDataStore = DataStore(dbPath=self.DatabasePath)
 
         locationsPath = self.DataRoot / "locations.json"
 

@@ -144,7 +144,7 @@ class APIApplication(object):
         hidden = queryValue(request, "hidden") == "true"
 
         incidentTypes = tuple(
-            await self.config.storage.incidentTypes(includeHidden=hidden)
+            await self.config.store.incidentTypes(includeHidden=hidden)
         )
 
         stream = buildJSONArray(
@@ -177,7 +177,7 @@ class APIApplication(object):
         show = json.get("show", [])
         hide = json.get("hide", [])
 
-        storage = self.config.storage
+        store = self.config.store
 
         if adds:
             if type(adds) is not list:
@@ -185,21 +185,21 @@ class APIApplication(object):
                     request, "add: expected a list."
                 )
             for incidentType in adds:
-                await storage.createIncidentType(incidentType)
+                await store.createIncidentType(incidentType)
 
         if show:
             if type(show) is not list:
                 return badRequestResponse(
                     request, "show: expected a list."
                 )
-            await storage.showIncidentTypes(show)
+            await store.showIncidentTypes(show)
 
         if hide:
             if type(hide) is not list:
                 return badRequestResponse(
                     request, "hide: expected a list."
                 )
-            await storage.hideIncidentTypes(hide)
+            await store.hideIncidentTypes(hide)
 
         return noContentResponse(request)
 
@@ -238,7 +238,7 @@ class APIApplication(object):
             jsonTextFromObject(
                 jsonObjectFromModelObject(incident)
             ).encode("utf-8")
-            for incident in await self.config.storage.incidents(event)
+            for incident in await self.config.store.incidents(event)
         )
 
         writeJSONStream(request, stream, None)
@@ -354,7 +354,7 @@ class APIApplication(object):
 
         # Store the incident
 
-        incident = await self.config.storage.createIncident(incident, author)
+        incident = await self.config.store.createIncident(incident, author)
 
         self._log.info(
             "User {author} created new incident #{incident.number} via JSON",
@@ -391,7 +391,7 @@ class APIApplication(object):
             return notFoundResponse(request)
 
         try:
-            incident = await self.config.storage.incidentWithNumber(
+            incident = await self.config.store.incidentWithNumber(
                 event, number
             )
         except NoSuchIncidentError:
@@ -467,32 +467,32 @@ class APIApplication(object):
             if value is not UNSET:
                 await setter(event, number, _cast(value), author)
 
-        storage = self.config.storage
+        store = self.config.store
 
         await applyEdit(
-            edits, IncidentJSONKey.priority, storage.setIncident_priority,
+            edits, IncidentJSONKey.priority, store.setIncident_priority,
             lambda json: modelObjectFromJSONObject(json, IncidentPriority),
         )
 
         await applyEdit(
             edits, IncidentJSONKey.state,
-            storage.setIncident_state,
+            store.setIncident_state,
             lambda json: modelObjectFromJSONObject(json, IncidentState),
         )
 
         await applyEdit(
-            edits, IncidentJSONKey.summary, storage.setIncident_summary
+            edits, IncidentJSONKey.summary, store.setIncident_summary
         )
 
         location = edits.get(IncidentJSONKey.location.value, UNSET)
         if location is not UNSET:
             if location is None:
                 for setter in (
-                    storage.setIncident_locationName,
-                    storage.setIncident_locationConcentricStreet,
-                    storage.setIncident_locationRadialHour,
-                    storage.setIncident_locationRadialMinute,
-                    storage.setIncident_locationDescription,
+                    store.setIncident_locationName,
+                    store.setIncident_locationConcentricStreet,
+                    store.setIncident_locationRadialHour,
+                    store.setIncident_locationRadialMinute,
+                    store.setIncident_locationDescription,
                 ):
                     cast(IncidentAttributeSetter, setter)(
                         event, number, None, author
@@ -500,32 +500,32 @@ class APIApplication(object):
             else:
                 await applyEdit(
                     location, LocationJSONKey.name,
-                    storage.setIncident_locationName
+                    store.setIncident_locationName
                 )
                 await applyEdit(
                     location, RodGarettAddressJSONKey.concentric,
-                    storage.setIncident_locationConcentricStreet
+                    store.setIncident_locationConcentricStreet
                 )
                 await applyEdit(
                     location, RodGarettAddressJSONKey.radialHour,
-                    storage.setIncident_locationRadialHour
+                    store.setIncident_locationRadialHour
                 )
                 await applyEdit(
                     location, RodGarettAddressJSONKey.radialMinute,
-                    storage.setIncident_locationRadialMinute
+                    store.setIncident_locationRadialMinute
                 )
                 await applyEdit(
                     location, RodGarettAddressJSONKey.description,
-                    storage.setIncident_locationDescription
+                    store.setIncident_locationDescription
                 )
 
         await applyEdit(
-            edits, IncidentJSONKey.rangerHandles, storage.setIncident_rangers
+            edits, IncidentJSONKey.rangerHandles, store.setIncident_rangers
         )
 
         await applyEdit(
             edits, IncidentJSONKey.incidentTypes,
-            storage.setIncident_incidentTypes,
+            store.setIncident_incidentTypes,
         )
 
         jsonEntries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)
@@ -542,7 +542,7 @@ class APIApplication(object):
                 for jsonEntry in jsonEntries
             )
 
-            await storage.addReportEntriesToIncident(
+            await store.addReportEntriesToIncident(
                 event, number, entries, author
             )
 
@@ -556,7 +556,7 @@ class APIApplication(object):
         """
         Incident reports endpoint.
         """
-        storage = self.config.storage
+        store = self.config.store
 
         eventID = queryValue(request, "event")
         incidentNumberText = queryValue(request, "incident")
@@ -571,7 +571,7 @@ class APIApplication(object):
             await self.auth.authorizeRequest(
                 request, None, Authorization.readIncidentReports
             )
-            incidentReports = await storage.detachedIncidentReports()
+            incidentReports = await store.detachedIncidentReports()
 
         else:
             try:
@@ -591,7 +591,7 @@ class APIApplication(object):
             await self.auth.authorizeRequest(
                 request, event, Authorization.readIncidents
             )
-            incidentReports = await storage.incidentReportsAttachedToIncident(
+            incidentReports = await store.incidentReportsAttachedToIncident(
                 event=event, incidentNumber=incidentNumber
             )
 
@@ -688,7 +688,7 @@ class APIApplication(object):
 
         # Store the incident report
 
-        incidentReport = await self.config.storage.createIncidentReport(
+        incidentReport = await self.config.store.createIncidentReport(
             incidentReport, author
         )
 
@@ -725,7 +725,7 @@ class APIApplication(object):
 
         await self.auth.authorizeRequestForIncidentReport(request, number)
 
-        incidentReport = await self.config.storage.incidentReportWithNumber(
+        incidentReport = await self.config.store.incidentReportWithNumber(
             number
         )
         text = jsonTextFromObject(jsonObjectFromModelObject(incidentReport))
@@ -751,7 +751,7 @@ class APIApplication(object):
         except ValueError:
             return notFoundResponse(request)
 
-        storage = self.config.storage
+        store = self.config.store
 
         #
         # Attach to incident if requested
@@ -781,11 +781,11 @@ class APIApplication(object):
                 )
 
             if action == "attach":
-                await storage.attachIncidentReportToIncident(
+                await store.attachIncidentReportToIncident(
                     number, event, incidentNumber
                 )
             elif action == "detach":
-                await storage.detachIncidentReportFromIncident(
+                await store.detachIncidentReportFromIncident(
                     number, event, incidentNumber
                 )
             else:
@@ -831,7 +831,7 @@ class APIApplication(object):
 
         await applyEdit(
             edits, IncidentReportJSONKey.summary,
-            storage.setIncidentReport_summary
+            store.setIncidentReport_summary
         )
 
         jsonEntries = edits.get(
@@ -850,7 +850,7 @@ class APIApplication(object):
                 for jsonEntry in jsonEntries
             )
 
-            await storage.addReportEntriesToIncidentReport(
+            await store.addReportEntriesToIncidentReport(
                 number, entries, author
             )
 
@@ -866,13 +866,13 @@ class APIApplication(object):
         """
         await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
 
-        storage = self.config.storage
+        store = self.config.store
 
         acl = {}
-        for event in await storage.events():
+        for event in await store.events():
             acl[event.id] = dict(
-                readers=await storage.readers(event),
-                writers=await storage.writers(event),
+                readers=await store.readers(event),
+                writers=await store.writers(event),
             )
         return jsonTextFromObject(acl)
 
@@ -886,16 +886,16 @@ class APIApplication(object):
         """
         await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
 
-        storage = self.config.storage
+        store = self.config.store
 
         edits = objectFromJSONBytesIO(request.content)
 
         for eventID, acl in edits.items():
             event = Event(id=eventID)
             if "readers" in acl:
-                await storage.setReaders(event, acl["readers"])
+                await store.setReaders(event, acl["readers"])
             if "writers" in acl:
-                await storage.setWriters(event, acl["writers"])
+                await store.setWriters(event, acl["writers"])
 
         return noContentResponse(request)
 
@@ -907,11 +907,11 @@ class APIApplication(object):
         """
         await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
 
-        storage = self.config.storage
+        store = self.config.store
 
         streets = {}
-        for event in await storage.events():
-            streets[event.id] = await storage.concentricStreets(event)
+        for event in await store.events():
+            streets[event.id] = await store.concentricStreets(event)
         return jsonTextFromObject(streets)
 
 
@@ -922,24 +922,24 @@ class APIApplication(object):
         """
         await self.auth.authorizeRequest(request, None, Authorization.imsAdmin)
 
-        storage = self.config.storage
+        store = self.config.store
 
         edits = objectFromJSONBytesIO(request.content)
 
         for eventID, _streets in edits.items():
             event = Event(id=eventID)
-            existing = await storage.concentricStreets(event)
+            existing = await store.concentricStreets(event)
 
             for _streetID, _streetName in existing.items():
                 raise NotAuthorizedError("Removal of streets is not allowed.")
 
         for eventID, streets in edits.items():
             event = Event(id=eventID)
-            existing = await storage.concentricStreets(event)
+            existing = await store.concentricStreets(event)
 
             for streetID, streetName in streets.items():
                 if streetID not in existing:
-                    await storage.createConcentricStreet(
+                    await store.createConcentricStreet(
                         event, streetID, streetName
                     )
 

@@ -71,7 +71,7 @@ class Server(object):
         """
         Called after the reactor has started.
         """
-        config.storage.validate()
+        config.store.validate()
 
         host = config.HostName
         port = config.Port
