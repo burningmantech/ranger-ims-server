@@ -49,16 +49,14 @@ class ServerOptions(Options):
 
 
     def getSynopsis(self) -> str:
-        return "{} plugin [plugin_options]".format(
-            Options.getSynopsis(self)
-        )
+        return f"{Options.getSynopsis(self)} plugin [plugin_options]"
 
 
     def opt_version(self) -> None:
         """
         Print version and exit.
         """
-        exit(ExitStatus.EX_OK, "{}".format(version))
+        exit(ExitStatus.EX_OK, f"{version}")
 
 
     def opt_config(self, path: str) -> None:
@@ -109,7 +107,7 @@ class ServerOptions(Options):
         try:
             self["logLevel"] = LogLevel.levelWithName(levelName)
         except InvalidLogLevelError:
-            raise UsageError("Invalid log level: {}".format(levelName))
+            raise UsageError(f"Invalid log level: {levelName}")
 
     opt_log_level.__doc__ = dedent(cast(str, opt_log_level.__doc__)).format(
         options=", ".join(
@@ -138,7 +136,7 @@ class ServerOptions(Options):
         except EnvironmentError as e:
             exit(
                 ExitStatus.EX_IOERR,
-                "Unable to open log file {!r}: {}".format(fileName, e)
+                f"Unable to open log file {fileName!r}: {e}"
             )
 
 
@@ -155,7 +153,7 @@ class ServerOptions(Options):
         elif logFormat == "json":
             self["fileLogObserverFactory"] = jsonFileLogObserver
         else:
-            raise UsageError("Invalid log format: {}".format(logFormat))
+            raise UsageError(f"Invalid log format: {logFormat}")
         self["logFormat"] = logFormat
 
     opt_log_format.__doc__ = dedent(cast(str, opt_log_format.__doc__))

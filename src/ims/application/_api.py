@@ -262,8 +262,8 @@ class APIApplication(object):
         if incident.event != event:
             return badRequestResponse(
                 request,
-                "Incident's event {} does not match event in URL {}"
-                .format(incident.event, event)
+                f"Incident's event {incident.event} does not match event in "
+                f"URL {event}"
             )
 
         if incident.state is None:
@@ -292,8 +292,8 @@ class APIApplication(object):
         elif incident.created > now:
             return badRequestResponse(
                 request,
-                "Created time {} is in the future. Current time is {}."
-                .format(incident.created, now)
+                f"Created time {incident.created} is in the future. "
+                f"(Current time is {now}.)"
             )
 
         await self.config.store.createIncident(incident, author)
@@ -311,7 +311,7 @@ class APIApplication(object):
         request.setHeader("Incident-Number", incident.number)
         request.setHeader(
             HeaderName.location.value,
-            "{}/{}".format(URLs.incidentNumber.asText(), incident.number)
+            f"{URLs.incidentNumber.asText()}/{incident.number}"
         )
         return noContentResponse(request)
 
@@ -619,18 +619,16 @@ class APIApplication(object):
         if incidentReport.created > now:
             return badRequestResponse(
                 request,
-                "Incident report created time {} is in the future. "
-                "(Current time is {}.)"
-                .format(incidentReport.created, now)
+                f"Incident report created time {incidentReport.created} is in "
+                f"the future. (Current time is {now}.)"
             )
 
         for reportEntry in incidentReport.reportEntries:
             if reportEntry.created > now:
                 return badRequestResponse(
                     request,
-                    "Report entry created time {} is in the future. "
-                    "(Current time is {}.)"
-                    .format(reportEntry.created, now)
+                    f"Report entry created time {reportEntry.created} is in "
+                    f"the future. (Current time is {now}.)"
                 )
 
         # Store the incident report
@@ -652,7 +650,7 @@ class APIApplication(object):
         request.setHeader("Incident-Report-Number", incidentReport.number)
         request.setHeader(
             HeaderName.location.value,
-            "{}/{}".format(URLs.incidentNumber.asText(), incidentReport.number)
+            f"{URLs.incidentNumber.asText()}/{incidentReport.number}"
         )
         return noContentResponse(request)
 

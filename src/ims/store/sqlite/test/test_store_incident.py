@@ -285,7 +285,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
             self.assertEqual(
                 len(storedIncidents), len(expectedIncidents),
-                "{} != {}".format(storedIncidents, expectedIncidents)
+                f"{storedIncidents} != {expectedIncidents}"
             )
 
             for stored, expected in zip(storedIncidents, expectedIncidents):
@@ -654,7 +654,7 @@ class DataStoreIncidentTests(DataStoreTests):
             store.createIncident(anIncident, "Hubcap")
         )
 
-        otherAuthor = "not{}".format(aReportEntry.author)
+        otherAuthor = f"not{aReportEntry.author}"
 
         f = self.failureResultOf(
             store.addReportEntriesToIncident(
@@ -663,7 +663,7 @@ class DataStoreIncidentTests(DataStoreTests):
         )
         self.assertEqual(f.type, ValueError)
         self.assertEndsWith(
-            f.getErrorMessage(), " has author != {}".format(otherAuthor),
+            f.getErrorMessage(), f" has author != {otherAuthor}",
         )
 
 
@@ -704,19 +704,13 @@ class DataStoreIncidentTests(DataStoreTests):
                     if dateTimesEqualish(valueA, valueB):
                         continue
                     else:
-                        messages.append(
-                            "{name} delta: {delta}"
-                            .format(name=name, delta=valueA - valueB)
-                        )
+                        messages.append(f"{name} delta: {valueA - valueB}")
                 elif name == "reportEntries":
                     if reportEntriesEqualish(valueA, valueB, ignoreAutomatic):
                         continue
 
                 if valueA != valueB:
-                    messages.append(
-                        "{name} {valueA!r} != {valueB!r}"
-                        .format(name=name, valueA=valueA, valueB=valueB)
-                    )
+                    messages.append(f"{name} {valueA!r} != {valueB!r}")
 
             if messages:
                 self.fail("Incidents do not match:\n" + "\n".join(messages))

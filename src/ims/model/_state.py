@@ -68,7 +68,7 @@ class IncidentState(Enum):
 
 
     def __repr__(self) -> str:
-        return "{}[{!r}]".format(self.__class__.__name__, self.name)
+        return f"{self.__class__.__name__}[{self.name!r}]"
 
 
     def __str__(self) -> str:

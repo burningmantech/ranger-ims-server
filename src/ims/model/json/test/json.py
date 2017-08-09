@@ -47,7 +47,7 @@ def jsonFromAddress(address: Address) -> Dict[str, Any]:
         return jsonFromRodGarettAddress(address)
     else:
         raise TypeError(
-            "Unknown address type {!r}".format(address)
+            f"Unknown address type {address!r}"
         )
 
 

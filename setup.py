@@ -89,9 +89,7 @@ script_entry_points = {
 }
 
 for tool, (module, function) in script_entry_points.items():
-    entry_points["console_scripts"].append(
-        "ims_{} = {}:{}".format(tool, module, function)
-    )
+    entry_points["console_scripts"].append(f"ims_{tool} = {module}:{function}")
 
 
 #

@@ -181,7 +181,7 @@ class Element(BaseElement):
         try:
             url = getattr(self.config.urls, name)
         except AttributeError:
-            raise ValueError("Unknown URL name: {}".format(name))
+            raise ValueError(f"Unknown URL name: {name}")
 
         text = url.asText()
 

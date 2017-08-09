@@ -88,7 +88,7 @@ if getenv("CI") == "true":
 def timeZones(draw: Callable) -> TimeZone:
     offset = draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
     timeDelta = TimeDelta(minutes=offset)
-    timeZone = TimeZone(offset=timeDelta, name="{}s".format(offset))
+    timeZone = TimeZone(offset=timeDelta, name=f"{offset}s")
     return timeZone
 
 

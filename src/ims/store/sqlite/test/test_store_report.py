@@ -368,7 +368,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
             store.createIncidentReport(anIncidentReport, "Hubcap")
         )
 
-        otherAuthor = "not{}".format(aReportEntry.author)
+        otherAuthor = f"not{aReportEntry.author}"
 
         f = self.failureResultOf(
             store.addReportEntriesToIncidentReport(
@@ -377,7 +377,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         )
         self.assertEqual(f.type, ValueError)
         self.assertEndsWith(
-            f.getErrorMessage(), " has author != {}".format(otherAuthor),
+            f.getErrorMessage(), f" has author != {otherAuthor}"
         )
 
 
@@ -641,19 +641,13 @@ class DataStoreIncidentReportTests(DataStoreTests):
                     if dateTimesEqualish(valueA, valueB):
                         continue
                     else:
-                        messages.append(
-                            "{name} delta: {delta}"
-                            .format(name=name, delta=valueA - valueB)
-                        )
+                        messages.append(f"{name} delta: {valueA - valueB}")
                 elif name == "reportEntries":
                     if reportEntriesEqualish(valueA, valueB, ignoreAutomatic):
                         continue
 
                 if valueA != valueB:
-                    messages.append(
-                        "{name} {valueA!r} != {valueB!r}"
-                        .format(name=name, valueA=valueA, valueB=valueB)
-                    )
+                    messages.append(f"{name} {valueA!r} != {valueB!r}")
 
             if messages:
                 self.fail(

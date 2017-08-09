@@ -42,7 +42,7 @@ class RangerStatusTests(TestCase):
         for status in RangerStatus:
             self.assertEqual(
                 repr(status),
-                "{}[{!r}]".format(RangerStatus.__name__, status.name)
+                f"{RangerStatus.__name__}[{status.name!r}]"
             )
 
 
@@ -67,5 +67,5 @@ class RangerTests(TestCase):
         """
         self.assertEqual(
             str(ranger),
-            "{} {} ({})".format(ranger.status, ranger.handle, ranger.name),
+            f"{ranger.status} {ranger.handle} ({ranger.name})"
         )

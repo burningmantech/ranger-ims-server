@@ -61,9 +61,7 @@ class Element(BaseElement):
 
 
     def _loader(self, name):
-        return XMLFile(
-            FilePath(__file__).parent().child("{}.xhtml".format(name))
-        )
+        return XMLFile(FilePath(__file__).parent().child(f"{name}.xhtml"))
 
 
     ##
@@ -335,7 +333,7 @@ class Element(BaseElement):
         try:
             url = getattr(URLs, name)
         except AttributeError:
-            raise RuntimeError("Unknown URL name: {}".format(name))
+            raise RuntimeError(f"Unknown URL name: {name}")
 
         text = url.asText()
 

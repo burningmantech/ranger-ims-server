@@ -56,9 +56,7 @@ class ReportEntry(ComparisonMixIn, ReplaceMixIn):
         else:
             automatic = ""
 
-        return "{} {}{}: {}".format(
-            self.created, self.author, automatic, self.text
-        )
+        return f"{self.created} {self.author}{automatic}: {self.text}"
 
 
     def _cmpValue(self) -> Any:
