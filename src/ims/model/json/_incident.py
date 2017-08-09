@@ -210,7 +210,7 @@ def deserializeIncident(obj: Dict[str, Any], cl: Type) -> Incident:
             (
                 key.name,
                 jsonDeserialize(
-                    obj[key.value],
+                    obj.get(key.value, None),
                     getattr(IncidentJSONType, key.name).value
                 )
             )
