@@ -18,6 +18,7 @@
 Element base classes.
 """
 
+from functools import partial
 from typing import Iterable
 
 from twisted.python.filepath import FilePath
@@ -27,6 +28,7 @@ from twisted.web.template import (
     Element as _Element, Tag, XMLFile, renderer, tags
 )
 
+from ims.auth import Authorization
 from ims.config import Configuration
 from ims.ext.json import jsonTextFromObject
 from ims.ext.klein import KleinRenderable
@@ -215,10 +217,15 @@ class Element(BaseElement):
             def order(i: Iterable) -> Iterable:
                 return sorted(i)
 
-        eventIDs = order(
+        authorizationsForUser = partial(
+            self.config.authProvider.authorizationsForUser, request.user
+        )
+
+        eventIDs = order([
             event.id for event in
             await self.config.store.events()
-        )
+            if Authorization.readIncidents & await authorizationsForUser(event)
+        ])
 
         if eventIDs:
             queue = self.config.urls.viewDispatchQueue.asText()
