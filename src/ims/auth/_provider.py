@@ -21,7 +21,7 @@ Incident Management System web application authentication provider.
 from typing import Container, FrozenSet, Optional, Sequence
 
 from attr import attrib, attrs
-from attr.validators import instance_of
+from attr.validators import instance_of, optional
 
 from twisted.logger import Logger
 from twisted.python.constants import FlagConstant, Flags
@@ -97,7 +97,7 @@ class AuthProvider(object):
 
     _log = Logger()
 
-    masterKey: str = attrib(validator=instance_of(str))
+    masterKey: Optional[str] = attrib(validator=optional(instance_of(str)))
 
     adminUsers: FrozenSet[str] = attrib()
 
