@@ -61,16 +61,16 @@ class Event(object):
         parts = []
 
         if self.eventID is not None:
-            parts.append("id: {0:d}".format(self.eventID))
+            parts.append(f"id: {self.eventID}")
 
         if self.eventClass is not None:
-            parts.append("event: {0}".format(self.eventClass))
+            parts.append(f"event: {self.eventClass}")
 
         if self.retry is not None:
-            parts.append("retry: {0:d}".format(self.retry))
+            parts.append(f"retry: {self.retry}")
 
         parts.extend(
-            "data: {}".format(line) for line in self.message.split("\n")
+            f"data: {line}" for line in self.message.split("\n")
         )
 
         return ("\r\n".join(parts) + "\r\n\r\n")

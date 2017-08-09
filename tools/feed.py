@@ -109,8 +109,8 @@ def parseLocation(
                 concentric = parseConcentricStreetAddress(streetAddress)
             except ConcentricStreetAddressParseError:
                 sys.stderr.write(
-                    "WARNING: unable to parse street address: {!r}\n"
-                    .format(streetAddress)
+                    f"WARNING: unable to parse street address: "
+                    f"{streetAddress!r}\n"
                 )
 
     if category == "Camp within a Village":
@@ -121,9 +121,7 @@ def parseLocation(
         description = category
 
     if dimensions:
-        description = "{} {}".format(
-            description, dimensions.replace(" ", "")
-        )
+        description = f"{description} {dimensions.replace(" ", "")}"
 
     if plaza:
         # print(
@@ -132,7 +130,7 @@ def parseLocation(
         #         radialHour, radialMinute, concentric, plaza
         #     )
         # )
-        description = "{}, {}".format(plaza, description)
+        description = f"{plaza}, {description}"
 
     address = RodGarettAddress(
         concentric=concentric,

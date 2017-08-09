@@ -88,7 +88,7 @@ class DataStore(IMSDataStore):
 
     @classmethod
     def _loadSchema(cls, version: Union[int, str] = _schemaVersion) -> str:
-        name = "schema.{}.sqlite".format(version)
+        name = f"schema.{version}.sqlite"
         path = Path(__file__).parent / name
         return path.read_text()
 
@@ -100,7 +100,7 @@ class DataStore(IMSDataStore):
         """
         with createDB(None, cls._loadSchema()) as db:
             version = cls._version(db)
-            print("Version: {}".format(version), file=out)
+            print(f"Version: {version}", file=out)
             printSchema(db, out=out)
 
 
@@ -133,9 +133,7 @@ class DataStore(IMSDataStore):
             cls._log.critical(
                 "Unable to look up schema version: {error}", error=e
             )
-            raise StorageError(
-                "Unable to look up schema version: {}".format(e)
-            )
+            raise StorageError(f"Unable to look up schema version: {e}")
 
 
     @classmethod
@@ -148,7 +146,7 @@ class DataStore(IMSDataStore):
             return False
 
         if version > currentVersion:
-            raise StorageError("Schema version {} is too new".format(version))
+            raise StorageError(f"Schema version {version} is too new")
 
         def sqlUpgrade(fromVersion: int, toVersion: int) -> None:
             cls._log.info(
@@ -157,7 +155,7 @@ class DataStore(IMSDataStore):
                 fromVersion=fromVersion, toVersion=toVersion,
             )
             sql = cls._loadSchema(
-                version="{}-from-{}".format(toVersion, fromVersion)
+                version=f"{toVersion}-from-{fromVersion}"
             )
             db.executescript(sql)
             db.validateConstraints()
@@ -171,9 +169,7 @@ class DataStore(IMSDataStore):
             # Successfully upgraded to the current version
             return True
 
-        raise StorageError(
-            "No upgrade path from schema version {}".format(version)
-        )
+        raise StorageError(f"No upgrade path from schema version {version}")
 
 
     @property
@@ -195,8 +191,7 @@ class DataStore(IMSDataStore):
                     dbPath=self.dbPath, error=e,
                 )
                 raise StorageError(
-                    "Unable to open SQLite database {dbPath}: {error}"
-                    .format(dbPath=self.dbPath, error=e)
+                    f"Unable to open SQLite database {self.dbPath}: {e}"
                 )
 
         return self._state.db
@@ -271,7 +266,7 @@ class DataStore(IMSDataStore):
                     else:
                         if eventID != event.id:
                             raise ValueError(
-                                "Event ID {} != {}".format(eventID, event.id)
+                                f"Event ID {eventID} != {event.id}"
                             )
 
                     incident = modelObjectFromJSONObject(
@@ -514,8 +509,8 @@ class DataStore(IMSDataStore):
                 )
                 for incidentType in incidentTypes
             ),
-            "Unable to set hidden to {hidden} incident types {{incidentTypes}}"
-            .format(hidden=hidden)
+            f"Unable to set hidden to {hidden} incident types "
+            f"{{incidentTypes}}"
         )
 
     _query_hideShowIncidentType = _query(
@@ -652,7 +647,7 @@ class DataStore(IMSDataStore):
 
         def notFound() -> None:
             raise NoSuchIncidentError(
-                "No incident #{} in event {}".format(incidentNumber, event)
+                f"No incident #{incidentNumber} in event {event}"
             )
 
         try:
@@ -963,7 +958,7 @@ class DataStore(IMSDataStore):
         self, author: str, created: DateTime, attribute: str, value: Any
     ) -> ReportEntry:
         return ReportEntry(
-            text="Changed {} to: {}".format(attribute, value),
+            text=f"Changed {attribute} to: {value}",
             author=author, created=created, automatic=True,
         )
 
@@ -1476,14 +1471,13 @@ class DataStore(IMSDataStore):
         for reportEntry in reportEntries:
             if reportEntry.automatic:
                 raise ValueError(
-                    "Automatic report entry {} may not be created by user {}"
-                    .format(reportEntry, author)
+                    f"Automatic report entry {reportEntry} may not be created "
+                    f"by user {author}"
                 )
 
             if reportEntry.author != author:
                 raise ValueError(
-                    "Report entry {} has author != {}"
-                    .format(reportEntry, author)
+                    f"Report entry {reportEntry} has author != {author}"
                 )
 
         try:
@@ -1521,7 +1515,7 @@ class DataStore(IMSDataStore):
 
         def notFound() -> None:
             raise NoSuchIncidentReportError(
-                "No incident report #{}".format(incidentReportNumber)
+                f"No incident report #{incidentReportNumber}"
             )
 
         try:
@@ -1842,14 +1836,13 @@ class DataStore(IMSDataStore):
         for reportEntry in reportEntries:
             if reportEntry.automatic:
                 raise ValueError(
-                    "Automatic report entry {} may not be created by user {}"
-                    .format(reportEntry, author)
+                    f"Automatic report entry {reportEntry} may not be created "
+                    f"by user {author}"
                 )
 
             if reportEntry.author != author:
                 raise ValueError(
-                    "Report entry {} has author != {}"
-                    .format(reportEntry, author)
+                    f"Report entry {reportEntry} has author != {author}"
                 )
 
         try:
@@ -2111,7 +2104,7 @@ def asTimeStamp(dateTime: DateTime) -> float:
     timeStamp = dateTime.timestamp()
     if timeStamp < 0:
         raise StorageError(
-            "DateTime is before the UTC epoch: {}".format(dateTime)
+            f"DateTime is before the UTC epoch: {dateTime}"
         )
     return timeStamp
 

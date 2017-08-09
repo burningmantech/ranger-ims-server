@@ -39,7 +39,7 @@ class IncidentPriorityTests(TestCase):
         for priority in IncidentPriority:
             self.assertEqual(
                 repr(priority),
-                "{}[{!r}]".format(IncidentPriority.__name__, priority.name)
+                f"{IncidentPriority.__name__}[{priority.name!r}]"
             )
 
 

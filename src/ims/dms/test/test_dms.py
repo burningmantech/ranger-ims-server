@@ -191,9 +191,7 @@ class DummyConnectionPool(object):
         ):
             return succeed(())
 
-        return fail(
-            AssertionError("No canned response for query: {0}".format(sql))
-        )
+        return fail(AssertionError(f"No canned response for query: {sql}"))
 
 
 

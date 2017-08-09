@@ -202,10 +202,7 @@ class DataStoreCoreTests(DataStoreTests):
 
         e = self.assertRaises(StorageError, lambda: store._db)
         self.assertEqual(
-            str(e),
-            "Unable to open SQLite database {}: {}".format(
-                store.dbPath, message
-            )
+            str(e), f"Unable to open SQLite database {store.dbPath}: {message}"
         )
 
 
@@ -292,7 +289,7 @@ class DataStoreCoreTests(DataStoreTests):
 
         e = self.assertRaises(StorageError, lambda: store._db)
         self.assertEqual(
-            str(e), "No upgrade path from schema version {}".format(version)
+            str(e), f"No upgrade path from schema version {version}"
         )
 
 
@@ -314,7 +311,7 @@ class DataStoreCoreTests(DataStoreTests):
 
         e = self.assertRaises(StorageError, lambda: store._db)
         self.assertEqual(
-            str(e), "Schema version {} is too new".format(version)
+            str(e), f"Schema version {version} is too new"
         )
 
 

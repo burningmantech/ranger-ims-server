@@ -63,25 +63,25 @@ class Configuration(object):
 
     def __str__(self) -> str:
         return (
-            "Configuration file: {self.ConfigFile}\n"
-            "\n"
-            "Core.Host: {self.HostName}\n"
-            "Core.Port: {self.PortNumber}\n"
-            "\n"
-            "Core.ServerRoot: {self.ServerRoot}\n"
-            "Core.ConfigRoot: {self.ConfigRoot}\n"
-            "Core.DataRoot: {self.DataRoot}\n"
-            "Core.DatabaseFile: {self.DatabasePath}\n"
-            "Core.CachedResources: {self.CachedResourcesPath}\n"
-            "Core.LogLevel: {self.LogLevel}\n"
-            "Core.LogFile: {self.LogFilePath}\n"
-            "Core.LogFormat: {self.LogFormat}\n"
-            "\n"
-            "DMS.Hostname: {self.DMSHost}\n"
-            "DMS.Database: {self.DMSDatabase}\n"
-            "DMS.Username: {self.DMSUsername}\n"
-            "DMS.Password: {self.DMSPassword}\n"
-        ).format(self=self)
+            f"Configuration file: {self.ConfigFile}\n"
+            f"\n"
+            f"Core.Host: {self.HostName}\n"
+            f"Core.Port: {self.Port}\n"
+            f"\n"
+            f"Core.ServerRoot: {self.ServerRoot}\n"
+            f"Core.ConfigRoot: {self.ConfigRoot}\n"
+            f"Core.DataRoot: {self.DataRoot}\n"
+            f"Core.DatabaseFile: {self.DatabasePath}\n"
+            f"Core.CachedResources: {self.CachedResourcesPath}\n"
+            f"Core.LogLevel: {self.LogLevelName}\n"
+            f"Core.LogFile: {self.LogFilePath}\n"
+            f"Core.LogFormat: {self.LogFormat}\n"
+            f"\n"
+            f"DMS.Hostname: {self.DMSHost}\n"
+            f"DMS.Database: {self.DMSDatabase}\n"
+            f"DMS.Username: {self.DMSUsername}\n"
+            f"DMS.Password: {self.DMSPassword}\n"
+        )
 
 
     def load(self) -> None:
@@ -189,7 +189,7 @@ class Configuration(object):
         self._log.info("LogFormat: {logFormat}", logFormat=self.LogFormat)
 
         self.LogFilePath = pathFromConfig(
-            "Core", "LogFile", self.DataRoot, ("{}.log".format(command),)
+            "Core", "LogFile", self.DataRoot, (f"{command}.log",)
         )
         self._log.info("LogFile: {path}", path=self.LogFilePath)
 

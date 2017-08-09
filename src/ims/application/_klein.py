@@ -176,7 +176,7 @@ def badRequestResponse(
     if message is None:
         message = "Bad request"
     else:
-        message = "{}".format(message)
+        message = f"{message}"
     return textResponse(request, message)
 
 
@@ -188,12 +188,10 @@ def invalidQueryResponse(
     """
     if value is None:
         return badRequestResponse(
-            request, "Invalid query: missing parameter {}".format(arg)
+            request, f"Invalid query: missing parameter {arg}"
         )
     else:
-        return badRequestResponse(
-            request, "Invalid query: {}={}".format(arg, value)
-        )
+        return badRequestResponse(request, f"Invalid query: {arg}={value}")
 
 
 def internalErrorResponse(
@@ -211,7 +209,7 @@ def internalErrorResponse(
     if message is None:
         message = "Internal error"
     else:
-        message = "{}".format(message)
+        message = f"{message}"
     return textResponse(request, message)
 
 
@@ -299,7 +297,7 @@ class Router(Klein):
             ) -> KleinRenderable:
                 request.setHeader(
                     HeaderName.server.value,
-                    "Incident Management System/{}".format(version),
+                    f"Incident Management System/{version}",
                 )
 
                 # Capture authentication info if sent by the client, (ie. it's

@@ -62,12 +62,7 @@ class IncidentReport(ReplaceMixIn):
 
 
     def __str__(self) -> str:
-        return (
-            "{self.number}: {summary}".format(
-                self=self,
-                summary=self.summaryFromReport()
-            )
-        )
+        return f"{self.number}: {self.summaryFromReport()}"
 
 
     def summaryFromReport(self) -> str:

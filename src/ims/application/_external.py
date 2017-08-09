@@ -70,41 +70,38 @@ class ExternalApplication(object):
     momentVersionNumber     = "2.14.1"
     lscacheVersionNumber    = "1.0.5"
 
-    bootstrapVersion  = "bootstrap-{}-dist".format(bootstrapVersionNumber)
-    jqueryVersion     = "jquery-{}".format(jqueryVersionNumber)
-    dataTablesVersion = "DataTables-{}".format(dataTablesVersionNumber)
-    momentVersion     = "moment-{}".format(momentVersionNumber)
-    lscacheVersion    = "lscache-{}".format(lscacheVersionNumber)
+    bootstrapVersion  = f"bootstrap-{bootstrapVersionNumber}-dist"
+    jqueryVersion     = f"jquery-{jqueryVersionNumber}"
+    dataTablesVersion = f"DataTables-{dataTablesVersionNumber}"
+    momentVersion     = f"moment-{momentVersionNumber}"
+    lscacheVersion    = f"lscache-{lscacheVersionNumber}"
 
     bootstrapSourceURL = URL.fromText(
-        "https://github.com/twbs/bootstrap/releases/download/v{n}/{v}.zip"
-        .format(n=bootstrapVersionNumber, v=bootstrapVersion)
+        f"https://github.com/twbs/bootstrap/releases/download/"
+        f"v{bootstrapVersionNumber}/{bootstrapVersion}.zip"
     )
 
     jqueryJSSourceURL = URL.fromText(
-        "https://code.jquery.com/{v}.min.js"
-        .format(n=jqueryVersionNumber, v=jqueryVersion)
+        f"https://code.jquery.com/{jqueryVersion}.min.js"
     )
 
     jqueryMapSourceURL = URL.fromText(
-        "https://code.jquery.com/{v}.min.map"
-        .format(n=jqueryVersionNumber, v=jqueryVersion)
+        f"https://code.jquery.com/{jqueryVersion}.min.map"
     )
 
     dataTablesSourceURL = URL.fromText(
-        "https://datatables.net/releases/DataTables-{n}.zip"
-        .format(n=dataTablesVersionNumber, v=dataTablesVersion)
+        f"https://datatables.net/releases/"
+        f"DataTables-{dataTablesVersionNumber}.zip"
     )
 
     momentJSSourceURL = URL.fromText(
-        "https://cdnjs.cloudflare.com/ajax/libs/moment.js/{n}/moment.min.js"
-        .format(n=momentVersionNumber)
+        f"https://cdnjs.cloudflare.com/ajax/libs/moment.js/"
+        f"{momentVersionNumber}/moment.min.js"
     )
 
     lscacheJSSourceURL = URL.fromText(
-        "https://raw.githubusercontent.com/pamelafox/lscache/{n}/"
-        "lscache.min.js"
-        .format(n=lscacheVersionNumber)
+        f"https://raw.githubusercontent.com/pamelafox/lscache/"
+        f"{lscacheVersionNumber}/lscache.min.js"
     )
 
 
@@ -138,8 +135,7 @@ class ExternalApplication(object):
             HeaderName.contentType.value, ContentType.javascript.value
         )
         return await self.cachedResource(
-            request, self.jqueryJSSourceURL,
-            "{}.min.js".format(self.jqueryVersion),
+            request, self.jqueryJSSourceURL, f"{self.jqueryVersion}.min.js"
         )
 
 
@@ -151,8 +147,7 @@ class ExternalApplication(object):
         """
         request.setHeader(HeaderName.contentType.value, ContentType.json.value)
         return await self.cachedResource(
-            request, self.jqueryMapSourceURL,
-            "{}.min.map".format(self.jqueryVersion),
+            request, self.jqueryMapSourceURL, f"{self.jqueryVersion}.min.map"
         )
 
 
@@ -186,8 +181,7 @@ class ExternalApplication(object):
             HeaderName.contentType.value, ContentType.javascript.value
         )
         return await self.cachedResource(
-            request, self.momentJSSourceURL,
-            "{}.min.js".format(self.momentVersion),
+            request, self.momentJSSourceURL, f"{self.momentVersion}.min.js"
         )
 
 
@@ -201,8 +195,7 @@ class ExternalApplication(object):
             HeaderName.contentType.value, ContentType.javascript.value
         )
         return await self.cachedResource(
-            request, self.lscacheJSSourceURL,
-            "{}.min.js".format(self.lscacheVersion),
+            request, self.lscacheJSSourceURL, f"{self.lscacheVersion}.min.js"
         )
 
 
@@ -266,7 +259,7 @@ class ExternalApplication(object):
         Retrieve a cached resource from a zip file.
         """
         archivePath = await self.cacheFromURL(
-            url, "{0}.zip".format(archiveName)
+            url, f"{archiveName}.zip"
         )
 
         try:

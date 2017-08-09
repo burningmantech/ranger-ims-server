@@ -307,14 +307,14 @@ def storeConcentricStreet(
 
     cursor.execute(
         dedent(
-            """
+            f"""
             insert{ignore} into CONCENTRIC_STREET (EVENT, ID, NAME)
             values (
                 (select ID from EVENT where NAME = :eventID),
                 :streetID,
                 :streetName
             )
-            """.format(ignore=ignore)
+            """
         ),
         dict(
             eventID=event.id, streetID=streetID, streetName=streetName

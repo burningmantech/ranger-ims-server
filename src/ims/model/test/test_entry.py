@@ -46,14 +46,11 @@ class ReportEntryTests(TestCase):
         """
         Report entry renders as a string.
         """
+        star = "*" if reportEntry.automatic else ""
         self.assertEqual(
             str(reportEntry),
-            "{} {}{}: {}".format(
-                reportEntry.created,
-                reportEntry.author,
-                "*" if reportEntry.automatic else "",
-                reportEntry.text,
-            )
+            f"{reportEntry.created} {reportEntry.author}"
+            f"{star}: {reportEntry.text}"
         )
 
 

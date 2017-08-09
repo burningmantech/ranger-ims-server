@@ -274,11 +274,9 @@ def fullName(first: str, middle: str, last: str) -> str:
     Compose parts of a name into a full name.
     """
     if middle:
-        format = "{first} {middle}. {last}"
+        return f"{first} {middle}. {last}"
     else:
-        format = "{first} {last}"
-
-    return format.format(first=first, middle=middle, last=last)
+        return f"{first} {last}"
 
 
 def statusFromID(strValue: str) -> RangerStatus:

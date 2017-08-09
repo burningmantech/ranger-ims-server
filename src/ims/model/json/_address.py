@@ -117,7 +117,7 @@ def serializeAddress(address: Address) -> Dict[str, Any]:
     elif isinstance(address, RodGarettAddress):
         return serializeRodGarettAddress(address)
     else:
-        raise TypeError("Unknown address type {!r}".format(address))
+        raise TypeError(f"Unknown address type {address!r}")
 
 
 registerSerializer(Address, serializeAddress)

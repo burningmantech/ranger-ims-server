@@ -38,8 +38,7 @@ class IncidentStateTests(TestCase):
         """
         for state in IncidentState:
             self.assertEqual(
-                repr(state),
-                "{}[{!r}]".format(IncidentState.__name__, state.name)
+                repr(state), f"{IncidentState.__name__}[{state.name!r}]"
             )
 
 
