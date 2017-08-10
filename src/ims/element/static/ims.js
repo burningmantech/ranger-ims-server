@@ -376,20 +376,6 @@ function stateForIncident(incident) {
         return incident.state;
     }
 
-    // 2013 data had multiple overloaded timestamps instead.
-    if (incident.closed != undefined) {
-        return "closed";
-    }
-    if (incident.on_scene != undefined) {
-        return "on_scene";
-    }
-    if (incident.dispatched != undefined) {
-        return "dispatched";
-    }
-    if (incident.created != undefined) {
-        return "new";
-    }
-
     console.warn("Unknown state for incident: " + incident);
     return undefined;
 }
