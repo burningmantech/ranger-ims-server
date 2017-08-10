@@ -25,7 +25,7 @@ from twisted.web.template import Tag, renderer
 
 from ims.auth import Authorization
 from ims.config import Configuration
-from ims.ext.json import jsonTextFromObject
+from ims.ext.json import jsonFalse, jsonTextFromObject, jsonTrue
 from ims.ext.klein import KleinRenderable
 from ims.model import Event
 
@@ -110,8 +110,3 @@ class IncidentPage(Page):
         """
         namesByID = await self.config.store.concentricStreets(self.event)
         return jsonTextFromObject(namesByID)
-
-
-
-jsonTrue  = jsonTextFromObject(True)
-jsonFalse = jsonTextFromObject(False)
