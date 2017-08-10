@@ -49,10 +49,10 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
         .getRawHeaders(b"x-forwarded-for", [b""])[0]
         .split(b",")[0]
         .strip()
-    )
+    ).decode("charmap")
 
     if forwardedFor:
-        ip = "{forwardedFor} > {clientIP}"
+        ip = "{} > {}".format(forwardedFor, clientIP)
     else:
         ip = clientIP
 
