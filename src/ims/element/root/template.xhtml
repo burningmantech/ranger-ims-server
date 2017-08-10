@@ -22,23 +22,23 @@
       <p t:render="if_logged_in">
         <div class="btn-group btn-group-justified" role="group">
           <a t:render="url"
-            url="viewIncidentReportsNew"
-            role="button"
-            class="btn btn-sm btn-default btn-default"
-          >
-            New incident report
-          </a>
-        </div>
-      </p>
-
-      <p t:render="if_logged_in">
-        <div class="btn-group btn-group-justified" role="group">
-          <a t:render="url"
             url="logout"
             role="button"
             class="btn btn-sm btn-default btn-danger"
           >
             Log Out
+          </a>
+        </div>
+      </p>
+
+      <p>
+        <div class="btn-group btn-group-justified" role="group">
+          <a t:render="url"
+            url="viewIncidentReportNew"
+            role="button"
+            class="btn btn-sm btn-default btn-default"
+          >
+            New incident report
           </a>
         </div>
       </p>

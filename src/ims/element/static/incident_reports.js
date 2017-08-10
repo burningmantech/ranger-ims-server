@@ -17,10 +17,10 @@
 // Initialize UI
 //
 
-function initDispatchQueuePage() {
+function initIncidentReportsPage() {
     function loadedBody() {
         disableEditing();
-        initDispatchQueueTable();
+        initIncidentReportsTable();
 
         var command = false;
 
@@ -45,7 +45,7 @@ function initDispatchQueuePage() {
             }
 
             if (command && keyCode == 78) {
-                $("#new_incident").click();
+                $("#new_incident_report").click();
             }
 
             // if (command) { console.warn(keyCode); }
@@ -63,9 +63,9 @@ function initDispatchQueuePage() {
 // Dispatch queue table
 //
 
-var dispatchQueueTable = null;
+var incidentReportsTable = null;
 
-function initDispatchQueueTable() {
+function initIncidentReportsTable() {
     initDataTables();
     initTableButtons();
     initSearchField();
@@ -77,13 +77,13 @@ function initDispatchQueueTable() {
 
     subscribeToUpdates();
 
-    eventSource.addEventListener("Incident", function(e) {
+    eventSource.addEventListener("IncidentReport", function(e) {
         var jsonText = e.data;
         var json = JSON.parse(jsonText);
-        var number = json["incident_number"];
+        var number = json["incident_report_number"];
 
-        console.log("Got incident update: " + number);
-        dispatchQueueTable.ajax.reload();
+        console.log("Got incident report update: " + number);
+        incidentReportsTable.ajax.reload();
     }, true);
 }
 
@@ -93,11 +93,11 @@ function initDispatchQueueTable() {
 //
 
 function initDataTables() {
-    function dataHandler(incidents) {
-        return incidents;
+    function dataHandler(incidentReports) {
+        return incidentReports;
     }
 
-    dispatchQueueTable = $("#queue_table").DataTable({
+    incidentReportsTable = $("#incident_reports_table").DataTable({
         "deferRender": true,
         "paging": true,
         "lengthChange": false,
@@ -110,60 +110,22 @@ function initDataTables() {
         },
         "columns": [
             {   // 0
-                "name": "incident_number",
-                "className": "incident_number text-right",
+                "name": "incident_report_number",
+                "className": "incident_report_number text-right",
                 "data": "number",
                 "defaultContent": null,
                 "cellType": "th",
             },
             {   // 1
-                "name": "incident_priority",
-                "className": "incident_priority text-center",
-                "data": "priority",
-                "defaultContent": null,
-                "searchable": false,
-                "render": renderPriority,
-            },
-            {   // 2
-                "name": "incident_created",
-                "className": "incident_created text-center",
+                "name": "incident_report_created",
+                "className": "incident_report_created text-center",
                 "data": "created",
                 "defaultContent": null,
                 "render": renderDate,
             },
-            {   // 3
-                "name": "incident_state",
-                "className": "incident_state text-center",
-                "data": "state",
-                "defaultContent": null,
-                "render": renderState,
-            },
-            {   // 4
-                "name": "incident_ranger_handles",
-                "className": "incident_ranger_handles",
-                "data": "ranger_handles",
-                "defaultContent": "",
-                "render": "[, ]",  // Join array with ", "
-                "width": "6em",
-            },
-            {   // 5
-                "name": "incident_location",
-                "className": "incident_location",
-                "data": "location",
-                "defaultContent": "",
-                "render": renderLocation,
-            },
-            {   // 6
-                "name": "incident_types",
-                "className": "incident_types",
-                "data": "incident_types",
-                "defaultContent": "",
-                "render": "[, ]",  // Join array with ", "
-                "width": "5em",
-            },
-            {   // 7
-                "name": "incident_summary",
-                "className": "incident_summary",
+            {   // 2
+                "name": "incident_report_summary",
+                "className": "incident_report_summary",
                 "data": "summary",
                 "defaultContent": "",
                 "render": renderSummary,
@@ -171,16 +133,13 @@ function initDataTables() {
         ],
         "order": [
             [1, "asc"],
-            [2, "dsc"],
         ],
-        "createdRow": function (row, incident, index) {
+        "createdRow": function (row, incidentReport, index) {
             $(row).click(function () {
-                var url = viewIncidentsURL + incident.number;
+                var url = viewIncidentReportsURL + incidentReport.number;
 
                 // Open new context with link
-                window.open(
-                    url, "Incident:" + eventID + "#" + incident.number
-                );
+                window.open(url, "Incident_Report:" + incidentReport.number);
             });
         },
     });
@@ -194,18 +153,15 @@ function initDataTables() {
 function initTableButtons() {
     // Relocate button container
 
-    $("#queue_table_wrapper")
+    $("#incident_reports_table_wrapper")
         .children(".row")
         .children(".col-sm-6:first")
         .replaceWith($("#button_container"));
 
     // Set button defaults
 
-    showState("open");
     showDays(null);
     showRows(25);
-
-    $(".new_incident_link").attr("href", viewIncidentsURL + "new");
 }
 
 
@@ -216,7 +172,7 @@ function initTableButtons() {
 function initSearchField() {
     // Relocate search container
 
-    $("#queue_table_wrapper")
+    $("#incident_reports_table_wrapper")
         .children(".row")
         .children(".col-sm-6:last")
         .replaceWith($("#search_container"));
@@ -224,8 +180,8 @@ function initSearchField() {
     // Search field handling
 
     $("#search_input").on("keyup", function () {
-        dispatchQueueTable.search(this.value);
-        dispatchQueueTable.draw();
+        incidentReportsTable.search(this.value);
+        incidentReportsTable.draw();
     });
 }
 
@@ -235,13 +191,13 @@ function initSearchField() {
 //
 
 function initSearch() {
-    function modifiedAfter(incident, timestamp) {
-        if (timestamp.isBefore(incident.created)) {
+    function modifiedAfter(incidentReport, timestamp) {
+        if (timestamp.isBefore(incidentReport.created)) {
             return true;
         }
 
-      for (var i in incident.report_entries) {
-          if (timestamp.isBefore(incident.report_entries[i].created)) {
+      for (var i in incidentReport.report_entries) {
+          if (timestamp.isBefore(incidentReport.report_entries[i].created)) {
               return true;
           }
       }
@@ -251,28 +207,11 @@ function initSearch() {
 
     $.fn.dataTable.ext.search.push(
         function(settings, rowData, rowIndex) {
-            var incident = dispatchQueueTable.data()[rowIndex];
-
-            switch (_showState) {
-                case "all":
-                    break;
-                case "active":
-                    state = stateForIncident(incident);
-                    if (state == "on_hold" || state == "closed") {
-                        return false;
-                    }
-                    break;
-                case "open":
-                    state = stateForIncident(incident);
-                    if (state == "closed") {
-                        return false;
-                    }
-                    break;
-            }
+            var incidentReport = incidentReportsTable.data()[rowIndex];
 
             if (
                 _showModifiedAfter != null &&
-                ! modifiedAfter(incident, _showModifiedAfter)
+                ! modifiedAfter(incidentReport, _showModifiedAfter)
             ) {
                 return false
             }
@@ -280,28 +219,6 @@ function initSearch() {
             return true;
         }
     );
-}
-
-
-//
-// Show state button handling
-//
-
-var _showState = null;
-
-function showState(stateToShow) {
-    var menu = $("#show_state");
-    var item = $("#show_state_" + stateToShow);
-
-    // Get title from selected item
-    var selection = item.children(".name").html();
-
-    // Update menu title to reflect selected item
-    menu.children(".selection").html(selection);
-
-    _showState = stateToShow;
-
-    dispatchQueueTable.draw();
 }
 
 
@@ -332,7 +249,7 @@ function showDays(daysBackToShow) {
             ;
     }
 
-    dispatchQueueTable.draw();
+    incidentReportsTable.draw();
 }
 
 
@@ -356,6 +273,6 @@ function showRows(rowsToShow) {
         rowsToShow = -1;
     }
 
-    dispatchQueueTable.page.len(rowsToShow);
-    dispatchQueueTable.draw()
+    incidentReportsTable.page.len(rowsToShow);
+    incidentReportsTable.draw()
 }

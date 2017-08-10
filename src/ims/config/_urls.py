@@ -97,37 +97,41 @@ class URLs(object):
 
     # Web application
 
-    app                        = prefix.child("app").child("")
+    app = prefix.child("app").child("")
 
-    imsJS                      = static.child("ims.js")
+    imsJS = static.child("ims.js")
 
-    admin                      = app.child("admin").child("")
-    adminJS                    = static.child("admin.js")
+    admin   = app.child("admin").child("")
+    adminJS = static.child("admin.js")
 
-    adminAccessControl         = admin.child("access")
-    adminAccessControlJS       = static.child("admin_access.js")
+    adminAccessControl   = admin.child("access")
+    adminAccessControlJS = static.child("admin_access.js")
 
-    adminIncidentTypes         = admin.child("types")
-    adminIncidentTypesJS       = static.child("admin_types.js")
+    adminIncidentTypes   = admin.child("types")
+    adminIncidentTypesJS = static.child("admin_types.js")
 
-    adminStreets               = admin.child("streets")
-    adminStreetsJS             = static.child("admin_streets.js")
+    adminStreets   = admin.child("streets")
+    adminStreetsJS = static.child("admin_streets.js")
 
-    viewEvents                 = app.child("events").child("")
-    viewEvent                  = viewEvents.child("<eventID>").child("")
+    viewEvents = app.child("events").child("")
+    viewEvent  = viewEvents.child("<eventID>").child("")
 
-    viewDispatchQueue          = viewEvent.child("queue")
-    viewDispatchQueueTemplate  = app.child("queue.html")
-    viewDispatchQueueJS        = static.child("queue.js")
-    viewDispatchQueueRelative  = URL.fromText("queue")
+    viewDispatchQueue         = viewEvent.child("queue")
+    viewDispatchQueueTemplate = app.child("queue.html")
+    viewDispatchQueueJS       = static.child("queue.js")
+    viewDispatchQueueRelative = URL.fromText("queue")
 
-    viewIncidents              = viewEvent.child("incidents").child("")
-    viewIncidentNumber         = viewIncidents.child("<number>")
-    viewIncidentNumberTemplate = app.child("incident.html")
-    viewIncidentNumberJS       = static.child("incident.js")
+    viewIncidents = viewEvent.child("incidents").child("")
 
-    viewIncidentReports        = app.child("incident_reports").child("")
-    viewIncidentReportsNew     = viewIncidentReports.child("new")
-    viewIncidentReport         = viewIncidentReports.child("<number>")
-    viewIncidentReportTemplate = app.child("incident_report.html")
-    viewIncidentReportJS       = static.child("incident_report.js")
+    viewIncidentNumber   = viewIncidents.child("<number>")
+    viewIncidentTemplate = app.child("incident.html")
+    viewIncidentJS       = static.child("incident.js")
+
+    viewIncidentReports         = app.child("incident_reports").child("")
+    viewIncidentReportsTemplate = app.child("incident_reports.html")
+    viewIncidentReportsJS       = static.child("incident_reports.js")
+
+    viewIncidentReportNew       = viewIncidentReports.child("new")
+    viewIncidentReportNumber    = viewIncidentReports.child("<number>")
+    viewIncidentReportTemplate  = app.child("incident_report.html")
+    viewIncidentReportJS        = static.child("incident_report.js")
