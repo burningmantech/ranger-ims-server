@@ -257,7 +257,9 @@ class DutyManagementSystem(object):
                         )
 
                     if elapsed > self.personnelCacheIntervalMax:
-                        raise DatabaseError(e)
+                        raise DatabaseError(
+                            f"Unable to load personnel data from DMS: {e}"
+                        )
 
             finally:
                 self._busy = False
