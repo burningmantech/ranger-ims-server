@@ -17,7 +17,8 @@
 r"""
 JSON serialization/deserialization for incidents
 
-2017 JSON incident schema makes location.concentric a string.
+2017 JSON incident schema makes location.concentric a string and renames the
+timestamp key on incident to created.
     {
         "number": 101,                              // int >= 0
         "priority": 3,                              // int {1,3,5}

@@ -127,7 +127,7 @@ function initDataTables() {
             {   // 2
                 "name": "incident_created",
                 "className": "incident_created text-center",
-                "data": "timestamp",
+                "data": "created",
                 "defaultContent": null,
                 "render": renderDate,
             },
@@ -234,7 +234,7 @@ function initSearchField() {
 
 function initSearch() {
     function modifiedAfter(incident, timestamp) {
-        if (timestamp.isBefore(incident.timestamp)) {
+        if (timestamp.isBefore(incident.created)) {
             return true;
         }
 
