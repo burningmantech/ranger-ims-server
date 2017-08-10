@@ -52,7 +52,7 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
     )
 
     if forwardedFor:
-        ip = "{forwardedFor} > {clientIP}"
+        ip = "{} > {}".format(forwardedFor, clientIP)
     else:
         ip = clientIP
 
