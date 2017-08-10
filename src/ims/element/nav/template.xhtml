@@ -13,6 +13,11 @@
   </div>
   <div class="collapse navbar-collapse" id="main-navbar">
     <ul class="nav navbar-nav navbar-left">
+      <li t:render="if_detached_reports">
+        <a t:render="url" url="viewIncidentReports">
+          <span id="detached_report_icon" class="glyphicon glyphicon-copy" />
+        </a>
+      </li>
       <li t:render="events_reversed" />
     </ul>
     <ul class="nav navbar-nav navbar-right" t:render="if_not_logged_in">

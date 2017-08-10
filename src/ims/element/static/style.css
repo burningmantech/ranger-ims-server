@@ -81,6 +81,10 @@ a.navbar-brand>img {
   color: black;
 }
 
+#detached_report_icon {
+  color: red;
+}
+
 /*
  * Below is a trick to hide the remove buttons (.remove-badge) from list
  * groups except when hovering, but only on non-touch devices.
