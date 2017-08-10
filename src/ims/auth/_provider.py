@@ -97,14 +97,16 @@ class AuthProvider(object):
 
     _log = Logger()
 
-    masterKey: Optional[str] = attrib(validator=optional(instance_of(str)))
-
     adminUsers: FrozenSet[str] = attrib()
 
     store: IMSDataStore = attrib(validator=instance_of(IMSDataStore))
 
     dms: DutyManagementSystem = attrib(
         validator=instance_of(DutyManagementSystem)
+    )
+
+    masterKey: Optional[str] = attrib(
+        validator=optional(instance_of(str)), default=None
     )
 
 
