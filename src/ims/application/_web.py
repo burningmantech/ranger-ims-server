@@ -75,7 +75,6 @@ class WebApplication(object):
     #
 
     @router.route(_unprefix(URLs.app), methods=("HEAD", "GET"))
-    @static
     def applicationRootResource(self, request: IRequest) -> KleinRenderable:
         """
         Application root page.
