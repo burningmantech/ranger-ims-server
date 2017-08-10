@@ -181,11 +181,12 @@ class AuthProvider(object):
             return False
 
         authorizations = Authorization.none
-        authorizations |= Authorization.readPersonnel
-        authorizations |= Authorization.readIncidentReports
-        authorizations |= Authorization.writeIncidentReports
 
         if user is not None:
+            authorizations |= Authorization.readPersonnel
+            authorizations |= Authorization.readIncidentReports
+            authorizations |= Authorization.writeIncidentReports
+
             for shortName in user.shortNames:
                 if shortName in self.adminUsers:
                     authorizations |= Authorization.imsAdmin
