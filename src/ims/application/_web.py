@@ -232,7 +232,7 @@ class WebApplication(object):
         self, request: IRequest, number: str
     ) -> KleinRenderable:
         """
-        Endpoint for the report page.
+        Endpoint for the incident report page.
         """
         numberValue: Optional[int]
         if number == "new":
@@ -261,6 +261,6 @@ class WebApplication(object):
         self, request: IRequest
     ) -> KleinRenderable:
         """
-        Endpoint for the incident page template.
+        Endpoint for the incident report page template.
         """
         return IncidentReportTemplatePage(self.config)

@@ -15,7 +15,7 @@
 ##
 
 """
-Admin page element.
+Dispatch queue page element.
 """
 
 from ._queue import DispatchQueuePage
