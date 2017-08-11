@@ -39,6 +39,8 @@ from ims.element.queue import DispatchQueuePage
 from ims.element.queue_template import DispatchQueueTemplatePage
 from ims.element.report import IncidentReportPage
 from ims.element.report_template import IncidentReportTemplatePage
+from ims.element.reports import IncidentReportsPage
+from ims.element.reports_template import IncidentReportsTemplatePage
 from ims.element.root import RootPage
 from ims.ext.klein import KleinRenderable, static
 from ims.model import Event
@@ -75,7 +77,6 @@ class WebApplication(object):
     #
 
     @router.route(_unprefix(URLs.app), methods=("HEAD", "GET"))
-    @static
     def applicationRootResource(self, request: IRequest) -> KleinRenderable:
         """
         Application root page.
@@ -212,10 +213,10 @@ class WebApplication(object):
 
 
     @router.route(
-        _unprefix(URLs.viewIncidentNumberTemplate), methods=("HEAD", "GET")
+        _unprefix(URLs.viewIncidentTemplate), methods=("HEAD", "GET")
     )
     @static
-    def viewIncidentNumberTemplatePage(
+    def viewIncidentTemplatePage(
         self, request: IRequest
     ) -> KleinRenderable:
         """
@@ -225,9 +226,35 @@ class WebApplication(object):
 
 
     # FIXME: viewIncidentReports
+    @router.route(_unprefix(URLs.viewIncidentReports), methods=("HEAD", "GET"))
+    async def viewIncidentReportsPage(
+        self, request: IRequest
+    ) -> KleinRenderable:
+        """
+        Endpoint for the incident reports page.
+        """
+        await self.config.authProvider.authorizeRequest(
+            request, None, Authorization.readIncidentReports
+        )
+        return IncidentReportsPage(self.config)
 
 
-    @router.route(_unprefix(URLs.viewIncidentReport), methods=("HEAD", "GET"))
+    @router.route(
+        _unprefix(URLs.viewIncidentReportsTemplate), methods=("HEAD", "GET")
+    )
+    @static
+    def viewIncidentReportsTemplatePage(
+        self, request: IRequest
+    ) -> KleinRenderable:
+        """
+        Endpoint for the incident reports page template.
+        """
+        return IncidentReportsTemplatePage(self.config)
+
+
+    @router.route(
+        _unprefix(URLs.viewIncidentReportNumber), methods=("HEAD", "GET")
+    )
     async def viewIncidentReportPage(
         self, request: IRequest, number: str
     ) -> KleinRenderable:

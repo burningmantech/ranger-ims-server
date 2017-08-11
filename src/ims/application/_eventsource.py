@@ -124,13 +124,10 @@ class DataStoreEventSourceLogObserver(object):
         """
         Convert a logger event into an EventSource event.
         """
-        if "storeWriteClass" not in loggerEvent:
-            # Not a data store event
-            return None
-
         eventClass = loggerEvent.get("storeWriteClass", None)
 
         if eventClass is None:
+            # Not a data store event
             return None
 
         elif eventClass is Incident:
