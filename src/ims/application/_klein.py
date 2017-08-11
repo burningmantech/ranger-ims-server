@@ -176,7 +176,7 @@ def badRequestResponse(
     if message is None:
         message = "Bad request"
     else:
-        message = f"{message}"
+        message = str(message)
     return textResponse(request, message)
 
 
