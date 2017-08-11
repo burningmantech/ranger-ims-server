@@ -112,7 +112,7 @@ class Ranger(ReplaceMixIn):
         validator=optional(instance_of(int))
     )
     password: Optional[str] = attrib(
-        validator=optional(instance_of(str))
+        validator=optional(instance_of(str)), default=None
     )
 
 
