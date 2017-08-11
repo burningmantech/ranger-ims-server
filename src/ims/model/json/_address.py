@@ -21,18 +21,13 @@ JSON serialization/deserialization for addresses
 from enum import Enum, unique
 from typing import Any, Dict, Optional, Type
 
-from twisted.logger import Logger
-
 from ._json import (
-    jsonDeserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize, jsonSerialize, registerDeserializer, registerSerializer
 )
 from .._address import Address, RodGarettAddress, TextOnlyAddress
 
 
 __all__ = ()
-
-
-log = Logger()
 
 
 
@@ -124,7 +119,6 @@ def serializeAddress(address: Address) -> Dict[str, Any]:
     else:
         raise TypeError(f"Unknown address type {address!r}")
 
-
 registerSerializer(Address, serializeAddress)
 
 
@@ -136,7 +130,6 @@ def serializeTextOnlyAddress(address: TextOnlyAddress) -> Dict[str, Any]:
     )
     json["type"] = "text"
     return json
-
 
 registerSerializer(TextOnlyAddress, serializeTextOnlyAddress)
 
@@ -150,7 +143,6 @@ def serializeRodGarettAddress(address: RodGarettAddress) -> Dict[str, Any]:
     json["type"] = "garett"
     return json
 
-
 registerSerializer(RodGarettAddress, serializeRodGarettAddress)
 
 
@@ -160,20 +152,10 @@ def deserializeTextOnlyAddress(
 ) -> TextOnlyAddress:
     assert cl is TextOnlyAddress, (cl, obj)
 
-    return TextOnlyAddress(
-        # Map JSON dict key names to TextOnlyAddress attribute names
-        **dict(
-            (
-                key.name,
-                jsonDeserialize(
-                    obj[key.value],
-                    getattr(TextOnlyAddressJSONType, key.name).value
-                )
-            )
-            for key in TextOnlyAddressJSONKey
-        )
+    return deserialize(
+        obj, TextOnlyAddress,
+        TextOnlyAddressJSONType, TextOnlyAddressJSONKey,
     )
-
 
 registerDeserializer(TextOnlyAddress, deserializeTextOnlyAddress)
 
@@ -183,23 +165,9 @@ def deserializeRodGarettAddress(
 ) -> RodGarettAddress:
     assert cl is RodGarettAddress, (cl, obj)
 
-    def decode(key):
-        cls = getattr(RodGarettAddressJSONType, key.name).value
-        try:
-            return jsonDeserialize(
-                obj.get(key.value, None), cls
-            )
-        except:
-            log.error(
-                "Unable to deserialize {key} as {cls} from {json}",
-                key=key, cls=cls, json=obj
-            )
-            raise
-
-    return RodGarettAddress(
-        # Map JSON dict key names to RodGarettAddress attribute names
-        **{key.name: decode(key) for key in RodGarettAddressJSONKey}
+    return deserialize(
+        obj, RodGarettAddress,
+        RodGarettAddressJSONType, RodGarettAddressJSONKey,
     )
-
 
 registerDeserializer(RodGarettAddress, deserializeRodGarettAddress)

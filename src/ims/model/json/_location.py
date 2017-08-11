@@ -54,7 +54,6 @@ def serializeLocation(location: Location) -> Dict[str, Any]:
 
     return locationJSON
 
-
 registerSerializer(Location, serializeLocation)
 
 
@@ -85,6 +84,5 @@ def deserializeLocation(obj: Dict[str, Any], cl: Type) -> Location:
         name=obj.get(LocationJSONKey.name.value, None),
         address=jsonDeserialize(jsonAddress, addressClass),
     )
-
 
 registerDeserializer(Location, deserializeLocation)
