@@ -328,7 +328,7 @@ class APIApplication(object):
         try:
             incident = modelObjectFromJSONObject(json, Incident)
         except JSONCodecError as e:
-            return badRequestResponse(request, e)
+            return badRequestResponse(request, str(e))
 
         # Validate data
 
@@ -467,7 +467,7 @@ class APIApplication(object):
                 lambda json: modelObjectFromJSONObject(json, IncidentState),
             )
         except JSONCodecError as e:
-            return badRequestResponse(request, e)
+            return badRequestResponse(request, str(e))
 
         await applyEdit(
             edits, IncidentJSONKey.summary, store.setIncident_summary
@@ -657,7 +657,7 @@ class APIApplication(object):
         try:
             incidentReport = modelObjectFromJSONObject(json, IncidentReport)
         except JSONCodecError as e:
-            return badRequestResponse(request, e)
+            return badRequestResponse(request, str(e))
 
         # Store the incident report
 
