@@ -47,7 +47,7 @@ from ims.model import (
 )
 from ims.model.json import (
     IncidentJSONKey, IncidentPriorityJSONValue, IncidentReportJSONKey,
-    IncidentStateJSONValue, LocationJSONKey,
+    IncidentStateJSONValue, JSONCodecError, LocationJSONKey,
     ReportEntryJSONKey, RodGarettAddressJSONKey,
     jsonObjectFromModelObject, modelObjectFromJSONObject
 )
@@ -325,7 +325,10 @@ class APIApplication(object):
 
         # Deserialize JSON incident
 
-        incident = modelObjectFromJSONObject(json, Incident)
+        try:
+            incident = modelObjectFromJSONObject(json, Incident)
+        except JSONCodecError as e:
+            return badRequestResponse(request, e)
 
         # Validate data
 
@@ -453,19 +456,28 @@ class APIApplication(object):
 
         store = self.config.store
 
-        await applyEdit(
-            edits, IncidentJSONKey.priority, store.setIncident_priority,
-            lambda json: modelObjectFromJSONObject(json, IncidentPriority),
-        )
-
-        await applyEdit(
-            edits, IncidentJSONKey.state,
-            store.setIncident_state,
-            lambda json: modelObjectFromJSONObject(json, IncidentState),
-        )
+        try:
+            await applyEdit(
+                edits, IncidentJSONKey.priority, store.setIncident_priority,
+                lambda json: modelObjectFromJSONObject(json, IncidentPriority),
+            )
+            await applyEdit(
+                edits, IncidentJSONKey.state,
+                store.setIncident_state,
+                lambda json: modelObjectFromJSONObject(json, IncidentState),
+            )
+        except JSONCodecError as e:
+            return badRequestResponse(request, e)
 
         await applyEdit(
             edits, IncidentJSONKey.summary, store.setIncident_summary
+        )
+        await applyEdit(
+            edits, IncidentJSONKey.rangerHandles, store.setIncident_rangers
+        )
+        await applyEdit(
+            edits, IncidentJSONKey.incidentTypes,
+            store.setIncident_incidentTypes,
         )
 
         location = edits.get(IncidentJSONKey.location.value, UNSET)
@@ -502,15 +514,6 @@ class APIApplication(object):
                     location, RodGarettAddressJSONKey.description,
                     store.setIncident_locationDescription
                 )
-
-        await applyEdit(
-            edits, IncidentJSONKey.rangerHandles, store.setIncident_rangers
-        )
-
-        await applyEdit(
-            edits, IncidentJSONKey.incidentTypes,
-            store.setIncident_incidentTypes,
-        )
 
         jsonEntries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)
         if jsonEntries is not UNSET:
@@ -651,7 +654,10 @@ class APIApplication(object):
 
         # Deserialize JSON incident report
 
-        incidentReport = modelObjectFromJSONObject(json, IncidentReport)
+        try:
+            incidentReport = modelObjectFromJSONObject(json, IncidentReport)
+        except JSONCodecError as e:
+            return badRequestResponse(request, e)
 
         # Store the incident report
 

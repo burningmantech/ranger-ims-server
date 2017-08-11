@@ -29,6 +29,14 @@ from ims.ext.json import dateTimeAsRFC3339Text, rfc3339TextAsDateTime
 __all__ = ()
 
 
+
+class JSONCodecError(Exception):
+    """
+    Error while serializing or deserializing JSON data.
+    """
+
+
+
 converter = Converter()
 jsonSerialize = converter.unstructure
 jsonDeserialize = converter.structure
@@ -53,9 +61,12 @@ def deserializeDateTime(obj: str, cl: Type) -> DateTime:
 registerDeserializer(DateTime, deserializeDateTime)
 
 
-def jsonObjectFromModelObject(object: Any) -> Any:
-    return jsonSerialize(object)
+def jsonObjectFromModelObject(model: Any) -> Any:
+    return jsonSerialize(model)
 
 
-def modelObjectFromJSONObject(object: Any, modelClass: type) -> Any:
-    return jsonDeserialize(object, modelClass)
+def modelObjectFromJSONObject(json: Any, modelClass: type) -> Any:
+    try:
+        return jsonDeserialize(json, modelClass)
+    except KeyError as e:
+        raise JSONCodecError(f"Invalid JSON for {modelClass.__name__}: {json}")
