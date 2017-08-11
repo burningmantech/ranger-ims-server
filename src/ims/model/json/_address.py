@@ -21,6 +21,8 @@ JSON serialization/deserialization for addresses
 from enum import Enum, unique
 from typing import Any, Dict, Optional, Type
 
+from twisted.logger import Logger
+
 from ._json import (
     jsonDeserialize, jsonSerialize, registerDeserializer, registerSerializer
 )
@@ -28,6 +30,9 @@ from .._address import Address, RodGarettAddress, TextOnlyAddress
 
 
 __all__ = ()
+
+
+log = Logger()
 
 
 
@@ -104,9 +109,9 @@ class RodGarettAddressJSONType(Enum):
     Rod Garett address JSON keys
     """
 
-    concentric   = str
-    radialHour   = int
-    radialMinute = int
+    concentric   = Optional[str]
+    radialHour   = Optional[int]
+    radialMinute = Optional[int]
     description  = AddressJSONType.description.value
 
 
@@ -178,18 +183,22 @@ def deserializeRodGarettAddress(
 ) -> RodGarettAddress:
     assert cl is RodGarettAddress, (cl, obj)
 
+    def decode(key):
+        cls = getattr(RodGarettAddressJSONType, key.name).value
+        try:
+            return jsonDeserialize(
+                obj.get(key.value, None), cls
+            )
+        except:
+            log.error(
+                "Unable to deserialize {key} as {cls} from {json}",
+                key=key, cls=cls, json=obj
+            )
+            raise
+
     return RodGarettAddress(
         # Map JSON dict key names to RodGarettAddress attribute names
-        **dict(
-            (
-                key.name,
-                jsonDeserialize(
-                    obj[key.value],
-                    getattr(RodGarettAddressJSONType, key.name).value
-                )
-            )
-            for key in RodGarettAddressJSONKey
-        )
+        **{key.name: decode(key) for key in RodGarettAddressJSONKey}
     )
 
 
