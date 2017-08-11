@@ -82,7 +82,7 @@ def deserializeLocation(obj: Dict[str, Any], cl: Type) -> Location:
         raise ValueError(f"Unknown address type: {addressType}")
 
     return Location(
-        name=obj[LocationJSONKey.name.value],
+        name=obj.get(LocationJSONKey.name.value, None),
         address=jsonDeserialize(jsonAddress, addressClass),
     )
 
