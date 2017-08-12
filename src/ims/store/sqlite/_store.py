@@ -319,13 +319,15 @@ class DataStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.createEvent`.
         """
-        self._log.info("Creating event: {event}", event=event)
-
         self._execute(
             (
                 (self._query_createEvent, dict(eventID=event.id)),
             ),
             "Unable to create event {eventID}"
+        )
+
+        self._log.info(
+            "Created event: {event}", storeWriteClass=Event, event=event,
         )
 
     _query_createEvent = _query(
@@ -355,6 +357,7 @@ class DataStore(IMSDataStore):
     def _setEventAccess(
         self, event: Event, mode: str, expressions: Iterable[str]
     ) -> None:
+        expressions = tuple(expressions)
         try:
             with self._db as db:
                 cursor = db.cursor()
@@ -363,7 +366,7 @@ class DataStore(IMSDataStore):
                         self._query_clearEventAccess,
                         dict(eventID=event.id, mode=mode),
                     )
-                    for expression in frozenset(expressions):
+                    for expression in expressions:
                         cursor.execute(
                             self._query_addEventAccess, dict(
                                 eventID=event.id,
@@ -379,6 +382,12 @@ class DataStore(IMSDataStore):
                 event=event, mode=mode, expressions=expressions, error=e,
             )
             raise StorageError(e)
+
+        self._log.info(
+            "Set {mode} access for {event}: {expressions}",
+            storeWriteClass=Event,
+            event=event, mode=mode, expressions=expressions,
+        )
 
     _query_clearEventAccess = _query(
         """
@@ -468,11 +477,6 @@ class DataStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.createIncidentType`.
         """
-        self._log.info(
-            "Creating incident type: {incidentType} (hidden={hidden})",
-            incidentType=incidentType, hidden=hidden,
-        )
-
         self._execute(
             ((
                 # FIXME: This casting shouldn't be necessary
@@ -483,6 +487,12 @@ class DataStore(IMSDataStore):
                 ),
             ),),
             "Unable to create incident type {name}"
+        )
+
+        self._log.info(
+            "Created incident type: {incidentType} (hidden={hidden})",
+            # storeWriteClass=IncidentType,
+            incidentType=incidentType, hidden=hidden,
         )
 
     _query_createIncidentType = _query(
@@ -496,11 +506,7 @@ class DataStore(IMSDataStore):
     def _hideShowIncidentTypes(
         self, incidentTypes: Iterable[str], hidden: bool
     ) -> None:
-        self._log.info(
-            "Setting hidden to {hidden} for incident types: {incidentTypes}",
-            incidentTypes=incidentTypes, hidden=hidden,
-        )
-
+        incidentTypes = tuple(incidentTypes)
         self._execute(
             (
                 (
@@ -511,6 +517,12 @@ class DataStore(IMSDataStore):
             ),
             f"Unable to set hidden to {hidden} incident types "
             f"{{incidentTypes}}"
+        )
+
+        self._log.info(
+            "Set hidden to {hidden} for incident types: {incidentTypes}",
+            # storeWriteClass=IncidentType,
+            incidentTypes=incidentTypes, hidden=hidden,
         )
 
     _query_hideShowIncidentType = _query(
@@ -565,11 +577,6 @@ class DataStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.createConcentricStreet`.
         """
-        self._log.info(
-            "Creating concentric street in event {event}: ({id}){name}",
-            event=event, id=id, name=name,
-        )
-
         self._execute(
             ((
                 self._query_createConcentricStreet,
@@ -577,6 +584,11 @@ class DataStore(IMSDataStore):
             ),),
             "Unable to create concentric street ({streetID}){streetName} "
             "for event {event}"
+        )
+
+        self._log.info(
+            "Created concentric street in {event}: {streetName}",
+            storeWriteClass=Event, event=event, concentricStreetName=name,
         )
 
     _query_createConcentricStreet = _query(
@@ -836,13 +848,7 @@ class DataStore(IMSDataStore):
         self, event: Event, incidentNumber: int, rangerHandles: Iterable[str],
         cursor: Cursor,
     ) -> None:
-        self._log.info(
-            "Attaching Rangers to incident #{incidentNumber} in event "
-            "{event}: {rangerHandles}",
-            event=event,
-            incidentNumber=incidentNumber,
-            rangerHandles=rangerHandles,
-        )
+        rangerHandles = tuple(rangerHandles)
 
         for rangerHandle in rangerHandles:
             cursor.execute(
@@ -852,6 +858,15 @@ class DataStore(IMSDataStore):
                     rangerHandle=rangerHandle,
                 )
             )
+
+        self._log.info(
+            "Attached Rangers {rangerHandles} to incident "
+            "{event}#{incidentNumber}",
+            storeWriteClass=Incident,
+            event=event,
+            incidentNumber=incidentNumber,
+            rangerHandles=rangerHandles,
+        )
 
     _query_attachRangeHandleToIncident = _query(
         """
@@ -865,13 +880,7 @@ class DataStore(IMSDataStore):
         self, event: Event, incidentNumber: int, incidentTypes: Iterable[str],
         cursor: Cursor,
     ) -> None:
-        self._log.info(
-            "Attaching incident types to incident #{incidentNumber} in event: "
-            "{event}: {incidentTypes}",
-            event=event,
-            incidentNumber=incidentNumber,
-            incidentTypes=incidentTypes,
-        )
+        incidentTypes = tuple(incidentTypes)
 
         for incidentType in incidentTypes:
             cursor.execute(
@@ -881,6 +890,15 @@ class DataStore(IMSDataStore):
                     incidentType=incidentType,
                 )
             )
+
+        self._log.info(
+            "Attached incident types {incidentTypes} to incident "
+            "{event}#{incidentNumber}",
+            storeWriteClass=Incident,
+            event=event,
+            incidentNumber=incidentNumber,
+            incidentTypes=incidentTypes,
+        )
 
     _query_attachIncidentTypeToIncident = _query(
         """
@@ -899,10 +917,6 @@ class DataStore(IMSDataStore):
     def _createReportEntry(
         self, reportEntry: ReportEntry, cursor: Cursor
     ) -> None:
-        self._log.info(
-            "Creating report entry: {reportEntry}", reportEntry=reportEntry
-        )
-
         cursor.execute(
             self._query_addReportEntry, dict(
                 created=asTimeStamp(reportEntry.created),
@@ -910,6 +924,11 @@ class DataStore(IMSDataStore):
                 author=reportEntry.author,
                 text=reportEntry.text,
             )
+        )
+
+        self._log.info(
+            "Created report entry: {reportEntry}",
+            storeWriteClass=ReportEntry, reportEntry=reportEntry,
         )
 
     _query_addReportEntry = _query(
@@ -924,16 +943,10 @@ class DataStore(IMSDataStore):
         self, event: Event, incidentNumber: int,
         reportEntries: Iterable[ReportEntry], cursor: Cursor,
     ) -> None:
+        reportEntries = tuple(reportEntries)
+
         for reportEntry in reportEntries:
             self._createReportEntry(reportEntry, cursor)
-
-            self._log.info(
-                "Attaching report entry to incident #{incidentNumber} in "
-                "event {event}: {reportEntry}",
-                event=event,
-                incidentNumber=incidentNumber,
-                reportEntry=reportEntry,
-            )
 
             # Join to incident
             cursor.execute(
@@ -943,6 +956,15 @@ class DataStore(IMSDataStore):
                     reportEntryID=cursor.lastrowid,
                 )
             )
+
+        self._log.info(
+            "Attached report entries to incident {event}#{incidentNumber}: "
+            "{reportEntries}",
+            storeWriteClass=Incident,
+            event=event,
+            incidentNumber=incidentNumber,
+            reportEntries=reportEntries,
+        )
 
     _query_attachReportEntryToIncident = _query(
         """
@@ -1054,8 +1076,6 @@ class DataStore(IMSDataStore):
             locationRadialHour   = None
             locationRadialMinute = None
 
-        self._log.info("Creating incident: {incident}", incident=incident)
-
         try:
             with self._db as db:
                 cursor = db.cursor()
@@ -1111,6 +1131,12 @@ class DataStore(IMSDataStore):
                 incident=incident, author=author, error=e,
             )
             raise StorageError(e)
+
+        self._log.info(
+            "Created incident {incident}",
+            storeWriteClass=Incident, incident=incident,
+        )
+
 
     _query_createIncident = _query(
         """
@@ -1170,17 +1196,6 @@ class DataStore(IMSDataStore):
             author, now(), attribute, value
         )
 
-        self._log.info(
-            "Author {author} updating incident #{incidentNumber} in event "
-            "{event}: {attribute}={value}",
-            query=query,
-            event=event,
-            incidentNumber=incidentNumber,
-            attribute=attribute,
-            value=value,
-            author=author,
-        )
-
         try:
             with self._db as db:
                 cursor = db.cursor()
@@ -1211,6 +1226,18 @@ class DataStore(IMSDataStore):
                 error=e,
             )
             raise StorageError(e)
+
+        self._log.info(
+            "{author} updated incident {event}#{incidentNumber}: "
+            "{attribute}={value}",
+            storeWriteClass=Incident,
+            query=query,
+            event=event,
+            incidentNumber=incidentNumber,
+            attribute=attribute,
+            value=value,
+            author=author,
+        )
 
     _template_setIncidentAttribute = _query(
         """
@@ -1398,6 +1425,16 @@ class DataStore(IMSDataStore):
             )
             raise StorageError(e)
 
+        self._log.info(
+            "{author} set Rangers for incident {event}#{incidentNumber}: "
+            "{rangerHandles}",
+            storeWriteClass=Incident,
+            author=author,
+            event=event,
+            incidentNumber=incidentNumber,
+            rangerHandles=rangerHandles,
+        )
+
     _query_clearIncidentRangers = _query(
         """
         delete from INCIDENT__RANGER
@@ -1450,6 +1487,16 @@ class DataStore(IMSDataStore):
                 error=e,
             )
             raise StorageError(e)
+
+        self._log.info(
+            "{author} set incident types for incident "
+            "{event}#{incidentNumber}: {incidentTypes}",
+            storeWriteClass=Incident,
+            author=author,
+            event=event,
+            incidentNumber=incidentNumber,
+            incidentTypes=incidentTypes,
+        )
 
     _query_clearIncidentIncidentTypes = _query(
         """
@@ -1659,11 +1706,6 @@ class DataStore(IMSDataStore):
                 reportEntries=(reportEntries + incidentReport.reportEntries)
             )
 
-        self._log.info(
-            "Creating incident report: {incidentReport}",
-            incidentReport=incidentReport,
-        )
-
         try:
             with self._db as db:
                 cursor = db.cursor()
@@ -1700,6 +1742,11 @@ class DataStore(IMSDataStore):
             )
             raise StorageError(e)
 
+        self._log.info(
+            "Created incident report: {incidentReport}",
+            storeWriteClass=IncidentReport, incidentReport=incidentReport,
+        )
+
     _query_createIncidentReport = _query(
         """
         insert into INCIDENT_REPORT (NUMBER, CREATED, SUMMARY)
@@ -1719,13 +1766,6 @@ class DataStore(IMSDataStore):
         for reportEntry in reportEntries:
             self._createReportEntry(reportEntry, cursor)
 
-            self._log.info(
-                "Attaching report entry to incident report "
-                "#{incidentReportNumber}: {reportEntry}",
-                incidentReportNumber=incidentReportNumber,
-                reportEntry=reportEntry,
-            )
-
             # Join to incident
             cursor.execute(
                 self._query_attachReportEntryToIncidentReport, dict(
@@ -1733,6 +1773,14 @@ class DataStore(IMSDataStore):
                     reportEntryID=cursor.lastrowid,
                 )
             )
+
+        self._log.info(
+            "Attached report entries to incident report "
+            "#{incidentReportNumber}: {reportEntry}",
+            storeWriteClass=IncidentReport,
+            incidentReportNumber=incidentReportNumber,
+            reportEntries=reportEntries,
+        )
 
     _query_attachReportEntryToIncidentReport = _query(
         """
@@ -1759,16 +1807,6 @@ class DataStore(IMSDataStore):
     ) -> None:
         autoEntry = self._automaticReportEntry(
             author, now(), attribute, value
-        )
-
-        self._log.info(
-            "Author {author} updating incident report "
-            "#{incidentReportNumber}: {attribute}={value}",
-            query=query,
-            incidentReportNumber=incidentReportNumber,
-            attribute=attribute,
-            value=value,
-            author=author,
         )
 
         try:
@@ -1799,6 +1837,17 @@ class DataStore(IMSDataStore):
                 error=e,
             )
             raise StorageError(e)
+
+        self._log.info(
+            "{author} updated incident report #{incidentReportNumber}: "
+            "{attribute}={value}",
+            storeWriteClass=IncidentReport,
+            query=query,
+            incidentReportNumber=incidentReportNumber,
+            attribute=attribute,
+            value=value,
+            author=author,
+        )
 
     _template_setIncidentReportAttribute = _query(
         """
@@ -2040,6 +2089,15 @@ class DataStore(IMSDataStore):
             )
             raise StorageError(e)
 
+        self._log.info(
+            "Attached incident report #{incidentReportNumber} to incident "
+            "{event}#{incidentNumber}",
+            storeWriteClass=Incident,
+            incidentReportNumber=incidentReportNumber,
+            event=event,
+            incidentNumber=incidentNumber,
+        )
+
     _query_attachIncidentReportToIncident = _query(
         """
         insert into INCIDENT__INCIDENT_REPORT (
@@ -2079,6 +2137,15 @@ class DataStore(IMSDataStore):
                 error=e,
             )
             raise StorageError(e)
+
+        self._log.info(
+            "Detached incident report #{incidentReportNumber} from incident "
+            "{event}#{incidentNumber}",
+            storeWriteClass=Incident,
+            incidentReportNumber=incidentReportNumber,
+            event=event,
+            incidentNumber=incidentNumber,
+        )
 
     _query_detachIncidentReportFromIncident = _query(
         """
