@@ -140,7 +140,7 @@ from enum import Enum, unique
 from typing import Any, Dict, List, Optional, Set, Type
 
 from ._json import (
-    jsonDeserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize, jsonSerialize, registerDeserializer, registerSerializer
 )
 from .._entry import ReportEntry
 from .._event import Event
@@ -198,26 +198,14 @@ def serializeIncident(incident: Incident) -> Dict[str, Any]:
         for key in IncidentJSONKey
     )
 
-
 registerSerializer(Incident, serializeIncident)
 
 
 def deserializeIncident(obj: Dict[str, Any], cl: Type) -> Incident:
     assert cl is Incident, (cl, obj)
 
-    return Incident(
-        # Map JSON dict key names to Incident attribute names
-        **dict(
-            (
-                key.name,
-                jsonDeserialize(
-                    obj.get(key.value, None),
-                    getattr(IncidentJSONType, key.name).value
-                )
-            )
-            for key in IncidentJSONKey
-        )
+    return deserialize(
+        obj, Incident, IncidentJSONType, IncidentJSONKey,
     )
-
 
 registerDeserializer(Incident, deserializeIncident)

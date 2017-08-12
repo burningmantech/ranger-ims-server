@@ -25,7 +25,9 @@ from . import _type
 from ._address import RodGarettAddressJSONKey, TextOnlyAddressJSONKey
 from ._entry import ReportEntryJSONKey
 from ._incident import IncidentJSONKey
-from ._json import jsonObjectFromModelObject, modelObjectFromJSONObject
+from ._json import (
+    JSONCodecError, jsonObjectFromModelObject, modelObjectFromJSONObject
+)
 from ._location import LocationJSONKey
 from ._priority import IncidentPriorityJSONValue
 from ._report import IncidentReportJSONKey
@@ -41,6 +43,7 @@ __all__ = (
     "IncidentPriorityJSONValue",
     "IncidentReportJSONKey",
     "IncidentStateJSONValue",
+    "JSONCodecError",
     "LocationJSONKey",
     "ReportEntryJSONKey",
     "RodGarettAddressJSONKey",

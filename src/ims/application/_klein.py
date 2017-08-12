@@ -176,7 +176,7 @@ def badRequestResponse(
     if message is None:
         message = "Bad request"
     else:
-        message = f"{message}"
+        message = str(message)
     return textResponse(request, message)
 
 
@@ -392,7 +392,7 @@ class Router(Klein):
             """
             DMS error.
             """
-            log.failure("DMS error", failure)
+            log.critical("DMS error: {error}", error=failure)
             return internalErrorResponse(request)
 
 

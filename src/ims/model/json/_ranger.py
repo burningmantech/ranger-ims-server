@@ -22,7 +22,7 @@ from enum import Enum, unique
 from typing import Any, Dict, List, Optional, Type
 
 from ._json import (
-    jsonDeserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize, jsonSerialize, registerDeserializer, registerSerializer
 )
 from .._ranger import Ranger, RangerStatus
 
@@ -67,28 +67,16 @@ def serializeRanger(ranger: Ranger) -> Dict[str, Any]:
         for key in RangerJSONKey
     )
 
-
 registerSerializer(Ranger, serializeRanger)
 
 
 def deserializeRanger(obj: Dict[str, Any], cl: Type) -> Ranger:
     assert cl is Ranger, (cl, obj)
 
-    return Ranger(
-        # Map JSON dict key names to Ranger attribute names
-        password=None,
-        **dict(
-            (
-                key.name,
-                jsonDeserialize(
-                    obj[key.value],
-                    getattr(RangerJSONType, key.name).value
-                )
-            )
-            for key in RangerJSONKey
-        )
+    return deserialize(
+        obj, Ranger,
+        RangerJSONType, RangerJSONKey,
     )
-
 
 registerDeserializer(Ranger, deserializeRanger)
 
@@ -114,7 +102,6 @@ class RangerStatusJSONValue(Enum):
 def serializeRangerStatus(rangerStatus: RangerStatus) -> str:
     return getattr(RangerStatusJSONValue, rangerStatus.name).value
 
-
 registerSerializer(RangerStatus, serializeRangerStatus)
 
 
@@ -122,6 +109,5 @@ def deserializeRangerStatus(obj: int, cl: Type) -> RangerStatus:
     assert cl is RangerStatus, (cl, obj)
 
     return getattr(RangerStatus, RangerStatusJSONValue(obj).name)
-
 
 registerDeserializer(RangerStatus, deserializeRangerStatus)

@@ -43,7 +43,6 @@ class IncidentPriorityJSONValue(Enum):
 def serializeIncidentPriority(incidentPriority: IncidentPriority) -> str:
     return getattr(IncidentPriorityJSONValue, incidentPriority.name).value
 
-
 registerSerializer(IncidentPriority, serializeIncidentPriority)
 
 
@@ -51,6 +50,5 @@ def deserializeIncidentPriority(obj: int, cl: Type) -> IncidentPriority:
     assert cl is IncidentPriority, (cl, obj)
 
     return getattr(IncidentPriority, IncidentPriorityJSONValue(obj).name)
-
 
 registerDeserializer(IncidentPriority, deserializeIncidentPriority)

@@ -23,7 +23,7 @@ from enum import Enum, unique
 from typing import Any, Dict, List, Optional, Type
 
 from ._json import (
-    jsonDeserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize, jsonSerialize, registerDeserializer, registerSerializer
 )
 from .._entry import ReportEntry
 from .._report import IncidentReport
@@ -65,26 +65,15 @@ def serializeIncidentReport(incidentReport: IncidentReport) -> Dict[str, Any]:
         for key in IncidentReportJSONKey
     )
 
-
 registerSerializer(IncidentReport, serializeIncidentReport)
 
 
 def deserializeIncidentReport(obj: Dict[str, Any], cl: Type) -> IncidentReport:
     assert cl is IncidentReport, (cl, obj)
 
-    return IncidentReport(
-        # Map JSON dict key names to IncidentReport attribute names
-        **dict(
-            (
-                key.name,
-                jsonDeserialize(
-                    obj.get(key.value, None),
-                    getattr(IncidentReportJSONType, key.name).value
-                )
-            )
-            for key in IncidentReportJSONKey
-        )
+    return deserialize(
+        obj, IncidentReport,
+        IncidentReportJSONType, IncidentReportJSONKey,
     )
-
 
 registerDeserializer(IncidentReport, deserializeIncidentReport)
