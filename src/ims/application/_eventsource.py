@@ -51,7 +51,9 @@ class Event(object):
     message: str = attrib(validator=instance_of(str))
     eventID: Optional[int] = attrib(validator=optional(instance_of(int)))
     eventClass: Optional[str] = attrib(validator=optional(instance_of(str)))
-    retry: Optional[int] = attrib(validator=optional(instance_of(int)))
+    retry: Optional[int] = attrib(
+        validator=optional(instance_of(int)), default=None
+    )
 
 
     def render(self) -> str:
