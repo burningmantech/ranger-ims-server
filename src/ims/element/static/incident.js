@@ -24,9 +24,7 @@ function initIncidentPage() {
             drawRangers();
             drawRangersToAdd();
         });
-        loadIncidentTypesAndCache(function() {
-            drawIncidentTypesToAdd();
-        });
+        loadIncidentTypesAndCache(drawIncidentTypesToAdd);
         loadAndDisplayIncidentReports();
 
         // Scroll to incident_report_add field
@@ -51,6 +49,7 @@ function initIncidentPage() {
             if (number == incidentNumber) {
                 console.log("Got incident update");
                 loadAndDisplayIncident();
+                loadAndDisplayIncidentReports();
             }
         }, true);
 
