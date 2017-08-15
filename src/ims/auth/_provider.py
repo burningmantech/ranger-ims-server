@@ -112,13 +112,15 @@ class AuthProvider(object):
 
     _log = Logger()
 
-    adminUsers: FrozenSet[str] = attrib()
-
     store: IMSDataStore = attrib(validator=instance_of(IMSDataStore))
 
     dms: DutyManagementSystem = attrib(
         validator=instance_of(DutyManagementSystem)
     )
+
+    requireActive: bool = attrib(validator=instance_of(bool), default=True)
+
+    adminUsers: FrozenSet[str] = attrib(default=frozenset())
 
     masterKey: Optional[str] = attrib(
         validator=optional(instance_of(str)), default=None
@@ -200,7 +202,7 @@ class AuthProvider(object):
         if user is not None:
             authorizations |= Authorization.writeIncidentReports
 
-            if user.active:
+            if user.active or not self.requireActive:
                 authorizations |= Authorization.readPersonnel
                 authorizations |= Authorization.readIncidentReports
 

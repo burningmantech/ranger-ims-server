@@ -200,6 +200,17 @@ class Configuration(object):
         )
         self._log.info("Admins: {admins}", admins=self.IMSAdmins)
 
+        active = (
+            cast(str, valueFromConfig("Core", "RequireActive", "true")).lower()
+        )
+        if active in ("false", "no", "0"):
+            self.RequireActive = False
+        else:
+            self.RequireActive = True
+        self._log.info(
+            "RequireActive: {active}", active=self.RequireActive
+        )
+
         self.DMSHost     = valueFromConfig("DMS", "Hostname", None)
         self.DMSDatabase = valueFromConfig("DMS", "Database", None)
         self.DMSUsername = valueFromConfig("DMS", "Username", None)
@@ -226,8 +237,11 @@ class Configuration(object):
         self.store: IMSDataStore = DataStore(dbPath=self.DatabasePath)
 
         self.authProvider = AuthProvider(
-            masterKey=self.MasterKey, adminUsers=self.IMSAdmins,
-            store=self.store, dms=self.dms,
+            store=self.store,
+            dms=self.dms,
+            requireActive=self.RequireActive,
+            adminUsers=self.IMSAdmins,
+            masterKey=self.MasterKey,
         )
 
         locationsPath = self.DataRoot / "locations.json"
