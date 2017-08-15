@@ -251,6 +251,19 @@ class AuthProvider(object):
         authorizations to read the incident report with the given number.
         """
 
+        # The author of the incident report should be allowed to read and write
+        # to it.
+
+        if incidentReport.reportEntries:
+            rangerHandle = request.user.rangerHandle
+            for reportEntry in incidentReport.reportEntries:
+                if reportEntry.author == rangerHandle:
+                    request.authorizations = (
+                        Authorization.readIncidentReports |
+                        Authorization.writeIncidentReports
+                    )
+                    return
+
         # If there are incidents attached to this incident report, then the
         # permissions on the attached incidents (which are determined by the
         # events containing the incidents) determine the permission on the
