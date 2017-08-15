@@ -85,7 +85,7 @@ class User(object):
 
 
     @property
-    def hashedPassword(self) -> str:
+    def hashedPassword(self) -> Optional[str]:
         return self._ranger.password
 
 
