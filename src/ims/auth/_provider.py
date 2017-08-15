@@ -28,7 +28,7 @@ from twisted.python.constants import FlagConstant, Flags
 from twisted.web.iweb import IRequest
 
 from ims.dms import DMSError, DutyManagementSystem, verifyPassword
-from ims.model import Event, Ranger
+from ims.model import Event, IncidentReport, Ranger
 from ims.store import IMSDataStore
 
 from ._exceptions import NotAuthenticatedError, NotAuthorizedError
@@ -244,7 +244,7 @@ class AuthProvider(object):
 
 
     async def authorizeRequestForIncidentReport(
-        self, request: IRequest, number: int
+        self, request: IRequest, incidentReport: IncidentReport
     ) -> None:
         """
         Determine whether the user attached to a request has the required
@@ -254,14 +254,16 @@ class AuthProvider(object):
 
         events = frozenset(
             event for event, _incidentNumber in
-            await self.store.incidentsAttachedToIncidentReport(number)
+            await self.store.incidentsAttachedToIncidentReport(
+                incidentReport.number
+            )
         )
 
         for event in events:
-            # There are incident attached; use the authorization for reading
+            # There are incidents attached; use the authorization for reading
             # incidents from the corresponding events.
             # Because it's possible for multiple incidents to be attached, if
-            # one fails, keep trying the others in case they allow it.
+            # one event fails, keep trying the others in case they allow it.
             try:
                 await self.authorizeRequest(
                     request, event, Authorization.readIncidents

@@ -696,13 +696,14 @@ class APIApplication(object):
             self.config.authProvider.authenticateRequest(request)
             return notFoundResponse(request)
 
-        await self.config.authProvider.authorizeRequestForIncidentReport(
-            request, number
-        )
-
         incidentReport = await self.config.store.incidentReportWithNumber(
             number
         )
+
+        await self.config.authProvider.authorizeRequestForIncidentReport(
+            request, incidentReport
+        )
+
         text = jsonTextFromObject(jsonObjectFromModelObject(incidentReport))
 
         return jsonBytes(request, text.encode("utf-8"))
