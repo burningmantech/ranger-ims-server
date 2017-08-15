@@ -89,6 +89,16 @@ class User(object):
         return self._ranger.password
 
 
+    @property
+    def active(self) -> bool:
+        return self._ranger.onSite
+
+
+    @property
+    def rangerHandle(self) -> str:
+        return self._ranger.handle
+
+
     def __str__(self) -> str:
         return str(self._ranger)
 
@@ -188,25 +198,28 @@ class AuthProvider(object):
         authorizations = Authorization.none
 
         if user is not None:
-            authorizations |= Authorization.readPersonnel
-            authorizations |= Authorization.readIncidentReports
             authorizations |= Authorization.writeIncidentReports
 
-            for shortName in user.shortNames:
-                if shortName in self.adminUsers:
-                    authorizations |= Authorization.imsAdmin
+            if user.active:
+                authorizations |= Authorization.readPersonnel
+                authorizations |= Authorization.readIncidentReports
 
-                if event is not None:
-                    if matchACL(
-                        user, frozenset(await self.store.writers(event))
-                    ):
-                        authorizations |= Authorization.writeIncidents
-                        authorizations |= Authorization.readIncidents
-                    else:
+                for shortName in user.shortNames:
+                    if shortName in self.adminUsers:
+                        authorizations |= Authorization.imsAdmin
+
+                    if event is not None:
                         if matchACL(
-                            user, frozenset(await self.store.readers(event))
+                            user, frozenset(await self.store.writers(event))
                         ):
+                            authorizations |= Authorization.writeIncidents
                             authorizations |= Authorization.readIncidents
+                        else:
+                            if matchACL(
+                                user,
+                                frozenset(await self.store.readers(event))
+                            ):
+                                authorizations |= Authorization.readIncidents
 
         self._log.debug(
             "Authz for {user}: {authorizations}",
