@@ -45,9 +45,13 @@ To run unit tests for a specific module::
 
     tox -e coverage-py36 ims.model
 
-To run all environments::
+To run all of the default test environments::
 
     tox
+
+To run the server (for development)::
+
+    tox -e run
 
 Pull requests in GitHub will run Flake8, Mypy, and unit tests on Travis CI, and all are required to pass prior to merging.
 
