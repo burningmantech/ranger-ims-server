@@ -51,6 +51,7 @@ function initIncidentPage() {
             if (number == incidentNumber) {
                 console.log("Got incident update");
                 loadAndDisplayIncident();
+                loadAndDisplayIncidentReports();
             }
         }, true);
 
