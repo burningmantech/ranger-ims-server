@@ -24,9 +24,7 @@ function initIncidentPage() {
             drawRangers();
             drawRangersToAdd();
         });
-        loadIncidentTypesAndCache(function() {
-            drawIncidentTypesToAdd();
-        });
+        loadIncidentTypesAndCache(drawIncidentTypesToAdd);
         loadAndDisplayIncidentReports();
 
         // Scroll to incident_report_add field
