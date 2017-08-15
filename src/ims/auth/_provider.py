@@ -75,17 +75,22 @@ class User(object):
     _log = Logger()
 
 
-    ranger: Ranger = attrib(validator=instance_of(Ranger))
+    _ranger: Ranger = attrib(validator=instance_of(Ranger))
     groups: Sequence[str] = attrib(validator=instance_of(tuple))
 
 
     @property
     def shortNames(self) -> Sequence[str]:
-        return (self.ranger.handle,)
+        return (self._ranger.handle,)
+
+
+    @property
+    def hashedPassword(self) -> str:
+        return self._ranger.password
 
 
     def __str__(self) -> str:
-        return str(self.ranger)
+        return str(self._ranger)
 
 
 
@@ -124,7 +129,7 @@ class AuthProvider(object):
                 ):
                     return True
 
-                hashedPassword = user.ranger.password
+                hashedPassword = user.hashedPassword
                 if hashedPassword is None:
                     return False
 
