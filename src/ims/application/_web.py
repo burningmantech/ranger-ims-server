@@ -273,8 +273,12 @@ class WebApplication(object):
             except ValueError:
                 return notFoundResponse(request)
 
+            incidentReport = await self.config.store.incidentReportWithNumber(
+                numberValue
+            )
+
             await self.config.authProvider.authorizeRequestForIncidentReport(
-                request, numberValue
+                request, incidentReport
             )
 
         return IncidentReportPage(self.config, numberValue)
