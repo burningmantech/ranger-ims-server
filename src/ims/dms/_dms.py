@@ -82,8 +82,8 @@ class DutyManagementSystem(object):
     # be fine.
     # Refresh after an hour, but don't panic about it until we're stale for >12
     # hours.
-    personnelCacheInterval    = 60 * 60 * 1   # 1 hour
-    personnelCacheIntervalMax = 60 * 60 * 12  # 12 hours
+    personnelCacheInterval    = 60 * 5   # 5 minutes
+    personnelCacheIntervalMax = 60 * 30  # 30 minutes
 
 
     def __init__(
