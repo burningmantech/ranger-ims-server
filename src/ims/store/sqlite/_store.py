@@ -1391,7 +1391,7 @@ class DataStore(IMSDataStore):
         rangerHandles = frozenset(rangerHandles)
 
         autoEntry = self._automaticReportEntry(
-            author, now(), "Rangers", rangerHandles
+            author, now(), "Rangers", ", ".join(rangerHandles)
         )
 
         try:
@@ -1453,7 +1453,7 @@ class DataStore(IMSDataStore):
         incidentTypes = frozenset(incidentTypes)
 
         autoEntry = self._automaticReportEntry(
-            author, now(), "incident types", incidentTypes
+            author, now(), "incident types", ", ".join(incidentTypes)
         )
 
         try:
