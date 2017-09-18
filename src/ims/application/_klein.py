@@ -83,7 +83,10 @@ def redirect(
     Perform a redirect.
     """
     if origin is not None:
-        location = location.set(origin, request.uri.decode("utf-8"))
+        try:
+            location = location.set(origin, request.uri.decode("utf-8"))
+        except ValueError:
+            return badRequestResponse(request, "Invalid origin URI")
 
     log.debug(
         "Redirect {source} -> {destination}",
