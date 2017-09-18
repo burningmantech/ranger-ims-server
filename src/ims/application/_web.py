@@ -44,6 +44,7 @@ from ims.element.reports_template import IncidentReportsTemplatePage
 from ims.element.root import RootPage
 from ims.ext.klein import KleinRenderable, static
 from ims.model import Event
+from ims.store import NoSuchIncidentReportError
 
 from ._klein import Router, notFoundResponse, redirect
 
@@ -273,9 +274,17 @@ class WebApplication(object):
             except ValueError:
                 return notFoundResponse(request)
 
-            incidentReport = await self.config.store.incidentReportWithNumber(
-                numberValue
-            )
+            try:
+                incidentReport = (
+                    await self.config.store.incidentReportWithNumber(
+                        numberValue
+                    )
+                )
+            except NoSuchIncidentReportError:
+                await self.config.authProvider.authorizeRequest(
+                    request, None, Authorization.readIncidentReports
+                )
+                return notFoundResponse(request)
 
             await self.config.authProvider.authorizeRequestForIncidentReport(
                 request, incidentReport
