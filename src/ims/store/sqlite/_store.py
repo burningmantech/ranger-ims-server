@@ -363,10 +363,14 @@ class DataStore(IMSDataStore):
                 cursor = db.cursor()
                 try:
                     cursor.execute(
-                        self._query_clearEventAccess,
+                        self._query_clearEventAccessForMode,
                         dict(eventID=event.id, mode=mode),
                     )
                     for expression in expressions:
+                        cursor.execute(
+                            self._query_clearEventAccessForExpression,
+                            dict(eventID=event.id, expression=expression),
+                        )
                         cursor.execute(
                             self._query_addEventAccess, dict(
                                 eventID=event.id,
@@ -389,10 +393,17 @@ class DataStore(IMSDataStore):
             event=event, mode=mode, expressions=expressions,
         )
 
-    _query_clearEventAccess = _query(
+    _query_clearEventAccessForMode = _query(
         """
         delete from EVENT_ACCESS
         where EVENT = ({query_eventID}) and MODE = :mode
+        """
+    )
+
+    _query_clearEventAccessForExpression = _query(
+        """
+        delete from EVENT_ACCESS
+        where EVENT = ({query_eventID}) and EXPRESSION = :expression
         """
     )
 
