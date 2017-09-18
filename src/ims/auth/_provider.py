@@ -269,7 +269,7 @@ class AuthProvider(object):
         # The author of the incident report should be allowed to read and write
         # to it.
 
-        if incidentReport.reportEntries:
+        if request.user is not None and incidentReport.reportEntries:
             rangerHandle = request.user.rangerHandle
             for reportEntry in incidentReport.reportEntries:
                 if reportEntry.author == rangerHandle:

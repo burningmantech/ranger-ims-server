@@ -52,6 +52,8 @@ function loadAccessControlList(success) {
 var _accessTemplate = null;
 var _entryTemplate = null;
 
+var accessModes = ["readers", "writers"];
+
 function drawAccess() {
     var container = $("#event_access_container");
 
@@ -69,10 +71,8 @@ function drawAccess() {
     for (var i in events) {
         var event = events[i];
 
-        var modes = ["readers", "writers"];
-
-        for (var i in modes) {
-            var mode = modes[i];
+        for (var i in accessModes) {
+            var mode = accessModes[i];
 
             var eventAccess = $(_accessTemplate).clone();
 
@@ -132,7 +132,9 @@ function addAccess(sender) {
     edits[event][mode] = acl;
 
     function refresh() {
-        updateEventAccess(event, mode);
+        for (var i in accessModes) {
+            updateEventAccess(event, accessModes[i]);
+        }
     }
 
     function ok() {
@@ -164,7 +166,9 @@ function removeAccess(sender) {
     edits[event][mode] = acl;
 
     function refresh() {
-        updateEventAccess(event, mode);
+        for (var i in accessModes) {
+            updateEventAccess(event, accessModes[i]);
+        }
     }
 
     function ok() {
