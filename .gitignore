@@ -6,6 +6,8 @@
 /.hypothesis
 /.mypy_cache
 /.tox
+/build/
 /cached/
 /data/
+/dist/
 __pycache__
