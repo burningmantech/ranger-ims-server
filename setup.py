@@ -129,7 +129,7 @@ install_requirements = [
     "ranger-ims-server==1.0",
     "service_identity==17.0.0",
     "six==1.10.0",
-    #"Twisted>=17.5.0",
+    "Twisted>=17.5.0",
     "Werkzeug==0.12.2",
     "zope.interface==4.4.2",
 ]
