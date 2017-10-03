@@ -1,0 +1,15 @@
+#!/bin/sh
+
+wd="$(cd "$(dirname "$0")/.." && pwd)";
+
+tmp="$(mktemp -d "${TMPDIR:=/tmp}/image.XXXXX")";
+
+python3.6 "${wd}/setup.py" sdist --dist-dir "${tmp}/dist";
+
+cp "${wd}/.docker.conf" "${tmp}/Dockerfile";
+
+cd "${tmp}";
+
+docker build                 \
+    --tag ranger-ims-server  \
+    "${tmp}";

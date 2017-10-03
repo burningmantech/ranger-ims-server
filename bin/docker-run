@@ -1,0 +1,17 @@
+#!/bin/sh
+
+wd="$(cd "$(dirname "$0")/.." && pwd)";
+
+install -d "${wd}/data";
+
+prefix="/opt/ims";
+  conf="/conf/imsd.conf";
+  data="/data";
+
+docker run                                    \
+    --rm                                      \
+    --name ims                                \
+    --volume "${wd}${conf}:${prefix}${conf}"  \
+    --volume "${wd}${data}:${prefix}${data}"  \
+    --publish 8080:8080                       \
+    ranger-ims-server;
