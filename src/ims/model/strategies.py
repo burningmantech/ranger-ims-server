@@ -167,15 +167,20 @@ def addresses() -> Address:
 
 @composite
 def reportEntries(
-    draw: Callable, automatic: Optional[bool] = None,
+    draw: Callable,
+    author: Optional[str] = None,
+    automatic: Optional[bool] = None,
     beforeNow: bool = False, fromNow: bool = False,
 ) -> ReportEntry:
+    if author is None:
+        author = draw(text(min_size=1))
+
     if automatic is None:
         automatic = draw(booleans())
 
     return ReportEntry(
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
-        author=draw(text(min_size=1)),
+        author=author,
         automatic=automatic,
         text=draw(text(min_size=1)),
     )
