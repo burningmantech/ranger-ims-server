@@ -21,7 +21,7 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 from collections import defaultdict
 from datetime import datetime as DateTime, timezone as TimeZone
 from typing import (
-    Any, Dict, Iterable, List, Optional, Set, Tuple
+    Any, Dict, Iterable, List, Optional, Set, Tuple, cast
 )
 
 from attr import fields as attrFields
@@ -570,7 +570,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
     @given(
         incidents(new=True),
-        rangerHandles().flatmap(
+        cast(Any, rangerHandles()).flatmap(
             lambda author:
                 tuples(
                     lists(
