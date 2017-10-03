@@ -27,7 +27,7 @@ from typing import (
 from attr import fields as attrFields
 
 from hypothesis import assume, given, settings
-from hypothesis.strategies import lists, text, tuples
+from hypothesis.strategies import just, lists, text, tuples
 
 from ims.ext.sqlite import SQLITE_MAX_INT
 from ims.model import (
@@ -568,21 +568,26 @@ class DataStoreIncidentTests(DataStoreTests):
 
     @given(
         incidents(new=True),
-        lists(reportEntries(automatic=False), average_size=2),
-        rangerHandles(),
+        rangerHandles().flatmap(
+            lambda author:
+                tuples(
+                    lists(
+                        reportEntries(automatic=False, author=author),
+                        average_size=2,
+                    ),
+                    just(author),
+                )
+        )
     )
     @settings(max_examples=200)
     def test_addReportEntriesToIncident(
-        self, incident: Incident, reportEntries: List[ReportEntry],
-        author: str
+        self, incident: Incident, entriesBy: Tuple[List[ReportEntry], str]
     ) -> None:
         """
         :meth:`DataStore.addReportEntriesToIncident` adds the given report
         entries to the given incident in the data store.
         """
-        # Change author in report entries to match the author we will use to
-        # add them
-        reportEntries = [r.replace(author=author) for r in reportEntries]
+        reportEntries, author = entriesBy
 
         # Store test data
         store = self.store()
