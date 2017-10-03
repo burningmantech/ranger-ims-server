@@ -248,9 +248,14 @@ def incidentLists(
     minSize: Optional[int] = None,
     maxSize: Optional[int] = None,
     averageSize: Optional[int] = None,
+    uniqueIDs: bool = False,
 ) -> List[Incident]:
-    def uniqueBy(incident: Incident) -> Hashable:
-        return cast(Hashable, (incident.event, incident.number))
+    uniqueBy: Optional[Callable[[Incident], Hashable]]
+    if uniqueIDs:
+        def uniqueBy(incident: Incident) -> Hashable:
+            return cast(Hashable, (incident.event, incident.number))
+    else:
+        uniqueBy = None
 
     return lists(
         incidents(event=event, maxNumber=maxNumber),

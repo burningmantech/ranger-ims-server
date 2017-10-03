@@ -26,7 +26,7 @@ from typing import (
 
 from attr import fields as attrFields
 
-from hypothesis import assume, given, settings
+from hypothesis import given, settings
 from hypothesis.strategies import just, lists, text, tuples
 
 from ims.ext.sqlite import SQLITE_MAX_INT
@@ -78,7 +78,11 @@ class DataStoreIncidentTests(DataStoreTests):
     Tests for :class:`DataStore` incident access.
     """
 
-    @given(incidentLists(maxNumber=SQLITE_MAX_INT, averageSize=3, maxSize=10))
+    @given(
+        incidentLists(
+            maxNumber=SQLITE_MAX_INT, averageSize=3, maxSize=10, uniqueIDs=True
+        )
+    )
     @settings(max_examples=100)
     def test_incidents(self, incidents: Iterable[Incident]) -> None:
         """
@@ -91,8 +95,6 @@ class DataStoreIncidentTests(DataStoreTests):
         store = self.store()
 
         for incident in incidents:
-            assume(incident.number not in events[incident.event])
-
             self.storeIncident(store, incident)
 
             events[incident.event][incident.number] = incident
@@ -113,7 +115,7 @@ class DataStoreIncidentTests(DataStoreTests):
     @given(
         incidentLists(
             event=anEvent, maxNumber=SQLITE_MAX_INT,
-            minSize=2, averageSize=3,
+            minSize=2, averageSize=3, uniqueIDs=True,
         ),
     )
     @settings(max_examples=100)
