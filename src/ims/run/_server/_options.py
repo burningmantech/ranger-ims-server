@@ -23,6 +23,9 @@ from sys import stderr, stdout
 from textwrap import dedent
 from typing import Mapping, MutableMapping, Optional, Sequence, cast
 
+from attr import attrib, attrs
+from attr.validators import instance_of
+
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.logger import (
     InvalidLogLevelError, LogLevel, jsonFileLogObserver, textFileLogObserver
@@ -77,24 +80,28 @@ class ServerOptions(Options):
                     exit(ExitStatus.EX_CONFIG, "Config file not found.")
                 configuration = Configuration(configFile)
 
-            options = cast(Mapping, self)
+            options = cast(MutableMapping, self)
+
+            if "overrides" in options:
+                for override in options["overrides"]:
+                    raise NotImplementedError("Option overrides unimplemented")
 
             if "logFileName" in options:
-                configuration.LogFilePath = Path(self["logFileName"])
+                configuration.LogFilePath = Path(options["logFileName"])
             else:
-                self.opt_log_file(str(configuration.LogFilePath))
+                options.opt_log_file(str(configuration.LogFilePath))
 
             if "logFormat" in options:
-                configuration.LogFormat = self["logFormat"]
+                configuration.LogFormat = options["logFormat"]
             elif configuration.LogFormat is not None:
-                self.opt_log_format(configuration.LogFormat)
+                options.opt_log_format(configuration.LogFormat)
 
             if "logLevel" in options:
-                configuration.LogLevelName = self["logLevel"].name
+                configuration.LogLevelName = options["logLevel"].name
             elif configuration.LogLevelName is not None:
-                self.opt_log_level(configuration.LogLevelName)
+                options.opt_log_level(configuration.LogLevelName)
 
-            cast(MutableMapping, self)["configuration"] = configuration
+            options["configuration"] = configuration
         except Exception as e:
             exit(ExitStatus.EX_CONFIG, str(e))
 
@@ -159,6 +166,29 @@ class ServerOptions(Options):
     opt_log_format.__doc__ = dedent(cast(str, opt_log_format.__doc__))
 
 
+    def opt_option(self, arg: str) -> None:
+        """
+        Set a configuration option.
+        Format is "[section]name=value", eg: "[Core]Host=0.0.0.0".
+        """
+        try:
+            if arg.startswith("["):
+                section, rest = arg[1:].split("]", 1)
+            else:
+                section = "Core"
+                rest = arg
+            name, value = rest.split("=", 1)
+        except ValueError:
+            raise UsageError(f"Invalid option specifier: {arg}")
+
+        if "overrides" not in self:
+            self["overrides"] = []
+
+        self["overrides"].append(
+            Override(section=section, name=name, value=value)
+        )
+
+
     def selectDefaultLogObserver(self) -> None:
         """
         Set :func:`fileLogObserverFactory` to the default appropriate for the
@@ -185,3 +215,14 @@ class ServerOptions(Options):
         Options.postOptions(self)
 
         self.initConfig()
+
+
+
+@attrs(frozen=True)
+class Override(object):
+    """
+    Configuration option override.
+    """
+    section: str = attrib(validator=instance_of(str))
+    name: str    = attrib(validator=instance_of(str))
+    value: str   = attrib(validator=instance_of(str))
