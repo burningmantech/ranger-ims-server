@@ -1,5 +1,12 @@
 #!/bin/sh
 
+##
+# Run the Docker container built by docker-build
+##
+
+set -e
+set -u
+
 wd="$(cd "$(dirname "$0")/.." && pwd)";
 
 install -d "${wd}/data";
@@ -14,4 +21,4 @@ docker run                                    \
     --volume "${wd}${conf}:${prefix}${conf}"  \
     --volume "${wd}${data}:${prefix}${data}"  \
     --publish 8080:8080                       \
-    ranger-ims-server;
+    ranger-ims-server "$@";
