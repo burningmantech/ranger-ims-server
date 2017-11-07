@@ -1,14 +1,26 @@
 #!/bin/sh
 
+##
+# Build a Docker container
+##
+
+set -e
+set -u
+
 wd="$(cd "$(dirname "$0")/.." && pwd)";
+
+tools="${wd}/tools/Docker";
 
 tmp="$(mktemp -d "${TMPDIR:=/tmp}/image.XXXXX")";
 
-python3.6 "${wd}/setup.py" sdist --dist-dir "${tmp}/dist";
+python3.6 "${wd}/setup.py" sdist --dist-dir "${tmp}/sdist";
 
-cp "${wd}/.docker.conf" "${tmp}/Dockerfile";
+install -m 444 "${tools}/Dockerfile" "${tmp}/Dockerfile";
+install -m 555 "${tools}/install.sh" "${tmp}/install";
 
 cd "${tmp}";
+
+cat Dockerfile;
 
 docker build                 \
     --tag ranger-ims-server  \

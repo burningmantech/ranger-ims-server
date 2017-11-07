@@ -18,9 +18,9 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from typing import Dict, Set, Tuple
+from typing import Any, Dict, Set, Tuple, cast
 
-from hypothesis import assume, given
+from hypothesis import given
 from hypothesis.strategies import booleans, tuples
 
 from ims.model.strategies import incidentTypesText
@@ -34,23 +34,28 @@ Dict, Set  # silence linter
 __all__ = ()
 
 
+builtInTypes = {"Admin", "Junk"}
+
+
 
 class DataStoreIncidentTypeTests(DataStoreTests):
     """
     Tests for :class:`DataStore` incident type access.
     """
 
-    builtInTypes = {"Admin", "Junk"}
-
-
-    @given(tuples(tuples(incidentTypesText(), booleans())))
+    @given(
+        tuples(
+            tuples(incidentTypesText(), booleans()).filter(
+                lambda t: t[0] not in builtInTypes
+            )
+        )
+    )
     def test_incidentTypes(self, data: Tuple[Tuple[str, bool]]) -> None:
         """
         :meth:`DataStore.incidentTypes` returns visible incident types.
         """
         store = self.store()
         for (name, hidden) in data:
-            assume(name not in self.builtInTypes)
             store._db.execute(
                 "insert into INCIDENT_TYPE (NAME, HIDDEN) "
                 "values (:name, :hidden)",
@@ -62,12 +67,18 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         )
         expected = frozenset(
             (name for (name, hidden) in data if not hidden)
-        ) | self.builtInTypes
+        ) | builtInTypes
 
         self.assertEqual(incidentTypes, expected)
 
 
-    @given(tuples(tuples(incidentTypesText(), booleans())))
+    @given(
+        tuples(
+            tuples(incidentTypesText(), booleans()).filter(
+                lambda t: t[0] not in builtInTypes
+            )
+        )
+    )
     def test_incidentTypes_includeHidden(
         self, data: Tuple[Tuple[str, bool]]
     ) -> None:
@@ -77,7 +88,6 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         """
         store = self.store()
         for (name, hidden) in data:
-            assume(name not in self.builtInTypes)
             store._db.execute(
                 "insert into INCIDENT_TYPE (NAME, HIDDEN) "
                 "values (:name, :hidden)",
@@ -89,18 +99,19 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         )
         expected = frozenset(
             (name for (name, hidden) in data)
-        ) | self.builtInTypes
+        ) | builtInTypes
 
         self.assertEqual(incidentTypes, expected)
 
 
-    @given(incidentTypesText(), booleans())
+    @given(
+        cast(Any, incidentTypesText()).filter(lambda t: t not in builtInTypes),
+        booleans(),
+    )
     def test_createIncidentType(self, incidentType: str, hidden: bool) -> None:
         """
         :meth:`DataStore.createIncidentType` creates the incident type.
         """
-        assume(incidentType not in self.builtInTypes)
-
         store = self.store()
         self.successResultOf(
             store.createIncidentType(incidentType, hidden=hidden)
