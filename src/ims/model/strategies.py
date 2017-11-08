@@ -22,15 +22,16 @@ from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
 from os import getenv
-from typing import Callable, Hashable, List, Optional, cast
+from typing import Callable, Hashable, Optional, cast
 
 from hypothesis import HealthCheck, settings
+from hypothesis.searchstrategy import SearchStrategy
 from hypothesis.strategies import (
     booleans, composite, datetimes as _datetimes, integers, lists, none,
     one_of, sampled_from, text,
 )
 
-from ._address import Address, RodGarettAddress, TextOnlyAddress
+from ._address import RodGarettAddress, TextOnlyAddress
 from ._entry import ReportEntry
 from ._event import Event
 from ._incident import Incident
@@ -97,7 +98,7 @@ def timeZones(draw: Callable) -> TimeZone:
 
 def dateTimes(
     beforeNow: bool = False, fromNow: bool = False
-) -> Callable[..., DateTime]:
+) -> SearchStrategy:  # DateTime
     assert not (beforeNow and fromNow)
 
     #
@@ -132,23 +133,23 @@ def dateTimes(
 ##
 
 @composite
-def textOnlyAddresses(draw: Callable) -> TextOnlyAddress:
+def textOnlyAddresses(draw: Callable) -> SearchStrategy:  # TextOnlyAddress
     return TextOnlyAddress(description=draw(text()))
 
 
-def concentricStreetIDs() -> Callable[..., str]:
+def concentricStreetIDs() -> SearchStrategy:  # str
     return text()
 
 
-def concentricStreetNames() -> Callable[..., str]:
+def concentricStreetNames() -> SearchStrategy:  # str
     return text()
 
 
-def radialHours() -> Callable[..., int]:
+def radialHours() -> SearchStrategy:  # int
     return integers(min_value=1, max_value=12)
 
 
-def radialMinutes() -> Callable[..., str]:
+def radialMinutes() -> SearchStrategy:  # str
     return integers(min_value=0, max_value=59)
 
 
@@ -162,7 +163,7 @@ def rodGarettAddresses(draw: Callable) -> RodGarettAddress:
     )
 
 
-def addresses() -> Callable[..., Address]:
+def addresses() -> SearchStrategy:  # Address
     return one_of(none(), textOnlyAddresses(), rodGarettAddresses())
 
 
@@ -204,11 +205,11 @@ def events(draw: Callable) -> Event:
 # Incident
 ##
 
-def incidentNumbers(max: Optional[int] = None) -> Callable[..., str]:
+def incidentNumbers(max: Optional[int] = None) -> SearchStrategy:  # str
     return integers(min_value=1, max_value=max)
 
 
-def incidentSummaries() -> Callable[..., str]:
+def incidentSummaries() -> SearchStrategy:  # str
     return one_of(none(), text())
 
 
@@ -254,7 +255,7 @@ def incidentLists(
     maxSize: Optional[int] = None,
     averageSize: Optional[int] = None,
     uniqueIDs: bool = False,
-) -> Callable[..., List[Incident]]:
+) -> SearchStrategy:  # List[Incident]
     uniqueBy: Optional[Callable[[Incident], Hashable]]
     if uniqueIDs:
         def uniqueBy(incident: Incident) -> Hashable:
@@ -273,7 +274,7 @@ def incidentLists(
 # Location
 ##
 
-def locationNames() -> Callable[..., str]:
+def locationNames() -> SearchStrategy:  # str
     return text()
 
 
@@ -286,7 +287,7 @@ def locations(draw: Callable) -> Location:
 # Priority
 ##
 
-def incidentPriorities() -> Callable[..., IncidentPriority]:
+def incidentPriorities() -> SearchStrategy:  # IncidentPriority
     return sampled_from(IncidentPriority)
 
 
@@ -294,7 +295,7 @@ def incidentPriorities() -> Callable[..., IncidentPriority]:
 # Ranger
 ##
 
-def rangerHandles() -> Callable[..., str]:
+def rangerHandles() -> SearchStrategy:  # str
     return text(min_size=1)
 
 
@@ -349,7 +350,7 @@ def incidentReportLists(
     minSize: Optional[int] = None,
     maxSize: Optional[int] = None,
     averageSize: Optional[int] = None,
-) -> Callable[..., List[IncidentReport]]:
+) -> SearchStrategy:  # List[IncidentReport]
     def uniqueBy(incidentReport: IncidentReport) -> Hashable:
         return cast(Hashable, incidentReport.number)
 
@@ -364,7 +365,7 @@ def incidentReportLists(
 # State
 ##
 
-def incidentStates() -> Callable[..., IncidentState]:
+def incidentStates() -> SearchStrategy:  # IncidentState
     return sampled_from(IncidentState)
 
 
@@ -372,9 +373,9 @@ def incidentStates() -> Callable[..., IncidentState]:
 # Type
 ##
 
-def incidentTypesText() -> Callable[..., str]:
+def incidentTypesText() -> SearchStrategy:  # str
     return text(min_size=1)
 
 
-def incidentTypes() -> Callable[..., KnownIncidentType]:
+def incidentTypes() -> SearchStrategy:  # KnownIncidentType
     return sampled_from(KnownIncidentType)
