@@ -102,10 +102,10 @@ def dateTimes(
     assert not (beforeNow and fromNow)
 
     #
-    # min_datetime >= UTC epoch because otherwise we can't store dates as UTC
+    # min_value >= UTC epoch because otherwise we can't store dates as UTC
     # timestamps.
     #
-    # We actually add a day of fuzz below because min_datetime doesn't allow
+    # We actually add a day of fuzz below because min_value doesn't allow
     # non-naive values (?!) so that ensures we have a value after the epoch
     #
     # For all current uses of model date-times in model objects in this module,
@@ -124,7 +124,7 @@ def dateTimes(
         min = DateTime(1970, 1, 1) + fuzz
 
     return _datetimes(
-        min_datetime=min, max_datetime=max, timezones=timeZones()
+        min_value=min, max_value=max, timezones=timeZones()
     )
 
 
