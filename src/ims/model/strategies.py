@@ -255,7 +255,7 @@ def incidentLists(
     maxSize: Optional[int] = None,
     averageSize: Optional[int] = None,
     uniqueIDs: bool = False,
-) -> Callable[..., List[Incident]]:
+) -> SearchStrategy:  # List[Incident]
     uniqueBy: Optional[Callable[[Incident], Hashable]]
     if uniqueIDs:
         def uniqueBy(incident: Incident) -> Hashable:
