@@ -21,7 +21,6 @@ Incident Management System data model JSON serialization/deserialization
 from . import _event
 from . import _ranger
 from . import _type
-
 from ._address import RodGarettAddressJSONKey, TextOnlyAddressJSONKey
 from ._entry import ReportEntryJSONKey
 from ._incident import IncidentJSONKey
