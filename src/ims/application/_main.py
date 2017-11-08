@@ -29,6 +29,7 @@ from twisted.web.static import File
 import ims.element
 from ims.config import Configuration, URLs
 from ims.dms import DutyManagementSystem
+from ims.ext.json import jsonTextFromObject
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
 from ._api import APIApplication
@@ -132,6 +133,31 @@ class MainApplication(object):
     @static
     def staticEndpoint(self, request: IRequest) -> KleinRenderable:
         return File(resourcesDirectory.path)
+
+
+    #
+    # URLs
+    #
+
+    @router.route(URLs.urlsJS, methods=("HEAD", "GET"))
+    @static
+    def urlsEndpoint(self, request: IRequest) -> KleinRenderable:
+        """
+        JavaScript variables for service URLs.
+        """
+        urls = {
+            k: getattr(URLs, k).asText() for k in URLs.__dict__
+            if not k.startswith("_")
+        }
+
+        request.setHeader(
+            HeaderName.contentType.value, ContentType.javascript.value
+        )
+
+        return "\n".join((
+            "var {} = {};".format(k, jsonTextFromObject(v))
+            for k, v in urls.items()
+        ))
 
 
     #
