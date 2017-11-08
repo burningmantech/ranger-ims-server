@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
 
-  <head t:render="head">
-    <script t:render="url" url="momentJS" />
-    <script t:render="url" url="imsJS" />
-    <script t:render="url" url="adminIncidentTypesJS" />
-  </head>
+  <head
+    t:render="head"
+    imports="jqueryJS,bootstrapJS,momentJS,imsJS,adminIncidentTypesJS"
+  />
 
   <body>
     <div t:render="container">

@@ -69,7 +69,24 @@ class Page(Element):
         children = tag.children
         tag.children = []
 
+        if "imports" in tag.attributes:
+            importNames = (
+                name.strip()
+                for name in tag.attributes["imports"].split(",")
+                if name
+            )
+            del tag.attributes["imports"]
+        else:
+            importNames = ()
+
+        imports = (
+            tags.script(src=getattr(urls, name).asText())
+            for name in importNames
+            if hasattr(urls, name)
+        )
+
         return tag(
+            # Resource metadata
             tags.meta(charset="utf-8"),
             tags.meta(
                 name="viewport", content="width=device-width, initial-scale=1"
@@ -86,9 +103,10 @@ class Page(Element):
                 type="text/css", rel="stylesheet", media="screen",
                 href=urls.styleSheet.asText(),
             ),
-            tags.script(src=urls.jqueryJS.asText()),
-            tags.script(src=urls.bootstrapJS.asText()),
             self.title(request),
+            # JavaScript resource imports
+            imports,
+            # Child elements
             children,
         )
 

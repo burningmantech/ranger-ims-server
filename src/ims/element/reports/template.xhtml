@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
-  <head t:render="head">
+  <head
+    t:render="head"
+    imports="jqueryJS,bootstrapJS,dataTablesJS,dataTablesBootstrapJS,momentJS,imsJS,viewIncidentReportsJS"
+  >
     <link type="text/css" rel="stylesheet" media="screen" t:render="url" url="dataTablesBootstrapCSS" />
-    <script t:render="url" url="dataTablesJS"          />
-    <script t:render="url" url="dataTablesBootstrapJS" />
-    <script t:render="url" url="momentJS"              />
-    <script t:render="url" url="imsJS"                 />
-    <script t:render="url" url="viewIncidentReportsJS" />
   </head>
 
   <body />
