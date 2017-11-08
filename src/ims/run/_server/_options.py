@@ -83,23 +83,23 @@ class ServerOptions(Options):
             options = cast(MutableMapping, self)
 
             if "overrides" in options:
-                for override in options["overrides"]:
+                for _override in options["overrides"]:
                     raise NotImplementedError("Option overrides unimplemented")
 
             if "logFileName" in options:
                 configuration.LogFilePath = Path(options["logFileName"])
             else:
-                options.opt_log_file(str(configuration.LogFilePath))
+                self.opt_log_file(str(configuration.LogFilePath))
 
             if "logFormat" in options:
                 configuration.LogFormat = options["logFormat"]
             elif configuration.LogFormat is not None:
-                options.opt_log_format(configuration.LogFormat)
+                self.opt_log_format(configuration.LogFormat)
 
             if "logLevel" in options:
                 configuration.LogLevelName = options["logLevel"].name
             elif configuration.LogLevelName is not None:
-                options.opt_log_level(configuration.LogLevelName)
+                self.opt_log_level(configuration.LogLevelName)
 
             options["configuration"] = configuration
         except Exception as e:
