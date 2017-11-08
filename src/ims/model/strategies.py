@@ -74,10 +74,7 @@ __all__ = (
 
 
 settings.register_profile(
-    "ci", settings(
-        deadline=None,
-        suppress_health_check=[HealthCheck.too_slow],
-    )
+    "ci", settings(suppress_health_check=[HealthCheck.too_slow])
 )
 if getenv("CI") == "true":
     settings.load_profile("ci")
