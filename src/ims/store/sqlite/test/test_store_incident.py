@@ -21,13 +21,13 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 from collections import defaultdict
 from datetime import datetime as DateTime, timezone as TimeZone
 from typing import (
-    Any, Dict, Iterable, List, Optional, Set, Tuple, cast
+    Any, Dict, FrozenSet, Iterable, Optional, Set, Tuple
 )
 
 from attr import fields as attrFields
 
-from hypothesis import given, settings
-from hypothesis.strategies import just, lists, text, tuples
+from hypothesis import assume, given, settings
+from hypothesis.strategies import frozensets, lists, text, tuples
 
 from ims.ext.sqlite import SQLITE_MAX_INT
 from ims.model import (
@@ -78,11 +78,7 @@ class DataStoreIncidentTests(DataStoreTests):
     Tests for :class:`DataStore` incident access.
     """
 
-    @given(
-        incidentLists(
-            maxNumber=SQLITE_MAX_INT, averageSize=3, maxSize=10, uniqueIDs=True
-        )
-    )
+    @given(incidentLists(maxNumber=SQLITE_MAX_INT, averageSize=3, maxSize=10))
     @settings(max_examples=100)
     def test_incidents(self, incidents: Iterable[Incident]) -> None:
         """
@@ -95,6 +91,8 @@ class DataStoreIncidentTests(DataStoreTests):
         store = self.store()
 
         for incident in incidents:
+            assume(incident.number not in events[incident.event])
+
             self.storeIncident(store, incident)
 
             events[incident.event][incident.number] = incident
@@ -115,7 +113,7 @@ class DataStoreIncidentTests(DataStoreTests):
     @given(
         incidentLists(
             event=anEvent, maxNumber=SQLITE_MAX_INT,
-            minSize=2, averageSize=3, uniqueIDs=True,
+            minSize=2, averageSize=3,
         ),
     )
     @settings(max_examples=100)
@@ -570,36 +568,34 @@ class DataStoreIncidentTests(DataStoreTests):
 
     @given(
         incidents(new=True),
-        cast(Any, rangerHandles()).flatmap(
-            lambda author:
-                tuples(
-                    lists(
-                        reportEntries(automatic=False, author=author),
-                        average_size=2,
-                    ),
-                    just(author),
-                )
-        )
+        frozensets(reportEntries(automatic=False), average_size=2),
+        rangerHandles(),
     )
     @settings(max_examples=200)
     def test_addReportEntriesToIncident(
-        self, incident: Incident, entriesBy: Tuple[List[ReportEntry], str]
+        self, incident: Incident, reportEntries: FrozenSet[ReportEntry],
+        author: str
     ) -> None:
         """
         :meth:`DataStore.addReportEntriesToIncident` adds the given report
         entries to the given incident in the data store.
         """
-        reportEntries, author = entriesBy
+        # Change author in report entries to match the author so we will use to
+        # add them
+        reportEntries = frozenset(
+            r.replace(author=author) for r in reportEntries
+        )
 
         # Store test data
         store = self.store()
         self.successResultOf(store.createEvent(incident.event))
         self.storeIncident(store, incident)
 
-        # Fetch incident back so we have the same data as the DB
+        # Fetch incident back so we have the version from the DB
         incident = self.successResultOf(
             store.incidentWithNumber(incident.event, incident.number)
         )
+        originalEntries = frozenset(incident.reportEntries)
 
         # Add report entries
         self.successResultOf(
@@ -609,22 +605,13 @@ class DataStoreIncidentTests(DataStoreTests):
         )
 
         # Get the updated incident with the new report entries
-        updatedIncident = self.successResultOf(
+        updated = self.successResultOf(
             store.incidentWithNumber(incident.event, incident.number)
         )
-
-        # Updated number of incidents should be original plus new
-        self.assertEqual(
-            len(updatedIncident.reportEntries),
-            len(incident.reportEntries) + len(reportEntries)
-        )
+        updatedEntries = frozenset(updated.reportEntries)
 
         # Updated entries minus the original entries == the added entries
-        updatedNewEntries = list(updatedIncident.reportEntries)
-        for entry in incident.reportEntries:
-            updatedNewEntries.remove(entry)
-
-        # New entries should be the same as the ones we added
+        updatedNewEntries = updatedEntries - originalEntries
         self.assertTrue(
             reportEntriesEqualish(
                 sorted(updatedNewEntries), sorted(reportEntries)

@@ -170,20 +170,15 @@ def addresses() -> SearchStrategy:  # Address
 
 @composite
 def reportEntries(
-    draw: Callable,
-    author: Optional[str] = None,
-    automatic: Optional[bool] = None,
+    draw: Callable, automatic: Optional[bool] = None,
     beforeNow: bool = False, fromNow: bool = False,
 ) -> ReportEntry:
-    if author is None:
-        author = draw(text(min_size=1))
-
     if automatic is None:
         automatic = draw(booleans())
 
     return ReportEntry(
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
-        author=author,
+        author=draw(text(min_size=1)),
         automatic=automatic,
         text=draw(text(min_size=1)),
     )
@@ -251,14 +246,9 @@ def incidentLists(
     minSize: Optional[int] = None,
     maxSize: Optional[int] = None,
     averageSize: Optional[int] = None,
-    uniqueIDs: bool = False,
-) -> Callable[..., List[Incident]]:
-    uniqueBy: Optional[Callable[[Incident], Hashable]]
-    if uniqueIDs:
-        def uniqueBy(incident: Incident) -> Hashable:
-            return cast(Hashable, (incident.event, incident.number))
-    else:
-        uniqueBy = None
+) -> SearchStrategy:  # List[Incident]
+    def uniqueBy(incident: Incident) -> Hashable:
+        return cast(Hashable, (incident.event, incident.number))
 
     return lists(
         incidents(event=event, maxNumber=maxNumber),
