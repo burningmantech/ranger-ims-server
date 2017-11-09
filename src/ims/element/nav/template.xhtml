@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <nav xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root" class="navbar navbar-default">
+
   <div class="navbar-header">
     <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar" aria-expanded="false">
       <span class="sr-only">Toggle navigation</span>
@@ -8,29 +9,45 @@
       <span class="icon-bar"></span>
     </button>
     <a class="navbar-brand" t:render="url" url="app">
-      <img alt="Brand" t:render="url" url="logo" />
+      <img alt="IMS" t:render="url" url="logo" />
     </a>
   </div>
+
   <div class="collapse navbar-collapse" id="main-navbar">
-    <ul class="nav navbar-nav navbar-left">
-      <li t:render="if_detached_reports">
+
+    <ul class="nav navbar-nav navbar-left" t:render="if_logged_in">
+      <li>
         <a t:render="url" url="viewIncidentReports">
           <span id="detached_report_icon" class="glyphicon glyphicon-copy" />
         </a>
       </li>
-      <li t:render="events_reversed" />
+      <li class="dropdown"> <!-- Event menu -->
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+            <span class="event-id">Event</span>
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <li t:render="events_reversed" />
+          </ul>
+      </li>
     </ul>
+
     <ul class="nav navbar-nav navbar-right" t:render="if_not_logged_in">
       <li id="nav_login"><a t:render="url" url="login">Log In</a></li>
     </ul>
+
     <ul class="nav navbar-nav navbar-right" t:render="if_logged_in">
-      <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><code t:render="logged_in_user" /><span class="caret"></span></a>
+      <li class="dropdown"> <!-- User menu -->
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+            <code t:render="logged_in_user" /><span class="caret"></span>
+          </a>
           <ul class="dropdown-menu">
             <li t:render="if_admin"><a t:render="url" url="admin">Admin</a></li>
             <li><a t:render="url" url="logout">Log out</a></li>
           </ul>
       </li>
     </ul>
+
   </div>
+
 </nav>

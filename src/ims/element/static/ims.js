@@ -258,6 +258,10 @@ function controlClear(element) {
 
 function loadBody(success) {
     function complete() {
+        if (typeof eventID !== "undefined") {
+            $(".event-id").text(eventID);
+        }
+
         if (success != undefined) {
             success();
         }
