@@ -97,11 +97,9 @@ class Page(Element):
         `<title>` element.
         """
         if self.titleText is None:
-            titleText = ""
+            return tag
         else:
-            titleText = self.titleText
-
-        return tag(titleText)
+            return tag.clone()(self.titleText)
 
 
     @renderer
