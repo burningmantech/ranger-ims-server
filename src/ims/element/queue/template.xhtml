@@ -1,24 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
-  <head t:render="head">
+  <head t:render="head" imports="dataTables,ims,viewDispatchQueue">
     <link type="text/css" rel="stylesheet" media="screen" t:render="url" url="dataTablesBootstrapCSS" />
-    <script t:render="url" url="dataTablesJS"          />
-    <script t:render="url" url="dataTablesBootstrapJS" />
-    <script t:render="url" url="momentJS"              />
-    <script t:render="url" url="imsJS"                 />
-    <script t:render="url" url="viewDispatchQueueJS"   />
   </head>
 
   <body />
 
   <script>
     <!-- FIXME: figure out how to move this to / include from incident.js -->
-    var editingAllowed   = <json t:render="editing_allowed"                     />;
-    var eventID          = <json t:render="event_id"                            />;
-    var pageTemplateURL  = <json t:render="url" url="viewDispatchQueueTemplate" />;
-    var dataURL          = <json t:render="data_url"                            />;
-    var viewIncidentsURL = <json t:render="view_incidents_url"                  />;
-    var eventSourceURL   = <json t:render="url" url="eventSource"               />;
+    var editingAllowed = <json t:render="editing_allowed" />;
+    var eventID        = <json t:render="event_id"        />;
+
+    var pageTemplateURL  = url_viewDispatchQueueTemplate;
+    var dataURL          = urlReplace(url_incidents, eventID);
+    var viewIncidentsURL = urlReplace(url_viewIncidents, eventID);
 
     var concentricStreetNameByID = <json t:render="concentric_street_name_by_id" />;
 

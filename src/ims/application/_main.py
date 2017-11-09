@@ -29,7 +29,8 @@ from twisted.web.static import File
 import ims.element
 from ims.config import Configuration, URLs
 from ims.dms import DutyManagementSystem
-from ims.ext.klein import KleinRenderable
+from ims.ext.json import jsonTextFromObject
+from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
 from ._api import APIApplication
 from ._auth import AuthApplication
@@ -118,7 +119,8 @@ class MainApplication(object):
     #
 
     @router.route(URLs.root, methods=("HEAD", "GET"))
-    def rootResource(self, request: IRequest) -> KleinRenderable:
+    @static
+    def rootEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Server root page.
 
@@ -128,8 +130,34 @@ class MainApplication(object):
 
 
     @router.route(URLs.static, branch=True)
-    def static(self, request: IRequest) -> KleinRenderable:
+    @static
+    def staticEndpoint(self, request: IRequest) -> KleinRenderable:
         return File(resourcesDirectory.path)
+
+
+    #
+    # URLs
+    #
+
+    @router.route(URLs.urlsJS, methods=("HEAD", "GET"))
+    @static
+    def urlsEndpoint(self, request: IRequest) -> KleinRenderable:
+        """
+        JavaScript variables for service URLs.
+        """
+        urls = {
+            k: getattr(URLs, k).asText() for k in URLs.__dict__
+            if not k.startswith("_")
+        }
+
+        request.setHeader(
+            HeaderName.contentType.value, ContentType.javascript.value
+        )
+
+        return "\n".join((
+            "var url_{} = {};".format(k, jsonTextFromObject(v))
+            for k, v in urls.items()
+        ))
 
 
     #
@@ -137,6 +165,7 @@ class MainApplication(object):
     #
 
     @router.route(URLs.api, branch=True)
+    @static
     def apiApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         API application resource.
@@ -145,6 +174,7 @@ class MainApplication(object):
 
 
     @router.route(URLs.auth, branch=True)
+    @static
     def authApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Auth application resource.
@@ -153,6 +183,7 @@ class MainApplication(object):
 
 
     @router.route(URLs.external, branch=True)
+    @static
     def externalApplicationEndpoint(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -163,6 +194,7 @@ class MainApplication(object):
 
 
     @router.route(URLs.app, branch=True)
+    @static
     def webApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Web application resource.

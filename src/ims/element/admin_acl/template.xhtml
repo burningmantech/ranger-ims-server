@@ -1,11 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
 
-  <head t:render="head">
-    <script t:render="url" url="momentJS" />
-    <script t:render="url" url="imsJS" />
-    <script t:render="url" url="adminAccessControlJS" />
-  </head>
+  <head t:render="head" imports="ims,adminAccessControl" />
 
   <body>
     <div t:render="container">
@@ -39,8 +35,7 @@
   </body>
 
   <script>
-    var events    = <json t:render="events_list" />;
-    var accessURL = <json t:render="url" url="acl" />;
+    var events = <json t:render="events_list" />;
 
     initPage();
   </script>

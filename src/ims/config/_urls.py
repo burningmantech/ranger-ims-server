@@ -38,6 +38,7 @@ class URLs(object):
     root = URL.fromText("/")
 
     prefix = root.child("ims").child("")
+    urlsJS = prefix.child("urls.js")
 
     # Static resources
     static     = prefix.child("static")

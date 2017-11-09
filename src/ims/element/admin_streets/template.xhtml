@@ -1,11 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
 
-  <head t:render="head">
-    <script t:render="url" url="momentJS" />
-    <script t:render="url" url="imsJS" />
-    <script t:render="url" url="adminStreetsJS" />
-  </head>
+  <head t:render="head" imports="ims,adminStreets" />
 
   <body>
     <div t:render="container">
@@ -41,8 +37,7 @@
   </body>
 
   <script>
-    var events     = <json t:render="events_list" />;
-    var streetsURL = <json t:render="url" url="streets" />;
+    var events = <json t:render="events_list" />;
 
     initPage();
   </script>

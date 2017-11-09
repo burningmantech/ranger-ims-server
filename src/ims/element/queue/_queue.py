@@ -65,30 +65,6 @@ class DispatchQueuePage(Page):
 
 
     @renderer
-    def data_url(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        JSON string: URL for incidents endpoint for the event.
-        """
-        return jsonTextFromObject(
-            self.config.urls.incidents.asText()
-            .replace("<eventID>", self.event.id)
-        )
-
-
-    @renderer
-    def view_incidents_url(
-        self, request: IRequest, tag: Tag
-    ) -> KleinRenderable:
-        """
-        JSON string: URL for incidents page for the event.
-        """
-        return jsonTextFromObject(
-            self.config.urls.viewIncidents.asText()
-            .replace("<eventID>", self.event.id)
-        )
-
-
-    @renderer
     async def concentric_street_name_by_id(
         self, request: IRequest, tag: Tag
     ) -> KleinRenderable:

@@ -1,22 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
 
-  <head t:render="head">
-    <script t:render="url" url="momentJS"             />
-    <script t:render="url" url="imsJS"                />
-    <script t:render="url" url="viewIncidentReportJS" />
-  </head>
+  <head t:render="head" imports="ims,viewIncidentReport" />
 
   <body />
 
   <script>
     <!-- FIXME: figure out how to move this to / include from report.js -->
-    var editingAllowed         = <json t:render="editing_allowed"                      />;
-    var incidentReportNumber   = <json t:render="incident_report_number"               />;
-    var pageTemplateURL        = <json t:render="url" url="viewIncidentReportTemplate" />;
-    var incidentReportsURL     = <json t:render="url" url="incidentReports"            />;
-    var viewIncidentReportsURL = <json t:render="url" url="viewIncidentReports"        />;
-    var personnelURL           = <json t:render="url" url="personnel"                  />;
+    var editingAllowed       = <json t:render="editing_allowed"                      />;
+    var incidentReportNumber = <json t:render="incident_report_number"               />;
+    var pageTemplateURL      = url_viewIncidentReportTemplate;
 
     initIncidentReportPage();
   </script>

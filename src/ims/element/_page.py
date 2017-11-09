@@ -18,6 +18,11 @@
 Element base classes.
 """
 
+from collections import OrderedDict
+from typing import Iterable, MutableMapping
+
+from hyperlink import URL
+
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer, tags
 
@@ -44,6 +49,46 @@ class Page(Element):
         self.titleText = title
 
 
+    def urlsFromImportSpec(self, spec: str) -> Iterable[URL]:
+        """
+        Given a string specifying desired imports, return the corresponding
+        URLs.
+        """
+        urls = self.config.urls
+
+        result: MutableMapping[str, URL] = OrderedDict()
+
+        def add(name: str) -> None:
+            if not name or name in result:
+                return
+
+            if name == "bootstrap":
+                add("jquery")
+
+            if name == "ims":
+                add("jquery")
+                add("moment")
+
+            try:
+                result[name] = getattr(urls, "{}JS".format(name))
+            except AttributeError:
+                raise ValueError(
+                    "Invalid import {!r} in spec {!r}".format(name, spec)
+                )
+
+            if name == "dataTables":
+                add("dataTablesBootstrap")
+
+        # All pages use Bootstrap
+        add("bootstrap")
+        add("urls")
+
+        for name in spec.split(","):
+            add(name.strip())
+
+        return result.values()
+
+
     @renderer
     def title(
         self, request: IRequest, tag: Tag = tags.title
@@ -62,14 +107,24 @@ class Page(Element):
     @renderer
     def head(self, request: IRequest, tag: Tag = tags.head) -> KleinRenderable:
         """
-        <head> element.
+        `<head>` element.
         """
         urls = self.config.urls
 
         children = tag.children
         tag.children = []
 
+        imports = (
+            tags.script(src=url.asText())
+            for url in
+            self.urlsFromImportSpec(tag.attributes.get("imports", ""))
+        )
+
+        if "imports" in tag.attributes:
+            del tag.attributes["imports"]
+
         return tag(
+            # Resource metadata
             tags.meta(charset="utf-8"),
             tags.meta(
                 name="viewport", content="width=device-width, initial-scale=1"
@@ -86,9 +141,10 @@ class Page(Element):
                 type="text/css", rel="stylesheet", media="screen",
                 href=urls.styleSheet.asText(),
             ),
-            tags.script(src=urls.jqueryJS.asText()),
-            tags.script(src=urls.bootstrapJS.asText()),
             self.title(request),
+            # JavaScript resource imports
+            imports,
+            # Child elements
             children,
         )
 
@@ -127,7 +183,7 @@ class Page(Element):
     @renderer
     def nav(self, request: IRequest, tag: Tag = tags.nav) -> KleinRenderable:
         """
-        <nav> element.
+        `<nav>` element.
         """
         return NavElement(config=self.config)
 
@@ -137,7 +193,7 @@ class Page(Element):
         self, request: IRequest, tag: Tag = tags.header
     ) -> KleinRenderable:
         """
-        <header> element.
+        `<header>` element.
         """
         return HeaderElement(config=self.config)
 
@@ -147,6 +203,6 @@ class Page(Element):
         self, request: IRequest, tag: Tag = tags.footer
     ) -> KleinRenderable:
         """
-        <footer> element.
+        `<footer>` element.
         """
         return FooterElement(config=self.config)
