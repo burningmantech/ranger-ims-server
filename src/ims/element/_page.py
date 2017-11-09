@@ -18,6 +18,8 @@
 Element base classes.
 """
 
+from typing import Iterable
+
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer, tags
 
@@ -69,6 +71,7 @@ class Page(Element):
         children = tag.children
         tag.children = []
 
+        importNames: Iterable[str]
         if "imports" in tag.attributes:
             importNames = (
                 name.strip()
