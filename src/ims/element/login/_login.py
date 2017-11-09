@@ -42,9 +42,7 @@ class LoginPage(Page):
 
 
     @renderer
-    def if_authn_failed(
-        self, request: IRequest, tag: Tag = tags.div
-    ) -> KleinRenderable:
+    def if_authn_failed(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         Render conditionally if the user failed to authenticate.
         """
@@ -55,9 +53,7 @@ class LoginPage(Page):
 
 
     @renderer
-    def if_authz_failed(
-        self, request: IRequest, tag: Tag = tags.div
-    ) -> KleinRenderable:
+    def if_authz_failed(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         Render conditionally if the user failed to authorize.
         """
