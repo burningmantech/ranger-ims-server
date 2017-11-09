@@ -20,6 +20,8 @@ Element base classes.
 
 from typing import Iterable
 
+from hyperlink import URL
+
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer, tags
 
@@ -46,6 +48,28 @@ class Page(Element):
         self.titleText = title
 
 
+    def urlsFromSpec(self, spec: str) -> Iterable[URL]:
+        """
+        Given a string specifying desired imports, return the corresponding
+        URLs.
+        """
+        urls = self.config.urls
+
+        result = OrderedDict()
+
+        def add(name):
+            if name and name not in result:
+                result[name] = getattr(urls, name)
+
+        for name in ("jqueryJS", "bootstrapJS"):
+            add(name)
+
+        for name in spec.split(","):
+            add(name.strip())
+
+        return result.values()
+
+
     @renderer
     def title(
         self, request: IRequest, tag: Tag = tags.title
@@ -64,29 +88,20 @@ class Page(Element):
     @renderer
     def head(self, request: IRequest, tag: Tag = tags.head) -> KleinRenderable:
         """
-        <head> element.
+        `<head>` element.
         """
         urls = self.config.urls
 
         children = tag.children
         tag.children = []
 
-        importNames: Iterable[str]
-        if "imports" in tag.attributes:
-            importNames = (
-                name.strip()
-                for name in tag.attributes["imports"].split(",")
-                if name
-            )
-            del tag.attributes["imports"]
-        else:
-            importNames = ()
-
         imports = (
-            tags.script(src=getattr(urls, name).asText())
-            for name in importNames
-            if hasattr(urls, name)
+            tags.script(src=url.asText())
+            for url in self.urlsFromSpec(tag.attributes.get("imports", ""))
         )
+
+        if "imports" in tag.attributes:
+            del tag.attributes["imports"]
 
         return tag(
             # Resource metadata
@@ -148,7 +163,7 @@ class Page(Element):
     @renderer
     def nav(self, request: IRequest, tag: Tag = tags.nav) -> KleinRenderable:
         """
-        <nav> element.
+        `<nav>` element.
         """
         return NavElement(config=self.config)
 
@@ -158,7 +173,7 @@ class Page(Element):
         self, request: IRequest, tag: Tag = tags.header
     ) -> KleinRenderable:
         """
-        <header> element.
+        `<header>` element.
         """
         return HeaderElement(config=self.config)
 
@@ -168,6 +183,6 @@ class Page(Element):
         self, request: IRequest, tag: Tag = tags.footer
     ) -> KleinRenderable:
         """
-        <footer> element.
+        `<footer>` element.
         """
         return FooterElement(config=self.config)
