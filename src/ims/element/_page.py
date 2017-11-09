@@ -18,7 +18,8 @@
 Element base classes.
 """
 
-from typing import Iterable
+from collections import OrderedDict
+from typing import Iterable, MutableMapping
 
 from hyperlink import URL
 
@@ -48,21 +49,39 @@ class Page(Element):
         self.titleText = title
 
 
-    def urlsFromSpec(self, spec: str) -> Iterable[URL]:
+    def urlsFromImportSpec(self, spec: str) -> Iterable[URL]:
         """
         Given a string specifying desired imports, return the corresponding
         URLs.
         """
         urls = self.config.urls
 
-        result = OrderedDict()
+        result: MutableMapping[str: URL] = OrderedDict()
 
         def add(name):
-            if name and name not in result:
-                result[name] = getattr(urls, name)
+            if not name or name in result:
+                return
 
-        for name in ("jqueryJS", "bootstrapJS"):
-            add(name)
+            if name == "bootstrap":
+                add("jquery")
+
+            if name == "ims":
+                add("jquery")
+                add("moment")
+
+            try:
+                result[name] = getattr(urls, "{}JS".format(name))
+            except AttributeError:
+                raise ValueError(
+                    "Invalid import {!r} in spec {!r}".format(name, spec)
+                )
+
+            if name == "dataTables":
+                add("dataTablesBootstrap")
+
+        # All pages use Bootstrap
+        add("bootstrap")
+        add("urls")
 
         for name in spec.split(","):
             add(name.strip())
@@ -97,7 +116,8 @@ class Page(Element):
 
         imports = (
             tags.script(src=url.asText())
-            for url in self.urlsFromSpec(tag.attributes.get("imports", ""))
+            for url in
+            self.urlsFromImportSpec(tag.attributes.get("imports", ""))
         )
 
         if "imports" in tag.attributes:
