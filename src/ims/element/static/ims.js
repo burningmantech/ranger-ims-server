@@ -39,6 +39,17 @@ function htmlAsText(html) {
 
 
 //
+// URL substitution
+//
+function urlReplace(url, eventID) {
+    if (eventID) {
+        url = url.replace("<eventID>", eventID);
+    }
+    return url;
+}
+
+
+//
 // Errors
 ///
 
