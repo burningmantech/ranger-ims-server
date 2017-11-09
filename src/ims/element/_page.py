@@ -56,7 +56,7 @@ class Page(Element):
         """
         urls = self.config.urls
 
-        result: MutableMapping[str: URL] = OrderedDict()
+        result: MutableMapping[str, URL] = OrderedDict()
 
         def add(name):
             if not name or name in result:
