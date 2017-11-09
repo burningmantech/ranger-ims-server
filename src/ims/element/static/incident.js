@@ -227,7 +227,7 @@ function loadPersonnel(success) {
         window.alert(message);
     }
 
-    jsonRequest(personnelURL, null, ok, fail);
+    jsonRequest(url_personnel, null, ok, fail);
 }
 
 
@@ -289,7 +289,7 @@ function loadIncidentTypes(success) {
         window.alert(message);
     }
 
-    jsonRequest(incidentTypesURL, null, ok, fail);
+    jsonRequest(url_incidentTypes, null, ok, fail);
 }
 
 
@@ -339,7 +339,7 @@ function loadUnattachedIncidentReports(success) {
         }
     }
 
-    jsonRequest(incidentReportsURL + "?event=;incident=", null, ok, fail);
+    jsonRequest(url_incidentReports + "?event=;incident=", null, ok, fail);
 }
 
 
@@ -369,7 +369,7 @@ function loadAttachedIncidentReports(success) {
     }
 
     jsonRequest(
-        incidentReportsURL + "?event=" + eventID + ";incident=" + incidentNumber,
+        url_incidentReports + "?event=" + eventID + ";incident=" + incidentNumber,
         null, ok, fail
     );
 }
@@ -761,7 +761,7 @@ function drawAttachedIncidentReports() {
         var report = reports[i];
         var item = _reportsItem.clone();
         var link = $("<a />");
-        link.attr("href", viewIncidentReportsURL + report.number);
+        link.attr("href", url_viewIncidentReports + report.number);
         link.text(summarizeIncidentReport(report));
         item.append(link);
         item.data(report);
@@ -1084,7 +1084,7 @@ function detachIncidentReport(sender) {
     }
 
     var url = (
-        incidentReportsURL + incidentReport.number +
+        url_incidentReports + incidentReport.number +
         "?action=detach;event=" + eventID + ";incident=" + incidentNumber
     );
 
@@ -1114,7 +1114,7 @@ function attachIncidentReport() {
     }
 
     var url = (
-        incidentReportsURL + incidentReportNumber +
+        url_incidentReports + incidentReportNumber +
         "?action=attach;event=" + eventID + ";incident=" + incidentNumber
     );
 

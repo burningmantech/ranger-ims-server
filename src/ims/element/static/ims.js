@@ -610,7 +610,7 @@ function reportEntryElement(entry) {
 
         var link = $("<a />");
         link.text("incident report #" + entry.merged);
-        link.attr("href", viewIncidentReportsURL + entry.merged)
+        link.attr("href", url_viewIncidentReports + entry.merged)
 
         var reportNumberContainer = $("<span />");
         metaDataContainer.append("(via ");
@@ -748,7 +748,7 @@ var eventSource = null;
 
 function subscribeToUpdates() {
     eventSource = new EventSource(
-        eventSourceURL, { withCredentials: true }
+        url_eventSource, { withCredentials: true }
     );
 
     eventSource.addEventListener("open", function(e) {

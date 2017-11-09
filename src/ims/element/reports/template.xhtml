@@ -2,7 +2,7 @@
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
   <head
     t:render="head"
-    imports="jqueryJS,bootstrapJS,dataTablesJS,dataTablesBootstrapJS,momentJS,imsJS,viewIncidentReportsJS"
+    imports="jqueryJS,bootstrapJS,dataTablesJS,dataTablesBootstrapJS,momentJS,urlsJS,imsJS,viewIncidentReportsJS"
   >
     <link type="text/css" rel="stylesheet" media="screen" t:render="url" url="dataTablesBootstrapCSS" />
   </head>
@@ -10,11 +10,8 @@
   <body />
 
   <script>
-    var editingAllowed         = <json t:render="editing_allowed"                       />;
-    var pageTemplateURL        = <json t:render="url" url="viewIncidentReportsTemplate" />;
-    var dataURL                = <json t:render="url" url="incidentReports"             /> + "?event=;incident=";
-    var viewIncidentReportsURL = <json t:render="url" url="viewIncidentReports"         />;
-    var eventSourceURL         = <json t:render="url" url="eventSource"                 />;
+    var editingAllowed  = <json t:render="editing_allowed" />;
+    var pageTemplateURL = url_viewIncidentReportsTemplate;
 
     initIncidentReportsPage();
   </script>

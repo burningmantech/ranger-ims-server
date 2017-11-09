@@ -37,8 +37,6 @@ var incidentTypes = null;
 var incidentTypesVisible = null;
 
 function loadIncidentTypes(success) {
-    var url = incidentTypesURL;
-
     var gotAll = false;
     var gotVisible = false;
 
@@ -69,8 +67,8 @@ function loadIncidentTypes(success) {
         window.alert(message);
     }
 
-    jsonRequest(incidentTypesURL, null, okVisible, fail);
-    jsonRequest(incidentTypesURL + "?hidden=true", null, okAll, fail);
+    jsonRequest(url_incidentTypes, null, okVisible, fail);
+    jsonRequest(url_incidentTypes + "?hidden=true", null, okAll, fail);
 }
 
 
@@ -164,5 +162,5 @@ function sendIncidentTypes(edits, success, error) {
         window.alert(message);
     }
 
-    jsonRequest(incidentTypesURL, edits, ok, fail);
+    jsonRequest(url_incidentTypes, edits, ok, fail);
 }

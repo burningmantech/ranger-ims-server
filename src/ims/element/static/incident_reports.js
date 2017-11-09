@@ -105,7 +105,7 @@ function initDataTables() {
         "processing": true,
         "scrollX": false, "scrollY": false,
         "ajax": {
-            "url": dataURL,
+            "url": url_incidentReports + "?event=;incident=",
             "dataSrc": dataHandler,
         },
         "columns": [
@@ -136,7 +136,7 @@ function initDataTables() {
         ],
         "createdRow": function (row, incidentReport, index) {
             $(row).click(function () {
-                var url = viewIncidentReportsURL + incidentReport.number;
+                var url = url_viewIncidentReports + incidentReport.number;
 
                 // Open new context with link
                 window.open(url, "Incident_Report:" + incidentReport.number);

@@ -3,7 +3,7 @@
 
   <head
     t:render="head"
-    imports="jqueryJS,bootstrapJS,momentJS,imsJS,adminStreetsJS"
+    imports="jqueryJS,bootstrapJS,momentJS,urlsJS,imsJS,adminStreetsJS"
   />
 
   <body>
@@ -40,8 +40,7 @@
   </body>
 
   <script>
-    var events     = <json t:render="events_list" />;
-    var streetsURL = <json t:render="url" url="streets" />;
+    var events = <json t:render="events_list" />;
 
     initPage();
   </script>

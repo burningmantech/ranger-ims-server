@@ -45,7 +45,7 @@ function loadAccessControlList(success) {
         window.alert(message);
     }
 
-    jsonRequest(accessURL, null, ok, fail);
+    jsonRequest(url_acl, null, ok, fail);
 }
 
 
@@ -195,5 +195,5 @@ function sendACL(edits, success, error) {
         window.alert(message);
     }
 
-    jsonRequest(accessURL, edits, ok, fail);
+    jsonRequest(url_acl, edits, ok, fail);
 }

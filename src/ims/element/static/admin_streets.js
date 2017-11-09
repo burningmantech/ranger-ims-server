@@ -31,7 +31,7 @@ function initPage() {
 var streets = null;
 
 function loadStreets(success) {
-    var url = streetsURL;
+    var url = url_streets;
 
     function ok(data, status, xhr) {
         streets = data;
@@ -47,7 +47,7 @@ function loadStreets(success) {
         window.alert(message);
     }
 
-    jsonRequest(streetsURL, null, ok, fail);
+    jsonRequest(url_streets, null, ok, fail);
 }
 
 
@@ -134,5 +134,5 @@ function sendStreets(edits, success, error) {
         window.alert(message);
     }
 
-    jsonRequest(streetsURL, edits, ok, fail);
+    jsonRequest(url_streets, edits, ok, fail);
 }

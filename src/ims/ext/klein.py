@@ -91,7 +91,7 @@ class HeaderName(Enum):
 
 
 
-if True:
+if False:
     _staticETag = version
     _maxAge = 60 * 5  # 5 minutes
 else:

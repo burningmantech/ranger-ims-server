@@ -2,7 +2,7 @@
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
   <head
     t:render="head"
-    imports="jqueryJS,bootstrapJS,dataTablesJS,dataTablesBootstrapJS,momentJS,imsJS,viewDispatchQueueJS"
+    imports="jqueryJS,bootstrapJS,dataTablesJS,dataTablesBootstrapJS,momentJS,urlsJS,imsJS,viewDispatchQueueJS"
   >
     <link type="text/css" rel="stylesheet" media="screen" t:render="url" url="dataTablesBootstrapCSS" />
   </head>
@@ -13,10 +13,9 @@
     <!-- FIXME: figure out how to move this to / include from incident.js -->
     var editingAllowed   = <json t:render="editing_allowed"                     />;
     var eventID          = <json t:render="event_id"                            />;
-    var pageTemplateURL  = <json t:render="url" url="viewDispatchQueueTemplate" />;
+    var pageTemplateURL  = url_viewDispatchQueueTemplate;
     var dataURL          = <json t:render="data_url"                            />;
     var viewIncidentsURL = <json t:render="view_incidents_url"                  />;
-    var eventSourceURL   = <json t:render="url" url="eventSource"               />;
 
     var concentricStreetNameByID = <json t:render="concentric_street_name_by_id" />;
 

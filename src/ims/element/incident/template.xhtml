@@ -3,24 +3,19 @@
 
   <head
     t:render="head"
-    imports="jqueryJS,bootstrapJS,momentJS,lscacheJS,imsJS,viewIncidentJS"
+    imports="jqueryJS,bootstrapJS,momentJS,lscacheJS,urlsJS,imsJS,viewIncidentJS"
   />
 
   <body />
 
   <script>
     <!-- FIXME: figure out how to move this to / include from incident.js -->
-    var editingAllowed         = <json t:render="editing_allowed"                />;
-    var eventID                = <json t:render="event_id"                       />;
-    var incidentNumber         = <json t:render="incident_number"                />;
-    var incidentsURL           = <json t:render="incidents_url"                  />;
-    var viewIncidentsURL       = <json t:render="view_incidents_url"             />;
-    var pageTemplateURL        = <json t:render="url" url="viewIncidentTemplate" />;
-    var personnelURL           = <json t:render="url" url="personnel"            />;
-    var incidentTypesURL       = <json t:render="url" url="incidentTypes"        />;
-    var incidentReportsURL     = <json t:render="url" url="incidentReports"      />;
-    var viewIncidentReportsURL = <json t:render="url" url="viewIncidentReports"  />;
-    var eventSourceURL         = <json t:render="url" url="eventSource"          />;
+    var editingAllowed   = <json t:render="editing_allowed"                />;
+    var eventID          = <json t:render="event_id"                       />;
+    var incidentNumber   = <json t:render="incident_number"                />;
+    var incidentsURL     = <json t:render="incidents_url"                  />;
+    var viewIncidentsURL = <json t:render="view_incidents_url"             />;
+    var pageTemplateURL  = url_viewIncidentTemplate;
 
     var concentricStreetNameByID = <json t:render="concentric_street_name_by_id" />;
 
