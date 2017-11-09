@@ -18,7 +18,7 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from typing import Any, Dict, Set, Tuple, cast
+from typing import Dict, Set, Tuple
 
 from hypothesis import given
 from hypothesis.strategies import booleans, tuples
@@ -105,7 +105,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
 
 
     @given(
-        cast(Any, incidentTypesText()).filter(lambda t: t not in builtInTypes),
+        incidentTypesText().filter(lambda t: t not in builtInTypes),
         booleans(),
     )
     def test_createIncidentType(self, incidentType: str, hidden: bool) -> None:

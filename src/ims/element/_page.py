@@ -58,7 +58,7 @@ class Page(Element):
 
         result: MutableMapping[str, URL] = OrderedDict()
 
-        def add(name):
+        def add(name: str) -> None:
             if not name or name in result:
                 return
 
