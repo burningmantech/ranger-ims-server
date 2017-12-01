@@ -633,9 +633,9 @@ class DataStore(IMSDataStore):
                             automatic=bool(row["GENERATED"]),
                             text=row["TEXT"],
                         )
-                        for row in cursor.execute(
+                        for row in cast(Cursor, cursor.execute(
                             self._query_detachedReportEntries, {}
-                        ) if row["TEXT"]
+                        )) if row["TEXT"]
                     )
                 finally:
                     cursor.close()
@@ -684,12 +684,16 @@ class DataStore(IMSDataStore):
 
         rangerHandles = tuple(
             row["RANGER_HANDLE"]
-            for row in cursor.execute(self._query_incident_rangers, params)
+            for row in cast(Cursor, cursor.execute(
+                self._query_incident_rangers, params
+            ))
         )
 
         incidentTypes = tuple(
             row["NAME"]
-            for row in cursor.execute(self._query_incident_types, params)
+            for row in cast(Cursor, cursor.execute(
+                self._query_incident_types, params
+            ))
         )
 
         reportEntries = tuple(
@@ -699,9 +703,9 @@ class DataStore(IMSDataStore):
                 automatic=bool(row["GENERATED"]),
                 text=row["TEXT"],
             )
-            for row in cursor.execute(
+            for row in cast(Cursor, cursor.execute(
                 self._query_incident_reportEntries, params
-            ) if row["TEXT"]
+            )) if row["TEXT"]
         )
 
         # FIXME: This is because schema thinks concentric is an int
@@ -782,9 +786,9 @@ class DataStore(IMSDataStore):
         """
         Look up all incident numbers for the given event.
         """
-        for row in cursor.execute(
+        for row in cast(Cursor, cursor.execute(
             self._query_incidentNumbers, dict(eventID=event.id)
-        ):
+        )):
             yield row["NUMBER"]
 
     _query_incidentNumbers = _query(
@@ -1593,9 +1597,9 @@ class DataStore(IMSDataStore):
                 automatic=bool(row["GENERATED"]),
                 text=row["TEXT"],
             )
-            for row in cursor.execute(
+            for row in cast(Cursor, cursor.execute(
                 self._query_incidentReport_reportEntries, params
-            )
+            ))
         )
 
         return IncidentReport(
@@ -1625,9 +1629,9 @@ class DataStore(IMSDataStore):
 
     def _fetchIncidentReportNumbers(self, cursor: Cursor) -> Iterable[int]:
         return (
-            row["NUMBER"] for row in cursor.execute(
+            row["NUMBER"] for row in cast(Cursor, cursor.execute(
                 self._query_incidentReportNumbers, {}
-            )
+            ))
         )
 
     _query_incidentReportNumbers = _query(
@@ -1936,9 +1940,9 @@ class DataStore(IMSDataStore):
         self, cursor: Cursor
     ) -> Iterable[int]:
         return (
-            row["NUMBER"] for row in cursor.execute(
+            row["NUMBER"] for row in cast(Cursor, cursor.execute(
                 self._query_detachedIncidentReportNumbers, {}
-            )
+            ))
         )
 
     _query_detachedIncidentReportNumbers = _query(
@@ -1955,10 +1959,10 @@ class DataStore(IMSDataStore):
         self, event: Event, incidentNumber: int, cursor: Cursor
     ) -> Iterable[int]:
         return (
-            row["NUMBER"] for row in cursor.execute(
+            row["NUMBER"] for row in cast(Cursor, cursor.execute(
                 self._query_attachedIncidentReportNumbers,
                 dict(eventID=event.id, incidentNumber=incidentNumber)
-            )
+            ))
         )
 
     _query_attachedIncidentReportNumbers = _query(
@@ -2044,10 +2048,10 @@ class DataStore(IMSDataStore):
                     # FIXME: This should be an async generator
                     return tuple(
                         (Event(row["EVENT"]), row["INCIDENT_NUMBER"])
-                        for row in cursor.execute(
+                        for row in cast(Cursor, cursor.execute(
                             self._query_incidentsAttachedToIncidentReport,
                             dict(incidentReportNumber=incidentReportNumber)
-                        )
+                        ))
                     )
                 finally:
                     cursor.close()
