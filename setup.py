@@ -115,16 +115,16 @@ package_data = dict(
 setup_requirements = []
 
 install_requirements = [
-    "arrow==0.10.0",
-    "attrs==17.2.0",
+    "arrow==0.12.0",
+    "attrs==17.3.0",
     "Automat==0.6.0",
     "cattrs==0.4.0",
     "constantly==15.1.0",
     "hyperlink==17.3.1",
     "incremental==17.5.0",
-    "klein==17.2.0",
+    "klein==17.10.0",
     "PyMySQL==0.7.11",
-    "pyOpenSSL==17.3.0",
+    "pyOpenSSL==17.5.0",
     "python-dateutil==2.6.1",
     "ranger-ims-server==1.0",
     "service_identity==17.0.0",
