@@ -82,7 +82,7 @@ class DataStoreTests(TestCase):
 
     def storeIncident(self, store: DataStore, incident: Incident) -> None:
         with store._db as db:
-            cursor = db.cursor()
+            cursor: Cursor = db.cursor()
             try:
                 self._storeIncident(cursor, incident)
             finally:
@@ -250,7 +250,7 @@ class DataStoreTests(TestCase):
         self, store: DataStore, incidentReport: IncidentReport
     ) -> None:
         with store._db as db:
-            cursor = db.cursor()
+            cursor: Cursor = db.cursor()
             try:
                 storeIncidentReport(cursor, incidentReport)
             finally:
