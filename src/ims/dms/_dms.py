@@ -167,7 +167,8 @@ class DutyManagementSystem(object):
                 id,
                 callsign, first_name, mi, last_name, email,
                 status, on_site, password
-            from person where status in ('active', 'inactive', 'vintage')
+            from person
+            where status in ('active', 'inactive', 'vintage', 'auditor')
             """
         )
 
