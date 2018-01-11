@@ -15,6 +15,7 @@ tmp="$(mktemp -t mypy.XXXX)";
 
 mypy "$@"                                                                     \
     | grep -v                                                                 \
+        -e ': error: <nothing> has no attribute "__iter__"'                   \
         -e ": error: Cannot find module named 'arrow.parser'"                 \
         -e ": error: Cannot find module named 'attr'"                         \
         -e ": error: Cannot find module named 'attr.validators'"              \

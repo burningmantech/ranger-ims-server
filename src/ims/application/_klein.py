@@ -290,7 +290,7 @@ class Router(Klein):
         superRoute = super().route
 
         if isinstance(url, URL):
-            url = cast(URL, url).asText()
+            url = url.asText()
 
         def decorator(f: KleinRouteMethod) -> KleinRouteMethod:
             @superRoute(url, *args, **kwargs)

@@ -1,6 +1,6 @@
 # Get master requirements
 -r requirements.txt
 
-hypothesis
-mock
-pytz
+hypothesis==3.44.14
+mock==2.0.0
+#pytz
