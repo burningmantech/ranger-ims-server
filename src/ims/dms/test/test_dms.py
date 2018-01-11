@@ -177,7 +177,7 @@ class DummyConnectionPool(object):
             "id, callsign, first_name, mi, last_name, "
             "email, status, on_site, password "
             "from person where status in "
-            "('active', 'inactive', 'vintage')"
+            "('active', 'inactive', 'vintage', 'auditor')"
         ):
             return succeed(fixPassword(p) for p in cannedPersonnel)
 

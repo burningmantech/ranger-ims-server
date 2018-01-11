@@ -36,6 +36,15 @@ a.navbar-brand>img {
   height: 20px;
 }
 
+.nav-event-id {
+  font-size: 12pt;
+}
+
+.active-event {
+  font-weight: bold;
+  color: black;
+}
+
 .flex-input-container {
   display: flex;
 }

@@ -90,22 +90,18 @@ class Page(Element):
 
 
     @renderer
-    def title(
-        self, request: IRequest, tag: Tag = tags.title
-    ) -> KleinRenderable:
+    def title(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         `<title>` element.
         """
         if self.titleText is None:
-            titleText = ""
+            return tag
         else:
-            titleText = self.titleText
-
-        return tag(titleText)
+            return tag.clone()(self.titleText)
 
 
     @renderer
-    def head(self, request: IRequest, tag: Tag = tags.head) -> KleinRenderable:
+    def head(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         `<head>` element.
         """
@@ -141,7 +137,7 @@ class Page(Element):
                 type="text/css", rel="stylesheet", media="screen",
                 href=urls.styleSheet.asText(),
             ),
-            self.title(request),
+            self.title(request, tags.title.clone()),
             # JavaScript resource imports
             imports,
             # Child elements
@@ -159,21 +155,19 @@ class Page(Element):
 
 
     @renderer
-    def top(self, request: IRequest, tag: Tag = tags.div) -> KleinRenderable:
+    def top(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
         """
         Top elements.
         """
         return (
             self.nav(request),
             self.header(request),
-            self.title(request, tags.h1),
+            self.title(request, tags.h1.clone()(id="doc-title")),
         )
 
 
     @renderer
-    def bottom(
-        self, request: IRequest, tag: Tag = tags.div
-    ) -> KleinRenderable:
+    def bottom(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
         """
         Bottom elements.
         """
@@ -181,7 +175,7 @@ class Page(Element):
 
 
     @renderer
-    def nav(self, request: IRequest, tag: Tag = tags.nav) -> KleinRenderable:
+    def nav(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
         """
         `<nav>` element.
         """
@@ -189,9 +183,7 @@ class Page(Element):
 
 
     @renderer
-    def header(
-        self, request: IRequest, tag: Tag = tags.header
-    ) -> KleinRenderable:
+    def header(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
         """
         `<header>` element.
         """
@@ -199,9 +191,7 @@ class Page(Element):
 
 
     @renderer
-    def footer(
-        self, request: IRequest, tag: Tag = tags.footer
-    ) -> KleinRenderable:
+    def footer(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
         """
         `<footer>` element.
         """

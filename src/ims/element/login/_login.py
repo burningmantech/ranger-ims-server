@@ -19,7 +19,7 @@ Login page.
 """
 
 from twisted.web.iweb import IRequest
-from twisted.web.template import Tag, renderer, tags
+from twisted.web.template import Tag, renderer
 
 from ims.config import Configuration
 from ims.ext.klein import KleinRenderable
@@ -42,9 +42,7 @@ class LoginPage(Page):
 
 
     @renderer
-    def if_authn_failed(
-        self, request: IRequest, tag: Tag = tags.div
-    ) -> KleinRenderable:
+    def if_authn_failed(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         Render conditionally if the user failed to authenticate.
         """
@@ -55,9 +53,7 @@ class LoginPage(Page):
 
 
     @renderer
-    def if_authz_failed(
-        self, request: IRequest, tag: Tag = tags.div
-    ) -> KleinRenderable:
+    def if_authz_failed(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         Render conditionally if the user failed to authorize.
         """
