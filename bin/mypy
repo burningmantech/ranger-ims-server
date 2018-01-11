@@ -13,37 +13,33 @@ tmp="$(mktemp -t mypy.XXXX)";
 # Callable has no attribute "todo": ... uh, not sure that's a bug, but ...
 # Too many arguments for: https://github.com/python/mypy/issues/2088
 
-mypy "$@"                                                                   \
-    | grep -v                                                               \
-        -e ": error: Cannot find module named 'arrow.parser'"               \
-        -e ": error: Cannot find module named 'attr'"                       \
-        -e ": error: Cannot find module named 'attr.validators'"            \
-        -e ": error: Cannot find module named 'cattr'"                      \
-        -e ": error: Cannot find module named 'hyperlink'"                  \
-        -e ": error: Cannot find module named 'hypothesis'"                 \
-        -e ": error: Cannot find module named 'hypothesis.searchstrategy'"  \
-        -e ": error: Cannot find module named 'hypothesis.strategies'"      \
-        -e ": error: Cannot find module named 'klein'"                      \
-        -e ": error: Cannot find module named 'klein.test.test_resource'"   \
-        -e ": error: Cannot find module named 'twisted'"                    \
-        -e ": error: Cannot find module named 'typing.io'"                  \
-        -e ": error: No library stub file for "                             \
-        -e ': error: Callable\[\[[^\]\+\], None\] has no attribute "todo"'  \
-        -e ': error: Too many arguments for '                               \
-        -e ': error: Unexpected keyword argument '                          \
-        -e ': error: Unsupported left operand type for '                    \
-        -e ': note: (Perhaps setting MYPYPATH '                             \
-        -e ': note: (Stub files are from '                                  \
-        -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: Argument .\+ of ".\+" incompatible with supertype ".\+"' \
-        -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: Signature of ".\+" incompatible with supertype ".\+"' \
+mypy "$@"                                                                     \
+    | grep -v                                                                 \
+        -e ': error: <nothing> has no attribute "__iter__"'                   \
+        -e ": error: Cannot find module named 'arrow.parser'"                 \
+        -e ": error: Cannot find module named 'attr'"                         \
+        -e ": error: Cannot find module named 'attr.validators'"              \
+        -e ": error: Cannot find module named 'cattr'"                        \
+        -e ": error: Cannot find module named 'hyperlink'"                    \
+        -e ": error: Cannot find module named 'hypothesis'"                   \
+        -e ": error: Cannot find module named 'hypothesis.searchstrategy'"    \
+        -e ": error: Cannot find module named 'hypothesis.strategies'"        \
+        -e ": error: Cannot find module named 'klein'"                        \
+        -e ": error: Cannot find module named 'klein.test.test_resource'"     \
+        -e ": error: Cannot find module named 'twisted'"                      \
+        -e ": error: Cannot find module named 'typing.io'"                    \
+        -e ": error: No library stub file for "                               \
+        -e ': error: "Callable\[\[[^\]\+\], None\]" has no attribute "todo"'  \
+        -e ': error: Too many arguments for '                                 \
+        -e ': error: Unexpected keyword argument '                            \
+        -e ': error: Unsupported left operand type for '                      \
+        -e ': note: ".*" defined here'                                        \
+        -e ': note: (Perhaps setting MYPYPATH '                               \
+        -e ': note: (Stub files are from '                                    \
+        -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: .* incompatible with supertype ".\+"' \
+        -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: Argument 2 to "connect" has incompatible type "Type\[Connection\]"' \
         -e '^src/ims/ext/enum.py:[0-9:]\+: error: Cannot assign to a method' \
-        -e '^src/ims/ext/enum.py:[0-9:]\+: error: Function is missing a type annotation for one or more arguments' \
-        -e '^src/ims/ext/enum.py:[0-9:]\+: error: Incompatible types in assignment ' \
-        -e '^src/ims/ext/sqlite.py:[0-9:]\+: error: Argument 2 to "connect" has incompatible type "Connection";' \
-        -e '^src/ims/ext/test/test_sqlite.py:[0-9:]\+: error: Argument 2 to "execute" of "Connection" has incompatible type "Optional\[Mapping\[Any, Any\]\]"; expected Iterable\[Any\]' \
-        -e '^src/ims/legacy/service/tool.py:[0-9:]\+: error: "ConfigOptionsMixIn" has no attribute ".\+"' \
         -e "^src/ims/model/json/_ranger.py:[0-9:]\+: error: Incompatible types in assignment "               \
-        -e '^src/ims/store/sqlite/_store.py:[0-9:]\+: error: <nothing> has no attribute "__iter__"' \
         > "${tmp}" || true;
 
 sort < "${tmp}";

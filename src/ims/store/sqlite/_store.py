@@ -360,7 +360,7 @@ class DataStore(IMSDataStore):
         expressions = tuple(expressions)
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
                         self._query_clearEventAccessForMode,
@@ -623,7 +623,7 @@ class DataStore(IMSDataStore):
         """
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     # FIXME: This should be an async generator
                     return tuple(
@@ -633,9 +633,9 @@ class DataStore(IMSDataStore):
                             automatic=bool(row["GENERATED"]),
                             text=row["TEXT"],
                         )
-                        for row in cursor.execute(
+                        for row in cast(Cursor, cursor.execute(
                             self._query_detachedReportEntries, {}
-                        ) if row["TEXT"]
+                        )) if row["TEXT"]
                     )
                 finally:
                     cursor.close()
@@ -684,12 +684,16 @@ class DataStore(IMSDataStore):
 
         rangerHandles = tuple(
             row["RANGER_HANDLE"]
-            for row in cursor.execute(self._query_incident_rangers, params)
+            for row in cast(Cursor, cursor.execute(
+                self._query_incident_rangers, params
+            ))
         )
 
         incidentTypes = tuple(
             row["NAME"]
-            for row in cursor.execute(self._query_incident_types, params)
+            for row in cast(Cursor, cursor.execute(
+                self._query_incident_types, params
+            ))
         )
 
         reportEntries = tuple(
@@ -699,9 +703,9 @@ class DataStore(IMSDataStore):
                 automatic=bool(row["GENERATED"]),
                 text=row["TEXT"],
             )
-            for row in cursor.execute(
+            for row in cast(Cursor, cursor.execute(
                 self._query_incident_reportEntries, params
-            ) if row["TEXT"]
+            )) if row["TEXT"]
         )
 
         # FIXME: This is because schema thinks concentric is an int
@@ -782,9 +786,9 @@ class DataStore(IMSDataStore):
         """
         Look up all incident numbers for the given event.
         """
-        for row in cursor.execute(
+        for row in cast(Cursor, cursor.execute(
             self._query_incidentNumbers, dict(eventID=event.id)
-        ):
+        )):
             yield row["NUMBER"]
 
     _query_incidentNumbers = _query(
@@ -800,7 +804,7 @@ class DataStore(IMSDataStore):
         """
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     # FIXME: This should be an async generator
                     return tuple(
@@ -824,7 +828,7 @@ class DataStore(IMSDataStore):
         """
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     return self._fetchIncident(event, number, cursor)
                 finally:
@@ -1089,7 +1093,7 @@ class DataStore(IMSDataStore):
 
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     if not directImport:
                         # Assign the incident number a number
@@ -1209,7 +1213,7 @@ class DataStore(IMSDataStore):
 
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(query, dict(
                         eventID=event.id,
@@ -1407,7 +1411,7 @@ class DataStore(IMSDataStore):
 
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
                         self._query_clearIncidentRangers,
@@ -1469,7 +1473,7 @@ class DataStore(IMSDataStore):
 
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
                         self._query_clearIncidentIncidentTypes,
@@ -1540,7 +1544,7 @@ class DataStore(IMSDataStore):
 
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     self._createAndAttachReportEntriesToIncident(
                         event, incidentNumber, reportEntries, cursor
@@ -1593,9 +1597,9 @@ class DataStore(IMSDataStore):
                 automatic=bool(row["GENERATED"]),
                 text=row["TEXT"],
             )
-            for row in cursor.execute(
+            for row in cast(Cursor, cursor.execute(
                 self._query_incidentReport_reportEntries, params
-            )
+            ))
         )
 
         return IncidentReport(
@@ -1625,9 +1629,9 @@ class DataStore(IMSDataStore):
 
     def _fetchIncidentReportNumbers(self, cursor: Cursor) -> Iterable[int]:
         return (
-            row["NUMBER"] for row in cursor.execute(
+            row["NUMBER"] for row in cast(Cursor, cursor.execute(
                 self._query_incidentReportNumbers, {}
-            )
+            ))
         )
 
     _query_incidentReportNumbers = _query(
@@ -1643,7 +1647,7 @@ class DataStore(IMSDataStore):
         """
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     # FIXME: This should be an async generator
                     return tuple(
@@ -1666,7 +1670,7 @@ class DataStore(IMSDataStore):
         """
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     return self._fetchIncidentReport(number, cursor)
                 finally:
@@ -1719,7 +1723,7 @@ class DataStore(IMSDataStore):
 
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     if not directImport:
                         # Assign the incident number a number
@@ -1822,7 +1826,7 @@ class DataStore(IMSDataStore):
 
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(query, dict(
                         incidentReportNumber=incidentReportNumber,
@@ -1907,7 +1911,7 @@ class DataStore(IMSDataStore):
 
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     self._createAndAttachReportEntriesToIncidentReport(
                         incidentReportNumber, reportEntries, cursor
@@ -1936,9 +1940,9 @@ class DataStore(IMSDataStore):
         self, cursor: Cursor
     ) -> Iterable[int]:
         return (
-            row["NUMBER"] for row in cursor.execute(
+            row["NUMBER"] for row in cast(Cursor, cursor.execute(
                 self._query_detachedIncidentReportNumbers, {}
-            )
+            ))
         )
 
     _query_detachedIncidentReportNumbers = _query(
@@ -1955,10 +1959,10 @@ class DataStore(IMSDataStore):
         self, event: Event, incidentNumber: int, cursor: Cursor
     ) -> Iterable[int]:
         return (
-            row["NUMBER"] for row in cursor.execute(
+            row["NUMBER"] for row in cast(Cursor, cursor.execute(
                 self._query_attachedIncidentReportNumbers,
                 dict(eventID=event.id, incidentNumber=incidentNumber)
-            )
+            ))
         )
 
     _query_attachedIncidentReportNumbers = _query(
@@ -1980,7 +1984,7 @@ class DataStore(IMSDataStore):
         """
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     # FIXME: This should be an async generator
                     return tuple(
@@ -2007,7 +2011,7 @@ class DataStore(IMSDataStore):
         """
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     # FIXME: This should be an async generator
                     return tuple(
@@ -2039,15 +2043,15 @@ class DataStore(IMSDataStore):
         """
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     # FIXME: This should be an async generator
                     return tuple(
                         (Event(row["EVENT"]), row["INCIDENT_NUMBER"])
-                        for row in cursor.execute(
+                        for row in cast(Cursor, cursor.execute(
                             self._query_incidentsAttachedToIncidentReport,
                             dict(incidentReportNumber=incidentReportNumber)
-                        )
+                        ))
                     )
                 finally:
                     cursor.close()
@@ -2078,7 +2082,7 @@ class DataStore(IMSDataStore):
         """
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
                         self._query_attachIncidentReportToIncident, dict(
@@ -2127,7 +2131,7 @@ class DataStore(IMSDataStore):
         """
         try:
             with self._db as db:
-                cursor = db.cursor()
+                cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
                         self._query_detachIncidentReportFromIncident, dict(

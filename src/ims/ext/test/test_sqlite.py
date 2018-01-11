@@ -307,6 +307,8 @@ class ErrneousSQLiteConnection(Connection):
 
 
     def execute(self, sql: str, parameters: Mapping = None) -> BaseCursor:
+        if parameters is None:
+            parameters = {}
         if self._generateErrors:
             raise SQLiteError("execute()")
         return super().execute(sql, parameters)

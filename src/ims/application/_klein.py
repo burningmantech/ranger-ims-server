@@ -21,7 +21,7 @@ Incident Management System Klein application.
 from __future__ import absolute_import
 
 from functools import wraps
-from typing import Any, Callable, Iterable, Optional, Union, cast
+from typing import Any, Callable, Iterable, Optional, Union
 
 from hyperlink import URL
 
@@ -290,7 +290,7 @@ class Router(Klein):
         superRoute = super().route
 
         if isinstance(url, URL):
-            url = cast(URL, url).asText()
+            url = url.asText()
 
         def decorator(f: KleinRouteMethod) -> KleinRouteMethod:
             @superRoute(url, *args, **kwargs)
