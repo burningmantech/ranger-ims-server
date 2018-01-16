@@ -29,10 +29,10 @@ from twisted.web.iweb import IRequest
 
 from ims.auth import Authorization
 from ims.config import Configuration, URLs
-from ims.element.admin import AdminPage
-from ims.element.admin_acl import AdminAccessControlPage
-from ims.element.admin_streets import AdminStreetsPage
-from ims.element.admin_types import AdminIncidentTypesPage
+from ims.element.admin.root import AdminPage
+from ims.element.admin.acl import AdminAccessControlPage
+from ims.element.admin.streets import AdminStreetsPage
+from ims.element.admin.types import AdminIncidentTypesPage
 from ims.element.incident import IncidentPage
 from ims.element.incident_template import IncidentTemplatePage
 from ims.element.queue import DispatchQueuePage

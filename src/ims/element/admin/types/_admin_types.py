@@ -15,7 +15,22 @@
 ##
 
 """
-Admin elements.
+Admin incident types page.
 """
 
+from ims.config import Configuration
+
+from ..._page import Page
+
+
 __all__ = ()
+
+
+
+class AdminIncidentTypesPage(Page):
+    """
+    Admin incident types page.
+    """
+
+    def __init__(self, config: Configuration) -> None:
+        super().__init__(config=config, title="Edit Incident Types")

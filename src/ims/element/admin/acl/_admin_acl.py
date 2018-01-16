@@ -15,22 +15,22 @@
 ##
 
 """
-Admin streets page.
+Admin access control page.
 """
 
 from ims.config import Configuration
 
-from .._page import Page
+from ..._page import Page
 
 
 __all__ = ()
 
 
 
-class AdminStreetsPage(Page):
+class AdminAccessControlPage(Page):
     """
-    Admin streets page.
+    Admin access control page.
     """
 
     def __init__(self, config: Configuration) -> None:
-        super().__init__(config=config, title="Edit Event Concentric Streets")
+        super().__init__(config=config, title="Edit Event Access Control")
