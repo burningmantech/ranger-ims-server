@@ -29,18 +29,18 @@ from twisted.web.iweb import IRequest
 
 from ims.auth import Authorization
 from ims.config import Configuration, URLs
-from ims.element.admin.root import AdminPage
 from ims.element.admin.acl import AdminAccessControlPage
+from ims.element.admin.root import AdminPage
 from ims.element.admin.streets import AdminStreetsPage
 from ims.element.admin.types import AdminIncidentTypesPage
-from ims.element.incident import IncidentPage
-from ims.element.incident_template import IncidentTemplatePage
-from ims.element.queue import DispatchQueuePage
-from ims.element.queue_template import DispatchQueueTemplatePage
-from ims.element.report import IncidentReportPage
-from ims.element.report_template import IncidentReportTemplatePage
-from ims.element.reports import IncidentReportsPage
-from ims.element.reports_template import IncidentReportsTemplatePage
+from ims.element.incident.incident import IncidentPage
+from ims.element.incident.incident_template import IncidentTemplatePage
+from ims.element.incident.queue import DispatchQueuePage
+from ims.element.incident.queue_template import DispatchQueueTemplatePage
+from ims.element.incident.report import IncidentReportPage
+from ims.element.incident.report_template import IncidentReportTemplatePage
+from ims.element.incident.reports import IncidentReportsPage
+from ims.element.incident.reports_template import IncidentReportsTemplatePage
 from ims.element.root import RootPage
 from ims.ext.klein import KleinRenderable, static
 from ims.model import Event

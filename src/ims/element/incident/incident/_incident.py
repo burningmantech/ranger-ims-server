@@ -15,7 +15,7 @@
 ##
 
 """
-Incident report page.
+Incident page.
 """
 
 from typing import Optional
@@ -25,26 +25,28 @@ from twisted.web.template import Tag, renderer
 
 from ims.auth import Authorization
 from ims.config import Configuration
-from ims.ext.json import jsonTextFromObject
+from ims.ext.json import jsonFalse, jsonTextFromObject, jsonTrue
 from ims.ext.klein import KleinRenderable
+from ims.model import Event
 
-from .._page import Page
 from ..incident_template._incident_template import title
+from ..._page import Page
 
 
 __all__ = ()
 
 
 
-class IncidentReportPage(Page):
+class IncidentPage(Page):
     """
-    Incident report page.
+    Incident page.
     """
 
     def __init__(
-        self, config: Configuration, number: Optional[int]
+        self, config: Configuration, event: Event, number: Optional[int]
     ) -> None:
         super().__init__(config=config, title=title)
+        self.event = event
         self.number = number
 
 
@@ -53,22 +55,34 @@ class IncidentReportPage(Page):
         """
         JSON boolean, true if editing is allowed.
         """
-        if (request.authorizations & Authorization.writeIncidentReports):
+        if (request.authorizations & Authorization.writeIncidents):
             return jsonTrue
         else:
             return jsonFalse
 
 
     @renderer
-    def incident_report_number(
-        self, request: IRequest, tag: Tag
-    ) -> KleinRenderable:
+    def event_id(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
-        JSON integer: incident report number.
+        JSON string: event ID.
+        """
+        return jsonTextFromObject(self.event.id)
+
+
+    @renderer
+    def incident_number(self, request: IRequest, tag: Tag) -> KleinRenderable:
+        """
+        JSON integer: incident number.
         """
         return jsonTextFromObject(self.number)
 
 
-
-jsonTrue  = jsonTextFromObject(True)
-jsonFalse = jsonTextFromObject(False)
+    @renderer
+    async def concentric_street_name_by_id(
+        self, request: IRequest, tag: Tag
+    ) -> KleinRenderable:
+        """
+        JSON dictionary: concentric streets by ID.
+        """
+        namesByID = await self.config.store.concentricStreets(self.event)
+        return jsonTextFromObject(namesByID)

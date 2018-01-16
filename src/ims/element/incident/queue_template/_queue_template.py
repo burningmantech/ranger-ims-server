@@ -15,40 +15,24 @@
 ##
 
 """
-Incident reports page element.
+Dispatch queue template page.
 """
 
-from twisted.web.iweb import IRequest
-from twisted.web.template import Tag, renderer
-
-from ims.auth import Authorization
 from ims.config import Configuration
-from ims.ext.json import jsonFalse, jsonTrue
-from ims.ext.klein import KleinRenderable
 
-from .._page import Page
-from ..reports_template._reports_template import title
+from ..._page import Page
 
 
 __all__ = ()
 
 
+title = "Dispatch Queue"
 
-class IncidentReportsPage(Page):
+
+class DispatchQueueTemplatePage(Page):
     """
-    Incident reports page element.
+    Dispatch queue template page.
     """
 
     def __init__(self, config: Configuration) -> None:
         super().__init__(config=config, title=title)
-
-
-    @renderer
-    def editing_allowed(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        JSON boolean, true if editing is allowed.
-        """
-        if (request.authorizations & Authorization.writeIncidentReports):
-            return jsonTrue
-        else:
-            return jsonFalse

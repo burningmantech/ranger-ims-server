@@ -15,12 +15,7 @@
 ##
 
 """
-Admin page element.
+Incident-related elements.
 """
 
-from ._incident import IncidentPage
-
-
-__all__ = (
-    "IncidentPage",
-)
+__all__ = ()

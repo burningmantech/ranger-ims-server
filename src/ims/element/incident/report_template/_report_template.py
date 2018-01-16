@@ -15,23 +15,23 @@
 ##
 
 """
-Incident template page.
+Incident report template page.
 """
 
 from ims.config import Configuration
 
-from .._page import Page
+from ..._page import Page
 
 
 __all__ = ()
 
 
-title = "Incident Details"
+title = "Incident Report Details"
 
 
-class IncidentTemplatePage(Page):
+class IncidentReportTemplatePage(Page):
     """
-    Incident template page.
+    Incident report template page.
     """
 
     def __init__(self, config: Configuration) -> None:

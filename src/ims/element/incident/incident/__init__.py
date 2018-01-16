@@ -15,24 +15,12 @@
 ##
 
 """
-Incident report template page.
+Admin page element.
 """
 
-from ims.config import Configuration
-
-from .._page import Page
+from ._incident import IncidentPage
 
 
-__all__ = ()
-
-
-title = "Incident Report Details"
-
-
-class IncidentReportTemplatePage(Page):
-    """
-    Incident report template page.
-    """
-
-    def __init__(self, config: Configuration) -> None:
-        super().__init__(config=config, title=title)
+__all__ = (
+    "IncidentPage",
+)

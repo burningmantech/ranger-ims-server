@@ -15,7 +15,7 @@
 ##
 
 """
-Dispatch queue page.
+Incident reports page element.
 """
 
 from twisted.web.iweb import IRequest
@@ -23,26 +23,24 @@ from twisted.web.template import Tag, renderer
 
 from ims.auth import Authorization
 from ims.config import Configuration
-from ims.ext.json import jsonFalse, jsonTextFromObject, jsonTrue
+from ims.ext.json import jsonFalse, jsonTrue
 from ims.ext.klein import KleinRenderable
-from ims.model import Event
 
-from .._page import Page
-from ..queue_template._queue_template import title
+from ..reports_template._reports_template import title
+from ..._page import Page
 
 
 __all__ = ()
 
 
 
-class DispatchQueuePage(Page):
+class IncidentReportsPage(Page):
     """
-    Dispatch queue page.
+    Incident reports page element.
     """
 
-    def __init__(self, config: Configuration, event: Event) -> None:
+    def __init__(self, config: Configuration) -> None:
         super().__init__(config=config, title=title)
-        self.event = event
 
 
     @renderer
@@ -50,26 +48,7 @@ class DispatchQueuePage(Page):
         """
         JSON boolean, true if editing is allowed.
         """
-        if (request.authorizations & Authorization.writeIncidents):
+        if (request.authorizations & Authorization.writeIncidentReports):
             return jsonTrue
         else:
             return jsonFalse
-
-
-    @renderer
-    def event_id(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        JSON string: event ID.
-        """
-        return jsonTextFromObject(self.event.id)
-
-
-    @renderer
-    async def concentric_street_name_by_id(
-        self, request: IRequest, tag: Tag
-    ) -> KleinRenderable:
-        """
-        JSON dictionary: concentric streets by ID.
-        """
-        namesByID = await self.config.store.concentricStreets(self.event)
-        return jsonTextFromObject(namesByID)

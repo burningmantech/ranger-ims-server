@@ -15,23 +15,23 @@
 ##
 
 """
-Dispatch queue template page.
+Incident reports template page element.
 """
 
 from ims.config import Configuration
 
-from .._page import Page
+from ..._page import Page
 
 
 __all__ = ()
 
 
-title = "Dispatch Queue"
+title = "Incident Reports"
 
 
-class DispatchQueueTemplatePage(Page):
+class IncidentReportsTemplatePage(Page):
     """
-    Dispatch queue template page.
+    Incident reports template page element.
     """
 
     def __init__(self, config: Configuration) -> None:
