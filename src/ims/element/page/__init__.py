@@ -15,22 +15,12 @@
 ##
 
 """
-<footer> Element.
+Page-related elements.
 """
 
-from ims.config import Configuration
-
-from .._element import Element
+from ._page import Page
 
 
-__all__ = ()
-
-
-
-class FooterElement(Element):
-    """
-    <footer> Element.
-    """
-
-    def __init__(self, config: Configuration) -> None:
-        super().__init__(config=config)
+__all__ = (
+    "Page",
+)

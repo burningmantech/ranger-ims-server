@@ -30,7 +30,7 @@ from ims.ext.klein import KleinRenderable
 from ims.model import Event
 
 from ..incident_template._incident_template import title
-from ..._page import Page
+from ...page import Page
 
 
 __all__ = ()

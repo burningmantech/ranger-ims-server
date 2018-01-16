@@ -20,7 +20,7 @@ Admin page.
 
 from ims.config import Configuration
 
-from ..._page import Page
+from ...page import Page
 
 
 __all__ = ()

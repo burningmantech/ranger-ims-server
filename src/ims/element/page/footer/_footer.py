@@ -15,22 +15,22 @@
 ##
 
 """
-Admin streets page.
+<footer> Element.
 """
 
 from ims.config import Configuration
 
-from ...page import Page
+from ..._element import Element
 
 
 __all__ = ()
 
 
 
-class AdminStreetsPage(Page):
+class FooterElement(Element):
     """
-    Admin streets page.
+    <footer> Element.
     """
 
     def __init__(self, config: Configuration) -> None:
-        super().__init__(config=config, title="Edit Event Concentric Streets")
+        super().__init__(config=config)

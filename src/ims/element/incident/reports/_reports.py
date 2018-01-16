@@ -27,7 +27,7 @@ from ims.ext.json import jsonFalse, jsonTrue
 from ims.ext.klein import KleinRenderable
 
 from ..reports_template._reports_template import title
-from ..._page import Page
+from ...page import Page
 
 
 __all__ = ()

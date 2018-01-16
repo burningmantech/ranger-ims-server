@@ -20,7 +20,7 @@
 
 from ims.config import Configuration
 
-from .._element import Element
+from ..._element import Element
 
 
 __all__ = ()

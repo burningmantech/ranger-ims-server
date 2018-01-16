@@ -24,7 +24,7 @@ from twisted.web.template import Tag, renderer
 from ims.config import Configuration
 from ims.ext.klein import KleinRenderable
 
-from .._page import Page
+from ..page import Page
 
 
 __all__ = ()

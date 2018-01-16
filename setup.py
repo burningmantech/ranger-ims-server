@@ -97,9 +97,10 @@ for tool, (module, function) in script_entry_points.items():
 #
 
 package_data = dict(
-    ims = [
+    ims=[
         "config/test/*.conf",
         "element/*/template.xhtml",
+        "element/*/*/template.xhtml",
         "element/static/*.css",
         "element/static/*.js",
         "element/static/*.png",

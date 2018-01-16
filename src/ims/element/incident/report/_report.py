@@ -29,7 +29,7 @@ from ims.ext.json import jsonTextFromObject
 from ims.ext.klein import KleinRenderable
 
 from ..incident_template._incident_template import title
-from ..._page import Page
+from ...page import Page
 
 
 __all__ = ()
