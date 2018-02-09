@@ -18,16 +18,16 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from textwrap import dedent
 from typing import Dict, Iterable, Set
 
 from hypothesis import given
 from hypothesis.strategies import frozensets, text
 
+from ims.ext.trial import TestCase
 from ims.model import Event
 from ims.model.strategies import events
 
-from .base import DataStoreTests, TestDataStore
+from .base import TestDataStore
 from ..._exceptions import StorageError
 
 Dict, Set  # silence linter
@@ -37,7 +37,7 @@ __all__ = ()
 
 
 
-class DataStoreEventTests(DataStoreTests):
+class DataStoreEventTests(TestCase):
     """
     Tests for :class:`DataStore` event access.
     """
@@ -46,15 +46,10 @@ class DataStoreEventTests(DataStoreTests):
         """
         :meth:`DataStore.events` returns all events.
         """
-        store = self.store()
-        store._db.executescript(
-            dedent(
-                """
-                insert into EVENT (NAME) values ('Event A');
-                insert into EVENT (NAME) values ('Event B');
-                """
-            )
-        )
+        store = TestDataStore(self)
+
+        for event in (Event(id="Event A"), Event(id="Event B")):
+            store.storeEvent(event)
 
         if broken:
             store.bringThePain()
@@ -77,7 +72,7 @@ class DataStoreEventTests(DataStoreTests):
         """
         :meth:`DataStore.createEvent` creates the given event.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(event))
         stored = frozenset(self.successResultOf(store.events()))
         self.assertEqual(stored, frozenset((event,)))
@@ -87,7 +82,7 @@ class DataStoreEventTests(DataStoreTests):
         """
         :meth:`DataStore.createEvent` raises `StorageError` if SQLite raises.
         """
-        store = self.store()
+        store = TestDataStore(self)
         store.bringThePain()
 
         f = self.failureResultOf(store.createEvent(Event(id="x")))
@@ -101,7 +96,7 @@ class DataStoreEventTests(DataStoreTests):
         event that already exists in the data store.
         """
         event = Event(id="foo")
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(event))
         f = self.failureResultOf(store.createEvent(event))
         self.assertEqual(f.type, StorageError)
@@ -112,7 +107,7 @@ class DataStoreEventTests(DataStoreTests):
         """
         :meth:`DataStore.setReaders` sets the read ACL for an event.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(event))
         self.successResultOf(store.setReaders(event, readers))
         result = frozenset(self.successResultOf(store.readers(event)))
@@ -125,7 +120,7 @@ class DataStoreEventTests(DataStoreTests):
         raises an exception.
         """
         event = Event(id="foo")
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(event))
         store.bringThePain()
         f = self.failureResultOf(store.setReaders(event, ()))
@@ -137,7 +132,7 @@ class DataStoreEventTests(DataStoreTests):
         """
         :meth:`DataStore.setWriters` sets the write ACL for an event.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(event))
         self.successResultOf(store.setWriters(event, writers))
         result = frozenset(self.successResultOf(store.writers(event)))
@@ -150,7 +145,7 @@ class DataStoreEventTests(DataStoreTests):
         raises an exception.
         """
         event = Event(id="foo")
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(event))
         store.bringThePain()
         f = self.failureResultOf(store.setWriters(event, ()))

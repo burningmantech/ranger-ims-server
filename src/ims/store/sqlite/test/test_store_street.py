@@ -22,12 +22,13 @@ from typing import Dict, Set
 
 from hypothesis import given
 
+from ims.ext.trial import TestCase
 from ims.model import Event
 from ims.model.strategies import (
     concentricStreetIDs, concentricStreetNames, events
 )
 
-from .base import DataStoreTests, storeConcentricStreet
+from .base import TestDataStore, storeConcentricStreet
 
 Dict, Set  # silence linter
 
@@ -36,7 +37,7 @@ __all__ = ()
 
 
 
-class DataStoreConcentricStreetTests(DataStoreTests):
+class DataStoreConcentricStreetTests(TestCase):
     """
     Tests for :class:`DataStore` concentric street access.
     """
@@ -49,7 +50,7 @@ class DataStoreConcentricStreetTests(DataStoreTests):
         :meth:`DataStore.createConcentricStreet` returns the concentric streets
         for the given event.
         """
-        store = self.store()
+        store = TestDataStore(self)
 
         self.successResultOf(store.createEvent(event))
 
@@ -71,7 +72,7 @@ class DataStoreConcentricStreetTests(DataStoreTests):
         :meth:`DataStore.createConcentricStreet` creates a concentric streets
         for the given event.
         """
-        store = self.store()
+        store = TestDataStore(self)
 
         self.successResultOf(store.createEvent(event))
 

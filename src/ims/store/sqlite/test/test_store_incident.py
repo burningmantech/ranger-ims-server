@@ -28,6 +28,7 @@ from hypothesis import given, settings
 from hypothesis.strategies import just, lists, text, tuples
 
 from ims.ext.sqlite import SQLITE_MAX_INT
+from ims.ext.trial import TestCase
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentState,
     Location, ReportEntry, RodGarettAddress,
@@ -39,7 +40,7 @@ from ims.model.strategies import (
 )
 
 from .base import (
-    DataStoreTests, dateTimesEqualish, normalizeAddress, reportEntriesEqualish,
+    TestDataStore, dateTimesEqualish, normalizeAddress, reportEntriesEqualish,
     storeConcentricStreet,
 )
 from ..._exceptions import NoSuchIncidentError, StorageError
@@ -71,7 +72,7 @@ aReportEntry = ReportEntry(
 
 
 
-class DataStoreIncidentTests(DataStoreTests):
+class DataStoreIncidentTests(TestCase):
     """
     Tests for :class:`DataStore` incident access.
     """
@@ -90,10 +91,10 @@ class DataStoreIncidentTests(DataStoreTests):
 
         events: Dict[Event, Dict[int, Incident]] = defaultdict(defaultdict)
 
-        store = self.store()
+        store = TestDataStore(self)
 
         for incident in incidents:
-            self.storeIncident(store, incident)
+            store.storeIncident(incident)
 
             events[incident.event][incident.number] = incident
 
@@ -123,14 +124,14 @@ class DataStoreIncidentTests(DataStoreTests):
         """
         incidents = frozenset(incidents)
 
-        store = self.store()
+        store = TestDataStore(self)
 
         event: Optional[Event] = None
 
         for incident in incidents:
             event = incident.event
 
-            self.storeIncident(store, incident)
+            store.storeIncident(incident)
 
         assert event is not None
 
@@ -145,7 +146,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.incidents` raises :exc:`StorageError` when SQLite
         raises an exception.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(anEvent))
         store.bringThePain()
 
@@ -159,9 +160,9 @@ class DataStoreIncidentTests(DataStoreTests):
         """
         :meth:`DataStore.incidentWithNumber` returns the specified incident.
         """
-        store = self.store()
+        store = TestDataStore(self)
 
-        self.storeIncident(store, incident)
+        store.storeIncident(incident)
 
         retrieved = self.successResultOf(
             store.incidentWithNumber(incident.event, incident.number)
@@ -175,7 +176,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.incidentWithNumber` raises :exc:`NoSuchIncidentError`
         when the given incident number is not found.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(anEvent))
 
         f = self.failureResultOf(
@@ -189,7 +190,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.incidentWithNumber` raises :exc:`NoSuchIncidentError`
         when the given incident number is too large for SQLite.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(anEvent))
 
         f = self.failureResultOf(
@@ -204,7 +205,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.incidentWithNumber` raises :exc:`StorageError` when
         SQLite raises an exception.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(anEvent))
         store.bringThePain()
 
@@ -220,7 +221,7 @@ class DataStoreIncidentTests(DataStoreTests):
         """
         :meth:`DataStore.createIncident` creates the given incident.
         """
-        store = self.store()
+        store = TestDataStore(self)
 
         createdEvents: Set[Event] = set()
         createdIncidentTypes: Set[str] = set()
@@ -299,7 +300,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.createIncident` raises :exc:`StorageError` when SQLite
         raises an exception.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(anIncident.event))
         store.bringThePain()
 
@@ -312,7 +313,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.setIncident_priority` raises :exc:`StorageError` when
         SQLite raises an exception.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(anIncident.event))
         incident = self.successResultOf(
             store.createIncident(anIncident, "Hubcap")
@@ -332,9 +333,9 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident,
         methodName: str, attributeName: str, value: Any
     ) -> None:
-        store = self.store()
+        store = TestDataStore(self)
 
-        self.storeIncident(store, incident)
+        store.storeIncident(incident)
 
         setter = getattr(store, methodName)
 
@@ -516,7 +517,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.setIncident_rangers` raises :exc:`StorageError` when
         SQLite raises an exception.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(anIncident.event))
         incident = self.successResultOf(
             store.createIncident(anIncident, "Hubcap")
@@ -551,7 +552,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.setIncident_incidentTypes` raises :exc:`StorageError`
         when SQLite raises an exception.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(anEvent))
         incident = self.successResultOf(
             store.createIncident(anIncident, "Hubcap")
@@ -590,9 +591,9 @@ class DataStoreIncidentTests(DataStoreTests):
         reportEntries, author = entriesBy
 
         # Store test data
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(incident.event))
-        self.storeIncident(store, incident)
+        store.storeIncident(incident)
 
         # Fetch incident back so we have the same data as the DB
         incident = self.successResultOf(
@@ -635,7 +636,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.addReportEntriesToIncident` raises :exc:`ValueError`
         when given automatic report entries.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(anIncident.event))
         incident = self.successResultOf(
             store.createIncident(anIncident, "Hubcap")
@@ -659,7 +660,7 @@ class DataStoreIncidentTests(DataStoreTests):
         when given report entries with an author that does not match the author
         that is adding the entries.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(anIncident.event))
         incident = self.successResultOf(
             store.createIncident(anIncident, "Hubcap")
@@ -683,7 +684,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`DataStore.addReportEntriesToIncident` raises :exc:`StorageError`
         when SQLite raises an exception.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createEvent(anIncident.event))
         incident = self.successResultOf(
             store.createIncident(anIncident, "Hubcap")

@@ -23,8 +23,6 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Dict, Optional, Sequence, Set, Union, cast
 
-from attr import attrs
-
 from ims.ext.sqlite import Connection, Cursor, SQLiteError
 from ims.ext.trial import TestCase
 from ims.model import (
@@ -32,6 +30,7 @@ from ims.model import (
 )
 
 from .._store import DataStore, asTimeStamp, incidentStateAsID, priorityAsID
+from ...test.base import TestDataStore as SuperTestDataStore
 
 Dict, Set  # silence linter
 
@@ -40,20 +39,26 @@ __all__ = ()
 
 
 
-@attrs(frozen=True)
-class TestDataStore(DataStore):
+class TestDataStore(SuperTestDataStore, DataStore):
     """
-    :class:`DataStore` subclass that raises SQLiteError when things get
-    interesting.
+    See :class:`SuperTestDataStore`.
     """
 
-    exceptionMessage = "I'm broken, yo"
+    exceptionClass = SQLiteError
+
+
+    def __init__(
+        self, testCase: TestCase, dbPath: Optional[Path] = None
+    ) -> None:
+        if dbPath is None:
+            dbPath = Path(testCase.mktemp())
+        DataStore.__init__(self, dbPath)
 
 
     @property
     def _db(self) -> Connection:
         if getattr(self._state, "broken", False):
-            raise SQLiteError(self.exceptionMessage)
+            self.raiseException()
 
         return cast(property, DataStore._db).fget(self)
 
@@ -63,25 +68,30 @@ class TestDataStore(DataStore):
         assert getattr(self._state, "broken")
 
 
-
-class DataStoreTests(TestCase):
-    """
-    Base class for :class:`DataStore` test cases.
-    """
-
-    def store(self, dbPath: Optional[Path] = None) -> TestDataStore:
-        if dbPath is None:
-            dbPath = Path(self.mktemp())
-        return TestDataStore(dbPath)
-
-
     # FIXME: A better plan here would be to create a mock DB object that yields
     # the expected rows, instead of writing to an actual DB.
     # Since it's SQLite, which isn't actually async, that's not a huge deal,
     # except there's a lot of fragile code below.
 
-    def storeIncident(self, store: DataStore, incident: Incident) -> None:
-        with store._db as db:
+
+    def storeEvent(self, event: Event) -> None:
+        with self._db as db:
+            cursor: Cursor = db.cursor()
+            try:
+                self._storeEvent(cursor, event)
+            finally:
+                cursor.close()
+
+
+    def _storeEvent(self, cursor: Cursor, event: Event) -> None:
+        cursor.execute(
+            "insert into EVENT (NAME) values (:eventID)",
+            dict(eventID=event.id)
+        )
+
+
+    def storeIncident(self, incident: Incident) -> None:
+        with self._db as db:
             cursor: Cursor = db.cursor()
             try:
                 self._storeIncident(cursor, incident)
@@ -247,9 +257,9 @@ class DataStoreTests(TestCase):
 
 
     def storeIncidentReport(
-        self, store: DataStore, incidentReport: IncidentReport
+        self, incidentReport: IncidentReport
     ) -> None:
-        with store._db as db:
+        with self._db as db:
             cursor: Cursor = db.cursor()
             try:
                 storeIncidentReport(cursor, incidentReport)

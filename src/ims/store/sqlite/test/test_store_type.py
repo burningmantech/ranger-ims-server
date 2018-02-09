@@ -23,9 +23,10 @@ from typing import Dict, Set, Tuple
 from hypothesis import given
 from hypothesis.strategies import booleans, tuples
 
+from ims.ext.trial import TestCase
 from ims.model.strategies import incidentTypesText
 
-from .base import DataStoreTests
+from .base import TestDataStore
 from ..._exceptions import StorageError
 
 Dict, Set  # silence linter
@@ -38,7 +39,7 @@ builtInTypes = {"Admin", "Junk"}
 
 
 
-class DataStoreIncidentTypeTests(DataStoreTests):
+class DataStoreIncidentTypeTests(TestCase):
     """
     Tests for :class:`DataStore` incident type access.
     """
@@ -54,7 +55,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         """
         :meth:`DataStore.incidentTypes` returns visible incident types.
         """
-        store = self.store()
+        store = TestDataStore(self)
         for (name, hidden) in data:
             store._db.execute(
                 "insert into INCIDENT_TYPE (NAME, HIDDEN) "
@@ -86,7 +87,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         :meth:`DataStore.incidentTypes` if given CL{includeHidden=True} returns
         all incident types.
         """
-        store = self.store()
+        store = TestDataStore(self)
         for (name, hidden) in data:
             store._db.execute(
                 "insert into INCIDENT_TYPE (NAME, HIDDEN) "
@@ -112,7 +113,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         """
         :meth:`DataStore.createIncidentType` creates the incident type.
         """
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(
             store.createIncidentType(incidentType, hidden=hidden)
         )
@@ -135,7 +136,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         given an incident type that already exists in the data store.
         """
         incidentType = "foo"
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(store.createIncidentType(incidentType))
         f = self.failureResultOf(store.createIncidentType(incidentType))
         self.assertEqual(f.type, StorageError)
@@ -147,7 +148,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         visible.
         """
         incidentType = "foo"
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(
             store.createIncidentType(incidentType, hidden=True)
         )
@@ -171,7 +172,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         hidden.
         """
         incidentType = "foo"
-        store = self.store()
+        store = TestDataStore(self)
         self.successResultOf(
             store.createIncidentType(incidentType, hidden=False)
         )
