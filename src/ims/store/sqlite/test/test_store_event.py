@@ -69,7 +69,7 @@ class DataStoreEventTests(DataStoreTests):
         :meth:`DataStore.events` raises `StorageError` if SQLite raises.
         """
         e = self.assertRaises(StorageError, self.test_events, broken=True)
-        self.assertEqual(str(e), TestDataStore.brokenErrorMessage)
+        self.assertEqual(str(e), TestDataStore.exceptionMessage)
 
 
     @given(events())
