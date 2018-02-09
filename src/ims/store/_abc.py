@@ -265,8 +265,7 @@ class IMSDataStore(ABC):
     ) -> None:
         """
         Set the location radial minute for the incident with the given number
-        in the given
-        event.
+        in the given event.
         """
 
 

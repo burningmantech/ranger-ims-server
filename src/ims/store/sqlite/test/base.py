@@ -47,13 +47,13 @@ class TestDataStore(DataStore):
     interesting.
     """
 
-    brokenErrorMessage = "I'm broken, yo"
+    exceptionMessage = "I'm broken, yo"
 
 
     @property
     def _db(self) -> Connection:
         if getattr(self._state, "broken", False):
-            raise SQLiteError(self.brokenErrorMessage)
+            raise SQLiteError(self.exceptionMessage)
 
         return cast(property, DataStore._db).fget(self)
 
@@ -66,7 +66,7 @@ class TestDataStore(DataStore):
 
 class DataStoreTests(TestCase):
     """
-    Tests for :class:`DataStore` base functionality.
+    Base class for :class:`DataStore` test cases.
     """
 
     def store(self, dbPath: Optional[Path] = None) -> TestDataStore:

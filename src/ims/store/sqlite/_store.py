@@ -74,7 +74,7 @@ class DataStore(IMSDataStore):
     @attrs(frozen=False)
     class _State(object):
         """
-        Internal mutable state for :class:`Connection`.
+        Internal mutable state for :class:`DataStore`.
         """
 
         db: Connection = attrib(
