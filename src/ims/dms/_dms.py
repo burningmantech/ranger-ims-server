@@ -32,8 +32,6 @@ from twisted.logger import Logger
 
 from ims.model import Ranger, RangerStatus
 
-Set, Sequence  # silence linter
-
 
 __all__ = (
     "DMSError",

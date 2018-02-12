@@ -21,7 +21,7 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 from datetime import datetime as DateTime, timedelta as TimeDelta
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict, Optional, Sequence, Set, Union, cast
+from typing import Optional, Sequence, Union, cast
 
 from ims.ext.sqlite import Connection, Cursor, SQLiteError
 from ims.ext.trial import TestCase
@@ -31,8 +31,6 @@ from ims.model import (
 
 from .._store import DataStore, asTimeStamp, incidentStateAsID, priorityAsID
 from ...test.base import TestDataStore as SuperTestDataStore
-
-Dict, Set  # silence linter
 
 
 __all__ = ()

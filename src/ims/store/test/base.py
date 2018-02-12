@@ -20,13 +20,11 @@ Tests for :mod:`ranger-ims-server.store`
 
 from abc import ABC, abstractmethod
 from datetime import datetime as DateTime
-from typing import Dict, Sequence, Set
+from typing import Sequence
 
 from ims.model import Event, Incident, IncidentReport, ReportEntry
 
 from .._abc import IMSDataStore
-
-Dict, Set  # silence linter
 
 
 __all__ = ()

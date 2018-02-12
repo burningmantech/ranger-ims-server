@@ -49,8 +49,6 @@ from .._exceptions import (
     NoSuchIncidentError, NoSuchIncidentReportError, StorageError
 )
 
-Parameters  # Silence linter
-
 
 __all__ = ()
 

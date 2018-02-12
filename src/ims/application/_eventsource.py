@@ -20,7 +20,7 @@ HTML5 EventSource support.
 
 from collections import deque
 from time import time
-from typing import Deque, List, Mapping, Optional, Set, Tuple
+from typing import Deque, List, Mapping, Optional, Tuple
 
 from attr import attrib, attrs
 from attr.validators import instance_of, optional
@@ -32,8 +32,6 @@ from zope.interface import implementer
 
 from ims.ext.json import jsonTextFromObject
 from ims.model import Incident
-
-Deque, List, Set, Tuple  # silence linter
 
 
 __all__ = (

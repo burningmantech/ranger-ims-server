@@ -18,7 +18,7 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from typing import Dict, Set, Tuple
+from typing import Tuple
 
 from hypothesis import given
 from hypothesis.strategies import booleans, tuples
@@ -28,8 +28,6 @@ from ims.model.strategies import incidentTypesText
 
 from .base import TestDataStore
 from ..._exceptions import StorageError
-
-Dict, Set  # silence linter
 
 
 __all__ = ()

@@ -18,8 +18,6 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from typing import Dict, Set
-
 from hypothesis import given
 
 from ims.ext.trial import TestCase
@@ -29,8 +27,6 @@ from ims.model.strategies import (
 )
 
 from .base import TestDataStore, storeConcentricStreet
-
-Dict, Set  # silence linter
 
 
 __all__ = ()

@@ -27,8 +27,6 @@ from ims.ext.trial import TestCase
 from .. import DutyManagementSystem
 from .._dms import fullName, hashPassword
 
-MutableSequence, Tuple  # silence linter
-
 
 __all__ = ()
 

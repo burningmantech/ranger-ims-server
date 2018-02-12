@@ -23,7 +23,7 @@ from os import getcwd
 from os.path import basename, sep as pathsep
 from pathlib import Path
 from sys import argv
-from typing import FrozenSet, Optional, Set, Tuple, cast
+from typing import FrozenSet, Optional, Tuple, cast
 
 from twisted.logger import Logger
 
@@ -34,8 +34,6 @@ from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore
 
 from ._urls import URLs
-
-FrozenSet, IMSDataStore, Set  # silence linter
 
 
 __all__ = (

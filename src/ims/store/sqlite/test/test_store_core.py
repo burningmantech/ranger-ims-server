@@ -24,7 +24,7 @@ from datetime import (
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict, Optional, Set
+from typing import Optional
 
 from hypothesis import given
 from hypothesis.strategies import integers
@@ -36,8 +36,6 @@ from .base import TestDataStore
 from .. import _store
 from .._store import DataStore, asTimeStamp
 from ..._exceptions import StorageError
-
-Dict, Set  # silence linter
 
 
 __all__ = ()
