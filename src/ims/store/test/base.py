@@ -21,8 +21,6 @@ Tests for :mod:`ranger-ims-server.store`
 from abc import ABC, abstractmethod
 from typing import Dict, Set
 
-from attr import attrs
-
 from ims.model import Event, Incident, IncidentReport
 
 from .._abc import IMSDataStore
@@ -34,7 +32,6 @@ __all__ = ()
 
 
 
-@attrs(frozen=True)
 class TestDataStore(IMSDataStore, ABC):
     """
     :class:`IMSDataStore` subclass that raises a database exception when things
