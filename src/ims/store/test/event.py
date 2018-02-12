@@ -72,7 +72,7 @@ class DataStoreEventTests(TestCase):
         :meth:`IMSDataStore.events` raises `StorageError` if the store raises.
         """
         e = self.assertRaises(StorageError, self.test_events, broken=True)
-        self.assertEqual(str(e), self.store().exceptionMessage)
+        self.assertEqual(str(e), TestDataStore.exceptionMessage)
 
 
     @given(events())
