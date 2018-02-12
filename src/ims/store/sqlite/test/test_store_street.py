@@ -18,64 +18,23 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from hypothesis import given
-
-from ims.ext.trial import TestCase
-from ims.model import Event
-from ims.model.strategies import (
-    concentricStreetIDs, concentricStreetNames, events
+from .base import TestDataStore
+from ...test.street import (
+    DataStoreConcentricStreetTests as SuperDataStoreConcentricStreetTests
 )
-
-from .base import TestDataStore, storeConcentricStreet
 
 
 __all__ = ()
 
 
 
-class DataStoreConcentricStreetTests(TestCase):
+class DataStoreConcentricStreetTests(SuperDataStoreConcentricStreetTests):
     """
     Tests for :class:`DataStore` concentric street access.
     """
 
-    @given(events(), concentricStreetIDs(), concentricStreetNames())
-    def test_concentricStreets(
-        self, event: Event, streetID: str, streetName: str
-    ) -> None:
-        """
-        :meth:`DataStore.createConcentricStreet` returns the concentric streets
-        for the given event.
-        """
-        store = TestDataStore(self)
-
-        self.successResultOf(store.createEvent(event))
-
-        storeConcentricStreet(store._db, event, streetID, streetName)
-
-        concentricStreets = self.successResultOf(
-            store.concentricStreets(event)
-        )
-
-        self.assertEqual(len(concentricStreets), 1)
-        self.assertEqual(concentricStreets.get(streetID), streetName)
+    skip = None
 
 
-    @given(events(), concentricStreetIDs(), concentricStreetNames())
-    def test_createConcentricStreet(
-        self, event: Event, id: str, name: str
-    ) -> None:
-        """
-        :meth:`DataStore.createConcentricStreet` creates a concentric streets
-        for the given event.
-        """
-        store = TestDataStore(self)
-
-        self.successResultOf(store.createEvent(event))
-
-        self.successResultOf(
-            store.createConcentricStreet(event=event, id=id, name=name)
-        )
-        stored = self.successResultOf(store.concentricStreets(event=event))
-
-        self.assertEqual(len(stored), 1)
-        self.assertEqual(stored.get(id), name)
+    def store(self) -> TestDataStore:
+        return TestDataStore(self)

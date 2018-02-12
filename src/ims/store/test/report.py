@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for :mod:`ranger-ims-server.store.sqlite._store`
+Report tests for :mod:`ranger-ims-server.store`
 """
 
 from datetime import datetime as DateTime, timezone as TimeZone

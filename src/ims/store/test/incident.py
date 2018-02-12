@@ -90,7 +90,7 @@ class DataStoreIncidentTests(TestCase):
     @settings(max_examples=100)
     def test_incidents(self, incidents: Iterable[Incident]) -> None:
         """
-        :meth:`DataStore.incidents` returns all incidents.
+        :meth:`IMSDataStore.incidents` returns all incidents.
         """
         incidents = tuple(incidents)
 
@@ -125,7 +125,7 @@ class DataStoreIncidentTests(TestCase):
     @settings(max_examples=100)
     def test_incidents_sameEvent(self, incidents: Iterable[Incident]) -> None:
         """
-        :meth:`DataStore.incidents` returns all incidents.
+        :meth:`IMSDataStore.incidents` returns all incidents.
         """
         incidents = frozenset(incidents)
 
@@ -148,8 +148,8 @@ class DataStoreIncidentTests(TestCase):
 
     def test_incidents_error(self) -> None:
         """
-        :meth:`DataStore.incidents` raises :exc:`StorageError` when the store
-        raises an exception.
+        :meth:`IMSDataStore.incidents` raises :exc:`StorageError` when the
+        store raises an exception.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anEvent))
@@ -163,7 +163,7 @@ class DataStoreIncidentTests(TestCase):
     @settings(max_examples=200)
     def test_incidentWithNumber(self, incident: Incident) -> None:
         """
-        :meth:`DataStore.incidentWithNumber` returns the specified incident.
+        :meth:`IMSDataStore.incidentWithNumber` returns the specified incident.
         """
         store = self.store()
 
@@ -178,8 +178,8 @@ class DataStoreIncidentTests(TestCase):
 
     def test_incidentWithNumber_notFound(self) -> None:
         """
-        :meth:`DataStore.incidentWithNumber` raises :exc:`NoSuchIncidentError`
-        when the given incident number is not found.
+        :meth:`IMSDataStore.incidentWithNumber` raises
+        :exc:`NoSuchIncidentError` when the given incident number is not found.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anEvent))
@@ -192,8 +192,9 @@ class DataStoreIncidentTests(TestCase):
 
     def test_incidentWithNumber_tooBig(self) -> None:
         """
-        :meth:`DataStore.incidentWithNumber` raises :exc:`NoSuchIncidentError`
-        when the given incident number is too large for the store.
+        :meth:`IMSDataStore.incidentWithNumber` raises
+        :exc:`NoSuchIncidentError` when the given incident number is too large
+        for the store.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anEvent))
@@ -209,7 +210,7 @@ class DataStoreIncidentTests(TestCase):
 
     def test_incidentWithNumber_error(self) -> None:
         """
-        :meth:`DataStore.incidentWithNumber` raises :exc:`StorageError` when
+        :meth:`IMSDataStore.incidentWithNumber` raises :exc:`StorageError` when
         the store raises an exception.
         """
         store = self.store()
@@ -226,7 +227,7 @@ class DataStoreIncidentTests(TestCase):
         self, data: Iterable[Tuple[Incident, str]]
     ) -> None:
         """
-        :meth:`DataStore.createIncident` creates the given incident.
+        :meth:`IMSDataStore.createIncident` creates the given incident.
         """
         store = self.store()
 
@@ -304,7 +305,7 @@ class DataStoreIncidentTests(TestCase):
 
     def test_createIncident_error(self) -> None:
         """
-        :meth:`DataStore.createIncident` raises :exc:`StorageError` when the
+        :meth:`IMSDataStore.createIncident` raises :exc:`StorageError` when the
         store raises an exception.
         """
         store = self.store()
@@ -317,8 +318,8 @@ class DataStoreIncidentTests(TestCase):
 
     def test_setIncident_priority_error(self) -> None:
         """
-        :meth:`DataStore.setIncident_priority` raises :exc:`StorageError` when
-        the store raises an exception.
+        :meth:`IMSDataStore.setIncident_priority` raises :exc:`StorageError`
+        when the store raises an exception.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
@@ -395,7 +396,7 @@ class DataStoreIncidentTests(TestCase):
         self, incident: Incident, priority: IncidentPriority
     ) -> None:
         """
-        :meth:`DataStore.setIncident_priority` updates the priority for the
+        :meth:`IMSDataStore.setIncident_priority` updates the priority for the
         given incident in the data store.
         """
         self._test_setIncidentAttribute(
@@ -409,8 +410,8 @@ class DataStoreIncidentTests(TestCase):
         self, incident: Incident, state: IncidentState
     ) -> None:
         """
-        :meth:`DataStore.setIncident_state` updates the state for the incident
-        with the given number in the data store.
+        :meth:`IMSDataStore.setIncident_state` updates the state for the
+        incident with the given number in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_state", "state", state
@@ -423,7 +424,7 @@ class DataStoreIncidentTests(TestCase):
         self, incident: Incident, summary: str
     ) -> None:
         """
-        :meth:`DataStore.setIncident_summary` updates the summary for the
+        :meth:`IMSDataStore.setIncident_summary` updates the summary for the
         given incident in the data store.
         """
         self._test_setIncidentAttribute(
@@ -437,7 +438,7 @@ class DataStoreIncidentTests(TestCase):
         self, incident: Incident, name: str
     ) -> None:
         """
-        :meth:`DataStore.setIncident_locationName` updates the location name
+        :meth:`IMSDataStore.setIncident_locationName` updates the location name
         for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
@@ -451,7 +452,7 @@ class DataStoreIncidentTests(TestCase):
         self, incident: Incident, streetID: str
     ) -> None:
         """
-        :meth:`DataStore.setIncident_locationConcentricStreet` updates the
+        :meth:`IMSDataStore.setIncident_locationConcentricStreet` updates the
         location concentric street for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
@@ -466,8 +467,8 @@ class DataStoreIncidentTests(TestCase):
         self, incident: Incident, radialHour: int
     ) -> None:
         """
-        :meth:`DataStore.setIncident_locationRadialHour` updates the location
-        radial hour for the given incident in the data store.
+        :meth:`IMSDataStore.setIncident_locationRadialHour` updates the
+        location radial hour for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_locationRadialHour",
@@ -481,8 +482,8 @@ class DataStoreIncidentTests(TestCase):
         self, incident: Incident, radialMinute: int
     ) -> None:
         """
-        :meth:`DataStore.setIncident_locationRadialMinute` updates the location
-        radial minute for the given incident in the data store.
+        :meth:`IMSDataStore.setIncident_locationRadialMinute` updates the
+        location radial minute for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_locationRadialMinute",
@@ -496,8 +497,8 @@ class DataStoreIncidentTests(TestCase):
         self, incident: Incident, description: str
     ) -> None:
         """
-        :meth:`DataStore.setIncident_locationDescription` updates the location
-        description for the given incident in the data store.
+        :meth:`IMSDataStore.setIncident_locationDescription` updates the
+        location description for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_locationDescription",
@@ -511,7 +512,7 @@ class DataStoreIncidentTests(TestCase):
         self, incident: Incident, rangerHandles: Iterable[str]
     ) -> None:
         """
-        :meth:`DataStore.setIncident_rangers` updates the ranger handles for
+        :meth:`IMSDataStore.setIncident_rangers` updates the ranger handles for
         the given incident in the data store.
         """
         self._test_setIncidentAttribute(
@@ -521,8 +522,8 @@ class DataStoreIncidentTests(TestCase):
 
     def test_setIncident_rangers_error(self) -> None:
         """
-        :meth:`DataStore.setIncident_rangers` raises :exc:`StorageError` when
-        the store raises an exception.
+        :meth:`IMSDataStore.setIncident_rangers` raises :exc:`StorageError`
+        when the store raises an exception.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
@@ -545,7 +546,7 @@ class DataStoreIncidentTests(TestCase):
         self, incident: Incident, incidentTypes: Iterable[str]
     ) -> None:
         """
-        :meth:`DataStore.setIncident_rangers` updates the ranger handles for
+        :meth:`IMSDataStore.setIncident_rangers` updates the ranger handles for
         the given incident in the data store.
         """
         self._test_setIncidentAttribute(
@@ -556,8 +557,8 @@ class DataStoreIncidentTests(TestCase):
 
     def test_setIncident_incidentTypes_error(self) -> None:
         """
-        :meth:`DataStore.setIncident_incidentTypes` raises :exc:`StorageError`
-        when the store raises an exception.
+        :meth:`IMSDataStore.setIncident_incidentTypes` raises
+        :exc:`StorageError` when the store raises an exception.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anEvent))
@@ -592,7 +593,7 @@ class DataStoreIncidentTests(TestCase):
         self, incident: Incident, entriesBy: Tuple[List[ReportEntry], str]
     ) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncident` adds the given report
+        :meth:`IMSDataStore.addReportEntriesToIncident` adds the given report
         entries to the given incident in the data store.
         """
         reportEntries, author = entriesBy
@@ -640,8 +641,8 @@ class DataStoreIncidentTests(TestCase):
 
     def test_addReportEntriesToIncident_automatic(self) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncident` raises :exc:`ValueError`
-        when given automatic report entries.
+        :meth:`IMSDataStore.addReportEntriesToIncident` raises
+        :exc:`ValueError` when given automatic report entries.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
@@ -663,9 +664,9 @@ class DataStoreIncidentTests(TestCase):
 
     def test_addReportEntriesToIncident_wrongAuthor(self) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncident` raises :exc:`ValueError`
-        when given report entries with an author that does not match the author
-        that is adding the entries.
+        :meth:`IMSDataStore.addReportEntriesToIncident` raises
+        :exc:`ValueError` when given report entries with an author that does
+        not match the author that is adding the entries.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
@@ -688,8 +689,8 @@ class DataStoreIncidentTests(TestCase):
 
     def test_addReportEntriesToIncident_error(self) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncident` raises :exc:`StorageError`
-        when the store raises an exception.
+        :meth:`IMSDataStore.addReportEntriesToIncident` raises
+        :exc:`StorageError` when the store raises an exception.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
