@@ -116,7 +116,7 @@ package_data = dict(
 setup_requirements = []
 
 install_requirements = [
-    "arrow==0.12.0",
+    "arrow==0.12.1",
     "attrs==17.4.0",
     "Automat==0.6.0",
     "cattrs==0.4.0",
