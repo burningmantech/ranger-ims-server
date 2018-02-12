@@ -32,8 +32,6 @@ from ims.ext.attr import sorted_tuple
 from ._incident import summaryFromReport
 from ._replace import ReplaceMixIn
 
-Optional, Sequence  # Silence linter
-
 
 __all__ = ()
 

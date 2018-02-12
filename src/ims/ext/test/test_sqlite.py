@@ -20,9 +20,6 @@ from ..trial import TestCase
 __all__ = ()
 
 
-List  # Silence linter
-
-
 
 class ConnectionTests(TestCase):
     """

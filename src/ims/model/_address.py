@@ -29,8 +29,6 @@ from attr.validators import instance_of, optional
 from ._cmp import ComparisonMixIn
 from ._replace import ReplaceMixIn
 
-Optional  # Silence linter
-
 
 __all__ = ()
 

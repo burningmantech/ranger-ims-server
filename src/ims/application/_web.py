@@ -48,8 +48,6 @@ from ims.store import NoSuchIncidentReportError
 
 from ._klein import Router, notFoundResponse, redirect
 
-Optional  # silence linter
-
 
 __all__ = (
     "WebApplication",

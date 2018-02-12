@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for :mod:`ranger-ims-server.store.sqlite._store`
+Report tests for :mod:`ranger-ims-server.store`
 """
 
 from datetime import datetime as DateTime, timezone as TimeZone
@@ -26,18 +26,15 @@ from attr import fields as attrFields
 from hypothesis import assume, given, settings
 from hypothesis.strategies import frozensets, lists, tuples
 
-from ims.ext.sqlite import SQLITE_MAX_INT
 from ims.model import Incident, IncidentReport, ReportEntry
 from ims.model.strategies import (
     incidentReportLists, incidentReportSummaries, incidentReports,
     incidents, rangerHandles, reportEntries,
 )
 
-from .base import DataStoreTests, dateTimesEqualish, reportEntriesEqualish
-from .test_store_incident import aReportEntry, anIncident
-from ..._exceptions import NoSuchIncidentReportError, StorageError
-
-Set  # silence linter
+from .base import DataStoreTests, TestDataStore
+from .incident import aReportEntry, anIncident
+from .._exceptions import NoSuchIncidentReportError, StorageError
 
 
 __all__ = ()
@@ -56,7 +53,10 @@ class DataStoreIncidentReportTests(DataStoreTests):
     """
     Tests for :class:`DataStore` incident report access.
     """
-    @given(incidentReportLists(maxNumber=SQLITE_MAX_INT, averageSize=3))
+
+    @given(incidentReportLists(
+        maxNumber=TestDataStore.maxIncidentNumber, averageSize=3
+    ))
     @settings(max_examples=100)
     def test_incidentReports(
         self, incidentReports: Iterable[IncidentReport]
@@ -70,7 +70,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         store = self.store()
 
         for incidentReport in incidentReports:
-            self.storeIncidentReport(store, incidentReport)
+            store.storeIncidentReport(incidentReport)
 
         found: Set[int] = set()
         for retrieved in self.successResultOf(store.incidentReports()):
@@ -95,7 +95,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         self.assertEqual(f.type, StorageError)
 
 
-    @given(incidentReports(maxNumber=SQLITE_MAX_INT))
+    @given(incidentReports(maxNumber=TestDataStore.maxIncidentNumber))
     def test_incidentReportWithNumber(
         self, incidentReport: IncidentReport
     ) -> None:
@@ -104,7 +104,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         incident report.
         """
         store = self.store()
-        self.storeIncidentReport(store, incidentReport)
+        store.storeIncidentReport(incidentReport)
 
         retrieved = self.successResultOf(
             store.incidentReportWithNumber(incidentReport.number)
@@ -137,7 +137,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         store = self.store()
 
         f = self.failureResultOf(
-            store.incidentReportWithNumber(SQLITE_MAX_INT + 1)
+            store.incidentReportWithNumber(TestDataStore.maxIncidentNumber + 1)
         )
         self.assertEqual(f.type, NoSuchIncidentReportError)
 
@@ -243,7 +243,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
     ) -> None:
         store = self.store()
 
-        self.storeIncidentReport(store, incidentReport)
+        store.storeIncidentReport(incidentReport)
 
         setter = getattr(store, methodName)
 
@@ -306,7 +306,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         # Store test data
         store = self.store()
-        self.storeIncidentReport(store, incidentReport)
+        store.storeIncidentReport(incidentReport)
 
         # Fetch incident report back so we have the version from the DB
         incidentReport = self.successResultOf(
@@ -330,7 +330,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         # Updated entries minus the original entries == the added entries
         updatedNewEntries = updatedEntries - originalEntries
         self.assertTrue(
-            reportEntriesEqualish(
+            store.reportEntriesEqual(
                 sorted(updatedNewEntries), sorted(reportEntries)
             )
         )
@@ -434,7 +434,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         # Create some detached incident reports
         for incidentReport in detached:
-            self.storeIncidentReport(store, incidentReport)
+            store.storeIncidentReport(incidentReport)
             foundIncidentReportNumbers.add(incidentReport.number)
 
         # Create some incidents and, for each, create some incident reports
@@ -442,11 +442,11 @@ class DataStoreIncidentReportTests(DataStoreTests):
         for incident, reports in attached:
             assume(incident.number not in foundIncidentNumbers)
 
-            self.storeIncident(store, incident)
+            store.storeIncident(incident)
             for incidentReport in reports:
                 assume(incidentReport.number not in foundIncidentReportNumbers)
 
-                self.storeIncidentReport(store, incidentReport)
+                store.storeIncidentReport(incidentReport)
                 self.successResultOf(
                     store.attachIncidentReportToIncident(
                         incidentReport.number, incident.event, incident.number
@@ -630,6 +630,8 @@ class DataStoreIncidentReportTests(DataStoreTests):
         ignoreAutomatic: bool = False,
     ) -> None:
         if incidentReportA != incidentReportB:
+            store = self.store()
+
             messages = []
 
             for attribute in attrFields(IncidentReport):
@@ -638,12 +640,14 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 valueB = getattr(incidentReportB, name)
 
                 if name == "created":
-                    if dateTimesEqualish(valueA, valueB):
+                    if store.dateTimesEqual(valueA, valueB):
                         continue
                     else:
                         messages.append(f"{name} delta: {valueA - valueB}")
                 elif name == "reportEntries":
-                    if reportEntriesEqualish(valueA, valueB, ignoreAutomatic):
+                    if store.reportEntriesEqual(
+                        valueA, valueB, ignoreAutomatic
+                    ):
                         continue
 
                 if valueA != valueB:

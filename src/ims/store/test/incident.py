@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for :mod:`ranger-ims-server.store.sqlite._store`
+Incident tests for :mod:`ranger-ims-server.store`
 """
 
 from collections import defaultdict
@@ -27,7 +27,6 @@ from attr import fields as attrFields
 from hypothesis import given, settings
 from hypothesis.strategies import just, lists, text, tuples
 
-from ims.ext.sqlite import SQLITE_MAX_INT
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentState,
     Location, ReportEntry, RodGarettAddress,
@@ -38,13 +37,8 @@ from ims.model.strategies import (
     radialHours, radialMinutes, rangerHandles, reportEntries,
 )
 
-from .base import (
-    DataStoreTests, dateTimesEqualish, normalizeAddress, reportEntriesEqualish,
-    storeConcentricStreet,
-)
-from ..._exceptions import NoSuchIncidentError, StorageError
-
-Dict, Event, Optional, Set  # silence linter
+from .base import DataStoreTests, TestDataStore
+from .._exceptions import NoSuchIncidentError, StorageError
 
 
 __all__ = ()
@@ -73,18 +67,19 @@ aReportEntry = ReportEntry(
 
 class DataStoreIncidentTests(DataStoreTests):
     """
-    Tests for :class:`DataStore` incident access.
+    Tests for :class:`IMSDataStore` incident access.
     """
 
     @given(
         incidentLists(
-            maxNumber=SQLITE_MAX_INT, averageSize=3, maxSize=10, uniqueIDs=True
+            maxNumber=TestDataStore.maxIncidentNumber,
+            averageSize=3, maxSize=10, uniqueIDs=True,
         )
     )
     @settings(max_examples=100)
     def test_incidents(self, incidents: Iterable[Incident]) -> None:
         """
-        :meth:`DataStore.incidents` returns all incidents.
+        :meth:`IMSDataStore.incidents` returns all incidents.
         """
         incidents = tuple(incidents)
 
@@ -93,7 +88,7 @@ class DataStoreIncidentTests(DataStoreTests):
         store = self.store()
 
         for incident in incidents:
-            self.storeIncident(store, incident)
+            store.storeIncident(incident)
 
             events[incident.event][incident.number] = incident
 
@@ -112,14 +107,14 @@ class DataStoreIncidentTests(DataStoreTests):
 
     @given(
         incidentLists(
-            event=anEvent, maxNumber=SQLITE_MAX_INT,
+            event=anEvent, maxNumber=TestDataStore.maxIncidentNumber,
             minSize=2, averageSize=3, uniqueIDs=True,
         ),
     )
     @settings(max_examples=100)
     def test_incidents_sameEvent(self, incidents: Iterable[Incident]) -> None:
         """
-        :meth:`DataStore.incidents` returns all incidents.
+        :meth:`IMSDataStore.incidents` returns all incidents.
         """
         incidents = frozenset(incidents)
 
@@ -130,7 +125,7 @@ class DataStoreIncidentTests(DataStoreTests):
         for incident in incidents:
             event = incident.event
 
-            self.storeIncident(store, incident)
+            store.storeIncident(incident)
 
         assert event is not None
 
@@ -142,8 +137,8 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def test_incidents_error(self) -> None:
         """
-        :meth:`DataStore.incidents` raises :exc:`StorageError` when SQLite
-        raises an exception.
+        :meth:`IMSDataStore.incidents` raises :exc:`StorageError` when the
+        store raises an exception.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anEvent))
@@ -153,15 +148,15 @@ class DataStoreIncidentTests(DataStoreTests):
         self.assertEqual(f.type, StorageError)
 
 
-    @given(incidents(maxNumber=SQLITE_MAX_INT))
+    @given(incidents(maxNumber=TestDataStore.maxIncidentNumber))
     @settings(max_examples=200)
     def test_incidentWithNumber(self, incident: Incident) -> None:
         """
-        :meth:`DataStore.incidentWithNumber` returns the specified incident.
+        :meth:`IMSDataStore.incidentWithNumber` returns the specified incident.
         """
         store = self.store()
 
-        self.storeIncident(store, incident)
+        store.storeIncident(incident)
 
         retrieved = self.successResultOf(
             store.incidentWithNumber(incident.event, incident.number)
@@ -172,8 +167,8 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def test_incidentWithNumber_notFound(self) -> None:
         """
-        :meth:`DataStore.incidentWithNumber` raises :exc:`NoSuchIncidentError`
-        when the given incident number is not found.
+        :meth:`IMSDataStore.incidentWithNumber` raises
+        :exc:`NoSuchIncidentError` when the given incident number is not found.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anEvent))
@@ -186,14 +181,17 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def test_incidentWithNumber_tooBig(self) -> None:
         """
-        :meth:`DataStore.incidentWithNumber` raises :exc:`NoSuchIncidentError`
-        when the given incident number is too large for SQLite.
+        :meth:`IMSDataStore.incidentWithNumber` raises
+        :exc:`NoSuchIncidentError` when the given incident number is too large
+        for the store.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anEvent))
 
         f = self.failureResultOf(
-            store.incidentWithNumber(anEvent, SQLITE_MAX_INT + 1)
+            store.incidentWithNumber(
+                anEvent, TestDataStore.maxIncidentNumber + 1
+            )
         )
         f.printTraceback()
         self.assertEqual(f.type, NoSuchIncidentError)
@@ -201,8 +199,8 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def test_incidentWithNumber_error(self) -> None:
         """
-        :meth:`DataStore.incidentWithNumber` raises :exc:`StorageError` when
-        SQLite raises an exception.
+        :meth:`IMSDataStore.incidentWithNumber` raises :exc:`StorageError` when
+        the store raises an exception.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anEvent))
@@ -218,7 +216,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self, data: Iterable[Tuple[Incident, str]]
     ) -> None:
         """
-        :meth:`DataStore.createIncident` creates the given incident.
+        :meth:`IMSDataStore.createIncident` creates the given incident.
         """
         store = self.store()
 
@@ -296,8 +294,8 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def test_createIncident_error(self) -> None:
         """
-        :meth:`DataStore.createIncident` raises :exc:`StorageError` when SQLite
-        raises an exception.
+        :meth:`IMSDataStore.createIncident` raises :exc:`StorageError` when the
+        store raises an exception.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
@@ -309,8 +307,8 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def test_setIncident_priority_error(self) -> None:
         """
-        :meth:`DataStore.setIncident_priority` raises :exc:`StorageError` when
-        SQLite raises an exception.
+        :meth:`IMSDataStore.setIncident_priority` raises :exc:`StorageError`
+        when the store raises an exception.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
@@ -334,14 +332,14 @@ class DataStoreIncidentTests(DataStoreTests):
     ) -> None:
         store = self.store()
 
-        self.storeIncident(store, incident)
+        store.storeIncident(incident)
 
         setter = getattr(store, methodName)
 
         # For concentric streets, we need to make sure they exist first.
         if attributeName == "location.address.concentric":
-            storeConcentricStreet(
-                store._db, incident.event, value, "Concentric Street",
+            store.storeConcentricStreet(
+                incident.event, value, "Concentric Street",
                 ignoreDuplicates=True,
             )
 
@@ -364,7 +362,7 @@ class DataStoreIncidentTests(DataStoreTests):
         # Don't normalize before calling the setter; we want to test that
         # giving it un-normalized data works.
         if attributeName.startswith("location.address."):
-            incident = normalizeAddress(incident)
+            incident = store.normalizeIncidentAddress(incident)
 
         # Replace the specified incident attribute with the given value.
         # This is a bit complex because we're recursing into sub-attributes.
@@ -387,7 +385,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident, priority: IncidentPriority
     ) -> None:
         """
-        :meth:`DataStore.setIncident_priority` updates the priority for the
+        :meth:`IMSDataStore.setIncident_priority` updates the priority for the
         given incident in the data store.
         """
         self._test_setIncidentAttribute(
@@ -401,8 +399,8 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident, state: IncidentState
     ) -> None:
         """
-        :meth:`DataStore.setIncident_state` updates the state for the incident
-        with the given number in the data store.
+        :meth:`IMSDataStore.setIncident_state` updates the state for the
+        incident with the given number in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_state", "state", state
@@ -415,7 +413,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident, summary: str
     ) -> None:
         """
-        :meth:`DataStore.setIncident_summary` updates the summary for the
+        :meth:`IMSDataStore.setIncident_summary` updates the summary for the
         given incident in the data store.
         """
         self._test_setIncidentAttribute(
@@ -429,7 +427,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident, name: str
     ) -> None:
         """
-        :meth:`DataStore.setIncident_locationName` updates the location name
+        :meth:`IMSDataStore.setIncident_locationName` updates the location name
         for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
@@ -443,7 +441,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident, streetID: str
     ) -> None:
         """
-        :meth:`DataStore.setIncident_locationConcentricStreet` updates the
+        :meth:`IMSDataStore.setIncident_locationConcentricStreet` updates the
         location concentric street for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
@@ -458,8 +456,8 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident, radialHour: int
     ) -> None:
         """
-        :meth:`DataStore.setIncident_locationRadialHour` updates the location
-        radial hour for the given incident in the data store.
+        :meth:`IMSDataStore.setIncident_locationRadialHour` updates the
+        location radial hour for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_locationRadialHour",
@@ -473,8 +471,8 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident, radialMinute: int
     ) -> None:
         """
-        :meth:`DataStore.setIncident_locationRadialMinute` updates the location
-        radial minute for the given incident in the data store.
+        :meth:`IMSDataStore.setIncident_locationRadialMinute` updates the
+        location radial minute for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_locationRadialMinute",
@@ -488,8 +486,8 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident, description: str
     ) -> None:
         """
-        :meth:`DataStore.setIncident_locationDescription` updates the location
-        description for the given incident in the data store.
+        :meth:`IMSDataStore.setIncident_locationDescription` updates the
+        location description for the given incident in the data store.
         """
         self._test_setIncidentAttribute(
             incident, "setIncident_locationDescription",
@@ -503,7 +501,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident, rangerHandles: Iterable[str]
     ) -> None:
         """
-        :meth:`DataStore.setIncident_rangers` updates the ranger handles for
+        :meth:`IMSDataStore.setIncident_rangers` updates the ranger handles for
         the given incident in the data store.
         """
         self._test_setIncidentAttribute(
@@ -513,8 +511,8 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def test_setIncident_rangers_error(self) -> None:
         """
-        :meth:`DataStore.setIncident_rangers` raises :exc:`StorageError` when
-        SQLite raises an exception.
+        :meth:`IMSDataStore.setIncident_rangers` raises :exc:`StorageError`
+        when the store raises an exception.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
@@ -537,7 +535,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident, incidentTypes: Iterable[str]
     ) -> None:
         """
-        :meth:`DataStore.setIncident_rangers` updates the ranger handles for
+        :meth:`IMSDataStore.setIncident_rangers` updates the ranger handles for
         the given incident in the data store.
         """
         self._test_setIncidentAttribute(
@@ -548,8 +546,8 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def test_setIncident_incidentTypes_error(self) -> None:
         """
-        :meth:`DataStore.setIncident_incidentTypes` raises :exc:`StorageError`
-        when SQLite raises an exception.
+        :meth:`IMSDataStore.setIncident_incidentTypes` raises
+        :exc:`StorageError` when the store raises an exception.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anEvent))
@@ -584,7 +582,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident, entriesBy: Tuple[List[ReportEntry], str]
     ) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncident` adds the given report
+        :meth:`IMSDataStore.addReportEntriesToIncident` adds the given report
         entries to the given incident in the data store.
         """
         reportEntries, author = entriesBy
@@ -592,7 +590,7 @@ class DataStoreIncidentTests(DataStoreTests):
         # Store test data
         store = self.store()
         self.successResultOf(store.createEvent(incident.event))
-        self.storeIncident(store, incident)
+        store.storeIncident(incident)
 
         # Fetch incident back so we have the same data as the DB
         incident = self.successResultOf(
@@ -624,7 +622,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
         # New entries should be the same as the ones we added
         self.assertTrue(
-            reportEntriesEqualish(
+            store.reportEntriesEqual(
                 sorted(updatedNewEntries), sorted(reportEntries)
             )
         )
@@ -632,8 +630,8 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def test_addReportEntriesToIncident_automatic(self) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncident` raises :exc:`ValueError`
-        when given automatic report entries.
+        :meth:`IMSDataStore.addReportEntriesToIncident` raises
+        :exc:`ValueError` when given automatic report entries.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
@@ -655,9 +653,9 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def test_addReportEntriesToIncident_wrongAuthor(self) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncident` raises :exc:`ValueError`
-        when given report entries with an author that does not match the author
-        that is adding the entries.
+        :meth:`IMSDataStore.addReportEntriesToIncident` raises
+        :exc:`ValueError` when given report entries with an author that does
+        not match the author that is adding the entries.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
@@ -680,8 +678,8 @@ class DataStoreIncidentTests(DataStoreTests):
 
     def test_addReportEntriesToIncident_error(self) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncident` raises :exc:`StorageError`
-        when SQLite raises an exception.
+        :meth:`IMSDataStore.addReportEntriesToIncident` raises
+        :exc:`StorageError` when the store raises an exception.
         """
         store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
@@ -704,6 +702,8 @@ class DataStoreIncidentTests(DataStoreTests):
         ignoreAutomatic: bool = False,
     ) -> None:
         if incidentA != incidentB:
+            store = self.store()
+
             messages = []
 
             for attribute in attrFields(Incident):
@@ -712,12 +712,14 @@ class DataStoreIncidentTests(DataStoreTests):
                 valueB = getattr(incidentB, name)
 
                 if name == "created":
-                    if dateTimesEqualish(valueA, valueB):
+                    if store.dateTimesEqual(valueA, valueB):
                         continue
                     else:
                         messages.append(f"{name} delta: {valueA - valueB}")
                 elif name == "reportEntries":
-                    if reportEntriesEqualish(valueA, valueB, ignoreAutomatic):
+                    if store.reportEntriesEqual(
+                        valueA, valueB, ignoreAutomatic
+                    ):
                         continue
 
                 if valueA != valueB:

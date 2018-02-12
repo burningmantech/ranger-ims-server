@@ -36,8 +36,6 @@ from ._priority import IncidentPriority
 from ._replace import ReplaceMixIn
 from ._state import IncidentState
 
-AbstractSet, Sequence  # silence linter
-
 
 __all__ = ()
 

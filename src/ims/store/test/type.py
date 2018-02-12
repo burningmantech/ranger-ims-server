@@ -15,10 +15,10 @@
 ##
 
 """
-Tests for :mod:`ranger-ims-server.store.sqlite._store`
+Incident type tests for :mod:`ranger-ims-server.store`
 """
 
-from typing import Dict, Set, Tuple
+from typing import Tuple
 
 from hypothesis import given
 from hypothesis.strategies import booleans, tuples
@@ -26,9 +26,7 @@ from hypothesis.strategies import booleans, tuples
 from ims.model.strategies import incidentTypesText
 
 from .base import DataStoreTests
-from ..._exceptions import StorageError
-
-Dict, Set  # silence linter
+from .._exceptions import StorageError
 
 
 __all__ = ()
@@ -40,7 +38,7 @@ builtInTypes = {"Admin", "Junk"}
 
 class DataStoreIncidentTypeTests(DataStoreTests):
     """
-    Tests for :class:`DataStore` incident type access.
+    Tests for :class:`IMSDataStore` incident type access.
     """
 
     @given(
@@ -52,15 +50,11 @@ class DataStoreIncidentTypeTests(DataStoreTests):
     )
     def test_incidentTypes(self, data: Tuple[Tuple[str, bool]]) -> None:
         """
-        :meth:`DataStore.incidentTypes` returns visible incident types.
+        :meth:`IMSDataStore.incidentTypes` returns visible incident types.
         """
         store = self.store()
         for (name, hidden) in data:
-            store._db.execute(
-                "insert into INCIDENT_TYPE (NAME, HIDDEN) "
-                "values (:name, :hidden)",
-                dict(name=name, hidden=hidden)
-            )
+            store.storeIncidentType(name, hidden)
 
         incidentTypes = frozenset(
             self.successResultOf(store.incidentTypes())
@@ -83,16 +77,12 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         self, data: Tuple[Tuple[str, bool]]
     ) -> None:
         """
-        :meth:`DataStore.incidentTypes` if given CL{includeHidden=True} returns
-        all incident types.
+        :meth:`IMSDataStore.incidentTypes` if given CL{includeHidden=True}
+        returns all incident types.
         """
         store = self.store()
         for (name, hidden) in data:
-            store._db.execute(
-                "insert into INCIDENT_TYPE (NAME, HIDDEN) "
-                "values (:name, :hidden)",
-                dict(name=name, hidden=hidden)
-            )
+            store.storeIncidentType(name, hidden)
 
         incidentTypes = frozenset(
             self.successResultOf(store.incidentTypes(includeHidden=True))
@@ -110,7 +100,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
     )
     def test_createIncidentType(self, incidentType: str, hidden: bool) -> None:
         """
-        :meth:`DataStore.createIncidentType` creates the incident type.
+        :meth:`IMSDataStore.createIncidentType` creates the incident type.
         """
         store = self.store()
         self.successResultOf(
@@ -131,7 +121,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
 
     def test_createIncidentType_duplicate(self) -> None:
         """
-        :meth:`DataStore.createIncidentType` raises :exc:`StorageError` when
+        :meth:`IMSDataStore.createIncidentType` raises :exc:`StorageError` when
         given an incident type that already exists in the data store.
         """
         incidentType = "foo"
@@ -143,7 +133,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
 
     def test_showIncidentTypes(self) -> None:
         """
-        :meth:`DataStore.showIncidentTypes` makes the given incident types
+        :meth:`IMSDataStore.showIncidentTypes` makes the given incident types
         visible.
         """
         incidentType = "foo"
@@ -167,7 +157,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
 
     def test_hideIncidentTypes(self) -> None:
         """
-        :meth:`DataStore.showIncidentTypes` makes the given incident types
+        :meth:`IMSDataStore.showIncidentTypes` makes the given incident types
         hidden.
         """
         incidentType = "foo"

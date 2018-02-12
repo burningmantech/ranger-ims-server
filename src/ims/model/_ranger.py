@@ -31,8 +31,6 @@ from ims.ext.attr import true
 
 from ._replace import ReplaceMixIn
 
-AbstractSet, Optional  # silence linter
-
 
 __all__ = ()
 

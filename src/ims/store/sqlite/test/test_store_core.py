@@ -24,26 +24,25 @@ from datetime import (
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict, Optional, Set
+from typing import Optional
 
 from hypothesis import given
 from hypothesis.strategies import integers
 
 from ims.ext.sqlite import Connection, SQLiteError, createDB, printSchema
+from ims.ext.trial import TestCase
 
-from .base import DataStoreTests
+from .base import TestDataStore
 from .. import _store
 from .._store import DataStore, asTimeStamp
 from ..._exceptions import StorageError
-
-Dict, Set  # silence linter
 
 
 __all__ = ()
 
 
 
-class DataStoreCoreTests(DataStoreTests):
+class DataStoreCoreTests(TestCase):
     """
     Tests for :class:`DataStore` base functionality.
     """
@@ -52,7 +51,7 @@ class DataStoreCoreTests(DataStoreTests):
         """
         :meth:`DataStore.loadSchema` caches and returns the schema.
         """
-        store = self.store()
+        store = TestDataStore(self)
         schema = store._loadSchema()
 
         self.assertStartsWith(schema, "create table SCHEMA_INFO (")
@@ -181,7 +180,7 @@ class DataStoreCoreTests(DataStoreTests):
         """
         :meth:`DataStore._db` returns a :class:`Connection`.
         """
-        store = self.store()
+        store = TestDataStore(self)
 
         self.assertIsInstance(store._db, Connection)
 
@@ -198,7 +197,7 @@ class DataStoreCoreTests(DataStoreTests):
 
         self.patch(_store, "openDB", oops)
 
-        store = self.store()
+        store = TestDataStore(self)
 
         e = self.assertRaises(StorageError, lambda: store._db)
         self.assertEqual(
@@ -247,7 +246,7 @@ class DataStoreCoreTests(DataStoreTests):
         with createDB(dbPath, DataStore._loadSchema()) as db:
             db.execute("drop table SCHEMA_INFO")
 
-        store = self.store(dbPath=dbPath)
+        store = TestDataStore(self, dbPath=dbPath)
 
         e = self.assertRaises(StorageError, lambda: store._db)
         self.assertStartsWith(str(e), "Unable to look up schema version: ")
@@ -264,7 +263,7 @@ class DataStoreCoreTests(DataStoreTests):
         with createDB(dbPath, DataStore._loadSchema()) as db:
             db.execute("delete from SCHEMA_INFO")
 
-        store = self.store(dbPath=dbPath)
+        store = TestDataStore(self, dbPath=dbPath)
 
         e = self.assertRaises(StorageError, lambda: store._db)
         self.assertEqual(str(e), "Invalid schema: no version")
@@ -285,7 +284,7 @@ class DataStoreCoreTests(DataStoreTests):
                 dict(version=version)
             )
 
-        store = self.store(dbPath=dbPath)
+        store = TestDataStore(self, dbPath=dbPath)
 
         e = self.assertRaises(StorageError, lambda: store._db)
         self.assertEqual(
@@ -307,7 +306,7 @@ class DataStoreCoreTests(DataStoreTests):
                 dict(version=version)
             )
 
-        store = self.store(dbPath=dbPath)
+        store = TestDataStore(self, dbPath=dbPath)
 
         e = self.assertRaises(StorageError, lambda: store._db)
         self.assertEqual(
@@ -316,7 +315,7 @@ class DataStoreCoreTests(DataStoreTests):
 
 
 
-class DataStoreHelperTests(DataStoreTests):
+class DataStoreHelperTests(TestCase):
     """
     Tests for :class:`DataStore` helper functions.
     """

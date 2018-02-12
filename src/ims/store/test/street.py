@@ -15,10 +15,8 @@
 ##
 
 """
-Tests for :mod:`ranger-ims-server.store.sqlite._store`
+Street tests for :mod:`ranger-ims-server.store`
 """
-
-from typing import Dict, Set
 
 from hypothesis import given
 
@@ -27,9 +25,7 @@ from ims.model.strategies import (
     concentricStreetIDs, concentricStreetNames, events
 )
 
-from .base import DataStoreTests, storeConcentricStreet
-
-Dict, Set  # silence linter
+from .base import DataStoreTests
 
 
 __all__ = ()
@@ -38,7 +34,7 @@ __all__ = ()
 
 class DataStoreConcentricStreetTests(DataStoreTests):
     """
-    Tests for :class:`DataStore` concentric street access.
+    Tests for :class:`IMSDataStore` concentric street access.
     """
 
     @given(events(), concentricStreetIDs(), concentricStreetNames())
@@ -46,14 +42,14 @@ class DataStoreConcentricStreetTests(DataStoreTests):
         self, event: Event, streetID: str, streetName: str
     ) -> None:
         """
-        :meth:`DataStore.createConcentricStreet` returns the concentric streets
-        for the given event.
+        :meth:`IMSDataStore.createConcentricStreet` returns the concentric
+        streets for the given event.
         """
         store = self.store()
 
         self.successResultOf(store.createEvent(event))
 
-        storeConcentricStreet(store._db, event, streetID, streetName)
+        store.storeConcentricStreet(event, streetID, streetName)
 
         concentricStreets = self.successResultOf(
             store.concentricStreets(event)
@@ -68,8 +64,8 @@ class DataStoreConcentricStreetTests(DataStoreTests):
         self, event: Event, id: str, name: str
     ) -> None:
         """
-        :meth:`DataStore.createConcentricStreet` creates a concentric streets
-        for the given event.
+        :meth:`IMSDataStore.createConcentricStreet` creates a concentric
+        streets for the given event.
         """
         store = self.store()
 
