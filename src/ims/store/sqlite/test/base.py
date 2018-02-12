@@ -100,7 +100,7 @@ class TestDataStore(SuperTestDataStore, DataStore):
 
 
     def _storeIncident(self, cursor: Cursor, incident: Incident) -> None:
-        incident = normalizeAddress(incident)
+        incident = self.normalizeIncidentAddress(incident)
 
         location = incident.location
         address = cast(RodGarettAddress, location.address)
@@ -267,43 +267,69 @@ class TestDataStore(SuperTestDataStore, DataStore):
                 cursor.close()
 
 
+    def storeConcentricStreet(
+        self, event: Event, streetID: str, streetName: str,
+        ignoreDuplicates: bool = False,
+    ) -> None:
+        with self._db as db:
+            cursor: Cursor = db.cursor()
+            try:
+                storeConcentricStreet(
+                    cursor, event, streetID, streetName, ignoreDuplicates
+                )
+            finally:
+                cursor.close()
 
-def dateTimesEqualish(a: DateTime, b: DateTime) -> bool:
-    """
-    Compare two :class:`DateTimes`.
-    Because floating point math, apply some "close enough" logic to deal with
-    the fact that floats stored in SQLite may be slightly off when retrieved.
-    """
-    return a - b < TimeDelta(microseconds=20)
+
+    def dateTimesEqual(self, a: DateTime, b: DateTime) -> bool:
+        # Floats stored in SQLite may be slightly off when round-tripped.
+        return a - b < TimeDelta(microseconds=20)
 
 
-def reportEntriesEqualish(
-    reportEntriesA: Sequence[ReportEntry],
-    reportEntriesB: Sequence[ReportEntry],
-    ignoreAutomatic: bool = False,
-) -> bool:
-    if ignoreAutomatic:
-        reportEntriesA = tuple(
-            e for e in reportEntriesA if not e.automatic
-        )
+    def reportEntriesEqual(
+        self,
+        reportEntriesA: Sequence[ReportEntry],
+        reportEntriesB: Sequence[ReportEntry],
+        ignoreAutomatic: bool = False,
+    ) -> bool:
+        if ignoreAutomatic:
+            reportEntriesA = tuple(
+                e for e in reportEntriesA if not e.automatic
+            )
 
-    if len(reportEntriesA) != len(reportEntriesB):
-        return False
+        if len(reportEntriesA) != len(reportEntriesB):
+            return False
 
-    for entryA, entryB in zip(reportEntriesA, reportEntriesB):
-        if entryA != entryB:
-            if entryA.author != entryB.author:
-                return False
-            if entryA.automatic != entryB.automatic:
-                return False
-            if entryA.text != entryB.text:
-                return False
-            if not dateTimesEqualish(
-                entryA.created, entryB.created
-            ):
-                return False
+        for entryA, entryB in zip(reportEntriesA, reportEntriesB):
+            if entryA != entryB:
+                if entryA.author != entryB.author:
+                    return False
+                if entryA.automatic != entryB.automatic:
+                    return False
+                if entryA.text != entryB.text:
+                    return False
+                if not self.dateTimesEqual(
+                    entryA.created, entryB.created
+                ):
+                    return False
 
-    return True
+        return True
+
+
+    def normalizeIncidentAddress(self, incident: Incident) -> Incident:
+        # Normalize address to Rod Garett; DB schema only supports those.
+        address = incident.location.address
+        if address is not None and not isinstance(address, RodGarettAddress):
+            incident = incident.replace(
+                location=Location(
+                    name=incident.location.name,
+                    address=RodGarettAddress(
+                        description=address.description,
+                    )
+                )
+            )
+        return incident
+
 
 
 def storeConcentricStreet(
@@ -330,21 +356,6 @@ def storeConcentricStreet(
             eventID=event.id, streetID=streetID, streetName=streetName
         )
     )
-
-
-def normalizeAddress(incident: Incident) -> Incident:
-    # Normalize address to Rod Garett; DB schema only supports those.
-    address = incident.location.address
-    if address is not None and not isinstance(address, RodGarettAddress):
-        incident = incident.replace(
-            location=Location(
-                name=incident.location.name,
-                address=RodGarettAddress(
-                    description=address.description,
-                )
-            )
-        )
-    return incident
 
 
 def storeIncidentReport(

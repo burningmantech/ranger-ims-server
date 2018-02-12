@@ -34,11 +34,9 @@ from ims.model.strategies import (
     incidents, rangerHandles, reportEntries,
 )
 
-from .base import TestDataStore, dateTimesEqualish, reportEntriesEqualish
-from .test_store_incident import aReportEntry, anIncident
+from .base import TestDataStore
 from ..._exceptions import NoSuchIncidentReportError, StorageError
-
-Set  # silence linter
+from ...test.incident import aReportEntry, anIncident
 
 
 __all__ = ()
@@ -57,6 +55,11 @@ class DataStoreIncidentReportTests(TestCase):
     """
     Tests for :class:`DataStore` incident report access.
     """
+
+    def store(self) -> TestDataStore:
+        return TestDataStore(self)
+
+
     @given(incidentReportLists(maxNumber=SQLITE_MAX_INT, averageSize=3))
     @settings(max_examples=100)
     def test_incidentReports(
@@ -68,7 +71,7 @@ class DataStoreIncidentReportTests(TestCase):
         incidentReports = tuple(incidentReports)
         incidentReportsByNumber = {r.number: r for r in incidentReports}
 
-        store = TestDataStore(self)
+        store = self.store()
 
         for incidentReport in incidentReports:
             store.storeIncidentReport(incidentReport)
@@ -89,7 +92,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.incidentReports` raises :exc:`StorageError` when
         SQLite raises an exception.
         """
-        store = TestDataStore(self)
+        store = self.store()
         store.bringThePain()
 
         f = self.failureResultOf(store.incidentReports())
@@ -104,7 +107,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.incidentReportWithNumber` returns the specified
         incident report.
         """
-        store = TestDataStore(self)
+        store = self.store()
         store.storeIncidentReport(incidentReport)
 
         retrieved = self.successResultOf(
@@ -120,7 +123,7 @@ class DataStoreIncidentReportTests(TestCase):
         :exc:`NoSuchIncidentReportError` when the given incident report number
         is not found.
         """
-        store = TestDataStore(self)
+        store = self.store()
 
         f = self.failureResultOf(
             store.incidentReportWithNumber(1)
@@ -135,7 +138,7 @@ class DataStoreIncidentReportTests(TestCase):
         :exc:`NoSuchIncidentReportError` when the given incident report number
         is too large for SQLite.
         """
-        store = TestDataStore(self)
+        store = self.store()
 
         f = self.failureResultOf(
             store.incidentReportWithNumber(SQLITE_MAX_INT + 1)
@@ -149,7 +152,7 @@ class DataStoreIncidentReportTests(TestCase):
         :exc:`NoSuchIncidentReportError` when the given incident report number
         is too large for SQLite.
         """
-        store = TestDataStore(self)
+        store = self.store()
         store.bringThePain()
 
         f = self.failureResultOf(store.incidentReportWithNumber(1))
@@ -169,7 +172,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.createIncidentReport` creates the given incident
         report.
         """
-        store = TestDataStore(self)
+        store = self.store()
 
         expectedStoredIncidentReports: Set[IncidentReport] = set()
         nextNumber = 1
@@ -210,7 +213,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.createIncidentReport` raises :exc:`StorageError` when
         SQLite raises an exception.
         """
-        store = TestDataStore(self)
+        store = self.store()
         store.bringThePain()
 
         f = self.failureResultOf(
@@ -224,7 +227,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.setIncident_summary` raises :exc:`StorageError` when
         SQLite raises an exception.
         """
-        store = TestDataStore(self)
+        store = self.store()
         incidentReport = self.successResultOf(
             store.createIncidentReport(anIncidentReport, "Hubcap")
         )
@@ -242,7 +245,7 @@ class DataStoreIncidentReportTests(TestCase):
         self, incidentReport: IncidentReport,
         methodName: str, attributeName: str, value: Any
     ) -> None:
-        store = TestDataStore(self)
+        store = self.store()
 
         store.storeIncidentReport(incidentReport)
 
@@ -306,7 +309,7 @@ class DataStoreIncidentReportTests(TestCase):
         )
 
         # Store test data
-        store = TestDataStore(self)
+        store = self.store()
         store.storeIncidentReport(incidentReport)
 
         # Fetch incident report back so we have the version from the DB
@@ -331,7 +334,7 @@ class DataStoreIncidentReportTests(TestCase):
         # Updated entries minus the original entries == the added entries
         updatedNewEntries = updatedEntries - originalEntries
         self.assertTrue(
-            reportEntriesEqualish(
+            store.reportEntriesEqual(
                 sorted(updatedNewEntries), sorted(reportEntries)
             )
         )
@@ -342,7 +345,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.addReportEntriesToIncidentReport` raises
         :exc:`ValueError` when given automatic report entries.
         """
-        store = TestDataStore(self)
+        store = self.store()
         incidentReport = self.successResultOf(
             store.createIncidentReport(anIncidentReport, "Hubcap")
         )
@@ -364,7 +367,7 @@ class DataStoreIncidentReportTests(TestCase):
         :exc:`ValueError` when given report entries with an author that does
         not match the author that is adding the entries.
         """
-        store = TestDataStore(self)
+        store = self.store()
         incidentReport = self.successResultOf(
             store.createIncidentReport(anIncidentReport, "Hubcap")
         )
@@ -387,7 +390,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.addReportEntriesToIncidentReport` raises
         :exc:`StorageError` when SQLite raises an exception.
         """
-        store = TestDataStore(self)
+        store = self.store()
         incidentReport = self.successResultOf(
             store.createIncidentReport(anIncidentReport, "Hubcap")
         )
@@ -427,7 +430,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.detachedIncidentReports` retrieves unattached incident
         reports.
         """
-        store = TestDataStore(self)
+        store = self.store()
 
         foundIncidentNumbers: Set[int] = set()
         foundIncidentReportNumbers: Set[int] = set()
@@ -518,7 +521,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.detachedIncidentReports` raises :exc:`StorageError`
         when SQLite raises an exception.
         """
-        store = TestDataStore(self)
+        store = self.store()
         store.bringThePain()
 
         f = self.failureResultOf(store.detachedIncidentReports())
@@ -530,7 +533,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.incidentReportsAttachedToIncident` raises
         :exc:`StorageError` when SQLite raises an exception.
         """
-        store = TestDataStore(self)
+        store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
         incident = self.successResultOf(
             store.createIncident(anIncident, "Hubcap")
@@ -550,7 +553,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.incidentsAttachedToIncidentReport` raises
         :exc:`StorageError` when SQLite raises an exception.
         """
-        store = TestDataStore(self)
+        store = self.store()
         incidentReport = self.successResultOf(
             store.createIncidentReport(anIncidentReport, "Hubcap")
         )
@@ -567,7 +570,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.attachIncidentReportToIncident` raises
         :exc:`StorageError` when SQLite raises an exception.
         """
-        store = TestDataStore(self)
+        store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
         incident = self.successResultOf(
             store.createIncident(anIncident, "Hubcap")
@@ -590,7 +593,7 @@ class DataStoreIncidentReportTests(TestCase):
         :meth:`DataStore.detachIncidentReportFromIncident` raises
         :exc:`StorageError` when SQLite raises an exception.
         """
-        store = TestDataStore(self)
+        store = self.store()
         self.successResultOf(store.createEvent(anIncident.event))
         incident = self.successResultOf(
             store.createIncident(anIncident, "Hubcap")
@@ -631,6 +634,8 @@ class DataStoreIncidentReportTests(TestCase):
         ignoreAutomatic: bool = False,
     ) -> None:
         if incidentReportA != incidentReportB:
+            store = self.store()
+
             messages = []
 
             for attribute in attrFields(IncidentReport):
@@ -639,12 +644,14 @@ class DataStoreIncidentReportTests(TestCase):
                 valueB = getattr(incidentReportB, name)
 
                 if name == "created":
-                    if dateTimesEqualish(valueA, valueB):
+                    if store.dateTimesEqual(valueA, valueB):
                         continue
                     else:
                         messages.append(f"{name} delta: {valueA - valueB}")
                 elif name == "reportEntries":
-                    if reportEntriesEqualish(valueA, valueB, ignoreAutomatic):
+                    if store.reportEntriesEqual(
+                        valueA, valueB, ignoreAutomatic
+                    ):
                         continue
 
                 if valueA != valueB:

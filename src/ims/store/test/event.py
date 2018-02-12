@@ -18,7 +18,7 @@
 Event tests for :mod:`ranger-ims-server.store`
 """
 
-from typing import Iterable
+from typing import Iterable, Optional
 
 from hypothesis import given
 from hypothesis.strategies import frozensets, text
@@ -40,7 +40,7 @@ class DataStoreEventTests(TestCase):
     Tests for :class:`IMSDataStore` event access.
     """
 
-    skip = "Parent class of real tests"
+    skip: Optional[str] = "Parent class of real tests"
 
 
     def store(self) -> TestDataStore:

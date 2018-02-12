@@ -19,9 +19,10 @@ Tests for :mod:`ranger-ims-server.store`
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Set
+from datetime import datetime as DateTime
+from typing import Dict, Sequence, Set
 
-from ims.model import Event, Incident, IncidentReport
+from ims.model import Event, Incident, IncidentReport, ReportEntry
 
 from .._abc import IMSDataStore
 
@@ -75,3 +76,42 @@ class TestDataStore(IMSDataStore, ABC):
         """
         Store the given incident report in the test store.
         """
+
+
+    @abstractmethod
+    def storeConcentricStreet(
+        self, event: Event, streetID: str, streetName: str,
+        ignoreDuplicates: bool = False,
+    ) -> None:
+        """
+        Store the a street in the given event with the given ID and name in the
+        test store.
+        """
+
+
+    def dateTimesEqual(self, a: DateTime, b: DateTime) -> bool:
+        """
+        Compare two :class:`DateTime` objects.
+        Apply some "close enough" logic to deal with the possibility that
+        date-times stored in a database may be slightly off when retrieved.
+        """
+        return a == b
+
+
+    def reportEntriesEqual(
+        self,
+        reportEntriesA: Sequence[ReportEntry],
+        reportEntriesB: Sequence[ReportEntry],
+        ignoreAutomatic: bool = False,
+    ) -> bool:
+        """
+        Compare two :class:`ReportEntry` objects, using :meth:`dateTimesEqual`
+        when comparing date-times.
+        """
+
+
+    def normalizeIncidentAddress(self, incident: Incident) -> Incident:
+        """
+        Normalize the address in an incident to canonical form, if necessary.
+        """
+        return incident
