@@ -18,37 +18,24 @@
 Street tests for :mod:`ranger-ims-server.store`
 """
 
-from typing import Optional
-
 from hypothesis import given
 
-from ims.ext.trial import TestCase
 from ims.model import Event
 from ims.model.strategies import (
     concentricStreetIDs, concentricStreetNames, events
 )
 
-from .base import TestDataStore
+from .base import DataStoreTests
 
 
 __all__ = ()
 
 
 
-class DataStoreConcentricStreetTests(TestCase):
+class DataStoreConcentricStreetTests(DataStoreTests):
     """
     Tests for :class:`IMSDataStore` concentric street access.
     """
-
-    skip: Optional[str] = "Parent class of real tests"
-
-
-    def store(self) -> TestDataStore:
-        """
-        Return a data store for use in tests.
-        """
-        raise NotImplementedError("Subclass should implement store()")
-
 
     @given(events(), concentricStreetIDs(), concentricStreetNames())
     def test_concentricStreets(

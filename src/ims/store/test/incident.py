@@ -27,7 +27,6 @@ from attr import fields as attrFields
 from hypothesis import given, settings
 from hypothesis.strategies import just, lists, text, tuples
 
-from ims.ext.trial import TestCase
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentState,
     Location, ReportEntry, RodGarettAddress,
@@ -38,7 +37,7 @@ from ims.model.strategies import (
     radialHours, radialMinutes, rangerHandles, reportEntries,
 )
 
-from .base import TestDataStore
+from .base import DataStoreTests, TestDataStore
 from .._exceptions import NoSuchIncidentError, StorageError
 
 
@@ -66,20 +65,10 @@ aReportEntry = ReportEntry(
 
 
 
-class DataStoreIncidentTests(TestCase):
+class DataStoreIncidentTests(DataStoreTests):
     """
     Tests for :class:`IMSDataStore` incident access.
     """
-
-    skip: Optional[str] = "Parent class of real tests"
-
-
-    def store(self) -> TestDataStore:
-        """
-        Return a data store for use in tests.
-        """
-        raise NotImplementedError("Subclass should implement store()")
-
 
     @given(
         incidentLists(

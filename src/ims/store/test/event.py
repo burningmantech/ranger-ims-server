@@ -18,16 +18,15 @@
 Event tests for :mod:`ranger-ims-server.store`
 """
 
-from typing import Iterable, Optional
+from typing import Iterable
 
 from hypothesis import given
 from hypothesis.strategies import frozensets, text
 
-from ims.ext.trial import TestCase
 from ims.model import Event
 from ims.model.strategies import events
 
-from .base import TestDataStore
+from .base import DataStoreTests, TestDataStore
 from .._exceptions import StorageError
 
 
@@ -35,20 +34,10 @@ __all__ = ()
 
 
 
-class DataStoreEventTests(TestCase):
+class DataStoreEventTests(DataStoreTests):
     """
     Tests for :class:`IMSDataStore` event access.
     """
-
-    skip: Optional[str] = "Parent class of real tests"
-
-
-    def store(self) -> TestDataStore:
-        """
-        Return a data store for use in tests.
-        """
-        raise NotImplementedError("Subclass should implement store()")
-
 
     def test_events(self, broken: bool = False) -> None:
         """

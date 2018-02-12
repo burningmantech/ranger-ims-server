@@ -18,15 +18,14 @@
 Incident type tests for :mod:`ranger-ims-server.store`
 """
 
-from typing import Optional, Tuple
+from typing import Tuple
 
 from hypothesis import given
 from hypothesis.strategies import booleans, tuples
 
-from ims.ext.trial import TestCase
 from ims.model.strategies import incidentTypesText
 
-from .base import TestDataStore
+from .base import DataStoreTests
 from .._exceptions import StorageError
 
 
@@ -37,20 +36,10 @@ builtInTypes = {"Admin", "Junk"}
 
 
 
-class DataStoreIncidentTypeTests(TestCase):
+class DataStoreIncidentTypeTests(DataStoreTests):
     """
     Tests for :class:`IMSDataStore` incident type access.
     """
-
-    skip: Optional[str] = "Parent class of real tests"
-
-
-    def store(self) -> TestDataStore:
-        """
-        Return a data store for use in tests.
-        """
-        raise NotImplementedError("Subclass should implement store()")
-
 
     @given(
         tuples(

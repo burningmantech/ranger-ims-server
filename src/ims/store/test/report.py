@@ -19,23 +19,20 @@ Report tests for :mod:`ranger-ims-server.store`
 """
 
 from datetime import datetime as DateTime, timezone as TimeZone
-from typing import (
-    Any, FrozenSet, Iterable, List, Optional, Sequence, Set, Tuple
-)
+from typing import Any, FrozenSet, Iterable, List, Sequence, Set, Tuple
 
 from attr import fields as attrFields
 
 from hypothesis import assume, given, settings
 from hypothesis.strategies import frozensets, lists, tuples
 
-from ims.ext.trial import TestCase
 from ims.model import Incident, IncidentReport, ReportEntry
 from ims.model.strategies import (
     incidentReportLists, incidentReportSummaries, incidentReports,
     incidents, rangerHandles, reportEntries,
 )
 
-from .base import TestDataStore
+from .base import DataStoreTests, TestDataStore
 from .incident import aReportEntry, anIncident
 from .._exceptions import NoSuchIncidentReportError, StorageError
 
@@ -52,20 +49,10 @@ anIncidentReport = IncidentReport(
 
 
 
-class DataStoreIncidentReportTests(TestCase):
+class DataStoreIncidentReportTests(DataStoreTests):
     """
     Tests for :class:`DataStore` incident report access.
     """
-
-    skip: Optional[str] = "Parent class of real tests"
-
-
-    def store(self) -> TestDataStore:
-        """
-        Return a data store for use in tests.
-        """
-        raise NotImplementedError("Subclass should implement store()")
-
 
     @given(incidentReportLists(
         maxNumber=TestDataStore.maxIncidentNumber, averageSize=3

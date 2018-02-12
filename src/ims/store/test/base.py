@@ -20,8 +20,9 @@ Tests for :mod:`ranger-ims-server.store`
 
 from abc import ABC, abstractmethod
 from datetime import datetime as DateTime
-from typing import Sequence
+from typing import Optional, Sequence
 
+from ims.ext.trial import TestCase
 from ims.model import Event, Incident, IncidentReport, ReportEntry
 
 from .._abc import IMSDataStore
@@ -122,3 +123,19 @@ class TestDataStore(IMSDataStore, ABC):
         Normalize the address in an incident to canonical form, if necessary.
         """
         return incident
+
+
+
+class DataStoreTests(TestCase):
+    """
+    Tests for :class:`IMSDataStore` event access.
+    """
+
+    skip: Optional[str] = "Parent class of real tests"
+
+
+    def store(self) -> TestDataStore:
+        """
+        Return a data store for use in tests.
+        """
+        raise NotImplementedError("Subclass should implement store()")
