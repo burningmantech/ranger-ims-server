@@ -18,16 +18,16 @@
 Event tests for :mod:`ranger-ims-server.store`
 """
 
-from abc import ABC, abstractmethod
 from typing import Iterable
 
 from hypothesis import given
 from hypothesis.strategies import frozensets, text
 
+from ims.ext.trial import TestCase
 from ims.model import Event
 from ims.model.strategies import events
 
-from .._abc import IMSDataStore
+from .base import TestDataStore
 from .._exceptions import StorageError
 
 
@@ -35,21 +35,24 @@ __all__ = ()
 
 
 
-class DataStoreEventTests(ABC):
+class DataStoreEventTests(TestCase):
     """
-    Tests for :class:`DataStore` event access.
+    Tests for :class:`IMSDataStore` event access.
     """
 
-    @abstractmethod
-    def store(self) -> IMSDataStore:
+    skip = "Parent class of real tests"
+
+
+    def store(self) -> TestDataStore:
         """
         Return a data store for use in tests.
         """
+        raise NotImplementedError("Subclass should implement store()")
 
 
     def test_events(self, broken: bool = False) -> None:
         """
-        :meth:`DataStore.events` returns all events.
+        :meth:`IMSDataStore.events` returns all events.
         """
         store = self.store()
 
@@ -66,7 +69,7 @@ class DataStoreEventTests(ABC):
 
     def test_events_error(self) -> None:
         """
-        :meth:`DataStore.events` raises `StorageError` if SQLite raises.
+        :meth:`IMSDataStore.events` raises `StorageError` if the store raises.
         """
         e = self.assertRaises(StorageError, self.test_events, broken=True)
         self.assertEqual(str(e), self.store().exceptionMessage)
@@ -75,7 +78,7 @@ class DataStoreEventTests(ABC):
     @given(events())
     def test_createEvent(self, event: Event) -> None:
         """
-        :meth:`DataStore.createEvent` creates the given event.
+        :meth:`IMSDataStore.createEvent` creates the given event.
         """
         store = self.store()
         self.successResultOf(store.createEvent(event))
@@ -85,7 +88,8 @@ class DataStoreEventTests(ABC):
 
     def test_createEvent_error(self) -> None:
         """
-        :meth:`DataStore.createEvent` raises `StorageError` if SQLite raises.
+        :meth:`IMSDataStore.createEvent` raises `StorageError` if the store
+        raises.
         """
         store = self.store()
         store.bringThePain()
@@ -97,8 +101,8 @@ class DataStoreEventTests(ABC):
 
     def test_createEvent_duplicate(self) -> None:
         """
-        :meth:`DataStore.createEvent` raises :exc:`StorageError` when given an
-        event that already exists in the data store.
+        :meth:`IMSDataStore.createEvent` raises :exc:`StorageError` when given
+        an event that already exists in the data store.
         """
         event = Event(id="foo")
         store = self.store()
@@ -110,7 +114,7 @@ class DataStoreEventTests(ABC):
     @given(events(), frozensets(text()))
     def test_setReaders(self, event: Event, readers: Iterable[str]) -> None:
         """
-        :meth:`DataStore.setReaders` sets the read ACL for an event.
+        :meth:`IMSDataStore.setReaders` sets the read ACL for an event.
         """
         store = self.store()
         self.successResultOf(store.createEvent(event))
@@ -121,8 +125,8 @@ class DataStoreEventTests(ABC):
 
     def test_setReaders_error(self) -> None:
         """
-        :meth:`DataStore.setReaders` raises :exc:`StorageError` when SQLite
-        raises an exception.
+        :meth:`IMSDataStore.setReaders` raises :exc:`StorageError` when the
+        store raises an exception.
         """
         event = Event(id="foo")
         store = self.store()
@@ -135,7 +139,7 @@ class DataStoreEventTests(ABC):
     @given(events(), frozensets(text()))
     def test_setWriters(self, event: Event, writers: Iterable[str]) -> None:
         """
-        :meth:`DataStore.setWriters` sets the write ACL for an event.
+        :meth:`IMSDataStore.setWriters` sets the write ACL for an event.
         """
         store = self.store()
         self.successResultOf(store.createEvent(event))
@@ -146,8 +150,8 @@ class DataStoreEventTests(ABC):
 
     def test_setWriters_error(self) -> None:
         """
-        :meth:`DataStore.setWriters` raises :exc:`StorageError` when SQLite
-        raises an exception.
+        :meth:`IMSDataStore.setWriters` raises :exc:`StorageError` when the
+        store raises an exception.
         """
         event = Event(id="foo")
         store = self.store()

@@ -18,8 +18,6 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from ims.ext.trial import TestCase
-
 from .base import TestDataStore
 from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
 
@@ -28,10 +26,13 @@ __all__ = ()
 
 
 
-class DataStoreEventTests(TestCase, SuperDataStoreEventTests):
+class DataStoreEventTests(SuperDataStoreEventTests):
     """
     Tests for :class:`DataStore` event access.
     """
+
+    skip = None
+
 
     def store(self) -> TestDataStore:
         return TestDataStore(self)
