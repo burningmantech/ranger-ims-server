@@ -68,192 +68,22 @@ class TestDataStore(SuperTestDataStore, DataStore):
         assert getattr(self._state, "broken")
 
 
-    # FIXME: A better plan here would be to create a mock DB object that yields
-    # the expected rows, instead of writing to an actual DB.
-    # Since it's SQLite, which isn't actually async, that's not a huge deal,
-    # except there's a lot of fragile code below.
-
-
     def storeEvent(self, event: Event) -> None:
         with self._db as db:
             cursor: Cursor = db.cursor()
             try:
-                self._storeEvent(cursor, event)
+                storeEvent(cursor, event)
             finally:
                 cursor.close()
-
-
-    def _storeEvent(self, cursor: Cursor, event: Event) -> None:
-        cursor.execute(
-            "insert into EVENT (NAME) values (:eventID)",
-            dict(eventID=event.id)
-        )
 
 
     def storeIncident(self, incident: Incident) -> None:
         with self._db as db:
             cursor: Cursor = db.cursor()
             try:
-                self._storeIncident(cursor, incident)
+                storeIncident(cursor, incident)
             finally:
                 cursor.close()
-
-
-    def _storeIncident(self, cursor: Cursor, incident: Incident) -> None:
-        incident = self.normalizeIncidentAddress(incident)
-
-        location = incident.location
-        address = cast(RodGarettAddress, location.address)
-
-        cursor.execute(
-            "insert or ignore into EVENT (NAME) values (:eventID);",
-            dict(eventID=incident.event.id)
-        )
-
-        if address is None:
-            locationConcentric   = None
-            locationRadialHour   = None
-            locationRadialMinute = None
-            locationDescription  = None
-        else:
-            locationConcentric   = address.concentric
-            locationRadialHour   = address.radialHour
-            locationRadialMinute = address.radialMinute
-            locationDescription  = address.description
-
-            if address.concentric is not None:
-                storeConcentricStreet(
-                    cursor, incident.event, address.concentric, "Some Street",
-                    ignoreDuplicates=True,
-                )
-
-        cursor.execute(
-            dedent(
-                """
-                insert into INCIDENT (
-                    EVENT, NUMBER, VERSION, CREATED, PRIORITY, STATE, SUMMARY,
-                    LOCATION_NAME,
-                    LOCATION_CONCENTRIC,
-                    LOCATION_RADIAL_HOUR,
-                    LOCATION_RADIAL_MINUTE,
-                    LOCATION_DESCRIPTION
-                ) values (
-                    (select ID from EVENT where NAME = :eventID),
-                    :incidentNumber,
-                    1,
-                    :incidentCreated,
-                    :incidentPriority,
-                    :incidentState,
-                    :incidentSummary,
-                    :locationName,
-                    :locationConcentric,
-                    :locationRadialHour,
-                    :locationRadialMinute,
-                    :locationDescription
-                )
-                """
-            ),
-            dict(
-                eventID=incident.event.id,
-                incidentCreated=asTimeStamp(incident.created),
-                incidentNumber=incident.number,
-                incidentSummary=incident.summary,
-                incidentPriority=priorityAsID(incident.priority),
-                incidentState=incidentStateAsID(incident.state),
-                locationName=location.name,
-                locationConcentric=locationConcentric,
-                locationRadialHour=locationRadialHour,
-                locationRadialMinute=locationRadialMinute,
-                locationDescription=locationDescription,
-            )
-        )
-
-        for rangerHandle in incident.rangerHandles:
-            cursor.execute(
-                dedent(
-                    """
-                    insert into INCIDENT__RANGER
-                    (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
-                    values (
-                        (select ID from EVENT where NAME = :eventID),
-                        :incidentNumber,
-                        :rangerHandle
-                    )
-                    """
-                ),
-                dict(
-                    eventID=incident.event.id,
-                    incidentNumber=incident.number,
-                    rangerHandle=rangerHandle
-                )
-            )
-
-        for incidentType in incident.incidentTypes:
-            cursor.execute(
-                dedent(
-                    """
-                    insert or ignore into INCIDENT_TYPE (NAME, HIDDEN)
-                    values (:incidentType, 0)
-                    """
-                ),
-                dict(incidentType=incidentType)
-            )
-            cursor.execute(
-                dedent(
-                    """
-                    insert into INCIDENT__INCIDENT_TYPE
-                    (EVENT, INCIDENT_NUMBER, INCIDENT_TYPE)
-                    values (
-                        (select ID from EVENT where NAME = :eventID),
-                        :incidentNumber,
-                        (
-                            select ID from INCIDENT_TYPE
-                            where NAME = :incidentType
-                        )
-                    )
-                    """
-                ),
-                dict(
-                    eventID=incident.event.id,
-                    incidentNumber=incident.number,
-                    incidentType=incidentType
-                )
-            )
-
-        for reportEntry in incident.reportEntries:
-            cursor.execute(
-                dedent(
-                    """
-                    insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
-                    values (:author, :text, :created, :automatic)
-                    """
-                ),
-                dict(
-                    created=asTimeStamp(reportEntry.created),
-                    author=reportEntry.author,
-                    automatic=reportEntry.automatic,
-                    text=reportEntry.text,
-                )
-            )
-            cursor.execute(
-                dedent(
-                    """
-                    insert into INCIDENT__REPORT_ENTRY (
-                        EVENT, INCIDENT_NUMBER, REPORT_ENTRY
-                    )
-                    values (
-                        (select ID from EVENT where NAME = :eventID),
-                        :incidentNumber,
-                        :reportEntryID
-                    )
-                    """
-                ),
-                dict(
-                    eventID=incident.event.id,
-                    incidentNumber=incident.number,
-                    reportEntryID=cursor.lastrowid
-                )
-            )
 
 
     def storeIncidentReport(
@@ -325,7 +155,8 @@ class TestDataStore(SuperTestDataStore, DataStore):
         return True
 
 
-    def normalizeIncidentAddress(self, incident: Incident) -> Incident:
+    @staticmethod
+    def normalizeIncidentAddress(incident: Incident) -> Incident:
         # Normalize address to Rod Garett; DB schema only supports those.
         address = incident.location.address
         if address is not None and not isinstance(address, RodGarettAddress):
@@ -339,6 +170,170 @@ class TestDataStore(SuperTestDataStore, DataStore):
             )
         return incident
 
+
+
+def storeEvent(cursor: Cursor, event: Event) -> None:
+    cursor.execute(
+        "insert into EVENT (NAME) values (:eventID)",
+        dict(eventID=event.id)
+    )
+
+
+def storeIncident(cursor: Cursor, incident: Incident) -> None:
+    incident = TestDataStore.normalizeIncidentAddress(incident)
+
+    location = incident.location
+    address = cast(RodGarettAddress, location.address)
+
+    cursor.execute(
+        "insert or ignore into EVENT (NAME) values (:eventID);",
+        dict(eventID=incident.event.id)
+    )
+
+    if address is None:
+        locationConcentric   = None
+        locationRadialHour   = None
+        locationRadialMinute = None
+        locationDescription  = None
+    else:
+        locationConcentric   = address.concentric
+        locationRadialHour   = address.radialHour
+        locationRadialMinute = address.radialMinute
+        locationDescription  = address.description
+
+        if address.concentric is not None:
+            storeConcentricStreet(
+                cursor, incident.event, address.concentric, "Some Street",
+                ignoreDuplicates=True,
+            )
+
+    cursor.execute(
+        dedent(
+            """
+            insert into INCIDENT (
+                EVENT, NUMBER, VERSION, CREATED, PRIORITY, STATE, SUMMARY,
+                LOCATION_NAME,
+                LOCATION_CONCENTRIC,
+                LOCATION_RADIAL_HOUR,
+                LOCATION_RADIAL_MINUTE,
+                LOCATION_DESCRIPTION
+            ) values (
+                (select ID from EVENT where NAME = :eventID),
+                :incidentNumber,
+                1,
+                :incidentCreated,
+                :incidentPriority,
+                :incidentState,
+                :incidentSummary,
+                :locationName,
+                :locationConcentric,
+                :locationRadialHour,
+                :locationRadialMinute,
+                :locationDescription
+            )
+            """
+        ),
+        dict(
+            eventID=incident.event.id,
+            incidentCreated=asTimeStamp(incident.created),
+            incidentNumber=incident.number,
+            incidentSummary=incident.summary,
+            incidentPriority=priorityAsID(incident.priority),
+            incidentState=incidentStateAsID(incident.state),
+            locationName=location.name,
+            locationConcentric=locationConcentric,
+            locationRadialHour=locationRadialHour,
+            locationRadialMinute=locationRadialMinute,
+            locationDescription=locationDescription,
+        )
+    )
+
+    for rangerHandle in incident.rangerHandles:
+        cursor.execute(
+            dedent(
+                """
+                insert into INCIDENT__RANGER
+                (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
+                values (
+                    (select ID from EVENT where NAME = :eventID),
+                    :incidentNumber,
+                    :rangerHandle
+                )
+                """
+            ),
+            dict(
+                eventID=incident.event.id,
+                incidentNumber=incident.number,
+                rangerHandle=rangerHandle
+            )
+        )
+
+    for incidentType in incident.incidentTypes:
+        cursor.execute(
+            dedent(
+                """
+                insert or ignore into INCIDENT_TYPE (NAME, HIDDEN)
+                values (:incidentType, 0)
+                """
+            ),
+            dict(incidentType=incidentType)
+        )
+        cursor.execute(
+            dedent(
+                """
+                insert into INCIDENT__INCIDENT_TYPE
+                (EVENT, INCIDENT_NUMBER, INCIDENT_TYPE)
+                values (
+                    (select ID from EVENT where NAME = :eventID),
+                    :incidentNumber,
+                    (
+                        select ID from INCIDENT_TYPE
+                        where NAME = :incidentType
+                    )
+                )
+                """
+            ),
+            dict(
+                eventID=incident.event.id,
+                incidentNumber=incident.number,
+                incidentType=incidentType
+            )
+        )
+
+    for reportEntry in incident.reportEntries:
+        cursor.execute(
+            dedent(
+                """
+                insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
+                values (:author, :text, :created, :automatic)
+                """
+            ),
+            dict(
+                created=asTimeStamp(reportEntry.created),
+                author=reportEntry.author,
+                automatic=reportEntry.automatic,
+                text=reportEntry.text,
+            )
+        )
+        cursor.execute(
+            dedent(
+                """
+                insert into INCIDENT__REPORT_ENTRY (
+                    EVENT, INCIDENT_NUMBER, REPORT_ENTRY
+                )
+                values (
+                    (select ID from EVENT where NAME = :eventID),
+                    :incidentNumber,
+                    :reportEntryID
+                )
+                """
+            ),
+            dict(
+                eventID=incident.event.id,
+                incidentNumber=incident.number,
+                reportEntryID=cursor.lastrowid
+            )
+        )
 
 
 def storeConcentricStreet(
