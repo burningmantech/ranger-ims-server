@@ -42,11 +42,15 @@ class DataStoreEventTests(TestCase):
     Tests for :class:`DataStore` event access.
     """
 
+    def store(self) -> TestDataStore:
+        return TestDataStore(self)
+
+
     def test_events(self, broken: bool = False) -> None:
         """
         :meth:`DataStore.events` returns all events.
         """
-        store = TestDataStore(self)
+        store = self.store()
 
         for event in (Event(id="Event A"), Event(id="Event B")):
             store.storeEvent(event)
@@ -72,7 +76,7 @@ class DataStoreEventTests(TestCase):
         """
         :meth:`DataStore.createEvent` creates the given event.
         """
-        store = TestDataStore(self)
+        store = self.store()
         self.successResultOf(store.createEvent(event))
         stored = frozenset(self.successResultOf(store.events()))
         self.assertEqual(stored, frozenset((event,)))
@@ -82,7 +86,7 @@ class DataStoreEventTests(TestCase):
         """
         :meth:`DataStore.createEvent` raises `StorageError` if SQLite raises.
         """
-        store = TestDataStore(self)
+        store = self.store()
         store.bringThePain()
 
         f = self.failureResultOf(store.createEvent(Event(id="x")))
@@ -96,7 +100,7 @@ class DataStoreEventTests(TestCase):
         event that already exists in the data store.
         """
         event = Event(id="foo")
-        store = TestDataStore(self)
+        store = self.store()
         self.successResultOf(store.createEvent(event))
         f = self.failureResultOf(store.createEvent(event))
         self.assertEqual(f.type, StorageError)
@@ -107,7 +111,7 @@ class DataStoreEventTests(TestCase):
         """
         :meth:`DataStore.setReaders` sets the read ACL for an event.
         """
-        store = TestDataStore(self)
+        store = self.store()
         self.successResultOf(store.createEvent(event))
         self.successResultOf(store.setReaders(event, readers))
         result = frozenset(self.successResultOf(store.readers(event)))
@@ -120,7 +124,7 @@ class DataStoreEventTests(TestCase):
         raises an exception.
         """
         event = Event(id="foo")
-        store = TestDataStore(self)
+        store = self.store()
         self.successResultOf(store.createEvent(event))
         store.bringThePain()
         f = self.failureResultOf(store.setReaders(event, ()))
@@ -132,7 +136,7 @@ class DataStoreEventTests(TestCase):
         """
         :meth:`DataStore.setWriters` sets the write ACL for an event.
         """
-        store = TestDataStore(self)
+        store = self.store()
         self.successResultOf(store.createEvent(event))
         self.successResultOf(store.setWriters(event, writers))
         result = frozenset(self.successResultOf(store.writers(event)))
@@ -145,7 +149,7 @@ class DataStoreEventTests(TestCase):
         raises an exception.
         """
         event = Event(id="foo")
-        store = TestDataStore(self)
+        store = self.store()
         self.successResultOf(store.createEvent(event))
         store.bringThePain()
         f = self.failureResultOf(store.setWriters(event, ()))
