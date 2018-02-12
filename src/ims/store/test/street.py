@@ -18,8 +18,9 @@
 Street tests for :mod:`ranger-ims-server.store`
 """
 
-from hypothesis import given
 from typing import Optional
+
+from hypothesis import given
 
 from ims.ext.trial import TestCase
 from ims.model import Event

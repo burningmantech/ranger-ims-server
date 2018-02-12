@@ -84,7 +84,14 @@ class TestDataStore(IMSDataStore, ABC):
         ignoreDuplicates: bool = False,
     ) -> None:
         """
-        Store the a street in the given event with the given ID and name in the
+        Store a street in the given event with the given ID and name in the
+        test store.
+        """
+
+
+    def storeIncidentType(self, name: str, hidden: bool) -> None:
+        """
+        Store an incident type with the given name and hidden state in the
         test store.
         """
 

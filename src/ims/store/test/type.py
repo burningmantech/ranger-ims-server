@@ -1,0 +1,190 @@
+##
+# See the file COPYRIGHT for copyright information.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+##
+
+"""
+Incident type tests for :mod:`ranger-ims-server.store`
+"""
+
+from typing import Optional, Tuple
+
+from hypothesis import given
+from hypothesis.strategies import booleans, tuples
+
+from ims.ext.trial import TestCase
+from ims.model.strategies import incidentTypesText
+
+from .base import TestDataStore
+from .._exceptions import StorageError
+
+
+__all__ = ()
+
+
+builtInTypes = {"Admin", "Junk"}
+
+
+
+class DataStoreIncidentTypeTests(TestCase):
+    """
+    Tests for :class:`IMSDataStore` incident type access.
+    """
+
+    skip: Optional[str] = "Parent class of real tests"
+
+
+    def store(self) -> TestDataStore:
+        """
+        Return a data store for use in tests.
+        """
+        raise NotImplementedError("Subclass should implement store()")
+
+
+    @given(
+        tuples(
+            tuples(incidentTypesText(), booleans()).filter(
+                lambda t: t[0] not in builtInTypes
+            )
+        )
+    )
+    def test_incidentTypes(self, data: Tuple[Tuple[str, bool]]) -> None:
+        """
+        :meth:`IMSDataStore.incidentTypes` returns visible incident types.
+        """
+        store = self.store()
+        for (name, hidden) in data:
+            store.storeIncidentType(name, hidden)
+
+        incidentTypes = frozenset(
+            self.successResultOf(store.incidentTypes())
+        )
+        expected = frozenset(
+            (name for (name, hidden) in data if not hidden)
+        ) | builtInTypes
+
+        self.assertEqual(incidentTypes, expected)
+
+
+    @given(
+        tuples(
+            tuples(incidentTypesText(), booleans()).filter(
+                lambda t: t[0] not in builtInTypes
+            )
+        )
+    )
+    def test_incidentTypes_includeHidden(
+        self, data: Tuple[Tuple[str, bool]]
+    ) -> None:
+        """
+        :meth:`IMSDataStore.incidentTypes` if given CL{includeHidden=True}
+        returns all incident types.
+        """
+        store = self.store()
+        for (name, hidden) in data:
+            store.storeIncidentType(name, hidden)
+
+        incidentTypes = frozenset(
+            self.successResultOf(store.incidentTypes(includeHidden=True))
+        )
+        expected = frozenset(
+            (name for (name, hidden) in data)
+        ) | builtInTypes
+
+        self.assertEqual(incidentTypes, expected)
+
+
+    @given(
+        incidentTypesText().filter(lambda t: t not in builtInTypes),
+        booleans(),
+    )
+    def test_createIncidentType(self, incidentType: str, hidden: bool) -> None:
+        """
+        :meth:`IMSDataStore.createIncidentType` creates the incident type.
+        """
+        store = self.store()
+        self.successResultOf(
+            store.createIncidentType(incidentType, hidden=hidden)
+        )
+
+        incidentTypes = frozenset(self.successResultOf(store.incidentTypes()))
+        if hidden:
+            self.assertNotIn(incidentType, incidentTypes)
+        else:
+            self.assertIn(incidentType, incidentTypes)
+
+        incidentTypes = frozenset(
+            self.successResultOf(store.incidentTypes(includeHidden=True))
+        )
+        self.assertIn(incidentType, incidentTypes)
+
+
+    def test_createIncidentType_duplicate(self) -> None:
+        """
+        :meth:`IMSDataStore.createIncidentType` raises :exc:`StorageError` when
+        given an incident type that already exists in the data store.
+        """
+        incidentType = "foo"
+        store = self.store()
+        self.successResultOf(store.createIncidentType(incidentType))
+        f = self.failureResultOf(store.createIncidentType(incidentType))
+        self.assertEqual(f.type, StorageError)
+
+
+    def test_showIncidentTypes(self) -> None:
+        """
+        :meth:`IMSDataStore.showIncidentTypes` makes the given incident types
+        visible.
+        """
+        incidentType = "foo"
+        store = self.store()
+        self.successResultOf(
+            store.createIncidentType(incidentType, hidden=True)
+        )
+        self.assertNotIn(
+            incidentType, self.successResultOf(store.incidentTypes())
+        )
+        self.successResultOf(store.showIncidentTypes((incidentType,)))
+        self.assertIn(
+            incidentType, self.successResultOf(store.incidentTypes())
+        )
+        # Again should also work
+        self.successResultOf(store.showIncidentTypes((incidentType,)))
+        self.assertIn(
+            incidentType, self.successResultOf(store.incidentTypes())
+        )
+
+
+    def test_hideIncidentTypes(self) -> None:
+        """
+        :meth:`IMSDataStore.showIncidentTypes` makes the given incident types
+        hidden.
+        """
+        incidentType = "foo"
+        store = self.store()
+        self.successResultOf(
+            store.createIncidentType(incidentType, hidden=False)
+        )
+        self.assertIn(
+            incidentType, self.successResultOf(store.incidentTypes())
+        )
+        self.successResultOf(store.hideIncidentTypes((incidentType,)))
+        self.assertNotIn(
+            incidentType, self.successResultOf(store.incidentTypes())
+        )
+        # Again should also work
+        self.successResultOf(store.hideIncidentTypes((incidentType,)))
+        self.assertNotIn(
+            incidentType, self.successResultOf(store.incidentTypes())
+        )

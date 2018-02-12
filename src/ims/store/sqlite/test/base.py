@@ -281,6 +281,15 @@ class TestDataStore(SuperTestDataStore, DataStore):
                 cursor.close()
 
 
+    def storeIncidentType(self, name: str, hidden: bool) -> None:
+        with self._db as db:
+            cursor: Cursor = db.cursor()
+            try:
+                storeIncidentType(cursor, name, hidden)
+            finally:
+                cursor.close()
+
+
     def dateTimesEqual(self, a: DateTime, b: DateTime) -> bool:
         # Floats stored in SQLite may be slightly off when round-tripped.
         return a - b < TimeDelta(microseconds=20)
@@ -408,3 +417,11 @@ def storeIncidentReport(
                 reportEntryID=cursor.lastrowid
             )
         )
+
+
+def storeIncidentType(cursor: Cursor, name: str, hidden: bool) -> None:
+    cursor.execute(
+        "insert into INCIDENT_TYPE (NAME, HIDDEN) "
+        "values (:name, :hidden)",
+        dict(name=name, hidden=hidden)
+    )
