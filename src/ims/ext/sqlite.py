@@ -42,7 +42,7 @@ CursorFactory = Callable[..., TCursor]
 ParameterValue = Optional[Union[bytes, str, int, float]]
 Parameters = Mapping[str, ParameterValue]
 
-SQLITE_MAX_INT = 9223372036854775807
+SQLITE_MAX_INT = 2**63 - 1  # 64 bits
 
 
 

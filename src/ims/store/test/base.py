@@ -37,6 +37,8 @@ class TestDataStore(IMSDataStore, ABC):
     get interesting.
     """
 
+    maxIncidentNumber = 2**63 - 1  # Default to 64-bit int
+
     exceptionClass = Exception
     exceptionMessage = "I'm broken, yo"
 

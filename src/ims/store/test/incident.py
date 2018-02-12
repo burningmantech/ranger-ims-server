@@ -27,7 +27,6 @@ from attr import fields as attrFields
 from hypothesis import given, settings
 from hypothesis.strategies import just, lists, text, tuples
 
-from ims.ext.sqlite import SQLITE_MAX_INT
 from ims.ext.trial import TestCase
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentState,
@@ -84,7 +83,8 @@ class DataStoreIncidentTests(TestCase):
 
     @given(
         incidentLists(
-            maxNumber=SQLITE_MAX_INT, averageSize=3, maxSize=10, uniqueIDs=True
+            maxNumber=TestDataStore.maxIncidentNumber,
+            averageSize=3, maxSize=10, uniqueIDs=True,
         )
     )
     @settings(max_examples=100)
@@ -118,7 +118,7 @@ class DataStoreIncidentTests(TestCase):
 
     @given(
         incidentLists(
-            event=anEvent, maxNumber=SQLITE_MAX_INT,
+            event=anEvent, maxNumber=TestDataStore.maxIncidentNumber,
             minSize=2, averageSize=3, uniqueIDs=True,
         ),
     )
@@ -159,7 +159,7 @@ class DataStoreIncidentTests(TestCase):
         self.assertEqual(f.type, StorageError)
 
 
-    @given(incidents(maxNumber=SQLITE_MAX_INT))
+    @given(incidents(maxNumber=TestDataStore.maxIncidentNumber))
     @settings(max_examples=200)
     def test_incidentWithNumber(self, incident: Incident) -> None:
         """
@@ -199,7 +199,9 @@ class DataStoreIncidentTests(TestCase):
         self.successResultOf(store.createEvent(anEvent))
 
         f = self.failureResultOf(
-            store.incidentWithNumber(anEvent, SQLITE_MAX_INT + 1)
+            store.incidentWithNumber(
+                anEvent, TestDataStore.maxIncidentNumber + 1
+            )
         )
         f.printTraceback()
         self.assertEqual(f.type, NoSuchIncidentError)

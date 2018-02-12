@@ -23,7 +23,7 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Optional, Sequence, Union, cast
 
-from ims.ext.sqlite import Connection, Cursor, SQLiteError
+from ims.ext.sqlite import Connection, Cursor, SQLITE_MAX_INT, SQLiteError
 from ims.ext.trial import TestCase
 from ims.model import (
     Event, Incident, IncidentReport, Location, ReportEntry, RodGarettAddress
@@ -41,6 +41,8 @@ class TestDataStore(SuperTestDataStore, DataStore):
     """
     See :class:`SuperTestDataStore`.
     """
+
+    maxIncidentNumber = SQLITE_MAX_INT
 
     exceptionClass = SQLiteError
 

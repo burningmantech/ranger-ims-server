@@ -28,7 +28,6 @@ from attr import fields as attrFields
 from hypothesis import assume, given, settings
 from hypothesis.strategies import frozensets, lists, tuples
 
-from ims.ext.sqlite import SQLITE_MAX_INT
 from ims.ext.trial import TestCase
 from ims.model import Incident, IncidentReport, ReportEntry
 from ims.model.strategies import (
@@ -68,7 +67,9 @@ class DataStoreIncidentReportTests(TestCase):
         raise NotImplementedError("Subclass should implement store()")
 
 
-    @given(incidentReportLists(maxNumber=SQLITE_MAX_INT, averageSize=3))
+    @given(incidentReportLists(
+        maxNumber=TestDataStore.maxIncidentNumber, averageSize=3
+    ))
     @settings(max_examples=100)
     def test_incidentReports(
         self, incidentReports: Iterable[IncidentReport]
@@ -107,7 +108,7 @@ class DataStoreIncidentReportTests(TestCase):
         self.assertEqual(f.type, StorageError)
 
 
-    @given(incidentReports(maxNumber=SQLITE_MAX_INT))
+    @given(incidentReports(maxNumber=TestDataStore.maxIncidentNumber))
     def test_incidentReportWithNumber(
         self, incidentReport: IncidentReport
     ) -> None:
@@ -149,7 +150,7 @@ class DataStoreIncidentReportTests(TestCase):
         store = self.store()
 
         f = self.failureResultOf(
-            store.incidentReportWithNumber(SQLITE_MAX_INT + 1)
+            store.incidentReportWithNumber(TestDataStore.maxIncidentNumber + 1)
         )
         self.assertEqual(f.type, NoSuchIncidentReportError)
 
