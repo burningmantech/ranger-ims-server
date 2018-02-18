@@ -18,10 +18,7 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from typing import Optional
-
-from .base import TestDataStore
-from ...test.base import DataStoreTests as SuperDataStoreTests
+from .base import DataStoreTests
 from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
 from ...test.incident import (
     DataStoreIncidentTests as SuperDataStoreIncidentTests
@@ -41,25 +38,10 @@ __all__ = ()
 
 
 
-class DataStoreTests(SuperDataStoreTests):
-    """
-    Parent test class.
-    """
-
-    skip: Optional[str] = None
-
-
-    def store(self) -> TestDataStore:
-        return TestDataStore(self)
-
-
-
 class DataStoreEventTests(DataStoreTests, SuperDataStoreEventTests):
     """
     Tests for :class:`DataStore` event access.
     """
-
-    skip = "unimplemented"
 
 
 

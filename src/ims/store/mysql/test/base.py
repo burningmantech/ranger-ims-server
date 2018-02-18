@@ -18,14 +18,129 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from ims.ext.trial import TestCase
+from typing import Optional, cast
+
+from docker.client import DockerClient
+from docker.errors import NotFound
+from docker.models.containers import Container
+
+from twisted.enterprise.adbapi import ConnectionPool
+from twisted.internet import reactor
+from twisted.internet.defer import Deferred
+from twisted.logger import Logger
+
 from ims.model import Event, Incident, IncidentReport
 
 from .._store import DataStore
-from ...test.base import TestDataStore as SuperTestDataStore
+from ...test.base import (
+    DataStoreTests as SuperDataStoreTests, TestDataStore as SuperTestDataStore
+)
 
 
 __all__ = ()
+
+
+
+class DataStoreTests(SuperDataStoreTests):
+    """
+    Parent test class.
+    """
+
+    log = Logger()
+
+    skip: Optional[str] = None
+
+    dbContainerImageName = "mysql/mysql-server"
+    dbContainerImageTag  = "5.6"
+
+    dbName     = "imsdb"
+    dbUser     = "imsuser"
+    dbPassword = "imspassword"
+
+
+    @classmethod
+    def dbEnvironment(cls) -> None:
+        return dict(
+            MYSQL_RANDOM_ROOT_PASSWORD="yes",
+            MYSQL_DATABASE=cls.dbName,
+            MYSQL_USER=cls.dbUser,
+            MYSQL_PASSWORD=cls.dbPassword,
+        )
+
+
+    @property
+    def dbContainer(self) -> None:
+        if not hasattr(self, "_dbContainer"):
+            self.log.info("Creating database container")
+            client = DockerClient.from_env()
+            container = client.containers.create(
+                image=(
+                    f"{self.dbContainerImageName}:{self.dbContainerImageTag}"
+                ),
+                auto_remove=True, detach=True,
+            )
+            self.log.info(
+                "Created database container {container}", container=container
+            )
+
+            logs = container.logs()
+
+            self._dbContainer = container
+        return self._dbContainer
+
+
+    def setUp(self) -> None:
+        container = self.dbContainer
+        self.log.info(
+            "Starting database container {container}", container=container
+        )
+        container.start()
+
+        d = Deferred()
+
+        interval = 1.0
+        timeout = 10.0
+
+        def waitOnDBStartup(elapsed=0.0):
+            if elapsed > timeout:
+                d.errback(
+                    RuntimeError("Unable to start test database.")
+                )
+
+            self.log.info(
+                "Waiting on database container {container} to start MySQL...",
+                container=container,
+            )
+
+            # FIXME: We fetch the full logs each time because the streaming API
+            # logs(stream=True) blocks.
+            logs = container.logs()
+
+            for line in logs.split(b"\n"):
+                if b" Starting MySQL " in line:
+                    self.log.info("Test database started: {line}", line=line)
+                    d.callback(None)
+                    return
+
+            self.log.info("Rescheduling")
+            reactor.callLater(
+                interval, waitOnDBStartup, elapsed=elapsed+interval
+            )
+
+        waitOnDBStartup()
+
+        return d
+
+
+    def tearDown(self) -> None:
+        container = self.dbContainer
+
+        self.log.info(
+            "Stopping database container {container}", container=container
+        )
+        # Since we're going to remove the container anyway, we don't care about
+        # it getting a chance to clean up, so set timeout=0.
+        container.stop(timeout=0)
 
 
 
