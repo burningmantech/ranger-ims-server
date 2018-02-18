@@ -143,6 +143,16 @@ class DataStoreTests(SuperDataStoreTests):
         container.stop(timeout=0)
 
 
+    def store(self) -> "TestDataStore":
+        return TestDataStore(
+            self,
+            hostname="localhost",
+            database=self.dbName,
+            username=self.dbUser,
+            password=self.dbPassword,
+        )
+
+
 
 class TestDataStore(SuperTestDataStore, DataStore):
     """
@@ -155,17 +165,26 @@ class TestDataStore(SuperTestDataStore, DataStore):
 
 
     def __init__(
-        self, testCase: TestCase,
-        hostname: str = "",
-        database: str = "",
-        username: str = "",
-        password: str = "",
+        self, testCase: DataStoreTests,
+        hostname: str,
+        database: str,
+        username: str,
+        password: str,
     ) -> None:
         DataStore.__init__(
             self,
             hostname=hostname, database=database,
             username=username, password=password,
         )
+        setattr(self._state, "testCase", testCase)
+
+
+    @property
+    def _db(self) -> ConnectionPool:
+        if getattr(self._state, "broken", False):
+            self.raiseException()
+
+        return cast(property, DataStore._db).fget(self)
 
 
     def bringThePain(self) -> None:
