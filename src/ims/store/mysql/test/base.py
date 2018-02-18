@@ -72,6 +72,7 @@ class DataStoreTests(SuperDataStoreTests):
     def dbContainer(self) -> None:
         if not hasattr(self, "_dbContainer"):
             self.log.info("Creating database container")
+
             client = DockerClient.from_env()
             container = client.containers.create(
                 image=(
@@ -79,21 +80,15 @@ class DataStoreTests(SuperDataStoreTests):
                 ),
                 auto_remove=True, detach=True,
             )
-            self.log.info(
-                "Created database container {container}", container=container
-            )
-
-            logs = container.logs()
 
             self._dbContainer = container
+
         return self._dbContainer
 
 
     def setUp(self) -> None:
         container = self.dbContainer
-        self.log.info(
-            "Starting database container {container}", container=container
-        )
+        self.log.info("Starting database container")
         container.start()
 
         d = Deferred()
@@ -107,10 +102,7 @@ class DataStoreTests(SuperDataStoreTests):
                     RuntimeError("Unable to start test database.")
                 )
 
-            self.log.info(
-                "Waiting on database container {container} to start MySQL...",
-                container=container,
-            )
+            self.log.info("Waiting on database container to start MySQL...")
 
             # FIXME: We fetch the full logs each time because the streaming API
             # logs(stream=True) blocks.
@@ -122,7 +114,6 @@ class DataStoreTests(SuperDataStoreTests):
                     d.callback(None)
                     return
 
-            self.log.info("Rescheduling")
             reactor.callLater(
                 interval, waitOnDBStartup, elapsed=elapsed+interval
             )
@@ -135,9 +126,7 @@ class DataStoreTests(SuperDataStoreTests):
     def tearDown(self) -> None:
         container = self.dbContainer
 
-        self.log.info(
-            "Stopping database container {container}", container=container
-        )
+        self.log.info("Stopping database container")
         # Since we're going to remove the container anyway, we don't care about
         # it getting a chance to clean up, so set timeout=0.
         container.stop(timeout=0)
