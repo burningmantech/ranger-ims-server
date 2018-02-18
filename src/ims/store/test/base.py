@@ -22,7 +22,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime as DateTime
 from typing import Optional, Sequence
 
-from ims.ext.trial import TestCase
+from ims.ext.trial import AsynchronousTestCase
 from ims.model import Event, Incident, IncidentReport, ReportEntry
 
 from .._abc import IMSDataStore
@@ -126,7 +126,7 @@ class TestDataStore(IMSDataStore, ABC):
 
 
 
-class DataStoreTests(TestCase):
+class DataStoreTests(AsynchronousTestCase):
     """
     Tests for :class:`IMSDataStore` event access.
     """

@@ -7,7 +7,10 @@ from typing import Any, Optional, Sequence
 
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.python.failure import Failure
-from twisted.trial.unittest import SynchronousTestCase
+from twisted.trial.unittest import (
+    SynchronousTestCase as SuperTestCase,
+    TestCase as SuperAsynchronousTestCase,
+)
 from twisted.web import http
 from twisted.web.iweb import IRequest
 
@@ -20,15 +23,7 @@ __all__ = (
 
 
 
-class TestCase(SynchronousTestCase):
-    """
-    A unit test. The atom of the unit testing universe.
-
-    This class extends :class:`SynchronousTestCase`, not
-    :class:`twisted.trial.unittest.TestCase`, because tests that are themselves
-    asynchronous cause some known problems, and one should be able to unit test
-    code synchronously.
-    """
+class TestCaseMixIn(object):
 
     def successResultOf(self, deferred: Deferred) -> Any:
         """
@@ -126,3 +121,17 @@ class TestCase(SynchronousTestCase):
         # FIXME: Check encoding, default to UTF-8
 
         return request.getWrittenData().decode()
+
+
+
+class TestCase(TestCaseMixIn, SuperTestCase):
+    """
+    A unit test.
+    """
+
+
+
+class AsynchronousTestCase(TestCaseMixIn, SuperAsynchronousTestCase):
+    """
+    A asynchronous unit test.
+    """
