@@ -20,12 +20,12 @@ mypy "$@"                                                                     \
         -e ": error: Cannot find module named 'attr'"                         \
         -e ": error: Cannot find module named 'attr.validators'"              \
         -e ": error: Cannot find module named 'cattr'"                        \
+        -e ": error: Cannot find module named 'docker.[^']*'"                 \
         -e ": error: Cannot find module named 'hyperlink'"                    \
         -e ": error: Cannot find module named 'hypothesis'"                   \
-        -e ": error: Cannot find module named 'hypothesis.searchstrategy'"    \
-        -e ": error: Cannot find module named 'hypothesis.strategies'"        \
+        -e ": error: Cannot find module named 'hypothesis.[^']*'"             \
         -e ": error: Cannot find module named 'klein'"                        \
-        -e ": error: Cannot find module named 'klein.test.test_resource'"     \
+        -e ": error: Cannot find module named 'klein.[^']*'"                  \
         -e ": error: Cannot find module named 'twisted'"                      \
         -e ": error: Cannot find module named 'typing.io'"                    \
         -e ": error: No library stub file for "                               \

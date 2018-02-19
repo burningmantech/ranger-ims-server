@@ -18,7 +18,7 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from typing import Optional, cast
+from typing import Mapping, Optional, cast
 
 from docker.client import DockerClient
 from docker.errors import NotFound
@@ -59,7 +59,7 @@ class DataStoreTests(SuperDataStoreTests):
 
 
     @classmethod
-    def dbEnvironment(cls) -> None:
+    def dbEnvironment(cls) -> Mapping:
         return dict(
             MYSQL_RANDOM_ROOT_PASSWORD="yes",
             MYSQL_DATABASE=cls.dbName,

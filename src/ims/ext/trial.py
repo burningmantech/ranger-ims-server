@@ -23,26 +23,29 @@ __all__ = (
 
 
 
-class TestCaseMixIn(object):
+class TestCase(SuperTestCase):
+    """
+    A unit test.
+    """
 
     def successResultOf(self, deferred: Deferred) -> Any:
         """
-        Override :meth:`SynchronousTestCase.successResultOf` to enable handling
-        of coroutines as well as :class:`Deferred` s.
+        Override :meth:`SuperTestCase.successResultOf` to enable handling of
+        coroutines as well as :class:`Deferred` s.
         """
         deferred = ensureDeferred(deferred)
-        return SynchronousTestCase.successResultOf(self, deferred)
+        return SuperTestCase.successResultOf(self, deferred)
 
 
     def failureResultOf(
         self, deferred: Deferred, *expectedExceptionTypes: BaseException
     ) -> Failure:
         """
-        Override :meth:`SynchronousTestCase.failureResultOf` to enable handling
-        of coroutines as well as :class:`Deferred` s.
+        Override :meth:`SuperTestCase.failureResultOf` to enable handling of
+        coroutines as well as :class:`Deferred` s.
         """
         deferred = ensureDeferred(deferred)
-        return SynchronousTestCase.failureResultOf(
+        return SuperTestCase.failureResultOf(
             self, deferred, *expectedExceptionTypes
         )
 
@@ -124,14 +127,7 @@ class TestCaseMixIn(object):
 
 
 
-class TestCase(TestCaseMixIn, SuperTestCase):
-    """
-    A unit test.
-    """
-
-
-
-class AsynchronousTestCase(TestCaseMixIn, SuperAsynchronousTestCase):
+class AsynchronousTestCase(TestCase, SuperAsynchronousTestCase):
     """
     A asynchronous unit test.
     """
