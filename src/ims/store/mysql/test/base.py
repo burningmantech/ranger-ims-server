@@ -18,15 +18,14 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from typing import Mapping, Optional, cast
+from typing import Awaitable, Mapping, Optional, cast
 
 from docker.client import DockerClient
-from docker.errors import NotFound
 from docker.models.containers import Container
 
 from twisted.enterprise.adbapi import ConnectionPool
 from twisted.internet import reactor
-from twisted.internet.defer import Deferred
+from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.logger import Logger
 
 from ims.model import Event, Incident, IncidentReport
@@ -50,8 +49,8 @@ class DataStoreTests(SuperDataStoreTests):
 
     skip: Optional[str] = None
 
-    dbContainerImageName = "mysql/mysql-server"
-    dbContainerImageTag  = "5.6"
+    mysqlContainerImageName = "mysql/mysql-server"
+    mysqlContainerImageTag  = "5.6"
 
     dbName     = "imsdb"
     dbUser     = "imsuser"
@@ -68,41 +67,40 @@ class DataStoreTests(SuperDataStoreTests):
         )
 
 
-    @property
-    def dbContainer(self) -> None:
-        if not hasattr(self, "_dbContainer"):
-            self.log.info("Creating database container")
+    @classmethod
+    def _createMySQLContainer(cls) -> Container:
+        cls.log.info("Creating MySQL container")
 
-            client = DockerClient.from_env()
-            container = client.containers.create(
-                image=(
-                    f"{self.dbContainerImageName}:{self.dbContainerImageTag}"
-                ),
-                auto_remove=True, detach=True,
-            )
+        client = DockerClient.from_env()
+        container = client.containers.create(
+            image=(
+                f"{cls.mysqlContainerImageName}:"
+                f"{cls.mysqlContainerImageTag}"
+            ),
+            auto_remove=True, detach=True,
+        )
 
-            self._dbContainer = container
-
-        return self._dbContainer
+        return container
 
 
-    def setUp(self) -> None:
-        container = self.dbContainer
-        self.log.info("Starting database container")
+    @classmethod
+    def _startMySQLContainer(cls, container: Container) -> Awaitable:
+        cls.log.info("Starting MySQL container")
         container.start()
 
         d = Deferred()
 
         interval = 1.0
-        timeout = 10.0
+        timeout = 60.0
 
-        def waitOnDBStartup(elapsed=0.0):
+        def waitOnDBStartup(elapsed: float = 0.0) -> None:
             if elapsed > timeout:
                 d.errback(
-                    RuntimeError("Unable to start test database.")
+                    RuntimeError("Unable to start test MySQL.")
                 )
+                return
 
-            self.log.info("Waiting on database container to start MySQL...")
+            cls.log.info("Waiting on MySQL container to start MySQL...")
 
             # FIXME: We fetch the full logs each time because the streaming API
             # logs(stream=True) blocks.
@@ -110,12 +108,12 @@ class DataStoreTests(SuperDataStoreTests):
 
             for line in logs.split(b"\n"):
                 if b" Starting MySQL " in line:
-                    self.log.info("Test database started: {line}", line=line)
+                    cls.log.info("MySQL container started")
                     d.callback(None)
                     return
 
             reactor.callLater(
-                interval, waitOnDBStartup, elapsed=elapsed+interval
+                interval, waitOnDBStartup, elapsed=(elapsed + interval)
             )
 
         waitOnDBStartup()
@@ -123,13 +121,24 @@ class DataStoreTests(SuperDataStoreTests):
         return d
 
 
-    def tearDown(self) -> None:
-        container = self.dbContainer
+    @classmethod
+    async def _createDBImage(cls) -> None:
+        container = cls._createMySQLContainer()
+        await cls._startMySQLContainer(container)
 
-        self.log.info("Stopping database container")
+        cls.log.info("Stopping MySQL container")
         # Since we're going to remove the container anyway, we don't care about
         # it getting a chance to clean up, so set timeout=0.
         container.stop(timeout=0)
+
+
+    def setUp(self) -> None:
+        d = ensureDeferred(self._createDBImage())
+        return d
+
+
+    def tearDown(cls) -> None:
+        return
 
 
     def store(self) -> "TestDataStore":
