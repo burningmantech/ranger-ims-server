@@ -165,14 +165,14 @@ class DataStoreTests(SuperDataStoreTests):
         return image
 
 
-    async def createDBContainer(cls) -> Container:
-        image = await cls._dbImage()
+    async def _createDBContainer(self) -> Container:
+        image = await self._dbImage()
 
-        cls.log.info("Creating Database container")
+        self.log.info("Creating Database container")
 
-        client = cls.dockerClient()
+        client = self.dockerClient()
         container = client.containers.create(
-            name=f"{cls.dbContainerName}",
+            name=f"{self.dbContainerName}",
             image=image.id, auto_remove=True, detach=True,
             ports={ 3306: None },
         )
@@ -181,14 +181,20 @@ class DataStoreTests(SuperDataStoreTests):
         return container
 
 
+    def _stopDBContainer(self) -> None:
+        self.log.info("Stopping DB container")
+        self.dbContainer.stop(timeout=0)
+
+
     def setUp(self) -> None:
         # setUp can't return a coroutine, so this can't be an async method.
-        d = ensureDeferred(self.createDBContainer())
+        d = ensureDeferred(self._createDBContainer())
+        d.addCallback(lambda c: setattr(self, "dbContainer", c))
         return d
 
 
-    def tearDown(cls) -> None:
-        return
+    def tearDown(self) -> None:
+        self._stopDBContainer()
 
 
     def store(self) -> "TestDataStore":
