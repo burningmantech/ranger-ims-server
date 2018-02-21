@@ -18,6 +18,7 @@
 Incident Management System SQL data store.
 """
 
+from pathlib import Path
 from typing import Iterable, Mapping, Tuple
 
 from attr import Factory, attrib, attrs
@@ -31,7 +32,7 @@ from ims.model import (
     ReportEntry,
 )
 
-from .._abc import IMSDataStore
+from .._db import DatabaseStore
 
 
 __all__ = ()
@@ -39,12 +40,17 @@ __all__ = ()
 
 
 @attrs(frozen=True)
-class DataStore(IMSDataStore):
+class DataStore(DatabaseStore):
     """
     Incident Management System MySQL data store.
     """
 
     _log = Logger()
+
+    schemaVersion = 2
+    schemaBasePath = Path(__file__).parent
+    sqlFileExtension = "mysql"
+
 
     @attrs(frozen=False)
     class _State(object):
@@ -65,6 +71,13 @@ class DataStore(IMSDataStore):
     _state: _State = attrib(default=Factory(_State), init=False)
 
 
+    async def dbSchemaVersion(self) -> int:
+        """
+        See `meth:DatabaseStore.dbSchemaVersion`.
+        """
+        raise NotImplementedError()
+
+
     @property
     def _db(self) -> ConnectionPool:
         if self._state.db is None:
@@ -76,9 +89,18 @@ class DataStore(IMSDataStore):
                 password=self.password,
             )
 
+            # self._upgradeSchema(db)
+
             self._state.db = db
 
         return self._state.db
+
+
+    async def applySchema(self, sql: str) -> None:
+        """
+        See :meth:`IMSDataStore.applySchema`.
+        """
+        raise NotImplementedError()
 
 
     def validate(self) -> None:

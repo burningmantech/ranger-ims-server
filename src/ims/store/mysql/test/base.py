@@ -57,7 +57,7 @@ class DataStoreTests(SuperDataStoreTests):
 
     dbContainerName = "ims-unittest-db"
     dbImageName     = "ims-unittest-mysql5.6"
-    dbImageTag      = 0  # str(DataStore._schemaVersion)
+    dbImageTag      = 0  # str(DataStore.schemaVersion)
 
     dbName     = "imsdb"
     dbUser     = "imsuser"
@@ -160,7 +160,7 @@ class DataStoreTests(SuperDataStoreTests):
             if cls.creatingDBImage is None:
                 cls._creatingDBImage = cls._createDBImage()
 
-            await cls._creatingDBImage
+            await cast(Awaitable, cls._creatingDBImage)
 
             image = client.images.get(imageName)
 
@@ -178,7 +178,7 @@ class DataStoreTests(SuperDataStoreTests):
         container = client.containers.create(
             name=f"{self.dbContainerName}",
             image=image.id, auto_remove=True, detach=True,
-            ports={ 3306: None },
+            ports={3306: None},
         )
 
         self.log.info("Starting Database container")
@@ -253,7 +253,7 @@ class TestDataStore(SuperTestDataStore, DataStore):
 
 
     def storeEvent(self, event: Event) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError("storeEvent")
 
 
     def storeIncident(self, incident: Incident) -> None:

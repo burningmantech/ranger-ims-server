@@ -52,7 +52,7 @@ class DataStoreCoreTests(TestCase):
         :meth:`DataStore.loadSchema` caches and returns the schema.
         """
         store = TestDataStore(self)
-        schema = store._loadSchema()
+        schema = store.loadSchema()
 
         self.assertStartsWith(schema, "create table SCHEMA_INFO (")
 
@@ -165,15 +165,15 @@ class DataStoreCoreTests(TestCase):
         )
 
 
-    def test_version(self) -> None:
+    def test_dbSchemaVersion(self) -> None:
         """
-        :meth:`DataStore._version` returns the schema version for the given
-        database.
+        :meth:`DataStore._dbSchemaVersion` returns the schema version for the
+        given database.
         """
-        for version in range(1, DataStore._schemaVersion + 1):
-            db = createDB(None, DataStore._loadSchema(version=version))
+        for version in range(1, DataStore.schemaVersion + 1):
+            db = createDB(None, DataStore.loadSchema(version=version))
 
-            self.assertEqual(DataStore._version(db), version)
+            self.assertEqual(DataStore._dbSchemaVersion(db), version)
 
 
     def test_db(self) -> None:
@@ -215,20 +215,20 @@ class DataStoreCoreTests(TestCase):
             printSchema(db, out)
             return out.getvalue()
 
-        currentVersion = DataStore._schemaVersion
+        currentVersion = DataStore.schemaVersion
 
         with createDB(
-            None, DataStore._loadSchema(version=currentVersion)
+            None, DataStore.loadSchema(version=currentVersion)
         ) as db:
             currentSchemaInfo = getSchemaInfo(db)
 
         for version in range(1, currentVersion):
             path = Path(self.mktemp())
-            createDB(path, DataStore._loadSchema(version=version))
+            createDB(path, DataStore.loadSchema(version=version))
 
             store = DataStore(dbPath=path)
 
-            self.assertEqual(store._version(store._db), currentVersion)
+            self.assertEqual(store._dbSchemaVersion(store._db), currentVersion)
 
             schemaInfo = getSchemaInfo(store._db)
 
@@ -243,7 +243,7 @@ class DataStoreCoreTests(TestCase):
         """
         # Load valid schema, then drop SCHEMA_INFO
         dbPath = Path(self.mktemp())
-        with createDB(dbPath, DataStore._loadSchema()) as db:
+        with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute("drop table SCHEMA_INFO")
 
         store = TestDataStore(self, dbPath=dbPath)
@@ -260,7 +260,7 @@ class DataStoreCoreTests(TestCase):
         """
         # Load valid schema, then delete SCHEMA_INFO rows.
         dbPath = Path(self.mktemp())
-        with createDB(dbPath, DataStore._loadSchema()) as db:
+        with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute("delete from SCHEMA_INFO")
 
         store = TestDataStore(self, dbPath=dbPath)
@@ -278,7 +278,7 @@ class DataStoreCoreTests(TestCase):
         """
         # Load valid schema, then set schema version
         dbPath = Path(self.mktemp())
-        with createDB(dbPath, DataStore._loadSchema()) as db:
+        with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute(
                 "update SCHEMA_INFO set VERSION = :version",
                 dict(version=version)
@@ -292,7 +292,7 @@ class DataStoreCoreTests(TestCase):
         )
 
 
-    @given(integers(min_value=DataStore._schemaVersion + 1))
+    @given(integers(min_value=DataStore.schemaVersion + 1))
     def test_db_fromVersionTooHigh(self, version: int) -> None:
         """
         :meth:`DataStore._db` raises :exc:`StorageError` when the database
@@ -300,7 +300,7 @@ class DataStoreCoreTests(TestCase):
         """
         # Load valid schema, then set schema version
         dbPath = Path(self.mktemp())
-        with createDB(dbPath, DataStore._loadSchema()) as db:
+        with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute(
                 "update SCHEMA_INFO set VERSION = :version",
                 dict(version=version)

@@ -44,7 +44,7 @@ from ims.model import (
 )
 from ims.model.json import IncidentJSONKey, modelObjectFromJSONObject
 
-from .._abc import IMSDataStore
+from .._db import DatabaseStore
 from .._exceptions import (
     NoSuchIncidentError, NoSuchIncidentReportError, StorageError
 )
@@ -61,13 +61,17 @@ def _query(query: str) -> str:
 
 
 @attrs(frozen=True)
-class DataStore(IMSDataStore):
+class DataStore(DatabaseStore):
     """
     Incident Management System SQLite data store.
     """
 
     _log = Logger()
-    _schemaVersion = 2
+
+    schemaVersion = 2
+    schemaBasePath = Path(__file__).parent
+    sqlFileExtension = "sqlite"
+
 
     @attrs(frozen=False)
     class _State(object):
@@ -85,19 +89,12 @@ class DataStore(IMSDataStore):
 
 
     @classmethod
-    def _loadSchema(cls, version: Union[int, str] = _schemaVersion) -> str:
-        name = f"schema.{version}.sqlite"
-        path = Path(__file__).parent / name
-        return path.read_text()
-
-
-    @classmethod
     def printSchema(cls, out: TextIO = stdout) -> None:
         """
         Print schema.
         """
-        with createDB(None, cls._loadSchema()) as db:
-            version = cls._version(db)
+        with createDB(None, cls.loadSchema()) as db:
+            version = cls._dbSchemaVersion(db)
             print(f"Version: {version}", file=out)
             printSchema(db, out=out)
 
@@ -113,14 +110,14 @@ class DataStore(IMSDataStore):
             if k.startswith("_query_")
         ]
 
-        with createDB(None, cls._loadSchema()) as db:
+        with createDB(None, cls.loadSchema()) as db:
             for line in explainQueryPlans(db, queries):
                 print(line, file=out)
                 print(file=out)
 
 
     @classmethod
-    def _version(cls, db: Connection) -> int:
+    def _dbSchemaVersion(cls, db: Connection) -> int:
         try:
             rows = db.execute("select VERSION from SCHEMA_INFO")
             row = next(rows, None)
@@ -136,8 +133,8 @@ class DataStore(IMSDataStore):
 
     @classmethod
     def _upgradeSchema(cls, db: Connection) -> bool:
-        currentVersion = cls._schemaVersion
-        version = cls._version(db)
+        currentVersion = cls.schemaVersion
+        version = cls._dbSchemaVersion(db)
 
         if version == currentVersion:
             # No upgrade needed
@@ -152,7 +149,7 @@ class DataStore(IMSDataStore):
                 "version {toVersion}",
                 fromVersion=fromVersion, toVersion=toVersion,
             )
-            sql = cls._loadSchema(
+            sql = cls.loadSchema(
                 version=f"{toVersion}-from-{fromVersion}"
             )
             db.executescript(sql)
@@ -170,11 +167,19 @@ class DataStore(IMSDataStore):
         raise StorageError(f"No upgrade path from schema version {version}")
 
 
+    async def dbSchemaVersion(self) -> int:
+        """
+        See `meth:DatabaseStore.dbSchemaVersion`.
+        """
+        # FIXME
+        return self._dbSchemaVersion(self._db)
+
+
     @property
     def _db(self) -> Connection:
         if self._state.db is None:
             try:
-                db = openDB(self.dbPath, schema=self._loadSchema())
+                db = openDB(self.dbPath, schema=self.loadSchema())
                 db.validateConstraints()
 
                 if self._upgradeSchema(db):
@@ -221,6 +226,15 @@ class DataStore(IMSDataStore):
                 errorLogFormat, query=query, **parameters, error=e
             )
             raise StorageError(e)
+
+
+    async def applySchema(self, sql: str) -> None:
+        """
+        See :meth:`IMSDataStore.applySchema`.
+        """
+        self._db.executescript(sql)
+        self._db.validateConstraints()
+        self._db.commit()
 
 
     def validate(self) -> None:
