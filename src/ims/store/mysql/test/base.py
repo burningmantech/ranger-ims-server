@@ -21,7 +21,9 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 from typing import Awaitable, Mapping, Optional, cast
 
 from docker.client import DockerClient
+from docker.errors import ImageNotFound
 from docker.models.containers import Container
+from docker.models.images import Image
 
 from twisted.enterprise.adbapi import ConnectionPool
 from twisted.internet import reactor
@@ -49,8 +51,13 @@ class DataStoreTests(SuperDataStoreTests):
 
     skip: Optional[str] = None
 
-    mysqlContainerImageName = "mysql/mysql-server"
-    mysqlContainerImageTag  = "5.6"
+    mysqlImageName     = "mysql/mysql-server"
+    mysqlImageTag      = "5.6"
+    mysqlContainerName = "ims-unittest-mysql"
+
+    dbContainerName = "ims-unittest-db"
+    dbImageName     = "ims-unittest-mysql5.6"
+    dbImageTag      = 0  # str(DataStore._schemaVersion)
 
     dbName     = "imsdb"
     dbUser     = "imsuser"
@@ -68,15 +75,22 @@ class DataStoreTests(SuperDataStoreTests):
 
 
     @classmethod
+    def dockerClient(cls) -> DockerClient:
+        if not hasattr(cls, "_dockerClient"):
+            client = DockerClient.from_env()
+            cls._dockerClient = client
+
+        return cls._dockerClient
+
+
+    @classmethod
     def _createMySQLContainer(cls) -> Container:
         cls.log.info("Creating MySQL container")
 
-        client = DockerClient.from_env()
+        client = cls.dockerClient()
         container = client.containers.create(
-            image=(
-                f"{cls.mysqlContainerImageName}:"
-                f"{cls.mysqlContainerImageTag}"
-            ),
+            name=f"{cls.mysqlContainerName}",
+            image=f"{cls.mysqlImageName}:{cls.mysqlImageTag}",
             auto_remove=True, detach=True,
         )
 
@@ -96,11 +110,11 @@ class DataStoreTests(SuperDataStoreTests):
         def waitOnDBStartup(elapsed: float = 0.0) -> None:
             if elapsed > timeout:
                 d.errback(
-                    RuntimeError("Unable to start test MySQL.")
+                    RuntimeError("Unable to start test MySQL")
                 )
                 return
 
-            cls.log.info("Waiting on MySQL container to start MySQL...")
+            cls.log.info("Waiting on MySQL to start...")
 
             # FIXME: We fetch the full logs each time because the streaming API
             # logs(stream=True) blocks.
@@ -124,16 +138,52 @@ class DataStoreTests(SuperDataStoreTests):
     @classmethod
     async def _createDBImage(cls) -> None:
         container = cls._createMySQLContainer()
+
         await cls._startMySQLContainer(container)
 
+        cls.log.info("Committing MySQL container to image")
+        container.commit(cls.dbImageName, cls.dbImageTag)
+
         cls.log.info("Stopping MySQL container")
-        # Since we're going to remove the container anyway, we don't care about
-        # it getting a chance to clean up, so set timeout=0.
-        container.stop(timeout=0)
+        container.stop()
+
+
+    @classmethod
+    async def _dbImage(cls) -> Image:
+        client = cls.dockerClient()
+
+        imageName = f"{cls.dbImageName}:{cls.dbImageTag}"
+
+        try:
+            image = client.images.get(imageName)
+        except ImageNotFound:
+            await cls._createDBImage()
+            image = client.images.get(imageName)
+        else:
+            cls.log.info("Found existing image: {image}", image=image)
+
+        return image
+
+
+    async def createDBContainer(cls) -> Container:
+        image = await cls._dbImage()
+
+        cls.log.info("Creating Database container")
+
+        client = cls.dockerClient()
+        container = client.containers.create(
+            name=f"{cls.dbContainerName}",
+            image=image.id, auto_remove=True, detach=True,
+            ports={ 3306: None },
+        )
+        container.start()
+
+        return container
 
 
     def setUp(self) -> None:
-        d = ensureDeferred(self._createDBImage())
+        # setUp can't return a coroutine, so this can't be an async method.
+        d = ensureDeferred(self.createDBContainer())
         return d
 
 
