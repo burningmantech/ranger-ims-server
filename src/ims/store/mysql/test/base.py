@@ -157,15 +157,19 @@ class DataStoreTests(SuperDataStoreTests):
         try:
             image = client.images.get(imageName)
         except ImageNotFound:
-            await cls._createDBImage()
+            if cls.creatingDBImage is None:
+                cls._creatingDBImage = cls._createDBImage()
+
+            await cls._creatingDBImage
+
             image = client.images.get(imageName)
-        else:
-            cls.log.info("Found existing image: {image}", image=image)
 
         return image
 
+    _creatingDBImage: Optional[Awaitable] = None
 
-    async def _createDBContainer(self) -> Container:
+
+    async def startDBContainer(self) -> Container:
         image = await self._dbImage()
 
         self.log.info("Creating Database container")
@@ -176,25 +180,27 @@ class DataStoreTests(SuperDataStoreTests):
             image=image.id, auto_remove=True, detach=True,
             ports={ 3306: None },
         )
+
+        self.log.info("Starting Database container")
         container.start()
 
         return container
 
 
-    def _stopDBContainer(self) -> None:
+    def stopDBContainer(self) -> None:
         self.log.info("Stopping DB container")
         self.dbContainer.stop(timeout=0)
 
 
     def setUp(self) -> None:
         # setUp can't return a coroutine, so this can't be an async method.
-        d = ensureDeferred(self._createDBContainer())
+        d = ensureDeferred(self.startDBContainer())
         d.addCallback(lambda c: setattr(self, "dbContainer", c))
         return d
 
 
     def tearDown(self) -> None:
-        self._stopDBContainer()
+        self.stopDBContainer()
 
 
     def store(self) -> "TestDataStore":
