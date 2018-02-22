@@ -168,7 +168,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.incidentTypes`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("incidentTypes()")
 
 
     async def createIncidentType(
@@ -177,21 +177,21 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createIncidentType`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("createIncidentType()")
 
 
     async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
         """
         See :meth:`IMSDataStore.showIncidentTypes`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("showIncidentTypes()")
 
 
     async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
         """
         See :meth:`IMSDataStore.hideIncidentTypes`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("hideIncidentTypes()")
 
 
     ###
@@ -203,7 +203,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.concentricStreets`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("concentricStreets()")
 
 
     async def createConcentricStreet(
@@ -212,7 +212,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createConcentricStreet`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("createConcentricStreet()")
 
 
     ###
@@ -224,14 +224,14 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.incidents`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("incidents()")
 
 
     async def incidentWithNumber(self, event: Event, number: int) -> Incident:
         """
         See :meth:`IMSDataStore.incidentWithNumber`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("incidentWithNumber()")
 
 
     async def createIncident(
@@ -240,14 +240,14 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createIncident`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("createIncident()")
 
 
     async def importIncident(self, incident: Incident) -> None:
         """
         See :meth:`IMSDataStore.importIncident`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("importIncident()")
 
 
     async def setIncident_priority(
@@ -257,7 +257,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setIncident_priority`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setIncident_priority()")
 
 
     async def setIncident_state(
@@ -267,7 +267,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setIncident_state`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setIncident_state()")
 
 
     async def setIncident_summary(
@@ -276,7 +276,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setIncident_summary`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setIncident_summary()")
 
 
     async def setIncident_locationName(
@@ -285,7 +285,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setIncident_locationName`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setIncident_locationName()")
 
 
     async def setIncident_locationConcentricStreet(
@@ -294,7 +294,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setIncident_locationConcentricStreet`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setIncident_locationConcentricStreet()")
 
 
     async def setIncident_locationRadialHour(
@@ -303,7 +303,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setIncident_locationRadialHour`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setIncident_locationRadialHour()")
 
 
     async def setIncident_locationRadialMinute(
@@ -312,7 +312,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setIncident_locationRadialMinute`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setIncident_locationRadialMinute()")
 
 
     async def setIncident_locationDescription(
@@ -321,7 +321,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setIncident_locationDescription`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setIncident_locationDescription()")
 
 
     async def setIncident_rangers(
@@ -331,7 +331,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setIncident_rangers`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setIncident_rangers()")
 
 
     async def setIncident_incidentTypes(
@@ -341,7 +341,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setIncident_incidentTypes`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setIncident_incidentTypes()")
 
 
     async def addReportEntriesToIncident(
@@ -351,7 +351,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.addReportEntriesToIncident`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("addReportEntriesToIncident()")
 
 
     ###
@@ -363,14 +363,14 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.incidentReports`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("incidentReports()")
 
 
     async def incidentReportWithNumber(self, number: int) -> IncidentReport:
         """
         See :meth:`IMSDataStore.incidentReportWithNumber`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("incidentReportWithNumber()")
 
 
     async def createIncidentReport(
@@ -379,7 +379,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createIncidentReport`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("createIncidentReport()")
 
 
     async def setIncidentReport_summary(
@@ -388,7 +388,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setIncidentReport_summary`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setIncidentReport_summary()")
 
 
     async def addReportEntriesToIncidentReport(
@@ -398,7 +398,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.addReportEntriesToIncidentReport`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("addReportEntriesToIncidentReport()")
 
 
     ###
@@ -410,7 +410,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.detachedIncidentReports`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("detachedIncidentReports()")
 
 
     async def incidentReportsAttachedToIncident(
@@ -419,7 +419,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.incidentReportsAttachedToIncident`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("incidentReportsAttachedToIncident()")
 
 
     async def incidentsAttachedToIncidentReport(
@@ -428,7 +428,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.incidentsAttachedToIncidentReport`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("incidentsAttachedToIncidentReport()")
 
 
     async def attachIncidentReportToIncident(
@@ -437,7 +437,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.attachIncidentReportToIncident`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("attachIncidentReportToIncident()")
 
 
     async def detachIncidentReportFromIncident(
@@ -446,4 +446,4 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.detachIncidentReportFromIncident`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("detachIncidentReportFromIncident()")

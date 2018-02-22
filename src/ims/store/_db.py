@@ -20,7 +20,6 @@ Incident Management System database tooling.
 
 from abc import abstractmethod
 from pathlib import Path
-from sys import modules
 from typing import Union
 
 from attr import attrib, attrs
