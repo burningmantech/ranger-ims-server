@@ -126,35 +126,35 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createEvent`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("createEvent()")
 
 
     async def readers(self, event: Event) -> Iterable[str]:
         """
         See :meth:`IMSDataStore.readers`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("readers()")
 
 
     async def setReaders(self, event: Event, readers: Iterable[str]) -> None:
         """
         See :meth:`IMSDataStore.setReaders`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setReaders()")
 
 
     async def writers(self, event: Event) -> Iterable[str]:
         """
         See :meth:`IMSDataStore.writers`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("writers()")
 
 
     async def setWriters(self, event: Event, writers: Iterable[str]) -> None:
         """
         See :meth:`IMSDataStore.setWriters`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError("setWriters()")
 
 
     ###
