@@ -93,6 +93,12 @@ class DataStoreTests(SuperDataStoreTests):
             name=f"{cls.mysqlContainerName}",
             image=f"{cls.mysqlImageName}:{cls.mysqlImageTag}",
             auto_remove=True, detach=True,
+            environment={
+                "MYSQL_RANDOM_ROOT_PASSWORD": "yes",
+                "MYSQL_DATABASE": cls.dbName,
+                "MYSQL_USER": cls.dbUser,
+                "MYSQL_PASSWORD": cls.dbPassword,
+            }
         )
 
         return container
@@ -124,6 +130,7 @@ class DataStoreTests(SuperDataStoreTests):
             for line in logs.split(b"\n"):
                 if b" Starting MySQL " in line:
                     cls.log.info("MySQL container started")
+                    cls.log.info("{logs}", logs=logs.decode("latin-1"))
                     d.callback(None)
                     return
 
@@ -158,10 +165,10 @@ class DataStoreTests(SuperDataStoreTests):
         try:
             image = client.images.get(imageName)
         except ImageNotFound:
-            if cls.creatingDBImage is None:
+            if cls._creatingDBImage is None:
                 cls._creatingDBImage = cls._createDBImage()
 
-            await cast(Awaitable, cls._creatingDBImage)
+            await cls._creatingDBImage
 
             image = client.images.get(imageName)
 
@@ -185,14 +192,22 @@ class DataStoreTests(SuperDataStoreTests):
         self.log.info("Starting Database container")
         container.start()
 
-        apiClient = APIClient()
+        try:
+            apiClient = APIClient()
 
-        port = apiClient.port(container.id, 3306)[0]
+            port = apiClient.port(container.id, 3306)[0]
 
-        self.dbHost = port["HostIp"]
-        self.dbPort = int(port["HostPort"])
+            self.dbHost = port["HostIp"]
+            self.dbPort = int(port["HostPort"])
 
-        return container
+            return container
+
+        except Exception as e:
+            self.log.info(
+                "Stopping Database container due to error: {error}", error=e
+            )
+            container.stop()
+            raise
 
 
     def stopDBContainer(self) -> None:
