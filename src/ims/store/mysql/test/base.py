@@ -200,6 +200,20 @@ class DataStoreTests(SuperDataStoreTests):
             self.dbHost = port["HostIp"]
             self.dbPort = int(port["HostPort"])
 
+            self.log.info(
+                f"MySQL ready:"
+                f" docker run"
+                f" --rm"
+                f" --interactive"
+                f" --tty"
+                f" {self.mysqlImageName}:{self.mysqlImageTag}"
+                f" mysql"
+                f" --host=docker.for.mac.host.internal"
+                f" --port={self.dbPort}"
+                f" --user={self.dbUser}"
+                f" --password={self.dbPassword}"
+            )
+
             return container
 
         except Exception as e:
