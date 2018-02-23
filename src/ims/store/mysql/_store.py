@@ -68,7 +68,8 @@ class DataStore(DatabaseStore):
             default=None, init=False,
         )
 
-    hostname: str = attrib(validator=instance_of(str))
+    hostName: str = attrib(validator=instance_of(str))
+    hostPort: str = attrib(validator=instance_of(int))
     database: str = attrib(validator=instance_of(str))
     username: str = attrib(validator=instance_of(str))
     password: str = attrib(validator=instance_of(str))
@@ -88,7 +89,8 @@ class DataStore(DatabaseStore):
         if self._state.db is None:
             db = ConnectionPool(
                 "pymysql",
-                host=self.hostname,
+                host=self.hostName,
+                port=self.hostPort,
                 database=self.database,
                 user=self.username,
                 password=self.password,

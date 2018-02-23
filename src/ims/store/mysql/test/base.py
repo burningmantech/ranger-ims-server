@@ -20,6 +20,7 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 
 from typing import Awaitable, Mapping, Optional, cast
 
+from docker.api import APIClient
 from docker.client import DockerClient
 from docker.errors import ImageNotFound
 from docker.models.containers import Container
@@ -184,6 +185,13 @@ class DataStoreTests(SuperDataStoreTests):
         self.log.info("Starting Database container")
         container.start()
 
+        apiClient = APIClient()
+
+        port = apiClient.port(container.id, 3306)[0]
+
+        self.dbHost = port["HostIp"]
+        self.dbPort = int(port["HostPort"])
+
         return container
 
 
@@ -206,7 +214,8 @@ class DataStoreTests(SuperDataStoreTests):
     def store(self) -> "TestDataStore":
         return TestDataStore(
             self,
-            hostname="localhost",
+            hostName=self.dbHost,
+            hostPort=self.dbPort,
             database=self.dbName,
             username=self.dbUser,
             password=self.dbPassword,
@@ -226,14 +235,16 @@ class TestDataStore(SuperTestDataStore, DataStore):
 
     def __init__(
         self, testCase: DataStoreTests,
-        hostname: str,
+        hostName: str,
+        hostPort: int,
         database: str,
         username: str,
         password: str,
     ) -> None:
         DataStore.__init__(
             self,
-            hostname=hostname, database=database,
+            hostName=hostName, hostPort=hostPort,
+            database=database,
             username=username, password=password,
         )
         setattr(self._state, "testCase", testCase)
