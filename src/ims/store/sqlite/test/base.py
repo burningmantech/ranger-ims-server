@@ -68,7 +68,7 @@ class TestDataStore(SuperTestDataStore, DataStore):
         assert getattr(self._state, "broken")
 
 
-    def storeEvent(self, event: Event) -> None:
+    async def storeEvent(self, event: Event) -> None:
         with self._db as db:
             cursor: Cursor = db.cursor()
             try:
@@ -77,7 +77,7 @@ class TestDataStore(SuperTestDataStore, DataStore):
                 cursor.close()
 
 
-    def storeIncident(self, incident: Incident) -> None:
+    async def storeIncident(self, incident: Incident) -> None:
         with self._db as db:
             cursor: Cursor = db.cursor()
             try:
@@ -86,7 +86,7 @@ class TestDataStore(SuperTestDataStore, DataStore):
                 cursor.close()
 
 
-    def storeIncidentReport(
+    async def storeIncidentReport(
         self, incidentReport: IncidentReport
     ) -> None:
         with self._db as db:
@@ -97,7 +97,7 @@ class TestDataStore(SuperTestDataStore, DataStore):
                 cursor.close()
 
 
-    def storeConcentricStreet(
+    async def storeConcentricStreet(
         self, event: Event, streetID: str, streetName: str,
         ignoreDuplicates: bool = False,
     ) -> None:
@@ -111,7 +111,7 @@ class TestDataStore(SuperTestDataStore, DataStore):
                 cursor.close()
 
 
-    def storeIncidentType(self, name: str, hidden: bool) -> None:
+    async def storeIncidentType(self, name: str, hidden: bool) -> None:
         with self._db as db:
             cursor: Cursor = db.cursor()
             try:

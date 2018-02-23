@@ -20,31 +20,24 @@ Incident tests for :mod:`ranger-ims-server.store`
 
 from collections import defaultdict
 from datetime import datetime as DateTime, timezone as TimeZone
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
+from typing import Any, Dict, Iterable, Optional, Sequence, Set, Tuple, cast
 
 from attr import fields as attrFields
-
-from hypothesis import given, settings
-from hypothesis.strategies import just, lists, text, tuples
 
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentState,
     Location, ReportEntry, RodGarettAddress,
 )
-from ims.model.strategies import (
-    concentricStreetIDs, incidentLists, incidentPriorities, incidentStates,
-    incidentSummaries, incidentTypesText, incidents, locationNames,
-    radialHours, radialMinutes, rangerHandles, reportEntries,
-)
 
-from .base import DataStoreTests, TestDataStore
+from .base import DataStoreTests, TestDataStore, asyncAsDeferred
 from .._exceptions import NoSuchIncidentError, StorageError
 
 
 __all__ = ()
 
 
-anEvent = Event(id="foo")
+anEvent  = Event(id="foo")
+anEvent2 = Event(id="bar")
 
 anIncident = Incident(
     event=anEvent,
@@ -56,11 +49,45 @@ anIncident = Incident(
     rangerHandles=(), incidentTypes=(), reportEntries=(),
 )
 
+anIncident1 = Incident(
+    event=anEvent,
+    number=1,
+    created=DateTime.now(TimeZone.utc),
+    state=IncidentState.new, priority=IncidentPriority.normal,
+    summary="A thing happened",
+    location=Location(name="There", address=None),
+    rangerHandles=(), incidentTypes=(), reportEntries=(),
+)
+
+anIncident2 = Incident(
+    event=anEvent2,
+    number=325,
+    created=DateTime.now(TimeZone.utc),
+    state=IncidentState.new, priority=IncidentPriority.normal,
+    summary="Another thing happened",
+    location=Location(name="Here", address=None),
+    rangerHandles=(), incidentTypes=(), reportEntries=(),
+)
+
 aReportEntry = ReportEntry(
     created=DateTime.now(TimeZone.utc),
     author="Hubcap",
     automatic=False,
     text="Hello",
+)
+
+aReportEntry1 = ReportEntry(
+    created=DateTime.now(TimeZone.utc),
+    author="Bucket",
+    automatic=False,
+    text="This happened",
+)
+
+aReportEntry2 = ReportEntry(
+    created=DateTime.now(TimeZone.utc),
+    author="Bucket",
+    automatic=False,
+    text="That happened",
 )
 
 
@@ -70,275 +97,298 @@ class DataStoreIncidentTests(DataStoreTests):
     Tests for :class:`IMSDataStore` incident access.
     """
 
-    @given(
-        incidentLists(
-            maxNumber=TestDataStore.maxIncidentNumber,
-            averageSize=2, uniqueIDs=True,
-        )
-    )
-    @settings(max_examples=20)
-    def test_incidents(self, incidents: Iterable[Incident]) -> None:
+    @asyncAsDeferred
+    async def test_incidents(self) -> None:
         """
         :meth:`IMSDataStore.incidents` returns all incidents.
         """
-        incidents = tuple(incidents)
+        for _incidents in (
+            [],
+            [anIncident1],
+            [anIncident1, anIncident2],
+        ):
+            incidents = tuple(cast(Iterable[Incident], _incidents))
 
-        events: Dict[Event, Dict[int, Incident]] = defaultdict(defaultdict)
+            events: Dict[Event, Dict[int, Incident]] = defaultdict(defaultdict)
 
-        store = self.store()
+            store = self.store()
 
-        for incident in incidents:
-            store.storeIncident(incident)
+            for incident in incidents:
+                await store.storeIncident(incident)
 
-            events[incident.event][incident.number] = incident
+                events[incident.event][incident.number] = incident
 
-        found: Set[Tuple[Event, int]] = set()
-        for event in events:
-            for retrieved in self.successResultOf(
-                store.incidents(event)
-            ):
-                self.assertIncidentsEqual(
-                    retrieved, events[event][retrieved.number]
-                )
-                found.add((event, retrieved.number))
+            found: Set[Tuple[Event, int]] = set()
+            for event in events:
+                for retrieved in await store.incidents(event):
+                    self.assertIncidentsEqual(
+                        retrieved, events[event][retrieved.number]
+                    )
+                    found.add((event, retrieved.number))
 
-        self.assertEqual(found, set(((i.event, i.number) for i in incidents)))
+            self.assertEqual(
+                found, set(((i.event, i.number) for i in incidents))
+            )
 
 
-    @given(
-        incidentLists(
-            event=anEvent, maxNumber=TestDataStore.maxIncidentNumber,
-            minSize=2, averageSize=3, uniqueIDs=True,
-        ),
-    )
-    @settings(max_examples=10)
-    def test_incidents_sameEvent(self, incidents: Iterable[Incident]) -> None:
+    @asyncAsDeferred
+    async def test_incidents_sameEvent(self) -> None:
         """
         :meth:`IMSDataStore.incidents` returns all incidents.
         """
-        incidents = frozenset(incidents)
+        for _incidents in (
+            [anIncident1],
+            [anIncident1, anIncident2.replace(event=anIncident1.event)],
+        ):
+            incidents = frozenset(_incidents)
 
-        store = self.store()
+            store = self.store()
 
-        event: Optional[Event] = None
+            event: Optional[Event] = None
 
-        for incident in incidents:
-            event = incident.event
+            for incident in incidents:
+                event = incident.event
 
-            store.storeIncident(incident)
+                await store.storeIncident(incident)
 
-        assert event is not None
+            assert event is not None
 
-        retrieved = self.successResultOf(store.incidents(event))
+            retrieved = await store.incidents(event)
 
-        for r, i in zip(sorted(retrieved), sorted(incidents)):
-            self.assertIncidentsEqual(r, i)
+            for r, i in zip(sorted(retrieved), sorted(incidents)):
+                self.assertIncidentsEqual(r, i)
 
 
-    def test_incidents_error(self) -> None:
+    @asyncAsDeferred
+    async def test_incidents_error(self) -> None:
         """
         :meth:`IMSDataStore.incidents` raises :exc:`StorageError` when the
         store raises an exception.
         """
         store = self.store()
-        self.successResultOf(store.createEvent(anEvent))
+        await store.createEvent(anEvent)
         store.bringThePain()
 
-        f = self.failureResultOf(store.incidents(anEvent))
-        self.assertEqual(f.type, StorageError)
+        try:
+            await store.incidents(anEvent)
+        except StorageError as e:
+            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    @given(incidents(maxNumber=TestDataStore.maxIncidentNumber))
-    @settings(max_examples=10)
-    def test_incidentWithNumber(self, incident: Incident) -> None:
+    @asyncAsDeferred
+    async def test_incidentWithNumber(self) -> None:
         """
         :meth:`IMSDataStore.incidentWithNumber` returns the specified incident.
         """
-        store = self.store()
+        for incident in (anIncident1, anIncident2):
+            store = self.store()
 
-        store.storeIncident(incident)
+            await store.storeIncident(incident)
 
-        retrieved = self.successResultOf(
-            store.incidentWithNumber(incident.event, incident.number)
-        )
+            retrieved = (
+                await store.incidentWithNumber(incident.event, incident.number)
+            )
 
-        self.assertIncidentsEqual(retrieved, incident)
+            self.assertIncidentsEqual(retrieved, incident)
 
 
-    def test_incidentWithNumber_notFound(self) -> None:
+    @asyncAsDeferred
+    async def test_incidentWithNumber_notFound(self) -> None:
         """
         :meth:`IMSDataStore.incidentWithNumber` raises
         :exc:`NoSuchIncidentError` when the given incident number is not found.
         """
         store = self.store()
-        self.successResultOf(store.createEvent(anEvent))
+        await store.createEvent(anEvent)
 
-        f = self.failureResultOf(
-            store.incidentWithNumber(anEvent, 1)
-        )
-        self.assertEqual(f.type, NoSuchIncidentError)
+        try:
+            await store.incidentWithNumber(anEvent, 1)
+        except NoSuchIncidentError as e:
+            pass
+        else:
+            self.fail("NoSuchIncidentError not raised")
 
 
-    def test_incidentWithNumber_tooBig(self) -> None:
+    @asyncAsDeferred
+    async def test_incidentWithNumber_tooBig(self) -> None:
         """
         :meth:`IMSDataStore.incidentWithNumber` raises
         :exc:`NoSuchIncidentError` when the given incident number is too large
         for the store.
         """
         store = self.store()
-        self.successResultOf(store.createEvent(anEvent))
+        await store.createEvent(anEvent)
 
-        f = self.failureResultOf(
-            store.incidentWithNumber(
+        try:
+            await store.incidentWithNumber(
                 anEvent, TestDataStore.maxIncidentNumber + 1
             )
-        )
-        f.printTraceback()
-        self.assertEqual(f.type, NoSuchIncidentError)
+        except NoSuchIncidentError as e:
+            pass
+        else:
+            self.fail("NoSuchIncidentError not raised")
 
 
-    def test_incidentWithNumber_error(self) -> None:
+    @asyncAsDeferred
+    async def test_incidentWithNumber_error(self) -> None:
         """
         :meth:`IMSDataStore.incidentWithNumber` raises :exc:`StorageError` when
         the store raises an exception.
         """
         store = self.store()
-        self.successResultOf(store.createEvent(anEvent))
+        await store.createEvent(anEvent)
         store.bringThePain()
 
-        f = self.failureResultOf(store.incidentWithNumber(anEvent, 1))
-        self.assertEqual(f.type, StorageError)
+        try:
+            await store.incidentWithNumber(anEvent, 1)
+        except StorageError as e:
+            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    @given(lists(tuples(incidents(new=True), rangerHandles()), average_size=2))
-    @settings(max_examples=40)
-    def test_createIncident(
-        self, data: Iterable[Tuple[Incident, str]]
-    ) -> None:
+    @asyncAsDeferred
+    async def test_createIncident(self) -> None:
         """
         :meth:`IMSDataStore.createIncident` creates the given incident.
         """
-        store = self.store()
+        for _data in (
+            (),
+            (
+                (anIncident1.replace(number=0), "Hubcap"),
+            ),
+            (
+                (anIncident1.replace(number=0), "Hubcap"),
+                (anIncident2.replace(number=0), "Bucket"),
+            ),
+        ):
+            data = cast(Iterable[Tuple[Incident, str]], _data)
 
-        createdEvents: Set[Event] = set()
-        createdIncidentTypes: Set[str] = set()
-        createdConcentricStreets: Dict[Event, Set[str]] = defaultdict(set)
+            store = self.store()
 
-        expectedStoredIncidents: Set[Incident] = set()
-        nextNumbers: Dict[Event, int] = {}
+            createdEvents: Set[Event] = set()
+            createdIncidentTypes: Set[str] = set()
+            createdConcentricStreets: Dict[Event, Set[str]] = defaultdict(set)
 
-        for incident, author in data:
-            event = incident.event
+            expectedStoredIncidents: Set[Incident] = set()
+            nextNumbers: Dict[Event, int] = {}
 
-            if event not in createdEvents:
-                self.successResultOf(store.createEvent(event))
-                createdEvents.add(event)
+            for incident, author in data:
+                event = incident.event
 
-            for incidentType in incident.incidentTypes:
-                if incidentType not in createdIncidentTypes:
-                    self.successResultOf(
-                        store.createIncidentType(incidentType)
-                    )
-                    createdIncidentTypes.add(incidentType)
+                if event not in createdEvents:
+                    await store.createEvent(event)
+                    createdEvents.add(event)
 
-            address = incident.location.address
-            if isinstance(address, RodGarettAddress):
-                concentric = address.concentric
-                if (
-                    concentric is not None and
-                    concentric not in createdConcentricStreets[event]
-                ):
-                    self.successResultOf(
-                        store.createConcentricStreet(
+                for incidentType in incident.incidentTypes:
+                    if incidentType not in createdIncidentTypes:
+                        await store.createIncidentType(incidentType)
+                        createdIncidentTypes.add(incidentType)
+
+                address = incident.location.address
+                if isinstance(address, RodGarettAddress):
+                    concentric = address.concentric
+                    if (
+                        concentric is not None and
+                        concentric not in createdConcentricStreets[event]
+                    ):
+                        await store.createConcentricStreet(
                             event, concentric, "Sesame Street"
                         )
-                    )
-                    createdConcentricStreets[event].add(concentric)
+                        createdConcentricStreets[event].add(concentric)
 
-            retrieved = self.successResultOf(
-                store.createIncident(incident=incident, author=author)
-            )
-
-            # The returned incident should be the same, except for modified
-            # number
-            expectedStoredIncident = incident.replace(
-                number=nextNumbers.setdefault(event, 1)
-            )
-            self.assertIncidentsEqual(
-                retrieved, expectedStoredIncident, ignoreAutomatic=True
-            )
-
-            # Add to set of stored incidents
-            expectedStoredIncidents.add(expectedStoredIncident)
-            nextNumbers[event] += 1
-
-        # Stored incidents should be contain incidents stored above
-        for event in createdEvents:
-            expectedIncidents = sorted(
-                i for i in expectedStoredIncidents if i.event == event
-            )
-            storedIncidents = sorted(
-                self.successResultOf(store.incidents(event=event))
-            )
-
-            self.assertEqual(
-                len(storedIncidents), len(expectedIncidents),
-                f"{storedIncidents} != {expectedIncidents}"
-            )
-
-            for stored, expected in zip(storedIncidents, expectedIncidents):
-                self.assertIncidentsEqual(
-                    stored, expected, ignoreAutomatic=True
+                retrieved = await store.createIncident(
+                    incident=incident, author=author
                 )
 
+                # The returned incident should be the same, except for modified
+                # number
+                expectedStoredIncident = incident.replace(
+                    number=nextNumbers.setdefault(event, 1)
+                )
+                self.assertIncidentsEqual(
+                    retrieved, expectedStoredIncident, ignoreAutomatic=True
+                )
 
-    def test_createIncident_error(self) -> None:
+                # Add to set of stored incidents
+                expectedStoredIncidents.add(expectedStoredIncident)
+                nextNumbers[event] += 1
+
+            # Stored incidents should be contain incidents stored above
+            for event in createdEvents:
+                expectedIncidents = sorted(
+                    i for i in expectedStoredIncidents if i.event == event
+                )
+                storedIncidents = sorted(await store.incidents(event=event))
+
+                self.assertEqual(
+                    len(storedIncidents), len(expectedIncidents),
+                    f"{storedIncidents} != {expectedIncidents}"
+                )
+
+                for stored, expected in zip(
+                    storedIncidents, expectedIncidents
+                ):
+                    self.assertIncidentsEqual(
+                        stored, expected, ignoreAutomatic=True
+                    )
+
+
+    @asyncAsDeferred
+    async def test_createIncident_error(self) -> None:
         """
         :meth:`IMSDataStore.createIncident` raises :exc:`StorageError` when the
         store raises an exception.
         """
         store = self.store()
-        self.successResultOf(store.createEvent(anIncident.event))
+        await store.createEvent(anIncident.event)
         store.bringThePain()
 
-        f = self.failureResultOf(store.createIncident(anIncident, "Hubcap"))
-        self.assertEqual(f.type, StorageError)
+        try:
+            await store.createIncident(anIncident, "Hubcap")
+        except StorageError as e:
+            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    def test_setIncident_priority_error(self) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_priority_error(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_priority` raises :exc:`StorageError`
         when the store raises an exception.
         """
         store = self.store()
-        self.successResultOf(store.createEvent(anIncident.event))
-        incident = self.successResultOf(
-            store.createIncident(anIncident, "Hubcap")
-        )
+        await store.createEvent(anIncident.event)
+        incident = await store.createIncident(anIncident, "Hubcap")
         store.bringThePain()
 
-        f = self.failureResultOf(
-            store.setIncident_priority(
+        try:
+            await store.setIncident_priority(
                 incident.event, incident.number, IncidentPriority.high,
                 "Bucket",
             )
-        )
-        self.assertEqual(f.type, StorageError)
+        except StorageError as e:
+            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    def _test_setIncidentAttribute(
+    async def _test_setIncidentAttribute(
         self, incident: Incident,
         methodName: str, attributeName: str, value: Any
     ) -> None:
         store = self.store()
 
-        store.storeIncident(incident)
+        await store.storeIncident(incident)
 
         setter = getattr(store, methodName)
 
         # For concentric streets, we need to make sure they exist first.
         if attributeName == "location.address.concentric":
-            store.storeConcentricStreet(
+            await store.storeConcentricStreet(
                 incident.event, value, "Concentric Street",
                 ignoreDuplicates=True,
             )
@@ -348,14 +398,14 @@ class DataStoreIncidentTests(DataStoreTests):
             for incidentType in (
                 frozenset(value) - frozenset(incident.incidentTypes)
             ):
-                self.successResultOf(store.createIncidentType(incidentType))
+                await store.createIncidentType(incidentType)
 
         self.successResultOf(
             setter(incident.event, incident.number, value, "Hubcap")
         )
 
-        retrieved = self.successResultOf(
-            store.incidentWithNumber(incident.event, incident.number)
+        retrieved = (
+            await store.incidentWithNumber(incident.event, incident.number)
         )
 
         # Normalize location if we're updating the address.
@@ -379,311 +429,328 @@ class DataStoreIncidentTests(DataStoreTests):
         self.assertIncidentsEqual(retrieved, incident, ignoreAutomatic=True)
 
 
-    @given(incidents(new=True), incidentPriorities())
-    def test_setIncident_priority(
-        self, incident: Incident, priority: IncidentPriority
-    ) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_priority(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_priority` updates the priority for the
         given incident in the data store.
         """
-        self._test_setIncidentAttribute(
-            incident, "setIncident_priority", "priority", priority
-        )
+        for priority in IncidentPriority:
+            for incident in (anIncident1, anIncident2):
+                await self._test_setIncidentAttribute(
+                    incident, "setIncident_priority", "priority", priority
+                )
 
 
-    @given(incidents(new=True), incidentStates())
-    def test_setIncident_state(
-        self, incident: Incident, state: IncidentState
-    ) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_state(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_state` updates the state for the
         incident with the given number in the data store.
         """
-        self._test_setIncidentAttribute(
-            incident, "setIncident_state", "state", state
-        )
+        for state in IncidentState:
+            for incident in (anIncident1, anIncident2):
+                await self._test_setIncidentAttribute(
+                    incident, "setIncident_state", "state", state
+                )
 
 
-    @given(incidents(new=True), incidentSummaries())
-    def test_setIncident_summary(
-        self, incident: Incident, summary: str
-    ) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_summary(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_summary` updates the summary for the
         given incident in the data store.
         """
-        self._test_setIncidentAttribute(
-            incident, "setIncident_summary", "summary", summary
-        )
+        for incident, summary in (
+            (anIncident1, "foo bar"),
+            (anIncident2, "quux bang"),
+        ):
+            await self._test_setIncidentAttribute(
+                incident, "setIncident_summary", "summary", summary
+            )
 
 
-    @given(incidents(new=True), locationNames())
-    def test_setIncident_locationName(
-        self, incident: Incident, name: str
-    ) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_locationName(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_locationName` updates the location name
         for the given incident in the data store.
         """
-        self._test_setIncidentAttribute(
-            incident, "setIncident_locationName", "location.name", name
-        )
+        for incident, name in (
+            (anIncident1, "foo bar"),
+            (anIncident2, "quux bang"),
+        ):
+            await self._test_setIncidentAttribute(
+                incident, "setIncident_locationName", "location.name", name
+            )
 
 
-    @given(incidents(new=True), concentricStreetIDs())
-    def test_setIncident_locationConcentricStreet(
-        self, incident: Incident, streetID: str
-    ) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_locationConcentricStreet(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_locationConcentricStreet` updates the
         location concentric street for the given incident in the data store.
         """
-        self._test_setIncidentAttribute(
-            incident, "setIncident_locationConcentricStreet",
-            "location.address.concentric", streetID,
-        )
+        for incident, streetID in (
+            (anIncident1, "foo bar"),
+            (anIncident2, "quux bang"),
+        ):
+            await self._test_setIncidentAttribute(
+                incident, "setIncident_locationConcentricStreet",
+                "location.address.concentric", streetID,
+            )
 
 
-    @given(incidents(new=True), radialHours())
-    def test_setIncident_locationRadialHour(
-        self, incident: Incident, radialHour: int
-    ) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_locationRadialHour(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_locationRadialHour` updates the
         location radial hour for the given incident in the data store.
         """
-        self._test_setIncidentAttribute(
-            incident, "setIncident_locationRadialHour",
-            "location.address.radialHour", radialHour,
-        )
+        for incident, radialHour in (
+            (anIncident1, 3),
+            (anIncident2, 9),
+        ):
+            await self._test_setIncidentAttribute(
+                incident, "setIncident_locationRadialHour",
+                "location.address.radialHour", radialHour,
+            )
 
 
-    @given(incidents(new=True), radialMinutes())
-    def test_setIncident_locationRadialMinute(
-        self, incident: Incident, radialMinute: int
-    ) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_locationRadialMinute(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_locationRadialMinute` updates the
         location radial minute for the given incident in the data store.
         """
-        self._test_setIncidentAttribute(
-            incident, "setIncident_locationRadialMinute",
-            "location.address.radialMinute", radialMinute,
-        )
+        for incident, radialMinute in (
+            (anIncident1, 0),
+            (anIncident2, 15),
+        ):
+            await self._test_setIncidentAttribute(
+                incident, "setIncident_locationRadialMinute",
+                "location.address.radialMinute", radialMinute,
+            )
 
 
-    @given(incidents(new=True), text())
-    def test_setIncident_locationDescription(
-        self, incident: Incident, description: str
-    ) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_locationDescription(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_locationDescription` updates the
         location description for the given incident in the data store.
         """
-        self._test_setIncidentAttribute(
-            incident, "setIncident_locationDescription",
-            "location.address.description", description,
-        )
+        incident = anIncident
+
+        for description in ("", "foo bar", "beep boop"):
+            await self._test_setIncidentAttribute(
+                incident, "setIncident_locationDescription",
+                "location.address.description", description,
+            )
 
 
-    @given(incidents(new=True), lists(rangerHandles(), average_size=2))
-    def test_setIncident_rangers(
-        self, incident: Incident, rangerHandles: Iterable[str]
-    ) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_rangers(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_rangers` updates the ranger handles for
         the given incident in the data store.
         """
-        self._test_setIncidentAttribute(
-            incident, "setIncident_rangers", "rangerHandles", rangerHandles,
-        )
+        incident = anIncident
+
+        for rangerHandles in (
+            (),
+            ("Hubcap",),
+            ("Hubcap", "Bucket"),
+        ):
+            await self._test_setIncidentAttribute(
+                incident, "setIncident_rangers",
+                "rangerHandles", rangerHandles,
+            )
 
 
-    def test_setIncident_rangers_error(self) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_rangers_error(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_rangers` raises :exc:`StorageError`
         when the store raises an exception.
         """
         store = self.store()
-        self.successResultOf(store.createEvent(anIncident.event))
-        incident = self.successResultOf(
-            store.createIncident(anIncident, "Hubcap")
-        )
+        await store.createEvent(anIncident.event)
+        incident = await store.createIncident(anIncident, "Hubcap")
         store.bringThePain()
 
-        f = self.failureResultOf(
-            store.setIncident_rangers(
+        try:
+            await store.setIncident_rangers(
                 incident.event, incident.number, ("Hubcap", "Dingle"), "Bucket"
             )
-        )
-        self.assertEqual(f.type, StorageError)
+        except StorageError as e:
+            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    @given(incidents(new=True), lists(incidentTypesText(), average_size=2))
-    def test_setIncident_incidentTypes(
-        self, incident: Incident, incidentTypes: Iterable[str]
-    ) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_incidentTypes(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_rangers` updates the ranger handles for
         the given incident in the data store.
         """
-        self._test_setIncidentAttribute(
-            incident, "setIncident_incidentTypes",
-            "incidentTypes", incidentTypes,
-        )
+        incident = anIncident
+
+        for incidentTypes in (
+            (),
+            ("MOOP",),
+            ("Medical", "Fire"),
+        ):
+            await self._test_setIncidentAttribute(
+                incident, "setIncident_incidentTypes",
+                "incidentTypes", incidentTypes,
+            )
 
 
-    def test_setIncident_incidentTypes_error(self) -> None:
+    @asyncAsDeferred
+    async def test_setIncident_incidentTypes_error(self) -> None:
         """
         :meth:`IMSDataStore.setIncident_incidentTypes` raises
         :exc:`StorageError` when the store raises an exception.
         """
         store = self.store()
-        self.successResultOf(store.createEvent(anEvent))
-        incident = self.successResultOf(
-            store.createIncident(anIncident, "Hubcap")
-        )
+        await store.createEvent(anEvent)
+        incident = await store.createIncident(anIncident, "Hubcap")
         store.bringThePain()
 
-        f = self.failureResultOf(
-            store.setIncident_incidentTypes(
+        try:
+            await store.setIncident_incidentTypes(
                 anEvent, incident.number, ("Fun", "Boring"), "Bucket"
             )
-        )
-        self.assertEqual(f.type, StorageError)
+        except StorageError as e:
+            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    @given(
-        incidents(new=True),
-        rangerHandles().flatmap(
-            lambda author:
-                tuples(
-                    lists(
-                        reportEntries(automatic=False, author=author),
-                        average_size=2,
-                    ),
-                    just(author),
-                )
-        )
-    )
-    def test_addReportEntriesToIncident(
-        self, incident: Incident, entriesBy: Tuple[List[ReportEntry], str]
-    ) -> None:
+    @asyncAsDeferred
+    async def test_addReportEntriesToIncident(self) -> None:
         """
         :meth:`IMSDataStore.addReportEntriesToIncident` adds the given report
         entries to the given incident in the data store.
         """
-        reportEntries, author = entriesBy
+        for incident in (anIncident1, anIncident2):
+            for entriesBy in (
+                ((), "Joe Ranger"),
+                ((aReportEntry,), aReportEntry.author),
+                ((aReportEntry1, aReportEntry2), aReportEntry1.author),
+            ):
+                reportEntries, author = cast(
+                    Tuple[Sequence[ReportEntry], str],
+                    entriesBy,
+                )
 
-        # Store test data
-        store = self.store()
-        self.successResultOf(store.createEvent(incident.event))
-        store.storeIncident(incident)
+                # Store test data
+                store = self.store()
+                await store.createEvent(incident.event)
+                await store.storeIncident(incident)
 
-        # Fetch incident back so we have the same data as the DB
-        incident = self.successResultOf(
-            store.incidentWithNumber(incident.event, incident.number)
-        )
+                # Fetch incident back so we have the same data as the DB
+                incident = await store.incidentWithNumber(
+                    incident.event, incident.number
+                )
 
-        # Add report entries
-        self.successResultOf(
-            store.addReportEntriesToIncident(
-                incident.event, incident.number, reportEntries, author
-            )
-        )
+                # Add report entries
+                await store.addReportEntriesToIncident(
+                    incident.event, incident.number, reportEntries, author
+                )
 
-        # Get the updated incident with the new report entries
-        updatedIncident = self.successResultOf(
-            store.incidentWithNumber(incident.event, incident.number)
-        )
+                # Get the updated incident with the new report entries
+                updatedIncident = await store.incidentWithNumber(
+                    incident.event, incident.number
+                )
 
-        # Updated number of incidents should be original plus new
-        self.assertEqual(
-            len(updatedIncident.reportEntries),
-            len(incident.reportEntries) + len(reportEntries)
-        )
+                # Updated number of incidents should be original plus new
+                self.assertEqual(
+                    len(updatedIncident.reportEntries),
+                    len(incident.reportEntries) + len(reportEntries)
+                )
 
-        # Updated entries minus the original entries == the added entries
-        updatedNewEntries = list(updatedIncident.reportEntries)
-        for entry in incident.reportEntries:
-            updatedNewEntries.remove(entry)
+                # Updated entries minus the original entries == the added
+                # entries
+                updatedNewEntries = list(updatedIncident.reportEntries)
+                for entry in incident.reportEntries:
+                    updatedNewEntries.remove(entry)
 
-        # New entries should be the same as the ones we added
-        self.assertTrue(
-            store.reportEntriesEqual(
-                sorted(updatedNewEntries), sorted(reportEntries)
-            )
-        )
+                # New entries should be the same as the ones we added
+                self.assertTrue(
+                    store.reportEntriesEqual(
+                        sorted(updatedNewEntries), sorted(reportEntries)
+                    )
+                )
 
 
-    def test_addReportEntriesToIncident_automatic(self) -> None:
+    @asyncAsDeferred
+    async def test_addReportEntriesToIncident_automatic(self) -> None:
         """
         :meth:`IMSDataStore.addReportEntriesToIncident` raises
         :exc:`ValueError` when given automatic report entries.
         """
         store = self.store()
-        self.successResultOf(store.createEvent(anIncident.event))
-        incident = self.successResultOf(
-            store.createIncident(anIncident, "Hubcap")
-        )
+        await store.createEvent(anIncident.event)
+        incident = await store.createIncident(anIncident, "Hubcap")
 
         reportEntry = aReportEntry.replace(automatic=True)
 
-        f = self.failureResultOf(
-            store.addReportEntriesToIncident(
+        try:
+            await store.addReportEntriesToIncident(
                 incident.event, incident.number,
                 (reportEntry,), reportEntry.author,
             )
-        )
-        self.assertEqual(f.type, ValueError)
-        self.assertIn(" may not be created by user ", f.getErrorMessage())
+        except ValueError as e:
+            self.assertIn(" may not be created by user ", str(e))
+        else:
+            self.fail("StorageError not raised")
 
 
-    def test_addReportEntriesToIncident_wrongAuthor(self) -> None:
+    @asyncAsDeferred
+    async def test_addReportEntriesToIncident_wrongAuthor(self) -> None:
         """
         :meth:`IMSDataStore.addReportEntriesToIncident` raises
         :exc:`ValueError` when given report entries with an author that does
         not match the author that is adding the entries.
         """
         store = self.store()
-        self.successResultOf(store.createEvent(anIncident.event))
-        incident = self.successResultOf(
-            store.createIncident(anIncident, "Hubcap")
-        )
+        await store.createEvent(anIncident.event)
+        incident = await store.createIncident(anIncident, "Hubcap")
 
         otherAuthor = f"not{aReportEntry.author}"
 
-        f = self.failureResultOf(
-            store.addReportEntriesToIncident(
+        try:
+            await store.addReportEntriesToIncident(
                 incident.event, incident.number, (aReportEntry,), otherAuthor
             )
-        )
-        self.assertEqual(f.type, ValueError)
-        self.assertEndsWith(
-            f.getErrorMessage(), f" has author != {otherAuthor}",
-        )
+        except ValueError as e:
+            self.assertEndsWith(str(e), f" has author != {otherAuthor}")
+        else:
+            self.fail("StorageError not raised")
 
 
-    def test_addReportEntriesToIncident_error(self) -> None:
+    @asyncAsDeferred
+    async def test_addReportEntriesToIncident_error(self) -> None:
         """
         :meth:`IMSDataStore.addReportEntriesToIncident` raises
         :exc:`StorageError` when the store raises an exception.
         """
         store = self.store()
-        self.successResultOf(store.createEvent(anIncident.event))
-        incident = self.successResultOf(
-            store.createIncident(anIncident, "Hubcap")
-        )
+        await store.createEvent(anIncident.event)
+        incident = await store.createIncident(anIncident, "Hubcap")
         store.bringThePain()
 
-        f = self.failureResultOf(
-            store.addReportEntriesToIncident(
+        try:
+            await store.addReportEntriesToIncident(
                 incident.event, incident.number,
                 (aReportEntry,), aReportEntry.author,
             )
-        )
-        self.assertEqual(f.type, StorageError)
+        except StorageError as e:
+            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
     def assertIncidentsEqual(

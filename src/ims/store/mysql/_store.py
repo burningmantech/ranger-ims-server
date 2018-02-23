@@ -19,6 +19,7 @@ Incident Management System SQL data store.
 """
 
 from pathlib import Path
+from textwrap import dedent
 from typing import Iterable, Mapping, Tuple
 
 from attr import Factory, attrib, attrs
@@ -36,6 +37,10 @@ from .._db import DatabaseStore
 
 
 __all__ = ()
+
+
+def _query(query: str) -> str:
+    return dedent(query)
 
 
 
@@ -119,7 +124,17 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.events`.
         """
-        raise NotImplementedError()
+        result = await self._db.runQuery(
+            self._query_events, {}, "Unable to look up events"
+        )
+        self._log.info("XXX: {result}", result=result)
+        return (Event(id=row["name"]) for row in result)
+
+    _query_events = _query(
+        """
+        select NAME from EVENT
+        """
+    )
 
 
     async def createEvent(self, event: Event) -> None:

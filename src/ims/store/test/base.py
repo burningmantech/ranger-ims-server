@@ -20,7 +20,10 @@ Tests for :mod:`ranger-ims-server.store`
 
 from abc import ABC, abstractmethod
 from datetime import datetime as DateTime
-from typing import Optional, Sequence
+from functools import wraps
+from typing import Any, Callable, Optional, Sequence
+
+from twisted.internet.defer import ensureDeferred
 
 from ims.ext.trial import AsynchronousTestCase
 from ims.model import Event, Incident, IncidentReport, ReportEntry
@@ -29,6 +32,15 @@ from .._abc import IMSDataStore
 
 
 __all__ = ()
+
+
+def asyncAsDeferred(f: Callable) -> Callable:
+    @wraps(f)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        result = f(*args, **kwargs)
+        return ensureDeferred(result)
+
+    return wrapper
 
 
 
@@ -59,28 +71,30 @@ class TestDataStore(IMSDataStore, ABC):
 
 
     @abstractmethod
-    def storeEvent(self, event: Event) -> None:
+    async def storeEvent(self, event: Event) -> None:
         """
         Store the given event in the test store.
         """
 
 
     @abstractmethod
-    def storeIncident(self, incident: Incident) -> None:
+    async def storeIncident(self, incident: Incident) -> None:
         """
         Store the given incident in the test store.
         """
 
 
     @abstractmethod
-    def storeIncidentReport(self, incidentReport: IncidentReport) -> None:
+    async def storeIncidentReport(
+        self, incidentReport: IncidentReport
+    ) -> None:
         """
         Store the given incident report in the test store.
         """
 
 
     @abstractmethod
-    def storeConcentricStreet(
+    async def storeConcentricStreet(
         self, event: Event, streetID: str, streetName: str,
         ignoreDuplicates: bool = False,
     ) -> None:
@@ -90,7 +104,7 @@ class TestDataStore(IMSDataStore, ABC):
         """
 
 
-    def storeIncidentType(self, name: str, hidden: bool) -> None:
+    async def storeIncidentType(self, name: str, hidden: bool) -> None:
         """
         Store an incident type with the given name and hidden state in the
         test store.

@@ -252,28 +252,31 @@ class TestDataStore(SuperTestDataStore, DataStore):
         assert getattr(self._state, "broken")
 
 
-    def storeEvent(self, event: Event) -> None:
-        raise NotImplementedError("storeEvent")
+    async def storeEvent(self, event: Event) -> None:
+        self._db.runQuery(
+            "insert into EVENT (NAME) values (:eventID)",
+            dict(eventID=event.id)
+        )
 
 
-    def storeIncident(self, incident: Incident) -> None:
+    async def storeIncident(self, incident: Incident) -> None:
         raise NotImplementedError()
 
 
-    def storeIncidentReport(
+    async def storeIncidentReport(
         self, incidentReport: IncidentReport
     ) -> None:
         raise NotImplementedError()
 
 
-    def storeConcentricStreet(
+    async def storeConcentricStreet(
         self, event: Event, streetID: str, streetName: str,
         ignoreDuplicates: bool = False,
     ) -> None:
         raise NotImplementedError()
 
 
-    def storeIncidentType(self, name: str, hidden: bool) -> None:
+    async def storeIncidentType(self, name: str, hidden: bool) -> None:
         raise NotImplementedError()
 
 
