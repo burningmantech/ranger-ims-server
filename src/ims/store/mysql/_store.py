@@ -94,6 +94,7 @@ class DataStore(DatabaseStore):
                 database=self.database,
                 user=self.username,
                 password=self.password,
+                cp_reconnect=True,
             )
 
             # self._upgradeSchema(db)
