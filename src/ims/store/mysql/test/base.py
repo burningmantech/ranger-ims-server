@@ -105,30 +105,29 @@ class DataStoreTests(SuperDataStoreTests):
 
 
     @classmethod
-    def _startMySQLContainer(cls, container: Container) -> Awaitable:
-        cls.log.info("Starting MySQL container")
-        container.start()
-
+    def _waitOnContainerLog(
+        cls, container: Container, message: str,
+        timeout: float = 60.0, interval: float = 1.0,
+    ) -> Awaitable:
         d = Deferred()
-
-        interval = 1.0
-        timeout = 60.0
 
         def waitOnDBStartup(elapsed: float = 0.0) -> None:
             if elapsed > timeout:
                 d.errback(
-                    RuntimeError("Unable to start test MySQL")
+                    RuntimeError("Timed out while starting container")
                 )
                 return
 
-            cls.log.info("Waiting on MySQL to start...")
+            cls.log.info("Waiting on container to start...")
 
             # FIXME: We fetch the full logs each time because the streaming API
             # logs(stream=True) blocks.
             logs = container.logs()
 
+            messageBytes = message.encode("latin-1")
+
             for line in logs.split(b"\n"):
-                if b" Starting MySQL " in line:
+                if messageBytes in line:
                     cls.log.info("MySQL container started")
                     cls.log.info("{logs}", logs=logs.decode("latin-1"))
                     d.callback(None)
@@ -141,6 +140,14 @@ class DataStoreTests(SuperDataStoreTests):
         waitOnDBStartup()
 
         return d
+
+
+    @classmethod
+    async def _startMySQLContainer(cls, container: Container) -> Awaitable:
+        cls.log.info("Starting MySQL container")
+        container.start()
+
+        await cls._waitOnContainerLog(container, " starting as process 1 ")
 
 
     @classmethod
@@ -193,6 +200,10 @@ class DataStoreTests(SuperDataStoreTests):
         container.start()
 
         try:
+            await self._waitOnContainerLog(
+                container, " starting as process 1 "
+            )
+
             apiClient = APIClient()
 
             port = apiClient.port(container.id, 3306)[0]
