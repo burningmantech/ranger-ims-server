@@ -305,7 +305,7 @@ class TestDataStore(SuperTestDataStore, DataStore):
 
     async def storeEvent(self, event: Event) -> None:
         self._db.runQuery(
-            "insert into EVENT (NAME) values (:eventID)",
+            "insert into EVENT (NAME) values (%(eventID)s)",
             dict(eventID=event.id)
         )
 
