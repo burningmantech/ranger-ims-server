@@ -69,7 +69,7 @@ class DataStore(DatabaseStore):
     _log = Logger()
 
     schemaVersion = 2
-    schemaBasePath = Path(__file__).parent
+    schemaBasePath = Path(__file__).parent / "schema"
     sqlFileExtension = "sqlite"
 
 

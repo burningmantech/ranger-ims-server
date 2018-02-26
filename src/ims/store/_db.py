@@ -38,7 +38,7 @@ class DatabaseStore(IMSDataStore):
     """
 
     schemaVersion = 0
-    schemaBasePath = Path(__file__).parent
+    schemaBasePath = Path(__file__).parent / "schema"
     sqlFileExtension = "sql"
 
 
@@ -50,7 +50,7 @@ class DatabaseStore(IMSDataStore):
         if version is None:
             version = cls.schemaVersion
 
-        name = f"schema.{version}.{cls.sqlFileExtension}"
+        name = f"{version}.{cls.sqlFileExtension}"
         path = cls.schemaBasePath / name
         return path.read_text()
 
