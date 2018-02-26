@@ -143,7 +143,7 @@ class DataStoreTests(SuperDataStoreTests):
 
 
     @classmethod
-    async def _startMySQLContainer(cls, container: Container) -> Awaitable:
+    async def _startMySQLContainer(cls, container: Container) -> None:
         cls.log.info("Starting MySQL container")
         container.start()
 
