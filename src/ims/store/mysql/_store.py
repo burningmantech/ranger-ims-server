@@ -34,6 +34,7 @@ from ims.model import (
 )
 
 from .._db import DatabaseStore
+from .._exceptions import StorageError
 
 
 __all__ = ()
@@ -77,13 +78,6 @@ class DataStore(DatabaseStore):
     _state: _State = attrib(default=Factory(_State), init=False)
 
 
-    async def dbSchemaVersion(self) -> int:
-        """
-        See `meth:DatabaseStore.dbSchemaVersion`.
-        """
-        raise NotImplementedError()
-
-
     @property
     def _db(self) -> ConnectionPool:
         if self._state.db is None:
@@ -104,6 +98,20 @@ class DataStore(DatabaseStore):
         return self._state.db
 
 
+    async def reconnect(self) -> None:
+        """
+        See :meth:`DatabaseStore.reconnect`.
+        """
+        self._state.db = None
+
+
+    async def dbSchemaVersion(self) -> int:
+        """
+        See `meth:DatabaseStore.dbSchemaVersion`.
+        """
+        raise NotImplementedError()
+
+
     async def applySchema(self, sql: str) -> None:
         """
         See :meth:`IMSDataStore.applySchema`.
@@ -111,11 +119,16 @@ class DataStore(DatabaseStore):
         raise NotImplementedError()
 
 
-    def validate(self) -> None:
+    async def validate(self) -> None:
         """
         See :meth:`IMSDataStore.validate`.
         """
-        raise NotImplementedError()
+        self._log.info("Validating data store...")
+
+        valid = True
+
+        if not valid:
+            raise StorageError("Data store validation failed")
 
 
     ###

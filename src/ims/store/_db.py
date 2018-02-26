@@ -61,6 +61,14 @@ class DatabaseStore(IMSDataStore):
 
 
     @abstractmethod
+    async def reconnect(self) -> None:
+        """
+        Establish new database connections for new queries.
+        This does not interrupt current queries.
+        """
+
+
+    @abstractmethod
     async def dbSchemaVersion(self) -> int:
         """
         The database's current schema version.
@@ -72,6 +80,14 @@ class DatabaseStore(IMSDataStore):
         """
         Apply the given schema to the database.
         """
+
+
+    async def upgradeSchema(self) -> None:
+        """
+        See :meth:`IMSDataStore.upgradeSchema`.
+        """
+        if await self.dbManager.upgradeSchema():
+            await self.reconnect()
 
 
 
@@ -88,6 +104,9 @@ class DatabaseManager(object):
 
 
     async def upgradeSchema(self) -> bool:
+        """
+        Apply schema updates
+        """
         currentVersion = self.store.schemaVersion
         version = await self.store.dbSchemaVersion()
 

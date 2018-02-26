@@ -79,7 +79,7 @@ class DataStore(DatabaseStore):
         Internal mutable state for :class:`DataStore`.
         """
 
-        db: Connection = attrib(
+        db: Optional[Connection] = attrib(
             validator=optional(instance_of(Connection)),
             default=None, init=False,
         )
@@ -131,62 +131,11 @@ class DataStore(DatabaseStore):
             raise StorageError(f"Unable to look up schema version: {e}")
 
 
-    @classmethod
-    def _upgradeSchema(cls, db: Connection) -> bool:
-        currentVersion = cls.schemaVersion
-        version = cls._dbSchemaVersion(db)
-
-        if version == currentVersion:
-            # No upgrade needed
-            return False
-
-        if version > currentVersion:
-            raise StorageError(f"Schema version {version} is too new")
-
-        def sqlUpgrade(fromVersion: int, toVersion: int) -> None:
-            cls._log.info(
-                "Upgrading database schema from version {fromVersion} to "
-                "version {toVersion}",
-                fromVersion=fromVersion, toVersion=toVersion,
-            )
-            sql = cls.loadSchema(
-                version=f"{toVersion}-from-{fromVersion}"
-            )
-            db.executescript(sql)
-            db.validateConstraints()
-            db.commit()
-
-        if version == 1:
-            sqlUpgrade(1, 2)
-            version = 2
-
-        if version == currentVersion:
-            # Successfully upgraded to the current version
-            return True
-
-        raise StorageError(f"No upgrade path from schema version {version}")
-
-
-    async def dbSchemaVersion(self) -> int:
-        """
-        See `meth:DatabaseStore.dbSchemaVersion`.
-        """
-        # FIXME
-        return self._dbSchemaVersion(self._db)
-
-
     @property
     def _db(self) -> Connection:
         if self._state.db is None:
             try:
-                db = openDB(self.dbPath, schema=self.loadSchema())
-                db.validateConstraints()
-
-                if self._upgradeSchema(db):
-                    # Re-connect to get new schema
-                    db = openDB(self.dbPath)
-
-                self._state.db = db
+                self._state.db = openDB(self.dbPath, schema=self.loadSchema())
 
             except SQLiteError as e:
                 self._log.critical(
@@ -228,6 +177,20 @@ class DataStore(DatabaseStore):
             raise StorageError(e)
 
 
+    async def reconnect(self) -> None:
+        """
+        See :meth:`DatabaseStore.reconnect`.
+        """
+        self._state.db = None
+
+
+    async def dbSchemaVersion(self) -> int:
+        """
+        See :meth:`DatabaseStore.dbSchemaVersion`.
+        """
+        return self._dbSchemaVersion(self._db)
+
+
     async def applySchema(self, sql: str) -> None:
         """
         See :meth:`IMSDataStore.applySchema`.
@@ -237,7 +200,7 @@ class DataStore(DatabaseStore):
         self._db.commit()
 
 
-    def validate(self) -> None:
+    async def validate(self) -> None:
         """
         See :meth:`IMSDataStore.validate`.
         """
@@ -245,9 +208,17 @@ class DataStore(DatabaseStore):
 
         valid = True
 
+        try:
+            self._db.validateConstraints()
+        except SQLiteError as e:
+            self._log.error(
+                "Database constraint violated: {error}",
+                error=e,
+            )
+
         # Check for detached report entries
         for reportEntry in self.detachedReportEntries():
-            self._log.critical(
+            self._log.error(
                 "Found detached report entry: {reportEntry}",
                 reportEntry=reportEntry,
             )

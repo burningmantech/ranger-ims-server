@@ -71,6 +71,7 @@ class Server(object):
         """
         Called after the reactor has started.
         """
+        config.store.upgradeSchema()
         config.store.validate()
 
         host = config.HostName

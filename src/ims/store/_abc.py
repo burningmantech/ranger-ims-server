@@ -36,8 +36,22 @@ class IMSDataStore(ABC):
     Incident Management System data store abstract base class.
     """
 
+    ##
+    # Database management
+    ##
+
     @abstractmethod
-    def validate(self) -> None:
+    async def upgradeSchema(self) -> None:
+        """
+        Upgrade the data store schema to the current version.
+
+        Return `True` if an upgrade was executed, `False` if no upgrade was
+        necessary.
+        """
+
+
+    @abstractmethod
+    async def validate(self) -> None:
         """
         Perform some data integrity checks and raise :exc:`StorageError` if
         there are any problems detected.

@@ -30,19 +30,20 @@ from hypothesis import given
 from hypothesis.strategies import integers
 
 from ims.ext.sqlite import Connection, SQLiteError, createDB, printSchema
-from ims.ext.trial import TestCase
+from ims.ext.trial import AsynchronousTestCase, TestCase
 
 from .base import TestDataStore
 from .. import _store
 from .._store import DataStore, asTimeStamp
 from ..._exceptions import StorageError
+from ...test.base import asyncAsDeferred
 
 
 __all__ = ()
 
 
 
-class DataStoreCoreTests(TestCase):
+class DataStoreCoreTests(AsynchronousTestCase):
     """
     Tests for :class:`DataStore` base functionality.
     """
@@ -205,9 +206,9 @@ class DataStoreCoreTests(TestCase):
         )
 
 
-    def test_db_schemaUpgrade(self) -> None:
+    def test_upgradeSchema(self) -> None:
         """
-        A database with an old schema is automatically upgraded to the current
+        :meth:`DataStore.upgradeSchema` upgrades the data schema to the current
         version.
         """
         def getSchemaInfo(db: Connection) -> str:
@@ -227,6 +228,7 @@ class DataStoreCoreTests(TestCase):
             createDB(path, DataStore.loadSchema(version=version))
 
             store = DataStore(dbPath=path)
+            self.successResultOf(store.upgradeSchema())
 
             self.assertEqual(store._dbSchemaVersion(store._db), currentVersion)
 
@@ -236,10 +238,10 @@ class DataStoreCoreTests(TestCase):
             self.assertEqual(schemaInfo, currentSchemaInfo)
 
 
-    def test_db_noSchemaInfo(self) -> None:
+    def test_upgradeSchema_noSchemaInfo(self) -> None:
         """
-        :meth:`DataStore._db` raises :exc:`StorageError` when the database
-        has no SCHEMA_INFO table.
+        :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
+        database has no SCHEMA_INFO table.
         """
         # Load valid schema, then drop SCHEMA_INFO
         dbPath = Path(self.mktemp())
@@ -248,15 +250,18 @@ class DataStoreCoreTests(TestCase):
 
         store = TestDataStore(self, dbPath=dbPath)
 
-        e = self.assertRaises(StorageError, lambda: store._db)
-        self.assertStartsWith(str(e), "Unable to look up schema version: ")
-        self.assertIn("SCHEMA_INFO", str(e))
+        f = self.failureResultOf(store.upgradeSchema(), StorageError)
+        message = str(f.getErrorMessage())
+        self.assertStartsWith(
+            message, "Unable to look up schema version: "
+        )
+        self.assertIn("SCHEMA_INFO", message)
 
 
-    def test_db_noSchemaVersion(self) -> None:
+    def test_upgradeSchema_noSchemaVersion(self) -> None:
         """
-        :meth:`DataStore._db` raises :exc:`StorageError` when the SCHEMA_INFO
-        table has no rows.
+        :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
+        SCHEMA_INFO table has no rows.
         """
         # Load valid schema, then delete SCHEMA_INFO rows.
         dbPath = Path(self.mktemp())
@@ -265,15 +270,15 @@ class DataStoreCoreTests(TestCase):
 
         store = TestDataStore(self, dbPath=dbPath)
 
-        e = self.assertRaises(StorageError, lambda: store._db)
-        self.assertEqual(str(e), "Invalid schema: no version")
+        f = self.failureResultOf(store.upgradeSchema(), StorageError)
+        self.assertEqual(f.getErrorMessage(), "Invalid schema: no version")
 
 
     @given(integers(max_value=0))
-    def test_db_fromVersionTooLow(self, version: int) -> None:
+    def test_upgradeSchema_fromVersionTooLow(self, version: int) -> None:
         """
-        :meth:`DataStore._db` raises :exc:`StorageError` when the database
-        has a schema version of zero or less.
+        :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
+        database has a schema version less than 1.
         (Version numbering started at 1.)
         """
         # Load valid schema, then set schema version
@@ -286,17 +291,19 @@ class DataStoreCoreTests(TestCase):
 
         store = TestDataStore(self, dbPath=dbPath)
 
-        e = self.assertRaises(StorageError, lambda: store._db)
+        f = self.failureResultOf(store.upgradeSchema(), StorageError)
         self.assertEqual(
-            str(e), f"No upgrade path from schema version {version}"
+            f.getErrorMessage(),
+            f"No upgrade path from schema version {version}",
         )
 
 
     @given(integers(min_value=DataStore.schemaVersion + 1))
-    def test_db_fromVersionTooHigh(self, version: int) -> None:
+    def test_upgradeSchema_fromVersionTooHigh(self, version: int) -> None:
         """
-        :meth:`DataStore._db` raises :exc:`StorageError` when the database
-        has a schema version of greater than the current schema version.
+        :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
+        database has a schema version of greater than the current schema
+        version.
         """
         # Load valid schema, then set schema version
         dbPath = Path(self.mktemp())
@@ -308,9 +315,11 @@ class DataStoreCoreTests(TestCase):
 
         store = TestDataStore(self, dbPath=dbPath)
 
-        e = self.assertRaises(StorageError, lambda: store._db)
+        f = self.failureResultOf(store.upgradeSchema(), StorageError)
         self.assertEqual(
-            str(e), f"Schema version {version} is too new"
+            f.getErrorMessage(),
+            f"Schema version {version} is too new "
+            f"(current version is {store.schemaVersion})"
         )
 
 
