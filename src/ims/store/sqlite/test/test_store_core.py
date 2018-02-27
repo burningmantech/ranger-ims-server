@@ -36,7 +36,6 @@ from .base import TestDataStore
 from .. import _store
 from .._store import DataStore, asTimeStamp
 from ..._exceptions import StorageError
-from ...test.base import asyncAsDeferred
 
 
 __all__ = ()

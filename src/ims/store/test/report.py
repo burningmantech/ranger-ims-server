@@ -90,7 +90,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
             )
             incidentReportsByNumber = {r.number: r for r in incidentReports}
 
-            store = self.store()
+            store = await self.store()
 
             for incidentReport in incidentReports:
                 await store.storeIncidentReport(incidentReport)
@@ -99,7 +99,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
             for retrieved in await store.incidentReports():
                 self.assertIn(retrieved.number, incidentReportsByNumber)
                 self.assertIncidentReportsEqual(
-                    retrieved, incidentReportsByNumber[retrieved.number]
+                    store, retrieved, incidentReportsByNumber[retrieved.number]
                 )
                 found.add(retrieved.number)
 
@@ -112,7 +112,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :meth:`DataStore.incidentReports` raises :exc:`StorageError` when
         the database raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         store.bringThePain()
 
         try:
@@ -130,14 +130,14 @@ class DataStoreIncidentReportTests(DataStoreTests):
         incident report.
         """
         for incidentReport in (anIncidentReport1, anIncidentReport2):
-            store = self.store()
+            store = await self.store()
             await store.storeIncidentReport(incidentReport)
 
             retrieved = await store.incidentReportWithNumber(
                 incidentReport.number
             )
 
-            self.assertIncidentReportsEqual(retrieved, incidentReport)
+            self.assertIncidentReportsEqual(store, retrieved, incidentReport)
 
 
     @asyncAsDeferred
@@ -147,7 +147,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :exc:`NoSuchIncidentReportError` when the given incident report number
         is not found.
         """
-        store = self.store()
+        store = await self.store()
 
         try:
             await store.incidentReportWithNumber(1)
@@ -164,7 +164,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :exc:`NoSuchIncidentReportError` when the given incident report number
         is too large for the database.
         """
-        store = self.store()
+        store = await self.store()
 
         try:
             await store.incidentReportWithNumber(
@@ -182,7 +182,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :meth:`DataStore.incidentReportWithNumber` raises :exc:`StorageError`
         when the given incident report number is too large for the database.
         """
-        store = self.store()
+        store = await self.store()
         store.bringThePain()
 
         try:
@@ -211,7 +211,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         ):
             data = cast(Iterable[Tuple[IncidentReport, str]], _data)
 
-            store = self.store()
+            store = await self.store()
 
             expectedStoredIncidentReports: Set[IncidentReport] = set()
             nextNumber = 1
@@ -223,7 +223,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 expected = incidentReport.replace(number=nextNumber)
 
                 self.assertIncidentReportsEqual(
-                    retrieved, expected, ignoreAutomatic=True
+                    store, retrieved, expected, ignoreAutomatic=True
                 )
 
                 expectedStoredIncidentReports.add(expected)
@@ -239,7 +239,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 storedIncidentReports, sorted(expectedStoredIncidentReports)
             ):
                 self.assertIncidentReportsEqual(
-                    stored, expected, ignoreAutomatic=True
+                    store, stored, expected, ignoreAutomatic=True
                 )
 
 
@@ -249,7 +249,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :meth:`DataStore.createIncidentReport` raises :exc:`StorageError` when
         the database raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         store.bringThePain()
 
         try:
@@ -266,7 +266,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :meth:`DataStore.setIncident_summary` raises :exc:`StorageError` when
         the database raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         incidentReport = await store.createIncidentReport(
             anIncidentReport, "Hubcap"
         )
@@ -286,7 +286,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         self, incidentReport: IncidentReport,
         methodName: str, attributeName: str, value: Any
     ) -> None:
-        store = self.store()
+        store = await self.store()
 
         await store.storeIncidentReport(incidentReport)
 
@@ -311,7 +311,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         incidentReport = values[0]
 
         self.assertIncidentReportsEqual(
-            retrieved, incidentReport, ignoreAutomatic=True
+            store, retrieved, incidentReport, ignoreAutomatic=True
         )
 
 
@@ -352,7 +352,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
             )
 
             # Store test data
-            store = self.store()
+            store = await self.store()
             await store.storeIncidentReport(incidentReport)
 
             # Fetch incident report back so we have the version from the DB
@@ -387,7 +387,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :meth:`DataStore.addReportEntriesToIncidentReport` raises
         :exc:`ValueError` when given automatic report entries.
         """
-        store = self.store()
+        store = await self.store()
         incidentReport = await store.createIncidentReport(
             anIncidentReport, "Hubcap"
         )
@@ -411,7 +411,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :exc:`ValueError` when given report entries with an author that does
         not match the author that is adding the entries.
         """
-        store = self.store()
+        store = await self.store()
         incidentReport = await store.createIncidentReport(
             anIncidentReport, "Hubcap"
         )
@@ -434,7 +434,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :meth:`DataStore.addReportEntriesToIncidentReport` raises
         :exc:`StorageError` when the database raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         incidentReport = await store.createIncidentReport(
             anIncidentReport, "Hubcap"
         )
@@ -523,7 +523,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 Iterable[Tuple[Incident, Sequence[IncidentReport]]], _attached,
             )
 
-            store = self.store()
+            store = await self.store()
 
             foundIncidentNumbers: Set[int] = set()
             foundIncidentReportNumbers: Set[int] = set()
@@ -576,14 +576,16 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 # Verify that the same attached reports come back from the
                 # store.
                 self.assertMultipleIncidentReportsEqual(
-                    storedAttached, reports
+                    store, storedAttached, reports
                 )
 
                 foundIncidentNumbers.add(incident.number)
 
             # Verify that the same detached reports come back from the store.
             storedDetached = tuple(await store.detachedIncidentReports())
-            self.assertMultipleIncidentReportsEqual(storedDetached, detached)
+            self.assertMultipleIncidentReportsEqual(
+                store, storedDetached, detached
+            )
 
             # Detach everything
             for incident, reports in attached:
@@ -615,7 +617,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :meth:`DataStore.detachedIncidentReports` raises :exc:`StorageError`
         when the database raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         store.bringThePain()
 
         try:
@@ -632,7 +634,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :meth:`DataStore.incidentReportsAttachedToIncident` raises
         :exc:`StorageError` when the database raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anIncident.event)
         incident = await store.createIncident(anIncident, "Hubcap")
         store.bringThePain()
@@ -653,7 +655,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :meth:`DataStore.incidentsAttachedToIncidentReport` raises
         :exc:`StorageError` when the database raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         incidentReport = await store.createIncidentReport(
             anIncidentReport, "Hubcap"
         )
@@ -675,7 +677,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :meth:`DataStore.attachIncidentReportToIncident` raises
         :exc:`StorageError` when the database raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anIncident.event)
         incident = await store.createIncident(anIncident, "Hubcap")
         incidentReport = await store.createIncidentReport(
@@ -699,7 +701,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :meth:`DataStore.detachIncidentReportFromIncident` raises
         :exc:`StorageError` when the database raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anIncident.event)
         incident = await store.createIncident(anIncident, "Hubcap")
         incidentReport = await store.createIncidentReport(
@@ -721,8 +723,11 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
 
     def assertMultipleIncidentReportsEqual(
-        self, groupA: Sequence[IncidentReport],
-        groupB: Sequence[IncidentReport], ignoreAutomatic: bool = False,
+        self,
+        store: TestDataStore,
+        groupA: Sequence[IncidentReport],
+        groupB: Sequence[IncidentReport],
+        ignoreAutomatic: bool = False,
     ) -> None:
         self.assertEqual(len(groupA), len(groupB))
 
@@ -730,16 +735,16 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         for a in groupA:
             self.assertIn(a.number, bByNumber)
-            self.assertIncidentReportsEqual(a, bByNumber[a.number])
+            self.assertIncidentReportsEqual(store, a, bByNumber[a.number])
 
 
     def assertIncidentReportsEqual(
-        self, incidentReportA: IncidentReport, incidentReportB: IncidentReport,
+        self, store: TestDataStore,
+        incidentReportA: IncidentReport,
+        incidentReportB: IncidentReport,
         ignoreAutomatic: bool = False,
     ) -> None:
         if incidentReportA != incidentReportB:
-            store = self.store()
-
             messages = []
 
             for attribute in attrFields(IncidentReport):

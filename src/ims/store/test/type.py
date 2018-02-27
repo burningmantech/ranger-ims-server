@@ -58,7 +58,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         ):
             data = cast(Tuple[Tuple[str, bool]], _data)
 
-            store = self.store()
+            store = await self.store()
             for name, hidden in data:
                 await store.storeIncidentType(name, hidden)
 
@@ -93,7 +93,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         ):
             data = cast(Tuple[Tuple[str, bool]], _data)
 
-            store = self.store()
+            store = await self.store()
             for name, hidden in data:
                 await store.storeIncidentType(name, hidden)
 
@@ -118,7 +118,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
             ("Old Type", True),
             ("Foo", True),
         ):
-            store = self.store()
+            store = await self.store()
             await store.createIncidentType(incidentType, hidden=hidden)
 
             incidentTypes = frozenset(await store.incidentTypes())
@@ -140,7 +140,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         given an incident type that already exists in the data store.
         """
         incidentType = "foo"
-        store = self.store()
+        store = await self.store()
 
         await store.createIncidentType(incidentType)
 
@@ -159,7 +159,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         visible.
         """
         incidentType = "foo"
-        store = self.store()
+        store = await self.store()
 
         await store.createIncidentType(incidentType, hidden=True)
         self.assertNotIn(incidentType, await store.incidentTypes())
@@ -179,7 +179,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         hidden.
         """
         incidentType = "foo"
-        store = self.store()
+        store = await self.store()
 
         await store.createIncidentType(incidentType, hidden=False)
         self.assertIn(incidentType, await store.incidentTypes())

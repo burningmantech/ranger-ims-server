@@ -148,7 +148,7 @@ class DataStoreTests(AsynchronousTestCase):
     skip: Optional[str] = "Parent class of real tests"
 
 
-    def store(self) -> TestDataStore:
+    async def store(self) -> TestDataStore:
         """
         Return a data store for use in tests.
         """

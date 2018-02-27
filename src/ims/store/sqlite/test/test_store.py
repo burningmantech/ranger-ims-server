@@ -47,7 +47,7 @@ class DataStoreTests(SuperDataStoreTests):
     skip = None
 
 
-    def store(self) -> TestDataStore:
+    async def store(self) -> TestDataStore:
         return TestDataStore(self)
 
 

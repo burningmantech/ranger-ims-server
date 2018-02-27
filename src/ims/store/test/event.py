@@ -38,7 +38,7 @@ class DataStoreEventTests(DataStoreTests):
         """
         :meth:`IMSDataStore.events` returns all events.
         """
-        store = self.store()
+        store = await self.store()
 
         for event in (Event(id="Event A"), Event(id="Event B")):
             await store.storeEvent(event)
@@ -72,7 +72,7 @@ class DataStoreEventTests(DataStoreTests):
         for eventName in ("Foo", "Foo Bar"):
             event = Event(eventName)
 
-            store = self.store()
+            store = await self.store()
             await store.createEvent(event)
             stored = frozenset(await store.events())
             self.assertEqual(stored, frozenset((event,)))
@@ -84,7 +84,7 @@ class DataStoreEventTests(DataStoreTests):
         :meth:`IMSDataStore.createEvent` raises `StorageError` if the store
         raises.
         """
-        store = self.store()
+        store = await self.store()
         store.bringThePain()
 
         try:
@@ -102,7 +102,7 @@ class DataStoreEventTests(DataStoreTests):
         an event that already exists in the data store.
         """
         event = Event(id="foo")
-        store = self.store()
+        store = await self.store()
         await store.createEvent(event)
 
         try:
@@ -121,7 +121,7 @@ class DataStoreEventTests(DataStoreTests):
         event = Event("Foo")
 
         for readers in ({"a"}, {"a", "b", "c"}):
-            store = self.store()
+            store = await self.store()
             await store.createEvent(event)
             await store.setReaders(event, readers)
             result = frozenset(await store.readers(event))
@@ -135,7 +135,7 @@ class DataStoreEventTests(DataStoreTests):
         store raises an exception.
         """
         event = Event(id="foo")
-        store = self.store()
+        store = await self.store()
         await store.createEvent(event)
         store.bringThePain()
 
@@ -155,7 +155,7 @@ class DataStoreEventTests(DataStoreTests):
         event = Event("Foo")
 
         for writers in ({"a"}, {"a", "b", "c"}):
-            store = self.store()
+            store = await self.store()
             await store.createEvent(event)
             await store.setWriters(event, writers)
             result = frozenset(await store.writers(event))
@@ -169,7 +169,7 @@ class DataStoreEventTests(DataStoreTests):
         store raises an exception.
         """
         event = Event(id="foo")
-        store = self.store()
+        store = await self.store()
         await store.createEvent(event)
         store.bringThePain()
 

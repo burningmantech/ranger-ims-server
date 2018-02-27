@@ -3,7 +3,7 @@
 Extensions to :mod:`twisted.trial`
 """
 
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, Type
 
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.python.failure import Failure
@@ -38,7 +38,7 @@ class TestCase(SuperTestCase):
 
 
     def failureResultOf(
-        self, deferred: Deferred, *expectedExceptionTypes: BaseException
+        self, deferred: Deferred, *expectedExceptionTypes: Type[BaseException]
     ) -> Failure:
         """
         Override :meth:`SuperTestCase.failureResultOf` to enable handling of

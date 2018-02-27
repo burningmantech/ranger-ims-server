@@ -111,7 +111,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
             events: Dict[Event, Dict[int, Incident]] = defaultdict(defaultdict)
 
-            store = self.store()
+            store = await self.store()
 
             for incident in incidents:
                 await store.storeIncident(incident)
@@ -122,7 +122,7 @@ class DataStoreIncidentTests(DataStoreTests):
             for event in events:
                 for retrieved in await store.incidents(event):
                     self.assertIncidentsEqual(
-                        retrieved, events[event][retrieved.number]
+                        store, retrieved, events[event][retrieved.number]
                     )
                     found.add((event, retrieved.number))
 
@@ -142,7 +142,7 @@ class DataStoreIncidentTests(DataStoreTests):
         ):
             incidents = frozenset(_incidents)
 
-            store = self.store()
+            store = await self.store()
 
             event: Optional[Event] = None
 
@@ -156,7 +156,7 @@ class DataStoreIncidentTests(DataStoreTests):
             retrieved = await store.incidents(event)
 
             for r, i in zip(sorted(retrieved), sorted(incidents)):
-                self.assertIncidentsEqual(r, i)
+                self.assertIncidentsEqual(store, r, i)
 
 
     @asyncAsDeferred
@@ -165,7 +165,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.incidents` raises :exc:`StorageError` when the
         store raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anEvent)
         store.bringThePain()
 
@@ -183,7 +183,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.incidentWithNumber` returns the specified incident.
         """
         for incident in (anIncident1, anIncident2):
-            store = self.store()
+            store = await self.store()
 
             await store.storeIncident(incident)
 
@@ -191,7 +191,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 await store.incidentWithNumber(incident.event, incident.number)
             )
 
-            self.assertIncidentsEqual(retrieved, incident)
+            self.assertIncidentsEqual(store, retrieved, incident)
 
 
     @asyncAsDeferred
@@ -200,7 +200,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.incidentWithNumber` raises
         :exc:`NoSuchIncidentError` when the given incident number is not found.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anEvent)
 
         try:
@@ -218,7 +218,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :exc:`NoSuchIncidentError` when the given incident number is too large
         for the store.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anEvent)
 
         try:
@@ -237,7 +237,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.incidentWithNumber` raises :exc:`StorageError` when
         the store raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anEvent)
         store.bringThePain()
 
@@ -266,7 +266,7 @@ class DataStoreIncidentTests(DataStoreTests):
         ):
             data = cast(Iterable[Tuple[Incident, str]], _data)
 
-            store = self.store()
+            store = await self.store()
 
             createdEvents: Set[Event] = set()
             createdIncidentTypes: Set[str] = set()
@@ -309,7 +309,8 @@ class DataStoreIncidentTests(DataStoreTests):
                     number=nextNumbers.setdefault(event, 1)
                 )
                 self.assertIncidentsEqual(
-                    retrieved, expectedStoredIncident, ignoreAutomatic=True
+                    store, retrieved, expectedStoredIncident,
+                    ignoreAutomatic=True,
                 )
 
                 # Add to set of stored incidents
@@ -332,7 +333,7 @@ class DataStoreIncidentTests(DataStoreTests):
                     storedIncidents, expectedIncidents
                 ):
                     self.assertIncidentsEqual(
-                        stored, expected, ignoreAutomatic=True
+                        store, stored, expected, ignoreAutomatic=True
                     )
 
 
@@ -342,7 +343,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.createIncident` raises :exc:`StorageError` when the
         store raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anIncident.event)
         store.bringThePain()
 
@@ -360,7 +361,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.setIncident_priority` raises :exc:`StorageError`
         when the store raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anIncident.event)
         incident = await store.createIncident(anIncident, "Hubcap")
         store.bringThePain()
@@ -380,7 +381,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self, incident: Incident,
         methodName: str, attributeName: str, value: Any
     ) -> None:
-        store = self.store()
+        store = await self.store()
 
         await store.storeIncident(incident)
 
@@ -426,7 +427,9 @@ class DataStoreIncidentTests(DataStoreTests):
             values[-1] = values[-1].replace(**{a: v})
         incident = values[0]
 
-        self.assertIncidentsEqual(retrieved, incident, ignoreAutomatic=True)
+        self.assertIncidentsEqual(
+            store, retrieved, incident, ignoreAutomatic=True
+        )
 
 
     @asyncAsDeferred
@@ -573,7 +576,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.setIncident_rangers` raises :exc:`StorageError`
         when the store raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anIncident.event)
         incident = await store.createIncident(anIncident, "Hubcap")
         store.bringThePain()
@@ -613,7 +616,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.setIncident_incidentTypes` raises
         :exc:`StorageError` when the store raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anEvent)
         incident = await store.createIncident(anIncident, "Hubcap")
         store.bringThePain()
@@ -646,7 +649,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 )
 
                 # Store test data
-                store = self.store()
+                store = await self.store()
                 await store.createEvent(incident.event)
                 await store.storeIncident(incident)
 
@@ -691,7 +694,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.addReportEntriesToIncident` raises
         :exc:`ValueError` when given automatic report entries.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anIncident.event)
         incident = await store.createIncident(anIncident, "Hubcap")
 
@@ -715,7 +718,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :exc:`ValueError` when given report entries with an author that does
         not match the author that is adding the entries.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anIncident.event)
         incident = await store.createIncident(anIncident, "Hubcap")
 
@@ -737,7 +740,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.addReportEntriesToIncident` raises
         :exc:`StorageError` when the store raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         await store.createEvent(anIncident.event)
         incident = await store.createIncident(anIncident, "Hubcap")
         store.bringThePain()
@@ -754,12 +757,10 @@ class DataStoreIncidentTests(DataStoreTests):
 
 
     def assertIncidentsEqual(
-        self, incidentA: Incident, incidentB: Incident,
+        self, store: TestDataStore, incidentA: Incident, incidentB: Incident,
         ignoreAutomatic: bool = False,
     ) -> None:
         if incidentA != incidentB:
-            store = self.store()
-
             messages = []
 
             for attribute in attrFields(Incident):
