@@ -9,7 +9,8 @@ from sqlite3 import (
     IntegrityError, Row as BaseRow, connect as sqliteConnect,
 )
 from typing import (
-    Any, Callable, Iterable, Mapping, Optional, Tuple, TypeVar, Union, cast
+    Any, Callable, Iterable, Mapping, Optional, Tuple, Type, TypeVar, Union,
+    cast,
 )
 from typing.io import TextIO
 
@@ -179,7 +180,8 @@ class Connection(BaseConnection):
 
 
     def __exit__(
-        self, exc_type: type, exc_val: BaseException, exc_tb: Any
+        self, exc_type: Type[BaseException], exc_val: BaseException,
+        exc_tb: Any,
     ) -> bool:
         self._log.debug("---------- EXIT ----------")
         return super().__exit__(exc_type, exc_val, exc_tb)
