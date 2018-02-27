@@ -189,9 +189,10 @@ class DataStoreTests(SuperDataStoreTests):
 
         self.log.info("Creating Database container")
 
+        testID = id(self)
         client = self.dockerClient()
         container = client.containers.create(
-            name=f"{self.dbContainerName}",
+            name=f"{self.dbContainerName}-{testID}",
             image=image.id, auto_remove=True, detach=True,
             ports={3306: None},
         )
@@ -251,7 +252,7 @@ class DataStoreTests(SuperDataStoreTests):
         self.stopDBContainer()
 
 
-    def store(self) -> "TestDataStore":
+    async def store(self) -> "TestDataStore":
         return TestDataStore(
             self,
             hostName=self.dbHost,
