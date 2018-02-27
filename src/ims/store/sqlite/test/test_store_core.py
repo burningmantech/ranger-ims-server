@@ -249,12 +249,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         store = TestDataStore(self, dbPath=dbPath)
 
-        f = self.failureResultOf(store.upgradeSchema(), StorageError)
-        message = str(f.getErrorMessage())
-        self.assertStartsWith(
-            message, "Unable to look up schema version: "
-        )
-        self.assertIn("SCHEMA_INFO", message)
+        self.failureResultOf(store.upgradeSchema(), StorageError)
 
 
     def test_upgradeSchema_noSchemaVersion(self) -> None:
