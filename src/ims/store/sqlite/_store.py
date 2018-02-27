@@ -200,18 +200,10 @@ class DataStore(DatabaseStore):
         """
         try:
             self._db.executescript(sql)
-        except SQLiteError as e:
-            raise StorageError("Unable to apply schema")
-
-        try:
             self._db.validateConstraints()
-        except SQLiteError as e:
-            raise StorageError("Validation failed after applying schema")
-
-        try:
             self._db.commit()
         except SQLiteError as e:
-            raise StorageError("Commit failed after applying schema")
+            raise StorageError("Unable to apply schema: e")
 
 
     async def validate(self) -> None:

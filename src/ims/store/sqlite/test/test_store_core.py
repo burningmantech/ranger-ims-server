@@ -249,7 +249,8 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         store = TestDataStore(self, dbPath=dbPath)
 
-        self.failureResultOf(store.upgradeSchema(), StorageError)
+        f = self.failureResultOf(store.upgradeSchema(), StorageError)
+        self.assertStartsWith(f.getErrorMessage(), "Unable to apply schema: ")
 
 
     def test_upgradeSchema_noSchemaVersion(self) -> None:
