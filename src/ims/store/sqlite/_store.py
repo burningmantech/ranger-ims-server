@@ -125,6 +125,9 @@ class DataStore(DatabaseStore):
                 raise StorageError("Invalid schema: no version")
             return row["VERSION"]
         except SQLiteError as e:
+            if e.args[0] == "no such table: SCHEMA_INFO":
+                return 0
+
             cls._log.critical(
                 "Unable to look up schema version: {error}", error=e
             )
@@ -135,7 +138,7 @@ class DataStore(DatabaseStore):
     def _db(self) -> Connection:
         if self._state.db is None:
             try:
-                self._state.db = openDB(self.dbPath, schema=self.loadSchema())
+                self._state.db = openDB(self.dbPath, schema="")
 
             except SQLiteError as e:
                 self._log.critical(

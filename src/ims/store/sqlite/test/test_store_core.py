@@ -273,12 +273,11 @@ class DataStoreCoreTests(AsynchronousTestCase):
         self.assertEqual(f.getErrorMessage(), "Invalid schema: no version")
 
 
-    @given(integers(max_value=0))
+    @given(integers(max_value=-1))
     def test_upgradeSchema_fromVersionTooLow(self, version: int) -> None:
         """
         :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
-        database has a schema version less than 1.
-        (Version numbering started at 1.)
+        database has a schema version less than 0.
         """
         # Load valid schema, then set schema version
         dbPath = Path(self.mktemp())

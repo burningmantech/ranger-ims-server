@@ -253,7 +253,7 @@ class DataStoreTests(SuperDataStoreTests):
 
 
     async def store(self) -> "TestDataStore":
-        return TestDataStore(
+        store = TestDataStore(
             self,
             hostName=self.dbHost,
             hostPort=self.dbPort,
@@ -261,6 +261,8 @@ class DataStoreTests(SuperDataStoreTests):
             username=self.dbUser,
             password=self.dbPassword,
         )
+        await store.upgradeSchema()
+        return store
 
 
 

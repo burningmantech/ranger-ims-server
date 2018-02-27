@@ -48,7 +48,9 @@ class DataStoreTests(SuperDataStoreTests):
 
 
     async def store(self) -> TestDataStore:
-        return TestDataStore(self)
+        store = TestDataStore(self)
+        await store.upgradeSchema()
+        return store
 
 
 

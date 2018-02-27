@@ -110,6 +110,11 @@ class DatabaseManager(object):
         currentVersion = self.store.schemaVersion
         version = await self.store.dbSchemaVersion()
 
+        if version < 0:
+            raise StorageError(
+                f"No upgrade path from schema version {version}"
+            )
+
         if version == currentVersion:
             # No upgrade needed
             return False
@@ -126,17 +131,17 @@ class DatabaseManager(object):
                 "version {toVersion}",
                 fromVersion=fromVersion, toVersion=toVersion,
             )
-            sql = self.store.loadSchema(
-                version=f"{toVersion}-from-{fromVersion}"
-            )
+
+            if fromVersion == 0:
+                fileID = "1"
+            else:
+                fileID = f"{toVersion}-from-{fromVersion}"
+
+            sql = self.store.loadSchema(version=fileID)
             await self.store.applySchema(sql)
 
-        if version == 1:
-            await sqlUpgrade(1, 2)
-            version = 2
+        while version < currentVersion:
+            await sqlUpgrade(version, version + 1)
+            version += 1
 
-        if version == currentVersion:
-            # Successfully upgraded to the current version
-            return True
-
-        raise StorageError(f"No upgrade path from schema version {version}")
+        return True
