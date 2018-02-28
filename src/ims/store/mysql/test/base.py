@@ -22,7 +22,7 @@ from typing import Awaitable, Mapping, Optional, cast
 
 from docker.api import APIClient
 from docker.client import DockerClient
-from docker.errors import ImageNotFound
+from docker.errors import ImageNotFound, NotFound
 from docker.models.containers import Container
 from docker.models.images import Image
 
@@ -88,7 +88,7 @@ class DataStoreTests(SuperDataStoreTests):
 
     @classmethod
     def _createMySQLContainer(cls) -> Container:
-        cls.log.info("Creating MySQL container")
+        cls.log.info("Creating MySQL base container")
 
         client = cls.dockerClient()
         container = client.containers.create(
@@ -130,7 +130,7 @@ class DataStoreTests(SuperDataStoreTests):
 
             for line in logs.split(b"\n"):
                 if messageBytes in line:
-                    cls.log.info("MySQL container started")
+                    cls.log.info("MySQL base container started")
                     cls.log.info("{logs}", logs=logs.decode("latin-1"))
                     d.callback(None)
                     return
@@ -146,7 +146,7 @@ class DataStoreTests(SuperDataStoreTests):
 
     @classmethod
     async def _startMySQLContainer(cls, container: Container) -> None:
-        cls.log.info("Starting MySQL container")
+        cls.log.info("Starting MySQL base container")
         container.start()
 
         await cls._waitOnContainerLog(container, " starting as process 1 ")
@@ -158,10 +158,12 @@ class DataStoreTests(SuperDataStoreTests):
 
         await cls._startMySQLContainer(container)
 
-        cls.log.info("Committing MySQL container to image")
+        cls.log.info(
+            "Committing MySQL base container to database container image"
+        )
         container.commit(cls.dbImageName, cls.dbImageTag)
 
-        cls.log.info("Stopping MySQL container")
+        cls.log.info("Stopping MySQL base container")
         container.stop()
 
 
@@ -186,73 +188,96 @@ class DataStoreTests(SuperDataStoreTests):
     _creatingDBImage: Optional[Awaitable] = None
 
 
-    async def startDBContainer(self) -> Container:
-        image = await self._dbImage()
+    @classmethod
+    async def _startDBContainer(cls) -> Container:
+        image = await cls._dbImage()
 
-        self.log.info("Creating Database container")
+        cls.log.info("Creating MySQL database container")
 
-        testID = id(self)
-        client = self.dockerClient()
+        client = cls.dockerClient()
         container = client.containers.create(
-            name=f"{self.dbContainerName}-{testID}",
+            name=f"{cls.dbContainerName}",
             image=image.id, auto_remove=True, detach=True,
             ports={3306: None},
         )
 
-        self.log.info("Starting Database container")
+        cls.log.info("Starting MySQL database container")
         container.start()
 
         try:
-            await self._waitOnContainerLog(
-                container, " starting as process 1 "
-            )
-
-            apiClient = APIClient()
-
-            port = apiClient.port(container.id, 3306)[0]
-
-            self.dbHost = port["HostIp"]
-            self.dbPort = int(port["HostPort"])
-
-            self.log.info(
-                f"MySQL ready:"
-                f" docker run"
-                f" --rm"
-                f" --interactive"
-                f" --tty"
-                f" {self.mysqlImageName}:{self.mysqlImageTag}"
-                f" mysql"
-                f" --host=docker.for.mac.host.internal"
-                f" --port={self.dbPort}"
-                f" --database={self.dbName}"
-                f" --user={self.dbUser}"
-                f" --password={self.dbPassword}"
-            )
-
-            return container
+            await cls._waitOnContainerLog(container, " starting as process 1 ")
 
         except Exception as e:
-            self.log.info(
-                "Stopping Database container due to error: {error}", error=e
+            cls.log.info(
+                "Stopping MySQL database container due to error: {error}",
+                error=e,
             )
             container.stop()
             raise
 
+        return container
 
-    def stopDBContainer(self) -> None:
-        self.log.info("Stopping DB container")
-        self.dbContainer.stop(timeout=0)
+
+    @classmethod
+    async def dbContainer(cls) -> Container:
+        client = cls.dockerClient()
+
+        try:
+            container = client.containers.get(cls.dbContainerName)
+        except NotFound:
+            if cls._dbContainer is None:
+                cls._dbContainer = cls._startDBContainer()
+
+            container = await cls._dbContainer
+
+        if not hasattr(cls, "dbHost"):
+            apiClient = APIClient()
+
+            port = apiClient.port(container.id, 3306)[0]
+
+            cls.dbHost = port["HostIp"]
+            cls.dbPort = int(port["HostPort"])
+
+            cls.log.info(
+                f"Database ready. To connect:"
+                f" docker run"
+                f" --rm"
+                f" --interactive"
+                f" --tty"
+                f" {cls.mysqlImageName}:{cls.mysqlImageTag}"
+                f" mysql"
+                f" --host=docker.for.mac.host.internal"
+                f" --port={cls.dbPort}"
+                f" --database={cls.dbName}"
+                f" --user={cls.dbUser}"
+                f" --password={cls.dbPassword}"
+            )
+
+            # Clean up the container before the reactor shuts down
+            from twisted.internet import reactor
+            reactor.addSystemEventTrigger(
+                "before", "shutdown", cls.stopDBContainer
+            )
+
+        return container
+
+    _dbContainer: Optional[Awaitable] = None
+
+
+    @classmethod
+    def stopDBContainer(cls) -> None:
+        client = cls.dockerClient()
+        try:
+            cls.log.info("Stopping MySQL database container")
+            container = client.containers.get(cls.dbContainerName)
+        except NotFound:
+            pass
+        container.stop()
 
 
     def setUp(self) -> None:
         # setUp can't return a coroutine, so this can't be an async method.
-        d = ensureDeferred(self.startDBContainer())
-        d.addCallback(lambda c: setattr(self, "dbContainer", c))
-        return d
-
-
-    def tearDown(self) -> None:
-        self.stopDBContainer()
+        return ensureDeferred(self.dbContainer())
 
 
     async def store(self) -> "TestDataStore":
@@ -264,6 +289,7 @@ class DataStoreTests(SuperDataStoreTests):
             username=self.dbUser,
             password=self.dbPassword,
         )
+        await store.resetDatabase()
         await store.upgradeSchema()
         return store
 

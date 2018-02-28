@@ -144,6 +144,30 @@ class DataStore(DatabaseStore):
         self._state.db = None
 
 
+    async def resetDatabase(self) -> None:
+        """
+        Nuke and pave.  Proceed with great caution.
+        """
+        self._log.info("Reseting database")
+        await self.applySchema(
+            """
+            set FOREIGN_KEY_CHECKS = 0;
+            set GROUP_CONCAT_MAX_LEN=32768;
+            set @TABLES = NULL;
+            select group_concat('`', table_name, '`') into @TABLES
+                from INFORMATION_SCHEMA.TABLES
+                where TABLE_SCHEMA = (select database());
+            select ifnull(@TABLES, 'dummy') into @TABLES;
+
+            set @TABLES = concat('drop table if exists ', @TABLES);
+            prepare STMT from @TABLES;
+            execute STMT;
+            deallocate prepare STMT;
+            set FOREIGN_KEY_CHECKS = 1;
+            """
+        )
+
+
     async def dbSchemaVersion(self) -> int:
         """
         See `meth:DatabaseStore.dbSchemaVersion`.
