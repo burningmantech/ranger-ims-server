@@ -75,7 +75,6 @@ class DataStoreEventTests(DataStoreTests):
             store = await self.store()
             await store.createEvent(event)
             stored = frozenset(await store.events())
-            import pdb; pdb.set_trace()
             self.assertEqual(stored, frozenset((event,)))
 
 
