@@ -20,7 +20,7 @@ Incident Management System SQL data store.
 
 from pathlib import Path
 from textwrap import dedent
-from typing import Iterable, Iterator, Mapping, Optional, Tuple
+from typing import Iterable, Iterator, Mapping, Optional, Tuple, cast
 
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of, optional
@@ -43,8 +43,10 @@ from .._exceptions import StorageError
 __all__ = ()
 
 
-def _query(query: str) -> str:
-    return dedent(query)
+@attrs(frozen=True)
+class Query(object):
+    description: str = attrib(validator=instance_of(str))
+    sql: str = attrib(validator=instance_of(str))
 
 
 
@@ -101,6 +103,40 @@ class DataStore(DatabaseStore):
         return self._state.db
 
 
+    async def _runQuery(
+        self, query: Query, params: Mapping = None
+    ) -> Iterator[Tuple]:
+        if params is None:
+            params = {}
+
+        try:
+            return iter(await self._db.runQuery(query.sql, params))
+
+        except MySQLError as e:
+            self._log.critical(
+                "Unable to {description}: {error}",
+                description=query.description, error=e,
+            )
+            raise StorageError(e)
+
+
+    async def _runOperation(
+        self, query: Query, params: Mapping = None
+    ) -> Iterator[Tuple]:
+        if params is None:
+            params = {}
+
+        try:
+            await self._db.runOperation(query.sql, params)
+
+        except MySQLError as e:
+            self._log.critical(
+                "Unable to {description}: {error}",
+                description=query.description, error=e,
+            )
+            raise StorageError(e)
+
+
     async def reconnect(self) -> None:
         """
         See :meth:`DatabaseStore.reconnect`.
@@ -112,9 +148,12 @@ class DataStore(DatabaseStore):
         """
         See `meth:DatabaseStore.dbSchemaVersion`.
         """
+        query = self._query_schemaVersion
+
         try:
-            rows: Iterator[Tuple[int]] = iter(
-                await self._db.runQuery(self._query_schemaVersion)
+            rows = cast(
+                Iterator[Tuple[int]],
+                iter(await self._db.runQuery(query.sql))
             )
             try:
                 row = next(rows)
@@ -126,10 +165,15 @@ class DataStore(DatabaseStore):
             if e.args[1] == "Table 'imsdb.SCHEMA_INFO' doesn't exist":
                 return 0
 
-            raise StorageError(f"Unable to look up schema version: {e}")
+            self._log.critical(
+                "Unable to {description}: {error}",
+                description=query.description, error=e,
+            )
+            raise StorageError(e)
 
 
-    _query_schemaVersion = _query(
+    _query_schemaVersion = Query(
+        "look up schema version",
         """
         select VERSION from SCHEMA_INFO
         """
@@ -174,12 +218,14 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.events`.
         """
-        rows: Iterator[Tuple[str]] = iter(
-            await self._db.runQuery(self._query_events, {})
+        rows = cast(
+            Iterator[Tuple[str]],
+            await self._runQuery(self._query_events)
         )
         return (Event(id=row[0]) for row in rows)
 
-    _query_events = _query(
+    _query_events = Query(
+        "look up events",
         """
         select NAME from EVENT
         """
