@@ -133,15 +133,30 @@ class DatabaseManager(object):
             )
 
             if fromVersion == 0:
-                fileID = "1"
+                fileID = f"{toVersion}"
             else:
                 fileID = f"{toVersion}-from-{fromVersion}"
 
             sql = self.store.loadSchema(version=fileID)
             await self.store.applySchema(sql)
 
-        while version < currentVersion:
-            await sqlUpgrade(version, version + 1)
-            version += 1
+        fromVersion = version
+
+        while fromVersion < currentVersion:
+            if fromVersion == 0:
+                toVersion = currentVersion
+            else:
+                toVersion = fromVersion + 1
+
+            await sqlUpgrade(fromVersion, toVersion)
+            fromVersion = await self.store.dbSchemaVersion()
+
+            # Make sure the schema version increased from last version
+            if fromVersion <= version:
+                raise StorageError(
+                    f"Schema upgrade did not increase schema version "
+                    f"({fromVersion} <= {version})"
+                )
+            version = fromVersion
 
         return True

@@ -1,0 +1,14 @@
+create table SCHEMA_INFO (
+    VERSION smallint not null
+);
+
+insert into SCHEMA_INFO (VERSION) values (2);
+
+
+create table EVENT (
+    ID   integer     not null auto_increment,
+    NAME varchar(64) not null,
+
+    primary key (ID),
+    unique key (NAME)
+);

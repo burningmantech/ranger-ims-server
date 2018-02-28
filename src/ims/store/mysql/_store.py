@@ -20,10 +20,13 @@ Incident Management System SQL data store.
 
 from pathlib import Path
 from textwrap import dedent
-from typing import Iterable, Mapping, Tuple
+from typing import Iterable, Iterator, Mapping, Optional, Tuple
 
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of, optional
+
+from pymysql.cursors import Cursor
+from pymysql.err import MySQLError
 
 from twisted.enterprise.adbapi import ConnectionPool
 from twisted.logger import Logger
@@ -64,7 +67,7 @@ class DataStore(DatabaseStore):
         Internal mutable state for :class:`DataStore`.
         """
 
-        db: ConnectionPool = attrib(
+        db: Optional[ConnectionPool] = attrib(
             validator=optional(instance_of(ConnectionPool)),
             default=None, init=False,
         )
@@ -109,14 +112,45 @@ class DataStore(DatabaseStore):
         """
         See `meth:DatabaseStore.dbSchemaVersion`.
         """
-        raise NotImplementedError()
+        try:
+            rows: Iterator[Tuple[int]] = iter(
+                await self._db.runQuery(self._query_schemaVersion)
+            )
+            try:
+                row = next(rows)
+            except StopIteration:
+                raise StorageError("Invalid schema: no version")
+            return row[0]
+
+        except MySQLError as e:
+            if e.args[1] == "Table 'imsdb.SCHEMA_INFO' doesn't exist":
+                return 0
+
+            raise StorageError(f"Unable to look up schema version: {e}")
+
+
+    _query_schemaVersion = _query(
+        """
+        select VERSION from SCHEMA_INFO
+        """
+    )
 
 
     async def applySchema(self, sql: str) -> None:
         """
         See :meth:`IMSDataStore.applySchema`.
         """
-        raise NotImplementedError()
+        def applySchema(t: Cursor) -> None:
+            # FIXME: OMG this is gross but works for now
+            for statement in sql.split(";"):
+                statement = statement.strip()
+                if statement and not statement.startswith("--"):
+                    t.execute(statement)
+
+        try:
+            await self._db.runInteraction(applySchema)
+        except MySQLError as e:
+            raise StorageError(f"Unable to apply schema: {e}")
 
 
     async def validate(self) -> None:
@@ -140,11 +174,10 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.events`.
         """
-        result = await self._db.runQuery(
-            self._query_events, {}, "Unable to look up events"
+        rows: Iterator[Tuple[str]] = iter(
+            await self._db.runQuery(self._query_events, {})
         )
-        self._log.info("XXX: {result}", result=result)
-        return (Event(id=row["name"]) for row in result)
+        return (Event(id=row[0]) for row in rows)
 
     _query_events = _query(
         """

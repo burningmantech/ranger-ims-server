@@ -222,6 +222,7 @@ class DataStoreTests(SuperDataStoreTests):
                 f" mysql"
                 f" --host=docker.for.mac.host.internal"
                 f" --port={self.dbPort}"
+                f" --database={self.dbName}"
                 f" --user={self.dbUser}"
                 f" --password={self.dbPassword}"
             )
@@ -307,7 +308,7 @@ class TestDataStore(SuperTestDataStore, DataStore):
 
 
     async def storeEvent(self, event: Event) -> None:
-        self._db.runQuery(
+        await self._db.runQuery(
             "insert into EVENT (NAME) values (%(eventID)s)",
             dict(eventID=event.id)
         )
