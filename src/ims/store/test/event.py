@@ -70,11 +70,12 @@ class DataStoreEventTests(DataStoreTests):
         :meth:`IMSDataStore.createEvent` creates the given event.
         """
         for eventName in ("Foo", "Foo Bar"):
-            event = Event(eventName)
+            event = Event(id=eventName)
 
             store = await self.store()
             await store.createEvent(event)
             stored = frozenset(await store.events())
+            import pdb; pdb.set_trace()
             self.assertEqual(stored, frozenset((event,)))
 
 
@@ -118,7 +119,7 @@ class DataStoreEventTests(DataStoreTests):
         """
         :meth:`IMSDataStore.setReaders` sets the read ACL for an event.
         """
-        event = Event("Foo")
+        event = Event(id="Foo")
 
         for readers in ({"a"}, {"a", "b", "c"}):
             store = await self.store()
@@ -152,7 +153,7 @@ class DataStoreEventTests(DataStoreTests):
         """
         :meth:`IMSDataStore.setWriters` sets the write ACL for an event.
         """
-        event = Event("Foo")
+        event = Event(id="Foo")
 
         for writers in ({"a"}, {"a", "b", "c"}):
             store = await self.store()
