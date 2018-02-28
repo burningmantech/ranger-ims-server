@@ -236,7 +236,16 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createEvent`.
         """
-        raise NotImplementedError("createEvent()")
+        await self._runOperation(
+            self._query_createEvent, dict(eventID=event.id)
+        )
+
+    _query_createEvent = Query(
+        "create event",
+        """
+        insert into EVENT (NAME) values (%(eventID)s)
+        """
+    )
 
 
     async def readers(self, event: Event) -> Iterable[str]:
