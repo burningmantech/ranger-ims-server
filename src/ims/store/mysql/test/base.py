@@ -26,6 +26,8 @@ from docker.errors import ImageNotFound
 from docker.models.containers import Container
 from docker.models.images import Image
 
+from pymysql.err import MySQLError
+
 from twisted.enterprise.adbapi import ConnectionPool
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred, ensureDeferred
@@ -274,7 +276,7 @@ class TestDataStore(SuperTestDataStore, DataStore):
 
     maxIncidentNumber = 4294967295
 
-    exceptionClass = RuntimeError
+    exceptionClass = MySQLError
 
 
     def __init__(
