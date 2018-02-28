@@ -321,7 +321,7 @@ class DataStore(DatabaseStore):
 
     _query_createEvent = _query(
         """
-        insert into EVENT (NAME) values (:eventID);
+        insert into EVENT (NAME) values (:eventID)
         """
     )
 
