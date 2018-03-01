@@ -26,7 +26,7 @@ from typing import Iterable, Iterator, Mapping, Optional, Tuple, Union, cast
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of, optional
 
-from pymysql.cursors import Cursor
+from pymysql.cursors import DictCursor as Cursor
 from pymysql.err import MySQLError
 
 from twisted.enterprise.adbapi import ConnectionPool
@@ -101,6 +101,7 @@ class DataStore(DatabaseStore):
                 database=self.database,
                 user=self.username,
                 password=self.password,
+                cursorclass=Cursor,
                 cp_reconnect=True,
             )
 
@@ -191,7 +192,7 @@ class DataStore(DatabaseStore):
                 row = next(rows)
             except StopIteration:
                 raise StorageError("Invalid schema: no version")
-            return row[0]
+            return row["VERSION"]
 
         except MySQLError as e:
             if e.args[1] == "Table 'imsdb.SCHEMA_INFO' doesn't exist":
@@ -202,7 +203,6 @@ class DataStore(DatabaseStore):
                 description=query.description, error=e,
             )
             raise StorageError(e)
-
 
     _query_schemaVersion = Query(
         "look up schema version",
@@ -257,7 +257,7 @@ class DataStore(DatabaseStore):
             Iterator[Tuple[str]],
             await self._runQuery(self._query_events)
         )
-        return (Event(id=row[0]) for row in rows)
+        return (Event(id=row["NAME"]) for row in rows)
 
     _query_events = Query(
         "look up events",
@@ -290,7 +290,7 @@ class DataStore(DatabaseStore):
                 self._query_eventAccess, dict(eventID=event.id, mode=mode)
             )
         )
-        return (row[0] for row in rows)
+        return (row["EXPRESSION"] for row in rows)
 
     _query_eventAccess = Query(
         "look up event access",
@@ -404,7 +404,7 @@ class DataStore(DatabaseStore):
             query = self._query_incidentTypesNotHidden
 
         rows = cast(Iterator[Tuple[str]], await self._runQuery(query))
-        return (row[0] for row in rows)
+        return (row["NAME"] for row in rows)
 
     _query_incidentTypes = Query(
         "look up incident types",
@@ -509,7 +509,7 @@ class DataStore(DatabaseStore):
         rows = cast(Iterator[Tuple[str, str]], await self._runQuery(
             self._query_concentricStreets, dict(eventID=event.id)
         ))
-        return MappingProxyType(dict((row[0], row[1]) for row in rows))
+        return MappingProxyType(dict((row["ID"], row["NAME"]) for row in rows))
 
     _query_concentricStreets = Query(
         "look up concentric streets",
