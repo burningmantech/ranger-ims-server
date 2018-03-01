@@ -343,26 +343,30 @@ class TestDataStore(SuperTestDataStore, DataStore):
 
 
     async def storeIncident(self, incident: Incident) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError("storeIncident()")
 
 
     async def storeIncidentReport(
         self, incidentReport: IncidentReport
     ) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError("storeIncidentReport()")
 
 
     async def storeConcentricStreet(
         self, event: Event, streetID: str, streetName: str,
         ignoreDuplicates: bool = False,
     ) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError("storeConcentricStreet()")
 
 
     async def storeIncidentType(self, name: str, hidden: bool) -> None:
-        raise NotImplementedError()
+        await self._db.runQuery(
+            "insert into INCIDENT_TYPE (NAME, HIDDEN) "
+            "values (%(name)s, %(hidden)s)",
+            dict(name=name, hidden=hidden)
+        )
 
 
     @staticmethod
     def normalizeIncidentAddress(incident: Incident) -> Incident:
-        raise NotImplementedError()
+        raise NotImplementedError("normalizeIncidentAddress()")

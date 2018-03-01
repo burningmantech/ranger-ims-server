@@ -14,6 +14,19 @@ create table EVENT (
 );
 
 
+
+
+create table INCIDENT_TYPE (
+    ID     integer     not null auto_increment,
+    NAME   varchar(64) not null,
+    HIDDEN boolean     not null,
+
+    primary key (ID),
+    unique key (NAME)
+);
+
+insert into INCIDENT_TYPE (NAME, HIDDEN) values ('Admin', 0);
+insert into INCIDENT_TYPE (NAME, HIDDEN) values ('Junk' , 0);
 create table EVENT_ACCESS (
     EVENT      integer      not null,
     EXPRESSION varchar(128) not null,

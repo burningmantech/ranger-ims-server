@@ -82,5 +82,3 @@ class DataStoreIncidentTypeTests(
     """
     Tests for :class:`DataStore` incident type access.
     """
-
-    skip = "unimplemented"

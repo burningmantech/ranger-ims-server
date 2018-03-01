@@ -491,7 +491,6 @@ class DataStore(DatabaseStore):
 
         self._log.info(
             "Created incident type: {incidentType} (hidden={hidden})",
-            # storeWriteClass=IncidentType,
             incidentType=incidentType, hidden=hidden,
         )
 
@@ -515,13 +514,12 @@ class DataStore(DatabaseStore):
                 )
                 for incidentType in incidentTypes
             ),
-            f"Unable to set hidden to {hidden} incident types "
+            f"Unable to set hidden to {hidden} for incident types "
             f"{{incidentTypes}}"
         )
 
         self._log.info(
             "Set hidden to {hidden} for incident types: {incidentTypes}",
-            # storeWriteClass=IncidentType,
             incidentTypes=incidentTypes, hidden=hidden,
         )
 

@@ -221,6 +221,9 @@ class DataStore(DatabaseStore):
         try:
             await self._db.runInteraction(applySchema)
         except MySQLError as e:
+            self._log.critical(
+                "Unable to apply schema: {error}", sql=sql, error=e
+            )
             raise StorageError(f"Unable to apply schema: {e}")
 
 
@@ -319,6 +322,11 @@ class DataStore(DatabaseStore):
         try:
             await self._db.runInteraction(setEventAccess)
         except MySQLError as e:
+            self._log.critical(
+                "Unable to set access for {event} to {mode} "
+                "for {expressions}: {error}",
+                event=event, mode=mode, expressions=expressions, error=e
+            )
             raise StorageError(f"Unable to set event access: {e}")
 
     _query_clearEventAccessForMode = Query(
@@ -385,7 +393,27 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.incidentTypes`.
         """
-        raise NotImplementedError("incidentTypes()")
+        if includeHidden:
+            query = self._query_incidentTypes
+        else:
+            query = self._query_incidentTypesNotHidden
+
+        rows = cast(Iterator[Tuple[str]], await self._runQuery(query))
+        return (row[0] for row in rows)
+
+    _query_incidentTypes = Query(
+        "look up incident types",
+        """
+        select NAME from INCIDENT_TYPE
+        """
+    )
+
+    _query_incidentTypesNotHidden = Query(
+        "look up non-hidden incident types",
+        """
+        select NAME from INCIDENT_TYPE where HIDDEN = 0
+        """
+    )
 
 
     async def createIncidentType(
@@ -394,21 +422,74 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createIncidentType`.
         """
-        raise NotImplementedError("createIncidentType()")
+        await self._runOperation(
+            self._query_createIncidentType,
+            dict(incidentType=incidentType, hidden=hidden),
+        )
+
+        self._log.info(
+            "Created incident type: {incidentType} (hidden={hidden})",
+            incidentType=incidentType, hidden=hidden,
+        )
+
+    _query_createIncidentType = Query(
+        "create incident type",
+        """
+        insert into INCIDENT_TYPE (NAME, HIDDEN)
+        values (%(incidentType)s, %(hidden)s)
+        """
+    )
+
+
+    async def _hideShowIncidentTypes(
+        self, incidentTypes: Iterable[str], hidden: bool
+    ) -> None:
+        incidentTypes = tuple(incidentTypes)
+
+        def hideShowIncidentTypes(txn: Cursor) -> None:
+            for incidentType in incidentTypes:
+                txn.execute(
+                    self._query_hideShowIncidentType.sql,
+                    dict(incidentType=incidentType, hidden=hidden),
+                )
+
+        try:
+            await self._db.runInteraction(hideShowIncidentTypes)
+        except MySQLError as e:
+            self._log.critical(
+                "Unable to set hidden to {hidden} for incident types: "
+                "{incidentTypes}",
+                incidentTypes=incidentTypes, hidden=hidden,
+            )
+            raise StorageError(f"Unable to set hidden: {e}")
+
+        self._log.info(
+            "Set hidden to {hidden} for incident types: {incidentTypes}",
+            incidentTypes=incidentTypes, hidden=hidden,
+        )
+
+
+    _query_hideShowIncidentType = Query(
+        "set event access",
+        """
+        update INCIDENT_TYPE set HIDDEN = %(hidden)s
+        where NAME = %(incidentType)s
+        """
+    )
 
 
     async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
         """
         See :meth:`IMSDataStore.showIncidentTypes`.
         """
-        raise NotImplementedError("showIncidentTypes()")
+        return await self._hideShowIncidentTypes(incidentTypes, False)
 
 
     async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
         """
         See :meth:`IMSDataStore.hideIncidentTypes`.
         """
-        raise NotImplementedError("hideIncidentTypes()")
+        return await self._hideShowIncidentTypes(incidentTypes, True)
 
 
     ###
