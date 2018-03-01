@@ -12,3 +12,15 @@ create table EVENT (
     primary key (ID),
     unique key (NAME)
 );
+
+
+create table EVENT_ACCESS (
+    EVENT      integer      not null,
+    EXPRESSION varchar(128) not null,
+
+    MODE enum ('read', 'write') not null,
+
+    foreign key (EVENT) references EVENT(ID),
+
+    primary key (EVENT, EXPRESSION)
+);

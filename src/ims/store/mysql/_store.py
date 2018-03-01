@@ -43,6 +43,9 @@ from .._exceptions import StorageError
 __all__ = ()
 
 
+query_eventID = "select ID from EVENT where NAME = %(eventID)s"
+
+
 @attrs(frozen=True)
 class Query(object):
     description: str = attrib(validator=instance_of(str))
@@ -208,12 +211,12 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.applySchema`.
         """
-        def applySchema(t: Cursor) -> None:
+        def applySchema(txn: Cursor) -> None:
             # FIXME: OMG this is gross but works for now
             for statement in sql.split(";"):
                 statement = statement.strip()
                 if statement and not statement.startswith("--"):
-                    t.execute(statement)
+                    txn.execute(statement)
 
         try:
             await self._db.runInteraction(applySchema)
@@ -272,32 +275,103 @@ class DataStore(DatabaseStore):
     )
 
 
+    async def _eventAccess(self, event: Event, mode: str) -> Iterable[str]:
+        rows = cast(
+            Iterator[Tuple[str]],
+            await self._runQuery(
+                self._query_eventAccess, dict(eventID=event.id, mode=mode)
+            )
+        )
+        return (row[0] for row in rows)
+
+    _query_eventAccess = Query(
+        "look up event access",
+        f"""
+        select EXPRESSION from EVENT_ACCESS
+        where EVENT = ({query_eventID}) and MODE = %(mode)s
+        """
+    )
+
+
+    async def _setEventAccess(
+        self, event: Event, mode: str, expressions: Iterable[str]
+    ) -> None:
+        expressions = tuple(expressions)
+
+        def setEventAccess(txn: Cursor) -> None:
+            txn.execute(
+                self._query_clearEventAccessForMode.sql,
+                dict(eventID=event.id, mode=mode),
+            )
+            for expression in expressions:
+                txn.execute(
+                    self._query_clearEventAccessForExpression.sql,
+                    dict(eventID=event.id, expression=expression),
+                )
+                txn.execute(
+                    self._query_addEventAccess.sql, dict(
+                        eventID=event.id,
+                        expression=expression,
+                        mode=mode,
+                    )
+                )
+
+        try:
+            await self._db.runInteraction(setEventAccess)
+        except MySQLError as e:
+            raise StorageError(f"Unable to set event access: {e}")
+
+    _query_clearEventAccessForMode = Query(
+        "clear event access for mode",
+        f"""
+        delete from EVENT_ACCESS
+        where EVENT = ({query_eventID}) and MODE = %(mode)s
+        """
+    )
+
+    _query_clearEventAccessForExpression = Query(
+        "clear event access for expression",
+        f"""
+        delete from EVENT_ACCESS
+        where EVENT = ({query_eventID}) and EXPRESSION = %(expression)s
+        """
+    )
+
+    _query_addEventAccess = Query(
+        "add event access",
+        f"""
+        insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)
+        values (({query_eventID}), %(expression)s, %(mode)s)
+        """
+    )
+
+
     async def readers(self, event: Event) -> Iterable[str]:
         """
         See :meth:`IMSDataStore.readers`.
         """
-        raise NotImplementedError("readers()")
+        return await self._eventAccess(event, "read")
 
 
     async def setReaders(self, event: Event, readers: Iterable[str]) -> None:
         """
         See :meth:`IMSDataStore.setReaders`.
         """
-        raise NotImplementedError("setReaders()")
+        return await self._setEventAccess(event, "read", readers)
 
 
     async def writers(self, event: Event) -> Iterable[str]:
         """
         See :meth:`IMSDataStore.writers`.
         """
-        raise NotImplementedError("writers()")
+        return await self._eventAccess(event, "write")
 
 
     async def setWriters(self, event: Event, writers: Iterable[str]) -> None:
         """
         See :meth:`IMSDataStore.setWriters`.
         """
-        raise NotImplementedError("setWriters()")
+        return await self._setEventAccess(event, "write", writers)
 
 
     ###

@@ -14,6 +14,15 @@ create table EVENT (
 );
 
 
+create table CONCENTRIC_STREET (
+    EVENT integer not null,
+    ID    text    not null,
+    NAME  text    not null,
+
+    primary key (EVENT, ID)
+);
+
+
 create table INCIDENT_STATE (
     ID text not null,
 
@@ -60,7 +69,7 @@ create table INCIDENT (
     VERSION  integer not null,
     CREATED  real    not null,
     PRIORITY integer not null,
-    STATE    text    not null,
+    STATE    text    not null,  -- FIXME: change to integer
     SUMMARY  text,
 
     LOCATION_NAME          text,
@@ -114,15 +123,6 @@ create table INCIDENT__REPORT_ENTRY (
     foreign key (REPORT_ENTRY) references REPORT_ENTRY(ID),
 
     primary key (EVENT, INCIDENT_NUMBER, REPORT_ENTRY)
-);
-
-
-create table CONCENTRIC_STREET (
-    EVENT integer not null,
-    ID    text    not null,
-    NAME  text    not null,
-
-    primary key (EVENT, ID)
 );
 
 
