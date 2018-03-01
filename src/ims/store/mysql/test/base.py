@@ -336,7 +336,7 @@ class TestDataStore(SuperTestDataStore, DataStore):
 
 
     async def storeEvent(self, event: Event) -> None:
-        await self._db.runQuery(
+        await self._db.runOperation(
             "insert into EVENT (NAME) values (%(eventID)s)",
             dict(eventID=event.id)
         )
@@ -356,7 +356,24 @@ class TestDataStore(SuperTestDataStore, DataStore):
         self, event: Event, streetID: str, streetName: str,
         ignoreDuplicates: bool = False,
     ) -> None:
-        raise NotImplementedError("storeConcentricStreet()")
+        if ignoreDuplicates:
+            ignore = " or ignore"
+        else:
+            ignore = ""
+
+        await self._db.runOperation(
+            f"""
+            insert{ignore} into CONCENTRIC_STREET (EVENT, ID, NAME)
+            values (
+                (select ID from EVENT where NAME = %(eventID)s),
+                %(streetID)s,
+                %(streetName)s
+            )
+            """,
+            dict(
+                eventID=event.id, streetID=streetID, streetName=streetName
+            )
+        )
 
 
     async def storeIncidentType(self, name: str, hidden: bool) -> None:

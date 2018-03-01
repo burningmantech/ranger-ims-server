@@ -20,7 +20,8 @@ Incident Management System SQL data store.
 
 from pathlib import Path
 from textwrap import dedent
-from typing import Iterable, Iterator, Mapping, Optional, Tuple, cast
+from types import MappingProxyType
+from typing import Iterable, Iterator, Mapping, Optional, Tuple, Union, cast
 
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of, optional
@@ -43,13 +44,19 @@ from .._exceptions import StorageError
 __all__ = ()
 
 
+ParameterValue = Optional[Union[bytes, str, int, float]]
+Parameters = Mapping[str, ParameterValue]
+
+emptyParams: Parameters = MappingProxyType({})
+
 query_eventID = "select ID from EVENT where NAME = %(eventID)s"
+
 
 
 @attrs(frozen=True)
 class Query(object):
     description: str = attrib(validator=instance_of(str))
-    sql: str = attrib(validator=instance_of(str))
+    sql: str = attrib(validator=instance_of(str), converter=dedent)
 
 
 
@@ -107,11 +114,8 @@ class DataStore(DatabaseStore):
 
 
     async def _runQuery(
-        self, query: Query, params: Mapping = None
+        self, query: Query, params: Parameters = emptyParams
     ) -> Iterator[Tuple]:
-        if params is None:
-            params = {}
-
         try:
             return iter(await self._db.runQuery(query.sql, params))
 
@@ -124,11 +128,8 @@ class DataStore(DatabaseStore):
 
 
     async def _runOperation(
-        self, query: Query, params: Mapping = None
-    ) -> Iterator[Tuple]:
-        if params is None:
-            params = {}
-
+        self, query: Query, params: Parameters = emptyParams
+    ) -> None:
         try:
             await self._db.runOperation(query.sql, params)
 
@@ -501,7 +502,17 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.concentricStreets`.
         """
-        raise NotImplementedError("concentricStreets()")
+        rows = cast(Iterator[Tuple[str, str]], await self._runQuery(
+            self._query_concentricStreets, dict(eventID=event.id)
+        ))
+        return MappingProxyType(dict((row[0], row[1]) for row in rows))
+
+    _query_concentricStreets = Query(
+        "look up concentric streets",
+        f"""
+        select ID, NAME from CONCENTRIC_STREET where EVENT = ({query_eventID})
+        """
+    )
 
 
     async def createConcentricStreet(
@@ -510,7 +521,23 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createConcentricStreet`.
         """
-        raise NotImplementedError("createConcentricStreet()")
+        await self._runOperation(
+            self._query_createConcentricStreet,
+            dict(eventID=event.id, streetID=id, streetName=name)
+        )
+
+        self._log.info(
+            "Created concentric street in {event}: {streetName}",
+            storeWriteClass=Event, event=event, concentricStreetName=name,
+        )
+
+    _query_createConcentricStreet = Query(
+        "create concentric street",
+        f"""
+        insert into CONCENTRIC_STREET (EVENT, ID, NAME)
+        values (({query_eventID}), %(streetID)s, %(streetName)s)
+        """
+    )
 
 
     ###

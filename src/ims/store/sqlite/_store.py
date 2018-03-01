@@ -561,7 +561,6 @@ class DataStore(DatabaseStore):
             )
         ))
 
-
     _query_concentricStreets = _query(
         """
         select ID, NAME from CONCENTRIC_STREET where EVENT = ({query_eventID})

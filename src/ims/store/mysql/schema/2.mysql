@@ -14,6 +14,13 @@ create table EVENT (
 );
 
 
+create table CONCENTRIC_STREET (
+    EVENT integer     not null,
+    ID    varchar(16) not null,
+    NAME  varchar(64) not null,
+
+    primary key (EVENT, ID)
+);
 
 
 create table INCIDENT_TYPE (

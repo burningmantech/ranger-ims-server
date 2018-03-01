@@ -72,8 +72,6 @@ class DataStoreConcentricStreetTests(
     Tests for :class:`DataStore` concentric street access.
     """
 
-    skip = "unimplemented"
-
 
 
 class DataStoreIncidentTypeTests(
