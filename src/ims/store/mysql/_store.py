@@ -47,8 +47,6 @@ __all__ = ()
 ParameterValue = Optional[Union[bytes, str, int, float]]
 Parameters = Mapping[str, ParameterValue]
 
-emptyParams: Parameters = MappingProxyType({})
-
 query_eventID = "select ID from EVENT where NAME = %(eventID)s"
 
 
@@ -114,8 +112,11 @@ class DataStore(DatabaseStore):
 
 
     async def _runQuery(
-        self, query: Query, params: Parameters = emptyParams
+        self, query: Query, params: Optional[Parameters] = None
     ) -> Iterator[Tuple]:
+        if params is None:
+            params = {}
+
         try:
             return iter(await self._db.runQuery(query.sql, params))
 
@@ -128,8 +129,11 @@ class DataStore(DatabaseStore):
 
 
     async def _runOperation(
-        self, query: Query, params: Parameters = emptyParams
+        self, query: Query, params: Optional[Parameters] = None
     ) -> None:
+        if params is None:
+            params = {}
+
         try:
             await self._db.runOperation(query.sql, params)
 
