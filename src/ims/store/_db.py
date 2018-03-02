@@ -20,6 +20,7 @@ Incident Management System database tooling.
 
 from abc import abstractmethod
 from pathlib import Path
+from textwrap import dedent
 from typing import Union
 
 from attr import attrib, attrs
@@ -29,6 +30,13 @@ from twisted.logger import Logger
 
 from ._abc import IMSDataStore
 from ._exceptions import StorageError
+
+
+
+@attrs(frozen=True)
+class Query(object):
+    description: str = attrib(validator=instance_of(str))
+    text: str = attrib(validator=instance_of(str), converter=dedent)
 
 
 

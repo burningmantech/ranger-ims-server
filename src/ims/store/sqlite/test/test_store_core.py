@@ -149,19 +149,34 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         self.assertStartsWith(
             queryInfo,
-            "addEventAccess:\n\n"
-            "  -- query --\n\n"
-            "    insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)\n"
-            "    values ((select ID from EVENT where NAME = :eventID), "
-            ":expression, :mode)\n\n"
-            "  -- query plan --\n\n"
-            "    [None,None] You did not supply a value for binding 1.\n\n"
-            "addReportEntry:\n\n"
-            "  -- query --\n\n"
-            "    insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)\n"
-            "    values (:author, :text, :created, :generated)\n\n"
-            "  -- query plan --\n\n"
-            "    [None,None] You did not supply a value for binding 1.\n\n"
+            "\n".join((
+                "addEventAccess:",
+                "",
+                "  -- query --",
+                "",
+                "    insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)",
+                "    values ((select ID from EVENT where NAME = :eventID), "
+                ":expression, :mode)",
+                "",
+                "  -- query plan --",
+                "",
+                "    [None,None] You did not supply a value for binding 1.",
+                "",
+                "attachIncidentReportToIncident:",
+                "",
+                "  -- query --",
+                "",
+                "    insert into INCIDENT__INCIDENT_REPORT (",
+                "        EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER",
+                "    )",
+                "    values ((select ID from EVENT where NAME = :eventID), "
+                ":incidentNumber, :incidentReportNumber)",
+                "",
+                "  -- query plan --",
+                "",
+                "    [None,None] You did not supply a value for binding 1.",
+                "",
+            ))
         )
 
 

@@ -23,7 +23,6 @@ from datetime import (
 )
 from pathlib import Path
 from sys import stdout
-from textwrap import dedent
 from types import MappingProxyType
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union, cast
 from typing.io import TextIO
@@ -44,7 +43,7 @@ from ims.model import (
 )
 from ims.model.json import IncidentJSONKey, modelObjectFromJSONObject
 
-from .._db import DatabaseStore
+from .._db import DatabaseStore, Query
 from .._exceptions import (
     NoSuchIncidentError, NoSuchIncidentReportError, StorageError
 )
@@ -53,10 +52,7 @@ from .._exceptions import (
 __all__ = ()
 
 
-def _query(query: str) -> str:
-    return dedent(query.format(
-        query_eventID="select ID from EVENT where NAME = :eventID",
-    ))
+query_eventID = "select ID from EVENT where NAME = :eventID"
 
 
 
@@ -105,7 +101,7 @@ class DataStore(DatabaseStore):
         Print a summary of queries.
         """
         queries = [
-            (getattr(cls, k), k[7:])
+            (getattr(cls, k).text, k[7:])
             for k in sorted(vars(cls))
             if k.startswith("_query_")
         ]
@@ -293,11 +289,12 @@ class DataStore(DatabaseStore):
         """
         return (
             Event(id=row["name"]) for row in self._executeAndIterate(
-                self._query_events, {}, "Unable to look up events"
+                self._query_events.text, {}, "Unable to look up events"
             )
         )
 
-    _query_events = _query(
+    _query_events = Query(
+        "look up events",
         """
         select NAME from EVENT
         """
@@ -310,7 +307,7 @@ class DataStore(DatabaseStore):
         """
         self._execute(
             (
-                (self._query_createEvent, dict(eventID=event.id)),
+                (self._query_createEvent.text, dict(eventID=event.id)),
             ),
             "Unable to create event {eventID}"
         )
@@ -319,7 +316,8 @@ class DataStore(DatabaseStore):
             "Created event: {event}", storeWriteClass=Event, event=event,
         )
 
-    _query_createEvent = _query(
+    _query_createEvent = Query(
+        "create event",
         """
         insert into EVENT (NAME) values (:eventID)
         """
@@ -329,14 +327,15 @@ class DataStore(DatabaseStore):
     def _eventAccess(self, event: Event, mode: str) -> Iterable[str]:
         return (
             row["EXPRESSION"] for row in self._executeAndIterate(
-                self._query_eventAccess,
+                self._query_eventAccess.text,
                 dict(eventID=event.id, mode=mode),
                 "Unable to look up {mode} access for event {eventID}",
             )
         )
 
-    _query_eventAccess = _query(
-        """
+    _query_eventAccess = Query(
+        "look up access for event",
+        f"""
         select EXPRESSION from EVENT_ACCESS
         where EVENT = ({query_eventID}) and MODE = :mode
         """
@@ -352,16 +351,16 @@ class DataStore(DatabaseStore):
                 cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
-                        self._query_clearEventAccessForMode,
+                        self._query_clearEventAccessForMode.text,
                         dict(eventID=event.id, mode=mode),
                     )
                     for expression in expressions:
                         cursor.execute(
-                            self._query_clearEventAccessForExpression,
+                            self._query_clearEventAccessForExpression.text,
                             dict(eventID=event.id, expression=expression),
                         )
                         cursor.execute(
-                            self._query_addEventAccess, dict(
+                            self._query_addEventAccess.text, dict(
                                 eventID=event.id,
                                 expression=expression,
                                 mode=mode,
@@ -382,22 +381,25 @@ class DataStore(DatabaseStore):
             event=event, mode=mode, expressions=expressions,
         )
 
-    _query_clearEventAccessForMode = _query(
-        """
+    _query_clearEventAccessForMode = Query(
+        "clear event access for mode",
+        f"""
         delete from EVENT_ACCESS
         where EVENT = ({query_eventID}) and MODE = :mode
         """
     )
 
-    _query_clearEventAccessForExpression = _query(
-        """
+    _query_clearEventAccessForExpression = Query(
+        "clear event access for expression",
+        f"""
         delete from EVENT_ACCESS
         where EVENT = ({query_eventID}) and EXPRESSION = :expression
         """
     )
 
-    _query_addEventAccess = _query(
-        """
+    _query_addEventAccess = Query(
+        "add event access",
+        f"""
         insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)
         values (({query_eventID}), :expression, :mode)
         """
@@ -448,9 +450,9 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.incidentTypes`.
         """
         if includeHidden:
-            query = self._query_incidentTypes
+            query = self._query_incidentTypes.text
         else:
-            query = self._query_incidentTypesNotHidden
+            query = self._query_incidentTypesNotHidden.text
 
         return (
             row["name"] for row in self._executeAndIterate(
@@ -458,13 +460,15 @@ class DataStore(DatabaseStore):
             )
         )
 
-    _query_incidentTypes = _query(
+    _query_incidentTypes = Query(
+        "look up incident types",
         """
         select NAME from INCIDENT_TYPE
         """
     )
 
-    _query_incidentTypesNotHidden = _query(
+    _query_incidentTypesNotHidden = Query(
+        "look up non-hidden incident types",
         """
         select NAME from INCIDENT_TYPE where HIDDEN = 0
         """
@@ -480,7 +484,7 @@ class DataStore(DatabaseStore):
         self._execute(
             ((
                 # FIXME: This casting shouldn't be necessary
-                cast(str, self._query_createIncidentType),
+                cast(str, self._query_createIncidentType.text),
                 cast(
                     Dict[str, ParameterValue],
                     dict(incidentType=incidentType, hidden=hidden)
@@ -494,7 +498,8 @@ class DataStore(DatabaseStore):
             incidentType=incidentType, hidden=hidden,
         )
 
-    _query_createIncidentType = _query(
+    _query_createIncidentType = Query(
+        "create incident type",
         """
         insert into INCIDENT_TYPE (NAME, HIDDEN)
         values (:incidentType, :hidden)
@@ -509,7 +514,7 @@ class DataStore(DatabaseStore):
         self._execute(
             (
                 (
-                    self._query_hideShowIncidentType,
+                    self._query_hideShowIncidentType.text,
                     dict(incidentType=incidentType, hidden=hidden),
                 )
                 for incidentType in incidentTypes
@@ -523,7 +528,8 @@ class DataStore(DatabaseStore):
             incidentTypes=incidentTypes, hidden=hidden,
         )
 
-    _query_hideShowIncidentType = _query(
+    _query_hideShowIncidentType = Query(
+        "hide/show incident type",
         """
         update INCIDENT_TYPE set HIDDEN = :hidden where NAME = :incidentType
         """
@@ -556,13 +562,14 @@ class DataStore(DatabaseStore):
         return MappingProxyType(dict(
             (row["ID"], row["NAME"]) for row in
             self._executeAndIterate(
-                self._query_concentricStreets, dict(eventID=event.id),
+                self._query_concentricStreets.text, dict(eventID=event.id),
                 "Unable to look up concentric streets for event {eventID}"
             )
         ))
 
-    _query_concentricStreets = _query(
-        """
+    _query_concentricStreets = Query(
+        "look up concentric streets for event",
+        f"""
         select ID, NAME from CONCENTRIC_STREET where EVENT = ({query_eventID})
         """
     )
@@ -576,7 +583,7 @@ class DataStore(DatabaseStore):
         """
         self._execute(
             ((
-                self._query_createConcentricStreet,
+                self._query_createConcentricStreet.text,
                 dict(eventID=event.id, streetID=id, streetName=name)
             ),),
             "Unable to create concentric street ({streetID}){streetName} "
@@ -588,8 +595,9 @@ class DataStore(DatabaseStore):
             storeWriteClass=Event, event=event, concentricStreetName=name,
         )
 
-    _query_createConcentricStreet = _query(
-        """
+    _query_createConcentricStreet = Query(
+        "create concentric street",
+        f"""
         insert into CONCENTRIC_STREET (EVENT, ID, NAME)
         values (({query_eventID}), :streetID, :streetName)
         """
@@ -620,7 +628,7 @@ class DataStore(DatabaseStore):
                             text=row["TEXT"],
                         )
                         for row in cast(Cursor, cursor.execute(
-                            self._query_detachedReportEntries, {}
+                            self._query_detachedReportEntries.text, {}
                         )) if row["TEXT"]
                     )
                 finally:
@@ -632,7 +640,8 @@ class DataStore(DatabaseStore):
             )
             raise StorageError(e)
 
-    _query_detachedReportEntries = _query(
+    _query_detachedReportEntries = Query(
+        "look up detached report entries",
         """
         select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
         where
@@ -660,7 +669,7 @@ class DataStore(DatabaseStore):
             )
 
         try:
-            cursor.execute(self._query_incident, params)
+            cursor.execute(self._query_incident.text, params)
         except OverflowError:
             notFound()
 
@@ -671,14 +680,14 @@ class DataStore(DatabaseStore):
         rangerHandles = tuple(
             row["RANGER_HANDLE"]
             for row in cast(Cursor, cursor.execute(
-                self._query_incident_rangers, params
+                self._query_incident_rangers.text, params
             ))
         )
 
         incidentTypes = tuple(
             row["NAME"]
             for row in cast(Cursor, cursor.execute(
-                self._query_incident_types, params
+                self._query_incident_incidentTypes.text, params
             ))
         )
 
@@ -690,7 +699,7 @@ class DataStore(DatabaseStore):
                 text=row["TEXT"],
             )
             for row in cast(Cursor, cursor.execute(
-                self._query_incident_reportEntries, params
+                self._query_incident_reportEntries.text, params
             )) if row["TEXT"]
         )
 
@@ -721,8 +730,9 @@ class DataStore(DatabaseStore):
             reportEntries=reportEntries,
         )
 
-    _query_incident = _query(
-        """
+    _query_incident = Query(
+        "look up incident",
+        f"""
         select
             CREATED, PRIORITY, STATE, SUMMARY,
             LOCATION_NAME,
@@ -735,15 +745,17 @@ class DataStore(DatabaseStore):
         """
     )
 
-    _query_incident_rangers = _query(
-        """
+    _query_incident_rangers = Query(
+        "look up Ranger for incident",
+        f"""
         select RANGER_HANDLE from INCIDENT__RANGER
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber
         """
     )
 
-    _query_incident_types = _query(
-        """
+    _query_incident_incidentTypes = Query(
+        "look up incident types for incident",
+        f"""
         select NAME from INCIDENT_TYPE where ID in (
             select INCIDENT_TYPE from INCIDENT__INCIDENT_TYPE
             where
@@ -753,8 +765,9 @@ class DataStore(DatabaseStore):
         """
     )
 
-    _query_incident_reportEntries = _query(
-        """
+    _query_incident_reportEntries = Query(
+        "look up report entries for incident",
+        f"""
         select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
         where ID in (
             select REPORT_ENTRY from INCIDENT__REPORT_ENTRY
@@ -773,12 +786,13 @@ class DataStore(DatabaseStore):
         Look up all incident numbers for the given event.
         """
         for row in cast(Cursor, cursor.execute(
-            self._query_incidentNumbers, dict(eventID=event.id)
+            self._query_incidentNumbers.text, dict(eventID=event.id)
         )):
             yield row["NUMBER"]
 
-    _query_incidentNumbers = _query(
-        """
+    _query_incidentNumbers = Query(
+        "look up incident numbers for event",
+        f"""
         select NUMBER from INCIDENT where EVENT = ({query_eventID})
         """
     )
@@ -831,15 +845,18 @@ class DataStore(DatabaseStore):
         """
         Look up the next available incident number.
         """
-        cursor.execute(self._query_maxIncidentNumber, dict(eventID=event.id))
+        cursor.execute(
+            self._query_maxIncidentNumber.text, dict(eventID=event.id)
+        )
         number = cursor.fetchone()["max(NUMBER)"]
         if number is None:
             return 1
         else:
             return number + 1
 
-    _query_maxIncidentNumber = _query(
-        """
+    _query_maxIncidentNumber = Query(
+        "look up maximum incident number for event",
+        f"""
         select max(NUMBER) from INCIDENT where EVENT = ({query_eventID})
         """
     )
@@ -853,7 +870,7 @@ class DataStore(DatabaseStore):
 
         for rangerHandle in rangerHandles:
             cursor.execute(
-                self._query_attachRangeHandleToIncident, dict(
+                self._query_attachRangeHandleToIncident.text, dict(
                     eventID=event.id,
                     incidentNumber=incidentNumber,
                     rangerHandle=rangerHandle,
@@ -869,8 +886,9 @@ class DataStore(DatabaseStore):
             rangerHandles=rangerHandles,
         )
 
-    _query_attachRangeHandleToIncident = _query(
-        """
+    _query_attachRangeHandleToIncident = Query(
+        "add Ranger to incident",
+        f"""
         insert into INCIDENT__RANGER (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
         values (({query_eventID}), :incidentNumber, :rangerHandle)
         """
@@ -885,7 +903,7 @@ class DataStore(DatabaseStore):
 
         for incidentType in incidentTypes:
             cursor.execute(
-                self._query_attachIncidentTypeToIncident, dict(
+                self._query_attachIncidentTypeToIncident.text, dict(
                     eventID=event.id,
                     incidentNumber=incidentNumber,
                     incidentType=incidentType,
@@ -901,8 +919,9 @@ class DataStore(DatabaseStore):
             incidentTypes=incidentTypes,
         )
 
-    _query_attachIncidentTypeToIncident = _query(
-        """
+    _query_attachIncidentTypeToIncident = Query(
+        "add incident type to incident",
+        f"""
         insert into INCIDENT__INCIDENT_TYPE (
             EVENT, INCIDENT_NUMBER, INCIDENT_TYPE
         )
@@ -919,7 +938,7 @@ class DataStore(DatabaseStore):
         self, reportEntry: ReportEntry, cursor: Cursor
     ) -> None:
         cursor.execute(
-            self._query_addReportEntry, dict(
+            self._query_createReportEntry.text, dict(
                 created=asTimeStamp(reportEntry.created),
                 generated=reportEntry.automatic,
                 author=reportEntry.author,
@@ -932,7 +951,8 @@ class DataStore(DatabaseStore):
             storeWriteClass=ReportEntry, reportEntry=reportEntry,
         )
 
-    _query_addReportEntry = _query(
+    _query_createReportEntry = Query(
+        "create report entry",
         """
         insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
         values (:author, :text, :created, :generated)
@@ -951,7 +971,7 @@ class DataStore(DatabaseStore):
 
             # Join to incident
             cursor.execute(
-                self._query_attachReportEntryToIncident, dict(
+                self._query_attachReportEntryToIncident.text, dict(
                     eventID=event.id,
                     incidentNumber=incidentNumber,
                     reportEntryID=cursor.lastrowid,
@@ -967,8 +987,9 @@ class DataStore(DatabaseStore):
             reportEntries=reportEntries,
         )
 
-    _query_attachReportEntryToIncident = _query(
-        """
+    _query_attachReportEntryToIncident = Query(
+        "add report entry to incident",
+        f"""
         insert into INCIDENT__REPORT_ENTRY (
             EVENT, INCIDENT_NUMBER, REPORT_ENTRY
         )
@@ -1090,7 +1111,7 @@ class DataStore(DatabaseStore):
 
                     # Write incident row
                     cursor.execute(
-                        self._query_createIncident, dict(
+                        self._query_createIncident.text, dict(
                             eventID=incident.event.id,
                             incidentNumber=incident.number,
                             incidentCreated=asTimeStamp(incident.created),
@@ -1139,8 +1160,9 @@ class DataStore(DatabaseStore):
         )
 
 
-    _query_createIncident = _query(
-        """
+    _query_createIncident = Query(
+        "create incident",
+        f"""
         insert into INCIDENT (
             EVENT,
             NUMBER,
@@ -1240,8 +1262,8 @@ class DataStore(DatabaseStore):
             author=author,
         )
 
-    _template_setIncidentAttribute = _query(
-        """
+    _template_setIncidentAttribute = (
+        f"""
         update INCIDENT set {{column}} = :value
         where EVENT = ({query_eventID}) and NUMBER = :incidentNumber
         """
@@ -1256,12 +1278,13 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_priority`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_priority,
+            self._query_setIncident_priority.text,
             event, incidentNumber, "priority", priorityAsID(priority), author,
         )
 
-    _query_setIncident_priority = _template_setIncidentAttribute.format(
-        column="PRIORITY"
+    _query_setIncident_priority = Query(
+        "set incident priority",
+        _template_setIncidentAttribute.format(column="PRIORITY")
     )
 
 
@@ -1273,12 +1296,13 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_state`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_state,
+            self._query_setIncident_state.text,
             event, incidentNumber, "state", incidentStateAsID(state), author,
         )
 
-    _query_setIncident_state = _template_setIncidentAttribute.format(
-        column="STATE"
+    _query_setIncident_state = Query(
+        "set incident state",
+        _template_setIncidentAttribute.format(column="STATE")
     )
 
 
@@ -1289,12 +1313,13 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_summary`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_summary,
+            self._query_setIncident_summary.text,
             event, incidentNumber, "summary", summary, author,
         )
 
-    _query_setIncident_summary = _template_setIncidentAttribute.format(
-        column="SUMMARY"
+    _query_setIncident_summary = Query(
+        "set incident summary",
+        _template_setIncidentAttribute.format(column="SUMMARY")
     )
 
 
@@ -1305,12 +1330,13 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_locationName`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_locationName,
+            self._query_setIncident_locationName.text,
             event, incidentNumber, "location name", name, author,
         )
 
-    _query_setIncident_locationName = _template_setIncidentAttribute.format(
-        column="LOCATION_NAME"
+    _query_setIncident_locationName = Query(
+        "set incident location name",
+        _template_setIncidentAttribute.format(column="LOCATION_NAME")
     )
 
 
@@ -1321,12 +1347,13 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_locationConcentricStreet`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_locationConcentricStreet,
+            self._query_setIncident_locationConcentricStreet.text,
             event, incidentNumber, "location concentric street", streetID,
             author,
         )
 
-    _query_setIncident_locationConcentricStreet = (
+    _query_setIncident_locationConcentricStreet = Query(
+        "set incident location concentric street",
         _template_setIncidentAttribute.format(column="LOCATION_CONCENTRIC")
     )
 
@@ -1338,11 +1365,12 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_locationRadialHour`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_locationRadialHour,
+            self._query_setIncident_locationRadialHour.text,
             event, incidentNumber, "location radial hour", hour, author,
         )
 
-    _query_setIncident_locationRadialHour = (
+    _query_setIncident_locationRadialHour = Query(
+        "set incident location radial hour",
         _template_setIncidentAttribute.format(column="LOCATION_RADIAL_HOUR")
     )
 
@@ -1354,11 +1382,12 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_locationRadialMinute`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_locationRadialMinute,
+            self._query_setIncident_locationRadialMinute.text,
             event, incidentNumber, "location radial minute", minute, author,
         )
 
-    _query_setIncident_locationRadialMinute = (
+    _query_setIncident_locationRadialMinute = Query(
+        "set incident location radial minute",
         _template_setIncidentAttribute.format(column="LOCATION_RADIAL_MINUTE")
     )
 
@@ -1370,15 +1399,14 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_locationDescription`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_locationRadialDescription,
+            self._query_setIncident_locationDescription.text,
             event, incidentNumber, "location description", description,
             author,
         )
 
-    _query_setIncident_locationRadialDescription = (
-        _template_setIncidentAttribute.format(
-            column="LOCATION_DESCRIPTION"
-        )
+    _query_setIncident_locationDescription = Query(
+        "set incident location description",
+        _template_setIncidentAttribute.format(column="LOCATION_DESCRIPTION")
     )
 
 
@@ -1400,7 +1428,7 @@ class DataStore(DatabaseStore):
                 cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
-                        self._query_clearIncidentRangers,
+                        self._query_clearIncidentRangers.text,
                         dict(eventID=event.id, incidentNumber=incidentNumber)
                     )
 
@@ -1436,8 +1464,9 @@ class DataStore(DatabaseStore):
             rangerHandles=rangerHandles,
         )
 
-    _query_clearIncidentRangers = _query(
-        """
+    _query_clearIncidentRangers = Query(
+        "clear incident Rangers",
+        f"""
         delete from INCIDENT__RANGER
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber
         """
@@ -1462,7 +1491,7 @@ class DataStore(DatabaseStore):
                 cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
-                        self._query_clearIncidentIncidentTypes,
+                        self._query_clearIncidentIncidentTypes.text,
                         dict(eventID=event.id, incidentNumber=incidentNumber)
                     )
 
@@ -1499,8 +1528,9 @@ class DataStore(DatabaseStore):
             incidentTypes=incidentTypes,
         )
 
-    _query_clearIncidentIncidentTypes = _query(
-        """
+    _query_clearIncidentIncidentTypes = Query(
+        "clear incident types",
+        f"""
         delete from INCIDENT__INCIDENT_TYPE
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber
         """
@@ -1567,7 +1597,7 @@ class DataStore(DatabaseStore):
             )
 
         try:
-            cursor.execute(self._query_incidentReport, params)
+            cursor.execute(self._query_incidentReport.text, params)
         except OverflowError:
             notFound()
 
@@ -1584,7 +1614,7 @@ class DataStore(DatabaseStore):
                 text=row["TEXT"],
             )
             for row in cast(Cursor, cursor.execute(
-                self._query_incidentReport_reportEntries, params
+                self._query_incidentReport_reportEntries.text, params
             ))
         )
 
@@ -1595,14 +1625,16 @@ class DataStore(DatabaseStore):
             reportEntries=reportEntries,
         )
 
-    _query_incidentReport = _query(
+    _query_incidentReport = Query(
+        "look up incident report",
         """
         select CREATED, SUMMARY from INCIDENT_REPORT
         where NUMBER = :incidentReportNumber
         """
     )
 
-    _query_incidentReport_reportEntries = _query(
+    _query_incidentReport_reportEntries = Query(
+        "look up report entries for incident report",
         """
         select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
         where ID in (
@@ -1616,11 +1648,12 @@ class DataStore(DatabaseStore):
     def _fetchIncidentReportNumbers(self, cursor: Cursor) -> Iterable[int]:
         return (
             row["NUMBER"] for row in cast(Cursor, cursor.execute(
-                self._query_incidentReportNumbers, {}
+                self._query_incidentReportNumbers.text, {}
             ))
         )
 
-    _query_incidentReportNumbers = _query(
+    _query_incidentReportNumbers = Query(
+        "look up incident report numbers",
         """
         select NUMBER from INCIDENT_REPORT
         """
@@ -1673,14 +1706,15 @@ class DataStore(DatabaseStore):
         """
         Look up the next available incident report number.
         """
-        cursor.execute(self._query_maxIncidentReportNumber, {})
+        cursor.execute(self._query_maxIncidentReportNumber.text, {})
         number = cursor.fetchone()["max(NUMBER)"]
         if number is None:
             return 1
         else:
             return number + 1
 
-    _query_maxIncidentReportNumber = _query(
+    _query_maxIncidentReportNumber = Query(
+        "look up maximum incident report number",
         """
         select max(NUMBER) from INCIDENT_REPORT
         """
@@ -1718,7 +1752,7 @@ class DataStore(DatabaseStore):
 
                     # Write incident row
                     cursor.execute(
-                        self._query_createIncidentReport, dict(
+                        self._query_createIncidentReport.text, dict(
                             incidentReportNumber=incidentReport.number,
                             incidentReportCreated=asTimeStamp(
                                 incidentReport.created
@@ -1748,7 +1782,8 @@ class DataStore(DatabaseStore):
             storeWriteClass=IncidentReport, incidentReport=incidentReport,
         )
 
-    _query_createIncidentReport = _query(
+    _query_createIncidentReport = Query(
+        "create incident report",
         """
         insert into INCIDENT_REPORT (NUMBER, CREATED, SUMMARY)
         values (
@@ -1769,7 +1804,7 @@ class DataStore(DatabaseStore):
 
             # Join to incident
             cursor.execute(
-                self._query_attachReportEntryToIncidentReport, dict(
+                self._query_attachReportEntryToIncidentReport.text, dict(
                     incidentReportNumber=incidentReportNumber,
                     reportEntryID=cursor.lastrowid,
                 )
@@ -1783,7 +1818,8 @@ class DataStore(DatabaseStore):
             reportEntries=reportEntries,
         )
 
-    _query_attachReportEntryToIncidentReport = _query(
+    _query_attachReportEntryToIncidentReport = Query(
+        "add report entry to incident report",
         """
         insert into INCIDENT_REPORT__REPORT_ENTRY (
             INCIDENT_REPORT_NUMBER, REPORT_ENTRY
@@ -1850,8 +1886,8 @@ class DataStore(DatabaseStore):
             author=author,
         )
 
-    _template_setIncidentReportAttribute = _query(
-        """
+    _template_setIncidentReportAttribute = (
+        f"""
         update INCIDENT_REPORT set {{column}} = :value
         where NUMBER = :incidentReportNumber
         """
@@ -1865,11 +1901,12 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncidentReport_summary`.
         """
         self._setIncidentReportAttribute(
-            self._query_setIncidentReport_summary,
+            self._query_setIncidentReport_summary.text,
             incidentReportNumber, "summary", summary, author,
         )
 
-    _query_setIncidentReport_summary = (
+    _query_setIncidentReport_summary = Query(
+        "set incident report summary",
         _template_setIncidentReportAttribute.format(column="SUMMARY")
     )
 
@@ -1927,11 +1964,12 @@ class DataStore(DatabaseStore):
     ) -> Iterable[int]:
         return (
             row["NUMBER"] for row in cast(Cursor, cursor.execute(
-                self._query_detachedIncidentReportNumbers, {}
+                self._query_detachedIncidentReportNumbers.text, {}
             ))
         )
 
-    _query_detachedIncidentReportNumbers = _query(
+    _query_detachedIncidentReportNumbers = Query(
+        "look up detached incident report numbers",
         """
         select NUMBER from INCIDENT_REPORT
         where NUMBER not in (
@@ -1946,13 +1984,14 @@ class DataStore(DatabaseStore):
     ) -> Iterable[int]:
         return (
             row["NUMBER"] for row in cast(Cursor, cursor.execute(
-                self._query_attachedIncidentReportNumbers,
+                self._query_attachedIncidentReportNumbers.text,
                 dict(eventID=event.id, incidentNumber=incidentNumber)
             ))
         )
 
-    _query_attachedIncidentReportNumbers = _query(
-        """
+    _query_attachedIncidentReportNumbers = Query(
+        "look up attached incident report numbers",
+        f"""
         select NUMBER from INCIDENT_REPORT
         where NUMBER in (
             select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
@@ -2035,7 +2074,7 @@ class DataStore(DatabaseStore):
                     return tuple(
                         (Event(row["EVENT"]), row["INCIDENT_NUMBER"])
                         for row in cast(Cursor, cursor.execute(
-                            self._query_incidentsAttachedToIncidentReport,
+                            self._query_incidentsAttachedToIncidentReport.text,
                             dict(incidentReportNumber=incidentReportNumber)
                         ))
                     )
@@ -2050,7 +2089,8 @@ class DataStore(DatabaseStore):
             )
             raise StorageError(e)
 
-    _query_incidentsAttachedToIncidentReport = _query(
+    _query_incidentsAttachedToIncidentReport = Query(
+        "look up incidents attached to incident report",
         """
         select e.NAME as EVENT, iir.INCIDENT_NUMBER as INCIDENT_NUMBER
         from INCIDENT__INCIDENT_REPORT iir
@@ -2071,7 +2111,7 @@ class DataStore(DatabaseStore):
                 cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
-                        self._query_attachIncidentReportToIncident, dict(
+                        self._query_attachIncidentReportToIncident.text, dict(
                             eventID=event.id,
                             incidentNumber=incidentNumber,
                             incidentReportNumber=incidentReportNumber,
@@ -2099,8 +2139,9 @@ class DataStore(DatabaseStore):
             incidentNumber=incidentNumber,
         )
 
-    _query_attachIncidentReportToIncident = _query(
-        """
+    _query_attachIncidentReportToIncident = Query(
+        "add incident report to incident",
+        f"""
         insert into INCIDENT__INCIDENT_REPORT (
             EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER
         )
@@ -2120,7 +2161,8 @@ class DataStore(DatabaseStore):
                 cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
-                        self._query_detachIncidentReportFromIncident, dict(
+                        self._query_detachIncidentReportFromIncident.text,
+                        dict(
                             eventID=event.id,
                             incidentNumber=incidentNumber,
                             incidentReportNumber=incidentReportNumber,
@@ -2148,8 +2190,9 @@ class DataStore(DatabaseStore):
             incidentNumber=incidentNumber,
         )
 
-    _query_detachIncidentReportFromIncident = _query(
-        """
+    _query_detachIncidentReportFromIncident = Query(
+        "remove incident report from incident",
+        f"""
         delete from INCIDENT__INCIDENT_REPORT
         where
             EVENT = ({query_eventID}) and

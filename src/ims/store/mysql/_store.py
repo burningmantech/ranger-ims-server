@@ -19,7 +19,6 @@ Incident Management System SQL data store.
 """
 
 from pathlib import Path
-from textwrap import dedent
 from types import MappingProxyType
 from typing import Iterable, Iterator, Mapping, Optional, Tuple, Union, cast
 
@@ -37,7 +36,7 @@ from ims.model import (
     ReportEntry,
 )
 
-from .._db import DatabaseStore
+from .._db import DatabaseStore, Query
 from .._exceptions import StorageError
 
 
@@ -47,14 +46,10 @@ __all__ = ()
 ParameterValue = Optional[Union[bytes, str, int, float]]
 Parameters = Mapping[str, ParameterValue]
 
+Row = Parameters
+Rows = Iterator[Row]
+
 query_eventID = "select ID from EVENT where NAME = %(eventID)s"
-
-
-
-@attrs(frozen=True)
-class Query(object):
-    description: str = attrib(validator=instance_of(str))
-    sql: str = attrib(validator=instance_of(str), converter=dedent)
 
 
 
@@ -112,14 +107,14 @@ class DataStore(DatabaseStore):
         return self._state.db
 
 
-    async def _runQuery(
+    async def runQuery(
         self, query: Query, params: Optional[Parameters] = None
-    ) -> Iterator[Tuple]:
+    ) -> Rows:
         if params is None:
             params = {}
 
         try:
-            return iter(await self._db.runQuery(query.sql, params))
+            return iter(await self._db.runQuery(query.text, params))
 
         except MySQLError as e:
             self._log.critical(
@@ -129,14 +124,14 @@ class DataStore(DatabaseStore):
             raise StorageError(e)
 
 
-    async def _runOperation(
+    async def runOperation(
         self, query: Query, params: Optional[Parameters] = None
     ) -> None:
         if params is None:
             params = {}
 
         try:
-            await self._db.runOperation(query.sql, params)
+            await self._db.runOperation(query.text, params)
 
         except MySQLError as e:
             self._log.critical(
@@ -184,15 +179,12 @@ class DataStore(DatabaseStore):
         query = self._query_schemaVersion
 
         try:
-            rows = cast(
-                Iterator[Tuple[int]],
-                iter(await self._db.runQuery(query.sql))
-            )
+            rows: Rows = iter(await self._db.runQuery(query.text))
             try:
                 row = next(rows)
             except StopIteration:
                 raise StorageError("Invalid schema: no version")
-            return row["VERSION"]
+            return cast(int, row["VERSION"])
 
         except MySQLError as e:
             if e.args[1] == "Table 'imsdb.SCHEMA_INFO' doesn't exist":
@@ -253,11 +245,8 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.events`.
         """
-        rows = cast(
-            Iterator[Tuple[str]],
-            await self._runQuery(self._query_events)
-        )
-        return (Event(id=row["NAME"]) for row in rows)
+        rows = await self.runQuery(self._query_events)
+        return (Event(id=cast(str, row["NAME"])) for row in rows)
 
     _query_events = Query(
         "look up events",
@@ -271,7 +260,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createEvent`.
         """
-        await self._runOperation(
+        await self.runOperation(
             self._query_createEvent, dict(eventID=event.id)
         )
 
@@ -284,13 +273,10 @@ class DataStore(DatabaseStore):
 
 
     async def _eventAccess(self, event: Event, mode: str) -> Iterable[str]:
-        rows = cast(
-            Iterator[Tuple[str]],
-            await self._runQuery(
-                self._query_eventAccess, dict(eventID=event.id, mode=mode)
-            )
+        rows = await self.runQuery(
+            self._query_eventAccess, dict(eventID=event.id, mode=mode)
         )
-        return (row["EXPRESSION"] for row in rows)
+        return (cast(str, row["EXPRESSION"]) for row in rows)
 
     _query_eventAccess = Query(
         "look up event access",
@@ -308,16 +294,16 @@ class DataStore(DatabaseStore):
 
         def setEventAccess(txn: Cursor) -> None:
             txn.execute(
-                self._query_clearEventAccessForMode.sql,
+                self._query_clearEventAccessForMode.text,
                 dict(eventID=event.id, mode=mode),
             )
             for expression in expressions:
                 txn.execute(
-                    self._query_clearEventAccessForExpression.sql,
+                    self._query_clearEventAccessForExpression.text,
                     dict(eventID=event.id, expression=expression),
                 )
                 txn.execute(
-                    self._query_addEventAccess.sql, dict(
+                    self._query_addEventAccess.text, dict(
                         eventID=event.id,
                         expression=expression,
                         mode=mode,
@@ -403,8 +389,8 @@ class DataStore(DatabaseStore):
         else:
             query = self._query_incidentTypesNotHidden
 
-        rows = cast(Iterator[Tuple[str]], await self._runQuery(query))
-        return (row["NAME"] for row in rows)
+        rows = await self.runQuery(query)
+        return (cast(str, row["NAME"]) for row in rows)
 
     _query_incidentTypes = Query(
         "look up incident types",
@@ -427,7 +413,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createIncidentType`.
         """
-        await self._runOperation(
+        await self.runOperation(
             self._query_createIncidentType,
             dict(incidentType=incidentType, hidden=hidden),
         )
@@ -454,7 +440,7 @@ class DataStore(DatabaseStore):
         def hideShowIncidentTypes(txn: Cursor) -> None:
             for incidentType in incidentTypes:
                 txn.execute(
-                    self._query_hideShowIncidentType.sql,
+                    self._query_hideShowIncidentType.text,
                     dict(incidentType=incidentType, hidden=hidden),
                 )
 
@@ -475,7 +461,7 @@ class DataStore(DatabaseStore):
 
 
     _query_hideShowIncidentType = Query(
-        "set event access",
+        "hide/show incident type",
         """
         update INCIDENT_TYPE set HIDDEN = %(hidden)s
         where NAME = %(incidentType)s
@@ -506,10 +492,12 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.concentricStreets`.
         """
-        rows = cast(Iterator[Tuple[str, str]], await self._runQuery(
+        rows = await self.runQuery(
             self._query_concentricStreets, dict(eventID=event.id)
+        )
+        return MappingProxyType(dict(
+            (cast(str, row["ID"]), cast(str, row["NAME"])) for row in rows
         ))
-        return MappingProxyType(dict((row["ID"], row["NAME"]) for row in rows))
 
     _query_concentricStreets = Query(
         "look up concentric streets",
@@ -525,7 +513,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createConcentricStreet`.
         """
-        await self._runOperation(
+        await self.runOperation(
             self._query_createConcentricStreet,
             dict(eventID=event.id, streetID=id, streetName=name)
         )
