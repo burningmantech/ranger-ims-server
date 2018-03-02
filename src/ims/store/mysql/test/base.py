@@ -64,13 +64,17 @@ class DataStoreTests(SuperDataStoreTests):
 
     skip: Optional[str] = None
 
-    dbContainerName   = "ims-unittest-db"
     dbImageRepository = "mysql/mysql-server"
     dbImageTag        = "5.6"
     dbDockerHost      = "172.17.0.1"
     dbRootPassword    = randomString()
     dbUser            = "ims"
     dbPassword        = randomString()
+
+
+    @classmethod
+    def dbContainerName(cls):
+        return "ims-unittest-db-{}".format(id(cls))
 
 
     @classmethod
@@ -90,13 +94,19 @@ class DataStoreTests(SuperDataStoreTests):
         d = Deferred()
 
         def waitOnDBStartup(elapsed: float = 0.0) -> None:
+            dbContainerName = cls.dbContainerName()
+
             if elapsed > timeout:
                 d.errback(
-                    RuntimeError("Timed out while starting container")
+                    RuntimeError(
+                        f"Timed out while starting container {dbContainerName}"
+                    )
                 )
                 return
 
-            cls.log.info("Waiting on container to start...")
+            cls.log.info(
+                "Waiting on container {name} to start...", name=dbContainerName
+            )
 
             # FIXME: We fetch the full logs each time because the streaming API
             # logs(stream=True) blocks.
@@ -106,7 +116,10 @@ class DataStoreTests(SuperDataStoreTests):
 
             for line in logs.split(b"\n"):
                 if messageBytes in line:
-                    cls.log.info("MySQL base container started")
+                    cls.log.info(
+                        "MySQL base container {name} started",
+                        name=dbContainerName,
+                    )
                     cls.log.info("{logs}", logs=logs.decode("latin-1"))
                     d.callback(logs)
                     return
@@ -145,17 +158,23 @@ class DataStoreTests(SuperDataStoreTests):
                 client.images.pull, cls.dbImageRepository, cls.dbImageTag
             )
 
-        cls.log.info("Creating MySQL database container")
+        dbContainerName = cls.dbContainerName()
+
+        cls.log.info(
+            "Creating MySQL database container {name}", name=dbContainerName
+        )
 
         container = client.containers.create(
-            name=f"{cls.dbContainerName}",
+            name=dbContainerName,
             image=image.id,
             auto_remove=True, detach=True,
             environment=cls.dbContainerEnvironment(),
             ports={3306: None},
         )
 
-        cls.log.info("Starting MySQL database container")
+        cls.log.info(
+            "Starting MySQL database container {name}", name=dbContainerName
+        )
         container.start()
 
         try:
@@ -165,8 +184,9 @@ class DataStoreTests(SuperDataStoreTests):
 
         except Exception as e:
             cls.log.info(
-                "Stopping MySQL database container due to error: {error}",
-                error=e,
+                "Stopping MySQL database container {name} due to error: "
+                "{error}",
+                name=dbContainerName, error=e,
             )
             container.stop()
             raise
@@ -179,7 +199,8 @@ class DataStoreTests(SuperDataStoreTests):
         client = cls.dockerClient()
 
         if cls._dbContainer is None:
-            cls._dbContainer = cls.startDBContainer()
+            d = cls._dbContainer = Deferred()
+            d.callback(await cls.startDBContainer())
 
         container = await cls._dbContainer
 
@@ -191,29 +212,30 @@ class DataStoreTests(SuperDataStoreTests):
             cls.dbHost = port["HostIp"]
             cls.dbPort = int(port["HostPort"])
 
-            cls.log.info(
-                "Database container ready at: {host}:{port}",
-                host=cls.dbHost, port=cls.dbPort
-            )
+            dbContainerName = cls.dbContainerName()
 
             cls.log.info(
-                "docker exec"
-                " --interactive"
-                " --tty"
-                " {container}"
-                " mysql"
-                " --host=docker.for.mac.host.internal"
-                " --port={port}"
-                " --user=root"
-                " --password={password}"
-                "",
-                container=cls.dbContainerName,
-                port=cls.dbPort,
-                password=cls.dbRootPassword,
+                "Database container {name} ready at: {host}:{port}",
+                name=dbContainerName, host=cls.dbHost, port=cls.dbPort
             )
+
+            # cls.log.info(
+            #     "docker exec"
+            #     " --interactive"
+            #     " --tty"
+            #     " {container}"
+            #     " mysql"
+            #     " --host=docker.for.mac.host.internal"
+            #     " --port={port}"
+            #     " --user=root"
+            #     " --password={password}"
+            #     "",
+            #     container=dbContainerName,
+            #     port=cls.dbPort,
+            #     password=cls.dbRootPassword,
+            # )
 
             # Clean up the container before the reactor shuts down
-            from twisted.internet import reactor
             reactor.addSystemEventTrigger(
                 "before", "shutdown", cls.stopDBContainer
             )
@@ -226,9 +248,12 @@ class DataStoreTests(SuperDataStoreTests):
     @classmethod
     def stopDBContainer(cls) -> None:
         client = cls.dockerClient()
-        cls.log.info("Stopping MySQL database container")
+        dbContainerName = cls.dbContainerName()
+        cls.log.info(
+            "Stopping MySQL database container {name}", name=dbContainerName
+        )
         try:
-            container = client.containers.get(cls.dbContainerName)
+            container = client.containers.get(dbContainerName)
         except NotFound:
             pass
         else:
@@ -242,7 +267,12 @@ class DataStoreTests(SuperDataStoreTests):
 
 
     async def createDatabase(self, name: str) -> None:
-        self.log.info("Creating database {name}.", name=name)
+        dbContainerName = self.dbContainerName()
+
+        self.log.info(
+            "Creating database {name} in container {container}.",
+            name=name, container=dbContainerName,
+        )
 
         connection = connect(
             host=self.dbHost,
@@ -269,24 +299,24 @@ class DataStoreTests(SuperDataStoreTests):
         finally:
             connection.close()
 
-        self.log.info(
-            "docker exec"
-            " --interactive"
-            " --tty"
-            " {container}"
-            " mysql"
-            " --host=docker.for.mac.host.internal"
-            " --port={port}"
-            " --user={user}"
-            " --password={password}"
-            " --database={database}"
-            "",
-            container=self.dbContainerName,
-            port=self.dbPort,
-            user=self.dbUser,
-            password=self.dbPassword,
-            database=name,
-        )
+        # self.log.info(
+        #     "docker exec"
+        #     " --interactive"
+        #     " --tty"
+        #     " {container}"
+        #     " mysql"
+        #     " --host=docker.for.mac.host.internal"
+        #     " --port={port}"
+        #     " --user={user}"
+        #     " --password={password}"
+        #     " --database={database}"
+        #     "",
+        #     container=dbContainerName,
+        #     port=self.dbPort,
+        #     user=self.dbUser,
+        #     password=self.dbPassword,
+        #     database=name,
+        # )
 
 
     async def store(self) -> "TestDataStore":
