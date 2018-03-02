@@ -18,6 +18,8 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
+from random import choice
+from string import ascii_letters, digits
 from typing import Awaitable, Mapping, Optional, cast
 
 from docker.api import APIClient
@@ -26,11 +28,14 @@ from docker.errors import ImageNotFound, NotFound
 from docker.models.containers import Container
 from docker.models.images import Image
 
+from pymysql import connect
+from pymysql.cursors import DictCursor as Cursor
 from pymysql.err import MySQLError
 
 from twisted.enterprise.adbapi import ConnectionPool
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred, ensureDeferred
+from twisted.internet.threads import deferToThread
 from twisted.logger import Logger
 
 from ims.model import Event, Incident, IncidentReport
@@ -43,6 +48,11 @@ from ...test.base import (
 
 __all__ = ()
 
+def randomString(length: int = 32) -> str:
+    """
+    Generate a random string.
+    """
+    return "".join(choice(ascii_letters + digits) for i in range(length))
 
 
 class DataStoreTests(SuperDataStoreTests):
@@ -54,27 +64,13 @@ class DataStoreTests(SuperDataStoreTests):
 
     skip: Optional[str] = None
 
-    mysqlImageName     = "mysql/mysql-server"
-    mysqlImageTag      = "5.6"
-    mysqlContainerName = "ims-unittest-mysql"
-
-    dbContainerName = "ims-unittest-db"
-    dbImageName     = "ims-unittest-mysql5.6"
-    dbImageTag      = 0  # str(DataStore.schemaVersion)
-
-    dbName     = "imsdb"
-    dbUser     = "imsuser"
-    dbPassword = "imspassword"
-
-
-    @classmethod
-    def dbEnvironment(cls) -> Mapping:
-        return dict(
-            MYSQL_RANDOM_ROOT_PASSWORD="yes",
-            MYSQL_DATABASE=cls.dbName,
-            MYSQL_USER=cls.dbUser,
-            MYSQL_PASSWORD=cls.dbPassword,
-        )
+    dbContainerName   = "ims-unittest-db"
+    dbImageRepository = "mysql/mysql-server"
+    dbImageTag        = "5.6"
+    dbDockerHost      = "172.17.0.1"
+    dbRootPassword    = randomString()
+    dbUser            = "ims"
+    dbPassword        = randomString()
 
 
     @classmethod
@@ -87,27 +83,7 @@ class DataStoreTests(SuperDataStoreTests):
 
 
     @classmethod
-    def _createMySQLContainer(cls) -> Container:
-        cls.log.info("Creating MySQL base container")
-
-        client = cls.dockerClient()
-        container = client.containers.create(
-            name=f"{cls.mysqlContainerName}",
-            image=f"{cls.mysqlImageName}:{cls.mysqlImageTag}",
-            auto_remove=True, detach=True,
-            environment={
-                "MYSQL_RANDOM_ROOT_PASSWORD": "yes",
-                "MYSQL_DATABASE": cls.dbName,
-                "MYSQL_USER": cls.dbUser,
-                "MYSQL_PASSWORD": cls.dbPassword,
-            }
-        )
-
-        return container
-
-
-    @classmethod
-    def _waitOnContainerLog(
+    def waitOnContainerLog(
         cls, container: Container, message: str,
         timeout: float = 60.0, interval: float = 1.0,
     ) -> Awaitable:
@@ -132,7 +108,7 @@ class DataStoreTests(SuperDataStoreTests):
                 if messageBytes in line:
                     cls.log.info("MySQL base container started")
                     cls.log.info("{logs}", logs=logs.decode("latin-1"))
-                    d.callback(None)
+                    d.callback(logs)
                     return
 
             reactor.callLater(
@@ -145,59 +121,37 @@ class DataStoreTests(SuperDataStoreTests):
 
 
     @classmethod
-    async def _startMySQLContainer(cls, container: Container) -> None:
-        cls.log.info("Starting MySQL base container")
-        container.start()
-
-        await cls._waitOnContainerLog(container, " starting as process 1 ")
-
-
-    @classmethod
-    async def _createDBImage(cls) -> None:
-        container = cls._createMySQLContainer()
-
-        await cls._startMySQLContainer(container)
-
-        cls.log.info(
-            "Committing MySQL base container to database container image"
+    def dbContainerEnvironment(cls) -> Mapping:
+        return dict(
+            MYSQL_ROOT_PASSWORD=cls.dbRootPassword,
+            # So we can connect as root from the Docker host
+            MYSQL_ROOT_HOST=cls.dbDockerHost,
+            MYSQL_USER=cls.dbUser,
+            MYSQL_PASSWORD=cls.dbPassword,
         )
-        container.commit(cls.dbImageName, cls.dbImageTag)
-
-        cls.log.info("Stopping MySQL base container")
-        container.stop()
 
 
     @classmethod
-    async def _dbImage(cls) -> Image:
+    async def startDBContainer(cls) -> Container:
         client = cls.dockerClient()
 
-        imageName = f"{cls.dbImageName}:{cls.dbImageTag}"
-
         try:
-            image = client.images.get(imageName)
+            image = client.images.get(
+                f"{cls.dbImageRepository}:{cls.dbImageTag}"
+            )
         except ImageNotFound:
-            if cls._creatingDBImage is None:
-                cls._creatingDBImage = cls._createDBImage()
-
-            await cls._creatingDBImage
-
-            image = client.images.get(imageName)
-
-        return image
-
-    _creatingDBImage: Optional[Awaitable] = None
-
-
-    @classmethod
-    async def _startDBContainer(cls) -> Container:
-        image = await cls._dbImage()
+            cls.log.info("Pulling MySQL image")
+            image = await deferToThread(
+                client.images.pull, cls.dbImageRepository, cls.dbImageTag
+            )
 
         cls.log.info("Creating MySQL database container")
 
-        client = cls.dockerClient()
         container = client.containers.create(
             name=f"{cls.dbContainerName}",
-            image=image.id, auto_remove=True, detach=True,
+            image=image.id,
+            auto_remove=True, detach=True,
+            environment=cls.dbContainerEnvironment(),
             ports={3306: None},
         )
 
@@ -205,7 +159,9 @@ class DataStoreTests(SuperDataStoreTests):
         container.start()
 
         try:
-            await cls._waitOnContainerLog(container, " starting as process 1 ")
+            logs = await cls.waitOnContainerLog(
+                container, " starting as process 1 "
+            )
 
         except Exception as e:
             cls.log.info(
@@ -222,13 +178,10 @@ class DataStoreTests(SuperDataStoreTests):
     async def dbContainer(cls) -> Container:
         client = cls.dockerClient()
 
-        try:
-            container = client.containers.get(cls.dbContainerName)
-        except NotFound:
-            if cls._dbContainer is None:
-                cls._dbContainer = cls._startDBContainer()
+        if cls._dbContainer is None:
+            cls._dbContainer = cls.startDBContainer()
 
-            container = await cls._dbContainer
+        container = await cls._dbContainer
 
         if not hasattr(cls, "dbHost"):
             apiClient = APIClient()
@@ -239,18 +192,24 @@ class DataStoreTests(SuperDataStoreTests):
             cls.dbPort = int(port["HostPort"])
 
             cls.log.info(
-                f"Database ready. To connect:"
-                f" docker run"
-                f" --rm"
-                f" --interactive"
-                f" --tty"
-                f" {cls.mysqlImageName}:{cls.mysqlImageTag}"
-                f" mysql"
-                f" --host=docker.for.mac.host.internal"
-                f" --port={cls.dbPort}"
-                f" --database={cls.dbName}"
-                f" --user={cls.dbUser}"
-                f" --password={cls.dbPassword}"
+                "Database container ready at: {host}:{port}",
+                host=cls.dbHost, port=cls.dbPort
+            )
+
+            cls.log.info(
+                "docker exec"
+                " --interactive"
+                " --tty"
+                " {container}"
+                " mysql"
+                " --host=docker.for.mac.host.internal"
+                " --port={port}"
+                " --user=root"
+                " --password={password}"
+                "",
+                container=cls.dbContainerName,
+                port=cls.dbPort,
+                password=cls.dbRootPassword,
             )
 
             # Clean up the container before the reactor shuts down
@@ -267,12 +226,14 @@ class DataStoreTests(SuperDataStoreTests):
     @classmethod
     def stopDBContainer(cls) -> None:
         client = cls.dockerClient()
+        cls.log.info("Stopping MySQL database container")
         try:
-            cls.log.info("Stopping MySQL database container")
             container = client.containers.get(cls.dbContainerName)
         except NotFound:
             pass
-        container.stop()
+        else:
+            # Set timeout=0 because we don't care about unclean shutdowns
+            container.stop(timeout=0)
 
 
     def setUp(self) -> None:
@@ -280,16 +241,67 @@ class DataStoreTests(SuperDataStoreTests):
         return ensureDeferred(self.dbContainer())
 
 
+    async def createDatabase(self, name: str) -> None:
+        self.log.info("Creating database {name}.", name=name)
+
+        connection = connect(
+            host=self.dbHost,
+            port=self.dbPort,
+            user="root",
+            password=self.dbRootPassword,
+            cursorclass=Cursor,
+        )
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(f"create database {name}")
+                cursor.execute(
+                    f"grant all privileges on {name}.* "
+                    "to %(user)s@%(host)s identified by %(password)s",
+                    dict(
+                        user=self.dbUser,
+                        host=self.dbDockerHost,
+                        password=self.dbPassword,
+                    )
+                )
+
+            connection.commit()
+        finally:
+            connection.close()
+
+        self.log.info(
+            "docker exec"
+            " --interactive"
+            " --tty"
+            " {container}"
+            " mysql"
+            " --host=docker.for.mac.host.internal"
+            " --port={port}"
+            " --user={user}"
+            " --password={password}"
+            " --database={database}"
+            "",
+            container=self.dbContainerName,
+            port=self.dbPort,
+            user=self.dbUser,
+            password=self.dbPassword,
+            database=name,
+        )
+
+
     async def store(self) -> "TestDataStore":
+        dbName = randomString()
+
+        await self.createDatabase(dbName)
+
         store = TestDataStore(
             self,
             hostName=self.dbHost,
             hostPort=self.dbPort,
-            database=self.dbName,
+            database=dbName,
             username=self.dbUser,
             password=self.dbPassword,
         )
-        await store.resetDatabase()
         await store.upgradeSchema()
         return store
 
