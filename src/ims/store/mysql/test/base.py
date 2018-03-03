@@ -26,7 +26,6 @@ from docker.api import APIClient
 from docker.client import DockerClient
 from docker.errors import ImageNotFound, NotFound
 from docker.models.containers import Container
-from docker.models.images import Image
 
 from pymysql import connect
 from pymysql.cursors import DictCursor as Cursor
@@ -48,11 +47,13 @@ from ...test.base import (
 
 __all__ = ()
 
+
 def randomString(length: int = 32) -> str:
     """
     Generate a random string.
     """
     return "".join(choice(ascii_letters + digits) for i in range(length))
+
 
 
 class DataStoreTests(SuperDataStoreTests):
@@ -73,7 +74,7 @@ class DataStoreTests(SuperDataStoreTests):
 
 
     @classmethod
-    def dbContainerName(cls):
+    def dbContainerName(cls) -> str:
         return "ims-unittest-db-{}".format(id(cls))
 
 
@@ -178,9 +179,7 @@ class DataStoreTests(SuperDataStoreTests):
         container.start()
 
         try:
-            logs = await cls.waitOnContainerLog(
-                container, " starting as process 1 "
-            )
+            await cls.waitOnContainerLog(container, " starting as process 1 ")
 
         except Exception as e:
             cls.log.info(
@@ -196,13 +195,11 @@ class DataStoreTests(SuperDataStoreTests):
 
     @classmethod
     async def dbContainer(cls) -> Container:
-        client = cls.dockerClient()
-
         if cls._dbContainer is None:
             d = cls._dbContainer = Deferred()
             d.callback(await cls.startDBContainer())
 
-        container = await cls._dbContainer
+        container = await cast(Awaitable[Container], cls._dbContainer)
 
         if not hasattr(cls, "dbHost"):
             apiClient = APIClient()
@@ -242,7 +239,7 @@ class DataStoreTests(SuperDataStoreTests):
 
         return container
 
-    _dbContainer: Optional[Awaitable] = None
+    _dbContainer: Optional[Awaitable[Container]] = None
 
 
     @classmethod
