@@ -142,11 +142,13 @@ class DataStore(DatabaseStore):
             raise StorageError(e)
 
 
-    async def reconnect(self) -> None:
+    async def disconnect(self) -> None:
         """
-        See :meth:`DatabaseStore.reconnect`.
+        See :meth:`DatabaseStore.disconnect`.
         """
-        self._state.db = None
+        if self._state.db is not None:
+            self._state.db.close()
+            self._state.db = None
 
 
     async def dbSchemaVersion(self) -> int:

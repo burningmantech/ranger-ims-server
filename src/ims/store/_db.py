@@ -69,10 +69,9 @@ class DatabaseStore(IMSDataStore):
 
 
     @abstractmethod
-    async def reconnect(self) -> None:
+    async def disconnect(self) -> None:
         """
-        Establish new database connections for new queries.
-        This does not interrupt current queries.
+        Close any existing connections to the database.
         """
 
 
@@ -95,7 +94,7 @@ class DatabaseStore(IMSDataStore):
         See :meth:`IMSDataStore.upgradeSchema`.
         """
         if await self.dbManager.upgradeSchema():
-            await self.reconnect()
+            await self.disconnect()
 
 
 

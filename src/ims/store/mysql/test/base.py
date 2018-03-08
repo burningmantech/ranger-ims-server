@@ -18,7 +18,7 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from typing import Optional, cast
+from typing import List, Optional, cast
 
 from pymysql.err import MySQLError
 
@@ -52,8 +52,22 @@ class DataStoreTests(SuperDataStoreTests):
 
 
     def setUp(self) -> None:
+        async def setUp() -> None:
+            self.stores: List[TestDataStore] = []
+
+            await self.mysqlService.start()
+
         # setUp can't return a coroutine, so convert it to a Deferred
-        return ensureDeferred(self.mysqlService.start())
+        return ensureDeferred(setUp())
+
+
+    def tearDown(self) -> None:
+        async def tearDown() -> None:
+            for store in self.stores:
+                await store.disconnect()
+
+        # setUp can't return a coroutine, so convert it to a Deferred
+        return ensureDeferred(tearDown())
 
 
     async def store(self) -> "TestDataStore":
@@ -73,6 +87,8 @@ class DataStoreTests(SuperDataStoreTests):
             password=service.password,
         )
         await store.upgradeSchema()
+
+        self.stores.append(store)
 
         return store
 
