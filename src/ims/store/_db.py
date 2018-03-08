@@ -21,7 +21,7 @@ Incident Management System database tooling.
 from abc import abstractmethod
 from pathlib import Path
 from textwrap import dedent
-from typing import Union
+from typing import Iterator, Mapping, Optional, Union
 
 from attr import attrib, attrs
 from attr.validators import instance_of
@@ -30,6 +30,16 @@ from twisted.logger import Logger
 
 from ._abc import IMSDataStore
 from ._exceptions import StorageError
+
+
+__all__ = ()
+
+
+ParameterValue = Optional[Union[bytes, str, int, float]]
+Parameters = Mapping[str, ParameterValue]
+
+Row = Parameters
+Rows = Iterator[Row]
 
 
 
@@ -72,6 +82,15 @@ class DatabaseStore(IMSDataStore):
     async def disconnect(self) -> None:
         """
         Close any existing connections to the database.
+        """
+
+
+    @abstractmethod
+    async def runQuery(
+        self, query: Query, parameters: Optional[Parameters] = None
+    ) -> Rows:
+        """
+        Execute the given query with the given parameters.
         """
 
 

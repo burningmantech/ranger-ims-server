@@ -20,7 +20,7 @@ Incident Management System SQL data store.
 
 from pathlib import Path
 from types import MappingProxyType
-from typing import Iterable, Iterator, Mapping, Optional, Tuple, Union, cast
+from typing import Iterable, Mapping, Optional, Tuple, cast
 
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of, optional
@@ -36,18 +36,12 @@ from ims.model import (
     ReportEntry,
 )
 
-from .._db import DatabaseStore, Query
+from .._db import DatabaseStore, Parameters, Query, Rows
 from .._exceptions import StorageError
 
 
 __all__ = ()
 
-
-ParameterValue = Optional[Union[bytes, str, int, float]]
-Parameters = Mapping[str, ParameterValue]
-
-Row = Parameters
-Rows = Iterator[Row]
 
 query_eventID = "select ID from EVENT where NAME = %(eventID)s"
 
@@ -108,40 +102,6 @@ class DataStore(DatabaseStore):
         return self._state.db
 
 
-    async def runQuery(
-        self, query: Query, params: Optional[Parameters] = None
-    ) -> Rows:
-        if params is None:
-            params = {}
-
-        try:
-            return iter(await self._db.runQuery(query.text, params))
-
-        except MySQLError as e:
-            self._log.critical(
-                "Unable to {description}: {error}",
-                description=query.description, error=e,
-            )
-            raise StorageError(e)
-
-
-    async def runOperation(
-        self, query: Query, params: Optional[Parameters] = None
-    ) -> None:
-        if params is None:
-            params = {}
-
-        try:
-            await self._db.runOperation(query.text, params)
-
-        except MySQLError as e:
-            self._log.critical(
-                "Unable to {description}: {error}",
-                description=query.description, error=e,
-            )
-            raise StorageError(e)
-
-
     async def disconnect(self) -> None:
         """
         See :meth:`DatabaseStore.disconnect`.
@@ -151,6 +111,41 @@ class DataStore(DatabaseStore):
             self._state.db = None
 
 
+    async def runQuery(
+        self, query: Query, parameters: Optional[Parameters] = None
+    ) -> Rows:
+        if parameters is None:
+            parameters = {}
+
+        try:
+            return iter(await self._db.runQuery(query.text, parameters))
+
+        except MySQLError as e:
+            self._log.critical(
+                "Unable to {description}: {error}",
+                description=query.description,
+                query=query, **parameters, error=e,
+            )
+            raise StorageError(e)
+
+
+    async def runOperation(
+        self, query: Query, parameters: Optional[Parameters] = None
+    ) -> None:
+        if parameters is None:
+            parameters = {}
+
+        try:
+            await self._db.runOperation(query.text, parameters)
+
+        except MySQLError as e:
+            self._log.critical(
+                "Unable to {description}: {error}",
+                description=query.description, error=e,
+            )
+            raise StorageError(e)
+
+
     async def dbSchemaVersion(self) -> int:
         """
         See `meth:DatabaseStore.dbSchemaVersion`.
@@ -158,12 +153,10 @@ class DataStore(DatabaseStore):
         query = self._query_schemaVersion
 
         try:
-            rows: Rows = iter(await self._db.runQuery(query.text))
-            try:
-                row = next(rows)
-            except StopIteration:
+            for row in await self._db.runQuery(query.text):
+                return cast(int, row["VERSION"])
+            else:
                 raise StorageError("Invalid schema: no version")
-            return cast(int, row["VERSION"])
 
         except MySQLError as e:
             message = e.args[1]

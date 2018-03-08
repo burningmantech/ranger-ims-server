@@ -34,7 +34,7 @@ from twisted.logger import Logger
 
 from ims.ext.json import objectFromJSONBytesIO
 from ims.ext.sqlite import (
-    Connection, Cursor, ParameterValue, Parameters, Row, SQLiteError,
+    Connection, Cursor, SQLiteError,
     createDB, explainQueryPlans, openDB, printSchema,
 )
 from ims.model import (
@@ -43,7 +43,7 @@ from ims.model import (
 )
 from ims.model.json import IncidentJSONKey, modelObjectFromJSONObject
 
-from .._db import DatabaseStore, Query
+from .._db import DatabaseStore, ParameterValue, Parameters, Query, Rows
 from .._exceptions import (
     NoSuchIncidentError, NoSuchIncidentReportError, StorageError
 )
@@ -115,11 +115,10 @@ class DataStore(DatabaseStore):
     @classmethod
     def _dbSchemaVersion(cls, db: Connection) -> int:
         try:
-            rows = db.execute("select VERSION from SCHEMA_INFO")
-            row = next(rows, None)
-            if row is None:
+            for row in db.execute("select VERSION from SCHEMA_INFO"):
+                return row["VERSION"]
+            else:
                 raise StorageError("Invalid schema: no version")
-            return row["VERSION"]
         except SQLiteError as e:
             if e.args[0] == "no such table: SCHEMA_INFO":
                 return 0
@@ -148,6 +147,31 @@ class DataStore(DatabaseStore):
         return self._state.db
 
 
+    async def disconnect(self) -> None:
+        """
+        See :meth:`DatabaseStore.disconnect`.
+        """
+        self._state.db = None
+
+
+    async def runQuery(
+        self, query: Query, parameters: Optional[Parameters] = None
+    ) -> Rows:
+        if parameters is None:
+            parameters = {}
+
+        try:
+            return self._db.execute(query.text, parameters)
+
+        except SQLiteError as e:
+            self._log.critical(
+                "Unable to {description}: {error}",
+                description=query.description,
+                query=query, **parameters, error=e,
+            )
+            raise StorageError(e)
+
+
     def _execute(
         self, queries: Iterable[Tuple[str, Parameters]],
         errorLogFormat: str,
@@ -161,26 +185,6 @@ class DataStore(DatabaseStore):
                 errorLogFormat, queries=queries, error=e
             )
             raise StorageError(e)
-
-
-    def _executeAndIterate(
-        self, query: str, parameters: Parameters, errorLogFormat: str
-    ) -> Iterable[Row]:
-        try:
-            for row in self._db.execute(query, parameters):
-                yield row
-        except SQLiteError as e:
-            self._log.critical(
-                errorLogFormat, query=query, **parameters, error=e
-            )
-            raise StorageError(e)
-
-
-    async def disconnect(self) -> None:
-        """
-        See :meth:`DatabaseStore.disconnect`.
-        """
-        self._state.db = None
 
 
     async def dbSchemaVersion(self) -> int:
@@ -288,9 +292,8 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.events`.
         """
         return (
-            Event(id=row["name"]) for row in self._executeAndIterate(
-                self._query_events.text, {}, "Unable to look up events"
-            )
+            Event(id=row["name"])
+            for row in await self.runQuery(self._query_events)
         )
 
     _query_events = Query(
@@ -324,12 +327,10 @@ class DataStore(DatabaseStore):
     )
 
 
-    def _eventAccess(self, event: Event, mode: str) -> Iterable[str]:
+    async def _eventAccess(self, event: Event, mode: str) -> Iterable[str]:
         return (
-            row["EXPRESSION"] for row in self._executeAndIterate(
-                self._query_eventAccess.text,
-                dict(eventID=event.id, mode=mode),
-                "Unable to look up {mode} access for event {eventID}",
+            cast(str, row["EXPRESSION"]) for row in await self.runQuery(
+                self._query_eventAccess, dict(eventID=event.id, mode=mode)
             )
         )
 
@@ -412,7 +413,7 @@ class DataStore(DatabaseStore):
         """
         assert type(event) is Event
 
-        return self._eventAccess(event, "read")
+        return await self._eventAccess(event, "read")
 
 
     async def setReaders(self, event: Event, readers: Iterable[str]) -> None:
@@ -428,7 +429,7 @@ class DataStore(DatabaseStore):
         """
         assert type(event) is Event
 
-        return self._eventAccess(event, "write")
+        return await self._eventAccess(event, "write")
 
 
     async def setWriters(self, event: Event, writers: Iterable[str]) -> None:
@@ -450,14 +451,12 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.incidentTypes`.
         """
         if includeHidden:
-            query = self._query_incidentTypes.text
+            query = self._query_incidentTypes
         else:
-            query = self._query_incidentTypesNotHidden.text
+            query = self._query_incidentTypesNotHidden
 
         return (
-            row["name"] for row in self._executeAndIterate(
-                query, {}, "Unable to look up incident types"
-            )
+            cast(str, row["name"]) for row in await self.runQuery(query)
         )
 
     _query_incidentTypes = Query(
@@ -560,10 +559,9 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.concentricStreets`.
         """
         return MappingProxyType(dict(
-            (row["ID"], row["NAME"]) for row in
-            self._executeAndIterate(
-                self._query_concentricStreets.text, dict(eventID=event.id),
-                "Unable to look up concentric streets for event {eventID}"
+            (cast(str, row["ID"]), cast(str, row["NAME"]))
+            for row in await self.runQuery(
+                self._query_concentricStreets, dict(eventID=event.id)
             )
         ))
 
@@ -659,7 +657,7 @@ class DataStore(DatabaseStore):
     def _fetchIncident(
         self, event: Event, incidentNumber: int, cursor: Cursor
     ) -> Incident:
-        params: Parameters = dict(
+        parameters: Parameters = dict(
             eventID=event.id, incidentNumber=incidentNumber
         )
 
@@ -669,7 +667,7 @@ class DataStore(DatabaseStore):
             )
 
         try:
-            cursor.execute(self._query_incident.text, params)
+            cursor.execute(self._query_incident.text, parameters)
         except OverflowError:
             notFound()
 
@@ -678,16 +676,15 @@ class DataStore(DatabaseStore):
             notFound()
 
         rangerHandles = tuple(
-            row["RANGER_HANDLE"]
-            for row in cast(Cursor, cursor.execute(
-                self._query_incident_rangers.text, params
+            row["RANGER_HANDLE"] for row in cast(Cursor, cursor.execute(
+                self._query_incident_rangers.text, parameters
             ))
         )
 
         incidentTypes = tuple(
             row["NAME"]
             for row in cast(Cursor, cursor.execute(
-                self._query_incident_incidentTypes.text, params
+                self._query_incident_incidentTypes.text, parameters
             ))
         )
 
@@ -699,7 +696,7 @@ class DataStore(DatabaseStore):
                 text=row["TEXT"],
             )
             for row in cast(Cursor, cursor.execute(
-                self._query_incident_reportEntries.text, params
+                self._query_incident_reportEntries.text, parameters
             )) if row["TEXT"]
         )
 
@@ -1589,7 +1586,9 @@ class DataStore(DatabaseStore):
     def _fetchIncidentReport(
         self, incidentReportNumber: int, cursor: Cursor
     ) -> IncidentReport:
-        params: Parameters = dict(incidentReportNumber=incidentReportNumber)
+        parameters: Parameters = dict(
+            incidentReportNumber=incidentReportNumber,
+        )
 
         def notFound() -> None:
             raise NoSuchIncidentReportError(
@@ -1597,7 +1596,7 @@ class DataStore(DatabaseStore):
             )
 
         try:
-            cursor.execute(self._query_incidentReport.text, params)
+            cursor.execute(self._query_incidentReport.text, parameters)
         except OverflowError:
             notFound()
 
@@ -1614,7 +1613,7 @@ class DataStore(DatabaseStore):
                 text=row["TEXT"],
             )
             for row in cast(Cursor, cursor.execute(
-                self._query_incidentReport_reportEntries.text, params
+                self._query_incidentReport_reportEntries.text, parameters
             ))
         )
 
