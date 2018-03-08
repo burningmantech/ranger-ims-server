@@ -18,7 +18,14 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from .base import DataStoreTests
+from typing import List, Optional
+
+from twisted.internet.defer import ensureDeferred
+from twisted.logger import Logger
+
+from .base import TestDataStore
+from .service import MySQLService
+from ...test.base import DataStoreTests as SuperDataStoreTests
 from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
 from ...test.incident import (
     DataStoreIncidentTests as SuperDataStoreIncidentTests
@@ -35,6 +42,61 @@ from ...test.type import (
 
 
 __all__ = ()
+
+
+
+class DataStoreTests(SuperDataStoreTests):
+    """
+    Parent test class.
+    """
+
+    log = Logger()
+
+    skip: Optional[str] = None
+
+    mysqlService = MySQLService()
+
+
+    def setUp(self) -> None:
+        async def setUp() -> None:
+            self.stores: List[TestDataStore] = []
+
+            await self.mysqlService.start()
+
+        # setUp can't return a coroutine, so convert it to a Deferred
+        return ensureDeferred(setUp())
+
+
+    def tearDown(self) -> None:
+        async def tearDown() -> None:
+            for store in self.stores:
+                await store.disconnect()
+
+        # setUp can't return a coroutine, so convert it to a Deferred
+        return ensureDeferred(tearDown())
+
+
+    async def store(self) -> TestDataStore:
+        service = self.mysqlService
+
+        assert service.host is not None
+        assert service.port is not None
+
+        name = await service.createDatabase()
+
+        store = TestDataStore(
+            self,
+            hostName=service.host,
+            hostPort=service.port,
+            database=name,
+            username=service.user,
+            password=service.password,
+        )
+        await store.upgradeSchema()
+
+        self.stores.append(store)
+
+        return store
 
 
 

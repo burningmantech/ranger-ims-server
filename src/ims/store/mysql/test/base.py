@@ -18,79 +18,20 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from typing import List, Optional, cast
+from typing import cast
 
 from pymysql.err import MySQLError
 
 from twisted.enterprise.adbapi import ConnectionPool
-from twisted.internet.defer import ensureDeferred
-from twisted.logger import Logger
 
+from ims.ext.trial import TestCase
 from ims.model import Event, Incident, IncidentReport
 
-from .service import MySQLService
 from .._store import DataStore
-from ...test.base import (
-    DataStoreTests as SuperDataStoreTests, TestDataStore as SuperTestDataStore
-)
+from ...test.base import TestDataStore as SuperTestDataStore
 
 
 __all__ = ()
-
-
-
-class DataStoreTests(SuperDataStoreTests):
-    """
-    Parent test class.
-    """
-
-    log = Logger()
-
-    skip: Optional[str] = None
-
-    mysqlService = MySQLService()
-
-
-    def setUp(self) -> None:
-        async def setUp() -> None:
-            self.stores: List[TestDataStore] = []
-
-            await self.mysqlService.start()
-
-        # setUp can't return a coroutine, so convert it to a Deferred
-        return ensureDeferred(setUp())
-
-
-    def tearDown(self) -> None:
-        async def tearDown() -> None:
-            for store in self.stores:
-                await store.disconnect()
-
-        # setUp can't return a coroutine, so convert it to a Deferred
-        return ensureDeferred(tearDown())
-
-
-    async def store(self) -> "TestDataStore":
-        service = self.mysqlService
-
-        assert service.host is not None
-        assert service.port is not None
-
-        name = await service.createDatabase()
-
-        store = TestDataStore(
-            self,
-            hostName=service.host,
-            hostPort=service.port,
-            database=name,
-            username=service.user,
-            password=service.password,
-        )
-        await store.upgradeSchema()
-
-        self.stores.append(store)
-
-        return store
 
 
 
@@ -105,7 +46,7 @@ class TestDataStore(SuperTestDataStore, DataStore):
 
 
     def __init__(
-        self, testCase: DataStoreTests,
+        self, testCase: TestCase,
         hostName: str,
         hostPort: int,
         database: str,
