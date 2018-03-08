@@ -20,7 +20,7 @@ Incident Management System SQL data store.
 
 from pathlib import Path
 from types import MappingProxyType
-from typing import Iterable, Mapping, Optional, Tuple, cast
+from typing import Callable, Iterable, Mapping, Optional, Tuple, cast
 
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of, optional
@@ -146,6 +146,17 @@ class DataStore(DatabaseStore):
             raise StorageError(e)
 
 
+    async def runInteraction(self, interaction: Callable) -> None:
+        try:
+            await self._db.runInteraction(interaction)
+        except MySQLError as e:
+            self._log.critical(
+                "Interaction {interaction} failed: {error}",
+                interaction=interaction, error=e,
+            )
+            raise StorageError(e)
+
+
     async def dbSchemaVersion(self) -> int:
         """
         See `meth:DatabaseStore.dbSchemaVersion`.
@@ -192,8 +203,8 @@ class DataStore(DatabaseStore):
                     txn.execute(statement)
 
         try:
-            await self._db.runInteraction(applySchema)
-        except MySQLError as e:
+            await self.runInteraction(applySchema)
+        except StorageError as e:
             self._log.critical(
                 "Unable to apply schema: {error}", sql=sql, error=e
             )
@@ -291,8 +302,8 @@ class DataStore(DatabaseStore):
                 )
 
         try:
-            await self._db.runInteraction(setEventAccess)
-        except MySQLError as e:
+            await self.runInteraction(setEventAccess)
+        except StorageError as e:
             self._log.critical(
                 "Unable to set access for {event} to {mode} "
                 "for {expressions}: {error}",
@@ -425,8 +436,8 @@ class DataStore(DatabaseStore):
                 )
 
         try:
-            await self._db.runInteraction(hideShowIncidentTypes)
-        except MySQLError as e:
+            await self.runInteraction(hideShowIncidentTypes)
+        except StorageError as e:
             self._log.critical(
                 "Unable to set hidden to {hidden} for incident types: "
                 "{incidentTypes}",

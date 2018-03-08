@@ -21,7 +21,7 @@ Incident Management System database tooling.
 from abc import abstractmethod
 from pathlib import Path
 from textwrap import dedent
-from typing import Iterator, Mapping, Optional, Union
+from typing import Callable, Iterator, Mapping, Optional, Union
 
 from attr import attrib, attrs
 from attr.validators import instance_of
@@ -101,6 +101,14 @@ class DatabaseStore(IMSDataStore):
     ) -> None:
         """
         Execute the given query with the given parameters.
+        """
+
+
+    @abstractmethod
+    async def runInteraction(self, interaction: Callable) -> None:
+        """
+        Create a cursor and call the given interaction with the cursor as the
+        sole argument.
         """
 
 

@@ -24,7 +24,9 @@ from datetime import (
 from pathlib import Path
 from sys import stdout
 from types import MappingProxyType
-from typing import Any, Iterable, Mapping, Optional, Tuple, Union, cast
+from typing import (
+    Any, Callable, Iterable, Mapping, Optional, Tuple, Union, cast
+)
 from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
@@ -178,17 +180,14 @@ class DataStore(DatabaseStore):
         await self.runQuery(query, parameters)
 
 
-    def _execute(
-        self, queries: Iterable[Tuple[str, Parameters]],
-        errorLogFormat: str,
-    ) -> None:
+    async def runInteraction(self, interaction: Callable) -> None:
         try:
-            with self._db as db:
-                for (query, parameters) in queries:
-                    db.execute(query, parameters)
+            with self._db as cursor:
+                interaction(cursor)
         except SQLiteError as e:
             self._log.critical(
-                errorLogFormat, queries=queries, error=e
+                "Interaction {interaction} failed: {error}",
+                interaction=interaction, error=e,
             )
             raise StorageError(e)
 
@@ -346,33 +345,32 @@ class DataStore(DatabaseStore):
     )
 
 
-    def _setEventAccess(
+    async def _setEventAccess(
         self, event: Event, mode: str, expressions: Iterable[str]
     ) -> None:
         expressions = tuple(expressions)
-        try:
-            with self._db as db:
-                cursor: Cursor = db.cursor()
-                try:
-                    cursor.execute(
-                        self._query_clearEventAccessForMode.text,
-                        dict(eventID=event.id, mode=mode),
+
+        def setEventAccess(txn: Cursor) -> None:
+            txn.execute(
+                self._query_clearEventAccessForMode.text,
+                dict(eventID=event.id, mode=mode),
+            )
+            for expression in expressions:
+                txn.execute(
+                    self._query_clearEventAccessForExpression.text,
+                    dict(eventID=event.id, expression=expression),
+                )
+                txn.execute(
+                    self._query_addEventAccess.text, dict(
+                        eventID=event.id,
+                        expression=expression,
+                        mode=mode,
                     )
-                    for expression in expressions:
-                        cursor.execute(
-                            self._query_clearEventAccessForExpression.text,
-                            dict(eventID=event.id, expression=expression),
-                        )
-                        cursor.execute(
-                            self._query_addEventAccess.text, dict(
-                                eventID=event.id,
-                                expression=expression,
-                                mode=mode,
-                            )
-                        )
-                finally:
-                    cursor.close()
-        except SQLiteError as e:
+                )
+
+        try:
+            await self.runInteraction(setEventAccess)
+        except StorageError as e:
             self._log.critical(
                 "Unable to set {mode} access for {event}: {error}",
                 event=event, mode=mode, expressions=expressions, error=e,
@@ -423,7 +421,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setReaders`.
         """
-        return self._setEventAccess(event, "read", readers)
+        await self._setEventAccess(event, "read", readers)
 
 
     async def writers(self, event: Event) -> Iterable[str]:
@@ -439,7 +437,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.setWriters`.
         """
-        return self._setEventAccess(event, "write", writers)
+        await self._setEventAccess(event, "write", writers)
 
 
     ###
@@ -502,21 +500,27 @@ class DataStore(DatabaseStore):
     )
 
 
-    def _hideShowIncidentTypes(
+    async def _hideShowIncidentTypes(
         self, incidentTypes: Iterable[str], hidden: bool
     ) -> None:
         incidentTypes = tuple(incidentTypes)
-        self._execute(
-            (
-                (
+
+        def hideShowIncidentTypes(txn: Cursor) -> None:
+            for incidentType in incidentTypes:
+                txn.execute(
                     self._query_hideShowIncidentType.text,
                     dict(incidentType=incidentType, hidden=hidden),
                 )
-                for incidentType in incidentTypes
-            ),
-            f"Unable to set hidden to {hidden} for incident types "
-            f"{{incidentTypes}}"
-        )
+
+        try:
+            await self.runInteraction(hideShowIncidentTypes)
+        except StorageError as e:
+            self._log.critical(
+                "Unable to set hidden to {hidden} for incident types: "
+                "{incidentTypes}",
+                incidentTypes=incidentTypes, hidden=hidden,
+            )
+            raise StorageError(f"Unable to set hidden: {e}")
 
         self._log.info(
             "Set hidden to {hidden} for incident types: {incidentTypes}",
@@ -535,14 +539,14 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.showIncidentTypes`.
         """
-        return self._hideShowIncidentTypes(incidentTypes, False)
+        await self._hideShowIncidentTypes(incidentTypes, False)
 
 
     async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
         """
         See :meth:`IMSDataStore.hideIncidentTypes`.
         """
-        return self._hideShowIncidentTypes(incidentTypes, True)
+        await self._hideShowIncidentTypes(incidentTypes, True)
 
 
     ###
