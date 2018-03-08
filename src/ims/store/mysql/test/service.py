@@ -15,7 +15,8 @@
 ##
 
 """
-MySQL container for testing.
+Start up a MySQL service for testing.
+This implementation uses Docker containers.
 """
 
 from random import choice
