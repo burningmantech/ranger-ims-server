@@ -240,6 +240,10 @@ class DataStore(DatabaseStore):
             self._query_createEvent, dict(eventID=event.id)
         )
 
+        self._log.info(
+            "Created event: {event}", storeWriteClass=Event, event=event,
+        )
+
     _query_createEvent = Query(
         "create event",
         """
