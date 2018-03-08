@@ -90,6 +90,16 @@ class DatabaseStore(IMSDataStore):
         self, query: Query, parameters: Optional[Parameters] = None
     ) -> Rows:
         """
+        Execute the given query with the given parameters, returning the
+        resulting rows.
+        """
+
+
+    @abstractmethod
+    async def runOperation(
+        self, query: Query, parameters: Optional[Parameters] = None
+    ) -> None:
+        """
         Execute the given query with the given parameters.
         """
 

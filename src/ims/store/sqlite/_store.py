@@ -24,7 +24,7 @@ from datetime import (
 from pathlib import Path
 from sys import stdout
 from types import MappingProxyType
-from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union, cast
+from typing import Any, Iterable, Mapping, Optional, Tuple, Union, cast
 from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
@@ -172,6 +172,12 @@ class DataStore(DatabaseStore):
             raise StorageError(e)
 
 
+    async def runOperation(
+        self, query: Query, parameters: Optional[Parameters] = None
+    ) -> None:
+        await self.runQuery(query, parameters)
+
+
     def _execute(
         self, queries: Iterable[Tuple[str, Parameters]],
         errorLogFormat: str,
@@ -308,11 +314,8 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createEvent`.
         """
-        self._execute(
-            (
-                (self._query_createEvent.text, dict(eventID=event.id)),
-            ),
-            "Unable to create event {eventID}"
+        await self.runOperation(
+            self._query_createEvent, dict(eventID=event.id)
         )
 
         self._log.info(
@@ -480,16 +483,9 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createIncidentType`.
         """
-        self._execute(
-            ((
-                # FIXME: This casting shouldn't be necessary
-                cast(str, self._query_createIncidentType.text),
-                cast(
-                    Dict[str, ParameterValue],
-                    dict(incidentType=incidentType, hidden=hidden)
-                ),
-            ),),
-            "Unable to create incident type {name}"
+        await self.runOperation(
+            self._query_createIncidentType,
+            dict(incidentType=incidentType, hidden=hidden),
         )
 
         self._log.info(
@@ -579,13 +575,9 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.createConcentricStreet`.
         """
-        self._execute(
-            ((
-                self._query_createConcentricStreet.text,
-                dict(eventID=event.id, streetID=id, streetName=name)
-            ),),
-            "Unable to create concentric street ({streetID}){streetName} "
-            "for event {event}"
+        await self.runOperation(
+            self._query_createConcentricStreet,
+            dict(eventID=event.id, streetID=id, streetName=name)
         )
 
         self._log.info(
