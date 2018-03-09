@@ -23,10 +23,7 @@ from datetime import (
 )
 from pathlib import Path
 from sys import stdout
-from types import MappingProxyType
-from typing import (
-    Any, Callable, Iterable, Mapping, Optional, Tuple, Union, cast
-)
+from typing import Any, Callable, Iterable, Optional, Tuple, Union
 from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
@@ -45,6 +42,7 @@ from ims.model import (
 )
 from ims.model.json import IncidentJSONKey, modelObjectFromJSONObject
 
+from ._queries import queries
 from .._db import DatabaseStore, ParameterValue, Parameters, Query, Rows
 from .._exceptions import (
     NoSuchIncidentError, NoSuchIncidentReportError, StorageError
@@ -69,6 +67,8 @@ class DataStore(DatabaseStore):
     schemaVersion = 2
     schemaBasePath = Path(__file__).parent / "schema"
     sqlFileExtension = "sqlite"
+
+    query = queries
 
 
     @attrs(frozen=False)
@@ -102,11 +102,10 @@ class DataStore(DatabaseStore):
         """
         Print a summary of queries.
         """
-        queries = [
-            (getattr(cls, k).text, k[7:])
-            for k in sorted(vars(cls))
-            if k.startswith("_query_")
-        ]
+        queries = (
+            (getattr(cls.query, name).text, name)
+            for name in sorted(vars(cls.query))
+        )
 
         with createDB(None, cls.loadSchema()) as db:
             for line in explainQueryPlans(db, queries):
@@ -287,317 +286,6 @@ class DataStore(DatabaseStore):
                     self.importIncident(incident)
 
 
-    ###
-    # Events
-    ###
-
-
-    async def events(self) -> Iterable[Event]:
-        """
-        See :meth:`IMSDataStore.events`.
-        """
-        return (
-            Event(id=row["name"])
-            for row in await self.runQuery(self._query_events)
-        )
-
-    _query_events = Query(
-        "look up events",
-        """
-        select NAME from EVENT
-        """
-    )
-
-
-    async def createEvent(self, event: Event) -> None:
-        """
-        See :meth:`IMSDataStore.createEvent`.
-        """
-        await self.runOperation(
-            self._query_createEvent, dict(eventID=event.id)
-        )
-
-        self._log.info(
-            "Created event: {event}", storeWriteClass=Event, event=event,
-        )
-
-    _query_createEvent = Query(
-        "create event",
-        """
-        insert into EVENT (NAME) values (:eventID)
-        """
-    )
-
-
-    async def _eventAccess(self, event: Event, mode: str) -> Iterable[str]:
-        return (
-            cast(str, row["EXPRESSION"]) for row in await self.runQuery(
-                self._query_eventAccess, dict(eventID=event.id, mode=mode)
-            )
-        )
-
-    _query_eventAccess = Query(
-        "look up access for event",
-        f"""
-        select EXPRESSION from EVENT_ACCESS
-        where EVENT = ({query_eventID}) and MODE = :mode
-        """
-    )
-
-
-    async def _setEventAccess(
-        self, event: Event, mode: str, expressions: Iterable[str]
-    ) -> None:
-        expressions = tuple(expressions)
-
-        def setEventAccess(txn: Cursor) -> None:
-            txn.execute(
-                self._query_clearEventAccessForMode.text,
-                dict(eventID=event.id, mode=mode),
-            )
-            for expression in expressions:
-                txn.execute(
-                    self._query_clearEventAccessForExpression.text,
-                    dict(eventID=event.id, expression=expression),
-                )
-                txn.execute(
-                    self._query_addEventAccess.text, dict(
-                        eventID=event.id,
-                        expression=expression,
-                        mode=mode,
-                    )
-                )
-
-        try:
-            await self.runInteraction(setEventAccess)
-        except StorageError as e:
-            self._log.critical(
-                "Unable to set {mode} access for {event}: {error}",
-                event=event, mode=mode, expressions=expressions, error=e,
-            )
-            raise StorageError(e)
-
-        self._log.info(
-            "Set {mode} access for {event}: {expressions}",
-            storeWriteClass=Event,
-            event=event, mode=mode, expressions=expressions,
-        )
-
-    _query_clearEventAccessForMode = Query(
-        "clear event access for mode",
-        f"""
-        delete from EVENT_ACCESS
-        where EVENT = ({query_eventID}) and MODE = :mode
-        """
-    )
-
-    _query_clearEventAccessForExpression = Query(
-        "clear event access for expression",
-        f"""
-        delete from EVENT_ACCESS
-        where EVENT = ({query_eventID}) and EXPRESSION = :expression
-        """
-    )
-
-    _query_addEventAccess = Query(
-        "add event access",
-        f"""
-        insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)
-        values (({query_eventID}), :expression, :mode)
-        """
-    )
-
-
-    async def readers(self, event: Event) -> Iterable[str]:
-        """
-        See :meth:`IMSDataStore.readers`.
-        """
-        assert type(event) is Event
-
-        return await self._eventAccess(event, "read")
-
-
-    async def setReaders(self, event: Event, readers: Iterable[str]) -> None:
-        """
-        See :meth:`IMSDataStore.setReaders`.
-        """
-        await self._setEventAccess(event, "read", readers)
-
-
-    async def writers(self, event: Event) -> Iterable[str]:
-        """
-        See :meth:`IMSDataStore.writers`.
-        """
-        assert type(event) is Event
-
-        return await self._eventAccess(event, "write")
-
-
-    async def setWriters(self, event: Event, writers: Iterable[str]) -> None:
-        """
-        See :meth:`IMSDataStore.setWriters`.
-        """
-        await self._setEventAccess(event, "write", writers)
-
-
-    ###
-    # Incident Types
-    ###
-
-
-    async def incidentTypes(
-        self, includeHidden: bool = False
-    ) -> Iterable[str]:
-        """
-        See :meth:`IMSDataStore.incidentTypes`.
-        """
-        if includeHidden:
-            query = self._query_incidentTypes
-        else:
-            query = self._query_incidentTypesNotHidden
-
-        return (
-            cast(str, row["name"]) for row in await self.runQuery(query)
-        )
-
-    _query_incidentTypes = Query(
-        "look up incident types",
-        """
-        select NAME from INCIDENT_TYPE
-        """
-    )
-
-    _query_incidentTypesNotHidden = Query(
-        "look up non-hidden incident types",
-        """
-        select NAME from INCIDENT_TYPE where HIDDEN = 0
-        """
-    )
-
-
-    async def createIncidentType(
-        self, incidentType: str, hidden: bool = False
-    ) -> None:
-        """
-        See :meth:`IMSDataStore.createIncidentType`.
-        """
-        await self.runOperation(
-            self._query_createIncidentType,
-            dict(incidentType=incidentType, hidden=hidden),
-        )
-
-        self._log.info(
-            "Created incident type: {incidentType} (hidden={hidden})",
-            incidentType=incidentType, hidden=hidden,
-        )
-
-    _query_createIncidentType = Query(
-        "create incident type",
-        """
-        insert into INCIDENT_TYPE (NAME, HIDDEN)
-        values (:incidentType, :hidden)
-        """
-    )
-
-
-    async def _hideShowIncidentTypes(
-        self, incidentTypes: Iterable[str], hidden: bool
-    ) -> None:
-        incidentTypes = tuple(incidentTypes)
-
-        def hideShowIncidentTypes(txn: Cursor) -> None:
-            for incidentType in incidentTypes:
-                txn.execute(
-                    self._query_hideShowIncidentType.text,
-                    dict(incidentType=incidentType, hidden=hidden),
-                )
-
-        try:
-            await self.runInteraction(hideShowIncidentTypes)
-        except StorageError as e:
-            self._log.critical(
-                "Unable to set hidden to {hidden} for incident types: "
-                "{incidentTypes}",
-                incidentTypes=incidentTypes, hidden=hidden,
-            )
-            raise StorageError(f"Unable to set hidden: {e}")
-
-        self._log.info(
-            "Set hidden to {hidden} for incident types: {incidentTypes}",
-            incidentTypes=incidentTypes, hidden=hidden,
-        )
-
-    _query_hideShowIncidentType = Query(
-        "hide/show incident type",
-        """
-        update INCIDENT_TYPE set HIDDEN = :hidden where NAME = :incidentType
-        """
-    )
-
-
-    async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
-        """
-        See :meth:`IMSDataStore.showIncidentTypes`.
-        """
-        await self._hideShowIncidentTypes(incidentTypes, False)
-
-
-    async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
-        """
-        See :meth:`IMSDataStore.hideIncidentTypes`.
-        """
-        await self._hideShowIncidentTypes(incidentTypes, True)
-
-
-    ###
-    # Concentric Streets
-    ###
-
-
-    async def concentricStreets(self, event: Event) -> Mapping[str, str]:
-        """
-        See :meth:`IMSDataStore.concentricStreets`.
-        """
-        return MappingProxyType(dict(
-            (cast(str, row["ID"]), cast(str, row["NAME"]))
-            for row in await self.runQuery(
-                self._query_concentricStreets, dict(eventID=event.id)
-            )
-        ))
-
-    _query_concentricStreets = Query(
-        "look up concentric streets for event",
-        f"""
-        select ID, NAME from CONCENTRIC_STREET where EVENT = ({query_eventID})
-        """
-    )
-
-
-    async def createConcentricStreet(
-        self, event: Event, id: str, name: str
-    ) -> None:
-        """
-        See :meth:`IMSDataStore.createConcentricStreet`.
-        """
-        await self.runOperation(
-            self._query_createConcentricStreet,
-            dict(eventID=event.id, streetID=id, streetName=name)
-        )
-
-        self._log.info(
-            "Created concentric street in {event}: {streetName}",
-            storeWriteClass=Event, event=event, concentricStreetName=name,
-        )
-
-    _query_createConcentricStreet = Query(
-        "create concentric street",
-        f"""
-        insert into CONCENTRIC_STREET (EVENT, ID, NAME)
-        values (({query_eventID}), :streetID, :streetName)
-        """
-    )
-
-
     ##
     # Report Entries
     ##
@@ -621,9 +309,9 @@ class DataStore(DatabaseStore):
                             automatic=bool(row["GENERATED"]),
                             text=row["TEXT"],
                         )
-                        for row in cast(Cursor, cursor.execute(
-                            self._query_detachedReportEntries.text, {}
-                        )) if row["TEXT"]
+                        for row in cursor.execute(
+                            self.query.detachedReportEntries.text, {}
+                        ) if row["TEXT"]
                     )
                 finally:
                     cursor.close()
@@ -633,16 +321,6 @@ class DataStore(DatabaseStore):
                 error=e,
             )
             raise StorageError(e)
-
-    _query_detachedReportEntries = Query(
-        "look up detached report entries",
-        """
-        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
-        where
-            ID not in (select REPORT_ENTRY from INCIDENT__REPORT_ENTRY) and
-            ID not in (select REPORT_ENTRY from INCIDENT_REPORT__REPORT_ENTRY)
-        """
-    )
 
 
     ###
@@ -663,7 +341,7 @@ class DataStore(DatabaseStore):
             )
 
         try:
-            cursor.execute(self._query_incident.text, parameters)
+            cursor.execute(self.query.incident.text, parameters)
         except OverflowError:
             notFound()
 
@@ -672,16 +350,16 @@ class DataStore(DatabaseStore):
             notFound()
 
         rangerHandles = tuple(
-            row["RANGER_HANDLE"] for row in cast(Cursor, cursor.execute(
-                self._query_incident_rangers.text, parameters
-            ))
+            row["RANGER_HANDLE"] for row in cursor.execute(
+                self.query.incident_rangers.text, parameters
+            )
         )
 
         incidentTypes = tuple(
             row["NAME"]
-            for row in cast(Cursor, cursor.execute(
-                self._query_incident_incidentTypes.text, parameters
-            ))
+            for row in cursor.execute(
+                self.query.incident_incidentTypes.text, parameters
+            )
         )
 
         reportEntries = tuple(
@@ -691,9 +369,9 @@ class DataStore(DatabaseStore):
                 automatic=bool(row["GENERATED"]),
                 text=row["TEXT"],
             )
-            for row in cast(Cursor, cursor.execute(
-                self._query_incident_reportEntries.text, parameters
-            )) if row["TEXT"]
+            for row in cursor.execute(
+                self.query.incident_reportEntries.text, parameters
+            ) if row["TEXT"]
         )
 
         # FIXME: This is because schema thinks concentric is an int
@@ -723,54 +401,6 @@ class DataStore(DatabaseStore):
             reportEntries=reportEntries,
         )
 
-    _query_incident = Query(
-        "look up incident",
-        f"""
-        select
-            CREATED, PRIORITY, STATE, SUMMARY,
-            LOCATION_NAME,
-            LOCATION_CONCENTRIC,
-            LOCATION_RADIAL_HOUR,
-            LOCATION_RADIAL_MINUTE,
-            LOCATION_DESCRIPTION
-        from INCIDENT i
-        where EVENT = ({query_eventID}) and NUMBER = :incidentNumber
-        """
-    )
-
-    _query_incident_rangers = Query(
-        "look up Ranger for incident",
-        f"""
-        select RANGER_HANDLE from INCIDENT__RANGER
-        where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber
-        """
-    )
-
-    _query_incident_incidentTypes = Query(
-        "look up incident types for incident",
-        f"""
-        select NAME from INCIDENT_TYPE where ID in (
-            select INCIDENT_TYPE from INCIDENT__INCIDENT_TYPE
-            where
-                EVENT = ({query_eventID}) and
-                INCIDENT_NUMBER = :incidentNumber
-        )
-        """
-    )
-
-    _query_incident_reportEntries = Query(
-        "look up report entries for incident",
-        f"""
-        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
-        where ID in (
-            select REPORT_ENTRY from INCIDENT__REPORT_ENTRY
-            where
-                EVENT = ({query_eventID}) and
-                INCIDENT_NUMBER = :incidentNumber
-        )
-        """
-    )
-
 
     def _fetchIncidentNumbers(
         self, event: Event, cursor: Cursor
@@ -778,17 +408,10 @@ class DataStore(DatabaseStore):
         """
         Look up all incident numbers for the given event.
         """
-        for row in cast(Cursor, cursor.execute(
-            self._query_incidentNumbers.text, dict(eventID=event.id)
-        )):
+        for row in cursor.execute(
+            self.query.incidentNumbers.text, dict(eventID=event.id)
+        ):
             yield row["NUMBER"]
-
-    _query_incidentNumbers = Query(
-        "look up incident numbers for event",
-        f"""
-        select NUMBER from INCIDENT where EVENT = ({query_eventID})
-        """
-    )
 
 
     async def incidents(self, event: Event) -> Iterable[Incident]:
@@ -839,20 +462,13 @@ class DataStore(DatabaseStore):
         Look up the next available incident number.
         """
         cursor.execute(
-            self._query_maxIncidentNumber.text, dict(eventID=event.id)
+            self.query.maxIncidentNumber.text, dict(eventID=event.id)
         )
         number = cursor.fetchone()["max(NUMBER)"]
         if number is None:
             return 1
         else:
             return number + 1
-
-    _query_maxIncidentNumber = Query(
-        "look up maximum incident number for event",
-        f"""
-        select max(NUMBER) from INCIDENT where EVENT = ({query_eventID})
-        """
-    )
 
 
     def _attachRangeHandlesToIncident(
@@ -863,7 +479,7 @@ class DataStore(DatabaseStore):
 
         for rangerHandle in rangerHandles:
             cursor.execute(
-                self._query_attachRangeHandleToIncident.text, dict(
+                self.query.attachRangeHandleToIncident.text, dict(
                     eventID=event.id,
                     incidentNumber=incidentNumber,
                     rangerHandle=rangerHandle,
@@ -879,14 +495,6 @@ class DataStore(DatabaseStore):
             rangerHandles=rangerHandles,
         )
 
-    _query_attachRangeHandleToIncident = Query(
-        "add Ranger to incident",
-        f"""
-        insert into INCIDENT__RANGER (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
-        values (({query_eventID}), :incidentNumber, :rangerHandle)
-        """
-    )
-
 
     def _attachIncidentTypesToIncident(
         self, event: Event, incidentNumber: int, incidentTypes: Iterable[str],
@@ -896,7 +504,7 @@ class DataStore(DatabaseStore):
 
         for incidentType in incidentTypes:
             cursor.execute(
-                self._query_attachIncidentTypeToIncident.text, dict(
+                self.query.attachIncidentTypeToIncident.text, dict(
                     eventID=event.id,
                     incidentNumber=incidentNumber,
                     incidentType=incidentType,
@@ -912,26 +520,12 @@ class DataStore(DatabaseStore):
             incidentTypes=incidentTypes,
         )
 
-    _query_attachIncidentTypeToIncident = Query(
-        "add incident type to incident",
-        f"""
-        insert into INCIDENT__INCIDENT_TYPE (
-            EVENT, INCIDENT_NUMBER, INCIDENT_TYPE
-        )
-        values (
-            ({query_eventID}),
-            :incidentNumber,
-            (select ID from INCIDENT_TYPE where NAME = :incidentType)
-        )
-        """
-    )
-
 
     def _createReportEntry(
         self, reportEntry: ReportEntry, cursor: Cursor
     ) -> None:
         cursor.execute(
-            self._query_createReportEntry.text, dict(
+            self.query.createReportEntry.text, dict(
                 created=asTimeStamp(reportEntry.created),
                 generated=reportEntry.automatic,
                 author=reportEntry.author,
@@ -943,14 +537,6 @@ class DataStore(DatabaseStore):
             "Created report entry: {reportEntry}",
             storeWriteClass=ReportEntry, reportEntry=reportEntry,
         )
-
-    _query_createReportEntry = Query(
-        "create report entry",
-        """
-        insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
-        values (:author, :text, :created, :generated)
-        """
-    )
 
 
     def _createAndAttachReportEntriesToIncident(
@@ -964,7 +550,7 @@ class DataStore(DatabaseStore):
 
             # Join to incident
             cursor.execute(
-                self._query_attachReportEntryToIncident.text, dict(
+                self.query.attachReportEntryToIncident.text, dict(
                     eventID=event.id,
                     incidentNumber=incidentNumber,
                     reportEntryID=cursor.lastrowid,
@@ -979,16 +565,6 @@ class DataStore(DatabaseStore):
             incidentNumber=incidentNumber,
             reportEntries=reportEntries,
         )
-
-    _query_attachReportEntryToIncident = Query(
-        "add report entry to incident",
-        f"""
-        insert into INCIDENT__REPORT_ENTRY (
-            EVENT, INCIDENT_NUMBER, REPORT_ENTRY
-        )
-        values (({query_eventID}), :incidentNumber, :reportEntryID)
-        """
-    )
 
 
     def _automaticReportEntry(
@@ -1104,7 +680,7 @@ class DataStore(DatabaseStore):
 
                     # Write incident row
                     cursor.execute(
-                        self._query_createIncident.text, dict(
+                        self.query.createIncident.text, dict(
                             eventID=incident.event.id,
                             incidentNumber=incident.number,
                             incidentCreated=asTimeStamp(incident.created),
@@ -1151,41 +727,6 @@ class DataStore(DatabaseStore):
             "Created incident {incident}",
             storeWriteClass=Incident, incident=incident,
         )
-
-
-    _query_createIncident = Query(
-        "create incident",
-        f"""
-        insert into INCIDENT (
-            EVENT,
-            NUMBER,
-            VERSION,
-            CREATED,
-            PRIORITY,
-            STATE,
-            SUMMARY,
-            LOCATION_NAME,
-            LOCATION_CONCENTRIC,
-            LOCATION_RADIAL_HOUR,
-            LOCATION_RADIAL_MINUTE,
-            LOCATION_DESCRIPTION
-        )
-        values (
-            ({query_eventID}),
-            :incidentNumber,
-            1,
-            :incidentCreated,
-            :incidentPriority,
-            :incidentState,
-            :incidentSummary,
-            :locationName,
-            :locationConcentric,
-            :locationRadialHour,
-            :locationRadialMinute,
-            :locationDescription
-        )
-        """
-    )
 
 
     async def createIncident(
@@ -1255,13 +796,6 @@ class DataStore(DatabaseStore):
             author=author,
         )
 
-    _template_setIncidentAttribute = (
-        f"""
-        update INCIDENT set {{column}} = :value
-        where EVENT = ({query_eventID}) and NUMBER = :incidentNumber
-        """
-    )
-
 
     async def setIncident_priority(
         self, event: Event, incidentNumber: int, priority: IncidentPriority,
@@ -1271,14 +805,9 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_priority`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_priority.text,
+            self.query.setIncident_priority.text,
             event, incidentNumber, "priority", priorityAsID(priority), author,
         )
-
-    _query_setIncident_priority = Query(
-        "set incident priority",
-        _template_setIncidentAttribute.format(column="PRIORITY")
-    )
 
 
     async def setIncident_state(
@@ -1289,14 +818,9 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_state`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_state.text,
+            self.query.setIncident_state.text,
             event, incidentNumber, "state", incidentStateAsID(state), author,
         )
-
-    _query_setIncident_state = Query(
-        "set incident state",
-        _template_setIncidentAttribute.format(column="STATE")
-    )
 
 
     async def setIncident_summary(
@@ -1306,14 +830,9 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_summary`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_summary.text,
+            self.query.setIncident_summary.text,
             event, incidentNumber, "summary", summary, author,
         )
-
-    _query_setIncident_summary = Query(
-        "set incident summary",
-        _template_setIncidentAttribute.format(column="SUMMARY")
-    )
 
 
     async def setIncident_locationName(
@@ -1323,14 +842,9 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_locationName`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_locationName.text,
+            self.query.setIncident_locationName.text,
             event, incidentNumber, "location name", name, author,
         )
-
-    _query_setIncident_locationName = Query(
-        "set incident location name",
-        _template_setIncidentAttribute.format(column="LOCATION_NAME")
-    )
 
 
     async def setIncident_locationConcentricStreet(
@@ -1340,15 +854,10 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_locationConcentricStreet`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_locationConcentricStreet.text,
+            self.query.setIncident_locationConcentricStreet.text,
             event, incidentNumber, "location concentric street", streetID,
             author,
         )
-
-    _query_setIncident_locationConcentricStreet = Query(
-        "set incident location concentric street",
-        _template_setIncidentAttribute.format(column="LOCATION_CONCENTRIC")
-    )
 
 
     async def setIncident_locationRadialHour(
@@ -1358,14 +867,9 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_locationRadialHour`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_locationRadialHour.text,
+            self.query.setIncident_locationRadialHour.text,
             event, incidentNumber, "location radial hour", hour, author,
         )
-
-    _query_setIncident_locationRadialHour = Query(
-        "set incident location radial hour",
-        _template_setIncidentAttribute.format(column="LOCATION_RADIAL_HOUR")
-    )
 
 
     async def setIncident_locationRadialMinute(
@@ -1375,14 +879,9 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_locationRadialMinute`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_locationRadialMinute.text,
+            self.query.setIncident_locationRadialMinute.text,
             event, incidentNumber, "location radial minute", minute, author,
         )
-
-    _query_setIncident_locationRadialMinute = Query(
-        "set incident location radial minute",
-        _template_setIncidentAttribute.format(column="LOCATION_RADIAL_MINUTE")
-    )
 
 
     async def setIncident_locationDescription(
@@ -1392,15 +891,10 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncident_locationDescription`.
         """
         self._setIncidentAttribute(
-            self._query_setIncident_locationDescription.text,
+            self.query.setIncident_locationDescription.text,
             event, incidentNumber, "location description", description,
             author,
         )
-
-    _query_setIncident_locationDescription = Query(
-        "set incident location description",
-        _template_setIncidentAttribute.format(column="LOCATION_DESCRIPTION")
-    )
 
 
     async def setIncident_rangers(
@@ -1421,7 +915,7 @@ class DataStore(DatabaseStore):
                 cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
-                        self._query_clearIncidentRangers.text,
+                        self.query.clearIncidentRangers.text,
                         dict(eventID=event.id, incidentNumber=incidentNumber)
                     )
 
@@ -1457,14 +951,6 @@ class DataStore(DatabaseStore):
             rangerHandles=rangerHandles,
         )
 
-    _query_clearIncidentRangers = Query(
-        "clear incident Rangers",
-        f"""
-        delete from INCIDENT__RANGER
-        where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber
-        """
-    )
-
 
     async def setIncident_incidentTypes(
         self, event: Event, incidentNumber: int, incidentTypes: Iterable[str],
@@ -1484,7 +970,7 @@ class DataStore(DatabaseStore):
                 cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
-                        self._query_clearIncidentIncidentTypes.text,
+                        self.query.clearIncidentIncidentTypes.text,
                         dict(eventID=event.id, incidentNumber=incidentNumber)
                     )
 
@@ -1520,14 +1006,6 @@ class DataStore(DatabaseStore):
             incidentNumber=incidentNumber,
             incidentTypes=incidentTypes,
         )
-
-    _query_clearIncidentIncidentTypes = Query(
-        "clear incident types",
-        f"""
-        delete from INCIDENT__INCIDENT_TYPE
-        where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber
-        """
-    )
 
 
     async def addReportEntriesToIncident(
@@ -1592,7 +1070,7 @@ class DataStore(DatabaseStore):
             )
 
         try:
-            cursor.execute(self._query_incidentReport.text, parameters)
+            cursor.execute(self.query.incidentReport.text, parameters)
         except OverflowError:
             notFound()
 
@@ -1608,9 +1086,9 @@ class DataStore(DatabaseStore):
                 automatic=bool(row["GENERATED"]),
                 text=row["TEXT"],
             )
-            for row in cast(Cursor, cursor.execute(
-                self._query_incidentReport_reportEntries.text, parameters
-            ))
+            for row in cursor.execute(
+                self.query.incidentReport_reportEntries.text, parameters
+            )
         )
 
         return IncidentReport(
@@ -1620,39 +1098,13 @@ class DataStore(DatabaseStore):
             reportEntries=reportEntries,
         )
 
-    _query_incidentReport = Query(
-        "look up incident report",
-        """
-        select CREATED, SUMMARY from INCIDENT_REPORT
-        where NUMBER = :incidentReportNumber
-        """
-    )
-
-    _query_incidentReport_reportEntries = Query(
-        "look up report entries for incident report",
-        """
-        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
-        where ID in (
-            select REPORT_ENTRY from INCIDENT_REPORT__REPORT_ENTRY
-            where INCIDENT_REPORT_NUMBER = :incidentReportNumber
-        )
-        """
-    )
-
 
     def _fetchIncidentReportNumbers(self, cursor: Cursor) -> Iterable[int]:
         return (
-            row["NUMBER"] for row in cast(Cursor, cursor.execute(
-                self._query_incidentReportNumbers.text, {}
-            ))
+            row["NUMBER"] for row in cursor.execute(
+                self.query.incidentReportNumbers.text, {}
+            )
         )
-
-    _query_incidentReportNumbers = Query(
-        "look up incident report numbers",
-        """
-        select NUMBER from INCIDENT_REPORT
-        """
-    )
 
 
     async def incidentReports(self) -> Iterable[IncidentReport]:
@@ -1701,19 +1153,12 @@ class DataStore(DatabaseStore):
         """
         Look up the next available incident report number.
         """
-        cursor.execute(self._query_maxIncidentReportNumber.text, {})
+        cursor.execute(self.query.maxIncidentReportNumber.text, {})
         number = cursor.fetchone()["max(NUMBER)"]
         if number is None:
             return 1
         else:
             return number + 1
-
-    _query_maxIncidentReportNumber = Query(
-        "look up maximum incident report number",
-        """
-        select max(NUMBER) from INCIDENT_REPORT
-        """
-    )
 
 
     async def _createIncidentReport(
@@ -1747,7 +1192,7 @@ class DataStore(DatabaseStore):
 
                     # Write incident row
                     cursor.execute(
-                        self._query_createIncidentReport.text, dict(
+                        self.query.createIncidentReport.text, dict(
                             incidentReportNumber=incidentReport.number,
                             incidentReportCreated=asTimeStamp(
                                 incidentReport.created
@@ -1777,18 +1222,6 @@ class DataStore(DatabaseStore):
             storeWriteClass=IncidentReport, incidentReport=incidentReport,
         )
 
-    _query_createIncidentReport = Query(
-        "create incident report",
-        """
-        insert into INCIDENT_REPORT (NUMBER, CREATED, SUMMARY)
-        values (
-            :incidentReportNumber,
-            :incidentReportCreated,
-            :incidentReportSummary
-        )
-        """
-    )
-
 
     def _createAndAttachReportEntriesToIncidentReport(
         self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
@@ -1799,7 +1232,7 @@ class DataStore(DatabaseStore):
 
             # Join to incident
             cursor.execute(
-                self._query_attachReportEntryToIncidentReport.text, dict(
+                self.query.attachReportEntryToIncidentReport.text, dict(
                     incidentReportNumber=incidentReportNumber,
                     reportEntryID=cursor.lastrowid,
                 )
@@ -1812,16 +1245,6 @@ class DataStore(DatabaseStore):
             incidentReportNumber=incidentReportNumber,
             reportEntries=reportEntries,
         )
-
-    _query_attachReportEntryToIncidentReport = Query(
-        "add report entry to incident report",
-        """
-        insert into INCIDENT_REPORT__REPORT_ENTRY (
-            INCIDENT_REPORT_NUMBER, REPORT_ENTRY
-        )
-        values (:incidentReportNumber, :reportEntryID)
-        """
-    )
 
 
     async def createIncidentReport(
@@ -1881,13 +1304,6 @@ class DataStore(DatabaseStore):
             author=author,
         )
 
-    _template_setIncidentReportAttribute = (
-        f"""
-        update INCIDENT_REPORT set {{column}} = :value
-        where NUMBER = :incidentReportNumber
-        """
-    )
-
 
     async def setIncidentReport_summary(
         self, incidentReportNumber: int, summary: str, author: str
@@ -1896,14 +1312,9 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.setIncidentReport_summary`.
         """
         self._setIncidentReportAttribute(
-            self._query_setIncidentReport_summary.text,
+            self.query.setIncidentReport_summary.text,
             incidentReportNumber, "summary", summary, author,
         )
-
-    _query_setIncidentReport_summary = Query(
-        "set incident report summary",
-        _template_setIncidentReportAttribute.format(column="SUMMARY")
-    )
 
 
     async def addReportEntriesToIncidentReport(
@@ -1958,44 +1369,21 @@ class DataStore(DatabaseStore):
         self, cursor: Cursor
     ) -> Iterable[int]:
         return (
-            row["NUMBER"] for row in cast(Cursor, cursor.execute(
-                self._query_detachedIncidentReportNumbers.text, {}
-            ))
+            row["NUMBER"] for row in cursor.execute(
+                self.query.detachedIncidentReportNumbers.text, {}
+            )
         )
-
-    _query_detachedIncidentReportNumbers = Query(
-        "look up detached incident report numbers",
-        """
-        select NUMBER from INCIDENT_REPORT
-        where NUMBER not in (
-            select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
-        )
-        """
-    )
 
 
     def _fetchAttachedIncidentReportNumbers(
         self, event: Event, incidentNumber: int, cursor: Cursor
     ) -> Iterable[int]:
         return (
-            row["NUMBER"] for row in cast(Cursor, cursor.execute(
-                self._query_attachedIncidentReportNumbers.text,
+            row["NUMBER"] for row in cursor.execute(
+                self.query.attachedIncidentReportNumbers.text,
                 dict(eventID=event.id, incidentNumber=incidentNumber)
-            ))
+            )
         )
-
-    _query_attachedIncidentReportNumbers = Query(
-        "look up attached incident report numbers",
-        f"""
-        select NUMBER from INCIDENT_REPORT
-        where NUMBER in (
-            select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
-            where
-                EVENT = ({query_eventID}) and
-                INCIDENT_NUMBER = :incidentNumber
-        )
-        """
-    )
 
 
     async def detachedIncidentReports(self) -> Iterable[IncidentReport]:
@@ -2068,10 +1456,10 @@ class DataStore(DatabaseStore):
                     # FIXME: This should be an async generator
                     return tuple(
                         (Event(row["EVENT"]), row["INCIDENT_NUMBER"])
-                        for row in cast(Cursor, cursor.execute(
-                            self._query_incidentsAttachedToIncidentReport.text,
+                        for row in cursor.execute(
+                            self.query.incidentsAttachedToIncidentReport.text,
                             dict(incidentReportNumber=incidentReportNumber)
-                        ))
+                        )
                     )
                 finally:
                     cursor.close()
@@ -2083,16 +1471,6 @@ class DataStore(DatabaseStore):
                 error=e,
             )
             raise StorageError(e)
-
-    _query_incidentsAttachedToIncidentReport = Query(
-        "look up incidents attached to incident report",
-        """
-        select e.NAME as EVENT, iir.INCIDENT_NUMBER as INCIDENT_NUMBER
-        from INCIDENT__INCIDENT_REPORT iir
-        join EVENT e on e.ID = iir.EVENT
-        where iir.INCIDENT_REPORT_NUMBER = :incidentReportNumber
-        """
-    )
 
 
     async def attachIncidentReportToIncident(
@@ -2106,7 +1484,7 @@ class DataStore(DatabaseStore):
                 cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
-                        self._query_attachIncidentReportToIncident.text, dict(
+                        self.query.attachIncidentReportToIncident.text, dict(
                             eventID=event.id,
                             incidentNumber=incidentNumber,
                             incidentReportNumber=incidentReportNumber,
@@ -2134,16 +1512,6 @@ class DataStore(DatabaseStore):
             incidentNumber=incidentNumber,
         )
 
-    _query_attachIncidentReportToIncident = Query(
-        "add incident report to incident",
-        f"""
-        insert into INCIDENT__INCIDENT_REPORT (
-            EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER
-        )
-        values (({query_eventID}), :incidentNumber, :incidentReportNumber)
-        """
-    )
-
 
     async def detachIncidentReportFromIncident(
         self, incidentReportNumber: int, event: Event, incidentNumber: int
@@ -2156,7 +1524,7 @@ class DataStore(DatabaseStore):
                 cursor: Cursor = db.cursor()
                 try:
                     cursor.execute(
-                        self._query_detachIncidentReportFromIncident.text,
+                        self.query.detachIncidentReportFromIncident.text,
                         dict(
                             eventID=event.id,
                             incidentNumber=incidentNumber,
@@ -2184,17 +1552,6 @@ class DataStore(DatabaseStore):
             event=event,
             incidentNumber=incidentNumber,
         )
-
-    _query_detachIncidentReportFromIncident = Query(
-        "remove incident report from incident",
-        f"""
-        delete from INCIDENT__INCIDENT_REPORT
-        where
-            EVENT = ({query_eventID}) and
-            INCIDENT_NUMBER = :incidentNumber and
-            INCIDENT_REPORT_NUMBER = :incidentReportNumber
-        """
-    )
 
 
 
