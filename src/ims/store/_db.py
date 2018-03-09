@@ -22,14 +22,19 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
-from typing import Callable, Iterable, Iterator, Mapping, Optional, Union, cast
+from typing import (
+    Callable, Iterable, Iterator, Mapping, Optional, Tuple, Union, cast
+)
 
 from attr import attrib, attrs
 from attr.validators import instance_of
 
 from twisted.logger import Logger
 
-from ims.model import Event
+from ims.model import (
+    Event, Incident, IncidentPriority, IncidentReport, IncidentState,
+    ReportEntry,
+)
 
 from ._abc import IMSDataStore
 from ._exceptions import StorageError
@@ -428,6 +433,240 @@ class DatabaseStore(IMSDataStore):
             "Created concentric street in {event}: {streetName}",
             storeWriteClass=Event, event=event, concentricStreetName=name,
         )
+
+
+    ###
+    # Incidents
+    ###
+
+
+    async def incidents(self, event: Event) -> Iterable[Incident]:
+        """
+        See :meth:`IMSDataStore.incidents`.
+        """
+        raise NotImplementedError("incidents()")
+
+
+    async def incidentWithNumber(self, event: Event, number: int) -> Incident:
+        """
+        See :meth:`IMSDataStore.incidentWithNumber`.
+        """
+        raise NotImplementedError("incidentWithNumber()")
+
+
+    async def createIncident(
+        self, incident: Incident, author: str
+    ) -> Incident:
+        """
+        See :meth:`IMSDataStore.createIncident`.
+        """
+        raise NotImplementedError("createIncident()")
+
+
+    async def importIncident(self, incident: Incident) -> None:
+        """
+        See :meth:`IMSDataStore.importIncident`.
+        """
+        raise NotImplementedError("importIncident()")
+
+
+    async def setIncident_priority(
+        self, event: Event, incidentNumber: int, priority: IncidentPriority,
+        author: str,
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncident_priority`.
+        """
+        raise NotImplementedError("setIncident_priority()")
+
+
+    async def setIncident_state(
+        self, event: Event, incidentNumber: int, state: IncidentState,
+        author: str,
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncident_state`.
+        """
+        raise NotImplementedError("setIncident_state()")
+
+
+    async def setIncident_summary(
+        self, event: Event, incidentNumber: int, summary: str, author: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncident_summary`.
+        """
+        raise NotImplementedError("setIncident_summary()")
+
+
+    async def setIncident_locationName(
+        self, event: Event, incidentNumber: int, name: str, author: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncident_locationName`.
+        """
+        raise NotImplementedError("setIncident_locationName()")
+
+
+    async def setIncident_locationConcentricStreet(
+        self, event: Event, incidentNumber: int, streetID: str, author: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncident_locationConcentricStreet`.
+        """
+        raise NotImplementedError("setIncident_locationConcentricStreet()")
+
+
+    async def setIncident_locationRadialHour(
+        self, event: Event, incidentNumber: int, hour: int, author: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncident_locationRadialHour`.
+        """
+        raise NotImplementedError("setIncident_locationRadialHour()")
+
+
+    async def setIncident_locationRadialMinute(
+        self, event: Event, incidentNumber: int, minute: int, author: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncident_locationRadialMinute`.
+        """
+        raise NotImplementedError("setIncident_locationRadialMinute()")
+
+
+    async def setIncident_locationDescription(
+        self, event: Event, incidentNumber: int, description: str, author: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncident_locationDescription`.
+        """
+        raise NotImplementedError("setIncident_locationDescription()")
+
+
+    async def setIncident_rangers(
+        self, event: Event, incidentNumber: int, rangerHandles: Iterable[str],
+        author: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncident_rangers`.
+        """
+        raise NotImplementedError("setIncident_rangers()")
+
+
+    async def setIncident_incidentTypes(
+        self, event: Event, incidentNumber: int, incidentTypes: Iterable[str],
+        author: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncident_incidentTypes`.
+        """
+        raise NotImplementedError("setIncident_incidentTypes()")
+
+
+    async def addReportEntriesToIncident(
+        self, event: Event, incidentNumber: int,
+        reportEntries: Iterable[ReportEntry], author: str,
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.addReportEntriesToIncident`.
+        """
+        raise NotImplementedError("addReportEntriesToIncident()")
+
+
+    ###
+    # Incident Reports
+    ###
+
+
+    async def incidentReports(self) -> Iterable[IncidentReport]:
+        """
+        See :meth:`IMSDataStore.incidentReports`.
+        """
+        raise NotImplementedError("incidentReports()")
+
+
+    async def incidentReportWithNumber(self, number: int) -> IncidentReport:
+        """
+        See :meth:`IMSDataStore.incidentReportWithNumber`.
+        """
+        raise NotImplementedError("incidentReportWithNumber()")
+
+
+    async def createIncidentReport(
+        self, incidentReport: IncidentReport, author: str
+    ) -> IncidentReport:
+        """
+        See :meth:`IMSDataStore.createIncidentReport`.
+        """
+        raise NotImplementedError("createIncidentReport()")
+
+
+    async def setIncidentReport_summary(
+        self, incidentReportNumber: int, summary: str, author: str
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setIncidentReport_summary`.
+        """
+        raise NotImplementedError("setIncidentReport_summary()")
+
+
+    async def addReportEntriesToIncidentReport(
+        self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
+        author: str,
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.addReportEntriesToIncidentReport`.
+        """
+        raise NotImplementedError("addReportEntriesToIncidentReport()")
+
+
+    ###
+    # Incident to Incident Report Relationships
+    ###
+
+
+    async def detachedIncidentReports(self) -> Iterable[IncidentReport]:
+        """
+        See :meth:`IMSDataStore.detachedIncidentReports`.
+        """
+        raise NotImplementedError("detachedIncidentReports()")
+
+
+    async def incidentReportsAttachedToIncident(
+        self, event: Event, incidentNumber: int
+    ) -> Iterable[IncidentReport]:
+        """
+        See :meth:`IMSDataStore.incidentReportsAttachedToIncident`.
+        """
+        raise NotImplementedError("incidentReportsAttachedToIncident()")
+
+
+    async def incidentsAttachedToIncidentReport(
+        self, incidentReportNumber: int
+    ) -> Iterable[Tuple[Event, int]]:
+        """
+        See :meth:`IMSDataStore.incidentsAttachedToIncidentReport`.
+        """
+        raise NotImplementedError("incidentsAttachedToIncidentReport()")
+
+
+    async def attachIncidentReportToIncident(
+        self, incidentReportNumber: int, event: Event, incidentNumber: int
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.attachIncidentReportToIncident`.
+        """
+        raise NotImplementedError("attachIncidentReportToIncident()")
+
+
+    async def detachIncidentReportFromIncident(
+        self, incidentReportNumber: int, event: Event, incidentNumber: int
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.detachIncidentReportFromIncident`.
+        """
+        raise NotImplementedError("detachIncidentReportFromIncident()")
 
 
 
