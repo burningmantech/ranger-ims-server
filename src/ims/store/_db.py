@@ -219,7 +219,7 @@ class DatabaseStore(IMSDataStore):
         See :meth:`IMSDataStore.events`.
         """
         return (
-            Event(id=row["name"])
+            Event(id=row["NAME"])
             for row in await self.runQuery(self.query.events)
         )
 
@@ -333,7 +333,7 @@ class DatabaseStore(IMSDataStore):
             query = self.query.incidentTypesNotHidden
 
         return (
-            cast(str, row["name"]) for row in await self.runQuery(query)
+            cast(str, row["NAME"]) for row in await self.runQuery(query)
         )
 
 
