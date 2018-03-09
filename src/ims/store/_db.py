@@ -18,12 +18,15 @@
 Incident Management System database tooling.
 """
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from collections.abc import Iterable as IterableABC
+from datetime import datetime as DateTime
 from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
 from typing import (
-    Callable, Iterable, Iterator, Mapping, Optional, Tuple, Union, cast
+    Callable, Iterable, Iterator, Mapping, Optional, Tuple, TypeVar, Union,
+    cast,
 )
 
 from attr import attrib, attrs
@@ -48,6 +51,8 @@ Parameters = Mapping[str, ParameterValue]
 
 Row = Parameters
 Rows = Iterator[Row]
+
+T = TypeVar("T")
 
 
 
@@ -115,7 +120,7 @@ class Queries(object):
 
 
 
-class Cursor(ABC):
+class Cursor(IterableABC):
     @abstractmethod
     def execute(
         self, sql: str, parameters: Optional[Parameters] = None
@@ -185,7 +190,7 @@ class DatabaseStore(IMSDataStore):
 
 
     @abstractmethod
-    async def runInteraction(self, interaction: Callable) -> None:
+    async def runInteraction(self, interaction: Callable[[Cursor], T]) -> T:
         """
         Create a cursor and call the given interaction with the cursor as the
         sole argument.
@@ -212,6 +217,20 @@ class DatabaseStore(IMSDataStore):
         """
         if await self.dbManager.upgradeSchema():
             await self.disconnect()
+
+
+    @abstractmethod
+    def asDateTimeValue(self, dateTime: DateTime) -> ParameterValue:
+        """
+        Convert :class:`DataTime` to a date-time value for the database.
+        """
+
+
+    @abstractmethod
+    def fromDateTimeValue(self, value: ParameterValue) -> DateTime:
+        """
+        Convert a date-time value from the database to a :class:`DataTime`.
+        """
 
 
     ###
@@ -433,6 +452,40 @@ class DatabaseStore(IMSDataStore):
             "Created concentric street in {event}: {streetName}",
             storeWriteClass=Event, event=event, concentricStreetName=name,
         )
+
+
+    ##
+    # Report Entries
+    ##
+
+    async def detachedReportEntries(self) -> Iterable[ReportEntry]:
+        """
+        Look up all report entries that are not attached to either an incident
+        or an incident report.
+        There shouldn't be any of these; so if there are any, it's an
+        indication of a bug.
+        """
+        def detachedReportEntries(txn: Cursor) -> Iterable[ReportEntry]:
+            return tuple(
+                ReportEntry(
+                    created=self.fromDateTimeValue(row["CREATED"]),
+                    author=row["AUTHOR"],
+                    automatic=bool(row["GENERATED"]),
+                    text=row["TEXT"],
+                )
+                for row in txn.execute(
+                    self.query.detachedReportEntries.text, {}
+                ) if row["TEXT"]
+            )
+
+        try:
+            return await self.runInteraction(detachedReportEntries)
+        except StorageError as e:
+            self._log.critical(
+                "Unable to look up detached report entries: {error}",
+                error=e,
+            )
+            raise StorageError(e)
 
 
     ###

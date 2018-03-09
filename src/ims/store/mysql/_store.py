@@ -18,8 +18,9 @@
 Incident Management System SQL data store.
 """
 
+from datetime import datetime as DateTime
 from pathlib import Path
-from typing import Callable, Optional, cast
+from typing import Any, Callable, Optional, cast
 
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of, optional
@@ -31,7 +32,7 @@ from twisted.enterprise.adbapi import ConnectionPool
 from twisted.logger import Logger
 
 from ._queries import queries
-from .._db import DatabaseStore, Parameters, Query, Rows
+from .._db import DatabaseStore, ParameterValue, Parameters, Query, Rows
 from .._exceptions import StorageError
 
 
@@ -140,9 +141,9 @@ class DataStore(DatabaseStore):
             raise StorageError(e)
 
 
-    async def runInteraction(self, interaction: Callable) -> None:
+    async def runInteraction(self, interaction: Callable) -> Any:
         try:
-            await self._db.runInteraction(interaction)
+            return await self._db.runInteraction(interaction)
         except MySQLError as e:
             self._log.critical(
                 "Interaction {interaction} failed: {error}",
@@ -194,6 +195,14 @@ class DataStore(DatabaseStore):
                 "Unable to apply schema: {error}", sql=sql, error=e
             )
             raise StorageError(f"Unable to apply schema: {e}")
+
+
+    def asDateTimeValue(self, dateTime: DateTime) -> ParameterValue:
+        raise NotImplementedError("asDateTimeValue")
+
+
+    def fromDateTimeValue(self, value: ParameterValue) -> DateTime:
+        raise NotImplementedError("fromDateTimeValue")
 
 
     async def validate(self) -> None:

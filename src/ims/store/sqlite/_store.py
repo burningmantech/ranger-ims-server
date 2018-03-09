@@ -181,10 +181,10 @@ class DataStore(DatabaseStore):
         await self.runQuery(query, parameters)
 
 
-    async def runInteraction(self, interaction: Callable) -> None:
+    async def runInteraction(self, interaction: Callable) -> Any:
         try:
-            with self._db as cursor:
-                interaction(cursor)
+            with self._db as db:
+                return interaction(db.cursor())
         except SQLiteError as e:
             self._log.critical(
                 "Interaction {interaction} failed: {error}",
@@ -212,6 +212,14 @@ class DataStore(DatabaseStore):
             raise StorageError(f"Unable to apply schema: {e}")
 
 
+    def asDateTimeValue(self, dateTime: DateTime) -> ParameterValue:
+        return asTimeStamp(dateTime)
+
+
+    def fromDateTimeValue(self, value: ParameterValue) -> DateTime:
+        return fromTimeStamp(value)
+
+
     async def validate(self) -> None:
         """
         See :meth:`IMSDataStore.validate`.
@@ -229,7 +237,7 @@ class DataStore(DatabaseStore):
             )
 
         # Check for detached report entries
-        for reportEntry in self.detachedReportEntries():
+        for reportEntry in await self.detachedReportEntries():
             self._log.error(
                 "Found detached report entry: {reportEntry}",
                 reportEntry=reportEntry,
@@ -286,43 +294,6 @@ class DataStore(DatabaseStore):
                 )
                 if not trialRun:
                     self.importIncident(incident)
-
-
-    ##
-    # Report Entries
-    ##
-
-    def detachedReportEntries(self) -> Iterable[ReportEntry]:
-        """
-        Look up all report entries that are not attached to either an incident
-        or an incident report.
-        There shouldn't be any of these; so if there are any, it's an
-        indication of a bug.
-        """
-        try:
-            with self._db as db:
-                cursor: Cursor = db.cursor()
-                try:
-                    # FIXME: This should be an async generator
-                    return tuple(
-                        ReportEntry(
-                            created=fromTimeStamp(row["CREATED"]),
-                            author=row["AUTHOR"],
-                            automatic=bool(row["GENERATED"]),
-                            text=row["TEXT"],
-                        )
-                        for row in cursor.execute(
-                            self.query.detachedReportEntries.text, {}
-                        ) if row["TEXT"]
-                    )
-                finally:
-                    cursor.close()
-        except SQLiteError as e:
-            self._log.critical(
-                "Unable to look up detached report entries: {error}",
-                error=e,
-            )
-            raise StorageError(e)
 
 
     ###
@@ -1574,7 +1545,9 @@ def asTimeStamp(dateTime: DateTime) -> float:
     return timeStamp
 
 
-def fromTimeStamp(timeStamp: float) -> DateTime:
+def fromTimeStamp(timeStamp: ParameterValue) -> DateTime:
+    if not isinstance(timeStamp, float):
+        raise TypeError("Time stamp in SQLite store must be a float")
     return DateTime.fromtimestamp(timeStamp, tz=TimeZone.utc)
 
 
