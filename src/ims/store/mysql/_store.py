@@ -155,10 +155,8 @@ class DataStore(DatabaseStore):
         """
         See `meth:DatabaseStore.dbSchemaVersion`.
         """
-        query = self.query.schemaVersion
-
         try:
-            for row in await self._db.runQuery(query.text):
+            for row in await self._db.runQuery(self.query.schemaVersion.text):
                 return cast(int, row["VERSION"])
             else:
                 raise StorageError("Invalid schema: no version")
@@ -173,7 +171,7 @@ class DataStore(DatabaseStore):
 
             self._log.critical(
                 "Unable to {description}: {error}",
-                description=query.description, error=e,
+                description=self.query.schemaVersion.description, error=e,
             )
             raise StorageError(e)
 

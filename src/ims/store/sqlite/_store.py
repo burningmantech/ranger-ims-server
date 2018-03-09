@@ -116,18 +116,20 @@ class DataStore(DatabaseStore):
     @classmethod
     def _dbSchemaVersion(cls, db: Connection) -> int:
         try:
-            for row in db.execute("select VERSION from SCHEMA_INFO"):
+            for row in db.execute(cls.query.schemaVersion.text):
                 return row["VERSION"]
             else:
                 raise StorageError("Invalid schema: no version")
+
         except SQLiteError as e:
             if e.args[0] == "no such table: SCHEMA_INFO":
                 return 0
 
-            cls._log.critical(
-                "Unable to look up schema version: {error}", error=e
+            self._log.critical(
+                "Unable to {description}: {error}",
+                description=cls.query.schemaVersion.description, error=e,
             )
-            raise StorageError(f"Unable to look up schema version: {e}")
+            raise StorageError(e)
 
 
     @property
