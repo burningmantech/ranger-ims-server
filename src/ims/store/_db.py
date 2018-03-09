@@ -60,6 +60,7 @@ def _queryAttribute() -> Query:
 
 @attrs(frozen=True)
 class Queries(object):
+    schemaVersion                        = _queryAttribute()
     events                               = _queryAttribute()
     createEvent                          = _queryAttribute()
     eventAccess                          = _queryAttribute()

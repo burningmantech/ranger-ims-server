@@ -36,14 +36,12 @@ from ims.model import (
     ReportEntry,
 )
 
+from ._queries import queries
 from .._db import DatabaseStore, Parameters, Query, Rows
 from .._exceptions import StorageError
 
 
 __all__ = ()
-
-
-query_eventID = "select ID from EVENT where NAME = %(eventID)s"
 
 
 
@@ -58,6 +56,8 @@ class DataStore(DatabaseStore):
     schemaVersion = 2
     schemaBasePath = Path(__file__).parent / "schema"
     sqlFileExtension = "mysql"
+
+    query = queries
 
 
     @attrs(frozen=False)
@@ -161,7 +161,7 @@ class DataStore(DatabaseStore):
         """
         See `meth:DatabaseStore.dbSchemaVersion`.
         """
-        query = self._query_schemaVersion
+        query = self.query.schemaVersion
 
         try:
             for row in await self._db.runQuery(query.text):
@@ -182,13 +182,6 @@ class DataStore(DatabaseStore):
                 description=query.description, error=e,
             )
             raise StorageError(e)
-
-    _query_schemaVersion = Query(
-        "look up schema version",
-        """
-        select VERSION from SCHEMA_INFO
-        """
-    )
 
 
     async def applySchema(self, sql: str) -> None:
@@ -232,15 +225,8 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.events`.
         """
-        rows = await self.runQuery(self._query_events)
+        rows = await self.runQuery(self.query.events)
         return (Event(id=cast(str, row["NAME"])) for row in rows)
-
-    _query_events = Query(
-        "look up events",
-        """
-        select NAME from EVENT
-        """
-    )
 
 
     async def createEvent(self, event: Event) -> None:
@@ -248,34 +234,19 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.createEvent`.
         """
         await self.runOperation(
-            self._query_createEvent, dict(eventID=event.id)
+            self.query.createEvent, dict(eventID=event.id)
         )
 
         self._log.info(
             "Created event: {event}", storeWriteClass=Event, event=event,
         )
 
-    _query_createEvent = Query(
-        "create event",
-        """
-        insert into EVENT (NAME) values (%(eventID)s)
-        """
-    )
-
 
     async def _eventAccess(self, event: Event, mode: str) -> Iterable[str]:
         rows = await self.runQuery(
-            self._query_eventAccess, dict(eventID=event.id, mode=mode)
+            self.query.eventAccess, dict(eventID=event.id, mode=mode)
         )
         return (cast(str, row["EXPRESSION"]) for row in rows)
-
-    _query_eventAccess = Query(
-        "look up event access",
-        f"""
-        select EXPRESSION from EVENT_ACCESS
-        where EVENT = ({query_eventID}) and MODE = %(mode)s
-        """
-    )
 
 
     async def _setEventAccess(
@@ -285,16 +256,16 @@ class DataStore(DatabaseStore):
 
         def setEventAccess(txn: Cursor) -> None:
             txn.execute(
-                self._query_clearEventAccessForMode.text,
+                self.query.clearEventAccessForMode.text,
                 dict(eventID=event.id, mode=mode),
             )
             for expression in expressions:
                 txn.execute(
-                    self._query_clearEventAccessForExpression.text,
+                    self.query.clearEventAccessForExpression.text,
                     dict(eventID=event.id, expression=expression),
                 )
                 txn.execute(
-                    self._query_addEventAccess.text, dict(
+                    self.query.addEventAccess.text, dict(
                         eventID=event.id,
                         expression=expression,
                         mode=mode,
@@ -310,30 +281,6 @@ class DataStore(DatabaseStore):
                 event=event, mode=mode, expressions=expressions, error=e
             )
             raise StorageError(f"Unable to set event access: {e}")
-
-    _query_clearEventAccessForMode = Query(
-        "clear event access for mode",
-        f"""
-        delete from EVENT_ACCESS
-        where EVENT = ({query_eventID}) and MODE = %(mode)s
-        """
-    )
-
-    _query_clearEventAccessForExpression = Query(
-        "clear event access for expression",
-        f"""
-        delete from EVENT_ACCESS
-        where EVENT = ({query_eventID}) and EXPRESSION = %(expression)s
-        """
-    )
-
-    _query_addEventAccess = Query(
-        "add event access",
-        f"""
-        insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)
-        values (({query_eventID}), %(expression)s, %(mode)s)
-        """
-    )
 
 
     async def readers(self, event: Event) -> Iterable[str]:
@@ -376,26 +323,12 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.incidentTypes`.
         """
         if includeHidden:
-            query = self._query_incidentTypes
+            query = self.query.incidentTypes
         else:
-            query = self._query_incidentTypesNotHidden
+            query = self.query.incidentTypesNotHidden
 
         rows = await self.runQuery(query)
         return (cast(str, row["NAME"]) for row in rows)
-
-    _query_incidentTypes = Query(
-        "look up incident types",
-        """
-        select NAME from INCIDENT_TYPE
-        """
-    )
-
-    _query_incidentTypesNotHidden = Query(
-        "look up non-hidden incident types",
-        """
-        select NAME from INCIDENT_TYPE where HIDDEN = 0
-        """
-    )
 
 
     async def createIncidentType(
@@ -405,7 +338,7 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.createIncidentType`.
         """
         await self.runOperation(
-            self._query_createIncidentType,
+            self.query.createIncidentType,
             dict(incidentType=incidentType, hidden=hidden),
         )
 
@@ -413,14 +346,6 @@ class DataStore(DatabaseStore):
             "Created incident type: {incidentType} (hidden={hidden})",
             incidentType=incidentType, hidden=hidden,
         )
-
-    _query_createIncidentType = Query(
-        "create incident type",
-        """
-        insert into INCIDENT_TYPE (NAME, HIDDEN)
-        values (%(incidentType)s, %(hidden)s)
-        """
-    )
 
 
     async def _hideShowIncidentTypes(
@@ -431,7 +356,7 @@ class DataStore(DatabaseStore):
         def hideShowIncidentTypes(txn: Cursor) -> None:
             for incidentType in incidentTypes:
                 txn.execute(
-                    self._query_hideShowIncidentType.text,
+                    self.query.hideShowIncidentType.text,
                     dict(incidentType=incidentType, hidden=hidden),
                 )
 
@@ -449,15 +374,6 @@ class DataStore(DatabaseStore):
             "Set hidden to {hidden} for incident types: {incidentTypes}",
             incidentTypes=incidentTypes, hidden=hidden,
         )
-
-
-    _query_hideShowIncidentType = Query(
-        "hide/show incident type",
-        """
-        update INCIDENT_TYPE set HIDDEN = %(hidden)s
-        where NAME = %(incidentType)s
-        """
-    )
 
 
     async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
@@ -484,18 +400,11 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.concentricStreets`.
         """
         rows = await self.runQuery(
-            self._query_concentricStreets, dict(eventID=event.id)
+            self.query.concentricStreets, dict(eventID=event.id)
         )
         return MappingProxyType(dict(
             (cast(str, row["ID"]), cast(str, row["NAME"])) for row in rows
         ))
-
-    _query_concentricStreets = Query(
-        "look up concentric streets",
-        f"""
-        select ID, NAME from CONCENTRIC_STREET where EVENT = ({query_eventID})
-        """
-    )
 
 
     async def createConcentricStreet(
@@ -505,7 +414,7 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.createConcentricStreet`.
         """
         await self.runOperation(
-            self._query_createConcentricStreet,
+            self.query.createConcentricStreet,
             dict(eventID=event.id, streetID=id, streetName=name)
         )
 
@@ -513,14 +422,6 @@ class DataStore(DatabaseStore):
             "Created concentric street in {event}: {streetName}",
             storeWriteClass=Event, event=event, concentricStreetName=name,
         )
-
-    _query_createConcentricStreet = Query(
-        "create concentric street",
-        f"""
-        insert into CONCENTRIC_STREET (EVENT, ID, NAME)
-        values (({query_eventID}), %(streetID)s, %(streetName)s)
-        """
-    )
 
 
     ###

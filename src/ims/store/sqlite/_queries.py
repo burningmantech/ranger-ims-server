@@ -41,6 +41,12 @@ template_setIncidentReportAttribute = (
 )
 
 queries = Queries(
+    schemaVersion=Query(
+        "look up schema version",
+        """
+        select VERSION from SCHEMA_INFO
+        """
+    ),
     events=Query(
         "look up events",
         """
