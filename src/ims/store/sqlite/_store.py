@@ -125,7 +125,7 @@ class DataStore(DatabaseStore):
             if e.args[0] == "no such table: SCHEMA_INFO":
                 return 0
 
-            self._log.critical(
+            cls._log.critical(
                 "Unable to {description}: {error}",
                 description=cls.query.schemaVersion.description, error=e,
             )

@@ -49,7 +49,7 @@ def randomString(length: int = 16) -> str:
     """
     return (
         choice(ascii_letters) +
-        "".join(choice(ascii_letters + digits) for i in range(length-1))
+        "".join(choice(ascii_letters + digits) for i in range(length - 1))
     )
 
 
