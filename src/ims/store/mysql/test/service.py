@@ -47,7 +47,10 @@ def randomString(length: int = 16) -> str:
     """
     Generate a random string.
     """
-    return "".join(choice(ascii_letters + digits) for i in range(length))
+    return (
+        choice(ascii_letters) +
+        "".join(choice(ascii_letters + digits) for i in range(length-1))
+    )
 
 
 
