@@ -38,15 +38,13 @@ from ims.ext.sqlite import (
 )
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentReport, IncidentState,
-    Location, ReportEntry, RodGarettAddress,
+    ReportEntry, RodGarettAddress,
 )
 from ims.model.json import IncidentJSONKey, modelObjectFromJSONObject
 
 from ._queries import queries
 from .._db import DatabaseStore, ParameterValue, Parameters, Query, Rows
-from .._exceptions import (
-    NoSuchIncidentError, NoSuchIncidentReportError, StorageError
-)
+from .._exceptions import NoSuchIncidentReportError, StorageError
 
 
 __all__ = ()
@@ -212,6 +210,28 @@ class DataStore(DatabaseStore):
             raise StorageError(f"Unable to apply schema: {e}")
 
 
+    def asIncidentStateValue(
+        self, incidentState: IncidentState
+    ) -> ParameterValue:
+        return incidentStateAsID(incidentState)
+
+
+    def fromIncidentStateValue(self, value: ParameterValue) -> IncidentState:
+        return incidentStateFromID(value)
+
+
+    def asIncidentPriorityValue(
+        self, incidentPriority: IncidentPriority
+    ) -> ParameterValue:
+        return priorityAsID(incidentPriority)
+
+
+    def fromIncidentPriorityValue(
+        self, value: ParameterValue
+    ) -> IncidentPriority:
+        return priorityFromID(value)
+
+
     def asDateTimeValue(self, dateTime: DateTime) -> ParameterValue:
         return asTimeStamp(dateTime)
 
@@ -299,135 +319,6 @@ class DataStore(DatabaseStore):
     ###
     # Incidents
     ###
-
-
-    def _fetchIncident(
-        self, event: Event, incidentNumber: int, cursor: Cursor
-    ) -> Incident:
-        parameters: Parameters = dict(
-            eventID=event.id, incidentNumber=incidentNumber
-        )
-
-        def notFound() -> None:
-            raise NoSuchIncidentError(
-                f"No incident #{incidentNumber} in event {event}"
-            )
-
-        try:
-            cursor.execute(self.query.incident.text, parameters)
-        except OverflowError:
-            notFound()
-
-        row = cursor.fetchone()
-        if row is None:
-            notFound()
-
-        rangerHandles = tuple(
-            row["RANGER_HANDLE"] for row in cursor.execute(
-                self.query.incident_rangers.text, parameters
-            )
-        )
-
-        incidentTypes = tuple(
-            row["NAME"]
-            for row in cursor.execute(
-                self.query.incident_incidentTypes.text, parameters
-            )
-        )
-
-        reportEntries = tuple(
-            ReportEntry(
-                created=fromTimeStamp(row["CREATED"]),
-                author=row["AUTHOR"],
-                automatic=bool(row["GENERATED"]),
-                text=row["TEXT"],
-            )
-            for row in cursor.execute(
-                self.query.incident_reportEntries.text, parameters
-            ) if row["TEXT"]
-        )
-
-        # FIXME: This is because schema thinks concentric is an int
-        if row["LOCATION_CONCENTRIC"] is None:
-            concentric = None
-        else:
-            concentric = str(row["LOCATION_CONCENTRIC"])
-
-        return Incident(
-            event=event,
-            number=incidentNumber,
-            created=fromTimeStamp(row["CREATED"]),
-            state=incidentStateFromID(row["STATE"]),
-            priority=priorityFromID(row["PRIORITY"]),
-            summary=row["SUMMARY"],
-            location=Location(
-                name=row["LOCATION_NAME"],
-                address=RodGarettAddress(
-                    concentric=concentric,
-                    radialHour=row["LOCATION_RADIAL_HOUR"],
-                    radialMinute=row["LOCATION_RADIAL_MINUTE"],
-                    description=row["LOCATION_DESCRIPTION"],
-                ),
-            ),
-            rangerHandles=rangerHandles,
-            incidentTypes=incidentTypes,
-            reportEntries=reportEntries,
-        )
-
-
-    def _fetchIncidentNumbers(
-        self, event: Event, cursor: Cursor
-    ) -> Iterable[int]:
-        """
-        Look up all incident numbers for the given event.
-        """
-        for row in cursor.execute(
-            self.query.incidentNumbers.text, dict(eventID=event.id)
-        ):
-            yield row["NUMBER"]
-
-
-    async def incidents(self, event: Event) -> Iterable[Incident]:
-        """
-        See :meth:`IMSDataStore.incidents`.
-        """
-        try:
-            with self._db as db:
-                cursor: Cursor = db.cursor()
-                try:
-                    # FIXME: This should be an async generator
-                    return tuple(
-                        self._fetchIncident(event, number, cursor)
-                        for number in
-                        tuple(self._fetchIncidentNumbers(event, cursor))
-                    )
-                finally:
-                    cursor.close()
-        except SQLiteError as e:
-            self._log.critical(
-                "Unable to look up incidents in {event}: {error}",
-                event=event, error=e,
-            )
-            raise StorageError(e)
-
-
-    async def incidentWithNumber(self, event: Event, number: int) -> Incident:
-        """
-        See :meth:`IMSDataStore.incidentWithNumber`.
-        """
-        try:
-            with self._db as db:
-                cursor: Cursor = db.cursor()
-                try:
-                    return self._fetchIncident(event, number, cursor)
-                finally:
-                    cursor.close()
-        except SQLiteError as e:
-            self._log.critical(
-                "Unable to look up incident #{number} in {event}: {error}",
-                event=event, number=number, error=e,
-            )
-            raise StorageError(e)
 
 
     def _nextIncidentNumber(self, event: Event, cursor: Cursor) -> int:
@@ -1548,10 +1439,14 @@ def asTimeStamp(dateTime: DateTime) -> float:
 def fromTimeStamp(timeStamp: ParameterValue) -> DateTime:
     if not isinstance(timeStamp, float):
         raise TypeError("Time stamp in SQLite store must be a float")
+
     return DateTime.fromtimestamp(timeStamp, tz=TimeZone.utc)
 
 
-def incidentStateFromID(strValue: str) -> IncidentState:
+def incidentStateFromID(strValue: ParameterValue) -> IncidentState:
+    if not isinstance(strValue, str):
+        raise TypeError("Incident state in SQLite store must be a str")
+
     return {
         "new":        IncidentState.new,
         "on_hold":    IncidentState.onHold,
@@ -1571,7 +1466,10 @@ def incidentStateAsID(incidentState: IncidentState) -> str:
     }[incidentState]
 
 
-def priorityFromID(intValue: int) -> IncidentPriority:
+def priorityFromID(intValue: ParameterValue) -> IncidentPriority:
+    if not isinstance(intValue, int):
+        raise TypeError("Incident priority in SQLite store must be an int")
+
     return {
         1: IncidentPriority.high,
         2: IncidentPriority.high,

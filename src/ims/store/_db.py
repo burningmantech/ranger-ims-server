@@ -20,7 +20,7 @@ Incident Management System database tooling.
 
 from abc import abstractmethod
 from collections.abc import Iterable as IterableABC
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
@@ -36,11 +36,11 @@ from twisted.logger import Logger
 
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentReport, IncidentState,
-    ReportEntry,
+    Location, ReportEntry, RodGarettAddress,
 )
 
 from ._abc import IMSDataStore
-from ._exceptions import StorageError
+from ._exceptions import NoSuchIncidentError, StorageError
 
 
 __all__ = ()
@@ -53,7 +53,6 @@ Row = Parameters
 Rows = Iterator[Row]
 
 T = TypeVar("T")
-
 
 
 @attrs(frozen=True)
@@ -127,6 +126,13 @@ class Cursor(IterableABC):
     ) -> "Cursor":
         """
         Executes an SQL statement.
+        """
+
+
+    @abstractmethod
+    def fetchone(self) -> Row:
+        """
+        Fetch the next row.
         """
 
 
@@ -220,16 +226,52 @@ class DatabaseStore(IMSDataStore):
 
 
     @abstractmethod
+    def asIncidentStateValue(
+        self, incidentState: IncidentState
+    ) -> ParameterValue:
+        """
+        Convert an :class:`IncidentState` to a state value for the database.
+        """
+
+
+    @abstractmethod
+    def fromIncidentStateValue(self, value: ParameterValue) -> IncidentState:
+        """
+        Convert a state value from the database to an :class:`IncidentState`.
+        """
+
+
+    @abstractmethod
+    def asIncidentPriorityValue(
+        self, incidentPriority: IncidentPriority
+    ) -> ParameterValue:
+        """
+        Convert an :class:`IncidentPriority` to an incident priority value for
+        the database.
+        """
+
+
+    @abstractmethod
+    def fromIncidentPriorityValue(
+        self, value: ParameterValue
+    ) -> IncidentPriority:
+        """
+        Convert an incident priority value from the database to an
+        :class:`IncidentPriority`.
+        """
+
+
+    @abstractmethod
     def asDateTimeValue(self, dateTime: DateTime) -> ParameterValue:
         """
-        Convert :class:`DataTime` to a date-time value for the database.
+        Convert a :class:`DateTime` to a date-time value for the database.
         """
 
 
     @abstractmethod
     def fromDateTimeValue(self, value: ParameterValue) -> DateTime:
         """
-        Convert a date-time value from the database to a :class:`DataTime`.
+        Convert a date-time value from the database to a :class:`DateTime`.
         """
 
 
@@ -299,7 +341,7 @@ class DatabaseStore(IMSDataStore):
                 "Unable to set {mode} access for {event}: {error}",
                 event=event, mode=mode, expressions=expressions, error=e,
             )
-            raise StorageError(e)
+            raise
 
         self._log.info(
             "Set {mode} access for {event}: {expressions}",
@@ -485,7 +527,7 @@ class DatabaseStore(IMSDataStore):
                 "Unable to look up detached report entries: {error}",
                 error=e,
             )
-            raise StorageError(e)
+            raise
 
 
     ###
@@ -493,18 +535,130 @@ class DatabaseStore(IMSDataStore):
     ###
 
 
+    def _fetchIncident(
+        self, event: Event, incidentNumber: int, cursor: Cursor
+    ) -> Incident:
+        parameters: Parameters = dict(
+            eventID=event.id, incidentNumber=incidentNumber
+        )
+
+        def notFound() -> None:
+            raise NoSuchIncidentError(
+                f"No incident #{incidentNumber} in event {event}"
+            )
+
+        try:
+            cursor.execute(self.query.incident.text, parameters)
+        except OverflowError:
+            notFound()
+
+        row = cursor.fetchone()
+        if row is None:
+            notFound()
+
+        rangerHandles = tuple(
+            row["RANGER_HANDLE"] for row in cursor.execute(
+                self.query.incident_rangers.text, parameters
+            )
+        )
+
+        incidentTypes = tuple(
+            row["NAME"]
+            for row in cursor.execute(
+                self.query.incident_incidentTypes.text, parameters
+            )
+        )
+
+        reportEntries = tuple(
+            ReportEntry(
+                created=self.fromDateTimeValue(row["CREATED"]),
+                author=row["AUTHOR"],
+                automatic=bool(row["GENERATED"]),
+                text=row["TEXT"],
+            )
+            for row in cursor.execute(
+                self.query.incident_reportEntries.text, parameters
+            ) if row["TEXT"]
+        )
+
+        # FIXME: This is because schema thinks concentric is an int
+        if row["LOCATION_CONCENTRIC"] is None:
+            concentric = None
+        else:
+            concentric = str(row["LOCATION_CONCENTRIC"])
+
+        return Incident(
+            event=event,
+            number=incidentNumber,
+            created=self.fromDateTimeValue(row["CREATED"]),
+            state=self.fromIncidentStateValue(row["STATE"]),
+            priority=self.fromIncidentPriorityValue(row["PRIORITY"]),
+            summary=row["SUMMARY"],
+            location=Location(
+                name=row["LOCATION_NAME"],
+                address=RodGarettAddress(
+                    concentric=concentric,
+                    radialHour=row["LOCATION_RADIAL_HOUR"],
+                    radialMinute=row["LOCATION_RADIAL_MINUTE"],
+                    description=row["LOCATION_DESCRIPTION"],
+                ),
+            ),
+            rangerHandles=rangerHandles,
+            incidentTypes=incidentTypes,
+            reportEntries=reportEntries,
+        )
+
+
+    def _fetchIncidentNumbers(
+        self, event: Event, cursor: Cursor
+    ) -> Iterable[int]:
+        """
+        Look up all incident numbers for the given event.
+        """
+        for row in cursor.execute(
+            self.query.incidentNumbers.text, dict(eventID=event.id)
+        ):
+            yield row["NUMBER"]
+
+
     async def incidents(self, event: Event) -> Iterable[Incident]:
         """
         See :meth:`IMSDataStore.incidents`.
         """
-        raise NotImplementedError("incidents()")
+        def incidents(txn: Cursor) -> Iterable[Incident]:
+            return tuple(
+                self._fetchIncident(event, number, txn)
+                for number in
+                tuple(self._fetchIncidentNumbers(event, txn))
+            )
+
+        try:
+            return await self.runInteraction(incidents)
+        except NoSuchIncidentError:
+            raise
+        except StorageError as e:
+            self._log.critical(
+                "Unable to look up incidents in {event}: {error}",
+                event=event, error=e,
+            )
+            raise
 
 
     async def incidentWithNumber(self, event: Event, number: int) -> Incident:
         """
         See :meth:`IMSDataStore.incidentWithNumber`.
         """
-        raise NotImplementedError("incidentWithNumber()")
+        def incidentWithNumber(txn: Cursor) -> Incident:
+            return self._fetchIncident(event, number, txn)
+
+        try:
+            return await self.runInteraction(incidentWithNumber)
+        except StorageError as e:
+            self._log.critical(
+                "Unable to look up incident #{number} in {event}: {error}",
+                event=event, number=number, error=e,
+            )
+            raise
 
 
     async def createIncident(

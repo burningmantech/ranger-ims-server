@@ -31,6 +31,8 @@ from pymysql.err import MySQLError
 from twisted.enterprise.adbapi import ConnectionPool
 from twisted.logger import Logger
 
+from ims.model import IncidentPriority, IncidentState
+
 from ._queries import queries
 from .._db import DatabaseStore, ParameterValue, Parameters, Query, Rows
 from .._exceptions import StorageError
@@ -195,6 +197,28 @@ class DataStore(DatabaseStore):
                 "Unable to apply schema: {error}", sql=sql, error=e
             )
             raise StorageError(f"Unable to apply schema: {e}")
+
+
+    def asIncidentStateValue(
+        self, incidentState: IncidentState
+    ) -> ParameterValue:
+        raise NotImplementedError("asIncidentStateValue")
+
+
+    def fromIncidentStateValue(self, value: ParameterValue) -> IncidentState:
+        raise NotImplementedError("fromIncidentStateValue")
+
+
+    def asIncidentPriorityValue(
+        self, incidentPriority: IncidentPriority
+    ) -> ParameterValue:
+        raise NotImplementedError("asIncidentPriorityValue")
+
+
+    def fromIncidentPriorityValue(
+        self, value: ParameterValue
+    ) -> IncidentPriority:
+        raise NotImplementedError("fromIncidentPriorityValue")
 
 
     def asDateTimeValue(self, dateTime: DateTime) -> ParameterValue:
