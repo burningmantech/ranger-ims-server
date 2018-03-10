@@ -209,16 +209,12 @@ class DataStore(DatabaseStore):
         raise NotImplementedError("fromIncidentStateValue")
 
 
-    def asIncidentPriorityValue(
-        self, incidentPriority: IncidentPriority
-    ) -> ParameterValue:
-        raise NotImplementedError("asIncidentPriorityValue")
+    def asPriorityValue(self, priority: IncidentPriority) -> ParameterValue:
+        raise NotImplementedError("asPriorityValue")
 
 
-    def fromIncidentPriorityValue(
-        self, value: ParameterValue
-    ) -> IncidentPriority:
-        raise NotImplementedError("fromIncidentPriorityValue")
+    def fromPriorityValue(self, value: ParameterValue) -> IncidentPriority:
+        raise NotImplementedError("fromPriorityValue")
 
 
     def asDateTimeValue(self, dateTime: DateTime) -> ParameterValue:
