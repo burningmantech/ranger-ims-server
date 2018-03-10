@@ -34,7 +34,7 @@ from ims.ext.trial import AsynchronousTestCase, TestCase
 
 from .base import TestDataStore
 from .. import _store
-from .._store import DataStore, asTimeStamp
+from .._store import DataStore
 from ..._exceptions import StorageError
 
 
@@ -340,13 +340,15 @@ class DataStoreHelperTests(TestCase):
 
     def test_asTimeStamp_preEpoch(self) -> None:
         """
-        :func:`asTimeStamp` raises :exc:`StorageError` when given a time stamp
-        before the UTC Epoch.
+        :meth:`DataStore.asDateTimeValue` raises :exc:`StorageError` when given
+        a time stamp before the UTC Epoch.
         """
         epoch = DateTime(
             year=1970, month=1, day=1, hour=0, minute=0, tzinfo=TimeZone.utc
         )
         preEpoch = epoch - TimeDelta(seconds=1)
 
-        e = self.assertRaises(StorageError, asTimeStamp, preEpoch)
+        e = self.assertRaises(
+            StorageError, DataStore.asDateTimeValue, preEpoch
+        )
         self.assertStartsWith(str(e), "DateTime is before the UTC epoch: ")

@@ -78,6 +78,36 @@ class DataStore(DatabaseStore):
     _state: _State = attrib(default=Factory(_State), init=False)
 
 
+    @staticmethod
+    def asIncidentStateValue(incidentState: IncidentState) -> ParameterValue:
+        raise NotImplementedError("asIncidentStateValue")
+
+
+    @staticmethod
+    def fromIncidentStateValue(value: ParameterValue) -> IncidentState:
+        raise NotImplementedError("fromIncidentStateValue")
+
+
+    @staticmethod
+    def asPriorityValue(priority: IncidentPriority) -> ParameterValue:
+        raise NotImplementedError("asPriorityValue")
+
+
+    @staticmethod
+    def fromPriorityValue(value: ParameterValue) -> IncidentPriority:
+        raise NotImplementedError("fromPriorityValue")
+
+
+    @staticmethod
+    def asDateTimeValue(dateTime: DateTime) -> ParameterValue:
+        raise NotImplementedError("asDateTimeValue")
+
+
+    @staticmethod
+    def fromDateTimeValue(value: ParameterValue) -> DateTime:
+        raise NotImplementedError("fromDateTimeValue")
+
+
     @property
     def _db(self) -> ConnectionPool:
         if self._state.db is None:
@@ -197,32 +227,6 @@ class DataStore(DatabaseStore):
                 "Unable to apply schema: {error}", sql=sql, error=e
             )
             raise StorageError(f"Unable to apply schema: {e}")
-
-
-    def asIncidentStateValue(
-        self, incidentState: IncidentState
-    ) -> ParameterValue:
-        raise NotImplementedError("asIncidentStateValue")
-
-
-    def fromIncidentStateValue(self, value: ParameterValue) -> IncidentState:
-        raise NotImplementedError("fromIncidentStateValue")
-
-
-    def asPriorityValue(self, priority: IncidentPriority) -> ParameterValue:
-        raise NotImplementedError("asPriorityValue")
-
-
-    def fromPriorityValue(self, value: ParameterValue) -> IncidentPriority:
-        raise NotImplementedError("fromPriorityValue")
-
-
-    def asDateTimeValue(self, dateTime: DateTime) -> ParameterValue:
-        raise NotImplementedError("asDateTimeValue")
-
-
-    def fromDateTimeValue(self, value: ParameterValue) -> DateTime:
-        raise NotImplementedError("fromDateTimeValue")
 
 
     async def validate(self) -> None:

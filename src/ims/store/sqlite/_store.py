@@ -80,6 +80,73 @@ class DataStore(DatabaseStore):
     _state: _State = attrib(default=Factory(_State), init=False)
 
 
+    @staticmethod
+    def asIncidentStateValue(incidentState: IncidentState) -> ParameterValue:
+        return {
+            IncidentState.new:        "new",
+            IncidentState.onHold:     "on_hold",
+            IncidentState.dispatched: "dispatched",
+            IncidentState.onScene:    "on_scene",
+            IncidentState.closed:     "closed",
+        }[incidentState]
+
+
+    @staticmethod
+    def fromIncidentStateValue(value: ParameterValue) -> IncidentState:
+        if not isinstance(value, str):
+            raise TypeError("Incident state in SQLite store must be a str")
+
+        return {
+            "new":        IncidentState.new,
+            "on_hold":    IncidentState.onHold,
+            "dispatched": IncidentState.dispatched,
+            "on_scene":   IncidentState.onScene,
+            "closed":     IncidentState.closed,
+        }[value]
+
+
+    @staticmethod
+    def asPriorityValue(priority: IncidentPriority) -> ParameterValue:
+        return {
+            IncidentPriority.high:   1,
+            IncidentPriority.normal: 3,
+            IncidentPriority.low:    4,
+        }[priority]
+
+
+    @staticmethod
+    def fromPriorityValue(value: ParameterValue) -> IncidentPriority:
+        if not isinstance(value, int):
+            raise TypeError("Incident priority in SQLite store must be an int")
+
+        return {
+            1: IncidentPriority.high,
+            2: IncidentPriority.high,
+            3: IncidentPriority.normal,
+            4: IncidentPriority.low,
+            5: IncidentPriority.low,
+        }[value]
+
+
+    @staticmethod
+    def asDateTimeValue(dateTime: DateTime) -> ParameterValue:
+        assert dateTime.tzinfo is not None, repr(dateTime)
+        timeStamp = dateTime.timestamp()
+        if timeStamp < 0:
+            raise StorageError(
+                f"DateTime is before the UTC epoch: {dateTime}"
+            )
+        return timeStamp
+
+
+    @staticmethod
+    def fromDateTimeValue(value: ParameterValue) -> DateTime:
+        if not isinstance(value, float):
+            raise TypeError("Time stamp in SQLite store must be a float")
+
+        return DateTime.fromtimestamp(value, tz=TimeZone.utc)
+
+
     @classmethod
     def printSchema(cls, out: TextIO = stdout) -> None:
         """
@@ -206,32 +273,6 @@ class DataStore(DatabaseStore):
             raise StorageError(f"Unable to apply schema: {e}")
 
 
-    def asIncidentStateValue(
-        self, incidentState: IncidentState
-    ) -> ParameterValue:
-        return incidentStateAsID(incidentState)
-
-
-    def fromIncidentStateValue(self, value: ParameterValue) -> IncidentState:
-        return incidentStateFromID(value)
-
-
-    def asPriorityValue(self, priority: IncidentPriority) -> ParameterValue:
-        return priorityAsID(priority)
-
-
-    def fromPriorityValue(self, value: ParameterValue) -> IncidentPriority:
-        return priorityFromID(value)
-
-
-    def asDateTimeValue(self, dateTime: DateTime) -> ParameterValue:
-        return asTimeStamp(dateTime)
-
-
-    def fromDateTimeValue(self, value: ParameterValue) -> DateTime:
-        return fromTimeStamp(value)
-
-
     async def validate(self) -> None:
         """
         See :meth:`IMSDataStore.validate`.
@@ -306,65 +347,3 @@ class DataStore(DatabaseStore):
                 )
                 if not trialRun:
                     self.importIncident(incident)
-
-
-
-def asTimeStamp(dateTime: DateTime) -> float:
-    assert dateTime.tzinfo is not None, repr(dateTime)
-    timeStamp = dateTime.timestamp()
-    if timeStamp < 0:
-        raise StorageError(
-            f"DateTime is before the UTC epoch: {dateTime}"
-        )
-    return timeStamp
-
-
-def fromTimeStamp(timeStamp: ParameterValue) -> DateTime:
-    if not isinstance(timeStamp, float):
-        raise TypeError("Time stamp in SQLite store must be a float")
-
-    return DateTime.fromtimestamp(timeStamp, tz=TimeZone.utc)
-
-
-def incidentStateFromID(strValue: ParameterValue) -> IncidentState:
-    if not isinstance(strValue, str):
-        raise TypeError("Incident state in SQLite store must be a str")
-
-    return {
-        "new":        IncidentState.new,
-        "on_hold":    IncidentState.onHold,
-        "dispatched": IncidentState.dispatched,
-        "on_scene":   IncidentState.onScene,
-        "closed":     IncidentState.closed,
-    }[strValue]
-
-
-def incidentStateAsID(incidentState: IncidentState) -> str:
-    return {
-        IncidentState.new:        "new",
-        IncidentState.onHold:     "on_hold",
-        IncidentState.dispatched: "dispatched",
-        IncidentState.onScene:    "on_scene",
-        IncidentState.closed:     "closed",
-    }[incidentState]
-
-
-def priorityFromID(intValue: ParameterValue) -> IncidentPriority:
-    if not isinstance(intValue, int):
-        raise TypeError("Incident priority in SQLite store must be an int")
-
-    return {
-        1: IncidentPriority.high,
-        2: IncidentPriority.high,
-        3: IncidentPriority.normal,
-        4: IncidentPriority.low,
-        5: IncidentPriority.low,
-    }[intValue]
-
-
-def priorityAsID(priority: IncidentPriority) -> int:
-    return {
-        IncidentPriority.high:   1,
-        IncidentPriority.normal: 3,
-        IncidentPriority.low:    4,
-    }[priority]

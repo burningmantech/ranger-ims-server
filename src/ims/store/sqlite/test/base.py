@@ -29,7 +29,7 @@ from ims.model import (
     Event, Incident, IncidentReport, Location, ReportEntry, RodGarettAddress
 )
 
-from .._store import DataStore, asTimeStamp, incidentStateAsID, priorityAsID
+from .._store import DataStore
 from ...test.base import TestDataStore as SuperTestDataStore
 
 
@@ -235,11 +235,11 @@ def storeIncident(cursor: Cursor, incident: Incident) -> None:
         ),
         dict(
             eventID=incident.event.id,
-            incidentCreated=asTimeStamp(incident.created),
+            incidentCreated=DataStore.asDateTimeValue(incident.created),
             incidentNumber=incident.number,
             incidentSummary=incident.summary,
-            incidentPriority=priorityAsID(incident.priority),
-            incidentState=incidentStateAsID(incident.state),
+            incidentPriority=DataStore.asPriorityValue(incident.priority),
+            incidentState=DataStore.asIncidentStateValue(incident.state),
             locationName=location.name,
             locationConcentric=locationConcentric,
             locationRadialHour=locationRadialHour,
@@ -309,7 +309,7 @@ def storeIncident(cursor: Cursor, incident: Incident) -> None:
                 """
             ),
             dict(
-                created=asTimeStamp(reportEntry.created),
+                created=DataStore.asDateTimeValue(reportEntry.created),
                 author=reportEntry.author,
                 automatic=reportEntry.automatic,
                 text=reportEntry.text,
@@ -377,7 +377,9 @@ def storeIncidentReport(
             """
         ),
         dict(
-            incidentReportCreated=asTimeStamp(incidentReport.created),
+            incidentReportCreated=DataStore.asDateTimeValue(
+                incidentReport.created
+            ),
             incidentReportNumber=incidentReport.number,
             incidentReportSummary=incidentReport.summary,
         )
@@ -392,7 +394,7 @@ def storeIncidentReport(
                 """
             ),
             dict(
-                created=asTimeStamp(reportEntry.created),
+                created=DataStore.asDateTimeValue(reportEntry.created),
                 author=reportEntry.author,
                 automatic=reportEntry.automatic,
                 text=reportEntry.text,

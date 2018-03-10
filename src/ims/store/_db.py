@@ -161,6 +161,56 @@ class DatabaseStore(IMSDataStore):
     query: Queries
 
 
+    @staticmethod
+    @abstractmethod
+    def asIncidentStateValue(incidentState: IncidentState) -> ParameterValue:
+        """
+        Convert an :class:`IncidentState` to a state value for the database.
+        """
+
+
+    @staticmethod
+    @abstractmethod
+    def fromIncidentStateValue(value: ParameterValue) -> IncidentState:
+        """
+        Convert a state value from the database to an :class:`IncidentState`.
+        """
+
+
+    @staticmethod
+    @abstractmethod
+    def asPriorityValue(priority: IncidentPriority) -> ParameterValue:
+        """
+        Convert an :class:`IncidentPriority` to an incident priority value for
+        the database.
+        """
+
+
+    @staticmethod
+    @abstractmethod
+    def fromPriorityValue(value: ParameterValue) -> IncidentPriority:
+        """
+        Convert an incident priority value from the database to an
+        :class:`IncidentPriority`.
+        """
+
+
+    @staticmethod
+    @abstractmethod
+    def asDateTimeValue(dateTime: DateTime) -> ParameterValue:
+        """
+        Convert a :class:`DateTime` to a date-time value for the database.
+        """
+
+
+    @staticmethod
+    @abstractmethod
+    def fromDateTimeValue(value: ParameterValue) -> DateTime:
+        """
+        Convert a date-time value from the database to a :class:`DateTime`.
+        """
+
+
     @classmethod
     def loadSchema(cls, version: Union[int, str] = None) -> str:
         """
@@ -233,52 +283,6 @@ class DatabaseStore(IMSDataStore):
         """
         if await self.dbManager.upgradeSchema():
             await self.disconnect()
-
-
-    @abstractmethod
-    def asIncidentStateValue(
-        self, incidentState: IncidentState
-    ) -> ParameterValue:
-        """
-        Convert an :class:`IncidentState` to a state value for the database.
-        """
-
-
-    @abstractmethod
-    def fromIncidentStateValue(self, value: ParameterValue) -> IncidentState:
-        """
-        Convert a state value from the database to an :class:`IncidentState`.
-        """
-
-
-    @abstractmethod
-    def asPriorityValue(self, priority: IncidentPriority) -> ParameterValue:
-        """
-        Convert an :class:`IncidentPriority` to an incident priority value for
-        the database.
-        """
-
-
-    @abstractmethod
-    def fromPriorityValue(self, value: ParameterValue) -> IncidentPriority:
-        """
-        Convert an incident priority value from the database to an
-        :class:`IncidentPriority`.
-        """
-
-
-    @abstractmethod
-    def asDateTimeValue(self, dateTime: DateTime) -> ParameterValue:
-        """
-        Convert a :class:`DateTime` to a date-time value for the database.
-        """
-
-
-    @abstractmethod
-    def fromDateTimeValue(self, value: ParameterValue) -> DateTime:
-        """
-        Convert a date-time value from the database to a :class:`DateTime`.
-        """
 
 
     ###
