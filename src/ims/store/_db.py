@@ -285,6 +285,26 @@ class DatabaseStore(IMSDataStore):
             await self.disconnect()
 
 
+    async def validate(self) -> None:
+        """
+        See :meth:`IMSDataStore.validate`.
+        """
+        self._log.info("Validating data store...")
+
+        valid = True
+
+        # Check for detached report entries
+        for reportEntry in await self.detachedReportEntries():
+            self._log.error(
+                "Found detached report entry: {reportEntry}",
+                reportEntry=reportEntry,
+            )
+            valid = False
+
+        if not valid:
+            raise StorageError("Data store validation failed")
+
+
     ###
     # Events
     ###

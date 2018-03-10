@@ -227,15 +227,3 @@ class DataStore(DatabaseStore):
                 "Unable to apply schema: {error}", sql=sql, error=e
             )
             raise StorageError(f"Unable to apply schema: {e}")
-
-
-    async def validate(self) -> None:
-        """
-        See :meth:`IMSDataStore.validate`.
-        """
-        self._log.info("Validating data store...")
-
-        valid = True
-
-        if not valid:
-            raise StorageError("Data store validation failed")

@@ -277,7 +277,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.validate`.
         """
-        self._log.info("Validating data store...")
+        super().validate()
 
         valid = True
 
@@ -287,13 +287,6 @@ class DataStore(DatabaseStore):
             self._log.error(
                 "Database constraint violated: {error}",
                 error=e,
-            )
-
-        # Check for detached report entries
-        for reportEntry in await self.detachedReportEntries():
-            self._log.error(
-                "Found detached report entry: {reportEntry}",
-                reportEntry=reportEntry,
             )
             valid = False
 
