@@ -44,10 +44,9 @@ def asyncAsDeferred(f: Callable) -> Callable:
 
 
 
-class TestDataStore(IMSDataStore, ABC):
+class TestDataStoreMixIn(ABC):
     """
-    :class:`IMSDataStore` subclass that raises a database exception when things
-    get interesting.
+    :class:`IMSDataStore` mix-in for testing.
     """
 
     maxIncidentNumber = 2**63 - 1  # Default to 64-bit int
@@ -104,6 +103,7 @@ class TestDataStore(IMSDataStore, ABC):
         """
 
 
+    @abstractmethod
     async def storeIncidentType(self, name: str, hidden: bool) -> None:
         """
         Store an incident type with the given name and hidden state in the
@@ -130,13 +130,43 @@ class TestDataStore(IMSDataStore, ABC):
         Compare two :class:`ReportEntry` objects, using :meth:`dateTimesEqual`
         when comparing date-times.
         """
+        if ignoreAutomatic:
+            reportEntriesA = tuple(
+                e for e in reportEntriesA if not e.automatic
+            )
+
+        if len(reportEntriesA) != len(reportEntriesB):
+            return False
+
+        for entryA, entryB in zip(reportEntriesA, reportEntriesB):
+            if entryA != entryB:
+                if entryA.author != entryB.author:
+                    return False
+                if entryA.automatic != entryB.automatic:
+                    return False
+                if entryA.text != entryB.text:
+                    return False
+                if not self.dateTimesEqual(
+                    entryA.created, entryB.created
+                ):
+                    return False
+
+        return True
 
 
-    def normalizeIncidentAddress(self, incident: Incident) -> Incident:
+    @staticmethod
+    def normalizeIncidentAddress(incident: Incident) -> Incident:
         """
-        Normalize the address in an incident to canonical form, if necessary.
+        Normalize the address in an incident to a canonical form, if necessary.
         """
         return incident
+
+
+
+class TestDataStoreABC(IMSDataStore, TestDataStoreMixIn):
+    """
+    Test Data Store ABC.
+    """
 
 
 
@@ -148,7 +178,7 @@ class DataStoreTests(AsynchronousTestCase):
     skip: Optional[str] = "Parent class of real tests"
 
 
-    async def store(self) -> TestDataStore:
+    async def store(self) -> TestDataStoreABC:
         """
         Return a data store for use in tests.
         """

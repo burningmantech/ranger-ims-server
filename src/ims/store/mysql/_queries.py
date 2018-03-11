@@ -26,6 +26,13 @@ __all__ = ()
 
 query_eventID = "select ID from EVENT where NAME = %(eventID)s"
 
+template_setIncidentAttribute = (
+    f"""
+    update INCIDENT set {{column}} = %(value)s
+    where EVENT = ({query_eventID}) and NUMBER = %(incidentNumber)s
+    """
+)
+
 queries = Queries(
     schemaVersion=Query(
         "look up schema version",
@@ -120,111 +127,184 @@ queries = Queries(
     detachedReportEntries=Query(
         "look up detached report entries",
         """
+        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
+        where
+            ID not in (select REPORT_ENTRY from INCIDENT__REPORT_ENTRY) and
+            ID not in (select REPORT_ENTRY from INCIDENT_REPORT__REPORT_ENTRY)
         """
     ),
     incident=Query(
         "look up incident",
-        """
+        f"""
+        select
+            CREATED, PRIORITY, STATE, SUMMARY,
+            LOCATION_NAME,
+            LOCATION_CONCENTRIC,
+            LOCATION_RADIAL_HOUR,
+            LOCATION_RADIAL_MINUTE,
+            LOCATION_DESCRIPTION
+        from INCIDENT i
+        where EVENT = ({query_eventID}) and NUMBER = %(incidentNumber)s
         """
     ),
     incident_rangers=Query(
         "look up Ranger for incident",
-        """
+        f"""
+        select RANGER_HANDLE from INCIDENT__RANGER
+        where
+            EVENT = ({query_eventID}) and INCIDENT_NUMBER = %(incidentNumber)s
         """
     ),
     incident_incidentTypes=Query(
         "look up incident types for incident",
-        """
+        f"""
+        select NAME from INCIDENT_TYPE where ID in (
+            select INCIDENT_TYPE from INCIDENT__INCIDENT_TYPE
+            where
+                EVENT = ({query_eventID}) and
+                INCIDENT_NUMBER = %(incidentNumber)s
+        )
         """
     ),
     incident_reportEntries=Query(
         "look up report entries for incident",
-        """
+        f"""
+        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
+        where ID in (
+            select REPORT_ENTRY from INCIDENT__REPORT_ENTRY
+            where
+                EVENT = ({query_eventID}) and
+                INCIDENT_NUMBER = %(incidentNumber)s
+        )
         """
     ),
     incidentNumbers=Query(
         "look up incident numbers for event",
-        """
+        f"""
+        select NUMBER from INCIDENT where EVENT = ({query_eventID})
         """
     ),
     maxIncidentNumber=Query(
         "look up maximum incident number for event",
-        """
+        f"""
+        select max(NUMBER) from INCIDENT where EVENT = ({query_eventID})
         """
     ),
     attachRangeHandleToIncident=Query(
         "add Ranger to incident",
-        """
+        f"""
+        insert into INCIDENT__RANGER (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
+        values (({query_eventID}), %(incidentNumber)s, %(rangerHandle)s)
         """
     ),
     attachIncidentTypeToIncident=Query(
         "add incident type to incident",
-        """
+        f"""
+        insert into INCIDENT__INCIDENT_TYPE (
+            EVENT, INCIDENT_NUMBER, INCIDENT_TYPE
+        )
+        values (
+            ({query_eventID}),
+            %(incidentNumber)s,
+            (select ID from INCIDENT_TYPE where NAME = %(incidentType)s)
+        )
         """
     ),
     createReportEntry=Query(
         "create report entry",
         """
+        insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
+        values (%(author)s, %(text)s, %(created)s, %(generated)s)
         """
     ),
     attachReportEntryToIncident=Query(
         "add report entry to incident",
-        """
+        f"""
+        insert into INCIDENT__REPORT_ENTRY (
+            EVENT, INCIDENT_NUMBER, REPORT_ENTRY
+        )
+        values (({query_eventID}), %(incidentNumber)s, %(reportEntryID)s)
         """
     ),
     createIncident=Query(
         "create incident",
-        """
+        f"""
+        insert into INCIDENT (
+            EVENT,
+            NUMBER,
+            VERSION,
+            CREATED,
+            PRIORITY,
+            STATE,
+            SUMMARY,
+            LOCATION_NAME,
+            LOCATION_CONCENTRIC,
+            LOCATION_RADIAL_HOUR,
+            LOCATION_RADIAL_MINUTE,
+            LOCATION_DESCRIPTION
+        )
+        values (
+            ({query_eventID}),
+            %(incidentNumber)s,
+            1,
+            %(incidentCreated)s,
+            %(incidentPriority)s,
+            %(incidentState)s,
+            %(incidentSummary)s,
+            %(locationName)s,
+            %(locationConcentric)s,
+            %(locationRadialHour)s,
+            %(locationRadialMinute)s,
+            %(locationDescription)s
+        )
         """
     ),
     setIncident_priority=Query(
         "set incident priority",
-        """
-        """
+        template_setIncidentAttribute.format(column="PRIORITY")
     ),
     setIncident_state=Query(
         "set incident state",
-        """
-        """
+        template_setIncidentAttribute.format(column="STATE")
     ),
     setIncident_summary=Query(
         "set incident summary",
-        """
-        """
+        template_setIncidentAttribute.format(column="SUMMARY")
     ),
     setIncident_locationName=Query(
         "set incident location name",
-        """
-        """
+        template_setIncidentAttribute.format(column="LOCATION_NAME")
     ),
     setIncident_locationConcentricStreet=Query(
         "set incident location concentric street",
-        """
-        """
+        template_setIncidentAttribute.format(column="LOCATION_CONCENTRIC")
     ),
     setIncident_locationRadialHour=Query(
         "set incident location radial hour",
-        """
-        """
+        template_setIncidentAttribute.format(column="LOCATION_RADIAL_HOUR")
     ),
     setIncident_locationRadialMinute=Query(
         "set incident location radial minute",
-        """
-        """
+        template_setIncidentAttribute.format(column="LOCATION_RADIAL_MINUTE")
     ),
     setIncident_locationDescription=Query(
         "set incident location description",
-        """
-        """
+        template_setIncidentAttribute.format(column="LOCATION_DESCRIPTION")
     ),
     clearIncidentRangers=Query(
         "clear incident Rangers",
-        """
+        f"""
+        delete from INCIDENT__RANGER
+        where
+            EVENT = ({query_eventID}) and INCIDENT_NUMBER = %(incidentNumber)s
         """
     ),
     clearIncidentIncidentTypes=Query(
         "clear incident types",
-        """
+        f"""
+        delete from INCIDENT__INCIDENT_TYPE
+        where
+            EVENT = ({query_eventID}) and INCIDENT_NUMBER = %(incidentNumber)s
         """
     ),
     incidentReport=Query(

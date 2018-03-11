@@ -256,7 +256,9 @@ class DatabaseStore(IMSDataStore):
 
 
     @abstractmethod
-    async def runInteraction(self, interaction: Callable[[Cursor], T]) -> T:
+    async def runInteraction(
+        self, interaction: Callable[..., T], *args: Any, **kwargs: Any,
+    ) -> T:
         """
         Create a cursor and call the given interaction with the cursor as the
         sole argument.

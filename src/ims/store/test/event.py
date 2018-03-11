@@ -20,7 +20,7 @@ Event tests for :mod:`ranger-ims-server.store`
 
 from ims.model import Event
 
-from .base import DataStoreTests, TestDataStore, asyncAsDeferred
+from .base import DataStoreTests, asyncAsDeferred
 from .._exceptions import StorageError
 
 
@@ -59,7 +59,8 @@ class DataStoreEventTests(DataStoreTests):
         try:
             await self.test_events(broken=True)
         except StorageError as e:
-            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+            store = await self.store()
+            self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 

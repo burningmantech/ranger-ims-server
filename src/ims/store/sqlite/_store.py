@@ -242,10 +242,12 @@ class DataStore(DatabaseStore):
         await self.runQuery(query, parameters)
 
 
-    async def runInteraction(self, interaction: Callable) -> Any:
+    async def runInteraction(
+        self, interaction: Callable, *args: Any, **kwargs: Any
+    ) -> Any:
         try:
             with self._db as db:
-                return interaction(db.cursor())
+                return interaction(db.cursor(), *args, **kwargs)
         except SQLiteError as e:
             self._log.critical(
                 "Interaction {interaction} failed: {error}",

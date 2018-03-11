@@ -29,7 +29,7 @@ from ims.model import (
     Location, ReportEntry, RodGarettAddress,
 )
 
-from .base import DataStoreTests, TestDataStore, asyncAsDeferred
+from .base import DataStoreTests, TestDataStoreABC, asyncAsDeferred
 from .._exceptions import NoSuchIncidentError, StorageError
 
 
@@ -172,7 +172,7 @@ class DataStoreIncidentTests(DataStoreTests):
         try:
             await store.incidents(anEvent)
         except StorageError as e:
-            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+            self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 
@@ -223,7 +223,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.incidentWithNumber(
-                anEvent, TestDataStore.maxIncidentNumber + 1
+                anEvent, store.maxIncidentNumber + 1
             )
         except NoSuchIncidentError as e:
             pass
@@ -244,7 +244,7 @@ class DataStoreIncidentTests(DataStoreTests):
         try:
             await store.incidentWithNumber(anEvent, 1)
         except StorageError as e:
-            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+            self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 
@@ -350,7 +350,7 @@ class DataStoreIncidentTests(DataStoreTests):
         try:
             await store.createIncident(anIncident, "Hubcap")
         except StorageError as e:
-            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+            self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 
@@ -372,7 +372,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 "Bucket",
             )
         except StorageError as e:
-            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+            self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 
@@ -586,7 +586,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 incident.event, incident.number, ("Hubcap", "Dingle"), "Bucket"
             )
         except StorageError as e:
-            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+            self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 
@@ -626,7 +626,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 anEvent, incident.number, ("Fun", "Boring"), "Bucket"
             )
         except StorageError as e:
-            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+            self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 
@@ -751,14 +751,14 @@ class DataStoreIncidentTests(DataStoreTests):
                 (aReportEntry,), aReportEntry.author,
             )
         except StorageError as e:
-            self.assertEqual(str(e), TestDataStore.exceptionMessage)
+            self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 
 
     def assertIncidentsEqual(
-        self, store: TestDataStore, incidentA: Incident, incidentB: Incident,
-        ignoreAutomatic: bool = False,
+        self, store: TestDataStoreABC, incidentA: Incident,
+        incidentB: Incident, ignoreAutomatic: bool = False,
     ) -> None:
         if incidentA != incidentB:
             messages = []

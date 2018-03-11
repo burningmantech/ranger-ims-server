@@ -28,14 +28,14 @@ from ims.ext.trial import TestCase
 from ims.model import Event, Incident, IncidentReport
 
 from .._store import DataStore
-from ...test.base import TestDataStore as SuperTestDataStore
+from ...test.database import TestDatabaseStoreMixIn
 
 
 __all__ = ()
 
 
 
-class TestDataStore(SuperTestDataStore, DataStore):
+class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     """
     See :class:`SuperTestDataStore`.
     """
@@ -73,13 +73,6 @@ class TestDataStore(SuperTestDataStore, DataStore):
     def bringThePain(self) -> None:
         setattr(self._state, "broken", True)
         assert getattr(self._state, "broken")
-
-
-    async def storeEvent(self, event: Event) -> None:
-        await self._db.runOperation(
-            "insert into EVENT (NAME) values (%(eventID)s)",
-            dict(eventID=event.id)
-        )
 
 
     async def storeIncident(self, incident: Incident) -> None:
@@ -122,8 +115,3 @@ class TestDataStore(SuperTestDataStore, DataStore):
             "values (%(name)s, %(hidden)s)",
             dict(name=name, hidden=hidden)
         )
-
-
-    @staticmethod
-    def normalizeIncidentAddress(incident: Incident) -> Incident:
-        raise NotImplementedError("normalizeIncidentAddress()")

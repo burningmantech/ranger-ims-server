@@ -18,14 +18,16 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from twisted.internet.defer import ensureDeferred
 from twisted.logger import Logger
 
 from .base import TestDataStore
 from .service import MySQLService
-from ...test.base import DataStoreTests as SuperDataStoreTests
+from ...test.base import (
+    DataStoreTests as SuperDataStoreTests, TestDataStoreABC
+)
 from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
 from ...test.incident import (
     DataStoreIncidentTests as SuperDataStoreIncidentTests
@@ -76,7 +78,7 @@ class DataStoreTests(SuperDataStoreTests):
         return ensureDeferred(tearDown())
 
 
-    async def store(self) -> TestDataStore:
+    async def store(self) -> TestDataStoreABC:
         service = self.mysqlService
 
         assert service.host is not None
@@ -96,7 +98,7 @@ class DataStoreTests(SuperDataStoreTests):
 
         self.stores.append(store)
 
-        return store
+        return cast(TestDataStoreABC, store)
 
 
 

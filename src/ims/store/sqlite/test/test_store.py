@@ -18,8 +18,12 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
+from typing import cast
+
 from .base import TestDataStore
-from ...test.base import DataStoreTests as SuperDataStoreTests
+from ...test.base import (
+    DataStoreTests as SuperDataStoreTests, TestDataStoreABC
+)
 from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
 from ...test.incident import (
     DataStoreIncidentTests as SuperDataStoreIncidentTests
@@ -47,10 +51,10 @@ class DataStoreTests(SuperDataStoreTests):
     skip = None
 
 
-    async def store(self) -> TestDataStore:
+    async def store(self) -> TestDataStoreABC:
         store = TestDataStore(self)
         await store.upgradeSchema()
-        return store
+        return cast(TestDataStoreABC, store)
 
 
 

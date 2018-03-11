@@ -173,9 +173,11 @@ class DataStore(DatabaseStore):
             raise StorageError(e)
 
 
-    async def runInteraction(self, interaction: Callable) -> Any:
+    async def runInteraction(
+        self, interaction: Callable, *args: Any, **kwargs: Any
+    ) -> Any:
         try:
-            return await self._db.runInteraction(interaction)
+            return await self._db.runInteraction(interaction, *args, **kwargs)
         except MySQLError as e:
             self._log.critical(
                 "Interaction {interaction} failed: {error}",
