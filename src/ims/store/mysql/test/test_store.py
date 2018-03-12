@@ -114,8 +114,6 @@ class DataStoreIncidentTests(DataStoreTests, SuperDataStoreIncidentTests):
     Tests for :class:`DataStore` incident access.
     """
 
-    skip = "unimplemented"
-
 
 
 class DataStoreIncidentReportTests(
@@ -124,8 +122,6 @@ class DataStoreIncidentReportTests(
     """
     Tests for :class:`DataStore` incident report access.
     """
-
-    skip = "unimplemented"
 
 
 
