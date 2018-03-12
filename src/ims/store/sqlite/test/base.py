@@ -18,7 +18,6 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from datetime import datetime as DateTime, timedelta as TimeDelta
 from pathlib import Path
 from typing import Optional, cast
 
@@ -62,8 +61,3 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     def bringThePain(self) -> None:
         setattr(self._state, "broken", True)
         assert getattr(self._state, "broken")
-
-
-    def dateTimesEqual(self, a: DateTime, b: DateTime) -> bool:
-        # Floats stored in SQLite may be slightly off when round-tripped.
-        return a - b < TimeDelta(microseconds=20)

@@ -19,7 +19,7 @@ Tests for :mod:`ranger-ims-server.store`
 """
 
 from abc import ABC, abstractmethod
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timedelta as TimeDelta
 from functools import wraps
 from typing import Any, Callable, Optional, Sequence
 
@@ -117,7 +117,8 @@ class TestDataStoreMixIn(ABC):
         Apply some "close enough" logic to deal with the possibility that
         date-times stored in a database may be slightly off when retrieved.
         """
-        return a == b
+        # Floats stored may be slightly off when round-tripped.
+        return a - b < TimeDelta(microseconds=20)
 
 
     def reportEntriesEqual(
