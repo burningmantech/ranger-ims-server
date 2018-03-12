@@ -18,6 +18,7 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
+from os import environ
 from typing import List, Optional, cast
 
 from twisted.internet.defer import ensureDeferred
@@ -47,6 +48,25 @@ __all__ = ()
 
 
 
+if environ.get("IMS_TEST_MYSQL_HOST", None) is None:
+    from .service import DockerizedMySQLService
+
+    def mysqlServiceFactory() -> MySQLService:
+        return DockerizedMySQLService()
+else:
+    from .service import ExternalMySQLService
+
+    def mysqlServiceFactory() -> MySQLService:
+        env = environ.get
+        return ExternalMySQLService(
+            host=env("IMS_TEST_MYSQL_HOST"),
+            port=int(env("IMS_TEST_MYSQL_PORT", "3306")),
+            user=env("IMS_TEST_MYSQL_USERNAME", "ims"),
+            password=env("IMS_TEST_MYSQL_PASSWORD", "ims"),
+            rootPassword=env("IMS_TEST_MYSQL_PASSWORD", "ims"),
+        )
+
+
 class DataStoreTests(SuperDataStoreTests):
     """
     Parent test class.
@@ -56,7 +76,7 @@ class DataStoreTests(SuperDataStoreTests):
 
     skip: Optional[str] = None
 
-    mysqlService = MySQLService()
+    mysqlService: MySQLService = mysqlServiceFactory()
 
 
     def setUp(self) -> None:

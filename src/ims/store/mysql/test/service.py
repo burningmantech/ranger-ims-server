@@ -19,6 +19,7 @@ Start up a MySQL service for testing.
 This implementation uses Docker containers.
 """
 
+from abc import ABC, abstractmethod
 from random import choice
 from string import ascii_letters, digits
 from typing import Awaitable, Mapping, Optional
@@ -53,9 +54,80 @@ def randomString(length: int = 16) -> str:
     )
 
 
+NO_HOST = ""
+NO_PORT = 0
+
+
+
+class MySQLService(ABC):
+    """
+    MySQL database service.
+    """
+
+    @property
+    @abstractmethod
+    def host(self) -> str:
+        """
+        Server network address host name.
+        """
+
+
+    @property
+    @abstractmethod
+    def port(self) -> int:
+        """
+        Server network address port number.
+        """
+
+
+    @property
+    @abstractmethod
+    def user(self) -> str:
+        """
+        Database user name.
+        """
+
+
+    @property
+    @abstractmethod
+    def password(self) -> str:
+        """
+        Database user password.
+        """
+
+
+    @property
+    @abstractmethod
+    def rootPassword(self) -> str:
+        """
+        Server root user password.
+        """
+
+
+    @abstractmethod
+    async def start(self) -> None:
+        """
+        Start the service.
+        """
+
+
+    @abstractmethod
+    async def stop(self) -> None:
+        """
+        Stop the service.
+        """
+
+
+    @abstractmethod
+    async def createDatabase(self, name: Optional[str] = None) -> str:
+        """
+        Create a database.
+        """
+
+
 
 @attrs(frozen=True)
-class MySQLService(object):
+class DockerizedMySQLService(MySQLService):
     """
     Manages a MySQL instance.
     """
@@ -74,13 +146,11 @@ class MySQLService(object):
             validator=optional(instance_of(Container)),
             default=None, init=False,
         )
-        host: Optional[str] = attrib(
-            validator=optional(instance_of(str)),
-            default=None, init=False,
+        host: str = attrib(
+            validator=optional(instance_of(str)), default=NO_HOST, init=False
         )
-        port: Optional[int] = attrib(
-            validator=optional(instance_of(str)),
-            default=None, init=False,
+        port: int = attrib(
+            validator=optional(instance_of(int)), default=NO_PORT, init=False
         )
 
 
@@ -91,13 +161,13 @@ class MySQLService(object):
         validator=instance_of(str), default="5.6",
     )
 
-    user: str = attrib(
+    _user: str = attrib(
         validator=instance_of(str), default=Factory(randomString),
     )
-    password: str = attrib(
+    _password: str = attrib(
         validator=instance_of(str), default=Factory(randomString),
     )
-    rootPassword: str = attrib(
+    _rootPassword: str = attrib(
         validator=instance_of(str), default=Factory(randomString),
     )
 
@@ -111,12 +181,27 @@ class MySQLService(object):
 
 
     @property
-    def host(self) -> Optional[str]:
+    def user(self) -> str:
+        return self._user
+
+
+    @property
+    def password(self) -> str:
+        return self._password
+
+
+    @property
+    def rootPassword(self) -> str:
+        return self._rootPassword
+
+
+    @property
+    def host(self) -> str:
         return self._state.host
 
 
     @property
-    def port(self) -> Optional[int]:
+    def port(self) -> int:
         return self._state.port
 
 
@@ -188,15 +273,12 @@ class MySQLService(object):
 
 
     def _resetContainerState(self) -> None:
-        self._state.host = None
-        self._state.port = None
+        self._state.host = NO_HOST
+        self._state.port = NO_PORT
         self._state.container = None
 
 
     async def start(self) -> None:
-        """
-        Start the service.
-        """
         if self._state.container is not None:
             # Already started or starting
             await self._state.container
@@ -293,9 +375,6 @@ class MySQLService(object):
 
 
     async def stop(self) -> None:
-        """
-        Stop the service.
-        """
         if self._state.container is None:
             # Not running
             return
@@ -306,9 +385,6 @@ class MySQLService(object):
 
 
     async def createDatabase(self, name: Optional[str] = None) -> str:
-        """
-        Create a database.
-        """
         if name is None:
             name = randomString()
 
@@ -362,5 +438,74 @@ class MySQLService(object):
             password=self.password,
             database=name,
         )
+
+        return name
+
+
+
+@attrs(frozen=True)
+class ExternalMySQLService(MySQLService):
+    """
+    Externally hosted MySQL instance.
+    """
+
+    _log = Logger()
+
+    host: str         = attrib(validator=instance_of(str))
+    port: int         = attrib(validator=instance_of(str))
+    user: str         = attrib(validator=instance_of(str))
+    password: str     = attrib(validator=instance_of(str))
+    rootPassword: str = attrib(validator=instance_of(str))
+
+
+    async def start(self) -> None:
+        """
+        Start the service.
+        """
+
+
+    async def stop(self) -> None:
+        """
+        Stop the service.
+        """
+        raise RuntimeError("Can't stop external MySQL service")
+
+
+    async def createDatabase(self, name: Optional[str] = None) -> str:
+        """
+        Create a database.
+        """
+        if name is None:
+            name = randomString()
+
+        self._log.info(
+            "Creating database {name} in MySQL service {service}.",
+            name=name, service=self,
+        )
+
+        connection = connect(
+            host=self.host,
+            port=self.port,
+            user="root",
+            password=self.rootPassword,
+            cursorclass=Cursor,
+        )
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(f"create database {name}")
+                cursor.execute(
+                    f"grant all privileges on {name}.* "
+                    f"to %(user)s@%(host)s identified by %(password)s",
+                    dict(
+                        user=self.user,
+                        host=self.host,
+                        password=self.password,
+                    )
+                )
+
+            connection.commit()
+        finally:
+            connection.close()
 
         return name
