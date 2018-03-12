@@ -165,53 +165,78 @@ class DatabaseStore(IMSDataStore):
 
 
     @staticmethod
-    @abstractmethod
     def asIncidentStateValue(incidentState: IncidentState) -> ParameterValue:
-        """
-        Convert an :class:`IncidentState` to a state value for the database.
-        """
+        return {
+            IncidentState.new:        "new",
+            IncidentState.onHold:     "on_hold",
+            IncidentState.dispatched: "dispatched",
+            IncidentState.onScene:    "on_scene",
+            IncidentState.closed:     "closed",
+        }[incidentState]
 
 
     @staticmethod
-    @abstractmethod
     def fromIncidentStateValue(value: ParameterValue) -> IncidentState:
-        """
-        Convert a state value from the database to an :class:`IncidentState`.
-        """
+        if not isinstance(value, str):
+            raise TypeError("Incident state in SQLite store must be a str")
+
+        return {
+            "new":        IncidentState.new,
+            "on_hold":    IncidentState.onHold,
+            "dispatched": IncidentState.dispatched,
+            "on_scene":   IncidentState.onScene,
+            "closed":     IncidentState.closed,
+        }[value]
 
 
     @staticmethod
-    @abstractmethod
     def asPriorityValue(priority: IncidentPriority) -> ParameterValue:
-        """
-        Convert an :class:`IncidentPriority` to an incident priority value for
-        the database.
-        """
+        return {
+            IncidentPriority.high:   1,
+            IncidentPriority.normal: 3,
+            IncidentPriority.low:    4,
+        }[priority]
 
 
     @staticmethod
-    @abstractmethod
     def fromPriorityValue(value: ParameterValue) -> IncidentPriority:
-        """
-        Convert an incident priority value from the database to an
-        :class:`IncidentPriority`.
-        """
+        if not isinstance(value, int):
+            raise TypeError("Incident priority in SQLite store must be an int")
+
+        return {
+            1: IncidentPriority.high,
+            2: IncidentPriority.high,
+            3: IncidentPriority.normal,
+            4: IncidentPriority.low,
+            5: IncidentPriority.low,
+        }[value]
 
 
     @staticmethod
-    @abstractmethod
     def asDateTimeValue(dateTime: DateTime) -> ParameterValue:
         """
         Convert a :class:`DateTime` to a date-time value for the database.
+        This implementation returns a :class:`float`.
         """
+        assert dateTime.tzinfo is not None, repr(dateTime)
+        timeStamp = dateTime.timestamp()
+        if timeStamp < 0:
+            raise StorageError(
+                f"DateTime is before the UTC epoch: {dateTime}"
+            )
+        return timeStamp
 
 
     @staticmethod
-    @abstractmethod
     def fromDateTimeValue(value: ParameterValue) -> DateTime:
         """
         Convert a date-time value from the database to a :class:`DateTime`.
+        This implementation requires :obj:`value` to be a :class:`float`.
         """
+        if not isinstance(value, float):
+            raise TypeError("Time stamp in SQLite store must be a float")
+
+        return DateTime.fromtimestamp(value, tz=TimeZone.utc)
 
 
     @classmethod

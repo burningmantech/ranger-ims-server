@@ -33,6 +33,13 @@ template_setIncidentAttribute = (
     """
 )
 
+template_setIncidentReportAttribute = (
+    f"""
+    update INCIDENT_REPORT set {{column}} = %(value)s
+    where NUMBER = %(incidentReportNumber)s
+    """
+)
+
 queries = Queries(
     schemaVersion=Query(
         "look up schema version",
@@ -142,9 +149,6 @@ queries = Queries(
         values (({query_eventID}), %(streetID)s, %(streetName)s)
         """
     ),
-
-    # ****************** Not done yet ******************
-
     detachedReportEntries=Query(
         "look up detached report entries",
         """
@@ -331,61 +335,105 @@ queries = Queries(
     incidentReport=Query(
         "look up incident report",
         """
+        select CREATED, SUMMARY from INCIDENT_REPORT
+        where NUMBER = %(incidentReportNumber)s
         """
     ),
     incidentReport_reportEntries=Query(
         "look up report entries for incident report",
         """
+        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
+        where ID in (
+            select REPORT_ENTRY from INCIDENT_REPORT__REPORT_ENTRY
+            where INCIDENT_REPORT_NUMBER = %(incidentReportNumber)s
+        )
         """
     ),
     incidentReportNumbers=Query(
         "look up incident report numbers",
         """
+        select NUMBER from INCIDENT_REPORT
         """
     ),
     maxIncidentReportNumber=Query(
         "look up maximum incident report number",
         """
+        select max(NUMBER) from INCIDENT_REPORT
         """
     ),
     createIncidentReport=Query(
         "create incident report",
         """
+        insert into INCIDENT_REPORT (NUMBER, CREATED, SUMMARY)
+        values (
+            %(incidentReportNumber)s,
+            %(incidentReportCreated)s,
+            %(incidentReportSummary)s
+        )
         """
     ),
     attachReportEntryToIncidentReport=Query(
         "add report entry to incident report",
         """
+        insert into INCIDENT_REPORT__REPORT_ENTRY (
+            INCIDENT_REPORT_NUMBER, REPORT_ENTRY
+        )
+        values (%(incidentReportNumber)s, %(reportEntryID)s)
         """
     ),
     setIncidentReport_summary=Query(
         "set incident report summary",
-        """
-        """
+        template_setIncidentReportAttribute.format(column="SUMMARY")
     ),
     detachedIncidentReportNumbers=Query(
         "look up detached incident report numbers",
         """
+        select NUMBER from INCIDENT_REPORT
+        where NUMBER not in (
+            select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
+        )
         """
     ),
     attachedIncidentReportNumbers=Query(
         "look up attached incident report numbers",
-        """
+        f"""
+        select NUMBER from INCIDENT_REPORT
+        where NUMBER in (
+            select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
+            where
+                EVENT = ({query_eventID}) and
+                INCIDENT_NUMBER = %(incidentNumber)s
+        )
         """
     ),
     incidentsAttachedToIncidentReport=Query(
         "look up incidents attached to incident report",
         """
+        select e.NAME as EVENT, iir.INCIDENT_NUMBER as INCIDENT_NUMBER
+        from INCIDENT__INCIDENT_REPORT iir
+        join EVENT e on e.ID = iir.EVENT
+        where iir.INCIDENT_REPORT_NUMBER = %(incidentReportNumber)s
         """
     ),
     attachIncidentReportToIncident=Query(
         "add incident report to incident",
-        """
+        f"""
+        insert into INCIDENT__INCIDENT_REPORT (
+            EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER
+        )
+        values (
+            ({query_eventID}), %(incidentNumber)s, %(incidentReportNumber)s
+        )
         """
     ),
     detachIncidentReportFromIncident=Query(
         "remove incident report from incident",
-        """
+        f"""
+        delete from INCIDENT__INCIDENT_REPORT
+        where
+            EVENT = ({query_eventID}) and
+            INCIDENT_NUMBER = %(incidentNumber)s and
+            INCIDENT_REPORT_NUMBER = %(incidentReportNumber)s
         """
     ),
 )

@@ -25,7 +25,6 @@ from pymysql.err import MySQLError
 from twisted.enterprise.adbapi import ConnectionPool
 
 from ims.ext.trial import TestCase
-from ims.model import Event, Incident, IncidentReport
 
 from .._store import DataStore
 from ...test.database import TestDatabaseStoreMixIn
@@ -73,45 +72,3 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     def bringThePain(self) -> None:
         setattr(self._state, "broken", True)
         assert getattr(self._state, "broken")
-
-
-    async def storeIncident(self, incident: Incident) -> None:
-        raise NotImplementedError("storeIncident()")
-
-
-    async def storeIncidentReport(
-        self, incidentReport: IncidentReport
-    ) -> None:
-        raise NotImplementedError("storeIncidentReport()")
-
-
-    async def storeConcentricStreet(
-        self, event: Event, streetID: str, streetName: str,
-        ignoreDuplicates: bool = False,
-    ) -> None:
-        if ignoreDuplicates:
-            ignore = " or ignore"
-        else:
-            ignore = ""
-
-        await self._db.runOperation(
-            f"""
-            insert{ignore} into CONCENTRIC_STREET (EVENT, ID, NAME)
-            values (
-                (select ID from EVENT where NAME = %(eventID)s),
-                %(streetID)s,
-                %(streetName)s
-            )
-            """,
-            dict(
-                eventID=event.id, streetID=streetID, streetName=streetName
-            )
-        )
-
-
-    async def storeIncidentType(self, name: str, hidden: bool) -> None:
-        await self._db.runQuery(
-            "insert into INCIDENT_TYPE (NAME, HIDDEN) "
-            "values (%(name)s, %(hidden)s)",
-            dict(name=name, hidden=hidden)
-        )

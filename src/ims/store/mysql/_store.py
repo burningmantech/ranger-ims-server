@@ -18,7 +18,6 @@
 Incident Management System SQL data store.
 """
 
-from datetime import datetime as DateTime
 from pathlib import Path
 from typing import Any, Callable, Optional, cast
 
@@ -31,10 +30,8 @@ from pymysql.err import MySQLError
 from twisted.enterprise.adbapi import ConnectionPool
 from twisted.logger import Logger
 
-from ims.model import IncidentPriority, IncidentState
-
 from ._queries import queries
-from .._db import DatabaseStore, ParameterValue, Parameters, Query, Rows
+from .._db import DatabaseStore, Parameters, Query, Rows
 from .._exceptions import StorageError
 
 
@@ -76,36 +73,6 @@ class DataStore(DatabaseStore):
     password: str = attrib(validator=instance_of(str))
 
     _state: _State = attrib(default=Factory(_State), init=False)
-
-
-    @staticmethod
-    def asIncidentStateValue(incidentState: IncidentState) -> ParameterValue:
-        raise NotImplementedError("asIncidentStateValue")
-
-
-    @staticmethod
-    def fromIncidentStateValue(value: ParameterValue) -> IncidentState:
-        raise NotImplementedError("fromIncidentStateValue")
-
-
-    @staticmethod
-    def asPriorityValue(priority: IncidentPriority) -> ParameterValue:
-        raise NotImplementedError("asPriorityValue")
-
-
-    @staticmethod
-    def fromPriorityValue(value: ParameterValue) -> IncidentPriority:
-        raise NotImplementedError("fromPriorityValue")
-
-
-    @staticmethod
-    def asDateTimeValue(dateTime: DateTime) -> ParameterValue:
-        raise NotImplementedError("asDateTimeValue")
-
-
-    @staticmethod
-    def fromDateTimeValue(value: ParameterValue) -> DateTime:
-        raise NotImplementedError("fromDateTimeValue")
 
 
     @property

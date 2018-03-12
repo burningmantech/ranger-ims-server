@@ -36,83 +36,84 @@ insert into INCIDENT_TYPE (NAME, HIDDEN) values ('Admin', 0);
 insert into INCIDENT_TYPE (NAME, HIDDEN) values ('Junk' , 0);
 
 
--- create table REPORT_ENTRY (
---     ID        integer        not null auto_increment,
---     AUTHOR    varchar(64)    not null,
---     TEXT      varchar(16384) not null,
---     CREATED   datetime       not null,
---     GENERATED boolean        not null,
+create table REPORT_ENTRY (
+    ID        integer        not null auto_increment,
+    AUTHOR    varchar(64)    not null,
+    TEXT      varchar(16384) not null,
+    CREATED   double         not null,
+    GENERATED boolean        not null,
 
---     -- FIXME: AUTHOR is an external non-primary key.
---     -- Primary key is DMS Person ID.
+    -- FIXME: AUTHOR is an external non-primary key.
+    -- Primary key is DMS Person ID.
 
---     primary key (ID)
--- );
-
-
--- create table INCIDENT (
---     EVENT    integer  not null,
---     NUMBER   integer  not null,
---     CREATED  datetime not null,
---     PRIORITY tinyint  not null,
-
---     STATE enum(
---         'new', 'on_hold', 'dispatched', 'on_scene', 'closed'
---     ) not null,
-
---     SUMMARY varchar(1024),
-
---     LOCATION_NAME          varchar(64),
---     LOCATION_CONCENTRIC    varchar(64),
---     LOCATION_RADIAL_HOUR   tinyint,
---     LOCATION_RADIAL_MINUTE tinyint,
---     LOCATION_DESCRIPTION   varchar(1024),
-
---     foreign key (EVENT) references EVENT(ID),
-
---     foreign key (EVENT, LOCATION_CONCENTRIC)
---     references CONCENTRIC_STREET(EVENT, ID),
-
---     primary key (EVENT, NUMBER)
--- );
+    primary key (ID)
+);
 
 
--- create table INCIDENT__RANGER (
---     EVENT           integer     not null,
---     INCIDENT_NUMBER integer     not null,
---     RANGER_HANDLE   varchar(64) not null,
+create table INCIDENT (
+    EVENT    integer  not null,
+    NUMBER   integer  not null,
+    VERSION  integer  not null,
+    CREATED  double   not null,
+    PRIORITY tinyint  not null,
 
---     foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
+    STATE enum(
+        'new', 'on_hold', 'dispatched', 'on_scene', 'closed'
+    ) not null,
 
---     -- FIXME: RANGER_HANDLE is an external non-primary key.
---     -- Primary key is DMS Person ID.
+    SUMMARY varchar(1024),
 
---     primary key (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
--- );
+    LOCATION_NAME          varchar(64),
+    LOCATION_CONCENTRIC    varchar(64),
+    LOCATION_RADIAL_HOUR   tinyint,
+    LOCATION_RADIAL_MINUTE tinyint,
+    LOCATION_DESCRIPTION   varchar(1024),
 
+    foreign key (EVENT) references EVENT(ID),
 
--- create table INCIDENT__INCIDENT_TYPE (
---     EVENT           integer not null,
---     INCIDENT_NUMBER integer not null,
---     INCIDENT_TYPE   integer not null,
+    foreign key (EVENT, LOCATION_CONCENTRIC)
+    references CONCENTRIC_STREET(EVENT, ID),
 
---     foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
---     foreign key (INCIDENT_TYPE) references INCIDENT_TYPE(ID),
-
---     primary key (EVENT, INCIDENT_NUMBER, INCIDENT_TYPE)
--- );
+    primary key (EVENT, NUMBER)
+);
 
 
--- create table INCIDENT__REPORT_ENTRY (
---     EVENT           integer not null,
---     INCIDENT_NUMBER integer not null,
---     REPORT_ENTRY    integer not null,
+create table INCIDENT__RANGER (
+    EVENT           integer     not null,
+    INCIDENT_NUMBER integer     not null,
+    RANGER_HANDLE   varchar(64) not null,
 
---     foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
---     foreign key (REPORT_ENTRY) references REPORT_ENTRY(ID),
+    foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
 
---     primary key (EVENT, INCIDENT_NUMBER, REPORT_ENTRY)
--- );
+    -- FIXME: RANGER_HANDLE is an external non-primary key.
+    -- Primary key is DMS Person ID.
+
+    primary key (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
+);
+
+
+create table INCIDENT__INCIDENT_TYPE (
+    EVENT           integer not null,
+    INCIDENT_NUMBER integer not null,
+    INCIDENT_TYPE   integer not null,
+
+    foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
+    foreign key (INCIDENT_TYPE) references INCIDENT_TYPE(ID),
+
+    primary key (EVENT, INCIDENT_NUMBER, INCIDENT_TYPE)
+);
+
+
+create table INCIDENT__REPORT_ENTRY (
+    EVENT           integer not null,
+    INCIDENT_NUMBER integer not null,
+    REPORT_ENTRY    integer not null,
+
+    foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
+    foreign key (REPORT_ENTRY) references REPORT_ENTRY(ID),
+
+    primary key (EVENT, INCIDENT_NUMBER, REPORT_ENTRY)
+);
 
 
 create table EVENT_ACCESS (
@@ -127,34 +128,34 @@ create table EVENT_ACCESS (
 );
 
 
--- create table INCIDENT_REPORT (
---     NUMBER   integer  not null,
---     CREATED  datetime not null,
+create table INCIDENT_REPORT (
+    NUMBER   integer  not null,
+    CREATED  double   not null,
 
---     SUMMARY varchar(1024),
+    SUMMARY varchar(1024),
 
---     primary key (NUMBER)
--- );
-
-
--- create table INCIDENT_REPORT__REPORT_ENTRY (
---     INCIDENT_REPORT_NUMBER integer not null,
---     REPORT_ENTRY           integer not null,
-
---     foreign key (INCIDENT_REPORT_NUMBER) references INCIDENT_REPORT(NUMBER),
---     foreign key (REPORT_ENTRY) references REPORT_ENTRY(ID),
-
---     primary key (INCIDENT_REPORT_NUMBER, REPORT_ENTRY)
--- );
+    primary key (NUMBER)
+);
 
 
--- create table INCIDENT__INCIDENT_REPORT (
---     EVENT                  integer not null,
---     INCIDENT_NUMBER        integer not null,
---     INCIDENT_REPORT_NUMBER integer not null,
+create table INCIDENT_REPORT__REPORT_ENTRY (
+    INCIDENT_REPORT_NUMBER integer not null,
+    REPORT_ENTRY           integer not null,
 
---     foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
---     foreign key (INCIDENT_REPORT_NUMBER) references INCIDENT_REPORT(NUMBER),
+    foreign key (INCIDENT_REPORT_NUMBER) references INCIDENT_REPORT(NUMBER),
+    foreign key (REPORT_ENTRY) references REPORT_ENTRY(ID),
 
---     primary key (EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER)
--- );
+    primary key (INCIDENT_REPORT_NUMBER, REPORT_ENTRY)
+);
+
+
+create table INCIDENT__INCIDENT_REPORT (
+    EVENT                  integer not null,
+    INCIDENT_NUMBER        integer not null,
+    INCIDENT_REPORT_NUMBER integer not null,
+
+    foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
+    foreign key (INCIDENT_REPORT_NUMBER) references INCIDENT_REPORT(NUMBER),
+
+    primary key (EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER)
+);
