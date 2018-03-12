@@ -35,4 +35,4 @@ matrix:
 
 
 script:
-  - ./bin/travis/run tox -- --exitfirst ims
+  - ./bin/travis/run tox
