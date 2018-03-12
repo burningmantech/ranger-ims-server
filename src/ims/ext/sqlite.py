@@ -21,6 +21,7 @@ from twisted.logger import Logger
 
 __all__ = (
     "Connection",
+    "Cursor",
     "ParameterValue",
     "Parameters",
     "QueryPlanExplanation",
@@ -60,7 +61,7 @@ class Row(BaseRow):
 
 class Cursor(BaseCursor):
     """
-    Subclass of :class:`sqlite3.Cursor` that adds logging of SQL statements for
+    Subclass of :class:`BaseCursor` that adds logging of SQL statements for
     debugging purposes.
     """
 
