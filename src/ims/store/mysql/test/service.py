@@ -452,7 +452,7 @@ class ExternalMySQLService(MySQLService):
     _log = Logger()
 
     _host: str         = attrib(validator=instance_of(str))
-    _port: int         = attrib(validator=instance_of(str))
+    _port: int         = attrib(validator=instance_of(int))
     _user: str         = attrib(validator=instance_of(str))
     _password: str     = attrib(validator=instance_of(str))
     _rootPassword: str = attrib(validator=instance_of(str))
