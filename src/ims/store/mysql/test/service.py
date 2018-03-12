@@ -154,13 +154,6 @@ class DockerizedMySQLService(MySQLService):
         )
 
 
-    imageRepository: str = attrib(
-        validator=instance_of(str), default="mysql/mysql-server",
-    )
-    imageTag: str = attrib(
-        validator=instance_of(str), default="5.6",
-    )
-
     _user: str = attrib(
         validator=instance_of(str), default=Factory(randomString),
     )
@@ -171,6 +164,13 @@ class DockerizedMySQLService(MySQLService):
         validator=instance_of(str), default=Factory(randomString),
     )
 
+    imageRepository: str = attrib(
+        validator=instance_of(str), default="mysql/mysql-server",
+    )
+    imageTag: str = attrib(
+        validator=instance_of(str), default="5.6",
+    )
+
     _dockerClient: DockerClient = attrib(
         validator=instance_of(DockerClient),
         default=Factory(DockerClient.from_env),
@@ -178,6 +178,16 @@ class DockerizedMySQLService(MySQLService):
     )
 
     _state: _State = attrib(default=Factory(_State), init=False)
+
+
+    @property
+    def host(self) -> str:
+        return self._state.host
+
+
+    @property
+    def port(self) -> int:
+        return self._state.port
 
 
     @property
@@ -193,16 +203,6 @@ class DockerizedMySQLService(MySQLService):
     @property
     def rootPassword(self) -> str:
         return self._rootPassword
-
-
-    @property
-    def host(self) -> str:
-        return self._state.host
-
-
-    @property
-    def port(self) -> int:
-        return self._state.port
 
 
     @property
@@ -451,11 +451,36 @@ class ExternalMySQLService(MySQLService):
 
     _log = Logger()
 
-    host: str         = attrib(validator=instance_of(str))
-    port: int         = attrib(validator=instance_of(str))
-    user: str         = attrib(validator=instance_of(str))
-    password: str     = attrib(validator=instance_of(str))
-    rootPassword: str = attrib(validator=instance_of(str))
+    _host: str         = attrib(validator=instance_of(str))
+    _port: int         = attrib(validator=instance_of(str))
+    _user: str         = attrib(validator=instance_of(str))
+    _password: str     = attrib(validator=instance_of(str))
+    _rootPassword: str = attrib(validator=instance_of(str))
+
+
+    @property
+    def host(self) -> str:
+        return self._host
+
+
+    @property
+    def port(self) -> int:
+        return self._port
+
+
+    @property
+    def user(self) -> str:
+        return self._user
+
+
+    @property
+    def password(self) -> str:
+        return self._password
+
+
+    @property
+    def rootPassword(self) -> str:
+        return self._rootPassword
 
 
     async def start(self) -> None:
