@@ -136,9 +136,16 @@ class Transaction(IterableABC):
     @abstractmethod
     def execute(
         self, sql: str, parameters: Optional[Parameters] = None
-    ) -> "Transaction":
+    ) -> None:
         """
         Executes an SQL statement.
+        """
+
+
+    @abstractmethod
+    def executescript(self, sql_script: str) -> None:
+        """
+        Execute multiple SQL statements at once.
         """
 
 
@@ -146,6 +153,13 @@ class Transaction(IterableABC):
     def fetchone(self) -> Row:
         """
         Fetch the next row.
+        """
+
+
+    @abstractmethod
+    def fetchall(self) -> Rows:
+        """
+        Fetch all rows.
         """
 
 
@@ -568,6 +582,7 @@ class DatabaseStore(IMSDataStore):
         indication of a bug.
         """
         def detachedReportEntries(txn: Transaction) -> Iterable[ReportEntry]:
+            txn.execute(self.query.detachedReportEntries.text)
             return tuple(
                 ReportEntry(
                     created=self.fromDateTimeValue(row["CREATED"]),
@@ -575,9 +590,7 @@ class DatabaseStore(IMSDataStore):
                     automatic=bool(row["GENERATED"]),
                     text=row["TEXT"],
                 )
-                for row in txn.execute(
-                    self.query.detachedReportEntries.text, {}
-                ) if row["TEXT"]
+                for row in txn.fetchall() if row["TEXT"]
             )
 
         try:
@@ -616,19 +629,13 @@ class DatabaseStore(IMSDataStore):
         if row is None:
             notFound()
 
-        rangerHandles = tuple(
-            row["RANGER_HANDLE"] for row in txn.execute(
-                self.query.incident_rangers.text, parameters
-            )
-        )
+        txn.execute(self.query.incident_rangers.text, parameters)
+        rangerHandles = tuple(row["RANGER_HANDLE"] for row in txn.fetchall())
 
-        incidentTypes = tuple(
-            row["NAME"]
-            for row in txn.execute(
-                self.query.incident_incidentTypes.text, parameters
-            )
-        )
+        txn.execute(self.query.incident_incidentTypes.text, parameters)
+        incidentTypes = tuple(row["NAME"] for row in txn.fetchall())
 
+        txn.execute(self.query.incident_reportEntries.text, parameters)
         reportEntries = tuple(
             ReportEntry(
                 created=self.fromDateTimeValue(row["CREATED"]),
@@ -636,9 +643,7 @@ class DatabaseStore(IMSDataStore):
                 automatic=bool(row["GENERATED"]),
                 text=row["TEXT"],
             )
-            for row in txn.execute(
-                self.query.incident_reportEntries.text, parameters
-            ) if row["TEXT"]
+            for row in txn.fetchall() if row["TEXT"]
         )
 
         # FIXME: This is because schema thinks concentric is an int
@@ -675,10 +680,9 @@ class DatabaseStore(IMSDataStore):
         """
         Look up all incident numbers for the given event.
         """
-        for row in txn.execute(
-            self.query.incidentNumbers.text, dict(eventID=event.id)
-        ):
-            yield row["NUMBER"]
+        txn.execute(self.query.incidentNumbers.text, dict(eventID=event.id))
+        for row in txn.fetchall():
+            yield cast(int, row["NUMBER"])
 
 
     async def incidents(self, event: Event) -> Iterable[Incident]:
@@ -725,9 +729,7 @@ class DatabaseStore(IMSDataStore):
         """
         Look up the next available incident number.
         """
-        txn.execute(
-            self.query.maxIncidentNumber.text, dict(eventID=event.id)
-        )
+        txn.execute(self.query.maxIncidentNumber.text, dict(eventID=event.id))
         number = cast(int, txn.fetchone()["max(NUMBER)"])
         if number is None:
             return 1
@@ -1018,12 +1020,15 @@ class DatabaseStore(IMSDataStore):
         )
 
         def setIncidentAttribute(txn: Transaction) -> None:
-            txn.execute(query, dict(
-                eventID=event.id,
-                incidentNumber=incidentNumber,
-                column=attribute,
-                value=value,
-            ))
+            txn.execute(
+                query,
+                dict(
+                    eventID=event.id,
+                    incidentNumber=incidentNumber,
+                    column=attribute,
+                    value=value,
+                )
+            )
 
             # Add automatic report entry
             self._createAndAttachReportEntriesToIncident(
@@ -1336,6 +1341,7 @@ class DatabaseStore(IMSDataStore):
         if row is None:
             notFound()
 
+        txn.execute(self.query.incidentReport_reportEntries.text, parameters)
 
         reportEntries = tuple(
             ReportEntry(
@@ -1344,9 +1350,7 @@ class DatabaseStore(IMSDataStore):
                 automatic=bool(row["GENERATED"]),
                 text=row["TEXT"],
             )
-            for row in txn.execute(
-                self.query.incidentReport_reportEntries.text, parameters
-            )
+            for row in txn.fetchall()
         )
 
         return IncidentReport(
@@ -1358,11 +1362,9 @@ class DatabaseStore(IMSDataStore):
 
 
     def _fetchIncidentReportNumbers(self, txn: Transaction) -> Iterable[int]:
-        return (
-            row["NUMBER"] for row in txn.execute(
-                self.query.incidentReportNumbers.text, {}
-            )
-        )
+        txn.execute(self.query.incidentReportNumbers.text)
+
+        return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
 
     async def incidentReports(self) -> Iterable[IncidentReport]:
@@ -1406,7 +1408,8 @@ class DatabaseStore(IMSDataStore):
         """
         Look up the next available incident report number.
         """
-        txn.execute(self.query.maxIncidentReportNumber.text, {})
+        txn.execute(self.query.maxIncidentReportNumber.text)
+
         number = cast(int, txn.fetchone()["max(NUMBER)"])
         if number is None:
             return 1
@@ -1617,22 +1620,18 @@ class DatabaseStore(IMSDataStore):
     def _fetchDetachedIncidentReportNumbers(
         self, txn: Transaction
     ) -> Iterable[int]:
-        return (
-            row["NUMBER"] for row in txn.execute(
-                self.query.detachedIncidentReportNumbers.text, {}
-            )
-        )
+        txn.execute(self.query.detachedIncidentReportNumbers.text)
+        return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
 
     def _fetchAttachedIncidentReportNumbers(
         self, event: Event, incidentNumber: int, txn: Transaction
     ) -> Iterable[int]:
-        return (
-            row["NUMBER"] for row in txn.execute(
-                self.query.attachedIncidentReportNumbers.text,
-                dict(eventID=event.id, incidentNumber=incidentNumber)
-            )
+        txn.execute(
+            self.query.attachedIncidentReportNumbers.text,
+            dict(eventID=event.id, incidentNumber=incidentNumber)
         )
+        return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
 
     async def detachedIncidentReports(self) -> Iterable[IncidentReport]:
@@ -1699,12 +1698,16 @@ class DatabaseStore(IMSDataStore):
         def incidentReportsAttachedToIncident(
             txn: Transaction
         ) -> Iterable[Tuple[Event, int]]:
+            txn.execute(
+                self.query.incidentsAttachedToIncidentReport.text,
+                dict(incidentReportNumber=incidentReportNumber)
+            )
             return tuple(
-                (Event(row["EVENT"]), row["INCIDENT_NUMBER"])
-                for row in txn.execute(
-                    self.query.incidentsAttachedToIncidentReport.text,
-                    dict(incidentReportNumber=incidentReportNumber)
+                (
+                    Event(id=cast(str, row["EVENT"])),
+                    cast(int, row["INCIDENT_NUMBER"]),
                 )
+                for row in txn.fetchall()
             )
 
         try:
