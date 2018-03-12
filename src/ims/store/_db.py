@@ -129,14 +129,14 @@ class Queries(object):
 
 
 
-class Cursor(IterableABC):
+class Transaction(IterableABC):
     lastrowid: int
 
 
     @abstractmethod
     def execute(
         self, sql: str, parameters: Optional[Parameters] = None
-    ) -> "Cursor":
+    ) -> "Transaction":
         """
         Executes an SQL statement.
         """
@@ -288,8 +288,8 @@ class DatabaseStore(IMSDataStore):
         self, interaction: Callable[..., T], *args: Any, **kwargs: Any,
     ) -> T:
         """
-        Create a cursor and call the given interaction with the cursor as the
-        sole argument.
+        Create a transaction and call the given interaction with the
+        transaction as the sole argument.
         """
 
 
@@ -376,7 +376,7 @@ class DatabaseStore(IMSDataStore):
     ) -> None:
         expressions = tuple(expressions)
 
-        def setEventAccess(txn: Cursor) -> None:
+        def setEventAccess(txn: Transaction) -> None:
             txn.execute(
                 self.query.clearEventAccessForMode.text,
                 dict(eventID=event.id, mode=mode),
@@ -485,7 +485,7 @@ class DatabaseStore(IMSDataStore):
     ) -> None:
         incidentTypes = tuple(incidentTypes)
 
-        def hideShowIncidentTypes(txn: Cursor) -> None:
+        def hideShowIncidentTypes(txn: Transaction) -> None:
             for incidentType in incidentTypes:
                 txn.execute(
                     self.query.hideShowIncidentType.text,
@@ -567,7 +567,7 @@ class DatabaseStore(IMSDataStore):
         There shouldn't be any of these; so if there are any, it's an
         indication of a bug.
         """
-        def detachedReportEntries(txn: Cursor) -> Iterable[ReportEntry]:
+        def detachedReportEntries(txn: Transaction) -> Iterable[ReportEntry]:
             return tuple(
                 ReportEntry(
                     created=self.fromDateTimeValue(row["CREATED"]),
@@ -596,7 +596,7 @@ class DatabaseStore(IMSDataStore):
 
 
     def _fetchIncident(
-        self, event: Event, incidentNumber: int, cursor: Cursor
+        self, event: Event, incidentNumber: int, txn: Transaction
     ) -> Incident:
         parameters: Parameters = dict(
             eventID=event.id, incidentNumber=incidentNumber
@@ -608,23 +608,23 @@ class DatabaseStore(IMSDataStore):
             )
 
         try:
-            cursor.execute(self.query.incident.text, parameters)
+            txn.execute(self.query.incident.text, parameters)
         except OverflowError:
             notFound()
 
-        row = cursor.fetchone()
+        row = txn.fetchone()
         if row is None:
             notFound()
 
         rangerHandles = tuple(
-            row["RANGER_HANDLE"] for row in cursor.execute(
+            row["RANGER_HANDLE"] for row in txn.execute(
                 self.query.incident_rangers.text, parameters
             )
         )
 
         incidentTypes = tuple(
             row["NAME"]
-            for row in cursor.execute(
+            for row in txn.execute(
                 self.query.incident_incidentTypes.text, parameters
             )
         )
@@ -636,7 +636,7 @@ class DatabaseStore(IMSDataStore):
                 automatic=bool(row["GENERATED"]),
                 text=row["TEXT"],
             )
-            for row in cursor.execute(
+            for row in txn.execute(
                 self.query.incident_reportEntries.text, parameters
             ) if row["TEXT"]
         )
@@ -670,12 +670,12 @@ class DatabaseStore(IMSDataStore):
 
 
     def _fetchIncidentNumbers(
-        self, event: Event, cursor: Cursor
+        self, event: Event, txn: Transaction
     ) -> Iterable[int]:
         """
         Look up all incident numbers for the given event.
         """
-        for row in cursor.execute(
+        for row in txn.execute(
             self.query.incidentNumbers.text, dict(eventID=event.id)
         ):
             yield row["NUMBER"]
@@ -685,7 +685,7 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.incidents`.
         """
-        def incidents(txn: Cursor) -> Iterable[Incident]:
+        def incidents(txn: Transaction) -> Iterable[Incident]:
             return tuple(
                 self._fetchIncident(event, number, txn)
                 for number in
@@ -708,7 +708,7 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.incidentWithNumber`.
         """
-        def incidentWithNumber(txn: Cursor) -> Incident:
+        def incidentWithNumber(txn: Transaction) -> Incident:
             return self._fetchIncident(event, number, txn)
 
         try:
@@ -721,14 +721,14 @@ class DatabaseStore(IMSDataStore):
             raise
 
 
-    def _nextIncidentNumber(self, event: Event, cursor: Cursor) -> int:
+    def _nextIncidentNumber(self, event: Event, txn: Transaction) -> int:
         """
         Look up the next available incident number.
         """
-        cursor.execute(
+        txn.execute(
             self.query.maxIncidentNumber.text, dict(eventID=event.id)
         )
-        number = cast(int, cursor.fetchone()["max(NUMBER)"])
+        number = cast(int, txn.fetchone()["max(NUMBER)"])
         if number is None:
             return 1
         else:
@@ -737,12 +737,12 @@ class DatabaseStore(IMSDataStore):
 
     def _attachRangeHandlesToIncident(
         self, event: Event, incidentNumber: int, rangerHandles: Iterable[str],
-        cursor: Cursor,
+        txn: Transaction,
     ) -> None:
         rangerHandles = tuple(rangerHandles)
 
         for rangerHandle in rangerHandles:
-            cursor.execute(
+            txn.execute(
                 self.query.attachRangeHandleToIncident.text, dict(
                     eventID=event.id,
                     incidentNumber=incidentNumber,
@@ -762,12 +762,12 @@ class DatabaseStore(IMSDataStore):
 
     def _attachIncidentTypesToIncident(
         self, event: Event, incidentNumber: int, incidentTypes: Iterable[str],
-        cursor: Cursor,
+        txn: Transaction,
     ) -> None:
         incidentTypes = tuple(incidentTypes)
 
         for incidentType in incidentTypes:
-            cursor.execute(
+            txn.execute(
                 self.query.attachIncidentTypeToIncident.text, dict(
                     eventID=event.id,
                     incidentNumber=incidentNumber,
@@ -786,9 +786,9 @@ class DatabaseStore(IMSDataStore):
 
 
     def _createReportEntry(
-        self, reportEntry: ReportEntry, cursor: Cursor
+        self, reportEntry: ReportEntry, txn: Transaction
     ) -> None:
-        cursor.execute(
+        txn.execute(
             self.query.createReportEntry.text, dict(
                 created=self.asDateTimeValue(reportEntry.created),
                 generated=reportEntry.automatic,
@@ -805,19 +805,19 @@ class DatabaseStore(IMSDataStore):
 
     def _createAndAttachReportEntriesToIncident(
         self, event: Event, incidentNumber: int,
-        reportEntries: Iterable[ReportEntry], cursor: Cursor,
+        reportEntries: Iterable[ReportEntry], txn: Transaction,
     ) -> None:
         reportEntries = tuple(reportEntries)
 
         for reportEntry in reportEntries:
-            self._createReportEntry(reportEntry, cursor)
+            self._createReportEntry(reportEntry, txn)
 
             # Join to incident
-            cursor.execute(
+            txn.execute(
                 self.query.attachReportEntryToIncident.text, dict(
                     eventID=event.id,
                     incidentNumber=incidentNumber,
-                    reportEntryID=cursor.lastrowid,
+                    reportEntryID=txn.lastrowid,
                 )
             )
 
@@ -932,7 +932,7 @@ class DatabaseStore(IMSDataStore):
             locationRadialMinute = None
 
         def createIncident(
-            txn: Cursor, incident: Incident = incident
+            txn: Transaction, incident: Incident = incident
         ) -> Incident:
             if not directImport:
                 # Assign the incident number a number
@@ -1017,7 +1017,7 @@ class DatabaseStore(IMSDataStore):
             author, now(), attribute, value
         )
 
-        def setIncidentAttribute(txn: Cursor) -> None:
+        def setIncidentAttribute(txn: Transaction) -> None:
             txn.execute(query, dict(
                 eventID=event.id,
                 incidentNumber=incidentNumber,
@@ -1174,7 +1174,7 @@ class DatabaseStore(IMSDataStore):
             author, now(), "Rangers", ", ".join(rangerHandles)
         )
 
-        def setIncident_rangers(txn: Cursor) -> None:
+        def setIncident_rangers(txn: Transaction) -> None:
             txn.execute(
                 self.query.clearIncidentRangers.text,
                 dict(eventID=event.id, incidentNumber=incidentNumber)
@@ -1227,7 +1227,7 @@ class DatabaseStore(IMSDataStore):
             author, now(), "incident types", ", ".join(incidentTypes)
         )
 
-        def setIncident_incidentTypes(txn: Cursor) -> None:
+        def setIncident_incidentTypes(txn: Transaction) -> None:
             txn.execute(
                 self.query.clearIncidentIncidentTypes.text,
                 dict(eventID=event.id, incidentNumber=incidentNumber)
@@ -1289,7 +1289,7 @@ class DatabaseStore(IMSDataStore):
                     f"Report entry {reportEntry} has author != {author}"
                 )
 
-        def addReportEntriesToIncident(txn: Cursor) -> None:
+        def addReportEntriesToIncident(txn: Transaction) -> None:
             self._createAndAttachReportEntriesToIncident(
                 event, incidentNumber, reportEntries, txn
             )
@@ -1316,7 +1316,7 @@ class DatabaseStore(IMSDataStore):
 
 
     def _fetchIncidentReport(
-        self, incidentReportNumber: int, cursor: Cursor
+        self, incidentReportNumber: int, txn: Transaction
     ) -> IncidentReport:
         parameters: Parameters = dict(
             incidentReportNumber=incidentReportNumber,
@@ -1328,11 +1328,11 @@ class DatabaseStore(IMSDataStore):
             )
 
         try:
-            cursor.execute(self.query.incidentReport.text, parameters)
+            txn.execute(self.query.incidentReport.text, parameters)
         except OverflowError:
             notFound()
 
-        row = cursor.fetchone()
+        row = txn.fetchone()
         if row is None:
             notFound()
 
@@ -1344,7 +1344,7 @@ class DatabaseStore(IMSDataStore):
                 automatic=bool(row["GENERATED"]),
                 text=row["TEXT"],
             )
-            for row in cursor.execute(
+            for row in txn.execute(
                 self.query.incidentReport_reportEntries.text, parameters
             )
         )
@@ -1357,9 +1357,9 @@ class DatabaseStore(IMSDataStore):
         )
 
 
-    def _fetchIncidentReportNumbers(self, cursor: Cursor) -> Iterable[int]:
+    def _fetchIncidentReportNumbers(self, txn: Transaction) -> Iterable[int]:
         return (
-            row["NUMBER"] for row in cursor.execute(
+            row["NUMBER"] for row in txn.execute(
                 self.query.incidentReportNumbers.text, {}
             )
         )
@@ -1369,7 +1369,7 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.incidentReports`.
         """
-        def incidentReports(txn: Cursor) -> Iterable[IncidentReport]:
+        def incidentReports(txn: Transaction) -> Iterable[IncidentReport]:
             return tuple(
                 self._fetchIncidentReport(number, txn)
                 for number
@@ -1389,7 +1389,7 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.incidentReportWithNumber`.
         """
-        def incidentReportWithNumber(txn: Cursor) -> IncidentReport:
+        def incidentReportWithNumber(txn: Transaction) -> IncidentReport:
             return self._fetchIncidentReport(number, txn)
 
         try:
@@ -1402,12 +1402,12 @@ class DatabaseStore(IMSDataStore):
             raise
 
 
-    def _nextIncidentReportNumber(self, cursor: Cursor) -> int:
+    def _nextIncidentReportNumber(self, txn: Transaction) -> int:
         """
         Look up the next available incident report number.
         """
-        cursor.execute(self.query.maxIncidentReportNumber.text, {})
-        number = cast(int, cursor.fetchone()["max(NUMBER)"])
+        txn.execute(self.query.maxIncidentReportNumber.text, {})
+        number = cast(int, txn.fetchone()["max(NUMBER)"])
         if number is None:
             return 1
         else:
@@ -1435,7 +1435,7 @@ class DatabaseStore(IMSDataStore):
             )
 
         def createIncidentReport(
-            txn: Cursor, incidentReport: IncidentReport = incidentReport
+            txn: Transaction, incidentReport: IncidentReport = incidentReport
         ) -> IncidentReport:
             if not directImport:
                 # Assign the incident number a number
@@ -1478,16 +1478,16 @@ class DatabaseStore(IMSDataStore):
 
     def _createAndAttachReportEntriesToIncidentReport(
         self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
-        cursor: Cursor,
+        txn: Transaction,
     ) -> None:
         for reportEntry in reportEntries:
-            self._createReportEntry(reportEntry, cursor)
+            self._createReportEntry(reportEntry, txn)
 
             # Join to incident
-            cursor.execute(
+            txn.execute(
                 self.query.attachReportEntryToIncidentReport.text, dict(
                     incidentReportNumber=incidentReportNumber,
-                    reportEntryID=cursor.lastrowid,
+                    reportEntryID=txn.lastrowid,
                 )
             )
 
@@ -1517,7 +1517,7 @@ class DatabaseStore(IMSDataStore):
             author, now(), attribute, value
         )
 
-        def setIncidentReportAttribute(txn: Cursor) -> None:
+        def setIncidentReportAttribute(txn: Transaction) -> None:
             txn.execute(query, dict(
                 incidentReportNumber=incidentReportNumber,
                 column=attribute,
@@ -1589,7 +1589,7 @@ class DatabaseStore(IMSDataStore):
                     f"Report entry {reportEntry} has author != {author}"
                 )
 
-        def addReportEntriesToIncidentReport(txn: Cursor) -> None:
+        def addReportEntriesToIncidentReport(txn: Transaction) -> None:
             self._createAndAttachReportEntriesToIncidentReport(
                 incidentReportNumber, reportEntries, txn
             )
@@ -1615,20 +1615,20 @@ class DatabaseStore(IMSDataStore):
 
 
     def _fetchDetachedIncidentReportNumbers(
-        self, cursor: Cursor
+        self, txn: Transaction
     ) -> Iterable[int]:
         return (
-            row["NUMBER"] for row in cursor.execute(
+            row["NUMBER"] for row in txn.execute(
                 self.query.detachedIncidentReportNumbers.text, {}
             )
         )
 
 
     def _fetchAttachedIncidentReportNumbers(
-        self, event: Event, incidentNumber: int, cursor: Cursor
+        self, event: Event, incidentNumber: int, txn: Transaction
     ) -> Iterable[int]:
         return (
-            row["NUMBER"] for row in cursor.execute(
+            row["NUMBER"] for row in txn.execute(
                 self.query.attachedIncidentReportNumbers.text,
                 dict(eventID=event.id, incidentNumber=incidentNumber)
             )
@@ -1639,7 +1639,9 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.detachedIncidentReports`.
         """
-        def detachedIncidentReports(txn: Cursor) -> Iterable[IncidentReport]:
+        def detachedIncidentReports(
+            txn: Transaction
+        ) -> Iterable[IncidentReport]:
             return tuple(
                 self._fetchIncidentReport(number, txn)
                 for number in tuple(
@@ -1664,7 +1666,7 @@ class DatabaseStore(IMSDataStore):
         See :meth:`IMSDataStore.attachedIncidentReports`.
         """
         def incidentReportsAttachedToIncident(
-            txn: Cursor
+            txn: Transaction
         ) -> Iterable[IncidentReport]:
             return tuple(
                 self._fetchIncidentReport(number, txn)
@@ -1695,7 +1697,7 @@ class DatabaseStore(IMSDataStore):
         See :meth:`IMSDataStore.incidentsAttachedToIncidentReport`.
         """
         def incidentReportsAttachedToIncident(
-            txn: Cursor
+            txn: Transaction
         ) -> Iterable[Tuple[Event, int]]:
             return tuple(
                 (Event(row["EVENT"]), row["INCIDENT_NUMBER"])
@@ -1723,7 +1725,7 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.attachIncidentReportToIncident`.
         """
-        def attachIncidentReportToIncident(txn: Cursor) -> None:
+        def attachIncidentReportToIncident(txn: Transaction) -> None:
             txn.execute(
                 self.query.attachIncidentReportToIncident.text, dict(
                     eventID=event.id,
@@ -1761,7 +1763,7 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.detachIncidentReportFromIncident`.
         """
-        def detachIncidentReportFromIncident(txn: Cursor) -> None:
+        def detachIncidentReportFromIncident(txn: Transaction) -> None:
             txn.execute(
                 self.query.detachIncidentReportFromIncident.text,
                 dict(

@@ -24,14 +24,14 @@ from typing import Any, Callable, Optional, cast
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of, optional
 
-from pymysql.cursors import DictCursor as Cursor
+from pymysql.cursors import DictCursor
 from pymysql.err import MySQLError
 
 from twisted.enterprise.adbapi import ConnectionPool
 from twisted.logger import Logger
 
 from ._queries import queries
-from .._db import DatabaseStore, Parameters, Query, Rows
+from .._db import DatabaseStore, Parameters, Query, Rows, Transaction
 from .._exceptions import StorageError
 
 
@@ -85,7 +85,7 @@ class DataStore(DatabaseStore):
                 database=self.database,
                 user=self.username,
                 password=self.password,
-                cursorclass=Cursor,
+                cursorclass=DictCursor,
                 cp_reconnect=True,
             )
 
@@ -182,7 +182,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.applySchema`.
         """
-        def applySchema(txn: Cursor) -> None:
+        def applySchema(txn: Transaction) -> None:
             # FIXME: OMG this is gross but works for now
             for statement in sql.split(";"):
                 statement = statement.strip()

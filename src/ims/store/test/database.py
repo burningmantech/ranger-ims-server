@@ -25,7 +25,7 @@ from ims.model import (
 )
 
 from .base import TestDataStoreMixIn
-from .._db import Cursor, DatabaseStore
+from .._db import DatabaseStore, Transaction
 from .._exceptions import StorageError
 
 
@@ -59,7 +59,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         )
 
 
-    def _storeIncident(_self, txn: Cursor, incident: Incident) -> None:
+    def _storeIncident(_self, txn: Transaction, incident: Incident) -> None:
         self = cast(DatabaseStore, _self)
 
         incident = _self.normalizeIncidentAddress(incident)
@@ -171,7 +171,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
 
     def _storeIncidentReport(
-        _self, txn: Cursor, incidentReport: IncidentReport
+        _self, txn: Transaction, incidentReport: IncidentReport
     ) -> None:
         self = cast(DatabaseStore, _self)
 
@@ -231,7 +231,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
 
     def _storeConcentricStreet(
-        _self, txn: Cursor, event: Event, streetID: str, streetName: str,
+        _self, txn: Transaction, event: Event, streetID: str, streetName: str,
         ignoreDuplicates: bool = False,
     ) -> None:
         self = cast(DatabaseStore, _self)
@@ -284,7 +284,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
 
     def _storeIncidentType(
-        _self, txn: Cursor, incidentType: str, hidden: bool
+        _self, txn: Transaction, incidentType: str, hidden: bool
     ) -> None:
         self = cast(DatabaseStore, _self)
 
