@@ -401,9 +401,7 @@ class DataStoreIncidentTests(DataStoreTests):
             ):
                 await store.createIncidentType(incidentType)
 
-        self.successResultOf(
-            setter(incident.event, incident.number, value, "Hubcap")
-        )
+        await setter(incident.event, incident.number, value, "Hubcap")
 
         retrieved = (
             await store.incidentWithNumber(incident.event, incident.number)

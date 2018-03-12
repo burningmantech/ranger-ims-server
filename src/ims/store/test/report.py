@@ -290,9 +290,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         setter = getattr(store, methodName)
 
-        self.successResultOf(
-            setter(incidentReport.number, value, "Hubcap")
-        )
+        await setter(incidentReport.number, value, "Hubcap")
 
         retrieved = await store.incidentReportWithNumber(incidentReport.number)
 
