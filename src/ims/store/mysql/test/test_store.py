@@ -62,8 +62,8 @@ else:
             host=env("IMS_TEST_MYSQL_HOST"),
             port=int(env("IMS_TEST_MYSQL_PORT", "3306")),
             user=env("IMS_TEST_MYSQL_USERNAME", "ims"),
-            password=env("IMS_TEST_MYSQL_PASSWORD", "ims"),
-            rootPassword=env("IMS_TEST_MYSQL_PASSWORD", "ims"),
+            password=env("IMS_TEST_MYSQL_PASSWORD", ""),
+            rootPassword=env("IMS_TEST_MYSQL_ROOT_PASSWORD", ""),
         )
 
 
