@@ -62,7 +62,8 @@ queries = Queries(
     createEventOrIgnore=Query(
         "create event if no matching event already exists",
         """
-        insert or ignore into EVENT (NAME) values (%(eventID)s)
+        insert into EVENT (NAME) values (%(eventID)s)
+        on duplicate key update NAME=NAME
         """
     ),
     eventAccess=Query(
@@ -116,8 +117,9 @@ queries = Queries(
     createIncidentTypeOrIgnore=Query(
         "create incident type if no matching incident type already exists",
         """
-        insert or ignore into INCIDENT_TYPE (NAME, HIDDEN)
+        insert into INCIDENT_TYPE (NAME, HIDDEN)
         values (%(incidentType)s, %(hidden)s)
+        on duplicate key update NAME=NAME
         """
     ),
     hideShowIncidentType=Query(
@@ -145,8 +147,9 @@ queries = Queries(
         "create concentric street if no matching concentric street already "
         "exists",
         f"""
-        insert or ignore into CONCENTRIC_STREET (EVENT, ID, NAME)
+        insert into CONCENTRIC_STREET (EVENT, ID, NAME)
         values (({query_eventID}), %(streetID)s, %(streetName)s)
+        on duplicate key update NAME=NAME
         """
     ),
     detachedReportEntries=Query(
