@@ -39,6 +39,44 @@ __all__ = ()
 
 
 
+class Cursor(DictCursor):
+    """
+    Subclass of :class:`DictCursor` that adds logging of SQL statements for
+    debugging purposes.
+    """
+
+    _log = Logger()
+
+
+    def execute(
+        self, sql: str, parameters: Optional[Parameters] = None
+    ) -> int:
+        """
+        See :meth:`sqlite3.Cursor.execute`.
+        """
+        if parameters is None:
+            parameters = {}
+        self._log.debug(
+            "EXECUTE: {sql} <- {parameters}", sql=sql, parameters=parameters
+        )
+        return super().execute(sql, parameters)
+
+
+    def executescript(self, sql_script: str) -> int:
+        self._log.debug("Executing script", script=sql_script)
+
+        count = 0
+
+        # FIXME: OMG this is gross but works for now
+        for statement in sql_script.split(";"):
+            statement = statement.strip()
+            if statement and not statement.startswith("--"):
+                count += self.execute(statement)
+
+        return count
+
+
+
 @attrs(frozen=True)
 class DataStore(DatabaseStore):
     """
@@ -85,7 +123,7 @@ class DataStore(DatabaseStore):
                 database=self.database,
                 user=self.username,
                 password=self.password,
-                cursorclass=DictCursor,
+                cursorclass=Cursor,
                 cp_reconnect=True,
             )
 
@@ -183,11 +221,7 @@ class DataStore(DatabaseStore):
         See :meth:`IMSDataStore.applySchema`.
         """
         def applySchema(txn: Transaction) -> None:
-            # FIXME: OMG this is gross but works for now
-            for statement in sql.split(";"):
-                statement = statement.strip()
-                if statement and not statement.startswith("--"):
-                    txn.execute(statement)
+            txn.executescript(sql)
 
         try:
             await self.runInteraction(applySchema)
