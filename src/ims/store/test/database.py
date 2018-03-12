@@ -68,7 +68,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         address = cast(RodGarettAddress, location.address)
 
         txn.execute(
-            "insert or ignore into EVENT (NAME) values (:eventID);",
+            self.query.createEventOrIgnore.text,
             dict(eventID=incident.event.id)
         )
 
@@ -90,29 +90,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
                 )
 
         txn.execute(
-            """
-            insert into INCIDENT (
-                EVENT, NUMBER, VERSION, CREATED, PRIORITY, STATE, SUMMARY,
-                LOCATION_NAME,
-                LOCATION_CONCENTRIC,
-                LOCATION_RADIAL_HOUR,
-                LOCATION_RADIAL_MINUTE,
-                LOCATION_DESCRIPTION
-            ) values (
-                (select ID from EVENT where NAME = :eventID),
-                :incidentNumber,
-                1,
-                :incidentCreated,
-                :incidentPriority,
-                :incidentState,
-                :incidentSummary,
-                :locationName,
-                :locationConcentric,
-                :locationRadialHour,
-                :locationRadialMinute,
-                :locationDescription
-            )
-            """,
+            self.query.createIncident.text,
             dict(
                 eventID=incident.event.id,
                 incidentCreated=self.asDateTimeValue(incident.created),
@@ -130,15 +108,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         for rangerHandle in incident.rangerHandles:
             txn.execute(
-                """
-                insert into INCIDENT__RANGER
-                (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
-                values (
-                    (select ID from EVENT where NAME = :eventID),
-                    :incidentNumber,
-                    :rangerHandle
-                )
-                """,
+                self.query.attachRangeHandleToIncident.text,
                 dict(
                     eventID=incident.event.id,
                     incidentNumber=incident.number,
@@ -148,24 +118,11 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         for incidentType in incident.incidentTypes:
             txn.execute(
-                """
-                insert or ignore into INCIDENT_TYPE (NAME, HIDDEN)
-                values (:incidentType, 0)
-                """,
+                self.query.createIncidentTypeOrIgnore.text,
                 dict(incidentType=incidentType)
             )
             txn.execute(
-                """
-                insert into INCIDENT__INCIDENT_TYPE
-                (EVENT, INCIDENT_NUMBER, INCIDENT_TYPE)
-                values (
-                    (select ID from EVENT where NAME = :eventID),
-                    :incidentNumber,
-                    (
-                        select ID from INCIDENT_TYPE where NAME = :incidentType
-                    )
-                )
-                """,
+                self.query.attachIncidentTypeToIncident.text,
                 dict(
                     eventID=incident.event.id,
                     incidentNumber=incident.number,
@@ -175,10 +132,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         for reportEntry in incident.reportEntries:
             txn.execute(
-                """
-                insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
-                values (:author, :text, :created, :automatic)
-                """,
+                self.query.createReportEntry.text,
                 dict(
                     created=self.asDateTimeValue(reportEntry.created),
                     author=reportEntry.author,
@@ -187,16 +141,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
                 )
             )
             txn.execute(
-                """
-                insert into INCIDENT__REPORT_ENTRY (
-                    EVENT, INCIDENT_NUMBER, REPORT_ENTRY
-                )
-                values (
-                    (select ID from EVENT where NAME = :eventID),
-                    :incidentNumber,
-                    :reportEntryID
-                )
-                """,
+                self.query.attachReportEntryToIncident.text,
                 dict(
                     eventID=incident.event.id,
                     incidentNumber=incident.number,
@@ -231,14 +176,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         self = cast(DatabaseStore, _self)
 
         txn.execute(
-            """
-            insert into INCIDENT_REPORT (NUMBER, CREATED, SUMMARY)
-            values (
-                :incidentReportNumber,
-                :incidentReportCreated,
-                :incidentReportSummary
-            )
-            """,
+            self.query.createIncidentReport.text,
             dict(
                 incidentReportCreated=self.asDateTimeValue(
                     incidentReport.created
@@ -250,10 +188,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         for reportEntry in incidentReport.reportEntries:
             txn.execute(
-                """
-                insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
-                values (:author, :text, :created, :automatic)
-                """,
+                self.query.createReportEntry.text,
                 dict(
                     created=self.asDateTimeValue(reportEntry.created),
                     author=reportEntry.author,
@@ -262,12 +197,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
                 )
             )
             txn.execute(
-                """
-                insert into INCIDENT_REPORT__REPORT_ENTRY (
-                    INCIDENT_REPORT_NUMBER, REPORT_ENTRY
-                )
-                values (:incidentReportNumber, :reportEntryID)
-                """,
+                self.query.attachReportEntryToIncidentReport.text,
                 dict(
                     incidentReportNumber=incidentReport.number,
                     reportEntryID=txn.lastrowid
@@ -304,20 +234,15 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         _self, txn: Cursor, event: Event, streetID: str, streetName: str,
         ignoreDuplicates: bool = False,
     ) -> None:
+        self = cast(DatabaseStore, _self)
+
         if ignoreDuplicates:
-            ignore = " or ignore"
+            query = self.query.createConcentricStreetOrIgnore
         else:
-            ignore = ""
+            query = self.query.createConcentricStreet
 
         txn.execute(
-            f"""
-            insert{ignore} into CONCENTRIC_STREET (EVENT, ID, NAME)
-            values (
-                (select ID from EVENT where NAME = :eventID),
-                :streetID,
-                :streetName
-            )
-            """,
+            query.text,
             dict(
                 eventID=event.id, streetID=streetID, streetName=streetName
             )
@@ -359,12 +284,13 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
 
     def _storeIncidentType(
-        _self, txn: Cursor, name: str, hidden: bool
+        _self, txn: Cursor, incidentType: str, hidden: bool
     ) -> None:
+        self = cast(DatabaseStore, _self)
+
         txn.execute(
-            "insert into INCIDENT_TYPE (NAME, HIDDEN) "
-            "values (:name, :hidden)",
-            dict(name=name, hidden=hidden)
+            self.query.createIncidentType.text,
+            dict(incidentType=incidentType, hidden=hidden)
         )
 
 

@@ -59,6 +59,12 @@ queries = Queries(
         insert into EVENT (NAME) values (:eventID)
         """
     ),
+    createEventOrIgnore=Query(
+        "create event if no matching event already exists",
+        """
+        insert or ignore into EVENT (NAME) values (:eventID)
+        """
+    ),
     eventAccess=Query(
         "look up access for event",
         f"""
@@ -106,6 +112,13 @@ queries = Queries(
         values (:incidentType, :hidden)
         """
     ),
+    createIncidentTypeOrIgnore=Query(
+        "create incident type if no matching incident type already exists",
+        """
+        insert or ignore into INCIDENT_TYPE (NAME, HIDDEN)
+        values (:incidentType, :hidden)
+        """
+    ),
     hideShowIncidentType=Query(
         "hide/show incident type",
         """
@@ -124,6 +137,14 @@ queries = Queries(
         "create concentric street",
         f"""
         insert into CONCENTRIC_STREET (EVENT, ID, NAME)
+        values (({query_eventID}), :streetID, :streetName)
+        """
+    ),
+    createConcentricStreetOrIgnore=Query(
+        "create concentric street if no matching concentric street already "
+        "exists",
+        f"""
+        insert or ignore into CONCENTRIC_STREET (EVENT, ID, NAME)
         values (({query_eventID}), :streetID, :streetName)
         """
     ),
