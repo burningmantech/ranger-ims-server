@@ -11,7 +11,11 @@ branches:
 
 
 install:
-  - pip install tox
+  - ./bin/travis/install
+
+
+services:
+  - mysql
 
 
 matrix:
@@ -31,4 +35,4 @@ matrix:
 
 
 script:
-  - tox
+  - ./bin/travis/run tox

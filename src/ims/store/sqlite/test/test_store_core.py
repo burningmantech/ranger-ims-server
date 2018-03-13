@@ -30,11 +30,11 @@ from hypothesis import given
 from hypothesis.strategies import integers
 
 from ims.ext.sqlite import Connection, SQLiteError, createDB, printSchema
-from ims.ext.trial import TestCase
+from ims.ext.trial import AsynchronousTestCase, TestCase
 
 from .base import TestDataStore
 from .. import _store
-from .._store import DataStore, asTimeStamp
+from .._store import DataStore
 from ..._exceptions import StorageError
 
 
@@ -42,7 +42,7 @@ __all__ = ()
 
 
 
-class DataStoreCoreTests(TestCase):
+class DataStoreCoreTests(AsynchronousTestCase):
     """
     Tests for :class:`DataStore` base functionality.
     """
@@ -52,7 +52,7 @@ class DataStoreCoreTests(TestCase):
         :meth:`DataStore.loadSchema` caches and returns the schema.
         """
         store = TestDataStore(self)
-        schema = store._loadSchema()
+        schema = store.loadSchema()
 
         self.assertStartsWith(schema, "create table SCHEMA_INFO (")
 
@@ -149,31 +149,46 @@ class DataStoreCoreTests(TestCase):
 
         self.assertStartsWith(
             queryInfo,
-            "addEventAccess:\n\n"
-            "  -- query --\n\n"
-            "    insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)\n"
-            "    values ((select ID from EVENT where NAME = :eventID), "
-            ":expression, :mode)\n\n"
-            "  -- query plan --\n\n"
-            "    [None,None] You did not supply a value for binding 1.\n\n"
-            "addReportEntry:\n\n"
-            "  -- query --\n\n"
-            "    insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)\n"
-            "    values (:author, :text, :created, :generated)\n\n"
-            "  -- query plan --\n\n"
-            "    [None,None] You did not supply a value for binding 1.\n\n"
+            "\n".join((
+                "addEventAccess:",
+                "",
+                "  -- query --",
+                "",
+                "    insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)",
+                "    values ((select ID from EVENT where NAME = :eventID), "
+                ":expression, :mode)",
+                "",
+                "  -- query plan --",
+                "",
+                "    [None,None] You did not supply a value for binding 1.",
+                "",
+                "attachIncidentReportToIncident:",
+                "",
+                "  -- query --",
+                "",
+                "    insert into INCIDENT__INCIDENT_REPORT (",
+                "        EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER",
+                "    )",
+                "    values ((select ID from EVENT where NAME = :eventID), "
+                ":incidentNumber, :incidentReportNumber)",
+                "",
+                "  -- query plan --",
+                "",
+                "    [None,None] You did not supply a value for binding 1.",
+                "",
+            ))
         )
 
 
-    def test_version(self) -> None:
+    def test_dbSchemaVersion(self) -> None:
         """
-        :meth:`DataStore._version` returns the schema version for the given
-        database.
+        :meth:`DataStore._dbSchemaVersion` returns the schema version for the
+        given database.
         """
-        for version in range(1, DataStore._schemaVersion + 1):
-            db = createDB(None, DataStore._loadSchema(version=version))
+        for version in range(1, DataStore.schemaVersion + 1):
+            db = createDB(None, DataStore.loadSchema(version=version))
 
-            self.assertEqual(DataStore._version(db), version)
+            self.assertEqual(DataStore._dbSchemaVersion(db), version)
 
 
     def test_db(self) -> None:
@@ -205,9 +220,9 @@ class DataStoreCoreTests(TestCase):
         )
 
 
-    def test_db_schemaUpgrade(self) -> None:
+    def test_upgradeSchema(self) -> None:
         """
-        A database with an old schema is automatically upgraded to the current
+        :meth:`DataStore.upgradeSchema` upgrades the data schema to the current
         version.
         """
         def getSchemaInfo(db: Connection) -> str:
@@ -215,20 +230,21 @@ class DataStoreCoreTests(TestCase):
             printSchema(db, out)
             return out.getvalue()
 
-        currentVersion = DataStore._schemaVersion
+        currentVersion = DataStore.schemaVersion
 
         with createDB(
-            None, DataStore._loadSchema(version=currentVersion)
+            None, DataStore.loadSchema(version=currentVersion)
         ) as db:
             currentSchemaInfo = getSchemaInfo(db)
 
         for version in range(1, currentVersion):
             path = Path(self.mktemp())
-            createDB(path, DataStore._loadSchema(version=version))
+            createDB(path, DataStore.loadSchema(version=version))
 
             store = DataStore(dbPath=path)
+            self.successResultOf(store.upgradeSchema())
 
-            self.assertEqual(store._version(store._db), currentVersion)
+            self.assertEqual(store._dbSchemaVersion(store._db), currentVersion)
 
             schemaInfo = getSchemaInfo(store._db)
 
@@ -236,49 +252,47 @@ class DataStoreCoreTests(TestCase):
             self.assertEqual(schemaInfo, currentSchemaInfo)
 
 
-    def test_db_noSchemaInfo(self) -> None:
+    def test_upgradeSchema_noSchemaInfo(self) -> None:
         """
-        :meth:`DataStore._db` raises :exc:`StorageError` when the database
-        has no SCHEMA_INFO table.
+        :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
+        database has no SCHEMA_INFO table.
         """
         # Load valid schema, then drop SCHEMA_INFO
         dbPath = Path(self.mktemp())
-        with createDB(dbPath, DataStore._loadSchema()) as db:
+        with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute("drop table SCHEMA_INFO")
 
         store = TestDataStore(self, dbPath=dbPath)
 
-        e = self.assertRaises(StorageError, lambda: store._db)
-        self.assertStartsWith(str(e), "Unable to look up schema version: ")
-        self.assertIn("SCHEMA_INFO", str(e))
+        f = self.failureResultOf(store.upgradeSchema(), StorageError)
+        self.assertStartsWith(f.getErrorMessage(), "Unable to apply schema: ")
 
 
-    def test_db_noSchemaVersion(self) -> None:
+    def test_upgradeSchema_noSchemaVersion(self) -> None:
         """
-        :meth:`DataStore._db` raises :exc:`StorageError` when the SCHEMA_INFO
-        table has no rows.
+        :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
+        SCHEMA_INFO table has no rows.
         """
         # Load valid schema, then delete SCHEMA_INFO rows.
         dbPath = Path(self.mktemp())
-        with createDB(dbPath, DataStore._loadSchema()) as db:
+        with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute("delete from SCHEMA_INFO")
 
         store = TestDataStore(self, dbPath=dbPath)
 
-        e = self.assertRaises(StorageError, lambda: store._db)
-        self.assertEqual(str(e), "Invalid schema: no version")
+        f = self.failureResultOf(store.upgradeSchema(), StorageError)
+        self.assertEqual(f.getErrorMessage(), "Invalid schema: no version")
 
 
-    @given(integers(max_value=0))
-    def test_db_fromVersionTooLow(self, version: int) -> None:
+    @given(integers(max_value=-1))
+    def test_upgradeSchema_fromVersionTooLow(self, version: int) -> None:
         """
-        :meth:`DataStore._db` raises :exc:`StorageError` when the database
-        has a schema version of zero or less.
-        (Version numbering started at 1.)
+        :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
+        database has a schema version less than 0.
         """
         # Load valid schema, then set schema version
         dbPath = Path(self.mktemp())
-        with createDB(dbPath, DataStore._loadSchema()) as db:
+        with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute(
                 "update SCHEMA_INFO set VERSION = :version",
                 dict(version=version)
@@ -286,21 +300,23 @@ class DataStoreCoreTests(TestCase):
 
         store = TestDataStore(self, dbPath=dbPath)
 
-        e = self.assertRaises(StorageError, lambda: store._db)
+        f = self.failureResultOf(store.upgradeSchema(), StorageError)
         self.assertEqual(
-            str(e), f"No upgrade path from schema version {version}"
+            f.getErrorMessage(),
+            f"No upgrade path from schema version {version}",
         )
 
 
-    @given(integers(min_value=DataStore._schemaVersion + 1))
-    def test_db_fromVersionTooHigh(self, version: int) -> None:
+    @given(integers(min_value=DataStore.schemaVersion + 1))
+    def test_upgradeSchema_fromVersionTooHigh(self, version: int) -> None:
         """
-        :meth:`DataStore._db` raises :exc:`StorageError` when the database
-        has a schema version of greater than the current schema version.
+        :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
+        database has a schema version of greater than the current schema
+        version.
         """
         # Load valid schema, then set schema version
         dbPath = Path(self.mktemp())
-        with createDB(dbPath, DataStore._loadSchema()) as db:
+        with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute(
                 "update SCHEMA_INFO set VERSION = :version",
                 dict(version=version)
@@ -308,9 +324,11 @@ class DataStoreCoreTests(TestCase):
 
         store = TestDataStore(self, dbPath=dbPath)
 
-        e = self.assertRaises(StorageError, lambda: store._db)
+        f = self.failureResultOf(store.upgradeSchema(), StorageError)
         self.assertEqual(
-            str(e), f"Schema version {version} is too new"
+            f.getErrorMessage(),
+            f"Schema version {version} is too new "
+            f"(current version is {store.schemaVersion})"
         )
 
 
@@ -322,13 +340,15 @@ class DataStoreHelperTests(TestCase):
 
     def test_asTimeStamp_preEpoch(self) -> None:
         """
-        :func:`asTimeStamp` raises :exc:`StorageError` when given a time stamp
-        before the UTC Epoch.
+        :meth:`DataStore.asDateTimeValue` raises :exc:`StorageError` when given
+        a time stamp before the UTC Epoch.
         """
         epoch = DateTime(
             year=1970, month=1, day=1, hour=0, minute=0, tzinfo=TimeZone.utc
         )
         preEpoch = epoch - TimeDelta(seconds=1)
 
-        e = self.assertRaises(StorageError, asTimeStamp, preEpoch)
+        e = self.assertRaises(
+            StorageError, DataStore.asDateTimeValue, preEpoch
+        )
         self.assertStartsWith(str(e), "DateTime is before the UTC epoch: ")

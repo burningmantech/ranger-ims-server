@@ -15,13 +15,15 @@
 ##
 
 """
-Tests for :mod:`ranger-ims-server.store.sqlite._store`
+Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
-from ims.ext.sqlite import Connection, SQLITE_MAX_INT, SQLiteError
+from pymysql.err import MySQLError
+
+from twisted.enterprise.adbapi import ConnectionPool
+
 from ims.ext.trial import TestCase
 
 from .._store import DataStore
@@ -37,21 +39,30 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     See :class:`SuperTestDataStore`.
     """
 
-    maxIncidentNumber = SQLITE_MAX_INT
+    maxIncidentNumber = 4294967295
 
-    exceptionClass = SQLiteError
+    exceptionClass = MySQLError
 
 
     def __init__(
-        self, testCase: TestCase, dbPath: Optional[Path] = None
+        self, testCase: TestCase,
+        hostName: str,
+        hostPort: int,
+        database: str,
+        username: str,
+        password: str,
     ) -> None:
-        if dbPath is None:
-            dbPath = Path(testCase.mktemp())
-        DataStore.__init__(self, dbPath)
+        DataStore.__init__(
+            self,
+            hostName=hostName, hostPort=hostPort,
+            database=database,
+            username=username, password=password,
+        )
+        setattr(self._state, "testCase", testCase)
 
 
     @property
-    def _db(self) -> Connection:
+    def _db(self) -> ConnectionPool:
         if getattr(self._state, "broken", False):
             self.raiseException()
 

@@ -3,11 +3,14 @@
 Extensions to :mod:`twisted.trial`
 """
 
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, Type
 
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.python.failure import Failure
-from twisted.trial.unittest import SynchronousTestCase
+from twisted.trial.unittest import (
+    SynchronousTestCase as SuperTestCase,
+    TestCase as SuperAsynchronousTestCase,
+)
 from twisted.web import http
 from twisted.web.iweb import IRequest
 
@@ -20,34 +23,29 @@ __all__ = (
 
 
 
-class TestCase(SynchronousTestCase):
+class TestCase(SuperTestCase):
     """
-    A unit test. The atom of the unit testing universe.
-
-    This class extends :class:`SynchronousTestCase`, not
-    :class:`twisted.trial.unittest.TestCase`, because tests that are themselves
-    asynchronous cause some known problems, and one should be able to unit test
-    code synchronously.
+    A unit test.
     """
 
     def successResultOf(self, deferred: Deferred) -> Any:
         """
-        Override :meth:`SynchronousTestCase.successResultOf` to enable handling
-        of coroutines as well as :class:`Deferred` s.
+        Override :meth:`SuperTestCase.successResultOf` to enable handling of
+        coroutines as well as :class:`Deferred` s.
         """
         deferred = ensureDeferred(deferred)
-        return SynchronousTestCase.successResultOf(self, deferred)
+        return SuperTestCase.successResultOf(self, deferred)
 
 
     def failureResultOf(
-        self, deferred: Deferred, *expectedExceptionTypes: BaseException
+        self, deferred: Deferred, *expectedExceptionTypes: Type[BaseException]
     ) -> Failure:
         """
-        Override :meth:`SynchronousTestCase.failureResultOf` to enable handling
-        of coroutines as well as :class:`Deferred` s.
+        Override :meth:`SuperTestCase.failureResultOf` to enable handling of
+        coroutines as well as :class:`Deferred` s.
         """
         deferred = ensureDeferred(deferred)
-        return SynchronousTestCase.failureResultOf(
+        return SuperTestCase.failureResultOf(
             self, deferred, *expectedExceptionTypes
         )
 
@@ -126,3 +124,10 @@ class TestCase(SynchronousTestCase):
         # FIXME: Check encoding, default to UTF-8
 
         return request.getWrittenData().decode()
+
+
+
+class AsynchronousTestCase(TestCase, SuperAsynchronousTestCase):
+    """
+    A asynchronous unit test.
+    """

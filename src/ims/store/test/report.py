@@ -19,21 +19,14 @@ Report tests for :mod:`ranger-ims-server.store`
 """
 
 from datetime import datetime as DateTime, timezone as TimeZone
-from typing import Any, FrozenSet, Iterable, List, Sequence, Set, Tuple
+from typing import Any, Iterable, Sequence, Set, Tuple, cast
 
 from attr import fields as attrFields
 
-from hypothesis import assume, given, settings
-from hypothesis.strategies import frozensets, lists, tuples
-
 from ims.model import Incident, IncidentReport, ReportEntry
-from ims.model.strategies import (
-    incidentReportLists, incidentReportSummaries, incidentReports,
-    incidents, rangerHandles, reportEntries,
-)
 
-from .base import DataStoreTests, TestDataStore
-from .incident import aReportEntry, anIncident
+from .base import DataStoreTests, TestDataStoreABC, asyncAsDeferred
+from .incident import aReportEntry, anIncident, anIncident1, anIncident2
 from .._exceptions import NoSuchIncidentReportError, StorageError
 
 
@@ -47,6 +40,34 @@ anIncidentReport = IncidentReport(
     reportEntries=(),
 )
 
+anIncidentReport1 = IncidentReport(
+    number=1,
+    created=DateTime.now(TimeZone.utc),
+    summary="This thing happened",
+    reportEntries=(),
+)
+
+anIncidentReport2 = IncidentReport(
+    number=2,
+    created=DateTime.now(TimeZone.utc),
+    summary="That thing happened",
+    reportEntries=(),
+)
+
+aReportEntry1 = ReportEntry(
+    created=DateTime.now(TimeZone.utc),
+    author="Hubcap",
+    automatic=False,
+    text="Well there was thing thing",
+)
+
+aReportEntry2 = ReportEntry(
+    created=DateTime.now(TimeZone.utc),
+    author="Bucket",
+    automatic=False,
+    text="Well there was that thing",
+)
+
 
 
 class DataStoreIncidentReportTests(DataStoreTests):
@@ -54,206 +75,224 @@ class DataStoreIncidentReportTests(DataStoreTests):
     Tests for :class:`DataStore` incident report access.
     """
 
-    @given(incidentReportLists(
-        maxNumber=TestDataStore.maxIncidentNumber, averageSize=3
-    ))
-    @settings(max_examples=100)
-    def test_incidentReports(
-        self, incidentReports: Iterable[IncidentReport]
-    ) -> None:
+    @asyncAsDeferred
+    async def test_incidentReports(self) -> None:
         """
         :meth:`DataStore.incidentReports` returns all incidents.
         """
-        incidentReports = tuple(incidentReports)
-        incidentReportsByNumber = {r.number: r for r in incidentReports}
-
-        store = self.store()
-
-        for incidentReport in incidentReports:
-            store.storeIncidentReport(incidentReport)
-
-        found: Set[int] = set()
-        for retrieved in self.successResultOf(store.incidentReports()):
-            self.assertIn(retrieved.number, incidentReportsByNumber)
-            self.assertIncidentReportsEqual(
-                retrieved, incidentReportsByNumber[retrieved.number]
+        for _incidentReports in (
+            (),
+            (anIncidentReport1,),
+            (anIncidentReport1, anIncidentReport2),
+        ):
+            incidentReports = tuple(
+                cast(Iterable[IncidentReport], _incidentReports)
             )
-            found.add(retrieved.number)
+            incidentReportsByNumber = {r.number: r for r in incidentReports}
 
-        self.assertEqual(found, set(r.number for r in incidentReports))
+            store = await self.store()
+
+            for incidentReport in incidentReports:
+                await store.storeIncidentReport(incidentReport)
+
+            found: Set[int] = set()
+            for retrieved in await store.incidentReports():
+                self.assertIn(retrieved.number, incidentReportsByNumber)
+                self.assertIncidentReportsEqual(
+                    store, retrieved, incidentReportsByNumber[retrieved.number]
+                )
+                found.add(retrieved.number)
+
+            self.assertEqual(found, set(r.number for r in incidentReports))
 
 
-    def test_incidentReports_error(self) -> None:
+    @asyncAsDeferred
+    async def test_incidentReports_error(self) -> None:
         """
         :meth:`DataStore.incidentReports` raises :exc:`StorageError` when
-        SQLite raises an exception.
+        the database raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         store.bringThePain()
 
-        f = self.failureResultOf(store.incidentReports())
-        self.assertEqual(f.type, StorageError)
+        try:
+            await store.incidentReports()
+        except StorageError as e:
+            self.assertEqual(str(e), store.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    @given(incidentReports(maxNumber=TestDataStore.maxIncidentNumber))
-    def test_incidentReportWithNumber(
-        self, incidentReport: IncidentReport
-    ) -> None:
+    @asyncAsDeferred
+    async def test_incidentReportWithNumber(self) -> None:
         """
         :meth:`DataStore.incidentReportWithNumber` returns the specified
         incident report.
         """
-        store = self.store()
-        store.storeIncidentReport(incidentReport)
+        for incidentReport in (anIncidentReport1, anIncidentReport2):
+            store = await self.store()
+            await store.storeIncidentReport(incidentReport)
 
-        retrieved = self.successResultOf(
-            store.incidentReportWithNumber(incidentReport.number)
-        )
+            retrieved = await store.incidentReportWithNumber(
+                incidentReport.number
+            )
 
-        self.assertIncidentReportsEqual(retrieved, incidentReport)
+            self.assertIncidentReportsEqual(store, retrieved, incidentReport)
 
 
-    def test_incidentReportWithNumber_notFound(self) -> None:
+    @asyncAsDeferred
+    async def test_incidentReportWithNumber_notFound(self) -> None:
         """
         :meth:`DataStore.incidentReportWithNumber` raises
         :exc:`NoSuchIncidentReportError` when the given incident report number
         is not found.
         """
-        store = self.store()
+        store = await self.store()
 
-        f = self.failureResultOf(
-            store.incidentReportWithNumber(1)
-        )
-        f.printTraceback()
-        self.assertEqual(f.type, NoSuchIncidentReportError)
+        try:
+            await store.incidentReportWithNumber(1)
+        except NoSuchIncidentReportError as e:
+            pass
+        else:
+            self.fail("NoSuchIncidentReportError not raised")
 
 
-    def test_incidentReportWithNumber_tooBig(self) -> None:
+    @asyncAsDeferred
+    async def test_incidentReportWithNumber_tooBig(self) -> None:
         """
         :meth:`DataStore.incidentReportWithNumber` raises
         :exc:`NoSuchIncidentReportError` when the given incident report number
-        is too large for SQLite.
+        is too large for the database.
         """
-        store = self.store()
+        store = await self.store()
 
-        f = self.failureResultOf(
-            store.incidentReportWithNumber(TestDataStore.maxIncidentNumber + 1)
-        )
-        self.assertEqual(f.type, NoSuchIncidentReportError)
+        try:
+            await store.incidentReportWithNumber(store.maxIncidentNumber + 1)
+        except NoSuchIncidentReportError as e:
+            pass
+        else:
+            self.fail("NoSuchIncidentReportError not raised")
 
 
-    def test_incidentReportWithNumber_error(self) -> None:
+    @asyncAsDeferred
+    async def test_incidentReportWithNumber_error(self) -> None:
         """
-        :meth:`DataStore.incidentReportWithNumber` raises
-        :exc:`NoSuchIncidentReportError` when the given incident report number
-        is too large for SQLite.
+        :meth:`DataStore.incidentReportWithNumber` raises :exc:`StorageError`
+        when the given incident report number is too large for the database.
         """
-        store = self.store()
+        store = await self.store()
         store.bringThePain()
 
-        f = self.failureResultOf(store.incidentReportWithNumber(1))
-        self.assertEqual(f.type, StorageError)
+        try:
+            await store.incidentReportWithNumber(1)
+        except StorageError as e:
+            self.assertEqual(str(e), store.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    @given(
-        lists(
-            tuples(incidentReports(new=True), rangerHandles()),
-            average_size=2
-        ),
-    )
-    def test_createIncidentReport(
-        self, data: Iterable[Tuple[IncidentReport, str]]
-    ) -> None:
+    @asyncAsDeferred
+    async def test_createIncidentReport(self) -> None:
         """
         :meth:`DataStore.createIncidentReport` creates the given incident
         report.
         """
-        store = self.store()
+        for _data in (
+            (),
+            (
+                (anIncidentReport1.replace(number=0), "Hubcap"),
+            ),
+            (
+                (anIncidentReport1.replace(number=0), "Hubcap"),
+                (anIncidentReport2.replace(number=0), "Bucket"),
+            ),
+        ):
+            data = cast(Iterable[Tuple[IncidentReport, str]], _data)
 
-        expectedStoredIncidentReports: Set[IncidentReport] = set()
-        nextNumber = 1
+            store = await self.store()
 
-        for incidentReport, author in data:
-            retrieved = self.successResultOf(
-                store.createIncidentReport(
+            expectedStoredIncidentReports: Set[IncidentReport] = set()
+            nextNumber = 1
+
+            for incidentReport, author in data:
+                retrieved = await store.createIncidentReport(
                     incidentReport=incidentReport, author=author
                 )
-            )
-            expected = incidentReport.replace(number=nextNumber)
+                expected = incidentReport.replace(number=nextNumber)
 
-            self.assertIncidentReportsEqual(
-                retrieved, expected, ignoreAutomatic=True
-            )
+                self.assertIncidentReportsEqual(
+                    store, retrieved, expected, ignoreAutomatic=True
+                )
 
-            expectedStoredIncidentReports.add(expected)
-            nextNumber += 1
+                expectedStoredIncidentReports.add(expected)
+                nextNumber += 1
 
-        storedIncidentReports = sorted(
-            self.successResultOf(store.incidentReports())
-        )
+            storedIncidentReports = sorted(await store.incidentReports())
 
-        self.assertEqual(
-            len(storedIncidentReports), len(expectedStoredIncidentReports)
-        )
-
-        for stored, expected in zip(
-            storedIncidentReports, sorted(expectedStoredIncidentReports)
-        ):
-            self.assertIncidentReportsEqual(
-                stored, expected, ignoreAutomatic=True
+            self.assertEqual(
+                len(storedIncidentReports), len(expectedStoredIncidentReports)
             )
 
+            for stored, expected in zip(
+                storedIncidentReports, sorted(expectedStoredIncidentReports)
+            ):
+                self.assertIncidentReportsEqual(
+                    store, stored, expected, ignoreAutomatic=True
+                )
 
-    def test_createIncidentReport_error(self) -> None:
+
+    @asyncAsDeferred
+    async def test_createIncidentReport_error(self) -> None:
         """
         :meth:`DataStore.createIncidentReport` raises :exc:`StorageError` when
-        SQLite raises an exception.
+        the database raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         store.bringThePain()
 
-        f = self.failureResultOf(
-            store.createIncidentReport(anIncidentReport, "Hubcap")
-        )
-        self.assertEqual(f.type, StorageError)
+        try:
+            await store.createIncidentReport(anIncidentReport, "Hubcap")
+        except StorageError as e:
+            self.assertEqual(str(e), store.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    def test_setIncidentReport_summary_error(self) -> None:
+    @asyncAsDeferred
+    async def test_setIncidentReport_summary_error(self) -> None:
         """
         :meth:`DataStore.setIncident_summary` raises :exc:`StorageError` when
-        SQLite raises an exception.
+        the database raises an exception.
         """
-        store = self.store()
-        incidentReport = self.successResultOf(
-            store.createIncidentReport(anIncidentReport, "Hubcap")
+        store = await self.store()
+        incidentReport = await store.createIncidentReport(
+            anIncidentReport, "Hubcap"
         )
         store.bringThePain()
 
-        f = self.failureResultOf(
-            store.setIncidentReport_summary(
+        try:
+            await store.setIncidentReport_summary(
                 incidentReport.number, "Never mind", "Bucket"
             )
-        )
-        self.assertEqual(f.type, StorageError)
+        except StorageError as e:
+            self.assertEqual(str(e), store.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    def _test_setIncidentReportAttribute(
+    async def _test_setIncidentReportAttribute(
         self, incidentReport: IncidentReport,
         methodName: str, attributeName: str, value: Any
     ) -> None:
-        store = self.store()
+        store = await self.store()
 
-        store.storeIncidentReport(incidentReport)
+        await store.storeIncidentReport(incidentReport)
 
         setter = getattr(store, methodName)
 
-        self.successResultOf(
-            setter(incidentReport.number, value, "Hubcap")
-        )
+        await setter(incidentReport.number, value, "Hubcap")
 
-        retrieved = self.successResultOf(
-            store.incidentReportWithNumber(incidentReport.number)
-        )
+        retrieved = await store.incidentReportWithNumber(incidentReport.number)
 
         # Replace the specified incident attribute with the given value.
         # This is a bit complex because we're recursing into sub-attributes.
@@ -268,156 +307,149 @@ class DataStoreIncidentReportTests(DataStoreTests):
         incidentReport = values[0]
 
         self.assertIncidentReportsEqual(
-            retrieved, incidentReport, ignoreAutomatic=True
+            store, retrieved, incidentReport, ignoreAutomatic=True
         )
 
 
-    @given(incidentReports(new=True), incidentReportSummaries())
-    def test_setIncidentReport_summary(
-        self, incidentReport: IncidentReport, summary: str
-    ) -> None:
+    @asyncAsDeferred
+    async def test_setIncidentReport_summary(self) -> None:
         """
         :meth:`DataStore.setIncidentReport_summary` updates the summary for the
         given incident report in the data store.
         """
-        self._test_setIncidentReportAttribute(
-            incidentReport, "setIncidentReport_summary", "summary", summary
-        )
+        for incidentReport, summary in (
+            (anIncidentReport1, "foo bar"),
+            (anIncidentReport2, ""),
+        ):
+            await self._test_setIncidentReportAttribute(
+                incidentReport, "setIncidentReport_summary", "summary", summary
+            )
 
 
-    @given(
-        incidentReports(new=True),
-        frozensets(reportEntries(automatic=False), average_size=2),
-        rangerHandles(),
-    )
-    def test_addReportEntriesToIncidentReport(
-        self, incidentReport: IncidentReport,
-        reportEntries: FrozenSet[ReportEntry], author: str
-    ) -> None:
+    @asyncAsDeferred
+    async def test_addReportEntriesToIncidentReport(self) -> None:
         """
         :meth:`DataStore.addReportEntriesToIncidentReport` adds the given
         report entries to the given incident report in the data store.
         """
-        # Change author in report entries to match the author so we will use to
-        # add them
-        reportEntries = frozenset(
-            r.replace(author=author) for r in reportEntries
-        )
+        incidentReport = anIncidentReport1
+        author = "Bucket"
 
-        # Store test data
-        store = self.store()
-        store.storeIncidentReport(incidentReport)
+        for reportEntries in (
+            (),
+            (aReportEntry1,),
+            (aReportEntry1, aReportEntry2),
+        ):
+            # Change author in report entries to match the author so we will
+            # use to add them
+            reportEntries = frozenset(
+                r.replace(author=author)
+                for r in cast(Iterable[ReportEntry], reportEntries)
+            )
 
-        # Fetch incident report back so we have the version from the DB
-        incidentReport = self.successResultOf(
-            store.incidentReportWithNumber(incidentReport.number)
-        )
-        originalEntries = frozenset(incidentReport.reportEntries)
+            # Store test data
+            store = await self.store()
+            await store.storeIncidentReport(incidentReport)
 
-        # Add report entries
-        self.successResultOf(
-            store.addReportEntriesToIncidentReport(
+            # Fetch incident report back so we have the version from the DB
+            incidentReport = await store.incidentReportWithNumber(
+                incidentReport.number
+            )
+            originalEntries = frozenset(incidentReport.reportEntries)
+
+            # Add report entries
+            await store.addReportEntriesToIncidentReport(
                 incidentReport.number, reportEntries, author
             )
-        )
 
-        # Get the updated incident report with the new report entries
-        updated = self.successResultOf(
-            store.incidentReportWithNumber(incidentReport.number)
-        )
-        updatedEntries = frozenset(updated.reportEntries)
-
-        # Updated entries minus the original entries == the added entries
-        updatedNewEntries = updatedEntries - originalEntries
-        self.assertTrue(
-            store.reportEntriesEqual(
-                sorted(updatedNewEntries), sorted(reportEntries)
+            # Get the updated incident report with the new report entries
+            updated = await store.incidentReportWithNumber(
+                incidentReport.number
             )
-        )
+            updatedEntries = frozenset(updated.reportEntries)
+
+            # Updated entries minus the original entries == the added entries
+            updatedNewEntries = updatedEntries - originalEntries
+            self.assertTrue(
+                store.reportEntriesEqual(
+                    sorted(updatedNewEntries), sorted(reportEntries)
+                )
+            )
 
 
-    def test_addReportEntriesToIncidentReport_automatic(self) -> None:
+    @asyncAsDeferred
+    async def test_addReportEntriesToIncidentReport_automatic(self) -> None:
         """
         :meth:`DataStore.addReportEntriesToIncidentReport` raises
         :exc:`ValueError` when given automatic report entries.
         """
-        store = self.store()
-        incidentReport = self.successResultOf(
-            store.createIncidentReport(anIncidentReport, "Hubcap")
+        store = await self.store()
+        incidentReport = await store.createIncidentReport(
+            anIncidentReport, "Hubcap"
         )
 
         reportEntry = aReportEntry.replace(automatic=True)
 
-        f = self.failureResultOf(
-            store.addReportEntriesToIncidentReport(
+        try:
+            await store.addReportEntriesToIncidentReport(
                 incidentReport.number, (reportEntry,), reportEntry.author
             )
-        )
-        self.assertEqual(f.type, ValueError)
-        self.assertIn(" may not be created by user ", f.getErrorMessage())
+        except ValueError as e:
+            self.assertIn(" may not be created by user ", str(e))
+        else:
+            self.fail("ValueError not raised")
 
 
-    def test_addReportEntriesToIncidentReport_wrongAuthor(self) -> None:
+    @asyncAsDeferred
+    async def test_addReportEntriesToIncidentReport_wrongAuthor(self) -> None:
         """
         :meth:`DataStore.addReportEntriesToIncidentReport` raises
         :exc:`ValueError` when given report entries with an author that does
         not match the author that is adding the entries.
         """
-        store = self.store()
-        incidentReport = self.successResultOf(
-            store.createIncidentReport(anIncidentReport, "Hubcap")
+        store = await self.store()
+        incidentReport = await store.createIncidentReport(
+            anIncidentReport, "Hubcap"
         )
 
         otherAuthor = f"not{aReportEntry.author}"
 
-        f = self.failureResultOf(
-            store.addReportEntriesToIncidentReport(
+        try:
+            await store.addReportEntriesToIncidentReport(
                 incidentReport.number, (aReportEntry,), otherAuthor
             )
-        )
-        self.assertEqual(f.type, ValueError)
-        self.assertEndsWith(
-            f.getErrorMessage(), f" has author != {otherAuthor}"
-        )
+        except ValueError as e:
+            self.assertEndsWith(str(e), f" has author != {otherAuthor}")
+        else:
+            self.fail("ValueError not raised")
 
 
-    def test_addReportEntriesToIncidentReport_error(self) -> None:
+    @asyncAsDeferred
+    async def test_addReportEntriesToIncidentReport_error(self) -> None:
         """
         :meth:`DataStore.addReportEntriesToIncidentReport` raises
-        :exc:`StorageError` when SQLite raises an exception.
+        :exc:`StorageError` when the database raises an exception.
         """
-        store = self.store()
-        incidentReport = self.successResultOf(
-            store.createIncidentReport(anIncidentReport, "Hubcap")
+        store = await self.store()
+        incidentReport = await store.createIncidentReport(
+            anIncidentReport, "Hubcap"
         )
         store.bringThePain()
 
         aReportEntry
 
-        f = self.failureResultOf(
-            store.addReportEntriesToIncidentReport(
+        try:
+            await store.addReportEntriesToIncidentReport(
                 incidentReport.number, (aReportEntry,), aReportEntry.author
             )
-        )
-        self.assertEqual(f.type, StorageError)
+        except StorageError as e:
+            self.assertEqual(str(e), store.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    @given(
-        incidentReportLists(averageSize=2),
-        lists(
-            tuples(
-                incidents(new=True),
-                incidentReportLists(minSize=1, averageSize=2),
-            ),
-            average_size=2,
-        ),
-    )
-    @settings(max_examples=100)
-    def test_detachedAndAttachedIncidentReports(
-        self,
-        detached: List[IncidentReport],
-        attached: Sequence[Tuple[Incident, List[IncidentReport]]],
-    ) -> None:
+    @asyncAsDeferred
+    async def test_detachedAndAttachedIncidentReports(self) -> None:
         """
         :meth:`DataStore.attachIncidentReportToIncident` attaches the given
         incident report to the given incident,
@@ -426,195 +458,272 @@ class DataStoreIncidentReportTests(DataStoreTests):
         :meth:`DataStore.detachedIncidentReports` retrieves unattached incident
         reports.
         """
-        store = self.store()
+        for _detached, _attached in (
+            (
+                (),
+                (),
+            ),
+            (
+                (anIncidentReport1,),
+                (),
+            ),
+            (
+                (anIncidentReport1, anIncidentReport2),
+                (),
+            ),
+            (
+                (),
+                (
+                    (anIncident1, ()),
+                ),
+            ),
+            (
+                (),
+                (
+                    (anIncident1, (anIncidentReport1,)),
+                ),
+            ),
+            (
+                (),
+                (
+                    (anIncident1, (anIncidentReport1, anIncidentReport2)),
+                ),
+            ),
+            (
+                (),
+                (
+                    (anIncident1, ()),
+                    (anIncident2, (anIncidentReport1, anIncidentReport2)),
+                ),
+            ),
+            (
+                (),
+                (
+                    (anIncident1, (anIncidentReport1,)),
+                    (anIncident2, (anIncidentReport2,)),
+                ),
+            ),
+            (
+                (anIncidentReport1,),
+                (
+                    (anIncident2, (anIncidentReport2,)),
+                ),
+            ),
+            (
+                (anIncidentReport1, anIncidentReport2),
+                (),
+            ),
+        ):
+            detached = cast(Sequence[IncidentReport], _detached)
+            attached = cast(
+                Iterable[Tuple[Incident, Sequence[IncidentReport]]], _attached,
+            )
 
-        foundIncidentNumbers: Set[int] = set()
-        foundIncidentReportNumbers: Set[int] = set()
-        attachedReports: Set[IncidentReport] = set()
+            store = await self.store()
 
-        # Create some detached incident reports
-        for incidentReport in detached:
-            store.storeIncidentReport(incidentReport)
-            foundIncidentReportNumbers.add(incidentReport.number)
+            foundIncidentNumbers: Set[int] = set()
+            foundIncidentReportNumbers: Set[int] = set()
+            attachedReports: Set[IncidentReport] = set()
 
-        # Create some incidents and, for each, create some incident reports
-        # and attached them to the incident.
-        for incident, reports in attached:
-            assume(incident.number not in foundIncidentNumbers)
-
-            store.storeIncident(incident)
-            for incidentReport in reports:
-                assume(incidentReport.number not in foundIncidentReportNumbers)
-
-                store.storeIncidentReport(incidentReport)
-                self.successResultOf(
-                    store.attachIncidentReportToIncident(
-                        incidentReport.number, incident.event, incident.number
-                    )
-                )
-                attachedReports.add(incidentReport)
-
+            # Create some detached incident reports
+            for incidentReport in detached:
+                await store.storeIncidentReport(incidentReport)
                 foundIncidentReportNumbers.add(incidentReport.number)
 
-                # Verify that the same attached incident comes back from the
-                # store.
-                storedAttachedIncidents = tuple(self.successResultOf(
-                    store.incidentsAttachedToIncidentReport(
-                        incidentReport.number
-                    )
-                ))
-                self.assertEqual(len(storedAttachedIncidents), 1)
-                self.assertEqual(
-                    storedAttachedIncidents[0],
-                    (incident.event, incident.number),
-                )
+            # Create some incidents and, for each, create some incident reports
+            # and attached them to the incident.
+            for incident, reports in attached:
+                # assume(incident.number not in foundIncidentNumbers)
 
-            storedAttached = tuple(self.successResultOf(
-                store.incidentReportsAttachedToIncident(
-                    incident.event, incident.number
-                )
-            ))
+                await store.storeIncident(incident)
+                for incidentReport in reports:
+                    # assume(
+                    #     incidentReport.number
+                    #     not in foundIncidentReportNumbers
+                    # )
 
-            # Verify that the same attached reports come back from the store.
-            self.assertMultipleIncidentReportsEqual(storedAttached, reports)
-
-            foundIncidentNumbers.add(incident.number)
-
-        # Verify that the same detached reports come back from the store.
-        storedDetached = tuple(
-            self.successResultOf(store.detachedIncidentReports())
-        )
-        self.assertMultipleIncidentReportsEqual(storedDetached, detached)
-
-        # Detach everything
-        for incident, reports in attached:
-            for incidentReport in reports:
-                self.successResultOf(
-                    store.detachIncidentReportFromIncident(
+                    await store.storeIncidentReport(incidentReport)
+                    await store.attachIncidentReportToIncident(
                         incidentReport.number, incident.event, incident.number
                     )
-                )
+                    attachedReports.add(incidentReport)
 
-                # Verify report is detached
-                storedAttachedIncidents = tuple(self.successResultOf(
-                    store.incidentsAttachedToIncidentReport(
-                        incidentReport.number
+                    foundIncidentReportNumbers.add(incidentReport.number)
+
+                    # Verify that the same attached incident comes back from
+                    # the store.
+                    storedAttachedIncidents = tuple(
+                        await store.incidentsAttachedToIncidentReport(
+                            incidentReport.number
+                        )
                     )
-                ))
-                self.assertEqual(len(storedAttachedIncidents), 0)
+                    self.assertEqual(len(storedAttachedIncidents), 1)
+                    self.assertEqual(
+                        storedAttachedIncidents[0],
+                        (incident.event, incident.number),
+                    )
 
-            # Verify no attached reports
-            storedAttached = tuple(self.successResultOf(
-                store.incidentReportsAttachedToIncident(
-                    incident.event, incident.number
+                storedAttached = tuple(
+                    await store.incidentReportsAttachedToIncident(
+                        incident.event, incident.number
+                    )
                 )
-            ))
-            self.assertEqual(len(storedAttached), 0)
+
+                # Verify that the same attached reports come back from the
+                # store.
+                self.assertMultipleIncidentReportsEqual(
+                    store, storedAttached, reports
+                )
+
+                foundIncidentNumbers.add(incident.number)
+
+            # Verify that the same detached reports come back from the store.
+            storedDetached = tuple(await store.detachedIncidentReports())
+            self.assertMultipleIncidentReportsEqual(
+                store, storedDetached, detached
+            )
+
+            # Detach everything
+            for incident, reports in attached:
+                for incidentReport in reports:
+                    await store.detachIncidentReportFromIncident(
+                        incidentReport.number, incident.event, incident.number
+                    )
+
+                    # Verify report is detached
+                    storedAttachedIncidents = tuple(
+                        await store.incidentsAttachedToIncidentReport(
+                            incidentReport.number
+                        )
+                    )
+                    self.assertEqual(len(storedAttachedIncidents), 0)
+
+                # Verify no attached reports
+                storedAttached = tuple(
+                    await store.incidentReportsAttachedToIncident(
+                        incident.event, incident.number
+                    )
+                )
+                self.assertEqual(len(storedAttached), 0)
 
 
-    def test_detachedIncidentReports_error(self) -> None:
+    @asyncAsDeferred
+    async def test_detachedIncidentReports_error(self) -> None:
         """
         :meth:`DataStore.detachedIncidentReports` raises :exc:`StorageError`
-        when SQLite raises an exception.
+        when the database raises an exception.
         """
-        store = self.store()
+        store = await self.store()
         store.bringThePain()
 
-        f = self.failureResultOf(store.detachedIncidentReports())
-        self.assertEqual(f.type, StorageError)
+        try:
+            await store.detachedIncidentReports()
+        except StorageError as e:
+            self.assertEqual(str(e), store.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    def test_incidentReportsAttachedToIncident_error(self) -> None:
+    @asyncAsDeferred
+    async def test_incidentReportsAttachedToIncident_error(self) -> None:
         """
         :meth:`DataStore.incidentReportsAttachedToIncident` raises
-        :exc:`StorageError` when SQLite raises an exception.
+        :exc:`StorageError` when the database raises an exception.
         """
-        store = self.store()
-        self.successResultOf(store.createEvent(anIncident.event))
-        incident = self.successResultOf(
-            store.createIncident(anIncident, "Hubcap")
-        )
+        store = await self.store()
+        await store.createEvent(anIncident.event)
+        incident = await store.createIncident(anIncident, "Hubcap")
         store.bringThePain()
 
-        f = self.failureResultOf(
-            store.incidentReportsAttachedToIncident(
+        try:
+            await store.incidentReportsAttachedToIncident(
                 incident.event, incident.number
             )
-        )
-        self.assertEqual(f.type, StorageError)
+        except StorageError as e:
+            self.assertEqual(str(e), store.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    def test_incidentsAttachedToIncidentReport_error(self) -> None:
+    @asyncAsDeferred
+    async def test_incidentsAttachedToIncidentReport_error(self) -> None:
         """
         :meth:`DataStore.incidentsAttachedToIncidentReport` raises
-        :exc:`StorageError` when SQLite raises an exception.
+        :exc:`StorageError` when the database raises an exception.
         """
-        store = self.store()
-        incidentReport = self.successResultOf(
-            store.createIncidentReport(anIncidentReport, "Hubcap")
+        store = await self.store()
+        incidentReport = await store.createIncidentReport(
+            anIncidentReport, "Hubcap"
         )
         store.bringThePain()
 
-        f = self.failureResultOf(
-            store.incidentsAttachedToIncidentReport(incidentReport.number)
-        )
-        self.assertEqual(f.type, StorageError)
+        try:
+            await store.incidentsAttachedToIncidentReport(
+                incidentReport.number
+            )
+        except StorageError as e:
+            self.assertEqual(str(e), store.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    def test_attachIncidentReportToIncident_error(self) -> None:
+    @asyncAsDeferred
+    async def test_attachIncidentReportToIncident_error(self) -> None:
         """
         :meth:`DataStore.attachIncidentReportToIncident` raises
-        :exc:`StorageError` when SQLite raises an exception.
+        :exc:`StorageError` when the database raises an exception.
         """
-        store = self.store()
-        self.successResultOf(store.createEvent(anIncident.event))
-        incident = self.successResultOf(
-            store.createIncident(anIncident, "Hubcap")
-        )
-        incidentReport = self.successResultOf(
-            store.createIncidentReport(anIncidentReport, "Hubcap")
+        store = await self.store()
+        await store.createEvent(anIncident.event)
+        incident = await store.createIncident(anIncident, "Hubcap")
+        incidentReport = await store.createIncidentReport(
+            anIncidentReport, "Hubcap"
         )
         store.bringThePain()
 
-        f = self.failureResultOf(
-            store.attachIncidentReportToIncident(
+        try:
+            await store.attachIncidentReportToIncident(
                 incidentReport.number, incident.event, incident.number
             )
-        )
-        self.assertEqual(f.type, StorageError)
+        except StorageError as e:
+            self.assertEqual(str(e), store.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
-    def test_detachIncidentReportFromIncident_error(self) -> None:
+    @asyncAsDeferred
+    async def test_detachIncidentReportFromIncident_error(self) -> None:
         """
         :meth:`DataStore.detachIncidentReportFromIncident` raises
-        :exc:`StorageError` when SQLite raises an exception.
+        :exc:`StorageError` when the database raises an exception.
         """
-        store = self.store()
-        self.successResultOf(store.createEvent(anIncident.event))
-        incident = self.successResultOf(
-            store.createIncident(anIncident, "Hubcap")
+        store = await self.store()
+        await store.createEvent(anIncident.event)
+        incident = await store.createIncident(anIncident, "Hubcap")
+        incidentReport = await store.createIncidentReport(
+            anIncidentReport, "Hubcap"
         )
-        incidentReport = self.successResultOf(
-            store.createIncidentReport(anIncidentReport, "Hubcap")
-        )
-        self.successResultOf(
-            store.attachIncidentReportToIncident(
-                incidentReport.number, incident.event, incident.number
-            )
+        await store.attachIncidentReportToIncident(
+            incidentReport.number, incident.event, incident.number
         )
         store.bringThePain()
 
-        f = self.failureResultOf(
-            store.detachIncidentReportFromIncident(
+        try:
+            await store.detachIncidentReportFromIncident(
                 incidentReport.number, incident.event, incident.number
             )
-        )
-        self.assertEqual(f.type, StorageError)
+        except StorageError as e:
+            self.assertEqual(str(e), store.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
 
 
     def assertMultipleIncidentReportsEqual(
-        self, groupA: Sequence[IncidentReport],
-        groupB: Sequence[IncidentReport], ignoreAutomatic: bool = False,
+        self,
+        store: TestDataStoreABC,
+        groupA: Sequence[IncidentReport],
+        groupB: Sequence[IncidentReport],
+        ignoreAutomatic: bool = False,
     ) -> None:
         self.assertEqual(len(groupA), len(groupB))
 
@@ -622,16 +731,16 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         for a in groupA:
             self.assertIn(a.number, bByNumber)
-            self.assertIncidentReportsEqual(a, bByNumber[a.number])
+            self.assertIncidentReportsEqual(store, a, bByNumber[a.number])
 
 
     def assertIncidentReportsEqual(
-        self, incidentReportA: IncidentReport, incidentReportB: IncidentReport,
+        self, store: TestDataStoreABC,
+        incidentReportA: IncidentReport,
+        incidentReportB: IncidentReport,
         ignoreAutomatic: bool = False,
     ) -> None:
         if incidentReportA != incidentReportB:
-            store = self.store()
-
             messages = []
 
             for attribute in attrFields(IncidentReport):

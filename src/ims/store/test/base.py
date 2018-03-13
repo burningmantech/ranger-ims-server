@@ -19,10 +19,13 @@ Tests for :mod:`ranger-ims-server.store`
 """
 
 from abc import ABC, abstractmethod
-from datetime import datetime as DateTime
-from typing import Optional, Sequence
+from datetime import datetime as DateTime, timedelta as TimeDelta
+from functools import wraps
+from typing import Any, Callable, Optional, Sequence
 
-from ims.ext.trial import TestCase
+from twisted.internet.defer import ensureDeferred
+
+from ims.ext.trial import AsynchronousTestCase
 from ims.model import Event, Incident, IncidentReport, ReportEntry
 
 from .._abc import IMSDataStore
@@ -31,11 +34,19 @@ from .._abc import IMSDataStore
 __all__ = ()
 
 
+def asyncAsDeferred(f: Callable) -> Callable:
+    @wraps(f)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        result = f(*args, **kwargs)
+        return ensureDeferred(result)
 
-class TestDataStore(IMSDataStore, ABC):
+    return wrapper
+
+
+
+class TestDataStoreMixIn(ABC):
     """
-    :class:`IMSDataStore` subclass that raises a database exception when things
-    get interesting.
+    :class:`IMSDataStore` mix-in for testing.
     """
 
     maxIncidentNumber = 2**63 - 1  # Default to 64-bit int
@@ -59,28 +70,30 @@ class TestDataStore(IMSDataStore, ABC):
 
 
     @abstractmethod
-    def storeEvent(self, event: Event) -> None:
+    async def storeEvent(self, event: Event) -> None:
         """
         Store the given event in the test store.
         """
 
 
     @abstractmethod
-    def storeIncident(self, incident: Incident) -> None:
+    async def storeIncident(self, incident: Incident) -> None:
         """
         Store the given incident in the test store.
         """
 
 
     @abstractmethod
-    def storeIncidentReport(self, incidentReport: IncidentReport) -> None:
+    async def storeIncidentReport(
+        self, incidentReport: IncidentReport
+    ) -> None:
         """
         Store the given incident report in the test store.
         """
 
 
     @abstractmethod
-    def storeConcentricStreet(
+    async def storeConcentricStreet(
         self, event: Event, streetID: str, streetName: str,
         ignoreDuplicates: bool = False,
     ) -> None:
@@ -90,7 +103,8 @@ class TestDataStore(IMSDataStore, ABC):
         """
 
 
-    def storeIncidentType(self, name: str, hidden: bool) -> None:
+    @abstractmethod
+    async def storeIncidentType(self, name: str, hidden: bool) -> None:
         """
         Store an incident type with the given name and hidden state in the
         test store.
@@ -103,7 +117,8 @@ class TestDataStore(IMSDataStore, ABC):
         Apply some "close enough" logic to deal with the possibility that
         date-times stored in a database may be slightly off when retrieved.
         """
-        return a == b
+        # Floats stored may be slightly off when round-tripped.
+        return a - b < TimeDelta(microseconds=20)
 
 
     def reportEntriesEqual(
@@ -116,17 +131,47 @@ class TestDataStore(IMSDataStore, ABC):
         Compare two :class:`ReportEntry` objects, using :meth:`dateTimesEqual`
         when comparing date-times.
         """
+        if ignoreAutomatic:
+            reportEntriesA = tuple(
+                e for e in reportEntriesA if not e.automatic
+            )
+
+        if len(reportEntriesA) != len(reportEntriesB):
+            return False
+
+        for entryA, entryB in zip(reportEntriesA, reportEntriesB):
+            if entryA != entryB:
+                if entryA.author != entryB.author:
+                    return False
+                if entryA.automatic != entryB.automatic:
+                    return False
+                if entryA.text != entryB.text:
+                    return False
+                if not self.dateTimesEqual(
+                    entryA.created, entryB.created
+                ):
+                    return False
+
+        return True
 
 
-    def normalizeIncidentAddress(self, incident: Incident) -> Incident:
+    @staticmethod
+    def normalizeIncidentAddress(incident: Incident) -> Incident:
         """
-        Normalize the address in an incident to canonical form, if necessary.
+        Normalize the address in an incident to a canonical form, if necessary.
         """
         return incident
 
 
 
-class DataStoreTests(TestCase):
+class TestDataStoreABC(IMSDataStore, TestDataStoreMixIn):
+    """
+    Test Data Store ABC.
+    """
+
+
+
+class DataStoreTests(AsynchronousTestCase):
     """
     Tests for :class:`IMSDataStore` event access.
     """
@@ -134,7 +179,7 @@ class DataStoreTests(TestCase):
     skip: Optional[str] = "Parent class of real tests"
 
 
-    def store(self) -> TestDataStore:
+    async def store(self) -> TestDataStoreABC:
         """
         Return a data store for use in tests.
         """

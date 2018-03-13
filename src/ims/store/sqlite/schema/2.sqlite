@@ -1,0 +1,180 @@
+create table SCHEMA_INFO (
+    VERSION integer not null
+);
+
+insert into SCHEMA_INFO (VERSION) values (2);
+
+
+create table EVENT (
+    ID   integer not null,
+    NAME text    not null,
+
+    primary key (ID),
+    unique (NAME)
+);
+
+
+create table CONCENTRIC_STREET (
+    EVENT integer not null,
+    ID    text    not null,
+    NAME  text    not null,
+
+    primary key (EVENT, ID)
+);
+
+
+create table INCIDENT_STATE (
+    ID text not null,
+
+    primary key (ID)
+);
+
+insert into INCIDENT_STATE (ID) values ('new');
+insert into INCIDENT_STATE (ID) values ('on_hold');
+insert into INCIDENT_STATE (ID) values ('dispatched');
+insert into INCIDENT_STATE (ID) values ('on_scene');
+insert into INCIDENT_STATE (ID) values ('closed');
+
+
+create table INCIDENT_TYPE (
+    ID     integer not null,
+    NAME   text    not null,
+    HIDDEN numeric not null,
+
+    primary key (ID),
+    unique (NAME)
+);
+
+insert into INCIDENT_TYPE (NAME, HIDDEN) values ('Admin', 0);
+insert into INCIDENT_TYPE (NAME, HIDDEN) values ('Junk', 0);
+
+
+create table REPORT_ENTRY (
+    ID        integer not null,
+    AUTHOR    text    not null,
+    TEXT      text    not null,
+    CREATED   real    not null,
+    GENERATED numeric not null,
+
+    -- FIXME: AUTHOR is an external non-primary key.
+    -- Primary key is DMS Person ID.
+
+    primary key (ID)
+);
+
+
+create table INCIDENT (
+    EVENT    integer not null,
+    NUMBER   integer not null,
+    VERSION  integer not null,
+    CREATED  real    not null,
+    PRIORITY integer not null,
+    STATE    text    not null,  -- FIXME: change to integer
+    SUMMARY  text,
+
+    LOCATION_NAME          text,
+    LOCATION_CONCENTRIC    text,
+    LOCATION_RADIAL_HOUR   integer,
+    LOCATION_RADIAL_MINUTE integer,
+    LOCATION_DESCRIPTION   text,
+
+    foreign key (EVENT) references EVENT(ID),
+    foreign key (STATE) references INCIDENT_STATE(ID),
+
+    foreign key (EVENT, LOCATION_CONCENTRIC)
+    references CONCENTRIC_STREET(EVENT, ID),
+
+    primary key (EVENT, NUMBER)
+);
+
+
+create table INCIDENT__RANGER (
+    EVENT           integer not null,
+    INCIDENT_NUMBER integer not null,
+    RANGER_HANDLE   text    not null,
+
+    foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
+
+    -- FIXME: RANGER_HANDLE is an external non-primary key.
+    -- Primary key is DMS Person ID.
+
+    primary key (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
+);
+
+
+create table INCIDENT__INCIDENT_TYPE (
+    EVENT           integer not null,
+    INCIDENT_NUMBER integer not null,
+    INCIDENT_TYPE   integer not null,
+
+    foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
+    foreign key (INCIDENT_TYPE) references INCIDENT_TYPE(ID),
+
+    primary key (EVENT, INCIDENT_NUMBER, INCIDENT_TYPE)
+);
+
+
+create table INCIDENT__REPORT_ENTRY (
+    EVENT           integer not null,
+    INCIDENT_NUMBER integer not null,
+    REPORT_ENTRY    integer not null,
+
+    foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
+    foreign key (REPORT_ENTRY) references REPORT_ENTRY(ID),
+
+    primary key (EVENT, INCIDENT_NUMBER, REPORT_ENTRY)
+);
+
+
+create table ACCESS_MODE (
+    ID text not null,
+
+    primary key (ID)
+);
+
+insert into ACCESS_MODE (ID) values ('read' );
+insert into ACCESS_MODE (ID) values ('write');
+
+
+create table EVENT_ACCESS (
+    EVENT      integer not null,
+    EXPRESSION text    not null,
+    MODE       text    not null,
+
+    foreign key (EVENT) references EVENT(ID),
+    foreign key (MODE) references ACCESS_MODE(ID),
+
+    primary key (EVENT, EXPRESSION)
+);
+
+
+create table INCIDENT_REPORT (
+    NUMBER   integer not null,
+    CREATED  real    not null,
+    SUMMARY  text,
+
+    primary key (NUMBER)
+);
+
+
+create table INCIDENT_REPORT__REPORT_ENTRY (
+    INCIDENT_REPORT_NUMBER integer not null,
+    REPORT_ENTRY           integer not null,
+
+    foreign key (INCIDENT_REPORT_NUMBER) references INCIDENT_REPORT(NUMBER),
+    foreign key (REPORT_ENTRY) references REPORT_ENTRY(ID),
+
+    primary key (INCIDENT_REPORT_NUMBER, REPORT_ENTRY)
+);
+
+
+create table INCIDENT__INCIDENT_REPORT (
+    EVENT                  integer not null,
+    INCIDENT_NUMBER        integer not null,
+    INCIDENT_REPORT_NUMBER integer not null,
+
+    foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
+    foreign key (INCIDENT_REPORT_NUMBER) references INCIDENT_REPORT(NUMBER),
+
+    primary key (EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER)
+);

@@ -18,14 +18,9 @@
 Street tests for :mod:`ranger-ims-server.store`
 """
 
-from hypothesis import given
-
 from ims.model import Event
-from ims.model.strategies import (
-    concentricStreetIDs, concentricStreetNames, events
-)
 
-from .base import DataStoreTests
+from .base import DataStoreTests, asyncAsDeferred
 
 
 __all__ = ()
@@ -37,44 +32,47 @@ class DataStoreConcentricStreetTests(DataStoreTests):
     Tests for :class:`IMSDataStore` concentric street access.
     """
 
-    @given(events(), concentricStreetIDs(), concentricStreetNames())
-    def test_concentricStreets(
-        self, event: Event, streetID: str, streetName: str
-    ) -> None:
+    @asyncAsDeferred
+    async def test_concentricStreets(self) -> None:
         """
         :meth:`IMSDataStore.createConcentricStreet` returns the concentric
         streets for the given event.
         """
-        store = self.store()
+        for event, streetID, streetName in (
+            (Event("Foo"), "A", "Alpha"),
+            (Event("Foo Bar"), "B", "Bravo"),
+            (Event("XYZZY"), "C", "Charlie"),
+        ):
+            store = await self.store()
 
-        self.successResultOf(store.createEvent(event))
+            await store.createEvent(event)
+            await store.storeConcentricStreet(event, streetID, streetName)
 
-        store.storeConcentricStreet(event, streetID, streetName)
+            concentricStreets = await store.concentricStreets(event)
 
-        concentricStreets = self.successResultOf(
-            store.concentricStreets(event)
-        )
-
-        self.assertEqual(len(concentricStreets), 1)
-        self.assertEqual(concentricStreets.get(streetID), streetName)
+            self.assertEqual(len(concentricStreets), 1)
+            self.assertEqual(concentricStreets.get(streetID), streetName)
 
 
-    @given(events(), concentricStreetIDs(), concentricStreetNames())
-    def test_createConcentricStreet(
-        self, event: Event, id: str, name: str
-    ) -> None:
+    @asyncAsDeferred
+    async def test_createConcentricStreet(self) -> None:
         """
         :meth:`IMSDataStore.createConcentricStreet` creates a concentric
         streets for the given event.
         """
-        store = self.store()
+        for event, streetID, streetName in (
+            (Event("Foo"), "A", "Alpha"),
+            (Event("Foo Bar"), "B", "Bravo"),
+            (Event("XYZZY"), "C", "Charlie"),
+        ):
+            store = await self.store()
 
-        self.successResultOf(store.createEvent(event))
+            await store.createEvent(event)
+            await store.createConcentricStreet(
+                event=event, id=streetID, name=streetName
+            )
 
-        self.successResultOf(
-            store.createConcentricStreet(event=event, id=id, name=name)
-        )
-        stored = self.successResultOf(store.concentricStreets(event=event))
+            stored = await store.concentricStreets(event=event)
 
-        self.assertEqual(len(stored), 1)
-        self.assertEqual(stored.get(id), name)
+            self.assertEqual(len(stored), 1)
+            self.assertEqual(stored.get(streetID), streetName)

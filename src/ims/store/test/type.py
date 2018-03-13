@@ -18,14 +18,9 @@
 Incident type tests for :mod:`ranger-ims-server.store`
 """
 
-from typing import Tuple
+from typing import Tuple, cast
 
-from hypothesis import given
-from hypothesis.strategies import booleans, tuples
-
-from ims.model.strategies import incidentTypesText
-
-from .base import DataStoreTests
+from .base import DataStoreTests, asyncAsDeferred
 from .._exceptions import StorageError
 
 
@@ -41,139 +36,157 @@ class DataStoreIncidentTypeTests(DataStoreTests):
     Tests for :class:`IMSDataStore` incident type access.
     """
 
-    @given(
-        tuples(
-            tuples(incidentTypesText(), booleans()).filter(
-                lambda t: t[0] not in builtInTypes
-            )
-        )
-    )
-    def test_incidentTypes(self, data: Tuple[Tuple[str, bool]]) -> None:
+    @asyncAsDeferred
+    async def test_incidentTypes(self) -> None:
         """
         :meth:`IMSDataStore.incidentTypes` returns visible incident types.
         """
-        store = self.store()
-        for (name, hidden) in data:
-            store.storeIncidentType(name, hidden)
+        for _data in (
+            (),
+            (
+                ("MOOP", False),
+            ),
+            (
+                ("MOOP", True),
+            ),
+            (
+                ("MOOP", False),
+                ("Law Enforcement", False),
+                ("Old Type", True),
+                ("Foo", True),
+            ),
+        ):
+            data = cast(Tuple[Tuple[str, bool]], _data)
 
-        incidentTypes = frozenset(
-            self.successResultOf(store.incidentTypes())
-        )
-        expected = frozenset(
-            (name for (name, hidden) in data if not hidden)
-        ) | builtInTypes
+            store = await self.store()
+            for name, hidden in data:
+                await store.storeIncidentType(name, hidden)
 
-        self.assertEqual(incidentTypes, expected)
+            incidentTypes = frozenset(await store.incidentTypes())
+            expected = frozenset(
+                (name for (name, hidden) in data if not hidden)
+            ) | builtInTypes
+
+            self.assertEqual(incidentTypes, expected)
 
 
-    @given(
-        tuples(
-            tuples(incidentTypesText(), booleans()).filter(
-                lambda t: t[0] not in builtInTypes
-            )
-        )
-    )
-    def test_incidentTypes_includeHidden(
-        self, data: Tuple[Tuple[str, bool]]
-    ) -> None:
+    @asyncAsDeferred
+    async def test_incidentTypes_includeHidden(self) -> None:
         """
         :meth:`IMSDataStore.incidentTypes` if given CL{includeHidden=True}
         returns all incident types.
         """
-        store = self.store()
-        for (name, hidden) in data:
-            store.storeIncidentType(name, hidden)
+        for _data in (
+            (),
+            (
+                ("MOOP", False),
+            ),
+            (
+                ("MOOP", True),
+            ),
+            (
+                ("MOOP", False),
+                ("Law Enforcement", False),
+                ("Old Type", True),
+                ("Foo", True),
+            ),
+        ):
+            data = cast(Tuple[Tuple[str, bool]], _data)
 
-        incidentTypes = frozenset(
-            self.successResultOf(store.incidentTypes(includeHidden=True))
-        )
-        expected = frozenset(
-            (name for (name, hidden) in data)
-        ) | builtInTypes
+            store = await self.store()
+            for name, hidden in data:
+                await store.storeIncidentType(name, hidden)
 
-        self.assertEqual(incidentTypes, expected)
+            incidentTypes = frozenset(
+                await store.incidentTypes(includeHidden=True)
+            )
+            expected = (
+                frozenset((name for (name, hidden) in data)) | builtInTypes
+            )
+
+            self.assertEqual(incidentTypes, expected)
 
 
-    @given(
-        incidentTypesText().filter(lambda t: t not in builtInTypes),
-        booleans(),
-    )
-    def test_createIncidentType(self, incidentType: str, hidden: bool) -> None:
+    @asyncAsDeferred
+    async def test_createIncidentType(self) -> None:
         """
         :meth:`IMSDataStore.createIncidentType` creates the incident type.
         """
-        store = self.store()
-        self.successResultOf(
-            store.createIncidentType(incidentType, hidden=hidden)
-        )
+        for incidentType, hidden in (
+            ("MOOP", False),
+            ("Law Enforcement", False),
+            ("Old Type", True),
+            ("Foo", True),
+        ):
+            store = await self.store()
+            await store.createIncidentType(incidentType, hidden=hidden)
 
-        incidentTypes = frozenset(self.successResultOf(store.incidentTypes()))
-        if hidden:
-            self.assertNotIn(incidentType, incidentTypes)
-        else:
+            incidentTypes = frozenset(await store.incidentTypes())
+            if hidden:
+                self.assertNotIn(incidentType, incidentTypes)
+            else:
+                self.assertIn(incidentType, incidentTypes)
+
+            incidentTypes = frozenset(
+                await store.incidentTypes(includeHidden=True)
+            )
             self.assertIn(incidentType, incidentTypes)
 
-        incidentTypes = frozenset(
-            self.successResultOf(store.incidentTypes(includeHidden=True))
-        )
-        self.assertIn(incidentType, incidentTypes)
 
-
-    def test_createIncidentType_duplicate(self) -> None:
+    @asyncAsDeferred
+    async def test_createIncidentType_duplicate(self) -> None:
         """
         :meth:`IMSDataStore.createIncidentType` raises :exc:`StorageError` when
         given an incident type that already exists in the data store.
         """
         incidentType = "foo"
-        store = self.store()
-        self.successResultOf(store.createIncidentType(incidentType))
-        f = self.failureResultOf(store.createIncidentType(incidentType))
-        self.assertEqual(f.type, StorageError)
+        store = await self.store()
+
+        await store.createIncidentType(incidentType)
+
+        try:
+            await store.createIncidentType(incidentType)
+        except StorageError as e:
+            pass
+        else:
+            self.fail("StorageError not raised")
 
 
-    def test_showIncidentTypes(self) -> None:
+    @asyncAsDeferred
+    async def test_showIncidentTypes(self) -> None:
         """
         :meth:`IMSDataStore.showIncidentTypes` makes the given incident types
         visible.
         """
         incidentType = "foo"
-        store = self.store()
-        self.successResultOf(
-            store.createIncidentType(incidentType, hidden=True)
-        )
-        self.assertNotIn(
-            incidentType, self.successResultOf(store.incidentTypes())
-        )
-        self.successResultOf(store.showIncidentTypes((incidentType,)))
-        self.assertIn(
-            incidentType, self.successResultOf(store.incidentTypes())
-        )
+        store = await self.store()
+
+        await store.createIncidentType(incidentType, hidden=True)
+        self.assertNotIn(incidentType, await store.incidentTypes())
+
+        await store.showIncidentTypes((incidentType,))
+        self.assertIn(incidentType, await store.incidentTypes())
+
         # Again should also work
-        self.successResultOf(store.showIncidentTypes((incidentType,)))
-        self.assertIn(
-            incidentType, self.successResultOf(store.incidentTypes())
-        )
+        await store.showIncidentTypes((incidentType,))
+        self.assertIn(incidentType, await store.incidentTypes())
 
 
-    def test_hideIncidentTypes(self) -> None:
+    @asyncAsDeferred
+    async def test_hideIncidentTypes(self) -> None:
         """
         :meth:`IMSDataStore.showIncidentTypes` makes the given incident types
         hidden.
         """
         incidentType = "foo"
-        store = self.store()
-        self.successResultOf(
-            store.createIncidentType(incidentType, hidden=False)
-        )
-        self.assertIn(
-            incidentType, self.successResultOf(store.incidentTypes())
-        )
-        self.successResultOf(store.hideIncidentTypes((incidentType,)))
-        self.assertNotIn(
-            incidentType, self.successResultOf(store.incidentTypes())
-        )
+        store = await self.store()
+
+        await store.createIncidentType(incidentType, hidden=False)
+        self.assertIn(incidentType, await store.incidentTypes())
+
+        await store.hideIncidentTypes((incidentType,))
+        self.assertNotIn(incidentType, await store.incidentTypes())
+
         # Again should also work
-        self.successResultOf(store.hideIncidentTypes((incidentType,)))
-        self.assertNotIn(
-            incidentType, self.successResultOf(store.incidentTypes())
-        )
+        await store.hideIncidentTypes((incidentType,))
+        self.assertNotIn(incidentType, await store.incidentTypes())

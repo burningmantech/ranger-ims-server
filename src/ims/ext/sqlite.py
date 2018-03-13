@@ -9,7 +9,7 @@ from sqlite3 import (
     IntegrityError, Row as BaseRow, connect as sqliteConnect,
 )
 from typing import (
-    Any, Callable, Iterable, Mapping, Optional, Tuple, TypeVar, Union, cast
+    Any, Callable, Iterable, Mapping, Optional, Tuple, Type, Union, cast
 )
 from typing.io import TextIO
 
@@ -21,6 +21,7 @@ from twisted.logger import Logger
 
 __all__ = (
     "Connection",
+    "Cursor",
     "ParameterValue",
     "Parameters",
     "QueryPlanExplanation",
@@ -33,11 +34,7 @@ __all__ = (
 )
 
 
-TConnection = TypeVar("TConnection", bound="Connection")
-TCursor     = TypeVar("TCursor", bound="Cursor")
-TBaseCursor = TypeVar("TBaseCursor", bound="BaseCursor")
-
-CursorFactory = Callable[..., TCursor]
+CursorFactory = Callable[..., "Cursor"]
 
 ParameterValue = Optional[Union[bytes, str, int, float]]
 Parameters = Mapping[str, ParameterValue]
@@ -64,24 +61,24 @@ class Row(BaseRow):
 
 class Cursor(BaseCursor):
     """
-    Subclass of :class:`sqlite3.Cursor` that adds logging of SQL statements for
+    Subclass of :class:`BaseCursor` that adds logging of SQL statements for
     debugging purposes.
     """
 
     _log = Logger()
 
 
-    def executescript(self, sql_script: str) -> TCursor:
+    def executescript(self, sql_script: str) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.executescript`.
         """
         self._log.debug("EXECUTE SCRIPT:\n{script}", script=sql_script)
-        return cast(TCursor, super().executescript(sql_script))
+        return cast("Cursor", super().executescript(sql_script))
 
 
     def execute(
         self, sql: str, parameters: Optional[Parameters] = None
-    ) -> TCursor:
+    ) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.execute`.
         """
@@ -90,7 +87,7 @@ class Cursor(BaseCursor):
         self._log.debug(
             "EXECUTE: {sql} <- {parameters}", sql=sql, parameters=parameters
         )
-        return cast(TCursor, super().execute(sql, parameters))
+        return cast("Cursor", super().execute(sql, parameters))
 
 
 
@@ -105,11 +102,11 @@ class Connection(BaseConnection):
 
     def cursor(
         self, factory: CursorFactory = cast(CursorFactory, Cursor)
-    ) -> TCursor:
+    ) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.cursor`.
         """
-        return cast(TCursor, super().cursor(factory=factory))
+        return cast("Cursor", super().cursor(factory=factory))
 
 
     def executeAndPrint(
@@ -172,14 +169,15 @@ class Connection(BaseConnection):
             raise IntegrityError("Foreign key constraints violated")
 
 
-    def __enter__(self: TConnection) -> TConnection:
+    def __enter__(self: "Connection") -> "Connection":
         self._log.debug("---------- ENTER ----------")
         super().__enter__()
         return self
 
 
     def __exit__(
-        self, exc_type: type, exc_val: BaseException, exc_tb: Any
+        self, exc_type: Type[BaseException], exc_val: BaseException,
+        exc_tb: Any,
     ) -> bool:
         self._log.debug("---------- EXIT ----------")
         return super().__exit__(exc_type, exc_val, exc_tb)
