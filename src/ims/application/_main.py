@@ -18,6 +18,8 @@
 Incident Management System web service.
 """
 
+from typing import Callable, cast
+
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of
 
@@ -49,6 +51,25 @@ resourcesDirectory = FilePath(ims.element.__file__).parent().child("static")
 
 
 
+def apiApplicationFactory(parent: 'MainApplication') -> APIApplication:
+    return APIApplication(
+        config=parent.config,
+        storeObserver=parent.storeObserver,
+    )
+
+
+def authApplicationFactory(parent: 'MainApplication') -> AuthApplication:
+    return AuthApplication(config=parent.config)
+
+
+def externalApplicationFactory(parent: 'MainApplication') -> ExternalApplication:
+    return ExternalApplication(config=parent.config)
+
+
+def webApplicationFactory(parent: 'MainApplication') -> WebApplication:
+    return WebApplication(config=parent.config)
+
+
 @attrs(frozen=True)
 class MainApplication(object):
     """
@@ -66,38 +87,20 @@ class MainApplication(object):
     )
 
     apiApplication: APIApplication = attrib(
-        default=Factory(
-            lambda self: APIApplication(
-                config=self.config,
-                storeObserver=self.storeObserver,
-            ),
-            takes_self=True,
-        ),
-        init=False,
+        default=Factory(apiApplicationFactory, takes_self=True), init=False
     )
 
     authApplication: AuthApplication = attrib(
-        default=Factory(
-            lambda self: AuthApplication(config=self.config),
-            takes_self=True,
-        ),
-        init=False,
+        default=Factory(authApplicationFactory, takes_self=True), init=False
     )
 
     externalApplication: ExternalApplication = attrib(
-        default=Factory(
-            lambda self: ExternalApplication(config=self.config),
-            takes_self=True,
-        ),
+        default=Factory(externalApplicationFactory, takes_self=True),
         init=False,
     )
 
     webApplication: WebApplication = attrib(
-        default=Factory(
-            lambda self: WebApplication(config=self.config),
-            takes_self=True,
-        ),
-        init=False,
+        default=Factory(webApplicationFactory, takes_self=True), init=False
     )
 
 
