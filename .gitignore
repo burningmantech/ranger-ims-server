@@ -5,7 +5,9 @@
 .DS_Store
 /.hypothesis
 /.mypy_cache
+/.pytest_cache
 /.tox
+/bin/.env.local.sh
 /build/
 /cached/
 /data/
