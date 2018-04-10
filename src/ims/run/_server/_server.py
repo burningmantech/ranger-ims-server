@@ -24,6 +24,7 @@ from typing import Sequence
 
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.application.runner._runner import Runner
+from twisted.internet.defer import ensureDeferred
 from twisted.logger import Logger
 from twisted.python.usage import UsageError
 from twisted.web.server import Session, Site
@@ -71,8 +72,11 @@ class Server(object):
         """
         Called after the reactor has started.
         """
-        config.store.upgradeSchema()
-        config.store.validate()
+        async def start():
+            await config.store.upgradeSchema()
+            await config.store.validate()
+
+        d = ensureDeferred(start())
 
         host = config.HostName
         port = config.Port
@@ -91,6 +95,8 @@ class Server(object):
 
         from twisted.internet import reactor
         reactor.listenTCP(port, factory, interface=host)
+
+        return d
 
 
     @classmethod
