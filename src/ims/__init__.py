@@ -18,4 +18,4 @@
 Incident Management System
 """
 
-__version__ = "1.0"
+__version__ = "18.0.0-dev"
