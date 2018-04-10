@@ -209,7 +209,7 @@ class DataStore(DatabaseStore):
         """
         See :meth:`IMSDataStore.validate`.
         """
-        super().validate()
+        await super().validate()
 
         valid = True
 
