@@ -117,22 +117,45 @@ package_data = dict(
 setup_requirements = []
 
 install_requirements = [
+    # Direct dependencies
     "arrow==0.12.1",
     "attrs==17.4.0",
-    "Automat==0.6.0",
     "cattrs==0.4.0",
-    "constantly==15.1.0",
-    "hyperlink==17.3.1",
-    "incremental==17.5.0",
+    "hyperlink==18.0.0",
     "klein==17.10.0",
     "PyMySQL==0.8.0",
     "pyOpenSSL==17.5.0",
-    "python-dateutil==2.6.1",
     "service_identity==17.0.0",
-    "six==1.11.0",
     "Twisted==17.9.0",
-    "Werkzeug==0.14.1",
     "zope.interface==4.4.3",
+
+    # Indirect dependencies
+    "asn1crypto==0.24.0",
+    "Automat==0.6.0",
+    "certifi==2018.1.18",
+    "cffi==1.11.5",
+    "chardet==3.0.4",
+    "constantly==15.1.0",
+    "coverage==4.4.2",
+    "cryptography==2.2.2",
+    "docker==3.2.1",
+    "docker-pycreds==0.2.2",
+    "hypothesis==3.44.14",
+    "idna==2.6",
+    "incremental==17.5.0",
+    "mock==2.0.0",
+    "pbr==4.0.1",
+    "pyasn1==0.4.2",
+    "pyasn1-modules==0.2.1",
+    "pycparser==2.18",
+    "pyOpenSSL==17.5.0",
+    "python-dateutil==2.7.2",
+    "ranger-ims-server==18.0.0.dev0",
+    "requests==2.18.4",
+    "six==1.11.0",
+    "urllib3==1.22",
+    "websocket-client==0.47.0",
+    "Werkzeug==0.14.1",
 ]
 
 extras_requirements = {}
