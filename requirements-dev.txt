@@ -1,7 +1,0 @@
-# Get master requirements
--r requirements.txt
-
-docker==3.0.1
-hypothesis==3.44.14
-mock==2.0.0
-#pytz
