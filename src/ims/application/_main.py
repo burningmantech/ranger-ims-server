@@ -18,8 +18,6 @@
 Incident Management System web service.
 """
 
-from typing import Callable, cast
-
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of
 
@@ -62,7 +60,9 @@ def authApplicationFactory(parent: 'MainApplication') -> AuthApplication:
     return AuthApplication(config=parent.config)
 
 
-def externalApplicationFactory(parent: 'MainApplication') -> ExternalApplication:
+def externalApplicationFactory(
+    parent: 'MainApplication'
+) -> ExternalApplication:
     return ExternalApplication(config=parent.config)
 
 
