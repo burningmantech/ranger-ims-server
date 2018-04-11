@@ -132,6 +132,17 @@ class MainApplication(object):
         return redirect(request, URLs.app)
 
 
+    @router.route(URLs.prefix, methods=("HEAD", "GET"))
+    @static
+    def prefixEndpoint(self, request: IRequest) -> KleinRenderable:
+        """
+        IMS root page.
+
+        This redirects to the application root page.
+        """
+        return redirect(request, URLs.app)
+
+
     @router.route(URLs.static, branch=True)
     @static
     def staticEndpoint(self, request: IRequest) -> KleinRenderable:
