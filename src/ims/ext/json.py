@@ -23,10 +23,6 @@ __all__ = (
 
 
 
-Optional  # pyflakes
-
-
-
 class Encoder(JSONEncoder):
     """
     JSON encoder that attempts to convert :class:`Mapping` to :class:`dict`,

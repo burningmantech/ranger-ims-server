@@ -6,6 +6,7 @@ from datetime import (
     date as Date, datetime as DateTime,
     timedelta as TimeDelta, timezone as TimeZone,
 )
+from io import BytesIO
 from json import JSONDecodeError
 from textwrap import dedent
 from typing import Callable, cast
@@ -17,7 +18,7 @@ from hypothesis.strategies import (
 
 from ..json import (
     dateAsRFC3339Text, dateTimeAsRFC3339Text,
-    jsonTextFromObject, objectFromJSONText,
+    jsonTextFromObject, objectFromJSONBytesIO, objectFromJSONText,
     rfc3339TextAsDate, rfc3339TextAsDateTime,
 )
 from ..trial import TestCase
@@ -137,11 +138,42 @@ class JSONDecodingTests(TestCase):
         :func:`objectFromJSONText` raises :exc:`JSONDecodeError` then given
         invalid JSON text.
         """
-        jsonText = "{"
+        self.assertRaises(JSONDecodeError, objectFromJSONText, "foo}")
 
-        e = self.assertRaises(JSONDecodeError, objectFromJSONText, jsonText)
 
-        self.assertIn(" in {!r}".format(jsonText), e.msg)
+    def test_objectFromJSONBytesIO(self) -> None:
+        """
+        :func:`objectFromJSONBytesIO` decodes JSON into POPOs.
+        """
+        self.assertEqual(
+            objectFromJSONBytesIO(
+                BytesIO(
+                    """
+                    {
+                      "x": "Hello",
+                      "y": [
+                        "one",
+                        "two",
+                        "three"
+                      ]
+                    }
+                    """.encode("ascii")
+                )
+            ),
+            dict(x="Hello", y=["one", "two", "three"])
+        )
+
+
+    def test_objectFromJSONBytesIO_badInput(self) -> None:
+        """
+        :func:`objectFromJSONBytesIO` raises :exc:`JSONDecodeError` then given
+        invalid JSON text.
+        """
+        self.assertRaises(
+            JSONDecodeError,
+            objectFromJSONBytesIO,
+            BytesIO("foo}".encode("ascii")),
+        )
 
 
 
