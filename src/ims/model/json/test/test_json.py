@@ -62,21 +62,21 @@ class POPOSerializationTests(TestCase):
         self.assertIdentical(serialized, obj)
 
 
-    def _test_equal(self, obj: Any) -> None:
-        """
-        :func:`jsonSerialize` serializes an object of the given type by
-        returning and equal object of the same type.
-        """
-        serialized = jsonSerialize(obj)
+    # def _test_equal(self, obj: Any) -> None:
+    #     """
+    #     :func:`jsonSerialize` serializes an object of the given type by
+    #     returning and equal object of the same type.
+    #     """
+    #     serialized = jsonSerialize(obj)
 
-        if serialized is obj:
-            self.fail(
-                "Serialized object is identical to input. "
-                "Consider using _test_identical instead?"
-            )
+    #     if serialized is obj:
+    #         self.fail(
+    #             "Serialized object is identical to input. "
+    #             "Consider using _test_identical instead?"
+    #         )
 
-        self.assertIdentical(type(serialized), obj.__class__)
-        self.assertEqual(serialized, obj)
+    #     self.assertIdentical(type(serialized), obj.__class__)
+    #     self.assertEqual(serialized, obj)
 
 
     @given(text())
@@ -145,12 +145,6 @@ class POPODeserializationTests(TestCase):
         """
         serialized = jsonSerialize(obj)
         deserialized = jsonDeserialize(serialized, obj.__class__)
-
-        if deserialized is serialized:
-            self.fail(
-                "Deserialized object is identical to input. "
-                "Consider using _test_identical instead?"
-            )
 
         self.assertIdentical(type(deserialized), obj.__class__)
         self.assertEqual(deserialized, obj)
