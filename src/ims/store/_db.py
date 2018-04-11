@@ -359,7 +359,7 @@ class DatabaseStore(IMSDataStore):
         See :meth:`IMSDataStore.events`.
         """
         return (
-            Event(id=row["NAME"])
+            Event(id=cast(str, row["NAME"]))
             for row in await self.runQuery(self.query.events)
         )
 
@@ -586,9 +586,9 @@ class DatabaseStore(IMSDataStore):
             return tuple(
                 ReportEntry(
                     created=self.fromDateTimeValue(row["CREATED"]),
-                    author=row["AUTHOR"],
+                    author=cast(str, row["AUTHOR"]),
                     automatic=bool(row["GENERATED"]),
-                    text=row["TEXT"],
+                    text=cast(str, row["TEXT"]),
                 )
                 for row in txn.fetchall() if row["TEXT"]
             )
@@ -639,9 +639,9 @@ class DatabaseStore(IMSDataStore):
         reportEntries = tuple(
             ReportEntry(
                 created=self.fromDateTimeValue(row["CREATED"]),
-                author=row["AUTHOR"],
+                author=cast(str, row["AUTHOR"]),
                 automatic=bool(row["GENERATED"]),
-                text=row["TEXT"],
+                text=cast(str, row["TEXT"]),
             )
             for row in txn.fetchall() if row["TEXT"]
         )
@@ -658,14 +658,20 @@ class DatabaseStore(IMSDataStore):
             created=self.fromDateTimeValue(row["CREATED"]),
             state=self.fromIncidentStateValue(row["STATE"]),
             priority=self.fromPriorityValue(row["PRIORITY"]),
-            summary=row["SUMMARY"],
+            summary=cast(Optional[str], row["SUMMARY"]),
             location=Location(
-                name=row["LOCATION_NAME"],
+                name=cast(str, row["LOCATION_NAME"]),
                 address=RodGarettAddress(
                     concentric=concentric,
-                    radialHour=row["LOCATION_RADIAL_HOUR"],
-                    radialMinute=row["LOCATION_RADIAL_MINUTE"],
-                    description=row["LOCATION_DESCRIPTION"],
+                    radialHour=cast(
+                        Optional[int], row["LOCATION_RADIAL_HOUR"]
+                    ),
+                    radialMinute=cast(
+                        Optional[int], row["LOCATION_RADIAL_MINUTE"]
+                    ),
+                    description=cast(
+                        Optional[str], row["LOCATION_DESCRIPTION"]
+                    ),
                 ),
             ),
             rangerHandles=rangerHandles,
@@ -1346,9 +1352,9 @@ class DatabaseStore(IMSDataStore):
         reportEntries = tuple(
             ReportEntry(
                 created=self.fromDateTimeValue(row["CREATED"]),
-                author=row["AUTHOR"],
+                author=cast(str, row["AUTHOR"]),
                 automatic=bool(row["GENERATED"]),
-                text=row["TEXT"],
+                text=cast(str, row["TEXT"]),
             )
             for row in txn.fetchall()
         )
@@ -1356,7 +1362,7 @@ class DatabaseStore(IMSDataStore):
         return IncidentReport(
             number=incidentReportNumber,
             created=self.fromDateTimeValue(row["CREATED"]),
-            summary=row["SUMMARY"],
+            summary=cast(Optional[str], row["SUMMARY"]),
             reportEntries=reportEntries,
         )
 

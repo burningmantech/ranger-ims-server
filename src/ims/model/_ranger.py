@@ -101,7 +101,7 @@ class Ranger(ReplaceMixIn):
         validator=instance_of(RangerStatus)
     )
     email: AbstractSet[str] = attrib(
-        validator=instance_of(Iterable), convert=frozenset
+        validator=instance_of(Iterable), converter=frozenset
     )
     onSite: bool = attrib(
         validator=instance_of(bool)

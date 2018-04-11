@@ -29,6 +29,7 @@ from attr.validators import instance_of, optional
 
 from ims.ext.attr import sorted_tuple
 
+from ._entry import ReportEntry
 from ._incident import summaryFromReport
 from ._replace import ReplaceMixIn
 
@@ -54,8 +55,8 @@ class IncidentReport(ReplaceMixIn):
     summary: Optional[str] = attrib(
         validator=optional(instance_of(str))
     )
-    reportEntries: Sequence = attrib(
-        validator=instance_of(Iterable), convert=sorted_tuple
+    reportEntries: Sequence[ReportEntry] = attrib(
+        validator=instance_of(Iterable), converter=sorted_tuple
     )
 
 

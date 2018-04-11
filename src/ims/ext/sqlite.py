@@ -280,7 +280,9 @@ class QueryPlanExplanation(object):
 
     name: str = attrib(validator=instance_of(str))
     query: str = attrib(validator=instance_of(str))
-    lines: Tuple[Line] = attrib(validator=instance_of(tuple))
+    lines: Tuple[Line] = cast(
+        Tuple[Line], attrib(validator=instance_of(tuple))
+    )
 
 
     def __str__(self) -> str:

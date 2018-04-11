@@ -72,13 +72,13 @@ class Incident(ReplaceMixIn):
     )
 
     rangerHandles: AbstractSet[str] = attrib(
-        validator=instance_of(IterableABC), convert=frozenset
+        validator=instance_of(IterableABC), converter=frozenset
     )
     incidentTypes: AbstractSet[str] = attrib(
-        validator=instance_of(IterableABC), convert=frozenset
+        validator=instance_of(IterableABC), converter=frozenset
     )
     reportEntries: Sequence[ReportEntry] = attrib(
-        validator=instance_of(IterableABC), convert=sorted_tuple
+        validator=instance_of(IterableABC), converter=sorted_tuple
     )
 
 

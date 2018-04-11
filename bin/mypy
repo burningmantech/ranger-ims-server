@@ -31,17 +31,21 @@ mypy "$@"                                                                       
         -e ": error: No library stub file for "                                                       \
         -e ': error: "attrib" does not return a value'                                                \
         -e ': error: "Callable\[\[[^\]\+\], None\]" has no attribute "todo"'                          \
+        -e ': error: .* has incompatible type .*; expected "Iterable\[T\]"'                           \
+        -e ': error: <nothing> has no attribute "__iter__"'                                           \
         -e ': error: Argument 1 to "Factory" has incompatible type "Callable\[\[[^\]\+\], [^\]\+\]"'  \
+        -e ': error: Argument 1 to "instance_of" has incompatible type "Type\[.\+\]"'                 \
         -e ': error: Too many arguments for '                                                         \
         -e ': error: Unexpected keyword argument '                                                    \
+        -e ': error: Unsupported converter function, only named functions are currently supported'    \
         -e ': error: Unsupported left operand type for '                                              \
         -e ': note: ".*" defined here'                                                                \
-        -e ': note: (Perhaps setting MYPYPATH '                                                       \
-        -e ': note: (Stub files are from '                                                            \
+        -e ': note: (Perhaps setting MYPYPATH .* would help)'                                         \
+        -e ': note: (Stub files are from .*)'                                                         \
         -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: .* incompatible with supertype ".\+"' \
-        -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: Argument 2 to "connect" has incompatible type "Type\[Connection\]"' \
+        -e '^src/ims/ext/sqlite.py:[0-9:]\+: error: Argument "factory" to "connect" has incompatible type "Type\[Connection\]"; expected "Optional\[Connection\]"' \
         -e '^src/ims/ext/enum.py:[0-9:]\+: error: Cannot assign to a method' \
-        -e "^src/ims/model/json/_ranger.py:[0-9:]\+: error: Incompatible types in assignment "               \
+        -e '^src/ims/model/json/_ranger.py:[0-9:]\+: error: Incompatible types in assignment '               \
         > "${tmp}" || true;
 
 sort < "${tmp}";

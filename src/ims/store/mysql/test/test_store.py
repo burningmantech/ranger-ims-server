@@ -59,7 +59,7 @@ else:
     def mysqlServiceFactory() -> MySQLService:
         env = environ.get
         return ExternalMySQLService(
-            host=env("IMS_TEST_MYSQL_HOST"),
+            host=cast(str, env("IMS_TEST_MYSQL_HOST")),
             port=int(env("IMS_TEST_MYSQL_PORT", "3306")),
             user=env("IMS_TEST_MYSQL_USERNAME", "ims"),
             password=env("IMS_TEST_MYSQL_PASSWORD", ""),

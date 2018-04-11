@@ -46,5 +46,5 @@ class Location(Address, ReplaceMixIn):
     name: Optional[str] = attrib(validator=optional(instance_of(str)))
     address: Address = attrib(
         validator=instance_of(Address),
-        convert=convertAddress,
+        converter=convertAddress,
     )

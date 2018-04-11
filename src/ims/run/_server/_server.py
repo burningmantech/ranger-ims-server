@@ -72,7 +72,7 @@ class Server(object):
         """
         Called after the reactor has started.
         """
-        async def start():
+        async def start() -> None:
             await config.store.upgradeSchema()
             await config.store.validate()
 

@@ -105,7 +105,7 @@ class DataStore(DatabaseStore):
 
 
     hostName: str = attrib(validator=instance_of(str))
-    hostPort: str = attrib(validator=instance_of(int))
+    hostPort: int = attrib(validator=instance_of(int))
     database: str = attrib(validator=instance_of(str))
     username: str = attrib(validator=instance_of(str))
     password: str = attrib(validator=instance_of(str))

@@ -186,8 +186,8 @@ def reportEntries(
 
     return ReportEntry(
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
-        author=author,
-        automatic=automatic,
+        author=cast(str, author),
+        automatic=cast(bool, automatic),
         text=draw(text(min_size=1)),
     )
 
@@ -233,7 +233,7 @@ def incidents(
         event = draw(events())
 
     return Incident(
-        event=event,
+        event=cast(Event, event),
         number=number,
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
         state=draw(incidentStates()),
