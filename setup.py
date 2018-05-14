@@ -119,15 +119,15 @@ setup_requirements = []
 install_requirements = [
     # Direct dependencies
     "arrow==0.12.1",
-    "attrs==17.4.0",
+    "attrs==18.1.0",
     "cattrs==0.4.0",
     "hyperlink==18.0.0",
     "klein==17.10.0",
-    "PyMySQL==0.8.0",
+    "PyMySQL==0.8.1",
     "pyOpenSSL==17.5.0",
     "service_identity==17.0.0",
-    "Twisted==17.9.0",
-    "zope.interface==4.4.3",
+    "Twisted==18.4.0",
+    "zope.interface==4.5.0",
 
     # Indirect dependencies
     "asn1crypto==0.24.0",
@@ -140,8 +140,7 @@ install_requirements = [
     "pyasn1==0.4.2",
     "pyasn1-modules==0.2.1",
     "pycparser==2.18",
-    "python-dateutil==2.7.2",
-    "ranger-ims-server==18.0.0.dev0",
+    "python-dateutil==2.7.3",
     "six==1.11.0",
     "Werkzeug==0.14.1",
 ]
