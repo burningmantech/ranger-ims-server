@@ -907,11 +907,15 @@ class DatabaseStore(IMSDataStore):
         directImport: bool,
     ) -> Incident:
         if directImport:
-            assert not author
-            assert incident.number > 0
+            if author is not None:
+                raise ValueError("Incident author may not be specified.")
+            if incident.number <= 0:
+                raise ValueError("Incident number must be greater than zero.")
         else:
-            assert author
-            assert incident.number == 0
+            if not author:
+                raise ValueError("Incident author is required.")
+            if incident.number != 0:
+                raise ValueError("Incident number must be zero.")
 
             for reportEntry in incident.reportEntries:
                 assert not reportEntry.automatic
@@ -1428,11 +1432,19 @@ class DatabaseStore(IMSDataStore):
         directImport: bool,
     ) -> IncidentReport:
         if directImport:
-            assert author is None
-            assert incidentReport.number > 0
+            if author is not None:
+                raise ValueError(
+                    "Incident report author may not be specified."
+                )
+            if incidentReport.number <= 0:
+                raise ValueError(
+                    "Incident report number must be greater than zero."
+                )
         else:
-            assert author
-            assert incidentReport.number == 0
+            if not author:
+                raise ValueError("Incident report author is required.")
+            if incidentReport.number != 0:
+                raise ValueError("Incident report number must be zero.")
 
             for reportEntry in incidentReport.reportEntries:
                 assert not reportEntry.automatic
