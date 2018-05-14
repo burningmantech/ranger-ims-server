@@ -29,7 +29,6 @@ mypy "$@"                                                                       
         -e ": error: Cannot find module named 'twisted'"                                              \
         -e ": error: Cannot find module named 'typing.io'"                                            \
         -e ": error: No library stub file for "                                                       \
-        -e ': error: "attrib" does not return a value'                                                \
         -e ': error: "Callable\[\[[^\]\+\], None\]" has no attribute "todo"'                          \
         -e ': error: .* has incompatible type .*; expected "Iterable\[T\]"'                           \
         -e ': error: <nothing> has no attribute "__iter__"'                                           \
@@ -43,9 +42,8 @@ mypy "$@"                                                                       
         -e ': note: (Perhaps setting MYPYPATH .* would help)'                                         \
         -e ': note: (Stub files are from .*)'                                                         \
         -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: .* incompatible with supertype ".\+"' \
-        -e '^src/ims/ext/sqlite.py:[0-9:]\+: error: Argument "factory" to "connect" has incompatible type "Type\[Connection\]"; expected "Optional\[Connection\]"' \
         -e '^src/ims/ext/enum.py:[0-9:]\+: error: Cannot assign to a method' \
-        -e '^src/ims/model/json/_ranger.py:[0-9:]\+: error: Incompatible types in assignment '               \
+        -e '^src/ims/model/json/_ranger.py:[0-9:]\+: error: Incompatible types in assignment ' \
         > "${tmp}" || true;
 
 sort < "${tmp}";
