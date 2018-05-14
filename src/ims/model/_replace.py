@@ -20,8 +20,7 @@ Replace mix-in
 
 from typing import Any, TypeVar
 
-from attr import asdict
-
+from attr import evolve
 
 __all__ = ()
 
@@ -40,6 +39,4 @@ class ReplaceMixIn():
         Return a new address with the same values, except those specified by
         keyword arguments.
         """
-        newArgs = asdict(self, recurse=False)
-        newArgs.update(kwargs)
-        return self.__class__(**newArgs)
+        return evolve(self, **kwargs)
