@@ -118,7 +118,7 @@ class ServerOptions(Options):
 
     opt_log_level.__doc__ = dedent(cast(str, opt_log_level.__doc__)).format(
         options=", ".join(
-            '"{}"'.format(l.name) for l in LogLevel.iterconstants()
+            f'"{l.name}"' for l in LogLevel.iterconstants()
         ),
         default=defaultLogLevel.name,
     )

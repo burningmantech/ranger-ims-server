@@ -21,12 +21,16 @@ T = TypeVar("T")
 Validator = Callable[[Any, Attribute, Any], None]
 
 
+##
+# Validators
+##
+
 def required(instance: Any, attribute: Attribute, value: Any) -> None:
     """
     Validate that the given value is not :obj:`None`.
     """
     if value is None:
-        raise ValueError("{!r} may not be None".format(attribute.name))
+        raise ValueError(f"{attribute.name!r} may not be None")
 
 
 def true(validator: Validator) -> Validator:
@@ -36,11 +40,15 @@ def true(validator: Validator) -> Validator:
     def true(instance: Any, attribute: Attribute, value: Any) -> None:
         if not value:
             raise ValueError(
-                "{!r} must be true, not {!r}".format(attribute.name, value)
+                f"{attribute.name!r} must be true, not {value!r}"
             )
         validator(instance, attribute, value)
     return true
 
+
+##
+# Converters
+##
 
 def sorted_tuple(iterable: Iterable[T]) -> Tuple[T, ...]:
     """

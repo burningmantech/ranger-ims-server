@@ -100,7 +100,7 @@ else:
     _staticETag = uuid4().hex
     _maxAge = 0
 
-_cacheControl = "max-age={}".format(_maxAge)
+_cacheControl = f"max-age={_maxAge}"
 
 
 def static(f: KleinRouteMethod) -> KleinRouteMethod:

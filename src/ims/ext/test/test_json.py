@@ -32,7 +32,7 @@ __all__ = ()
 def timezones(draw: Callable) -> TimeZone:
     offset = draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
     timeDelta = TimeDelta(minutes=offset)
-    timeZone = TimeZone(offset=timeDelta, name="{}s".format(offset))
+    timeZone = TimeZone(offset=timeDelta, name=f"{offset}s")
     return timeZone
 
 
@@ -192,7 +192,7 @@ class DateTimeTests(TestCase):
         :return: An RFC 3339 formatted date string corresponding to
         :obj:`date`.
         """
-        return "{:04d}-{:02d}-{:02d}".format(date.year, date.month, date.day)
+        return f"{date.year:04d}-{date.month:02d}-{date.day:02d}"
 
 
     @staticmethod
@@ -217,7 +217,7 @@ class DateTimeTests(TestCase):
         if dateTime.microsecond == 0:
             microsecond = ""
         else:
-            microsecond = ".{:06d}".format(dateTime.microsecond)
+            microsecond = f".{dateTime.microsecond:06d}"
 
         tzHour = int(utcOffset / 60 / 60)
         tzMinute = int(utcOffset / 60) % 60
@@ -229,13 +229,11 @@ class DateTimeTests(TestCase):
             tzSign = "+"
 
         return (
-            "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}{}{}{:02d}:{:02d}"
-            .format(
-                dateTime.year, dateTime.month, dateTime.day,
-                dateTime.hour, dateTime.minute, dateTime.second,
-                microsecond,
-                tzSign, tzHour, tzMinute,
-            )
+            f"{dateTime.year:04d}-{dateTime.month:02d}-{dateTime.day:02d}"
+            "T"
+            f"{dateTime.hour:02d}:{dateTime.minute:02d}:{dateTime.second:02d}"
+            f"{microsecond}"
+            f"{tzSign}{tzHour:02d}:{tzMinute:02d}"
         )
 
 

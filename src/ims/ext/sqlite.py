@@ -149,7 +149,7 @@ class Connection(BaseConnection):
             self.execute("pragma foreign_key_check")
         ):
             row = self.execute(
-                "select * from {} where ROWID=:rowid".format(referent),
+                f"select * from {referent} where ROWID=:rowid",
                 dict(rowid=rowid)
             ).fetchone()
             self._log.critical(
@@ -222,7 +222,7 @@ def openDB(path: Path, schema: Optional[str] = None) -> Connection:
     if schema is not None:
         return createDB(path, schema)
 
-    raise SQLiteError("Database does not exist: {}".format(path))
+    raise SQLiteError(f"Database does not exist: {path}")
 
 
 def printSchema(db: Connection, out: TextIO) -> None:
@@ -234,18 +234,18 @@ def printSchema(db: Connection, out: TextIO) -> None:
         select NAME from SQLITE_MASTER where TYPE='table' order by NAME;
         """
     ):
-        print("{}:".format(tableName), file=out)
+        print(f"{tableName}:", file=out)
         for (
             rowNumber, colName, colType, colNotNull, colDefault, colPK
-        ) in db.execute("pragma table_info('{}');".format(tableName)):
+        ) in db.execute(f"pragma table_info('{tableName}');"):
             print(
                 "  {n}: {name}({type}){null}{default}{pk}".format(
                     n=rowNumber,
                     name=colName,
                     type=colType,
                     null=" not null" if colNotNull else "",
-                    default=" [{}]".format(colDefault) if colDefault else "",
-                    pk=" *{}".format(colPK) if colPK else "",
+                    default=f" [{colDefault}]" if colDefault else "",
+                    pk=f" *{colPK}" if colPK else "",
                 ),
                 file=out,
             )
@@ -273,9 +273,7 @@ class QueryPlanExplanation(object):
         details: str = attrib(validator=instance_of(str))
 
         def __str__(self) -> str:
-            return "[{},{}] {}".format(
-                self.nestingOrder, self.selectFrom, self.details
-            )
+            return f"[{self.nestingOrder},{self.selectFrom}] {self.details}"
 
 
     name: str = attrib(validator=instance_of(str))
@@ -286,16 +284,16 @@ class QueryPlanExplanation(object):
 
 
     def __str__(self) -> str:
-        text = ["{}:".format(self.name), "", "  -- query --", ""]
+        text = [f"{self.name}:", "", "  -- query --", ""]
 
         text.extend(
-            "    {}".format(l)
-            for l in self.query.strip().split("\n")
+            f"    {line}"
+            for line in self.query.strip().split("\n")
         )
 
         if self.lines:
             text.extend(("", "  -- query plan --", ""))
-            text.extend("    {}".format(line) for line in self.lines)
+            text.extend(f"    {line}" for line in self.lines)
 
         return "\n".join(text)
 
@@ -317,12 +315,12 @@ def explainQueryPlans(
                     details=details,
                 )
                 for n, nestingOrder, selectFrom, details in (
-                    db.execute("explain query plan {}".format(query), params)
+                    db.execute(f"explain query plan {query}", params)
                 )
             )
         except SQLiteError as e:
             lines = (QueryPlanExplanation.Line(
-                nestingOrder=None, selectFrom=None, details="{}".format(e),
+                nestingOrder=None, selectFrom=None, details=f"{e}",
             ),)
 
         yield QueryPlanExplanation(name=name, query=query, lines=lines)

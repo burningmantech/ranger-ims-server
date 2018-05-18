@@ -207,7 +207,8 @@ class DockerizedMySQLService(MySQLService):
 
     @property
     def _containerName(self) -> str:
-        return "MySQLService-{}".format(id(self))
+        cid = id(self)
+        return f"MySQLService-{cid}"
 
 
     @property

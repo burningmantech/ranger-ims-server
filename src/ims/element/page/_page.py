@@ -70,10 +70,10 @@ class Page(Element):
                 add("moment")
 
             try:
-                result[name] = getattr(urls, "{}JS".format(name))
+                result[name] = getattr(urls, f"{name}JS")
             except AttributeError:
                 raise ValueError(
-                    "Invalid import {!r} in spec {!r}".format(name, spec)
+                    f"Invalid import {name!r} in spec {spec!r}"
                 )
 
             if name == "dataTables":

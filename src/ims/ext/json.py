@@ -78,7 +78,7 @@ def objectFromJSONText(text: str) -> Any:
         return loads(text)
     except JSONDecodeError as e:
         raise JSONDecodeError(
-            msg="{} in {!r}".format(e.msg, text),
+            msg=f"{e.msg} in {text!r}",
             doc=e.doc,
             pos=e.pos,
         )
