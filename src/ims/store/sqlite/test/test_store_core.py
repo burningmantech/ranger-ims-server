@@ -26,7 +26,7 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Optional
 
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis.strategies import integers
 
 from ims.ext.sqlite import Connection, SQLiteError, createDB, printSchema
@@ -285,6 +285,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
 
     @given(integers(max_value=-1))
+    @settings(max_examples=10)
     def test_upgradeSchema_fromVersionTooLow(self, version: int) -> None:
         """
         :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
@@ -308,6 +309,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
 
     @given(integers(min_value=DataStore.schemaVersion + 1))
+    @settings(max_examples=10)
     def test_upgradeSchema_fromVersionTooHigh(self, version: int) -> None:
         """
         :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
