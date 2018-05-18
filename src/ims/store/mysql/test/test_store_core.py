@@ -18,41 +18,45 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from typing import List, Optional, cast
+from os import environ
+from typing import cast
 
 from twisted.internet.defer import ensureDeferred
 
+from ims.ext.trial import AsynchronousTestCase
+
 from .base import TestDataStore
 from .service import MySQLService
-from .test_store_core import mysqlServiceFactory
-from ...test.base import (
-    DataStoreTests as SuperDataStoreTests, TestDataStoreABC
-)
-from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
-from ...test.incident import (
-    DataStoreIncidentTests as SuperDataStoreIncidentTests
-)
-from ...test.report import (
-    DataStoreIncidentReportTests as SuperDataStoreIncidentReportTests
-)
-from ...test.street import (
-    DataStoreConcentricStreetTests as SuperDataStoreConcentricStreetTests
-)
-from ...test.type import (
-    DataStoreIncidentTypeTests as SuperDataStoreIncidentTypeTests
-)
+from ...test.base import asyncAsDeferred
 
 
 __all__ = ()
 
 
+if environ.get("IMS_TEST_MYSQL_HOST", None) is None:
+    from .service import DockerizedMySQLService
 
-class DataStoreTests(SuperDataStoreTests):
-    """
-    Parent test class.
-    """
+    def mysqlServiceFactory() -> MySQLService:
+        return DockerizedMySQLService()
+else:
+    from .service import ExternalMySQLService
 
-    skip: Optional[str] = None
+    def mysqlServiceFactory() -> MySQLService:
+        env = environ.get
+        return ExternalMySQLService(
+            host=cast(str, env("IMS_TEST_MYSQL_HOST")),
+            port=int(env("IMS_TEST_MYSQL_PORT", "3306")),
+            user=env("IMS_TEST_MYSQL_USERNAME", "ims"),
+            password=env("IMS_TEST_MYSQL_PASSWORD", ""),
+            rootPassword=env("IMS_TEST_MYSQL_ROOT_PASSWORD", ""),
+        )
+
+
+
+class DataStoreCoreTests(AsynchronousTestCase):
+    """
+    Tests for :class:`DataStore` base functionality.
+    """
 
     mysqlService: MySQLService = mysqlServiceFactory()
 
@@ -76,7 +80,7 @@ class DataStoreTests(SuperDataStoreTests):
         return ensureDeferred(tearDown())
 
 
-    async def store(self) -> TestDataStoreABC:
+    async def store(self) -> TestDataStore:
         service = self.mysqlService
 
         assert service.host is not None
@@ -92,49 +96,18 @@ class DataStoreTests(SuperDataStoreTests):
             username=service.user,
             password=service.password,
         )
-        await store.upgradeSchema()
 
         self.stores.append(store)
 
-        return cast(TestDataStoreABC, store)
+        return store
 
 
+    @asyncAsDeferred
+    async def test_loadSchema(self) -> None:
+        """
+        :meth:`DataStore.loadSchema` caches and returns the schema.
+        """
+        store = await self.store()
+        schema = store.loadSchema()
 
-class DataStoreEventTests(DataStoreTests, SuperDataStoreEventTests):
-    """
-    Tests for :class:`DataStore` event access.
-    """
-
-
-
-class DataStoreIncidentTests(DataStoreTests, SuperDataStoreIncidentTests):
-    """
-    Tests for :class:`DataStore` incident access.
-    """
-
-
-
-class DataStoreIncidentReportTests(
-    DataStoreTests, SuperDataStoreIncidentReportTests
-):
-    """
-    Tests for :class:`DataStore` incident report access.
-    """
-
-
-
-class DataStoreConcentricStreetTests(
-    DataStoreTests, SuperDataStoreConcentricStreetTests
-):
-    """
-    Tests for :class:`DataStore` concentric street access.
-    """
-
-
-
-class DataStoreIncidentTypeTests(
-    DataStoreTests, SuperDataStoreIncidentTypeTests
-):
-    """
-    Tests for :class:`DataStore` incident type access.
-    """
+        self.assertStartsWith(schema, "create table SCHEMA_INFO (")
