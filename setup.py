@@ -124,7 +124,7 @@ install_requirements = [
     "hyperlink==18.0.0",
     "klein==17.10.0",
     "PyMySQL==0.8.1",
-    "pyOpenSSL==17.5.0",
+    "pyOpenSSL==18.0.0",
     "service_identity==17.0.0",
     "Twisted==18.4.0",
     "zope.interface==4.5.0",
