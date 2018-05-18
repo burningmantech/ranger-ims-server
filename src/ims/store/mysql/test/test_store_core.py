@@ -19,7 +19,7 @@ Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
 from os import environ
-from typing import cast
+from typing import List, cast
 
 from twisted.internet.defer import ensureDeferred
 
