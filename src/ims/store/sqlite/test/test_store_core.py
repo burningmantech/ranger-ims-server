@@ -70,7 +70,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
             schemaInfo,
             dedent(
                 """
-                Version: 2
+                Version: 3
                 ACCESS_MODE:
                   0: ID(text) not null *1
                 CONCENTRIC_STREET:
@@ -90,7 +90,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   2: VERSION(integer) not null
                   3: CREATED(real) not null
                   4: PRIORITY(integer) not null
-                  5: STATE(text) not null
+                  5: STATE(integer) not null
                   6: SUMMARY(text)
                   7: LOCATION_NAME(text)
                   8: LOCATION_CONCENTRIC(text)
