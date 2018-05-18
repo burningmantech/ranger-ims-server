@@ -234,8 +234,8 @@ queries = Queries(
     createReportEntry=Query(
         "create report entry",
         """
-        insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
-        values (:author, :text, :created, :generated)
+        insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED, STRICKEN)
+        values (:author, :text, :created, :generated, 0)
         """
     ),
     attachReportEntryToIncident=Query(

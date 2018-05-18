@@ -132,6 +132,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   2: TEXT(text) not null
                   3: CREATED(real) not null
                   4: GENERATED(numeric) not null
+                  5: STRICKEN(numeric) not null
                 SCHEMA_INFO:
                   0: VERSION(integer) not null
                 """[1:]

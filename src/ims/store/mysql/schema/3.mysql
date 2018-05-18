@@ -1,61 +1,48 @@
 create table SCHEMA_INFO (
-    VERSION integer not null
+    VERSION smallint not null
 );
 
 insert into SCHEMA_INFO (VERSION) values (3);
 
 
 create table EVENT (
-    ID   integer not null,
-    NAME text    not null,
+    ID   integer     not null auto_increment,
+    NAME varchar(64) not null,
 
     primary key (ID),
-    unique (NAME)
+    unique key (NAME)
 );
 
 
 create table CONCENTRIC_STREET (
-    EVENT integer not null,
-    ID    text    not null,
-    NAME  text    not null,
+    EVENT integer     not null,
+    ID    varchar(16) not null,
+    NAME  varchar(64) not null,
 
     primary key (EVENT, ID)
 );
 
 
-create table INCIDENT_STATE (
-    ID text not null,
-
-    primary key (ID)
-);
-
-insert into INCIDENT_STATE (ID) values ('new');
-insert into INCIDENT_STATE (ID) values ('on_hold');
-insert into INCIDENT_STATE (ID) values ('dispatched');
-insert into INCIDENT_STATE (ID) values ('on_scene');
-insert into INCIDENT_STATE (ID) values ('closed');
-
-
 create table INCIDENT_TYPE (
-    ID     integer not null,
-    NAME   text    not null,
-    HIDDEN numeric not null,
+    ID     integer     not null auto_increment,
+    NAME   varchar(64) not null,
+    HIDDEN boolean     not null,
 
     primary key (ID),
-    unique (NAME)
+    unique key (NAME)
 );
 
 insert into INCIDENT_TYPE (NAME, HIDDEN) values ('Admin', 0);
-insert into INCIDENT_TYPE (NAME, HIDDEN) values ('Junk', 0);
+insert into INCIDENT_TYPE (NAME, HIDDEN) values ('Junk' , 0);
 
 
 create table REPORT_ENTRY (
-    ID        integer not null,
-    AUTHOR    text    not null,
-    TEXT      text    not null,
-    CREATED   real    not null,
-    GENERATED numeric not null,
-    STRICKEN  numeric not null,
+    ID        integer        not null auto_increment,
+    AUTHOR    varchar(64)    not null,
+    TEXT      varchar(16384) not null,
+    CREATED   double         not null,
+    GENERATED boolean        not null,
+    STRICKEN  boolean        not null,
 
     -- FIXME: AUTHOR is an external non-primary key.
     -- Primary key is DMS Person ID.
@@ -65,22 +52,25 @@ create table REPORT_ENTRY (
 
 
 create table INCIDENT (
-    EVENT    integer not null,
-    NUMBER   integer not null,
-    VERSION  integer not null,
-    CREATED  real    not null,
-    PRIORITY integer not null,
-    STATE    integer not null,
-    SUMMARY  text,
+    EVENT    integer  not null,
+    NUMBER   integer  not null,
+    VERSION  integer  not null,
+    CREATED  double   not null,
+    PRIORITY tinyint  not null,
 
-    LOCATION_NAME          text,
-    LOCATION_CONCENTRIC    text,
-    LOCATION_RADIAL_HOUR   integer,
-    LOCATION_RADIAL_MINUTE integer,
-    LOCATION_DESCRIPTION   text,
+    STATE enum(
+        'new', 'on_hold', 'dispatched', 'on_scene', 'closed'
+    ) not null,
+
+    SUMMARY varchar(1024),
+
+    LOCATION_NAME          varchar(64),
+    LOCATION_CONCENTRIC    varchar(64),
+    LOCATION_RADIAL_HOUR   tinyint,
+    LOCATION_RADIAL_MINUTE tinyint,
+    LOCATION_DESCRIPTION   varchar(1024),
 
     foreign key (EVENT) references EVENT(ID),
-    foreign key (STATE) references INCIDENT_STATE(ID),
 
     foreign key (EVENT, LOCATION_CONCENTRIC)
     references CONCENTRIC_STREET(EVENT, ID),
@@ -90,9 +80,9 @@ create table INCIDENT (
 
 
 create table INCIDENT__RANGER (
-    EVENT           integer not null,
-    INCIDENT_NUMBER integer not null,
-    RANGER_HANDLE   text    not null,
+    EVENT           integer     not null,
+    INCIDENT_NUMBER integer     not null,
+    RANGER_HANDLE   varchar(64) not null,
 
     foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
 
@@ -127,32 +117,23 @@ create table INCIDENT__REPORT_ENTRY (
 );
 
 
-create table ACCESS_MODE (
-    ID text not null,
-
-    primary key (ID)
-);
-
-insert into ACCESS_MODE (ID) values ('read' );
-insert into ACCESS_MODE (ID) values ('write');
-
-
 create table EVENT_ACCESS (
-    EVENT      integer not null,
-    EXPRESSION text    not null,
-    MODE       text    not null,
+    EVENT      integer      not null,
+    EXPRESSION varchar(128) not null,
+
+    MODE enum ('read', 'write') not null,
 
     foreign key (EVENT) references EVENT(ID),
-    foreign key (MODE) references ACCESS_MODE(ID),
 
     primary key (EVENT, EXPRESSION)
 );
 
 
 create table INCIDENT_REPORT (
-    NUMBER   integer not null,
-    CREATED  real    not null,
-    SUMMARY  text,
+    NUMBER   integer  not null,
+    CREATED  double   not null,
+
+    SUMMARY varchar(1024),
 
     primary key (NUMBER)
 );

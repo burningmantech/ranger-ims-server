@@ -241,8 +241,8 @@ queries = Queries(
     createReportEntry=Query(
         "create report entry",
         """
-        insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED)
-        values (%(author)s, %(text)s, %(created)s, %(generated)s)
+        insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED, STRICKEN)
+        values (%(author)s, %(text)s, %(created)s, %(generated)s, 0)
         """
     ),
     attachReportEntryToIncident=Query(
