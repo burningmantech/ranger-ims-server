@@ -18,7 +18,9 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
+from io import StringIO
 from os import environ
+from textwrap import dedent
 from typing import List, cast
 
 from twisted.internet.defer import ensureDeferred
@@ -111,3 +113,28 @@ class DataStoreCoreTests(AsynchronousTestCase):
         schema = store.loadSchema()
 
         self.assertStartsWith(schema, "create table SCHEMA_INFO (")
+
+
+    @asyncAsDeferred
+    async def test_printSchema(self) -> None:
+        """
+        :meth:`DataStore.printSchema` prints the expected schema.
+        """
+        store = await self.store()
+        await store.upgradeSchema()
+
+        out = StringIO()
+        await store.printSchema(out)
+        schemaInfo = out.getvalue()
+
+        self.maxDiff = None
+        self.assertEqual(
+            schemaInfo,
+            dedent(
+                """
+                Version: 3
+                ACCESS_MODE:
+                  0: ID(text) not null *1
+                """[1:]
+            )
+        )

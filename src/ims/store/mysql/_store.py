@@ -19,7 +19,9 @@ Incident Management System SQL data store.
 """
 
 from pathlib import Path
+from sys import stdout
 from typing import Any, Callable, Optional, cast
+from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of, optional
@@ -214,6 +216,32 @@ class DataStore(DatabaseStore):
                 description=self.query.schemaVersion.description, error=e,
             )
             raise StorageError(e)
+
+
+    async def printSchema(self, out: TextIO = stdout) -> None:
+        """
+        Print schema.
+        """
+        # See https://dev.mysql.com/doc/refman/5.7/en/tables-table.html
+
+        version = await self.dbSchemaVersion()
+        print(f"Version: {version}", file=out)
+
+        tablesQuery = Query(
+            "look up database tables",
+            """
+            select TABLE_NAME, TABLE_SCHEMA from INFORMATION_SCHEMA.TABLES
+            """
+        )
+
+        for row in await self.runQuery(tablesQuery):
+            tableName = row["TABLE_NAME"]
+            print(f"{tableName}:", file=out)
+
+            tableSchema = row["TABLE_SCHEMA"]
+            print("  schema ->", tableSchema, file=out)
+
+        print("*&@^#*$&^")
 
 
     async def applySchema(self, sql: str) -> None:
