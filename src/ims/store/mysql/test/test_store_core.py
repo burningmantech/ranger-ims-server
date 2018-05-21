@@ -133,8 +133,66 @@ class DataStoreCoreTests(AsynchronousTestCase):
             dedent(
                 """
                 Version: 3
-                ACCESS_MODE:
-                  0: ID(text) not null *1
+                CONCENTRIC_STREET:
+                  1: EVENT(int) not null
+                  2: ID(varchar(16)) not null
+                  3: NAME(varchar(64)) not null
+                EVENT:
+                  1: ID(int) not null
+                  2: NAME(varchar(64)) not null
+                EVENT_ACCESS:
+                  1: EVENT(int) not null
+                  2: EXPRESSION(varchar(128)) not null
+                  3: MODE(enum(5)) not null
+                INCIDENT:
+                  1: EVENT(int) not null
+                  2: NUMBER(int) not null
+                  3: VERSION(int) not null
+                  4: CREATED(double) not null
+                  5: PRIORITY(tinyint) not null
+                  6: STATE(enum(10)) not null
+                  7: SUMMARY(varchar(1024))
+                  8: LOCATION_NAME(varchar(64))
+                  9: LOCATION_CONCENTRIC(varchar(64))
+                  10: LOCATION_RADIAL_HOUR(tinyint)
+                  11: LOCATION_RADIAL_MINUTE(tinyint)
+                  12: LOCATION_DESCRIPTION(varchar(1024))
+                INCIDENT_REPORT:
+                  1: NUMBER(int) not null
+                  2: CREATED(double) not null
+                  3: SUMMARY(varchar(1024))
+                INCIDENT_REPORT__REPORT_ENTRY:
+                  1: INCIDENT_REPORT_NUMBER(int) not null
+                  2: REPORT_ENTRY(int) not null
+                INCIDENT_TYPE:
+                  1: ID(int) not null
+                  2: NAME(varchar(64)) not null
+                  3: HIDDEN(tinyint) not null
+                INCIDENT__INCIDENT_REPORT:
+                  1: EVENT(int) not null
+                  2: INCIDENT_NUMBER(int) not null
+                  3: INCIDENT_REPORT_NUMBER(int) not null
+                INCIDENT__INCIDENT_TYPE:
+                  1: EVENT(int) not null
+                  2: INCIDENT_NUMBER(int) not null
+                  3: INCIDENT_TYPE(int) not null
+                INCIDENT__RANGER:
+                  1: EVENT(int) not null
+                  2: INCIDENT_NUMBER(int) not null
+                  3: RANGER_HANDLE(varchar(64)) not null
+                INCIDENT__REPORT_ENTRY:
+                  1: EVENT(int) not null
+                  2: INCIDENT_NUMBER(int) not null
+                  3: REPORT_ENTRY(int) not null
+                REPORT_ENTRY:
+                  1: ID(int) not null
+                  2: AUTHOR(varchar(64)) not null
+                  3: TEXT(varchar(16384)) not null
+                  4: CREATED(double) not null
+                  5: GENERATED(tinyint) not null
+                  6: STRICKEN(tinyint) not null
+                SCHEMA_INFO:
+                  1: VERSION(smallint) not null
                 """[1:]
             )
         )

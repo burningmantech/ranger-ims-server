@@ -231,17 +231,75 @@ class DataStore(DatabaseStore):
             "look up database tables",
             """
             select TABLE_NAME, TABLE_SCHEMA from INFORMATION_SCHEMA.TABLES
+            where TABLE_SCHEMA <> 'information_schema'
             """
         )
 
+        schema: Optional[str] = None
+
+        tableNames: List[str] = []
+
         for row in await self.runQuery(tablesQuery):
-            tableName = row["TABLE_NAME"]
-            print(f"{tableName}:", file=out)
+            tableNames.append(row["TABLE_NAME"])
 
             tableSchema = row["TABLE_SCHEMA"]
-            print("  schema ->", tableSchema, file=out)
 
-        print("*&@^#*$&^")
+            if schema is None:
+                schema = tableSchema
+            else:
+                # We only expect one schema here
+                assert tableSchema == schema
+
+        columnsQuery = Query(
+            "look up database columns",
+            """
+            select
+                COLUMN_NAME,
+                DATA_TYPE,
+                CHARACTER_MAXIMUM_LENGTH,
+                IS_NULLABLE,
+                COLUMN_DEFAULT,
+                ORDINAL_POSITION
+            from INFORMATION_SCHEMA.COLUMNS
+            where TABLE_SCHEMA = %(tableSchema)s and TABLE_NAME = %(tableName)s
+            order by ORDINAL_POSITION
+            """
+        )
+
+        for tableName in sorted(tableNames):
+            print(f"{tableName}:", file=out)
+
+            for row in await self.runQuery(
+                columnsQuery, dict(tableSchema=schema, tableName=tableName)
+            ):
+                columnName     = row["COLUMN_NAME"]
+                columnType     = row["DATA_TYPE"]
+                columnMaxChars = row["CHARACTER_MAXIMUM_LENGTH"]
+                columnNullable = row["IS_NULLABLE"]
+                columnDefault  = row["COLUMN_DEFAULT"]
+                columnPosition = row["ORDINAL_POSITION"]
+
+                if columnMaxChars is None:
+                    size = ""
+                else:
+                    size = f"({columnMaxChars})"
+
+                if columnNullable == "YES":
+                    notNull = ""
+                else:
+                    notNull = " not null"
+
+                if columnDefault:
+                    default = f" := {columnDefault}"
+                else:
+                    default = ""
+
+                text = (
+                    f"  {columnPosition}: "
+                    f"{columnName}({columnType}{size}){notNull}{default}"
+                )
+
+                print(text, file=out)
 
 
     async def applySchema(self, sql: str) -> None:
