@@ -257,7 +257,7 @@ class DataStore(DatabaseStore):
 
             if tableName != lastTableName:
                 print(f"{tableName}:", file=out)
-                lastTableName = tableName
+                lastTableName = cast(str, tableName)
 
             if columnMaxChars is None:
                 size = ""
