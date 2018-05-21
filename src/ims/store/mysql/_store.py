@@ -227,33 +227,11 @@ class DataStore(DatabaseStore):
         version = await self.dbSchemaVersion()
         print(f"Version: {version}", file=out)
 
-        tablesQuery = Query(
-            "look up database tables",
-            """
-            select TABLE_NAME, TABLE_SCHEMA from INFORMATION_SCHEMA.TABLES
-            where TABLE_SCHEMA <> 'information_schema'
-            """
-        )
-
-        schema: Optional[str] = None
-
-        tableNames: List[str] = []
-
-        for row in await self.runQuery(tablesQuery):
-            tableNames.append(row["TABLE_NAME"])
-
-            tableSchema = row["TABLE_SCHEMA"]
-
-            if schema is None:
-                schema = tableSchema
-            else:
-                # We only expect one schema here
-                assert tableSchema == schema
-
         columnsQuery = Query(
             "look up database columns",
             """
             select
+                TABLE_NAME,
                 COLUMN_NAME,
                 DATA_TYPE,
                 CHARACTER_MAXIMUM_LENGTH,
@@ -261,45 +239,47 @@ class DataStore(DatabaseStore):
                 COLUMN_DEFAULT,
                 ORDINAL_POSITION
             from INFORMATION_SCHEMA.COLUMNS
-            where TABLE_SCHEMA = %(tableSchema)s and TABLE_NAME = %(tableName)s
-            order by ORDINAL_POSITION
+            where TABLE_SCHEMA <> 'information_schema'
+            order by TABLE_NAME, ORDINAL_POSITION
             """
         )
 
-        for tableName in sorted(tableNames):
-            print(f"{tableName}:", file=out)
+        lastTableName = ""
 
-            for row in await self.runQuery(
-                columnsQuery, dict(tableSchema=schema, tableName=tableName)
-            ):
-                columnName     = row["COLUMN_NAME"]
-                columnType     = row["DATA_TYPE"]
-                columnMaxChars = row["CHARACTER_MAXIMUM_LENGTH"]
-                columnNullable = row["IS_NULLABLE"]
-                columnDefault  = row["COLUMN_DEFAULT"]
-                columnPosition = row["ORDINAL_POSITION"]
+        for row in await self.runQuery(columnsQuery):
+            tableName      = row["TABLE_NAME"]
+            columnName     = row["COLUMN_NAME"]
+            columnType     = row["DATA_TYPE"]
+            columnMaxChars = row["CHARACTER_MAXIMUM_LENGTH"]
+            columnNullable = row["IS_NULLABLE"]
+            columnDefault  = row["COLUMN_DEFAULT"]
+            columnPosition = row["ORDINAL_POSITION"]
 
-                if columnMaxChars is None:
-                    size = ""
-                else:
-                    size = f"({columnMaxChars})"
+            if tableName != lastTableName:
+                print(f"{tableName}:", file=out)
+                lastTableName = tableName
 
-                if columnNullable == "YES":
-                    notNull = ""
-                else:
-                    notNull = " not null"
+            if columnMaxChars is None:
+                size = ""
+            else:
+                size = f"({columnMaxChars})"
 
-                if columnDefault:
-                    default = f" := {columnDefault}"
-                else:
-                    default = ""
+            if columnNullable == "YES":
+                notNull = ""
+            else:
+                notNull = " not null"
 
-                text = (
-                    f"  {columnPosition}: "
-                    f"{columnName}({columnType}{size}){notNull}{default}"
-                )
+            if columnDefault:
+                default = f" := {columnDefault}"
+            else:
+                default = ""
 
-                print(text, file=out)
+            text = (
+                f"  {columnPosition}: "
+                f"{columnName}({columnType}{size}){notNull}{default}"
+            )
+
+            print(text, file=out)
 
 
     async def applySchema(self, sql: str) -> None:
