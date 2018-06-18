@@ -74,6 +74,14 @@ class MySQLService(ABC):
 
     @property
     @abstractmethod
+    def clientHost(self) -> str:
+        """
+        Client host name to use in grant statements.
+        """
+
+
+    @property
+    @abstractmethod
     def port(self) -> int:
         """
         Server network address port number.
@@ -118,11 +126,44 @@ class MySQLService(ABC):
         """
 
 
-    @abstractmethod
     async def createDatabase(self, name: Optional[str] = None) -> str:
         """
         Create a database.
         """
+        if name is None:
+            name = randomString()
+
+        self._log.info(
+            "Creating database {name} in MySQL service {service}.",
+            name=name, service=self,
+        )
+
+        connection = connect(
+            host=self.host,
+            port=self.port,
+            user="root",
+            password=self.rootPassword,
+            cursorclass=Cursor,
+        )
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(f"create database {name}")
+                cursor.execute(
+                    f"grant all privileges on {name}.* "
+                    f"to %(user)s@%(host)s identified by %(password)s",
+                    dict(
+                        user=self.user,
+                        host=self.clientHost,
+                        password=self.password,
+                    )
+                )
+
+            connection.commit()
+        finally:
+            connection.close()
+
+        return name
 
 
 
@@ -183,6 +224,11 @@ class DockerizedMySQLService(MySQLService):
     @property
     def host(self) -> str:
         return self._state.host
+
+
+    @property
+    def clientHost(self) -> str:
+        return self._dockerHost
 
 
     @property
@@ -386,40 +432,9 @@ class DockerizedMySQLService(MySQLService):
 
 
     async def createDatabase(self, name: Optional[str] = None) -> str:
-        if name is None:
-            name = randomString()
-
         containerName = self._containerName
 
-        self._log.info(
-            "Creating database {name} in MySQL container {container}.",
-            name=name, container=containerName,
-        )
-
-        connection = connect(
-            host=self.host,
-            port=self.port,
-            user="root",
-            password=self.rootPassword,
-            cursorclass=Cursor,
-        )
-
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(f"create database {name}")
-                cursor.execute(
-                    f"grant all privileges on {name}.* "
-                    f"to %(user)s@%(host)s identified by %(password)s",
-                    dict(
-                        user=self.user,
-                        host=self._dockerHost,
-                        password=self.password,
-                    )
-                )
-
-            connection.commit()
-        finally:
-            connection.close()
+        name = await super().createDatabase(name)
 
         self._log.info(
             "docker exec"
@@ -465,6 +480,11 @@ class ExternalMySQLService(MySQLService):
 
 
     @property
+    def clientHost(self) -> str:
+        return self._host
+
+
+    @property
     def port(self) -> int:
         return self._port
 
@@ -495,43 +515,3 @@ class ExternalMySQLService(MySQLService):
         Stop the service.
         """
         raise RuntimeError("Can't stop external MySQL service")
-
-
-    async def createDatabase(self, name: Optional[str] = None) -> str:
-        """
-        Create a database.
-        """
-        if name is None:
-            name = randomString()
-
-        self._log.info(
-            "Creating database {name} in MySQL service {service}.",
-            name=name, service=self,
-        )
-
-        connection = connect(
-            host=self.host,
-            port=self.port,
-            user="root",
-            password=self.rootPassword,
-            cursorclass=Cursor,
-        )
-
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(f"create database {name}")
-                cursor.execute(
-                    f"grant all privileges on {name}.* "
-                    f"to %(user)s@%(host)s identified by %(password)s",
-                    dict(
-                        user=self.user,
-                        host=self.host,
-                        password=self.password,
-                    )
-                )
-
-            connection.commit()
-        finally:
-            connection.close()
-
-        return name
