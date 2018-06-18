@@ -239,7 +239,11 @@ class DataStore(DatabaseStore):
                 COLUMN_DEFAULT,
                 ORDINAL_POSITION
             from INFORMATION_SCHEMA.COLUMNS
-            where TABLE_SCHEMA <> 'information_schema'
+            where
+                TABLE_SCHEMA not in (
+                    'information_schema',
+                    'performance_schema'
+                )
             order by TABLE_NAME, ORDINAL_POSITION
             """
         )
