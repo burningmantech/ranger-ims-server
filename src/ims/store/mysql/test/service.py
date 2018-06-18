@@ -64,6 +64,9 @@ class MySQLService(ABC):
     MySQL database service.
     """
 
+    _log = Logger()
+
+
     @property
     @abstractmethod
     def host(self) -> str:
