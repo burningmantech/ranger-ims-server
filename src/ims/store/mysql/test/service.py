@@ -44,7 +44,7 @@ from twisted.logger import Logger
 __all__ = ()
 
 
-def randomString(length: int = 16) -> str:
+def randomDatabaseName(length: int = 16) -> str:
     """
     Generate a random string.
     """
@@ -134,7 +134,7 @@ class MySQLService(ABC):
         Create a database.
         """
         if name is None:
-            name = randomString()
+            name = randomDatabaseName()
 
         self._log.info(
             "Creating database {name} in MySQL service {service}.",
@@ -199,13 +199,13 @@ class DockerizedMySQLService(MySQLService):
 
 
     _user: str = attrib(
-        validator=instance_of(str), default=Factory(randomString),
+        validator=instance_of(str), default=Factory(randomDatabaseName),
     )
     _password: str = attrib(
-        validator=instance_of(str), default=Factory(randomString),
+        validator=instance_of(str), default=Factory(randomDatabaseName),
     )
     _rootPassword: str = attrib(
-        validator=instance_of(str), default=Factory(randomString),
+        validator=instance_of(str), default=Factory(randomDatabaseName),
     )
 
     imageRepository: str = attrib(
