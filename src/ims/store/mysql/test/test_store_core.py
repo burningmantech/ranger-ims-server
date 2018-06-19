@@ -28,7 +28,7 @@ from twisted.internet.defer import ensureDeferred
 from ims.ext.trial import AsynchronousTestCase
 
 from .base import TestDataStore
-from .service import MySQLService
+from .service import MySQLService, randomDatabaseName
 from ...test.base import asyncAsDeferred
 
 
@@ -65,6 +65,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
     def setUp(self) -> None:
         async def setUp() -> None:
+            self.names: Set[str] = set()
             self.stores: List[TestDataStore] = []
 
             await self.mysqlService.start()
@@ -88,7 +89,14 @@ class DataStoreCoreTests(AsynchronousTestCase):
         assert service.host is not None
         assert service.port is not None
 
-        name = await service.createDatabase()
+        for _ in range(10):
+            name = randomDatabaseName()
+            if name not in self.names:
+                break
+        else:
+            raise AssertionError("Unable to generate unique database name")
+
+        name = await service.createDatabase(name=name)
 
         store = TestDataStore(
             self,
@@ -99,6 +107,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
             password=service.password,
         )
 
+        self.names.add(name)
         self.stores.append(store)
 
         return store
