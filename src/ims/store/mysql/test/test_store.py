@@ -20,8 +20,6 @@ Tests for :mod:`ranger-ims-server.store.mysql._store`
 
 from typing import List, Optional, Set, cast
 
-from pymysql.err import ProgrammingError
-
 from twisted.internet.defer import ensureDeferred
 
 from .base import TestDataStore
