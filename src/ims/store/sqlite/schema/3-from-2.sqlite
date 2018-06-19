@@ -1,4 +1,4 @@
--- Change STATE column in REPORT_ENTRY from text to integer
+-- Change STATE column in INCIDENT from text to integer
 
 create table INCIDENT_TEMP (
     EVENT    integer not null,
