@@ -674,15 +674,16 @@ class DataStoreIncidentTests(DataStoreTests):
 
                 # Updated entries minus the original entries == the added
                 # entries
-                updatedNewEntries = list(updatedIncident.reportEntries)
+                updatedNewEntries = sorted(updatedIncident.reportEntries)
                 for entry in incident.reportEntries:
                     updatedNewEntries.remove(entry)
 
                 # New entries should be the same as the ones we added
                 self.assertTrue(
                     store.reportEntriesEqual(
-                        sorted(updatedNewEntries), sorted(reportEntries)
-                    )
+                        updatedNewEntries, sorted(reportEntries)
+                    ),
+                    f"{updatedNewEntries} != {reportEntries}"
                 )
 
 

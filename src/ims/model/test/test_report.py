@@ -18,6 +18,8 @@
 Tests for :mod:`ranger-ims-server.model._report`
 """
 
+from typing import Iterable, cast
+
 from ims.ext.trial import TestCase
 
 from .datetimes import dt1
@@ -68,7 +70,7 @@ class IncidentReportTests(TestCase):
             number=321,
             created=dt1,
             summary=None,
-            reportEntries=(entry,),
+            reportEntries=cast(Iterable, (entry,)),
         )
 
         self.assertEqual(str(report), "321: A different thing happened")

@@ -70,7 +70,6 @@ class Incident(ReplaceMixIn):
     location: Location = attrib(
         validator=instance_of(Location)
     )
-
     rangerHandles: AbstractSet[str] = attrib(
         validator=instance_of(IterableABC), converter=frozenset
     )
