@@ -63,7 +63,7 @@ class AddressJSONType(Enum):
     """
 
     addressType = str
-    description = Optional[str]
+    description: Type[Any] = Optional[str]
 
 
 
