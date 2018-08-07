@@ -680,7 +680,7 @@ class DatabaseStore(IMSDataStore):
             ),
             rangerHandles=cast(Iterable, rangerHandles),
             incidentTypes=cast(Iterable, incidentTypes),
-            reportEntries=reportEntries,
+            reportEntries=cast(Iterable, reportEntries),
         )
 
 
@@ -1371,7 +1371,7 @@ class DatabaseStore(IMSDataStore):
             number=incidentReportNumber,
             created=self.fromDateTimeValue(row["CREATED"]),
             summary=cast(Optional[str], row["SUMMARY"]),
-            reportEntries=reportEntries,
+            reportEntries=cast(Iterable, reportEntries),
         )
 
 
