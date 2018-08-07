@@ -1,0 +1,61 @@
+-- Change STATE column in INCIDENT from text to integer
+
+create table INCIDENT_TEMP (
+    EVENT    integer not null,
+    NUMBER   integer not null,
+    VERSION  integer not null,
+    CREATED  real    not null,
+    PRIORITY integer not null,
+    STATE    integer not null,
+    SUMMARY  text,
+
+    LOCATION_NAME          text,
+    LOCATION_CONCENTRIC    text,
+    LOCATION_RADIAL_HOUR   integer,
+    LOCATION_RADIAL_MINUTE integer,
+    LOCATION_DESCRIPTION   text,
+
+    foreign key (EVENT) references EVENT(ID),
+    foreign key (STATE) references INCIDENT_STATE(ID),
+
+    foreign key (EVENT, LOCATION_CONCENTRIC)
+    references CONCENTRIC_STREET(EVENT, ID),
+
+    primary key (EVENT, NUMBER)
+);
+
+pragma foreign_keys = false;
+insert into INCIDENT_TEMP select * from INCIDENT;
+drop table INCIDENT;
+alter table INCIDENT_TEMP rename to INCIDENT;
+pragma foreign_keys = true;
+
+
+-- Add STRICKEN column to REPORT_ENTRY
+
+create table REPORT_ENTRY_TEMP (
+    ID        integer not null,
+    AUTHOR    text    not null,
+    TEXT      text    not null,
+    CREATED   real    not null,
+    GENERATED numeric not null,
+    STRICKEN  numeric not null,
+
+    -- FIXME: AUTHOR is an external non-primary key.
+    -- Primary key is DMS Person ID.
+
+    primary key (ID)
+);
+
+pragma foreign_keys = false;
+insert into REPORT_ENTRY_TEMP
+    select ID, AUTHOR, TEXT, CREATED, GENERATED, 0
+    from REPORT_ENTRY;
+drop table REPORT_ENTRY;
+alter table REPORT_ENTRY_TEMP rename to REPORT_ENTRY;
+pragma foreign_keys = true;
+
+
+-- Update schema version
+
+update SCHEMA_INFO set version = 3;

@@ -19,7 +19,9 @@ Incident Management System SQL data store.
 """
 
 from pathlib import Path
+from sys import stdout
 from typing import Any, Callable, Optional, cast
+from typing.io import TextIO
 
 from attr import Factory, attrib, attrs
 from attr.validators import instance_of, optional
@@ -85,7 +87,7 @@ class DataStore(DatabaseStore):
 
     _log = Logger()
 
-    schemaVersion = 2
+    schemaVersion = 3
     schemaBasePath = Path(__file__).parent / "schema"
     sqlFileExtension = "mysql"
 
@@ -214,6 +216,70 @@ class DataStore(DatabaseStore):
                 description=self.query.schemaVersion.description, error=e,
             )
             raise StorageError(e)
+
+
+    async def printSchema(self, out: TextIO = stdout) -> None:
+        """
+        Print schema.
+        """
+        # See https://dev.mysql.com/doc/refman/5.7/en/tables-table.html
+
+        version = await self.dbSchemaVersion()
+        print(f"Version: {version}", file=out)
+
+        columnsQuery = Query(
+            "look up database columns",
+            """
+            select
+                TABLE_NAME,
+                COLUMN_NAME,
+                DATA_TYPE,
+                CHARACTER_MAXIMUM_LENGTH,
+                IS_NULLABLE,
+                COLUMN_DEFAULT,
+                ORDINAL_POSITION
+            from INFORMATION_SCHEMA.COLUMNS
+            where TABLE_SCHEMA = database()
+            order by TABLE_NAME, ORDINAL_POSITION
+            """
+        )
+
+        lastTableName = ""
+
+        for row in await self.runQuery(columnsQuery):
+            tableName      = row["TABLE_NAME"]
+            columnName     = row["COLUMN_NAME"]
+            columnType     = row["DATA_TYPE"]
+            columnMaxChars = row["CHARACTER_MAXIMUM_LENGTH"]
+            columnNullable = row["IS_NULLABLE"]
+            columnDefault  = row["COLUMN_DEFAULT"]
+            columnPosition = row["ORDINAL_POSITION"]
+
+            if tableName != lastTableName:
+                print(f"{tableName}:", file=out)
+                lastTableName = cast(str, tableName)
+
+            if columnMaxChars is None:
+                size = ""
+            else:
+                size = f"({columnMaxChars})"
+
+            if columnNullable == "YES":
+                notNull = ""
+            else:
+                notNull = " not null"
+
+            if columnDefault:
+                default = f" := {columnDefault}"
+            else:
+                default = ""
+
+            text = (
+                f"  {columnPosition}: "
+                f"{columnName}({columnType}{size}){notNull}{default}"
+            )
+
+            print(text, file=out)
 
 
     async def applySchema(self, sql: str) -> None:

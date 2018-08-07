@@ -26,7 +26,7 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Optional
 
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis.strategies import integers
 
 from ims.ext.sqlite import Connection, SQLiteError, createDB, printSchema
@@ -70,7 +70,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
             schemaInfo,
             dedent(
                 """
-                Version: 2
+                Version: 3
                 ACCESS_MODE:
                   0: ID(text) not null *1
                 CONCENTRIC_STREET:
@@ -90,7 +90,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   2: VERSION(integer) not null
                   3: CREATED(real) not null
                   4: PRIORITY(integer) not null
-                  5: STATE(text) not null
+                  5: STATE(integer) not null
                   6: SUMMARY(text)
                   7: LOCATION_NAME(text)
                   8: LOCATION_CONCENTRIC(text)
@@ -132,6 +132,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   2: TEXT(text) not null
                   3: CREATED(real) not null
                   4: GENERATED(numeric) not null
+                  5: STRICKEN(numeric) not null
                 SCHEMA_INFO:
                   0: VERSION(integer) not null
                 """[1:]
@@ -285,6 +286,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
 
     @given(integers(max_value=-1))
+    @settings(max_examples=10)
     def test_upgradeSchema_fromVersionTooLow(self, version: int) -> None:
         """
         :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
@@ -308,6 +310,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
 
     @given(integers(min_value=DataStore.schemaVersion + 1))
+    @settings(max_examples=10)
     def test_upgradeSchema_fromVersionTooHigh(self, version: int) -> None:
         """
         :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the

@@ -18,14 +18,13 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from os import environ
-from typing import List, Optional, cast
+from typing import List, Optional, Set, cast
 
 from twisted.internet.defer import ensureDeferred
-from twisted.logger import Logger
 
 from .base import TestDataStore
-from .service import MySQLService
+from .service import MySQLService, randomDatabaseName
+from .test_store_core import mysqlServiceFactory
 from ...test.base import (
     DataStoreTests as SuperDataStoreTests, TestDataStoreABC
 )
@@ -48,31 +47,10 @@ __all__ = ()
 
 
 
-if environ.get("IMS_TEST_MYSQL_HOST", None) is None:
-    from .service import DockerizedMySQLService
-
-    def mysqlServiceFactory() -> MySQLService:
-        return DockerizedMySQLService()
-else:
-    from .service import ExternalMySQLService
-
-    def mysqlServiceFactory() -> MySQLService:
-        env = environ.get
-        return ExternalMySQLService(
-            host=cast(str, env("IMS_TEST_MYSQL_HOST")),
-            port=int(env("IMS_TEST_MYSQL_PORT", "3306")),
-            user=env("IMS_TEST_MYSQL_USERNAME", "ims"),
-            password=env("IMS_TEST_MYSQL_PASSWORD", ""),
-            rootPassword=env("IMS_TEST_MYSQL_ROOT_PASSWORD", ""),
-        )
-
-
 class DataStoreTests(SuperDataStoreTests):
     """
     Parent test class.
     """
-
-    log = Logger()
 
     skip: Optional[str] = None
 
@@ -81,6 +59,7 @@ class DataStoreTests(SuperDataStoreTests):
 
     def setUp(self) -> None:
         async def setUp() -> None:
+            self.names: Set[str] = set()
             self.stores: List[TestDataStore] = []
 
             await self.mysqlService.start()
@@ -104,7 +83,14 @@ class DataStoreTests(SuperDataStoreTests):
         assert service.host is not None
         assert service.port is not None
 
-        name = await service.createDatabase()
+        for _ in range(10):
+            name = randomDatabaseName()
+            if name not in self.names:
+                break
+        else:
+            raise AssertionError("Unable to generate unique database name")
+
+        name = await service.createDatabase(name=name)
 
         store = TestDataStore(
             self,
@@ -116,6 +102,7 @@ class DataStoreTests(SuperDataStoreTests):
         )
         await store.upgradeSchema()
 
+        self.names.add(name)
         self.stores.append(store)
 
         return cast(TestDataStoreABC, store)

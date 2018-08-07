@@ -44,7 +44,7 @@ from twisted.logger import Logger
 __all__ = ()
 
 
-def randomString(length: int = 16) -> str:
+def randomDatabaseName(length: int = 16) -> str:
     """
     Generate a random string.
     """
@@ -64,11 +64,22 @@ class MySQLService(ABC):
     MySQL database service.
     """
 
+    _log = Logger()
+
+
     @property
     @abstractmethod
     def host(self) -> str:
         """
         Server network address host name.
+        """
+
+
+    @property
+    @abstractmethod
+    def clientHost(self) -> str:
+        """
+        Client host name to use in grant statements.
         """
 
 
@@ -118,11 +129,41 @@ class MySQLService(ABC):
         """
 
 
-    @abstractmethod
-    async def createDatabase(self, name: Optional[str] = None) -> str:
+    async def createDatabase(self, name: str) -> str:
         """
         Create a database.
         """
+        self._log.info(
+            "Creating database {name} in MySQL service {service}.",
+            name=name, service=self,
+        )
+
+        connection = connect(
+            host=self.host,
+            port=self.port,
+            user="root",
+            password=self.rootPassword,
+            cursorclass=Cursor,
+        )
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(f"create database {name}")
+                cursor.execute(
+                    f"grant all privileges on {name}.* "
+                    f"to %(user)s@%(host)s identified by %(password)s",
+                    dict(
+                        user=self.user,
+                        host=self.clientHost,
+                        password=self.password,
+                    )
+                )
+
+            connection.commit()
+        finally:
+            connection.close()
+
+        return name
 
 
 
@@ -155,13 +196,13 @@ class DockerizedMySQLService(MySQLService):
 
 
     _user: str = attrib(
-        validator=instance_of(str), default=Factory(randomString),
+        validator=instance_of(str), default=Factory(randomDatabaseName),
     )
     _password: str = attrib(
-        validator=instance_of(str), default=Factory(randomString),
+        validator=instance_of(str), default=Factory(randomDatabaseName),
     )
     _rootPassword: str = attrib(
-        validator=instance_of(str), default=Factory(randomString),
+        validator=instance_of(str), default=Factory(randomDatabaseName),
     )
 
     imageRepository: str = attrib(
@@ -183,6 +224,11 @@ class DockerizedMySQLService(MySQLService):
     @property
     def host(self) -> str:
         return self._state.host
+
+
+    @property
+    def clientHost(self) -> str:
+        return self._dockerHost
 
 
     @property
@@ -385,41 +431,10 @@ class DockerizedMySQLService(MySQLService):
         self._stop(container, self._containerName)
 
 
-    async def createDatabase(self, name: Optional[str] = None) -> str:
-        if name is None:
-            name = randomString()
-
+    async def createDatabase(self, name: str) -> str:
         containerName = self._containerName
 
-        self._log.info(
-            "Creating database {name} in MySQL container {container}.",
-            name=name, container=containerName,
-        )
-
-        connection = connect(
-            host=self.host,
-            port=self.port,
-            user="root",
-            password=self.rootPassword,
-            cursorclass=Cursor,
-        )
-
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(f"create database {name}")
-                cursor.execute(
-                    f"grant all privileges on {name}.* "
-                    f"to %(user)s@%(host)s identified by %(password)s",
-                    dict(
-                        user=self.user,
-                        host=self._dockerHost,
-                        password=self.password,
-                    )
-                )
-
-            connection.commit()
-        finally:
-            connection.close()
+        name = await super().createDatabase(name)
 
         self._log.info(
             "docker exec"
@@ -465,6 +480,11 @@ class ExternalMySQLService(MySQLService):
 
 
     @property
+    def clientHost(self) -> str:
+        return self._host
+
+
+    @property
     def port(self) -> int:
         return self._port
 
@@ -495,43 +515,3 @@ class ExternalMySQLService(MySQLService):
         Stop the service.
         """
         raise RuntimeError("Can't stop external MySQL service")
-
-
-    async def createDatabase(self, name: Optional[str] = None) -> str:
-        """
-        Create a database.
-        """
-        if name is None:
-            name = randomString()
-
-        self._log.info(
-            "Creating database {name} in MySQL service {service}.",
-            name=name, service=self,
-        )
-
-        connection = connect(
-            host=self.host,
-            port=self.port,
-            user="root",
-            password=self.rootPassword,
-            cursorclass=Cursor,
-        )
-
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(f"create database {name}")
-                cursor.execute(
-                    f"grant all privileges on {name}.* "
-                    f"to %(user)s@%(host)s identified by %(password)s",
-                    dict(
-                        user=self.user,
-                        host=self.host,
-                        password=self.password,
-                    )
-                )
-
-            connection.commit()
-        finally:
-            connection.close()
-
-        return name
