@@ -129,13 +129,10 @@ class MySQLService(ABC):
         """
 
 
-    async def createDatabase(self, name: Optional[str] = None) -> str:
+    async def createDatabase(self, name: str) -> str:
         """
         Create a database.
         """
-        if name is None:
-            name = randomDatabaseName()
-
         self._log.info(
             "Creating database {name} in MySQL service {service}.",
             name=name, service=self,
@@ -434,7 +431,7 @@ class DockerizedMySQLService(MySQLService):
         self._stop(container, self._containerName)
 
 
-    async def createDatabase(self, name: Optional[str] = None) -> str:
+    async def createDatabase(self, name: str) -> str:
         containerName = self._containerName
 
         name = await super().createDatabase(name)
