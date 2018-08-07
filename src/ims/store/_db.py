@@ -630,10 +630,14 @@ class DatabaseStore(IMSDataStore):
             notFound()
 
         txn.execute(self.query.incident_rangers.text, parameters)
-        rangerHandles = tuple(row["RANGER_HANDLE"] for row in txn.fetchall())
+        rangerHandles = frozenset(
+            cast(str, row["RANGER_HANDLE"]) for row in txn.fetchall()
+        )
 
         txn.execute(self.query.incident_incidentTypes.text, parameters)
-        incidentTypes = tuple(row["NAME"] for row in txn.fetchall())
+        incidentTypes = frozenset(
+            cast(str, row["NAME"]) for row in txn.fetchall()
+        )
 
         txn.execute(self.query.incident_reportEntries.text, parameters)
         reportEntries = tuple(
@@ -674,8 +678,8 @@ class DatabaseStore(IMSDataStore):
                     ),
                 ),
             ),
-            rangerHandles=rangerHandles,
-            incidentTypes=incidentTypes,
+            rangerHandles=cast(Iterable, rangerHandles),
+            incidentTypes=cast(Iterable, incidentTypes),
             reportEntries=reportEntries,
         )
 
