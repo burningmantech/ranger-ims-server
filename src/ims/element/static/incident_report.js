@@ -142,15 +142,7 @@ function loadAndDisplayIncidentReport(success) {
 //
 
 function drawTitle() {
-    var number = incidentReport.number;
-    if (number == null) {
-        document.title = "new incident report"
-    } else {
-        document.title = (
-            "IR#" + incidentReport.number + ": " +
-            summarizeIncident(incidentReport)
-        );
-    }
+    document.title = incidentReportAsString(incidentReport);
 }
 
 
