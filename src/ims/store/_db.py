@@ -1375,21 +1375,29 @@ class DatabaseStore(IMSDataStore):
         )
 
 
-    def _fetchIncidentReportNumbers(self, txn: Transaction) -> Iterable[int]:
-        txn.execute(self.query.incidentReportNumbers.text)
-
+    def _fetchIncidentReportNumbers(
+        self, event: Event, txn: Transaction
+    ) -> Iterable[int]:
+        txn.execute(
+            self.query.incidentReportNumbers.text, dict(eventID=event.id)
+        )
         return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
 
-    async def incidentReports(self) -> Iterable[IncidentReport]:
+    async def incidentReports(self, event: Optional[Event]) -> Iterable[IncidentReport]:
         """
         See :meth:`IMSDataStore.incidentReports`.
         """
+        if event is None:
+            return await self.detachedIncidentReports()
+
         def incidentReports(txn: Transaction) -> Iterable[IncidentReport]:
             return tuple(
                 self._fetchIncidentReport(number, txn)
                 for number
-                in tuple(self._fetchIncidentReportNumbers(txn))
+                in tuple(
+                    self._fetchIncidentReportNumbers(cast(Event, event), txn)
+                )
             )
 
         try:
