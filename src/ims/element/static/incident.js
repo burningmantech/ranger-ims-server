@@ -799,16 +799,17 @@ function drawIncidentReportsToAttach() {
 
 
 function summarizeIncidentReport(report) {
-    var author = "";
+    var prefix = "#" + report.number;
 
     for (var i in report.report_entries) {
         entry = report.report_entries[i];
         if (entry.author != undefined) {
-            author = entry.author + ": ";
+            prefix += " (" + entry.author + ")";
+            break;
         }
     }
 
-    return author + summarizeIncident(report);
+    return prefix + ": " + summarizeIncident(report);
 }
 
 
