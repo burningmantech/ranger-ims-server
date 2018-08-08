@@ -432,6 +432,58 @@ function summarizeIncident(incident) {
 }
 
 
+// Return a summary for a given incident report.
+function summarizeIncidentReport(report) {
+    return summarizeIncident(report);
+}
+
+
+// Get author for incident
+function incidentAuthor(incident) {
+    for (var i in incident.report_entries) {
+        entry = incident.report_entries[i];
+        if (entry.author != undefined) {
+            return entry.author;
+        }
+    }
+
+    return undefined;
+}
+
+
+// Get author for incident report
+function incidentReportAuthor(report) {
+    return incidentAuthor(report);
+}
+
+
+// Render incident as a string
+function incidentAsString(incident) {
+    if (incident.number == null) {
+        document.title = "New Incident";
+    } else {
+        return (
+            incident.event + " incident #" + incident.number + ": " +
+            summarizeIncident(incident)
+        );
+    }
+}
+
+
+// Render incident report as a string
+function incidentReportAsString(report) {
+    if (report.number == null) {
+        document.title = "New Incident Report";
+    } else {
+        return (
+            "Report #" + report.number +
+            " (" + incidentReportAuthor(report) + "): " +
+            summarizeIncidentReport(report)
+        );
+    }
+}
+
+
 // Return all user-entered report text for a given incident.
 function reportTextFromIncident(incident) {
     var texts = [];
