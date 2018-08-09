@@ -551,9 +551,6 @@ class APIApplication(object):
         if eventID is None:
             return invalidQueryResponse(request, "event")
 
-        if incidentNumberText is None:
-            return invalidQueryResponse(request, "incident")
-
         if eventID == incidentNumberText == "":
             await self.config.authProvider.authorizeRequest(
                 request, None, Authorization.readIncidentReports
@@ -568,19 +565,25 @@ class APIApplication(object):
                     request, "event", eventID
                 )
 
-            try:
-                incidentNumber = int(incidentNumberText)
-            except ValueError:
-                return invalidQueryResponse(
-                    request, "incident", incidentNumberText
-                )
-
             await self.config.authProvider.authorizeRequest(
                 request, event, Authorization.readIncidents
             )
-            incidentReports = await store.incidentReportsAttachedToIncident(
-                event=event, incidentNumber=incidentNumber
-            )
+
+            if incidentNumberText is None:
+                incidentReports = await store.incidentReports(event=event)
+            else:
+                try:
+                    incidentNumber = int(incidentNumberText)
+                except ValueError:
+                    return invalidQueryResponse(
+                        request, "incident", incidentNumberText
+                    )
+
+                incidentReports = (
+                    await store.incidentReportsAttachedToIncident(
+                        event=event, incidentNumber=incidentNumber
+                    )
+                )
 
         stream = buildJSONArray(
             jsonTextFromObject(
