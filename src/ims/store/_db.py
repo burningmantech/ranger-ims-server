@@ -1391,7 +1391,9 @@ class DatabaseStore(IMSDataStore):
         return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
 
-    async def incidentReports(self, event: Optional[Event]) -> Iterable[IncidentReport]:
+    async def incidentReports(
+        self, event: Optional[Event]
+    ) -> Iterable[IncidentReport]:
         """
         See :meth:`IMSDataStore.incidentReports`.
         """
