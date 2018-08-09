@@ -160,16 +160,17 @@ class IncidentJSONKey(Enum):
     Incident JSON keys
     """
 
-    event         = "event"
-    number        = "number"
-    created       = "created"
-    state         = "state"
-    priority      = "priority"
-    summary       = "summary"
-    location      = "location"
-    rangerHandles = "ranger_handles"
-    incidentTypes = "incident_types"
-    reportEntries = "report_entries"
+    event                 = "event"
+    number                = "number"
+    created               = "created"
+    state                 = "state"
+    priority              = "priority"
+    summary               = "summary"
+    location              = "location"
+    rangerHandles         = "ranger_handles"
+    incidentTypes         = "incident_types"
+    reportEntries         = "report_entries"
+    incidentReportNumbers = "incident_reports"
 
 
 
@@ -178,16 +179,17 @@ class IncidentJSONType(Enum):
     Incident attribute types
     """
 
-    event         = Event
-    number        = int
-    created       = DateTime
-    state         = IncidentState
-    priority      = IncidentPriority
-    summary       = Optional[str]
-    location      = Location
-    rangerHandles = Set[str]
-    incidentTypes = Set[str]
-    reportEntries = List[ReportEntry]
+    event                 = Event
+    number                = int
+    created               = DateTime
+    state                 = IncidentState
+    priority              = IncidentPriority
+    summary               = Optional[str]
+    location              = Location
+    rangerHandles         = Set[str]
+    incidentTypes         = Set[str]
+    reportEntries         = List[ReportEntry]
+    incidentReportNumbers = Set[int]
 
 
 

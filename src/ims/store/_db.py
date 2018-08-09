@@ -630,17 +630,17 @@ class DatabaseStore(IMSDataStore):
             notFound()
 
         txn.execute(self.query.incident_rangers.text, parameters)
-        rangerHandles = frozenset(
+        rangerHandles = (
             cast(str, row["RANGER_HANDLE"]) for row in txn.fetchall()
         )
 
         txn.execute(self.query.incident_incidentTypes.text, parameters)
-        incidentTypes = frozenset(
+        incidentTypes = (
             cast(str, row["NAME"]) for row in txn.fetchall()
         )
 
         txn.execute(self.query.incident_reportEntries.text, parameters)
-        reportEntries = tuple(
+        reportEntries = (
             ReportEntry(
                 created=self.fromDateTimeValue(row["CREATED"]),
                 author=cast(str, row["AUTHOR"]),
@@ -655,6 +655,12 @@ class DatabaseStore(IMSDataStore):
             concentric = None
         else:
             concentric = str(row["LOCATION_CONCENTRIC"])
+
+        incidentReportNumbers = (
+            self._fetchAttachedIncidentReportNumbers(
+                event, incidentNumber, txn
+            )
+        )
 
         return Incident(
             event=event,
@@ -681,6 +687,7 @@ class DatabaseStore(IMSDataStore):
             rangerHandles=cast(Iterable, rangerHandles),
             incidentTypes=cast(Iterable, incidentTypes),
             reportEntries=cast(Iterable, reportEntries),
+            incidentReportNumbers=cast(Iterable, incidentReportNumbers),
         )
 
 

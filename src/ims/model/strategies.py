@@ -245,6 +245,7 @@ def incidents(
         reportEntries=draw(lists(reportEntries(
             automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
         ))),
+        incidentReportNumbers=frozenset(),
     )
 
 

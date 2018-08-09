@@ -79,6 +79,9 @@ class Incident(ReplaceMixIn):
     reportEntries: Sequence[ReportEntry] = attrib(
         validator=instance_of(IterableABC), converter=sorted_tuple
     )
+    incidentReportNumbers: AbstractSet[int] = attrib(
+        validator=instance_of(IterableABC), converter=frozenset
+    )
 
 
     def __str__(self) -> str:
