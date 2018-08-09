@@ -437,14 +437,7 @@ function addLocationAddressOptions() {
 //
 
 function drawTitle() {
-    var number = incident.number;
-    if (number == null) {
-        document.title = "new incident"
-    } else {
-        document.title = (
-            "#" + incident.number + ": " + summarizeIncident(incident)
-        );
-    }
+    document.title = incidentAsString(incident);
 }
 
 
@@ -765,7 +758,7 @@ function drawAttachedIncidentReports() {
         var item = _reportsItem.clone();
         var link = $("<a />");
         link.attr("href", url_viewIncidentReports + report.number);
-        link.text(summarizeIncidentReport(report));
+        link.text(incidentReportAsString(report));
         item.append(link);
         item.data(report);
         items.push(item);
@@ -792,26 +785,12 @@ function drawIncidentReportsToAttach() {
 
             var option = $("<option />");
             option.val(report.number);
-            option.text(summarizeIncidentReport(report));
+            option.text(incidentReportAsString(report));
 
             select.append(option);
         }
         container.removeClass("hidden");
     }
-}
-
-
-function summarizeIncidentReport(report) {
-    var author = "";
-
-    for (var i in report.report_entries) {
-        entry = report.report_entries[i];
-        if (entry.author != undefined) {
-            author = entry.author + ": ";
-        }
-    }
-
-    return author + summarizeIncident(report);
 }
 
 
