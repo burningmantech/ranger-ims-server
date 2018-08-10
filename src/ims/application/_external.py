@@ -65,7 +65,7 @@ class ExternalApplication(object):
     bootstrapVersionNumber  = "3.3.7"
     jqueryVersionNumber     = "3.1.0"
     dataTablesVersionNumber = "1.10.12"
-    momentVersionNumber     = "2.14.1"
+    momentVersionNumber     = "2.22.2"
     lscacheVersionNumber    = "1.0.5"
 
     bootstrapVersion  = f"bootstrap-{bootstrapVersionNumber}-dist"
