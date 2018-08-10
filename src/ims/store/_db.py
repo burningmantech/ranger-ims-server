@@ -630,17 +630,17 @@ class DatabaseStore(IMSDataStore):
             notFound()
 
         txn.execute(self.query.incident_rangers.text, parameters)
-        rangerHandles = frozenset(
+        rangerHandles = (
             cast(str, row["RANGER_HANDLE"]) for row in txn.fetchall()
         )
 
         txn.execute(self.query.incident_incidentTypes.text, parameters)
-        incidentTypes = frozenset(
+        incidentTypes = (
             cast(str, row["NAME"]) for row in txn.fetchall()
         )
 
         txn.execute(self.query.incident_reportEntries.text, parameters)
-        reportEntries = tuple(
+        reportEntries = (
             ReportEntry(
                 created=self.fromDateTimeValue(row["CREATED"]),
                 author=cast(str, row["AUTHOR"]),
@@ -655,6 +655,12 @@ class DatabaseStore(IMSDataStore):
             concentric = None
         else:
             concentric = str(row["LOCATION_CONCENTRIC"])
+
+        incidentReportNumbers = (
+            self._fetchAttachedIncidentReportNumbers(
+                event, incidentNumber, txn
+            )
+        )
 
         return Incident(
             event=event,
@@ -681,6 +687,7 @@ class DatabaseStore(IMSDataStore):
             rangerHandles=cast(Iterable, rangerHandles),
             incidentTypes=cast(Iterable, incidentTypes),
             reportEntries=cast(Iterable, reportEntries),
+            incidentReportNumbers=cast(Iterable, incidentReportNumbers),
         )
 
 
@@ -1375,21 +1382,31 @@ class DatabaseStore(IMSDataStore):
         )
 
 
-    def _fetchIncidentReportNumbers(self, txn: Transaction) -> Iterable[int]:
-        txn.execute(self.query.incidentReportNumbers.text)
-
+    def _fetchIncidentReportNumbers(
+        self, event: Event, txn: Transaction
+    ) -> Iterable[int]:
+        txn.execute(
+            self.query.incidentReportNumbers.text, dict(eventID=event.id)
+        )
         return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
 
-    async def incidentReports(self) -> Iterable[IncidentReport]:
+    async def incidentReports(
+        self, event: Optional[Event]
+    ) -> Iterable[IncidentReport]:
         """
         See :meth:`IMSDataStore.incidentReports`.
         """
+        if event is None:
+            return await self.detachedIncidentReports()
+
         def incidentReports(txn: Transaction) -> Iterable[IncidentReport]:
             return tuple(
                 self._fetchIncidentReport(number, txn)
                 for number
-                in tuple(self._fetchIncidentReportNumbers(txn))
+                in tuple(
+                    self._fetchIncidentReportNumbers(cast(Event, event), txn)
+                )
             )
 
         try:

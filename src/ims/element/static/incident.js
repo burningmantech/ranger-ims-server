@@ -368,10 +368,13 @@ function loadAttachedIncidentReports(success) {
         window.alert(message);
     }
 
-    jsonRequest(
-        url_incidentReports + "?event=" + eventID + ";incident=" + incidentNumber,
-        null, ok, fail
+    var url = (
+        url_incidentReports +
+        "?event=" + eventID +
+        ";incident=" + incidentNumber
     );
+
+    jsonRequest(url, null, ok, fail);
 }
 
 

@@ -353,9 +353,14 @@ queries = Queries(
         """
     ),
     incidentReportNumbers=Query(
-        "look up incident report numbers",
-        """
+        "look up incident report numbers for event",
+        f"""
         select NUMBER from INCIDENT_REPORT
+        where NUMBER in (
+            select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
+            where
+                EVENT = ({query_eventID})
+        )
         """
     ),
     maxIncidentReportNumber=Query(

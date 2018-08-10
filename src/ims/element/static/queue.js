@@ -20,7 +20,8 @@
 function initDispatchQueuePage() {
     function loadedBody() {
         disableEditing();
-        initDispatchQueueTable();
+
+        loadEventIncidentReports(initDispatchQueueTable);
 
         var command = false;
 
@@ -56,6 +57,43 @@ function initDispatchQueuePage() {
     }
 
     loadBody(loadedBody);
+}
+
+
+//
+// Load event incident reports
+//
+
+var eventIncidentReports = null;
+
+function loadEventIncidentReports(success) {
+    function ok(data, status, xhr) {
+        var reports = {};
+
+        for (var i in data) {
+            var report = data[i];
+            reports[report.number] = report;
+        }
+
+        eventIncidentReports = reports;
+
+        if (success != undefined) {
+            success();
+        }
+    }
+
+    function fail(error, status, xhr) {
+        var message = "Failed to load event incident reports:\n" + error;
+        console.error(message);
+        window.alert(message);
+    }
+
+    jsonRequest(url_incidentReports + "?event=" + eventID, null, ok, fail);
+
+    console.log("Loaded event incident reports");
+    if (dispatchQueueTable != null) {
+        dispatchQueueTable.ajax.reload();
+    }
 }
 
 
@@ -240,11 +278,11 @@ function initSearch() {
             return true;
         }
 
-      for (var i in incident.report_entries) {
-          if (timestamp.isBefore(incident.report_entries[i].created)) {
-              return true;
-          }
-      }
+        for (var i in incident.report_entries) {
+            if (timestamp.isBefore(incident.report_entries[i].created)) {
+                return true;
+            }
+        }
 
       return false;
     }

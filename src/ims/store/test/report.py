@@ -78,7 +78,8 @@ class DataStoreIncidentReportTests(DataStoreTests):
     @asyncAsDeferred
     async def test_incidentReports(self) -> None:
         """
-        :meth:`DataStore.incidentReports` returns all incidents.
+        :meth:`DataStore.incidentReports` returns all incident reports attached
+        to an incident in an event.
         """
         for _incidentReports in (
             (),
@@ -92,11 +93,16 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
             store = await self.store()
 
+            await store.storeIncident(anIncident)
+
             for incidentReport in incidentReports:
                 await store.storeIncidentReport(incidentReport)
+                await store.attachIncidentReportToIncident(
+                    incidentReport.number, anIncident.event, anIncident.number
+                )
 
             found: Set[int] = set()
-            for retrieved in await store.incidentReports():
+            for retrieved in await store.incidentReports(anIncident.event):
                 self.assertIn(retrieved.number, incidentReportsByNumber)
                 self.assertIncidentReportsEqual(
                     store, retrieved, incidentReportsByNumber[retrieved.number]
@@ -116,7 +122,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         store.bringThePain()
 
         try:
-            await store.incidentReports()
+            await store.incidentReports(event=anIncident.event)
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
@@ -227,7 +233,9 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 expectedStoredIncidentReports.add(expected)
                 nextNumber += 1
 
-            storedIncidentReports = sorted(await store.incidentReports())
+            storedIncidentReports = sorted(
+                await store.incidentReports(event=None)
+            )
 
             self.assertEqual(
                 len(storedIncidentReports), len(expectedStoredIncidentReports)

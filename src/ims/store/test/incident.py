@@ -47,6 +47,7 @@ anIncident = Incident(
     summary="A thing happened",
     location=Location(name="There", address=None),
     rangerHandles=(), incidentTypes=(), reportEntries=(),
+    incidentReportNumbers=(),
 )
 
 anIncident1 = Incident(
@@ -57,6 +58,7 @@ anIncident1 = Incident(
     summary="A thing happened",
     location=Location(name="There", address=None),
     rangerHandles=(), incidentTypes=(), reportEntries=(),
+    incidentReportNumbers=(),
 )
 
 anIncident2 = Incident(
@@ -67,6 +69,7 @@ anIncident2 = Incident(
     summary="Another thing happened",
     location=Location(name="Here", address=None),
     rangerHandles=(), incidentTypes=(), reportEntries=(),
+    incidentReportNumbers=(),
 )
 
 aReportEntry = ReportEntry(

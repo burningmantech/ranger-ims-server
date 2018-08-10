@@ -108,6 +108,9 @@ def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
         report_entries=tuple(
             jsonSerialize(e) for e in sorted(incident.reportEntries)
         ),
+        incident_reports=frozenset(
+            jsonSerialize(n) for n in sorted(incident.incidentReportNumbers)
+        ),
     )
 
 
