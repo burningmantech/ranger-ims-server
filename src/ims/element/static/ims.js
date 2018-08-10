@@ -197,7 +197,7 @@ function timeElement(date) {
     var timeStampContainer = jQuery(
         "<time />", {"datetime": date.toISOString()}
     );
-    timeStampContainer.text(date.toString());
+    timeStampContainer.text(date.format("MMMM Do YYYY HH:mm:ss"));
     return timeStampContainer;
 }
 
