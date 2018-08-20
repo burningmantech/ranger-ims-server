@@ -292,12 +292,14 @@ class APIApplication(object):
                 IncidentPriorityJSONValue.normal.value
             )
 
-        # If not provided, set JSON handles, types, entries to an empty list
+        # If not provided, set JSON handles, types, entries,
+        # incident report numbers to an empty list
 
         for incidentKey in (
             IncidentJSONKey.rangerHandles,
             IncidentJSONKey.incidentTypes,
             IncidentJSONKey.reportEntries,
+            IncidentJSONKey.incidentReportNumbers,
         ):
             if incidentKey.value not in json:
                 json[incidentKey.value] = []
