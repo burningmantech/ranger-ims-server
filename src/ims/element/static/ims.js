@@ -510,7 +510,7 @@ function reportTextFromIncident(incident) {
     }
 
     // Dispatch Queue page loads all incident reports for the event
-    if (eventIncidentReports !== undefined) {
+    if (typeof eventIncidentReports !== "undefined") {
         for (var i in incident.incident_reports) {
             var reportNumber = incident.incident_reports[i];
             var report = eventIncidentReports[reportNumber];
