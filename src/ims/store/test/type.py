@@ -146,7 +146,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
 
         try:
             await store.createIncidentType(incidentType)
-        except StorageError as e:
+        except StorageError:
             pass
         else:
             self.fail("StorageError not raised")

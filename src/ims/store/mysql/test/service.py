@@ -183,6 +183,7 @@ class DockerizedMySQLService(MySQLService):
         """
         Internal mutable state for :class:`DataStore`.
         """
+
         container: Optional[Deferred] = attrib(
             validator=optional(instance_of(Container)),
             default=None, init=False,

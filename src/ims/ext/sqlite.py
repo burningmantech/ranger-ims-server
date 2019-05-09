@@ -39,6 +39,7 @@ CursorFactory = Callable[..., "Cursor"]
 ParameterValue = Optional[Union[bytes, str, int, float]]
 Parameters = Mapping[str, ParameterValue]
 
+SQLITE_MIN_INT = -2**63     # 64 bits
 SQLITE_MAX_INT = 2**63 - 1  # 64 bits
 
 
@@ -52,6 +53,10 @@ class Row(BaseRow):
     def get(
         self, key: str, default: Optional[ParameterValue] = None
     ) -> ParameterValue:
+        """
+        Return the value for the column named `key`.
+        Returns :obj:`None` if there is no such column.
+        """
         if key in self.keys():
             return self[key]
         else:
@@ -139,10 +144,18 @@ class Connection(BaseConnection):
 
 
     def validateConstraints(self) -> None:
+        """
+        Validate constraints.
+        Raise :exc:`IntegrityError` if there is a constraint violation.
+        """
         self.validateForeignKeys()
 
 
     def validateForeignKeys(self) -> None:
+        """
+        Validate foreign key constraints.
+        Raise :exc:`IntegrityError` if there is a constraint violation.
+        """
         valid = True
 
         for referent, rowid, referred, constraint in (

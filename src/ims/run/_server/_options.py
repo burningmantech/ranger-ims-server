@@ -223,6 +223,7 @@ class Override(object):
     """
     Configuration option override.
     """
+
     section: str = attrib(validator=instance_of(str))
     name: str    = attrib(validator=instance_of(str))
     value: str   = attrib(validator=instance_of(str))

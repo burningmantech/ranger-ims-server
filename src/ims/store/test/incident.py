@@ -208,7 +208,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.incidentWithNumber(anEvent, 1)
-        except NoSuchIncidentError as e:
+        except NoSuchIncidentError:
             pass
         else:
             self.fail("NoSuchIncidentError not raised")
@@ -228,7 +228,7 @@ class DataStoreIncidentTests(DataStoreTests):
             await store.incidentWithNumber(
                 anEvent, store.maxIncidentNumber + 1
             )
-        except NoSuchIncidentError as e:
+        except NoSuchIncidentError:
             pass
         else:
             self.fail("NoSuchIncidentError not raised")

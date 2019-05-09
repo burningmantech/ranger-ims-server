@@ -1,7 +1,4 @@
-dist: trusty
-sudo: false
-
-
+dist: trusty  # Use trusty for MySQL 5.6
 language: python
 
 
@@ -10,29 +7,43 @@ branches:
     - master
 
 
-install:
-  - ./bin/travis/install
-
-
 services:
   - mysql
 
 
-matrix:
-  include:
-    - python: 3.6
-      env: TOXENV=flake8
-    - python: 3.6
-      env: TOXENV=mypy
-    # - python: 3.6
-    #   env: TOXENV=docs
-    - python: 3.6
-      env: TOXENV=coverage-py36,codecov
+stages:
+  - Lint
+  - Unit Test
 
-  allow_failures:
-    # Needs work
-    - env: TOXENV=docs
+
+jobs:
+  include:
+    - stage: Lint
+      python: 3.6
+      env: TOXENV=flake8
+
+    - stage: Lint
+      python: 3.6
+      env: TOXENV=mypy
+
+    - stage: Unit Test
+      python: 3.6
+      env:
+        - TOXENV=coverage-py36,codecov
+        - TOX_SKIP_MISSING_INTERPRETERS=False
+        - IMS_TEST_MYSQL_HOST="127.0.0.1";
+        - IMS_TEST_MYSQL_USERNAME="travis";
+
+
+install:
+  - pip install tox
 
 
 script:
-  - ./bin/travis/run tox
+  - tox
+
+
+notifications:
+  email:
+    recipients:
+      - ranger-tech-list@burningman.org

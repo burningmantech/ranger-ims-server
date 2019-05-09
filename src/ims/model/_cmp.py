@@ -33,7 +33,6 @@ class ComparisonMixIn(ABC):
     Mix-in class with support for comparison operators.
     """
 
-
     @abstractmethod
     def _cmpValue(self) -> Any:
         """
