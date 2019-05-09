@@ -268,7 +268,6 @@ class AuthProvider(object):
         Determine whether the user attached to a request has the required
         authorizations to read the incident report with the given number.
         """
-
         # The author of the incident report should be allowed to read and write
         # to it.
 
