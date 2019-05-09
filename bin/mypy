@@ -16,9 +16,6 @@ tmp="$(mktemp -t mypy.XXXX)";
 mypy "$@"                                                                                             \
     | grep -v                                                                                         \
         -e ": error: Cannot find module named 'arrow.parser'"                                         \
-        -e ": error: Cannot find module named 'arrow.parser'"                                         \
-        -e ": error: Cannot find module named 'attr'"                                                 \
-        -e ": error: Cannot find module named 'attr.validators'"                                      \
         -e ": error: Cannot find module named 'cattr'"                                                \
         -e ": error: Cannot find module named 'docker.[^']*'"                                         \
         -e ": error: Cannot find module named 'hyperlink'"                                            \
@@ -26,24 +23,20 @@ mypy "$@"                                                                       
         -e ": error: Cannot find module named 'hypothesis.[^']*'"                                     \
         -e ": error: Cannot find module named 'klein'"                                                \
         -e ": error: Cannot find module named 'klein.[^']*'"                                          \
-        -e ": error: Cannot find module named 'twisted'"                                              \
-        -e ": error: Cannot find module named 'typing.io'"                                            \
         -e ": error: No library stub file for "                                                       \
         -e ': error: "Callable\[\[[^\]\+\], None\]" has no attribute "todo"'                          \
-        -e ': error: .* has incompatible type .*; expected "Iterable\[T\]"'                           \
         -e ': error: <nothing> has no attribute "__iter__"'                                           \
-        -e ': error: Argument 1 to "Factory" has incompatible type "Callable\[\[[^\]\+\], [^\]\+\]"'  \
-        -e ': error: Argument 1 to "instance_of" has incompatible type "Type\[.\+\]"'                 \
-        -e ': error: Too many arguments for '                                                         \
-        -e ': error: Unexpected keyword argument '                                                    \
-        -e ': error: Unsupported converter function, only named functions are currently supported'    \
+        -e ': error: Argument 1 to "instance_of" has incompatible type "Type\[Iterable\[Any\]\]"'     \
+        -e ': error: Too many arguments for "fget" of "property"'                                     \
         -e ': error: Unsupported left operand type for '                                              \
-        -e ': note: ".*" defined here'                                                                \
         -e ': note: (Perhaps setting MYPYPATH .* would help)'                                         \
         -e ': note: (Stub files are from .*)'                                                         \
-        -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: .* incompatible with supertype ".\+"' \
         -e '^src/ims/ext/enum.py:[0-9:]\+: error: Cannot assign to a method' \
+        -e '^src/ims/ext/sqlite.py:[0-9:]\+: error: Unexpected keyword argument "factory" for "cursor" of "Connection"' \
+        -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: .* incompatible with supertype ".\+"' \
+        -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: Unexpected keyword argument "lines" for "QueryPlanExplanation"' \
         -e '^src/ims/model/json/_ranger.py:[0-9:]\+: error: Incompatible types in assignment ' \
+        -e '^src/ims/store/.*/_queries.py:[0-9:]\+: error: Unexpected keyword argument "[^"]*" for "Queries"' \
         > "${tmp}" || true;
 
 sort < "${tmp}";
