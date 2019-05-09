@@ -1,4 +1,4 @@
-dist: xenial
+dist: trusty  # Use trusty for MySQL 5.6
 language: python
 
 
