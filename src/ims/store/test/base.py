@@ -128,8 +128,8 @@ class TestDataStoreMixIn(ABC):
         ignoreAutomatic: bool = False,
     ) -> bool:
         """
-        Compare two :class:`ReportEntry` objects, using :meth:`dateTimesEqual`
-        when comparing date-times.
+        Compare two sequences of :class:`ReportEntry` objects, using
+        :meth:`dateTimesEqual` when comparing date-times.
         """
         if ignoreAutomatic:
             reportEntriesA = tuple(

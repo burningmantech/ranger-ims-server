@@ -70,6 +70,7 @@ __all__ = (
     "reportEntries",
     "rodGarettAddresses",
     "textOnlyAddresses",
+    "timeZones",
 )
 
 
@@ -90,6 +91,9 @@ if getenv("CI") == "true":
 
 @composite
 def timeZones(draw: Callable) -> TimeZone:
+    """
+    Strategy that generates :class:`TimeZone` values.
+    """
     offset = draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
     timeDelta = TimeDelta(minutes=offset)
     timeZone = TimeZone(offset=timeDelta, name=f"{offset}s")
@@ -99,6 +103,9 @@ def timeZones(draw: Callable) -> TimeZone:
 def dateTimes(
     beforeNow: bool = False, fromNow: bool = False
 ) -> SearchStrategy:  # DateTime
+    """
+    Strategy that generates :class:`DateTime` values.
+    """
     assert not (beforeNow and fromNow)
 
     #
@@ -134,27 +141,45 @@ def dateTimes(
 
 @composite
 def textOnlyAddresses(draw: Callable) -> SearchStrategy:  # TextOnlyAddress
+    """
+    Strategy that generates :class:`TextOnlyAddress` values.
+    """
     return TextOnlyAddress(description=draw(text()))
 
 
 def concentricStreetIDs() -> SearchStrategy:  # str
+    """
+    Strategy that generates concentric street IDs.
+    """
     return text()
 
 
 def concentricStreetNames() -> SearchStrategy:  # str
+    """
+    Strategy that generates concentric street names.
+    """
     return text()
 
 
 def radialHours() -> SearchStrategy:  # int
+    """
+    Strategy that generates radial street hour values.
+    """
     return integers(min_value=1, max_value=12)
 
 
 def radialMinutes() -> SearchStrategy:  # str
+    """
+    Strategy that generates radial street minute values.
+    """
     return integers(min_value=0, max_value=59)
 
 
 @composite
 def rodGarettAddresses(draw: Callable) -> RodGarettAddress:
+    """
+    Strategy that generates :class:`RodGarettAddress` values.
+    """
     return RodGarettAddress(
         concentric=draw(concentricStreetIDs()),
         radialHour=draw(radialHours()),
@@ -164,6 +189,9 @@ def rodGarettAddresses(draw: Callable) -> RodGarettAddress:
 
 
 def addresses() -> SearchStrategy:  # Address
+    """
+    Strategy that generates :class:`Address` values.
+    """
     return one_of(none(), textOnlyAddresses(), rodGarettAddresses())
 
 
@@ -178,6 +206,9 @@ def reportEntries(
     automatic: Optional[bool] = None,
     beforeNow: bool = False, fromNow: bool = False,
 ) -> ReportEntry:
+    """
+    Strategy that generates :class:`ReportEntry` values.
+    """
     if author is None:
         author = draw(text(min_size=1))
 
@@ -198,6 +229,9 @@ def reportEntries(
 
 @composite
 def events(draw: Callable) -> Event:
+    """
+    Strategy that generates :class:`Event` values.
+    """
     return Event(id=draw(text(min_size=1)))
 
 
@@ -206,10 +240,16 @@ def events(draw: Callable) -> Event:
 ##
 
 def incidentNumbers(max: Optional[int] = None) -> SearchStrategy:  # str
+    """
+    Strategy that generates incident numbers.
+    """
     return integers(min_value=1, max_value=max)
 
 
 def incidentSummaries() -> SearchStrategy:  # str
+    """
+    Strategy that generates incident summaries.
+    """
     return one_of(none(), text())
 
 
@@ -221,6 +261,9 @@ def incidents(
     maxNumber: Optional[int] = None,
     beforeNow: bool = False, fromNow: bool = False,
 ) -> Incident:
+    """
+    Strategy that generates :class:`Incident` values.
+    """
     automatic: Optional[bool]
     if new:
         number = 0
@@ -257,6 +300,9 @@ def incidentLists(
     averageSize: Optional[int] = None,
     uniqueIDs: bool = False,
 ) -> SearchStrategy:  # List[Incident]
+    """
+    Strategy that generates :class:`List`s containing :class:`Incident` values.
+    """
     uniqueBy: Optional[Callable[[Incident], Hashable]]
     if uniqueIDs:
         def uniqueBy(incident: Incident) -> Hashable:
@@ -276,11 +322,17 @@ def incidentLists(
 ##
 
 def locationNames() -> SearchStrategy:  # str
+    """
+    Strategy that generates location names.
+    """
     return text()
 
 
 @composite
 def locations(draw: Callable) -> Location:
+    """
+    Strategy that generates :class:`Location` values.
+    """
     return Location(name=draw(locationNames()), address=draw(addresses()))
 
 
@@ -289,6 +341,9 @@ def locations(draw: Callable) -> Location:
 ##
 
 def incidentPriorities() -> SearchStrategy:  # IncidentPriority
+    """
+    Strategy that generates :class:`IncidentPriority` values.
+    """
     return sampled_from(IncidentPriority)
 
 
@@ -297,11 +352,17 @@ def incidentPriorities() -> SearchStrategy:  # IncidentPriority
 ##
 
 def rangerHandles() -> SearchStrategy:  # str
+    """
+    Strategy that generates Ranger handles.
+    """
     return text(min_size=1)
 
 
 @composite
 def rangers(draw: Callable) -> Ranger:
+    """
+    Strategy that generates :class:`Ranger` values.
+    """
     return Ranger(
         handle=draw(rangerHandles()),
         name=draw(text(min_size=1)),
@@ -328,6 +389,9 @@ def incidentReports(
     maxNumber: Optional[int] = None,
     beforeNow: bool = False, fromNow: bool = False,
 ) -> IncidentReport:
+    """
+    Strategy that generates :class:`IncidentReport` values.
+    """
     automatic: Optional[bool]
     if new:
         number = 0
@@ -352,6 +416,10 @@ def incidentReportLists(
     maxSize: Optional[int] = None,
     averageSize: Optional[int] = None,
 ) -> SearchStrategy:  # List[IncidentReport]
+    """
+    Strategy that generates :class:`List`s containing :class:`IncidentReport`
+    values.
+    """
     def uniqueBy(incidentReport: IncidentReport) -> Hashable:
         return cast(Hashable, incidentReport.number)
 
@@ -367,6 +435,9 @@ def incidentReportLists(
 ##
 
 def incidentStates() -> SearchStrategy:  # IncidentState
+    """
+    Strategy that generates :class:`IncidentState` values.
+    """
     return sampled_from(IncidentState)
 
 
@@ -375,8 +446,14 @@ def incidentStates() -> SearchStrategy:  # IncidentState
 ##
 
 def incidentTypesText() -> SearchStrategy:  # str
+    """
+    Strategy that generates incident types.
+    """
     return text(min_size=1)
 
 
 def incidentTypes() -> SearchStrategy:  # KnownIncidentType
+    """
+    Strategy that generates :class:`KnownIncidentType` values.
+    """
     return sampled_from(KnownIncidentType)

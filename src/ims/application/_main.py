@@ -106,6 +106,9 @@ class MainApplication(object):
 
     @property
     def dms(self) -> DutyManagementSystem:
+        """
+        Return the :class:`DutyManagementSystem` object.
+        """
         return self.config.dms
 
 
@@ -146,6 +149,9 @@ class MainApplication(object):
     @router.route(URLs.static, branch=True)
     @static
     def staticEndpoint(self, request: IRequest) -> KleinRenderable:
+        """
+        Return endpoint for static resources collection.
+        """
         return File(resourcesDirectory.path)
 
 

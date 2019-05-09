@@ -279,14 +279,21 @@ def queryValues(
 #
 
 class Router(Klein):
+    """
+    Klein router.
+    """
+
     def __init__(self) -> None:
         super().__init__()
-        self.registerHandlers()
+        self._registerHandlers()
 
 
     def route(
         self, url: Union[str, URL], *args: Any, **kwargs: Any
     ) -> Callable[[KleinRouteMethod], KleinRouteMethod]:
+        """
+        See :meth:`Klein.route`.
+        """
         superRoute = super().route
 
         if isinstance(url, URL):
@@ -316,7 +323,7 @@ class Router(Klein):
         return decorator
 
 
-    def registerHandlers(self) -> None:
+    def _registerHandlers(self) -> None:
         @self.handle_errors(RequestRedirect)
         @renderResponse
         def requestRedirectError(

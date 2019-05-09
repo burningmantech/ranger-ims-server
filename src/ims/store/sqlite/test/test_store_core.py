@@ -29,7 +29,10 @@ from typing import Optional
 from hypothesis import given, settings
 from hypothesis.strategies import integers
 
-from ims.ext.sqlite import Connection, SQLiteError, createDB, printSchema
+from ims.ext.sqlite import (
+    Connection, SQLITE_MAX_INT, SQLITE_MIN_INT, SQLiteError,
+    createDB, printSchema,
+)
 from ims.ext.trial import AsynchronousTestCase, TestCase
 
 from .base import TestDataStore
@@ -285,7 +288,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         self.assertEqual(f.getErrorMessage(), "Invalid schema: no version")
 
 
-    @given(integers(max_value=-1))
+    @given(integers(min_value=SQLITE_MIN_INT, max_value=-1))
     @settings(max_examples=10)
     def test_upgradeSchema_fromVersionTooLow(self, version: int) -> None:
         """
@@ -309,7 +312,11 @@ class DataStoreCoreTests(AsynchronousTestCase):
         )
 
 
-    @given(integers(min_value=DataStore.schemaVersion + 1))
+    @given(
+        integers(
+            min_value=DataStore.schemaVersion + 1, max_value=SQLITE_MAX_INT
+        )
+    )
     @settings(max_examples=10)
     def test_upgradeSchema_fromVersionTooHigh(self, version: int) -> None:
         """
