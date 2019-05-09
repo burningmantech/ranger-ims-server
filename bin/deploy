@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# Deploy Docker image.
+#
+
+# These variables must be provided by the CI environment:
+# * AWS_ACCESS_KEY_ID
+# * AWS_DEFAULT_REGION
+# * AWS_ECR_IMAGE_NAME
+# * AWS_ECS_CLUSTER_PRODUCTION
+# * AWS_ECS_CLUSTER_STAGING
+# * AWS_ECS_SERVICE_PRODUCTION
+# * AWS_ECS_SERVICE_STAGING
+# * AWS_SECRET_ACCESS_KEY
+# * LOCAL_IMAGE_NAME
+# * NOTIFY_EMAIL_RECIPIENT
+# * NOTIFY_EMAIL_SENDER
+# * NOTIFY_SMTP_HOST
+# * NOTIFY_SMTP_PASSWORD
+# * NOTIFY_SMTP_PORT
+# * NOTIFY_SMTP_USER
+# * PROJECT_NAME (optional)
+
+. "$(dirname "$0")/.common.sh";
+
+version="master";
+
+host="raw.githubusercontent.com";
+repo="burningmantech/ranger-deploy";
+path="bin/deploy_aws_ecs";
+
+script_url="https://${host}/${repo}/${version}/${path}";
+
+export DEPLOY_TOOLS_VERSION="${version}";
+export     LOCAL_IMAGE_NAME="${image_name}";
+
+# Download and run the deploy script.
+echo "Running: ${script_url} ${@}";
+deploy_cmd="$(mktemp)";
+curl --silent "${script_url}" --output "${deploy_cmd}";
+sh "${deploy_cmd}" --profile="clubhouse-api" "${@}";
+rm "${deploy_cmd}";
