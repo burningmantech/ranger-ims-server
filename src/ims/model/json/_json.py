@@ -74,7 +74,7 @@ def jsonObjectFromModelObject(model: Any) -> Any:
 def modelObjectFromJSONObject(json: Any, modelClass: type) -> Any:
     try:
         return jsonDeserialize(json, modelClass)
-    except KeyError as e:
+    except KeyError:
         raise JSONCodecError(f"Invalid JSON for {modelClass.__name__}: {json}")
 
 

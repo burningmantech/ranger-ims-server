@@ -157,7 +157,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         try:
             await store.incidentReportWithNumber(1)
-        except NoSuchIncidentReportError as e:
+        except NoSuchIncidentReportError:
             pass
         else:
             self.fail("NoSuchIncidentReportError not raised")
@@ -174,7 +174,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         try:
             await store.incidentReportWithNumber(store.maxIncidentNumber + 1)
-        except NoSuchIncidentReportError as e:
+        except NoSuchIncidentReportError:
             pass
         else:
             self.fail("NoSuchIncidentReportError not raised")
