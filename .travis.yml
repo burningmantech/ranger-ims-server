@@ -11,15 +11,23 @@ services:
   - mysql
 
 
-matrix:
+stages:
+  - Lint
+  - Unit Test
+
+
+jobs:
   include:
-    - python: 3.6
+    - stage: Lint
+      python: 3.6
       env: TOXENV=flake8
 
-    - python: 3.6
+    - stage: Lint
+      python: 3.6
       env: TOXENV=mypy
 
-    - python: 3.6
+    - stage: Unit Test
+      python: 3.6
       env: TOXENV=coverage-py36,codecov
 
 
