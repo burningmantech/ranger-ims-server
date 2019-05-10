@@ -29,15 +29,13 @@ mypy "$@"                                                                       
         -e ': error: Argument 1 to "instance_of" has incompatible type "Type\[Iterable\[Any\]\]"'  \
         -e ': error: Too many arguments for "fget" of "property"'                                  \
         -e ': error: Unsupported left operand type for '                                           \
-        -e ': note: (Perhaps setting MYPYPATH .* would help)'                                      \
-        -e ': note: (Stub files are from .*)'                                                      \
-        -e ': note: See https://mypy.readthedocs.io/en/latest/running_mypy.html#missing-imports'   \
+        -e ': note: '                                                                              \
         -e '^src/ims/ext/sqlite.py:[0-9:]\+: error: Unexpected keyword argument "factory" for "cursor" of "Connection"' \
-        -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: Unexpected keyword argument "lines" for "QueryPlanExplanation"' \
-        -e '^src/ims/store/.*/_queries.py:[0-9:]\+: error: Unexpected keyword argument "[^"]*" for "Queries"' \
         -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: .* incompatible with supertype ".\+"' \
+        -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: Unexpected keyword argument "lines" for "QueryPlanExplanation"' \
         -e '^src/ims/ext/enum.py:[0-9:]\+: error: Cannot assign to a method' \
         -e '^src/ims/model/json/_ranger.py:[0-9:]\+: error: Incompatible types in assignment ' \
+        -e '^src/ims/store/.*/_queries.py:[0-9:]\+: error: Unexpected keyword argument "[^"]*" for "Queries"' \
         > "${tmp}" || true;
 
 sort < "${tmp}";
