@@ -18,11 +18,11 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from pathlib import Path
-from typing import Optional, cast
+from typing import ClassVar, cast
+
+from attr import attrib, attrs
 
 from ims.ext.sqlite import Connection, SQLITE_MAX_INT, SQLiteError
-from ims.ext.trial import TestCase
 
 from .._store import DataStore
 from ...test.database import TestDatabaseStoreMixIn
@@ -32,22 +32,26 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     """
     See :class:`SuperTestDataStore`.
     """
 
-    maxIncidentNumber = SQLITE_MAX_INT
+    maxIncidentNumber: ClassVar[int] = SQLITE_MAX_INT
+    exceptionClass: ClassVar[type] = SQLiteError
 
-    exceptionClass = SQLiteError
+
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, slots=True)
+    class _State(DataStore._State):
+        """
+        Internal mutable state for :class:`DataStore`.
+        """
+
+        broken: bool = False
 
 
-    def __init__(
-        self, testCase: TestCase, dbPath: Optional[Path] = None
-    ) -> None:
-        if dbPath is None:
-            dbPath = Path(testCase.mktemp())
-        DataStore.__init__(self, dbPath)
+    _state: _State = attrib(factory=_State, init=False)
 
 
     @property
@@ -59,5 +63,4 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
 
 
     def bringThePain(self) -> None:
-        setattr(self._state, "broken", True)
-        assert getattr(self._state, "broken")
+        self._state.broken = True

@@ -18,7 +18,7 @@
 Admin incident types page.
 """
 
-from ims.config import Configuration
+from attr import attrs
 
 from ...page import Page
 
@@ -27,10 +27,10 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class AdminIncidentTypesPage(Page):
     """
     Admin incident types page.
     """
 
-    def __init__(self, config: Configuration) -> None:
-        super().__init__(config=config, title="Edit Incident Types")
+    name: str = "Edit Incident Types"

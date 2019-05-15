@@ -21,7 +21,9 @@ Tests for :mod:`ranger-ims-server.store`
 from abc import ABC, abstractmethod
 from datetime import datetime as DateTime, timedelta as TimeDelta
 from functools import wraps
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Callable, ClassVar, Optional, Sequence
+
+from attr import attrs
 
 from twisted.internet.defer import ensureDeferred
 
@@ -44,15 +46,15 @@ def asyncAsDeferred(f: Callable) -> Callable:
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class TestDataStoreMixIn(ABC):
     """
     :class:`IMSDataStore` mix-in for testing.
     """
 
-    maxIncidentNumber = 2**63 - 1  # Default to 64-bit int
-
-    exceptionClass = Exception
-    exceptionMessage = "I'm broken, yo"
+    maxIncidentNumber: ClassVar[int] = 2**63 - 1  # Default to 64-bit int
+    exceptionClass: ClassVar[type] = Exception
+    exceptionMessage: ClassVar[str] = "I'm broken, yo"
 
 
     @abstractmethod
@@ -164,6 +166,7 @@ class TestDataStoreMixIn(ABC):
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class TestDataStoreABC(IMSDataStore, TestDataStoreMixIn):
     """
     Test Data Store ABC.
@@ -176,7 +179,7 @@ class DataStoreTests(AsynchronousTestCase):
     Tests for :class:`IMSDataStore` event access.
     """
 
-    skip: Optional[str] = "Parent class of real tests"
+    skip: ClassVar[Optional[str]] = "Parent class of real tests"
 
 
     async def store(self) -> TestDataStoreABC:

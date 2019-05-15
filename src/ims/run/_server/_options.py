@@ -21,10 +21,9 @@ Command line options for the IMS server.
 from pathlib import Path
 from sys import stderr, stdout
 from textwrap import dedent
-from typing import Mapping, MutableMapping, Optional, Sequence, cast
+from typing import ClassVar, Mapping, MutableMapping, Optional, Sequence, cast
 
-from attr import attrib, attrs
-from attr.validators import instance_of
+from attr import attrs
 
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.logger import (
@@ -43,12 +42,13 @@ openFile = open
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class ServerOptions(Options):
     """
     Command line options for the IMS server.
     """
 
-    defaultLogLevel = LogLevel.info
+    defaultLogLevel: ClassVar[LogLevel] = LogLevel.info
 
 
     def getSynopsis(self) -> str:
@@ -74,11 +74,11 @@ class ServerOptions(Options):
             configFile = cast(Path, cast(Mapping, self).get("configFile"))
 
             if configFile is None:
-                configuration = Configuration(None)
+                configuration = Configuration.fromConfigFile(None)
             else:
                 if not configFile.is_file():
                     exit(ExitStatus.EX_CONFIG, "Config file not found.")
-                configuration = Configuration(configFile)
+                configuration = Configuration.fromConfigFile(configFile)
 
             options = cast(MutableMapping, self)
 
@@ -87,17 +87,23 @@ class ServerOptions(Options):
                     raise NotImplementedError("Option overrides unimplemented")
 
             if "logFileName" in options:
-                configuration.LogFilePath = Path(options["logFileName"])
+                configuration = configuration.replace(
+                    LogFilePath=Path(options["logFileName"])
+                )
             else:
                 self.opt_log_file(str(configuration.LogFilePath))
 
             if "logFormat" in options:
-                configuration.LogFormat = options["logFormat"]
+                configuration = configuration.replace(
+                    LogFormat=options["logFormat"]
+                )
             elif configuration.LogFormat is not None:
                 self.opt_log_format(configuration.LogFormat)
 
             if "logLevel" in options:
-                configuration.LogLevelName = options["logLevel"].name
+                configuration = configuration.replace(
+                    LogLevelName=options["logLevel"].name
+                )
             elif configuration.LogLevelName is not None:
                 self.opt_log_level(configuration.LogLevelName)
 
@@ -218,12 +224,12 @@ class ServerOptions(Options):
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class Override(object):
     """
     Configuration option override.
     """
 
-    section: str = attrib(validator=instance_of(str))
-    name: str    = attrib(validator=instance_of(str))
-    value: str   = attrib(validator=instance_of(str))
+    section: str
+    name: str
+    value: str

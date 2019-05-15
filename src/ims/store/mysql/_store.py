@@ -20,10 +20,10 @@ Incident Management System SQL data store.
 
 from pathlib import Path
 from sys import stdout
-from typing import Any, Callable, Optional, cast
+from typing import Any, Callable, ClassVar, Optional, cast
 from typing.io import TextIO
 
-from attr import Factory, attrib, attrs
+from attr import attrib, attrs
 from attr.validators import instance_of, optional
 
 from pymysql.cursors import DictCursor
@@ -33,7 +33,7 @@ from twisted.enterprise.adbapi import ConnectionPool
 from twisted.logger import Logger
 
 from ._queries import queries
-from .._db import DatabaseStore, Parameters, Query, Rows, Transaction
+from .._db import DatabaseStore, Parameters, Queries, Query, Rows, Transaction
 from .._exceptions import StorageError
 
 
@@ -79,19 +79,19 @@ class Cursor(DictCursor):
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class DataStore(DatabaseStore):
     """
     Incident Management System MySQL data store.
     """
 
-    _log = Logger()
+    _log: ClassVar[Logger] = Logger()
 
-    schemaVersion = 3
-    schemaBasePath = Path(__file__).parent / "schema"
-    sqlFileExtension = "mysql"
+    schemaVersion: ClassVar[int] = 3
+    schemaBasePath: ClassVar[Path] = Path(__file__).parent / "schema"
+    sqlFileExtension: ClassVar[str] = "mysql"
 
-    query = queries
+    query: ClassVar[Queries] = queries
 
 
     @attrs(frozen=False)
@@ -106,13 +106,13 @@ class DataStore(DatabaseStore):
         )
 
 
-    hostName: str = attrib(validator=instance_of(str))
-    hostPort: int = attrib(validator=instance_of(int))
-    database: str = attrib(validator=instance_of(str))
-    username: str = attrib(validator=instance_of(str))
-    password: str = attrib(validator=instance_of(str))
+    hostName: str
+    hostPort: int
+    database: str
+    username: str
+    password: str
 
-    _state: _State = attrib(default=Factory(_State), init=False)
+    _state: _State = attrib(factory=_State, init=False)
 
 
     @property
@@ -128,8 +128,6 @@ class DataStore(DatabaseStore):
                 cursorclass=Cursor,
                 cp_reconnect=True,
             )
-
-            # self._upgradeSchema(db)
 
             self._state.db = db
 
@@ -160,7 +158,7 @@ class DataStore(DatabaseStore):
                 description=query.description,
                 query=query, **parameters, error=e,
             )
-            raise StorageError(e)
+            raise StorageError(str(e))
 
 
     async def runOperation(
@@ -177,7 +175,7 @@ class DataStore(DatabaseStore):
                 "Unable to {description}: {error}",
                 description=query.description, error=e,
             )
-            raise StorageError(e)
+            raise StorageError(str(e))
 
 
     async def runInteraction(
@@ -190,7 +188,7 @@ class DataStore(DatabaseStore):
                 "Interaction {interaction} failed: {error}",
                 interaction=interaction, error=e,
             )
-            raise StorageError(e)
+            raise StorageError(str(e))
 
 
     async def dbSchemaVersion(self) -> int:
@@ -215,7 +213,7 @@ class DataStore(DatabaseStore):
                 "Unable to {description}: {error}",
                 description=self.query.schemaVersion.description, error=e,
             )
-            raise StorageError(e)
+            raise StorageError(str(e))
 
 
     async def printSchema(self, out: TextIO = stdout) -> None:

@@ -99,7 +99,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
         name = await service.createDatabase(name=name)
 
         store = TestDataStore(
-            self,
             hostName=service.host,
             hostPort=service.port,
             database=name,

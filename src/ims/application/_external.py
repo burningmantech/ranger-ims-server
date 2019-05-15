@@ -20,11 +20,10 @@ Incident Management System cached external resources.
 
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any
+from typing import Any, ClassVar
 from zipfile import BadZipfile
 
-from attr import attrib, attrs
-from attr.validators import instance_of
+from attr import attrs
 
 from hyperlink import URL
 
@@ -51,16 +50,16 @@ def _unprefix(url: URL) -> URL:
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class ExternalApplication(object):
     """
     Application with endpoints for cached external resources.
     """
 
-    _log = Logger()
-    router = Router()
+    _log: ClassVar = Logger()
+    router: ClassVar = Router()
 
-    config: Configuration = attrib(validator=instance_of(Configuration))
+    config: Configuration
 
     bootstrapVersionNumber  = "3.3.7"
     jqueryVersionNumber     = "3.1.0"

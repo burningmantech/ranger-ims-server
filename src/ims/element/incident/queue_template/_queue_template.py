@@ -18,7 +18,7 @@
 Dispatch queue template page.
 """
 
-from ims.config import Configuration
+from attr import attrs
 
 from ...page import Page
 
@@ -29,10 +29,10 @@ __all__ = ()
 title = "Dispatch Queue"
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class DispatchQueueTemplatePage(Page):
     """
     Dispatch queue template page.
     """
 
-    def __init__(self, config: Configuration) -> None:
-        super().__init__(config=config, title=title)
+    name: str = title

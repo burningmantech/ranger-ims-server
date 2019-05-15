@@ -18,11 +18,12 @@
 Incident reports page element.
 """
 
+from attr import attrs
+
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 
 from ims.auth import Authorization
-from ims.config import Configuration
 from ims.ext.json import jsonFalse, jsonTrue
 from ims.ext.klein import KleinRenderable
 
@@ -34,13 +35,13 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class IncidentReportsPage(Page):
     """
     Incident reports page element.
     """
 
-    def __init__(self, config: Configuration) -> None:
-        super().__init__(config=config, title=title)
+    name: str = title
 
 
     @renderer

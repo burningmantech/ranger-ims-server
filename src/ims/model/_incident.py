@@ -20,12 +20,10 @@
 Incident
 """
 
-from collections.abc import Iterable as IterableABC
 from datetime import datetime as DateTime
 from typing import AbstractSet, Iterable, Optional, Sequence
 
 from attr import attrib, attrs
-from attr.validators import instance_of, optional
 
 from ims.ext.attr import sorted_tuple
 
@@ -41,47 +39,23 @@ __all__ = ()
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class Incident(ReplaceMixIn):
     """
     Incident
     """
 
-    # FIXME: better validator for IterableABC attrs
-
-    event: Event = attrib(
-        validator=instance_of(Event)
-    )
-    number: int = attrib(
-        validator=instance_of(int)
-    )
-    created: DateTime = attrib(
-        validator=instance_of(DateTime)
-    )
-    state: IncidentState = attrib(
-        validator=instance_of(IncidentState)
-    )
-    priority: IncidentPriority = attrib(
-        validator=instance_of(IncidentPriority)
-    )
-    summary: Optional[str] = attrib(
-        validator=optional(instance_of(str))
-    )
-    location: Location = attrib(
-        validator=instance_of(Location)
-    )
-    rangerHandles: AbstractSet[str] = attrib(
-        validator=instance_of(IterableABC), converter=frozenset
-    )
-    incidentTypes: AbstractSet[str] = attrib(
-        validator=instance_of(IterableABC), converter=frozenset
-    )
-    reportEntries: Sequence[ReportEntry] = attrib(
-        validator=instance_of(IterableABC), converter=sorted_tuple
-    )
-    incidentReportNumbers: AbstractSet[int] = attrib(
-        validator=instance_of(IterableABC), converter=frozenset
-    )
+    event: Event
+    number: int
+    created: DateTime
+    state: IncidentState
+    priority: IncidentPriority
+    summary: Optional[str]
+    location: Location
+    rangerHandles: AbstractSet[str] = attrib(converter=frozenset)
+    incidentTypes: AbstractSet[str] = attrib(converter=frozenset)
+    reportEntries: Sequence[ReportEntry] = attrib(converter=sorted_tuple)
+    incidentReportNumbers: AbstractSet[int] = attrib(converter=frozenset)
 
 
     def __str__(self) -> str:

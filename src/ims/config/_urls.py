@@ -18,6 +18,8 @@
 Incident Management System URL schema.
 """
 
+from typing import ClassVar
+
 from attr import attrs
 
 from hyperlink import URL
@@ -27,7 +29,7 @@ __all__ = ()
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class URLs(object):
     """
     Incident Management System URL schema.
@@ -35,104 +37,106 @@ class URLs(object):
 
     # Main application
 
-    root = URL.fromText("/")
+    root: ClassVar = URL.fromText("/")
 
-    prefix = root.child("ims").child("")
-    urlsJS = prefix.child("urls.js")
+    prefix: ClassVar = root.child("ims").child("")
+    urlsJS: ClassVar = prefix.child("urls.js")
 
     # Static resources
-    static     = prefix.child("static")
-    styleSheet = static.child("style.css")
-    logo       = static.child("logo.png")
+    static: ClassVar     = prefix.child("static")
+    styleSheet: ClassVar = static.child("style.css")
+    logo: ClassVar       = static.child("logo.png")
 
     # Auth application
 
-    auth   = prefix.child("auth").child("")
-    login  = auth.child("login")
-    logout = auth.child("logout")
+    auth: ClassVar   = prefix.child("auth").child("")
+    login: ClassVar  = auth.child("login")
+    logout: ClassVar = auth.child("logout")
 
     # External application
 
-    external = prefix.child("ext").child("")
+    external: ClassVar = prefix.child("ext").child("")
 
-    jqueryBase = external.child("jquery").child("")
-    jqueryJS   = jqueryBase.child("jquery.min.js")
-    jqueryMap  = jqueryBase.child("jquery.min.map")
+    jqueryBase: ClassVar = external.child("jquery").child("")
+    jqueryJS: ClassVar   = jqueryBase.child("jquery.min.js")
+    jqueryMap: ClassVar  = jqueryBase.child("jquery.min.map")
 
-    bootstrapBase = external.child("bootstrap").child("")
-    bootstrapCSS  = bootstrapBase.child("css", "bootstrap.min.css")
-    bootstrapJS   = bootstrapBase.child("js", "bootstrap.min.js")
+    bootstrapBase: ClassVar = external.child("bootstrap").child("")
+    bootstrapCSS: ClassVar  = bootstrapBase.child("css", "bootstrap.min.css")
+    bootstrapJS: ClassVar   = bootstrapBase.child("js", "bootstrap.min.js")
 
-    dataTablesBase = external.child("datatables").child("")
-    dataTablesJS = dataTablesBase.child(
+    dataTablesBase: ClassVar = external.child("datatables").child("")
+    dataTablesJS: ClassVar = dataTablesBase.child(
         "media", "js", "jquery.dataTables.min.js"
     )
-    dataTablesBootstrapCSS = dataTablesBase.child(
+    dataTablesBootstrapCSS: ClassVar = dataTablesBase.child(
         "media", "css", "dataTables.bootstrap.min.css"
     )
-    dataTablesBootstrapJS = dataTablesBase.child(
+    dataTablesBootstrapJS: ClassVar = dataTablesBase.child(
         "media", "js", "dataTables.bootstrap.min.js"
     )
 
-    momentJS = external.child("moment.min.js")
+    momentJS: ClassVar = external.child("moment.min.js")
 
-    lscacheJS = external.child("lscache.min.js")
+    lscacheJS: ClassVar = external.child("lscache.min.js")
 
     # API application
 
-    api              = prefix.child("api").child("")
-    ping             = api.child("ping").child("")
-    acl              = api.child("access")
-    streets          = api.child("streets")
-    personnel        = api.child("personnel").child("")
-    incidentTypes    = api.child("incident_types").child("")
-    incidentReports  = api.child("incident_reports").child("")
-    incidentReport   = incidentReports.child("<number>")
-    events           = api.child("events").child("")
-    event            = events.child("<eventID>").child("")
-    locations        = event.child("locations").child("")
-    incidents        = event.child("incidents").child("")
-    incidentNumber   = incidents.child("<number>")
+    api: ClassVar              = prefix.child("api").child("")
+    ping: ClassVar             = api.child("ping").child("")
+    acl: ClassVar              = api.child("access")
+    streets: ClassVar          = api.child("streets")
+    personnel: ClassVar        = api.child("personnel").child("")
+    incidentTypes: ClassVar    = api.child("incident_types").child("")
+    incidentReports: ClassVar  = api.child("incident_reports").child("")
+    incidentReport: ClassVar   = incidentReports.child("<number>")
+    events: ClassVar           = api.child("events").child("")
+    event: ClassVar            = events.child("<eventID>").child("")
+    locations: ClassVar        = event.child("locations").child("")
+    incidents: ClassVar        = event.child("incidents").child("")
+    incidentNumber: ClassVar   = incidents.child("<number>")
 
-    eventSource      = api.child("eventsource")
+    eventSource: ClassVar      = api.child("eventsource")
 
     # Web application
 
-    app = prefix.child("app").child("")
+    app: ClassVar = prefix.child("app").child("")
 
-    imsJS = static.child("ims.js")
+    imsJS: ClassVar = static.child("ims.js")
 
-    admin   = app.child("admin").child("")
-    adminJS = static.child("admin.js")
+    admin: ClassVar   = app.child("admin").child("")
+    adminJS: ClassVar = static.child("admin.js")
 
-    adminAccessControl   = admin.child("access")
-    adminAccessControlJS = static.child("admin_access.js")
+    adminAccessControl: ClassVar   = admin.child("access")
+    adminAccessControlJS: ClassVar = static.child("admin_access.js")
 
-    adminIncidentTypes   = admin.child("types")
-    adminIncidentTypesJS = static.child("admin_types.js")
+    adminIncidentTypes: ClassVar   = admin.child("types")
+    adminIncidentTypesJS: ClassVar = static.child("admin_types.js")
 
-    adminStreets   = admin.child("streets")
-    adminStreetsJS = static.child("admin_streets.js")
+    adminStreets: ClassVar   = admin.child("streets")
+    adminStreetsJS: ClassVar = static.child("admin_streets.js")
 
-    viewEvents = app.child("events").child("")
-    viewEvent  = viewEvents.child("<eventID>").child("")
+    viewEvents: ClassVar = app.child("events").child("")
+    viewEvent: ClassVar  = viewEvents.child("<eventID>").child("")
 
-    viewDispatchQueue         = viewEvent.child("queue")
-    viewDispatchQueueTemplate = app.child("queue.html")
-    viewDispatchQueueJS       = static.child("queue.js")
-    viewDispatchQueueRelative = URL.fromText("queue")
+    viewDispatchQueue: ClassVar         = viewEvent.child("queue")
+    viewDispatchQueueTemplate: ClassVar = app.child("queue.html")
+    viewDispatchQueueJS: ClassVar       = static.child("queue.js")
+    viewDispatchQueueRelative: ClassVar = URL.fromText("queue")
 
-    viewIncidents = viewEvent.child("incidents").child("")
+    viewIncidents: ClassVar = viewEvent.child("incidents").child("")
 
-    viewIncidentNumber   = viewIncidents.child("<number>")
-    viewIncidentTemplate = app.child("incident.html")
-    viewIncidentJS       = static.child("incident.js")
+    viewIncidentNumber: ClassVar   = viewIncidents.child("<number>")
+    viewIncidentTemplate: ClassVar = app.child("incident.html")
+    viewIncidentJS: ClassVar       = static.child("incident.js")
 
-    viewIncidentReports         = app.child("incident_reports").child("")
-    viewIncidentReportsTemplate = app.child("incident_reports.html")
-    viewIncidentReportsJS       = static.child("incident_reports.js")
+    viewIncidentReports: ClassVar = (
+        app.child("incident_reports").child("")
+    )
+    viewIncidentReportsTemplate: ClassVar = app.child("incident_reports.html")
+    viewIncidentReportsJS: ClassVar = static.child("incident_reports.js")
 
-    viewIncidentReportNew       = viewIncidentReports.child("new")
-    viewIncidentReportNumber    = viewIncidentReports.child("<number>")
-    viewIncidentReportTemplate  = app.child("incident_report.html")
-    viewIncidentReportJS        = static.child("incident_report.js")
+    viewIncidentReportNew: ClassVar = viewIncidentReports.child("new")
+    viewIncidentReportNumber: ClassVar = viewIncidentReports.child("<number>")
+    viewIncidentReportTemplate: ClassVar = app.child("incident_report.html")
+    viewIncidentReportJS: ClassVar = static.child("incident_report.js")

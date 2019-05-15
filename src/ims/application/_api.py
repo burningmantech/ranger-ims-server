@@ -21,11 +21,11 @@ Incident Management System JSON API endpoints.
 from datetime import datetime as DateTime, timezone as TimeZone
 from enum import Enum
 from typing import (
-    Any, Awaitable, Callable, Iterable, Mapping, Optional, Tuple, cast
+    Any, Awaitable, Callable, ClassVar, Iterable, Mapping, Optional, Tuple,
+    cast,
 )
 
-from attr import attrib, attrs
-from attr.validators import instance_of, provides
+from attr import attrs
 
 from hyperlink import URL
 
@@ -72,18 +72,18 @@ def _unprefix(url: URL) -> URL:
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class APIApplication(object):
     """
     Application with JSON API endpoints.
     """
 
-    _log = Logger()
-    router = Router()
+    _log: ClassVar = Logger()
+    router: ClassVar = Router()
 
 
-    config: Configuration = attrib(validator=instance_of(Configuration))
-    storeObserver: ILogObserver = attrib(validator=provides(ILogObserver))
+    config: Configuration
+    storeObserver: ILogObserver
 
 
     @router.route(_unprefix(URLs.ping), methods=("HEAD", "GET"))

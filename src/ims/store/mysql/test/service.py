@@ -22,10 +22,9 @@ This implementation uses Docker containers.
 from abc import ABC, abstractmethod
 from random import choice
 from string import ascii_letters, digits
-from typing import Awaitable, Mapping, Optional
+from typing import Awaitable, ClassVar, Mapping, Optional
 
 from attr import Factory, attrib, attrs
-from attr.validators import instance_of, optional
 
 from docker.api import APIClient
 from docker.client import DockerClient
@@ -59,12 +58,13 @@ NO_PORT = 0
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class MySQLService(ABC):
     """
     MySQL database service.
     """
 
-    _log = Logger()
+    _log: ClassVar[Logger] = Logger()
 
 
     @property
@@ -167,59 +167,40 @@ class MySQLService(ABC):
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class DockerizedMySQLService(MySQLService):
     """
     Manages a MySQL instance.
     """
 
-    _log = Logger()
-
-    _dockerHost = "172.17.0.1"
+    _log: ClassVar[Logger] = Logger()
 
 
-    @attrs(frozen=False)
+    @attrs(auto_attribs=True, kw_only=True)
     class _State(object):
         """
         Internal mutable state for :class:`DataStore`.
         """
 
-        container: Optional[Deferred] = attrib(
-            validator=optional(instance_of(Container)),
-            default=None, init=False,
-        )
-        host: str = attrib(
-            validator=optional(instance_of(str)), default=NO_HOST, init=False
-        )
-        port: int = attrib(
-            validator=optional(instance_of(int)), default=NO_PORT, init=False
-        )
+        container: Optional[Deferred] = None
+
+        host = NO_HOST
+        port = NO_PORT
 
 
-    _user: str = attrib(
-        validator=instance_of(str), default=Factory(randomDatabaseName),
-    )
-    _password: str = attrib(
-        validator=instance_of(str), default=Factory(randomDatabaseName),
-    )
-    _rootPassword: str = attrib(
-        validator=instance_of(str), default=Factory(randomDatabaseName),
-    )
+    _user: str         = Factory(randomDatabaseName)
+    _password: str     = Factory(randomDatabaseName)
+    _rootPassword: str = Factory(randomDatabaseName)
 
-    imageRepository: str = attrib(
-        validator=instance_of(str), default="mysql/mysql-server",
-    )
-    imageTag: str = attrib(
-        validator=instance_of(str), default="5.6",
-    )
+    _dockerHost: str = "172.17.0.1"
+
+    imageRepository = "mysql/mysql-server"
+    imageTag        = "5.6"
 
     _dockerClient: DockerClient = attrib(
-        validator=instance_of(DockerClient),
-        default=Factory(DockerClient.from_env),
-        init=False,
+        factory=DockerClient.from_env, init=False
     )
-
-    _state: _State = attrib(default=Factory(_State), init=False)
+    _state: _State = attrib(factory=_State, init=False)
 
 
     @property
@@ -460,19 +441,19 @@ class DockerizedMySQLService(MySQLService):
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class ExternalMySQLService(MySQLService):
     """
     Externally hosted MySQL instance.
     """
 
-    _log = Logger()
+    _log: ClassVar = Logger()
 
-    _host: str         = attrib(validator=instance_of(str))
-    _port: int         = attrib(validator=instance_of(int))
-    _user: str         = attrib(validator=instance_of(str))
-    _password: str     = attrib(validator=instance_of(str))
-    _rootPassword: str = attrib(validator=instance_of(str))
+    _host: str
+    _port: int
+    _user: str
+    _password: str
+    _rootPassword: str
 
 
     @property

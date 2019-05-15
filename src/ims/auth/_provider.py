@@ -18,10 +18,9 @@
 Incident Management System web application authentication provider.
 """
 
-from typing import Container, FrozenSet, Optional, Sequence
+from typing import ClassVar, Container, FrozenSet, Optional, Sequence
 
-from attr import attrib, attrs
-from attr.validators import instance_of, optional
+from attr import attrs
 
 from twisted.logger import Logger
 from twisted.python.constants import FlagConstant, Flags
@@ -38,20 +37,21 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=False)
 class Authorization(Flags):
     """
     Authorizations
     """
 
-    imsAdmin = FlagConstant()
+    imsAdmin: ClassVar[FlagConstant] = FlagConstant()
 
-    readPersonnel = FlagConstant()
+    readPersonnel: ClassVar[FlagConstant] = FlagConstant()
 
-    readIncidents  = FlagConstant()
-    writeIncidents = FlagConstant()
+    readIncidents: ClassVar[FlagConstant]  = FlagConstant()
+    writeIncidents: ClassVar[FlagConstant] = FlagConstant()
 
-    readIncidentReports  = FlagConstant()
-    writeIncidentReports = FlagConstant()
+    readIncidentReports: ClassVar[FlagConstant]  = FlagConstant()
+    writeIncidentReports: ClassVar[FlagConstant] = FlagConstant()
 
 
 Authorization.none = Authorization.imsAdmin ^ Authorization.imsAdmin
@@ -66,17 +66,17 @@ Authorization.all = (
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class User(object):
     """
     Application user.
     """
 
-    _log = Logger()
+    _log: ClassVar = Logger()
 
 
-    _ranger: Ranger = attrib(validator=instance_of(Ranger))
-    groups: Sequence[str] = attrib(validator=instance_of(tuple))
+    _ranger: Ranger
+    groups: Sequence[str]
 
 
     @property
@@ -104,27 +104,20 @@ class User(object):
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class AuthProvider(object):
     """
     Provider for authentication and authorization support.
     """
 
-    _log = Logger()
+    _log: ClassVar = Logger()
 
-    store: IMSDataStore = attrib(validator=instance_of(IMSDataStore))
+    store: IMSDataStore
+    dms: DutyManagementSystem
 
-    dms: DutyManagementSystem = attrib(
-        validator=instance_of(DutyManagementSystem)
-    )
-
-    requireActive: bool = attrib(validator=instance_of(bool), default=True)
-
-    adminUsers: FrozenSet[str] = attrib(default=frozenset())
-
-    masterKey: Optional[str] = attrib(
-        validator=optional(instance_of(str)), default=None
-    )
+    requireActive: bool = True
+    adminUsers: FrozenSet[str] = frozenset()
+    masterKey: Optional[str] = None
 
 
     async def verifyCredentials(self, user: User, password: str) -> bool:
@@ -174,7 +167,7 @@ class AuthProvider(object):
 
         if request.user is None and not optional:
             self._log.debug("Authentication failed")
-            raise NotAuthenticatedError()
+            raise NotAuthenticatedError("No user logged in")
 
 
     async def authorizationsForUser(
@@ -258,7 +251,7 @@ class AuthProvider(object):
                 requiredAuthorizations=requiredAuthorizations,
                 userAuthorizations=userAuthorizations,
             )
-            raise NotAuthorizedError()
+            raise NotAuthorizedError(f"User not authorized")
 
 
     async def authorizeRequestForIncidentReport(

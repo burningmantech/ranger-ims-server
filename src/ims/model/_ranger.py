@@ -20,14 +20,10 @@
 Ranger
 """
 
-from collections.abc import Iterable
 from enum import Enum, unique
 from typing import AbstractSet, Optional
 
 from attr import attrib, attrs
-from attr.validators import instance_of, optional
-
-from ims.ext.attr import true
 
 from ._replace import ReplaceMixIn
 
@@ -80,7 +76,7 @@ class RangerStatus(Enum):
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class Ranger(ReplaceMixIn):
     """
     Ranger
@@ -91,27 +87,13 @@ class Ranger(ReplaceMixIn):
 
     # FIXME: better validator for email
 
-    handle: str = attrib(
-        validator=true(instance_of(str))
-    )
-    name: str = attrib(
-        validator=true(instance_of(str))
-    )
-    status: RangerStatus = attrib(
-        validator=instance_of(RangerStatus)
-    )
-    email: AbstractSet[str] = attrib(
-        validator=instance_of(Iterable), converter=frozenset
-    )
-    onSite: bool = attrib(
-        validator=instance_of(bool)
-    )
-    dmsID: Optional[int] = attrib(
-        validator=optional(instance_of(int))
-    )
-    password: Optional[str] = attrib(
-        validator=optional(instance_of(str)), default=None
-    )
+    handle: str
+    name: str
+    status: RangerStatus
+    email: AbstractSet[str] = attrib(converter=frozenset)
+    onSite: bool
+    dmsID: Optional[int]
+    password: Optional[str] = None
 
 
     def __str__(self) -> str:

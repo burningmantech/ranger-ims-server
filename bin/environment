@@ -36,6 +36,23 @@ class Writer(object):
         for value in values:
             self.line(value)
 
+    def modules(self, *names):
+        self.heading("Module versions")
+        for name in names:
+            try:
+                module = import_module(name)
+            except ImportError as e:
+                module = None
+
+            if module:
+                message = "{name} = {version}"
+                version = module.__version__
+            else:
+                message = "{name} is not installed"
+                version = None
+
+            self.line(message.format(name=name, version=version))
+
 
 out = Writer()
 
@@ -46,5 +63,10 @@ out.multiple(
 )
 out.single("Python executable", executable)
 out.multiple("Python version", sys_version.split("\n"))
+out.modules(
+    "flake8", "mypy.version",
+    "twisted",
+    "klein",
+)
 
 out.line("")

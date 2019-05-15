@@ -18,7 +18,7 @@
 Server root page.
 """
 
-from ims.config import Configuration
+from attr import attrs
 
 from ..page import Page
 
@@ -27,12 +27,10 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class RootPage(Page):
     """
     Server root page.
     """
 
-    def __init__(self, config: Configuration) -> None:
-        super().__init__(
-            config=config, title="Ranger Incident Management System"
-        )
+    name: str = "Ranger Incident Management System"

@@ -23,10 +23,7 @@ Report entry
 from datetime import datetime as DateTime
 from typing import Any
 
-from attr import attrib, attrs
-from attr.validators import instance_of
-
-from ims.ext.attr import true
+from attr import attrs
 
 from ._cmp import ComparisonMixIn
 from ._replace import ReplaceMixIn
@@ -36,7 +33,7 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, cmp=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True, cmp=False)
 class ReportEntry(ComparisonMixIn, ReplaceMixIn):
     """
     Report entry
@@ -44,10 +41,10 @@ class ReportEntry(ComparisonMixIn, ReplaceMixIn):
     A report entry is text with an associated author and time stamp.
     """
 
-    created: DateTime = attrib(validator=instance_of(DateTime))
-    author: str = attrib(validator=true(instance_of(str)))
-    automatic: bool = attrib(validator=instance_of(bool))
-    text: str = attrib(validator=true(instance_of(str)))
+    created: DateTime
+    author: str
+    automatic: bool
+    text: str
 
 
     def __str__(self) -> str:

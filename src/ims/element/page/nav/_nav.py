@@ -18,7 +18,7 @@
 <nav> Element.
 """
 
-from ims.config import Configuration
+from attr import attrs
 
 from ..._element import Element
 
@@ -27,10 +27,8 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class NavElement(Element):
     """
     <nav> Element.
     """
-
-    def __init__(self, config: Configuration) -> None:
-        super().__init__(config=config)

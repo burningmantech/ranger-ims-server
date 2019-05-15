@@ -21,6 +21,8 @@ Element base classes.
 from functools import partial
 from typing import Iterable
 
+from attr import attrs
+
 from twisted.python.filepath import FilePath
 from twisted.python.reflect import namedModule
 from twisted.web.iweb import IRequest, ITemplateLoader
@@ -38,12 +40,13 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class BaseElement(_Element):
     """
     XHTML element.
     """
 
-    def __init__(self) -> None:
+    def __attrs_post_init__(self) -> None:
         super().__init__(loader=self._loader())
 
 
@@ -54,14 +57,13 @@ class BaseElement(_Element):
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class Element(BaseElement):
     """
     XHTML element.
     """
 
-    def __init__(self, config: Configuration) -> None:
-        super().__init__()
-        self.config = config
+    config: Configuration
 
 
     ##
