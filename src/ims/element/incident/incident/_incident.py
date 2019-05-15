@@ -20,11 +20,12 @@ Incident page.
 
 from typing import Optional
 
+from attr import attrs
+
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 
 from ims.auth import Authorization
-from ims.config import Configuration
 from ims.ext.json import jsonFalse, jsonTextFromObject, jsonTrue
 from ims.ext.klein import KleinRenderable
 from ims.model import Event
@@ -37,17 +38,15 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class IncidentPage(Page):
     """
     Incident page.
     """
 
-    def __init__(
-        self, config: Configuration, event: Event, number: Optional[int]
-    ) -> None:
-        super().__init__(config=config, title=title)
-        self.event = event
-        self.number = number
+    name: str = title
+    event: Event
+    number: Optional[int]
 
 
     @renderer

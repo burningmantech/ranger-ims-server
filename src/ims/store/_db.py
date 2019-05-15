@@ -25,8 +25,8 @@ from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
 from typing import (
-    Any, Callable, Iterable, Iterator, Mapping, Optional, Tuple, TypeVar,
-    Union, cast,
+    Any, Callable, ClassVar, Iterable, Iterator, Mapping, Optional, Tuple,
+    TypeVar, Union, cast,
 )
 
 from attr import attrib, attrs
@@ -62,10 +62,10 @@ def now() -> DateTime:
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=False, slots=True)
 class Query(object):
-    description: str = attrib(validator=instance_of(str))
-    text: str = attrib(validator=instance_of(str), converter=dedent)
+    description: str
+    text: str = attrib(converter=dedent)
 
 
 
@@ -74,61 +74,63 @@ def _queryAttribute() -> Query:
 
 
 
-@attrs(frozen=True)
+# FIXME: Can this be an Enum?
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=False)
 class Queries(object):
-    schemaVersion                        = _queryAttribute()
-    events                               = _queryAttribute()
-    createEvent                          = _queryAttribute()
-    createEventOrIgnore                  = _queryAttribute()
-    eventAccess                          = _queryAttribute()
-    clearEventAccessForMode              = _queryAttribute()
-    clearEventAccessForExpression        = _queryAttribute()
-    addEventAccess                       = _queryAttribute()
-    incidentTypes                        = _queryAttribute()
-    incidentTypesNotHidden               = _queryAttribute()
-    createIncidentType                   = _queryAttribute()
-    createIncidentTypeOrIgnore           = _queryAttribute()
-    hideShowIncidentType                 = _queryAttribute()
-    concentricStreets                    = _queryAttribute()
-    createConcentricStreet               = _queryAttribute()
-    createConcentricStreetOrIgnore       = _queryAttribute()
-    detachedReportEntries                = _queryAttribute()
-    incident                             = _queryAttribute()
-    incident_rangers                     = _queryAttribute()
-    incident_incidentTypes               = _queryAttribute()
-    incident_reportEntries               = _queryAttribute()
-    incidentNumbers                      = _queryAttribute()
-    maxIncidentNumber                    = _queryAttribute()
-    attachRangeHandleToIncident          = _queryAttribute()
-    attachIncidentTypeToIncident         = _queryAttribute()
-    createReportEntry                    = _queryAttribute()
-    attachReportEntryToIncident          = _queryAttribute()
-    createIncident                       = _queryAttribute()
-    setIncident_priority                 = _queryAttribute()
-    setIncident_state                    = _queryAttribute()
-    setIncident_summary                  = _queryAttribute()
-    setIncident_locationName             = _queryAttribute()
-    setIncident_locationConcentricStreet = _queryAttribute()
-    setIncident_locationRadialHour       = _queryAttribute()
-    setIncident_locationRadialMinute     = _queryAttribute()
-    setIncident_locationDescription      = _queryAttribute()
-    clearIncidentRangers                 = _queryAttribute()
-    clearIncidentIncidentTypes           = _queryAttribute()
-    incidentReport                       = _queryAttribute()
-    incidentReport_reportEntries         = _queryAttribute()
-    incidentReportNumbers                = _queryAttribute()
-    maxIncidentReportNumber              = _queryAttribute()
-    createIncidentReport                 = _queryAttribute()
-    attachReportEntryToIncidentReport    = _queryAttribute()
-    setIncidentReport_summary            = _queryAttribute()
-    detachedIncidentReportNumbers        = _queryAttribute()
-    attachedIncidentReportNumbers        = _queryAttribute()
-    incidentsAttachedToIncidentReport    = _queryAttribute()
-    attachIncidentReportToIncident       = _queryAttribute()
-    detachIncidentReportFromIncident     = _queryAttribute()
+    schemaVersion: Query                        = _queryAttribute()
+    events: Query                               = _queryAttribute()
+    createEvent: Query                          = _queryAttribute()
+    createEventOrIgnore: Query                  = _queryAttribute()
+    eventAccess: Query                          = _queryAttribute()
+    clearEventAccessForMode: Query              = _queryAttribute()
+    clearEventAccessForExpression: Query        = _queryAttribute()
+    addEventAccess: Query                       = _queryAttribute()
+    incidentTypes: Query                        = _queryAttribute()
+    incidentTypesNotHidden: Query               = _queryAttribute()
+    createIncidentType: Query                   = _queryAttribute()
+    createIncidentTypeOrIgnore: Query           = _queryAttribute()
+    hideShowIncidentType: Query                 = _queryAttribute()
+    concentricStreets: Query                    = _queryAttribute()
+    createConcentricStreet: Query               = _queryAttribute()
+    createConcentricStreetOrIgnore: Query       = _queryAttribute()
+    detachedReportEntries: Query                = _queryAttribute()
+    incident: Query                             = _queryAttribute()
+    incident_rangers: Query                     = _queryAttribute()
+    incident_incidentTypes: Query               = _queryAttribute()
+    incident_reportEntries: Query               = _queryAttribute()
+    incidentNumbers: Query                      = _queryAttribute()
+    maxIncidentNumber: Query                    = _queryAttribute()
+    attachRangeHandleToIncident: Query          = _queryAttribute()
+    attachIncidentTypeToIncident: Query         = _queryAttribute()
+    createReportEntry: Query                    = _queryAttribute()
+    attachReportEntryToIncident: Query          = _queryAttribute()
+    createIncident: Query                       = _queryAttribute()
+    setIncident_priority: Query                 = _queryAttribute()
+    setIncident_state: Query                    = _queryAttribute()
+    setIncident_summary: Query                  = _queryAttribute()
+    setIncident_locationName: Query             = _queryAttribute()
+    setIncident_locationConcentricStreet: Query = _queryAttribute()
+    setIncident_locationRadialHour: Query       = _queryAttribute()
+    setIncident_locationRadialMinute: Query     = _queryAttribute()
+    setIncident_locationDescription: Query      = _queryAttribute()
+    clearIncidentRangers: Query                 = _queryAttribute()
+    clearIncidentIncidentTypes: Query           = _queryAttribute()
+    incidentReport: Query                       = _queryAttribute()
+    incidentReport_reportEntries: Query         = _queryAttribute()
+    incidentReportNumbers: Query                = _queryAttribute()
+    maxIncidentReportNumber: Query              = _queryAttribute()
+    createIncidentReport: Query                 = _queryAttribute()
+    attachReportEntryToIncidentReport: Query    = _queryAttribute()
+    setIncidentReport_summary: Query            = _queryAttribute()
+    detachedIncidentReportNumbers: Query        = _queryAttribute()
+    attachedIncidentReportNumbers: Query        = _queryAttribute()
+    incidentsAttachedToIncidentReport: Query    = _queryAttribute()
+    attachIncidentReportToIncident: Query       = _queryAttribute()
+    detachIncidentReportFromIncident: Query     = _queryAttribute()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class Transaction(IterableABC):
     lastrowid: int
 
@@ -164,18 +166,19 @@ class Transaction(IterableABC):
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class DatabaseStore(IMSDataStore):
     """
     Incident Management System data store using a managed database.
     """
 
-    _log = Logger()
+    _log: ClassVar[Logger] = Logger()
 
-    schemaVersion = 0
-    schemaBasePath = Path(__file__).parent / "schema"
-    sqlFileExtension = "sql"
+    schemaVersion: ClassVar[int]
+    schemaBasePath: ClassVar[Path]
+    sqlFileExtension: ClassVar[str]
 
-    query: Queries
+    query: ClassVar[Queries]
 
 
     @staticmethod

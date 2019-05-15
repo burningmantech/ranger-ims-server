@@ -20,17 +20,14 @@
 Event
 """
 
-from attr import attrib, attrs
-from attr.validators import instance_of
-
-from ims.ext.attr import true
+from attr import attrs
 
 
 __all__ = ()
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class Event(object):
     """
     Event
@@ -38,7 +35,7 @@ class Event(object):
     An event identifies a container for incident data.
     """
 
-    id: str = attrib(validator=true(instance_of(str)))
+    id: str
 
 
     def __str__(self) -> str:

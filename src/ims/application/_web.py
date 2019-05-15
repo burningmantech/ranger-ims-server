@@ -18,10 +18,9 @@
 Incident Management System web interface.
 """
 
-from typing import Optional
+from typing import ClassVar, Optional
 
-from attr import attrib, attrs
-from attr.validators import instance_of
+from attr import attrs
 
 from hyperlink import URL
 
@@ -61,15 +60,15 @@ def _unprefix(url: URL) -> URL:
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class WebApplication(object):
     """
     Application with web interface endpoints.
     """
 
-    router = Router()
+    router: ClassVar = Router()
 
-    config: Configuration = attrib(validator=instance_of(Configuration))
+    config: Configuration
 
     #
     # Web interface
@@ -80,7 +79,7 @@ class WebApplication(object):
         """
         Application root page.
         """
-        return RootPage(self.config)
+        return RootPage(config=self.config)
 
 
     @router.route(_unprefix(URLs.viewEvent), methods=("HEAD", "GET"))
@@ -107,7 +106,7 @@ class WebApplication(object):
         await self.config.authProvider.authorizeRequest(
             request, None, Authorization.imsAdmin
         )
-        return AdminPage(self.config)
+        return AdminPage(config=self.config)
 
 
     @router.route(_unprefix(URLs.adminAccessControl), methods=("HEAD", "GET"))
@@ -123,7 +122,7 @@ class WebApplication(object):
         await self.config.authProvider.authorizeRequest(
             request, None, Authorization.imsAdmin
         )
-        return AdminAccessControlPage(self.config)
+        return AdminAccessControlPage(config=self.config)
 
 
     @router.route(_unprefix(URLs.adminIncidentTypes), methods=("HEAD", "GET"))
@@ -139,7 +138,7 @@ class WebApplication(object):
         await self.config.authProvider.authorizeRequest(
             request, None, Authorization.imsAdmin
         )
-        return AdminIncidentTypesPage(self.config)
+        return AdminIncidentTypesPage(config=self.config)
 
 
     @router.route(_unprefix(URLs.adminStreets), methods=("HEAD", "GET"))
@@ -153,7 +152,7 @@ class WebApplication(object):
         await self.config.authProvider.authorizeRequest(
             request, None, Authorization.imsAdmin
         )
-        return AdminStreetsPage(self.config)
+        return AdminStreetsPage(config=self.config)
 
 
     @router.route(_unprefix(URLs.viewDispatchQueue), methods=("HEAD", "GET"))
@@ -170,7 +169,7 @@ class WebApplication(object):
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
         )
-        return DispatchQueuePage(self.config, event)
+        return DispatchQueuePage(config=self.config, event=event)
 
 
     @router.route(
@@ -183,7 +182,7 @@ class WebApplication(object):
         """
         Endpoint for the dispatch queue page template.
         """
-        return DispatchQueueTemplatePage(self.config)
+        return DispatchQueueTemplatePage(config=self.config)
 
 
     @router.route(_unprefix(URLs.viewIncidentNumber), methods=("HEAD", "GET"))
@@ -208,7 +207,9 @@ class WebApplication(object):
 
         await self.config.authProvider.authorizeRequest(request, event, authz)
 
-        return IncidentPage(self.config, event, numberValue)
+        return IncidentPage(
+            config=self.config, event=event, number=numberValue
+        )
 
 
     @router.route(
@@ -221,7 +222,7 @@ class WebApplication(object):
         """
         Endpoint for the incident page template.
         """
-        return IncidentTemplatePage(self.config)
+        return IncidentTemplatePage(config=self.config)
 
 
     # FIXME: viewIncidentReports
@@ -235,7 +236,7 @@ class WebApplication(object):
         await self.config.authProvider.authorizeRequest(
             request, None, Authorization.readIncidentReports
         )
-        return IncidentReportsPage(self.config)
+        return IncidentReportsPage(config=self.config)
 
 
     @router.route(
@@ -248,7 +249,7 @@ class WebApplication(object):
         """
         Endpoint for the incident reports page template.
         """
-        return IncidentReportsTemplatePage(self.config)
+        return IncidentReportsTemplatePage(config=self.config)
 
 
     @router.route(
@@ -288,7 +289,7 @@ class WebApplication(object):
                 request, incidentReport
             )
 
-        return IncidentReportPage(self.config, numberValue)
+        return IncidentReportPage(config=self.config, number=numberValue)
 
 
     @router.route(
@@ -301,4 +302,4 @@ class WebApplication(object):
         """
         Endpoint for the incident report page template.
         """
-        return IncidentReportTemplatePage(self.config)
+        return IncidentReportTemplatePage(config=self.config)

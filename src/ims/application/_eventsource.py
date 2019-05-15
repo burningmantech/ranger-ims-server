@@ -20,10 +20,9 @@ HTML5 EventSource support.
 
 from collections import deque
 from time import time
-from typing import Deque, List, Mapping, Optional, Tuple
+from typing import ClassVar, Deque, List, Mapping, Optional, Tuple
 
 from attr import attrib, attrs
-from attr.validators import instance_of, optional
 
 from twisted.logger import ILogObserver, Logger
 from twisted.web.iweb import IRequest
@@ -40,18 +39,16 @@ __all__ = (
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class Event(object):
     """
     HTML5 EventSource event.
     """
 
-    message: str = attrib(validator=instance_of(str))
-    eventID: Optional[int] = attrib(validator=optional(instance_of(int)))
-    eventClass: Optional[str] = attrib(validator=optional(instance_of(str)))
-    retry: Optional[int] = attrib(
-        validator=optional(instance_of(int)), default=None
-    )
+    message: str
+    eventID: Optional[int]
+    eventClass: Optional[str]
+    retry: Optional[int] = None
 
 
     def render(self) -> str:
@@ -78,22 +75,20 @@ class Event(object):
 
 
 @implementer(ILogObserver)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class DataStoreEventSourceLogObserver(object):
     """
     Observer for events related to any updates to the data store.
     """
 
-    log = Logger()
+    log: ClassVar = Logger()
 
-
-    def __init__(self) -> None:
-        """
-        Initialize.
-        """
-        self._listeners: List[IRequest] = []
-        self._events: Deque[Tuple[int, Event]] = deque(maxlen=1000)
-        self._start = time()
-        self._counter = 0
+    _listeners: List[IRequest] = attrib(init=False, factory=list)
+    _events: Deque[Tuple[int, Event]] = attrib(
+        init=False, factory=lambda: deque(maxlen=1000)
+    )
+    _start: float = attrib(init=False, factory=time)
+    _counter: List[int] = attrib(init=False, factory=lambda: [0])
 
 
     def addListener(
@@ -196,17 +191,17 @@ class DataStoreEventSourceLogObserver(object):
                 )
                 self.removeListener(listener)
 
-        self._events.append((self._counter, eventSourceEvent))
+        self._events.append((self._counter[0], eventSourceEvent))
 
 
     def __call__(self, event: Mapping) -> None:
         """
         See L{ILogObserver.__call__}.
         """
-        self._counter += 1
+        self._counter[0] += 1
 
-        eventSourceEvent = self._transmogrify(event, self._counter)
+        eventSourceEvent = self._transmogrify(event, self._counter[0])
         if eventSourceEvent is None:
             return
 
-        self._publish(eventSourceEvent, self._counter)
+        self._publish(eventSourceEvent, self._counter[0])

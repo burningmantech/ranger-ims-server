@@ -18,7 +18,7 @@
 Admin streets page.
 """
 
-from ims.config import Configuration
+from attr import attrs
 
 from ...page import Page
 
@@ -27,10 +27,10 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class AdminStreetsPage(Page):
     """
     Admin streets page.
     """
 
-    def __init__(self, config: Configuration) -> None:
-        super().__init__(config=config, title="Edit Event Concentric Streets")
+    name: str = "Edit Event Concentric Streets"

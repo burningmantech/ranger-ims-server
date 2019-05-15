@@ -21,7 +21,6 @@ Location
 from typing import Optional
 
 from attr import attrib, attrs
-from attr.validators import instance_of, optional
 
 from ._address import Address, TextOnlyAddress
 from ._replace import ReplaceMixIn
@@ -37,14 +36,11 @@ def convertAddress(address: Optional[Address]) -> Address:
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class Location(Address, ReplaceMixIn):
     """
     Location
     """
 
-    name: Optional[str] = attrib(validator=optional(instance_of(str)))
-    address: Address = attrib(
-        validator=instance_of(Address),
-        converter=convertAddress,
-    )
+    name: Optional[str]
+    address: Address = attrib(converter=convertAddress)

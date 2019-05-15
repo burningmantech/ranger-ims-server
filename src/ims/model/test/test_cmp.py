@@ -20,7 +20,7 @@ Tests for :mod:`ranger-ims-server.model._cmp`
 
 from typing import Any
 
-from attr import attrib, attrs
+from attr import attrs
 
 from ims.ext.trial import TestCase
 
@@ -31,9 +31,9 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, cmp=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True, cmp=False)
 class Comparable(ComparisonMixIn):
-    value: Any = attrib()
+    value: Any
 
 
     def _cmpValue(self) -> Any:

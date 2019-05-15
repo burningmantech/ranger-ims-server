@@ -44,7 +44,7 @@ class ConfigurationTests(TestCase):
         """
         assert emptyConfigFile.is_file(), emptyConfigFile
 
-        config = Configuration(emptyConfigFile)
+        config = Configuration.fromConfigFile(emptyConfigFile)
 
         serverRoot = Path(__file__).parent.parent
         configRoot = serverRoot / "conf"
@@ -68,7 +68,7 @@ class ConfigurationTests(TestCase):
         """
         assert sampleConfigFile.is_file(), sampleConfigFile
 
-        config = Configuration(sampleConfigFile)
+        config = Configuration.fromConfigFile(sampleConfigFile)
 
         serverRoot = sampleConfigFile.parent.parent
         configRoot = serverRoot / "conf"

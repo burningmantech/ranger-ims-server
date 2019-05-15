@@ -20,11 +20,10 @@ Incident Management System SQLite data store.
 
 from pathlib import Path
 from sys import stdout
-from typing import Any, Callable, Optional
+from typing import Any, Callable, ClassVar, Optional
 from typing.io import TextIO
 
-from attr import Factory, attrib, attrs
-from attr.validators import instance_of, optional
+from attr import attrib, attrs
 
 from twisted.logger import Logger
 
@@ -36,7 +35,7 @@ from ims.model import Event, Incident
 from ims.model.json import IncidentJSONKey, modelObjectFromJSONObject
 
 from ._queries import queries
-from .._db import DatabaseStore, Parameters, Query, Rows
+from .._db import DatabaseStore, Parameters, Queries, Query, Rows
 from .._exceptions import StorageError
 
 
@@ -47,34 +46,32 @@ query_eventID = "select ID from EVENT where NAME = :eventID"
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class DataStore(DatabaseStore):
     """
     Incident Management System SQLite data store.
     """
 
-    _log = Logger()
+    _log: ClassVar[Logger] = Logger()
 
-    schemaVersion = 3
-    schemaBasePath = Path(__file__).parent / "schema"
-    sqlFileExtension = "sqlite"
+    schemaVersion: ClassVar[int] = 3
+    schemaBasePath: ClassVar[Path] = Path(__file__).parent / "schema"
+    sqlFileExtension: ClassVar[str] = "sqlite"
 
-    query = queries
+    query: ClassVar[Queries] = queries
 
 
-    @attrs(frozen=False)
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, slots=True)
     class _State(object):
         """
         Internal mutable state for :class:`DataStore`.
         """
 
-        db: Optional[Connection] = attrib(
-            validator=optional(instance_of(Connection)),
-            default=None, init=False,
-        )
+        db: Optional[Connection] = attrib(default=None, init=False)
 
-    dbPath: Path = attrib(validator=instance_of(Path))
-    _state: _State = attrib(default=Factory(_State), init=False)
+
+    dbPath: Path
+    _state: _State = attrib(factory=_State, init=False)
 
 
     @classmethod
@@ -120,7 +117,7 @@ class DataStore(DatabaseStore):
                 "Unable to {description}: {error}",
                 description=cls.query.schemaVersion.description, error=e,
             )
-            raise StorageError(e)
+            raise StorageError(str(e))
 
 
     @property
@@ -163,7 +160,7 @@ class DataStore(DatabaseStore):
                 description=query.description,
                 query=query, **parameters, error=e,
             )
-            raise StorageError(e)
+            raise StorageError(str(e))
 
 
     async def runOperation(
@@ -183,7 +180,7 @@ class DataStore(DatabaseStore):
                 "Interaction {interaction} failed: {error}",
                 interaction=interaction, error=e,
             )
-            raise StorageError(e)
+            raise StorageError(str(e))
 
 
     async def dbSchemaVersion(self) -> int:

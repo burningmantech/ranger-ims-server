@@ -20,12 +20,10 @@
 Incident Report
 """
 
-from collections.abc import Iterable
 from datetime import datetime as DateTime
 from typing import Optional, Sequence
 
 from attr import attrib, attrs
-from attr.validators import instance_of, optional
 
 from ims.ext.attr import sorted_tuple
 
@@ -38,7 +36,7 @@ __all__ = ()
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class IncidentReport(ReplaceMixIn):
     """
     Incident
@@ -46,18 +44,10 @@ class IncidentReport(ReplaceMixIn):
 
     # FIXME: better validator for reportEntries
 
-    number: int = attrib(
-        validator=instance_of(int)
-    )
-    created: DateTime = attrib(
-        validator=instance_of(DateTime)
-    )
-    summary: Optional[str] = attrib(
-        validator=optional(instance_of(str))
-    )
-    reportEntries: Sequence[ReportEntry] = attrib(
-        validator=instance_of(Iterable), converter=sorted_tuple
-    )
+    number: int
+    created: DateTime
+    summary: Optional[str]
+    reportEntries: Sequence[ReportEntry] = attrib(converter=sorted_tuple)
 
 
     def __str__(self) -> str:

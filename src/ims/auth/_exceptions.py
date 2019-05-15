@@ -18,6 +18,9 @@
 Incident Management System service errors.
 """
 
+from attr import attrs
+
+
 __all__ = (
     "NotAuthenticatedError",
     "NotAuthorizedError",
@@ -25,13 +28,20 @@ __all__ = (
 
 
 
+@attrs(frozen=False, auto_attribs=True, auto_exc=True, slots=True)
 class NotAuthenticatedError(Exception):
     """
     Not authorized.
     """
 
+    message: str
 
+
+
+@attrs(frozen=False, auto_attribs=True, auto_exc=True, slots=True)
 class NotAuthorizedError(Exception):
     """
     Not authorized.
     """
+
+    message: str

@@ -18,7 +18,9 @@
 Report tests for :mod:`ranger-ims-server.store`
 """
 
-from datetime import datetime as DateTime, timezone as TimeZone
+from datetime import (
+    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+)
 from typing import Any, Iterable, Sequence, Set, Tuple, cast
 
 from attr import fields as attrFields
@@ -33,36 +35,40 @@ from .._exceptions import NoSuchIncidentReportError, StorageError
 __all__ = ()
 
 
+# Note: we add a TimeDelta to the created attribute of objects so that they
+# don't have timestamps that are within the time resolution of some back-end
+# data stores.
+
 anIncidentReport = IncidentReport(
     number=0,
-    created=DateTime.now(TimeZone.utc),
+    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=1),
     summary="A thing happened",
     reportEntries=(),
 )
 
 anIncidentReport1 = IncidentReport(
     number=1,
-    created=DateTime.now(TimeZone.utc),
+    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=2),
     summary="This thing happened",
     reportEntries=(),
 )
 
 anIncidentReport2 = IncidentReport(
     number=2,
-    created=DateTime.now(TimeZone.utc),
+    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=3),
     summary="That thing happened",
     reportEntries=(),
 )
 
 aReportEntry1 = ReportEntry(
-    created=DateTime.now(TimeZone.utc),
+    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=4),
     author="Hubcap",
     automatic=False,
     text="Well there was thing thing",
 )
 
 aReportEntry2 = ReportEntry(
-    created=DateTime.now(TimeZone.utc),
+    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=5),
     author="Bucket",
     automatic=False,
     text="Well there was that thing",

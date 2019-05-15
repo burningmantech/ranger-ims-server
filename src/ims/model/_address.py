@@ -23,8 +23,7 @@ Address
 from abc import ABC
 from typing import Any, Optional, TypeVar
 
-from attr import attrib, attrs
-from attr.validators import instance_of, optional
+from attr import attrs
 
 from ._cmp import ComparisonMixIn
 from ._replace import ReplaceMixIn
@@ -37,16 +36,17 @@ TRodGarettAddress = TypeVar("TRodGarettAddress", bound="RodGarettAddress")
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True, cmp=False)
 class Address(ABC):
     """
     Location address
     """
 
-    description: Optional[str]
+    description: Optional[str] = None
 
 
 
-@attrs(frozen=True, cmp=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True, cmp=False)
 class TextOnlyAddress(Address, ComparisonMixIn):
     """
     Address
@@ -54,9 +54,7 @@ class TextOnlyAddress(Address, ComparisonMixIn):
     An address contains a description of a location.
     """
 
-    description: Optional[str] = attrib(
-        validator=optional(instance_of(str)), default=None
-    )
+    description: Optional[str] = None
 
 
     def _cmpValue(self) -> Any:
@@ -71,7 +69,7 @@ class TextOnlyAddress(Address, ComparisonMixIn):
 
 
 
-@attrs(frozen=True, cmp=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True, cmp=False)
 class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
     """
     Rod Garett Address
@@ -80,18 +78,10 @@ class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
     Black Rock City.
     """
 
-    description: Optional[str] = attrib(
-        validator=optional(instance_of(str)), default=None
-    )
-    concentric: Optional[str] = attrib(
-        validator=optional(instance_of(str)), default=None
-    )
-    radialHour: Optional[int] = attrib(
-        validator=optional(instance_of(int)), default=None
-    )
-    radialMinute: Optional[int] = attrib(
-        validator=optional(instance_of(int)), default=None
-    )
+    description: Optional[str]  = None
+    concentric: Optional[str]   = None
+    radialHour: Optional[int]   = None
+    radialMinute: Optional[int] = None
 
 
     def _allNone(self) -> bool:

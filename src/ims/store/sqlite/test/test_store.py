@@ -18,6 +18,7 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
+from pathlib import Path
 from typing import cast
 
 from .base import TestDataStore
@@ -52,7 +53,7 @@ class DataStoreTests(SuperDataStoreTests):
 
 
     async def store(self) -> TestDataStoreABC:
-        store = TestDataStore(self)
+        store = TestDataStore(dbPath=Path(self.mktemp()))
         await store.upgradeSchema()
         return cast(TestDataStoreABC, store)
 

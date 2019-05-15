@@ -23,7 +23,9 @@ from os import getcwd
 from os.path import basename, sep as pathsep
 from pathlib import Path
 from sys import argv
-from typing import FrozenSet, Optional, Tuple, cast
+from typing import Any, ClassVar, FrozenSet, Optional, Tuple, cast
+
+from attr import attrs, evolve
 
 from twisted.logger import Logger
 
@@ -42,48 +44,18 @@ __all__ = (
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class Configuration(object):
     """
     Configuration
     """
 
-    _log = Logger()
-
-    urls = URLs
-
-
-    def __init__(self, configFile: Optional[Path]) -> None:
-        """
-        @param configFile: The configuration file to load.
-        """
-        self.ConfigFile = configFile
-        self.load()
+    _log: ClassVar = Logger()
+    urls: ClassVar = URLs
 
 
-    def __str__(self) -> str:
-        return (
-            f"Configuration file: {self.ConfigFile}\n"
-            f"\n"
-            f"Core.Host: {self.HostName}\n"
-            f"Core.Port: {self.Port}\n"
-            f"\n"
-            f"Core.ServerRoot: {self.ServerRoot}\n"
-            f"Core.ConfigRoot: {self.ConfigRoot}\n"
-            f"Core.DataRoot: {self.DataRoot}\n"
-            f"Core.DatabaseFile: {self.DatabasePath}\n"
-            f"Core.CachedResources: {self.CachedResourcesPath}\n"
-            f"Core.LogLevel: {self.LogLevelName}\n"
-            f"Core.LogFile: {self.LogFilePath}\n"
-            f"Core.LogFormat: {self.LogFormat}\n"
-            f"\n"
-            f"DMS.Hostname: {self.DMSHost}\n"
-            f"DMS.Database: {self.DMSDatabase}\n"
-            f"DMS.Username: {self.DMSUsername}\n"
-            f"DMS.Password: {self.DMSPassword}\n"
-        )
-
-
-    def load(self) -> None:
+    @classmethod
+    def fromConfigFile(cls, configFile: Optional[Path]) -> "Configuration":
         """
         Load the configuration.
         """
@@ -93,16 +65,16 @@ class Configuration(object):
 
         def readConfig(path: Optional[Path]) -> None:
             if path is None:
-                self._log.info("No configuration file specified.")
+                cls._log.info("No configuration file specified.")
                 return
 
             for _okFile in configParser.read(str(path)):
-                self._log.info(
+                cls._log.info(
                     "Read configuration file: {path}", path=path
                 )
                 break
             else:
-                self._log.error(
+                cls._log.error(
                     "Unable to read configuration file: {path}", path=path
                 )
 
@@ -141,114 +113,190 @@ class Configuration(object):
 
             return path
 
-        readConfig(self.ConfigFile)
+        readConfig(configFile)
 
-        if self.ConfigFile is None:
+        if configFile is None:
             defaultRoot = Path(getcwd())
         else:
-            defaultRoot = self.ConfigFile.parent.parent
+            defaultRoot = configFile.parent.parent
 
-        self.HostName = valueFromConfig("Core", "Host", "localhost")
-        self._log.info("HostName: {hostName}", hostName=self.HostName)
+        hostName = valueFromConfig("Core", "Host", "localhost")
+        cls._log.info("HostName: {hostName}", hostName=hostName)
 
-        self.Port = int(cast(str, valueFromConfig("Core", "Port", "8080")))
-        self._log.info("Port: {port}", port=self.Port)
+        port = int(cast(str, valueFromConfig("Core", "Port", "8080")))
+        cls._log.info("Port: {port}", port=port)
 
-        self.ServerRoot = pathFromConfig(
+        serverRoot = pathFromConfig(
             "Core", "ServerRoot", defaultRoot, cast(Tuple[str], ())
         )
-        self._log.info("Server root: {path}", path=self.ServerRoot)
+        cls._log.info("Server root: {path}", path=serverRoot)
 
-        self.ConfigRoot = pathFromConfig(
-            "Core", "ConfigRoot", self.ServerRoot, ("conf",)
+        configRoot = pathFromConfig(
+            "Core", "ConfigRoot", serverRoot, ("conf",)
         )
-        self._log.info("Config root: {path}", path=self.ConfigRoot)
+        cls._log.info("Config root: {path}", path=configRoot)
 
-        self.DataRoot = pathFromConfig(
-            "Core", "DataRoot", self.ServerRoot, ("data",)
+        dataRoot = pathFromConfig(
+            "Core", "DataRoot", serverRoot, ("data",)
         )
-        self._log.info("Data root: {path}", path=self.DataRoot)
+        cls._log.info("Data root: {path}", path=dataRoot)
 
-        self.DatabasePath = pathFromConfig(
-            "Core", "Database", self.DataRoot, ("db.sqlite",)
+        databasePath = pathFromConfig(
+            "Core", "Database", dataRoot, ("db.sqlite",)
         )
-        self._log.info("Database: {path}", path=self.DatabasePath)
+        cls._log.info("Database: {path}", path=databasePath)
 
-        self.CachedResourcesPath = pathFromConfig(
-            "Core", "CachedResources", self.DataRoot, ("cache",)
+        cachedResourcesPath = pathFromConfig(
+            "Core", "CachedResources", dataRoot, ("cache",)
         )
-        self._log.info(
-            "CachedResourcesPath: {path}", path=self.CachedResourcesPath
+        cls._log.info(
+            "CachedResourcesPath: {path}", path=cachedResourcesPath
         )
 
-        self.LogLevelName = valueFromConfig("Core", "LogLevel", "info")
-        self._log.info("LogLevel: {logLevel}", logLevel=self.LogLevelName)
+        logLevelName = valueFromConfig("Core", "LogLevel", "info")
+        cls._log.info("LogLevel: {logLevel}", logLevel=logLevelName)
 
-        self.LogFormat = valueFromConfig("Core", "LogFormat", "text")
-        self._log.info("LogFormat: {logFormat}", logFormat=self.LogFormat)
+        logFormat = valueFromConfig("Core", "LogFormat", "text")
+        cls._log.info("LogFormat: {logFormat}", logFormat=logFormat)
 
-        self.LogFilePath = pathFromConfig(
-            "Core", "LogFile", self.DataRoot, (f"{command}.log",)
+        logFilePath = pathFromConfig(
+            "Core", "LogFile", dataRoot, (f"{command}.log",)
         )
-        self._log.info("LogFile: {path}", path=self.LogFilePath)
+        cls._log.info("LogFile: {path}", path=logFilePath)
 
         admins = cast(str, valueFromConfig("Core", "Admins", ""))
-        self.IMSAdmins: FrozenSet[str] = frozenset(
+        imsAdmins: FrozenSet[str] = frozenset(
             a.strip() for a in admins.split(",")
         )
-        self._log.info("Admins: {admins}", admins=self.IMSAdmins)
+        cls._log.info("Admins: {admins}", admins=imsAdmins)
 
         active = (
             cast(str, valueFromConfig("Core", "RequireActive", "true")).lower()
         )
         if active in ("false", "no", "0"):
-            self.RequireActive = False
+            requireActive = False
         else:
-            self.RequireActive = True
-        self._log.info(
-            "RequireActive: {active}", active=self.RequireActive
-        )
+            requireActive = True
+        cls._log.info("RequireActive: {active}", active=requireActive)
 
-        self.DMSHost     = valueFromConfig("DMS", "Hostname", None)
-        self.DMSDatabase = valueFromConfig("DMS", "Database", None)
-        self.DMSUsername = valueFromConfig("DMS", "Username", None)
-        self.DMSPassword = valueFromConfig("DMS", "Password", None)
+        dmsHost     = valueFromConfig("DMS", "Hostname", None)
+        dmsDatabase = valueFromConfig("DMS", "Database", None)
+        dmsUsername = valueFromConfig("DMS", "Username", None)
+        dmsPassword = valueFromConfig("DMS", "Password", None)
 
-        self._log.info(
+        cls._log.info(
             "Database: {user}@{host}/{db}",
-            user=self.DMSUsername, host=self.DMSHost, db=self.DMSDatabase,
+            user=dmsUsername, host=dmsHost, db=dmsDatabase,
         )
 
-        self.MasterKey = valueFromConfig("Core", "MasterKey", None)
+        masterKey = valueFromConfig("Core", "MasterKey", None)
 
         #
         # Persist some objects
         #
 
-        self.dms = DutyManagementSystem(
-            host=self.DMSHost,
-            database=self.DMSDatabase,
-            username=self.DMSUsername,
-            password=self.DMSPassword,
+        dms = DutyManagementSystem(
+            host=dmsHost, database=dmsDatabase,
+            username=dmsUsername, password=dmsPassword,
+        )
+        store: IMSDataStore = DataStore(dbPath=databasePath)
+
+        authProvider = AuthProvider(
+            store=store, dms=dms,
+            requireActive=requireActive,
+            adminUsers=imsAdmins, masterKey=masterKey,
         )
 
-        self.store: IMSDataStore = DataStore(dbPath=self.DatabasePath)
-
-        self.authProvider = AuthProvider(
-            store=self.store,
-            dms=self.dms,
-            requireActive=self.RequireActive,
-            adminUsers=self.IMSAdmins,
-            masterKey=self.MasterKey,
-        )
-
-        locationsPath = self.DataRoot / "locations.json"
+        locationsPath = dataRoot / "locations.json"
 
         if locationsPath.is_file():
             with locationsPath.open() as jsonStrem:
                 json = objectFromJSONBytesIO(jsonStrem)
-            self._log.info("{count} locations", count=len(json))
-            self.locationsJSONBytes = jsonTextFromObject(json).encode("utf-8")
+            cls._log.info("{count} locations", count=len(json))
+            locationsJSONBytes = jsonTextFromObject(json).encode("utf-8")
         else:
-            self._log.info("No locations file: {path}", path=locationsPath)
-            self.locationsJSONBytes = jsonTextFromObject([]).encode("utf-8")
+            cls._log.info("No locations file: {path}", path=locationsPath)
+            locationsJSONBytes = jsonTextFromObject([]).encode("utf-8")
+
+        return cls(
+            ConfigFile=configFile,
+
+            CachedResourcesPath=cachedResourcesPath,
+            ConfigRoot=configRoot,
+            DatabasePath=databasePath,
+            DataRoot=dataRoot,
+            DMSDatabase=dmsDatabase,
+            DMSHost=dmsHost,
+            DMSPassword=dmsPassword,
+            DMSUsername=dmsUsername,
+            HostName=hostName,
+            IMSAdmins=imsAdmins,
+            LogFilePath=logFilePath,
+            LogFormat=logFormat,
+            LogLevelName=logLevelName,
+            MasterKey=masterKey,
+            Port=port,
+            RequireActive=requireActive,
+            ServerRoot=serverRoot,
+
+            store=store, dms=dms, authProvider=authProvider,
+            locationsPath=locationsPath, locationsJSONBytes=locationsJSONBytes,
+        )
+
+
+    ConfigFile: Optional[Path]
+
+    CachedResourcesPath: Path
+    ConfigRoot: Path
+    DatabasePath: Path
+    DataRoot: Path
+    DMSDatabase: Optional[str]
+    DMSHost: Optional[str]
+    DMSPassword: Optional[str]
+    DMSUsername: Optional[str]
+    HostName: Optional[str]
+    IMSAdmins: FrozenSet[str]
+    LogFilePath: Path
+    LogFormat: Optional[str]
+    LogLevelName: Optional[str]
+    MasterKey: Optional[str]
+    Port: int
+    RequireActive: bool
+    ServerRoot: Path
+
+    # FIXME: make these computed properties
+    store: IMSDataStore
+    dms: DutyManagementSystem
+    authProvider: AuthProvider
+    locationsPath: Path
+    locationsJSONBytes: bytes
+
+
+    def __str__(self) -> str:
+        return (
+            f"Configuration file: {self.ConfigFile}\n"
+            f"\n"
+            f"Core.Host: {self.HostName}\n"
+            f"Core.Port: {self.Port}\n"
+            f"\n"
+            f"Core.ServerRoot: {self.ServerRoot}\n"
+            f"Core.ConfigRoot: {self.ConfigRoot}\n"
+            f"Core.DataRoot: {self.DataRoot}\n"
+            f"Core.DatabaseFile: {self.DatabasePath}\n"
+            f"Core.CachedResources: {self.CachedResourcesPath}\n"
+            f"Core.LogLevel: {self.LogLevelName}\n"
+            f"Core.LogFile: {self.LogFilePath}\n"
+            f"Core.LogFormat: {self.LogFormat}\n"
+            f"\n"
+            f"DMS.Hostname: {self.DMSHost}\n"
+            f"DMS.Database: {self.DMSDatabase}\n"
+            f"DMS.Username: {self.DMSUsername}\n"
+            f"DMS.Password: {self.DMSPassword}\n"
+        )
+
+
+    def replace(self, **changes: Any) -> "Configuration":
+        """
+        Return a new Configuration instance with changed values.
+        """
+        return evolve(**changes)

@@ -18,10 +18,11 @@
 Login page.
 """
 
+from attr import attrs
+
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 
-from ims.config import Configuration
 from ims.ext.klein import KleinRenderable
 
 from ..page import Page
@@ -31,14 +32,14 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class LoginPage(Page):
     """
     Login page.
     """
 
-    def __init__(self, config: Configuration, failed: bool = False) -> None:
-        super().__init__(config=config, title="Log In")
-        self.failed = failed
+    name: str = "Log In"
+    failed: bool = False
 
 
     @renderer

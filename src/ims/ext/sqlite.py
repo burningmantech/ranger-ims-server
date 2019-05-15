@@ -13,8 +13,7 @@ from typing import (
 )
 from typing.io import TextIO
 
-from attr import attrib, attrs
-from attr.validators import instance_of, optional
+from attr import attrs
 
 from twisted.logger import Logger
 
@@ -265,35 +264,29 @@ def printSchema(db: Connection, out: TextIO) -> None:
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class QueryPlanExplanation(object):
     """
     Container for information about a query plan.
     """
 
-    @attrs(frozen=True)
+    @attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
     class Line(object):
         """
         A line of information about a query plan.
         """
 
-        nestingOrder: Optional[int] = attrib(
-            validator=optional(instance_of(int))
-        )
-        selectFrom: Optional[int] = attrib(
-            validator=optional(instance_of(int))
-        )
-        details: str = attrib(validator=instance_of(str))
+        nestingOrder: Optional[int]
+        selectFrom: Optional[int]
+        details: str
 
         def __str__(self) -> str:
             return f"[{self.nestingOrder},{self.selectFrom}] {self.details}"
 
 
-    name: str = attrib(validator=instance_of(str))
-    query: str = attrib(validator=instance_of(str))
-    lines: Tuple[Line] = cast(
-        Tuple[Line], attrib(validator=instance_of(tuple))
-    )
+    name: str
+    query: str
+    lines: Iterable[Line]
 
 
     def __str__(self) -> str:
@@ -321,7 +314,7 @@ def explainQueryPlans(
     for query, name in queries:
         params = dict((x, x) for x in range(query.count(":")))  # Dummy params
         try:
-            lines: Iterable[QueryPlanExplanation.Line] = tuple(
+            lines = tuple(
                 QueryPlanExplanation.Line(
                     nestingOrder=nestingOrder,
                     selectFrom=selectFrom,

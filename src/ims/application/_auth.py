@@ -18,8 +18,9 @@
 Incident Management System web application authentication endpoints.
 """
 
-from attr import attrib, attrs
-from attr.validators import instance_of
+from typing import ClassVar
+
+from attr import attrs
 
 from hyperlink import URL
 
@@ -42,17 +43,17 @@ def _unprefix(url: URL) -> URL:
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class AuthApplication(object):
     """
     Application with login and logout endpoints.
     """
 
-    _log = Logger()
-    router = Router()
+    _log: ClassVar = Logger()
+    router: ClassVar = Router()
 
 
-    config: Configuration = attrib(validator=instance_of(Configuration))
+    config: Configuration
 
 
     @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
@@ -65,7 +66,7 @@ class AuthApplication(object):
         self.config.authProvider.authenticateRequest(request, optional=True)
 
         from ims.element.login import LoginPage
-        return LoginPage(self.config, failed=failed)
+        return LoginPage(config=self.config, failed=failed)
 
 
     @router.route(_unprefix(URLs.login), methods=("POST",))

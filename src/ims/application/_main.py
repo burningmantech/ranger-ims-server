@@ -18,10 +18,11 @@
 Incident Management System web service.
 """
 
-from attr import Factory, attrib, attrs
-from attr.validators import instance_of
+from typing import ClassVar
 
-from twisted.logger import ILogObserver, Logger, globalLogPublisher
+from attr import Factory, attrib, attrs
+
+from twisted.logger import ILogObserver, globalLogPublisher
 from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
 from twisted.web.static import File
@@ -36,7 +37,7 @@ from ._api import APIApplication
 from ._auth import AuthApplication
 from ._eventsource import DataStoreEventSourceLogObserver
 from ._external import ExternalApplication
-from ._klein import redirect, router
+from ._klein import Router, redirect
 from ._web import WebApplication
 
 
@@ -70,20 +71,19 @@ def webApplicationFactory(parent: 'MainApplication') -> WebApplication:
     return WebApplication(config=parent.config)
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class MainApplication(object):
     """
     Incident Management System main application.
     """
 
-    log = _log = Logger()
-    router = router
+    router: ClassVar = Router()
 
 
-    config: Configuration = attrib(validator=instance_of(Configuration))
+    config: Configuration
 
     storeObserver: ILogObserver = attrib(
-        default=Factory(DataStoreEventSourceLogObserver), init=False
+        factory=DataStoreEventSourceLogObserver, init=False
     )
 
     apiApplication: APIApplication = attrib(

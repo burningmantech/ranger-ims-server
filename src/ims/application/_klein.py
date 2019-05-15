@@ -48,7 +48,6 @@ from ims.ext.klein import (
 
 __all__ = (
     "Router",
-    "router",
     "queryValue",
     "queryValues",
 )
@@ -98,7 +97,7 @@ def redirect(
     request.setHeader(HeaderName.location.value, url)
     request.setResponseCode(http.FOUND)
 
-    return RedirectPage(location)
+    return RedirectPage(location=location)
 
 
 #
@@ -428,7 +427,3 @@ class Router(Klein):
             #    in a browser, and that's just pitiful.
             log.failure("Request failed", failure)
             return internalErrorResponse(request)
-
-
-
-router = Router()

@@ -18,6 +18,8 @@
 Redirect page.
 """
 
+from attr import attrs
+
 from hyperlink import URL
 
 from twisted.python.filepath import FilePath
@@ -31,14 +33,13 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class RedirectPage(BaseElement):
     """
     Redirect page.
     """
 
-    def __init__(self, location: URL) -> None:
-        super().__init__()
-        self.location = location
+    location: URL
 
 
     def _loader(self) -> ITemplateLoader:

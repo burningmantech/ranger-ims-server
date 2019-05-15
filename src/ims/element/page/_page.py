@@ -21,6 +21,8 @@ Element base classes.
 from collections import OrderedDict
 from typing import Iterable, MutableMapping
 
+from attr import attrs
+
 from hyperlink import URL
 
 from twisted.web.iweb import IRequest
@@ -39,14 +41,14 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class Page(Element):
     """
     XHTML page element.
     """
 
-    def __init__(self, config: Configuration, title: str) -> None:
-        super().__init__(config=config)
-        self.titleText = title
+    config: Configuration
+    name: str
 
 
     def urlsFromImportSpec(self, spec: str) -> Iterable[URL]:
@@ -94,10 +96,10 @@ class Page(Element):
         """
         `<title>` element.
         """
-        if self.titleText is None:
+        if self.name is None:
             return tag
         else:
-            return tag.clone()(self.titleText)
+            return tag.clone()(self.name)
 
 
     @renderer

@@ -54,7 +54,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         """
         :meth:`DataStore.loadSchema` caches and returns the schema.
         """
-        store = TestDataStore(self)
+        store = TestDataStore(dbPath=Path(self.mktemp()))
         schema = store.loadSchema()
 
         self.assertStartsWith(schema, "create table SCHEMA_INFO (")
@@ -199,7 +199,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         """
         :meth:`DataStore._db` returns a :class:`Connection`.
         """
-        store = TestDataStore(self)
+        store = TestDataStore(dbPath=Path(self.mktemp()))
 
         self.assertIsInstance(store._db, Connection)
 
@@ -216,7 +216,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         self.patch(_store, "openDB", oops)
 
-        store = TestDataStore(self)
+        store = TestDataStore(dbPath=Path(self.mktemp()))
 
         e = self.assertRaises(StorageError, lambda: store._db)
         self.assertEqual(
@@ -266,7 +266,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute("drop table SCHEMA_INFO")
 
-        store = TestDataStore(self, dbPath=dbPath)
+        store = TestDataStore(dbPath=dbPath)
 
         f = self.failureResultOf(store.upgradeSchema(), StorageError)
         self.assertStartsWith(f.getErrorMessage(), "Unable to apply schema: ")
@@ -282,7 +282,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute("delete from SCHEMA_INFO")
 
-        store = TestDataStore(self, dbPath=dbPath)
+        store = TestDataStore(dbPath=dbPath)
 
         f = self.failureResultOf(store.upgradeSchema(), StorageError)
         self.assertEqual(f.getErrorMessage(), "Invalid schema: no version")
@@ -303,7 +303,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 dict(version=version)
             )
 
-        store = TestDataStore(self, dbPath=dbPath)
+        store = TestDataStore(dbPath=dbPath)
 
         f = self.failureResultOf(store.upgradeSchema(), StorageError)
         self.assertEqual(
@@ -332,7 +332,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 dict(version=version)
             )
 
-        store = TestDataStore(self, dbPath=dbPath)
+        store = TestDataStore(dbPath=dbPath)
 
         f = self.failureResultOf(store.upgradeSchema(), StorageError)
         self.assertEqual(

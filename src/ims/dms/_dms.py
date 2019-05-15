@@ -21,7 +21,9 @@ Duty Management System.
 from hashlib import sha1
 from os import urandom
 from time import time
-from typing import Iterable, Mapping, Optional, Sequence, Set, Tuple
+from typing import ClassVar, Iterable, Mapping, Optional, Set, Tuple
+
+from attr import Factory, attrib, attrs
 
 from pymysql import (
     DatabaseError as SQLDatabaseError, OperationalError as SQLOperationalError
@@ -41,13 +43,17 @@ __all__ = (
 
 
 
+@attrs(frozen=False, auto_attribs=True, auto_exc=True, slots=True)
 class DMSError(Exception):
     """
     Duty Management System error.
     """
 
+    message: str
 
 
+
+@attrs(frozen=False, auto_attribs=True, auto_exc=True, slots=True)
 class DatabaseError(DMSError):
     """
     Database error.
@@ -55,18 +61,20 @@ class DatabaseError(DMSError):
 
 
 
+@attrs(frozen=False, auto_attribs=True, kw_only=True, slots=True)
 class Position(object):
     """
     A Ranger position.
     """
 
-    def __init__(self, positionID: str, name: str) -> None:
-        self.positionID = positionID
-        self.name = name
-        self.members: Set[Ranger] = set()
+    positionID: str
+    name: str
+    members: Set[Ranger] = Factory(set)
 
 
 
+# FIXME: make frozen
+@attrs(frozen=False, auto_attribs=True, kw_only=True, slots=True)
 class DutyManagementSystem(object):
     """
     Duty Management System
@@ -74,38 +82,25 @@ class DutyManagementSystem(object):
     This class connects to an external system to get data.
     """
 
-    _log = Logger()
+    _log: ClassVar = Logger()
 
     # DMS data changes rarely, so hour intervals between refreshing data should
     # be fine.
     # Refresh after an hour, but don't panic about it until we're stale for >12
     # hours.
-    personnelCacheInterval    = 60 * 5   # 5 minutes
-    personnelCacheIntervalMax = 60 * 30  # 30 minutes
+    personnelCacheInterval: ClassVar    = 60 * 5   # 5 minutes
+    personnelCacheIntervalMax: ClassVar = 60 * 30  # 30 minutes
 
+    host: Optional[str]
+    database: Optional[str]
+    username: Optional[str]
+    password: Optional[str]
 
-    def __init__(
-        self, host: Optional[str], database: Optional[str],
-        username: Optional[str], password: Optional[str],
-    ) -> None:
-        """
-        @param host: The name of the database host to connect to.
-
-        @param database: The name of the database to access.
-
-        @param username: The user name to use to access the database.
-
-        @param password: The password to use to access the database.
-        """
-        self.host     = host
-        self.database = database
-        self.username = username
-        self.password = password
-
-        self._personnel: Sequence[Ranger] = ()
-        self._personnelLastUpdated = 0.0
-        self._dbpool: Optional[adbapi.ConnectionPool] = None
-        self._busy = False
+    _personnel: Iterable[Ranger] = attrib(default=(), init=False)
+    _positions: Iterable[Position] = attrib(default=(), init=False)
+    _personnelLastUpdated: float = attrib(default=0.0, init=False)
+    _dbpool: Optional[adbapi.ConnectionPool] = attrib(default=None, init=False)
+    _busy: bool = attrib(default=False, init=False)
 
 
     @property
@@ -151,7 +146,9 @@ class DutyManagementSystem(object):
             """
         )
 
-        return dict((id, Position(id, title)) for (id, title) in rows)
+        return {
+            id: Position(positionID=id, name=title) for (id, title) in rows
+        }
 
 
     async def _queryRangersByID(self) -> Mapping[str, Ranger]:

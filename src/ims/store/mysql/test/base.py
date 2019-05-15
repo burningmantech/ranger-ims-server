@@ -18,13 +18,13 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from typing import cast
+from typing import ClassVar, cast
+
+from attr import attrib, attrs
 
 from pymysql.err import MySQLError
 
 from twisted.enterprise.adbapi import ConnectionPool
-
-from ims.ext.trial import TestCase
 
 from .._store import DataStore
 from ...test.database import TestDatabaseStoreMixIn
@@ -34,31 +34,26 @@ __all__ = ()
 
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     """
     See :class:`SuperTestDataStore`.
     """
 
-    maxIncidentNumber = 4294967295
+    maxIncidentNumber: ClassVar[int] = 4294967295
+    exceptionClass: ClassVar[type] = MySQLError
 
-    exceptionClass = MySQLError
+
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, slots=True)
+    class _State(DataStore._State):
+        """
+        Internal mutable state for :class:`DataStore`.
+        """
+
+        broken: bool = False
 
 
-    def __init__(
-        self, testCase: TestCase,
-        hostName: str,
-        hostPort: int,
-        database: str,
-        username: str,
-        password: str,
-    ) -> None:
-        DataStore.__init__(
-            self,
-            hostName=hostName, hostPort=hostPort,
-            database=database,
-            username=username, password=password,
-        )
-        setattr(self._state, "testCase", testCase)
+    _state: _State = attrib(factory=_State, init=False)
 
 
     @property
@@ -70,5 +65,4 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
 
 
     def bringThePain(self) -> None:
-        setattr(self._state, "broken", True)
-        assert getattr(self._state, "broken")
+        self._state.broken = True

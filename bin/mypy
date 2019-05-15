@@ -11,30 +11,29 @@ tmp="$(mktemp -t mypy.XXXX)";
 
 # Bugs filed:
 # Callable has no attribute "todo": ... uh, not sure that's a bug, but ...
-# Too many arguments for: https://github.com/python/mypy/issues/2088
+# Too many arguments for: https://github.com/python/mypy/issues/20
 
-mypy "$@"                                                                                             \
-    | grep -v                                                                                         \
-        -e ": error: Cannot find module named 'arrow.parser'"                                         \
-        -e ": error: Cannot find module named 'cattr'"                                                \
-        -e ": error: Cannot find module named 'docker.[^']*'"                                         \
-        -e ": error: Cannot find module named 'hyperlink'"                                            \
-        -e ": error: Cannot find module named 'hypothesis'"                                           \
-        -e ": error: Cannot find module named 'hypothesis.[^']*'"                                     \
-        -e ": error: Cannot find module named 'klein'"                                                \
-        -e ": error: Cannot find module named 'klein.[^']*'"                                          \
-        -e ": error: No library stub file for "                                                       \
-        -e ': error: "Callable\[\[[^\]\+\], None\]" has no attribute "todo"'                          \
-        -e ': error: <nothing> has no attribute "__iter__"'                                           \
-        -e ': error: Argument 1 to "instance_of" has incompatible type "Type\[Iterable\[Any\]\]"'     \
-        -e ': error: Too many arguments for "fget" of "property"'                                     \
-        -e ': error: Unsupported left operand type for '                                              \
-        -e ': note: (Perhaps setting MYPYPATH .* would help)'                                         \
-        -e ': note: (Stub files are from .*)'                                                         \
-        -e '^src/ims/ext/enum.py:[0-9:]\+: error: Cannot assign to a method' \
+mypy "$@"                                                                                          \
+    | grep -v                                                                                      \
+        -e ": error: Cannot find module named 'arrow.parser'"                                      \
+        -e ": error: Cannot find module named 'cattr'"                                             \
+        -e ": error: Cannot find module named 'docker.[^']*'"                                      \
+        -e ": error: Cannot find module named 'hyperlink'"                                         \
+        -e ": error: Cannot find module named 'hypothesis'"                                        \
+        -e ": error: Cannot find module named 'hypothesis.[^']*'"                                  \
+        -e ": error: Cannot find module named 'klein'"                                             \
+        -e ": error: Cannot find module named 'klein.[^']*'"                                       \
+        -e ": error: No library stub file for "                                                    \
+        -e ': error: "Callable\[\[[^\]\+\], None\]" has no attribute "todo"'                       \
+        -e ': error: <nothing> has no attribute "__iter__"'                                        \
+        -e ': error: Argument 1 to "instance_of" has incompatible type "Type\[Iterable\[Any\]\]"'  \
+        -e ': error: Too many arguments for "fget" of "property"'                                  \
+        -e ': error: Unsupported left operand type for '                                           \
+        -e ': note: '                                                                              \
         -e '^src/ims/ext/sqlite.py:[0-9:]\+: error: Unexpected keyword argument "factory" for "cursor" of "Connection"' \
         -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: .* incompatible with supertype ".\+"' \
         -e '^src/ims/ext/.*sqlite.py:[0-9:]\+: error: Unexpected keyword argument "lines" for "QueryPlanExplanation"' \
+        -e '^src/ims/ext/enum.py:[0-9:]\+: error: Cannot assign to a method' \
         -e '^src/ims/model/json/_ranger.py:[0-9:]\+: error: Incompatible types in assignment ' \
         -e '^src/ims/store/.*/_queries.py:[0-9:]\+: error: Unexpected keyword argument "[^"]*" for "Queries"' \
         > "${tmp}" || true;
@@ -42,5 +41,5 @@ mypy "$@"                                                                       
 sort < "${tmp}";
 
 if grep -e ": error: " "${tmp}" > /dev/null; then
-  exit 1;
+    exit 1;
 fi;

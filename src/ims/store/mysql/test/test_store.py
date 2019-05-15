@@ -18,7 +18,7 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from typing import List, Optional, Set, cast
+from typing import ClassVar, List, Optional, Set, cast
 
 from twisted.internet.defer import ensureDeferred
 
@@ -52,7 +52,7 @@ class DataStoreTests(SuperDataStoreTests):
     Parent test class.
     """
 
-    skip: Optional[str] = None
+    skip: ClassVar[Optional[str]] = None
 
     mysqlService: MySQLService = mysqlServiceFactory()
 
@@ -93,7 +93,6 @@ class DataStoreTests(SuperDataStoreTests):
         name = await service.createDatabase(name=name)
 
         store = TestDataStore(
-            self,
             hostName=service.host,
             hostPort=service.port,
             database=name,
