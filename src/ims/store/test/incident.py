@@ -19,7 +19,9 @@ Incident tests for :mod:`ranger-ims-server.store`
 """
 
 from collections import defaultdict
-from datetime import datetime as DateTime, timezone as TimeZone
+from datetime import (
+    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+)
 from typing import Any, Dict, Iterable, Optional, Sequence, Set, Tuple, cast
 
 from attr import fields as attrFields
@@ -39,10 +41,14 @@ __all__ = ()
 anEvent  = Event(id="foo")
 anEvent2 = Event(id="bar")
 
+# Note: we add a TimeDelta to the created attribute of objects so that they
+# don't have timestamps that are within the time resolution of some back-end
+# data stores.
+
 anIncident = Incident(
     event=anEvent,
     number=0,
-    created=DateTime.now(TimeZone.utc),
+    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=1),
     state=IncidentState.new, priority=IncidentPriority.normal,
     summary="A thing happened",
     location=Location(name="There", address=None),
@@ -53,7 +59,7 @@ anIncident = Incident(
 anIncident1 = Incident(
     event=anEvent,
     number=1,
-    created=DateTime.now(TimeZone.utc),
+    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=2),
     state=IncidentState.new, priority=IncidentPriority.normal,
     summary="A thing happened",
     location=Location(name="There", address=None),
@@ -64,7 +70,7 @@ anIncident1 = Incident(
 anIncident2 = Incident(
     event=anEvent2,
     number=325,
-    created=DateTime.now(TimeZone.utc),
+    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=3),
     state=IncidentState.new, priority=IncidentPriority.normal,
     summary="Another thing happened",
     location=Location(name="Here", address=None),
@@ -73,21 +79,21 @@ anIncident2 = Incident(
 )
 
 aReportEntry = ReportEntry(
-    created=DateTime.now(TimeZone.utc),
+    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=4),
     author="Hubcap",
     automatic=False,
     text="Hello",
 )
 
 aReportEntry1 = ReportEntry(
-    created=DateTime.now(TimeZone.utc),
+    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=5),
     author="Bucket",
     automatic=False,
     text="This happened",
 )
 
 aReportEntry2 = ReportEntry(
-    created=DateTime.now(TimeZone.utc),
+    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=6),
     author="Bucket",
     automatic=False,
     text="That happened",
