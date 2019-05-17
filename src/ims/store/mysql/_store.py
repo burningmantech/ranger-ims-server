@@ -78,7 +78,7 @@ class Cursor(DictCursor):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class DataStore(DatabaseStore):
     """
     Incident Management System MySQL data store.
@@ -93,9 +93,7 @@ class DataStore(DatabaseStore):
     query: ClassVar[Queries] = queries
 
 
-    @attrs(
-        frozen=False, auto_attribs=True, kw_only=True, slots=True, cmp=False
-    )
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, cmp=False)
     class _State(object):
         """
         Internal mutable state for :class:`DataStore`.

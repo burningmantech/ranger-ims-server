@@ -46,7 +46,7 @@ query_eventID = "select ID from EVENT where NAME = :eventID"
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class DataStore(DatabaseStore):
     """
     Incident Management System SQLite data store.
@@ -62,7 +62,7 @@ class DataStore(DatabaseStore):
 
 
     @attrs(
-        frozen=False, auto_attribs=True, kw_only=True, slots=True, cmp=False
+        frozen=False, auto_attribs=True, kw_only=True, cmp=False
     )
     class _State(object):
         """

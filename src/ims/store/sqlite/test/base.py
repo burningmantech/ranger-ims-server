@@ -32,7 +32,7 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     """
     See :class:`SuperTestDataStore`.
@@ -43,7 +43,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
 
 
     @attrs(
-        frozen=False, auto_attribs=True, kw_only=True, slots=True, cmp=False
+        frozen=False, auto_attribs=True, kw_only=True, cmp=False
     )
     class _State(DataStore._State):
         """

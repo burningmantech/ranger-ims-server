@@ -226,7 +226,7 @@ class ServerOptions(Options):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Override(object):
     """
     Configuration option override.

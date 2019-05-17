@@ -39,7 +39,7 @@ __all__ = (
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Event(object):
     """
     HTML5 EventSource event.
@@ -75,7 +75,7 @@ class Event(object):
 
 
 @implementer(ILogObserver)
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class DataStoreEventSourceLogObserver(object):
     """
     Observer for events related to any updates to the data store.

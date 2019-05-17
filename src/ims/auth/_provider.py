@@ -37,7 +37,7 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Authorization(Flags):
     """
     Authorizations
@@ -66,7 +66,7 @@ Authorization.all = (
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class User(object):
     """
     Application user.
@@ -104,7 +104,7 @@ class User(object):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class AuthProvider(object):
     """
     Provider for authentication and authorization support.

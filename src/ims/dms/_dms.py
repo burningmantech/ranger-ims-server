@@ -43,7 +43,7 @@ __all__ = (
 
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True, slots=True)
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class DMSError(Exception):
     """
     Duty Management System error.
@@ -53,7 +53,7 @@ class DMSError(Exception):
 
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True, slots=True)
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class DatabaseError(DMSError):
     """
     Database error.
@@ -61,7 +61,7 @@ class DatabaseError(DMSError):
 
 
 
-@attrs(frozen=False, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=False, auto_attribs=True, kw_only=True)
 class Position(object):
     """
     A Ranger position.
@@ -74,7 +74,7 @@ class Position(object):
 
 
 # FIXME: make frozen
-@attrs(frozen=False, auto_attribs=True, kw_only=True, slots=True, cmp=False)
+@attrs(frozen=False, auto_attribs=True, kw_only=True, cmp=False)
 class DutyManagementSystem(object):
     """
     Duty Management System

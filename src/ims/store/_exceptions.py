@@ -25,7 +25,7 @@ __all__ = ()
 
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True, slots=True)
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class StorageError(RuntimeError):
     """
     Storage error.
@@ -35,7 +35,7 @@ class StorageError(RuntimeError):
 
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True, slots=True)
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class NoSuchIncidentError(StorageError):
     """
     No such incident.
@@ -43,7 +43,7 @@ class NoSuchIncidentError(StorageError):
 
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True, slots=True)
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class NoSuchIncidentReportError(StorageError):
     """
     No such incident.

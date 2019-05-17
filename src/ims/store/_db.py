@@ -62,7 +62,7 @@ def now() -> DateTime:
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=False, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=False)
 class Query(object):
     description: str
     text: str = attrib(converter=dedent)
@@ -75,7 +75,7 @@ def _queryAttribute() -> Query:
 
 
 # FIXME: Can this be an Enum?
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Queries(object):
     schemaVersion: Query                        = _queryAttribute()
     events: Query                               = _queryAttribute()
@@ -130,7 +130,7 @@ class Queries(object):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Transaction(IterableABC):
     lastrowid: int
 
@@ -166,7 +166,7 @@ class Transaction(IterableABC):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class DatabaseStore(IMSDataStore):
     """
     Incident Management System data store using a managed database.

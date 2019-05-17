@@ -36,7 +36,7 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class IncidentReport(ReplaceMixIn):
     """
     Incident
