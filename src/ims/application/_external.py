@@ -50,7 +50,7 @@ def _unprefix(url: URL) -> URL:
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True, cmp=False)
 class ExternalApplication(object):
     """
     Application with endpoints for cached external resources.

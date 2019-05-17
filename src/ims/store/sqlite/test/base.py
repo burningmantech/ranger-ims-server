@@ -42,7 +42,9 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     exceptionClass: ClassVar[type] = SQLiteError
 
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, slots=True)
+    @attrs(
+        frozen=False, auto_attribs=True, kw_only=True, slots=True, cmp=False
+    )
     class _State(DataStore._State):
         """
         Internal mutable state for :class:`DataStore`.

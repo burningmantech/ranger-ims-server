@@ -27,7 +27,7 @@ from attr import attrs
 
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.logger import (
-    InvalidLogLevelError, Logger, LogLevel,
+    InvalidLogLevelError, LogLevel, Logger,
     jsonFileLogObserver, textFileLogObserver,
 )
 from twisted.python.usage import Options, UsageError

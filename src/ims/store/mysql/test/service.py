@@ -176,7 +176,9 @@ class DockerizedMySQLService(MySQLService):
     _log: ClassVar[Logger] = Logger()
 
 
-    @attrs(auto_attribs=True, kw_only=True)
+    @attrs(
+        frozen=False, auto_attribs=True, kw_only=True, slots=True, cmp=False
+    )
     class _State(object):
         """
         Internal mutable state for :class:`DataStore`.

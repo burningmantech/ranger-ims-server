@@ -74,7 +74,7 @@ class Position(object):
 
 
 # FIXME: make frozen
-@attrs(frozen=False, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=False, auto_attribs=True, kw_only=True, slots=True, cmp=False)
 class DutyManagementSystem(object):
     """
     Duty Management System

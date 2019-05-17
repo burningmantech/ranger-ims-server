@@ -24,7 +24,6 @@ from typing import Any, Callable, ClassVar, Optional, cast
 from typing.io import TextIO
 
 from attr import attrib, attrs
-from attr.validators import instance_of, optional
 
 from pymysql.cursors import DictCursor
 from pymysql.err import MySQLError
@@ -94,16 +93,15 @@ class DataStore(DatabaseStore):
     query: ClassVar[Queries] = queries
 
 
-    @attrs(frozen=False)
+    @attrs(
+        frozen=False, auto_attribs=True, kw_only=True, slots=True, cmp=False
+    )
     class _State(object):
         """
         Internal mutable state for :class:`DataStore`.
         """
 
-        db: Optional[ConnectionPool] = attrib(
-            validator=optional(instance_of(ConnectionPool)),
-            default=None, init=False,
-        )
+        db: Optional[ConnectionPool] = attrib(default=None, init=False)
 
 
     hostName: str
