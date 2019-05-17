@@ -200,7 +200,7 @@ class ExternalApplication(object):
         """
         Download a resource and cache it.
         """
-        cacheDir = self.config.CachedResourcesPath
+        cacheDir = self.config.CachedResourcesRoot
 
         destination = cacheDir / name
 

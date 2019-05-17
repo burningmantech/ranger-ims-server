@@ -152,12 +152,12 @@ class Configuration(object):
         )
         cls._log.info("Database: {path}", path=databasePath)
 
-        cachedResourcesPath = pathFromConfig(
+        cachedResourcesRoot = pathFromConfig(
             "Core", "CachedResources", dataRoot, ("cache",)
         )
-        makeDirectory(cachedResourcesPath)
+        makeDirectory(cachedResourcesRoot)
         cls._log.info(
-            "CachedResourcesPath: {path}", path=cachedResourcesPath
+            "CachedResourcesRoot: {path}", path=cachedResourcesRoot
         )
 
         logLevelName = valueFromConfig("Core", "LogLevel", "info")
@@ -228,7 +228,7 @@ class Configuration(object):
         return cls(
             ConfigFile=configFile,
 
-            CachedResourcesPath=cachedResourcesPath,
+            CachedResourcesRoot=cachedResourcesRoot,
             ConfigRoot=configRoot,
             DatabasePath=databasePath,
             DataRoot=dataRoot,
@@ -253,7 +253,7 @@ class Configuration(object):
 
     ConfigFile: Optional[Path]
 
-    CachedResourcesPath: Path
+    CachedResourcesRoot: Path
     ConfigRoot: Path
     DatabasePath: Path
     DataRoot: Path
@@ -289,8 +289,8 @@ class Configuration(object):
             f"Core.ServerRoot: {self.ServerRoot}\n"
             f"Core.ConfigRoot: {self.ConfigRoot}\n"
             f"Core.DataRoot: {self.DataRoot}\n"
-            f"Core.DatabaseFile: {self.DatabasePath}\n"
-            f"Core.CachedResources: {self.CachedResourcesPath}\n"
+            f"Core.DatabasePath: {self.DatabasePath}\n"
+            f"Core.CachedResources: {self.CachedResourcesRoot}\n"
             f"Core.LogLevel: {self.LogLevelName}\n"
             f"Core.LogFile: {self.LogFilePath}\n"
             f"Core.LogFormat: {self.LogFormat}\n"
