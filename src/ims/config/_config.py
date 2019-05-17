@@ -113,7 +113,7 @@ class Configuration(object):
 
             return path
 
-        def makeDirectory(path) -> None:
+        def makeDirectory(path: Path) -> None:
             path.mkdir(exist_ok=True)
 
         readConfig(configFile)
