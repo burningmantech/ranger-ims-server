@@ -27,7 +27,8 @@ from attr import attrs
 
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.logger import (
-    InvalidLogLevelError, LogLevel, jsonFileLogObserver, textFileLogObserver
+    InvalidLogLevelError, Logger, LogLevel,
+    jsonFileLogObserver, textFileLogObserver,
 )
 from twisted.python.usage import Options, UsageError
 
@@ -42,13 +43,13 @@ openFile = open
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
 class ServerOptions(Options):
     """
     Command line options for the IMS server.
     """
 
-    defaultLogLevel: ClassVar[LogLevel] = LogLevel.info
+    log: ClassVar = Logger()
+    defaultLogLevel: ClassVar = LogLevel.info
 
 
     def getSynopsis(self) -> str:
@@ -71,14 +72,15 @@ class ServerOptions(Options):
 
     def initConfig(self) -> None:
         try:
-            configFile = cast(Path, cast(Mapping, self).get("configFile"))
+            configFile = cast(
+                Optional[Path], cast(Mapping, self).get("configFile")
+            )
 
-            if configFile is None:
-                configuration = Configuration.fromConfigFile(None)
-            else:
-                if not configFile.is_file():
-                    exit(ExitStatus.EX_CONFIG, "Config file not found.")
-                configuration = Configuration.fromConfigFile(configFile)
+            if configFile and not configFile.is_file():
+                self.log.info("Config file not found.")
+                configFile = None
+
+            configuration = Configuration.fromConfigFile(configFile)
 
             options = cast(MutableMapping, self)
 
