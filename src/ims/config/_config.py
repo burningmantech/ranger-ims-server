@@ -299,4 +299,4 @@ class Configuration(object):
         """
         Return a new Configuration instance with changed values.
         """
-        return evolve(**changes)
+        return evolve(self, **changes)
