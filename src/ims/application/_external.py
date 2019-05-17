@@ -201,7 +201,6 @@ class ExternalApplication(object):
         Download a resource and cache it.
         """
         cacheDir = self.config.CachedResourcesPath
-        cacheDir.mkdir(exist_ok=True)
 
         destination = cacheDir / name
 

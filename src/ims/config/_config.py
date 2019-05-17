@@ -113,6 +113,9 @@ class Configuration(object):
 
             return path
 
+        def makeDirectory(path) -> None:
+            path.mkdir(exist_ok=True)
+
         readConfig(configFile)
 
         if configFile is None:
@@ -129,16 +132,19 @@ class Configuration(object):
         serverRoot = pathFromConfig(
             "Core", "ServerRoot", defaultRoot, cast(Tuple[str], ())
         )
+        makeDirectory(serverRoot)
         cls._log.info("Server root: {path}", path=serverRoot)
 
         configRoot = pathFromConfig(
             "Core", "ConfigRoot", serverRoot, ("conf",)
         )
+        makeDirectory(configRoot)
         cls._log.info("Config root: {path}", path=configRoot)
 
         dataRoot = pathFromConfig(
             "Core", "DataRoot", serverRoot, ("data",)
         )
+        makeDirectory(dataRoot)
         cls._log.info("Data root: {path}", path=dataRoot)
 
         databasePath = pathFromConfig(
@@ -149,6 +155,7 @@ class Configuration(object):
         cachedResourcesPath = pathFromConfig(
             "Core", "CachedResources", dataRoot, ("cache",)
         )
+        makeDirectory(cachedResourcesPath)
         cls._log.info(
             "CachedResourcesPath: {path}", path=cachedResourcesPath
         )
