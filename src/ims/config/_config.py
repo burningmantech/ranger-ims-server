@@ -25,7 +25,7 @@ from pathlib import Path
 from sys import argv
 from typing import Any, ClassVar, FrozenSet, Optional, Tuple, cast
 
-from attr import attrs, evolve
+from attr import attrib, attrs, evolve
 
 from twisted.logger import Logger
 
@@ -52,6 +52,20 @@ class Configuration(object):
 
     _log: ClassVar = Logger()
     urls: ClassVar = URLs
+
+
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, cmp=False)
+    class _State(object):
+        """
+        Internal mutable state for :class:`Configuration`.
+        """
+
+        store: Optional[IMSDataStore]        = None
+        dms: Optional[DutyManagementSystem]  = None
+        authProvider: Optional[AuthProvider] = None
+        locationsPath: Optional[Path]        = None
+        locationsJSONBytes: Optional[bytes]  = None
+
 
 
     @classmethod
@@ -202,29 +216,6 @@ class Configuration(object):
         # Persist some objects
         #
 
-        dms = DutyManagementSystem(
-            host=dmsHost, database=dmsDatabase,
-            username=dmsUsername, password=dmsPassword,
-        )
-        store: IMSDataStore = DataStore(dbPath=databasePath)
-
-        authProvider = AuthProvider(
-            store=store, dms=dms,
-            requireActive=requireActive,
-            adminUsers=imsAdmins, masterKey=masterKey,
-        )
-
-        locationsPath = dataRoot / "locations.json"
-
-        if locationsPath.is_file():
-            with locationsPath.open() as jsonStrem:
-                json = objectFromJSONBytesIO(jsonStrem)
-            cls._log.info("{count} locations", count=len(json))
-            locationsJSONBytes = jsonTextFromObject(json).encode("utf-8")
-        else:
-            cls._log.info("No locations file: {path}", path=locationsPath)
-            locationsJSONBytes = jsonTextFromObject([]).encode("utf-8")
-
         return cls(
             ConfigFile=configFile,
 
@@ -245,9 +236,6 @@ class Configuration(object):
             Port=port,
             RequireActive=requireActive,
             ServerRoot=serverRoot,
-
-            store=store, dms=dms, authProvider=authProvider,
-            locationsPath=locationsPath, locationsJSONBytes=locationsJSONBytes,
         )
 
 
@@ -271,12 +259,80 @@ class Configuration(object):
     RequireActive: bool
     ServerRoot: Path
 
-    # FIXME: make these computed properties
-    store: IMSDataStore
-    dms: DutyManagementSystem
-    authProvider: AuthProvider
-    locationsPath: Path
-    locationsJSONBytes: bytes
+    _state: _State = attrib(factory=_State, init=False)
+
+
+    @property
+    def store(self) -> IMSDataStore:
+        """
+        Data store.
+        """
+        if self._state.store is None:
+            self._state.store = DataStore(dbPath=self.DatabasePath)
+
+        return self._state.store
+
+
+    @property
+    def dms(self) -> DutyManagementSystem:
+        """
+        Duty Management System.
+        """
+        if self._state.dms is None:
+            self._state.dms = DutyManagementSystem(
+                host=self.DMSHost, database=self.DMSDatabase,
+                username=self.DMSUsername, password=self.DMSPassword,
+            )
+
+        return self._state.dms
+
+
+    @property
+    def authProvider(self) -> AuthProvider:
+        """
+        Auth provider.
+        """
+        if self._state.authProvider is None:
+            self._state.authProvider = AuthProvider(
+                store=self.store, dms=self.dms,
+                requireActive=self.RequireActive,
+                adminUsers=self.IMSAdmins, masterKey=self.MasterKey,
+            )
+
+        return self._state.authProvider
+
+
+    @property
+    def locationsPath(self) -> Path:
+        """
+        Locations file path.
+        """
+        if self._state.locationsPath is None:
+            self._state.locationsPath = self.DataRoot / "locations.json"
+
+        return self._state.locationsPath
+
+
+    @property
+    def locationsJSONBytes(self) -> bytes:
+        """
+        Locations JSON data as bytes.
+        """
+        if self._state.locationsJSONBytes is None:
+            if self.locationsPath.is_file():
+                with self.locationsPath.open() as jsonStream:
+                    json = objectFromJSONBytesIO(jsonStream)
+                self._log.info("{count} locations", count=len(json))
+                locationsJSONBytes = jsonTextFromObject(json).encode("utf-8")
+            else:
+                self._log.info(
+                    "No locations file: {path}", path=self.locationsPath
+                )
+                locationsJSONBytes = jsonTextFromObject([]).encode("utf-8")
+
+            self._state.locationsJSONBytes = locationsJSONBytes
+
+        return self._state.locationsJSONBytes
 
 
     def __str__(self) -> str:
