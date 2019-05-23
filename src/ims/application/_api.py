@@ -134,7 +134,7 @@ class APIApplication(object):
     @router.route(_unprefix(URLs.incidentTypes), methods=("HEAD", "GET"))
     async def incidentTypesResource(
         self, request: IRequest
-    ) -> None:
+    ) -> KleinRenderable:
         """
         Incident types endpoint.
         """
@@ -241,6 +241,7 @@ class APIApplication(object):
         )
 
         writeJSONStream(request, stream, None)
+        return None
 
 
     @router.route(_unprefix(URLs.incidents), methods=("POST",))
