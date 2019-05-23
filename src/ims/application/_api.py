@@ -20,6 +20,7 @@ Incident Management System JSON API endpoints.
 
 from datetime import datetime as DateTime, timezone as TimeZone
 from enum import Enum
+from functools import partial
 from typing import (
     Any, Awaitable, Callable, ClassVar, Iterable, Mapping, Optional, Tuple,
     cast,
@@ -152,6 +153,33 @@ class APIApplication(object):
         )
 
         writeJSONStream(request, stream, None)
+        return None
+
+
+    @router.route(_unprefix(URLs.events), methods=("GET",))
+    async def eventsResource(self, request: IRequest) -> KleinRenderable:
+        """
+        Events endpoint.
+        """
+        self.config.authProvider.authenticateRequest(request)
+
+        authorizationsForUser = partial(
+            self.config.authProvider.authorizationsForUser, request.user
+        )
+
+        events = sorted([
+            event for event in
+            await self.config.store.events()
+            if Authorization.readIncidents & await authorizationsForUser(event)
+        ])
+
+        stream = buildJSONArray(
+            jsonTextFromObject(event).encode("utf-8")
+            for event in events
+        )
+
+        writeJSONStream(request, stream, None)
+        return None
 
 
     @router.route(_unprefix(URLs.incidentTypes), methods=("POST",))
