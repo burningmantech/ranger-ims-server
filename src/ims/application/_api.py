@@ -156,32 +156,6 @@ class APIApplication(object):
         return None
 
 
-    @router.route(_unprefix(URLs.events), methods=("GET",))
-    async def eventsResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Events endpoint.
-        """
-        self.config.authProvider.authenticateRequest(request)
-
-        authorizationsForUser = partial(
-            self.config.authProvider.authorizationsForUser, request.user
-        )
-
-        events = sorted([
-            event for event in
-            await self.config.store.events()
-            if Authorization.readIncidents & await authorizationsForUser(event)
-        ])
-
-        stream = buildJSONArray(
-            jsonTextFromObject(event).encode("utf-8")
-            for event in events
-        )
-
-        writeJSONStream(request, stream, None)
-        return None
-
-
     @router.route(_unprefix(URLs.incidentTypes), methods=("POST",))
     async def editIncidentTypesResource(
         self, request: IRequest
@@ -229,6 +203,32 @@ class APIApplication(object):
             await store.hideIncidentTypes(hide)
 
         return noContentResponse(request)
+
+
+    @router.route(_unprefix(URLs.events), methods=("HEAD", "GET"))
+    async def eventsResource(self, request: IRequest) -> KleinRenderable:
+        """
+        Events endpoint.
+        """
+        self.config.authProvider.authenticateRequest(request)
+
+        authorizationsForUser = partial(
+            self.config.authProvider.authorizationsForUser, request.user
+        )
+
+        events = sorted([
+            event for event in
+            await self.config.store.events()
+            if Authorization.readIncidents & await authorizationsForUser(event)
+        ])
+
+        stream = buildJSONArray(
+            jsonTextFromObject(event).encode("utf-8")
+            for event in events
+        )
+
+        writeJSONStream(request, stream, None)
+        return None
 
 
     @router.route(_unprefix(URLs.locations), methods=("HEAD", "GET"))
