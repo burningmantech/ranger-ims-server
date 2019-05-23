@@ -21,7 +21,6 @@ Test strategies for model data.
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
-from os import getenv
 from typing import Callable, Hashable, Optional, cast
 
 from hypothesis import HealthCheck, settings
@@ -80,8 +79,7 @@ settings.register_profile(
         suppress_health_check=[HealthCheck.too_slow],
     )
 )
-if getenv("CI") == "true":
-    settings.load_profile("ci")
+settings.load_profile("ci")
 
 
 ##
