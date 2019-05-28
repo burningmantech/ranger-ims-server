@@ -30,6 +30,7 @@ from pymysql import (
 )
 
 from twisted.enterprise import adbapi
+from twisted.internet.defer import CancelledError
 from twisted.logger import Logger
 
 from ims.model import Ranger, RangerStatus
@@ -193,11 +194,15 @@ class DutyManagementSystem(object):
             "Duty Management System..."
         )
 
-        return await self.dbpool.runQuery(
-            """
-            select person_id, position_id from person_position
-            """
-        )
+        try:
+            return await self.dbpool.runQuery(
+                """
+                select person_id, position_id from person_position
+                """
+            )
+        except CancelledError:
+            # Uh… well, ok. Never mind, then.
+            pass
 
 
     async def positions(self) -> Iterable[Position]:
