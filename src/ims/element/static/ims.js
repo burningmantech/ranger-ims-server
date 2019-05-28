@@ -132,12 +132,7 @@ function jsonRequest(url, jsonOut, success, error) {
     }
 
     if (jsonOut) {
-        var jsonText = null
-        if (typeof(jsonOut) == "string") {
-            jsonText = jsonOut;
-        } else {
-            jsonText = JSON.stringify(jsonOut);
-        }
+        var jsonText = JSON.stringify(jsonOut);
 
         args["method"] = "POST";
         args["contentType"] = "application/json";

@@ -5,6 +5,7 @@
 
   <body>
     <div t:render="container">
+
       <div class="row" id="event_access_container">
 
         <div class="col-sm-12 event_access">
@@ -31,6 +32,20 @@
         </div>
 
       </div>
+
+      <div class="row" id="event_new_container">
+        <div class="col-sm-12 event_access">
+          <label>Create New Event:</label>
+          <input
+            id="event_add"
+            class="form-control input-sm auto-width"
+            type="text" inputmode="verbatim"
+            placeholder="Burn-A-Matic 3000"
+            onchange="addEvent(this)"
+          />
+        </div>
+      </div>
+
     </div>
   </body>
 
