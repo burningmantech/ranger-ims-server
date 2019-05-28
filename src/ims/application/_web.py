@@ -28,8 +28,8 @@ from twisted.web.iweb import IRequest
 
 from ims.auth import Authorization
 from ims.config import Configuration, URLs
-from ims.element.admin.acl import AdminAccessControlPage
-from ims.element.admin.root import AdminPage
+from ims.element.admin.events import AdminEventsPage
+from ims.element.admin.root import AdminRootPage
 from ims.element.admin.streets import AdminStreetsPage
 from ims.element.admin.types import AdminIncidentTypesPage
 from ims.element.incident.incident import IncidentPage
@@ -106,11 +106,11 @@ class WebApplication(object):
         await self.config.authProvider.authorizeRequest(
             request, None, Authorization.imsAdmin
         )
-        return AdminPage(config=self.config)
+        return AdminRootPage(config=self.config)
 
 
-    @router.route(_unprefix(URLs.adminAccessControl), methods=("HEAD", "GET"))
-    async def adminAccessControlPage(
+    @router.route(_unprefix(URLs.adminEvents), methods=("HEAD", "GET"))
+    async def adminEventsPage(
         self, request: IRequest
     ) -> KleinRenderable:
         """
@@ -122,7 +122,7 @@ class WebApplication(object):
         await self.config.authProvider.authorizeRequest(
             request, None, Authorization.imsAdmin
         )
-        return AdminAccessControlPage(config=self.config)
+        return AdminEventsPage(config=self.config)
 
 
     @router.route(_unprefix(URLs.adminIncidentTypes), methods=("HEAD", "GET"))

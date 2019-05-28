@@ -18,19 +18,9 @@
 Admin access control page.
 """
 
-from attr import attrs
-
-from ...page import Page
+from ._admin_events import AdminEventsPage
 
 
-__all__ = ()
-
-
-
-@attrs(auto_attribs=True, kw_only=True)
-class AdminAccessControlPage(Page):
-    """
-    Admin access control page.
-    """
-
-    name: str = "Edit Event Access Control"
+__all__ = (
+    "AdminEventsPage",
+)

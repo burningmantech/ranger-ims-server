@@ -15,12 +15,22 @@
 ##
 
 """
-Admin access control page.
+Admin page.
 """
 
-from ._admin_acl import AdminAccessControlPage
+from attr import attrs
+
+from ...page import Page
 
 
-__all__ = (
-    "AdminAccessControlPage",
-)
+__all__ = ()
+
+
+
+@attrs(auto_attribs=True, kw_only=True)
+class AdminRootPage(Page):
+    """
+    Admin page.
+    """
+
+    name: str = "Administration Tools"

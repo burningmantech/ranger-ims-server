@@ -15,7 +15,7 @@
 ##
 
 """
-Admin page.
+Admin access control page.
 """
 
 from attr import attrs
@@ -28,9 +28,9 @@ __all__ = ()
 
 
 @attrs(auto_attribs=True, kw_only=True)
-class AdminPage(Page):
+class AdminEventsPage(Page):
     """
-    Admin page.
+    Admin events page.
     """
 
-    name: str = "Administration Tools"
+    name: str = "Edit Events"
