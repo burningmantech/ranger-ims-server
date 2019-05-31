@@ -276,23 +276,6 @@ class APIApplication(object):
         return noContentResponse(request)
 
 
-    @router.route(_unprefix(URLs.locations), methods=("HEAD", "GET"))
-    async def locationsResource(
-        self, request: IRequest, eventID: str
-    ) -> KleinRenderable:
-        """
-        Location list endpoint.
-        """
-        event = Event(id=eventID)
-
-        await self.config.authProvider.authorizeRequest(
-            request, event, Authorization.readIncidents
-        )
-
-        data = self.config.locationsJSONBytes
-        return jsonBytes(request, data, str(hash(data)))
-
-
     @router.route(_unprefix(URLs.incidents), methods=("HEAD", "GET"))
     async def listIncidentsResource(
         self, request: IRequest, eventID: str

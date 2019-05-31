@@ -23,7 +23,10 @@ from os import environ, getcwd
 from pathlib import Path
 from typing import Iterable, Iterator, Mapping, Optional, Set, Tuple
 
+from ims.auth import AuthProvider
+from ims.dms import DutyManagementSystem
 from ims.ext.trial import TestCase
+from ims.store import IMSDataStore
 
 from .._config import Configuration
 
@@ -216,3 +219,74 @@ class ConfigurationTests(TestCase):
 
         for value in ("true", "True", "TRUE", "yes", "Yes", "YES", "1"):
             self.assertTrue(test(value))
+
+
+    def test_store(self) -> None:
+        with testingEnvironment({}):
+            config = Configuration.fromConfigFile(None)
+
+        self.assertIsNone(config._state.store)
+        self.assertIsInstance(config.store, IMSDataStore)
+        self.assertIsNotNone(config._state.store)
+        self.assertIsInstance(config.store, IMSDataStore)
+
+
+    def test_dms(self) -> None:
+        with testingEnvironment({}):
+            config = Configuration.fromConfigFile(None)
+
+        self.assertIsNone(config._state.dms)
+        self.assertIsInstance(config.dms, DutyManagementSystem)
+        self.assertIsNotNone(config._state.dms)
+        self.assertIsInstance(config.dms, DutyManagementSystem)
+
+
+    def test_authProvider(self) -> None:
+        with testingEnvironment({}):
+            config = Configuration.fromConfigFile(None)
+
+        self.assertIsNone(config._state.authProvider)
+        self.assertIsInstance(config.authProvider, AuthProvider)
+        self.assertIsNotNone(config._state.authProvider)
+        self.assertIsInstance(config.authProvider, AuthProvider)
+
+
+    def test_str(self) -> None:
+        serverRoot = Path(self.mktemp()).resolve()
+
+        with testingEnvironment(dict(IMS_SERVER_ROOT=str(serverRoot))):
+            config = Configuration.fromConfigFile(None)
+
+        self.maxDiff = None
+        self.assertEqual(
+            str(config),
+            f"Configuration file: None\n"
+            f"\n"
+            f"Core.Host: localhost\n"
+            f"Core.Port: 8080\n"
+            f"\n"
+            f"Core.ServerRoot: {serverRoot}\n"
+            f"Core.ConfigRoot: {serverRoot}/conf\n"
+            f"Core.DataRoot: {serverRoot}/data\n"
+            f"Core.DatabasePath: {serverRoot}/data/db.sqlite\n"
+            f"Core.CachedResources: {serverRoot}/data/cache\n"
+            f"Core.LogLevel: info\n"
+            f"Core.LogFile: {serverRoot}/data/trial.log\n"
+            f"Core.LogFormat: text\n"
+            f"\n"
+            f"DMS.Hostname: \n"
+            f"DMS.Database: \n"
+            f"DMS.Username: \n"
+            f"DMS.Password: \n"
+        )
+
+
+    def test_replace(self) -> None:
+        hostName = "xyzzy"
+
+        with testingEnvironment({}):
+            config = Configuration.fromConfigFile(None)
+
+        config = config.replace(HostName=hostName)
+
+        self.assertEqual(config.HostName, hostName)

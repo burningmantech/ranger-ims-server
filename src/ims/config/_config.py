@@ -31,7 +31,6 @@ from twisted.logger import Logger
 
 from ims.auth import AuthProvider
 from ims.dms import DutyManagementSystem
-from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore
 
@@ -63,7 +62,6 @@ class Configuration(object):
         store: Optional[IMSDataStore]        = None
         dms: Optional[DutyManagementSystem]  = None
         authProvider: Optional[AuthProvider] = None
-        locationsPath: Optional[Path]        = None
         locationsJSONBytes: Optional[bytes]  = None
 
 
@@ -303,39 +301,6 @@ class Configuration(object):
             )
 
         return self._state.authProvider
-
-
-    @property
-    def locationsPath(self) -> Path:
-        """
-        Locations file path.
-        """
-        if self._state.locationsPath is None:
-            self._state.locationsPath = self.DataRoot / "locations.json"
-
-        return self._state.locationsPath
-
-
-    @property
-    def locationsJSONBytes(self) -> bytes:
-        """
-        Locations JSON data as bytes.
-        """
-        if self._state.locationsJSONBytes is None:
-            if self.locationsPath.is_file():
-                with self.locationsPath.open() as jsonStream:
-                    json = objectFromJSONBytesIO(jsonStream)
-                self._log.info("{count} locations", count=len(json))
-                locationsJSONBytes = jsonTextFromObject(json).encode("utf-8")
-            else:
-                self._log.info(
-                    "No locations file: {path}", path=self.locationsPath
-                )
-                locationsJSONBytes = jsonTextFromObject([]).encode("utf-8")
-
-            self._state.locationsJSONBytes = locationsJSONBytes
-
-        return self._state.locationsJSONBytes
 
 
     def __str__(self) -> str:
