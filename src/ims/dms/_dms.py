@@ -194,15 +194,11 @@ class DutyManagementSystem(object):
             "Duty Management System..."
         )
 
-        try:
-            return await self.dbpool.runQuery(
-                """
-                select person_id, position_id from person_position
-                """
-            )
-        except CancelledError:
-            # Uh… well, ok. Never mind, then.
-            pass
+        return await self.dbpool.runQuery(
+            """
+            select person_id, position_id from person_position
+            """
+        )
 
 
     async def positions(self) -> Iterable[Position]:
@@ -252,6 +248,8 @@ class DutyManagementSystem(object):
                             "Unable to load personnel data from DMS: {error}",
                             error=e
                         )
+                    elif isinstance(e, CancelledError):
+                        pass
                     else:
                         self._log.failure(
                             "Unable to load personnel data from DMS"
