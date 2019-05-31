@@ -19,7 +19,7 @@ IMS configuration
 """
 
 from configparser import ConfigParser, NoOptionError, NoSectionError
-from os import getcwd
+from os import environ, getcwd
 from os.path import basename, sep as pathsep
 from pathlib import Path
 from sys import argv
@@ -31,7 +31,6 @@ from twisted.logger import Logger
 
 from ims.auth import AuthProvider
 from ims.dms import DutyManagementSystem
-from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore
 
@@ -63,9 +62,7 @@ class Configuration(object):
         store: Optional[IMSDataStore]        = None
         dms: Optional[DutyManagementSystem]  = None
         authProvider: Optional[AuthProvider] = None
-        locationsPath: Optional[Path]        = None
         locationsJSONBytes: Optional[bytes]  = None
-
 
 
     @classmethod
@@ -93,26 +90,28 @@ class Configuration(object):
                 )
 
         def valueFromConfig(
-            section: str, option: str, default: Optional[str]
-        ) -> Optional[str]:
-            try:
-                value = configParser.get(section, option)
-                if value:
-                    return value
-                else:
-                    return default
-            except (NoSectionError, NoOptionError):
+            variable: str, section: str, option: str, default: str = ""
+        ) -> str:
+            value = environ.get(f"IMS_{variable}")
+
+            if not value:
+                try:
+                    value = configParser.get(section, option)
+                except (NoSectionError, NoOptionError):
+                    pass
+
+            if value:
+                return value
+            else:
                 return default
 
         def pathFromConfig(
-            section: str, option: str, root: Path, segments: Tuple[str]
+            variable: str, section: str, option: str,
+            root: Path, segments: Tuple[str],
         ) -> Path:
-            if section is None:
-                text = None
-            else:
-                text = valueFromConfig(section, option, None)
+            text = valueFromConfig(variable, section, option)
 
-            if text is None:
+            if not text:
                 path = root
                 for segment in segments:
                     path = path / segment
@@ -137,80 +136,82 @@ class Configuration(object):
         else:
             defaultRoot = configFile.parent.parent
 
-        hostName = valueFromConfig("Core", "Host", "localhost")
+        hostName = valueFromConfig("HOSTNAME", "Core", "Host", "localhost")
         cls._log.info("HostName: {hostName}", hostName=hostName)
 
-        port = int(cast(str, valueFromConfig("Core", "Port", "8080")))
+        port = int(cast(str, valueFromConfig("PORT", "Core", "Port", "8080")))
         cls._log.info("Port: {port}", port=port)
 
         serverRoot = pathFromConfig(
-            "Core", "ServerRoot", defaultRoot, cast(Tuple[str], ())
+            "SERVER_ROOT", "Core", "ServerRoot",
+            defaultRoot, cast(Tuple[str], ()),
         )
         makeDirectory(serverRoot)
         cls._log.info("Server root: {path}", path=serverRoot)
 
         configRoot = pathFromConfig(
-            "Core", "ConfigRoot", serverRoot, ("conf",)
+            "CONFIG_ROOT", "Core", "ConfigRoot", serverRoot, ("conf",)
         )
         makeDirectory(configRoot)
         cls._log.info("Config root: {path}", path=configRoot)
 
         dataRoot = pathFromConfig(
-            "Core", "DataRoot", serverRoot, ("data",)
+            "DATA_ROOT", "Core", "DataRoot", serverRoot, ("data",)
         )
         makeDirectory(dataRoot)
         cls._log.info("Data root: {path}", path=dataRoot)
 
         databasePath = pathFromConfig(
-            "Core", "Database", dataRoot, ("db.sqlite",)
+            "DB_PATH", "Core", "Database", dataRoot, ("db.sqlite",)
         )
         cls._log.info("Database: {path}", path=databasePath)
 
         cachedResourcesRoot = pathFromConfig(
-            "Core", "CachedResources", dataRoot, ("cache",)
+            "CACHE_PATH", "Core", "CachedResources", dataRoot, ("cache",)
         )
         makeDirectory(cachedResourcesRoot)
         cls._log.info(
             "CachedResourcesRoot: {path}", path=cachedResourcesRoot
         )
 
-        logLevelName = valueFromConfig("Core", "LogLevel", "info")
+        logLevelName = valueFromConfig("LOG_LEVEL", "Core", "LogLevel", "info")
         cls._log.info("LogLevel: {logLevel}", logLevel=logLevelName)
 
-        logFormat = valueFromConfig("Core", "LogFormat", "text")
+        logFormat = valueFromConfig("LOG_FORMAT", "Core", "LogFormat", "text")
         cls._log.info("LogFormat: {logFormat}", logFormat=logFormat)
 
         logFilePath = pathFromConfig(
-            "Core", "LogFile", dataRoot, (f"{command}.log",)
+            "LOG_FILE", "Core", "LogFile", dataRoot, (f"{command}.log",)
         )
         cls._log.info("LogFile: {path}", path=logFilePath)
 
-        admins = cast(str, valueFromConfig("Core", "Admins", ""))
+        admins = valueFromConfig("ADMINS", "Core", "Admins")
         imsAdmins: FrozenSet[str] = frozenset(
-            a.strip() for a in admins.split(",")
+            a for a in map(str.strip, admins.split(",")) if a
         )
         cls._log.info("Admins: {admins}", admins=imsAdmins)
 
-        active = (
-            cast(str, valueFromConfig("Core", "RequireActive", "true")).lower()
+        active = valueFromConfig(
+            "REQUIRE_ACTIVE", "Core", "RequireActive", "true"
         )
+        active = active.lower()
         if active in ("false", "no", "0"):
             requireActive = False
         else:
             requireActive = True
         cls._log.info("RequireActive: {active}", active=requireActive)
 
-        dmsHost     = valueFromConfig("DMS", "Hostname", None)
-        dmsDatabase = valueFromConfig("DMS", "Database", None)
-        dmsUsername = valueFromConfig("DMS", "Username", None)
-        dmsPassword = valueFromConfig("DMS", "Password", None)
+        dmsHost     = valueFromConfig("DMS_HOSTNAME", "DMS", "Hostname")
+        dmsDatabase = valueFromConfig("DMS_DATABASE", "DMS", "Database")
+        dmsUsername = valueFromConfig("DMS_USERNAME", "DMS", "Username")
+        dmsPassword = valueFromConfig("DMS_PASSWORD", "DMS", "Password")
 
         cls._log.info(
             "Database: {user}@{host}/{db}",
             user=dmsUsername, host=dmsHost, db=dmsDatabase,
         )
 
-        masterKey = valueFromConfig("Core", "MasterKey", None)
+        masterKey = valueFromConfig("MASTER_KEY", "Core", "MasterKey")
 
         #
         # Persist some objects
@@ -245,16 +246,16 @@ class Configuration(object):
     ConfigRoot: Path
     DatabasePath: Path
     DataRoot: Path
-    DMSDatabase: Optional[str]
-    DMSHost: Optional[str]
-    DMSPassword: Optional[str]
-    DMSUsername: Optional[str]
-    HostName: Optional[str]
+    DMSDatabase: str
+    DMSHost: str
+    DMSPassword: str
+    DMSUsername: str
+    HostName: str
     IMSAdmins: FrozenSet[str]
     LogFilePath: Path
-    LogFormat: Optional[str]
-    LogLevelName: Optional[str]
-    MasterKey: Optional[str]
+    LogFormat: str
+    LogLevelName: str
+    MasterKey: str
     Port: int
     RequireActive: bool
     ServerRoot: Path
@@ -300,39 +301,6 @@ class Configuration(object):
             )
 
         return self._state.authProvider
-
-
-    @property
-    def locationsPath(self) -> Path:
-        """
-        Locations file path.
-        """
-        if self._state.locationsPath is None:
-            self._state.locationsPath = self.DataRoot / "locations.json"
-
-        return self._state.locationsPath
-
-
-    @property
-    def locationsJSONBytes(self) -> bytes:
-        """
-        Locations JSON data as bytes.
-        """
-        if self._state.locationsJSONBytes is None:
-            if self.locationsPath.is_file():
-                with self.locationsPath.open() as jsonStream:
-                    json = objectFromJSONBytesIO(jsonStream)
-                self._log.info("{count} locations", count=len(json))
-                locationsJSONBytes = jsonTextFromObject(json).encode("utf-8")
-            else:
-                self._log.info(
-                    "No locations file: {path}", path=self.locationsPath
-                )
-                locationsJSONBytes = jsonTextFromObject([]).encode("utf-8")
-
-            self._state.locationsJSONBytes = locationsJSONBytes
-
-        return self._state.locationsJSONBytes
 
 
     def __str__(self) -> str:

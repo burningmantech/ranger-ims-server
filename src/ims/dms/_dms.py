@@ -92,10 +92,10 @@ class DutyManagementSystem(object):
     personnelCacheInterval: ClassVar    = 60 * 5   # 5 minutes
     personnelCacheIntervalMax: ClassVar = 60 * 30  # 30 minutes
 
-    host: Optional[str]
-    database: Optional[str]
-    username: Optional[str]
-    password: Optional[str]
+    host: str
+    database: str
+    username: str
+    password: str
 
     _personnel: Iterable[Ranger] = attrib(default=(), init=False)
     _positions: Iterable[Position] = attrib(default=(), init=False)
@@ -111,10 +111,10 @@ class DutyManagementSystem(object):
         """
         if self._dbpool is None:
             if (
-                self.host is None and
-                self.database is None and
-                self.username is None and
-                self.password is None
+                not self.host and
+                not self.database and
+                not self.username and
+                not self.password
             ):
                 from .test.test_dms import DummyConnectionPool
                 dbpool = DummyConnectionPool("Dummy")

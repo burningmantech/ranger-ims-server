@@ -117,7 +117,7 @@ class AuthProvider(object):
 
     requireActive: bool = True
     adminUsers: FrozenSet[str] = frozenset()
-    masterKey: Optional[str] = None
+    masterKey: str = ""
 
 
     async def verifyCredentials(self, user: User, password: str) -> bool:
@@ -129,7 +129,7 @@ class AuthProvider(object):
         else:
             try:
                 if (
-                    self.masterKey is not None and
+                    self.masterKey and
                     password == self.masterKey
                 ):
                     return True
