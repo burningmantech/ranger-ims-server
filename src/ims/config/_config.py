@@ -189,7 +189,7 @@ class Configuration(object):
 
         admins = valueFromConfig("ADMINS", "Core", "Admins")
         imsAdmins: FrozenSet[str] = frozenset(
-            a.strip() for a in admins.split(",")
+            a for a in map(str.strip, admins.split(",")) if a
         )
         cls._log.info("Admins: {admins}", admins=imsAdmins)
 
