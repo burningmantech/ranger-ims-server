@@ -29,7 +29,7 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class URLs(object):
     """
     Incident Management System URL schema.
@@ -107,8 +107,8 @@ class URLs(object):
     admin: ClassVar   = app.child("admin").child("")
     adminJS: ClassVar = static.child("admin.js")
 
-    adminAccessControl: ClassVar   = admin.child("access")
-    adminAccessControlJS: ClassVar = static.child("admin_access.js")
+    adminEvents: ClassVar   = admin.child("events")
+    adminEventsJS: ClassVar = static.child("admin_events.js")
 
     adminIncidentTypes: ClassVar   = admin.child("types")
     adminIncidentTypesJS: ClassVar = static.child("admin_types.js")

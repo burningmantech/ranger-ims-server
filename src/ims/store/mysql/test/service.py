@@ -58,7 +58,7 @@ NO_PORT = 0
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class MySQLService(ABC):
     """
     MySQL database service.
@@ -167,7 +167,7 @@ class MySQLService(ABC):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class DockerizedMySQLService(MySQLService):
     """
     Manages a MySQL instance.
@@ -176,7 +176,7 @@ class DockerizedMySQLService(MySQLService):
     _log: ClassVar[Logger] = Logger()
 
 
-    @attrs(auto_attribs=True, kw_only=True)
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, cmp=False)
     class _State(object):
         """
         Internal mutable state for :class:`DataStore`.
@@ -441,7 +441,7 @@ class DockerizedMySQLService(MySQLService):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class ExternalMySQLService(MySQLService):
     """
     Externally hosted MySQL instance.

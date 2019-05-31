@@ -29,7 +29,7 @@ __all__ = ()
 title = "Dispatch Queue"
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(auto_attribs=True, kw_only=True)
 class DispatchQueueTemplatePage(Page):
     """
     Dispatch queue template page.

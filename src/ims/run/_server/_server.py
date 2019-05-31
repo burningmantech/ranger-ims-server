@@ -46,7 +46,7 @@ class IMSSession(Session):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Server(object):
     """
     Run the IMS server.

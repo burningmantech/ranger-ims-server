@@ -38,5 +38,5 @@ export     LOCAL_IMAGE_NAME="${image_name}";
 echo "Running: ${script_url} ${@}";
 deploy_cmd="$(mktemp)";
 curl --silent "${script_url}" --output "${deploy_cmd}";
-sh "${deploy_cmd}" --profile="clubhouse-api" "${@}";
+sh "${deploy_cmd}" --profile="ims" "${@}";
 rm "${deploy_cmd}";

@@ -264,13 +264,13 @@ def printSchema(db: Connection, out: TextIO) -> None:
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class QueryPlanExplanation(object):
     """
     Container for information about a query plan.
     """
 
-    @attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+    @attrs(frozen=True, auto_attribs=True, kw_only=True)
     class Line(object):
         """
         A line of information about a query plan.

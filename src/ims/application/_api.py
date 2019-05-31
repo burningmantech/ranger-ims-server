@@ -20,6 +20,8 @@ Incident Management System JSON API endpoints.
 
 from datetime import datetime as DateTime, timezone as TimeZone
 from enum import Enum
+from functools import partial
+from json import JSONDecodeError
 from typing import (
     Any, Awaitable, Callable, ClassVar, Iterable, Mapping, Optional, Tuple,
     cast,
@@ -54,8 +56,8 @@ from ims.model.json import (
 from ims.store import NoSuchIncidentError
 
 from ._klein import (
-    Router, badRequestResponse, invalidQueryResponse, noContentResponse,
-    notFoundResponse, queryValue
+    Router, badRequestResponse, invalidJSONResponse, invalidQueryResponse,
+    noContentResponse, notFoundResponse, queryValue,
 )
 from ._static import buildJSONArray, jsonBytes, writeJSONStream
 
@@ -72,7 +74,7 @@ def _unprefix(url: URL) -> URL:
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, cmp=False)
 class APIApplication(object):
     """
     Application with JSON API endpoints.
@@ -134,7 +136,7 @@ class APIApplication(object):
     @router.route(_unprefix(URLs.incidentTypes), methods=("HEAD", "GET"))
     async def incidentTypesResource(
         self, request: IRequest
-    ) -> None:
+    ) -> KleinRenderable:
         """
         Incident types endpoint.
         """
@@ -152,6 +154,7 @@ class APIApplication(object):
         )
 
         writeJSONStream(request, stream, None)
+        return None
 
 
     @router.route(_unprefix(URLs.incidentTypes), methods=("POST",))
@@ -165,7 +168,10 @@ class APIApplication(object):
             request, None, Authorization.imsAdmin
         )
 
-        json = objectFromJSONBytesIO(request.content)
+        try:
+            json = objectFromJSONBytesIO(request.content)
+        except JSONDecodeError as e:
+            return invalidJSONResponse(request, e)
 
         if type(json) is not dict:
             return badRequestResponse(
@@ -199,6 +205,73 @@ class APIApplication(object):
                     request, "hide: expected a list."
                 )
             await store.hideIncidentTypes(hide)
+
+        return noContentResponse(request)
+
+
+    @router.route(_unprefix(URLs.events), methods=("HEAD", "GET"))
+    async def eventsResource(self, request: IRequest) -> KleinRenderable:
+        """
+        Events endpoint.
+        """
+        self.config.authProvider.authenticateRequest(request)
+
+        authorizationsForUser = partial(
+            self.config.authProvider.authorizationsForUser, request.user
+        )
+
+        events = sorted([
+            event for event in
+            await self.config.store.events()
+            if Authorization.readIncidents & await authorizationsForUser(event)
+        ])
+
+        stream = buildJSONArray(
+            jsonTextFromObject(event).encode("utf-8")
+            for event in events
+        )
+
+        writeJSONStream(request, stream, None)
+        return None
+
+
+    @router.route(_unprefix(URLs.events), methods=("POST",))
+    async def editEventsResource(self, request: IRequest) -> KleinRenderable:
+        """
+        Events editing endpoint.
+        """
+        await self.config.authProvider.authorizeRequest(
+            request, None, Authorization.imsAdmin
+        )
+
+        try:
+            json = objectFromJSONBytesIO(request.content)
+        except JSONDecodeError as e:
+            return invalidJSONResponse(request, e)
+
+        if type(json) is not dict:
+            self._log.debug(
+                "Events update expected a dictionary, got {json!r}", json=json
+            )
+            return badRequestResponse(
+                request, "root: expected a dictionary."
+            )
+
+        adds = json.get("add", [])
+
+        store = self.config.store
+
+        if adds:
+            if type(adds) is not list:
+                self._log.debug(
+                    "Events add expected a list, got {adds!r}",
+                    json=json, adds=adds,
+                )
+                return badRequestResponse(
+                    request, "add: expected a list."
+                )
+            for eventID in adds:
+                await store.createEvent(Event(id=eventID))
 
         return noContentResponse(request)
 
@@ -241,6 +314,7 @@ class APIApplication(object):
         )
 
         writeJSONStream(request, stream, None)
+        return None
 
 
     @router.route(_unprefix(URLs.incidents), methods=("POST",))
@@ -256,8 +330,12 @@ class APIApplication(object):
             request, event, Authorization.writeIncidents
         )
 
+        try:
+            json = objectFromJSONBytesIO(request.content)
+        except JSONDecodeError as e:
+            return invalidJSONResponse(request, e)
+
         author = request.user.shortNames[0]
-        json = objectFromJSONBytesIO(request.content)
         now = DateTime.now(TimeZone.utc)
         jsonNow = jsonObjectFromModelObject(now)
 
@@ -417,7 +495,10 @@ class APIApplication(object):
         #
         # Get the edits requested by the client
         #
-        edits = objectFromJSONBytesIO(request.content)
+        try:
+            edits = objectFromJSONBytesIO(request.content)
+        except JSONDecodeError as e:
+            return invalidJSONResponse(request, e)
 
         if not isinstance(edits, dict):
             return badRequestResponse(
@@ -609,8 +690,12 @@ class APIApplication(object):
             request, None, Authorization.writeIncidentReports
         )
 
+        try:
+            json = objectFromJSONBytesIO(request.content)
+        except JSONDecodeError as e:
+            return invalidJSONResponse(request, e)
+
         author = request.user.shortNames[0]
-        json = objectFromJSONBytesIO(request.content)
         now = DateTime.now(TimeZone.utc)
         jsonNow = jsonObjectFromModelObject(now)
 
@@ -775,7 +860,10 @@ class APIApplication(object):
         #
         # Get the edits requested by the client
         #
-        edits = objectFromJSONBytesIO(request.content)
+        try:
+            edits = objectFromJSONBytesIO(request.content)
+        except JSONDecodeError as e:
+            return invalidJSONResponse(request, e)
 
         if not isinstance(edits, dict):
             return badRequestResponse(
@@ -873,7 +961,10 @@ class APIApplication(object):
 
         store = self.config.store
 
-        edits = objectFromJSONBytesIO(request.content)
+        try:
+            edits = objectFromJSONBytesIO(request.content)
+        except JSONDecodeError as e:
+            return invalidJSONResponse(request, e)
 
         for eventID, acl in edits.items():
             event = Event(id=eventID)
@@ -913,7 +1004,10 @@ class APIApplication(object):
 
         store = self.config.store
 
-        edits = objectFromJSONBytesIO(request.content)
+        try:
+            edits = objectFromJSONBytesIO(request.content)
+        except JSONDecodeError as e:
+            return invalidJSONResponse(request, e)
 
         for eventID, _streets in edits.items():
             event = Event(id=eventID)

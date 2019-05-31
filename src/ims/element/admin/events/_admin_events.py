@@ -27,10 +27,10 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
-class AdminAccessControlPage(Page):
+@attrs(auto_attribs=True, kw_only=True)
+class AdminEventsPage(Page):
     """
-    Admin access control page.
+    Admin events page.
     """
 
-    name: str = "Edit Event Access Control"
+    name: str = "Edit Events"

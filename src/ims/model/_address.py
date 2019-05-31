@@ -36,7 +36,7 @@ TRodGarettAddress = TypeVar("TRodGarettAddress", bound="RodGarettAddress")
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True, cmp=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, cmp=False)
 class Address(ABC):
     """
     Location address
@@ -46,7 +46,7 @@ class Address(ABC):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True, cmp=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, cmp=False)
 class TextOnlyAddress(Address, ComparisonMixIn):
     """
     Address
@@ -69,7 +69,7 @@ class TextOnlyAddress(Address, ComparisonMixIn):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True, cmp=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, cmp=False)
 class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
     """
     Rod Garett Address

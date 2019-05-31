@@ -54,7 +54,7 @@ class ConfigurationTests(TestCase):
         self.assertEquals(config.ServerRoot, serverRoot)
         self.assertEquals(config.ConfigRoot, configRoot)
         self.assertEquals(config.DataRoot, dataRoot)
-        self.assertEquals(config.CachedResourcesPath, cached)
+        self.assertEquals(config.CachedResourcesRoot, cached)
 
         self.assertEquals(config.DMSHost, None)
         self.assertEquals(config.DMSDatabase, None)
@@ -78,7 +78,7 @@ class ConfigurationTests(TestCase):
         self.assertEquals(config.ServerRoot, serverRoot)
         self.assertEquals(config.ConfigRoot, configRoot)
         self.assertEquals(config.DataRoot, dataRoot)
-        self.assertEquals(config.CachedResourcesPath, cached)
+        self.assertEquals(config.CachedResourcesRoot, cached)
 
         # self.assertEquals(config.DMSHost, "dms.rangers.example.com")
         self.assertEquals(config.DMSDatabase, "rangers")

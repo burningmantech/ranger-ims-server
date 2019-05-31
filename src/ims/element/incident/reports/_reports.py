@@ -35,7 +35,7 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(auto_attribs=True, kw_only=True)
 class IncidentReportsPage(Page):
     """
     Incident reports page element.

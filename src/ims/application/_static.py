@@ -19,7 +19,7 @@ Incident Management System web application authentication endpoints.
 """
 
 from hashlib import sha1
-from typing import Any, Iterable, Optional
+from typing import Iterable, Optional
 from typing.io import BinaryIO
 
 from twisted.logger import Logger
@@ -65,9 +65,9 @@ def writeJSONStream(
         request.write(line)
 
 
-def buildJSONArray(items: Iterable[Any]) -> Iterable[bytes]:
+def buildJSONArray(items: Iterable[bytes]) -> Iterable[bytes]:
     """
-    Generate a JSON array from an iterable of JSON objects.
+    Generate a JSON array from an iterable of bytes.
     """
     first = True
 

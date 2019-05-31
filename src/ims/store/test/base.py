@@ -46,7 +46,7 @@ def asyncAsDeferred(f: Callable) -> Callable:
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class TestDataStoreMixIn(ABC):
     """
     :class:`IMSDataStore` mix-in for testing.
@@ -166,7 +166,7 @@ class TestDataStoreMixIn(ABC):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class TestDataStoreABC(IMSDataStore, TestDataStoreMixIn):
     """
     Test Data Store ABC.

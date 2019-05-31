@@ -73,7 +73,7 @@ class IMSDataStore(ABC):
     @abstractmethod
     async def createEvent(self, event: Event) -> None:
         """
-        Create an event with the given name.
+        Create the given event.
         """
 
 

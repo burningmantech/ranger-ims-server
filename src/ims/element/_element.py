@@ -40,7 +40,7 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(auto_attribs=True, kw_only=True)
 class BaseElement(_Element):
     """
     XHTML element.
@@ -57,7 +57,7 @@ class BaseElement(_Element):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(auto_attribs=True, kw_only=True)
 class Element(BaseElement):
     """
     XHTML element.

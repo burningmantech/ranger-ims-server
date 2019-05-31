@@ -28,7 +28,7 @@ __all__ = (
 
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True, slots=True)
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class NotAuthenticatedError(Exception):
     """
     Not authorized.
@@ -38,7 +38,7 @@ class NotAuthenticatedError(Exception):
 
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True, slots=True)
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class NotAuthorizedError(Exception):
     """
     Not authorized.

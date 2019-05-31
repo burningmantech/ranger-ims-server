@@ -15,22 +15,12 @@
 ##
 
 """
-Admin page.
+Admin access control page.
 """
 
-from attr import attrs
-
-from ...page import Page
+from ._admin_events import AdminEventsPage
 
 
-__all__ = ()
-
-
-
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
-class AdminPage(Page):
-    """
-    Admin page.
-    """
-
-    name: str = "Administration Tools"
+__all__ = (
+    "AdminEventsPage",
+)

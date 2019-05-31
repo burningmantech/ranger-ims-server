@@ -18,9 +18,9 @@
 Admin page element.
 """
 
-from ._admin import AdminPage
+from ._root import AdminRootPage
 
 
 __all__ = (
-    "AdminPage",
+    "AdminRootPage",
 )

@@ -29,7 +29,7 @@ __all__ = ()
 title = "Incident Details"
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, slots=True)
+@attrs(auto_attribs=True, kw_only=True)
 class IncidentTemplatePage(Page):
     """
     Incident template page.

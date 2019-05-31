@@ -117,6 +117,30 @@ function updateEventAccess(event, mode) {
 }
 
 
+function addEvent(sender) {
+    var event = sender.value.trim();
+
+    function refresh() {
+        loadAccessControlList(drawAccess);
+    }
+
+    function ok(data, status, xhr) {
+        refresh();
+        sender.value = "";  // Clear input field
+    }
+
+    function fail(requestError, status, xhr) {
+        var message = "Failed to add event:\n" + requestError
+        console.log(message);
+        refresh();
+        controlHasError($(sender));
+        window.alert(message);
+    }
+
+    jsonRequest(url_events, {"add": [event]}, ok, fail);
+}
+
+
 function addAccess(sender) {
     var container = $(sender).parents(".event_access:first");
     var event = container.find(".event_name:first").text();
@@ -144,7 +168,7 @@ function addAccess(sender) {
 
     function fail() {
         loadAccessControlList(refresh);
-        controlHasError(sender);
+        controlHasError($(sender));
     }
 
     sendACL(edits, ok, fail);

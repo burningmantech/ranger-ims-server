@@ -182,6 +182,15 @@ def badRequestResponse(
     return textResponse(request, message)
 
 
+def invalidJSONResponse(
+    request: IRequest, error: Exception = None
+) -> KleinRenderable:
+    """
+    Respond with a BAD REQUEST status for invalid JSON request data.
+    """
+    return badRequestResponse(request, f"Invalid JSON request data: {error}")
+
+
 def invalidQueryResponse(
     request: IRequest, arg: str, value: Optional[str] = None
 ) -> KleinRenderable:
