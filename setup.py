@@ -118,7 +118,7 @@ setup_requirements = []
 
 install_requirements = [
     # Direct dependencies
-    "arrow==0.13.1",
+    "arrow==0.13.2",
     "attrs==19.1.0",
     "cattrs==0.4.0",
     "hyperlink==19.0.0",
@@ -134,7 +134,7 @@ install_requirements = [
     "Automat==0.7.0",
     "cffi==1.12.3",
     "constantly==15.1.0",
-    "cryptography==2.6.1",
+    "cryptography==2.7",
     "idna==2.8",
     "incremental==17.5.0",
     "pyasn1-modules==0.2.5",
@@ -145,7 +145,7 @@ install_requirements = [
     "python-dateutil==2.8.0",
     "ranger-ims-server==18.0.0.dev0",
     "six==1.12.0",
-    "Werkzeug==0.15.2",
+    "Werkzeug==0.15.4",
 ]
 
 extras_requirements = {}
