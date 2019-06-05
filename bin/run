@@ -12,10 +12,21 @@ if [ ! -f "${env_file}" ]; then
     touch "${env_file}";
 fi;
 
-exec docker run                 \
-    --rm                        \
-    --name="${container_name}"  \
-    --env-file="${env_file}"    \
-    --publish=4200:80           \
-    "${image_name}"             \
+mysql_port="${IMS_DB_HOST_PORT:-$(mysql_port)}";
+
+if [ -z "${mysql_port}" ]; then
+    exit 1;
+fi;
+
+exec docker run                                \
+    --rm                                       \
+    --name="${container_name}"                 \
+    --env="IMS_DB_HOST_NAME=${mysql_host}"     \
+    --env="IMS_DB_HOST_PORT=${mysql_port}"     \
+    --env="IMS_DB_DATABASE=${mysql_database}"  \
+    --env="IMS_DB_USER_NAME=${mysql_user}"     \
+    --env="IMS_DB_PASSWORD=${mysql_password}"  \
+    --env-file="${env_file}"                   \
+    --publish=80:80                            \
+    "${image_name}"                            \
     ;

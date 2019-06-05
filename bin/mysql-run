@@ -1,0 +1,25 @@
+#!/bin/sh
+
+#
+# Build the Docker container
+#
+
+. "$(dirname "$0")/.common.sh";
+
+env_file="${wd}/.docker_environment";
+
+if [ ! -f "${env_file}" ]; then
+    touch "${env_file}";
+fi;
+
+exec docker run                               \
+    --rm                                      \
+    --name="${mysql_container_name}"          \
+    --env="MYSQL_RANDOM_ROOT_PASSWORD=yes"    \
+    --env="MYSQL_DATABASE=${mysql_database}"  \
+    --env="MYSQL_USER=${mysql_user}"          \
+    --env="MYSQL_PASSWORD=${mysql_password}"  \
+    --env-file="${env_file}"                  \
+    --publish=3306                            \
+    "${mysql_image_name}"                     \
+    ;
