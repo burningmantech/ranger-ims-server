@@ -1,0 +1,21 @@
+#!/bin/sh
+
+#
+# Build the Docker container
+#
+
+. "$(dirname "$0")/.common.sh";
+
+env_file="${wd}/.docker_environment";
+
+if [ ! -f "${env_file}" ]; then
+    touch "${env_file}";
+fi;
+
+exec docker run                 \
+    --rm                        \
+    --name="${container_name}"  \
+    --env-file="${env_file}"    \
+    --publish=4200:80           \
+    "${image_name}"             \
+    ;
