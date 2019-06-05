@@ -203,7 +203,7 @@ class Configuration(object):
         imsAdmins: FrozenSet[str] = frozenset(
             a for a in map(str.strip, admins.split(",")) if a
         )
-        cls._log.info("Admins: {admins}", admins=imsAdmins)
+        cls._log.info("Admins: {admins}", admins=tuple(imsAdmins))
 
         active = valueFromConfig(
             "REQUIRE_ACTIVE", "Core", "RequireActive", "true"
@@ -222,7 +222,7 @@ class Configuration(object):
             storeFactory = DataStoreFactory[storeName]
         except KeyError:
             raise ConfigurationError(f"Unknown data store: {storeName}")
-        cls._log.info("DataStore: {storeFactory}", storeFactory=storeFactory)
+        cls._log.info("DataStore: {storeName}", storeName=storeName)
 
         storeArguments: Mapping[str, Any]
 
@@ -250,7 +250,7 @@ class Configuration(object):
                 "DB_PASSWORD", "Store:MySQL", "Password"
             )
             cls._log.info(
-                "Database: {user}@{host}{port}",
+                "Database: {user}@{host}:{port}",
                 user=storeUser, host=storeHost, port=storePort,
             )
             storeArguments = dict(
@@ -267,7 +267,7 @@ class Configuration(object):
         dmsPassword = valueFromConfig("DMS_PASSWORD", "DMS", "Password")
 
         cls._log.info(
-            "Database: {user}@{host}/{db}",
+            "DMS: {user}@{host}/{db}",
             user=dmsUsername, host=dmsHost, db=dmsDatabase,
         )
 
