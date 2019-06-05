@@ -18,11 +18,13 @@
 Incident Management System configuration.
 """
 
-from ._config import Configuration
+from ._config import Configuration, ConfigurationError, DataStoreFactory
 from ._urls import URLs
 
 
 __all__ = (
     "Configuration",
+    "ConfigurationError",
+    "DataStoreFactory",
     "URLs",
 )

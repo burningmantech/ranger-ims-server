@@ -19,11 +19,12 @@ IMS configuration
 """
 
 from configparser import ConfigParser, NoOptionError, NoSectionError
+from enum import Enum
 from os import environ, getcwd
 from os.path import basename, sep as pathsep
 from pathlib import Path
 from sys import argv
-from typing import Any, ClassVar, FrozenSet, Optional, Tuple, cast
+from typing import Any, ClassVar, FrozenSet, Mapping, Optional, Tuple, cast
 
 from attr import attrib, attrs, evolve
 
@@ -32,14 +33,33 @@ from twisted.logger import Logger
 from ims.auth import AuthProvider
 from ims.dms import DutyManagementSystem
 from ims.store import IMSDataStore
-from ims.store.sqlite import DataStore
+from ims.store.mysql import DataStore as MySQLDataStore
+from ims.store.sqlite import DataStore as SQLiteDataStore
 
 from ._urls import URLs
 
 
-__all__ = (
-    "Configuration",
-)
+__all__ = ()
+
+
+
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
+class ConfigurationError(Exception):
+    """
+    Configuration error.
+    """
+
+    message: str
+
+
+
+class DataStoreFactory(Enum):
+    """
+    Data store type.
+    """
+
+    SQLite = SQLiteDataStore
+    MySQL  = MySQLDataStore
 
 
 
@@ -161,11 +181,6 @@ class Configuration(object):
         makeDirectory(dataRoot)
         cls._log.info("Data root: {path}", path=dataRoot)
 
-        databasePath = pathFromConfig(
-            "DB_PATH", "Core", "Database", dataRoot, ("db.sqlite",)
-        )
-        cls._log.info("Database: {path}", path=databasePath)
-
         cachedResourcesRoot = pathFromConfig(
             "CACHE_PATH", "Core", "CachedResources", dataRoot, ("cache",)
         )
@@ -201,6 +216,25 @@ class Configuration(object):
             requireActive = True
         cls._log.info("RequireActive: {active}", active=requireActive)
 
+        storeName = valueFromConfig(
+            "DATA_STORE", "Core", "DataStore", "SQLite"
+        )
+        try:
+            storeFactory = DataStoreFactory[storeName]
+        except KeyError:
+            raise ConfigurationError(f"Unknown data store: {storeFactory}")
+        cls._log.info("DataStore: {storeFactory}", storeFactory=storeFactory)
+
+        if storeFactory is DataStoreFactory.SQLite:
+            dbPath = pathFromConfig(
+                "DB_PATH", "Store:SQLite", "File", dataRoot, ("db.sqlite",)
+            )
+            cls._log.info("Database: {path}", path=dbPath)
+            storeArguments = dict(dbPath=dbPath)
+
+        elif storeFactory is DataStoreFactory.MySQL:
+            raise NotImplementedError()
+
         dmsHost     = valueFromConfig("DMS_HOSTNAME", "DMS", "Hostname")
         dmsDatabase = valueFromConfig("DMS_DATABASE", "DMS", "Database")
         dmsUsername = valueFromConfig("DMS_USERNAME", "DMS", "Username")
@@ -222,7 +256,6 @@ class Configuration(object):
 
             CachedResourcesRoot=cachedResourcesRoot,
             ConfigRoot=configRoot,
-            DatabasePath=databasePath,
             DataRoot=dataRoot,
             DMSDatabase=dmsDatabase,
             DMSHost=dmsHost,
@@ -237,6 +270,8 @@ class Configuration(object):
             Port=port,
             RequireActive=requireActive,
             ServerRoot=serverRoot,
+            StoreArguments=storeArguments,
+            StoreFactory=storeFactory,
         )
 
 
@@ -244,7 +279,6 @@ class Configuration(object):
 
     CachedResourcesRoot: Path
     ConfigRoot: Path
-    DatabasePath: Path
     DataRoot: Path
     DMSDatabase: str
     DMSHost: str
@@ -259,6 +293,8 @@ class Configuration(object):
     Port: int
     RequireActive: bool
     ServerRoot: Path
+    StoreArguments: Mapping[str, Any]
+    StoreFactory: DataStoreFactory
 
     _state: _State = attrib(factory=_State, init=False)
 
@@ -269,7 +305,19 @@ class Configuration(object):
         Data store.
         """
         if self._state.store is None:
-            self._state.store = DataStore(dbPath=self.DatabasePath)
+            try:
+                self._state.store = self.StoreFactory.value(
+                    **self.StoreArguments
+                )
+            except Exception as e:
+                self._log.failure(
+                    "Can't create data store with factory {factory!r} and "
+                    "arguments {arguments!r}: {error}",
+                    factory=self.StoreFactory.value,
+                    arguments=self.StoreArguments,
+                    error=e,
+                )
+                raise
 
         return self._state.store
 
@@ -313,11 +361,13 @@ class Configuration(object):
             f"Core.ServerRoot: {self.ServerRoot}\n"
             f"Core.ConfigRoot: {self.ConfigRoot}\n"
             f"Core.DataRoot: {self.DataRoot}\n"
-            f"Core.DatabasePath: {self.DatabasePath}\n"
             f"Core.CachedResources: {self.CachedResourcesRoot}\n"
             f"Core.LogLevel: {self.LogLevelName}\n"
             f"Core.LogFile: {self.LogFilePath}\n"
             f"Core.LogFormat: {self.LogFormat}\n"
+            f"\n"
+            f"DB.Store: {self.StoreFactory}\n"
+            f"DB.Arguments: {self.StoreArguments}\n"
             f"\n"
             f"DMS.Hostname: {self.DMSHost}\n"
             f"DMS.Database: {self.DMSDatabase}\n"

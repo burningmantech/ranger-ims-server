@@ -3,12 +3,14 @@
 Extensions to :mod:`enum`
 """
 
-from enum import Enum, unique
-from typing import Any, Callable, Iterable, cast
+from enum import Enum, auto, unique
+from typing import Any, Callable, Iterable, List, cast
 
 
 __all__ = (
     "Enum",
+    "Names",
+    "auto",
     "enumOrdering",
     "unique",
 )
@@ -71,3 +73,17 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
     enumClass.__ge__ = cast(Callable, greaterThanOrEqual)
 
     return enumClass
+
+
+
+class Names(Enum):
+    """
+    Enumerated names.
+    """
+
+    # FIXME: there's not much documentation for _generate_next_value_ around,
+    # sowe're using Any as the type for arguments we don't use.
+    def _generate_next_value_(
+        name: str, start: int, count: int, last_values: List
+    ) -> Any:
+        return name
