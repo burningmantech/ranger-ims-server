@@ -159,7 +159,7 @@ class Configuration(object):
         hostName = valueFromConfig("HOSTNAME", "Core", "Host", "localhost")
         cls._log.info("HostName: {hostName}", hostName=hostName)
 
-        port = int(cast(str, valueFromConfig("PORT", "Core", "Port", "8080")))
+        port = int(cast(str, valueFromConfig("PORT", "Core", "Port", "80")))
         cls._log.info("Port: {port}", port=port)
 
         serverRoot = pathFromConfig(
