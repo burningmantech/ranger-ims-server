@@ -172,7 +172,6 @@ class Configuration(object):
         configRoot = pathFromConfig(
             "CONFIG_ROOT", "Core", "ConfigRoot", serverRoot, ("conf",)
         )
-        makeDirectory(configRoot)
         cls._log.info("Config root: {path}", path=configRoot)
 
         dataRoot = pathFromConfig(
