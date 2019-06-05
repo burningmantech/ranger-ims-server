@@ -27,9 +27,10 @@ from ims.auth import AuthProvider
 from ims.dms import DutyManagementSystem
 from ims.ext.trial import TestCase
 from ims.store import IMSDataStore
+from ims.store.mysql import DataStore as MySQLDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
-from .._config import Configuration
+from .._config import Configuration, ConfigurationError
 
 
 __all__ = ()
@@ -244,6 +245,40 @@ class ConfigurationTests(TestCase):
         self.assertEqual(
             cast(SQLiteDataStore, config.store).dbPath, path
         )
+
+
+    def test_store_mysql(self) -> None:
+        hostName = "db_host"
+        hostPort = 72984
+        database = "ranger_ims"
+        userName = "ims_user"
+        password = "hoorj"
+
+        with testingEnvironment(dict(
+            IMS_DATA_STORE="MySQL",
+            IMS_DB_HOST_NAME=hostName,
+            IMS_DB_HOST_PORT=str(hostPort),
+            IMS_DB_DATABASE=database,
+            IMS_DB_USER_NAME=userName,
+            IMS_DB_PASSWORD=password,
+        )):
+            config = Configuration.fromConfigFile(None)
+
+        store = cast(MySQLDataStore, config.store)
+
+        self.assertIsInstance(store, MySQLDataStore)
+        self.assertEqual(store.hostName, hostName)
+        self.assertEqual(store.hostPort, hostPort)
+        self.assertEqual(store.database, database)
+        self.assertEqual(store.username, userName)
+        self.assertEqual(store.password, password)
+
+
+    def test_store_unknown(self) -> None:
+        with testingEnvironment(dict(IMS_DATA_STORE="XYZZY")):
+            self.assertRaises(
+                ConfigurationError, Configuration.fromConfigFile, None
+            )
 
 
     def test_dms(self) -> None:

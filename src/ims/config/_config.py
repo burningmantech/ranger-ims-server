@@ -222,8 +222,10 @@ class Configuration(object):
         try:
             storeFactory = DataStoreFactory[storeName]
         except KeyError:
-            raise ConfigurationError(f"Unknown data store: {storeFactory}")
+            raise ConfigurationError(f"Unknown data store: {storeName}")
         cls._log.info("DataStore: {storeFactory}", storeFactory=storeFactory)
+
+        storeArguments: Mapping[str, Any]
 
         if storeFactory is DataStoreFactory.SQLite:
             dbPath = pathFromConfig(
@@ -232,8 +234,33 @@ class Configuration(object):
             cls._log.info("Database: {path}", path=dbPath)
             storeArguments = dict(dbPath=dbPath)
 
-        elif storeFactory is DataStoreFactory.MySQL:
-            raise NotImplementedError()
+        if storeFactory is DataStoreFactory.MySQL:
+            storeHost = valueFromConfig(
+                "DB_HOST_NAME", "Store:MySQL", "HostName", "localhost"
+            )
+            storePort = int(valueFromConfig(
+                "DB_HOST_PORT", "Store:MySQL", "HostPort", "3306"
+            ))
+            storeDatabase = valueFromConfig(
+                "DB_DATABASE", "Store:MySQL", "Database"
+            )
+            storeUser = valueFromConfig(
+                "DB_USER_NAME", "Store:MySQL", "UserName"
+            )
+            storePassword = valueFromConfig(
+                "DB_PASSWORD", "Store:MySQL", "Password"
+            )
+            cls._log.info(
+                "Database: {user}@{host}{port}",
+                user=storeUser, host=storeHost, port=storePort,
+            )
+            storeArguments = dict(
+                hostName=storeHost,
+                hostPort=storePort,
+                database=storeDatabase,
+                username=storeUser,
+                password=storePassword,
+            )
 
         dmsHost     = valueFromConfig("DMS_HOSTNAME", "DMS", "Hostname")
         dmsDatabase = valueFromConfig("DMS_DATABASE", "DMS", "Database")
@@ -305,19 +332,7 @@ class Configuration(object):
         Data store.
         """
         if self._state.store is None:
-            try:
-                self._state.store = self.StoreFactory.value(
-                    **self.StoreArguments
-                )
-            except Exception as e:
-                self._log.failure(
-                    "Can't create data store with factory {factory!r} and "
-                    "arguments {arguments!r}: {error}",
-                    factory=self.StoreFactory.value,
-                    arguments=self.StoreArguments,
-                    error=e,
-                )
-                raise
+            self._state.store = self.StoreFactory.value(**self.StoreArguments)
 
         return self._state.store
 
