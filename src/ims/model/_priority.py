@@ -20,7 +20,7 @@
 Incident priority
 """
 
-from ims.ext.enum import Enum, enumOrdering, unique
+from ims.ext.enum import Names, auto, enumOrdering
 
 
 __all__ = ()
@@ -28,8 +28,7 @@ __all__ = ()
 
 
 @enumOrdering
-@unique
-class IncidentPriority(Enum):
+class IncidentPriority(Names):
     """
     Incident priorities
 
@@ -37,9 +36,9 @@ class IncidentPriority(Enum):
     particular incident.
     """
 
-    high   = object()
-    normal = object()
-    low    = object()
+    high   = auto()
+    normal = auto()
+    low    = auto()
 
 
     def __repr__(self) -> str:
