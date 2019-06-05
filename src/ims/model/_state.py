@@ -20,7 +20,7 @@
 Incident state
 """
 
-from ims.ext.enum import Enum, enumOrdering, unique
+from ims.ext.enum import Names, auto, enumOrdering
 
 
 __all__ = ()
@@ -37,8 +37,7 @@ stateDescriptions = {
 
 
 @enumOrdering
-@unique
-class IncidentState(Enum):
+class IncidentState(Names):
     """
     Incident states
 
@@ -60,11 +59,11 @@ class IncidentState(Enum):
     no longer applies.
     """
 
-    new        = object()
-    onHold     = object()
-    dispatched = object()
-    onScene    = object()
-    closed     = object()
+    new        = auto()
+    onHold     = auto()
+    dispatched = auto()
+    onScene    = auto()
+    closed     = auto()
 
 
     def __repr__(self) -> str:

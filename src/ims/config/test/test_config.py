@@ -21,14 +21,16 @@ Tests for L{ims.config._config}.
 from contextlib import contextmanager
 from os import environ, getcwd
 from pathlib import Path
-from typing import Iterable, Iterator, Mapping, Optional, Set, Tuple
+from typing import Iterable, Iterator, Mapping, Optional, Set, Tuple, cast
 
 from ims.auth import AuthProvider
 from ims.dms import DutyManagementSystem
 from ims.ext.trial import TestCase
 from ims.store import IMSDataStore
+from ims.store.mysql import DataStore as MySQLDataStore
+from ims.store.sqlite import DataStore as SQLiteDataStore
 
-from .._config import Configuration
+from .._config import Configuration, ConfigurationError
 
 
 __all__ = ()
@@ -231,6 +233,54 @@ class ConfigurationTests(TestCase):
         self.assertIsInstance(config.store, IMSDataStore)
 
 
+    def test_store_sqlite(self) -> None:
+        path = Path(self.mktemp()).resolve() / "ims.sqlite"
+
+        with testingEnvironment(dict(
+            IMS_DATA_STORE="SQLite", IMS_DB_PATH=str(path)
+        )):
+            config = Configuration.fromConfigFile(None)
+
+        self.assertIsInstance(config.store, SQLiteDataStore)
+        self.assertEqual(
+            cast(SQLiteDataStore, config.store).dbPath, path
+        )
+
+
+    def test_store_mysql(self) -> None:
+        hostName = "db_host"
+        hostPort = 72984
+        database = "ranger_ims"
+        userName = "ims_user"
+        password = "hoorj"
+
+        with testingEnvironment(dict(
+            IMS_DATA_STORE="MySQL",
+            IMS_DB_HOST_NAME=hostName,
+            IMS_DB_HOST_PORT=str(hostPort),
+            IMS_DB_DATABASE=database,
+            IMS_DB_USER_NAME=userName,
+            IMS_DB_PASSWORD=password,
+        )):
+            config = Configuration.fromConfigFile(None)
+
+        store = cast(MySQLDataStore, config.store)
+
+        self.assertIsInstance(store, MySQLDataStore)
+        self.assertEqual(store.hostName, hostName)
+        self.assertEqual(store.hostPort, hostPort)
+        self.assertEqual(store.database, database)
+        self.assertEqual(store.username, userName)
+        self.assertEqual(store.password, password)
+
+
+    def test_store_unknown(self) -> None:
+        with testingEnvironment(dict(IMS_DATA_STORE="XYZZY")):
+            self.assertRaises(
+                ConfigurationError, Configuration.fromConfigFile, None
+            )
+
+
     def test_dms(self) -> None:
         with testingEnvironment({}):
             config = Configuration.fromConfigFile(None)
@@ -252,9 +302,7 @@ class ConfigurationTests(TestCase):
 
 
     def test_str(self) -> None:
-        serverRoot = Path(self.mktemp()).resolve()
-
-        with testingEnvironment(dict(IMS_SERVER_ROOT=str(serverRoot))):
+        with testingEnvironment({}):
             config = Configuration.fromConfigFile(None)
 
         self.maxDiff = None
@@ -265,14 +313,16 @@ class ConfigurationTests(TestCase):
             f"Core.Host: localhost\n"
             f"Core.Port: 8080\n"
             f"\n"
-            f"Core.ServerRoot: {serverRoot}\n"
-            f"Core.ConfigRoot: {serverRoot}/conf\n"
-            f"Core.DataRoot: {serverRoot}/data\n"
-            f"Core.DatabasePath: {serverRoot}/data/db.sqlite\n"
-            f"Core.CachedResources: {serverRoot}/data/cache\n"
+            f"Core.ServerRoot: {config.ServerRoot}\n"
+            f"Core.ConfigRoot: {config.ServerRoot}/conf\n"
+            f"Core.DataRoot: {config.ServerRoot}/data\n"
+            f"Core.CachedResources: {config.ServerRoot}/data/cache\n"
             f"Core.LogLevel: info\n"
-            f"Core.LogFile: {serverRoot}/data/trial.log\n"
+            f"Core.LogFile: {config.ServerRoot}/data/trial.log\n"
             f"Core.LogFormat: text\n"
+            f"\n"
+            f"DB.Store: DataStoreFactory.SQLite\n"
+            f"DB.Arguments: {config.StoreArguments!r}\n"
             f"\n"
             f"DMS.Hostname: \n"
             f"DMS.Database: \n"

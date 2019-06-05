@@ -20,7 +20,7 @@
 Ranger
 """
 
-from enum import Enum, unique
+from enum import IntEnum, unique
 from typing import AbstractSet, Optional
 
 from attr import attrib, attrs
@@ -47,7 +47,7 @@ statusDescriptions = dict(
 
 
 @unique
-class RangerStatus(Enum):
+class RangerStatus(IntEnum):
     """
     Ranger status
 

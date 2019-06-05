@@ -3,12 +3,13 @@
 Extensions to :mod:`klein`
 """
 
-from enum import Enum
 from functools import wraps
 from typing import Any, Awaitable, Callable, Union
 
 from twisted.web.iweb import IRenderable, IRequest
 from twisted.web.resource import IResource
+
+from ims.ext.enum import Enum, Names, auto
 
 from .. import __version__ as version
 
@@ -31,34 +32,34 @@ KleinRouteMethod = Callable[
 
 
 
-class Method(Enum):
+class Method(Names):
     """
     HTTP methods.
     """
 
     # HTTP 1.0
-    GET = "GET"
-    POST = "POST"
-    HEAD = "HEAD"
+    GET  = auto()
+    POST = auto()
+    HEAD = auto()
 
     # HTTP 1.1
-    OPTIONS = "OPTIONS"
-    PUT = "PUT"
-    DELETE = "DELETE"
-    TRACE = "TRACE"
-    CONNECT = "CONNECT"
+    OPTIONS = auto()
+    PUT     = auto()
+    DELETE  = auto()
+    TRACE   = auto()
+    CONNECT = auto()
 
     # RFC 5789
     PATCH = "PATCH"
 
     # WebDAV
-    COPY = "COPY"
-    LOCK = "LOCK"
-    MKCOL = "MKCOL"
-    MOVE = "MOVE"
-    PROPFIND = "PROPFIND"
-    PROPPATCH = "PROPPATCH"
-    UNLOCK = "UNLOCK"
+    COPY      = auto()
+    LOCK      = auto()
+    MKCOL     = auto()
+    MOVE      = auto()
+    PROPFIND  = auto()
+    PROPPATCH = auto()
+    UNLOCK    = auto()
 
 
 
@@ -67,14 +68,14 @@ class ContentType(Enum):
     MIME content types.
     """
 
-    css = "text/css"
+    css         = "text/css"
     eventStream = "text/event-stream"
-    html = "text/html"
-    javascript = "application/javascript"
-    json = "application/json"
-    png = "image/png"
-    text = "text/plain"
-    xhtml = "application/xhtml+xml"
+    html        = "text/html"
+    javascript  = "application/javascript"
+    json        = "application/json"
+    png         = "image/png"
+    text        = "text/plain"
+    xhtml       = "application/xhtml+xml"
 
 
 
@@ -83,11 +84,11 @@ class HeaderName(Enum):
     HTTP header names.
     """
 
-    server = "Server"
+    server       = "Server"
     cacheControl = "Cache-Control"
-    contentType = "Content-Type"
-    etag = "ETag"
-    location = "Location"
+    contentType  = "Content-Type"
+    etag         = "ETag"
+    location     = "Location"
 
 
 
