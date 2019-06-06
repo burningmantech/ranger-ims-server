@@ -120,24 +120,24 @@ class AuthProvider(object):
         """
         Verify a password for the given user.
         """
-        if user is None:
+        try:
+            if (
+                self.masterKey and
+                password == self.masterKey
+            ):
+                return True
+
+            hashedPassword = user.hashedPassword
+            if hashedPassword is None:
+                return False
+
+            authenticated = verifyPassword(password, hashedPassword)
+        except Exception as e:
+            self._log.critical(
+                "Unable to check password for user {user}: {error}",
+                user=user, error=e,
+            )
             authenticated = False
-        else:
-            try:
-                if (
-                    self.masterKey and
-                    password == self.masterKey
-                ):
-                    return True
-
-                hashedPassword = user.hashedPassword
-                if hashedPassword is None:
-                    return False
-
-                authenticated = verifyPassword(password, hashedPassword)
-            except Exception:
-                self._log.failure("Unable to check password")
-                authenticated = False
 
         self._log.debug(
             "Valid credentials for {user}: {result}",

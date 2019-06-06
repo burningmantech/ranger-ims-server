@@ -20,12 +20,9 @@ Tests for :mod:`ranger-ims-server.store`
 
 from abc import ABC, abstractmethod
 from datetime import datetime as DateTime, timedelta as TimeDelta
-from functools import wraps
-from typing import Any, Callable, ClassVar, Optional, Sequence
+from typing import ClassVar, Optional, Sequence
 
 from attr import attrs
-
-from twisted.internet.defer import ensureDeferred
 
 from ims.ext.trial import AsynchronousTestCase
 from ims.model import Event, Incident, IncidentReport, ReportEntry
@@ -34,15 +31,6 @@ from .._abc import IMSDataStore
 
 
 __all__ = ()
-
-
-def asyncAsDeferred(f: Callable) -> Callable:
-    @wraps(f)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        result = f(*args, **kwargs)
-        return ensureDeferred(result)
-
-    return wrapper
 
 
 

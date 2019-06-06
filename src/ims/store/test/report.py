@@ -25,9 +25,10 @@ from typing import Any, Iterable, Sequence, Set, Tuple, cast
 
 from attr import fields as attrFields
 
+from ims.ext.trial import asyncAsDeferred
 from ims.model import Incident, IncidentReport, ReportEntry
 
-from .base import DataStoreTests, TestDataStoreABC, asyncAsDeferred
+from .base import DataStoreTests, TestDataStoreABC
 from .incident import aReportEntry, anIncident, anIncident1, anIncident2
 from .._exceptions import NoSuchIncidentReportError, StorageError
 

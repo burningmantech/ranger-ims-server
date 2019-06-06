@@ -3,7 +3,8 @@
 Extensions to :mod:`twisted.trial`
 """
 
-from typing import Any, Optional, Sequence, Type
+from functools import wraps
+from typing import Any, Callable, Optional, Sequence, Type
 
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.python.failure import Failure
@@ -20,6 +21,16 @@ from .klein import ContentType
 __all__ = (
     "TestCase",
 )
+
+
+
+def asyncAsDeferred(f: Callable) -> Callable:
+    @wraps(f)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        result = f(*args, **kwargs)
+        return ensureDeferred(result)
+
+    return wrapper
 
 
 

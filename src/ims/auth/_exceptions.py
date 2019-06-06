@@ -21,10 +21,7 @@ Incident Management System service errors.
 from attr import attrs
 
 
-__all__ = (
-    "NotAuthenticatedError",
-    "NotAuthorizedError",
-)
+__all__ = ()
 
 
 

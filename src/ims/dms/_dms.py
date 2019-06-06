@@ -36,11 +36,7 @@ from twisted.logger import Logger
 from ims.model import Ranger, RangerStatus
 
 
-__all__ = (
-    "DMSError",
-    "DatabaseError",
-    "DutyManagementSystem",
-)
+__all__ = ()
 
 
 
@@ -296,12 +292,12 @@ def statusFromID(strValue: str) -> RangerStatus:
 
 def hashPassword(password: str, salt: Optional[str] = None) -> str:
     """
-    Compute a has for the given password
+    Compute a hash for the given password
     """
     if salt is None:
         salt = urandom(16).decode("charmap")
 
-    return salt + ":" + sha1(password.encode("utf-8")).hexdigest()
+    return salt + ":" + sha1((salt + password).encode("utf-8")).hexdigest()
 
 
 def verifyPassword(password: str, hashedPassword: str) -> bool:
@@ -312,7 +308,7 @@ def verifyPassword(password: str, hashedPassword: str) -> bool:
 
     # DMS password field is a salt and a SHA-1 hash (hex digest), separated by
     # ":".
-    salt, hashValue = hashedPassword.split(":")
+    salt, hashValue = hashedPassword.rsplit(":", 1)
 
     hashed = sha1((salt + password).encode("utf-8")).hexdigest()
 

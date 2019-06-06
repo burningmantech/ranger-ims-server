@@ -30,6 +30,8 @@ from hypothesis.strategies import (
     one_of, sampled_from, text,
 )
 
+from ims.dms import hashPassword
+
 from ._address import RodGarettAddress, TextOnlyAddress
 from ._entry import ReportEntry
 from ._event import Event
@@ -354,6 +356,15 @@ def rangerHandles() -> SearchStrategy:  # str
     Strategy that generates Ranger handles.
     """
     return text(min_size=1)
+
+
+@composite
+def passwords(draw: Callable) -> str:
+    """
+    Strategy that generates hashed passwords.
+    """
+    password = draw(text())
+    return hashPassword(password)
 
 
 @composite

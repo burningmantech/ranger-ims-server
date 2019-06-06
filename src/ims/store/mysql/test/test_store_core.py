@@ -25,11 +25,10 @@ from typing import List, Set, cast
 
 from twisted.internet.defer import ensureDeferred
 
-from ims.ext.trial import AsynchronousTestCase
+from ims.ext.trial import AsynchronousTestCase, asyncAsDeferred
 
 from .base import TestDataStore
 from .service import MySQLService, randomDatabaseName
-from ...test.base import asyncAsDeferred
 
 
 __all__ = ()
