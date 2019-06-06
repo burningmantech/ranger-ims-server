@@ -19,19 +19,19 @@ IMS configuration
 """
 
 from configparser import ConfigParser, NoOptionError, NoSectionError
-from enum import Enum
 from os import environ, getcwd
 from os.path import basename, sep as pathsep
 from pathlib import Path
 from sys import argv
 from typing import Any, ClassVar, FrozenSet, Mapping, Optional, Tuple, cast
 
-from attr import attrib, attrs, evolve
+from attr import Factory, attrib, attrs, evolve
 
 from twisted.logger import Logger
 
 from ims.auth import AuthProvider
 from ims.dms import DutyManagementSystem
+from ims.ext.enum import Enum, Names, auto
 from ims.store import IMSDataStore
 from ims.store.mysql import DataStore as MySQLDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
@@ -53,6 +53,19 @@ class ConfigurationError(Exception):
 
 
 
+class LogFormat(Names):
+    """
+    Log formats.
+    """
+
+    text = auto()
+    json = auto()
+
+# FIXME: Due to conflicting names below
+_LogFormat = LogFormat
+
+
+
 class DataStoreFactory(Enum):
     """
     Data store type.
@@ -60,6 +73,91 @@ class DataStoreFactory(Enum):
 
     SQLite = SQLiteDataStore
     MySQL  = MySQLDataStore
+
+
+
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
+class ConfigFileParser(object):
+    """
+    Configuration parser.
+    """
+
+    _log: ClassVar = Logger()
+
+    path: Optional[Path]
+    _configParser: ConfigParser = Factory(ConfigParser)
+
+
+    def __attrs_post_init__(self) -> None:
+        if self.path is None:
+            self._log.info("No configuration file specified.")
+            return
+
+        for _okFile in self._configParser.read(str(self.path)):
+            self._log.info(
+                "Read configuration file: {path}", path=self.path
+            )
+            break
+        else:
+            self._log.error(
+                "Unable to read configuration file: {path}",
+                path=self.path,
+            )
+
+
+    def valueFromConfig(
+        self, variable: str, section: str, option: str, default: str = ""
+    ) -> str:
+        value = environ.get(f"IMS_{variable}")
+
+        if not value:
+            try:
+                value = self._configParser.get(section, option)
+            except (NoSectionError, NoOptionError):
+                pass
+
+        if value:
+            return value
+        else:
+            return default
+
+
+    def pathFromConfig(
+        self, variable: str, section: str, option: str,
+        root: Path, segments: Tuple[str],
+    ) -> Path:
+        text = self.valueFromConfig(variable, section, option)
+
+        if not text:
+            path = root
+            for segment in segments:
+                path = path / segment
+
+        elif text.startswith("/"):
+            path = Path(text)
+
+        else:
+            path = root
+            for segment in text.split(pathsep):
+                path = path / segment
+
+        return path
+
+
+    def enumFromConfig(
+        self, variable: str, section: str, option: str, default: Enum,
+    ) -> Enum:
+        name = self.valueFromConfig(variable, section, option)
+
+        if not name:
+            return default
+
+        try:
+            return type(default)[name]
+        except KeyError:
+            raise ConfigurationError(
+                f"Invalid option {name!r} for {section}.{option}"
+            )
 
 
 
@@ -92,120 +190,71 @@ class Configuration(object):
         """
         command = basename(argv[0])
 
-        configParser = ConfigParser()
-
-        def readConfig(path: Optional[Path]) -> None:
-            if path is None:
-                cls._log.info("No configuration file specified.")
-                return
-
-            for _okFile in configParser.read(str(path)):
-                cls._log.info(
-                    "Read configuration file: {path}", path=path
-                )
-                break
-            else:
-                cls._log.error(
-                    "Unable to read configuration file: {path}", path=path
-                )
-
-        def valueFromConfig(
-            variable: str, section: str, option: str, default: str = ""
-        ) -> str:
-            value = environ.get(f"IMS_{variable}")
-
-            if not value:
-                try:
-                    value = configParser.get(section, option)
-                except (NoSectionError, NoOptionError):
-                    pass
-
-            if value:
-                return value
-            else:
-                return default
-
-        def pathFromConfig(
-            variable: str, section: str, option: str,
-            root: Path, segments: Tuple[str],
-        ) -> Path:
-            text = valueFromConfig(variable, section, option)
-
-            if not text:
-                path = root
-                for segment in segments:
-                    path = path / segment
-
-            elif text.startswith("/"):
-                path = Path(text)
-
-            else:
-                path = root
-                for segment in text.split(pathsep):
-                    path = path / segment
-
-            return path
-
-        def makeDirectory(path: Path) -> None:
-            path.mkdir(exist_ok=True)
-
-        readConfig(configFile)
+        parser = ConfigFileParser(path=configFile)
 
         if configFile is None:
             defaultRoot = Path(getcwd())
         else:
             defaultRoot = configFile.parent.parent
 
-        hostName = valueFromConfig("HOSTNAME", "Core", "Host", "localhost")
+        hostName = parser.valueFromConfig(
+            "HOSTNAME", "Core", "Host", "localhost"
+        )
         cls._log.info("HostName: {hostName}", hostName=hostName)
 
-        port = int(cast(str, valueFromConfig("PORT", "Core", "Port", "80")))
+        port = int(cast(str, parser.valueFromConfig(
+            "PORT", "Core", "Port", "80"))
+        )
         cls._log.info("Port: {port}", port=port)
 
-        serverRoot = pathFromConfig(
+        serverRoot = parser.pathFromConfig(
             "SERVER_ROOT", "Core", "ServerRoot",
             defaultRoot, cast(Tuple[str], ()),
         )
-        makeDirectory(serverRoot)
+        serverRoot.mkdir(exist_ok=True)
         cls._log.info("Server root: {path}", path=serverRoot)
 
-        configRoot = pathFromConfig(
+        configRoot = parser.pathFromConfig(
             "CONFIG_ROOT", "Core", "ConfigRoot", serverRoot, ("conf",)
         )
         cls._log.info("Config root: {path}", path=configRoot)
 
-        dataRoot = pathFromConfig(
+        dataRoot = parser.pathFromConfig(
             "DATA_ROOT", "Core", "DataRoot", serverRoot, ("data",)
         )
-        makeDirectory(dataRoot)
+        dataRoot.mkdir(exist_ok=True)
         cls._log.info("Data root: {path}", path=dataRoot)
 
-        cachedResourcesRoot = pathFromConfig(
+        cachedResourcesRoot = parser.pathFromConfig(
             "CACHE_PATH", "Core", "CachedResources", dataRoot, ("cache",)
         )
-        makeDirectory(cachedResourcesRoot)
+        cachedResourcesRoot.mkdir(exist_ok=True)
         cls._log.info(
             "CachedResourcesRoot: {path}", path=cachedResourcesRoot
         )
 
-        logLevelName = valueFromConfig("LOG_LEVEL", "Core", "LogLevel", "info")
+        logLevelName = parser.valueFromConfig(
+            "LOG_LEVEL", "Core", "LogLevel", "info"
+        )
         cls._log.info("LogLevel: {logLevel}", logLevel=logLevelName)
 
-        logFormat = valueFromConfig("LOG_FORMAT", "Core", "LogFormat", "text")
+        logFormat = cast(LogFormat, parser.enumFromConfig(
+            "LOG_FORMAT", "Core", "LogFormat", LogFormat.text
+        ))
         cls._log.info("LogFormat: {logFormat}", logFormat=logFormat)
 
-        logFilePath = pathFromConfig(
+        logFilePath = parser.pathFromConfig(
             "LOG_FILE", "Core", "LogFile", dataRoot, (f"{command}.log",)
         )
         cls._log.info("LogFile: {path}", path=logFilePath)
 
-        admins = valueFromConfig("ADMINS", "Core", "Admins")
+        admins = parser.valueFromConfig("ADMINS", "Core", "Admins")
         imsAdmins: FrozenSet[str] = frozenset(
             a for a in map(str.strip, admins.split(",")) if a
         )
         cls._log.info("Admins: {admins}", admins=tuple(imsAdmins))
 
-        active = valueFromConfig(
+        active = parser.valueFromConfig(
             "REQUIRE_ACTIVE", "Core", "RequireActive", "true"
         )
         active = active.lower()
@@ -215,38 +264,34 @@ class Configuration(object):
             requireActive = True
         cls._log.info("RequireActive: {active}", active=requireActive)
 
-        storeName = valueFromConfig(
-            "DATA_STORE", "Core", "DataStore", "SQLite"
-        )
-        try:
-            storeFactory = DataStoreFactory[storeName]
-        except KeyError:
-            raise ConfigurationError(f"Unknown data store: {storeName}")
-        cls._log.info("DataStore: {storeName}", storeName=storeName)
+        storeFactory = cast(DataStoreFactory, parser.enumFromConfig(
+            "DATA_STORE", "Core", "DataStore", DataStoreFactory.SQLite
+        ))
+        cls._log.info("DataStore: {storeName}", storeName=storeFactory.name)
 
         storeArguments: Mapping[str, Any]
 
         if storeFactory is DataStoreFactory.SQLite:
-            dbPath = pathFromConfig(
+            dbPath = parser.pathFromConfig(
                 "DB_PATH", "Store:SQLite", "File", dataRoot, ("db.sqlite",)
             )
             cls._log.info("Database: {path}", path=dbPath)
             storeArguments = dict(dbPath=dbPath)
 
         if storeFactory is DataStoreFactory.MySQL:
-            storeHost = valueFromConfig(
+            storeHost = parser.valueFromConfig(
                 "DB_HOST_NAME", "Store:MySQL", "HostName", "localhost"
             )
-            storePort = int(valueFromConfig(
+            storePort = int(parser.valueFromConfig(
                 "DB_HOST_PORT", "Store:MySQL", "HostPort", "3306"
             ))
-            storeDatabase = valueFromConfig(
+            storeDatabase = parser.valueFromConfig(
                 "DB_DATABASE", "Store:MySQL", "Database"
             )
-            storeUser = valueFromConfig(
+            storeUser = parser.valueFromConfig(
                 "DB_USER_NAME", "Store:MySQL", "UserName"
             )
-            storePassword = valueFromConfig(
+            storePassword = parser.valueFromConfig(
                 "DB_PASSWORD", "Store:MySQL", "Password"
             )
             cls._log.info(
@@ -261,17 +306,17 @@ class Configuration(object):
                 password=storePassword,
             )
 
-        dmsHost     = valueFromConfig("DMS_HOSTNAME", "DMS", "Hostname")
-        dmsDatabase = valueFromConfig("DMS_DATABASE", "DMS", "Database")
-        dmsUsername = valueFromConfig("DMS_USERNAME", "DMS", "Username")
-        dmsPassword = valueFromConfig("DMS_PASSWORD", "DMS", "Password")
+        dmsHost     = parser.valueFromConfig("DMS_HOSTNAME", "DMS", "Hostname")
+        dmsDatabase = parser.valueFromConfig("DMS_DATABASE", "DMS", "Database")
+        dmsUsername = parser.valueFromConfig("DMS_USERNAME", "DMS", "Username")
+        dmsPassword = parser.valueFromConfig("DMS_PASSWORD", "DMS", "Password")
 
         cls._log.info(
             "DMS: {user}@{host}/{db}",
             user=dmsUsername, host=dmsHost, db=dmsDatabase,
         )
 
-        masterKey = valueFromConfig("MASTER_KEY", "Core", "MasterKey")
+        masterKey = parser.valueFromConfig("MASTER_KEY", "Core", "MasterKey")
 
         #
         # Persist some objects
@@ -313,7 +358,7 @@ class Configuration(object):
     HostName: str
     IMSAdmins: FrozenSet[str]
     LogFilePath: Path
-    LogFormat: str
+    LogFormat: _LogFormat
     LogLevelName: str
     MasterKey: str
     Port: int
@@ -380,7 +425,7 @@ class Configuration(object):
             f"Core.LogFile: {self.LogFilePath}\n"
             f"Core.LogFormat: {self.LogFormat}\n"
             f"\n"
-            f"DB.Store: {self.StoreFactory}\n"
+            f"DB.Store: {self.StoreFactory.name}\n"
             f"DB.Arguments: {self.StoreArguments}\n"
             f"\n"
             f"DMS.Hostname: {self.DMSHost}\n"
