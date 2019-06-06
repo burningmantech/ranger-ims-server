@@ -33,7 +33,7 @@ from twisted.logger import (
 from twisted.python.usage import Options, UsageError
 
 from ims import __version__ as version
-from ims.config import Configuration
+from ims.config import Configuration, LogFormat
 
 
 __all__ = ()
@@ -90,26 +90,27 @@ class ServerOptions(Options):
 
             if "logFileName" in options:
                 configuration = configuration.replace(
-                    LogFilePath=Path(options["logFileName"])
+                    logFilePath=Path(options["logFileName"])
                 )
             else:
-                self.opt_log_file(str(configuration.LogFilePath))
+                self.opt_log_file(str(configuration.logFilePath))
 
             if "logFormat" in options:
                 configuration = configuration.replace(
-                    LogFormat=options["logFormat"]
+                    logFormat=options["logFormat"]
                 )
-            elif configuration.LogFormat is not None:
-                self.opt_log_format(configuration.LogFormat)
+            elif configuration.logFormat is not None:
+                self.opt_log_format(configuration.logFormat.name)
 
             if "logLevel" in options:
                 configuration = configuration.replace(
-                    LogLevelName=options["logLevel"].name
+                    logLevelName=options["logLevel"].name
                 )
-            elif configuration.LogLevelName is not None:
-                self.opt_log_level(configuration.LogLevelName)
+            elif configuration.logLevelName is not None:
+                self.opt_log_level(configuration.logLevelName)
 
             options["configuration"] = configuration
+
         except Exception as e:
             exit(ExitStatus.EX_CONFIG, str(e))
 
@@ -155,20 +156,24 @@ class ServerOptions(Options):
             )
 
 
-    def opt_log_format(self, logFormat: str) -> None:
+    def opt_log_format(self, logFormatName: str) -> None:
         """
         Log file format.
         (options: "text", "json"; default: "text" if the log file is a tty,
         otherwise "json")
         """
-        logFormat = logFormat.lower()
+        try:
+            logFormat = LogFormat[logFormatName.lower()]
+        except KeyError:
+            raise UsageError(f"Invalid log format: {logFormatName}")
 
-        if logFormat == "text":
+        if logFormat is LogFormat.text:
             self["fileLogObserverFactory"] = textFileLogObserver
-        elif logFormat == "json":
+        elif logFormat is LogFormat.json:
             self["fileLogObserverFactory"] = jsonFileLogObserver
         else:
-            raise UsageError(f"Invalid log format: {logFormat}")
+            raise AssertionError(f"Unhandled LogFormat: {logFormat}")
+
         self["logFormat"] = logFormat
 
     opt_log_format.__doc__ = dedent(cast(str, opt_log_format.__doc__))

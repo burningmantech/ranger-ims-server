@@ -81,8 +81,8 @@ class Server(object):
 
         d = ensureDeferred(start())
 
-        host = config.HostName
-        port = config.Port
+        host = config.hostName
+        port = config.port
 
         application = Application(config=config)
 

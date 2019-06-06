@@ -1,0 +1,20 @@
+#!/bin/sh
+
+#
+# Open a shell in the running Docker container
+#
+
+. "$(dirname "$0")/.common.sh";
+
+if [ -t 0 ]; then
+    tty_args="--tty";
+else
+    tty_args="";
+fi;
+
+exec docker exec         \
+    --interactive        \
+    ${tty_args}          \
+    "${container_name}"  \
+    ash                  \
+    ;

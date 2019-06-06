@@ -71,15 +71,15 @@ class ConfigurationTests(TestCase):
         dataRoot   = serverRoot / "data"
         cached     = dataRoot / "cache"
 
-        self.assertEqual(config.ServerRoot, serverRoot)
-        self.assertEqual(config.ConfigRoot, configRoot)
-        self.assertEqual(config.DataRoot, dataRoot)
-        self.assertEqual(config.CachedResourcesRoot, cached)
+        self.assertEqual(config.serverRoot, serverRoot)
+        self.assertEqual(config.configRoot, configRoot)
+        self.assertEqual(config.dataRoot, dataRoot)
+        self.assertEqual(config.cachedResourcesRoot, cached)
 
-        self.assertEqual(config.DMSHost, "")
-        self.assertEqual(config.DMSDatabase, "")
-        self.assertEqual(config.DMSUsername, "")
-        self.assertEqual(config.DMSPassword, "")
+        self.assertEqual(config.dmsHost, "")
+        self.assertEqual(config.dmsDatabase, "")
+        self.assertEqual(config.dmsUsername, "")
+        self.assertEqual(config.dmsPassword, "")
 
 
     def test_fromConfigFile_none(self) -> None:
@@ -118,16 +118,16 @@ class ConfigurationTests(TestCase):
         dataRoot   = serverRoot / "infos"
         cached     = dataRoot / "stuff"
 
-        self.assertEqual(config.ServerRoot, serverRoot)
-        self.assertEqual(config.ConfigRoot, configRoot)
-        self.assertEqual(config.DataRoot, dataRoot)
-        self.assertEqual(config.CachedResourcesRoot, cached)
+        self.assertEqual(config.serverRoot, serverRoot)
+        self.assertEqual(config.configRoot, configRoot)
+        self.assertEqual(config.dataRoot, dataRoot)
+        self.assertEqual(config.cachedResourcesRoot, cached)
 
-        self.assertEqual(config.DMSHost, "dms.rangers.example.com")
-        self.assertEqual(config.DMSDatabase, "rangers")
-        self.assertEqual(config.DMSUsername, "ims")
+        self.assertEqual(config.dmsHost, "dms.rangers.example.com")
+        self.assertEqual(config.dmsDatabase, "rangers")
+        self.assertEqual(config.dmsUsername, "ims")
         self.assertEqual(
-            config.DMSPassword, "9F29BB2B-E775-489C-9C20-9FE3EFEE1F22"
+            config.dmsPassword, "9F29BB2B-E775-489C-9C20-9FE3EFEE1F22"
         )
 
 
@@ -140,7 +140,7 @@ class ConfigurationTests(TestCase):
         with testingEnvironment(dict(IMS_HOSTNAME=hostName)):
             config = Configuration.fromConfigFile(None)
 
-        self.assertEqual(config.HostName, hostName)
+        self.assertEqual(config.hostName, hostName)
 
 
     def test_fromConfigFile_environment_path_relative(self) -> None:
@@ -154,7 +154,7 @@ class ConfigurationTests(TestCase):
         with testingEnvironment(dict(IMS_SERVER_ROOT=textPath)):
             config = Configuration.fromConfigFile(None)
 
-        self.assertTrue(Path(textPath).samefile(config.ServerRoot))
+        self.assertTrue(Path(textPath).samefile(config.serverRoot))
 
 
     def test_fromConfigFile_environment_path_absolute(self) -> None:
@@ -166,7 +166,7 @@ class ConfigurationTests(TestCase):
         with testingEnvironment(dict(IMS_SERVER_ROOT=str(path))):
             config = Configuration.fromConfigFile(None)
 
-        self.assertEqual(config.ServerRoot, path)
+        self.assertEqual(config.serverRoot, path)
 
 
     def test_fromConfigFile_createDirectories(self) -> None:
@@ -181,11 +181,10 @@ class ConfigurationTests(TestCase):
         with testingEnvironment(dict(IMS_SERVER_ROOT=str(path))):
             config = Configuration.fromConfigFile(None)
 
-        self.assertTrue(config.ServerRoot.is_dir())
-        self.assertTrue(config.ConfigRoot.is_dir())
-        self.assertTrue(config.DataRoot.is_dir())
-        self.assertTrue(config.CachedResourcesRoot.is_dir())
-        self.assertTrue(config.ServerRoot.is_dir())
+        self.assertTrue(config.serverRoot.is_dir())
+        self.assertTrue(config.dataRoot.is_dir())
+        self.assertTrue(config.cachedResourcesRoot.is_dir())
+        self.assertTrue(config.serverRoot.is_dir())
 
 
     def test_fromConfigFile_admins(self) -> None:
@@ -204,7 +203,7 @@ class ConfigurationTests(TestCase):
             with testingEnvironment(dict(IMS_ADMINS=value)):
                 config = Configuration.fromConfigFile(None)
 
-            self.assertEqual(config.IMSAdmins, result)
+            self.assertEqual(config.imsAdmins, result)
 
 
     def test_fromConfigFile_requireActive(self) -> None:
@@ -214,7 +213,7 @@ class ConfigurationTests(TestCase):
         def test(value: str) -> bool:
             with testingEnvironment(dict(IMS_REQUIRE_ACTIVE=value)):
                 config = Configuration.fromConfigFile(None)
-            return config.RequireActive
+            return config.requireActive
 
         for value in ("false", "False", "FALSE", "no", "No", "NO", "0"):
             self.assertFalse(test(value))
@@ -310,19 +309,19 @@ class ConfigurationTests(TestCase):
             str(config),
             f"Configuration file: None\n"
             f"\n"
-            f"Core.Host: localhost\n"
-            f"Core.Port: 8080\n"
+            f"Core.Host: {config.hostName}\n"
+            f"Core.Port: {config.port}\n"
             f"\n"
-            f"Core.ServerRoot: {config.ServerRoot}\n"
-            f"Core.ConfigRoot: {config.ServerRoot}/conf\n"
-            f"Core.DataRoot: {config.ServerRoot}/data\n"
-            f"Core.CachedResources: {config.ServerRoot}/data/cache\n"
-            f"Core.LogLevel: info\n"
-            f"Core.LogFile: {config.ServerRoot}/data/trial.log\n"
-            f"Core.LogFormat: text\n"
+            f"Core.ServerRoot: {config.serverRoot}\n"
+            f"Core.ConfigRoot: {config.configRoot}\n"
+            f"Core.DataRoot: {config.dataRoot}\n"
+            f"Core.CachedResources: {config.cachedResourcesRoot}\n"
+            f"Core.LogLevel: {config.logLevelName}\n"
+            f"Core.LogFile: {config.logFilePath}\n"
+            f"Core.LogFormat: {config.logFormat}\n"
             f"\n"
-            f"DB.Store: DataStoreFactory.SQLite\n"
-            f"DB.Arguments: {config.StoreArguments!r}\n"
+            f"DB.Store: {config.storeFactory.name}\n"
+            f"DB.Arguments: {config.storeArguments!r}\n"
             f"\n"
             f"DMS.Hostname: \n"
             f"DMS.Database: \n"
@@ -337,6 +336,6 @@ class ConfigurationTests(TestCase):
         with testingEnvironment({}):
             config = Configuration.fromConfigFile(None)
 
-        config = config.replace(HostName=hostName)
+        config = config.replace(hostName=hostName)
 
-        self.assertEqual(config.HostName, hostName)
+        self.assertEqual(config.hostName, hostName)

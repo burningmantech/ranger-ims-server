@@ -20,36 +20,18 @@ Clients connect to the server over the network and provide an interface to users
 This package provides the server component, which includes a web client and some web-based reporting features.
 All functionality is expose via JSON endpoints.
 
-The server is implemented using Twisted_ Klein_ and requires Python 3.6 or later.
+The server is implemented using Twisted_ Klein_ and requires Python 3.6.
 
 
 Development
 -----------
 
 This project uses Tox_ for running tests.
-The following Tox environments are defined:
-
-To run the Flake8_ linter::
-
-    tox -e flake8
-
-To run the Mypy_ type checker::
-
-    tox -e mypy
-
-To run the unit tests with coverage reporting for Python 3.6::
-
-    tox -e coverage-py36
-
-To run unit tests for a specific module::
-
-    tox -e coverage-py36 ims.model
-
 To run all of the default test environments::
 
     tox
 
-To run the server (for development)::
+To run the server (for development only)::
 
     tox -e run
 
