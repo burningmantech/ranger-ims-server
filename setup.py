@@ -118,13 +118,13 @@ setup_requirements = []
 
 install_requirements = [
     # Direct dependencies
-    "arrow==0.13.2",
+    "arrow==0.14.2",
     "attrs==19.1.0",
     "cattrs==0.4.0",
     "hyperlink==19.0.0",
     "klein==17.10.0",
     "PyMySQL==0.9.3",
-    "Twisted==19.2.0",
+    "Twisted==19.2.1",
     "zope.interface==4.6.0",
     "pyOpenSSL==19.0.0",
     "service-identity==18.1.0",
