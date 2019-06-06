@@ -182,7 +182,6 @@ class ConfigurationTests(TestCase):
             config = Configuration.fromConfigFile(None)
 
         self.assertTrue(config.ServerRoot.is_dir())
-        self.assertTrue(config.ConfigRoot.is_dir())
         self.assertTrue(config.DataRoot.is_dir())
         self.assertTrue(config.CachedResourcesRoot.is_dir())
         self.assertTrue(config.ServerRoot.is_dir())
