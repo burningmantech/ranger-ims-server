@@ -61,9 +61,6 @@ class LogFormat(Names):
     text = auto()
     json = auto()
 
-# FIXME: Due to conflicting names below
-_LogFormat = LogFormat
-
 
 
 class DataStoreFactory(Enum):
@@ -200,7 +197,7 @@ class Configuration(object):
         hostName = parser.valueFromConfig(
             "HOSTNAME", "Core", "Host", "localhost"
         )
-        cls._log.info("HostName: {hostName}", hostName=hostName)
+        cls._log.info("hostName: {hostName}", hostName=hostName)
 
         port = int(cast(str, parser.valueFromConfig(
             "PORT", "Core", "Port", "80"))
@@ -230,7 +227,7 @@ class Configuration(object):
         )
         cachedResourcesRoot.mkdir(exist_ok=True)
         cls._log.info(
-            "CachedResourcesRoot: {path}", path=cachedResourcesRoot
+            "CachedResources: {path}", path=cachedResourcesRoot
         )
 
         logLevelName = parser.valueFromConfig(
@@ -323,49 +320,49 @@ class Configuration(object):
         #
 
         return cls(
-            ConfigFile=configFile,
+            configFile=configFile,
 
-            CachedResourcesRoot=cachedResourcesRoot,
-            ConfigRoot=configRoot,
-            DataRoot=dataRoot,
-            DMSDatabase=dmsDatabase,
-            DMSHost=dmsHost,
-            DMSPassword=dmsPassword,
-            DMSUsername=dmsUsername,
-            HostName=hostName,
-            IMSAdmins=imsAdmins,
-            LogFilePath=logFilePath,
-            LogFormat=logFormat,
-            LogLevelName=logLevelName,
-            MasterKey=masterKey,
-            Port=port,
-            RequireActive=requireActive,
-            ServerRoot=serverRoot,
-            StoreArguments=storeArguments,
-            StoreFactory=storeFactory,
+            cachedResourcesRoot=cachedResourcesRoot,
+            configRoot=configRoot,
+            dataRoot=dataRoot,
+            dmsDatabase=dmsDatabase,
+            dmsHost=dmsHost,
+            dmsPassword=dmsPassword,
+            dmsUsername=dmsUsername,
+            hostName=hostName,
+            imsAdmins=imsAdmins,
+            logFilePath=logFilePath,
+            logFormat=logFormat,
+            logLevelName=logLevelName,
+            masterKey=masterKey,
+            port=port,
+            requireActive=requireActive,
+            serverRoot=serverRoot,
+            storeArguments=storeArguments,
+            storeFactory=storeFactory,
         )
 
 
-    ConfigFile: Optional[Path]
+    configFile: Optional[Path]
 
-    CachedResourcesRoot: Path
-    ConfigRoot: Path
-    DataRoot: Path
-    DMSDatabase: str
-    DMSHost: str
-    DMSPassword: str
-    DMSUsername: str
-    HostName: str
-    IMSAdmins: FrozenSet[str]
-    LogFilePath: Path
-    LogFormat: _LogFormat
-    LogLevelName: str
-    MasterKey: str
-    Port: int
-    RequireActive: bool
-    ServerRoot: Path
-    StoreArguments: Mapping[str, Any]
-    StoreFactory: DataStoreFactory
+    cachedResourcesRoot: Path
+    configRoot: Path
+    dataRoot: Path
+    dmsDatabase: str
+    dmsHost: str
+    dmsPassword: str
+    dmsUsername: str
+    hostName: str
+    imsAdmins: FrozenSet[str]
+    logFilePath: Path
+    logFormat: LogFormat
+    logLevelName: str
+    masterKey: str
+    port: int
+    requireActive: bool
+    serverRoot: Path
+    storeArguments: Mapping[str, Any]
+    storeFactory: DataStoreFactory
 
     _state: _State = attrib(factory=_State, init=False)
 
@@ -376,7 +373,7 @@ class Configuration(object):
         Data store.
         """
         if self._state.store is None:
-            self._state.store = self.StoreFactory.value(**self.StoreArguments)
+            self._state.store = self.storeFactory.value(**self.storeArguments)
 
         return self._state.store
 
@@ -388,8 +385,8 @@ class Configuration(object):
         """
         if self._state.dms is None:
             self._state.dms = DutyManagementSystem(
-                host=self.DMSHost, database=self.DMSDatabase,
-                username=self.DMSUsername, password=self.DMSPassword,
+                host=self.dmsHost, database=self.dmsDatabase,
+                username=self.dmsUsername, password=self.dmsPassword,
             )
 
         return self._state.dms
@@ -403,8 +400,8 @@ class Configuration(object):
         if self._state.authProvider is None:
             self._state.authProvider = AuthProvider(
                 store=self.store, dms=self.dms,
-                requireActive=self.RequireActive,
-                adminUsers=self.IMSAdmins, masterKey=self.MasterKey,
+                requireActive=self.requireActive,
+                adminUsers=self.imsAdmins, masterKey=self.masterKey,
             )
 
         return self._state.authProvider
@@ -412,26 +409,26 @@ class Configuration(object):
 
     def __str__(self) -> str:
         return (
-            f"Configuration file: {self.ConfigFile}\n"
+            f"Configuration file: {self.configFile}\n"
             f"\n"
-            f"Core.Host: {self.HostName}\n"
-            f"Core.Port: {self.Port}\n"
+            f"Core.Host: {self.hostName}\n"
+            f"Core.Port: {self.port}\n"
             f"\n"
-            f"Core.ServerRoot: {self.ServerRoot}\n"
-            f"Core.ConfigRoot: {self.ConfigRoot}\n"
-            f"Core.DataRoot: {self.DataRoot}\n"
-            f"Core.CachedResources: {self.CachedResourcesRoot}\n"
-            f"Core.LogLevel: {self.LogLevelName}\n"
-            f"Core.LogFile: {self.LogFilePath}\n"
-            f"Core.LogFormat: {self.LogFormat}\n"
+            f"Core.ServerRoot: {self.serverRoot}\n"
+            f"Core.ConfigRoot: {self.configRoot}\n"
+            f"Core.DataRoot: {self.dataRoot}\n"
+            f"Core.CachedResources: {self.cachedResourcesRoot}\n"
+            f"Core.LogLevel: {self.logLevelName}\n"
+            f"Core.LogFile: {self.logFilePath}\n"
+            f"Core.LogFormat: {self.logFormat}\n"
             f"\n"
-            f"DB.Store: {self.StoreFactory.name}\n"
-            f"DB.Arguments: {self.StoreArguments}\n"
+            f"DB.Store: {self.storeFactory.name}\n"
+            f"DB.Arguments: {self.storeArguments}\n"
             f"\n"
-            f"DMS.Hostname: {self.DMSHost}\n"
-            f"DMS.Database: {self.DMSDatabase}\n"
-            f"DMS.Username: {self.DMSUsername}\n"
-            f"DMS.Password: {self.DMSPassword}\n"
+            f"DMS.Hostname: {self.dmsHost}\n"
+            f"DMS.Database: {self.dmsDatabase}\n"
+            f"DMS.Username: {self.dmsUsername}\n"
+            f"DMS.Password: {self.dmsPassword}\n"
         )
 
 

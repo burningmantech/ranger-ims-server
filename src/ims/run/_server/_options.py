@@ -90,24 +90,24 @@ class ServerOptions(Options):
 
             if "logFileName" in options:
                 configuration = configuration.replace(
-                    LogFilePath=Path(options["logFileName"])
+                    logFilePath=Path(options["logFileName"])
                 )
             else:
-                self.opt_log_file(str(configuration.LogFilePath))
+                self.opt_log_file(str(configuration.logFilePath))
 
             if "logFormat" in options:
                 configuration = configuration.replace(
-                    LogFormat=options["logFormat"]
+                    logFormat=options["logFormat"]
                 )
-            elif configuration.LogFormat is not None:
-                self.opt_log_format(configuration.LogFormat.name)
+            elif configuration.logFormat is not None:
+                self.opt_log_format(configuration.logFormat.name)
 
             if "logLevel" in options:
                 configuration = configuration.replace(
-                    LogLevelName=options["logLevel"].name
+                    logLevelName=options["logLevel"].name
                 )
-            elif configuration.LogLevelName is not None:
-                self.opt_log_level(configuration.LogLevelName)
+            elif configuration.logLevelName is not None:
+                self.opt_log_level(configuration.logLevelName)
 
             options["configuration"] = configuration
 

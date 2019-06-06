@@ -104,7 +104,7 @@ class Element(BaseElement):
 
         if user is not None:
             for shortName in user.shortNames:
-                if shortName in self.config.IMSAdmins:
+                if shortName in self.config.imsAdmins:
                     return True
 
         return False
