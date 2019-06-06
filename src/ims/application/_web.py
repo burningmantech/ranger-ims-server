@@ -66,7 +66,7 @@ class WebApplication(object):
     Application with web interface endpoints.
     """
 
-    router: ClassVar = Router()
+    router: ClassVar[Router] = Router()
 
     config: Configuration
 

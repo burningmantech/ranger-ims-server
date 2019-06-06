@@ -77,7 +77,7 @@ class MainApplication(object):
     Incident Management System main application.
     """
 
-    router: ClassVar = Router()
+    router: ClassVar[Router] = Router()
 
 
     config: Configuration

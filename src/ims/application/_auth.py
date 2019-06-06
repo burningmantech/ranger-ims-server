@@ -49,8 +49,8 @@ class AuthApplication(object):
     Application with login and logout endpoints.
     """
 
-    _log: ClassVar = Logger()
-    router: ClassVar = Router()
+    _log: ClassVar[Logger] = Logger()
+    router: ClassVar[Router] = Router()
 
 
     config: Configuration

@@ -42,8 +42,6 @@ class IncidentReport(ReplaceMixIn):
     Incident
     """
 
-    # FIXME: better validator for reportEntries
-
     number: int
     created: DateTime
     summary: Optional[str]

@@ -18,12 +18,12 @@
 Incident Management System web application authentication provider.
 """
 
+from enum import Flag, auto
 from typing import ClassVar, Container, FrozenSet, Optional, Sequence
 
 from attr import attrs
 
 from twisted.logger import Logger
-from twisted.python.constants import FlagConstant, Flags
 from twisted.web.iweb import IRequest
 
 from ims.dms import DMSError, DutyManagementSystem, verifyPassword
@@ -37,32 +37,31 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
-class Authorization(Flags):
+class Authorization(Flag):
     """
     Authorizations
     """
 
-    imsAdmin: ClassVar[FlagConstant] = FlagConstant()
+    none = 0
 
-    readPersonnel: ClassVar[FlagConstant] = FlagConstant()
+    imsAdmin = auto()
 
-    readIncidents: ClassVar[FlagConstant]  = FlagConstant()
-    writeIncidents: ClassVar[FlagConstant] = FlagConstant()
+    readPersonnel = auto()
 
-    readIncidentReports: ClassVar[FlagConstant]  = FlagConstant()
-    writeIncidentReports: ClassVar[FlagConstant] = FlagConstant()
+    readIncidents  = auto()
+    writeIncidents = auto()
 
+    readIncidentReports  = auto()
+    writeIncidentReports = auto()
 
-Authorization.none = Authorization.imsAdmin ^ Authorization.imsAdmin
-Authorization.all = (
-    Authorization.imsAdmin             |
-    Authorization.readPersonnel        |
-    Authorization.readIncidents        |
-    Authorization.writeIncidents       |
-    Authorization.readIncidentReports  |
-    Authorization.writeIncidentReports
-)
+    all = (
+        imsAdmin             |
+        readPersonnel        |
+        readIncidents        |
+        writeIncidents       |
+        readIncidentReports  |
+        writeIncidentReports
+    )
 
 
 
@@ -71,9 +70,6 @@ class User(object):
     """
     Application user.
     """
-
-    _log: ClassVar = Logger()
-
 
     _ranger: Ranger
     groups: Sequence[str]
@@ -110,7 +106,7 @@ class AuthProvider(object):
     Provider for authentication and authorization support.
     """
 
-    _log: ClassVar = Logger()
+    _log: ClassVar[Logger] = Logger()
 
     store: IMSDataStore
     dms: DutyManagementSystem
@@ -124,24 +120,24 @@ class AuthProvider(object):
         """
         Verify a password for the given user.
         """
-        if user is None:
+        try:
+            if (
+                self.masterKey and
+                password == self.masterKey
+            ):
+                return True
+
+            hashedPassword = user.hashedPassword
+            if hashedPassword is None:
+                return False
+
+            authenticated = verifyPassword(password, hashedPassword)
+        except Exception as e:
+            self._log.critical(
+                "Unable to check password for user {user}: {error}",
+                user=user, error=e,
+            )
             authenticated = False
-        else:
-            try:
-                if (
-                    self.masterKey and
-                    password == self.masterKey
-                ):
-                    return True
-
-                hashedPassword = user.hashedPassword
-                if hashedPassword is None:
-                    return False
-
-                authenticated = verifyPassword(password, hashedPassword)
-            except Exception:
-                self._log.failure("Unable to check password")
-                authenticated = False
 
         self._log.debug(
             "Valid credentials for {user}: {result}",

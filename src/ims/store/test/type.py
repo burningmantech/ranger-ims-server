@@ -20,7 +20,9 @@ Incident type tests for :mod:`ranger-ims-server.store`
 
 from typing import Tuple, cast
 
-from .base import DataStoreTests, asyncAsDeferred
+from ims.ext.trial import asyncAsDeferred
+
+from .base import DataStoreTests
 from .._exceptions import StorageError
 
 

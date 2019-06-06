@@ -18,9 +18,10 @@
 Street tests for :mod:`ranger-ims-server.store`
 """
 
+from ims.ext.trial import asyncAsDeferred
 from ims.model import Event
 
-from .base import DataStoreTests, asyncAsDeferred
+from .base import DataStoreTests
 
 
 __all__ = ()

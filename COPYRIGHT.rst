@@ -1,4 +1,4 @@
-Copyright 2013-2018 Burning Man and its contributors.
+Copyright 2013-2019 Burning Man and its contributors.
 
 All rights reserved.
 

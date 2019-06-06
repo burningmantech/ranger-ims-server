@@ -30,7 +30,6 @@ from typing import (
 )
 
 from attr import attrib, attrs
-from attr.validators import instance_of
 
 from twisted.logger import Logger
 
@@ -69,64 +68,58 @@ class Query(object):
 
 
 
-def _queryAttribute() -> Query:
-    return attrib(validator=instance_of(Query))
-
-
-
-# FIXME: Can this be an Enum?
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Queries(object):
-    schemaVersion: Query                        = _queryAttribute()
-    events: Query                               = _queryAttribute()
-    createEvent: Query                          = _queryAttribute()
-    createEventOrIgnore: Query                  = _queryAttribute()
-    eventAccess: Query                          = _queryAttribute()
-    clearEventAccessForMode: Query              = _queryAttribute()
-    clearEventAccessForExpression: Query        = _queryAttribute()
-    addEventAccess: Query                       = _queryAttribute()
-    incidentTypes: Query                        = _queryAttribute()
-    incidentTypesNotHidden: Query               = _queryAttribute()
-    createIncidentType: Query                   = _queryAttribute()
-    createIncidentTypeOrIgnore: Query           = _queryAttribute()
-    hideShowIncidentType: Query                 = _queryAttribute()
-    concentricStreets: Query                    = _queryAttribute()
-    createConcentricStreet: Query               = _queryAttribute()
-    createConcentricStreetOrIgnore: Query       = _queryAttribute()
-    detachedReportEntries: Query                = _queryAttribute()
-    incident: Query                             = _queryAttribute()
-    incident_rangers: Query                     = _queryAttribute()
-    incident_incidentTypes: Query               = _queryAttribute()
-    incident_reportEntries: Query               = _queryAttribute()
-    incidentNumbers: Query                      = _queryAttribute()
-    maxIncidentNumber: Query                    = _queryAttribute()
-    attachRangeHandleToIncident: Query          = _queryAttribute()
-    attachIncidentTypeToIncident: Query         = _queryAttribute()
-    createReportEntry: Query                    = _queryAttribute()
-    attachReportEntryToIncident: Query          = _queryAttribute()
-    createIncident: Query                       = _queryAttribute()
-    setIncident_priority: Query                 = _queryAttribute()
-    setIncident_state: Query                    = _queryAttribute()
-    setIncident_summary: Query                  = _queryAttribute()
-    setIncident_locationName: Query             = _queryAttribute()
-    setIncident_locationConcentricStreet: Query = _queryAttribute()
-    setIncident_locationRadialHour: Query       = _queryAttribute()
-    setIncident_locationRadialMinute: Query     = _queryAttribute()
-    setIncident_locationDescription: Query      = _queryAttribute()
-    clearIncidentRangers: Query                 = _queryAttribute()
-    clearIncidentIncidentTypes: Query           = _queryAttribute()
-    incidentReport: Query                       = _queryAttribute()
-    incidentReport_reportEntries: Query         = _queryAttribute()
-    incidentReportNumbers: Query                = _queryAttribute()
-    maxIncidentReportNumber: Query              = _queryAttribute()
-    createIncidentReport: Query                 = _queryAttribute()
-    attachReportEntryToIncidentReport: Query    = _queryAttribute()
-    setIncidentReport_summary: Query            = _queryAttribute()
-    detachedIncidentReportNumbers: Query        = _queryAttribute()
-    attachedIncidentReportNumbers: Query        = _queryAttribute()
-    incidentsAttachedToIncidentReport: Query    = _queryAttribute()
-    attachIncidentReportToIncident: Query       = _queryAttribute()
-    detachIncidentReportFromIncident: Query     = _queryAttribute()
+    schemaVersion: Query
+    events: Query
+    createEvent: Query
+    createEventOrIgnore: Query
+    eventAccess: Query
+    clearEventAccessForMode: Query
+    clearEventAccessForExpression: Query
+    addEventAccess: Query
+    incidentTypes: Query
+    incidentTypesNotHidden: Query
+    createIncidentType: Query
+    createIncidentTypeOrIgnore: Query
+    hideShowIncidentType: Query
+    concentricStreets: Query
+    createConcentricStreet: Query
+    createConcentricStreetOrIgnore: Query
+    detachedReportEntries: Query
+    incident: Query
+    incident_rangers: Query
+    incident_incidentTypes: Query
+    incident_reportEntries: Query
+    incidentNumbers: Query
+    maxIncidentNumber: Query
+    attachRangeHandleToIncident: Query
+    attachIncidentTypeToIncident: Query
+    createReportEntry: Query
+    attachReportEntryToIncident: Query
+    createIncident: Query
+    setIncident_priority: Query
+    setIncident_state: Query
+    setIncident_summary: Query
+    setIncident_locationName: Query
+    setIncident_locationConcentricStreet: Query
+    setIncident_locationRadialHour: Query
+    setIncident_locationRadialMinute: Query
+    setIncident_locationDescription: Query
+    clearIncidentRangers: Query
+    clearIncidentIncidentTypes: Query
+    incidentReport: Query
+    incidentReport_reportEntries: Query
+    incidentReportNumbers: Query
+    maxIncidentReportNumber: Query
+    createIncidentReport: Query
+    attachReportEntryToIncidentReport: Query
+    setIncidentReport_summary: Query
+    detachedIncidentReportNumbers: Query
+    attachedIncidentReportNumbers: Query
+    incidentsAttachedToIncidentReport: Query
+    attachIncidentReportToIncident: Query
+    detachIncidentReportFromIncident: Query
 
 
 
@@ -271,7 +264,7 @@ class DatabaseStore(IMSDataStore):
 
     @property
     def dbManager(self) -> "DatabaseManager":
-        return DatabaseManager(self)
+        return DatabaseManager(store=self)
 
 
     @abstractmethod
@@ -1842,16 +1835,16 @@ class DatabaseStore(IMSDataStore):
 
 
 
-@attrs(frozen=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class DatabaseManager(object):
     """
     Generic manager for databases.
     """
 
-    _log = Logger()
+    _log: ClassVar[Logger] = Logger()
 
 
-    store: DatabaseStore = attrib(validator=instance_of(DatabaseStore))
+    store: DatabaseStore
 
 
     async def upgradeSchema(self) -> bool:

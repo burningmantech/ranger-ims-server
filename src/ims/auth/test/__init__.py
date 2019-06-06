@@ -15,30 +15,5 @@
 ##
 
 """
-Incident Management System service errors.
+Tests for L{ims.auth}.
 """
-
-from attr import attrs
-
-
-__all__ = ()
-
-
-
-@attrs(frozen=False, auto_attribs=True, auto_exc=True)
-class NotAuthenticatedError(Exception):
-    """
-    Not authorized.
-    """
-
-    message: str
-
-
-
-@attrs(frozen=False, auto_attribs=True, auto_exc=True)
-class NotAuthorizedError(Exception):
-    """
-    Not authorized.
-    """
-
-    message: str

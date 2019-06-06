@@ -46,7 +46,7 @@ class Cursor(DictCursor):
     debugging purposes.
     """
 
-    _log = Logger()
+    _log: ClassVar[Logger] = Logger()
 
 
     def execute(

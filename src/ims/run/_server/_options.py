@@ -48,7 +48,7 @@ class ServerOptions(Options):
     Command line options for the IMS server.
     """
 
-    log: ClassVar = Logger()
+    log: ClassVar[Logger] = Logger()
     defaultLogLevel: ClassVar = LogLevel.info
 
 
