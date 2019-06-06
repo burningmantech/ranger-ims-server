@@ -34,7 +34,6 @@ from hyperlink import URL
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
 from twisted.logger import ILogObserver, Logger
-from twisted.python.constants import NamedConstant
 from twisted.python.failure import Failure
 from twisted.web.iweb import IRequest
 
@@ -867,7 +866,7 @@ class APIApplication(object):
             )
 
         async def applyEdit(
-            json: Mapping[str, Any], key: NamedConstant,
+            json: Mapping[str, Any], key: Enum,
             setter: Callable[[int, Any, str], Awaitable[None]],
             cast: Optional[Callable[[Any], Any]] = None
         ) -> None:

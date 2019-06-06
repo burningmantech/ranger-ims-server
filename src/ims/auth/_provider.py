@@ -18,12 +18,12 @@
 Incident Management System web application authentication provider.
 """
 
+from enum import Flag, auto
 from typing import ClassVar, Container, FrozenSet, Optional, Sequence
 
 from attr import attrs
 
 from twisted.logger import Logger
-from twisted.python.constants import FlagConstant, Flags
 from twisted.web.iweb import IRequest
 
 from ims.dms import DMSError, DutyManagementSystem, verifyPassword
@@ -37,32 +37,31 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
-class Authorization(Flags):
+class Authorization(Flag):
     """
     Authorizations
     """
 
-    imsAdmin: ClassVar[FlagConstant] = FlagConstant()
+    imsAdmin = auto()
 
-    readPersonnel: ClassVar[FlagConstant] = FlagConstant()
+    readPersonnel = auto()
 
-    readIncidents: ClassVar[FlagConstant]  = FlagConstant()
-    writeIncidents: ClassVar[FlagConstant] = FlagConstant()
+    readIncidents  = auto()
+    writeIncidents = auto()
 
-    readIncidentReports: ClassVar[FlagConstant]  = FlagConstant()
-    writeIncidentReports: ClassVar[FlagConstant] = FlagConstant()
+    readIncidentReports  = auto()
+    writeIncidentReports = auto()
 
+    none = imsAdmin ^ imsAdmin
 
-Authorization.none = Authorization.imsAdmin ^ Authorization.imsAdmin
-Authorization.all = (
-    Authorization.imsAdmin             |
-    Authorization.readPersonnel        |
-    Authorization.readIncidents        |
-    Authorization.writeIncidents       |
-    Authorization.readIncidentReports  |
-    Authorization.writeIncidentReports
-)
+    all = (
+        imsAdmin             |
+        readPersonnel        |
+        readIncidents        |
+        writeIncidents       |
+        readIncidentReports  |
+        writeIncidentReports
+    )
 
 
 
