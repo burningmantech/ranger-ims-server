@@ -83,14 +83,14 @@ class DutyManagementSystem(object):
     This class connects to an external system to get data.
     """
 
-    _log: ClassVar = Logger()
+    _log: ClassVar[Logger] = Logger()
 
     # DMS data changes rarely, so hour intervals between refreshing data should
     # be fine.
     # Refresh after an hour, but don't panic about it until we're stale for >12
     # hours.
-    personnelCacheInterval: ClassVar    = 60 * 5   # 5 minutes
-    personnelCacheIntervalMax: ClassVar = 60 * 30  # 30 minutes
+    personnelCacheInterval: ClassVar[int]    = 60 * 5   # 5 minutes
+    personnelCacheIntervalMax: ClassVar[int] = 60 * 30  # 30 minutes
 
     host: str
     database: str

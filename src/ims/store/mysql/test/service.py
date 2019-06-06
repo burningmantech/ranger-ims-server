@@ -447,7 +447,7 @@ class ExternalMySQLService(MySQLService):
     Externally hosted MySQL instance.
     """
 
-    _log: ClassVar = Logger()
+    _log: ClassVar[Logger] = Logger()
 
     _host: str
     _port: int

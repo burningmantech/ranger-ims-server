@@ -56,8 +56,8 @@ class ExternalApplication(object):
     Application with endpoints for cached external resources.
     """
 
-    _log: ClassVar = Logger()
-    router: ClassVar = Router()
+    _log: ClassVar[Logger] = Logger()
+    router: ClassVar[Router] = Router()
 
     config: Configuration
 

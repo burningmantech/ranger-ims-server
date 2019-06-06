@@ -81,7 +81,7 @@ class DataStoreEventSourceLogObserver(object):
     Observer for events related to any updates to the data store.
     """
 
-    log: ClassVar = Logger()
+    _log: ClassVar[Logger] = Logger()
 
     _listeners: List[IRequest] = attrib(init=False, factory=list)
     _events: Deque[Tuple[int, Event]] = attrib(
@@ -97,7 +97,7 @@ class DataStoreEventSourceLogObserver(object):
         """
         Add a listener.
         """
-        self.log.debug("Adding listener: {listener}", listener=listener)
+        self._log.debug("Adding listener: {listener}", listener=listener)
 
         self._playback(listener, lastEventID)
 
@@ -108,7 +108,7 @@ class DataStoreEventSourceLogObserver(object):
         """
         Remove a listener.
         """
-        self.log.debug("Removing listener: {listener}", listener=listener)
+        self._log.debug("Removing listener: {listener}", listener=listener)
 
         self._listeners.remove(listener)
 
@@ -134,7 +134,7 @@ class DataStoreEventSourceLogObserver(object):
                 incidentNumber = incident.number
 
             if incidentNumber is None:
-                self.log.critical(
+                self._log.critical(
                     "Unable to determine incident number from store event: "
                     "{event}",
                     event=loggerEvent,
@@ -144,7 +144,7 @@ class DataStoreEventSourceLogObserver(object):
             message = dict(incident_number=incidentNumber)
 
         else:
-            self.log.debug(
+            self._log.debug(
                 "Unknown data store event class: {eventClass}",
                 eventClass=eventClass
             )
@@ -184,7 +184,7 @@ class DataStoreEventSourceLogObserver(object):
             try:
                 listener.write(eventText)
             except Exception as e:
-                self.log.error(
+                self._log.error(
                     "Unable to publish to EventSource listener {listener}: "
                     "{error}",
                     listener=listener, error=e,

@@ -79,7 +79,7 @@ class ConfigFileParser(object):
     Configuration parser.
     """
 
-    _log: ClassVar = Logger()
+    _log: ClassVar[Logger] = Logger()
 
     path: Optional[Path]
     _configParser: ConfigParser = Factory(ConfigParser)
@@ -164,7 +164,7 @@ class Configuration(object):
     Configuration
     """
 
-    _log: ClassVar = Logger()
+    _log: ClassVar[Logger] = Logger()
     urls: ClassVar = URLs
 
 

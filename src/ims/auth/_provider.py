@@ -42,6 +42,8 @@ class Authorization(Flag):
     Authorizations
     """
 
+    none = 0
+
     imsAdmin = auto()
 
     readPersonnel = auto()
@@ -51,8 +53,6 @@ class Authorization(Flag):
 
     readIncidentReports  = auto()
     writeIncidentReports = auto()
-
-    none = imsAdmin ^ imsAdmin
 
     all = (
         imsAdmin             |
@@ -70,9 +70,6 @@ class User(object):
     """
     Application user.
     """
-
-    _log: ClassVar = Logger()
-
 
     _ranger: Ranger
     groups: Sequence[str]
@@ -109,7 +106,7 @@ class AuthProvider(object):
     Provider for authentication and authorization support.
     """
 
-    _log: ClassVar = Logger()
+    _log: ClassVar[Logger] = Logger()
 
     store: IMSDataStore
     dms: DutyManagementSystem

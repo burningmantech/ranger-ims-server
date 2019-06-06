@@ -85,8 +85,6 @@ class Ranger(ReplaceMixIn):
     specific to a Black Rock Ranger.
     """
 
-    # FIXME: better validator for email
-
     handle: str
     name: str
     status: RangerStatus

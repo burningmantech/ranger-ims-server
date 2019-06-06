@@ -9,7 +9,8 @@ from sqlite3 import (
     IntegrityError, Row as BaseRow, connect as sqliteConnect,
 )
 from typing import (
-    Any, Callable, Iterable, Mapping, Optional, Tuple, Type, Union, cast
+    Any, Callable, ClassVar, Iterable, Mapping, Optional, Tuple, Type, Union,
+    cast,
 )
 from typing.io import TextIO
 
@@ -69,7 +70,7 @@ class Cursor(BaseCursor):
     debugging purposes.
     """
 
-    _log = Logger()
+    _log: ClassVar[Logger] = Logger()
 
 
     def executescript(self, sql_script: str) -> "Cursor":
@@ -101,7 +102,7 @@ class Connection(BaseConnection):
     for debugging purposes and an improved row type.
     """
 
-    _log = Logger()
+    _log: ClassVar[Logger] = Logger()
 
 
     def cursor(

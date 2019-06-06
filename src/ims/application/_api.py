@@ -79,8 +79,8 @@ class APIApplication(object):
     Application with JSON API endpoints.
     """
 
-    _log: ClassVar = Logger()
-    router: ClassVar = Router()
+    _log: ClassVar[Logger] = Logger()
+    router: ClassVar[Router] = Router()
 
 
     config: Configuration
