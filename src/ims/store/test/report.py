@@ -26,21 +26,24 @@ from typing import Any, Iterable, Sequence, Set, Tuple, cast
 from attr import fields as attrFields
 
 from ims.ext.trial import asyncAsDeferred
-from ims.model import Incident, IncidentReport, ReportEntry
+from ims.model import Event, IncidentReport, ReportEntry
 
 from .base import DataStoreTests, TestDataStoreABC
-from .incident import aReportEntry, anIncident, anIncident1, anIncident2
+from .incident import aReportEntry, anIncident
 from .._exceptions import NoSuchIncidentReportError, StorageError
 
 
 __all__ = ()
 
 
+event = Event(id="Party At Outpost Berlin")
+
 # Note: we add a TimeDelta to the created attribute of objects so that they
 # don't have timestamps that are within the time resolution of some back-end
 # data stores.
 
 anIncidentReport = IncidentReport(
+    event=event,
     number=0,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=1),
     summary="A thing happened",
@@ -48,6 +51,7 @@ anIncidentReport = IncidentReport(
 )
 
 anIncidentReport1 = IncidentReport(
+    event=event,
     number=1,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=2),
     summary="This thing happened",
@@ -55,6 +59,7 @@ anIncidentReport1 = IncidentReport(
 )
 
 anIncidentReport2 = IncidentReport(
+    event=event,
     number=2,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=3),
     summary="That thing happened",
@@ -457,182 +462,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
             await store.addReportEntriesToIncidentReport(
                 incidentReport.number, (aReportEntry,), aReportEntry.author
             )
-        except StorageError as e:
-            self.assertEqual(str(e), store.exceptionMessage)
-        else:
-            self.fail("StorageError not raised")
-
-
-    @asyncAsDeferred
-    async def test_detachedAndAttachedIncidentReports(self) -> None:
-        """
-        :meth:`DataStore.attachIncidentReportToIncident` attaches the given
-        incident report to the given incident,
-        :meth:`DataStore.incidentReportsAttachedToIncident` retrieves the
-        attached incident reports, and
-        :meth:`DataStore.detachedIncidentReports` retrieves unattached incident
-        reports.
-        """
-        for _detached, _attached in (
-            (
-                (),
-                (),
-            ),
-            (
-                (anIncidentReport1,),
-                (),
-            ),
-            (
-                (anIncidentReport1, anIncidentReport2),
-                (),
-            ),
-            (
-                (),
-                (
-                    (anIncident1, ()),
-                ),
-            ),
-            (
-                (),
-                (
-                    (anIncident1, (anIncidentReport1,)),
-                ),
-            ),
-            (
-                (),
-                (
-                    (anIncident1, (anIncidentReport1, anIncidentReport2)),
-                ),
-            ),
-            (
-                (),
-                (
-                    (anIncident1, ()),
-                    (anIncident2, (anIncidentReport1, anIncidentReport2)),
-                ),
-            ),
-            (
-                (),
-                (
-                    (anIncident1, (anIncidentReport1,)),
-                    (anIncident2, (anIncidentReport2,)),
-                ),
-            ),
-            (
-                (anIncidentReport1,),
-                (
-                    (anIncident2, (anIncidentReport2,)),
-                ),
-            ),
-            (
-                (anIncidentReport1, anIncidentReport2),
-                (),
-            ),
-        ):
-            detached = cast(Sequence[IncidentReport], _detached)
-            attached = cast(
-                Iterable[Tuple[Incident, Sequence[IncidentReport]]], _attached,
-            )
-
-            store = await self.store()
-
-            foundIncidentNumbers: Set[int] = set()
-            foundIncidentReportNumbers: Set[int] = set()
-            attachedReports: Set[IncidentReport] = set()
-
-            # Create some detached incident reports
-            for incidentReport in detached:
-                await store.storeIncidentReport(incidentReport)
-                foundIncidentReportNumbers.add(incidentReport.number)
-
-            # Create some incidents and, for each, create some incident reports
-            # and attached them to the incident.
-            for incident, reports in attached:
-                # assume(incident.number not in foundIncidentNumbers)
-
-                await store.storeIncident(incident)
-                for incidentReport in reports:
-                    # assume(
-                    #     incidentReport.number
-                    #     not in foundIncidentReportNumbers
-                    # )
-
-                    await store.storeIncidentReport(incidentReport)
-                    await store.attachIncidentReportToIncident(
-                        incidentReport.number, incident.event, incident.number
-                    )
-                    attachedReports.add(incidentReport)
-
-                    foundIncidentReportNumbers.add(incidentReport.number)
-
-                    # Verify that the same attached incident comes back from
-                    # the store.
-                    storedAttachedIncidents = tuple(
-                        await store.incidentsAttachedToIncidentReport(
-                            incidentReport.number
-                        )
-                    )
-                    self.assertEqual(len(storedAttachedIncidents), 1)
-                    self.assertEqual(
-                        storedAttachedIncidents[0],
-                        (incident.event, incident.number),
-                    )
-
-                storedAttached = tuple(
-                    await store.incidentReportsAttachedToIncident(
-                        incident.event, incident.number
-                    )
-                )
-
-                # Verify that the same attached reports come back from the
-                # store.
-                self.assertMultipleIncidentReportsEqual(
-                    store, storedAttached, reports
-                )
-
-                foundIncidentNumbers.add(incident.number)
-
-            # Verify that the same detached reports come back from the store.
-            storedDetached = tuple(await store.detachedIncidentReports())
-            self.assertMultipleIncidentReportsEqual(
-                store, storedDetached, detached
-            )
-
-            # Detach everything
-            for incident, reports in attached:
-                for incidentReport in reports:
-                    await store.detachIncidentReportFromIncident(
-                        incidentReport.number, incident.event, incident.number
-                    )
-
-                    # Verify report is detached
-                    storedAttachedIncidents = tuple(
-                        await store.incidentsAttachedToIncidentReport(
-                            incidentReport.number
-                        )
-                    )
-                    self.assertEqual(len(storedAttachedIncidents), 0)
-
-                # Verify no attached reports
-                storedAttached = tuple(
-                    await store.incidentReportsAttachedToIncident(
-                        incident.event, incident.number
-                    )
-                )
-                self.assertEqual(len(storedAttached), 0)
-
-
-    @asyncAsDeferred
-    async def test_detachedIncidentReports_error(self) -> None:
-        """
-        :meth:`DataStore.detachedIncidentReports` raises :exc:`StorageError`
-        when the database raises an exception.
-        """
-        store = await self.store()
-        store.bringThePain()
-
-        try:
-            await store.detachedIncidentReports()
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:

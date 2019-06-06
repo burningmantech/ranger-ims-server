@@ -395,6 +395,7 @@ incidentReportSummaries = incidentSummaries
 def incidentReports(
     draw: Callable,
     new: bool = False,
+    event: Optional[Event] = None,
     maxNumber: Optional[int] = None,
     beforeNow: bool = False, fromNow: bool = False,
 ) -> IncidentReport:
@@ -409,7 +410,11 @@ def incidentReports(
         number = draw(incidentNumbers(max=maxNumber))
         automatic = None
 
+    if event is None:
+        event = draw(events())
+
     return IncidentReport(
+        event=event,
         number=number,
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
         summary=draw(incidentReportSummaries()),

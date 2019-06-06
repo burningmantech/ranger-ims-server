@@ -19,7 +19,7 @@ Incident Management System data store abstract base classes.
 """
 
 from abc import ABC, abstractmethod
-from typing import Iterable, Mapping, Optional, Tuple
+from typing import Iterable, Mapping, Tuple
 
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentReport, IncidentState,
@@ -332,9 +332,7 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def incidentReports(
-        self, event: Optional[Event]
-    ) -> Iterable[IncidentReport]:
+    async def incidentReports(self, event: Event) -> Iterable[IncidentReport]:
         """
         Look up all incident reports attached to incidents in the given event.
         If the given event is L{None}, returns all detached incident reports.
@@ -342,7 +340,9 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def incidentReportWithNumber(self, number: int) -> IncidentReport:
+    async def incidentReportWithNumber(
+        self, event: Event, number: int
+    ) -> IncidentReport:
         """
         Look up the incident report with the given number.
         """
@@ -366,7 +366,8 @@ class IMSDataStore(ABC):
 
     @abstractmethod
     async def setIncidentReport_summary(
-        self, incidentReportNumber: int, summary: str, author: str
+        self, event: Event, incidentReportNumber: int,
+        summary: str, author: str,
     ) -> None:
         """
         Set the summary for the incident report with the given number.
@@ -375,8 +376,8 @@ class IMSDataStore(ABC):
 
     @abstractmethod
     async def addReportEntriesToIncidentReport(
-        self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
-        author: str,
+        self, event: Event, incidentReportNumber: int,
+        reportEntries: Iterable[ReportEntry], author: str,
     ) -> None:
         """
         Add the given report entries to incident report with the given number.
@@ -386,13 +387,6 @@ class IMSDataStore(ABC):
     ###
     # Incident to Incident Report Relationships
     ###
-
-
-    @abstractmethod
-    async def detachedIncidentReports(self) -> Iterable[IncidentReport]:
-        """
-        Look up all detached incident reports.
-        """
 
 
     @abstractmethod

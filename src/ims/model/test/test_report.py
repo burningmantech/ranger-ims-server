@@ -18,26 +18,17 @@
 Tests for :mod:`ranger-ims-server.model._report`
 """
 
-from typing import Iterable, cast
+from hypothesis import given
+from hypothesis.strategies import sampled_from, text
 
 from ims.ext.trial import TestCase
 
-from .datetimes import dt1
-from .rangers import rangerHubcap
-from .._entry import ReportEntry
+from .._incident import summaryFromReport
 from .._report import IncidentReport
+from ..strategies import incidentReports
 
 
 __all__ = ()
-
-
-
-entry = ReportEntry(
-    created=dt1,
-    author=rangerHubcap.handle,
-    automatic=False,
-    text="A different thing happened",
-)
 
 
 
@@ -46,31 +37,35 @@ class IncidentReportTests(TestCase):
     Tests for :class:`IncidentReport`
     """
 
-    def test_str_summary(self) -> None:
+    @given(incidentReports(), text(min_size=1))
+    def test_str_summary(
+        self, incidentReport: IncidentReport, summary: str
+    ) -> None:
         """
-        :meth:`IncidentReport.__str__` renders an report with a summary as a
-        string.
+        :meth:`IncidentReport.__str__` renders an incident report with a
+        non-empty summary as a string consisting of the incident number and
+        summary.
         """
-        report = IncidentReport(
-            number=123,
-            created=dt1,
-            summary="A thing happened",
-            reportEntries=(),
+        incidentReport = incidentReport.replace(summary=summary)
+
+        self.assertEqual(
+            str(incidentReport),
+            f"{incidentReport.event} #{incidentReport.number}: {summary}",
         )
 
-        self.assertEqual(str(report), "123: A thing happened")
 
+    @given(incidentReports(), sampled_from((None, "")))
+    def test_str_noSummary(
+        self, incidentReport: IncidentReport, summary: str
+    ) -> None:
+        """
+        :meth:`IncidentReport.__str__` renders an incident report without a
+        summary as a string.
+        """
+        incidentReport = incidentReport.replace(summary=summary)
 
-    def test_str_report(self) -> None:
-        """
-        :meth:`IncidentReport.__str__` renders an report without a summary as a
-        string.
-        """
-        report = IncidentReport(
-            number=321,
-            created=dt1,
-            summary=None,
-            reportEntries=cast(Iterable, (entry,)),
+        self.assertEqual(
+            str(incidentReport),
+            f"{incidentReport.event} #{incidentReport.number}: "
+            f"{summaryFromReport(None, incidentReport.reportEntries)}"
         )
-
-        self.assertEqual(str(report), "321: A different thing happened")
