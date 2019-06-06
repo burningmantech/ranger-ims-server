@@ -18,9 +18,13 @@
 Tests for L{ims.auth._provider}.
 """
 
-from ims.ext.trial import TestCase
+from hypothesis import given
 
-from .._provider import Authorization
+from ims.ext.trial import TestCase
+from ims.model import Ranger
+from ims.model.strategies import rangers
+
+from .._provider import Authorization, User
 
 
 __all__ = ()
@@ -34,9 +38,47 @@ class AuthorizationTests(TestCase):
 
     def test_authorization_none(self) -> None:
         for authorization in Authorization:
+            if authorization is Authorization.none:
+                continue
             self.assertNotIn(authorization, Authorization.none)
 
 
     def test_authorization_all(self) -> None:
         for authorization in Authorization:
             self.assertIn(authorization, Authorization.all)
+
+
+
+class UserTests(TestCase):
+    """
+    Tests for :class:`User`
+    """
+
+    @given(rangers())
+    def test_shortNames_handle(self, ranger: Ranger) -> None:
+        user = User(ranger=ranger, groups=())
+        self.assertIn(ranger.handle, user.shortNames)
+
+
+    @given(rangers())
+    def test_hashedPassword(self, ranger: Ranger) -> None:
+        user = User(ranger=ranger, groups=())
+        self.assertEqual(user.hashedPassword, ranger.password)
+
+
+    @given(rangers())
+    def test_active(self, ranger: Ranger) -> None:
+        user = User(ranger=ranger, groups=())
+        self.assertEqual(user.active, ranger.onSite)
+
+
+    @given(rangers())
+    def test_rangerHandle(self, ranger: Ranger) -> None:
+        user = User(ranger=ranger, groups=())
+        self.assertEqual(user.rangerHandle, ranger.handle)
+
+
+    @given(rangers())
+    def test_str(self, ranger: Ranger) -> None:
+        user = User(ranger=ranger, groups=())
+        self.assertEqual(str(user), str(ranger))
