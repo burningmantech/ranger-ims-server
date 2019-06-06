@@ -44,6 +44,7 @@ RUN apk add --no-cache libcap
 RUN setcap "cap_net_bind_service=+ep" "${IMS_INSTALL_DIR}/bin/python"
 
 # Configuration
+ENV IMS_HOSTNAME="0.0.0.0"
 ENV IMS_CONFIG_ROOT="${IMS_INSTALL_DIR}/conf"
 ENV IMS_SERVER_ROOT="/srv/ims"
 ENV IMS_DATA_STORE="MySQL"
