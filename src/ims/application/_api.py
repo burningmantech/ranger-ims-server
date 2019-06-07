@@ -413,7 +413,7 @@ class APIApplication(object):
             "New incident: {json}", json=jsonObjectFromModelObject(incident)
         )
 
-        request.setHeader("Incident-Number", incident.number)
+        request.setHeader("Incident-Number", str(incident.number))
         request.setHeader(
             HeaderName.location.value,
             f"{URLs.incidentNumber.asText()}/{incident.number}"
