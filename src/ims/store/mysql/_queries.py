@@ -67,7 +67,7 @@ queries = Queries(
         """
     ),
     eventAccess=Query(
-        "look up event access",
+        "look up access for event",
         f"""
         select EXPRESSION from EVENT_ACCESS
         where EVENT = ({query_eventID}) and MODE = %(mode)s
@@ -94,7 +94,6 @@ queries = Queries(
         values (({query_eventID}), %(expression)s, %(mode)s)
         """
     ),
-
     incidentTypes=Query(
         "look up incident types",
         """
@@ -359,7 +358,6 @@ queries = Queries(
         f"""
         select NUMBER from INCIDENT_REPORT
         where EVENT = ({query_eventID})
-        )
         """
     ),
     maxIncidentReportNumber=Query(
@@ -385,7 +383,7 @@ queries = Queries(
     ),
     attachReportEntryToIncidentReport=Query(
         "add report entry to incident report",
-        """
+        f"""
         insert into INCIDENT_REPORT__REPORT_ENTRY (
             EVENT, INCIDENT_REPORT_NUMBER, REPORT_ENTRY
         )
@@ -402,7 +400,7 @@ queries = Queries(
     ),
     detachedIncidentReportNumbers=Query(
         "look up detached incident report numbers",
-        """
+        f"""
         select NUMBER from INCIDENT_REPORT
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER is null
         """

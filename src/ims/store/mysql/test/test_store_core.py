@@ -136,10 +136,9 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         self.maxDiff = None
         self.assertEqual(
-            schemaInfo,
             dedent(
                 """
-                Version: 3
+                Version: 4
                 CONCENTRIC_STREET:
                   1: EVENT(int) not null
                   2: ID(varchar(16)) not null
@@ -165,20 +164,19 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   11: LOCATION_RADIAL_MINUTE(tinyint)
                   12: LOCATION_DESCRIPTION(varchar(1024))
                 INCIDENT_REPORT:
-                  1: NUMBER(int) not null
-                  2: CREATED(double) not null
-                  3: SUMMARY(varchar(1024))
+                  1: EVENT(int) not null
+                  2: NUMBER(int) not null
+                  3: CREATED(double) not null
+                  4: SUMMARY(varchar(1024))
+                  5: INCIDENT_NUMBER(int)
                 INCIDENT_REPORT__REPORT_ENTRY:
-                  1: INCIDENT_REPORT_NUMBER(int) not null
-                  2: REPORT_ENTRY(int) not null
+                  1: EVENT(int) not null
+                  2: INCIDENT_REPORT_NUMBER(int) not null
+                  3: REPORT_ENTRY(int) not null
                 INCIDENT_TYPE:
                   1: ID(int) not null
-                  2: NAME(varchar(64)) not null
+                  2: NAME(varchar(128)) not null
                   3: HIDDEN(tinyint) not null
-                INCIDENT__INCIDENT_REPORT:
-                  1: EVENT(int) not null
-                  2: INCIDENT_NUMBER(int) not null
-                  3: INCIDENT_REPORT_NUMBER(int) not null
                 INCIDENT__INCIDENT_TYPE:
                   1: EVENT(int) not null
                   2: INCIDENT_NUMBER(int) not null
@@ -201,5 +199,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 SCHEMA_INFO:
                   1: VERSION(smallint) not null
                 """[1:]
-            )
+            ),
+            schemaInfo,
         )

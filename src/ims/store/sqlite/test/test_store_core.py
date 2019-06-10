@@ -70,7 +70,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         self.maxDiff = None
         self.assertEqual(
-            schemaInfo,
             dedent(
                 """
                 Version: 4
@@ -138,7 +137,8 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 SCHEMA_INFO:
                   0: VERSION(integer) not null
                 """[1:]
-            )
+            ),
+            schemaInfo,
         )
 
 
