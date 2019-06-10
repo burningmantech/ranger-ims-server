@@ -418,6 +418,7 @@ def incidentReports(
         number=number,
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
         summary=draw(incidentReportSummaries()),
+        incidentNumber=None,  # FIXME: May allow some to be passed in?
         reportEntries=draw(lists(reportEntries(
             automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
         ))),

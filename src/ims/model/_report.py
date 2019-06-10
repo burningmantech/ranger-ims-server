@@ -47,6 +47,7 @@ class IncidentReport(ReplaceMixIn):
     number: int
     created: DateTime
     summary: Optional[str]
+    incidentNumber: Optional[int]
     reportEntries: Sequence[ReportEntry] = attrib(converter=sorted_tuple)
 
 

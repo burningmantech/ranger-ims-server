@@ -400,19 +400,9 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def incidentsAttachedToIncidentReport(
-        self, incidentReportNumber: int
-    ) -> Iterable[Tuple[Event, int]]:
-        """
-        Look up all incidents attached to the incident report with the given
-        number.
-        Incidents are returned as tuples of `(event, incidentNumber)`,
-        """
-
-
-    @abstractmethod
     async def attachIncidentReportToIncident(
-        self, incidentReportNumber: int, event: Event, incidentNumber: int
+        self, incidentReportNumber: int, event: Event, incidentNumber: int,
+        author: str,
     ) -> None:
         """
         Attach the incident report with the given number to the incident with
@@ -422,7 +412,8 @@ class IMSDataStore(ABC):
 
     @abstractmethod
     async def detachIncidentReportFromIncident(
-        self, incidentReportNumber: int, event: Event, incidentNumber: int
+        self, incidentReportNumber: int, event: Event, incidentNumber: int,
+        author: str,
     ) -> None:
         """
         Detach the incident report with the given number from the incident with

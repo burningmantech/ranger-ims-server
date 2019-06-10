@@ -270,42 +270,11 @@ class AuthProvider(object):
                     )
                     return
 
-        # If there are incidents attached to this incident report, then the
-        # permissions on the attached incidents (which are determined by the
-        # events containing the incidents) determine the permission on the
-        # incident report.
-        # So we'll iterate over all of the events containing incidents that
-        # this incident report is attached to, and see if any of those events
-        # can approve the request.
+        # Otherwise, use the ACL for the event associated with the incident
+        # report.
 
-        events = frozenset(
-            event for event, _incidentNumber in
-            await self.store.incidentsAttachedToIncidentReport(
-                incidentReport.number
-            )
-        )
-
-        if events:
-            for event in events:
-                # There are incidents attached; use the authorization for
-                # reading incidents from the corresponding events.
-                # Because it's possible for multiple incidents to be attached,
-                # if one event fails, keep trying the others in case they allow
-                # it.
-                try:
-                    await self.authorizeRequest(
-                        request, event, Authorization.readIncidents
-                    )
-                except NotAuthorizedError as e:
-                    authFailure = e
-                else:
-                    return
-
-            raise authFailure
-
-        # Incident report is detached
         await self.authorizeRequest(
-            request, None, Authorization.readIncidentReports
+            request, incidentReport.event, Authorization.readIncidents
         )
 
 
