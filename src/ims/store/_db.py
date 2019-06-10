@@ -25,7 +25,7 @@ from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
 from typing import (
-    Any, Callable, ClassVar, Iterable, Iterator, Mapping, Optional, Tuple,
+    Any, Callable, ClassVar, Iterable, Iterator, Mapping, Optional,
     TypeVar, Union, cast,
 )
 
