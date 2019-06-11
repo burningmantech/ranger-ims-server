@@ -26,6 +26,7 @@ from ._json import (
     deserialize, jsonSerialize, registerDeserializer, registerSerializer
 )
 from .._entry import ReportEntry
+from .._event import Event
 from .._report import IncidentReport
 
 
@@ -39,10 +40,12 @@ class IncidentReportJSONKey(Enum):
     Incident report JSON keys
     """
 
-    number        = "number"
-    created       = "created"
-    summary       = "summary"
-    reportEntries = "report_entries"
+    event          = "event"
+    number         = "number"
+    created        = "created"
+    summary        = "summary"
+    incidentNumber = "incident"
+    reportEntries  = "report_entries"
 
 
 
@@ -51,10 +54,12 @@ class IncidentReportJSONType(Enum):
     Incident report attribute types
     """
 
-    number        = int
-    created       = DateTime
-    summary       = Optional[str]
-    reportEntries = List[ReportEntry]
+    event          = Event
+    number         = int
+    created        = DateTime
+    summary        = Optional[str]
+    incidentNumber = Optional[int]
+    reportEntries  = List[ReportEntry]
 
 
 
