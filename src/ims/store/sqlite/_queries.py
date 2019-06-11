@@ -253,7 +253,6 @@ queries = Queries(
         insert into INCIDENT (
             EVENT,
             NUMBER,
-            VERSION,
             CREATED,
             PRIORITY,
             STATE,
@@ -267,7 +266,6 @@ queries = Queries(
         values (
             ({query_eventID}),
             :incidentNumber,
-            1,
             :incidentCreated,
             :incidentPriority,
             :incidentState,

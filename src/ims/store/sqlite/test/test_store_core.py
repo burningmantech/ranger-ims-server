@@ -89,16 +89,15 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 INCIDENT:
                   0: EVENT(integer) not null *1
                   1: NUMBER(integer) not null *2
-                  2: VERSION(integer) not null
-                  3: CREATED(real) not null
-                  4: PRIORITY(integer) not null
-                  5: STATE(integer) not null
-                  6: SUMMARY(text)
-                  7: LOCATION_NAME(text)
-                  8: LOCATION_CONCENTRIC(text)
-                  9: LOCATION_RADIAL_HOUR(integer)
-                  10: LOCATION_RADIAL_MINUTE(integer)
-                  11: LOCATION_DESCRIPTION(text)
+                  2: CREATED(real) not null
+                  3: PRIORITY(integer) not null
+                  4: STATE(integer) not null
+                  5: SUMMARY(text)
+                  6: LOCATION_NAME(text)
+                  7: LOCATION_CONCENTRIC(text)
+                  8: LOCATION_RADIAL_HOUR(integer)
+                  9: LOCATION_RADIAL_MINUTE(integer)
+                  10: LOCATION_DESCRIPTION(text)
                 INCIDENT_REPORT:
                   0: EVENT(integer) not null *1
                   1: NUMBER(integer) not null *2

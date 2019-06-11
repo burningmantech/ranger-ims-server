@@ -153,16 +153,15 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 INCIDENT:
                   1: EVENT(int) not null
                   2: NUMBER(int) not null
-                  3: VERSION(int) not null
-                  4: CREATED(double) not null
-                  5: PRIORITY(tinyint) not null
-                  6: STATE(enum(10)) not null
-                  7: SUMMARY(varchar(1024))
-                  8: LOCATION_NAME(varchar(64))
-                  9: LOCATION_CONCENTRIC(varchar(64))
-                  10: LOCATION_RADIAL_HOUR(tinyint)
-                  11: LOCATION_RADIAL_MINUTE(tinyint)
-                  12: LOCATION_DESCRIPTION(varchar(1024))
+                  3: CREATED(double) not null
+                  4: PRIORITY(tinyint) not null
+                  5: STATE(enum(10)) not null
+                  6: SUMMARY(varchar(1024))
+                  7: LOCATION_NAME(varchar(64))
+                  8: LOCATION_CONCENTRIC(varchar(64))
+                  9: LOCATION_RADIAL_HOUR(tinyint)
+                  10: LOCATION_RADIAL_MINUTE(tinyint)
+                  11: LOCATION_DESCRIPTION(varchar(1024))
                 INCIDENT_REPORT:
                   1: EVENT(int) not null
                   2: NUMBER(int) not null

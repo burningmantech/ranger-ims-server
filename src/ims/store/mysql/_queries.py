@@ -259,7 +259,6 @@ queries = Queries(
         insert into INCIDENT (
             EVENT,
             NUMBER,
-            VERSION,
             CREATED,
             PRIORITY,
             STATE,
@@ -273,7 +272,6 @@ queries = Queries(
         values (
             ({query_eventID}),
             %(incidentNumber)s,
-            1,
             %(incidentCreated)s,
             %(incidentPriority)s,
             %(incidentState)s,

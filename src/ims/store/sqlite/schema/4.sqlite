@@ -67,7 +67,6 @@ create table REPORT_ENTRY (
 create table INCIDENT (
     EVENT    integer not null,
     NUMBER   integer not null,
-    VERSION  integer not null,
     CREATED  real    not null,
     PRIORITY integer not null,
     STATE    integer not null,
