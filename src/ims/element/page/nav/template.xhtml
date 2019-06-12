@@ -16,11 +16,6 @@
   <div class="collapse navbar-collapse" id="main-navbar">
 
     <ul class="nav navbar-nav navbar-left" t:render="if_logged_in">
-      <li>
-        <a t:render="url" url="viewIncidentReports">
-          <span id="detached_report_icon" class="glyphicon glyphicon-copy" />
-        </a>
-      </li>
       <li class="dropdown"> <!-- Event menu -->
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
             <span class="event-id nav-event-id">Event</span>
