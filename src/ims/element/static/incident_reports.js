@@ -136,7 +136,10 @@ function initDataTables() {
         ],
         "createdRow": function (row, incidentReport, index) {
             $(row).click(function () {
-                var url = url_viewIncidentReports + incidentReport.number;
+                var url = (
+                    urlReplace(url_viewIncidentReports, eventID)
+                    + incidentReport.number
+                );
 
                 // Open new context with link
                 window.open(url, "Incident_Report:" + incidentReport.number);

@@ -231,7 +231,8 @@ function sendEdits(edits, success, error) {
             // Update browser history to update URL
             drawTitle();
             window.history.pushState(
-                null, document.title, url_viewIncidentReports + newNumber
+                null, document.title,
+                urlReplace(url_viewIncidentReports, eventID) + newNumber
             );
         }
 

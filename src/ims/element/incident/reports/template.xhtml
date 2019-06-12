@@ -8,7 +8,7 @@
 
   <script>
     var editingAllowed  = <json t:render="editing_allowed" />;
-    var pageTemplateURL = url_viewIncidentReportsTemplate;
+    var pageTemplateURL = urlReplace(url_viewIncidentReportsTemplate, eventID);
 
     initIncidentReportsPage();
   </script>

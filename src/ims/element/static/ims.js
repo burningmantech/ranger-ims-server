@@ -684,7 +684,9 @@ function reportEntryElement(entry) {
 
         var link = $("<a />");
         link.text("incident report #" + entry.merged);
-        link.attr("href", url_viewIncidentReports + entry.merged)
+        link.attr(
+            "href", urlReplace(url_viewIncidentReports, eventID) + entry.merged
+        )
 
         var reportNumberContainer = $("<span />");
         metaDataContainer.append("(via ");
