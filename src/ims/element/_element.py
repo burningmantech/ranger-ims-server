@@ -230,11 +230,11 @@ class Element(BaseElement):
         ])
 
         if eventIDs:
-            queue = self.config.urls.viewDispatchQueue.asText()
+            incidents = self.config.urls.viewIncidents.asText()
             return (
                 tag.clone()(
                     tags.a(
-                        eventID, href=queue.replace("<eventID>", eventID)
+                        eventID, href=incidents.replace("<eventID>", eventID)
                     )
                 )
                 for eventID in eventIDs

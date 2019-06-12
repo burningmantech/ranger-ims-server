@@ -119,12 +119,10 @@ class URLs(object):
     viewEvents: ClassVar = app.child("events").child("")
     viewEvent: ClassVar  = viewEvents.child("<eventID>").child("")
 
-    viewDispatchQueue: ClassVar         = viewEvent.child("queue")
-    viewDispatchQueueTemplate: ClassVar = app.child("queue.html")
-    viewDispatchQueueJS: ClassVar       = static.child("queue.js")
-    viewDispatchQueueRelative: ClassVar = URL.fromText("queue")
-
-    viewIncidents: ClassVar = viewEvent.child("incidents").child("")
+    viewIncidents: ClassVar         = viewEvent.child("incidents").child("")
+    viewIncidentsTemplate: ClassVar = app.child("incidents.html")
+    viewIncidentsJS: ClassVar       = static.child("incidents.js")
+    viewIncidentsRelative: ClassVar = URL.fromText("incidents")
 
     viewIncidentNumber: ClassVar   = viewIncidents.child("<number>")
     viewIncidentTemplate: ClassVar = app.child("incident.html")

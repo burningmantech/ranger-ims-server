@@ -34,8 +34,8 @@ from ims.element.admin.streets import AdminStreetsPage
 from ims.element.admin.types import AdminIncidentTypesPage
 from ims.element.incident.incident import IncidentPage
 from ims.element.incident.incident_template import IncidentTemplatePage
-from ims.element.incident.queue import DispatchQueuePage
-from ims.element.incident.queue_template import DispatchQueueTemplatePage
+from ims.element.incident.incidents import IncidentsPage
+from ims.element.incident.incidents_template import IncidentsTemplatePage
 from ims.element.incident.report import IncidentReportPage
 from ims.element.incident.report_template import IncidentReportTemplatePage
 from ims.element.incident.reports import IncidentReportsPage
@@ -83,15 +83,15 @@ class WebApplication(object):
 
 
     @router.route(_unprefix(URLs.viewEvent), methods=("HEAD", "GET"))
-    def viewEventResource(
+    def viewIncidentsResource(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
         """
         Event root page.
 
-        This redirects to the event's dispatch queue page.
+        This redirects to the event's incidents page.
         """
-        return redirect(request, URLs.viewDispatchQueueRelative)
+        return redirect(request, URLs.viewIncidentsRelative)
 
 
     @router.route(_unprefix(URLs.admin), methods=("HEAD", "GET"))
@@ -155,12 +155,12 @@ class WebApplication(object):
         return AdminStreetsPage(config=self.config)
 
 
-    @router.route(_unprefix(URLs.viewDispatchQueue), methods=("HEAD", "GET"))
-    async def viewDispatchQueuePage(
+    @router.route(_unprefix(URLs.viewIncidents), methods=("HEAD", "GET"))
+    async def viewIncidentsPage(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
         """
-        Endpoint for the dispatch queue page.
+        Endpoint for the incidents page.
         """
         event = Event(id=eventID)
         del eventID
@@ -170,20 +170,20 @@ class WebApplication(object):
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
         )
-        return DispatchQueuePage(config=self.config, event=event)
+        return IncidentsPage(config=self.config, event=event)
 
 
     @router.route(
-        _unprefix(URLs.viewDispatchQueueTemplate), methods=("HEAD", "GET")
+        _unprefix(URLs.viewIncidentsTemplate), methods=("HEAD", "GET")
     )
     @static
-    def viewDispatchQueueTemplatePage(
+    def viewIncidentsTemplatePage(
         self, request: IRequest
     ) -> KleinRenderable:
         """
-        Endpoint for the dispatch queue page template.
+        Endpoint for the incidents page template.
         """
-        return DispatchQueueTemplatePage(config=self.config)
+        return IncidentsTemplatePage(config=self.config)
 
 
     @router.route(_unprefix(URLs.viewIncidentNumber), methods=("HEAD", "GET"))
