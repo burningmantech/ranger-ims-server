@@ -423,7 +423,7 @@ class APIApplication(object):
 
     @router.route(_unprefix(URLs.incidentNumber), methods=("HEAD", "GET"))
     async def readIncidentResource(
-        self, request: IRequest, eventID: str, number: int
+        self, request: IRequest, eventID: str, number: str
     ) -> KleinRenderable:
         """
         Incident endpoint.
@@ -435,13 +435,13 @@ class APIApplication(object):
         )
 
         try:
-            number = int(number)
+            incidentNumber = int(number)
         except ValueError:
             return notFoundResponse(request)
 
         try:
             incident = await self.config.store.incidentWithNumber(
-                event, number
+                event, incidentNumber
             )
         except NoSuchIncidentError:
             return notFoundResponse(request)
@@ -456,7 +456,7 @@ class APIApplication(object):
 
     @router.route(_unprefix(URLs.incidentNumber), methods=("POST",))
     async def editIncidentResource(
-        self, request: IRequest, eventID: str, number: int
+        self, request: IRequest, eventID: str, number: str
     ) -> KleinRenderable:
         """
         Incident edit endpoint.
@@ -470,7 +470,7 @@ class APIApplication(object):
         author = request.user.shortNames[0]
 
         try:
-            number = int(number)
+            incidentNumber = int(number)
         except ValueError:
             return notFoundResponse(request)
 
@@ -487,7 +487,10 @@ class APIApplication(object):
                 request, "JSON incident must be a dictionary"
             )
 
-        if edits.get(IncidentJSONKey.number.value, number) != number:
+        if (
+            edits.get(IncidentJSONKey.number.value, incidentNumber)
+            != incidentNumber
+        ):
             return badRequestResponse(
                 request, "Incident number may not be modified"
             )
@@ -603,52 +606,36 @@ class APIApplication(object):
 
     @router.route(_unprefix(URLs.incidentReports), methods=("HEAD", "GET"))
     async def listIncidentReportsResource(
-        self, request: IRequest
+        self, request: IRequest, eventID: str
     ) -> KleinRenderable:
         """
         Incident reports endpoint.
         """
-        store = self.config.store
+        event = Event(id=eventID)
 
-        eventID = queryValue(request, "event")
+        await self.config.authProvider.authorizeRequest(
+            request, event, Authorization.readIncidents
+        )
+
         incidentNumberText = queryValue(request, "incident")
 
-        if eventID is None:
-            return invalidQueryResponse(request, "event")
+        store = self.config.store
 
-        if eventID == incidentNumberText == "":
-            await self.config.authProvider.authorizeRequest(
-                request, None, Authorization.readIncidentReports
-            )
-            incidentReports = await store.detachedIncidentReports()
-
+        if incidentNumberText is None:
+            incidentReports = await store.incidentReports(event=event)
         else:
             try:
-                event = Event(id=eventID)
+                incidentNumber = int(incidentNumberText)
             except ValueError:
                 return invalidQueryResponse(
-                    request, "event", eventID
+                    request, "incident", incidentNumberText
                 )
 
-            await self.config.authProvider.authorizeRequest(
-                request, event, Authorization.readIncidents
+            incidentReports = (
+                await store.incidentReportsAttachedToIncident(
+                    event=event, incidentNumber=incidentNumber
+                )
             )
-
-            if incidentNumberText is None:
-                incidentReports = await store.incidentReports(event=event)
-            else:
-                try:
-                    incidentNumber = int(incidentNumberText)
-                except ValueError:
-                    return invalidQueryResponse(
-                        request, "incident", incidentNumberText
-                    )
-
-                incidentReports = (
-                    await store.incidentReportsAttachedToIncident(
-                        event=event, incidentNumber=incidentNumber
-                    )
-                )
 
         stream = buildJSONArray(
             jsonTextFromObject(
@@ -663,7 +650,7 @@ class APIApplication(object):
 
     @router.route(_unprefix(URLs.incidentReports), methods=("POST",))
     async def newIncidentReportResource(
-        self, request: IRequest
+        self, request: IRequest, eventID: str
     ) -> KleinRenderable:
         """
         New incident report endpoint.
@@ -676,6 +663,17 @@ class APIApplication(object):
             json = objectFromJSONBytesIO(request.content)
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
+
+        if json[IncidentReportJSONKey.event.value] != eventID:
+            return badRequestResponse(
+                "Event ID mismatch: "
+                f"{json[IncidentReportJSONKey.event.value]} != {eventID}"
+            )
+        if json.get(IncidentReportJSONKey.incidentNumber.value):
+            return badRequestResponse(
+                "New incident report may not be attached to an incident: "
+                f"{json[IncidentReportJSONKey.incidentNumber.value]}"
+            )
 
         author = request.user.shortNames[0]
         now = DateTime.now(TimeZone.utc)
@@ -757,19 +755,21 @@ class APIApplication(object):
 
     @router.route(_unprefix(URLs.incidentReport), methods=("HEAD", "GET"))
     async def readIncidentReportResource(
-        self, request: IRequest, number: int
+        self, request: IRequest, eventID: str, number: str
     ) -> KleinRenderable:
         """
         Incident report endpoint.
         """
         try:
-            number = int(number)
+            incidentReportNumber = int(number)
         except ValueError:
             self.config.authProvider.authenticateRequest(request)
             return notFoundResponse(request)
 
+        event = Event(id=eventID)
+
         incidentReport = await self.config.store.incidentReportWithNumber(
-            number
+            event, incidentReportNumber
         )
 
         await self.config.authProvider.authorizeRequestForIncidentReport(
@@ -783,7 +783,7 @@ class APIApplication(object):
 
     @router.route(_unprefix(URLs.incidentReport), methods=("POST",))
     async def editIncidentReportResource(
-        self, request: IRequest, number: int
+        self, request: IRequest, eventID: str, number: str
     ) -> KleinRenderable:
         """
         Incident report edit endpoint.
@@ -795,11 +795,12 @@ class APIApplication(object):
         author = request.user.shortNames[0]
 
         try:
-            number = int(number)
+            incidentReportNumber = int(number)
         except ValueError:
             return notFoundResponse(request)
 
         store = self.config.store
+        event = Event(id=eventID)
 
         #
         # Attach to incident if requested
@@ -807,19 +808,10 @@ class APIApplication(object):
         action = queryValue(request, "action")
 
         if action is not None:
-            eventID            = queryValue(request, "event")
             incidentNumberText = queryValue(request, "incident")
-
-            if eventID is None:
-                return invalidQueryResponse(request, "event")
 
             if incidentNumberText is None:
                 return invalidQueryResponse(request, "incident")
-
-            try:
-                event = Event(id=eventID)
-            except ValueError:
-                return invalidQueryResponse(request, "event", eventID)
 
             try:
                 incidentNumber = int(incidentNumberText)
@@ -830,11 +822,11 @@ class APIApplication(object):
 
             if action == "attach":
                 await store.attachIncidentReportToIncident(
-                    number, event, incidentNumber
+                    incidentNumber, event, incidentNumber, author
                 )
             elif action == "detach":
                 await store.detachIncidentReportFromIncident(
-                    number, event, incidentNumber
+                    incidentNumber, event, incidentNumber, author
                 )
             else:
                 return invalidQueryResponse(request, "action", action)
@@ -867,7 +859,7 @@ class APIApplication(object):
 
         async def applyEdit(
             json: Mapping[str, Any], key: Enum,
-            setter: Callable[[int, Any, str], Awaitable[None]],
+            setter: Callable[[Event, int, Any, str], Awaitable[None]],
             cast: Optional[Callable[[Any], Any]] = None
         ) -> None:
             _cast: Callable[[Any], Any]
@@ -878,7 +870,7 @@ class APIApplication(object):
                 _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                await setter(number, _cast(value), author)
+                await setter(event, number, _cast(value), author)
 
         await applyEdit(
             edits, IncidentReportJSONKey.summary,
@@ -902,7 +894,7 @@ class APIApplication(object):
             )
 
             await store.addReportEntriesToIncidentReport(
-                number, entries, author
+                event, number, entries, author
             )
 
         return noContentResponse(request)

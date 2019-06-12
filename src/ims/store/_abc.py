@@ -334,8 +334,7 @@ class IMSDataStore(ABC):
     @abstractmethod
     async def incidentReports(self, event: Event) -> Iterable[IncidentReport]:
         """
-        Look up all incident reports attached to incidents in the given event.
-        If the given event is L{None}, returns all detached incident reports.
+        Look up all incident reports in the given event.
         """
 
 
