@@ -116,6 +116,9 @@ a.navbar-brand>img {
 .no-edit .new_incident {
   display: none;
 }
+.no-edit .new_incident_report {
+  display: none;
+}
 
 #incident_report_well > .panel {
   margin-bottom: 5px;
