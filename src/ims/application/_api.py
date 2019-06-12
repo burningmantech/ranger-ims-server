@@ -283,6 +283,7 @@ class APIApplication(object):
         Incident list endpoint.
         """
         event = Event(id=eventID)
+        del eventID
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
@@ -307,6 +308,7 @@ class APIApplication(object):
         New incident endpoint.
         """
         event = Event(id=eventID)
+        del eventID
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.writeIncidents
@@ -429,6 +431,7 @@ class APIApplication(object):
         Incident endpoint.
         """
         event = Event(id=eventID)
+        del eventID
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
@@ -463,6 +466,7 @@ class APIApplication(object):
         Incident edit endpoint.
         """
         event = Event(id=eventID)
+        del eventID
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.writeIncidents
@@ -614,6 +618,7 @@ class APIApplication(object):
         Incident reports endpoint.
         """
         event = Event(id=eventID)
+        del eventID
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
@@ -770,6 +775,7 @@ class APIApplication(object):
         del number
 
         event = Event(id=eventID)
+        del eventID
 
         incidentReport = await self.config.store.incidentReportWithNumber(
             event, incidentReportNumber
@@ -805,6 +811,7 @@ class APIApplication(object):
 
         store = self.config.store
         event = Event(id=eventID)
+        del eventID
 
         #
         # Attach to incident if requested
