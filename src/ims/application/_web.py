@@ -225,18 +225,18 @@ class WebApplication(object):
         return IncidentTemplatePage(config=self.config)
 
 
-    # FIXME: viewIncidentReports
     @router.route(_unprefix(URLs.viewIncidentReports), methods=("HEAD", "GET"))
     async def viewIncidentReportsPage(
-        self, request: IRequest
+        self, request: IRequest, eventID: str
     ) -> KleinRenderable:
         """
         Endpoint for the incident reports page.
         """
+        event = Event(id=eventID)
         await self.config.authProvider.authorizeRequest(
-            request, None, Authorization.readIncidentReports
+            request, event, Authorization.readIncidents
         )
-        return IncidentReportsPage(config=self.config)
+        return IncidentReportsPage(config=self.config, event=event)
 
 
     @router.route(
@@ -252,54 +252,54 @@ class WebApplication(object):
         return IncidentReportsTemplatePage(config=self.config)
 
 
-    @router.route(
-        _unprefix(URLs.viewIncidentReportNumber), methods=("HEAD", "GET")
-    )
-    async def viewIncidentReportPage(
-        self, request: IRequest, number: str
-    ) -> KleinRenderable:
-        """
-        Endpoint for the incident report page.
-        """
-        numberValue: Optional[int]
-        if number == "new":
-            await self.config.authProvider.authorizeRequest(
-                request, None, Authorization.writeIncidentReports
-            )
-            numberValue = None
-        else:
-            try:
-                numberValue = int(number)
-            except ValueError:
-                return notFoundResponse(request)
+    # @router.route(
+    #     _unprefix(URLs.viewIncidentReportNumber), methods=("HEAD", "GET")
+    # )
+    # async def viewIncidentReportPage(
+    #     self, request: IRequest, number: str
+    # ) -> KleinRenderable:
+    #     """
+    #     Endpoint for the incident report page.
+    #     """
+    #     numberValue: Optional[int]
+    #     if number == "new":
+    #         await self.config.authProvider.authorizeRequest(
+    #             request, None, Authorization.writeIncidentReports
+    #         )
+    #         numberValue = None
+    #     else:
+    #         try:
+    #             numberValue = int(number)
+    #         except ValueError:
+    #             return notFoundResponse(request)
 
-            try:
-                incidentReport = (
-                    await self.config.store.incidentReportWithNumber(
-                        numberValue
-                    )
-                )
-            except NoSuchIncidentReportError:
-                await self.config.authProvider.authorizeRequest(
-                    request, None, Authorization.readIncidentReports
-                )
-                return notFoundResponse(request)
+    #         try:
+    #             incidentReport = (
+    #                 await self.config.store.incidentReportWithNumber(
+    #                     numberValue
+    #                 )
+    #             )
+    #         except NoSuchIncidentReportError:
+    #             await self.config.authProvider.authorizeRequest(
+    #                 request, None, Authorization.readIncidentReports
+    #             )
+    #             return notFoundResponse(request)
 
-            await self.config.authProvider.authorizeRequestForIncidentReport(
-                request, incidentReport
-            )
+    #         await self.config.authProvider.authorizeRequestForIncidentReport(
+    #             request, incidentReport
+    #         )
 
-        return IncidentReportPage(config=self.config, number=numberValue)
+    #     return IncidentReportPage(config=self.config, number=numberValue)
 
 
-    @router.route(
-        _unprefix(URLs.viewIncidentReportTemplate), methods=("HEAD", "GET")
-    )
-    @static
-    def viewIncidentReportTemplatePage(
-        self, request: IRequest
-    ) -> KleinRenderable:
-        """
-        Endpoint for the incident report page template.
-        """
-        return IncidentReportTemplatePage(config=self.config)
+    # @router.route(
+    #     _unprefix(URLs.viewIncidentReportTemplate), methods=("HEAD", "GET")
+    # )
+    # @static
+    # def viewIncidentReportTemplatePage(
+    #     self, request: IRequest
+    # ) -> KleinRenderable:
+    #     """
+    #     Endpoint for the incident report page template.
+    #     """
+    #     return IncidentReportTemplatePage(config=self.config)
