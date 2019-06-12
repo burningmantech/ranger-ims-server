@@ -7,9 +7,10 @@
   <body />
 
   <script>
-    var editingAllowed  = <json t:render="editing_allowed" />;
-    var eventID         = <json t:render="event_id"        />;
-    var pageTemplateURL = url_viewIncidentReportsTemplate;
+    var pageTemplateURL  = url_viewIncidentReportsTemplate;
+    var editingAllowed   = <json t:render="editing_allowed" />;
+    var eventID          = <json t:render="event_id"        />;
+    var viewIncidentsURL = urlReplace(url_viewIncidents);
 
     initIncidentReportsPage();
   </script>

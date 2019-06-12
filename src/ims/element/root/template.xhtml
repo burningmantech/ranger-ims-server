@@ -5,7 +5,9 @@
   <body>
     <div t:render="container">
 
-      <p>This service hosts the Ranger Incident Management System (IMS).</p>
+      <p t:render="if_logged_in">
+        Please select an event from the pop-up above.
+      </p>
 
       <p t:render="if_not_logged_in">
         <div class="btn-group btn-group-justified" role="group">
@@ -27,18 +29,6 @@
             class="btn btn-sm btn-default btn-danger"
           >
             Log Out
-          </a>
-        </div>
-      </p>
-
-      <p>
-        <div class="btn-group btn-group-justified" role="group">
-          <a t:render="url"
-            url="viewIncidentReportNew"
-            role="button"
-            class="btn btn-sm btn-default btn-default"
-          >
-            New incident report
           </a>
         </div>
       </p>
