@@ -797,8 +797,11 @@ class APIApplication(object):
         """
         Incident report edit endpoint.
         """
+        event = Event(id=eventID)
+        del eventID
+
         await self.config.authProvider.authorizeRequest(
-            request, None, Authorization.writeIncidentReports
+            request, event, Authorization.writeIncidentReports
         )
 
         author = request.user.shortNames[0]
@@ -810,8 +813,6 @@ class APIApplication(object):
         del number
 
         store = self.config.store
-        event = Event(id=eventID)
-        del eventID
 
         #
         # Attach to incident if requested
@@ -933,6 +934,7 @@ class APIApplication(object):
             acl[event.id] = dict(
                 readers=await store.readers(event),
                 writers=await store.writers(event),
+                reporters=await store.reporters(event),
             )
         return jsonTextFromObject(acl)
 
@@ -961,6 +963,8 @@ class APIApplication(object):
                 await store.setReaders(event, acl["readers"])
             if "writers" in acl:
                 await store.setWriters(event, acl["writers"])
+            if "reporters" in acl:
+                await store.setReporters(event, acl["reporters"])
 
         return noContentResponse(request)
 

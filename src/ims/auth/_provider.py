@@ -51,7 +51,6 @@ class Authorization(Flag):
     readIncidents  = auto()
     writeIncidents = auto()
 
-    readIncidentReports  = auto()
     writeIncidentReports = auto()
 
     all = (
@@ -59,7 +58,6 @@ class Authorization(Flag):
         readPersonnel        |
         readIncidents        |
         writeIncidents       |
-        readIncidentReports  |
         writeIncidentReports
     )
 
@@ -173,11 +171,14 @@ class AuthProvider(object):
         Look up the authorizations that a user has for a given event.
         """
         def matchACL(user: User, acl: Container[str]) -> bool:
-            if "*" in acl:
+            if "**" in acl:
                 return True
 
             if self.requireActive and not user.active:
                 return False
+
+            if "*" in acl:
+                return True
 
             for shortName in user.shortNames:
                 if ("person:" + shortName) in acl:
@@ -194,10 +195,6 @@ class AuthProvider(object):
         if user is not None:
             authorizations |= Authorization.readPersonnel
 
-            if not self.requireActive or user.active:
-                authorizations |= Authorization.readIncidentReports
-                authorizations |= Authorization.writeIncidentReports
-
             for shortName in user.shortNames:
                 if shortName in self.adminUsers:
                     authorizations |= Authorization.imsAdmin
@@ -208,12 +205,22 @@ class AuthProvider(object):
                     ):
                         authorizations |= Authorization.writeIncidents
                         authorizations |= Authorization.readIncidents
+                        authorizations |= Authorization.writeIncidentReports
+
                     else:
                         if matchACL(
                             user,
                             frozenset(await self.store.readers(event))
                         ):
                             authorizations |= Authorization.readIncidents
+
+                        if matchACL(
+                            user,
+                            frozenset(await self.store.reporters(event))
+                        ):
+                            authorizations |= (
+                                Authorization.writeIncidentReports
+                            )
 
         self._log.debug(
             "Authz for {user}: {authorizations}",
@@ -264,10 +271,7 @@ class AuthProvider(object):
             rangerHandle = request.user.rangerHandle
             for reportEntry in incidentReport.reportEntries:
                 if reportEntry.author == rangerHandle:
-                    request.authorizations = (
-                        Authorization.readIncidentReports |
-                        Authorization.writeIncidentReports
-                    )
+                    request.authorizations = Authorization.writeIncidentReports
                     return
 
         # Otherwise, use the ACL for the event associated with the incident

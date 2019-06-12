@@ -105,6 +105,11 @@ pragma foreign_keys = true;
 drop table INCIDENT__INCIDENT_REPORT;
 
 
+--- Add "report" ACCESS_MODE
+
+insert into ACCESS_MODE (ID) values ('report');
+
+
 -- Update schema version
 
 update SCHEMA_INFO set version = 4;

@@ -270,7 +270,7 @@ class WebApplication(object):
         incidentReportNumber: Optional[int]
         if number == "new":
             await self.config.authProvider.authorizeRequest(
-                request, None, Authorization.writeIncidentReports
+                request, event, Authorization.writeIncidentReports
             )
             incidentReportNumber = None
             del number
@@ -289,7 +289,7 @@ class WebApplication(object):
                 )
             except NoSuchIncidentReportError:
                 await self.config.authProvider.authorizeRequest(
-                    request, None, Authorization.readIncidentReports
+                    request, event, Authorization.readIncidents
                 )
                 return notFoundResponse(request)
 

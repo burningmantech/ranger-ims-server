@@ -450,6 +450,22 @@ class DatabaseStore(IMSDataStore):
         await self._setEventAccess(event, "write", writers)
 
 
+    async def reporters(self, event: Event) -> Iterable[str]:
+        """
+        See :meth:`IMSDataStore.reporters`.
+        """
+        assert type(event) is Event
+
+        return await self._eventAccess(event, "report")
+
+
+    async def setReporters(self, event: Event, writers: Iterable[str]) -> None:
+        """
+        See :meth:`IMSDataStore.setReporters`.
+        """
+        await self._setEventAccess(event, "report", writers)
+
+
     ###
     # Incident Types
     ###

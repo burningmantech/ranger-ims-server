@@ -52,7 +52,7 @@ function loadAccessControlList(success) {
 var _accessTemplate = null;
 var _entryTemplate = null;
 
-var accessModes = ["readers", "writers"];
+var accessModes = ["readers", "writers", "reporters"];
 
 function drawAccess() {
     var container = $("#event_access_container");

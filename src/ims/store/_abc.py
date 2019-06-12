@@ -105,6 +105,20 @@ class IMSDataStore(ABC):
         """
 
 
+    @abstractmethod
+    async def reporters(self, event: Event) -> Iterable[str]:
+        """
+        Look up the allowed reporters for the given event.
+        """
+
+
+    @abstractmethod
+    async def setReporters(self, event: Event, writers: Iterable[str]) -> None:
+        """
+        Set the allowed reporters for the given event.
+        """
+
+
     ###
     # Incident Types
     ###

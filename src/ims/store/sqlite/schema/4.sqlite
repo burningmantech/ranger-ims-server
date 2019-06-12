@@ -135,8 +135,9 @@ create table ACCESS_MODE (
     primary key (ID)
 );
 
-insert into ACCESS_MODE (ID) values ('read' );
-insert into ACCESS_MODE (ID) values ('write');
+insert into ACCESS_MODE (ID) values ('read'  );
+insert into ACCESS_MODE (ID) values ('write' );
+insert into ACCESS_MODE (ID) values ('report');
 
 
 create table EVENT_ACCESS (
