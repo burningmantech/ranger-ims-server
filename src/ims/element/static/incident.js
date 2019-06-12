@@ -339,7 +339,10 @@ function loadUnattachedIncidentReports(success) {
         }
     }
 
-    jsonRequest(url_incidentReports + "?event=;incident=", null, ok, fail);
+    jsonRequest(
+        urlReplace(url_incidentReports, eventID),
+        null, ok, fail,
+    );
 }
 
 
@@ -369,9 +372,8 @@ function loadAttachedIncidentReports(success) {
     }
 
     var url = (
-        url_incidentReports +
-        "?event=" + eventID +
-        ";incident=" + incidentNumber
+        urlReplace(url_incidentReports, eventID) +
+        "?incident=" + incidentNumber
     );
 
     jsonRequest(url, null, ok, fail);
@@ -1066,8 +1068,8 @@ function detachIncidentReport(sender) {
     }
 
     var url = (
-        url_incidentReports + incidentReport.number +
-        "?action=detach;event=" + eventID + ";incident=" + incidentNumber
+        urlReplace(url_incidentReports, eventID) + incidentReport.number +
+        "?action=detach;incident=" + incidentNumber
     );
 
     jsonRequest(url, {}, ok, fail);
@@ -1096,8 +1098,8 @@ function attachIncidentReport() {
     }
 
     var url = (
-        url_incidentReports + incidentReportNumber +
-        "?action=attach;event=" + eventID + ";incident=" + incidentNumber
+        urlReplace(url_incidentReports, eventID) + incidentReportNumber +
+        "?action=attach;incident=" + incidentNumber
     );
 
     jsonRequest(url, {}, ok, fail);

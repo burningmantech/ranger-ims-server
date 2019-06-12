@@ -88,7 +88,7 @@ function loadEventIncidentReports(success) {
         window.alert(message);
     }
 
-    jsonRequest(url_incidentReports + "?event=" + eventID, null, ok, fail);
+    jsonRequest(urlReplace(url_incidentReports, eventID), null, ok, fail);
 
     console.log("Loaded event incident reports");
     if (dispatchQueueTable != null) {

@@ -105,7 +105,7 @@ function initDataTables() {
         "processing": true,
         "scrollX": false, "scrollY": false,
         "ajax": {
-            "url": url_incidentReports + "?event=;incident=",
+            "url": urlReplace(url_incidentReports, eventID),
             "dataSrc": dataHandler,
         },
         "columns": [
