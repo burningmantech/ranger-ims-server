@@ -438,6 +438,7 @@ class APIApplication(object):
             incidentNumber = int(number)
         except ValueError:
             return notFoundResponse(request)
+        del number
 
         try:
             incident = await self.config.store.incidentWithNumber(
@@ -473,6 +474,7 @@ class APIApplication(object):
             incidentNumber = int(number)
         except ValueError:
             return notFoundResponse(request)
+        del number
 
         #
         # Get the edits requested by the client
@@ -488,8 +490,8 @@ class APIApplication(object):
             )
 
         if (
-            edits.get(IncidentJSONKey.number.value, incidentNumber)
-            != incidentNumber
+            edits.get(IncidentJSONKey.number.value, incidentNumber) !=
+            incidentNumber
         ):
             return badRequestResponse(
                 request, "Incident number may not be modified"
@@ -520,7 +522,7 @@ class APIApplication(object):
                 _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                await setter(event, number, _cast(value), author)
+                await setter(event, incidentNumber, _cast(value), author)
 
         store = self.config.store
 
@@ -559,7 +561,7 @@ class APIApplication(object):
                     store.setIncident_locationDescription,
                 ):
                     cast(IncidentAttributeSetter, setter)(
-                        event, number, None, author
+                        event, incidentNumber, None, author
                     )
             else:
                 await applyEdit(
@@ -598,7 +600,7 @@ class APIApplication(object):
             )
 
             await store.addReportEntriesToIncident(
-                event, number, entries, author
+                event, incidentNumber, entries, author
             )
 
         return noContentResponse(request)
@@ -765,6 +767,7 @@ class APIApplication(object):
         except ValueError:
             self.config.authProvider.authenticateRequest(request)
             return notFoundResponse(request)
+        del number
 
         event = Event(id=eventID)
 
@@ -798,6 +801,7 @@ class APIApplication(object):
             incidentReportNumber = int(number)
         except ValueError:
             return notFoundResponse(request)
+        del number
 
         store = self.config.store
         event = Event(id=eventID)
@@ -844,7 +848,11 @@ class APIApplication(object):
                 request, "JSON incident report must be a dictionary"
             )
 
-        if edits.get(IncidentReportJSONKey.number.value, number) != number:
+        if (
+            edits.get(
+                IncidentReportJSONKey.number.value, incidentReportNumber
+            ) != incidentReportNumber
+        ):
             return badRequestResponse(
                 request, "Incident report number may not be modified"
             )
@@ -870,7 +878,7 @@ class APIApplication(object):
                 _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                await setter(event, number, _cast(value), author)
+                await setter(event, incidentReportNumber, _cast(value), author)
 
         await applyEdit(
             edits, IncidentReportJSONKey.summary,
@@ -894,7 +902,7 @@ class APIApplication(object):
             )
 
             await store.addReportEntriesToIncidentReport(
-                event, number, entries, author
+                event, incidentReportNumber, entries, author
             )
 
         return noContentResponse(request)
