@@ -26,8 +26,9 @@ from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 
 from ims.auth import Authorization
-from ims.ext.json import jsonTextFromObject
+from ims.ext.json import jsonFalse, jsonTextFromObject, jsonTrue
 from ims.ext.klein import KleinRenderable
+from ims.model import Event
 
 from ..incident_template._incident_template import title
 from ...page import Page
@@ -44,6 +45,7 @@ class IncidentReportPage(Page):
     """
 
     name: str = title
+    event: Event
     number: Optional[int]
 
 
@@ -59,6 +61,14 @@ class IncidentReportPage(Page):
 
 
     @renderer
+    def event_id(self, request: IRequest, tag: Tag) -> KleinRenderable:
+        """
+        JSON string: event ID.
+        """
+        return jsonTextFromObject(self.event.id)
+
+
+    @renderer
     def incident_report_number(
         self, request: IRequest, tag: Tag
     ) -> KleinRenderable:
@@ -66,8 +76,3 @@ class IncidentReportPage(Page):
         JSON integer: incident report number.
         """
         return jsonTextFromObject(self.number)
-
-
-
-jsonTrue  = jsonTextFromObject(True)
-jsonFalse = jsonTextFromObject(False)

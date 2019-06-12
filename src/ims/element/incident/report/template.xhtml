@@ -7,8 +7,9 @@
 
   <script>
     <!-- FIXME: figure out how to move this to / include from report.js -->
-    var editingAllowed       = <json t:render="editing_allowed"                      />;
-    var incidentReportNumber = <json t:render="incident_report_number"               />;
+    var editingAllowed       = <json t:render="editing_allowed"        />;
+    var eventID              = <json t:render="event_id"               />;
+    var incidentReportNumber = <json t:render="incident_report_number" />;
     var pageTemplateURL      = url_viewIncidentReportTemplate;
 
     initIncidentReportPage();

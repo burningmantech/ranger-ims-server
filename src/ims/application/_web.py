@@ -163,6 +163,7 @@ class WebApplication(object):
         Endpoint for the dispatch queue page.
         """
         event = Event(id=eventID)
+        del eventID
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
@@ -193,6 +194,7 @@ class WebApplication(object):
         Endpoint for the incident page.
         """
         event = Event(id=eventID)
+        del eventID
 
         numberValue: Optional[int]
         if number == "new":
@@ -233,6 +235,7 @@ class WebApplication(object):
         Endpoint for the incident reports page.
         """
         event = Event(id=eventID)
+        del eventID
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
         )
@@ -252,54 +255,61 @@ class WebApplication(object):
         return IncidentReportsTemplatePage(config=self.config)
 
 
-    # @router.route(
-    #     _unprefix(URLs.viewIncidentReportNumber), methods=("HEAD", "GET")
-    # )
-    # async def viewIncidentReportPage(
-    #     self, request: IRequest, number: str
-    # ) -> KleinRenderable:
-    #     """
-    #     Endpoint for the incident report page.
-    #     """
-    #     numberValue: Optional[int]
-    #     if number == "new":
-    #         await self.config.authProvider.authorizeRequest(
-    #             request, None, Authorization.writeIncidentReports
-    #         )
-    #         numberValue = None
-    #     else:
-    #         try:
-    #             numberValue = int(number)
-    #         except ValueError:
-    #             return notFoundResponse(request)
+    @router.route(
+        _unprefix(URLs.viewIncidentReportNumber), methods=("HEAD", "GET")
+    )
+    async def viewIncidentReportPage(
+        self, request: IRequest, eventID: str, number: str
+    ) -> KleinRenderable:
+        """
+        Endpoint for the incident report page.
+        """
+        event = Event(id=eventID)
+        del eventID
 
-    #         try:
-    #             incidentReport = (
-    #                 await self.config.store.incidentReportWithNumber(
-    #                     numberValue
-    #                 )
-    #             )
-    #         except NoSuchIncidentReportError:
-    #             await self.config.authProvider.authorizeRequest(
-    #                 request, None, Authorization.readIncidentReports
-    #             )
-    #             return notFoundResponse(request)
+        incidentReportNumber: Optional[int]
+        if number == "new":
+            await self.config.authProvider.authorizeRequest(
+                request, None, Authorization.writeIncidentReports
+            )
+            incidentReportNumber = None
+            del number
+        else:
+            try:
+                incidentReportNumber = int(number)
+            except ValueError:
+                return notFoundResponse(request)
+            del number
 
-    #         await self.config.authProvider.authorizeRequestForIncidentReport(
-    #             request, incidentReport
-    #         )
+            try:
+                incidentReport = (
+                    await self.config.store.incidentReportWithNumber(
+                        event, incidentReportNumber
+                    )
+                )
+            except NoSuchIncidentReportError:
+                await self.config.authProvider.authorizeRequest(
+                    request, None, Authorization.readIncidentReports
+                )
+                return notFoundResponse(request)
 
-    #     return IncidentReportPage(config=self.config, number=numberValue)
+            await self.config.authProvider.authorizeRequestForIncidentReport(
+                request, incidentReport
+            )
+
+        return IncidentReportPage(
+            config=self.config, event=event, number=incidentReportNumber
+        )
 
 
-    # @router.route(
-    #     _unprefix(URLs.viewIncidentReportTemplate), methods=("HEAD", "GET")
-    # )
-    # @static
-    # def viewIncidentReportTemplatePage(
-    #     self, request: IRequest
-    # ) -> KleinRenderable:
-    #     """
-    #     Endpoint for the incident report page template.
-    #     """
-    #     return IncidentReportTemplatePage(config=self.config)
+    @router.route(
+        _unprefix(URLs.viewIncidentReportTemplate), methods=("HEAD", "GET")
+    )
+    @static
+    def viewIncidentReportTemplatePage(
+        self, request: IRequest
+    ) -> KleinRenderable:
+        """
+        Endpoint for the incident report page template.
+        """
+        return IncidentReportTemplatePage(config=self.config)
