@@ -41,7 +41,7 @@ function htmlAsText(html) {
 //
 // URL substitution
 //
-function urlReplace(url, eventID) {
+function urlReplace(url) {
     if (eventID) {
         url = url.replace("<eventID>", eventID);
     }
@@ -684,9 +684,7 @@ function reportEntryElement(entry) {
 
         var link = $("<a />");
         link.text("incident report #" + entry.merged);
-        link.attr(
-            "href", urlReplace(url_viewIncidentReports, eventID) + entry.merged
-        )
+        link.attr("href", urlReplace(url_viewIncidentReports) + entry.merged)
 
         var reportNumberContainer = $("<span />");
         metaDataContainer.append("(via ");

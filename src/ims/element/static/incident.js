@@ -340,7 +340,7 @@ function loadUnattachedIncidentReports(success) {
     }
 
     jsonRequest(
-        urlReplace(url_incidentReports, eventID),
+        urlReplace(url_incidentReports),
         null, ok, fail,
     );
 }
@@ -372,8 +372,7 @@ function loadAttachedIncidentReports(success) {
     }
 
     var url = (
-        urlReplace(url_incidentReports, eventID) +
-        "?incident=" + incidentNumber
+        urlReplace(url_incidentReports) + "?incident=" + incidentNumber
     );
 
     jsonRequest(url, null, ok, fail);
@@ -759,10 +758,7 @@ function drawAttachedIncidentReports() {
         var report = reports[i];
         var item = _reportsItem.clone();
         var link = $("<a />");
-        link.attr(
-            "href",
-            urlReplace(url_viewIncidentReports, eventID) + report.number
-        );
+        link.attr("href", urlReplace(url_viewIncidentReports) + report.number);
         link.text(incidentReportAsString(report));
         item.append(link);
         item.data(report);
@@ -1071,7 +1067,7 @@ function detachIncidentReport(sender) {
     }
 
     var url = (
-        urlReplace(url_incidentReports, eventID) + incidentReport.number +
+        urlReplace(url_incidentReports) + incidentReport.number +
         "?action=detach;incident=" + incidentNumber
     );
 
@@ -1101,7 +1097,7 @@ function attachIncidentReport() {
     }
 
     var url = (
-        urlReplace(url_incidentReports, eventID) + incidentReportNumber +
+        urlReplace(url_incidentReports) + incidentReportNumber +
         "?action=attach;incident=" + incidentNumber
     );
 

@@ -12,8 +12,8 @@
     var eventID        = <json t:render="event_id"        />;
 
     var pageTemplateURL  = url_viewDispatchQueueTemplate;
-    var dataURL          = urlReplace(url_incidents, eventID);
-    var viewIncidentsURL = urlReplace(url_viewIncidents, eventID);
+    var dataURL          = urlReplace(url_incidents);
+    var viewIncidentsURL = urlReplace(url_viewIncidents);
 
     var concentricStreetNameByID = <json t:render="concentric_street_name_by_id" />;
 

@@ -102,7 +102,7 @@ function loadIncidentReport(success) {
             "created": null,
         });
     } else {
-        var url = urlReplace(url_incidentReports, eventID) + number;
+        var url = urlReplace(url_incidentReports) + number;
         jsonRequest(url, null, ok, fail);
     }
 }
@@ -184,7 +184,7 @@ function drawSummary() {
 
 function sendEdits(edits, success, error) {
     var number = incidentReport.number
-    var url = urlReplace(url_incidentReports, eventID);
+    var url = urlReplace(url_incidentReports);
 
     if (number == null) {
         // We're creating a new incident report.
@@ -232,7 +232,7 @@ function sendEdits(edits, success, error) {
             drawTitle();
             window.history.pushState(
                 null, document.title,
-                urlReplace(url_viewIncidentReports, eventID) + newNumber
+                urlReplace(url_viewIncidentReports) + newNumber
             );
         }
 
