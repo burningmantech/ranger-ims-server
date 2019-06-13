@@ -26,7 +26,7 @@ from hyperlink import URL
 
 from twisted.web.iweb import IRequest
 
-from ims.auth import Authorization
+from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
 from ims.element.admin.events import AdminEventsPage
 from ims.element.admin.root import AdminRootPage
@@ -236,9 +236,14 @@ class WebApplication(object):
         """
         event = Event(id=eventID)
         del eventID
-        await self.config.authProvider.authorizeRequest(
-            request, event, Authorization.readIncidents
-        )
+        try:
+            await self.config.authProvider.authorizeRequest(
+                request, event, Authorization.readIncidents
+            )
+        except NotAuthorizedError:
+            await self.config.authProvider.authorizeRequest(
+                request, event, Authorization.writeIncidentReports
+            )
         return IncidentReportsPage(config=self.config, event=event)
 
 
