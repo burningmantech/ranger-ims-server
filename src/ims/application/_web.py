@@ -83,7 +83,7 @@ class WebApplication(object):
 
 
     @router.route(_unprefix(URLs.viewEvent), methods=("HEAD", "GET"))
-    def viewIncidentsResource(
+    async def viewIncidentsResource(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
         """
@@ -91,7 +91,20 @@ class WebApplication(object):
 
         This redirects to the event's incidents page.
         """
-        return redirect(request, URLs.viewIncidentsRelative)
+        event = Event(id=eventID)
+        del eventID
+        try:
+            await self.config.authProvider.authorizeRequest(
+                request, event, Authorization.readIncidents
+            )
+            url = URLs.viewIncidentsRelative
+        except NotAuthorizedError:
+            await self.config.authProvider.authorizeRequest(
+                request, event, Authorization.writeIncidentReports
+            )
+            url = URLs.viewIncidentReportsRelative
+
+        return redirect(request, url)
 
 
     @router.route(_unprefix(URLs.admin), methods=("HEAD", "GET"))
