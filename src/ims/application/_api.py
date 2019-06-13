@@ -858,7 +858,7 @@ class APIApplication(object):
                 )
             elif action == "detach":
                 await store.detachIncidentReportFromIncident(
-                    incidentNumber, event, incidentNumber, author
+                    incidentReportNumber, event, incidentNumber, author
                 )
             else:
                 return invalidQueryResponse(request, "action", action)
