@@ -149,7 +149,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 EVENT_ACCESS:
                   1: EVENT(int) not null
                   2: EXPRESSION(varchar(128)) not null
-                  3: MODE(enum(5)) not null
+                  3: MODE(enum(6)) not null
                 INCIDENT:
                   1: EVENT(int) not null
                   2: NUMBER(int) not null
