@@ -620,15 +620,30 @@ class APIApplication(object):
         event = Event(id=eventID)
         del eventID
 
-        await self.config.authProvider.authorizeRequest(
-            request, event, Authorization.readIncidents
-        )
+        try:
+            await self.config.authProvider.authorizeRequest(
+                request, event, Authorization.readIncidents
+            )
+            limitedAccess = False
+        except NotAuthorizedError:
+            await self.config.authProvider.authorizeRequest(
+                request, event, Authorization.writeIncidentReports
+            )
+            limitedAccess = True
 
         incidentNumberText = queryValue(request, "incident")
 
         store = self.config.store
 
-        if incidentNumberText is None:
+        if limitedAccess:
+            incidentReports = (
+                incidentReport
+                for incidentReport in await store.incidentReports(event=event)
+                if request.user.rangerHandle in (
+                    entry.author for entry in incidentReport.reportEntries
+                )
+            )
+        elif incidentNumberText is None:
             incidentReports = await store.incidentReports(event=event)
         else:
             try:
