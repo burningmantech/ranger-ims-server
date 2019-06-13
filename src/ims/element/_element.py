@@ -234,11 +234,11 @@ class Element(BaseElement):
         ])
 
         if eventIDs:
-            incidents = self.config.urls.viewIncidents.asText()
+            eventPage = self.config.urls.viewEvent.asText()
             return (
                 tag.clone()(
                     tags.a(
-                        eventID, href=incidents.replace("<eventID>", eventID)
+                        eventID, href=eventPage.replace("<eventID>", eventID)
                     )
                 )
                 for eventID in eventIDs
