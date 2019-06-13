@@ -689,10 +689,10 @@ class APIApplication(object):
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
 
-        if json[IncidentReportJSONKey.event.value] != eventID:
+        if json.get(IncidentReportJSONKey.event.value, event.id) != event.id:
             return badRequestResponse(
                 "Event ID mismatch: "
-                f"{json[IncidentReportJSONKey.event.value]} != {eventID}"
+                f"{json[IncidentReportJSONKey.event.value]} != {event.id}"
             )
         if json.get(IncidentReportJSONKey.incidentNumber.value):
             return badRequestResponse(
@@ -704,6 +704,7 @@ class APIApplication(object):
         now = DateTime.now(TimeZone.utc)
         jsonNow = jsonObjectFromModelObject(now)
 
+        # Set JSON event id
         # Set JSON incident report number to 0
         # Set JSON incident report created time to now
 
@@ -718,6 +719,7 @@ class APIApplication(object):
                     f"{incidentReportKey.value}"
                 )
 
+        json[IncidentReportJSONKey.event.value] = event.id
         json[IncidentReportJSONKey.number.value] = 0
         json[IncidentReportJSONKey.created.value] = jsonNow
 
