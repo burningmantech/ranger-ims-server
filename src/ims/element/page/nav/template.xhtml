@@ -15,13 +15,9 @@
 
   <div class="collapse navbar-collapse" id="main-navbar">
 
-    <ul class="nav navbar-nav navbar-left" t:render="if_logged_in">
-      <li>
-        <a t:render="url" url="viewIncidentReports">
-          <span id="detached_report_icon" class="glyphicon glyphicon-copy" />
-        </a>
-      </li>
-      <li class="dropdown"> <!-- Event menu -->
+     <!-- Event menu -->
+     <ul class="nav navbar-nav navbar-left" t:render="if_logged_in">
+      <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
             <span class="event-id nav-event-id">Event</span>
             <span class="caret"></span>
@@ -32,12 +28,14 @@
       </li>
     </ul>
 
+    <!-- Not logged in: offer to log in -->
     <ul class="nav navbar-nav navbar-right" t:render="if_not_logged_in">
       <li id="nav_login"><a t:render="url" url="login">Log In</a></li>
     </ul>
 
+    <!-- Logged in: show user menu -->
     <ul class="nav navbar-nav navbar-right" t:render="if_logged_in">
-      <li class="dropdown"> <!-- User menu -->
+      <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
             <code t:render="logged_in_user" /><span class="caret"></span>
           </a>

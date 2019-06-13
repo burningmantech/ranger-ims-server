@@ -41,7 +41,7 @@ function htmlAsText(html) {
 //
 // URL substitution
 //
-function urlReplace(url, eventID) {
+function urlReplace(url) {
     if (eventID) {
         url = url.replace("<eventID>", eventID);
     }
@@ -504,7 +504,7 @@ function reportTextFromIncident(incident) {
         }
     }
 
-    // Dispatch Queue page loads all incident reports for the event
+    // Incidents page loads all incident reports for the event
     if (typeof eventIncidentReports !== "undefined") {
         for (var i in incident.incident_reports) {
             var reportNumber = incident.incident_reports[i];
@@ -684,7 +684,7 @@ function reportEntryElement(entry) {
 
         var link = $("<a />");
         link.text("incident report #" + entry.merged);
-        link.attr("href", url_viewIncidentReports + entry.merged)
+        link.attr("href", urlReplace(url_viewIncidentReports) + entry.merged)
 
         var reportNumberContainer = $("<span />");
         metaDataContainer.append("(via ");

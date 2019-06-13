@@ -28,6 +28,7 @@ from attr import attrib, attrs
 from ims.ext.attr import sorted_tuple
 
 from ._entry import ReportEntry
+from ._event import Event
 from ._incident import summaryFromReport
 from ._replace import ReplaceMixIn
 
@@ -42,14 +43,16 @@ class IncidentReport(ReplaceMixIn):
     Incident
     """
 
+    event: Event
     number: int
     created: DateTime
     summary: Optional[str]
+    incidentNumber: Optional[int]
     reportEntries: Sequence[ReportEntry] = attrib(converter=sorted_tuple)
 
 
     def __str__(self) -> str:
-        return f"{self.number}: {self.summaryFromReport()}"
+        return f"{self.event} #{self.number}: {self.summaryFromReport()}"
 
 
     def summaryFromReport(self) -> str:

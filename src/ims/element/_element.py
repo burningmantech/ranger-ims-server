@@ -223,18 +223,22 @@ class Element(BaseElement):
             self.config.authProvider.authorizationsForUser, request.user
         )
 
+        relevantAuthorizations = (
+            Authorization.readIncidents | Authorization.writeIncidentReports
+        )
+
         eventIDs = order([
             event.id for event in
             await self.config.store.events()
-            if Authorization.readIncidents & await authorizationsForUser(event)
+            if relevantAuthorizations & await authorizationsForUser(event)
         ])
 
         if eventIDs:
-            queue = self.config.urls.viewDispatchQueue.asText()
+            eventPage = self.config.urls.viewEvent.asText()
             return (
                 tag.clone()(
                     tags.a(
-                        eventID, href=queue.replace("<eventID>", eventID)
+                        eventID, href=eventPage.replace("<eventID>", eventID)
                     )
                 )
                 for eventID in eventIDs
@@ -270,26 +274,3 @@ class Element(BaseElement):
         return jsonTextFromObject(
             e.id for e in await self.config.store.events()
         )
-
-
-    @renderer
-    async def if_detached_reports(
-        self, request: IRequest, tag: Tag
-    ) -> KleinRenderable:
-        """
-        Render conditionally if there are detached incident reports.
-        """
-        if not (
-            Authorization.readIncidentReports &
-            await self.config.authProvider.authorizationsForUser(
-                request.user, None
-            )
-        ):
-            return ""
-
-        for _incidentReport in (
-            await self.config.store.detachedIncidentReports()
-        ):
-            return tag
-        else:
-            return ""

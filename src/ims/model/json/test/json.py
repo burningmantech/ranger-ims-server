@@ -175,9 +175,11 @@ def jsonFromRanger(ranger: Ranger) -> Dict[str, Any]:
 
 def jsonFromIncidentReport(report: IncidentReport) -> Dict[str, Any]:
     return dict(
+        event=jsonSerialize(report.event),
         number=jsonSerialize(report.number),
         created=jsonSerialize(report.created),
         summary=jsonSerialize(report.summary),
+        incident=jsonSerialize(report.incidentNumber),
         report_entries=tuple(jsonSerialize(e) for e in report.reportEntries),
     )
 

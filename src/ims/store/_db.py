@@ -25,7 +25,7 @@ from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
 from typing import (
-    Any, Callable, ClassVar, Iterable, Iterator, Mapping, Optional, Tuple,
+    Any, Callable, ClassVar, Iterable, Iterator, Mapping, Optional,
     TypeVar, Union, cast,
 )
 
@@ -115,11 +115,9 @@ class Queries(object):
     createIncidentReport: Query
     attachReportEntryToIncidentReport: Query
     setIncidentReport_summary: Query
+    attachIncidentReportToIncident: Query
     detachedIncidentReportNumbers: Query
     attachedIncidentReportNumbers: Query
-    incidentsAttachedToIncidentReport: Query
-    attachIncidentReportToIncident: Query
-    detachIncidentReportFromIncident: Query
 
 
 
@@ -452,6 +450,22 @@ class DatabaseStore(IMSDataStore):
         await self._setEventAccess(event, "write", writers)
 
 
+    async def reporters(self, event: Event) -> Iterable[str]:
+        """
+        See :meth:`IMSDataStore.reporters`.
+        """
+        assert type(event) is Event
+
+        return await self._eventAccess(event, "report")
+
+
+    async def setReporters(self, event: Event, writers: Iterable[str]) -> None:
+        """
+        See :meth:`IMSDataStore.setReporters`.
+        """
+        await self._setEventAccess(event, "report", writers)
+
+
     ###
     # Incident Types
     ###
@@ -636,6 +650,7 @@ class DatabaseStore(IMSDataStore):
         )
 
         txn.execute(self.query.incident_reportEntries.text, parameters)
+
         reportEntries = (
             ReportEntry(
                 created=self.fromDateTimeValue(row["CREATED"]),
@@ -694,8 +709,7 @@ class DatabaseStore(IMSDataStore):
         Look up all incident numbers for the given event.
         """
         txn.execute(self.query.incidentNumbers.text, dict(eventID=event.id))
-        for row in txn.fetchall():
-            yield cast(int, row["NUMBER"])
+        return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
 
     async def incidents(self, event: Event) -> Iterable[Incident]:
@@ -1037,15 +1051,11 @@ class DatabaseStore(IMSDataStore):
         )
 
         def setIncidentAttribute(txn: Transaction) -> None:
-            txn.execute(
-                query,
-                dict(
-                    eventID=event.id,
-                    incidentNumber=incidentNumber,
-                    column=attribute,
-                    value=value,
-                )
-            )
+            txn.execute(query, dict(
+                eventID=event.id,
+                incidentNumber=incidentNumber,
+                value=value,
+            ))
 
             # Add automatic report entry
             self._createAndAttachReportEntriesToIncident(
@@ -1056,8 +1066,8 @@ class DatabaseStore(IMSDataStore):
             return await self.runInteraction(setIncidentAttribute)
         except StorageError as e:
             self._log.critical(
-                "Author {author} unable to update incident #{incidentNumber} "
-                "in event {event} ({attribute}={value}): {error}",
+                "Author {author} unable to update incident "
+                "{event}#{incidentNumber} ({attribute}={value}): {error}",
                 query=query,
                 event=event,
                 incidentNumber=incidentNumber,
@@ -1321,8 +1331,8 @@ class DatabaseStore(IMSDataStore):
         except StorageError as e:
             self._log.critical(
                 "Author {author} unable to create report entries "
-                "{reportEntries} to incident #{incidentNumber} in event "
-                "{event}: {error}",
+                "{reportEntries} to incident "
+                "{event}#{incidentNumber}: {error}",
                 author=author,
                 reportEntries=reportEntries,
                 incidentNumber=incidentNumber,
@@ -1338,10 +1348,10 @@ class DatabaseStore(IMSDataStore):
 
 
     def _fetchIncidentReport(
-        self, incidentReportNumber: int, txn: Transaction
+        self, event: Event, incidentReportNumber: int, txn: Transaction
     ) -> IncidentReport:
         parameters: Parameters = dict(
-            incidentReportNumber=incidentReportNumber,
+            eventID=event.id, incidentReportNumber=incidentReportNumber,
         )
 
         def notFound() -> None:
@@ -1371,9 +1381,11 @@ class DatabaseStore(IMSDataStore):
         )
 
         return IncidentReport(
+            event=event,
             number=incidentReportNumber,
             created=self.fromDateTimeValue(row["CREATED"]),
             summary=cast(Optional[str], row["SUMMARY"]),
+            incidentNumber=cast(Optional[int], row["INCIDENT_NUMBER"]),
             reportEntries=cast(Iterable, reportEntries),
         )
 
@@ -1387,26 +1399,23 @@ class DatabaseStore(IMSDataStore):
         return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
 
-    async def incidentReports(
-        self, event: Optional[Event]
-    ) -> Iterable[IncidentReport]:
+    async def incidentReports(self, event: Event) -> Iterable[IncidentReport]:
         """
         See :meth:`IMSDataStore.incidentReports`.
         """
-        if event is None:
-            return await self.detachedIncidentReports()
-
         def incidentReports(txn: Transaction) -> Iterable[IncidentReport]:
             return tuple(
-                self._fetchIncidentReport(number, txn)
+                self._fetchIncidentReport(event, number, txn)
                 for number
                 in tuple(
-                    self._fetchIncidentReportNumbers(cast(Event, event), txn)
+                    self._fetchIncidentReportNumbers(event, txn)
                 )
             )
 
         try:
             return await self.runInteraction(incidentReports)
+        except NoSuchIncidentReportError:
+            raise
         except StorageError as e:
             self._log.critical(
                 "Unable to look up incident reports: {error}", error=e,
@@ -1414,12 +1423,14 @@ class DatabaseStore(IMSDataStore):
             raise
 
 
-    async def incidentReportWithNumber(self, number: int) -> IncidentReport:
+    async def incidentReportWithNumber(
+        self, event: Event, number: int
+    ) -> IncidentReport:
         """
         See :meth:`IMSDataStore.incidentReportWithNumber`.
         """
         def incidentReportWithNumber(txn: Transaction) -> IncidentReport:
-            return self._fetchIncidentReport(number, txn)
+            return self._fetchIncidentReport(event, number, txn)
 
         try:
             return await self.runInteraction(incidentReportWithNumber)
@@ -1436,12 +1447,39 @@ class DatabaseStore(IMSDataStore):
         Look up the next available incident report number.
         """
         txn.execute(self.query.maxIncidentReportNumber.text)
-
         number = cast(int, txn.fetchone()["max(NUMBER)"])
         if number is None:
             return 1
         else:
             return number + 1
+
+
+    def _createAndAttachReportEntriesToIncidentReport(
+        self, event: Event, incidentReportNumber: int,
+        reportEntries: Iterable[ReportEntry], txn: Transaction,
+    ) -> None:
+        reportEntries = tuple(reportEntries)
+
+        for reportEntry in reportEntries:
+            self._createReportEntry(reportEntry, txn)
+
+            # Join to incident
+            txn.execute(
+                self.query.attachReportEntryToIncidentReport.text, dict(
+                    eventID=event.id,
+                    incidentReportNumber=incidentReportNumber,
+                    reportEntryID=txn.lastrowid,
+                )
+            )
+
+        self._log.info(
+            "Attached report entries to incident report "
+            "{event}#{incidentReportNumber}: {reportEntries}",
+            storeWriteClass=IncidentReport,
+            event=event,
+            incidentReportNumber=incidentReportNumber,
+            reportEntries=reportEntries,
+        )
 
 
     async def _createIncidentReport(
@@ -1483,18 +1521,20 @@ class DatabaseStore(IMSDataStore):
             # Write incident row
             txn.execute(
                 self.query.createIncidentReport.text, dict(
+                    eventID=incidentReport.event.id,
                     incidentReportNumber=incidentReport.number,
                     incidentReportCreated=self.asDateTimeValue(
                         incidentReport.created
                     ),
                     incidentReportSummary=incidentReport.summary,
+                    incidentNumber=incidentReport.incidentNumber,
                 )
             )
 
             # Add report entries
             self._createAndAttachReportEntriesToIncidentReport(
-                incidentReport.number, incidentReport.reportEntries,
-                txn,
+                incidentReport.event, incidentReport.number,
+                incidentReport.reportEntries, txn,
             )
 
             return incidentReport
@@ -1514,30 +1554,6 @@ class DatabaseStore(IMSDataStore):
         )
 
 
-    def _createAndAttachReportEntriesToIncidentReport(
-        self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
-        txn: Transaction,
-    ) -> None:
-        for reportEntry in reportEntries:
-            self._createReportEntry(reportEntry, txn)
-
-            # Join to incident
-            txn.execute(
-                self.query.attachReportEntryToIncidentReport.text, dict(
-                    incidentReportNumber=incidentReportNumber,
-                    reportEntryID=txn.lastrowid,
-                )
-            )
-
-        self._log.info(
-            "Attached report entries to incident report "
-            "#{incidentReportNumber}: {reportEntry}",
-            storeWriteClass=IncidentReport,
-            incidentReportNumber=incidentReportNumber,
-            reportEntries=reportEntries,
-        )
-
-
     async def createIncidentReport(
         self, incidentReport: IncidentReport, author: str
     ) -> IncidentReport:
@@ -1548,7 +1564,7 @@ class DatabaseStore(IMSDataStore):
 
 
     async def _setIncidentReportAttribute(
-        self, query: str, incidentReportNumber: int,
+        self, query: str, event: Event, incidentReportNumber: int,
         attribute: str, value: ParameterValue, author: str,
     ) -> None:
         autoEntry = self._automaticReportEntry(
@@ -1557,14 +1573,14 @@ class DatabaseStore(IMSDataStore):
 
         def setIncidentReportAttribute(txn: Transaction) -> None:
             txn.execute(query, dict(
+                eventID=event.id,
                 incidentReportNumber=incidentReportNumber,
-                column=attribute,
                 value=value,
             ))
 
             # Add report entries
             self._createAndAttachReportEntriesToIncidentReport(
-                incidentReportNumber, (autoEntry,), txn,
+                event, incidentReportNumber, (autoEntry,), txn,
             )
 
         try:
@@ -1572,8 +1588,10 @@ class DatabaseStore(IMSDataStore):
         except StorageError as e:
             self._log.critical(
                 "Author {author} unable to update incident report "
-                "#{incidentReportNumber} ({attribute}={value}): {error}",
+                "{event}#{incidentReportNumber} "
+                "({attribute}={value}): {error}",
                 query=query,
+                event=event,
                 incidentReportNumber=incidentReportNumber,
                 attribute=attribute,
                 value=value,
@@ -1587,6 +1605,7 @@ class DatabaseStore(IMSDataStore):
             "{attribute}={value}",
             storeWriteClass=IncidentReport,
             query=query,
+            event=event,
             incidentReportNumber=incidentReportNumber,
             attribute=attribute,
             value=value,
@@ -1595,20 +1614,21 @@ class DatabaseStore(IMSDataStore):
 
 
     async def setIncidentReport_summary(
-        self, incidentReportNumber: int, summary: str, author: str
+        self, event: Event, incidentReportNumber: int,
+        summary: str, author: str,
     ) -> None:
         """
         See :meth:`IMSDataStore.setIncidentReport_summary`.
         """
         await self._setIncidentReportAttribute(
             self.query.setIncidentReport_summary.text,
-            incidentReportNumber, "summary", summary, author,
+            event, incidentReportNumber, "summary", summary, author,
         )
 
 
     async def addReportEntriesToIncidentReport(
-        self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
-        author: str,
+        self, event: Event, incidentReportNumber: int,
+        reportEntries: Iterable[ReportEntry], author: str,
     ) -> None:
         """
         See :meth:`IMSDataStore.addReportEntriesToIncidentReport`.
@@ -1629,7 +1649,7 @@ class DatabaseStore(IMSDataStore):
 
         def addReportEntriesToIncidentReport(txn: Transaction) -> None:
             self._createAndAttachReportEntriesToIncidentReport(
-                incidentReportNumber, reportEntries, txn
+                event, incidentReportNumber, reportEntries, txn
             )
 
         try:
@@ -1637,11 +1657,12 @@ class DatabaseStore(IMSDataStore):
         except StorageError as e:
             self._log.critical(
                 "Author {author} unable to create report entries "
-                "{reportEntries} to incident report #{incidentReportNumber}: "
-                "{error}",
+                "{reportEntries} to incident report "
+                "{event}#{incidentReportNumber}: {error}",
                 author=author,
                 reportEntries=reportEntries,
                 incidentReportNumber=incidentReportNumber,
+                event=event,
                 error=e,
             )
             raise
@@ -1653,9 +1674,12 @@ class DatabaseStore(IMSDataStore):
 
 
     def _fetchDetachedIncidentReportNumbers(
-        self, txn: Transaction
+        self, event: Event, txn: Transaction
     ) -> Iterable[int]:
-        txn.execute(self.query.detachedIncidentReportNumbers.text)
+        txn.execute(
+            self.query.detachedIncidentReportNumbers.text,
+            dict(eventID=event.id),
+        )
         return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
 
@@ -1664,33 +1688,9 @@ class DatabaseStore(IMSDataStore):
     ) -> Iterable[int]:
         txn.execute(
             self.query.attachedIncidentReportNumbers.text,
-            dict(eventID=event.id, incidentNumber=incidentNumber)
+            dict(eventID=event.id, incidentNumber=incidentNumber),
         )
         return (cast(int, row["NUMBER"]) for row in txn.fetchall())
-
-
-    async def detachedIncidentReports(self) -> Iterable[IncidentReport]:
-        """
-        See :meth:`IMSDataStore.detachedIncidentReports`.
-        """
-        def detachedIncidentReports(
-            txn: Transaction
-        ) -> Iterable[IncidentReport]:
-            return tuple(
-                self._fetchIncidentReport(number, txn)
-                for number in tuple(
-                    self._fetchDetachedIncidentReportNumbers(txn)
-                )
-            )
-
-        try:
-            return await self.runInteraction(detachedIncidentReports)
-        except StorageError as e:
-            self._log.critical(
-                "Unable to look up detached incident reports: {error}",
-                error=e,
-            )
-            raise
 
 
     async def incidentReportsAttachedToIncident(
@@ -1703,7 +1703,7 @@ class DatabaseStore(IMSDataStore):
             txn: Transaction
         ) -> Iterable[IncidentReport]:
             return tuple(
-                self._fetchIncidentReport(number, txn)
+                self._fetchIncidentReport(event, number, txn)
                 for number in tuple(
                     self._fetchAttachedIncidentReportNumbers(
                         event, incidentNumber, txn
@@ -1724,113 +1724,30 @@ class DatabaseStore(IMSDataStore):
             raise
 
 
-    async def incidentsAttachedToIncidentReport(
-        self, incidentReportNumber: int
-    ) -> Iterable[Tuple[Event, int]]:
-        """
-        See :meth:`IMSDataStore.incidentsAttachedToIncidentReport`.
-        """
-        def incidentReportsAttachedToIncident(
-            txn: Transaction
-        ) -> Iterable[Tuple[Event, int]]:
-            txn.execute(
-                self.query.incidentsAttachedToIncidentReport.text,
-                dict(incidentReportNumber=incidentReportNumber)
-            )
-            return tuple(
-                (
-                    Event(id=cast(str, row["EVENT"])),
-                    cast(int, row["INCIDENT_NUMBER"]),
-                )
-                for row in txn.fetchall()
-            )
-
-        try:
-            return await self.runInteraction(incidentReportsAttachedToIncident)
-        except StorageError as e:
-            self._log.critical(
-                "Unable to look up incidents attached to incident report "
-                "#{incidentReportNumber}: {error}",
-                incidentReportNumber=incidentReportNumber,
-                error=e,
-            )
-            raise
-
-
     async def attachIncidentReportToIncident(
-        self, incidentReportNumber: int, event: Event, incidentNumber: int
+        self, incidentReportNumber: int, event: Event, incidentNumber: int,
+        author: str,
     ) -> None:
         """
         See :meth:`IMSDataStore.attachIncidentReportToIncident`.
         """
-        def attachIncidentReportToIncident(txn: Transaction) -> None:
-            txn.execute(
-                self.query.attachIncidentReportToIncident.text, dict(
-                    eventID=event.id,
-                    incidentNumber=incidentNumber,
-                    incidentReportNumber=incidentReportNumber,
-                )
-            )
-
-        try:
-            return await self.runInteraction(attachIncidentReportToIncident)
-        except StorageError as e:
-            self._log.critical(
-                "Unable to attach incident report #{incidentReportNumber} to "
-                "incident #{incidentNumber} in event {event}: {error}",
-                incidentReportNumber=incidentReportNumber,
-                incidentNumber=incidentNumber,
-                event=event,
-                error=e,
-            )
-            raise
-
-        self._log.info(
-            "Attached incident report #{incidentReportNumber} to incident "
-            "{event}#{incidentNumber}",
-            storeWriteClass=Incident,
-            incidentReportNumber=incidentReportNumber,
-            event=event,
-            incidentNumber=incidentNumber,
+        await self._setIncidentReportAttribute(
+            self.query.attachIncidentReportToIncident.text,
+            event, incidentReportNumber, "incident_number", incidentNumber,
+            author,
         )
 
 
     async def detachIncidentReportFromIncident(
-        self, incidentReportNumber: int, event: Event, incidentNumber: int
+        self, incidentReportNumber: int, event: Event, incidentNumber: int,
+        author: str,
     ) -> None:
         """
         See :meth:`IMSDataStore.detachIncidentReportFromIncident`.
         """
-        def detachIncidentReportFromIncident(txn: Transaction) -> None:
-            txn.execute(
-                self.query.detachIncidentReportFromIncident.text,
-                dict(
-                    eventID=event.id,
-                    incidentNumber=incidentNumber,
-                    incidentReportNumber=incidentReportNumber,
-                )
-            )
-
-        try:
-            return await self.runInteraction(detachIncidentReportFromIncident)
-        except StorageError as e:
-            self._log.critical(
-                "Unable to detach incident report #{incidentReportNumber} "
-                "from incident #{incidentNumber} in event {event}: {error}",
-                incidentReportNumber=incidentReportNumber,
-                incidentNumber=incidentNumber,
-                event=event,
-                error=e,
-            )
-            raise
-
-        self._log.info(
-            "Detached incident report #{incidentReportNumber} from incident "
-            "{event}#{incidentNumber}",
-            storeWriteClass=Incident,
-            incidentReportNumber=incidentReportNumber,
-            event=event,
-            incidentNumber=incidentNumber,
+        await self._setIncidentReportAttribute(
+            self.query.attachIncidentReportToIncident.text,
+            event, incidentReportNumber, "incident_number", None, author,
         )
 
 

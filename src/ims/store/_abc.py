@@ -19,7 +19,7 @@ Incident Management System data store abstract base classes.
 """
 
 from abc import ABC, abstractmethod
-from typing import Iterable, Mapping, Optional, Tuple
+from typing import Iterable, Mapping
 
 from ims.model import (
     Event, Incident, IncidentPriority, IncidentReport, IncidentState,
@@ -102,6 +102,20 @@ class IMSDataStore(ABC):
     async def setWriters(self, event: Event, writers: Iterable[str]) -> None:
         """
         Set the allowed writers for the given event.
+        """
+
+
+    @abstractmethod
+    async def reporters(self, event: Event) -> Iterable[str]:
+        """
+        Look up the allowed reporters for the given event.
+        """
+
+
+    @abstractmethod
+    async def setReporters(self, event: Event, writers: Iterable[str]) -> None:
+        """
+        Set the allowed reporters for the given event.
         """
 
 
@@ -332,17 +346,16 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def incidentReports(
-        self, event: Optional[Event]
-    ) -> Iterable[IncidentReport]:
+    async def incidentReports(self, event: Event) -> Iterable[IncidentReport]:
         """
-        Look up all incident reports attached to incidents in the given event.
-        If the given event is L{None}, returns all detached incident reports.
+        Look up all incident reports in the given event.
         """
 
 
     @abstractmethod
-    async def incidentReportWithNumber(self, number: int) -> IncidentReport:
+    async def incidentReportWithNumber(
+        self, event: Event, number: int
+    ) -> IncidentReport:
         """
         Look up the incident report with the given number.
         """
@@ -366,7 +379,8 @@ class IMSDataStore(ABC):
 
     @abstractmethod
     async def setIncidentReport_summary(
-        self, incidentReportNumber: int, summary: str, author: str
+        self, event: Event, incidentReportNumber: int,
+        summary: str, author: str,
     ) -> None:
         """
         Set the summary for the incident report with the given number.
@@ -375,8 +389,8 @@ class IMSDataStore(ABC):
 
     @abstractmethod
     async def addReportEntriesToIncidentReport(
-        self, incidentReportNumber: int, reportEntries: Iterable[ReportEntry],
-        author: str,
+        self, event: Event, incidentReportNumber: int,
+        reportEntries: Iterable[ReportEntry], author: str,
     ) -> None:
         """
         Add the given report entries to incident report with the given number.
@@ -386,13 +400,6 @@ class IMSDataStore(ABC):
     ###
     # Incident to Incident Report Relationships
     ###
-
-
-    @abstractmethod
-    async def detachedIncidentReports(self) -> Iterable[IncidentReport]:
-        """
-        Look up all detached incident reports.
-        """
 
 
     @abstractmethod
@@ -406,19 +413,9 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
-    async def incidentsAttachedToIncidentReport(
-        self, incidentReportNumber: int
-    ) -> Iterable[Tuple[Event, int]]:
-        """
-        Look up all incidents attached to the incident report with the given
-        number.
-        Incidents are returned as tuples of `(event, incidentNumber)`,
-        """
-
-
-    @abstractmethod
     async def attachIncidentReportToIncident(
-        self, incidentReportNumber: int, event: Event, incidentNumber: int
+        self, incidentReportNumber: int, event: Event, incidentNumber: int,
+        author: str,
     ) -> None:
         """
         Attach the incident report with the given number to the incident with
@@ -428,7 +425,8 @@ class IMSDataStore(ABC):
 
     @abstractmethod
     async def detachIncidentReportFromIncident(
-        self, incidentReportNumber: int, event: Event, incidentNumber: int
+        self, incidentReportNumber: int, event: Event, incidentNumber: int,
+        author: str,
     ) -> None:
         """
         Detach the incident report with the given number from the incident with

@@ -46,7 +46,7 @@ anEvent2 = Event(id="bar")
 # don't have timestamps that are within the time resolution of some back-end
 # data stores.
 
-anIncident = Incident(
+aNewIncident = Incident(
     event=anEvent,
     number=0,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=1),
@@ -354,11 +354,11 @@ class DataStoreIncidentTests(DataStoreTests):
         store raises an exception.
         """
         store = await self.store()
-        await store.createEvent(anIncident.event)
+        await store.createEvent(aNewIncident.event)
         store.bringThePain()
 
         try:
-            await store.createIncident(anIncident, "Hubcap")
+            await store.createIncident(aNewIncident, "Hubcap")
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
@@ -372,13 +372,12 @@ class DataStoreIncidentTests(DataStoreTests):
         when the store raises an exception.
         """
         store = await self.store()
-        await store.createEvent(anIncident.event)
-        incident = await store.createIncident(anIncident, "Hubcap")
+        await store.storeIncident(anIncident1)
         store.bringThePain()
 
         try:
             await store.setIncident_priority(
-                incident.event, incident.number, IncidentPriority.high,
+                anIncident1.event, anIncident1.number, IncidentPriority.high,
                 "Bucket",
             )
         except StorageError as e:
@@ -550,7 +549,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.setIncident_locationDescription` updates the
         location description for the given incident in the data store.
         """
-        incident = anIncident
+        incident = anIncident1
 
         for description in ("", "foo bar", "beep boop"):
             await self._test_setIncidentAttribute(
@@ -565,7 +564,7 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.setIncident_rangers` updates the ranger handles for
         the given incident in the data store.
         """
-        incident = anIncident
+        incident = anIncident1
 
         for rangerHandles in (
             (),
@@ -585,13 +584,13 @@ class DataStoreIncidentTests(DataStoreTests):
         when the store raises an exception.
         """
         store = await self.store()
-        await store.createEvent(anIncident.event)
-        incident = await store.createIncident(anIncident, "Hubcap")
+        await store.storeIncident(anIncident1)
         store.bringThePain()
 
         try:
             await store.setIncident_rangers(
-                incident.event, incident.number, ("Hubcap", "Dingle"), "Bucket"
+                anIncident1.event, anIncident1.number,
+                ("Hubcap", "Dingle"), "Bucket",
             )
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
@@ -605,15 +604,13 @@ class DataStoreIncidentTests(DataStoreTests):
         :meth:`IMSDataStore.setIncident_rangers` updates the ranger handles for
         the given incident in the data store.
         """
-        incident = anIncident
-
         for incidentTypes in (
             (),
             ("MOOP",),
             ("Medical", "Fire"),
         ):
             await self._test_setIncidentAttribute(
-                incident, "setIncident_incidentTypes",
+                anIncident1, "setIncident_incidentTypes",
                 "incidentTypes", incidentTypes,
             )
 
@@ -625,13 +622,13 @@ class DataStoreIncidentTests(DataStoreTests):
         :exc:`StorageError` when the store raises an exception.
         """
         store = await self.store()
-        await store.createEvent(anEvent)
-        incident = await store.createIncident(anIncident, "Hubcap")
+        await store.storeIncident(anIncident1)
         store.bringThePain()
 
         try:
             await store.setIncident_incidentTypes(
-                anEvent, incident.number, ("Fun", "Boring"), "Bucket"
+                anIncident1.event, anIncident1.number,
+                ("Fun", "Boring"), "Bucket",
             )
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
@@ -704,14 +701,13 @@ class DataStoreIncidentTests(DataStoreTests):
         :exc:`ValueError` when given automatic report entries.
         """
         store = await self.store()
-        await store.createEvent(anIncident.event)
-        incident = await store.createIncident(anIncident, "Hubcap")
+        await store.storeIncident(anIncident1)
 
         reportEntry = aReportEntry.replace(automatic=True)
 
         try:
             await store.addReportEntriesToIncident(
-                incident.event, incident.number,
+                anIncident1.event, anIncident1.number,
                 (reportEntry,), reportEntry.author,
             )
         except ValueError as e:
@@ -728,14 +724,14 @@ class DataStoreIncidentTests(DataStoreTests):
         not match the author that is adding the entries.
         """
         store = await self.store()
-        await store.createEvent(anIncident.event)
-        incident = await store.createIncident(anIncident, "Hubcap")
+        await store.storeIncident(anIncident1)
 
         otherAuthor = f"not{aReportEntry.author}"
 
         try:
             await store.addReportEntriesToIncident(
-                incident.event, incident.number, (aReportEntry,), otherAuthor
+                anIncident1.event, anIncident1.number,
+                (aReportEntry,), otherAuthor,
             )
         except ValueError as e:
             self.assertEndsWith(str(e), f" has author != {otherAuthor}")
@@ -750,13 +746,12 @@ class DataStoreIncidentTests(DataStoreTests):
         :exc:`StorageError` when the store raises an exception.
         """
         store = await self.store()
-        await store.createEvent(anIncident.event)
-        incident = await store.createIncident(anIncident, "Hubcap")
+        await store.storeIncident(anIncident1)
         store.bringThePain()
 
         try:
             await store.addReportEntriesToIncident(
-                incident.event, incident.number,
+                anIncident1.event, anIncident1.number,
                 (aReportEntry,), aReportEntry.author,
             )
         except StorageError as e:

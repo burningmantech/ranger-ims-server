@@ -144,9 +144,10 @@ class DataStoreEventSourceLogObserver(object):
             message = dict(incident_number=incidentNumber)
 
         else:
-            self._log.debug(
-                "Unknown data store event class: {eventClass}",
-                eventClass=eventClass
+            self._log.critical(
+                "Unknown data store event class {eventClass} "
+                "sent event: {event}",
+                eventClass=eventClass, event=loggerEvent
             )
             return None
 

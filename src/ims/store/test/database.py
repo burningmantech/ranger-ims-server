@@ -176,13 +176,20 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         self = cast(DatabaseStore, _self)
 
         txn.execute(
+            self.query.createEventOrIgnore.text,
+            dict(eventID=incidentReport.event.id)
+        )
+
+        txn.execute(
             self.query.createIncidentReport.text,
             dict(
+                eventID=incidentReport.event.id,
+                incidentReportNumber=incidentReport.number,
                 incidentReportCreated=self.asDateTimeValue(
                     incidentReport.created
                 ),
-                incidentReportNumber=incidentReport.number,
                 incidentReportSummary=incidentReport.summary,
+                incidentNumber=incidentReport.incidentNumber,
             )
         )
 

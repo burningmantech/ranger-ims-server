@@ -15,12 +15,24 @@
 ##
 
 """
-Dispatch queue template page element.
+Incidents template page.
 """
 
-from ._queue_template import DispatchQueueTemplatePage
+from attr import attrs
+
+from ...page import Page
 
 
-__all__ = (
-    "DispatchQueueTemplatePage",
-)
+__all__ = ()
+
+
+title = "Incidents"
+
+
+@attrs(auto_attribs=True, kw_only=True)
+class IncidentsTemplatePage(Page):
+    """
+    Incidents template page.
+    """
+
+    name: str = title

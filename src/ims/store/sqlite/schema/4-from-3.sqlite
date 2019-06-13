@@ -1,0 +1,115 @@
+-- Drop VERSION from INCIDENT
+
+create table INCIDENT_TEMP (
+    EVENT    integer not null,
+    NUMBER   integer not null,
+    CREATED  real    not null,
+    PRIORITY integer not null,
+    STATE    integer not null,
+    SUMMARY  text,
+
+    LOCATION_NAME          text,
+    LOCATION_CONCENTRIC    text,
+    LOCATION_RADIAL_HOUR   integer,
+    LOCATION_RADIAL_MINUTE integer,
+    LOCATION_DESCRIPTION   text,
+
+    foreign key (EVENT) references EVENT(ID),
+    foreign key (STATE) references INCIDENT_STATE(ID),
+
+    foreign key (EVENT, LOCATION_CONCENTRIC)
+    references CONCENTRIC_STREET(EVENT, ID),
+
+    primary key (EVENT, NUMBER)
+);
+
+pragma foreign_keys = false;
+insert into INCIDENT_TEMP
+    select
+        EVENT,
+        NUMBER,
+        CREATED,
+        PRIORITY,
+        STATE,
+        SUMMARY,
+        LOCATION_NAME,
+        LOCATION_CONCENTRIC,
+        LOCATION_RADIAL_HOUR,
+        LOCATION_RADIAL_MINUTE,
+        LOCATION_DESCRIPTION
+    from INCIDENT;
+drop table INCIDENT;
+alter table INCIDENT_TEMP rename to INCIDENT;
+pragma foreign_keys = true;
+
+
+-- Add EVENT and INCIDENT_NUMBER columns to INCIDENT_REPORT
+
+create table INCIDENT_REPORT_TEMP (
+    EVENT           integer not null,
+    NUMBER          integer not null,
+    CREATED         real    not null,
+    SUMMARY         text,
+    INCIDENT_NUMBER integer,
+
+    foreign key (EVENT) references EVENT(ID),
+    foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
+
+    primary key (EVENT, NUMBER)
+);
+
+pragma foreign_keys = false;
+
+insert into INCIDENT_REPORT_TEMP
+    select iir.EVENT, r.NUMBER, r.CREATED, r.SUMMARY, iir.INCIDENT_NUMBER
+    from INCIDENT_REPORT r
+    join INCIDENT__INCIDENT_REPORT iir on iir.INCIDENT_REPORT_NUMBER = r.NUMBER
+    ;
+
+drop table INCIDENT_REPORT;
+alter table INCIDENT_REPORT_TEMP rename to INCIDENT_REPORT;
+pragma foreign_keys = true;
+
+
+-- Add EVENT to INCIDENT_REPORT__REPORT_ENTRY
+
+create table INCIDENT_REPORT__REPORT_ENTRY_TEMP (
+    EVENT                  integer not null,
+    INCIDENT_REPORT_NUMBER integer not null,
+    REPORT_ENTRY           integer not null,
+
+    foreign key (EVENT) references EVENT(ID),
+    foreign key (EVENT, INCIDENT_REPORT_NUMBER)
+        references INCIDENT_REPORT(EVENT, NUMBER),
+    foreign key (REPORT_ENTRY) references REPORT_ENTRY(ID),
+
+    primary key (EVENT, INCIDENT_REPORT_NUMBER, REPORT_ENTRY)
+);
+
+pragma foreign_keys = false;
+
+insert into INCIDENT_REPORT__REPORT_ENTRY_TEMP
+    select r.EVENT, r.NUMBER, irre.REPORT_ENTRY
+    from INCIDENT_REPORT__REPORT_ENTRY irre
+    join INCIDENT_REPORT r on r.NUMBER = irre.INCIDENT_REPORT_NUMBER
+    ;
+
+drop table INCIDENT_REPORT__REPORT_ENTRY;
+alter table INCIDENT_REPORT__REPORT_ENTRY_TEMP
+    rename to INCIDENT_REPORT__REPORT_ENTRY;
+pragma foreign_keys = true;
+
+
+-- INCIDENT__INCIDENT_REPORT table is obsolete.
+
+drop table INCIDENT__INCIDENT_REPORT;
+
+
+--- Add "report" ACCESS_MODE
+
+insert into ACCESS_MODE (ID) values ('report');
+
+
+-- Update schema version
+
+update SCHEMA_INFO set version = 4;

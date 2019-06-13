@@ -26,7 +26,7 @@ from hyperlink import URL
 
 from twisted.web.iweb import IRequest
 
-from ims.auth import Authorization
+from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
 from ims.element.admin.events import AdminEventsPage
 from ims.element.admin.root import AdminRootPage
@@ -34,8 +34,8 @@ from ims.element.admin.streets import AdminStreetsPage
 from ims.element.admin.types import AdminIncidentTypesPage
 from ims.element.incident.incident import IncidentPage
 from ims.element.incident.incident_template import IncidentTemplatePage
-from ims.element.incident.queue import DispatchQueuePage
-from ims.element.incident.queue_template import DispatchQueueTemplatePage
+from ims.element.incident.incidents import IncidentsPage
+from ims.element.incident.incidents_template import IncidentsTemplatePage
 from ims.element.incident.report import IncidentReportPage
 from ims.element.incident.report_template import IncidentReportTemplatePage
 from ims.element.incident.reports import IncidentReportsPage
@@ -83,15 +83,28 @@ class WebApplication(object):
 
 
     @router.route(_unprefix(URLs.viewEvent), methods=("HEAD", "GET"))
-    def viewEventResource(
+    async def viewIncidentsResource(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
         """
         Event root page.
 
-        This redirects to the event's dispatch queue page.
+        This redirects to the event's incidents page.
         """
-        return redirect(request, URLs.viewDispatchQueueRelative)
+        event = Event(id=eventID)
+        del eventID
+        try:
+            await self.config.authProvider.authorizeRequest(
+                request, event, Authorization.readIncidents
+            )
+            url = URLs.viewIncidentsRelative
+        except NotAuthorizedError:
+            await self.config.authProvider.authorizeRequest(
+                request, event, Authorization.writeIncidentReports
+            )
+            url = URLs.viewIncidentReportsRelative
+
+        return redirect(request, url)
 
 
     @router.route(_unprefix(URLs.admin), methods=("HEAD", "GET"))
@@ -155,34 +168,35 @@ class WebApplication(object):
         return AdminStreetsPage(config=self.config)
 
 
-    @router.route(_unprefix(URLs.viewDispatchQueue), methods=("HEAD", "GET"))
-    async def viewDispatchQueuePage(
+    @router.route(_unprefix(URLs.viewIncidents), methods=("HEAD", "GET"))
+    async def viewIncidentsPage(
         self, request: IRequest, eventID: str
     ) -> KleinRenderable:
         """
-        Endpoint for the dispatch queue page.
+        Endpoint for the incidents page.
         """
         event = Event(id=eventID)
+        del eventID
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
         )
-        return DispatchQueuePage(config=self.config, event=event)
+        return IncidentsPage(config=self.config, event=event)
 
 
     @router.route(
-        _unprefix(URLs.viewDispatchQueueTemplate), methods=("HEAD", "GET")
+        _unprefix(URLs.viewIncidentsTemplate), methods=("HEAD", "GET")
     )
     @static
-    def viewDispatchQueueTemplatePage(
+    def viewIncidentsTemplatePage(
         self, request: IRequest
     ) -> KleinRenderable:
         """
-        Endpoint for the dispatch queue page template.
+        Endpoint for the incidents page template.
         """
-        return DispatchQueueTemplatePage(config=self.config)
+        return IncidentsTemplatePage(config=self.config)
 
 
     @router.route(_unprefix(URLs.viewIncidentNumber), methods=("HEAD", "GET"))
@@ -193,6 +207,7 @@ class WebApplication(object):
         Endpoint for the incident page.
         """
         event = Event(id=eventID)
+        del eventID
 
         numberValue: Optional[int]
         if number == "new":
@@ -225,18 +240,24 @@ class WebApplication(object):
         return IncidentTemplatePage(config=self.config)
 
 
-    # FIXME: viewIncidentReports
     @router.route(_unprefix(URLs.viewIncidentReports), methods=("HEAD", "GET"))
     async def viewIncidentReportsPage(
-        self, request: IRequest
+        self, request: IRequest, eventID: str
     ) -> KleinRenderable:
         """
         Endpoint for the incident reports page.
         """
-        await self.config.authProvider.authorizeRequest(
-            request, None, Authorization.readIncidentReports
-        )
-        return IncidentReportsPage(config=self.config)
+        event = Event(id=eventID)
+        del eventID
+        try:
+            await self.config.authProvider.authorizeRequest(
+                request, event, Authorization.readIncidents
+            )
+        except NotAuthorizedError:
+            await self.config.authProvider.authorizeRequest(
+                request, event, Authorization.writeIncidentReports
+            )
+        return IncidentReportsPage(config=self.config, event=event)
 
 
     @router.route(
@@ -256,32 +277,37 @@ class WebApplication(object):
         _unprefix(URLs.viewIncidentReportNumber), methods=("HEAD", "GET")
     )
     async def viewIncidentReportPage(
-        self, request: IRequest, number: str
+        self, request: IRequest, eventID: str, number: str
     ) -> KleinRenderable:
         """
         Endpoint for the incident report page.
         """
-        numberValue: Optional[int]
+        event = Event(id=eventID)
+        del eventID
+
+        incidentReportNumber: Optional[int]
         if number == "new":
             await self.config.authProvider.authorizeRequest(
-                request, None, Authorization.writeIncidentReports
+                request, event, Authorization.writeIncidentReports
             )
-            numberValue = None
+            incidentReportNumber = None
+            del number
         else:
             try:
-                numberValue = int(number)
+                incidentReportNumber = int(number)
             except ValueError:
                 return notFoundResponse(request)
+            del number
 
             try:
                 incidentReport = (
                     await self.config.store.incidentReportWithNumber(
-                        numberValue
+                        event, incidentReportNumber
                     )
                 )
             except NoSuchIncidentReportError:
                 await self.config.authProvider.authorizeRequest(
-                    request, None, Authorization.readIncidentReports
+                    request, event, Authorization.readIncidents
                 )
                 return notFoundResponse(request)
 
@@ -289,7 +315,9 @@ class WebApplication(object):
                 request, incidentReport
             )
 
-        return IncidentReportPage(config=self.config, number=numberValue)
+        return IncidentReportPage(
+            config=self.config, event=event, number=incidentReportNumber
+        )
 
 
     @router.route(

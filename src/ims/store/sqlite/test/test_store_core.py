@@ -70,10 +70,9 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         self.maxDiff = None
         self.assertEqual(
-            schemaInfo,
             dedent(
                 """
-                Version: 3
+                Version: 4
                 ACCESS_MODE:
                   0: ID(text) not null *1
                 CONCENTRIC_STREET:
@@ -90,33 +89,31 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 INCIDENT:
                   0: EVENT(integer) not null *1
                   1: NUMBER(integer) not null *2
-                  2: VERSION(integer) not null
-                  3: CREATED(real) not null
-                  4: PRIORITY(integer) not null
-                  5: STATE(integer) not null
-                  6: SUMMARY(text)
-                  7: LOCATION_NAME(text)
-                  8: LOCATION_CONCENTRIC(text)
-                  9: LOCATION_RADIAL_HOUR(integer)
-                  10: LOCATION_RADIAL_MINUTE(integer)
-                  11: LOCATION_DESCRIPTION(text)
+                  2: CREATED(real) not null
+                  3: PRIORITY(integer) not null
+                  4: STATE(integer) not null
+                  5: SUMMARY(text)
+                  6: LOCATION_NAME(text)
+                  7: LOCATION_CONCENTRIC(text)
+                  8: LOCATION_RADIAL_HOUR(integer)
+                  9: LOCATION_RADIAL_MINUTE(integer)
+                  10: LOCATION_DESCRIPTION(text)
                 INCIDENT_REPORT:
-                  0: NUMBER(integer) not null *1
-                  1: CREATED(real) not null
-                  2: SUMMARY(text)
+                  0: EVENT(integer) not null *1
+                  1: NUMBER(integer) not null *2
+                  2: CREATED(real) not null
+                  3: SUMMARY(text)
+                  4: INCIDENT_NUMBER(integer)
                 INCIDENT_REPORT__REPORT_ENTRY:
-                  0: INCIDENT_REPORT_NUMBER(integer) not null *1
-                  1: REPORT_ENTRY(integer) not null *2
+                  0: EVENT(integer) not null *1
+                  1: INCIDENT_REPORT_NUMBER(integer) not null *2
+                  2: REPORT_ENTRY(integer) not null *3
                 INCIDENT_STATE:
                   0: ID(text) not null *1
                 INCIDENT_TYPE:
                   0: ID(integer) not null *1
                   1: NAME(text) not null
                   2: HIDDEN(numeric) not null
-                INCIDENT__INCIDENT_REPORT:
-                  0: EVENT(integer) not null *1
-                  1: INCIDENT_NUMBER(integer) not null *2
-                  2: INCIDENT_REPORT_NUMBER(integer) not null *3
                 INCIDENT__INCIDENT_TYPE:
                   0: EVENT(integer) not null *1
                   1: INCIDENT_NUMBER(integer) not null *2
@@ -139,7 +136,8 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 SCHEMA_INFO:
                   0: VERSION(integer) not null
                 """[1:]
-            )
+            ),
+            schemaInfo,
         )
 
 
@@ -151,6 +149,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         DataStore.printQueries(out)
         queryInfo = out.getvalue()
 
+        self.maxDiff = None
         self.assertStartsWith(
             queryInfo,
             "\n".join((
@@ -159,7 +158,8 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 "  -- query --",
                 "",
                 "    insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)",
-                "    values ((select ID from EVENT where NAME = :eventID), "
+                "    values "
+                "((select ID from EVENT where NAME = :eventID), "
                 ":expression, :mode)",
                 "",
                 "  -- query plan --",
@@ -170,11 +170,10 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 "",
                 "  -- query --",
                 "",
-                "    insert into INCIDENT__INCIDENT_REPORT (",
-                "        EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER",
-                "    )",
-                "    values ((select ID from EVENT where NAME = :eventID), "
-                ":incidentNumber, :incidentReportNumber)",
+                "    update INCIDENT_REPORT set INCIDENT_NUMBER = :value",
+                "    where EVENT = "
+                "(select ID from EVENT where NAME = :eventID) "
+                "and NUMBER = :incidentReportNumber",
                 "",
                 "  -- query plan --",
                 "",

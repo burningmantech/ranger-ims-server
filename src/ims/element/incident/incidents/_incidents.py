@@ -15,7 +15,7 @@
 ##
 
 """
-Dispatch queue page.
+Incidents page.
 """
 
 from attr import attrs
@@ -28,7 +28,7 @@ from ims.ext.json import jsonFalse, jsonTextFromObject, jsonTrue
 from ims.ext.klein import KleinRenderable
 from ims.model import Event
 
-from ..queue_template._queue_template import title
+from ..incidents_template._incidents_template import title
 from ...page import Page
 
 
@@ -37,9 +37,9 @@ __all__ = ()
 
 
 @attrs(auto_attribs=True, kw_only=True)
-class DispatchQueuePage(Page):
+class IncidentsPage(Page):
     """
-    Dispatch queue page.
+    Incidents page.
     """
 
     name: str = title

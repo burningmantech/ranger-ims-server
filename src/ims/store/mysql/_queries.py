@@ -36,7 +36,7 @@ template_setIncidentAttribute = (
 template_setIncidentReportAttribute = (
     f"""
     update INCIDENT_REPORT set {{column}} = %(value)s
-    where NUMBER = %(incidentReportNumber)s
+    where EVENT = ({query_eventID}) and NUMBER = %(incidentReportNumber)s
     """
 )
 
@@ -67,7 +67,7 @@ queries = Queries(
         """
     ),
     eventAccess=Query(
-        "look up event access",
+        "look up access for event",
         f"""
         select EXPRESSION from EVENT_ACCESS
         where EVENT = ({query_eventID}) and MODE = %(mode)s
@@ -94,7 +94,6 @@ queries = Queries(
         values (({query_eventID}), %(expression)s, %(mode)s)
         """
     ),
-
     incidentTypes=Query(
         "look up incident types",
         """
@@ -260,7 +259,6 @@ queries = Queries(
         insert into INCIDENT (
             EVENT,
             NUMBER,
-            VERSION,
             CREATED,
             PRIORITY,
             STATE,
@@ -274,7 +272,6 @@ queries = Queries(
         values (
             ({query_eventID}),
             %(incidentNumber)s,
-            1,
             %(incidentCreated)s,
             %(incidentPriority)s,
             %(incidentState)s,
@@ -337,18 +334,20 @@ queries = Queries(
     ),
     incidentReport=Query(
         "look up incident report",
-        """
-        select CREATED, SUMMARY from INCIDENT_REPORT
-        where NUMBER = %(incidentReportNumber)s
+        f"""
+        select CREATED, SUMMARY, INCIDENT_NUMBER from INCIDENT_REPORT
+        where EVENT = ({query_eventID}) and NUMBER = %(incidentReportNumber)s
         """
     ),
     incidentReport_reportEntries=Query(
         "look up report entries for incident report",
-        """
+        f"""
         select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
         where ID in (
             select REPORT_ENTRY from INCIDENT_REPORT__REPORT_ENTRY
-            where INCIDENT_REPORT_NUMBER = %(incidentReportNumber)s
+            where
+                EVENT = ({query_eventID}) and
+                INCIDENT_REPORT_NUMBER = %(incidentReportNumber)s
         )
         """
     ),
@@ -356,11 +355,7 @@ queries = Queries(
         "look up incident report numbers for event",
         f"""
         select NUMBER from INCIDENT_REPORT
-        where NUMBER in (
-            select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
-            where
-                EVENT = ({query_eventID})
-        )
+        where EVENT = ({query_eventID})
         """
     ),
     maxIncidentReportNumber=Query(
@@ -371,77 +366,50 @@ queries = Queries(
     ),
     createIncidentReport=Query(
         "create incident report",
-        """
-        insert into INCIDENT_REPORT (NUMBER, CREATED, SUMMARY)
+        f"""
+        insert into INCIDENT_REPORT (
+            EVENT, NUMBER, CREATED, SUMMARY, INCIDENT_NUMBER
+        )
         values (
+            ({query_eventID}),
             %(incidentReportNumber)s,
             %(incidentReportCreated)s,
-            %(incidentReportSummary)s
+            %(incidentReportSummary)s,
+            %(incidentNumber)s
         )
         """
     ),
     attachReportEntryToIncidentReport=Query(
         "add report entry to incident report",
-        """
+        f"""
         insert into INCIDENT_REPORT__REPORT_ENTRY (
-            INCIDENT_REPORT_NUMBER, REPORT_ENTRY
+            EVENT, INCIDENT_REPORT_NUMBER, REPORT_ENTRY
         )
-        values (%(incidentReportNumber)s, %(reportEntryID)s)
+        values (({query_eventID}), %(incidentReportNumber)s, %(reportEntryID)s)
         """
     ),
     setIncidentReport_summary=Query(
         "set incident report summary",
         template_setIncidentReportAttribute.format(column="SUMMARY")
     ),
+    attachIncidentReportToIncident=Query(
+        "attach incident report to incident",
+        template_setIncidentReportAttribute.format(column="INCIDENT_NUMBER")
+    ),
     detachedIncidentReportNumbers=Query(
         "look up detached incident report numbers",
-        """
+        f"""
         select NUMBER from INCIDENT_REPORT
-        where NUMBER not in (
-            select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
-        )
+        where EVENT = ({query_eventID}) and INCIDENT_NUMBER is null
         """
     ),
     attachedIncidentReportNumbers=Query(
         "look up attached incident report numbers",
         f"""
         select NUMBER from INCIDENT_REPORT
-        where NUMBER in (
-            select INCIDENT_REPORT_NUMBER from INCIDENT__INCIDENT_REPORT
-            where
-                EVENT = ({query_eventID}) and
-                INCIDENT_NUMBER = %(incidentNumber)s
-        )
-        """
-    ),
-    incidentsAttachedToIncidentReport=Query(
-        "look up incidents attached to incident report",
-        """
-        select e.NAME as EVENT, iir.INCIDENT_NUMBER as INCIDENT_NUMBER
-        from INCIDENT__INCIDENT_REPORT iir
-        join EVENT e on e.ID = iir.EVENT
-        where iir.INCIDENT_REPORT_NUMBER = %(incidentReportNumber)s
-        """
-    ),
-    attachIncidentReportToIncident=Query(
-        "add incident report to incident",
-        f"""
-        insert into INCIDENT__INCIDENT_REPORT (
-            EVENT, INCIDENT_NUMBER, INCIDENT_REPORT_NUMBER
-        )
-        values (
-            ({query_eventID}), %(incidentNumber)s, %(incidentReportNumber)s
-        )
-        """
-    ),
-    detachIncidentReportFromIncident=Query(
-        "remove incident report from incident",
-        f"""
-        delete from INCIDENT__INCIDENT_REPORT
         where
             EVENT = ({query_eventID}) and
-            INCIDENT_NUMBER = %(incidentNumber)s and
-            INCIDENT_REPORT_NUMBER = %(incidentReportNumber)s
+            INCIDENT_NUMBER = %(incidentNumber)s
         """
     ),
 )

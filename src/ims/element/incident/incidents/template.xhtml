@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
-  <head t:render="head" imports="dataTables,ims,viewDispatchQueue">
+  <head t:render="head" imports="dataTables,ims,viewIncidents">
     <link type="text/css" rel="stylesheet" media="screen" t:render="url" url="dataTablesBootstrapCSS" />
   </head>
 
@@ -11,12 +11,13 @@
     var editingAllowed = <json t:render="editing_allowed" />;
     var eventID        = <json t:render="event_id"        />;
 
-    var pageTemplateURL  = url_viewDispatchQueueTemplate;
-    var dataURL          = urlReplace(url_incidents, eventID);
-    var viewIncidentsURL = urlReplace(url_viewIncidents, eventID);
+    var pageTemplateURL        = url_viewIncidentsTemplate;
+    var dataURL                = urlReplace(url_incidents);
+    var viewIncidentsURL       = urlReplace(url_viewIncidents);
+    var viewIncidentReportsURL = urlReplace(url_viewIncidentReports);
 
     var concentricStreetNameByID = <json t:render="concentric_street_name_by_id" />;
 
-    initDispatchQueuePage();
+    initIncidentsPage();
   </script>
 </html>

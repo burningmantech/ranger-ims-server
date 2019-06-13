@@ -17,11 +17,11 @@
 // Initialize UI
 //
 
-function initDispatchQueuePage() {
+function initIncidentsPage() {
     function loadedBody() {
         disableEditing();
 
-        loadEventIncidentReports(initDispatchQueueTable);
+        loadEventIncidentReports(initIncidentsTable);
 
         var command = false;
 
@@ -88,11 +88,11 @@ function loadEventIncidentReports(success) {
         window.alert(message);
     }
 
-    jsonRequest(url_incidentReports + "?event=" + eventID, null, ok, fail);
+    jsonRequest(urlReplace(url_incidentReports), null, ok, fail);
 
     console.log("Loaded event incident reports");
-    if (dispatchQueueTable != null) {
-        dispatchQueueTable.ajax.reload();
+    if (incidentsTable != null) {
+        incidentsTable.ajax.reload();
     }
 }
 
@@ -101,9 +101,9 @@ function loadEventIncidentReports(success) {
 // Dispatch queue table
 //
 
-var dispatchQueueTable = null;
+var incidentsTable = null;
 
-function initDispatchQueueTable() {
+function initIncidentsTable() {
     initDataTables();
     initTableButtons();
     initSearchField();
@@ -121,7 +121,7 @@ function initDispatchQueueTable() {
         var number = json["incident_number"];
 
         console.log("Got incident update: " + number);
-        dispatchQueueTable.ajax.reload();
+        incidentsTable.ajax.reload();
     }, true);
 }
 
@@ -135,7 +135,7 @@ function initDataTables() {
         return incidents;
     }
 
-    dispatchQueueTable = $("#queue_table").DataTable({
+    incidentsTable = $("#queue_table").DataTable({
         "deferRender": true,
         "paging": true,
         "lengthChange": false,
@@ -242,8 +242,6 @@ function initTableButtons() {
     showState("open");
     showDays(null);
     showRows(25);
-
-    $(".new_incident_link").attr("href", viewIncidentsURL + "new");
 }
 
 
@@ -262,8 +260,8 @@ function initSearchField() {
     // Search field handling
 
     $("#search_input").on("keyup", function () {
-        dispatchQueueTable.search(this.value);
-        dispatchQueueTable.draw();
+        incidentsTable.search(this.value);
+        incidentsTable.draw();
     });
 }
 
@@ -289,7 +287,7 @@ function initSearch() {
 
     $.fn.dataTable.ext.search.push(
         function(settings, rowData, rowIndex) {
-            var incident = dispatchQueueTable.data()[rowIndex];
+            var incident = incidentsTable.data()[rowIndex];
 
             switch (_showState) {
                 case "all":
@@ -339,7 +337,7 @@ function showState(stateToShow) {
 
     _showState = stateToShow;
 
-    dispatchQueueTable.draw();
+    incidentsTable.draw();
 }
 
 
@@ -370,7 +368,7 @@ function showDays(daysBackToShow) {
             ;
     }
 
-    dispatchQueueTable.draw();
+    incidentsTable.draw();
 }
 
 
@@ -394,6 +392,6 @@ function showRows(rowsToShow) {
         rowsToShow = -1;
     }
 
-    dispatchQueueTable.page.len(rowsToShow);
-    dispatchQueueTable.draw()
+    incidentsTable.page.len(rowsToShow);
+    incidentsTable.draw()
 }

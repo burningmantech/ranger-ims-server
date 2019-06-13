@@ -15,12 +15,12 @@
 ##
 
 """
-Dispatch queue page element.
+Incidents page element.
 """
 
-from ._queue import DispatchQueuePage
+from ._incidents import IncidentsPage
 
 
 __all__ = (
-    "DispatchQueuePage",
+    "IncidentsPage",
 )

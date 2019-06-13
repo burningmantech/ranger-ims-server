@@ -102,7 +102,7 @@ function loadIncidentReport(success) {
             "created": null,
         });
     } else {
-        var url = url_incidentReports + number;
+        var url = urlReplace(url_incidentReports) + number;
         jsonRequest(url, null, ok, fail);
     }
 }
@@ -184,7 +184,7 @@ function drawSummary() {
 
 function sendEdits(edits, success, error) {
     var number = incidentReport.number
-    var url = url_incidentReports;
+    var url = urlReplace(url_incidentReports);
 
     if (number == null) {
         // We're creating a new incident report.
@@ -231,7 +231,8 @@ function sendEdits(edits, success, error) {
             // Update browser history to update URL
             drawTitle();
             window.history.pushState(
-                null, document.title, url_viewIncidentReports + newNumber
+                null, document.title,
+                urlReplace(url_viewIncidentReports) + newNumber
             );
         }
 
