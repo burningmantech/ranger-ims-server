@@ -677,8 +677,11 @@ class APIApplication(object):
         """
         New incident report endpoint.
         """
+        event = Event(id=eventID)
+        del eventID
+
         await self.config.authProvider.authorizeRequest(
-            request, None, Authorization.writeIncidentReports
+            request, event, Authorization.writeIncidentReports
         )
 
         try:
