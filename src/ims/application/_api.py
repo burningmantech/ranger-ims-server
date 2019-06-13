@@ -635,6 +635,7 @@ class APIApplication(object):
 
         store = self.config.store
 
+        incidentReports: Iterable[IncidentReport]
         if limitedAccess:
             incidentReports = (
                 incidentReport
