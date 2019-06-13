@@ -1474,7 +1474,7 @@ class DatabaseStore(IMSDataStore):
 
         self._log.info(
             "Attached report entries to incident report "
-            "{event}#{incidentReportNumber}: {reportEntry}",
+            "{event}#{incidentReportNumber}: {reportEntries}",
             storeWriteClass=IncidentReport,
             event=event,
             incidentReportNumber=incidentReportNumber,
