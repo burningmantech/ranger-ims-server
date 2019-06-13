@@ -854,7 +854,7 @@ class APIApplication(object):
 
             if action == "attach":
                 await store.attachIncidentReportToIncident(
-                    incidentNumber, event, incidentNumber, author
+                    incidentReportNumber, event, incidentNumber, author
                 )
             elif action == "detach":
                 await store.detachIncidentReportFromIncident(
