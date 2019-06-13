@@ -1054,7 +1054,6 @@ class DatabaseStore(IMSDataStore):
             txn.execute(query, dict(
                 eventID=event.id,
                 incidentNumber=incidentNumber,
-                column=attribute,  # FIXME: unused?
                 value=value,
             ))
 
@@ -1576,7 +1575,6 @@ class DatabaseStore(IMSDataStore):
             txn.execute(query, dict(
                 eventID=event.id,
                 incidentReportNumber=incidentReportNumber,
-                column=attribute,  # FIXME: unused?
                 value=value,
             ))
 
