@@ -223,10 +223,14 @@ class Element(BaseElement):
             self.config.authProvider.authorizationsForUser, request.user
         )
 
+        relevantAuthorizations = (
+            Authorization.readIncidents | Authorization.writeIncidentReports
+        )
+
         eventIDs = order([
             event.id for event in
             await self.config.store.events()
-            if Authorization.readIncidents & await authorizationsForUser(event)
+            if relevantAuthorizations & await authorizationsForUser(event)
         ])
 
         if eventIDs:
