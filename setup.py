@@ -122,7 +122,7 @@ install_requirements = [
     "attrs==19.1.0",
     "cattrs==0.4.0",
     "hyperlink==19.0.0",
-    "klein==17.10.0",
+    "klein==19.6.0",
     "PyMySQL==0.9.3",
     "Twisted==19.2.1",
     "zope.interface==4.6.0",
@@ -145,7 +145,7 @@ install_requirements = [
     "python-dateutil==2.8.0",
     "ranger-ims-server==18.0.0.dev0",
     "six==1.12.0",
-    "Werkzeug==0.15.4",
+    "Werkzeug==0.15.5",
 ]
 
 extras_requirements = {}

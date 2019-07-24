@@ -199,9 +199,7 @@ class Configuration(object):
         )
         cls._log.info("hostName: {hostName}", hostName=hostName)
 
-        port = int(cast(str, parser.valueFromConfig(
-            "PORT", "Core", "Port", "80"))
-        )
+        port = int(parser.valueFromConfig("PORT", "Core", "Port", "80"))
         cls._log.info("Port: {port}", port=port)
 
         serverRoot = parser.pathFromConfig(

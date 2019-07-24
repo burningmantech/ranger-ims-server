@@ -23,6 +23,8 @@ mypy "$@"                                                                       
         -e ": error: Cannot find module named 'hypothesis.[^']*'"                                  \
         -e ": error: Cannot find module named 'klein'"                                             \
         -e ": error: Cannot find module named 'klein.[^']*'"                                       \
+        -e ": error: Cannot find module named 'twisted'"                                       \
+        -e ": error: Cannot find module named 'twisted.[^']*'"                                       \
         -e ": error: No library stub file for "                                                    \
         -e ': error: "Callable\[\[[^\]\+\], None\]" has no attribute "todo"'                       \
         -e ': error: <nothing> has no attribute "__iter__"'                                        \
