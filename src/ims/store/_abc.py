@@ -59,6 +59,43 @@ class IMSDataStore(ABC):
 
 
     ###
+    # Incident Types
+    ###
+
+
+    @abstractmethod
+    async def incidentTypes(
+        self, includeHidden: bool = False
+    ) -> Iterable[str]:
+        """
+        Look up the incident types used in this store.
+        """
+
+
+    @abstractmethod
+    async def createIncidentType(
+        self, incidentType: str, hidden: bool = False
+    ) -> None:
+        """
+        Create the given incident type.
+        """
+
+
+    @abstractmethod
+    async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
+        """
+        Show the given incident types.
+        """
+
+
+    @abstractmethod
+    async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
+        """
+        Hide the given incident types.
+        """
+
+
+    ###
     # Events
     ###
 
@@ -116,43 +153,6 @@ class IMSDataStore(ABC):
     async def setReporters(self, event: Event, writers: Iterable[str]) -> None:
         """
         Set the allowed reporters for the given event.
-        """
-
-
-    ###
-    # Incident Types
-    ###
-
-
-    @abstractmethod
-    async def incidentTypes(
-        self, includeHidden: bool = False
-    ) -> Iterable[str]:
-        """
-        Look up the incident types used in this store.
-        """
-
-
-    @abstractmethod
-    async def createIncidentType(
-        self, incidentType: str, hidden: bool = False
-    ) -> None:
-        """
-        Create the given incident type.
-        """
-
-
-    @abstractmethod
-    async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
-        """
-        Show the given incident types.
-        """
-
-
-    @abstractmethod
-    async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
-        """
-        Hide the given incident types.
         """
 
 
