@@ -81,6 +81,7 @@ entry_points = {
 
 script_entry_points = {
     "server"      : ("ims.run", "Server.main"),
+    "export_json" : ("ims.store.export", "JSONExporter.main"),
     # "endpoints"   : ("ims.legacy.service.tool", "KleinTool.main"),
     # "schema"      : ("ims.store.sqlite", "DataStore.printSchema"),
     # "queries"     : ("ims.store.sqlite", "DataStore.printQueries"),

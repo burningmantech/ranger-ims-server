@@ -21,7 +21,9 @@ Command line options for the IMS server.
 from pathlib import Path
 from sys import stderr, stdout
 from textwrap import dedent
-from typing import ClassVar, Mapping, MutableMapping, Optional, Sequence, cast
+from typing import (
+    ClassVar, IO, Mapping, MutableMapping, Optional, Sequence, cast
+)
 
 from attr import attrs
 
@@ -70,51 +72,6 @@ class ServerOptions(Options):
         cast(MutableMapping, self)["configFile"] = Path(path)
 
 
-    def initConfig(self) -> None:
-        try:
-            configFile = cast(
-                Optional[Path], cast(Mapping, self).get("configFile")
-            )
-
-            if configFile and not configFile.is_file():
-                self.log.info("Config file not found.")
-                configFile = None
-
-            configuration = Configuration.fromConfigFile(configFile)
-
-            options = cast(MutableMapping, self)
-
-            if "overrides" in options:
-                for _override in options["overrides"]:
-                    raise NotImplementedError("Option overrides unimplemented")
-
-            if "logFileName" in options:
-                configuration = configuration.replace(
-                    logFilePath=Path(options["logFileName"])
-                )
-            else:
-                self.opt_log_file(str(configuration.logFilePath))
-
-            if "logFormat" in options:
-                configuration = configuration.replace(
-                    logFormat=options["logFormat"]
-                )
-            elif configuration.logFormat is not None:
-                self.opt_log_format(configuration.logFormat.name)
-
-            if "logLevel" in options:
-                configuration = configuration.replace(
-                    logLevelName=options["logLevel"].name
-                )
-            elif configuration.logLevelName is not None:
-                self.opt_log_level(configuration.logLevelName)
-
-            options["configuration"] = configuration
-
-        except Exception as e:
-            exit(ExitStatus.EX_CONFIG, str(e))
-
-
     def opt_log_level(self, levelName: str) -> None:
         """
         Set default log level.
@@ -138,22 +95,6 @@ class ServerOptions(Options):
         Log to file. ("-" for stdout, "+" for stderr; default: "-")
         """
         self["logFileName"] = fileName
-
-        if fileName == "-":
-            self["logFile"] = stdout
-            return
-
-        if fileName == "+":
-            self["logFile"] = stderr
-            return
-
-        try:
-            self["logFile"] = openFile(fileName, "a")
-        except EnvironmentError as e:
-            exit(
-                ExitStatus.EX_IOERR,
-                f"Unable to open log file {fileName!r}: {e}"
-            )
 
 
     def opt_log_format(self, logFormatName: str) -> None:
@@ -202,6 +143,71 @@ class ServerOptions(Options):
         )
 
 
+    def initConfig(self) -> None:
+        try:
+            configFile = cast(
+                Optional[Path], cast(Mapping, self).get("configFile")
+            )
+
+            if configFile and not configFile.is_file():
+                self.log.info("Config file not found.")
+                configFile = None
+
+            configuration = Configuration.fromConfigFile(configFile)
+
+            options = cast(MutableMapping, self)
+
+            if "overrides" in options:
+                for _override in options["overrides"]:
+                    raise NotImplementedError("Option overrides unimplemented")
+
+            if "logFileName" in options:
+                configuration = configuration.replace(
+                    logFilePath=Path(options["logFileName"])
+                )
+
+            self.opt_log_file(str(configuration.logFilePath))
+
+            if "logFormat" in options:
+                configuration = configuration.replace(
+                    logFormat=options["logFormat"]
+                )
+            elif configuration.logFormat is not None:
+                self.opt_log_format(configuration.logFormat.name)
+
+            if "logLevel" in options:
+                configuration = configuration.replace(
+                    logLevelName=options["logLevel"].name
+                )
+            elif configuration.logLevelName is not None:
+                self.opt_log_level(configuration.logLevelName)
+
+            options["configuration"] = configuration
+
+        except Exception as e:
+            exit(ExitStatus.EX_CONFIG, str(e))
+
+
+    def initLogFile(self) -> None:
+        fileName = self["logFileName"]
+
+        logFile: IO
+        if fileName == "-":
+            logFile = stdout
+        elif fileName == "+":
+            logFile = stderr
+        else:
+            try:
+                logFile = openFile(fileName, "a")
+            except EnvironmentError as e:
+                exit(
+                    ExitStatus.EX_IOERR,
+                    f"Unable to open log file {fileName!r}: {e}"
+                )
+
+        self["logFileName"] = logFile
+
+
     def selectDefaultLogObserver(self) -> None:
         """
         Set :func:`fileLogObserverFactory` to the default appropriate for the
@@ -221,6 +227,7 @@ class ServerOptions(Options):
     def parseOptions(self, options: Optional[Sequence[str]] = None) -> None:
         Options.parseOptions(self, options=options)
 
+        self.initLogFile()
         self.selectDefaultLogObserver()
 
 

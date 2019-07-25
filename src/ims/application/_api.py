@@ -953,9 +953,9 @@ class APIApplication(object):
         acl = {}
         for event in await store.events():
             acl[event.id] = dict(
-                readers=await store.readers(event),
-                writers=await store.writers(event),
-                reporters=await store.reporters(event),
+                readers=(await store.readers(event)),
+                writers=(await store.writers(event)),
+                reporters=(await store.reporters(event)),
             )
         return jsonTextFromObject(acl)
 
