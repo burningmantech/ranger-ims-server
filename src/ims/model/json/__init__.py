@@ -24,6 +24,7 @@ from . import _type
 from ._address import RodGarettAddressJSONKey, TextOnlyAddressJSONKey
 from ._entry import ReportEntryJSONKey
 from ._eventaccess import EventAccessJSONKey
+from ._eventdata import EventDataJSONKey
 from ._incident import IncidentJSONKey
 from ._json import (
     JSONCodecError, jsonObjectFromModelObject, modelObjectFromJSONObject
@@ -41,6 +42,7 @@ del _type
 
 __all__ = (
     "EventAccessJSONKey",
+    "EventDataJSONKey",
     "IncidentJSONKey",
     "IncidentPriorityJSONValue",
     "IncidentReportJSONKey",

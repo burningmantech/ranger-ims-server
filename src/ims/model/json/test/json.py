@@ -25,6 +25,7 @@ from ..._address import Address, RodGarettAddress, TextOnlyAddress
 from ..._entry import ReportEntry
 from ..._event import Event
 from ..._eventaccess import EventAccess
+from ..._eventdata import EventData
 from ..._incident import Incident
 from ..._location import Location
 from ..._priority import IncidentPriority
@@ -92,6 +93,16 @@ def jsonFromEventAccess(eventAccess: EventAccess) -> Dict[str, List[str]]:
         readers=jsonSerialize(eventAccess.readers),
         writers=jsonSerialize(eventAccess.writers),
         reporters=jsonSerialize(eventAccess.reporters),
+    )
+
+
+def jsonFromEventData(eventData: EventData) -> Dict[str, Any]:
+    return dict(
+        event=jsonSerialize(eventData.event),
+        access=jsonSerialize(eventData.access),
+        concentric_streets=eventData.concentricStreets,
+        incidents=[jsonSerialize(i) for i in eventData.incidents],
+        incident_reports=[jsonSerialize(r) for r in eventData.incidentReports],
     )
 
 

@@ -36,6 +36,7 @@ from ._address import RodGarettAddress, TextOnlyAddress
 from ._entry import ReportEntry
 from ._event import Event
 from ._eventaccess import EventAccess
+from ._eventdata import EventData
 from ._incident import Incident
 from ._location import Location
 from ._priority import IncidentPriority
@@ -52,6 +53,7 @@ __all__ = (
     "dateTimes",
     "events",
     "eventAccesses",
+    "eventDatas",
     "incidentLists",
     "incidentNumbers",
     "incidentPriorities",
@@ -246,6 +248,25 @@ def eventAccesses(draw: Callable) -> EventAccess:
         readers=draw(lists(text(min_size=1))),
         writers=draw(lists(text(min_size=1))),
         reporters=draw(lists(text(min_size=1))),
+    )
+
+
+@composite
+def eventDatas(draw: Callable) -> EventData:
+    """
+    Strategy that generates :class:`EventData` values.
+    """
+    event = draw(events())
+
+    return EventData(
+        event=event,
+        access=draw(eventAccesses()),
+        concentricStreets=draw(dictionaries(
+            keys=sampled_from(("readers", "writers", "reporters")),
+            values=text(min_size=1),
+        )),
+        incidents=draw(lists(incidents(event=event))),
+        incidentReports=draw(lists(incidentReports(event=event))),
     )
 
 

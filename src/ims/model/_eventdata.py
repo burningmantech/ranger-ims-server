@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_eventdata -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -15,37 +17,33 @@
 ##
 
 """
-Incident Management System data model
+Event Data
 """
 
-from ._address import Address, RodGarettAddress, TextOnlyAddress
-from ._entry import ReportEntry
+from typing import Iterable, Mapping
+
+from attr import attrs
+
 from ._event import Event
 from ._eventaccess import EventAccess
-from ._eventdata import EventData
 from ._incident import Incident
-from ._location import Location
-from ._priority import IncidentPriority
-from ._ranger import Ranger, RangerStatus
 from ._report import IncidentReport
-from ._state import IncidentState
-from ._type import KnownIncidentType
 
 
-__all__ = (
-    "Address",
-    "Event",
-    "EventAccess",
-    "EventData",
-    "Incident",
-    "IncidentPriority",
-    "IncidentReport",
-    "IncidentState",
-    "KnownIncidentType",
-    "Location",
-    "Ranger",
-    "RangerStatus",
-    "ReportEntry",
-    "RodGarettAddress",
-    "TextOnlyAddress",
-)
+__all__ = ()
+
+
+
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
+class EventData(object):
+    """
+    Event Data container
+
+    Encapsulates all data associated with an event.
+    """
+
+    event:             Event
+    access:            EventAccess
+    concentricStreets: Mapping[str, str]
+    incidents:         Iterable[Incident]
+    incidentReports:   Iterable[IncidentReport]
