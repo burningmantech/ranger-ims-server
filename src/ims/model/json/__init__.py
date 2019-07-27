@@ -23,6 +23,7 @@ from . import _ranger
 from . import _type
 from ._address import RodGarettAddressJSONKey, TextOnlyAddressJSONKey
 from ._entry import ReportEntryJSONKey
+from ._eventaccess import EventAccessJSONKey
 from ._incident import IncidentJSONKey
 from ._json import (
     JSONCodecError, jsonObjectFromModelObject, modelObjectFromJSONObject
@@ -32,12 +33,14 @@ from ._priority import IncidentPriorityJSONValue
 from ._report import IncidentReportJSONKey
 from ._state import IncidentStateJSONValue
 
+# These were imported only to register the serializers/de-serializers
 del _event
 del _ranger
 del _type
 
 
 __all__ = (
+    "EventAccessJSONKey",
     "IncidentJSONKey",
     "IncidentPriorityJSONValue",
     "IncidentReportJSONKey",

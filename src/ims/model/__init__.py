@@ -21,6 +21,7 @@ Incident Management System data model
 from ._address import Address, RodGarettAddress, TextOnlyAddress
 from ._entry import ReportEntry
 from ._event import Event
+from ._eventaccess import EventAccess
 from ._incident import Incident
 from ._location import Location
 from ._priority import IncidentPriority
@@ -33,6 +34,7 @@ from ._type import KnownIncidentType
 __all__ = (
     "Address",
     "Event",
+    "EventAccess",
     "Incident",
     "IncidentPriority",
     "IncidentReport",

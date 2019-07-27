@@ -26,8 +26,8 @@ from typing import Callable, Hashable, Optional, cast
 from hypothesis import HealthCheck, settings
 from hypothesis.searchstrategy import SearchStrategy
 from hypothesis.strategies import (
-    booleans, composite, datetimes as _datetimes, integers, lists, none,
-    one_of, sampled_from, text,
+    booleans, composite, datetimes as _datetimes, dictionaries, integers,
+    lists, none, one_of, sampled_from, text,
 )
 
 from ims.dms import hashPassword
@@ -35,6 +35,7 @@ from ims.dms import hashPassword
 from ._address import RodGarettAddress, TextOnlyAddress
 from ._entry import ReportEntry
 from ._event import Event
+from ._eventaccess import EventAccess
 from ._incident import Incident
 from ._location import Location
 from ._priority import IncidentPriority
@@ -50,6 +51,7 @@ __all__ = (
     "concentricStreetNames",
     "dateTimes",
     "events",
+    "eventAccesses",
     "incidentLists",
     "incidentNumbers",
     "incidentPriorities",
@@ -233,6 +235,18 @@ def events(draw: Callable) -> Event:
     Strategy that generates :class:`Event` values.
     """
     return Event(id=draw(text(min_size=1)))
+
+
+@composite
+def eventAccesses(draw: Callable) -> EventAccess:
+    """
+    Strategy that generates :class:`EventAccess` values.
+    """
+    return EventAccess(
+        readers=draw(lists(text(min_size=1))),
+        writers=draw(lists(text(min_size=1))),
+        reporters=draw(lists(text(min_size=1))),
+    )
 
 
 ##
