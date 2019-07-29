@@ -29,7 +29,7 @@ from ._priority import IncidentPriority
 from ._ranger import Ranger, RangerStatus
 from ._report import IncidentReport
 from ._state import IncidentState
-from ._type import KnownIncidentType
+from ._type import IncidentType, KnownIncidentType
 
 
 __all__ = (
@@ -41,6 +41,7 @@ __all__ = (
     "IncidentPriority",
     "IncidentReport",
     "IncidentState",
+    "IncidentType",
     "KnownIncidentType",
     "Location",
     "Ranger",

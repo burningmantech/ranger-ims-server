@@ -20,7 +20,6 @@ Incident Management System data model JSON serialization/deserialization
 
 from . import _event
 from . import _ranger
-from . import _type
 from ._address import RodGarettAddressJSONKey, TextOnlyAddressJSONKey
 from ._entry import ReportEntryJSONKey
 from ._eventaccess import EventAccessJSONKey
@@ -33,11 +32,11 @@ from ._location import LocationJSONKey
 from ._priority import IncidentPriorityJSONValue
 from ._report import IncidentReportJSONKey
 from ._state import IncidentStateJSONValue
+from ._type import IncidentTypeJSONKey
 
 # These were imported only to register the serializers/de-serializers
 del _event
 del _ranger
-del _type
 
 
 __all__ = (
@@ -47,6 +46,7 @@ __all__ = (
     "IncidentPriorityJSONValue",
     "IncidentReportJSONKey",
     "IncidentStateJSONValue",
+    "IncidentTypeJSONKey",
     "JSONCodecError",
     "LocationJSONKey",
     "ReportEntryJSONKey",

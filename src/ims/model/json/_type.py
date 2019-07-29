@@ -19,8 +19,60 @@ JSON serialization/deserialization for incident type
 """
 
 
+from enum import Enum, unique
+from typing import Any, Dict, Type
+
+from ._json import (
+    deserialize, jsonSerialize, registerDeserializer, registerSerializer
+)
+from .._type import IncidentType
+
+
 __all__ = ()
 
 
-# Nothing to register here; by default, cattrs handles enums by value, which is
-# what we want here.
+
+@unique
+class IncidentTypeJSONKey(Enum):
+    """
+    Incident type JSON keys
+    """
+
+    name   = "name"
+    hidden = "hidden"
+
+
+
+class IncidentTypeJSONType(Enum):
+    """
+    Incident type attribute types
+    """
+
+    name   = str
+    hidden = bool
+
+
+
+def serializeIncidentType(incidentType: IncidentType) -> Dict[str, Any]:
+    # Map IncidentType attribute names to JSON dict key names
+    return dict(
+        (key.value, jsonSerialize(getattr(incidentType, key.name)))
+        for key in IncidentTypeJSONKey
+    )
+
+registerSerializer(IncidentType, serializeIncidentType)
+
+
+def deserializeIncidentType(obj: Dict[str, Any], cl: Type) -> IncidentType:
+    assert cl is IncidentType, (cl, obj)
+
+    return deserialize(
+        obj, IncidentType,
+        IncidentTypeJSONType, IncidentTypeJSONKey,
+    )
+
+registerDeserializer(IncidentType, deserializeIncidentType)
+
+
+# Nothing to register for KnownIncidentType; by default, cattrs handles enums
+# by value, which is what we want here.

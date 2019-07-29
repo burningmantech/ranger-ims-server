@@ -43,7 +43,7 @@ from ._priority import IncidentPriority
 from ._ranger import Ranger, RangerStatus
 from ._report import IncidentReport
 from ._state import IncidentState
-from ._type import KnownIncidentType
+from ._type import IncidentType, KnownIncidentType
 
 
 __all__ = (
@@ -64,7 +64,6 @@ __all__ = (
     "incidentStates",
     "incidentSummaries",
     "incidentTypes",
-    "incidentTypesText",
     "incidents",
     "locationNames",
     "locations",
@@ -310,6 +309,8 @@ def incidents(
     if event is None:
         event = draw(events())
 
+    incidentTypes = [t.name for t in draw(lists(incidentTypes()))]
+
     return Incident(
         event=cast(Event, event),
         number=number,
@@ -319,7 +320,7 @@ def incidents(
         summary=draw(incidentSummaries()),
         location=draw(locations()),
         rangerHandles=draw(lists(rangerHandles())),
-        incidentTypes=draw(lists(incidentTypesText())),
+        incidentTypes=incidentTypes,
         reportEntries=draw(lists(reportEntries(
             automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
         ))),
@@ -495,14 +496,18 @@ def incidentStates() -> SearchStrategy:  # IncidentState
 # Type
 ##
 
-def incidentTypesText() -> SearchStrategy:  # str
+@composite
+def incidentTypes(draw: Callable) -> IncidentType:
     """
     Strategy that generates incident types.
     """
-    return text(min_size=1)
+    return IncidentType(
+        name=draw(text(min_size=1)),
+        hidden=draw(booleans()),
+    )
 
 
-def incidentTypes() -> SearchStrategy:  # KnownIncidentType
+def knownIncidentTypes() -> SearchStrategy:  # KnownIncidentType
     """
     Strategy that generates :class:`KnownIncidentType` values.
     """

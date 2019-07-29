@@ -32,7 +32,7 @@ from ..._priority import IncidentPriority
 from ..._ranger import Ranger, RangerStatus
 from ..._report import IncidentReport
 from ..._state import IncidentState
-from ..._type import KnownIncidentType
+from ..._type import IncidentType, KnownIncidentType
 
 
 __all__ = ()
@@ -221,6 +221,13 @@ def jsonFromIncidentState(state: IncidentState) -> str:
 ##
 # Type
 ##
+
+def jsonFromIncidentType(incidentType: IncidentType) -> Dict[str, Any]:
+    return dict(
+        name=jsonSerialize(incidentType.name),
+        hidden=jsonSerialize(incidentType.hidden),
+    )
+
 
 def jsonFromKnownIncidentType(incidentType: KnownIncidentType) -> str:
     return incidentType.value

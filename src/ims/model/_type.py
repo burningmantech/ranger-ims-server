@@ -20,8 +20,26 @@ Incident type
 
 from enum import Enum, unique
 
+from attr import attrs
+
 
 __all__ = ()
+
+
+
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
+class IncidentType(object):
+    """
+    Incident Type
+    """
+
+    name:   str
+    hidden: bool
+
+
+
+admin = IncidentType(name="Admin", hidden=False)
+junk  = IncidentType(name="Junk",  hidden=False)
 
 
 
@@ -36,5 +54,5 @@ class KnownIncidentType(Enum):
     the Incident Management System itself, meaning they are treated specially.
     """
 
-    admin = "Admin"
-    junk  = "Junk"
+    admin = admin.name
+    junk  = junk.name

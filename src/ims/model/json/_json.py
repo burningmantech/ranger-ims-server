@@ -84,7 +84,14 @@ def deserialize(
     obj: Dict[str, Any], cls: Type, typeEnum: Type, keyEnum: Type
 ) -> Any:
     def deserializeKey(key: Enum) -> Any:
-        cls = getattr(typeEnum, key.name).value
+        try:
+            cls = getattr(typeEnum, key.name).value
+        except AttributeError:
+            raise AttributeError(
+                "No attribute {attribute!r} in type enum {enum!r}".format(
+                    attribute=key.name, enum=typeEnum
+                )
+            )
         try:
             return jsonDeserialize(
                 obj.get(key.value, None), cls
