@@ -113,7 +113,7 @@ class Server(object):
         exporter = JSONExporter(store=config.store)
         data = await exporter.asBytes()
 
-        print(data.decode("utf-8"), file=stdout)
+        print(data.decode("utf-8"), file=options["outFile"])
 
         cls.stop()
 

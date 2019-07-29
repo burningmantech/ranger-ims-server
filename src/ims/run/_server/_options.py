@@ -44,6 +44,28 @@ __all__ = ()
 openFile = open
 
 
+def openFileName(fileName: str) -> None:
+    """
+    Open a file, given a name.
+    Handles "+" and "-" as stdin/stdout.
+    """
+    outFile: IO
+    if fileName == "-":
+        outFile = stdout
+    elif fileName == "+":
+        outFile = stderr
+    else:
+        try:
+            outFile = openFile(fileName, "a")
+        except EnvironmentError as e:
+            exit(
+                ExitStatus.EX_IOERR,
+                f"Unable to open file {fileName!r}: {e}"
+            )
+
+    return outFile
+
+
 
 class Options(BaseOptions):
     """
@@ -69,6 +91,12 @@ class ExportOptions(Options):
     """
     Command line options for the IMS server.
     """
+
+    def opt_output(self, fileName: str) -> None:
+        """
+        Output file. ("-" for stdout, "+" for stderr; default: "-")
+        """
+        self["outFile"] = openFileName(fileName)
 
 
 
@@ -215,23 +243,7 @@ class IMSOptions(Options):
 
 
     def initLogFile(self) -> None:
-        fileName = self["logFileName"]
-
-        logFile: IO
-        if fileName == "-":
-            logFile = stdout
-        elif fileName == "+":
-            logFile = stderr
-        else:
-            try:
-                logFile = openFile(fileName, "a")
-            except EnvironmentError as e:
-                exit(
-                    ExitStatus.EX_IOERR,
-                    f"Unable to open log file {fileName!r}: {e}"
-                )
-
-        self["logFileName"] = logFile
+        self["logFile"] = openFileName(self["logFileName"])
 
 
     def selectDefaultLogObserver(self) -> None:
