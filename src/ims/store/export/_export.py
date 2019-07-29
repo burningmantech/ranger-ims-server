@@ -26,7 +26,7 @@ from attr import attrs
 from twisted.logger import Logger
 
 from ims.ext.json import jsonTextFromObject
-from ims.model import Event
+from ims.model import Event, EventAccess, EventData
 from ims.model.json import jsonObjectFromModelObject
 
 from .._abc import IMSDataStore
@@ -113,58 +113,23 @@ class JSONExporter(object):
         Export an event.
         """
         self._log.info("Exporting event {event}...", event=event)
-        return dict(
-            id=event.id,
-            access=(await self._access(event)),
-            concentric_streets=(await self._concentricStreets(event)),
-            incidents=(await self._incidents(event)),
-            incident_reports=(await self._incidentReports(event)),
+
+        eventAccess=EventAccess(
+            readers=tuple(await self.store.readers(event)),
+            writers=tuple(await self.store.writers(event)),
+            reporters=tuple(await self.store.reporters(event)),
         )
 
+        concentricStreets=tuple(await self.store.concentricStreets(event)),
+        incidents=tuple(await self.store.incidents(event))
+        incidentReports=tuple(await self.store.incidentReports(event))
 
-    async def _access(self, event: Event) -> Mapping[str, Iterable[str]]:
-        """
-        Export event access.
-        """
-        self._log.info("Exporting access for event {event}...", event=event)
-        return dict(
-            readers=(await self.store.readers(event)),
-            writers=(await self.store.writers(event)),
-            reporters=(await self.store.reporters(event)),
+        eventData = EventData(
+            event=event,
+            access=eventAccess,
+            concentricStreets=concentricStreets,
+            incidents=incidents,
+            incidentReports=incidentReports,
         )
 
-
-    async def _concentricStreets(self, event: Event) -> Mapping[str, str]:
-        """
-        Export event concentric streets.
-        """
-        self._log.info(
-            "Exporting concentric streets for event {event}...", event=event
-        )
-        return (await self.store.concentricStreets(event))
-
-
-    async def _incidents(self, event: Event) -> Iterable[Mapping[str, Any]]:
-        """
-        Export event incidents.
-        """
-        self._log.info("Exporting incidents for event {event}...", event=event)
-        return (
-            jsonObjectFromModelObject(incident)
-            for incident in (await self.store.incidents(event))
-        )
-
-
-    async def _incidentReports(
-        self, event: Event
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        Export event incidents.
-        """
-        self._log.info(
-            "Exporting incident reports for event {event}...", event=event
-        )
-        return (
-            jsonObjectFromModelObject(incidentReport)
-            for incidentReport in (await self.store.incidentReports(event))
-        )
+        return jsonObjectFromModelObject(eventData)
