@@ -309,7 +309,7 @@ def incidents(
     if event is None:
         event = draw(events())
 
-    incidentTypes = [t.name for t in draw(lists(incidentTypes()))]
+    types = [t.name for t in draw(lists(incidentTypes()))]
 
     return Incident(
         event=cast(Event, event),
@@ -320,7 +320,7 @@ def incidents(
         summary=draw(incidentSummaries()),
         location=draw(locations()),
         rangerHandles=draw(lists(rangerHandles())),
-        incidentTypes=incidentTypes,
+        incidentTypes=types,
         reportEntries=draw(lists(reportEntries(
             automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
         ))),
