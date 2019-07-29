@@ -24,6 +24,7 @@ from ._address import RodGarettAddressJSONKey, TextOnlyAddressJSONKey
 from ._entry import ReportEntryJSONKey
 from ._eventaccess import EventAccessJSONKey
 from ._eventdata import EventDataJSONKey
+from ._imsdata import IMSDataJSONKey
 from ._incident import IncidentJSONKey
 from ._json import (
     JSONCodecError, jsonObjectFromModelObject, modelObjectFromJSONObject
@@ -42,6 +43,7 @@ del _ranger
 __all__ = (
     "EventAccessJSONKey",
     "EventDataJSONKey",
+    "IMSDataJSONKey",
     "IncidentJSONKey",
     "IncidentPriorityJSONValue",
     "IncidentReportJSONKey",

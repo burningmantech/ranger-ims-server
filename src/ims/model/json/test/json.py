@@ -26,6 +26,7 @@ from ..._entry import ReportEntry
 from ..._event import Event
 from ..._eventaccess import EventAccess
 from ..._eventdata import EventData
+from ..._imsdata import IMSData
 from ..._incident import Incident
 from ..._location import Location
 from ..._priority import IncidentPriority
@@ -103,6 +104,13 @@ def jsonFromEventData(eventData: EventData) -> Dict[str, Any]:
         concentric_streets=eventData.concentricStreets,
         incidents=[jsonSerialize(i) for i in eventData.incidents],
         incident_reports=[jsonSerialize(r) for r in eventData.incidentReports],
+    )
+
+
+def jsonFromIMSData(imsData: IMSData) -> Dict[str, Any]:
+    return dict(
+        events=[jsonSerialize(e) for e in imsData.events],
+        incident_types=[jsonSerialize(t) for t in imsData.incidentTypes],
     )
 
 

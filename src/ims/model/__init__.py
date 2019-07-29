@@ -23,6 +23,7 @@ from ._entry import ReportEntry
 from ._event import Event
 from ._eventaccess import EventAccess
 from ._eventdata import EventData
+from ._imsdata import IMSData
 from ._incident import Incident
 from ._location import Location
 from ._priority import IncidentPriority
@@ -37,6 +38,7 @@ __all__ = (
     "Event",
     "EventAccess",
     "EventData",
+    "IMSData",
     "Incident",
     "IncidentPriority",
     "IncidentReport",

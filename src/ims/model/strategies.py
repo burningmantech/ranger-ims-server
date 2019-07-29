@@ -37,6 +37,7 @@ from ._entry import ReportEntry
 from ._event import Event
 from ._eventaccess import EventAccess
 from ._eventdata import EventData
+from ._imsdata import IMSData
 from ._incident import Incident
 from ._location import Location
 from ._priority import IncidentPriority
@@ -54,6 +55,7 @@ __all__ = (
     "events",
     "eventAccesses",
     "eventDatas",
+    "imsDatas",
     "incidentLists",
     "incidentNumbers",
     "incidentPriorities",
@@ -266,6 +268,17 @@ def eventDatas(draw: Callable) -> EventData:
         )),
         incidents=draw(lists(incidents(event=event))),
         incidentReports=draw(lists(incidentReports(event=event))),
+    )
+
+
+@composite
+def imsDatas(draw: Callable) -> IMSData:
+    """
+    Strategy that generates :class:`IMSData` values.
+    """
+    return IMSData(
+        events=draw(lists(eventDatas())),
+        incidentTypes=draw(lists(incidentTypes())),
     )
 
 
