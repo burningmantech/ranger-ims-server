@@ -114,15 +114,15 @@ class JSONExporter(object):
         """
         self._log.info("Exporting event {event}...", event=event)
 
-        eventAccess=EventAccess(
+        eventAccess = EventAccess(
             readers=tuple(await self.store.readers(event)),
             writers=tuple(await self.store.writers(event)),
             reporters=tuple(await self.store.reporters(event)),
         )
 
-        concentricStreets=tuple(await self.store.concentricStreets(event)),
-        incidents=tuple(await self.store.incidents(event))
-        incidentReports=tuple(await self.store.incidentReports(event))
+        concentricStreets = (await self.store.concentricStreets(event))
+        incidents = tuple(await self.store.incidents(event))
+        incidentReports = tuple(await self.store.incidentReports(event))
 
         eventData = EventData(
             event=event,
