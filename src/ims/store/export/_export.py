@@ -26,7 +26,7 @@ from attr import attrs
 from twisted.logger import Logger
 
 from ims.ext.json import jsonTextFromObject
-from ims.model import Event, EventAccess, EventData
+from ims.model import Event, EventAccess, EventData, IMSData, IncidentType
 from ims.model.json import jsonObjectFromModelObject
 
 from .._abc import IMSDataStore
@@ -78,37 +78,38 @@ class JSONExporter(object):
         Export data store as JSON.
         """
         self._log.info("Exporting data store as JSON...")
-        return dict(
-            incident_types=(await self._incidentTypes()),
-            events=(await self._events()),
+        return jsonObjectFromModelObject(await self.imsData())
+
+
+    async def imsData(self) -> IMSData:
+        """
+        Export IMS Data.
+        """
+        return IMSData(
+            incidentTypes=tuple(await self._incidentTypes()),
+            events=[
+                await self._eventData(event)
+                for event in await self.store.events()
+            ],
         )
 
 
-    async def _incidentTypes(self) -> Iterable[Mapping[str, Any]]:
+    async def _incidentTypes(self) -> Iterable[IncidentType]:
         """
         Export incident types.
         """
-        self._log.info("Exporting incident types...")
-
         allTypes = tuple(await self.store.incidentTypes(includeHidden=True))
         visibleTypes = frozenset(
             await self.store.incidentTypes(includeHidden=False)
         )
 
         return (
-            dict(name=incidentType, hidden=(incidentType in visibleTypes))
-            for incidentType in allTypes
+            IncidentType(name=name, hidden=(name not in visibleTypes))
+            for name in allTypes
         )
 
 
-    async def _events(self) -> Iterable[Mapping[str, Any]]:
-        return [
-            await self._event(event)
-            for event in await self.store.events()
-        ]
-
-
-    async def _event(self, event: Event) -> Mapping[str, Any]:
+    async def _eventData(self, event: Event) -> EventData:
         """
         Export an event.
         """
@@ -120,16 +121,14 @@ class JSONExporter(object):
             reporters=tuple(await self.store.reporters(event)),
         )
 
-        concentricStreets = (await self.store.concentricStreets(event))
+        concentricStreets = dict(await self.store.concentricStreets(event))
         incidents = tuple(await self.store.incidents(event))
         incidentReports = tuple(await self.store.incidentReports(event))
 
-        eventData = EventData(
+        return EventData(
             event=event,
             access=eventAccess,
             concentricStreets=concentricStreets,
             incidents=incidents,
             incidentReports=incidentReports,
         )
-
-        return jsonObjectFromModelObject(eventData)
