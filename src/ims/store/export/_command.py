@@ -27,6 +27,7 @@ from attr import attrs
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.application.runner._runner import Runner
 from twisted.internet.defer import ensureDeferred
+from twisted.logger import Logger
 from twisted.python.usage import UsageError
 
 from ims.config import Configuration
@@ -50,6 +51,9 @@ class JSONExportCommand(object):
     """
     JSON export command.
     """
+
+    log = Logger()
+
 
     @staticmethod
     def options(argv: Sequence[str]) -> JSONExportOptions:
@@ -76,13 +80,16 @@ class JSONExportCommand(object):
         from twisted.internet import reactor
 
         async def run() -> None:
-            await config.store.upgradeSchema()
-            await config.store.validate()
+            try:
+                await config.store.upgradeSchema()
+                await config.store.validate()
 
-            exporter = JSONExporter(store=config.store)
-            data = await exporter.asBytes()
+                exporter = JSONExporter(store=config.store)
+                data = await exporter.asBytes()
 
-            print(data)
+                print(data)
+            except Exception:
+                cls.log.failure("Unable to export data")
 
             reactor.stop()
 
