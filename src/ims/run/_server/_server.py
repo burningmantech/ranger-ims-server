@@ -26,16 +26,19 @@ from attr import attrs
 
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.application.runner._runner import Runner
-from twisted.internet.defer import ensureDeferred
+from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.logger import Logger
+from twisted.python.failure import Failure
 from twisted.python.usage import UsageError
 from twisted.web.server import Session, Site
 
 from ims.application import Application
 from ims.config import Configuration
+from ims.store import IMSDataStore
+from ims.store.export import JSONExporter
 
 from ._log import patchCombinedLogFormatter
-from ._options import ServerOptions
+from ._options import ExportOptions, IMSOptions
 
 
 __all__ = ()
@@ -56,11 +59,11 @@ class Server(object):
 
 
     @staticmethod
-    def options(argv: Sequence[str]) -> ServerOptions:
+    def options(argv: Sequence[str]) -> IMSOptions:
         """
         Parse command line options.
         """
-        options = ServerOptions()
+        options = IMSOptions()
 
         try:
             options.parseOptions(argv[1:])
@@ -71,16 +74,19 @@ class Server(object):
 
 
     @classmethod
-    def whenRunning(cls, config: Configuration) -> None:
-        """
-        Called after the reactor has started.
-        """
-        async def start() -> None:
-            await config.store.upgradeSchema()
-            await config.store.validate()
+    def stop(cls) -> None:
+        from twisted.internet import reactor
+        reactor.stop()
 
-        d = ensureDeferred(start())
 
+    @classmethod
+    async def initStore(cls, store: IMSDataStore) -> None:
+        await store.upgradeSchema()
+        await store.validate()
+
+
+    @classmethod
+    def runServer(cls, config: Configuration) -> None:
         host = config.hostName
         port = config.port
 
@@ -99,16 +105,50 @@ class Server(object):
         from twisted.internet import reactor
         reactor.listenTCP(port, factory, interface=host)
 
+
+    @classmethod
+    async def runExport(
+        cls, config: Configuration, options: ExportOptions
+    ) -> None:
+        exporter = JSONExporter(store=config.store)
+        data = await exporter.asBytes()
+
+        print(data.decode("utf-8"), file=stdout)
+
+        cls.stop()
+
+
+    @classmethod
+    def whenRunning(cls, options: IMSOptions) -> Deferred:
+        """
+        Called after the reactor has started.
+        """
+        config: Configuration = options["configuration"]
+
+        async def run() -> None:
+            await cls.initStore(config.store)
+
+            if options.subCommand is None:
+                cls.runServer(config)
+            elif options.subCommand == "server":
+                cls.runServer(config)
+            elif options.subCommand == "export":
+                await cls.runExport(config, options.subOptions)
+
+        def error(f: Failure) -> None:
+            cls.log.failure("Unable to start: {log_failure}", failure=f)
+            cls.stop()
+
+        d = ensureDeferred(run())
+        d.addErrback(error)
         return d
 
 
     @classmethod
-    def run(cls, options: ServerOptions) -> None:
+    def run(cls, options: IMSOptions) -> None:
         """
         Run the application service.
         """
-        config = options["configuration"]
-
         from twisted.internet import reactor
 
         runner = Runner(
@@ -117,7 +157,7 @@ class Server(object):
             logFile=options.get("logFile", stdout),
             fileLogObserverFactory=options["fileLogObserverFactory"],
             whenRunning=cls.whenRunning,
-            whenRunningArguments=dict(config=config),
+            whenRunningArguments=dict(options=options),
         )
         runner.run()
 

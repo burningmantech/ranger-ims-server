@@ -32,7 +32,7 @@ from twisted.logger import (
     InvalidLogLevelError, LogLevel, Logger,
     jsonFileLogObserver, textFileLogObserver,
 )
-from twisted.python.usage import Options, UsageError
+from twisted.python.usage import Options as BaseOptions, UsageError
 
 from ims import __version__ as version
 from ims.config import Configuration, LogFormat
@@ -45,24 +45,50 @@ openFile = open
 
 
 
-class ServerOptions(Options):
+class Options(BaseOptions):
     """
-    Command line options for the IMS server.
+    Options, cleaned up
     """
-
-    log: ClassVar[Logger] = Logger()
-    defaultLogLevel: ClassVar = LogLevel.info
-
-
-    def getSynopsis(self) -> str:
-        return f"{Options.getSynopsis(self)} plugin [plugin_options]"
-
 
     def opt_version(self) -> None:
         """
         Print version and exit.
         """
         exit(ExitStatus.EX_OK, f"{version}")
+
+
+
+class ServerOptions(Options):
+    """
+    Command line options for the IMS server.
+    """
+
+
+
+class ExportOptions(Options):
+    """
+    Command line options for the IMS server.
+    """
+
+
+
+class IMSOptions(Options):
+    """
+    Command line options for all IMS commands.
+    """
+
+    log: ClassVar[Logger] = Logger()
+    defaultLogLevel: ClassVar = LogLevel.info
+
+    subCommands: ClassVar = [
+        ["server", None, ServerOptions, "Run the IMS server"],
+        ["export", None, ExportOptions, "Export data"],
+    ]
+    # defaultSubCommand = "server"
+
+
+    def getSynopsis(self) -> str:
+        return f"{Options.getSynopsis(self)} command [command_options]"
 
 
     def opt_config(self, path: str) -> None:

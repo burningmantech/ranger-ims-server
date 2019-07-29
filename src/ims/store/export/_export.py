@@ -18,8 +18,7 @@
 Incident Management System data store export.
 """
 
-import sys
-from typing import Any, ClassVar, Iterable, Mapping, Sequence
+from typing import Any, ClassVar, Iterable, Mapping
 
 from attr import attrs
 
@@ -44,15 +43,6 @@ class JSONExporter(object):
     _log: ClassVar[Logger] = Logger()
 
     store: IMSDataStore
-
-
-    @classmethod
-    def main(cls, argv: Sequence[str] = sys.argv) -> None:
-        """
-        JSONExportCommand main entry point.
-        """
-        from ._command import JSONExportCommand
-        JSONExportCommand.main(argv)
 
 
     async def asBytes(self) -> bytes:
