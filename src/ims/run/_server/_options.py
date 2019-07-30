@@ -41,10 +41,7 @@ from ims.config import Configuration, LogFormat
 __all__ = ()
 
 
-openFile = open
-
-
-def openFileName(fileName: str) -> None:
+def openFile(fileName: str, mode: str) -> IO:
     """
     Open a file, given a name.
     Handles "+" and "-" as stdin/stdout.
@@ -56,7 +53,7 @@ def openFileName(fileName: str) -> None:
         outFile = stderr
     else:
         try:
-            outFile = openFile(fileName, "a")
+            outFile = open(fileName, mode)
         except EnvironmentError as e:
             exit(
                 ExitStatus.EX_IOERR,
@@ -96,7 +93,7 @@ class ExportOptions(Options):
         """
         Output file. ("-" for stdout, "+" for stderr; default: "-")
         """
-        self["outFile"] = openFileName(fileName)
+        self["outFile"] = openFile(fileName, "wb")
 
 
 
@@ -243,7 +240,7 @@ class IMSOptions(Options):
 
 
     def initLogFile(self) -> None:
-        self["logFile"] = openFileName(self["logFileName"])
+        self["logFile"] = openFile(self["logFileName"], "a")
 
 
     def selectDefaultLogObserver(self) -> None:
