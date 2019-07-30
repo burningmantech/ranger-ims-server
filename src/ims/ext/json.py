@@ -18,6 +18,7 @@ __all__ = (
     "dateAsRFC3339Text",
     "dateTimeAsRFC3339Text",
     "jsonTextFromObject",
+    "objectFromJSONBytesIO",
     "objectFromJSONText",
     "rfc3339TextAsDate",
     "rfc3339TextAsDateTime",
