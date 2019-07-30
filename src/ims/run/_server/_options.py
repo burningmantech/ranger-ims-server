@@ -19,7 +19,7 @@ Command line options for the IMS server.
 """
 
 from pathlib import Path
-from sys import stderr, stdout
+from sys import stderr, stdin, stdout
 from textwrap import dedent
 from typing import (
     ClassVar, IO, Mapping, MutableMapping, Optional, Sequence, cast
@@ -46,21 +46,32 @@ def openFile(fileName: str, mode: str) -> IO:
     Open a file, given a name.
     Handles "+" and "-" as stdin/stdout.
     """
-    outFile: IO
-    if fileName == "-":
-        outFile = stdout
-    elif fileName == "+":
-        outFile = stderr
-    else:
+    file: IO
+
+    def openNamedFile() -> IO:
         try:
-            outFile = open(fileName, mode)
+            file = open(fileName, mode)
         except EnvironmentError as e:
             exit(
                 ExitStatus.EX_IOERR,
                 f"Unable to open file {fileName!r}: {e}"
             )
+        return file
 
-    return outFile
+    if any((c in mode) for c in "wxa"):
+        if fileName == "-":
+            file = stdout
+        elif fileName == "+":
+            file = stderr
+        else:
+            file = openNamedFile()
+    else:
+        if fileName == "-":
+            file = stdin
+        else:
+            file = openNamedFile()
+
+    return file
 
 
 
@@ -86,7 +97,7 @@ class ServerOptions(Options):
 
 class ExportOptions(Options):
     """
-    Command line options for the IMS server.
+    Command line options for the IMS export tool.
     """
 
     def opt_output(self, fileName: str) -> None:
@@ -94,6 +105,19 @@ class ExportOptions(Options):
         Output file. ("-" for stdout, "+" for stderr; default: "-")
         """
         self["outFile"] = openFile(fileName, "wb")
+
+
+
+class ImportOptions(Options):
+    """
+    Command line options for the IMS import tool.
+    """
+
+    def opt_input(self, fileName: str) -> None:
+        """
+        Input file. ("-" for stdin)
+        """
+        self["inFile"] = openFile(fileName, "rb")
 
 
 

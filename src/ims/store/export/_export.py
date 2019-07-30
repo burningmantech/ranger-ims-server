@@ -19,18 +19,21 @@ Incident Management System data store export.
 """
 
 from typing import Any, ClassVar, Iterable, Mapping
+from typing.io import BinaryIO
 
 from attr import attrs
 
 from twisted.logger import Logger
 
-from ims.ext.json import jsonTextFromObject
+from ims.ext.json import (
+    jsonTextFromObject, objectFromJSONBytesIO, objectFromJSONText
+)
 from ims.model import Event, EventAccess, EventData, IMSData, IncidentType
-from ims.model.json import jsonObjectFromModelObject
+from ims.model.json import jsonObjectFromModelObject, modelObjectFromJSONObject
 
 from .._abc import IMSDataStore
 
-__all__ = ("JSONExporter")
+__all__ = ()
 
 
 
@@ -59,7 +62,7 @@ class JSONExporter(object):
         Export data store as text.
         """
         json = await self.asJSON()
-        self._log.info("Encoding exported data as text...")
+        self._log.info("Encoding exported data as JSON text...")
         return jsonTextFromObject(json)
 
 
@@ -67,7 +70,7 @@ class JSONExporter(object):
         """
         Export data store as JSON.
         """
-        self._log.info("Exporting data store as JSON...")
+        self._log.info("Exporting data store as JSON objects...")
         return jsonObjectFromModelObject(await self.imsData())
 
 
@@ -122,3 +125,54 @@ class JSONExporter(object):
             incidents=incidents,
             incidentReports=incidentReports,
         )
+
+
+
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
+class JSONImporter(object):
+    """
+    Incident Management System data store JSON importer.
+    """
+
+    _log: ClassVar[Logger] = Logger()
+
+    store: IMSDataStore
+    imsData: IMSData
+
+
+    @classmethod
+    def fromIO(
+        cls, store: IMSDataStore, io: BinaryIO
+    ) -> "JSONImporter":
+        cls._log.info("Reading from JSON I/O...")
+        return cls.fromJSON(store, objectFromJSONBytesIO(io))
+
+
+    @classmethod
+    def fromBytes(
+        cls, store: IMSDataStore, jsonBytes: bytes
+    ) -> "JSONImporter":
+        cls._log.info("Reading from JSON bytes...")
+        return cls.fromText(store, jsonBytes.decode("utf-8"))
+
+
+    @classmethod
+    def fromText(cls, store: IMSDataStore, jsonText: str) -> "JSONImporter":
+        cls._log.info("Reading from JSON text...")
+        return cls.fromJSON(store, objectFromJSONText(jsonText))
+
+
+    @classmethod
+    def fromJSON(
+        cls, store: IMSDataStore, json: Mapping[str, Any]
+    ) -> "JSONImporter":
+        """
+        Import JSON.
+        """
+        cls._log.info("Reading from JSON objects...")
+        imsData = modelObjectFromJSONObject(json, IMSData)
+        return cls(store=store, imsData=imsData)
+
+
+    async def storeData(self) -> None:
+        raise NotImplementedError()

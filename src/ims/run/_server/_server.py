@@ -35,10 +35,10 @@ from twisted.web.server import Session, Site
 from ims.application import Application
 from ims.config import Configuration
 from ims.store import IMSDataStore
-from ims.store.export import JSONExporter
+from ims.store.export import JSONExporter, JSONImporter
 
 from ._log import patchCombinedLogFormatter
-from ._options import ExportOptions, IMSOptions
+from ._options import ExportOptions, IMSOptions, ImportOptions
 
 
 __all__ = ()
@@ -117,6 +117,14 @@ class Server(object):
         cls.stop()
 
 
+    @classmethod
+    async def runImport(
+        cls, config: Configuration, options: ImportOptions
+    ) -> None:
+        with options["inFile"] as inFile:
+            importer = JSONImporter.fromIO(store=config.store, io=inFile)
+            await importer.storeData()
+        cls.stop()
 
 
     @classmethod
