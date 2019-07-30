@@ -110,12 +110,13 @@ class Server(object):
     async def runExport(
         cls, config: Configuration, options: ExportOptions
     ) -> None:
-        exporter = JSONExporter(store=config.store)
-        data = await exporter.asBytes()
-
-        print(data.decode("utf-8"), file=options["outFile"])
-
+        with options["outFile"] as outFile:
+            exporter = JSONExporter(store=config.store)
+            data = await exporter.asBytes()
+            outFile.write(data)
         cls.stop()
+
+
 
 
     @classmethod
