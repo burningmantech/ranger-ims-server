@@ -18,7 +18,7 @@
 Incident Management System data store.
 """
 
-from ._export import JSONExporter, JSONImporter
+from ._json import JSONExporter, JSONImporter
 
 
 __all__ = (
