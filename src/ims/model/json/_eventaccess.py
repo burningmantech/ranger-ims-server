@@ -19,7 +19,7 @@ JSON serialization/deserialization for event access
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, Set, Type
+from typing import Any, Dict, FrozenSet, Type
 
 from ._json import (
     deserialize, jsonSerialize, registerDeserializer, registerSerializer
@@ -48,9 +48,9 @@ class EventAccessJSONType(Enum):
     Event access attribute types
     """
 
-    readers   = Set[str]
-    writers   = Set[str]
-    reporters = Set[str]
+    readers   = FrozenSet[str]
+    writers   = FrozenSet[str]
+    reporters = FrozenSet[str]
 
 
 

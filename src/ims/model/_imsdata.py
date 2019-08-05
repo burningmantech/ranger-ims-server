@@ -20,25 +20,40 @@
 IMS Data
 """
 
-from typing import Iterable
+from typing import FrozenSet, Iterable
 
-from attr import attrs
+from attr import attrib, attrs
 
 from ._eventdata import EventData
+from ._replace import ReplaceMixIn
 from ._type import IncidentType
 
 
 __all__ = ()
 
 
+def freezeEventDatas(
+    eventDatas: Iterable[EventData]
+) -> FrozenSet[EventData]:
+    return frozenset(eventDatas)
+
+
+def freezeIncidentTypes(
+    incidentTypes: Iterable[IncidentType]
+) -> FrozenSet[IncidentType]:
+    return frozenset(incidentTypes)
+
+
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class IMSData(object):
+class IMSData(ReplaceMixIn):
     """
     IMS Data container
 
     Encapsulates all data associated with an IMS service.
     """
 
-    events:        Iterable[EventData]
-    incidentTypes: Iterable[IncidentType]
+    events: FrozenSet[EventData] = attrib(converter=freezeEventDatas)
+    incidentTypes: FrozenSet[IncidentType] = attrib(
+        converter=freezeIncidentTypes
+    )

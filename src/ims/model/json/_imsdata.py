@@ -19,7 +19,7 @@ JSON serialization/deserialization for IMS data
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, FrozenSet, Type
 
 from ._json import (
     deserialize, jsonSerialize, registerDeserializer, registerSerializer
@@ -49,8 +49,8 @@ class IMSDataJSONType(Enum):
     Event data attribute types
     """
 
-    events        = List[EventData]
-    incidentTypes = List[IncidentType]
+    events        = FrozenSet[EventData]
+    incidentTypes = FrozenSet[IncidentType]
 
 
 
