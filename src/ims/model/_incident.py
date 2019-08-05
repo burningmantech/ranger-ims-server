@@ -21,12 +21,13 @@ Incident
 """
 
 from datetime import datetime as DateTime
-from typing import AbstractSet, Iterable, Optional, Sequence
+from typing import FrozenSet, Iterable, Optional, Sequence
 
 from attr import attrib, attrs
 
 from ims.ext.attr import sorted_tuple
 
+from ._convert import freezeIntegers, freezeStrings
 from ._entry import ReportEntry
 from ._event import Event
 from ._location import Location
@@ -36,6 +37,12 @@ from ._state import IncidentState
 
 
 __all__ = ()
+
+
+def sortAndFreezeReportEntries(
+    reportEntries: Iterable[ReportEntry]
+) -> Iterable[ReportEntry]:
+    return sorted_tuple(reportEntries)
 
 
 
@@ -52,10 +59,12 @@ class Incident(ReplaceMixIn):
     priority: IncidentPriority
     summary: Optional[str]
     location: Location
-    rangerHandles: AbstractSet[str] = attrib(converter=frozenset)
-    incidentTypes: AbstractSet[str] = attrib(converter=frozenset)
-    reportEntries: Sequence[ReportEntry] = attrib(converter=sorted_tuple)
-    incidentReportNumbers: AbstractSet[int] = attrib(converter=frozenset)
+    rangerHandles: FrozenSet[str] = attrib(converter=freezeStrings)
+    incidentTypes: FrozenSet[str] = attrib(converter=freezeStrings)
+    reportEntries: Sequence[ReportEntry] = attrib(
+        converter=sortAndFreezeReportEntries
+    )
+    incidentReportNumbers: FrozenSet[int] = attrib(converter=freezeIntegers)
 
 
     def __str__(self) -> str:

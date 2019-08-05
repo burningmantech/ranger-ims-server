@@ -22,7 +22,10 @@ Event Data
 
 from typing import Iterable, Mapping
 
-from attr import attrs
+from attr import attrib, attrs
+
+from ims.ext.attr import sorted_tuple
+from ims.ext.frozendict import FrozenDict
 
 from ._event import Event
 from ._eventaccess import EventAccess
@@ -31,6 +34,24 @@ from ._report import IncidentReport
 
 
 __all__ = ()
+
+
+def sortAndFreezeIncidents(
+    incidents: Iterable[Incident]
+) -> Iterable[Incident]:
+    return sorted_tuple(incidents)
+
+
+def sortAndFreezeIncidentReports(
+    incidentReports: Iterable[IncidentReport]
+) -> Iterable[IncidentReport]:
+    return sorted_tuple(incidentReports)
+
+
+def freezeConcentricStreets(
+    concentricStreets: Mapping[str, str]
+) -> Mapping[str, str]:
+    return FrozenDict.fromMapping(concentricStreets)
 
 
 
@@ -42,8 +63,12 @@ class EventData(object):
     Encapsulates all data associated with an event.
     """
 
-    event:             Event
-    access:            EventAccess
-    concentricStreets: Mapping[str, str]
-    incidents:         Iterable[Incident]
-    incidentReports:   Iterable[IncidentReport]
+    event: Event
+    access: EventAccess
+    concentricStreets: Mapping[str, str] = attrib(
+        converter=freezeConcentricStreets
+    )
+    incidents: Iterable[Incident] = attrib(converter=sortAndFreezeIncidents)
+    incidentReports: Iterable[IncidentReport] = attrib(
+        converter=sortAndFreezeIncidentReports
+    )

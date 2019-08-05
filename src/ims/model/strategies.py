@@ -277,8 +277,8 @@ def imsDatas(draw: Callable) -> IMSData:
     Strategy that generates :class:`IMSData` values.
     """
     return IMSData(
-        events=draw(lists(eventDatas())),
-        incidentTypes=draw(lists(incidentTypes())),
+        events=draw(lists(eventDatas(), unique_by=lambda d: d.event.id)),
+        incidentTypes=draw(lists(incidentTypes(), unique_by=lambda t: t.name)),
     )
 
 

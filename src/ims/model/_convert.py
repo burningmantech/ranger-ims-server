@@ -1,4 +1,4 @@
-# -*- test-case-name: ranger-ims-server.model.test.test_eventaccess -*-
+# -*- test-case-name: ranger-ims-server.model.test.test_convert -*-
 
 ##
 # See the file COPYRIGHT for copyright information.
@@ -17,28 +17,18 @@
 ##
 
 """
-Event Access
+Converters
 """
 
-from typing import FrozenSet
-
-from attr import attrib, attrs
-
-from ._convert import freezeStrings
+from typing import FrozenSet, Iterable
 
 
 __all__ = ()
 
 
+def freezeIntegers(integers: Iterable[int]) -> FrozenSet[int]:
+    return frozenset(integers)
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
-class EventAccess(object):
-    """
-    Event Access
 
-    Contains access control configuration for an event.
-    """
-
-    readers:   FrozenSet[str] = attrib(converter=freezeStrings)
-    writers:   FrozenSet[str] = attrib(converter=freezeStrings)
-    reporters: FrozenSet[str] = attrib(converter=freezeStrings)
+def freezeStrings(strings: Iterable[str]) -> FrozenSet[str]:
+    return frozenset(strings)

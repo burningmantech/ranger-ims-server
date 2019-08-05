@@ -37,6 +37,10 @@ class IncidentType(object):
     hidden: bool
 
 
+    def known(self) -> bool:
+        return self.name in knownIncidentTypeNames
+
+
 
 admin = IncidentType(name="Admin", hidden=False)
 junk  = IncidentType(name="Junk",  hidden=False)
@@ -56,3 +60,6 @@ class KnownIncidentType(Enum):
 
     admin = admin.name
     junk  = junk.name
+
+
+knownIncidentTypeNames = frozenset((kt.value for kt in KnownIncidentType))

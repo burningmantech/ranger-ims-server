@@ -19,7 +19,7 @@ JSON serialization/deserialization for Rangers
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, Optional, Set, Type
 
 from ._json import (
     deserialize, jsonSerialize, registerDeserializer, registerSerializer
@@ -54,7 +54,7 @@ class RangerJSONType(Enum):
     handle = str
     name   = str
     status = RangerStatus
-    email  = List[str]
+    email  = Set[str]
     onSite = bool
     dmsID  = Optional[int]
 

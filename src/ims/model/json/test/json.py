@@ -101,7 +101,7 @@ def jsonFromEventData(eventData: EventData) -> Dict[str, Any]:
     return dict(
         event=jsonSerialize(eventData.event),
         access=jsonSerialize(eventData.access),
-        concentric_streets=eventData.concentricStreets,
+        concentric_streets=jsonSerialize(eventData.concentricStreets),
         incidents=[jsonSerialize(i) for i in eventData.incidents],
         incident_reports=[jsonSerialize(r) for r in eventData.incidentReports],
     )
@@ -127,18 +127,18 @@ def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
         priority=jsonSerialize(incident.priority),
         summary=jsonSerialize(incident.summary),
         location=jsonSerialize(incident.location),
-        ranger_handles=frozenset(
+        ranger_handles=[
             jsonSerialize(r) for r in incident.rangerHandles
-        ),
-        incident_types=frozenset(
+        ],
+        incident_types=[
             jsonSerialize(t) for t in incident.incidentTypes
-        ),
-        report_entries=tuple(
+        ],
+        report_entries=[
             jsonSerialize(e) for e in sorted(incident.reportEntries)
-        ),
-        incident_reports=frozenset(
+        ],
+        incident_reports=[
             jsonSerialize(n) for n in sorted(incident.incidentReportNumbers)
-        ),
+        ],
     )
 
 
@@ -192,7 +192,7 @@ def jsonFromRanger(ranger: Ranger) -> Dict[str, Any]:
         name=ranger.name,
         status=jsonFromRangerStatus(ranger.status),
         dms_id=ranger.dmsID,
-        email=ranger.email,
+        email=jsonSerialize([e for e in ranger.email]),
         on_site=ranger.onSite,
     )
 
@@ -208,7 +208,7 @@ def jsonFromIncidentReport(report: IncidentReport) -> Dict[str, Any]:
         created=jsonSerialize(report.created),
         summary=jsonSerialize(report.summary),
         incident=jsonSerialize(report.incidentNumber),
-        report_entries=tuple(jsonSerialize(e) for e in report.reportEntries),
+        report_entries=[jsonSerialize(e) for e in report.reportEntries],
     )
 
 

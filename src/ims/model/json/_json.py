@@ -20,12 +20,13 @@ Incident Management System data model JSON serialization/deserialization
 
 from datetime import datetime as DateTime
 from enum import Enum
-from typing import Any, Dict, Iterable, Type, cast
+from typing import Any, Dict, Iterable, List, Type, cast
 
 from cattr import Converter
 
 from twisted.logger import Logger
 
+from ims.ext.frozendict import FrozenDict
 from ims.ext.json import dateTimeAsRFC3339Text, rfc3339TextAsDateTime
 
 
@@ -51,21 +52,43 @@ registerSerializer = converter.register_unstructure_hook
 registerDeserializer = converter.register_structure_hook
 
 
-# Serialization hooks
+# DateTime
 
 registerSerializer(DateTime, dateTimeAsRFC3339Text)
-
-
-# Deserialization hooks
 
 def deserializeDateTime(obj: str, cl: Type) -> DateTime:
     assert cl is DateTime, (cl, obj)
 
     return rfc3339TextAsDateTime(obj)
 
-
 registerDeserializer(DateTime, deserializeDateTime)
 
+
+# Tuples and sets should serialize like lists
+
+def serializeIterable(iterable: Iterable) -> List:
+    return [jsonSerialize(item) for item in iterable]
+
+registerSerializer(frozenset, serializeIterable)
+registerSerializer(set, serializeIterable)
+registerSerializer(tuple, serializeIterable)
+
+
+# FrozenDict
+
+def serializeFrozenDict(frozenDict: FrozenDict) -> Any:
+    return jsonSerialize(dict(frozenDict))
+
+registerSerializer(FrozenDict, serializeFrozenDict)
+
+def deserializeFrozenDict(obj: Dict, cl: Type) -> FrozenDict:
+    assert cl is FrozenDict, (cl, obj)
+
+    return FrozenDict.fromMapping(obj)
+
+
+
+# Public API
 
 def jsonObjectFromModelObject(model: Any) -> Any:
     return jsonSerialize(model)

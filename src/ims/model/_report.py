@@ -25,11 +25,9 @@ from typing import Optional, Sequence
 
 from attr import attrib, attrs
 
-from ims.ext.attr import sorted_tuple
-
 from ._entry import ReportEntry
 from ._event import Event
-from ._incident import summaryFromReport
+from ._incident import sortAndFreezeReportEntries, summaryFromReport
 from ._replace import ReplaceMixIn
 
 
@@ -48,7 +46,9 @@ class IncidentReport(ReplaceMixIn):
     created: DateTime
     summary: Optional[str]
     incidentNumber: Optional[int]
-    reportEntries: Sequence[ReportEntry] = attrib(converter=sorted_tuple)
+    reportEntries: Sequence[ReportEntry] = attrib(
+        converter=sortAndFreezeReportEntries
+    )
 
 
     def __str__(self) -> str:
