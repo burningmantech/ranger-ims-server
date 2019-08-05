@@ -257,16 +257,29 @@ def eventDatas(draw: Callable) -> EventData:
     """
     Strategy that generates :class:`EventData` values.
     """
-    event = draw(events())
+    event: Event = draw(events())
+    concentricStreets: Dict[str, str] = draw(dictionaries(
+        keys=concentricStreetIDs(), values=concentricStreetNames()
+    ))
+    situations: List[Incident] = draw(lists(incidents(event=event)))
+
+    # Add all concentric streets referred to by incidents so the data is valid
+    for incident in situations:
+        address = incident.location.address
+        if (
+            isinstance(address, RodGarettAddress) and
+            address.concentric is not None and
+            address.concentric not in concentricStreets
+        ):
+            concentricStreets[address.concentric] = draw(
+                concentricStreetNames()
+            )
 
     return EventData(
         event=event,
         access=draw(eventAccesses()),
-        concentricStreets=draw(dictionaries(
-            keys=sampled_from(("readers", "writers", "reporters")),
-            values=text(min_size=1),
-        )),
-        incidents=draw(lists(incidents(event=event))),
+        concentricStreets=concentricStreets,
+        incidents=situations,
         incidentReports=draw(lists(incidentReports(event=event))),
     )
 
@@ -287,6 +300,7 @@ def imsDatas(draw: Callable) -> IMSData:
         )
     }
 
+    # Add all incident types referred to by incidents so the data is valid
     for eventData in events:
         for incident in eventData.incidents:
             for name in incident.incidentTypes:
