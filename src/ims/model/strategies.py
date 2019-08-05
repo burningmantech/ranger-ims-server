@@ -21,7 +21,7 @@ Test strategies for model data.
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
-from typing import Callable, Hashable, Optional, cast
+from typing import Callable, Dict, Hashable, List, Optional, cast
 
 from hypothesis import HealthCheck, settings
 from hypothesis.searchstrategy import SearchStrategy
@@ -276,10 +276,24 @@ def imsDatas(draw: Callable) -> IMSData:
     """
     Strategy that generates :class:`IMSData` values.
     """
-    return IMSData(
-        events=draw(lists(eventDatas(), unique_by=lambda d: d.event.id)),
-        incidentTypes=draw(lists(incidentTypes(), unique_by=lambda t: t.name)),
+    events: List[EventData] = draw(
+        lists(eventDatas(), unique_by=lambda d: d.event.id)
     )
+
+    types: Dict[str, IncidentType] = {
+        incidentType.name: incidentType
+        for incidentType in draw(
+            lists(incidentTypes(), unique_by=lambda t: t.name)
+        )
+    }
+
+    for eventData in events:
+        for incident in eventData.incidents:
+            for name in incident.incidentTypes:
+                if name not in types:
+                    types[name] = IncidentType(name=name, hidden=False)
+
+    return IMSData(events=events, incidentTypes=types.values())
 
 
 ##
