@@ -19,6 +19,7 @@ Tests for :mod:`ranger-ims-server.store.export._json`
 """
 
 from io import BytesIO
+from pathlib import Path
 
 from hypothesis import given
 
@@ -59,7 +60,7 @@ class JSONExporterTests(TestCase):
         # expected in the end result, since creating the schema will add them.
         imsData = addKnownIncidentTypes(imsData)
 
-        store = SQLiteDataStore(dbPath=None)
+        store = SQLiteDataStore(dbPath=Path(self.mktemp()))
         self.successResultOf(store.upgradeSchema())
 
         importer = JSONImporter(store=store, imsData=imsData)
@@ -133,7 +134,7 @@ class JSONImporterTests(TestCase):
     """
 
     def store(self) -> IMSDataStore:
-        store = SQLiteDataStore(dbPath=None)
+        store = SQLiteDataStore(dbPath=Path(self.mktemp()))
         self.successResultOf(store.upgradeSchema())
         return store
 
