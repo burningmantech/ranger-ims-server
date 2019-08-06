@@ -198,5 +198,5 @@ class JSONImporter(object):
             for incident in eventData.incidents:
                 await store.importIncident(incident)
 
-            # for incidentReport in eventData.incidentReports:
-            #     await store.importIncidentReport(incidentReport)
+            for incidentReport in eventData.incidentReports:
+                await store.importIncidentReport(incidentReport)
