@@ -18,7 +18,7 @@
 Incident Management System data store export.
 """
 
-from typing import Any, ClassVar, Iterable, Mapping
+from typing import Any, ClassVar, FrozenSet, Mapping
 from typing.io import BinaryIO
 
 from attr import attrs
@@ -79,27 +79,29 @@ class JSONExporter(object):
         Export IMS Data.
         """
         return IMSData(
-            incidentTypes=tuple(await self._incidentTypes()),
-            events=[
+            incidentTypes=(await self._incidentTypes()),
+            events=frozenset([
                 await self._eventData(event)
                 for event in await self.store.events()
-            ],
+            ]),
         )
 
 
-    async def _incidentTypes(self) -> Iterable[IncidentType]:
+    async def _incidentTypes(self) -> FrozenSet[IncidentType]:
         """
         Export incident types.
         """
-        allTypes = tuple(await self.store.incidentTypes(includeHidden=True))
+        allTypes = frozenset(
+            await self.store.incidentTypes(includeHidden=True)
+        )
         visibleTypes = frozenset(
             await self.store.incidentTypes(includeHidden=False)
         )
 
-        return (
+        return frozenset((
             IncidentType(name=name, hidden=(name not in visibleTypes))
             for name in allTypes
-        )
+        ))
 
 
     async def _eventData(self, event: Event) -> EventData:
@@ -109,9 +111,9 @@ class JSONExporter(object):
         self._log.info("Exporting event {event}...", event=event)
 
         eventAccess = EventAccess(
-            readers=tuple(await self.store.readers(event)),
-            writers=tuple(await self.store.writers(event)),
-            reporters=tuple(await self.store.reporters(event)),
+            readers=frozenset(await self.store.readers(event)),
+            writers=frozenset(await self.store.writers(event)),
+            reporters=frozenset(await self.store.reporters(event)),
         )
 
         concentricStreets = dict(await self.store.concentricStreets(event))
