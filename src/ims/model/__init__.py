@@ -19,6 +19,7 @@ Incident Management System data model
 """
 
 from ._address import Address, RodGarettAddress, TextOnlyAddress
+from ._convert import normalizeDateTime
 from ._entry import ReportEntry
 from ._event import Event
 from ._eventaccess import EventAccess
@@ -51,4 +52,5 @@ __all__ = (
     "ReportEntry",
     "RodGarettAddress",
     "TextOnlyAddress",
+    "normalizeDateTime",
 )
