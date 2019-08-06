@@ -18,7 +18,7 @@
 Incident Management System data store export.
 """
 
-from typing import Any, ClassVar, FrozenSet, Mapping
+from typing import Any, ClassVar, FrozenSet, Iterable, Mapping
 from typing.io import BinaryIO
 
 from attr import attrs
@@ -80,28 +80,24 @@ class JSONExporter(object):
         """
         return IMSData(
             incidentTypes=(await self._incidentTypes()),
-            events=frozenset([
+            events=[
                 await self._eventData(event)
                 for event in await self.store.events()
-            ]),
+            ],
         )
 
 
-    async def _incidentTypes(self) -> FrozenSet[IncidentType]:
+    async def _incidentTypes(self) -> Iterable[IncidentType]:
         """
         Export incident types.
         """
-        allTypes = frozenset(
-            await self.store.incidentTypes(includeHidden=True)
-        )
-        visibleTypes = frozenset(
-            await self.store.incidentTypes(includeHidden=False)
-        )
+        allTypes     = await self.store.incidentTypes(includeHidden=True)
+        visibleTypes = await self.store.incidentTypes(includeHidden=False)
 
-        return frozenset((
+        return (
             IncidentType(name=name, hidden=(name not in visibleTypes))
             for name in allTypes
-        ))
+        )
 
 
     async def _eventData(self, event: Event) -> EventData:
@@ -111,14 +107,14 @@ class JSONExporter(object):
         self._log.info("Exporting event {event}...", event=event)
 
         eventAccess = EventAccess(
-            readers=frozenset(await self.store.readers(event)),
-            writers=frozenset(await self.store.writers(event)),
-            reporters=frozenset(await self.store.reporters(event)),
+            readers=(await self.store.readers(event)),
+            writers=(await self.store.writers(event)),
+            reporters=(await self.store.reporters(event)),
         )
 
-        concentricStreets = dict(await self.store.concentricStreets(event))
-        incidents = tuple(await self.store.incidents(event))
-        incidentReports = tuple(await self.store.incidentReports(event))
+        concentricStreets = await self.store.concentricStreets(event)
+        incidents         = await self.store.incidents(event)
+        incidentReports   = await self.store.incidentReports(event)
 
         return EventData(
             event=event,
