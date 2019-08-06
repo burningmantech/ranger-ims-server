@@ -378,6 +378,20 @@ class IMSDataStore(ABC):
 
 
     @abstractmethod
+    async def importIncidentReport(
+        self, incidentReport: IncidentReport
+    ) -> None:
+        """
+        Import an incident and add it into the given event.
+
+        This differs from :meth:`IMSDataStore.createIncidentReport` in that the
+        incident report is added exactly as is; the incident report's number is
+        not modified (and must be greater than zero), and no automatic entries
+        are added to it.
+        """
+
+
+    @abstractmethod
     async def setIncidentReport_summary(
         self, event: Event, incidentReportNumber: int,
         summary: str, author: str,
