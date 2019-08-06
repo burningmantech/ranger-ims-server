@@ -18,7 +18,6 @@
 Tests for L{ims.auth._provider}.
 """
 
-from pathlib import Path
 from typing import Any
 from unittest.mock import patch
 
@@ -98,7 +97,7 @@ class AuthProviderTests(TestCase):
     """
 
     def store(self) -> IMSDataStore:
-        return SQLiteDataStore(dbPath=Path(self.mktemp()))
+        return SQLiteDataStore(dbPath=None)
 
 
     def dms(self) -> DutyManagementSystem:
