@@ -18,7 +18,7 @@
 Incident Management System data store export.
 """
 
-from typing import Any, ClassVar, FrozenSet, Iterable, Mapping
+from typing import Any, ClassVar, Iterable, Mapping
 from typing.io import BinaryIO
 
 from attr import attrs
