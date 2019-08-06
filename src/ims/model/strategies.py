@@ -279,7 +279,9 @@ def eventDatas(draw: Callable) -> EventData:
     concentricStreets: Dict[str, str] = draw(dictionaries(
         keys=concentricStreetIDs(), values=concentricStreetNames()
     ))
-    situations: List[Incident] = draw(lists(incidents(event=event)))
+    situations: List[Incident] = draw(lists(
+        incidents(event=event), unique_by=lambda i: i.number
+    ))
 
     # Add all concentric streets referred to by incidents so the data is valid
     for incident in situations:
