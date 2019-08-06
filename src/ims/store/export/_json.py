@@ -173,4 +173,30 @@ class JSONImporter(object):
 
 
     async def storeData(self) -> None:
-        raise NotImplementedError()
+        store   = self.store
+        imsData = self.imsData
+
+        for incidentType in imsData.incidentTypes:
+            if incidentType.known():
+                continue
+            await store.createIncidentType(
+                incidentType.name, incidentType.hidden
+            )
+
+        for eventData in imsData.events:
+            event = eventData.event
+            await store.createEvent(event)
+
+            eventAccess = eventData.access
+            await store.setReaders(event, eventAccess.readers)
+            await store.setWriters(event, eventAccess.writers)
+            await store.setReporters(event, eventAccess.reporters)
+
+            for streetID, streetName in eventData.concentricStreets.items():
+                await store.createConcentricStreet(event, streetID, streetName)
+
+            for incident in eventData.incidents:
+                await store.importIncident(incident)
+
+            # for incidentReport in eventData.incidentReports:
+            #     await store.importIncidentReport(incidentReport)
