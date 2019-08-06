@@ -31,6 +31,7 @@ from hypothesis.strategies import (
 )
 
 from ims.dms import hashPassword
+from ims.ext.sqlite import SQLITE_MAX_INT
 
 from ._address import RodGarettAddress, TextOnlyAddress
 from ._entry import ReportEntry
@@ -297,7 +298,7 @@ def eventDatas(draw: Callable) -> EventData:
         access=draw(eventAccesses()),
         concentricStreets=concentricStreets,
         incidents=situations,
-        incidentReports=draw(lists(incidentReports(event=event))),
+        incidentReports=()  # draw(lists(incidentReports(event=event))),
     )
 
 
@@ -331,11 +332,16 @@ def imsDatas(draw: Callable) -> IMSData:
 # Incident
 ##
 
+maxIncidentNumber = min((
+    SQLITE_MAX_INT,  # SQLite
+    4294967295,      # MySQL
+))
+
 def incidentNumbers(max: Optional[int] = None) -> SearchStrategy:  # str
     """
     Strategy that generates incident numbers.
     """
-    return integers(min_value=1, max_value=max)
+    return integers(min_value=1, max_value=maxIncidentNumber)
 
 
 def incidentSummaries() -> SearchStrategy:  # str
