@@ -15,7 +15,8 @@ from twisted.trial.unittest import (
 from twisted.web import http
 from twisted.web.iweb import IRequest
 
-from .klein import ContentType
+from ims.ext.klein import ContentType
+from ims.model import EventData, IMSData
 
 
 __all__ = (
@@ -135,6 +136,66 @@ class TestCase(SuperTestCase):
         # FIXME: Check encoding, default to UTF-8
 
         return request.getWrittenData().decode()
+
+
+    def assertEventDataEqual(
+        self, eventDataA: EventData, eventDataB: EventData
+    ) -> None:
+        """
+        Assert that the given eventData objects are equal.
+        """
+        try:
+            self.assertEqual(eventDataA.event, eventDataB.event)
+        except self.failureException as e:
+            self.fail(f"EventData.event: {e}")
+
+        try:
+            self.assertEqual(eventDataA.access, eventDataB.access)
+        except self.failureException as e:
+            self.fail(f"EventData.access: {e}")
+
+        try:
+            self.assertEqual(
+                eventDataA.concentricStreets, eventDataB.concentricStreets
+            )
+        except self.failureException as e:
+            self.fail(f"EventData.concentricStreets: {e}")
+
+        try:
+            self.assertEqual(eventDataA.incidents, eventDataB.incidents)
+        except self.failureException as e:
+            self.fail(f"EventData.incidents: {e}")
+
+        try:
+            self.assertEqual(
+                eventDataA.incidentReports, eventDataB.incidentReports
+            )
+        except self.failureException as e:
+            self.fail(f"EventData.incidentReports: {e}")
+
+
+    def assertIMSDataEqual(self, imsDataA: IMSData, imsDataB: IMSData) -> None:
+        """
+        Assert that the given IMSData objects are equal.
+        """
+        try:
+            self.assertEqual(imsDataA.incidentTypes, imsDataB.incidentTypes)
+        except self.failureException as e:
+            self.fail(f"IMSData.incidentTypes: {e}")
+
+        if len(imsDataA.events) != len(imsDataB.events):
+            self.fail(
+                f"len(IMSData.events): "
+                f"{len(imsDataA.events)} != {len(imsDataB.events)}"
+            )
+
+        for eventDataA, eventDataB in zip(imsDataA.events, imsDataB.events):
+            try:
+                self.assertEventDataEqual(eventDataA, eventDataB)
+            except self.failureException as e:
+                self.fail(f"IMSData.events: {e}")
+
+        self.assertEqual(imsDataA, imsDataB)
 
 
 

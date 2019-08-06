@@ -19,30 +19,111 @@ Tests for :mod:`ranger-ims-server.store.export._json`
 """
 
 from io import BytesIO
-from pathlib import Path
 
 from hypothesis import given
 
-from ims.ext.json import jsonTextFromObject
+from ims.ext.json import jsonTextFromObject, objectFromJSONText
 from ims.ext.trial import TestCase
 from ims.model import (
     EventAccess, EventData, IMSData, IncidentType, KnownIncidentType
 )
-from ims.model.json import jsonObjectFromModelObject
+from ims.model.json import jsonObjectFromModelObject, modelObjectFromJSONObject
 from ims.model.strategies import imsDatas
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
-from .._json import JSONImporter
+from .._json import JSONExporter, JSONImporter
 
 
 __all__ = ()
+
+
+def addKnownIncidentTypes(imsData: IMSData) -> IMSData:
+    incidentTypesIn = frozenset(imsData.incidentTypes)
+    incidentTypesIn |= frozenset(
+        IncidentType(name=kt.value, hidden=False)
+        for kt in KnownIncidentType
+        if kt.value not in (t.name for t in incidentTypesIn)
+    )
+    return imsData.replace(incidentTypes=incidentTypesIn)
+
 
 
 class JSONExporterTests(TestCase):
     """
     Tests for :class:`JSONExporter`
     """
+
+    def store(self, imsData: IMSData) -> IMSDataStore:
+        # Add known incident types to imsDataIn, because that's going to be
+        # expected in the end result, since creating the schema will add them.
+        imsData = addKnownIncidentTypes(imsData)
+
+        store = SQLiteDataStore(dbPath=None)
+        self.successResultOf(store.upgradeSchema())
+
+        importer = JSONImporter(store=store, imsData=imsData)
+        self.successResultOf(importer.storeData())
+
+        return store
+
+
+    @given(imsDatas())
+    def test_asBytes(self, imsDataIn: IMSData) -> None:
+        # Create a new data store and import imsDataIn into it
+        store = self.store(imsData=imsDataIn)
+
+        # Export the data from that store
+        exporter = JSONExporter(store=store)
+        data = self.successResultOf(exporter.asBytes())
+        text = data.decode("utf-8")
+        json = objectFromJSONText(text)
+        imsDataOut = modelObjectFromJSONObject(json, IMSData)
+
+        # Compare result to input data
+        self.assertIMSDataEqual(imsDataOut, imsDataIn)
+
+
+    @given(imsDatas())
+    def test_asText(self, imsDataIn: IMSData) -> None:
+        # Create a new data store and import imsDataIn into it
+        store = self.store(imsData=imsDataIn)
+
+        # Export the data from that store
+        exporter = JSONExporter(store=store)
+        text = self.successResultOf(exporter.asText())
+        json = objectFromJSONText(text)
+        imsDataOut = modelObjectFromJSONObject(json, IMSData)
+
+        # Compare result to input data
+        self.assertIMSDataEqual(imsDataOut, imsDataIn)
+
+
+    @given(imsDatas())
+    def test_asJSON(self, imsDataIn: IMSData) -> None:
+        # Create a new data store and import imsDataIn into it
+        store = self.store(imsData=imsDataIn)
+
+        # Export the data from that store
+        exporter = JSONExporter(store=store)
+        json = self.successResultOf(exporter.asJSON())
+        imsDataOut = modelObjectFromJSONObject(json, IMSData)
+
+        # Compare result to input data
+        self.assertIMSDataEqual(imsDataOut, imsDataIn)
+
+
+    @given(imsDatas())
+    def test_imsData(self, imsDataIn: IMSData) -> None:
+        # Create a new data store and import imsDataIn into it
+        store = self.store(imsData=imsDataIn)
+
+        # Export the data from that store
+        exporter = JSONExporter(store=store)
+        imsDataOut = self.successResultOf(exporter.imsData())
+
+        # Compare exported result to input data
+        self.assertIMSDataEqual(imsDataOut, imsDataIn)
 
 
 
@@ -52,7 +133,9 @@ class JSONImporterTests(TestCase):
     """
 
     def store(self) -> IMSDataStore:
-        return SQLiteDataStore(dbPath=Path(self.mktemp()))
+        store = SQLiteDataStore(dbPath=None)
+        self.successResultOf(store.upgradeSchema())
+        return store
 
 
     @given(imsDatas())
@@ -63,7 +146,7 @@ class JSONImporterTests(TestCase):
         jsonIO = BytesIO(jsonBytes)
         importer = JSONImporter.fromIO(store=self.store(), io=jsonIO)
 
-        self.assertEqual(importer.imsData, imsDataIn)
+        self.assertIMSDataEqual(importer.imsData, imsDataIn)
 
 
     @given(imsDatas())
@@ -75,7 +158,7 @@ class JSONImporterTests(TestCase):
             store=self.store(), jsonBytes=jsonBytes
         )
 
-        self.assertEqual(importer.imsData, imsDataIn)
+        self.assertIMSDataEqual(importer.imsData, imsDataIn)
 
 
     @given(imsDatas())
@@ -84,7 +167,7 @@ class JSONImporterTests(TestCase):
         jsonText = jsonTextFromObject(json)
         importer = JSONImporter.fromText(store=self.store(), jsonText=jsonText)
 
-        self.assertEqual(importer.imsData, imsDataIn)
+        self.assertIMSDataEqual(importer.imsData, imsDataIn)
 
 
     @given(imsDatas())
@@ -92,39 +175,29 @@ class JSONImporterTests(TestCase):
         json = jsonObjectFromModelObject(imsDataIn)
         importer = JSONImporter.fromJSON(store=self.store(), json=json)
 
-        self.assertEqual(importer.imsData, imsDataIn)
+        self.assertIMSDataEqual(importer.imsData, imsDataIn)
 
 
     @given(imsDatas())
     def test_storeData(self, imsDataIn: IMSData) -> None:
-        # Add known incident types to imsDataIn, because that's going to be
-        # expected in the end result, since creating the schema will add them.
-        incidentTypesIn = frozenset(imsDataIn.incidentTypes)
-        incidentTypesIn |= frozenset(
-            IncidentType(name=kt.value, hidden=False)
-            for kt in KnownIncidentType
-            if kt.value not in (t.name for t in incidentTypesIn)
-        )
-        imsDataIn = imsDataIn.replace(incidentTypes=incidentTypesIn)
-
         resultOf = self.successResultOf
 
+        # Add known incident types to imsDataIn, because that's going to be
+        # expected in the end result, since creating the schema will add them.
+        imsDataIn = addKnownIncidentTypes(imsDataIn)
+
+        # Create a new data store and import imsDataIn into it
         store = self.store()
-        resultOf(store.upgradeSchema())
-
         importer = JSONImporter(store=store, imsData=imsDataIn)
-
         resultOf(importer.storeData())
 
-        # Incident Types
-
+        # Create a new IMSData with the imported data in it
         allTypesOut = frozenset(
             resultOf(store.incidentTypes(includeHidden=True))
         )
         visibleTypesOut = frozenset(
             resultOf(store.incidentTypes(includeHidden=False))
         )
-
         imsDataOut = IMSData(
             events=(
                 EventData(
@@ -150,4 +223,5 @@ class JSONImporterTests(TestCase):
             ),
         )
 
-        self.assertEqual(imsDataOut, imsDataIn)
+        # Compare imported result to input data
+        self.assertIMSDataEqual(imsDataOut, imsDataIn)
