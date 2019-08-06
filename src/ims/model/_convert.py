@@ -41,4 +41,7 @@ def normalizeDateTime(dateTime: DateTime) -> DateTime:
     into all data stores with full precision and we don't need that kind of
     precision.
     """
-    return dateTime.replace(microsecond=round(dateTime.microsecond, -4))
+    microsecond = round(dateTime.microsecond, -4)
+    if microsecond == 1000000:  # Rounded up a wee bit too far
+        microsecond = 990000
+    return dateTime.replace(microsecond=microsecond)
