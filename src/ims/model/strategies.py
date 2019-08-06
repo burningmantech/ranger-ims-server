@@ -300,7 +300,9 @@ def eventDatas(draw: Callable) -> EventData:
         access=draw(eventAccesses()),
         concentricStreets=concentricStreets,
         incidents=situations,
-        incidentReports=draw(lists(incidentReports(event=event))),
+        incidentReports=draw(lists(
+            incidentReports(event=event), unique_by=lambda i: i.number
+        )),
     )
 
 
