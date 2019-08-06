@@ -25,6 +25,7 @@ from hypothesis.strategies import booleans
 
 from ims.ext.trial import TestCase
 
+from .._convert import normalizeDateTime
 from .._entry import ReportEntry
 from ..strategies import dateTimes, rangerHandles, reportEntries
 
@@ -61,6 +62,9 @@ class ReportEntryTests(TestCase):
         """
         Report entry ordering sorts by created.
         """
+        createdA = normalizeDateTime(createdA)
+        createdB = normalizeDateTime(createdB)
+
         a = reportEntry.replace(created=createdA)
         b = reportEntry.replace(created=createdB)
 
