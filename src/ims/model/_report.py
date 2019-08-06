@@ -25,6 +25,7 @@ from typing import Optional, Sequence
 
 from attr import attrib, attrs
 
+from ._convert import normalizeDateTime
 from ._entry import ReportEntry
 from ._event import Event
 from ._incident import sortAndFreezeReportEntries, summaryFromReport
@@ -43,7 +44,7 @@ class IncidentReport(ReplaceMixIn):
 
     event: Event
     number: int
-    created: DateTime
+    created: DateTime = attrib(converter=normalizeDateTime)
     summary: Optional[str]
     incidentNumber: Optional[int]
     reportEntries: Sequence[ReportEntry] = attrib(

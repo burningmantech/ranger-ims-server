@@ -20,6 +20,7 @@
 Converters
 """
 
+from datetime import datetime as DateTime
 from typing import FrozenSet, Iterable
 
 
@@ -32,3 +33,12 @@ def freezeIntegers(integers: Iterable[int]) -> FrozenSet[int]:
 
 def freezeStrings(strings: Iterable[str]) -> FrozenSet[str]:
     return frozenset(strings)
+
+
+def normalizeDateTime(dateTime: DateTime) -> DateTime:
+    """
+    Shave some precision off of DateTimes, since it may not round-trip well
+    into all data stores with full precision and we don't need that kind of
+    precision.
+    """
+    return dateTime.replace(microsecond=round(dateTime.microsecond, -4))

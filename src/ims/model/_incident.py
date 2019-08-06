@@ -27,7 +27,7 @@ from attr import attrib, attrs
 
 from ims.ext.attr import sorted_tuple
 
-from ._convert import freezeIntegers, freezeStrings
+from ._convert import freezeIntegers, freezeStrings, normalizeDateTime
 from ._entry import ReportEntry
 from ._event import Event
 from ._location import Location
@@ -54,7 +54,7 @@ class Incident(ReplaceMixIn):
 
     event: Event
     number: int
-    created: DateTime
+    created: DateTime = attrib(converter=normalizeDateTime)
     state: IncidentState
     priority: IncidentPriority
     summary: Optional[str]
