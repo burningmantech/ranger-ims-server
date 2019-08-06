@@ -189,7 +189,9 @@ class TestCase(SuperTestCase):
                 f"{len(imsDataA.events)} != {len(imsDataB.events)}"
             )
 
-        for eventDataA, eventDataB in zip(imsDataA.events, imsDataB.events):
+        for eventDataA, eventDataB in zip(
+            sorted(imsDataA.events), sorted(imsDataB.events)
+        ):
             try:
                 self.assertEventDataEqual(eventDataA, eventDataB)
             except self.failureException as e:
