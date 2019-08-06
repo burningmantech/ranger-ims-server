@@ -21,7 +21,7 @@ Test strategies for model data.
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
-from typing import Callable, Dict, Hashable, List, Optional, cast
+from typing import Callable, Dict, FrozenSet, Hashable, List, Optional, cast
 
 from hypothesis import HealthCheck, settings
 from hypothesis.searchstrategy import SearchStrategy
@@ -241,15 +241,32 @@ def events(draw: Callable) -> Event:
 
 
 @composite
+def accessTexts(draw: Callable) -> str:
+    """
+    Strategy that generates event access strings.
+    """
+    # FIXME: We are using Ranger handles for positions here.
+    return "{}:{}".format(
+        draw(sampled_from(("person", "position"))),
+        draw(rangerHandles()),
+    )
+
+
+@composite
 def eventAccesses(draw: Callable) -> EventAccess:
     """
     Strategy that generates :class:`EventAccess` values.
     """
-    return EventAccess(
-        readers=draw(lists(text(min_size=1))),
-        writers=draw(lists(text(min_size=1))),
-        reporters=draw(lists(text(min_size=1))),
+    readers: FrozenSet[str] = frozenset(draw(lists(accessTexts())))
+    writers: FrozenSet[str] = frozenset(
+        a for a in draw(lists(accessTexts()))
+        if a not in readers
     )
+    reporters: FrozenSet[str] = frozenset(
+        a for a in draw(lists(accessTexts()))
+        if a not in readers and a not in writers
+    )
+    return EventAccess(readers=readers, writers=writers, reporters=reporters)
 
 
 @composite
