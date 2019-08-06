@@ -126,7 +126,7 @@ class JSONImporterTests(TestCase):
         )
 
         imsDataOut = IMSData(
-            events=frozenset(
+            events=(
                 EventData(
                     event=event,
                     access=EventAccess(
@@ -144,7 +144,7 @@ class JSONImporterTests(TestCase):
                 )
                 for event in resultOf(store.events())
             ),
-            incidentTypes=frozenset(
+            incidentTypes=(
                 IncidentType(name=t, hidden=(t not in visibleTypesOut))
                 for t in allTypesOut
             ),
