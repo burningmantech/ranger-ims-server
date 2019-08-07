@@ -28,6 +28,7 @@ from ims.ext.trial import TestCase
 from ims.model import (
     EventAccess, EventData, IMSData, IncidentType, KnownIncidentType
 )
+from ims.model._type import admin, junk
 from ims.model.json import jsonObjectFromModelObject, modelObjectFromJSONObject
 from ims.model.strategies import imsDatas
 from ims.store import IMSDataStore
@@ -39,17 +40,26 @@ from .._json import JSONExporter, JSONImporter
 __all__ = ()
 
 
+knownIncidentTypes = frozenset((admin, junk))
+knownIncidentTypesNot = frozenset(
+    IncidentType(name=t.name, hidden=True) for t in knownIncidentTypes
+)
+
+# Make sure this is in sync with KnownIncidentType
+assert (
+    sorted(t.name for t in knownIncidentTypes) ==
+    sorted(k.value for k in KnownIncidentType)
+)
+
+
 def addKnownIncidentTypes(imsData: IMSData) -> IMSData:
     """
     Add known incident types to imsDataIn, because that's going to be
     expected in the end result, since creating the schema will add them.
     """
     incidentTypesIn = frozenset(imsData.incidentTypes)
-    incidentTypesIn |= frozenset(
-        IncidentType(name=kt.value, hidden=False)
-        for kt in KnownIncidentType
-        if kt.value not in (t.name for t in incidentTypesIn)
-    )
+    incidentTypesIn |= knownIncidentTypes
+    incidentTypesIn -= knownIncidentTypesNot
     return imsData.replace(incidentTypes=incidentTypesIn)
 
 
