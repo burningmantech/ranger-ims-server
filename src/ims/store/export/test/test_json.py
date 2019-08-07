@@ -40,6 +40,10 @@ __all__ = ()
 
 
 def addKnownIncidentTypes(imsData: IMSData) -> IMSData:
+    """
+    Add known incident types to imsDataIn, because that's going to be
+    expected in the end result, since creating the schema will add them.
+    """
     incidentTypesIn = frozenset(imsData.incidentTypes)
     incidentTypesIn |= frozenset(
         IncidentType(name=kt.value, hidden=False)
@@ -56,10 +60,6 @@ class JSONExporterTests(TestCase):
     """
 
     def store(self, imsData: IMSData) -> IMSDataStore:
-        # Add known incident types to imsDataIn, because that's going to be
-        # expected in the end result, since creating the schema will add them.
-        imsData = addKnownIncidentTypes(imsData)
-
         store = SQLiteDataStore(dbPath=Path(self.mktemp()))
         self.successResultOf(store.upgradeSchema())
 
@@ -71,6 +71,8 @@ class JSONExporterTests(TestCase):
 
     @given(imsDatas())
     def test_asBytes(self, imsDataIn: IMSData) -> None:
+        imsDataIn = addKnownIncidentTypes(imsDataIn)
+
         # Create a new data store and import imsDataIn into it
         store = self.store(imsData=imsDataIn)
 
@@ -87,6 +89,8 @@ class JSONExporterTests(TestCase):
 
     @given(imsDatas())
     def test_asText(self, imsDataIn: IMSData) -> None:
+        imsDataIn = addKnownIncidentTypes(imsDataIn)
+
         # Create a new data store and import imsDataIn into it
         store = self.store(imsData=imsDataIn)
 
@@ -102,6 +106,8 @@ class JSONExporterTests(TestCase):
 
     @given(imsDatas())
     def test_asJSON(self, imsDataIn: IMSData) -> None:
+        imsDataIn = addKnownIncidentTypes(imsDataIn)
+
         # Create a new data store and import imsDataIn into it
         store = self.store(imsData=imsDataIn)
 
@@ -116,6 +122,8 @@ class JSONExporterTests(TestCase):
 
     @given(imsDatas())
     def test_imsData(self, imsDataIn: IMSData) -> None:
+        imsDataIn = addKnownIncidentTypes(imsDataIn)
+
         # Create a new data store and import imsDataIn into it
         store = self.store(imsData=imsDataIn)
 
@@ -181,11 +189,9 @@ class JSONImporterTests(TestCase):
 
     @given(imsDatas())
     def test_storeData(self, imsDataIn: IMSData) -> None:
-        resultOf = self.successResultOf
-
-        # Add known incident types to imsDataIn, because that's going to be
-        # expected in the end result, since creating the schema will add them.
         imsDataIn = addKnownIncidentTypes(imsDataIn)
+
+        resultOf = self.successResultOf
 
         # Create a new data store and import imsDataIn into it
         store = self.store()
