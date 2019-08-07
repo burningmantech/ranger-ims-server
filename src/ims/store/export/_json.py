@@ -91,8 +91,12 @@ class JSONExporter(object):
         """
         Export incident types.
         """
-        allTypes     = await self.store.incidentTypes(includeHidden=True)
-        visibleTypes = await self.store.incidentTypes(includeHidden=False)
+        allTypes = frozenset(
+            await self.store.incidentTypes(includeHidden=True)
+        )
+        visibleTypes = frozenset(
+            await self.store.incidentTypes(includeHidden=False)
+        )
 
         return (
             IncidentType(name=name, hidden=(name not in visibleTypes))
