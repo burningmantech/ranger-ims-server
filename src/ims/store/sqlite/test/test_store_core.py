@@ -54,7 +54,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         """
         :meth:`DataStore.loadSchema` caches and returns the schema.
         """
-        store = TestDataStore(dbPath=Path(self.mktemp()))
+        store = TestDataStore(dbPath=None)
         schema = store.loadSchema()
 
         self.assertStartsWith(schema, "create table SCHEMA_INFO (")
@@ -198,7 +198,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         """
         :meth:`DataStore._db` returns a :class:`Connection`.
         """
-        store = TestDataStore(dbPath=Path(self.mktemp()))
+        store = TestDataStore(dbPath=None)
 
         self.assertIsInstance(store._db, Connection)
 
@@ -213,9 +213,9 @@ class DataStoreCoreTests(AsynchronousTestCase):
         def oops(path: Path, schema: Optional[str] = None) -> Connection:
             raise SQLiteError(message)
 
-        self.patch(_store, "openDB", oops)
+        self.patch(_store, "createDB", oops)
 
-        store = TestDataStore(dbPath=Path(self.mktemp()))
+        store = TestDataStore(dbPath=None)
 
         e = self.assertRaises(StorageError, lambda: store._db)
         self.assertEqual(

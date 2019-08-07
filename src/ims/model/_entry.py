@@ -23,9 +23,10 @@ Report entry
 from datetime import datetime as DateTime
 from typing import Any
 
-from attr import attrs
+from attr import attrib, attrs
 
 from ._cmp import ComparisonMixIn
+from ._convert import normalizeDateTime
 from ._replace import ReplaceMixIn
 
 
@@ -41,7 +42,7 @@ class ReportEntry(ComparisonMixIn, ReplaceMixIn):
     A report entry is text with an associated author and time stamp.
     """
 
-    created: DateTime
+    created: DateTime = attrib(converter=normalizeDateTime)
     author: str
     automatic: bool
     text: str

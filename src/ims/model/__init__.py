@@ -19,24 +19,32 @@ Incident Management System data model
 """
 
 from ._address import Address, RodGarettAddress, TextOnlyAddress
+from ._convert import normalizeDateTime
 from ._entry import ReportEntry
 from ._event import Event
+from ._eventaccess import EventAccess
+from ._eventdata import EventData
+from ._imsdata import IMSData
 from ._incident import Incident
 from ._location import Location
 from ._priority import IncidentPriority
 from ._ranger import Ranger, RangerStatus
 from ._report import IncidentReport
 from ._state import IncidentState
-from ._type import KnownIncidentType
+from ._type import IncidentType, KnownIncidentType
 
 
 __all__ = (
     "Address",
     "Event",
+    "EventAccess",
+    "EventData",
+    "IMSData",
     "Incident",
     "IncidentPriority",
     "IncidentReport",
     "IncidentState",
+    "IncidentType",
     "KnownIncidentType",
     "Location",
     "Ranger",
@@ -44,4 +52,5 @@ __all__ = (
     "ReportEntry",
     "RodGarettAddress",
     "TextOnlyAddress",
+    "normalizeDateTime",
 )

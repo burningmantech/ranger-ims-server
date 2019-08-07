@@ -28,6 +28,7 @@ from hypothesis.strategies import lists, sampled_from, text
 
 from ims.ext.trial import TestCase
 
+from .._convert import normalizeDateTime
 from .._entry import ReportEntry
 from .._event import Event
 from .._incident import Incident, summaryFromReport
@@ -112,7 +113,7 @@ class IncidentTests(TestCase):
         :meth:`Incident.replace` with a created argument replaces the created
         time.
         """
-        self._test_replace(incident, "created", created)
+        self._test_replace(incident, "created", normalizeDateTime(created))
 
 
     @given(incidents(), incidentStates())

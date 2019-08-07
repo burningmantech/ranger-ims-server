@@ -21,10 +21,11 @@ Ranger
 """
 
 from enum import IntEnum, unique
-from typing import AbstractSet, Optional
+from typing import FrozenSet, Optional
 
 from attr import attrib, attrs
 
+from ._convert import freezeStrings
 from ._replace import ReplaceMixIn
 
 
@@ -88,7 +89,7 @@ class Ranger(ReplaceMixIn):
     handle: str
     name: str
     status: RangerStatus
-    email: AbstractSet[str] = attrib(converter=frozenset)
+    email: FrozenSet[str] = attrib(converter=freezeStrings)
     onSite: bool
     dmsID: Optional[int]
     password: Optional[str] = None

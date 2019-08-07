@@ -23,6 +23,8 @@ mypy "$@"                                                                       
         -e ": error: Cannot find module named 'hypothesis.[^']*'"                                  \
         -e ": error: Cannot find module named 'klein'"                                             \
         -e ": error: Cannot find module named 'klein.[^']*'"                                       \
+        -e ": error: Cannot find module named 'twisted'"                                       \
+        -e ": error: Cannot find module named 'twisted.[^']*'"                                       \
         -e ": error: No library stub file for "                                                    \
         -e ': error: "Callable\[\[[^\]\+\], None\]" has no attribute "todo"'                       \
         -e ': error: <nothing> has no attribute "__iter__"'                                        \
@@ -38,6 +40,7 @@ mypy "$@"                                                                       
         -e '^src/ims/store/.*/_queries.py:[0-9:]\+: error: Unexpected keyword argument "[^"]*" for "Queries"' \
         -e 'src/ims/ext/enum.py:[0-9:]\+: error: Self argument missing for a non-static method (or an invalid type for self)' \
         -e 'src/ims/ext/enum.py:[0-9:]\+: error: Signature of "_generate_next_value_" incompatible with supertype "Enum"' \
+        -e 'src/ims/model/json/_type.py:[0-9:]\+: error: Incompatible types in assignment (expression has type "Type\[str\]", base class "Enum" defined the type as "str")' \
         > "${tmp}" || true;
 
 sort < "${tmp}";

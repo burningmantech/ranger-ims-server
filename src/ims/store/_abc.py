@@ -59,6 +59,43 @@ class IMSDataStore(ABC):
 
 
     ###
+    # Incident Types
+    ###
+
+
+    @abstractmethod
+    async def incidentTypes(
+        self, includeHidden: bool = False
+    ) -> Iterable[str]:
+        """
+        Look up the incident types used in this store.
+        """
+
+
+    @abstractmethod
+    async def createIncidentType(
+        self, incidentType: str, hidden: bool = False
+    ) -> None:
+        """
+        Create the given incident type.
+        """
+
+
+    @abstractmethod
+    async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
+        """
+        Show the given incident types.
+        """
+
+
+    @abstractmethod
+    async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
+        """
+        Hide the given incident types.
+        """
+
+
+    ###
     # Events
     ###
 
@@ -116,43 +153,6 @@ class IMSDataStore(ABC):
     async def setReporters(self, event: Event, writers: Iterable[str]) -> None:
         """
         Set the allowed reporters for the given event.
-        """
-
-
-    ###
-    # Incident Types
-    ###
-
-
-    @abstractmethod
-    async def incidentTypes(
-        self, includeHidden: bool = False
-    ) -> Iterable[str]:
-        """
-        Look up the incident types used in this store.
-        """
-
-
-    @abstractmethod
-    async def createIncidentType(
-        self, incidentType: str, hidden: bool = False
-    ) -> None:
-        """
-        Create the given incident type.
-        """
-
-
-    @abstractmethod
-    async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
-        """
-        Show the given incident types.
-        """
-
-
-    @abstractmethod
-    async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
-        """
-        Hide the given incident types.
         """
 
 
@@ -374,6 +374,20 @@ class IMSDataStore(ABC):
         The stored incident report is returned with the incident report number
         assigned to it by the data store, and with initial (automatic) report
         entries added.
+        """
+
+
+    @abstractmethod
+    async def importIncidentReport(
+        self, incidentReport: IncidentReport
+    ) -> None:
+        """
+        Import an incident and add it into the given event.
+
+        This differs from :meth:`IMSDataStore.createIncidentReport` in that the
+        incident report is added exactly as is; the incident report's number is
+        not modified (and must be greater than zero), and no automatic entries
+        are added to it.
         """
 
 

@@ -72,7 +72,7 @@ class DataStore(DatabaseStore):
         db: Optional[Connection] = attrib(default=None, init=False)
 
 
-    dbPath: Path
+    dbPath: Optional[Path]
     _state: _State = attrib(factory=_State, init=False)
 
 
@@ -126,7 +126,10 @@ class DataStore(DatabaseStore):
     def _db(self) -> Connection:
         if self._state.db is None:
             try:
-                self._state.db = openDB(self.dbPath, schema="")
+                if self.dbPath is None:
+                    self._state.db = createDB(None, schema="")
+                else:
+                    self._state.db = openDB(self.dbPath, schema="")
 
             except SQLiteError as e:
                 self._log.critical(
@@ -144,7 +147,9 @@ class DataStore(DatabaseStore):
         """
         See :meth:`DatabaseStore.disconnect`.
         """
-        self._state.db = None
+        if self._state.db is not None:
+            self._state.db.close()
+            self._state.db = None
 
 
     async def runQuery(

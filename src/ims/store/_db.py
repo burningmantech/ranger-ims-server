@@ -1563,6 +1563,15 @@ class DatabaseStore(IMSDataStore):
         return await self._createIncidentReport(incidentReport, author, False)
 
 
+    async def importIncidentReport(
+        self, incidentReport: IncidentReport
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.importIncidentReport`.
+        """
+        await self._createIncidentReport(incidentReport, None, True)
+
+
     async def _setIncidentReportAttribute(
         self, query: str, event: Event, incidentReportNumber: int,
         attribute: str, value: ParameterValue, author: str,

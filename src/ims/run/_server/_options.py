@@ -19,9 +19,11 @@ Command line options for the IMS server.
 """
 
 from pathlib import Path
-from sys import stderr, stdout
+from sys import stderr, stdin, stdout
 from textwrap import dedent
-from typing import ClassVar, Mapping, MutableMapping, Optional, Sequence, cast
+from typing import (
+    ClassVar, IO, Mapping, MutableMapping, Optional, Sequence, cast
+)
 
 from attr import attrs
 
@@ -30,7 +32,7 @@ from twisted.logger import (
     InvalidLogLevelError, LogLevel, Logger,
     jsonFileLogObserver, textFileLogObserver,
 )
-from twisted.python.usage import Options, UsageError
+from twisted.python.usage import Options as BaseOptions, UsageError
 
 from ims import __version__ as version
 from ims.config import Configuration, LogFormat
@@ -39,22 +41,44 @@ from ims.config import Configuration, LogFormat
 __all__ = ()
 
 
-openFile = open
-
-
-
-class ServerOptions(Options):
+def openFile(fileName: str, mode: str) -> IO:
     """
-    Command line options for the IMS server.
+    Open a file, given a name.
+    Handles "+" and "-" as stdin/stdout.
     """
+    file: IO
 
-    log: ClassVar[Logger] = Logger()
-    defaultLogLevel: ClassVar = LogLevel.info
+    def openNamedFile() -> IO:
+        try:
+            file = open(fileName, mode)
+        except EnvironmentError as e:
+            exit(
+                ExitStatus.EX_IOERR,
+                f"Unable to open file {fileName!r}: {e}"
+            )
+        return file
+
+    if any((c in mode) for c in "wxa"):
+        if fileName == "-":
+            file = stdout
+        elif fileName == "+":
+            file = stderr
+        else:
+            file = openNamedFile()
+    else:
+        if fileName == "-":
+            file = stdin
+        else:
+            file = openNamedFile()
+
+    return file
 
 
-    def getSynopsis(self) -> str:
-        return f"{Options.getSynopsis(self)} plugin [plugin_options]"
 
+class Options(BaseOptions):
+    """
+    Options, cleaned up
+    """
 
     def opt_version(self) -> None:
         """
@@ -63,56 +87,64 @@ class ServerOptions(Options):
         exit(ExitStatus.EX_OK, f"{version}")
 
 
+
+class ServerOptions(Options):
+    """
+    Command line options for the IMS server.
+    """
+
+
+
+class ExportOptions(Options):
+    """
+    Command line options for the IMS export tool.
+    """
+
+    def opt_output(self, fileName: str) -> None:
+        """
+        Output file. ("-" for stdout, "+" for stderr; default: "-")
+        """
+        self["outFile"] = openFile(fileName, "wb")
+
+
+
+class ImportOptions(Options):
+    """
+    Command line options for the IMS import tool.
+    """
+
+    def opt_input(self, fileName: str) -> None:
+        """
+        Input file. ("-" for stdin)
+        """
+        self["inFile"] = openFile(fileName, "rb")
+
+
+
+class IMSOptions(Options):
+    """
+    Command line options for all IMS commands.
+    """
+
+    log: ClassVar[Logger] = Logger()
+    defaultLogLevel: ClassVar = LogLevel.info
+
+    subCommands: ClassVar = [
+        ["server", None, ServerOptions, "Run the IMS server"],
+        ["export", None, ExportOptions, "Export data"],
+    ]
+    # defaultSubCommand = "server"
+
+
+    def getSynopsis(self) -> str:
+        return f"{Options.getSynopsis(self)} command [command_options]"
+
+
     def opt_config(self, path: str) -> None:
         """
         Location of configuration file.
         """
         cast(MutableMapping, self)["configFile"] = Path(path)
-
-
-    def initConfig(self) -> None:
-        try:
-            configFile = cast(
-                Optional[Path], cast(Mapping, self).get("configFile")
-            )
-
-            if configFile and not configFile.is_file():
-                self.log.info("Config file not found.")
-                configFile = None
-
-            configuration = Configuration.fromConfigFile(configFile)
-
-            options = cast(MutableMapping, self)
-
-            if "overrides" in options:
-                for _override in options["overrides"]:
-                    raise NotImplementedError("Option overrides unimplemented")
-
-            if "logFileName" in options:
-                configuration = configuration.replace(
-                    logFilePath=Path(options["logFileName"])
-                )
-            else:
-                self.opt_log_file(str(configuration.logFilePath))
-
-            if "logFormat" in options:
-                configuration = configuration.replace(
-                    logFormat=options["logFormat"]
-                )
-            elif configuration.logFormat is not None:
-                self.opt_log_format(configuration.logFormat.name)
-
-            if "logLevel" in options:
-                configuration = configuration.replace(
-                    logLevelName=options["logLevel"].name
-                )
-            elif configuration.logLevelName is not None:
-                self.opt_log_level(configuration.logLevelName)
-
-            options["configuration"] = configuration
-
-        except Exception as e:
-            exit(ExitStatus.EX_CONFIG, str(e))
 
 
     def opt_log_level(self, levelName: str) -> None:
@@ -138,22 +170,6 @@ class ServerOptions(Options):
         Log to file. ("-" for stdout, "+" for stderr; default: "-")
         """
         self["logFileName"] = fileName
-
-        if fileName == "-":
-            self["logFile"] = stdout
-            return
-
-        if fileName == "+":
-            self["logFile"] = stderr
-            return
-
-        try:
-            self["logFile"] = openFile(fileName, "a")
-        except EnvironmentError as e:
-            exit(
-                ExitStatus.EX_IOERR,
-                f"Unable to open log file {fileName!r}: {e}"
-            )
 
 
     def opt_log_format(self, logFormatName: str) -> None:
@@ -202,6 +218,55 @@ class ServerOptions(Options):
         )
 
 
+    def initConfig(self) -> None:
+        try:
+            configFile = cast(
+                Optional[Path], cast(Mapping, self).get("configFile")
+            )
+
+            if configFile and not configFile.is_file():
+                self.log.info("Config file not found.")
+                configFile = None
+
+            configuration = Configuration.fromConfigFile(configFile)
+
+            options = cast(MutableMapping, self)
+
+            if "overrides" in options:
+                for _override in options["overrides"]:
+                    raise NotImplementedError("Option overrides unimplemented")
+
+            if "logFileName" in options:
+                configuration = configuration.replace(
+                    logFilePath=Path(options["logFileName"])
+                )
+
+            self.opt_log_file(str(configuration.logFilePath))
+
+            if "logFormat" in options:
+                configuration = configuration.replace(
+                    logFormat=options["logFormat"]
+                )
+            elif configuration.logFormat is not None:
+                self.opt_log_format(configuration.logFormat.name)
+
+            if "logLevel" in options:
+                configuration = configuration.replace(
+                    logLevelName=options["logLevel"].name
+                )
+            elif configuration.logLevelName is not None:
+                self.opt_log_level(configuration.logLevelName)
+
+            options["configuration"] = configuration
+
+        except Exception as e:
+            exit(ExitStatus.EX_CONFIG, str(e))
+
+
+    def initLogFile(self) -> None:
+        self["logFile"] = openFile(self["logFileName"], "a")
+
+
     def selectDefaultLogObserver(self) -> None:
         """
         Set :func:`fileLogObserverFactory` to the default appropriate for the
@@ -221,6 +286,7 @@ class ServerOptions(Options):
     def parseOptions(self, options: Optional[Sequence[str]] = None) -> None:
         Options.parseOptions(self, options=options)
 
+        self.initLogFile()
         self.selectDefaultLogObserver()
 
 

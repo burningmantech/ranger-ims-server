@@ -21,27 +21,31 @@ Test strategies for model data.
 from datetime import (
     datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 )
-from typing import Callable, Hashable, Optional, cast
+from typing import Callable, Dict, FrozenSet, Hashable, List, Optional, cast
 
 from hypothesis import HealthCheck, settings
 from hypothesis.searchstrategy import SearchStrategy
 from hypothesis.strategies import (
-    booleans, composite, datetimes as _datetimes, integers, lists, none,
-    one_of, sampled_from, text,
+    booleans, composite, datetimes as _datetimes, dictionaries, integers,
+    lists, none, one_of, sampled_from, text,
 )
 
 from ims.dms import hashPassword
+from ims.ext.sqlite import SQLITE_MAX_INT
 
 from ._address import RodGarettAddress, TextOnlyAddress
 from ._entry import ReportEntry
 from ._event import Event
+from ._eventaccess import EventAccess
+from ._eventdata import EventData
+from ._imsdata import IMSData
 from ._incident import Incident
 from ._location import Location
 from ._priority import IncidentPriority
 from ._ranger import Ranger, RangerStatus
 from ._report import IncidentReport
 from ._state import IncidentState
-from ._type import KnownIncidentType
+from ._type import IncidentType, KnownIncidentType
 
 
 __all__ = (
@@ -50,6 +54,9 @@ __all__ = (
     "concentricStreetNames",
     "dateTimes",
     "events",
+    "eventAccesses",
+    "eventDatas",
+    "imsDatas",
     "incidentLists",
     "incidentNumbers",
     "incidentPriorities",
@@ -60,7 +67,6 @@ __all__ = (
     "incidentStates",
     "incidentSummaries",
     "incidentTypes",
-    "incidentTypesText",
     "incidents",
     "locationNames",
     "locations",
@@ -235,15 +241,111 @@ def events(draw: Callable) -> Event:
     return Event(id=draw(text(min_size=1)))
 
 
+@composite
+def accessTexts(draw: Callable) -> str:
+    """
+    Strategy that generates event access strings.
+    """
+    # FIXME: We are using Ranger handles for positions here.
+    return "{}:{}".format(
+        draw(sampled_from(("person", "position"))),
+        draw(rangerHandles()),
+    )
+
+
+@composite
+def eventAccesses(draw: Callable) -> EventAccess:
+    """
+    Strategy that generates :class:`EventAccess` values.
+    """
+    readers: FrozenSet[str] = frozenset(draw(lists(accessTexts())))
+    writers: FrozenSet[str] = frozenset(
+        a for a in draw(lists(accessTexts()))
+        if a not in readers
+    )
+    reporters: FrozenSet[str] = frozenset(
+        a for a in draw(lists(accessTexts()))
+        if a not in readers and a not in writers
+    )
+    return EventAccess(readers=readers, writers=writers, reporters=reporters)
+
+
+@composite
+def eventDatas(draw: Callable) -> EventData:
+    """
+    Strategy that generates :class:`EventData` values.
+    """
+    event: Event = draw(events())
+    concentricStreets: Dict[str, str] = draw(dictionaries(
+        keys=concentricStreetIDs(), values=concentricStreetNames()
+    ))
+    situations: List[Incident] = draw(lists(
+        incidents(event=event), unique_by=lambda i: i.number
+    ))
+
+    # Add all concentric streets referred to by incidents so the data is valid
+    for incident in situations:
+        address = incident.location.address
+        if (
+            isinstance(address, RodGarettAddress) and
+            address.concentric is not None and
+            address.concentric not in concentricStreets
+        ):
+            concentricStreets[address.concentric] = draw(
+                concentricStreetNames()
+            )
+
+    return EventData(
+        event=event,
+        access=draw(eventAccesses()),
+        concentricStreets=concentricStreets,
+        incidents=situations,
+        incidentReports=draw(lists(
+            incidentReports(event=event), unique_by=lambda i: i.number
+        )),
+    )
+
+
+@composite
+def imsDatas(draw: Callable) -> IMSData:
+    """
+    Strategy that generates :class:`IMSData` values.
+    """
+    events: List[EventData] = draw(
+        lists(eventDatas(), unique_by=lambda d: d.event.id)
+    )
+
+    types: Dict[str, IncidentType] = {
+        incidentType.name: incidentType
+        for incidentType in draw(
+            lists(incidentTypes(), unique_by=lambda t: t.name)
+        )
+    }
+
+    # Add all incident types referred to by incidents so the data is valid
+    for eventData in events:
+        for incident in eventData.incidents:
+            for name in incident.incidentTypes:
+                if name not in types:
+                    types[name] = IncidentType(name=name, hidden=False)
+
+    return IMSData(events=events, incidentTypes=types.values())
+
+
 ##
 # Incident
 ##
+
+maxIncidentNumber = min((
+    SQLITE_MAX_INT,  # SQLite
+    4294967295,      # MySQL
+))
 
 def incidentNumbers(max: Optional[int] = None) -> SearchStrategy:  # str
     """
     Strategy that generates incident numbers.
     """
-    return integers(min_value=1, max_value=max)
+    return integers(min_value=1, max_value=maxIncidentNumber)
 
 
 def incidentSummaries() -> SearchStrategy:  # str
@@ -275,6 +377,8 @@ def incidents(
     if event is None:
         event = draw(events())
 
+    types = [t.name for t in draw(lists(incidentTypes()))]
+
     return Incident(
         event=cast(Event, event),
         number=number,
@@ -284,7 +388,7 @@ def incidents(
         summary=draw(incidentSummaries()),
         location=draw(locations()),
         rangerHandles=draw(lists(rangerHandles())),
-        incidentTypes=draw(lists(incidentTypesText())),
+        incidentTypes=types,
         reportEntries=draw(lists(reportEntries(
             automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
         ))),
@@ -460,14 +564,18 @@ def incidentStates() -> SearchStrategy:  # IncidentState
 # Type
 ##
 
-def incidentTypesText() -> SearchStrategy:  # str
+@composite
+def incidentTypes(draw: Callable) -> IncidentType:
     """
     Strategy that generates incident types.
     """
-    return text(min_size=1)
+    return IncidentType(
+        name=draw(text(min_size=1)),
+        hidden=draw(booleans()),
+    )
 
 
-def incidentTypes() -> SearchStrategy:  # KnownIncidentType
+def knownIncidentTypes() -> SearchStrategy:  # KnownIncidentType
     """
     Strategy that generates :class:`KnownIncidentType` values.
     """

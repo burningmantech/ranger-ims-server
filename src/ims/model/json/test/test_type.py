@@ -22,13 +22,48 @@ from hypothesis import given
 
 from ims.ext.trial import TestCase
 
-from .json import jsonFromKnownIncidentType
+from .json import jsonFromIncidentType, jsonFromKnownIncidentType
 from .._json import jsonDeserialize, jsonSerialize
-from ..._type import KnownIncidentType
-from ...strategies import incidentTypes
+from ..._type import IncidentType, KnownIncidentType
+from ...strategies import incidentTypes, knownIncidentTypes
 
 
 __all__ = ()
+
+
+
+class IncidentTypeSerializationTests(TestCase):
+    """
+    Tests for serialization of :class:`IncidentType`
+    """
+
+    @given(incidentTypes())
+    def test_serialize(self, incidentType: IncidentType) -> None:
+        """
+        :func:`jsonSerialize` serializes the given incident type as
+        the expected value.
+        """
+        self.assertEqual(
+            jsonSerialize(incidentType), jsonFromIncidentType(incidentType)
+        )
+
+
+
+class IncidentTypeDeserializationTests(TestCase):
+    """
+    Tests for deserialization of :class:`IncidentType`
+    """
+
+    @given(incidentTypes())
+    def test_deserialize(self, incidentType: IncidentType) -> None:
+        """
+        :func:`jsonDeserialize` returns the expected incident type for the
+        given value.
+        """
+        self.assertEqual(
+            jsonDeserialize(jsonFromIncidentType(incidentType), IncidentType),
+            incidentType,
+        )
 
 
 
@@ -37,7 +72,7 @@ class KnownIncidentTypeSerializationTests(TestCase):
     Tests for serialization of :class:`KnownIncidentType`.
     """
 
-    @given(incidentTypes())
+    @given(knownIncidentTypes())
     def test_serialize(self, incidentType: KnownIncidentType) -> None:
         """
         :func:`jsonSerialize` returns the value of the given incident
@@ -55,7 +90,7 @@ class KnownIncidentTypeDeserializationTests(TestCase):
     Tests for deserialization of :class:`KnownIncidentType`.
     """
 
-    @given(incidentTypes())
+    @given(knownIncidentTypes())
     def test_deserialize(self, incidentType: KnownIncidentType) -> None:
         """
         :func:`jsonDeserialize` returns the incident type with the given value.

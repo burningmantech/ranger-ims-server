@@ -6,16 +6,19 @@ Extensions to :mod:`json`
 from datetime import date as Date, datetime as DateTime
 from io import TextIOWrapper
 from json import JSONDecodeError, JSONEncoder, dumps, load, loads
-from typing import Any, Optional
+from typing import Any, ClassVar, Optional
 from typing.io import BinaryIO
 
 from arrow.parser import DateTimeParser
+
+from twisted.logger import Logger
 
 
 __all__ = (
     "dateAsRFC3339Text",
     "dateTimeAsRFC3339Text",
     "jsonTextFromObject",
+    "objectFromJSONBytesIO",
     "objectFromJSONText",
     "rfc3339TextAsDate",
     "rfc3339TextAsDateTime",
@@ -29,6 +32,9 @@ class Encoder(JSONEncoder):
     and other types of :class:`Iterable` to :class:`list`.
     """
 
+    _log: ClassVar = Logger()
+
+
     def default(self, obj: Any) -> Any:
         iterate = getattr(obj, "__iter__", None)
         if iterate is not None:
@@ -38,7 +44,11 @@ class Encoder(JSONEncoder):
                 return dict(obj)
             return list(iterate())
 
-        return JSONEncoder.default(self, obj)
+        try:
+            return JSONEncoder.default(self, obj)
+        except Exception:
+            self._log.critical("Unable to encode object: {obj!r}", obj=obj)
+            raise
 
 
 

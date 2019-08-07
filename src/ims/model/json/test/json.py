@@ -18,19 +18,22 @@
 Expected JSON encoding for model data.
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from .._json import jsonSerialize
 from ..._address import Address, RodGarettAddress, TextOnlyAddress
 from ..._entry import ReportEntry
 from ..._event import Event
+from ..._eventaccess import EventAccess
+from ..._eventdata import EventData
+from ..._imsdata import IMSData
 from ..._incident import Incident
 from ..._location import Location
 from ..._priority import IncidentPriority
 from ..._ranger import Ranger, RangerStatus
 from ..._report import IncidentReport
 from ..._state import IncidentState
-from ..._type import KnownIncidentType
+from ..._type import IncidentType, KnownIncidentType
 
 
 __all__ = ()
@@ -86,6 +89,31 @@ def jsonFromEvent(event: Event) -> str:
     return event.id
 
 
+def jsonFromEventAccess(eventAccess: EventAccess) -> Dict[str, List[str]]:
+    return dict(
+        readers=jsonSerialize(eventAccess.readers),
+        writers=jsonSerialize(eventAccess.writers),
+        reporters=jsonSerialize(eventAccess.reporters),
+    )
+
+
+def jsonFromEventData(eventData: EventData) -> Dict[str, Any]:
+    return dict(
+        event=jsonSerialize(eventData.event),
+        access=jsonSerialize(eventData.access),
+        concentric_streets=jsonSerialize(eventData.concentricStreets),
+        incidents=[jsonSerialize(i) for i in eventData.incidents],
+        incident_reports=[jsonSerialize(r) for r in eventData.incidentReports],
+    )
+
+
+def jsonFromIMSData(imsData: IMSData) -> Dict[str, Any]:
+    return dict(
+        events=[jsonSerialize(e) for e in imsData.events],
+        incident_types=[jsonSerialize(t) for t in imsData.incidentTypes],
+    )
+
+
 ##
 # Incident
 ##
@@ -99,18 +127,18 @@ def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
         priority=jsonSerialize(incident.priority),
         summary=jsonSerialize(incident.summary),
         location=jsonSerialize(incident.location),
-        ranger_handles=frozenset(
+        ranger_handles=[
             jsonSerialize(r) for r in incident.rangerHandles
-        ),
-        incident_types=frozenset(
+        ],
+        incident_types=[
             jsonSerialize(t) for t in incident.incidentTypes
-        ),
-        report_entries=tuple(
+        ],
+        report_entries=[
             jsonSerialize(e) for e in sorted(incident.reportEntries)
-        ),
-        incident_reports=frozenset(
+        ],
+        incident_reports=[
             jsonSerialize(n) for n in sorted(incident.incidentReportNumbers)
-        ),
+        ],
     )
 
 
@@ -164,7 +192,7 @@ def jsonFromRanger(ranger: Ranger) -> Dict[str, Any]:
         name=ranger.name,
         status=jsonFromRangerStatus(ranger.status),
         dms_id=ranger.dmsID,
-        email=ranger.email,
+        email=jsonSerialize([e for e in ranger.email]),
         on_site=ranger.onSite,
     )
 
@@ -180,7 +208,7 @@ def jsonFromIncidentReport(report: IncidentReport) -> Dict[str, Any]:
         created=jsonSerialize(report.created),
         summary=jsonSerialize(report.summary),
         incident=jsonSerialize(report.incidentNumber),
-        report_entries=tuple(jsonSerialize(e) for e in report.reportEntries),
+        report_entries=[jsonSerialize(e) for e in report.reportEntries],
     )
 
 
@@ -201,6 +229,13 @@ def jsonFromIncidentState(state: IncidentState) -> str:
 ##
 # Type
 ##
+
+def jsonFromIncidentType(incidentType: IncidentType) -> Dict[str, Any]:
+    return dict(
+        name=jsonSerialize(incidentType.name),
+        hidden=jsonSerialize(incidentType.hidden),
+    )
+
 
 def jsonFromKnownIncidentType(incidentType: KnownIncidentType) -> str:
     return incidentType.value
