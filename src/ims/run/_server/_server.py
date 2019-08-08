@@ -143,6 +143,8 @@ class Server(object):
                 cls.runServer(config)
             elif options.subCommand == "export":
                 await cls.runExport(config, options.subOptions)
+            elif options.subCommand == "import":
+                await cls.runImport(config, options.subOptions)
 
         def error(f: Failure) -> None:
             cls.log.failure("Unable to start: {log_failure}", failure=f)
