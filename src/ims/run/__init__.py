@@ -18,9 +18,9 @@
 Incident Management System application runners.
 """
 
-from ._server._server import Server
+from ._command import Command
 
 
 __all__ = (
-    "Server",
+    "Command",
 )

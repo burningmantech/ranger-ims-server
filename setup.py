@@ -80,7 +80,7 @@ entry_points = {
 }
 
 script_entry_points = {
-    "server"      : ("ims.run", "Server.main"),
+    "server"      : ("ims.run", "Command.main"),
     # "endpoints"   : ("ims.legacy.service.tool", "KleinTool.main"),
     # "schema"      : ("ims.store.sqlite", "DataStore.printSchema"),
     # "queries"     : ("ims.store.sqlite", "DataStore.printQueries"),

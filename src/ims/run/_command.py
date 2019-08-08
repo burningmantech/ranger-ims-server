@@ -50,7 +50,7 @@ class IMSSession(Session):
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class Server(object):
+class Command(object):
     """
     Run the IMS server.
     """
