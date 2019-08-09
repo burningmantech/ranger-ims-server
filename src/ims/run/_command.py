@@ -34,7 +34,7 @@ from twisted.web.server import Session, Site
 
 from ims.application import Application
 from ims.config import Configuration
-from ims.store import IMSDataStore
+from ims.store import IMSDataStore, StorageError
 from ims.store.export import JSONExporter, JSONImporter
 
 from ._log import patchCombinedLogFormatter
@@ -135,7 +135,14 @@ class Command(object):
         config: Configuration = options["configuration"]
 
         async def run() -> None:
-            await cls.initStore(config.store)
+            try:
+                await cls.initStore(config.store)
+            except StorageError as e:
+                cls.log.critical(
+                    "Unable to initialize data store: {error}", error=e
+                )
+                cls.stop()
+                return
 
             if options.subCommand is None:
                 cls.runServer(config)
