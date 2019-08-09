@@ -129,7 +129,7 @@ class MySQLService(ABC):
         """
 
 
-    async def createDatabase(self, name: str) -> str:
+    async def createDatabase(self, name: str) -> None:
         """
         Create a database.
         """
@@ -162,8 +162,6 @@ class MySQLService(ABC):
             connection.commit()
         finally:
             connection.close()
-
-        return name
 
 
 
@@ -413,10 +411,10 @@ class DockerizedMySQLService(MySQLService):
         self._stop(container, self._containerName)
 
 
-    async def createDatabase(self, name: str) -> str:
+    async def createDatabase(self, name: str) -> None:
         containerName = self._containerName
 
-        name = await super().createDatabase(name)
+        await super().createDatabase(name)
 
         self._log.info(
             "docker exec"
@@ -436,8 +434,6 @@ class DockerizedMySQLService(MySQLService):
             password=self.password,
             database=name,
         )
-
-        return name
 
 
 

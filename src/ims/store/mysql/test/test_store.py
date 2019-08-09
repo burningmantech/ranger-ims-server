@@ -18,9 +18,10 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from typing import ClassVar, List, Optional, Set, cast
+from typing import ClassVar, List, Optional, cast
 
-from twisted.internet.defer import ensureDeferred
+from twisted.internet.defer import Deferred, ensureDeferred
+from twisted.logger import Logger
 
 from .base import TestDataStore
 from .service import MySQLService, randomDatabaseName
@@ -53,13 +54,13 @@ class DataStoreTests(SuperDataStoreTests):
     """
 
     skip: ClassVar[Optional[str]] = None
+    log: ClassVar[Logger] = Logger()
 
     mysqlService: MySQLService = mysqlServiceFactory()
 
 
-    def setUp(self) -> None:
+    def setUp(self) -> Deferred:
         async def setUp() -> None:
-            self.names: Set[str] = set()
             self.stores: List[TestDataStore] = []
 
             await self.mysqlService.start()
@@ -68,7 +69,7 @@ class DataStoreTests(SuperDataStoreTests):
         return ensureDeferred(setUp())
 
 
-    def tearDown(self) -> None:
+    def tearDown(self) -> Deferred:
         async def tearDown() -> None:
             for store in self.stores:
                 await store.disconnect()
@@ -84,24 +85,25 @@ class DataStoreTests(SuperDataStoreTests):
         assert service.port is not None
 
         for _ in range(10):
-            name = randomDatabaseName()
-            if name not in self.names:
+            databaseName = randomDatabaseName()
+            try:
+                await service.createDatabase(name=databaseName)
+            except Exception as e:
+                self.log.warn("Unable to create database: {error}", error=e)
+            else:
                 break
         else:
             raise AssertionError("Unable to generate unique database name")
 
-        name = await service.createDatabase(name=name)
-
         store = TestDataStore(
             hostName=service.host,
             hostPort=service.port,
-            database=name,
+            database=databaseName,
             username=service.user,
             password=service.password,
         )
         await store.upgradeSchema()
 
-        self.names.add(name)
         self.stores.append(store)
 
         return cast(TestDataStoreABC, store)
