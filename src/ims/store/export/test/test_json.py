@@ -20,7 +20,6 @@ Tests for :mod:`ranger-ims-server.store.export._json`
 
 from io import BytesIO
 from pathlib import Path
-from typing import Iterable
 
 from hypothesis import given
 
@@ -70,74 +69,80 @@ class JSONExporterTests(TestCase):
     Tests for :class:`JSONExporter`
     """
 
-    def stores(self, imsData: IMSData) -> Iterable[IMSDataStore]:
-        for store in (
-            SQLiteDataStore(dbPath=Path(self.mktemp())),
-        ):
-            self.successResultOf(store.upgradeSchema())
+    def store(self, imsData: IMSData) -> IMSDataStore:
+        store = SQLiteDataStore(dbPath=Path(self.mktemp()))
+        self.successResultOf(store.upgradeSchema())
 
-            importer = JSONImporter(store=store, imsData=imsData)
-            self.successResultOf(importer.storeData())
+        importer = JSONImporter(store=store, imsData=imsData)
+        self.successResultOf(importer.storeData())
 
-            yield store
+        return store
 
 
     @given(imsDatas())
     def test_asBytes(self, imsDataIn: IMSData) -> None:
         imsDataIn = addKnownIncidentTypes(imsDataIn)
 
-        for store in self.stores(imsData=imsDataIn):
-            # Export the data from that store
-            exporter = JSONExporter(store=store)
-            data = self.successResultOf(exporter.asBytes())
-            text = data.decode("utf-8")
-            json = objectFromJSONText(text)
-            imsDataOut = modelObjectFromJSONObject(json, IMSData)
+        # Create a new data store and import imsDataIn into it
+        store = self.store(imsData=imsDataIn)
 
-            # Compare result to input data
-            self.assertIMSDataEqual(imsDataOut, imsDataIn)
+        # Export the data from that store
+        exporter = JSONExporter(store=store)
+        data = self.successResultOf(exporter.asBytes())
+        text = data.decode("utf-8")
+        json = objectFromJSONText(text)
+        imsDataOut = modelObjectFromJSONObject(json, IMSData)
+
+        # Compare result to input data
+        self.assertIMSDataEqual(imsDataOut, imsDataIn)
 
 
     @given(imsDatas())
     def test_asText(self, imsDataIn: IMSData) -> None:
         imsDataIn = addKnownIncidentTypes(imsDataIn)
 
-        for store in self.stores(imsData=imsDataIn):
-            # Export the data from that store
-            exporter = JSONExporter(store=store)
-            text = self.successResultOf(exporter.asText())
-            json = objectFromJSONText(text)
-            imsDataOut = modelObjectFromJSONObject(json, IMSData)
+        # Create a new data store and import imsDataIn into it
+        store = self.store(imsData=imsDataIn)
 
-            # Compare result to input data
-            self.assertIMSDataEqual(imsDataOut, imsDataIn)
+        # Export the data from that store
+        exporter = JSONExporter(store=store)
+        text = self.successResultOf(exporter.asText())
+        json = objectFromJSONText(text)
+        imsDataOut = modelObjectFromJSONObject(json, IMSData)
+
+        # Compare result to input data
+        self.assertIMSDataEqual(imsDataOut, imsDataIn)
 
 
     @given(imsDatas())
     def test_asJSON(self, imsDataIn: IMSData) -> None:
         imsDataIn = addKnownIncidentTypes(imsDataIn)
 
-        for store in self.stores(imsData=imsDataIn):
-            # Export the data from that store
-            exporter = JSONExporter(store=store)
-            json = self.successResultOf(exporter.asJSON())
-            imsDataOut = modelObjectFromJSONObject(json, IMSData)
+        # Create a new data store and import imsDataIn into it
+        store = self.store(imsData=imsDataIn)
 
-            # Compare result to input data
-            self.assertIMSDataEqual(imsDataOut, imsDataIn)
+        # Export the data from that store
+        exporter = JSONExporter(store=store)
+        json = self.successResultOf(exporter.asJSON())
+        imsDataOut = modelObjectFromJSONObject(json, IMSData)
+
+        # Compare result to input data
+        self.assertIMSDataEqual(imsDataOut, imsDataIn)
 
 
     @given(imsDatas())
     def test_imsData(self, imsDataIn: IMSData) -> None:
         imsDataIn = addKnownIncidentTypes(imsDataIn)
 
-        for store in self.stores(imsData=imsDataIn):
-            # Export the data from that store
-            exporter = JSONExporter(store=store)
-            imsDataOut = self.successResultOf(exporter.imsData())
+        # Create a new data store and import imsDataIn into it
+        store = self.store(imsData=imsDataIn)
 
-            # Compare exported result to input data
-            self.assertIMSDataEqual(imsDataOut, imsDataIn)
+        # Export the data from that store
+        exporter = JSONExporter(store=store)
+        imsDataOut = self.successResultOf(exporter.imsData())
+
+        # Compare exported result to input data
+        self.assertIMSDataEqual(imsDataOut, imsDataIn)
 
 
 
@@ -146,12 +151,10 @@ class JSONImporterTests(TestCase):
     Tests for :class:`JSONImporter`
     """
 
-    def stores(self) -> Iterable[IMSDataStore]:
-        for store in (
-            SQLiteDataStore(dbPath=Path(self.mktemp())),
-        ):
-            self.successResultOf(store.upgradeSchema())
-            yield store
+    def store(self) -> IMSDataStore:
+        store = SQLiteDataStore(dbPath=Path(self.mktemp()))
+        self.successResultOf(store.upgradeSchema())
+        return store
 
 
     @given(imsDatas())
@@ -160,10 +163,9 @@ class JSONImporterTests(TestCase):
         jsonText = jsonTextFromObject(json)
         jsonBytes = jsonText.encode("utf-8")
         jsonIO = BytesIO(jsonBytes)
+        importer = JSONImporter.fromIO(store=self.store(), io=jsonIO)
 
-        for store in self.stores():
-            importer = JSONImporter.fromIO(store=store, io=jsonIO)
-            self.assertIMSDataEqual(importer.imsData, imsDataIn)
+        self.assertIMSDataEqual(importer.imsData, imsDataIn)
 
 
     @given(imsDatas())
@@ -171,29 +173,28 @@ class JSONImporterTests(TestCase):
         json = jsonObjectFromModelObject(imsDataIn)
         jsonText = jsonTextFromObject(json)
         jsonBytes = jsonText.encode("utf-8")
+        importer = JSONImporter.fromBytes(
+            store=self.store(), jsonBytes=jsonBytes
+        )
 
-        for store in self.stores():
-            importer = JSONImporter.fromBytes(store=store, jsonBytes=jsonBytes)
-            self.assertIMSDataEqual(importer.imsData, imsDataIn)
+        self.assertIMSDataEqual(importer.imsData, imsDataIn)
 
 
     @given(imsDatas())
     def test_fromText(self, imsDataIn: IMSData) -> None:
         json = jsonObjectFromModelObject(imsDataIn)
         jsonText = jsonTextFromObject(json)
+        importer = JSONImporter.fromText(store=self.store(), jsonText=jsonText)
 
-        for store in self.stores():
-            importer = JSONImporter.fromText(store=store, jsonText=jsonText)
-            self.assertIMSDataEqual(importer.imsData, imsDataIn)
+        self.assertIMSDataEqual(importer.imsData, imsDataIn)
 
 
     @given(imsDatas())
     def test_fromJSON(self, imsDataIn: IMSData) -> None:
         json = jsonObjectFromModelObject(imsDataIn)
+        importer = JSONImporter.fromJSON(store=self.store(), json=json)
 
-        for store in self.stores():
-            importer = JSONImporter.fromJSON(store=store, json=json)
-            self.assertIMSDataEqual(importer.imsData, imsDataIn)
+        self.assertIMSDataEqual(importer.imsData, imsDataIn)
 
 
     @given(imsDatas())
@@ -202,41 +203,42 @@ class JSONImporterTests(TestCase):
 
         resultOf = self.successResultOf
 
-        for store in self.stores():
-            importer = JSONImporter(store=store, imsData=imsDataIn)
-            resultOf(importer.storeData())
+        # Create a new data store and import imsDataIn into it
+        store = self.store()
+        importer = JSONImporter(store=store, imsData=imsDataIn)
+        resultOf(importer.storeData())
 
-            # Create a new IMSData with the imported data in it
-            allTypesOut = frozenset(
-                resultOf(store.incidentTypes(includeHidden=True))
-            )
-            visibleTypesOut = frozenset(
-                resultOf(store.incidentTypes(includeHidden=False))
-            )
-            imsDataOut = IMSData(
-                events=(
-                    EventData(
-                        event=event,
-                        access=EventAccess(
-                            readers=resultOf(store.readers(event)),
-                            writers=resultOf(store.writers(event)),
-                            reporters=resultOf(store.reporters(event)),
-                        ),
-                        concentricStreets=resultOf(
-                            store.concentricStreets(event)
-                        ),
-                        incidents=resultOf(store.incidents(event)),
-                        incidentReports=resultOf(
-                            store.incidentReports(event)
-                        ),
-                    )
-                    for event in resultOf(store.events())
-                ),
-                incidentTypes=(
-                    IncidentType(name=t, hidden=(t not in visibleTypesOut))
-                    for t in allTypesOut
-                ),
-            )
+        # Create a new IMSData with the imported data in it
+        allTypesOut = frozenset(
+            resultOf(store.incidentTypes(includeHidden=True))
+        )
+        visibleTypesOut = frozenset(
+            resultOf(store.incidentTypes(includeHidden=False))
+        )
+        imsDataOut = IMSData(
+            events=(
+                EventData(
+                    event=event,
+                    access=EventAccess(
+                        readers=resultOf(store.readers(event)),
+                        writers=resultOf(store.writers(event)),
+                        reporters=resultOf(store.reporters(event)),
+                    ),
+                    concentricStreets=resultOf(
+                        store.concentricStreets(event)
+                    ),
+                    incidents=resultOf(store.incidents(event)),
+                    incidentReports=resultOf(
+                        store.incidentReports(event)
+                    ),
+                )
+                for event in resultOf(store.events())
+            ),
+            incidentTypes=(
+                IncidentType(name=t, hidden=(t not in visibleTypesOut))
+                for t in allTypesOut
+            ),
+        )
 
-            # Compare imported result to input data
-            self.assertIMSDataEqual(imsDataOut, imsDataIn)
+        # Compare imported result to input data
+        self.assertIMSDataEqual(imsDataOut, imsDataIn)
