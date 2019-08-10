@@ -4,7 +4,6 @@ Extensions to :mod:`json`
 """
 
 from datetime import date as Date, datetime as DateTime
-from io import TextIOWrapper
 from json import JSONDecodeError, JSONEncoder, dumps, load, loads
 from typing import Any, ClassVar, Optional
 from typing.io import BinaryIO
@@ -99,8 +98,7 @@ def objectFromJSONBytesIO(io: BinaryIO, encoding: str = "utf-8") -> Any:
     """
     Covert JSON text from a byte stream into an object.
     """
-    textIO = TextIOWrapper(io, encoding=encoding, newline="")
-    return load(textIO)
+    return load(io)
 
 
 

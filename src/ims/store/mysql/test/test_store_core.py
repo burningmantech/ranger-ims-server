@@ -21,7 +21,7 @@ Tests for :mod:`ranger-ims-server.store.mysql._store`
 from io import StringIO
 from os import environ
 from textwrap import dedent
-from typing import List, Set, cast
+from typing import List, cast
 
 from twisted.internet.defer import ensureDeferred
 
@@ -64,7 +64,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
     def setUp(self) -> None:
         async def setUp() -> None:
-            self.names: Set[str] = set()
             self.stores: List[TestDataStore] = []
 
             await self.mysqlService.start()
@@ -89,23 +88,24 @@ class DataStoreCoreTests(AsynchronousTestCase):
         assert service.port is not None
 
         for _ in range(10):
-            name = randomDatabaseName()
-            if name not in self.names:
+            databaseName = randomDatabaseName()
+            try:
+                await service.createDatabase(name=databaseName)
+            except Exception as e:
+                self.log.warn("Unable to create database: {error}", error=e)
+            else:
                 break
         else:
             raise AssertionError("Unable to generate unique database name")
 
-        name = await service.createDatabase(name=name)
-
         store = TestDataStore(
             hostName=service.host,
             hostPort=service.port,
-            database=name,
+            database=databaseName,
             username=service.user,
             password=service.password,
         )
 
-        self.names.add(name)
         self.stores.append(store)
 
         return store

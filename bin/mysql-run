@@ -20,6 +20,6 @@ exec docker run                               \
     --env="MYSQL_USER=${mysql_user}"          \
     --env="MYSQL_PASSWORD=${mysql_password}"  \
     --env-file="${env_file}"                  \
-    --publish=3306                            \
+    --publish=3306:3306                       \
     "${mysql_image_name}"                     \
     ;

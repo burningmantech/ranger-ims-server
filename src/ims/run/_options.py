@@ -132,6 +132,7 @@ class IMSOptions(Options):
     subCommands: ClassVar = [
         ["server", None, ServerOptions, "Run the IMS server"],
         ["export", None, ExportOptions, "Export data"],
+        ["import", None, ImportOptions, "Import data"],
     ]
     # defaultSubCommand = "server"
 

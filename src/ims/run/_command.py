@@ -34,7 +34,7 @@ from twisted.web.server import Session, Site
 
 from ims.application import Application
 from ims.config import Configuration
-from ims.store import IMSDataStore
+from ims.store import IMSDataStore, StorageError
 from ims.store.export import JSONExporter, JSONImporter
 
 from ._log import patchCombinedLogFormatter
@@ -50,7 +50,7 @@ class IMSSession(Session):
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class Server(object):
+class Command(object):
     """
     Run the IMS server.
     """
@@ -135,7 +135,14 @@ class Server(object):
         config: Configuration = options["configuration"]
 
         async def run() -> None:
-            await cls.initStore(config.store)
+            try:
+                await cls.initStore(config.store)
+            except StorageError as e:
+                cls.log.critical(
+                    "Unable to initialize data store: {error}", error=e
+                )
+                cls.stop()
+                return
 
             if options.subCommand is None:
                 cls.runServer(config)
@@ -143,6 +150,8 @@ class Server(object):
                 cls.runServer(config)
             elif options.subCommand == "export":
                 await cls.runExport(config, options.subOptions)
+            elif options.subCommand == "import":
+                await cls.runImport(config, options.subOptions)
 
         def error(f: Failure) -> None:
             cls.log.failure("Unable to start: {log_failure}", failure=f)

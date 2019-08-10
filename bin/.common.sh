@@ -2,7 +2,7 @@ set -eu
 
 wd="$(cd "$(dirname "$0")/.." && pwd)";
 
-    mysql_image_name="mysql:5.6";
+    mysql_image_name="mysql/mysql-server:5.6";
 mysql_container_name="ranger-ims-server_mysql";
           mysql_host="${IMS_DB_HOST_NAME:-host.docker.internal}";
       mysql_database="${IMS_DB_DATABASE:-ims}";
