@@ -23,8 +23,10 @@ from datetime import (
 )
 from io import StringIO
 from pathlib import Path
+from sqlite3 import IntegrityError
 from textwrap import dedent
 from typing import Optional
+from unittest.mock import patch
 
 from hypothesis import given, settings
 from hypothesis.strategies import integers
@@ -38,6 +40,7 @@ from ims.ext.trial import AsynchronousTestCase, TestCase
 from .base import TestDataStore
 from .. import _store
 from .._store import DataStore
+from ..._db import DatabaseStore
 from ..._exceptions import StorageError
 
 
@@ -339,6 +342,46 @@ class DataStoreCoreTests(AsynchronousTestCase):
             f"Schema version {version} is too new "
             f"(current version is {store.schemaVersion})"
         )
+
+
+    def test_validate_super(self) -> None:
+        """
+        :meth:`DataStore.validate` raises :exc:`StorageError` when its
+        superclass raises :exc:`StorageError`.
+        """
+        store = TestDataStore(dbPath=Path(self.mktemp()))
+        self.successResultOf(store.upgradeSchema())
+
+        message = "FE06D0BE-A491-4B5D-ABAF-444E49220178"
+
+        def errorValidate(self) -> None:
+            raise StorageError(message)
+
+        with patch("ims.store._db.DatabaseStore.validate", errorValidate):
+            f = self.failureResultOf(store.validate(), StorageError)
+            self.assertEqual(f.getErrorMessage(), message)
+
+
+    def test_validate_constraints(self) -> None:
+        """
+        :meth:`DataStore.validate` raises :exc:`StorageError` when its
+        underlying database has a constraint violation.
+        """
+        store = TestDataStore(dbPath=Path(self.mktemp()))
+        self.successResultOf(store.upgradeSchema())
+
+        def errorValidate(self) -> None:
+            raise IntegrityError("680304E2-C77C-478D-8BA0-F0AD0A15509D")
+
+        self.successResultOf(store.validate())
+
+        with patch(
+            "ims.ext.sqlite.Connection.validateConstraints", errorValidate
+        ):
+            f = self.failureResultOf(store.validate(), StorageError)
+            self.assertEqual(
+                f.getErrorMessage(), "Data store validation failed"
+            )
 
 
 
