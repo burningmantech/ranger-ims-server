@@ -24,12 +24,34 @@ from ims.ext.trial import TestCase
 
 from .json import jsonFromRodGarettAddress, jsonFromTextOnlyAddress
 from .._json import jsonDeserialize, jsonSerialize
-from ..._address import RodGarettAddress, TextOnlyAddress
+from ..._address import Address, RodGarettAddress, TextOnlyAddress
 from ...strategies import rodGarettAddresses, textOnlyAddresses
 
 
 __all__ = ()
 
+
+
+class UnknownAddress(Address):
+    """
+    Unknown Address subclass.
+    """
+
+
+class AddressSerializationTests(TestCase):
+    """
+    Tests for serialization of :class:`TextOnlyAddress`
+    """
+
+    def test_serialize_unknown(self) -> None:
+        """
+        :func:`jsonSerialize` raises TypeError for unknown address types.
+        """
+        address = UnknownAddress()
+        e = self.assertRaises(TypeError, jsonSerialize, address)
+        self.assertEqual(
+            str(e), "Unknown address type: UnknownAddress(description=None)"
+        )
 
 
 class TextOnlyAddressSerializationTests(TestCase):
