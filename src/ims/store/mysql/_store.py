@@ -126,6 +126,8 @@ class DataStore(DatabaseStore):
             )
 
             self._state.db = db
+        else:
+            db.ping(reconnect=True)
 
         return self._state.db
 
