@@ -21,9 +21,10 @@ Tests for :mod:`ranger-ims-server.store.mysql._store`
 from io import StringIO
 from os import environ
 from textwrap import dedent
-from typing import List, cast
+from typing import ClassVar, List, cast
 
 from twisted.internet.defer import ensureDeferred
+from twisted.logger import Logger
 
 from ims.ext.trial import AsynchronousTestCase, asyncAsDeferred
 
@@ -59,6 +60,8 @@ class DataStoreCoreTests(AsynchronousTestCase):
     Tests for :class:`DataStore` base functionality.
     """
 
+    _log: ClassVar[Logger] = Logger()
+
     mysqlService: MySQLService = mysqlServiceFactory()
 
 
@@ -92,7 +95,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
             try:
                 await service.createDatabase(name=databaseName)
             except Exception as e:
-                self.log.warn("Unable to create database: {error}", error=e)
+                self._log.warn("Unable to create database: {error}", error=e)
             else:
                 break
         else:
