@@ -21,7 +21,7 @@ Tests for :mod:`ranger-ims-server.store.mysql._store`
 from io import StringIO
 from os import environ
 from textwrap import dedent
-from typing import List, cast
+from typing import ClassVar, List, cast
 
 from twisted.internet.defer import ensureDeferred
 from twisted.logger import Logger
