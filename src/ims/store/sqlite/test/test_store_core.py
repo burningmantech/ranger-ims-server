@@ -40,7 +40,6 @@ from ims.ext.trial import AsynchronousTestCase, TestCase
 from .base import TestDataStore
 from .. import _store
 from .._store import DataStore
-from ..._db import DatabaseStore
 from ..._exceptions import StorageError
 
 
@@ -354,7 +353,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         message = "FE06D0BE-A491-4B5D-ABAF-444E49220178"
 
-        def errorValidate(self) -> None:
+        def errorValidate(self: "DataStoreCoreTests") -> None:
             raise StorageError(message)
 
         with patch("ims.store._db.DatabaseStore.validate", errorValidate):
@@ -370,7 +369,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         store = TestDataStore(dbPath=Path(self.mktemp()))
         self.successResultOf(store.upgradeSchema())
 
-        def errorValidate(self) -> None:
+        def errorValidate(self: "DataStoreCoreTests") -> None:
             raise IntegrityError("680304E2-C77C-478D-8BA0-F0AD0A15509D")
 
         self.successResultOf(store.validate())

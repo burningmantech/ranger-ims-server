@@ -27,12 +27,9 @@ from attr import attrib, attrs
 
 from twisted.logger import Logger
 
-from ims.ext.json import objectFromJSONBytesIO
 from ims.ext.sqlite import (
     Connection, SQLiteError, createDB, explainQueryPlans, openDB, printSchema
 )
-from ims.model import Event, Incident
-from ims.model.json import IncidentJSONKey, modelObjectFromJSONObject
 
 from ._queries import queries
 from .._db import DatabaseStore, Parameters, Queries, Query, Rows

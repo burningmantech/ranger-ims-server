@@ -19,7 +19,7 @@ Tests for :mod:`ranger-ims-server.model._type`
 """
 
 from hypothesis import assume, given
-from hypothesis.strategies import booleans, sampled_from, text
+from hypothesis.strategies import booleans, sampled_from
 
 from ims.ext.trial import TestCase
 
@@ -37,11 +37,11 @@ class IncidentTypeTests(TestCase):
     """
 
     @given(incidentTypes(), booleans())
-    def test_known_known(
+    def test_known_unknown(
         self, incidentType: IncidentType, hidden: bool
     ) -> None:
         """
-        The Known Knowns are known.
+        The Unknown Knowns are known.
         """
         assume(incidentType.name not in knownIncidentTypeNames)
 
@@ -49,7 +49,9 @@ class IncidentTypeTests(TestCase):
 
 
     @given(sampled_from(KnownIncidentType), booleans())
-    def test_known_known(self, knownType: KnownIncidentType, hidden: bool) -> None:
+    def test_known_known(
+        self, knownType: KnownIncidentType, hidden: bool
+    ) -> None:
         """
         The Known Knowns are known.
         """
