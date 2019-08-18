@@ -28,7 +28,7 @@ from attr import attrib, attrs
 from pymysql.cursors import DictCursor
 from pymysql.err import MySQLError
 
-from twisted.enterprise.adbapi import ConnectionPool
+from twisted.enterprise.adbapi import Connection, ConnectionPool
 from twisted.logger import Logger
 
 from ._queries import queries
@@ -37,6 +37,18 @@ from .._exceptions import StorageError
 
 
 __all__ = ()
+
+
+
+class ReconnectingConnectionPool(ConnectionPool):
+    """
+    Subclass of ConnectionPool that reconnects to MySQL.
+    """
+
+    def connect(self) -> Connection:
+        connection = ConnectionPool.connect(self)
+        connection.ping(reconnect=True)
+        return connection
 
 
 
@@ -114,7 +126,7 @@ class DataStore(DatabaseStore):
     @property
     def _db(self) -> ConnectionPool:
         if self._state.db is None:
-            db = ConnectionPool(
+            db = ReconnectingConnectionPool(
                 "pymysql",
                 host=self.hostName,
                 port=self.hostPort,
@@ -126,8 +138,6 @@ class DataStore(DatabaseStore):
             )
 
             self._state.db = db
-        else:
-            db.ping(reconnect=True)
 
         return self._state.db
 
