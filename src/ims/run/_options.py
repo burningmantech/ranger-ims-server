@@ -121,6 +121,24 @@ class ImportOptions(Options):
 
 
 
+class CompareOptions(Options):
+    """
+    Command line options for the IMS export comparison tool.
+    """
+
+    def parseArgs(self, *fileNames: str) -> None:
+        """
+        Input files. ("-" for stdin)
+        """
+        files = []
+
+        for fileName in fileNames:
+            files.append(openFile(fileName, "rb"))
+
+        self["inFiles"] = files
+
+
+
 class IMSOptions(Options):
     """
     Command line options for all IMS commands.
@@ -133,6 +151,7 @@ class IMSOptions(Options):
         ["server", None, ServerOptions, "Run the IMS server"],
         ["export", None, ExportOptions, "Export data"],
         ["import", None, ImportOptions, "Import data"],
+        ["compare", None, CompareOptions, "Compare two export files"],
     ]
     # defaultSubCommand = "server"
 

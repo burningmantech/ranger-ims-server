@@ -34,11 +34,12 @@ from twisted.web.server import Session, Site
 
 from ims.application import Application
 from ims.config import Configuration
+from ims.model.json import jsonObjectFromModelObject
 from ims.store import IMSDataStore, StorageError
 from ims.store.export import JSONExporter, JSONImporter
 
 from ._log import patchCombinedLogFormatter
-from ._options import ExportOptions, IMSOptions, ImportOptions
+from ._options import CompareOptions, ExportOptions, IMSOptions, ImportOptions
 
 
 __all__ = ()
@@ -128,6 +129,125 @@ class Command(object):
 
 
     @classmethod
+    async def runCompare(
+        cls, config: Configuration, options: CompareOptions
+    ) -> None:
+        importers = []
+
+        for inFile in options["inFiles"]:
+            with inFile:
+                cls.log.info("Reading export file...")
+                importers.append(
+                    JSONImporter.fromIO(store=config.store, io=inFile)
+                )
+
+        first = None
+
+        for importer in importers:
+            if first is None:
+                first = importer
+            else:
+                cls.log.info("Comparing export files...")
+
+                imsDataA = first.imsData
+                imsDataB = importer.imsData
+
+                if imsDataA != imsDataB:
+
+                    if imsDataA.incidentTypes != imsDataB.incidentTypes:
+                        cls.log.error(
+                            "Incident Types do not match: "
+                            "{incidentTypesA} != {incidentTypesB}",
+                            incidentTypesA=imsDataA.incidentTypes,
+                            incidentTypesB=imsDataB.incidentTypes,
+                        )
+
+                    for eventDataA, eventDataB in zip(
+                        sorted(imsDataA.events), sorted(imsDataB.events)
+                    ):
+                        if eventDataA.event != eventDataB.event:
+                            cls.log.error(
+                                "Events do not match: {eventsA} != {eventsB}",
+                                eventsA=[e for e in imsDataA.events.event],
+                                eventsB=[e for e in imsDataB.events.event],
+                            )
+
+                    for eventDataA, eventDataB in zip(
+                        sorted(imsDataA.events), sorted(imsDataB.events)
+                    ):
+                        if eventDataA.access != eventDataB.access:
+                            cls.log.error(
+                                "Events ACLs do not match: {aclA} != {aclB}",
+                                aclA=eventDataA.access,
+                                aclB=eventDataB.access,
+                            )
+
+                        if (
+                            eventDataA.concentricStreets !=
+                            eventDataB.concentricStreets
+                        ):
+                            cls.log.error(
+                                "Events concentric streets do not match: "
+                                "{streetsA} != {streetsB}",
+                                streetsA=eventDataA.concentricStreets,
+                                streetsB=eventDataB.concentricStreets,
+                            )
+
+                        if eventDataA.incidents != eventDataB.incidents:
+                            cls.log.error(
+                                "Events incidents do not match: {event}",
+                                event=eventDataA.event,
+                            )
+
+                            numbersA = frozenset(
+                                i.number for i in eventDataA.incidents
+                            )
+                            numbersB = frozenset(
+                                i.number for i in eventDataB.incidents
+                            )
+                            if numbersA != numbersB:
+                                cls.log.error(
+                                    "Incident numbers do not match for event "
+                                    "{event}",
+                                    event=eventDataA.event,
+                                )
+
+                            for incidentA, incidentB in zip(
+                                sorted(eventDataA.incidents),
+                                sorted(eventDataB.incidents),
+                            ):
+                                if incidentA != incidentB:
+                                    cls.log.error(
+                                        "Incidents do not match for event "
+                                        "{event}: {incidentA} != {incidentB}",
+                                        event=eventDataA.event,
+                                        incidentA=jsonObjectFromModelObject(
+                                            incidentA
+                                        ),
+                                        incidentB=jsonObjectFromModelObject(
+                                            incidentB
+                                        ),
+                                    )
+
+                        if (
+                            eventDataA.incidentReports !=
+                            eventDataB.incidentReports
+                        ):
+                            cls.log.error(
+                                "Events incident reports do not match: "
+                                "{event}",
+                                event=eventDataA.event,
+                            )
+
+                    cls.log.error("Argh IMS data mismatch")
+
+                    break
+
+        cls.stop()
+
+
+
+    @classmethod
     def whenRunning(cls, options: IMSOptions) -> Deferred:
         """
         Called after the reactor has started.
@@ -152,6 +272,8 @@ class Command(object):
                 await cls.runExport(config, options.subOptions)
             elif options.subCommand == "import":
                 await cls.runImport(config, options.subOptions)
+            elif options.subCommand == "compare":
+                await cls.runCompare(config, options.subOptions)
 
         def error(f: Failure) -> None:
             cls.log.failure("Unable to start: {log_failure}", failure=f)
