@@ -18,7 +18,7 @@
 Incident Management System data store export.
 """
 
-from typing import Any, ClassVar, Iterable, Mapping
+from typing import Any, ClassVar, Iterable, Mapping, Optional
 from typing.io import BinaryIO
 
 from attr import attrs
@@ -138,7 +138,7 @@ class JSONImporter(object):
 
     _log: ClassVar[Logger] = Logger()
 
-    store: IMSDataStore
+    store: Optional[IMSDataStore]
     imsData: IMSData
 
 
@@ -179,6 +179,8 @@ class JSONImporter(object):
     async def _storeIncidentTypes(self) -> None:
         store = self.store
 
+        assert store is not None
+
         existingIncidentTypes = frozenset(
             await store.incidentTypes(includeHidden=True)
         )
@@ -200,6 +202,8 @@ class JSONImporter(object):
         event       = eventData.event
         eventAccess = eventData.access
 
+        assert store is not None
+
         await store.setReaders(event, eventAccess.readers)
         await store.setWriters(event, eventAccess.writers)
         await store.setReporters(event, eventAccess.reporters)
@@ -208,6 +212,8 @@ class JSONImporter(object):
     async def _storeConcentricStreets(self, eventData: EventData) -> None:
         store = self.store
         event = eventData.event
+
+        assert store is not None
 
         existingStreetIDs = frozenset(
             (await store.concentricStreets(event)).keys()
@@ -227,6 +233,8 @@ class JSONImporter(object):
 
     async def _storeIncidents(self, eventData: EventData) -> None:
         store = self.store
+
+        assert store is not None
 
         existingIncidentNumbers = frozenset(
             incident.number for incident in
@@ -248,6 +256,8 @@ class JSONImporter(object):
     async def _storeIncidentReports(self, eventData: EventData) -> None:
         store = self.store
 
+        assert store is not None
+
         existingIncidentReportNumbers = frozenset(
             incidentReport.number for incidentReport in
             await store.incidentReports(eventData.event)
@@ -266,7 +276,11 @@ class JSONImporter(object):
 
 
     async def storeData(self) -> None:
-        store   = self.store
+        store = self.store
+
+        if store is None:
+            raise RuntimeError("No data store")
+
         imsData = self.imsData
 
         await self._storeIncidentTypes()
