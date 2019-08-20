@@ -176,31 +176,115 @@ class JSONImporter(object):
         return cls(store=store, imsData=imsData)
 
 
+    async def _storeIncidentTypes(self) -> None:
+        store = self.store
+
+        existingIncidentTypes = frozenset(
+            await store.incidentTypes(includeHidden=True)
+        )
+
+        for incidentType in self.imsData.incidentTypes:
+            if incidentType.name in existingIncidentTypes:
+                self._log.info(
+                    "Not importing existing incident type: {incidentType}",
+                    incidentType=incidentType,
+                )
+            else:
+                await store.createIncidentType(
+                    incidentType.name, incidentType.hidden
+                )
+
+
+    async def _storeEventAccess(self, eventData: EventData) -> None:
+        store       = self.store
+        event       = eventData.event
+        eventAccess = eventData.access
+
+        await store.setReaders(event, eventAccess.readers)
+        await store.setWriters(event, eventAccess.writers)
+        await store.setReporters(event, eventAccess.reporters)
+
+
+    async def _storeConcentricStreets(self, eventData: EventData) -> None:
+        store = self.store
+        event = eventData.event
+
+        existingStreetIDs = frozenset(
+            (await store.concentricStreets(event)).keys()
+        )
+
+        for streetID, streetName in eventData.concentricStreets.items():
+            if streetID in existingStreetIDs:
+                self._log.info(
+                    "Not importing existing street {streetID} "
+                    "into event {event}",
+                    event=eventData.event,
+                    streetID=streetID,
+                )
+            else:
+                await store.createConcentricStreet(event, streetID, streetName)
+
+
+    async def _storeIncidents(self, eventData: EventData) -> None:
+        store = self.store
+
+        existingIncidentNumbers = frozenset(
+            incident.number for incident in
+            await store.incidents(eventData.event)
+        )
+
+        for incident in eventData.incidents:
+            if incident.number in existingIncidentNumbers:
+                self._log.info(
+                    "Not importing existing incident #{number} "
+                    "into event {event}",
+                    event=eventData.event,
+                    number=incident.number,
+                )
+            else:
+                await store.importIncident(incident)
+
+
+    async def _storeIncidentReports(self, eventData: EventData) -> None:
+        store = self.store
+
+        existingIncidentReportNumbers = frozenset(
+            incidentReport.number for incidentReport in
+            await store.incidentReports(eventData.event)
+        )
+
+        for incidentReport in eventData.incidentReports:
+            if incidentReport.number in existingIncidentReportNumbers:
+                self._log.info(
+                    "Not importing existing incident report #{number} "
+                    "into event {event}",
+                    event=eventData.event,
+                    number=incidentReport.number,
+                )
+            else:
+                await store.importIncidentReport(incidentReport)
+
+
     async def storeData(self) -> None:
         store   = self.store
         imsData = self.imsData
 
-        for incidentType in imsData.incidentTypes:
-            if incidentType.known():
-                continue
-            await store.createIncidentType(
-                incidentType.name, incidentType.hidden
-            )
+        await self._storeIncidentTypes()
+
+        existingEvents = frozenset(await store.events())
 
         for eventData in imsData.events:
             event = eventData.event
-            await store.createEvent(event)
 
-            eventAccess = eventData.access
-            await store.setReaders(event, eventAccess.readers)
-            await store.setWriters(event, eventAccess.writers)
-            await store.setReporters(event, eventAccess.reporters)
+            if event in existingEvents:
+                self._log.info(
+                    "Not creating existing event: {event}",
+                    event=event,
+                )
+            else:
+                await store.createEvent(event)
 
-            for streetID, streetName in eventData.concentricStreets.items():
-                await store.createConcentricStreet(event, streetID, streetName)
-
-            for incident in eventData.incidents:
-                await store.importIncident(incident)
-
-            for incidentReport in eventData.incidentReports:
-                await store.importIncidentReport(incidentReport)
+            await self._storeEventAccess(eventData)
+            await self._storeConcentricStreets(eventData)
+            await self._storeIncidents(eventData)
+            await self._storeIncidentReports(eventData)
