@@ -124,6 +124,13 @@ function initDataTables() {
                 "render": renderDate,
             },
             {   // 2
+                "name": "incident_report_incident",
+                "className": "incident_report_incident text-center",
+                "data": "incident",
+                "defaultContent": "-",
+                "render": renderIncidentNumber,
+            },
+            {   // 3
                 "name": "incident_report_summary",
                 "className": "incident_report_summary",
                 "data": "summary",
