@@ -566,6 +566,19 @@ function shortDescribeLocation(location) {
 // DataTables rendering
 //
 
+function renderIncidentNumber(incidentNumber, type, incident) {
+    switch (type) {
+        case "display":
+            return incidentNumber;
+        case "filter":
+            return incidentNumber;
+        case "type":
+        case "sort":
+            return incidentNumber;
+    }
+    return undefined;
+}
+
 function renderPriority(priorityNumber, type, incident) {
     switch (type) {
         case "display":
