@@ -5,7 +5,7 @@ on: [push]
 jobs:
 
   flake8:
-    name: Flake8 Linter
+    name: Flake8 (linter)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,13 +16,13 @@ jobs:
           python-version: '3.6'
       - name: Install Tox
         run: pip install tox
-      - name: Run linter
+      - name: Run Flake8
         env:
           TOX_SKIP_MISSING_INTERPRETERS: False
         run: tox -e flake8
 
   mypy:
-    name: Mypy Static Type Checker
+    name: Mypy (static type checker)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,7 +33,7 @@ jobs:
           python-version: '3.6'
       - name: Install Tox
         run: pip install tox
-      - name: Run linter
+      - name: Run Mypy
         env:
           TOX_SKIP_MISSING_INTERPRETERS: False
         run: tox -e mypy
@@ -54,7 +54,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install Tox
         run: pip install tox
-      - name: Run linter
+      - name: Run unit tests
         env:
           TOX_SKIP_MISSING_INTERPRETERS: False
         run: tox -e coverage-py36,codecov
