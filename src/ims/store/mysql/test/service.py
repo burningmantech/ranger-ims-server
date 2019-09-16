@@ -49,7 +49,7 @@ def randomDatabaseName(length: int = 16) -> str:
     """
     return (
         choice(ascii_letters) +
-        "".join(choices(ascii_letters + digits), k=(length - 1))
+        "".join(choices(ascii_letters + digits, k=(length - 1)))
     )
 
 
