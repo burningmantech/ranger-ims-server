@@ -20,7 +20,7 @@ This implementation uses Docker containers.
 """
 
 from abc import ABC, abstractmethod
-from random import choice
+from random import choice, choices
 from string import ascii_letters, digits
 from typing import Awaitable, ClassVar, Mapping, Optional
 
@@ -49,7 +49,7 @@ def randomDatabaseName(length: int = 16) -> str:
     """
     return (
         choice(ascii_letters) +
-        "".join(choice(ascii_letters + digits) for i in range(length - 1))
+        "".join(choices(ascii_letters + digits), k=(length - 1))
     )
 
 
