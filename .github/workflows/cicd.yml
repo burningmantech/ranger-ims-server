@@ -17,9 +17,9 @@ jobs:
       - name: Install Tox
         run: pip install tox
       - name: Run Flake8
+        run: tox -e flake8
         env:
           TOX_SKIP_MISSING_INTERPRETERS: False
-        run: tox -e flake8
 
   mypy:
     name: Mypy (static type checker)
@@ -34,9 +34,9 @@ jobs:
       - name: Install Tox
         run: pip install tox
       - name: Run Mypy
+        run: tox -e mypy
         env:
           TOX_SKIP_MISSING_INTERPRETERS: False
-        run: tox -e mypy
 
   test_ubuntu_py36:
     name: Unit Tests using Python ${{ matrix.python }} on Ubuntu
@@ -55,9 +55,10 @@ jobs:
       - name: Install Tox
         run: pip install tox
       - name: Run unit tests
+        run: tox -e coverage-py36,codecov
         env:
           TOX_SKIP_MISSING_INTERPRETERS: False
-        run: tox -e coverage-py36,codecov
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   deploy_staging:
     name: Deploy code from master branch to the staging environment
