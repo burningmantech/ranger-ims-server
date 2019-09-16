@@ -61,10 +61,9 @@ jobs:
 
   deploy_staging:
     name: Deploy code from master branch to the staging environment
-    branches:
-      - master
     needs: [test_ubuntu_py36]
     runs-on: ubuntu-latest
+    if: github.ref == 'master'
     steps:
       - name: Checkout
         uses: actions/checkout@v1
