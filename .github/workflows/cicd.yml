@@ -1,0 +1,74 @@
+name: CI/CD
+
+on: [push]
+
+jobs:
+
+  flake8:
+    name: Flake8 Linter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Install python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.6'
+      - name: Install Tox
+        run: pip install tox
+      - name: Run linter
+        env:
+          TOX_SKIP_MISSING_INTERPRETERS: False
+        run: tox -e flake8
+
+  mypy:
+    name: Mypy Static Type Checker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Install python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.6'
+      - name: Install Tox
+        run: pip install tox
+      - name: Run linter
+        env:
+          TOX_SKIP_MISSING_INTERPRETERS: False
+        run: tox -e mypy
+
+  test_ubuntu_py36:
+    name: Unit Tests using Python ${{ matrix.python }} on Ubuntu
+    needs: [flake8, mypy]
+    strategy:
+      matrix:
+        python: ['3.6']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Install python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install Tox
+        run: pip install tox
+      - name: Run linter
+        env:
+          TOX_SKIP_MISSING_INTERPRETERS: False
+        run: tox -e coverage-py36,codecov
+
+  deploy_staging:
+    name: Deploy code from master branch to the staging environment
+    branches:
+      - master
+    needs: [test_ubuntu_py36]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build image
+        run: ./bin/build
+      - name: Deploy to staging
+        run: ./bin/deploy staging
