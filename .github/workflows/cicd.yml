@@ -95,8 +95,8 @@ jobs:
           NOTIFY_EMAIL_SENDER: ${{ secrets.NOTIFY_EMAIL_SENDER }}
           PROJECT_NAME: Ranger IMS Server
 
-  debug:
-    name: Workflow debugging information
+  info:
+    name: Workflow information
     runs-on: ubuntu-16.04
     steps:
       - name: Print GITHUB_CONTEXT
