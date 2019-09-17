@@ -85,3 +85,32 @@ jobs:
           NOTIFY_EMAIL_RECIPIENT: ${{ secrets.NOTIFY_EMAIL_RECIPIENT }}
           NOTIFY_EMAIL_SENDER: ${{ secrets.NOTIFY_EMAIL_SENDER }}
           PROJECT_NAME: Ranger IMS Server
+
+  debug:
+    name: Workflow debugging information
+    runs-on: ubuntu-16.04
+    steps:
+      - name: Print GITHUB_CONTEXT
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "${GITHUB_CONTEXT}"
+      - name: Print JOB_CONTEXT
+        env:
+          JOB_CONTEXT: ${{ toJson(job) }}
+        run: echo "${JOB_CONTEXT}"
+      - name: Print STEPS_CONTEXT
+        env:
+          STEPS_CONTEXT: ${{ toJson(steps) }}
+        run: echo "${STEPS_CONTEXT}"
+      - name: Print RUNNER_CONTEXT
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: echo "${RUNNER_CONTEXT}"
+      - name: Print STRATEGY_CONTEXT
+        env:
+          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+        run: echo "${STRATEGY_CONTEXT}"
+      - name: Print MATRIX_CONTEXT
+        env:
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+        run: echo "${MATRIX_CONTEXT}"
