@@ -75,6 +75,10 @@ jobs:
         uses: actions/checkout@v1
       - name: Build image
         run: ./bin/build
+      - name: Install Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.6'
       - name: Deploy to staging
         run: ./bin/deploy staging
         env:
@@ -91,8 +95,8 @@ jobs:
           NOTIFY_EMAIL_SENDER: ${{ secrets.NOTIFY_EMAIL_SENDER }}
           PROJECT_NAME: Ranger IMS Server
 
-  debug:
-    name: Workflow debugging information
+  info:
+    name: Workflow information
     runs-on: ubuntu-16.04
     steps:
       - name: Print GITHUB_CONTEXT
