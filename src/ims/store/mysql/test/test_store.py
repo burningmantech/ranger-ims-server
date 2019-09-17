@@ -88,7 +88,7 @@ class DataStoreTests(SuperDataStoreTests):
             databaseName = randomDatabaseName()
             try:
                 await service.createDatabase(name=databaseName)
-            except Exception as e:
+            except Exception as e:  # pragma: no cover
                 self.log.warn("Unable to create database: {error}", error=e)
             else:
                 break
