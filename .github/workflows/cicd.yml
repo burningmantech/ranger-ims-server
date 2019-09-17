@@ -75,6 +75,10 @@ jobs:
         uses: actions/checkout@v1
       - name: Build image
         run: ./bin/build
+      - name: Install Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.6'
       - name: Deploy to staging
         run: ./bin/deploy staging
         env:
