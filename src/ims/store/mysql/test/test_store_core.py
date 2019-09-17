@@ -90,7 +90,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         assert service.host is not None
         assert service.port is not None
 
-        for _ in range(10):
+        for _ in range(100):
             databaseName = randomDatabaseName()
             try:
                 await service.createDatabase(name=databaseName)
