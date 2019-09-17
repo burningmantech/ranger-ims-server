@@ -62,7 +62,7 @@ jobs:
           TOX_SKIP_MISSING_INTERPRETERS: False
 
 
-  unit-test:
+  unit:
     name: Unit Tests using Python ${{ matrix.python }} on Ubuntu
 
     needs: [flake8, mypy]
@@ -96,7 +96,7 @@ jobs:
   deploy-staging:
     name: Deploy code from master branch to the staging environment
 
-    needs: [test_ubuntu_py36]
+    needs: [unit]
     if: github.ref == 'refs/heads/master'
 
     runs-on: ubuntu-latest
