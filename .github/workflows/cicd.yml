@@ -3,82 +3,118 @@
 # https://help.github.com/en/articles/configuring-a-workflow
 # https://help.github.com/en/articles/workflow-syntax-for-github-actions
 
+
 name: CI/CD
 
 on: [push]
 
+
 jobs:
 
   flake8:
+
     name: Flake8 (linter)
+
     runs-on: ubuntu-latest
+    timeout-minutes: 1
+
     steps:
+
       - name: Checkout source code
         uses: actions/checkout@v1
+
       - name: Install Python
         uses: actions/setup-python@v1
         with:
           python-version: '3.6'
+
       - name: Install Tox
         run: pip install tox
+
       - name: Run Flake8
         run: tox -e flake8
         env:
           TOX_SKIP_MISSING_INTERPRETERS: False
 
+
   mypy:
     name: Mypy (static type checker)
+
     runs-on: ubuntu-latest
+    timeout-minutes: 1
+
     steps:
+
       - name: Checkout source code
         uses: actions/checkout@v1
+
       - name: Install Python
         uses: actions/setup-python@v1
         with:
           python-version: '3.6'
+
       - name: Install Tox
         run: pip install tox
+
       - name: Run Mypy
         run: tox -e mypy
         env:
           TOX_SKIP_MISSING_INTERPRETERS: False
 
-  test_ubuntu_py36:
+
+  unit:
     name: Unit Tests using Python ${{ matrix.python }} on Ubuntu
+
     needs: [flake8, mypy]
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       matrix:
         python: ['3.6']
-    runs-on: ubuntu-latest
+
     steps:
+
       - name: Checkout source code
         uses: actions/checkout@v1
+
       - name: Install Python
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python }}
+
       - name: Install Tox
         run: pip install tox
+
       - name: Run unit tests
         run: tox -e coverage-py36,codecov
         env:
           TOX_SKIP_MISSING_INTERPRETERS: False
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  deploy_staging:
+
+  deploy-staging:
     name: Deploy code from master branch to the staging environment
-    needs: [test_ubuntu_py36]
-    runs-on: ubuntu-latest
+
+    needs: [unit]
     if: github.ref == 'refs/heads/master'
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
     steps:
+
       - name: Checkout source code
         uses: actions/checkout@v1
-      - name: Build image
-        run: ./bin/build
+
       - name: Install Python
         uses: actions/setup-python@v1
         with:
           python-version: '3.6'
+
+      - name: Build Docker image
+        run: ./bin/build
+
       - name: Deploy to staging
         run: ./bin/deploy staging
         env:
@@ -93,32 +129,48 @@ jobs:
           NOTIFY_SMTP_PASSWORD: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
           NOTIFY_EMAIL_RECIPIENT: ${{ secrets.NOTIFY_EMAIL_RECIPIENT }}
           NOTIFY_EMAIL_SENDER: ${{ secrets.NOTIFY_EMAIL_SENDER }}
+          CI: true
           PROJECT_NAME: Ranger IMS Server
+          REPOSITORY_ID: ${{ github.repository }}
+          BUILD_NUMBER: 0
+          BUILD_URL: https://github.com/burningmantech/ranger-ims-server/commit/${{ github.sha }}/checks
+          COMMIT_ID: ${{ github.sha }}
+          COMMIT_MESSAGE: ${{ github.event.commits.head_commit.message }}
+
 
   info:
+
     name: Workflow information
     runs-on: ubuntu-16.04
+    timeout-minutes: 1
+
     steps:
+
       - name: Print GITHUB_CONTEXT
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "${GITHUB_CONTEXT}"
+
       - name: Print JOB_CONTEXT
         env:
           JOB_CONTEXT: ${{ toJson(job) }}
         run: echo "${JOB_CONTEXT}"
+
       - name: Print STEPS_CONTEXT
         env:
           STEPS_CONTEXT: ${{ toJson(steps) }}
         run: echo "${STEPS_CONTEXT}"
+
       - name: Print RUNNER_CONTEXT
         env:
           RUNNER_CONTEXT: ${{ toJson(runner) }}
         run: echo "${RUNNER_CONTEXT}"
+
       - name: Print STRATEGY_CONTEXT
         env:
           STRATEGY_CONTEXT: ${{ toJson(strategy) }}
         run: echo "${STRATEGY_CONTEXT}"
+
       - name: Print MATRIX_CONTEXT
         env:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
