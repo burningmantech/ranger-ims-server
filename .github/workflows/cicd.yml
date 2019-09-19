@@ -87,7 +87,7 @@ jobs:
         run: pip install tox
 
       - name: Run unit tests
-        run: tox -e coverage-py36,codecov
+        run: tox -e coverage-py0,codecov
         env:
           TOX_SKIP_MISSING_INTERPRETERS: False
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
