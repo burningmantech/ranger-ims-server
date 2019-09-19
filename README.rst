@@ -1,7 +1,7 @@
 Ranger Incident Management System
 =================================
 
-.. image:: https://github.com/burningmantech/ranger-ims-server/workflows/.github/workflows/cicd.yml/badge.svg
+.. image:: https://github.com/burningmantech/ranger-ims-server/workflows/CI%2fCD/badge.svg
     :target: https://github.com/burningmantech/ranger-ims-server/actions
     :alt: Build Status
 .. image:: https://codecov.io/github/burningmantech/ranger-ims-server/coverage.svg?branch=master
