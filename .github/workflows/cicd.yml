@@ -134,13 +134,13 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: trial
-          path: .tox/coverage-py36/log/trial.log
+          path: .tox/coverage-py0/log/trial.log
 
       - name: Upload coverage report as artifact
         uses: actions/upload-artifact@v1
         with:
           name: coverage
-          path: .tox/coverage-py36/log/coverage_report_html
+          path: .tox/coverage-py0/log/coverage_report_html
 
 
   docker:
