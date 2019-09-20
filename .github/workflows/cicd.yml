@@ -130,6 +130,17 @@ jobs:
           GITHUB_USER: ${{ github.actor }}
           GITHUB_WORKFLOW: ${{ github.workflow }}
 
+      - name: Upload Trial log as artifact
+        uses: upload-artifact@v1
+        with:
+          name: trial
+          path: .tox/coverage-py36/log/trial.log
+
+      - name: Upload coverage report as artifact
+        uses: upload-artifact@v1
+        with:
+          name: coverage
+          path: .tox/coverage-py36/log/coverage_report_html
 
   deploy-staging:
     name: Deploy code from master branch to the staging environment
