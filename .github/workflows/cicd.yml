@@ -72,8 +72,6 @@ jobs:
 
       - name: Run Flake8
         run: tox -e flake8
-        env:
-          TOX_SKIP_MISSING_INTERPRETERS: False
 
 
   mypy:
@@ -97,8 +95,6 @@ jobs:
 
       - name: Run Mypy
         run: tox -e mypy
-        env:
-          TOX_SKIP_MISSING_INTERPRETERS: False
 
 
   unit:
@@ -128,8 +124,11 @@ jobs:
       - name: Run unit tests
         run: tox -e coverage-py0,codecov
         env:
-          TOX_SKIP_MISSING_INTERPRETERS: False
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_COMMIT: ${{ github.sha }}
+          GITHUB_USER: ${{ github.actor }}
+          GITHUB_WORKFLOW: ${{ github.workflow }}
 
 
   deploy-staging:
