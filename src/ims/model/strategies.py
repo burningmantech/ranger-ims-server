@@ -82,10 +82,9 @@ __all__ = (
 
 
 settings.register_profile(
-    "ci", settings(
-        deadline=None,
-        suppress_health_check=[HealthCheck.too_slow],
-    )
+    "ci",
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow],
 )
 settings.load_profile("ci")
 
