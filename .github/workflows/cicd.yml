@@ -142,11 +142,11 @@ jobs:
           name: coverage
           path: .tox/coverage-py36/log/coverage_report_html
 
-  deploy-staging:
-    name: Deploy code from master branch to the staging environment
+
+  docker:
+    name: Build Docker image
 
     needs: [unit]
-    if: github.ref == 'refs/heads/master'
 
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -156,17 +156,47 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v1
 
+      - name: Build Docker image
+        run: ./bin/build
+
+      - name: Save Docker image
+        run: docker image save ranger-ims-server:dev | gzip -9 > image.tgz
+
+      - name: Upload Docker image as artifact
+        uses: upload-artifact@v1
+        with:
+          name: docker
+          path: image.tgz
+
+
+  deploy-staging:
+    name: Deploy image built from master branch to the staging environment
+
+    needs: [docker]
+    if: github.ref == 'refs/heads/master'
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+
+      - name: Upload Docker image artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: docker
+
+      - name: Load Docker image
+        run: gzcat docker/image.tgz | docker image load
+
       - name: Install Python
         uses: actions/setup-python@v1
         with:
           python-version: '3.6'
 
-      - name: Build Docker image
-        run: ./bin/build
-
       - name: Deploy to staging
         run: ./bin/deploy staging
         env:
+          # https://github.com/burningmantech/ranger-ims-server/settings/secrets
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
