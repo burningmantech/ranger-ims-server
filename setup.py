@@ -112,7 +112,7 @@ package_data = dict(
 # Dependencies
 #
 
-python_requirements = "==3.6"
+python_requirements = ">=3.6,<3.7"
 
 setup_requirements = []
 
