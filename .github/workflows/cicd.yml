@@ -130,13 +130,13 @@ jobs:
           GITHUB_USER: ${{ github.actor }}
           GITHUB_WORKFLOW: ${{ github.workflow }}
 
-      - name: Upload Trial log as artifact
+      - name: Upload Trial log artifact
         uses: actions/upload-artifact@v1
         with:
           name: trial
           path: .tox/coverage-py0/log/trial.log
 
-      - name: Upload coverage report as artifact
+      - name: Upload coverage report artifact
         uses: actions/upload-artifact@v1
         with:
           name: coverage
@@ -146,10 +146,10 @@ jobs:
   docker:
     name: Build Docker image
 
-    needs: [unit]
+    needs: [flake8, mypy, unit]
 
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
 
     steps:
 
@@ -162,7 +162,7 @@ jobs:
       - name: Save Docker image
         run: docker image save ranger-ims-server:dev | gzip -9 > image.tgz
 
-      - name: Upload Docker image as artifact
+      - name: Upload Docker image artifacts
         uses: actions/upload-artifact@v1
         with:
           name: docker
@@ -176,11 +176,11 @@ jobs:
     if: github.ref == 'refs/heads/master'
 
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
 
     steps:
 
-      - name: Upload Docker image artifact
+      - name: Download Docker image artifacts
         uses: actions/download-artifact@v1
         with:
           name: docker
