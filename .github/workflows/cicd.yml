@@ -186,7 +186,7 @@ jobs:
           name: docker
 
       - name: Load Docker image
-        run: gzip --uncompress docker/image.tgz | docker image load
+        run: gzip --uncompress --stdout docker/image.tgz | docker image load
 
       - name: Install Python
         uses: actions/setup-python@v1
