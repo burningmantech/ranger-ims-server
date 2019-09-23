@@ -180,6 +180,9 @@ jobs:
 
     steps:
 
+      - name: Checkout source code
+        uses: actions/checkout@v1
+
       - name: Download Docker image artifacts
         uses: actions/download-artifact@v1
         with:
