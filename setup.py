@@ -112,6 +112,8 @@ package_data = dict(
 # Dependencies
 #
 
+python_requirements = ">=3.6,<3.7"
+
 setup_requirements = []
 
 install_requirements = [
@@ -181,6 +183,7 @@ def main():
         entry_points=entry_points,
         data_files=[],
         ext_modules=extensions,
+        python_requires=python_requirements,
         setup_requires=setup_requirements,
         install_requires=install_requirements,
         extras_require=extras_requirements,
