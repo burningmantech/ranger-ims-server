@@ -22,32 +22,32 @@ jobs:
       - name: Print GitHub Context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "${GITHUB_CONTEXT}"
+        run: echo "${GITHUB_CONTEXT}";
 
       - name: Print Job Context
         env:
           JOB_CONTEXT: ${{ toJson(job) }}
-        run: echo "${JOB_CONTEXT}"
+        run: echo "${JOB_CONTEXT}";
 
       - name: Print Steps Context
         env:
           STEPS_CONTEXT: ${{ toJson(steps) }}
-        run: echo "${STEPS_CONTEXT}"
+        run: echo "${STEPS_CONTEXT}";
 
       - name: Print Runner Context
         env:
           RUNNER_CONTEXT: ${{ toJson(runner) }}
-        run: echo "${RUNNER_CONTEXT}"
+        run: echo "${RUNNER_CONTEXT}";
 
       - name: Print Strategy Context
         env:
           STRATEGY_CONTEXT: ${{ toJson(strategy) }}
-        run: echo "${STRATEGY_CONTEXT}"
+        run: echo "${STRATEGY_CONTEXT}";
 
       - name: Print Matrix Context
         env:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
-        run: echo "${MATRIX_CONTEXT}"
+        run: echo "${MATRIX_CONTEXT}";
 
 
   flake8:
@@ -68,10 +68,10 @@ jobs:
           python-version: '3.6'
 
       - name: Install Tox
-        run: pip install tox
+        run: pip install tox;
 
       - name: Run Flake8
-        run: tox -e flake8
+        run: tox -e flake8;
 
 
   mypy:
@@ -91,10 +91,10 @@ jobs:
           python-version: '3.6'
 
       - name: Install Tox
-        run: pip install tox
+        run: pip install tox;
 
       - name: Run Mypy
-        run: tox -e mypy
+        run: tox -e mypy;
 
 
   unit:
@@ -119,10 +119,10 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Install Tox
-        run: pip install tox
+        run: pip install tox;
 
       - name: Run unit tests
-        run: tox -e coverage-py0,codecov
+        run: tox -e coverage-py0,codecov;
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           GITHUB_REF: ${{ github.ref }}
@@ -157,10 +157,10 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Build Docker image
-        run: ./bin/build
+        run: ./bin/build;
 
       - name: Save Docker image
-        run: docker image save ranger-ims-server:dev | gzip -9 > image.tgz
+        run: docker image save ranger-ims-server:dev | gzip -9 > image.tgz;
 
       - name: Upload Docker image artifacts
         uses: actions/upload-artifact@v1
@@ -189,7 +189,7 @@ jobs:
           name: docker
 
       - name: Load Docker image
-        run: gzip --uncompress --stdout docker/image.tgz | docker image load
+        run: gzip --uncompress --stdout docker/image.tgz | docker image load;
 
       - name: Install Python
         uses: actions/setup-python@v1
@@ -197,7 +197,7 @@ jobs:
           python-version: '3.6'
 
       - name: Deploy to staging
-        run: ./bin/deploy staging
+        run: ./bin/deploy staging;
         env:
           # https://github.com/burningmantech/ranger-ims-server/settings/secrets
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
