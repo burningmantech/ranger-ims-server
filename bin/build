@@ -6,7 +6,6 @@
 
 . "$(dirname "$0")/.common.sh";
 
-label="$(cd "${wd}" && git describe --all --long)";
 stages="";
 
 
@@ -26,7 +25,6 @@ build() {
     docker build             \
         --target="${stage}"  \
         --tag="${name}"      \
-        --label="${label}"   \
         $(cache_flags)       \
         "${wd}";
 
