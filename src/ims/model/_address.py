@@ -21,7 +21,7 @@ Address
 """
 
 from abc import ABC
-from typing import Any, Optional, TypeVar
+from typing import Any, Callable, Optional, TypeVar, cast
 
 from attr import attrs
 
@@ -105,7 +105,11 @@ class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
 
         if other.__class__ is TextOnlyAddress:
             if self._allNone():
-                return getattr(self.description, methodName)(other.description)
+                method = cast(
+                    Callable[[str], bool],
+                    getattr(self.description, methodName)
+                )
+                return method(other.description)
 
         return ComparisonMixIn._cmp(self, other, methodName)
 

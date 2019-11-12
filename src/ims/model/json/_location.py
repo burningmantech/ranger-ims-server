@@ -19,7 +19,7 @@ JSON serialization/deserialization for addresses
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, Type
+from typing import Any, Dict, Optional, Type
 
 from ._address import AddressJSONKey, AddressTypeJSONValue, serializeAddress
 from ._json import (
@@ -57,7 +57,7 @@ def serializeLocation(location: Location) -> Dict[str, Any]:
 registerSerializer(Location, serializeLocation)
 
 
-def deserializeLocation(obj: Dict[str, Any], cl: Type) -> Location:
+def deserializeLocation(obj: Optional[Dict[str, Any]], cl: Type) -> Location:
     assert cl is Location, (cl, obj)
 
     if obj is None:

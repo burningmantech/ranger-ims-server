@@ -19,7 +19,7 @@ JSON serialization/deserialization for event access
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, FrozenSet, Type
+from typing import Any, Dict, FrozenSet, Type, cast
 
 from ._json import (
     deserialize, jsonSerialize, registerDeserializer, registerSerializer
@@ -67,9 +67,12 @@ registerSerializer(EventAccess, serializeEventAccess)
 def deserializeEventAccess(obj: Dict[str, Any], cl: Type) -> EventAccess:
     assert cl is EventAccess, (cl, obj)
 
-    return deserialize(
-        obj, EventAccess,
-        EventAccessJSONType, EventAccessJSONKey,
+    return cast(
+        EventAccess,
+        deserialize(
+            obj, EventAccess,
+            EventAccessJSONType, EventAccessJSONKey,
+        )
     )
 
 registerDeserializer(EventAccess, deserializeEventAccess)

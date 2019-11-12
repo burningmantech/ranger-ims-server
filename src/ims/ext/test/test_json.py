@@ -30,7 +30,9 @@ __all__ = ()
 
 @composite
 def timezones(draw: Callable) -> TimeZone:
-    offset = draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
+    offset = cast(
+        int, draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
+    )
     timeDelta = TimeDelta(minutes=offset)
     timeZone = TimeZone(offset=timeDelta, name=f"{offset}s")
     return timeZone
@@ -38,7 +40,7 @@ def timezones(draw: Callable) -> TimeZone:
 
 @composite
 def datetimes(draw: Callable) -> DateTime:
-    return draw(_datetimes(timezones=timezones()))
+    return cast(DateTime, draw(_datetimes(timezones=timezones())))
 
 
 

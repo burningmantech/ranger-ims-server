@@ -20,7 +20,7 @@ JSON serialization/deserialization for incident type
 
 
 from enum import Enum, unique
-from typing import Any, Dict, Type
+from typing import Any, Dict, Type, cast
 
 from ._json import (
     deserialize, jsonSerialize, registerDeserializer, registerSerializer
@@ -48,7 +48,7 @@ class IncidentTypeJSONType(Enum):
     Incident type attribute types
     """
 
-    name   = str
+    name   = str   # type: ignore[assignment]
     hidden = bool
 
 
@@ -66,9 +66,11 @@ registerSerializer(IncidentType, serializeIncidentType)
 def deserializeIncidentType(obj: Dict[str, Any], cl: Type) -> IncidentType:
     assert cl is IncidentType, (cl, obj)
 
-    return deserialize(
-        obj, IncidentType,
-        IncidentTypeJSONType, IncidentTypeJSONKey,
+    return cast(
+        IncidentType,
+        deserialize(
+            obj, IncidentType, IncidentTypeJSONType, IncidentTypeJSONKey
+        )
     )
 
 registerDeserializer(IncidentType, deserializeIncidentType)

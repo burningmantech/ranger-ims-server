@@ -22,7 +22,7 @@ This implementation uses Docker containers.
 from abc import ABC, abstractmethod
 from random import choice, choices
 from string import ascii_letters, digits
-from typing import Awaitable, ClassVar, Mapping, Optional
+from typing import Awaitable, ClassVar, Mapping, Optional, cast
 
 from attr import Factory, attrib, attrs
 
@@ -147,7 +147,7 @@ class MySQLService(ABC):
         )
 
         try:
-            with connection.cursor() as cursor:
+            with connection.cursor() as cursor:  # type: ignore[attr-defined]
                 cursor.execute(f"create database {name}")
                 cursor.execute(
                     f"grant all privileges on {name}.* "
@@ -296,7 +296,7 @@ class DockerizedMySQLService(MySQLService):
 
         waitOnDBStartup()
 
-        return d
+        return cast(Awaitable, d)
 
 
     def _resetContainerState(self) -> None:

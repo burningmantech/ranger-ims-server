@@ -20,7 +20,9 @@ Incident Management System data model JSON serialization/deserialization
 
 from datetime import datetime as DateTime
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Type, cast
+from typing import (
+    Any, Callable, Dict, Iterable, List, Mapping, Type, Union, cast
+)
 
 from cattr import Converter
 
@@ -36,6 +38,9 @@ __all__ = ()
 log = Logger()
 
 
+JSON = Union[Mapping[str, Any], Iterable, int, str, float, bool, None]
+
+
 
 class JSONCodecError(Exception):
     """
@@ -45,7 +50,7 @@ class JSONCodecError(Exception):
 
 
 converter = Converter()
-jsonSerialize = converter.unstructure
+jsonSerialize = converter.unstructure  # type: Callable[[Any], JSON]
 jsonDeserialize = converter.structure
 
 registerSerializer = converter.register_unstructure_hook
@@ -90,11 +95,11 @@ def deserializeFrozenDict(obj: Dict, cl: Type) -> FrozenDict:
 
 # Public API
 
-def jsonObjectFromModelObject(model: Any) -> Any:
+def jsonObjectFromModelObject(model: Any) -> JSON:
     return jsonSerialize(model)
 
 
-def modelObjectFromJSONObject(json: Any, modelClass: type) -> Any:
+def modelObjectFromJSONObject(json: JSON, modelClass: type) -> Any:
     try:
         return jsonDeserialize(json, modelClass)
     except KeyError:

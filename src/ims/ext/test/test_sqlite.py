@@ -7,7 +7,7 @@ from io import StringIO
 from pathlib import Path
 from sqlite3 import Error as SQLiteError
 from textwrap import dedent
-from typing import Any, Generator, List, Mapping, cast
+from typing import Any, Generator, List, Mapping, Optional, Union, cast
 
 from .. import sqlite
 from ..sqlite import (
@@ -169,7 +169,7 @@ class DebugToolsTests(TestCase):
         """
         raise NotImplementedError()
 
-    test_printSchema.todo = "unimplemented"
+    test_printSchema.todo = "unimplemented"  # type: ignore[attr-defined]
 
 
     def test_explainQueryPlans(self) -> None:
@@ -178,7 +178,7 @@ class DebugToolsTests(TestCase):
         """
         raise NotImplementedError()
 
-    test_explainQueryPlans.todo = "unimplemented"
+    test_explainQueryPlans.todo = "unimplemented"  # type: ignore[attr-defined]
 
 
     def test_QueryPlanExplanation_Lines_str(self) -> None:
@@ -297,13 +297,15 @@ class ErrneousSQLiteConnection(Connection):
         self._generateErrors = generateErrors
 
 
-    def executescript(self, sql_script: str) -> BaseCursor:
+    def executescript(self, sql_script: Union[bytes, str]) -> BaseCursor:
         if self._generateErrors:
             raise SQLiteError("executescript()")
         return super().executescript(sql_script)
 
 
-    def execute(self, sql: str, parameters: Mapping = None) -> BaseCursor:
+    def execute(  # type: ignore[override]
+        self, sql: str, parameters: Optional[Mapping] = None
+    ) -> BaseCursor:
         if parameters is None:
             parameters = {}
         if self._generateErrors:
@@ -316,7 +318,7 @@ def patchConnect_errors(testCase: TestCase) -> None:
     """
     Patch :func:`connect` to create :class:`ErrneousSQLiteConnection`s.
     """
-    def connect(database: str) -> Connection:
+    def connect(database: Optional[str]) -> Connection:
         if database is None:
             database = ":memory:"
         db = ErrneousSQLiteConnection(database)

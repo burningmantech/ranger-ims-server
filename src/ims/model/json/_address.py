@@ -19,7 +19,7 @@ JSON serialization/deserialization for addresses
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional, Type, cast
 
 from ._json import (
     deserialize, jsonSerialize, registerDeserializer, registerSerializer
@@ -152,9 +152,12 @@ def deserializeTextOnlyAddress(
 ) -> TextOnlyAddress:
     assert cl is TextOnlyAddress, (cl, obj)
 
-    return deserialize(
-        obj, TextOnlyAddress,
-        TextOnlyAddressJSONType, TextOnlyAddressJSONKey,
+    return cast(
+        TextOnlyAddress,
+        deserialize(
+            obj, TextOnlyAddress,
+            TextOnlyAddressJSONType, TextOnlyAddressJSONKey,
+        )
     )
 
 registerDeserializer(TextOnlyAddress, deserializeTextOnlyAddress)
@@ -165,9 +168,12 @@ def deserializeRodGarettAddress(
 ) -> RodGarettAddress:
     assert cl is RodGarettAddress, (cl, obj)
 
-    return deserialize(
-        obj, RodGarettAddress,
-        RodGarettAddressJSONType, RodGarettAddressJSONKey,
+    return cast(
+        RodGarettAddress,
+        deserialize(
+            obj, RodGarettAddress,
+            RodGarettAddressJSONType, RodGarettAddressJSONKey,
+        )
     )
 
 registerDeserializer(RodGarettAddress, deserializeRodGarettAddress)

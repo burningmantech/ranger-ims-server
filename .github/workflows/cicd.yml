@@ -122,7 +122,7 @@ jobs:
         run: pip install tox;
 
       - name: Run unit tests
-        run: tox -e coverage-py0,codecov;
+        run: tox -e coverage-py,codecov;
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           GITHUB_REF: ${{ github.ref }}
@@ -134,13 +134,13 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: trial
-          path: .tox/coverage-py0/log/trial.log
+          path: .tox/coverage-py/log/trial.log
 
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v1
         with:
           name: coverage
-          path: .tox/coverage-py0/log/coverage_report_html
+          path: .tox/coverage-py/log/coverage_report_html
 
 
   docker:

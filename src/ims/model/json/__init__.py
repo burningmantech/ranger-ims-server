@@ -27,7 +27,7 @@ from ._eventdata import EventDataJSONKey
 from ._imsdata import IMSDataJSONKey
 from ._incident import IncidentJSONKey
 from ._json import (
-    JSONCodecError, jsonObjectFromModelObject, modelObjectFromJSONObject
+    JSON, JSONCodecError, jsonObjectFromModelObject, modelObjectFromJSONObject
 )
 from ._location import LocationJSONKey
 from ._priority import IncidentPriorityJSONValue
@@ -49,6 +49,7 @@ __all__ = (
     "IncidentReportJSONKey",
     "IncidentStateJSONValue",
     "IncidentTypeJSONKey",
+    "JSON",
     "JSONCodecError",
     "LocationJSONKey",
     "ReportEntryJSONKey",

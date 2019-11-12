@@ -19,7 +19,7 @@ JSON serialization/deserialization for incident state
 """
 
 from enum import Enum, unique
-from typing import Type
+from typing import Type, cast
 
 from ._json import registerDeserializer, registerSerializer
 from .._state import IncidentState
@@ -44,7 +44,11 @@ class IncidentStateJSONValue(Enum):
 
 
 def serializeIncidentState(incidentState: IncidentState) -> str:
-    return getattr(IncidentStateJSONValue, incidentState.name).value
+    constant = cast(
+        IncidentStateJSONValue,
+        getattr(IncidentStateJSONValue, incidentState.name)
+    )
+    return cast(str, constant.value)
 
 registerSerializer(IncidentState, serializeIncidentState)
 
@@ -52,6 +56,8 @@ registerSerializer(IncidentState, serializeIncidentState)
 def deserializeIncidentState(obj: str, cl: Type) -> IncidentState:
     assert cl is IncidentState, (cl, obj)
 
-    return getattr(IncidentState, IncidentStateJSONValue(obj).name)
+    return cast(
+        IncidentState, getattr(IncidentState, IncidentStateJSONValue(obj).name)
+    )
 
 registerDeserializer(IncidentState, deserializeIncidentState)

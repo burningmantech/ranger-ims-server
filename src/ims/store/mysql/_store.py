@@ -20,8 +20,7 @@ Incident Management System SQL data store.
 
 from pathlib import Path
 from sys import stdout
-from typing import Any, Callable, ClassVar, Optional, cast
-from typing.io import TextIO
+from typing import Any, Callable, ClassVar, Optional, TextIO, cast
 
 from attr import attrib, attrs
 
@@ -253,17 +252,19 @@ class DataStore(DatabaseStore):
         lastTableName = ""
 
         for row in await self.runQuery(columnsQuery):
-            tableName      = row["TABLE_NAME"]
-            columnName     = row["COLUMN_NAME"]
-            columnType     = row["DATA_TYPE"]
-            columnMaxChars = row["CHARACTER_MAXIMUM_LENGTH"]
-            columnNullable = row["IS_NULLABLE"]
-            columnDefault  = row["COLUMN_DEFAULT"]
-            columnPosition = row["ORDINAL_POSITION"]
+            tableName      = cast(str, row["TABLE_NAME"])
+            columnName     = cast(str, row["COLUMN_NAME"])
+            columnType     = cast(str, row["DATA_TYPE"])
+            columnNullable = cast(bool, row["IS_NULLABLE"])
+            columnDefault  = cast(bool, row["COLUMN_DEFAULT"])
+            columnPosition = cast(int, row["ORDINAL_POSITION"])
+            columnMaxChars = cast(
+                Optional[int], row["CHARACTER_MAXIMUM_LENGTH"]
+            )
 
             if tableName != lastTableName:
                 print(f"{tableName}:", file=out)
-                lastTableName = cast(str, tableName)
+                lastTableName = tableName
 
             if columnMaxChars is None:
                 size = ""

@@ -19,7 +19,7 @@ JSON serialization/deserialization for IMS data
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, FrozenSet, Type
+from typing import Any, Dict, FrozenSet, Type, cast
 
 from ._json import (
     deserialize, jsonSerialize, registerDeserializer, registerSerializer
@@ -67,8 +67,11 @@ registerSerializer(IMSData, serializeIMSData)
 def deserializeIMSData(obj: Dict[str, Any], cl: Type) -> IMSData:
     assert cl is IMSData, (cl, obj)
 
-    return deserialize(
-        obj, IMSData, IMSDataJSONType, IMSDataJSONKey,
+    return cast(
+        IMSData,
+        deserialize(
+            obj, IMSData, IMSDataJSONType, IMSDataJSONKey,
+        )
     )
 
 registerDeserializer(IMSData, deserializeIMSData)

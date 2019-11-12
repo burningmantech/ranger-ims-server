@@ -25,7 +25,7 @@ from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
 from typing import (
-    Any, Callable, ClassVar, Iterable, Iterator, Mapping, Optional,
+    Any, Callable, ClassVar, Iterable, Iterator, Mapping, NoReturn, Optional,
     TypeVar, Union, cast,
 )
 
@@ -143,7 +143,7 @@ class Transaction(IterableABC):
 
 
     @abstractmethod
-    def fetchone(self) -> Row:
+    def fetchone(self) -> Optional[Row]:
         """
         Fetch the next row.
         """
@@ -248,7 +248,7 @@ class DatabaseStore(IMSDataStore):
 
 
     @classmethod
-    def loadSchema(cls, version: Union[int, str] = None) -> str:
+    def loadSchema(cls, version: Optional[Union[int, str]] = None) -> str:
         """
         Read the schema file with the given version name.
         """
@@ -625,7 +625,7 @@ class DatabaseStore(IMSDataStore):
             eventID=event.id, incidentNumber=incidentNumber
         )
 
-        def notFound() -> None:
+        def notFound() -> NoReturn:
             raise NoSuchIncidentError(
                 f"No incident #{incidentNumber} in event {event}"
             )
@@ -757,7 +757,9 @@ class DatabaseStore(IMSDataStore):
         Look up the next available incident number.
         """
         txn.execute(self.query.maxIncidentNumber.text, dict(eventID=event.id))
-        number = cast(int, txn.fetchone()["max(NUMBER)"])
+        row = txn.fetchone()
+        assert row is not None
+        number = cast(Optional[int], row["max(NUMBER)"])
         if number is None:
             return 1
         else:
@@ -942,9 +944,9 @@ class DatabaseStore(IMSDataStore):
                 assert not reportEntry.automatic
 
             # Add initial report entries
-            reportEntries = self._initialReportEntries(incident, author)
+            reportEntries = tuple(self._initialReportEntries(incident, author))
             incident = incident.replace(
-                reportEntries=(reportEntries + incident.reportEntries)
+                reportEntries=(reportEntries + tuple(incident.reportEntries))
             )
 
         # Get normalized-to-Rod-Garett address fields
@@ -1012,7 +1014,7 @@ class DatabaseStore(IMSDataStore):
             return incident
 
         try:
-            return await self.runInteraction(createIncident)
+            incident = await self.runInteraction(createIncident)
         except StorageError as e:
             self._log.critical(
                 "Unable to create incident {incident}: {error}",
@@ -1024,6 +1026,8 @@ class DatabaseStore(IMSDataStore):
             "Created incident {incident}",
             storeWriteClass=Incident, incident=incident,
         )
+
+        return incident
 
 
     async def createIncident(
@@ -1063,7 +1067,7 @@ class DatabaseStore(IMSDataStore):
             )
 
         try:
-            return await self.runInteraction(setIncidentAttribute)
+            await self.runInteraction(setIncidentAttribute)
         except StorageError as e:
             self._log.critical(
                 "Author {author} unable to update incident "
@@ -1222,7 +1226,7 @@ class DatabaseStore(IMSDataStore):
             )
 
         try:
-            return await self.runInteraction(setIncident_rangers)
+            await self.runInteraction(setIncident_rangers)
         except StorageError as e:
             self._log.critical(
                 "Author {author} unable to attach Rangers {rangerHandles} to "
@@ -1275,7 +1279,7 @@ class DatabaseStore(IMSDataStore):
             )
 
         try:
-            return await self.runInteraction(setIncident_incidentTypes)
+            await self.runInteraction(setIncident_incidentTypes)
         except StorageError as e:
             self._log.critical(
                 "Author {author} unable to attach incident types "
@@ -1327,7 +1331,7 @@ class DatabaseStore(IMSDataStore):
             )
 
         try:
-            return await self.runInteraction(addReportEntriesToIncident)
+            await self.runInteraction(addReportEntriesToIncident)
         except StorageError as e:
             self._log.critical(
                 "Author {author} unable to create report entries "
@@ -1354,7 +1358,7 @@ class DatabaseStore(IMSDataStore):
             eventID=event.id, incidentReportNumber=incidentReportNumber,
         )
 
-        def notFound() -> None:
+        def notFound() -> NoReturn:
             raise NoSuchIncidentReportError(
                 f"No incident report #{incidentReportNumber}"
             )
@@ -1447,7 +1451,9 @@ class DatabaseStore(IMSDataStore):
         Look up the next available incident report number.
         """
         txn.execute(self.query.maxIncidentReportNumber.text)
-        number = cast(int, txn.fetchone()["max(NUMBER)"])
+        row = txn.fetchone()
+        assert row is not None
+        number = cast(Optional[int], row["max(NUMBER)"])
         if number is None:
             return 1
         else:
@@ -1505,9 +1511,13 @@ class DatabaseStore(IMSDataStore):
                 assert not reportEntry.automatic
 
             # Add initial report entries
-            reportEntries = self._initialReportEntries(incidentReport, author)
+            reportEntries = tuple(
+                self._initialReportEntries(incidentReport, author)
+            )
             incidentReport = incidentReport.replace(
-                reportEntries=(reportEntries + incidentReport.reportEntries)
+                reportEntries=(
+                    reportEntries + tuple(incidentReport.reportEntries)
+                )
             )
 
         def createIncidentReport(
@@ -1540,7 +1550,7 @@ class DatabaseStore(IMSDataStore):
             return incidentReport
 
         try:
-            return await self.runInteraction(createIncidentReport)
+            incidentReport = await self.runInteraction(createIncidentReport)
         except StorageError as e:
             self._log.critical(
                 "Unable to create incident report {incidentReport}: {error}",
@@ -1552,6 +1562,8 @@ class DatabaseStore(IMSDataStore):
             "Created incident report: {incidentReport}",
             storeWriteClass=IncidentReport, incidentReport=incidentReport,
         )
+
+        return incidentReport
 
 
     async def createIncidentReport(
@@ -1593,7 +1605,7 @@ class DatabaseStore(IMSDataStore):
             )
 
         try:
-            return await self.runInteraction(setIncidentReportAttribute)
+            await self.runInteraction(setIncidentReportAttribute)
         except StorageError as e:
             self._log.critical(
                 "Author {author} unable to update incident report "
@@ -1662,7 +1674,7 @@ class DatabaseStore(IMSDataStore):
             )
 
         try:
-            return await self.runInteraction(addReportEntriesToIncidentReport)
+            await self.runInteraction(addReportEntriesToIncidentReport)
         except StorageError as e:
             self._log.critical(
                 "Author {author} unable to create report entries "

@@ -61,7 +61,10 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
         if getattr(self._state, "broken", False):
             self.raiseException()
 
-        return cast(property, DataStore._db).fget(self)
+        return cast(
+            Connection,
+            cast(property, DataStore._db).fget(self)  # type: ignore[call-arg]
+        )
 
 
     def bringThePain(self) -> None:

@@ -9,10 +9,9 @@ from sqlite3 import (
     IntegrityError, Row as BaseRow, connect as sqliteConnect,
 )
 from typing import (
-    Any, Callable, ClassVar, Iterable, Mapping, Optional, Tuple, Type, Union,
-    cast,
+    Any, Callable, ClassVar, Iterable, Mapping, Optional,
+    TextIO, Tuple, Type, Union, cast,
 )
-from typing.io import TextIO
 
 from attr import attrs
 
@@ -52,13 +51,13 @@ class Row(BaseRow):
 
     def get(
         self, key: str, default: Optional[ParameterValue] = None
-    ) -> ParameterValue:
+    ) -> Optional[ParameterValue]:
         """
         Return the value for the column named `key`.
         Returns :obj:`None` if there is no such column.
         """
         if key in self.keys():
-            return self[key]
+            return cast(ParameterValue, self[key])
         else:
             return default
 
@@ -73,7 +72,7 @@ class Cursor(BaseCursor):
     _log: ClassVar[Logger] = Logger()
 
 
-    def executescript(self, sql_script: str) -> "Cursor":
+    def executescript(self, sql_script: Union[bytes, str]) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.executescript`.
         """
@@ -81,7 +80,7 @@ class Cursor(BaseCursor):
         return cast("Cursor", super().executescript(sql_script))
 
 
-    def execute(
+    def execute(  # type: ignore[override]
         self, sql: str, parameters: Optional[Parameters] = None
     ) -> "Cursor":
         """
@@ -105,13 +104,16 @@ class Connection(BaseConnection):
     _log: ClassVar[Logger] = Logger()
 
 
-    def cursor(
+    def cursor(  # type: ignore[override]
         self, factory: CursorFactory = cast(CursorFactory, Cursor)
     ) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.cursor`.
         """
-        return cast("Cursor", super().cursor(factory=factory))
+        return cast(
+            "Cursor",
+            super().cursor(factory=factory)  # type: ignore[call-arg]
+        )
 
 
     def executeAndPrint(
@@ -182,18 +184,20 @@ class Connection(BaseConnection):
             raise IntegrityError("Foreign key constraints violated")
 
 
-    def __enter__(self: "Connection") -> "Connection":
+    def __enter__(  # type: ignore[override]
+        self: "Connection"
+    ) -> "Connection":
         self._log.debug("---------- ENTER ----------")
         super().__enter__()
         return self
 
 
-    def __exit__(
+    def __exit__(  # type: ignore[override]
         self, exc_type: Type[BaseException], exc_val: BaseException,
         exc_tb: Any,
     ) -> bool:
         self._log.debug("---------- EXIT ----------")
-        return super().__exit__(exc_type, exc_val, exc_tb)
+        return cast(bool, super().__exit__(exc_type, exc_val, exc_tb))
 
 
 

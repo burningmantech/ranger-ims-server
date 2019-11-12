@@ -23,7 +23,7 @@ from os import environ
 from textwrap import dedent
 from typing import ClassVar, List, cast
 
-from twisted.internet.defer import ensureDeferred
+from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.logger import Logger
 
 from ims.ext.trial import AsynchronousTestCase, asyncAsDeferred
@@ -65,7 +65,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
     mysqlService: MySQLService = mysqlServiceFactory()
 
 
-    def setUp(self) -> None:
+    def setUp(self) -> Deferred:
         async def setUp() -> None:
             self.stores: List[TestDataStore] = []
 
@@ -75,7 +75,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         return ensureDeferred(setUp())
 
 
-    def tearDown(self) -> None:
+    def tearDown(self) -> Deferred:
         async def tearDown() -> None:
             for store in self.stores:
                 await store.disconnect()

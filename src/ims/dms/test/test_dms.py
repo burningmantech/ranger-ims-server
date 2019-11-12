@@ -18,9 +18,9 @@
 Tests for L{ims.dms}.
 """
 
-from typing import MutableSequence, Tuple
+from typing import MutableSequence, Tuple, cast
 
-from twisted.internet.defer import fail, succeed
+from twisted.internet.defer import Deferred, fail, succeed
 
 from ims.ext.trial import TestCase
 
@@ -135,7 +135,7 @@ class DummyQuery(object):
         """
         Produce normalized SQL for the query.
         """
-        sql = self.args[0]
+        sql = cast(str, self.args[0])
 
         # Collapse spaces
         sql = " ".join(sql.split())
@@ -155,7 +155,7 @@ class DummyConnectionPool(object):
         self.queries: MutableSequence[DummyQuery] = []
 
 
-    def runQuery(self, *args: tuple, **kw: dict) -> None:
+    def runQuery(self, *args: tuple, **kw: dict) -> Deferred:
         query = DummyQuery(args, kw)
 
         self.queries.append(query)
