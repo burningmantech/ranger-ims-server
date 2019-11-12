@@ -73,7 +73,7 @@ def _unprefix(url: URL) -> URL:
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, cmp=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class APIApplication(object):
     """
     Application with JSON API endpoints.

@@ -34,7 +34,7 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, cmp=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, order=False)
 class ReportEntry(ComparisonMixIn, ReplaceMixIn):
     """
     Report entry

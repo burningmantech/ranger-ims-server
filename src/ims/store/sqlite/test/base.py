@@ -43,7 +43,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
 
 
     @attrs(
-        frozen=False, auto_attribs=True, kw_only=True, cmp=False
+        frozen=False, auto_attribs=True, kw_only=True, eq=False
     )
     class _State(DataStore._State):
         """

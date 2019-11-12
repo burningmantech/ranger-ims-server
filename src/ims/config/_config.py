@@ -168,7 +168,7 @@ class Configuration(object):
     urls: ClassVar = URLs
 
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, cmp=False)
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State(object):
         """
         Internal mutable state for :class:`Configuration`.
