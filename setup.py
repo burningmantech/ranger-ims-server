@@ -170,6 +170,7 @@ def main():
         version=version_string,
         description=description,
         long_description=long_description,
+        long_description_content_type="text/x-rst",
         url=url,
         classifiers=classifiers,
         author=author,
