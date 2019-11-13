@@ -31,7 +31,7 @@ __all__ = ()
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, order=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class Comparable(ComparisonMixIn):
     value: Any
 
