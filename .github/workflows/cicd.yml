@@ -65,7 +65,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.6'
+          python-version: "3.6"
 
       - name: Install Tox
         run: pip install tox;
@@ -88,7 +88,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.6'
+          python-version: "3.6"
 
       - name: Install Tox
         run: pip install tox;
@@ -111,7 +111,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.6'
+          python-version: "3.6"
 
       - name: Install Tox
         run: pip install tox;
@@ -131,7 +131,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        python: ['3.6']
+        python: ["3.6"]
 
     steps:
 
@@ -160,12 +160,6 @@ jobs:
         with:
           name: trial
           path: .tox/coverage-py/log/trial.log
-
-      - name: Upload coverage report artifact
-        uses: actions/upload-artifact@v1
-        with:
-          name: coverage
-          path: .tox/coverage-py/log/coverage_report_html
 
 
   docker:
@@ -198,7 +192,7 @@ jobs:
     name: Deploy image built from master branch to the staging environment
 
     needs: [docker]
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == "refs/heads/master"
 
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -219,7 +213,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.6'
+          python-version: "3.6"
 
       - name: Deploy to staging
         run: ./bin/deploy staging;
