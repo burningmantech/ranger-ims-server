@@ -97,6 +97,31 @@ jobs:
         run: tox -e mypy;
 
 
+  packaging:
+    name: Packaging
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@v1
+
+      - name: Install Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.6'
+
+      - name: Install Tox
+        run: pip install tox;
+
+      - name: Check packaging
+        run: tox -e packaging;
+        env:
+          TOX_SKIP_MISSING_INTERPRETERS: False
+
+
   unit:
     name: Unit Tests using Python ${{ matrix.python }} on Ubuntu
 

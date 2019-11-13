@@ -1,0 +1,19 @@
+include .coveragerc
+include bin/.common.sh
+include bin/build
+include bin/deploy
+include bin/mysql-run
+include bin/run
+include bin/shell
+include codecov.yml
+include conf/imsd-sample.conf
+include COPYRIGHT.rst
+include Dockerfile
+include LICENSE.txt
+include pyproject.toml
+include README.rst
+include tox.ini
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include src *.txt
+recursive-include tools *.py
