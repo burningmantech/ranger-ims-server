@@ -21,7 +21,7 @@ Duty Management System.
 from hashlib import sha1
 from os import urandom
 from time import time
-from typing import ClassVar, Iterable, Mapping, Optional, Set, Tuple
+from typing import ClassVar, Iterable, Mapping, Optional, Set, Tuple, cast
 
 from attr import Factory, attrib, attrs
 
@@ -71,7 +71,7 @@ class Position(object):
 
 
 # FIXME: make frozen
-@attrs(frozen=False, auto_attribs=True, kw_only=True, cmp=False)
+@attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
 class DutyManagementSystem(object):
     """
     Duty Management System
@@ -190,10 +190,13 @@ class DutyManagementSystem(object):
             "Duty Management System..."
         )
 
-        return await self.dbpool.runQuery(
-            """
-            select person_id, position_id from person_position
-            """
+        return cast(
+            Iterable[Tuple[str, str]],
+            await self.dbpool.runQuery(
+                """
+                select person_id, position_id from person_position
+                """
+            )
         )
 
 

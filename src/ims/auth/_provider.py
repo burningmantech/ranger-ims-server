@@ -254,7 +254,7 @@ class AuthProvider(object):
                 requiredAuthorizations=requiredAuthorizations,
                 userAuthorizations=userAuthorizations,
             )
-            raise NotAuthorizedError(f"User not authorized")
+            raise NotAuthorizedError("User not authorized")
 
 
     async def authorizeRequestForIncidentReport(

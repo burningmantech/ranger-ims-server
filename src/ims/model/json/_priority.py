@@ -19,7 +19,7 @@ JSON serialization/deserialization for incident priority
 """
 
 from enum import Enum
-from typing import Type
+from typing import Type, cast
 
 from ._json import registerDeserializer, registerSerializer
 from .._priority import IncidentPriority
@@ -41,7 +41,9 @@ class IncidentPriorityJSONValue(Enum):
 
 
 def serializeIncidentPriority(incidentPriority: IncidentPriority) -> str:
-    return getattr(IncidentPriorityJSONValue, incidentPriority.name).value
+    return cast(
+        str, getattr(IncidentPriorityJSONValue, incidentPriority.name).value
+    )
 
 registerSerializer(IncidentPriority, serializeIncidentPriority)
 
@@ -49,6 +51,9 @@ registerSerializer(IncidentPriority, serializeIncidentPriority)
 def deserializeIncidentPriority(obj: int, cl: Type) -> IncidentPriority:
     assert cl is IncidentPriority, (cl, obj)
 
-    return getattr(IncidentPriority, IncidentPriorityJSONValue(obj).name)
+    return cast(
+        IncidentPriority,
+        getattr(IncidentPriority, IncidentPriorityJSONValue(obj).name)
+    )
 
 registerDeserializer(IncidentPriority, deserializeIncidentPriority)

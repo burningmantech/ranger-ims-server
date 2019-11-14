@@ -21,7 +21,7 @@ Comparison mix-in
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Callable, cast
 
 
 __all__ = ()
@@ -44,10 +44,12 @@ class ComparisonMixIn(ABC):
         if other.__class__ is self.__class__:
             selfValue = self._cmpValue()
             otherValue = other._cmpValue()
-            selfValueCmp = getattr(selfValue, methodName)
+            selfValueCmp = cast(
+                Callable[[Any], bool], getattr(selfValue, methodName)
+            )
             return selfValueCmp(otherValue)
         else:
-            return NotImplemented
+            return NotImplemented  # type: ignore[no-any-return]
 
 
     def __hash__(self) -> int:

@@ -19,7 +19,7 @@ JSON serialization/deserialization for Rangers
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, Optional, Set, Type
+from typing import Any, Dict, Optional, Set, Type, cast
 
 from ._json import (
     deserialize, jsonSerialize, registerDeserializer, registerSerializer
@@ -52,7 +52,7 @@ class RangerJSONType(Enum):
     """
 
     handle = str
-    name   = str
+    name   = str  # type: ignore[assignment]
     status = RangerStatus
     email  = Set[str]
     onSite = bool
@@ -73,9 +73,8 @@ registerSerializer(Ranger, serializeRanger)
 def deserializeRanger(obj: Dict[str, Any], cl: Type) -> Ranger:
     assert cl is Ranger, (cl, obj)
 
-    return deserialize(
-        obj, Ranger,
-        RangerJSONType, RangerJSONKey,
+    return cast(
+        Ranger, deserialize(obj, Ranger, RangerJSONType, RangerJSONKey)
     )
 
 registerDeserializer(Ranger, deserializeRanger)
@@ -100,7 +99,7 @@ class RangerStatusJSONValue(Enum):
 
 
 def serializeRangerStatus(rangerStatus: RangerStatus) -> str:
-    return getattr(RangerStatusJSONValue, rangerStatus.name).value
+    return cast(str, getattr(RangerStatusJSONValue, rangerStatus.name).value)
 
 registerSerializer(RangerStatus, serializeRangerStatus)
 
@@ -108,6 +107,8 @@ registerSerializer(RangerStatus, serializeRangerStatus)
 def deserializeRangerStatus(obj: int, cl: Type) -> RangerStatus:
     assert cl is RangerStatus, (cl, obj)
 
-    return getattr(RangerStatus, RangerStatusJSONValue(obj).name)
+    return cast(
+        RangerStatus, getattr(RangerStatus, RangerStatusJSONValue(obj).name)
+    )
 
 registerDeserializer(RangerStatus, deserializeRangerStatus)

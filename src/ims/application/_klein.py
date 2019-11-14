@@ -21,7 +21,7 @@ Incident Management System Klein application.
 from __future__ import absolute_import
 
 from functools import wraps
-from typing import Any, Callable, Iterable, Optional, Union
+from typing import Any, Callable, Iterable, Optional, Sequence, Union, cast
 
 from hyperlink import URL
 
@@ -183,7 +183,7 @@ def badRequestResponse(
 
 
 def invalidJSONResponse(
-    request: IRequest, error: Exception = None
+    request: IRequest, error: Optional[Exception] = None
 ) -> KleinRenderable:
     """
     Respond with a BAD REQUEST status for invalid JSON request data.
@@ -246,7 +246,10 @@ def queryValue(
         C{default} if there no such query parameter.
         If more than one value is found, return the last value found.
     """
-    values = request.args.get(name.encode("utf-8"))
+    values = cast(
+        Optional[Sequence[bytes]],
+        request.args.get(name.encode("utf-8"))
+    )
 
     if values is None:
         return default
@@ -274,7 +277,7 @@ def queryValues(
     @return: The values of the query parameter specified by C{name}, or
         C{default} if there no such query parameter.
     """
-    values = request.args.get(name)
+    values = cast(Optional[Sequence[bytes]], request.args.get(name))
 
     if values is None:
         return default
@@ -327,7 +330,8 @@ class Router(Klein):
 
                 return f(app, request, *args, **kwargs)
 
-            return wrapper
+            return cast(KleinRouteMethod, wrapper)
+
         return decorator
 
 

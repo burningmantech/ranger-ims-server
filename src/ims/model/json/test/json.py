@@ -18,7 +18,7 @@
 Expected JSON encoding for model data.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 from .._json import jsonSerialize
 from ..._address import Address, RodGarettAddress, TextOnlyAddress
@@ -91,9 +91,9 @@ def jsonFromEvent(event: Event) -> str:
 
 def jsonFromEventAccess(eventAccess: EventAccess) -> Dict[str, List[str]]:
     return dict(
-        readers=jsonSerialize(eventAccess.readers),
-        writers=jsonSerialize(eventAccess.writers),
-        reporters=jsonSerialize(eventAccess.reporters),
+        readers=cast(List[str], jsonSerialize(eventAccess.readers)),
+        writers=cast(List[str], jsonSerialize(eventAccess.writers)),
+        reporters=cast(List[str], jsonSerialize(eventAccess.reporters)),
     )
 
 
@@ -238,4 +238,4 @@ def jsonFromIncidentType(incidentType: IncidentType) -> Dict[str, Any]:
 
 
 def jsonFromKnownIncidentType(incidentType: KnownIncidentType) -> str:
-    return incidentType.value
+    return cast(str, incidentType.value)

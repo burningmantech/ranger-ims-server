@@ -1,7 +1,5 @@
 # Docs:
-# https://help.github.com/en/articles/about-github-actions
-# https://help.github.com/en/articles/configuring-a-workflow
-# https://help.github.com/en/articles/workflow-syntax-for-github-actions
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions
 
 
 name: CI/CD
@@ -65,7 +63,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.6'
+          python-version: "3.6"
 
       - name: Install Tox
         run: pip install tox;
@@ -88,13 +86,38 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.6'
+          python-version: "3.6"
 
       - name: Install Tox
         run: pip install tox;
 
       - name: Run Mypy
         run: tox -e mypy;
+
+
+  packaging:
+    name: Packaging
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@v1
+
+      - name: Install Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.6"
+
+      - name: Install Tox
+        run: pip install tox;
+
+      - name: Check packaging
+        run: tox -e packaging;
+        env:
+          TOX_SKIP_MISSING_INTERPRETERS: False
 
 
   unit:
@@ -106,7 +129,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        python: ['3.6']
+        python: ["3.6"]
 
     steps:
 
@@ -122,7 +145,7 @@ jobs:
         run: pip install tox;
 
       - name: Run unit tests
-        run: tox -e coverage-py0,codecov;
+        run: tox -e coverage-py,codecov;
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           GITHUB_REF: ${{ github.ref }}
@@ -134,13 +157,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: trial
-          path: .tox/coverage-py0/log/trial.log
-
-      - name: Upload coverage report artifact
-        uses: actions/upload-artifact@v1
-        with:
-          name: coverage
-          path: .tox/coverage-py0/log/coverage_report_html
+          path: .tox/coverage-py/log/trial.log
 
 
   docker:
@@ -194,7 +211,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: '3.6'
+          python-version: "3.6"
 
       - name: Deploy to staging
         run: ./bin/deploy staging;

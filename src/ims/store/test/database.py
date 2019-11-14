@@ -18,10 +18,11 @@
 Tests for :mod:`ranger-ims-server.store` database stores
 """
 
-from typing import cast
+from typing import Optional, cast
 
 from ims.model import (
-    Event, Incident, IncidentReport, Location, RodGarettAddress
+    Event, Incident, IncidentReport, Location,
+    RodGarettAddress, TextOnlyAddress,
 )
 
 from .base import TestDataStoreMixIn
@@ -65,7 +66,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         incident = _self.normalizeIncidentAddress(incident)
 
         location = incident.location
-        address = cast(RodGarettAddress, location.address)
+        address = cast(Optional[RodGarettAddress], location.address)
 
         txn.execute(
             self.query.createEventOrIgnore.text,
@@ -329,7 +330,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
     def normalizeIncidentAddress(incident: Incident) -> Incident:
         # Normalize address to Rod Garett; DB schema only supports those.
         address = incident.location.address
-        if address is not None and not isinstance(address, RodGarettAddress):
+        if isinstance(address, TextOnlyAddress):
             incident = incident.replace(
                 location=Location(
                     name=incident.location.name,
@@ -338,4 +339,6 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
                     )
                 )
             )
+        else:
+            assert isinstance(address, RodGarettAddress)
         return incident

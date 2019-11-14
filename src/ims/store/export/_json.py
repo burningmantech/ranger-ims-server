@@ -18,8 +18,7 @@
 Incident Management System data store export.
 """
 
-from typing import Any, ClassVar, Iterable, Mapping, Optional
-from typing.io import BinaryIO
+from typing import Any, BinaryIO, ClassVar, Iterable, Mapping, Optional, cast
 
 from attr import attrs
 
@@ -71,7 +70,10 @@ class JSONExporter(object):
         Export data store as JSON.
         """
         self._log.info("Exporting data store as JSON objects...")
-        return jsonObjectFromModelObject(await self.imsData())
+        return cast(
+            Mapping[str, Any],
+            jsonObjectFromModelObject(await self.imsData())
+        )
 
 
     async def imsData(self) -> IMSData:

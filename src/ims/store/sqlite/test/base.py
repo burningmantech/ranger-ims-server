@@ -43,7 +43,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
 
 
     @attrs(
-        frozen=False, auto_attribs=True, kw_only=True, cmp=False
+        frozen=False, auto_attribs=True, kw_only=True, eq=False
     )
     class _State(DataStore._State):
         """
@@ -61,7 +61,10 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
         if getattr(self._state, "broken", False):
             self.raiseException()
 
-        return cast(property, DataStore._db).fget(self)
+        return cast(
+            Connection,
+            cast(property, DataStore._db).fget(self)  # type: ignore[call-arg]
+        )
 
 
     def bringThePain(self) -> None:

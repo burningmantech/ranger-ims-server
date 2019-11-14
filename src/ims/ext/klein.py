@@ -8,6 +8,7 @@ from typing import Any, Awaitable, Callable, Union
 
 from twisted.web.iweb import IRenderable, IRequest
 from twisted.web.resource import IResource
+from twisted.web.template import Tag
 
 from ims.ext.enum import Enum, Names, auto
 
@@ -25,7 +26,7 @@ __all__ = (
 
 
 # Expected return types for route methods
-KleinRenderable = Union[str, bytes, IResource, IRenderable]
+KleinRenderable = Union[str, bytes, IResource, IRenderable, Tag]
 KleinRouteMethod = Callable[
     ..., Union[KleinRenderable, Awaitable[KleinRenderable]]
 ]
@@ -93,7 +94,7 @@ class HeaderName(Enum):
 
 
 if False:
-    _staticETag = version
+    _staticETag = version  # type: ignore[misc] # unreachable
     _maxAge = 60 * 5  # 5 minutes
 else:
     # For debugging, change the ETag on app launch

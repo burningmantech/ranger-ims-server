@@ -39,7 +39,7 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
                 elif enumInstance is other:
                     return not lessThan
 
-        return NotImplemented
+        return NotImplemented  # type: ignore[no-any-return]
 
     def lessThan(self: Enum, other: Any) -> bool:
         if self is other:
@@ -65,12 +65,24 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
 
         return compare(self, other, False)
 
-    enumClass.__eq__ = cast(Callable, equal)
-    enumClass.__ne__ = cast(Callable, notEqual)
-    enumClass.__lt__ = cast(Callable, lessThan)
-    enumClass.__le__ = cast(Callable, lessThanOrEqual)
-    enumClass.__gt__ = cast(Callable, greaterThan)
-    enumClass.__ge__ = cast(Callable, greaterThanOrEqual)
+    enumClass.__eq__ = cast(  # type: ignore[assignment]
+        Callable, equal
+    )
+    enumClass.__ne__ = cast(  # type: ignore[assignment]
+        Callable, notEqual
+    )
+    enumClass.__lt__ = cast(  # type: ignore[operator]
+        Callable, lessThan
+    )
+    enumClass.__le__ = cast(  # type: ignore[operator]
+        Callable, lessThanOrEqual
+    )
+    enumClass.__gt__ = cast(  # type: ignore[operator]
+        Callable, greaterThan
+    )
+    enumClass.__ge__ = cast(  # type: ignore[operator]
+        Callable, greaterThanOrEqual
+    )
 
     return enumClass
 
@@ -81,9 +93,8 @@ class Names(Enum):
     Enumerated names.
     """
 
-    # FIXME: there's not much documentation for _generate_next_value_ around,
-    # sowe're using Any as the type for arguments we don't use.
+    @staticmethod
     def _generate_next_value_(
         name: str, start: int, count: int, last_values: List
-    ) -> Any:
+    ) -> str:
         return name

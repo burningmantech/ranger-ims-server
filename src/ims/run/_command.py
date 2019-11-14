@@ -20,7 +20,7 @@ Run the IMS server.
 
 import sys
 from sys import stdout
-from typing import ClassVar, Sequence
+from typing import ClassVar, List, Sequence
 
 from attr import attrs
 
@@ -132,7 +132,7 @@ class Command(object):
     async def runCompare(
         cls, config: Configuration, options: CompareOptions
     ) -> None:
-        importers = []
+        importers = []  # type: List[JSONImporter]
 
         for inFile in options["inFiles"]:
             with inFile:
@@ -147,7 +147,7 @@ class Command(object):
             if first is None:
                 first = importer
             else:
-                cls.log.info("Comparing export files...")
+                cls.log.info("Comparing export files...")  # type: ignore[misc]
 
                 imsDataA = first.imsData
                 imsDataB = importer.imsData

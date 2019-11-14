@@ -13,4 +13,5 @@
 /cached/
 /data/
 /dist/
+/htmlcov/
 __pycache__

@@ -20,8 +20,7 @@ Incident Management System SQLite data store.
 
 from pathlib import Path
 from sys import stdout
-from typing import Any, Callable, ClassVar, Optional
-from typing.io import TextIO
+from typing import Any, Callable, ClassVar, Optional, TextIO, cast
 
 from attr import attrib, attrs
 
@@ -59,7 +58,7 @@ class DataStore(DatabaseStore):
 
 
     @attrs(
-        frozen=False, auto_attribs=True, kw_only=True, cmp=False
+        frozen=False, auto_attribs=True, kw_only=True, eq=False
     )
     class _State(object):
         """
@@ -104,7 +103,7 @@ class DataStore(DatabaseStore):
     def _dbSchemaVersion(cls, db: Connection) -> int:
         try:
             for row in db.execute(cls.query.schemaVersion.text):
-                return row["VERSION"]
+                return cast(int, row["VERSION"])
             else:
                 raise StorageError("Invalid schema: no version")
 

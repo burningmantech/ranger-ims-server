@@ -22,7 +22,7 @@ class ResultOfTests(TestCase):
         """
         raise NotImplementedError()
 
-    test_successResultOf.todo = "unimplemented"
+    test_successResultOf.todo = "unimplemented"  # type: ignore[attr-defined]
 
 
     def test_failureResultOf(self) -> None:
@@ -31,7 +31,7 @@ class ResultOfTests(TestCase):
         """
         raise NotImplementedError()
 
-    test_failureResultOf.todo = "unimplemented"
+    test_failureResultOf.todo = "unimplemented"  # type: ignore[attr-defined]
 
 
 

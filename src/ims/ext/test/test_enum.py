@@ -61,57 +61,109 @@ class EnumOrderingTests(TestCase):
         """
         :func:`enumOrdering` sets ``__lt__``.
         """
-        self.assertTrue(Thing.first.__lt__(Thing.second))
-        self.assertFalse(Thing.second.__lt__(Thing.first))
+        self.assertTrue(
+            Thing.first.__lt__(Thing.second)  # type: ignore[operator]
+        )
+        self.assertFalse(
+            Thing.second.__lt__(Thing.first)  # type: ignore[operator]
+        )
 
-        self.assertFalse(Thing.second.__lt__(Thing.second))
+        self.assertFalse(
+            Thing.second.__lt__(Thing.second)  # type: ignore[operator]
+        )
 
-        self.assertTrue(Thing.second.__lt__(Thing.third))
-        self.assertFalse(Thing.third.__lt__(Thing.second))
+        self.assertTrue(
+            Thing.second.__lt__(Thing.third)  # type: ignore[operator]
+        )
+        self.assertFalse(
+            Thing.third.__lt__(Thing.second)  # type: ignore[operator]
+        )
 
-        self.assertIdentical(Thing.second.__lt__(self), NotImplemented)
+        self.assertIdentical(
+            Thing.second.__lt__(self),  # type: ignore[operator]
+            NotImplemented
+        )
 
 
     def test_lessThanOrEqual(self) -> None:
         """
         :func:`enumOrdering` sets ``__le__``.
         """
-        self.assertTrue(Thing.first.__le__(Thing.second))
-        self.assertFalse(Thing.second.__le__(Thing.first))
+        self.assertTrue(
+            Thing.first.__le__(Thing.second)  # type: ignore[operator]
+        )
+        self.assertFalse(
+            Thing.second.__le__(Thing.first)  # type: ignore[operator]
+        )
 
-        self.assertTrue(Thing.second.__le__(Thing.second))
+        self.assertTrue(
+            Thing.second.__le__(Thing.second)  # type: ignore[operator]
+        )
 
-        self.assertTrue(Thing.second.__le__(Thing.third))
-        self.assertFalse(Thing.third.__le__(Thing.second))
+        self.assertTrue(
+            Thing.second.__le__(Thing.third)  # type: ignore[operator]
+        )
+        self.assertFalse(
+            Thing.third.__le__(Thing.second)  # type: ignore[operator]
+        )
 
-        self.assertIdentical(Thing.second.__le__(self), NotImplemented)
+        self.assertIdentical(
+            Thing.second.__le__(self),  # type: ignore[operator]
+            NotImplemented
+        )
 
 
     def test_greaterThan(self) -> None:
         """
         :func:`enumOrdering` sets ``__gt__``.
         """
-        self.assertFalse(Thing.first.__gt__(Thing.second))
-        self.assertTrue(Thing.second.__gt__(Thing.first))
+        self.assertFalse(
+            Thing.first.__gt__(Thing.second)  # type: ignore[operator]
+        )
+        self.assertTrue(
+            Thing.second.__gt__(Thing.first)  # type: ignore[operator]
+        )
 
-        self.assertFalse(Thing.second.__gt__(Thing.second))
+        self.assertFalse(
+            Thing.second.__gt__(Thing.second)  # type: ignore[operator]
+        )
 
-        self.assertFalse(Thing.second.__gt__(Thing.third))
-        self.assertTrue(Thing.third.__gt__(Thing.second))
+        self.assertFalse(
+            Thing.second.__gt__(Thing.third)  # type: ignore[operator]
+        )
+        self.assertTrue(
+            Thing.third.__gt__(Thing.second)  # type: ignore[operator]
+        )
 
-        self.assertIdentical(Thing.second.__gt__(self), NotImplemented)
+        self.assertIdentical(
+            Thing.second.__gt__(self),  # type: ignore[operator]
+            NotImplemented
+        )
 
 
     def test_greaterThanOrEqual(self) -> None:
         """
         :func:`enumOrdering` sets ``__ge__``.
         """
-        self.assertFalse(Thing.first.__ge__(Thing.second))
-        self.assertTrue(Thing.second.__ge__(Thing.first))
+        self.assertFalse(
+            Thing.first.__ge__(Thing.second)  # type: ignore[operator]
+        )
+        self.assertTrue(
+            Thing.second.__ge__(Thing.first)  # type: ignore[operator]
+        )
 
-        self.assertTrue(Thing.second.__ge__(Thing.second))
+        self.assertTrue(
+            Thing.second.__ge__(Thing.second)  # type: ignore[operator]
+        )
 
-        self.assertFalse(Thing.second.__ge__(Thing.third))
-        self.assertTrue(Thing.third.__ge__(Thing.second))
+        self.assertFalse(
+            Thing.second.__ge__(Thing.third)  # type: ignore[operator]
+        )
+        self.assertTrue(
+            Thing.third.__ge__(Thing.second)  # type: ignore[operator]
+        )
 
-        self.assertIdentical(Thing.second.__ge__(self), NotImplemented)
+        self.assertIdentical(
+            Thing.second.__ge__(self),  # type: ignore[operator]
+            NotImplemented
+        )

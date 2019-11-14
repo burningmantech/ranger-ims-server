@@ -19,7 +19,7 @@ JSON serialization/deserialization for event data
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Type, cast
 
 from ._json import (
     deserialize, jsonSerialize, registerDeserializer, registerSerializer
@@ -75,8 +75,11 @@ registerSerializer(EventData, serializeEventData)
 def deserializeEventData(obj: Dict[str, Any], cl: Type) -> EventData:
     assert cl is EventData, (cl, obj)
 
-    return deserialize(
-        obj, EventData, EventDataJSONType, EventDataJSONKey,
+    return cast(
+        EventData,
+        deserialize(
+            obj, EventData, EventDataJSONType, EventDataJSONKey,
+        )
     )
 
 registerDeserializer(EventData, deserializeEventData)

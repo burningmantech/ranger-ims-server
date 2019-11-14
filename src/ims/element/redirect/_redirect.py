@@ -18,6 +18,8 @@
 Redirect page.
 """
 
+from typing import cast
+
 from attr import attrs
 
 from hyperlink import URL
@@ -52,4 +54,4 @@ class RedirectPage(BaseElement):
         """
         JSON string: URL for the redirect destination.
         """
-        return tag.fillSlots(destination_url=self.location.asText())
+        return cast(str, tag.fillSlots(destination_url=self.location.asText()))

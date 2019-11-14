@@ -20,7 +20,6 @@ Incident Management System web application authentication endpoints.
 
 from hashlib import sha1
 from typing import Iterable, Optional
-from typing.io import BinaryIO
 
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
@@ -52,7 +51,7 @@ def jsonBytes(
 
 
 def writeJSONStream(
-    request: IRequest, jsonStream: BinaryIO,
+    request: IRequest, jsonStream: Iterable[bytes],
     etag: Optional[str] = None,
 ) -> None:
     """

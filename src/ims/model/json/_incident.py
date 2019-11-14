@@ -20,7 +20,7 @@ JSON serialization/deserialization for incidents
 
 from datetime import datetime as DateTime
 from enum import Enum, unique
-from typing import Any, Dict, List, Optional, Set, Type
+from typing import Any, Dict, List, Optional, Set, Type, cast
 
 from ._json import (
     deserialize, jsonSerialize, registerDeserializer, registerSerializer
@@ -89,8 +89,11 @@ registerSerializer(Incident, serializeIncident)
 def deserializeIncident(obj: Dict[str, Any], cl: Type) -> Incident:
     assert cl is Incident, (cl, obj)
 
-    return deserialize(
-        obj, Incident, IncidentJSONType, IncidentJSONKey,
+    return cast(
+        Incident,
+        deserialize(
+            obj, Incident, IncidentJSONType, IncidentJSONKey,
+        )
     )
 
 registerDeserializer(Incident, deserializeIncident)

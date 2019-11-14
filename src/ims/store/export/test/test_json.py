@@ -20,6 +20,7 @@ Tests for :mod:`ranger-ims-server.store.export._json`
 
 from io import BytesIO
 from pathlib import Path
+from typing import Any, Mapping, cast
 
 from hypothesis import given
 
@@ -191,7 +192,7 @@ class JSONImporterTests(TestCase):
 
     @given(imsDatas())
     def test_fromJSON(self, imsDataIn: IMSData) -> None:
-        json = jsonObjectFromModelObject(imsDataIn)
+        json = cast(Mapping[str, Any], jsonObjectFromModelObject(imsDataIn))
         importer = JSONImporter.fromJSON(store=self.store(), json=json)
 
         self.assertIMSDataEqual(importer.imsData, imsDataIn)

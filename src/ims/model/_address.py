@@ -21,7 +21,7 @@ Address
 """
 
 from abc import ABC
-from typing import Any, Optional, TypeVar
+from typing import Any, Callable, Optional, TypeVar, cast
 
 from attr import attrs
 
@@ -36,7 +36,7 @@ TRodGarettAddress = TypeVar("TRodGarettAddress", bound="RodGarettAddress")
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, cmp=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class Address(ABC):
     """
     Location address
@@ -46,7 +46,7 @@ class Address(ABC):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, cmp=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class TextOnlyAddress(Address, ComparisonMixIn):
     """
     Address
@@ -69,7 +69,7 @@ class TextOnlyAddress(Address, ComparisonMixIn):
 
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, cmp=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
     """
     Rod Garett Address
@@ -105,7 +105,11 @@ class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
 
         if other.__class__ is TextOnlyAddress:
             if self._allNone():
-                return getattr(self.description, methodName)(other.description)
+                method = cast(
+                    Callable[[str], bool],
+                    getattr(self.description, methodName)
+                )
+                return method(other.description)
 
         return ComparisonMixIn._cmp(self, other, methodName)
 

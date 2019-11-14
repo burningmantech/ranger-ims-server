@@ -44,7 +44,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     exceptionClass: ClassVar[type] = MySQLError
 
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, cmp=False)
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State(DataStore._State):
         """
         Internal mutable state for :class:`DataStore`.
@@ -61,7 +61,9 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
         if getattr(self._state, "broken", False):
             self.raiseException()
 
-        return cast(property, DataStore._db).fget(self)
+        return cast(  # type: ignore[call-arg]
+            property, DataStore._db
+        ).fget(self)
 
 
     def bringThePain(self) -> None:

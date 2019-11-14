@@ -4,7 +4,7 @@ Extensions to :mod:`twisted.trial`
 """
 
 from functools import wraps
-from typing import Any, Callable, Optional, Sequence, Type
+from typing import Any, Callable, Optional, Sequence, Type, cast
 
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.python.failure import Failure
@@ -46,7 +46,7 @@ class TestCase(SuperTestCase):
         coroutines as well as :class:`Deferred` s.
         """
         deferred = ensureDeferred(deferred)
-        return SuperTestCase.successResultOf(self, deferred)
+        return super().successResultOf(deferred)
 
 
     def failureResultOf(
@@ -57,13 +57,14 @@ class TestCase(SuperTestCase):
         coroutines as well as :class:`Deferred` s.
         """
         deferred = ensureDeferred(deferred)
-        return SuperTestCase.failureResultOf(
-            self, deferred, *expectedExceptionTypes
-        )
+        return super().failureResultOf(deferred, *expectedExceptionTypes)
 
 
     def _headerValues(self, request: IRequest, name: str) -> Sequence[str]:
-        return request.responseHeaders.getRawHeaders(name, default=[])
+        return cast(
+            Sequence[str],
+            request.responseHeaders.getRawHeaders(name, default=[])
+        )
 
 
     def _headerValue(self, request: IRequest, name: str) -> Optional[str]:
@@ -121,7 +122,7 @@ class TestCase(SuperTestCase):
 
         # FIXME: Check encoding, default to UTF-8
 
-        return request.getWrittenData().decode()
+        return cast(bytes, request.getWrittenData()).decode()
 
 
     def assertJSONResponse(
@@ -135,7 +136,7 @@ class TestCase(SuperTestCase):
 
         # FIXME: Check encoding, default to UTF-8
 
-        return request.getWrittenData().decode()
+        return cast(bytes, request.getWrittenData()).decode()
 
 
     def assertEventDataEqual(
