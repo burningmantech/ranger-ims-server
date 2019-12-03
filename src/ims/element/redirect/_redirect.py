@@ -34,7 +34,6 @@ from .._element import BaseElement
 __all__ = ()
 
 
-
 @attrs(auto_attribs=True, kw_only=True)
 class RedirectPage(BaseElement):
     """
@@ -43,11 +42,9 @@ class RedirectPage(BaseElement):
 
     location: URL
 
-
     def _loader(self) -> ITemplateLoader:
         filePath = FilePath(__file__).parent().child("template.xhtml")
         return XMLFile(filePath)
-
 
     @renderer
     def destination(self, request: IRequest, tag: Tag) -> str:

@@ -22,7 +22,10 @@ from enum import Enum, unique
 from typing import Any, Dict, FrozenSet, Type, cast
 
 from ._json import (
-    deserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize,
+    jsonSerialize,
+    registerDeserializer,
+    registerSerializer,
 )
 from .._eventdata import EventData
 from .._imsdata import IMSData
@@ -32,16 +35,14 @@ from .._type import IncidentType
 __all__ = ()
 
 
-
 @unique
 class IMSDataJSONKey(Enum):
     """
     Event data JSON keys
     """
 
-    events        = "events"
+    events = "events"
     incidentTypes = "incident_types"
-
 
 
 class IMSDataJSONType(Enum):
@@ -49,9 +50,8 @@ class IMSDataJSONType(Enum):
     Event data attribute types
     """
 
-    events        = FrozenSet[EventData]
+    events = FrozenSet[EventData]
     incidentTypes = FrozenSet[IncidentType]
-
 
 
 def serializeIMSData(imsData: IMSData) -> Dict[str, Any]:
@@ -61,6 +61,7 @@ def serializeIMSData(imsData: IMSData) -> Dict[str, Any]:
         for key in IMSDataJSONKey
     )
 
+
 registerSerializer(IMSData, serializeIMSData)
 
 
@@ -68,10 +69,8 @@ def deserializeIMSData(obj: Dict[str, Any], cl: Type) -> IMSData:
     assert cl is IMSData, (cl, obj)
 
     return cast(
-        IMSData,
-        deserialize(
-            obj, IMSData, IMSDataJSONType, IMSDataJSONKey,
-        )
+        IMSData, deserialize(obj, IMSData, IMSDataJSONType, IMSDataJSONKey,)
     )
+
 
 registerDeserializer(IMSData, deserializeIMSData)

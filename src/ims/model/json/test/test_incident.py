@@ -31,7 +31,6 @@ from ...strategies import incidents
 __all__ = ()
 
 
-
 class IncidentSerializationTests(TestCase):
     """
     Tests for serialization of :class:`Incident`
@@ -43,7 +42,6 @@ class IncidentSerializationTests(TestCase):
         :func:`jsonSerialize` serializes the given incident.
         """
         self.assertEqual(jsonSerialize(incident), jsonFromIncident(incident))
-
 
 
 class IncidentDeserializationTests(TestCase):

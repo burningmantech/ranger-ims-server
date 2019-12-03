@@ -26,7 +26,6 @@ from ..._element import Element
 __all__ = ()
 
 
-
 @attrs(auto_attribs=True, kw_only=True)
 class HeaderElement(Element):
     """

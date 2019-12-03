@@ -49,7 +49,6 @@ class IMSSession(Session):
     sessionTimeout = 60 * 60 * 1  # 1 hour
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Command(object):
     """
@@ -57,7 +56,6 @@ class Command(object):
     """
 
     log: ClassVar[Logger] = Logger()
-
 
     @staticmethod
     def options(argv: Sequence[str]) -> IMSOptions:
@@ -73,18 +71,16 @@ class Command(object):
 
         return options
 
-
     @classmethod
     def stop(cls) -> None:
         from twisted.internet import reactor
-        reactor.stop()
 
+        reactor.stop()
 
     @classmethod
     async def initStore(cls, store: IMSDataStore) -> None:
         await store.upgradeSchema()
         await store.validate()
-
 
     @classmethod
     def runServer(cls, config: Configuration) -> None:
@@ -95,7 +91,8 @@ class Command(object):
 
         cls.log.info(
             "Setting up web service at http://{host}:{port}/",
-            host=host, port=port,
+            host=host,
+            port=port,
         )
 
         patchCombinedLogFormatter()
@@ -104,8 +101,8 @@ class Command(object):
         factory.sessionFactory = IMSSession
 
         from twisted.internet import reactor
-        reactor.listenTCP(port, factory, interface=host)
 
+        reactor.listenTCP(port, factory, interface=host)
 
     @classmethod
     async def runExport(
@@ -117,7 +114,6 @@ class Command(object):
             outFile.write(data)
         cls.stop()
 
-
     @classmethod
     async def runImport(
         cls, config: Configuration, options: ImportOptions
@@ -126,7 +122,6 @@ class Command(object):
             importer = JSONImporter.fromIO(store=config.store, io=inFile)
             await importer.storeData()
         cls.stop()
-
 
     @classmethod
     async def runCompare(
@@ -183,8 +178,8 @@ class Command(object):
                             )
 
                         if (
-                            eventDataA.concentricStreets !=
-                            eventDataB.concentricStreets
+                            eventDataA.concentricStreets
+                            != eventDataB.concentricStreets
                         ):
                             cls.log.error(
                                 "Events concentric streets do not match: "
@@ -230,8 +225,8 @@ class Command(object):
                                     )
 
                         if (
-                            eventDataA.incidentReports !=
-                            eventDataB.incidentReports
+                            eventDataA.incidentReports
+                            != eventDataB.incidentReports
                         ):
                             cls.log.error(
                                 "Events incident reports do not match: "
@@ -244,8 +239,6 @@ class Command(object):
                     break
 
         cls.stop()
-
-
 
     @classmethod
     def whenRunning(cls, options: IMSOptions) -> Deferred:
@@ -283,7 +276,6 @@ class Command(object):
         d.addErrback(error)
         return d
 
-
     @classmethod
     def run(cls, options: IMSOptions) -> None:
         """
@@ -300,7 +292,6 @@ class Command(object):
             whenRunningArguments=dict(options=options),
         )
         runner.run()
-
 
     @classmethod
     def main(cls, argv: Sequence[str] = sys.argv) -> None:

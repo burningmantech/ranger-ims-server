@@ -5,12 +5,25 @@ SQLite utilities
 
 from pathlib import Path
 from sqlite3 import (
-    Connection as BaseConnection, Cursor as BaseCursor, Error as SQLiteError,
-    IntegrityError, Row as BaseRow, connect as sqliteConnect,
+    Connection as BaseConnection,
+    Cursor as BaseCursor,
+    Error as SQLiteError,
+    IntegrityError,
+    Row as BaseRow,
+    connect as sqliteConnect,
 )
 from typing import (
-    Any, Callable, ClassVar, Iterable, Mapping, Optional,
-    TextIO, Tuple, Type, Union, cast,
+    Any,
+    Callable,
+    ClassVar,
+    Iterable,
+    Mapping,
+    Optional,
+    TextIO,
+    Tuple,
+    Type,
+    Union,
+    cast,
 )
 
 from attr import attrs
@@ -38,9 +51,8 @@ CursorFactory = Callable[..., "Cursor"]
 ParameterValue = Optional[Union[bytes, str, int, float]]
 Parameters = Mapping[str, ParameterValue]
 
-SQLITE_MIN_INT = -2**63     # 64 bits
-SQLITE_MAX_INT = 2**63 - 1  # 64 bits
-
+SQLITE_MIN_INT = -(2 ** 63)  # 64 bits
+SQLITE_MAX_INT = 2 ** 63 - 1  # 64 bits
 
 
 class Row(BaseRow):
@@ -62,7 +74,6 @@ class Row(BaseRow):
             return default
 
 
-
 class Cursor(BaseCursor):
     """
     Subclass of :class:`BaseCursor` that adds logging of SQL statements for
@@ -71,14 +82,12 @@ class Cursor(BaseCursor):
 
     _log: ClassVar[Logger] = Logger()
 
-
     def executescript(self, sql_script: Union[bytes, str]) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.executescript`.
         """
         self._log.debug("EXECUTE SCRIPT:\n{script}", script=sql_script)
         return cast("Cursor", super().executescript(sql_script))
-
 
     def execute(  # type: ignore[override]
         self, sql: str, parameters: Optional[Parameters] = None
@@ -94,7 +103,6 @@ class Cursor(BaseCursor):
         return cast("Cursor", super().execute(sql, parameters))
 
 
-
 class Connection(BaseConnection):
     """
     Subclass of :class:`sqlite3.Connection` that adds logging of SQL statements
@@ -103,7 +111,6 @@ class Connection(BaseConnection):
 
     _log: ClassVar[Logger] = Logger()
 
-
     def cursor(  # type: ignore[override]
         self, factory: CursorFactory = cast(CursorFactory, Cursor)
     ) -> "Cursor":
@@ -111,10 +118,8 @@ class Connection(BaseConnection):
         See :meth:`sqlite3.Cursor.cursor`.
         """
         return cast(
-            "Cursor",
-            super().cursor(factory=factory)  # type: ignore[call-arg]
+            "Cursor", super().cursor(factory=factory)  # type: ignore[call-arg]
         )
-
 
     def executeAndPrint(
         self, sql: str, parameters: Optional[Parameters] = None
@@ -122,20 +127,19 @@ class Connection(BaseConnection):
         """
         Execute the given SQL and print the results in a table format.
         """
+
         def emit(row: Iterable) -> None:
             print(" | ".join(str(i) for i in row))
 
         printHeader = True
 
         for row in cast(
-            Iterable[Row],
-            self.execute(sql, cast(Any, parameters))
+            Iterable[Row], self.execute(sql, cast(Any, parameters))
         ):
             if printHeader:
                 emit(row.keys())
                 printHeader = False
             emit(cast(Iterable, row))
-
 
     def commit(self) -> None:
         """
@@ -144,14 +148,12 @@ class Connection(BaseConnection):
         self._log.debug("COMMIT")
         super().commit()
 
-
     def validateConstraints(self) -> None:
         """
         Validate constraints.
         Raise :exc:`IntegrityError` if there is a constraint violation.
         """
         self.validateForeignKeys()
-
 
     def validateForeignKeys(self) -> None:
         """
@@ -160,12 +162,12 @@ class Connection(BaseConnection):
         """
         valid = True
 
-        for referent, rowid, referred, constraint in (
-            self.execute("pragma foreign_key_check")
+        for referent, rowid, referred, constraint in self.execute(
+            "pragma foreign_key_check"
         ):
             row = self.execute(
                 f"select * from {referent} where ROWID=:rowid",
-                dict(rowid=rowid)
+                dict(rowid=rowid),
             ).fetchone()
             self._log.critical(
                 "Foreign key constraint {constraint} violated by "
@@ -183,22 +185,21 @@ class Connection(BaseConnection):
         if not valid:
             raise IntegrityError("Foreign key constraints violated")
 
-
     def __enter__(  # type: ignore[override]
-        self: "Connection"
+        self: "Connection",
     ) -> "Connection":
         self._log.debug("---------- ENTER ----------")
         super().__enter__()
         return self
 
-
     def __exit__(  # type: ignore[override]
-        self, exc_type: Type[BaseException], exc_val: BaseException,
+        self,
+        exc_type: Type[BaseException],
+        exc_val: BaseException,
         exc_tb: Any,
     ) -> bool:
         self._log.debug("---------- EXIT ----------")
         return cast(bool, super().__exit__(exc_type, exc_val, exc_tb))
-
 
 
 def connect(path: Optional[Path]) -> Connection:
@@ -253,7 +254,12 @@ def printSchema(db: Connection, out: TextIO) -> None:
     ):
         print(f"{tableName}:", file=out)
         for (
-            rowNumber, colName, colType, colNotNull, colDefault, colPK
+            rowNumber,
+            colName,
+            colType,
+            colNotNull,
+            colDefault,
+            colPK,
         ) in db.execute(f"pragma table_info('{tableName}');"):
             print(
                 "  {n}: {name}({type}){null}{default}{pk}".format(
@@ -266,7 +272,6 @@ def printSchema(db: Connection, out: TextIO) -> None:
                 ),
                 file=out,
             )
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -288,26 +293,20 @@ class QueryPlanExplanation(object):
         def __str__(self) -> str:
             return f"[{self.nestingOrder},{self.selectFrom}] {self.details}"
 
-
     name: str
     query: str
     lines: Iterable[Line]
 
-
     def __str__(self) -> str:
         text = [f"{self.name}:", "", "  -- query --", ""]
 
-        text.extend(
-            f"    {line}"
-            for line in self.query.strip().split("\n")
-        )
+        text.extend(f"    {line}" for line in self.query.strip().split("\n"))
 
         if self.lines:
             text.extend(("", "  -- query plan --", ""))
             text.extend(f"    {line}" for line in self.lines)
 
         return "\n".join(text)
-
 
 
 def explainQueryPlans(
@@ -330,8 +329,10 @@ def explainQueryPlans(
                 )
             )
         except SQLiteError as e:
-            lines = (QueryPlanExplanation.Line(
-                nestingOrder=None, selectFrom=None, details=f"{e}",
-            ),)
+            lines = (
+                QueryPlanExplanation.Line(
+                    nestingOrder=None, selectFrom=None, details=f"{e}",
+                ),
+            )
 
         yield QueryPlanExplanation(name=name, query=query, lines=lines)

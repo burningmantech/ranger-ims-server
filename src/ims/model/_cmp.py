@@ -27,7 +27,6 @@ from typing import Any, Callable, cast
 __all__ = ()
 
 
-
 class ComparisonMixIn(ABC):
     """
     Mix-in class with support for comparison operators.
@@ -38,7 +37,6 @@ class ComparisonMixIn(ABC):
         """
         Returns a value for use in comparison methods.
         """
-
 
     def _cmp(self, other: Any, methodName: str) -> bool:
         if other.__class__ is self.__class__:
@@ -51,30 +49,23 @@ class ComparisonMixIn(ABC):
         else:
             return NotImplemented  # type: ignore[no-any-return]
 
-
     def __hash__(self) -> int:
         return hash(self._cmpValue())
-
 
     def __eq__(self, other: Any) -> bool:
         return self._cmp(other, "__eq__")
 
-
     def __ne__(self, other: Any) -> bool:
         return self._cmp(other, "__ne__")
-
 
     def __lt__(self, other: Any) -> bool:
         return self._cmp(other, "__lt__")
 
-
     def __le__(self, other: Any) -> bool:
         return self._cmp(other, "__le__")
 
-
     def __gt__(self, other: Any) -> bool:
         return self._cmp(other, "__gt__")
-
 
     def __ge__(self, other: Any) -> bool:
         return self._cmp(other, "__ge__")

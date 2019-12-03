@@ -36,8 +36,8 @@ from .._config import Configuration, ConfigurationError
 __all__ = ()
 
 
-emptyConfigFile   = Path(__file__).parent / "empty.conf"
-sampleConfigFile  = Path(__file__).parent / "test.conf"
+emptyConfigFile = Path(__file__).parent / "empty.conf"
+sampleConfigFile = Path(__file__).parent / "test.conf"
 missingConfigFile = Path(__file__).parent / "missing.conf"
 
 
@@ -56,7 +56,6 @@ def testingEnvironment(environment: Mapping[str, str]) -> Iterator[None]:
         environ.update(savedEnvironment)
 
 
-
 class ConfigurationTests(TestCase):
     """
     Tests for :class:`Configuration`
@@ -68,8 +67,8 @@ class ConfigurationTests(TestCase):
         config = Configuration.fromConfigFile(configFile)
 
         configRoot = serverRoot / "conf"
-        dataRoot   = serverRoot / "data"
-        cached     = dataRoot / "cache"
+        dataRoot = serverRoot / "data"
+        cached = dataRoot / "cache"
 
         self.assertEqual(config.serverRoot, serverRoot)
         self.assertEqual(config.configRoot, configRoot)
@@ -81,13 +80,11 @@ class ConfigurationTests(TestCase):
         self.assertEqual(config.dmsUsername, "")
         self.assertEqual(config.dmsPassword, "")
 
-
     def test_fromConfigFile_none(self) -> None:
         """
         No config file provided.
         """
         self._test_fromConfigFile_defaults(None, Path(getcwd()))
-
 
     def test_fromConfigFile_empty(self) -> None:
         """
@@ -97,7 +94,6 @@ class ConfigurationTests(TestCase):
             emptyConfigFile, Path(__file__).parent.parent
         )
 
-
     def test_fromConfigFile_missing(self) -> None:
         """
         Non-existent config file provided.
@@ -105,7 +101,6 @@ class ConfigurationTests(TestCase):
         self._test_fromConfigFile_defaults(
             missingConfigFile, Path(__file__).parent.parent
         )
-
 
     def test_fromConfigFile_sampleConfig(self) -> None:
         """
@@ -115,8 +110,8 @@ class ConfigurationTests(TestCase):
 
         serverRoot = sampleConfigFile.parent.parent
         configRoot = serverRoot / "config"
-        dataRoot   = serverRoot / "infos"
-        cached     = dataRoot / "stuff"
+        dataRoot = serverRoot / "infos"
+        cached = dataRoot / "stuff"
 
         self.assertEqual(config.serverRoot, serverRoot)
         self.assertEqual(config.configRoot, configRoot)
@@ -130,7 +125,6 @@ class ConfigurationTests(TestCase):
             config.dmsPassword, "9F29BB2B-E775-489C-9C20-9FE3EFEE1F22"
         )
 
-
     def test_fromConfigFile_environment_value(self) -> None:
         """
         Text value from environment.
@@ -141,7 +135,6 @@ class ConfigurationTests(TestCase):
             config = Configuration.fromConfigFile(None)
 
         self.assertEqual(config.hostName, hostName)
-
 
     def test_fromConfigFile_environment_path_relative(self) -> None:
         """
@@ -156,7 +149,6 @@ class ConfigurationTests(TestCase):
 
         self.assertTrue(Path(textPath).samefile(config.serverRoot))
 
-
     def test_fromConfigFile_environment_path_absolute(self) -> None:
         """
         Absolute path from environment.
@@ -167,7 +159,6 @@ class ConfigurationTests(TestCase):
             config = Configuration.fromConfigFile(None)
 
         self.assertEqual(config.serverRoot, path)
-
 
     def test_fromConfigFile_createDirectories(self) -> None:
         """
@@ -185,7 +176,6 @@ class ConfigurationTests(TestCase):
         self.assertTrue(config.dataRoot.is_dir())
         self.assertTrue(config.cachedResourcesRoot.is_dir())
         self.assertTrue(config.serverRoot.is_dir())
-
 
     def test_fromConfigFile_admins(self) -> None:
         """
@@ -205,11 +195,11 @@ class ConfigurationTests(TestCase):
 
             self.assertEqual(config.imsAdmins, result)
 
-
     def test_fromConfigFile_requireActive(self) -> None:
         """
         RequireActive boolean values.
         """
+
         def test(value: str) -> bool:
             with testingEnvironment(dict(IMS_REQUIRE_ACTIVE=value)):
                 config = Configuration.fromConfigFile(None)
@@ -221,7 +211,6 @@ class ConfigurationTests(TestCase):
         for value in ("true", "True", "TRUE", "yes", "Yes", "YES", "1"):
             self.assertTrue(test(value))
 
-
     def test_store(self) -> None:
         with testingEnvironment({}):
             config = Configuration.fromConfigFile(None)
@@ -231,20 +220,16 @@ class ConfigurationTests(TestCase):
         self.assertIsNotNone(config._state.store)
         self.assertIsInstance(config.store, IMSDataStore)
 
-
     def test_store_sqlite(self) -> None:
         path = Path(self.mktemp()).resolve() / "ims.sqlite"
 
-        with testingEnvironment(dict(
-            IMS_DATA_STORE="SQLite", IMS_DB_PATH=str(path)
-        )):
+        with testingEnvironment(
+            dict(IMS_DATA_STORE="SQLite", IMS_DB_PATH=str(path))
+        ):
             config = Configuration.fromConfigFile(None)
 
         self.assertIsInstance(config.store, SQLiteDataStore)
-        self.assertEqual(
-            cast(SQLiteDataStore, config.store).dbPath, path
-        )
-
+        self.assertEqual(cast(SQLiteDataStore, config.store).dbPath, path)
 
     def test_store_mysql(self) -> None:
         hostName = "db_host"
@@ -253,14 +238,16 @@ class ConfigurationTests(TestCase):
         userName = "ims_user"
         password = "hoorj"
 
-        with testingEnvironment(dict(
-            IMS_DATA_STORE="MySQL",
-            IMS_DB_HOST_NAME=hostName,
-            IMS_DB_HOST_PORT=str(hostPort),
-            IMS_DB_DATABASE=database,
-            IMS_DB_USER_NAME=userName,
-            IMS_DB_PASSWORD=password,
-        )):
+        with testingEnvironment(
+            dict(
+                IMS_DATA_STORE="MySQL",
+                IMS_DB_HOST_NAME=hostName,
+                IMS_DB_HOST_PORT=str(hostPort),
+                IMS_DB_DATABASE=database,
+                IMS_DB_USER_NAME=userName,
+                IMS_DB_PASSWORD=password,
+            )
+        ):
             config = Configuration.fromConfigFile(None)
 
         store = cast(MySQLDataStore, config.store)
@@ -272,13 +259,11 @@ class ConfigurationTests(TestCase):
         self.assertEqual(store.username, userName)
         self.assertEqual(store.password, password)
 
-
     def test_store_unknown(self) -> None:
         with testingEnvironment(dict(IMS_DATA_STORE="XYZZY")):
             self.assertRaises(
                 ConfigurationError, Configuration.fromConfigFile, None
             )
-
 
     def test_dms(self) -> None:
         with testingEnvironment({}):
@@ -289,7 +274,6 @@ class ConfigurationTests(TestCase):
         self.assertIsNotNone(config._state.dms)
         self.assertIsInstance(config.dms, DutyManagementSystem)
 
-
     def test_authProvider(self) -> None:
         with testingEnvironment({}):
             config = Configuration.fromConfigFile(None)
@@ -298,7 +282,6 @@ class ConfigurationTests(TestCase):
         self.assertIsInstance(config.authProvider, AuthProvider)
         self.assertIsNotNone(config._state.authProvider)
         self.assertIsInstance(config.authProvider, AuthProvider)
-
 
     def test_str(self) -> None:
         with testingEnvironment({}):
@@ -326,9 +309,8 @@ class ConfigurationTests(TestCase):
             f"DMS.Hostname: \n"
             f"DMS.Database: \n"
             f"DMS.Username: \n"
-            f"DMS.Password: \n"
+            f"DMS.Password: \n",
         )
-
 
     def test_replace(self) -> None:
         hostName = "xyzzy"

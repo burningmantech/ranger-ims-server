@@ -29,7 +29,6 @@ from .._address import RodGarettAddress, TextOnlyAddress
 __all__ = ()
 
 
-
 class AddressTests(TestCase):
     """
     Tests for :class:`Address`
@@ -57,7 +56,6 @@ class AddressTests(TestCase):
             hash(TextOnlyAddress(description=description)),
             hash(RodGarettAddress(description=description, radialHour=1)),
         )
-
 
     @given(text())
     def test_eq_address(self, description: str) -> None:
@@ -89,7 +87,6 @@ class AddressTests(TestCase):
             TextOnlyAddress(description=description),
             RodGarettAddress(description=description, radialHour=1),
         )
-
 
     def test_eq_none(self) -> None:
         """

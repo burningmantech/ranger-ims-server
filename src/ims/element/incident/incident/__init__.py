@@ -21,6 +21,4 @@ Admin page element.
 from ._incident import IncidentPage
 
 
-__all__ = (
-    "IncidentPage",
-)
+__all__ = ("IncidentPage",)

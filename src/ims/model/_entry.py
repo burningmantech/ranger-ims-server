@@ -33,7 +33,6 @@ from ._replace import ReplaceMixIn
 __all__ = ()
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class ReportEntry(ComparisonMixIn, ReplaceMixIn):
     """
@@ -47,7 +46,6 @@ class ReportEntry(ComparisonMixIn, ReplaceMixIn):
     automatic: bool
     text: str
 
-
     def __str__(self) -> str:
         if self.automatic:
             automatic = "*"
@@ -55,7 +53,6 @@ class ReportEntry(ComparisonMixIn, ReplaceMixIn):
             automatic = ""
 
         return f"{self.created} {self.author}{automatic}: {self.text}"
-
 
     def _cmpValue(self) -> Any:
         return (self.created, self.author, not self.automatic, self.text)

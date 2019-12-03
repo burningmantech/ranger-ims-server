@@ -21,6 +21,4 @@ Navigation element.
 from ._root import RootPage
 
 
-__all__ = (
-    "RootPage",
-)
+__all__ = ("RootPage",)

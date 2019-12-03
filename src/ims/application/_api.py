@@ -23,7 +23,14 @@ from enum import Enum
 from functools import partial
 from json import JSONDecodeError
 from typing import (
-    Any, Awaitable, Callable, ClassVar, Iterable, Mapping, Optional, Tuple,
+    Any,
+    Awaitable,
+    Callable,
+    ClassVar,
+    Iterable,
+    Mapping,
+    Optional,
+    Tuple,
     cast,
 )
 
@@ -43,34 +50,46 @@ from ims.dms import DMSError
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ims.model import (
-    Event, Incident, IncidentPriority, IncidentReport, IncidentState,
+    Event,
+    Incident,
+    IncidentPriority,
+    IncidentReport,
+    IncidentState,
     ReportEntry,
 )
 from ims.model.json import (
-    IncidentJSONKey, IncidentPriorityJSONValue, IncidentReportJSONKey,
-    IncidentStateJSONValue, JSONCodecError, LocationJSONKey,
-    ReportEntryJSONKey, RodGarettAddressJSONKey,
-    jsonObjectFromModelObject, modelObjectFromJSONObject
+    IncidentJSONKey,
+    IncidentPriorityJSONValue,
+    IncidentReportJSONKey,
+    IncidentStateJSONValue,
+    JSONCodecError,
+    LocationJSONKey,
+    ReportEntryJSONKey,
+    RodGarettAddressJSONKey,
+    jsonObjectFromModelObject,
+    modelObjectFromJSONObject,
 )
 from ims.store import NoSuchIncidentError
 
 from ._klein import (
-    Router, badRequestResponse, invalidJSONResponse, invalidQueryResponse,
-    noContentResponse, notFoundResponse, queryValue,
+    Router,
+    badRequestResponse,
+    invalidJSONResponse,
+    invalidQueryResponse,
+    noContentResponse,
+    notFoundResponse,
+    queryValue,
 )
 from ._static import buildJSONArray, jsonBytes, writeJSONStream
 
 
-__all__ = (
-    "APIApplication",
-)
+__all__ = ("APIApplication",)
 
 
 def _unprefix(url: URL) -> URL:
     prefix = URLs.api.path[:-1]
-    assert url.path[:len(prefix)] == prefix, (url.path[len(prefix):], prefix)
-    return url.replace(path=url.path[len(prefix):])
-
+    assert url.path[: len(prefix)] == prefix, (url.path[len(prefix) :], prefix)
+    return url.replace(path=url.path[len(prefix) :])
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
@@ -82,10 +101,8 @@ class APIApplication(object):
     _log: ClassVar[Logger] = Logger()
     router: ClassVar[Router] = Router()
 
-
     config: Configuration
     storeObserver: ILogObserver
-
 
     @router.route(_unprefix(URLs.ping), methods=("HEAD", "GET"))
     @static
@@ -95,7 +112,6 @@ class APIApplication(object):
         """
         ack = b'"ack"'
         return jsonBytes(request, ack, str(hash(ack)))
-
 
     @router.route(_unprefix(URLs.personnel), methods=("HEAD", "GET"))
     async def personnelResource(self, request: IRequest) -> KleinRenderable:
@@ -110,7 +126,6 @@ class APIApplication(object):
         writeJSONStream(request, stream, etag)
         return None
 
-
     async def personnelData(self) -> Tuple[Iterable[bytes], str]:
         """
         Data for personnel endpoint.
@@ -123,19 +138,16 @@ class APIApplication(object):
 
         return (
             buildJSONArray(
-                jsonTextFromObject(
-                    jsonObjectFromModelObject(ranger)
-                ).encode("utf-8")
+                jsonTextFromObject(jsonObjectFromModelObject(ranger)).encode(
+                    "utf-8"
+                )
                 for ranger in personnel
             ),
             str(hash(personnel)),
         )
 
-
     @router.route(_unprefix(URLs.incidentTypes), methods=("HEAD", "GET"))
-    async def incidentTypesResource(
-        self, request: IRequest
-    ) -> KleinRenderable:
+    async def incidentTypesResource(self, request: IRequest) -> KleinRenderable:
         """
         Incident types endpoint.
         """
@@ -155,7 +167,6 @@ class APIApplication(object):
         writeJSONStream(request, stream, None)
         return None
 
-
     @router.route(_unprefix(URLs.incidentTypes), methods=("POST",))
     async def editIncidentTypesResource(
         self, request: IRequest
@@ -173,9 +184,7 @@ class APIApplication(object):
             return invalidJSONResponse(request, e)
 
         if type(json) is not dict:
-            return badRequestResponse(
-                request, "root: expected a dictionary."
-            )
+            return badRequestResponse(request, "root: expected a dictionary.")
 
         adds = json.get("add", [])
         show = json.get("show", [])
@@ -185,28 +194,21 @@ class APIApplication(object):
 
         if adds:
             if type(adds) is not list:
-                return badRequestResponse(
-                    request, "add: expected a list."
-                )
+                return badRequestResponse(request, "add: expected a list.")
             for incidentType in adds:
                 await store.createIncidentType(incidentType)
 
         if show:
             if type(show) is not list:
-                return badRequestResponse(
-                    request, "show: expected a list."
-                )
+                return badRequestResponse(request, "show: expected a list.")
             await store.showIncidentTypes(show)
 
         if hide:
             if type(hide) is not list:
-                return badRequestResponse(
-                    request, "hide: expected a list."
-                )
+                return badRequestResponse(request, "hide: expected a list.")
             await store.hideIncidentTypes(hide)
 
         return noContentResponse(request)
-
 
     @router.route(_unprefix(URLs.events), methods=("HEAD", "GET"))
     async def eventsResource(self, request: IRequest) -> KleinRenderable:
@@ -219,20 +221,21 @@ class APIApplication(object):
             self.config.authProvider.authorizationsForUser, request.user
         )
 
-        events = sorted([
-            event for event in
-            await self.config.store.events()
-            if Authorization.readIncidents & await authorizationsForUser(event)
-        ])
+        events = sorted(
+            [
+                event
+                for event in await self.config.store.events()
+                if Authorization.readIncidents
+                & await authorizationsForUser(event)
+            ]
+        )
 
         stream = buildJSONArray(
-            jsonTextFromObject(event).encode("utf-8")
-            for event in events
+            jsonTextFromObject(event).encode("utf-8") for event in events
         )
 
         writeJSONStream(request, stream, None)
         return None
-
 
     @router.route(_unprefix(URLs.events), methods=("POST",))
     async def editEventsResource(self, request: IRequest) -> KleinRenderable:
@@ -252,9 +255,7 @@ class APIApplication(object):
             self._log.debug(
                 "Events update expected a dictionary, got {json!r}", json=json
             )
-            return badRequestResponse(
-                request, "root: expected a dictionary."
-            )
+            return badRequestResponse(request, "root: expected a dictionary.")
 
         adds = json.get("add", [])
 
@@ -264,16 +265,14 @@ class APIApplication(object):
             if type(adds) is not list:
                 self._log.debug(
                     "Events add expected a list, got {adds!r}",
-                    json=json, adds=adds,
+                    json=json,
+                    adds=adds,
                 )
-                return badRequestResponse(
-                    request, "add: expected a list."
-                )
+                return badRequestResponse(request, "add: expected a list.")
             for eventID in adds:
                 await store.createEvent(Event(id=eventID))
 
         return noContentResponse(request)
-
 
     @router.route(_unprefix(URLs.incidents), methods=("HEAD", "GET"))
     async def listIncidentsResource(
@@ -290,15 +289,14 @@ class APIApplication(object):
         )
 
         stream = buildJSONArray(
-            jsonTextFromObject(
-                jsonObjectFromModelObject(incident)
-            ).encode("utf-8")
+            jsonTextFromObject(jsonObjectFromModelObject(incident)).encode(
+                "utf-8"
+            )
             for incident in await self.config.store.incidents(event)
         )
 
         writeJSONStream(request, stream, None)
         return None
-
 
     @router.route(_unprefix(URLs.incidents), methods=("POST",))
     async def newIncidentResource(
@@ -332,8 +330,7 @@ class APIApplication(object):
         ):
             if incidentKey.value in json:
                 return badRequestResponse(
-                    request,
-                    f"New incident may not specify {incidentKey.value}"
+                    request, f"New incident may not specify {incidentKey.value}"
                 )
 
         json[IncidentJSONKey.number.value] = 0
@@ -345,14 +342,12 @@ class APIApplication(object):
             json[IncidentJSONKey.event.value] = event.id
 
         if IncidentJSONKey.state.value not in json:
-            json[IncidentJSONKey.state.value] = (
-                IncidentStateJSONValue.new.value
-            )
+            json[IncidentJSONKey.state.value] = IncidentStateJSONValue.new.value
 
         if IncidentJSONKey.priority.value not in json:
-            json[IncidentJSONKey.priority.value] = (
-                IncidentPriorityJSONValue.normal.value
-            )
+            json[
+                IncidentJSONKey.priority.value
+            ] = IncidentPriorityJSONValue.normal.value
 
         # If not provided, set JSON handles, types, entries,
         # incident report numbers to an empty list
@@ -380,7 +375,7 @@ class APIApplication(object):
                     return badRequestResponse(
                         request,
                         f"New report entry may not specify "
-                        f"{reportEntryKey.value}"
+                        f"{reportEntryKey.value}",
                     )
 
             entryJSON[ReportEntryJSONKey.created.value] = jsonNow
@@ -400,7 +395,7 @@ class APIApplication(object):
             return badRequestResponse(
                 request,
                 f"Incident's event {incident.event} does not match event in "
-                f"URL {event}"
+                f"URL {event}",
             )
 
         # Store the incident
@@ -409,7 +404,8 @@ class APIApplication(object):
 
         self._log.info(
             "User {author} created new incident #{incident.number} via JSON",
-            author=author, incident=incident
+            author=author,
+            incident=incident,
         )
         self._log.debug(
             "New incident: {json}", json=jsonObjectFromModelObject(incident)
@@ -418,10 +414,9 @@ class APIApplication(object):
         request.setHeader("Incident-Number", str(incident.number))
         request.setHeader(
             HeaderName.location.value,
-            f"{URLs.incidentNumber.asText()}/{incident.number}"
+            f"{URLs.incidentNumber.asText()}/{incident.number}",
         )
         return noContentResponse(request)
-
 
     @router.route(_unprefix(URLs.incidentNumber), methods=("HEAD", "GET"))
     async def readIncidentResource(
@@ -450,13 +445,11 @@ class APIApplication(object):
         except NoSuchIncidentError:
             return notFoundResponse(request)
 
-        data = (
-            jsonTextFromObject(jsonObjectFromModelObject(incident))
-            .encode("utf-8")
+        data = jsonTextFromObject(jsonObjectFromModelObject(incident)).encode(
+            "utf-8"
         )
 
         return jsonBytes(request, data)
-
 
     @router.route(_unprefix(URLs.incidentNumber), methods=("POST",))
     async def editIncidentResource(
@@ -494,8 +487,8 @@ class APIApplication(object):
             )
 
         if (
-            edits.get(IncidentJSONKey.number.value, incidentNumber) !=
-            incidentNumber
+            edits.get(IncidentJSONKey.number.value, incidentNumber)
+            != incidentNumber
         ):
             return badRequestResponse(
                 request, "Incident number may not be modified"
@@ -509,19 +502,22 @@ class APIApplication(object):
                 request, "Incident created time may not be modified"
             )
 
-        IncidentAttributeSetter = (
-            Callable[[Event, int, Any, str], Awaitable[None]]
-        )
+        IncidentAttributeSetter = Callable[
+            [Event, int, Any, str], Awaitable[None]
+        ]
 
         async def applyEdit(
-            json: Mapping[str, Any], key: Enum,
+            json: Mapping[str, Any],
+            key: Enum,
             setter: IncidentAttributeSetter,
-            cast: Optional[Callable[[Any], Any]] = None
+            cast: Optional[Callable[[Any], Any]] = None,
         ) -> None:
             _cast: Callable[[Any], Any]
             if cast is None:
+
                 def _cast(obj: Any) -> Any:
                     return obj
+
             else:
                 _cast = cast
             value = json.get(key.value, UNSET)
@@ -532,11 +528,14 @@ class APIApplication(object):
 
         try:
             await applyEdit(
-                edits, IncidentJSONKey.priority, store.setIncident_priority,
+                edits,
+                IncidentJSONKey.priority,
+                store.setIncident_priority,
                 lambda json: modelObjectFromJSONObject(json, IncidentPriority),
             )
             await applyEdit(
-                edits, IncidentJSONKey.state,
+                edits,
+                IncidentJSONKey.state,
                 store.setIncident_state,
                 lambda json: modelObjectFromJSONObject(json, IncidentState),
             )
@@ -550,7 +549,8 @@ class APIApplication(object):
             edits, IncidentJSONKey.rangerHandles, store.setIncident_rangers
         )
         await applyEdit(
-            edits, IncidentJSONKey.incidentTypes,
+            edits,
+            IncidentJSONKey.incidentTypes,
             store.setIncident_incidentTypes,
         )
 
@@ -569,24 +569,29 @@ class APIApplication(object):
                     )
             else:
                 await applyEdit(
-                    location, LocationJSONKey.name,
-                    store.setIncident_locationName
+                    location,
+                    LocationJSONKey.name,
+                    store.setIncident_locationName,
                 )
                 await applyEdit(
-                    location, RodGarettAddressJSONKey.concentric,
-                    store.setIncident_locationConcentricStreet
+                    location,
+                    RodGarettAddressJSONKey.concentric,
+                    store.setIncident_locationConcentricStreet,
                 )
                 await applyEdit(
-                    location, RodGarettAddressJSONKey.radialHour,
-                    store.setIncident_locationRadialHour
+                    location,
+                    RodGarettAddressJSONKey.radialHour,
+                    store.setIncident_locationRadialHour,
                 )
                 await applyEdit(
-                    location, RodGarettAddressJSONKey.radialMinute,
-                    store.setIncident_locationRadialMinute
+                    location,
+                    RodGarettAddressJSONKey.radialMinute,
+                    store.setIncident_locationRadialMinute,
                 )
                 await applyEdit(
-                    location, RodGarettAddressJSONKey.description,
-                    store.setIncident_locationDescription
+                    location,
+                    RodGarettAddressJSONKey.description,
+                    store.setIncident_locationDescription,
                 )
 
         jsonEntries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)
@@ -608,7 +613,6 @@ class APIApplication(object):
             )
 
         return noContentResponse(request)
-
 
     @router.route(_unprefix(URLs.incidentReports), methods=("HEAD", "GET"))
     async def listIncidentReportsResource(
@@ -640,9 +644,8 @@ class APIApplication(object):
             incidentReports = (
                 incidentReport
                 for incidentReport in await store.incidentReports(event=event)
-                if request.user.rangerHandle in (
-                    entry.author for entry in incidentReport.reportEntries
-                )
+                if request.user.rangerHandle
+                in (entry.author for entry in incidentReport.reportEntries)
             )
         elif incidentNumberText is None:
             incidentReports = await store.incidentReports(event=event)
@@ -654,10 +657,8 @@ class APIApplication(object):
                     request, "incident", incidentNumberText
                 )
 
-            incidentReports = (
-                await store.incidentReportsAttachedToIncident(
-                    event=event, incidentNumber=incidentNumber
-                )
+            incidentReports = await store.incidentReportsAttachedToIncident(
+                event=event, incidentNumber=incidentNumber
             )
 
         stream = buildJSONArray(
@@ -669,7 +670,6 @@ class APIApplication(object):
 
         writeJSONStream(request, stream, None)
         return None
-
 
     @router.route(_unprefix(URLs.incidentReports), methods=("POST",))
     async def newIncidentReportResource(
@@ -717,7 +717,7 @@ class APIApplication(object):
                 return badRequestResponse(
                     request,
                     f"New incident report may not specify "
-                    f"{incidentReportKey.value}"
+                    f"{incidentReportKey.value}",
                 )
 
         json[IncidentReportJSONKey.event.value] = event.id
@@ -743,7 +743,7 @@ class APIApplication(object):
                     return badRequestResponse(
                         request,
                         f"New report entry may not specify "
-                        f"{reportEntryKey.value}"
+                        f"{reportEntryKey.value}",
                     )
 
             entryJSON[ReportEntryJSONKey.created.value] = jsonNow
@@ -766,7 +766,8 @@ class APIApplication(object):
         self._log.info(
             "User {author} created new incident report "
             "#{incidentReport.number} via JSON",
-            author=author, incidentReport=incidentReport
+            author=author,
+            incidentReport=incidentReport,
         )
         self._log.debug(
             "New incident report: {json}",
@@ -776,10 +777,9 @@ class APIApplication(object):
         request.setHeader("Incident-Report-Number", str(incidentReport.number))
         request.setHeader(
             HeaderName.location.value,
-            f"{URLs.incidentNumber.asText()}/{incidentReport.number}"
+            f"{URLs.incidentNumber.asText()}/{incidentReport.number}",
         )
         return noContentResponse(request)
-
 
     @router.route(_unprefix(URLs.incidentReport), methods=("HEAD", "GET"))
     async def readIncidentReportResource(
@@ -809,7 +809,6 @@ class APIApplication(object):
         text = jsonTextFromObject(jsonObjectFromModelObject(incidentReport))
 
         return jsonBytes(request, text.encode("utf-8"))
-
 
     @router.route(_unprefix(URLs.incidentReport), methods=("POST",))
     async def editIncidentReportResource(
@@ -878,9 +877,8 @@ class APIApplication(object):
             )
 
         if (
-            edits.get(
-                IncidentReportJSONKey.number.value, incidentReportNumber
-            ) != incidentReportNumber
+            edits.get(IncidentReportJSONKey.number.value, incidentReportNumber)
+            != incidentReportNumber
         ):
             return badRequestResponse(
                 request, "Incident report number may not be modified"
@@ -895,14 +893,17 @@ class APIApplication(object):
             )
 
         async def applyEdit(
-            json: Mapping[str, Any], key: Enum,
+            json: Mapping[str, Any],
+            key: Enum,
             setter: Callable[[Event, int, Any, str], Awaitable[None]],
-            cast: Optional[Callable[[Any], Any]] = None
+            cast: Optional[Callable[[Any], Any]] = None,
         ) -> None:
             _cast: Callable[[Any], Any]
             if cast is None:
+
                 def _cast(obj: Any) -> Any:
                     return obj
+
             else:
                 _cast = cast
             value = json.get(key.value, UNSET)
@@ -910,8 +911,9 @@ class APIApplication(object):
                 await setter(event, incidentReportNumber, _cast(value), author)
 
         await applyEdit(
-            edits, IncidentReportJSONKey.summary,
-            store.setIncidentReport_summary
+            edits,
+            IncidentReportJSONKey.summary,
+            store.setIncidentReport_summary,
         )
 
         jsonEntries = edits.get(
@@ -936,7 +938,6 @@ class APIApplication(object):
 
         return noContentResponse(request)
 
-
     @router.route(_unprefix(URLs.acl), methods=("HEAD", "GET"))
     async def readAdminAccessResource(
         self, request: IRequest
@@ -958,7 +959,6 @@ class APIApplication(object):
                 reporters=(await store.reporters(event)),
             )
         return jsonTextFromObject(acl)
-
 
     @router.route(_unprefix(URLs.acl), methods=("POST",))
     async def editAdminAccessResource(
@@ -989,7 +989,6 @@ class APIApplication(object):
 
         return noContentResponse(request)
 
-
     @router.route(_unprefix(URLs.streets), methods=("HEAD", "GET"))
     async def readStreetsResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -1005,7 +1004,6 @@ class APIApplication(object):
         for event in await store.events():
             streets[event.id] = await store.concentricStreets(event)
         return jsonTextFromObject(streets)
-
 
     @router.route(_unprefix(URLs.streets), methods=("POST",))
     async def editStreetsResource(self, request: IRequest) -> KleinRenderable:
@@ -1041,7 +1039,6 @@ class APIApplication(object):
                     )
 
         return noContentResponse(request)
-
 
     @router.route(_unprefix(URLs.eventSource), methods=("GET",))
     def eventSourceResource(self, request: IRequest) -> KleinRenderable:

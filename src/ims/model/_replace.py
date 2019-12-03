@@ -28,8 +28,7 @@ __all__ = ()
 TAttrsObject = TypeVar("TAttrsObject")
 
 
-
-class ReplaceMixIn():
+class ReplaceMixIn:
     """
     Mix-in class with replace method for :mod:`attr` classes.
     """

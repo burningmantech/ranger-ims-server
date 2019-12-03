@@ -36,13 +36,20 @@ from .._location import Location
 from .._priority import IncidentPriority
 from .._state import IncidentState
 from ..strategies import (
-    dateTimes, events, incidentNumbers, incidentPriorities, incidentStates,
-    incidentSummaries, incidentTypes, incidents, locations, rangerHandles,
+    dateTimes,
+    events,
+    incidentNumbers,
+    incidentPriorities,
+    incidentStates,
+    incidentSummaries,
+    incidentTypes,
+    incidents,
+    locations,
+    rangerHandles,
     reportEntries,
 )
 
 __all__ = ()
-
 
 
 class IncidentTests(TestCase):
@@ -62,7 +69,6 @@ class IncidentTests(TestCase):
             str(incident), f"{incident.event} #{incident.number}: {summary}"
         )
 
-
     @given(incidents(), sampled_from((None, "")))
     def test_str_noSummary(self, incident: Incident, summary: str) -> None:
         """
@@ -74,9 +80,8 @@ class IncidentTests(TestCase):
         self.assertEqual(
             str(incident),
             f"{incident.event} #{incident.number}: "
-            f"{summaryFromReport(None, incident.reportEntries)}"
+            f"{summaryFromReport(None, incident.reportEntries)}",
         )
-
 
     def _test_replace(self, incident: Incident, name: str, value: Any) -> None:
         mod = {name: value}
@@ -87,14 +92,12 @@ class IncidentTests(TestCase):
 
         self.assertEqual(asdict(new, recurse=False), expected)
 
-
     @given(incidents(), events())
     def test_replace_event(self, incident: Incident, event: Event) -> None:
         """
         :meth:`Incident.replace` with an event argument replaces the event.
         """
         self._test_replace(incident, "event", event)
-
 
     @given(incidents(), incidentNumbers())
     def test_replace_number(self, incident: Incident, number: int) -> None:
@@ -103,7 +106,6 @@ class IncidentTests(TestCase):
         incident number.
         """
         self._test_replace(incident, "number", number)
-
 
     @given(incidents(), dateTimes())
     def test_replace_created(
@@ -115,7 +117,6 @@ class IncidentTests(TestCase):
         """
         self._test_replace(incident, "created", normalizeDateTime(created))
 
-
     @given(incidents(), incidentStates())
     def test_replace_state(
         self, incident: Incident, state: IncidentState
@@ -125,7 +126,6 @@ class IncidentTests(TestCase):
         state.
         """
         self._test_replace(incident, "state", state)
-
 
     @given(incidents(), incidentPriorities())
     def test_replace_priority(
@@ -137,7 +137,6 @@ class IncidentTests(TestCase):
         """
         self._test_replace(incident, "priority", priority)
 
-
     @given(incidents(), incidentSummaries())
     def test_replace_summary(self, incident: Incident, summary: str) -> None:
         """
@@ -145,7 +144,6 @@ class IncidentTests(TestCase):
         summary.
         """
         self._test_replace(incident, "summary", summary)
-
 
     @given(incidents(), locations())
     def test_replace_location(
@@ -157,7 +155,6 @@ class IncidentTests(TestCase):
         """
         self._test_replace(incident, "location", location)
 
-
     @given(incidents(), lists(rangerHandles()))
     def test_replace_rangerHandles(
         self, incident: Incident, rangerHandles: Iterable[str]
@@ -168,7 +165,6 @@ class IncidentTests(TestCase):
         """
         self._test_replace(incident, "rangerHandles", frozenset(rangerHandles))
 
-
     @given(incidents(), lists(incidentTypes()))
     def test_replace_incidentTypes(
         self, incident: Incident, incidentTypes: Iterable[str]
@@ -178,7 +174,6 @@ class IncidentTests(TestCase):
         incident types.
         """
         self._test_replace(incident, "incidentTypes", frozenset(incidentTypes))
-
 
     @given(incidents(), lists(reportEntries()))
     def test_replace_reportEntries(
@@ -193,7 +188,6 @@ class IncidentTests(TestCase):
         )
 
 
-
 class SummaryFromReportTests(TestCase):
     """
     Tests for :func:`summaryFromReport`
@@ -204,18 +198,13 @@ class SummaryFromReportTests(TestCase):
         :func:`summaryFromReport` uses the given non-empty summary.
         """
         result = summaryFromReport(
-            summary="A thing happened",
-            reportEntries=(),
+            summary="A thing happened", reportEntries=(),
         )
 
         self.assertEqual(result, "A thing happened")
 
-
-
     @given(lists(reportEntries()))
-    def test_entryAutomatic(
-        self, reportEntries: Iterable[ReportEntry]
-    ) -> None:
+    def test_entryAutomatic(self, reportEntries: Iterable[ReportEntry]) -> None:
         """
         :func:`summaryFromReport` skips automatic entries.
         """
@@ -224,9 +213,8 @@ class SummaryFromReportTests(TestCase):
             summaryFromReport(
                 summary="",
                 reportEntries=(r for r in reportEntries if not r.automatic),
-            )
+            ),
         )
-
 
     @given(lists(reportEntries(), min_size=1))
     def test_entryNotAutomatic(
@@ -248,15 +236,11 @@ class SummaryFromReportTests(TestCase):
             expectedSummary,
         )
 
-
     def test_entryNone(self) -> None:
         """
         :func:`summaryFromReport` returns am empty string if given no report
         entries.
         """
-        result = summaryFromReport(
-            summary=None,
-            reportEntries=(),
-        )
+        result = summaryFromReport(summary=None, reportEntries=(),)
 
         self.assertEqual(result, "")

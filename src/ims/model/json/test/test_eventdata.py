@@ -31,7 +31,6 @@ from ...strategies import eventDatas
 __all__ = ()
 
 
-
 class EventDataSerializationTests(TestCase):
     """
     Tests for serialization of :class:`EventData`
@@ -42,10 +41,7 @@ class EventDataSerializationTests(TestCase):
         """
         :func:`jsonSerialize` serializes the given event data.
         """
-        self.assertEqual(
-            jsonSerialize(eventData), jsonFromEventData(eventData)
-        )
-
+        self.assertEqual(jsonSerialize(eventData), jsonFromEventData(eventData))
 
 
 class EventDataDeserializationTests(TestCase):

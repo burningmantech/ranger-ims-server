@@ -11,14 +11,19 @@ from typing import Any, Generator, List, Mapping, Optional, Union, cast
 
 from .. import sqlite
 from ..sqlite import (
-    BaseCursor, Connection, QueryPlanExplanation,
-    connect, createDB, explainQueryPlans, openDB, printSchema,
+    BaseCursor,
+    Connection,
+    QueryPlanExplanation,
+    connect,
+    createDB,
+    explainQueryPlans,
+    openDB,
+    printSchema,
 )
 from ..trial import TestCase
 
 
 __all__ = ()
-
 
 
 class ConnectionTests(TestCase):
@@ -33,7 +38,6 @@ class ConnectionTests(TestCase):
 
         self.connections: List[str] = []
         self.patch(sqlite, name, _connect)
-
 
     def test_row_get(self) -> None:
         """
@@ -62,7 +66,6 @@ class ConnectionTests(TestCase):
         else:
             self.fail("No rows found")
 
-
     def test_connect_none(self) -> None:
         """
         :func:`connect` with :obj:`None` argument connects to `:memory:`.
@@ -72,7 +75,6 @@ class ConnectionTests(TestCase):
         connect(None)
 
         self.assertEqual(self.connections, [":memory:"])
-
 
     def test_connect_path(self) -> None:
         """
@@ -84,7 +86,6 @@ class ConnectionTests(TestCase):
         connect(path)
 
         self.assertEqual(self.connections, [str(path)])
-
 
     def test_createDB_schema(self) -> None:
         """
@@ -113,10 +114,11 @@ class ConnectionTests(TestCase):
                 PERSON:
                   0: ID(integer) not null *1
                   1: NAME(text) not null
-                """[1:]
-            )
+                """[
+                    1:
+                ]
+            ),
         )
-
 
     def test_openDB_exists(self) -> None:
         """
@@ -130,7 +132,6 @@ class ConnectionTests(TestCase):
 
         self.assertEqual(self.connections, [path])
 
-
     def test_openDB_create(self) -> None:
         """
         :func:`openDB` with a :class:`Path` argument that doesn't exist and
@@ -143,7 +144,6 @@ class ConnectionTests(TestCase):
 
         self.assertEqual(self.connections, [path])
 
-
     def test_openDB_doesNotExist(self) -> None:
         """
         :func:`openDB` with a :class:`Path` argument that doesn't exist and
@@ -154,7 +154,6 @@ class ConnectionTests(TestCase):
         path = Path(__file__) / "xyzzy"
 
         self.assertRaises(SQLiteError, openDB, path)
-
 
 
 class DebugToolsTests(TestCase):
@@ -171,7 +170,6 @@ class DebugToolsTests(TestCase):
 
     test_printSchema.todo = "unimplemented"  # type: ignore[attr-defined]
 
-
     def test_explainQueryPlans(self) -> None:
         """
         :func:`explainQueryPlans` ...
@@ -179,7 +177,6 @@ class DebugToolsTests(TestCase):
         raise NotImplementedError()
 
     test_explainQueryPlans.todo = "unimplemented"  # type: ignore[attr-defined]
-
 
     def test_QueryPlanExplanation_Lines_str(self) -> None:
         """
@@ -190,19 +187,19 @@ class DebugToolsTests(TestCase):
         )
         self.assertEqual(str(line), "[12,34] Blah blah")
 
-
     def test_str_withLines(self) -> None:
         """
         :meth:`QueryPlanExplanation.__str__` with lines emits the expected
         string.
         """
         explanation = QueryPlanExplanation(
-            name="foo", query="select * from FOO",
+            name="foo",
+            query="select * from FOO",
             lines=(
                 QueryPlanExplanation.Line(
                     nestingOrder=0, selectFrom=0, details="X"
                 ),
-            )
+            ),
         )
         self.assertEqual(
             str(explanation),
@@ -212,9 +209,8 @@ class DebugToolsTests(TestCase):
                 "    select * from FOO\n\n"
                 "  -- query plan --\n\n"
                 "    [0,0] X"
-            )
+            ),
         )
-
 
     def test_str_withoutLines(self) -> None:
         """
@@ -226,13 +222,8 @@ class DebugToolsTests(TestCase):
         )
         self.assertEqual(
             str(explanation),
-            (
-                "foo:\n\n"
-                "  -- query --\n\n"
-                "    select * from FOO"
-            )
+            ("foo:\n\n" "  -- query --\n\n" "    select * from FOO"),
         )
-
 
     def test_explainQueryPlans_error(self) -> None:
         """
@@ -259,8 +250,8 @@ class DebugToolsTests(TestCase):
         db._generateErrors = True
 
         explanations = [
-            str(x) for x in
-            explainQueryPlans(
+            str(x)
+            for x in explainQueryPlans(
                 db, (("select NAME from PERSON", "Person names"),)
             )
         ]
@@ -273,9 +264,8 @@ class DebugToolsTests(TestCase):
                 "    select NAME from PERSON\n\n"
                 "  -- query plan --\n\n"
                 "    [None,None] execute()",
-            )
+            ),
         )
-
 
 
 class ErrneousSQLiteConnection(Connection):
@@ -284,7 +274,6 @@ class ErrneousSQLiteConnection(Connection):
     """
 
     _generateErrors = False
-
 
     @contextmanager
     def noErrors(self) -> Generator:
@@ -296,12 +285,10 @@ class ErrneousSQLiteConnection(Connection):
         yield
         self._generateErrors = generateErrors
 
-
     def executescript(self, sql_script: Union[bytes, str]) -> BaseCursor:
         if self._generateErrors:
             raise SQLiteError("executescript()")
         return super().executescript(sql_script)
-
 
     def execute(  # type: ignore[override]
         self, sql: str, parameters: Optional[Mapping] = None
@@ -313,11 +300,11 @@ class ErrneousSQLiteConnection(Connection):
         return super().execute(sql, parameters)
 
 
-
 def patchConnect_errors(testCase: TestCase) -> None:
     """
     Patch :func:`connect` to create :class:`ErrneousSQLiteConnection`s.
     """
+
     def connect(database: Optional[str]) -> Connection:
         if database is None:
             database = ":memory:"

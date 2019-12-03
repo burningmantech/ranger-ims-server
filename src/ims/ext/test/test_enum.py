@@ -9,17 +9,15 @@ from ..trial import TestCase
 __all__ = ()
 
 
-
 @enumOrdering
 class Thing(Enum):
     """
     Enumeration of some things.
     """
 
-    first  = object()
+    first = object()
     second = object()
-    third  = object()
-
+    third = object()
 
 
 class EnumOrderingTests(TestCase):
@@ -41,7 +39,6 @@ class EnumOrderingTests(TestCase):
 
         self.assertFalse(Thing.second.__eq__(self))
 
-
     def test_notEqual(self) -> None:
         """
         :func:`enumOrdering` sets ``__ne__``.
@@ -55,7 +52,6 @@ class EnumOrderingTests(TestCase):
         self.assertTrue(Thing.third.__ne__(Thing.second))
 
         self.assertTrue(Thing.second.__ne__(self))
-
 
     def test_lessThan(self) -> None:
         """
@@ -81,9 +77,8 @@ class EnumOrderingTests(TestCase):
 
         self.assertIdentical(
             Thing.second.__lt__(self),  # type: ignore[operator]
-            NotImplemented
+            NotImplemented,
         )
-
 
     def test_lessThanOrEqual(self) -> None:
         """
@@ -109,9 +104,8 @@ class EnumOrderingTests(TestCase):
 
         self.assertIdentical(
             Thing.second.__le__(self),  # type: ignore[operator]
-            NotImplemented
+            NotImplemented,
         )
-
 
     def test_greaterThan(self) -> None:
         """
@@ -137,9 +131,8 @@ class EnumOrderingTests(TestCase):
 
         self.assertIdentical(
             Thing.second.__gt__(self),  # type: ignore[operator]
-            NotImplemented
+            NotImplemented,
         )
-
 
     def test_greaterThanOrEqual(self) -> None:
         """
@@ -165,5 +158,5 @@ class EnumOrderingTests(TestCase):
 
         self.assertIdentical(
             Thing.second.__ge__(self),  # type: ignore[operator]
-            NotImplemented
+            NotImplemented,
         )

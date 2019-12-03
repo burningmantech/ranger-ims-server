@@ -30,7 +30,6 @@ from ._convert import freezeStrings
 __all__ = ()
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class EventAccess(object):
     """
@@ -39,6 +38,6 @@ class EventAccess(object):
     Contains access control configuration for an event.
     """
 
-    readers:   FrozenSet[str] = attrib(converter=freezeStrings)
-    writers:   FrozenSet[str] = attrib(converter=freezeStrings)
+    readers: FrozenSet[str] = attrib(converter=freezeStrings)
+    writers: FrozenSet[str] = attrib(converter=freezeStrings)
     reporters: FrozenSet[str] = attrib(converter=freezeStrings)

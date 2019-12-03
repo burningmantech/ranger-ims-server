@@ -40,6 +40,8 @@ if environ.get("IMS_TEST_MYSQL_HOST", None) is None:
 
     def mysqlServiceFactory() -> MySQLService:
         return DockerizedMySQLService()
+
+
 else:
     from .service import ExternalMySQLService
 
@@ -54,7 +56,6 @@ else:
         )
 
 
-
 class DataStoreCoreTests(AsynchronousTestCase):
     """
     Tests for :class:`DataStore` base functionality.
@@ -63,7 +64,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
     _log: ClassVar[Logger] = Logger()
 
     mysqlService: MySQLService = mysqlServiceFactory()
-
 
     def setUp(self) -> Deferred:
         async def setUp() -> None:
@@ -74,7 +74,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
         # setUp can't return a coroutine, so convert it to a Deferred
         return ensureDeferred(setUp())
 
-
     def tearDown(self) -> Deferred:
         async def tearDown() -> None:
             for store in self.stores:
@@ -82,7 +81,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         # setUp can't return a coroutine, so convert it to a Deferred
         return ensureDeferred(tearDown())
-
 
     async def store(self) -> TestDataStore:
         service = self.mysqlService
@@ -113,7 +111,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         return store
 
-
     @asyncAsDeferred
     async def test_loadSchema(self) -> None:
         """
@@ -123,7 +120,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
         schema = store.loadSchema()
 
         self.assertStartsWith(schema, "create table SCHEMA_INFO (")
-
 
     @asyncAsDeferred
     async def test_printSchema(self) -> None:
@@ -200,7 +196,9 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   6: STRICKEN(tinyint) not null
                 SCHEMA_INFO:
                   1: VERSION(smallint) not null
-                """[1:]
+                """[
+                    1:
+                ]
             ),
             schemaInfo,
         )

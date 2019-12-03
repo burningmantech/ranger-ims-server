@@ -21,6 +21,4 @@ Incident Management System SQL data store.
 from ._store import DataStore
 
 
-__all__ = (
-    "DataStore",
-)
+__all__ = ("DataStore",)

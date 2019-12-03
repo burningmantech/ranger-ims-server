@@ -32,36 +32,34 @@ KleinRouteMethod = Callable[
 ]
 
 
-
 class Method(Names):
     """
     HTTP methods.
     """
 
     # HTTP 1.0
-    GET  = auto()
+    GET = auto()
     POST = auto()
     HEAD = auto()
 
     # HTTP 1.1
     OPTIONS = auto()
-    PUT     = auto()
-    DELETE  = auto()
-    TRACE   = auto()
+    PUT = auto()
+    DELETE = auto()
+    TRACE = auto()
     CONNECT = auto()
 
     # RFC 5789
     PATCH = "PATCH"
 
     # WebDAV
-    COPY      = auto()
-    LOCK      = auto()
-    MKCOL     = auto()
-    MOVE      = auto()
-    PROPFIND  = auto()
+    COPY = auto()
+    LOCK = auto()
+    MKCOL = auto()
+    MOVE = auto()
+    PROPFIND = auto()
     PROPPATCH = auto()
-    UNLOCK    = auto()
-
+    UNLOCK = auto()
 
 
 class ContentType(Enum):
@@ -69,15 +67,14 @@ class ContentType(Enum):
     MIME content types.
     """
 
-    css         = "text/css"
+    css = "text/css"
     eventStream = "text/event-stream"
-    html        = "text/html"
-    javascript  = "application/javascript"
-    json        = "application/json"
-    png         = "image/png"
-    text        = "text/plain"
-    xhtml       = "application/xhtml+xml"
-
+    html = "text/html"
+    javascript = "application/javascript"
+    json = "application/json"
+    png = "image/png"
+    text = "text/plain"
+    xhtml = "application/xhtml+xml"
 
 
 class HeaderName(Enum):
@@ -85,12 +82,11 @@ class HeaderName(Enum):
     HTTP header names.
     """
 
-    server       = "Server"
+    server = "Server"
     cacheControl = "Cache-Control"
-    contentType  = "Content-Type"
-    etag         = "ETag"
-    location     = "Location"
-
+    contentType = "Content-Type"
+    etag = "ETag"
+    location = "Location"
 
 
 if False:
@@ -99,6 +95,7 @@ if False:
 else:
     # For debugging, change the ETag on app launch
     from uuid import uuid4
+
     _staticETag = uuid4().hex
     _maxAge = 0
 
@@ -110,6 +107,7 @@ def static(f: KleinRouteMethod) -> KleinRouteMethod:
     Decorate a route handler to add fixed ETag and Cache-Control headers, which
     are appropriate for static resources.
     """
+
     @wraps(f)
     def wrapper(
         self: Any, request: IRequest, *args: Any, **kwargs: Any

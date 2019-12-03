@@ -31,7 +31,6 @@ from ...strategies import rodGarettAddresses, textOnlyAddresses
 __all__ = ()
 
 
-
 class UnknownAddress(Address):
     """
     Unknown Address subclass.
@@ -69,23 +68,19 @@ class TextOnlyAddressSerializationTests(TestCase):
         )
 
 
-
 class RodGarettAddressSerializationTests(TestCase):
     """
     Tests for serialization of :class:`RodGarettAddress`
     """
 
     @given(rodGarettAddresses())
-    def test_serialize(
-        self, address: RodGarettAddress
-    ) -> None:
+    def test_serialize(self, address: RodGarettAddress) -> None:
         """
         :func:`jsonSerialize` serializes the given address.
         """
         self.assertEqual(
             jsonSerialize(address), jsonFromRodGarettAddress(address)
         )
-
 
 
 class TextOnlyAddressDeserializationTests(TestCase):
@@ -100,9 +95,8 @@ class TextOnlyAddressDeserializationTests(TestCase):
         """
         self.assertEqual(
             jsonDeserialize(jsonFromTextOnlyAddress(address), TextOnlyAddress),
-            address
+            address,
         )
-
 
 
 class RodGarettAddressDeserializationTests(TestCase):
@@ -119,5 +113,5 @@ class RodGarettAddressDeserializationTests(TestCase):
             jsonDeserialize(
                 jsonFromRodGarettAddress(address), RodGarettAddress
             ),
-            address
+            address,
         )

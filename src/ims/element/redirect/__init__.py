@@ -21,6 +21,4 @@ Login page element.
 from ._redirect import RedirectPage
 
 
-__all__ = (
-    "RedirectPage",
-)
+__all__ = ("RedirectPage",)

@@ -21,6 +21,4 @@ Incident Management System application runners.
 from ._command import Command
 
 
-__all__ = (
-    "Command",
-)
+__all__ = ("Command",)

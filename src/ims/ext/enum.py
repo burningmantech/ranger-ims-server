@@ -25,6 +25,7 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
     Decorate an `Enum` class to add comparison methods that order instances in
     the order that they were enumerated.
     """
+
     def equal(self: Enum, other: Any) -> bool:
         return self is other
 
@@ -85,7 +86,6 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
     )
 
     return enumClass
-
 
 
 class Names(Enum):

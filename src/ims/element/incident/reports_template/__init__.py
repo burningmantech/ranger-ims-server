@@ -21,6 +21,4 @@ Incident reports template page element.
 from ._reports_template import IncidentReportsTemplatePage
 
 
-__all__ = (
-    "IncidentReportsTemplatePage",
-)
+__all__ = ("IncidentReportsTemplatePage",)

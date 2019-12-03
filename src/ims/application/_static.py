@@ -37,6 +37,7 @@ log = Logger()
 # MIME type wrappers
 #
 
+
 def jsonBytes(
     request: IRequest, data: bytes, etag: Optional[str] = None
 ) -> bytes:
@@ -51,8 +52,7 @@ def jsonBytes(
 
 
 def writeJSONStream(
-    request: IRequest, jsonStream: Iterable[bytes],
-    etag: Optional[str] = None,
+    request: IRequest, jsonStream: Iterable[bytes], etag: Optional[str] = None,
 ) -> None:
     """
     Respond with a stream of JSON data.
@@ -70,7 +70,7 @@ def buildJSONArray(items: Iterable[bytes]) -> Iterable[bytes]:
     """
     first = True
 
-    yield b'['
+    yield b"["
 
     for item in items:
         if first:
@@ -80,4 +80,4 @@ def buildJSONArray(items: Iterable[bytes]) -> Iterable[bytes]:
 
         yield item
 
-    yield b']'
+    yield b"]"

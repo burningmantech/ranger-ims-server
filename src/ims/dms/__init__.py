@@ -19,7 +19,11 @@ Duty Management System integration.
 """
 
 from ._dms import (
-    DMSError, DatabaseError, DutyManagementSystem, hashPassword, verifyPassword
+    DMSError,
+    DatabaseError,
+    DutyManagementSystem,
+    hashPassword,
+    verifyPassword,
 )
 
 

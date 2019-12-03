@@ -31,7 +31,6 @@ from ...test.database import TestDatabaseStoreMixIn
 __all__ = ()
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     """
@@ -41,10 +40,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     maxIncidentNumber: ClassVar[int] = SQLITE_MAX_INT
     exceptionClass: ClassVar[type] = SQLiteError
 
-
-    @attrs(
-        frozen=False, auto_attribs=True, kw_only=True, eq=False
-    )
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State(DataStore._State):
         """
         Internal mutable state for :class:`DataStore`.
@@ -52,9 +48,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
 
         broken: bool = False
 
-
     _state: _State = attrib(factory=_State, init=False)
-
 
     @property
     def _db(self) -> Connection:
@@ -63,9 +57,8 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
 
         return cast(
             Connection,
-            cast(property, DataStore._db).fget(self)  # type: ignore[call-arg]
+            cast(property, DataStore._db).fget(self),  # type: ignore[call-arg]
         )
-
 
     def bringThePain(self) -> None:
         self._state.broken = True

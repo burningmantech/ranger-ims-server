@@ -37,7 +37,6 @@ from .._provider import AuthProvider, Authorization, User
 __all__ = ()
 
 
-
 class AuthorizationTests(TestCase):
     """
     Tests for :class:`Authorization`
@@ -49,11 +48,9 @@ class AuthorizationTests(TestCase):
                 continue
             self.assertNotIn(authorization, Authorization.none)
 
-
     def test_authorization_all(self) -> None:
         for authorization in Authorization:
             self.assertIn(authorization, Authorization.all)
-
 
 
 class UserTests(TestCase):
@@ -66,24 +63,20 @@ class UserTests(TestCase):
         user = User(ranger=ranger, groups=())
         self.assertIn(ranger.handle, user.shortNames)
 
-
     @given(rangers())
     def test_hashedPassword(self, ranger: Ranger) -> None:
         user = User(ranger=ranger, groups=())
         self.assertEqual(user.hashedPassword, ranger.password)
-
 
     @given(rangers())
     def test_active(self, ranger: Ranger) -> None:
         user = User(ranger=ranger, groups=())
         self.assertEqual(user.active, ranger.onSite)
 
-
     @given(rangers())
     def test_rangerHandle(self, ranger: Ranger) -> None:
         user = User(ranger=ranger, groups=())
         self.assertEqual(user.rangerHandle, ranger.handle)
-
 
     @given(rangers())
     def test_str(self, ranger: Ranger) -> None:
@@ -99,7 +92,6 @@ class AuthProviderTests(TestCase):
     def store(self) -> IMSDataStore:
         return SQLiteDataStore(dbPath=None)
 
-
     def dms(self) -> DutyManagementSystem:
         """
         Gimme a DMS.
@@ -110,7 +102,6 @@ class AuthProviderTests(TestCase):
             username="user",
             password="password",
         )
-
 
     @given(text(min_size=1), rangers())
     def test_verifyCredentials_masterKey(
@@ -126,7 +117,6 @@ class AuthProviderTests(TestCase):
         )
         self.assertTrue(authorization)
 
-
     @given(rangers(), text())
     def test_verifyCredentials_match(
         self, ranger: Ranger, password: str
@@ -139,7 +129,6 @@ class AuthProviderTests(TestCase):
             provider.verifyCredentials(user, password)
         )
         self.assertTrue(authorization)
-
 
     @given(rangers(), text(), text())
     def test_verifyCredentials_mismatch(
@@ -156,7 +145,6 @@ class AuthProviderTests(TestCase):
         )
         self.assertFalse(authorization)
 
-
     @given(rangers(), text())
     def test_verifyCredentials_none(
         self, ranger: Ranger, password: str
@@ -170,7 +158,6 @@ class AuthProviderTests(TestCase):
         )
         self.assertFalse(authorization)
 
-
     @given(rangers(), text())
     def test_verifyCredentials_error(
         self, ranger: Ranger, password: str
@@ -182,9 +169,7 @@ class AuthProviderTests(TestCase):
         def oops(*args: Any, **kwargs: Any) -> None:
             raise RuntimeError()
 
-        assert self.successResultOf(
-            provider.verifyCredentials(user, password)
-        )
+        assert self.successResultOf(provider.verifyCredentials(user, password))
 
         with patch("ims.auth._provider.verifyPassword", oops):
             authorization = self.successResultOf(

@@ -31,7 +31,6 @@ from ...strategies import incidentTypes, knownIncidentTypes
 __all__ = ()
 
 
-
 class IncidentTypeSerializationTests(TestCase):
     """
     Tests for serialization of :class:`IncidentType`
@@ -46,7 +45,6 @@ class IncidentTypeSerializationTests(TestCase):
         self.assertEqual(
             jsonSerialize(incidentType), jsonFromIncidentType(incidentType)
         )
-
 
 
 class IncidentTypeDeserializationTests(TestCase):
@@ -66,7 +64,6 @@ class IncidentTypeDeserializationTests(TestCase):
         )
 
 
-
 class KnownIncidentTypeSerializationTests(TestCase):
     """
     Tests for serialization of :class:`KnownIncidentType`.
@@ -79,10 +76,8 @@ class KnownIncidentTypeSerializationTests(TestCase):
         type.
         """
         self.assertEqual(
-            jsonSerialize(incidentType),
-            jsonFromKnownIncidentType(incidentType)
+            jsonSerialize(incidentType), jsonFromKnownIncidentType(incidentType)
         )
-
 
 
 class KnownIncidentTypeDeserializationTests(TestCase):

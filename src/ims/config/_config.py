@@ -42,7 +42,6 @@ from ._urls import URLs
 __all__ = ()
 
 
-
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class ConfigurationError(Exception):
     """
@@ -50,7 +49,6 @@ class ConfigurationError(Exception):
     """
 
     message: str
-
 
 
 class LogFormat(Names):
@@ -62,15 +60,13 @@ class LogFormat(Names):
     json = auto()
 
 
-
 class DataStoreFactory(Enum):
     """
     Data store type.
     """
 
     SQLite = SQLiteDataStore
-    MySQL  = MySQLDataStore
-
+    MySQL = MySQLDataStore
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -84,23 +80,18 @@ class ConfigFileParser(object):
     path: Optional[Path]
     _configParser: ConfigParser = Factory(ConfigParser)
 
-
     def __attrs_post_init__(self) -> None:
         if self.path is None:
             self._log.info("No configuration file specified.")
             return
 
         for _okFile in self._configParser.read(str(self.path)):
-            self._log.info(
-                "Read configuration file: {path}", path=self.path
-            )
+            self._log.info("Read configuration file: {path}", path=self.path)
             break
         else:
             self._log.error(
-                "Unable to read configuration file: {path}",
-                path=self.path,
+                "Unable to read configuration file: {path}", path=self.path,
             )
-
 
     def valueFromConfig(
         self, variable: str, section: str, option: str, default: str = ""
@@ -118,10 +109,13 @@ class ConfigFileParser(object):
         else:
             return default
 
-
     def pathFromConfig(
-        self, variable: str, section: str, option: str,
-        root: Path, segments: Tuple[str],
+        self,
+        variable: str,
+        section: str,
+        option: str,
+        root: Path,
+        segments: Tuple[str],
     ) -> Path:
         text = self.valueFromConfig(variable, section, option)
 
@@ -140,7 +134,6 @@ class ConfigFileParser(object):
 
         return path
 
-
     def enumFromConfig(
         self, variable: str, section: str, option: str, default: Enum,
     ) -> Enum:
@@ -157,7 +150,6 @@ class ConfigFileParser(object):
             )
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Configuration(object):
     """
@@ -167,18 +159,16 @@ class Configuration(object):
     _log: ClassVar[Logger] = Logger()
     urls: ClassVar = URLs
 
-
     @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State(object):
         """
         Internal mutable state for :class:`Configuration`.
         """
 
-        store: Optional[IMSDataStore]        = None
-        dms: Optional[DutyManagementSystem]  = None
+        store: Optional[IMSDataStore] = None
+        dms: Optional[DutyManagementSystem] = None
         authProvider: Optional[AuthProvider] = None
-        locationsJSONBytes: Optional[bytes]  = None
-
+        locationsJSONBytes: Optional[bytes] = None
 
     @classmethod
     def fromConfigFile(cls, configFile: Optional[Path]) -> "Configuration":
@@ -203,8 +193,11 @@ class Configuration(object):
         cls._log.info("Port: {port}", port=port)
 
         serverRoot = parser.pathFromConfig(
-            "SERVER_ROOT", "Core", "ServerRoot",
-            defaultRoot, cast(Tuple[str], ()),
+            "SERVER_ROOT",
+            "Core",
+            "ServerRoot",
+            defaultRoot,
+            cast(Tuple[str], ()),
         )
         serverRoot.mkdir(exist_ok=True)
         cls._log.info("Server root: {path}", path=serverRoot)
@@ -224,18 +217,19 @@ class Configuration(object):
             "CACHE_PATH", "Core", "CachedResources", dataRoot, ("cache",)
         )
         cachedResourcesRoot.mkdir(exist_ok=True)
-        cls._log.info(
-            "CachedResources: {path}", path=cachedResourcesRoot
-        )
+        cls._log.info("CachedResources: {path}", path=cachedResourcesRoot)
 
         logLevelName = parser.valueFromConfig(
             "LOG_LEVEL", "Core", "LogLevel", "info"
         )
         cls._log.info("LogLevel: {logLevel}", logLevel=logLevelName)
 
-        logFormat = cast(LogFormat, parser.enumFromConfig(
-            "LOG_FORMAT", "Core", "LogFormat", LogFormat.text
-        ))
+        logFormat = cast(
+            LogFormat,
+            parser.enumFromConfig(
+                "LOG_FORMAT", "Core", "LogFormat", LogFormat.text
+            ),
+        )
         cls._log.info("LogFormat: {logFormat}", logFormat=logFormat)
 
         logFilePath = parser.pathFromConfig(
@@ -259,9 +253,12 @@ class Configuration(object):
             requireActive = True
         cls._log.info("RequireActive: {active}", active=requireActive)
 
-        storeFactory = cast(DataStoreFactory, parser.enumFromConfig(
-            "DATA_STORE", "Core", "DataStore", DataStoreFactory.SQLite
-        ))
+        storeFactory = cast(
+            DataStoreFactory,
+            parser.enumFromConfig(
+                "DATA_STORE", "Core", "DataStore", DataStoreFactory.SQLite
+            ),
+        )
         cls._log.info("DataStore: {storeName}", storeName=storeFactory.name)
 
         storeArguments: Mapping[str, Any]
@@ -277,9 +274,11 @@ class Configuration(object):
             storeHost = parser.valueFromConfig(
                 "DB_HOST_NAME", "Store:MySQL", "HostName", "localhost"
             )
-            storePort = int(parser.valueFromConfig(
-                "DB_HOST_PORT", "Store:MySQL", "HostPort", "3306"
-            ))
+            storePort = int(
+                parser.valueFromConfig(
+                    "DB_HOST_PORT", "Store:MySQL", "HostPort", "3306"
+                )
+            )
             storeDatabase = parser.valueFromConfig(
                 "DB_DATABASE", "Store:MySQL", "Database"
             )
@@ -291,7 +290,9 @@ class Configuration(object):
             )
             cls._log.info(
                 "Database: {user}@{host}:{port}",
-                user=storeUser, host=storeHost, port=storePort,
+                user=storeUser,
+                host=storeHost,
+                port=storePort,
             )
             storeArguments = dict(
                 hostName=storeHost,
@@ -301,14 +302,16 @@ class Configuration(object):
                 password=storePassword,
             )
 
-        dmsHost     = parser.valueFromConfig("DMS_HOSTNAME", "DMS", "Hostname")
+        dmsHost = parser.valueFromConfig("DMS_HOSTNAME", "DMS", "Hostname")
         dmsDatabase = parser.valueFromConfig("DMS_DATABASE", "DMS", "Database")
         dmsUsername = parser.valueFromConfig("DMS_USERNAME", "DMS", "Username")
         dmsPassword = parser.valueFromConfig("DMS_PASSWORD", "DMS", "Password")
 
         cls._log.info(
             "DMS: {user}@{host}/{db}",
-            user=dmsUsername, host=dmsHost, db=dmsDatabase,
+            user=dmsUsername,
+            host=dmsHost,
+            db=dmsDatabase,
         )
 
         masterKey = parser.valueFromConfig("MASTER_KEY", "Core", "MasterKey")
@@ -319,7 +322,6 @@ class Configuration(object):
 
         return cls(
             configFile=configFile,
-
             cachedResourcesRoot=cachedResourcesRoot,
             configRoot=configRoot,
             dataRoot=dataRoot,
@@ -339,7 +341,6 @@ class Configuration(object):
             storeArguments=storeArguments,
             storeFactory=storeFactory,
         )
-
 
     configFile: Optional[Path]
 
@@ -364,7 +365,6 @@ class Configuration(object):
 
     _state: _State = attrib(factory=_State, init=False)
 
-
     @property
     def store(self) -> IMSDataStore:
         """
@@ -375,7 +375,6 @@ class Configuration(object):
 
         return self._state.store
 
-
     @property
     def dms(self) -> DutyManagementSystem:
         """
@@ -383,12 +382,13 @@ class Configuration(object):
         """
         if self._state.dms is None:
             self._state.dms = DutyManagementSystem(
-                host=self.dmsHost, database=self.dmsDatabase,
-                username=self.dmsUsername, password=self.dmsPassword,
+                host=self.dmsHost,
+                database=self.dmsDatabase,
+                username=self.dmsUsername,
+                password=self.dmsPassword,
             )
 
         return self._state.dms
-
 
     @property
     def authProvider(self) -> AuthProvider:
@@ -397,13 +397,14 @@ class Configuration(object):
         """
         if self._state.authProvider is None:
             self._state.authProvider = AuthProvider(
-                store=self.store, dms=self.dms,
+                store=self.store,
+                dms=self.dms,
                 requireActive=self.requireActive,
-                adminUsers=self.imsAdmins, masterKey=self.masterKey,
+                adminUsers=self.imsAdmins,
+                masterKey=self.masterKey,
             )
 
         return self._state.authProvider
-
 
     def __str__(self) -> str:
         return (
@@ -428,7 +429,6 @@ class Configuration(object):
             f"DMS.Username: {self.dmsUsername}\n"
             f"DMS.Password: {self.dmsPassword}\n"
         )
-
 
     def replace(self, **changes: Any) -> "Configuration":
         """

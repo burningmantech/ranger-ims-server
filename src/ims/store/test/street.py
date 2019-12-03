@@ -27,7 +27,6 @@ from .base import DataStoreTests
 __all__ = ()
 
 
-
 class DataStoreConcentricStreetTests(DataStoreTests):
     """
     Tests for :class:`IMSDataStore` concentric street access.
@@ -53,7 +52,6 @@ class DataStoreConcentricStreetTests(DataStoreTests):
 
             self.assertEqual(len(concentricStreets), 1)
             self.assertEqual(concentricStreets.get(streetID), streetName)
-
 
     @asyncAsDeferred
     async def test_createConcentricStreet(self) -> None:

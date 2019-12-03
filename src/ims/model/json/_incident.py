@@ -23,7 +23,10 @@ from enum import Enum, unique
 from typing import Any, Dict, List, Optional, Set, Type, cast
 
 from ._json import (
-    deserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize,
+    jsonSerialize,
+    registerDeserializer,
+    registerSerializer,
 )
 from .._entry import ReportEntry
 from .._event import Event
@@ -36,25 +39,23 @@ from .._state import IncidentState
 __all__ = ()
 
 
-
 @unique
 class IncidentJSONKey(Enum):
     """
     Incident JSON keys
     """
 
-    event                 = "event"
-    number                = "number"
-    created               = "created"
-    state                 = "state"
-    priority              = "priority"
-    summary               = "summary"
-    location              = "location"
-    rangerHandles         = "ranger_handles"
-    incidentTypes         = "incident_types"
-    reportEntries         = "report_entries"
+    event = "event"
+    number = "number"
+    created = "created"
+    state = "state"
+    priority = "priority"
+    summary = "summary"
+    location = "location"
+    rangerHandles = "ranger_handles"
+    incidentTypes = "incident_types"
+    reportEntries = "report_entries"
     incidentReportNumbers = "incident_reports"
-
 
 
 class IncidentJSONType(Enum):
@@ -62,18 +63,17 @@ class IncidentJSONType(Enum):
     Incident attribute types
     """
 
-    event                 = Event
-    number                = int
-    created               = DateTime
-    state                 = IncidentState
-    priority              = IncidentPriority
-    summary               = Optional[str]
-    location              = Location
-    rangerHandles         = Set[str]
-    incidentTypes         = Set[str]
-    reportEntries         = List[ReportEntry]
+    event = Event
+    number = int
+    created = DateTime
+    state = IncidentState
+    priority = IncidentPriority
+    summary = Optional[str]
+    location = Location
+    rangerHandles = Set[str]
+    incidentTypes = Set[str]
+    reportEntries = List[ReportEntry]
     incidentReportNumbers = Set[int]
-
 
 
 def serializeIncident(incident: Incident) -> Dict[str, Any]:
@@ -83,6 +83,7 @@ def serializeIncident(incident: Incident) -> Dict[str, Any]:
         for key in IncidentJSONKey
     )
 
+
 registerSerializer(Incident, serializeIncident)
 
 
@@ -90,10 +91,8 @@ def deserializeIncident(obj: Dict[str, Any], cl: Type) -> Incident:
     assert cl is Incident, (cl, obj)
 
     return cast(
-        Incident,
-        deserialize(
-            obj, Incident, IncidentJSONType, IncidentJSONKey,
-        )
+        Incident, deserialize(obj, Incident, IncidentJSONType, IncidentJSONKey,)
     )
+
 
 registerDeserializer(Incident, deserializeIncident)

@@ -20,7 +20,9 @@ Incident Management System data store.
 
 from ._abc import IMSDataStore
 from ._exceptions import (
-    NoSuchIncidentError, NoSuchIncidentReportError, StorageError
+    NoSuchIncidentError,
+    NoSuchIncidentReportError,
+    StorageError,
 )
 
 

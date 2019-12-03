@@ -22,15 +22,24 @@ from pathlib import Path
 from sys import stderr, stdin, stdout
 from textwrap import dedent
 from typing import (
-    ClassVar, IO, Mapping, MutableMapping, Optional, Sequence, cast
+    ClassVar,
+    IO,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Sequence,
+    cast,
 )
 
 from attr import attrs
 
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.logger import (
-    InvalidLogLevelError, LogLevel, Logger,
-    jsonFileLogObserver, textFileLogObserver,
+    InvalidLogLevelError,
+    LogLevel,
+    Logger,
+    jsonFileLogObserver,
+    textFileLogObserver,
 )
 from twisted.python.usage import Options as BaseOptions, UsageError
 
@@ -52,10 +61,7 @@ def openFile(fileName: str, mode: str) -> IO:
         try:
             file = open(fileName, mode)
         except EnvironmentError as e:
-            exit(
-                ExitStatus.EX_IOERR,
-                f"Unable to open file {fileName!r}: {e}"
-            )
+            exit(ExitStatus.EX_IOERR, f"Unable to open file {fileName!r}: {e}")
         return file
 
     if any((c in mode) for c in "wxa"):
@@ -74,7 +80,6 @@ def openFile(fileName: str, mode: str) -> IO:
     return file
 
 
-
 class Options(BaseOptions):
     """
     Options, cleaned up
@@ -87,12 +92,10 @@ class Options(BaseOptions):
         exit(ExitStatus.EX_OK, f"{version}")
 
 
-
 class ServerOptions(Options):
     """
     Command line options for the IMS server.
     """
-
 
 
 class ExportOptions(Options):
@@ -107,7 +110,6 @@ class ExportOptions(Options):
         self["outFile"] = openFile(fileName, "wb")
 
 
-
 class ImportOptions(Options):
     """
     Command line options for the IMS import tool.
@@ -118,7 +120,6 @@ class ImportOptions(Options):
         Input file. ("-" for stdin)
         """
         self["inFile"] = openFile(fileName, "rb")
-
 
 
 class CompareOptions(Options):
@@ -138,7 +139,6 @@ class CompareOptions(Options):
         self["inFiles"] = files
 
 
-
 class IMSOptions(Options):
     """
     Command line options for all IMS commands.
@@ -155,17 +155,14 @@ class IMSOptions(Options):
     ]
     # defaultSubCommand = "server"
 
-
     def getSynopsis(self) -> str:
         return f"{Options.getSynopsis(self)} command [command_options]"
-
 
     def opt_config(self, path: str) -> None:
         """
         Location of configuration file.
         """
         cast(MutableMapping, self)["configFile"] = Path(path)
-
 
     def opt_log_level(self, levelName: str) -> None:
         """
@@ -178,19 +175,15 @@ class IMSOptions(Options):
             raise UsageError(f"Invalid log level: {levelName}")
 
     opt_log_level.__doc__ = dedent(cast(str, opt_log_level.__doc__)).format(
-        options=", ".join(
-            f'"{l.name}"' for l in LogLevel.iterconstants()
-        ),
+        options=", ".join(f'"{l.name}"' for l in LogLevel.iterconstants()),
         default=defaultLogLevel.name,
     )
-
 
     def opt_log_file(self, fileName: str) -> None:
         """
         Log to file. ("-" for stdout, "+" for stderr; default: "-")
         """
         self["logFileName"] = fileName
-
 
     def opt_log_format(self, logFormatName: str) -> None:
         """
@@ -214,7 +207,6 @@ class IMSOptions(Options):
 
     opt_log_format.__doc__ = dedent(cast(str, opt_log_format.__doc__))
 
-
     def opt_option(self, arg: str) -> None:
         """
         Set a configuration option.
@@ -236,7 +228,6 @@ class IMSOptions(Options):
         self["overrides"].append(
             Override(section=section, name=name, value=value)
         )
-
 
     def initConfig(self) -> None:
         try:
@@ -282,10 +273,8 @@ class IMSOptions(Options):
         except Exception as e:
             exit(ExitStatus.EX_CONFIG, str(e))
 
-
     def initLogFile(self) -> None:
         self["logFile"] = openFile(self["logFileName"], "a")
-
 
     def selectDefaultLogObserver(self) -> None:
         """
@@ -302,19 +291,16 @@ class IMSOptions(Options):
                 self["fileLogObserverFactory"] = jsonFileLogObserver
                 self["logFormat"] = "json"
 
-
     def parseOptions(self, options: Optional[Sequence[str]] = None) -> None:
         Options.parseOptions(self, options=options)
 
         self.initLogFile()
         self.selectDefaultLogObserver()
 
-
     def postOptions(self) -> None:
         Options.postOptions(self)
 
         self.initConfig()
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)

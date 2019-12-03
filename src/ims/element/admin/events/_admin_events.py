@@ -26,7 +26,6 @@ from ...page import Page
 __all__ = ()
 
 
-
 @attrs(auto_attribs=True, kw_only=True)
 class AdminEventsPage(Page):
     """

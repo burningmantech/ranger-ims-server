@@ -20,7 +20,9 @@ Incident tests for :mod:`ranger-ims-server.store`
 
 from collections import defaultdict
 from datetime import (
-    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+    datetime as DateTime,
+    timedelta as TimeDelta,
+    timezone as TimeZone,
 )
 from typing import Any, Dict, Iterable, Optional, Sequence, Set, Tuple, cast
 
@@ -28,8 +30,13 @@ from attr import fields as attrFields
 
 from ims.ext.trial import asyncAsDeferred
 from ims.model import (
-    Event, Incident, IncidentPriority, IncidentState,
-    Location, ReportEntry, RodGarettAddress,
+    Event,
+    Incident,
+    IncidentPriority,
+    IncidentState,
+    Location,
+    ReportEntry,
+    RodGarettAddress,
 )
 
 from .base import DataStoreTests, TestDataStoreABC
@@ -39,7 +46,7 @@ from .._exceptions import NoSuchIncidentError, StorageError
 __all__ = ()
 
 
-anEvent  = Event(id="foo")
+anEvent = Event(id="foo")
 anEvent2 = Event(id="bar")
 
 # Note: we add a TimeDelta to the created attribute of objects so that they
@@ -50,10 +57,13 @@ aNewIncident = Incident(
     event=anEvent,
     number=0,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=1),
-    state=IncidentState.new, priority=IncidentPriority.normal,
+    state=IncidentState.new,
+    priority=IncidentPriority.normal,
     summary="A thing happened",
     location=Location(name="There", address=None),
-    rangerHandles=(), incidentTypes=(), reportEntries=(),
+    rangerHandles=(),
+    incidentTypes=(),
+    reportEntries=(),
     incidentReportNumbers=(),
 )
 
@@ -61,10 +71,13 @@ anIncident1 = Incident(
     event=anEvent,
     number=1,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=2),
-    state=IncidentState.new, priority=IncidentPriority.normal,
+    state=IncidentState.new,
+    priority=IncidentPriority.normal,
     summary="A thing happened",
     location=Location(name="There", address=None),
-    rangerHandles=(), incidentTypes=(), reportEntries=(),
+    rangerHandles=(),
+    incidentTypes=(),
+    reportEntries=(),
     incidentReportNumbers=(),
 )
 
@@ -72,10 +85,13 @@ anIncident2 = Incident(
     event=anEvent2,
     number=325,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=3),
-    state=IncidentState.new, priority=IncidentPriority.normal,
+    state=IncidentState.new,
+    priority=IncidentPriority.normal,
     summary="Another thing happened",
     location=Location(name="Here", address=None),
-    rangerHandles=(), incidentTypes=(), reportEntries=(),
+    rangerHandles=(),
+    incidentTypes=(),
+    reportEntries=(),
     incidentReportNumbers=(),
 )
 
@@ -99,7 +115,6 @@ aReportEntry2 = ReportEntry(
     automatic=False,
     text="That happened",
 )
-
 
 
 class DataStoreIncidentTests(DataStoreTests):
@@ -140,7 +155,6 @@ class DataStoreIncidentTests(DataStoreTests):
                 found, set(((i.event, i.number) for i in incidents))
             )
 
-
     @asyncAsDeferred
     async def test_incidents_sameEvent(self) -> None:
         """
@@ -168,7 +182,6 @@ class DataStoreIncidentTests(DataStoreTests):
             for r, i in zip(sorted(retrieved), sorted(incidents)):
                 self.assertIncidentsEqual(store, r, i)
 
-
     @asyncAsDeferred
     async def test_incidents_error(self) -> None:
         """
@@ -186,7 +199,6 @@ class DataStoreIncidentTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
-
     @asyncAsDeferred
     async def test_incidentWithNumber(self) -> None:
         """
@@ -197,12 +209,11 @@ class DataStoreIncidentTests(DataStoreTests):
 
             await store.storeIncident(incident)
 
-            retrieved = (
-                await store.incidentWithNumber(incident.event, incident.number)
+            retrieved = await store.incidentWithNumber(
+                incident.event, incident.number
             )
 
             self.assertIncidentsEqual(store, retrieved, incident)
-
 
     @asyncAsDeferred
     async def test_incidentWithNumber_notFound(self) -> None:
@@ -220,7 +231,6 @@ class DataStoreIncidentTests(DataStoreTests):
         else:
             self.fail("NoSuchIncidentError not raised")
 
-
     @asyncAsDeferred
     async def test_incidentWithNumber_tooBig(self) -> None:
         """
@@ -232,14 +242,11 @@ class DataStoreIncidentTests(DataStoreTests):
         await store.createEvent(anEvent)
 
         try:
-            await store.incidentWithNumber(
-                anEvent, store.maxIncidentNumber + 1
-            )
+            await store.incidentWithNumber(anEvent, store.maxIncidentNumber + 1)
         except NoSuchIncidentError:
             pass
         else:
             self.fail("NoSuchIncidentError not raised")
-
 
     @asyncAsDeferred
     async def test_incidentWithNumber_error(self) -> None:
@@ -258,7 +265,6 @@ class DataStoreIncidentTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
-
     @asyncAsDeferred
     async def test_createIncident(self) -> None:
         """
@@ -266,9 +272,7 @@ class DataStoreIncidentTests(DataStoreTests):
         """
         for _data in (
             (),
-            (
-                (anIncident1.replace(number=0), "Hubcap"),
-            ),
+            ((anIncident1.replace(number=0), "Hubcap"),),
             (
                 (anIncident1.replace(number=0), "Hubcap"),
                 (anIncident2.replace(number=0), "Bucket"),
@@ -301,8 +305,8 @@ class DataStoreIncidentTests(DataStoreTests):
                 if isinstance(address, RodGarettAddress):
                     concentric = address.concentric
                     if (
-                        concentric is not None and
-                        concentric not in createdConcentricStreets[event]
+                        concentric is not None
+                        and concentric not in createdConcentricStreets[event]
                     ):
                         await store.createConcentricStreet(
                             event, concentric, "Sesame Street"
@@ -319,7 +323,9 @@ class DataStoreIncidentTests(DataStoreTests):
                     number=nextNumbers.setdefault(event, 1)
                 )
                 self.assertIncidentsEqual(
-                    store, retrieved, expectedStoredIncident,
+                    store,
+                    retrieved,
+                    expectedStoredIncident,
                     ignoreAutomatic=True,
                 )
 
@@ -335,17 +341,15 @@ class DataStoreIncidentTests(DataStoreTests):
                 storedIncidents = sorted(await store.incidents(event=event))
 
                 self.assertEqual(
-                    len(storedIncidents), len(expectedIncidents),
-                    f"{storedIncidents} != {expectedIncidents}"
+                    len(storedIncidents),
+                    len(expectedIncidents),
+                    f"{storedIncidents} != {expectedIncidents}",
                 )
 
-                for stored, expected in zip(
-                    storedIncidents, expectedIncidents
-                ):
+                for stored, expected in zip(storedIncidents, expectedIncidents):
                     self.assertIncidentsEqual(
                         store, stored, expected, ignoreAutomatic=True
                     )
-
 
     @asyncAsDeferred
     async def test_createIncident_error(self) -> None:
@@ -364,7 +368,6 @@ class DataStoreIncidentTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
-
     @asyncAsDeferred
     async def test_setIncident_priority_error(self) -> None:
         """
@@ -377,7 +380,9 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.setIncident_priority(
-                anIncident1.event, anIncident1.number, IncidentPriority.high,
+                anIncident1.event,
+                anIncident1.number,
+                IncidentPriority.high,
                 "Bucket",
             )
         except StorageError as e:
@@ -385,10 +390,12 @@ class DataStoreIncidentTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
-
     async def _test_setIncidentAttribute(
-        self, incident: Incident,
-        methodName: str, attributeName: str, value: Any
+        self,
+        incident: Incident,
+        methodName: str,
+        attributeName: str,
+        value: Any,
     ) -> None:
         store = await self.store()
 
@@ -399,21 +406,23 @@ class DataStoreIncidentTests(DataStoreTests):
         # For concentric streets, we need to make sure they exist first.
         if attributeName == "location.address.concentric":
             await store.storeConcentricStreet(
-                incident.event, value, "Concentric Street",
+                incident.event,
+                value,
+                "Concentric Street",
                 ignoreDuplicates=True,
             )
 
         # For incident types, we need to make sure they exist first.
         if attributeName == "incidentTypes":
-            for incidentType in (
-                frozenset(value) - frozenset(incident.incidentTypes)
+            for incidentType in frozenset(value) - frozenset(
+                incident.incidentTypes
             ):
                 await store.createIncidentType(incidentType)
 
         await setter(incident.event, incident.number, value, "Hubcap")
 
-        retrieved = (
-            await store.incidentWithNumber(incident.event, incident.number)
+        retrieved = await store.incidentWithNumber(
+            incident.event, incident.number
         )
 
         # Normalize location if we're updating the address.
@@ -438,7 +447,6 @@ class DataStoreIncidentTests(DataStoreTests):
             store, retrieved, incident, ignoreAutomatic=True
         )
 
-
     @asyncAsDeferred
     async def test_setIncident_priority(self) -> None:
         """
@@ -451,7 +459,6 @@ class DataStoreIncidentTests(DataStoreTests):
                     incident, "setIncident_priority", "priority", priority
                 )
 
-
     @asyncAsDeferred
     async def test_setIncident_state(self) -> None:
         """
@@ -463,7 +470,6 @@ class DataStoreIncidentTests(DataStoreTests):
                 await self._test_setIncidentAttribute(
                     incident, "setIncident_state", "state", state
                 )
-
 
     @asyncAsDeferred
     async def test_setIncident_summary(self) -> None:
@@ -479,7 +485,6 @@ class DataStoreIncidentTests(DataStoreTests):
                 incident, "setIncident_summary", "summary", summary
             )
 
-
     @asyncAsDeferred
     async def test_setIncident_locationName(self) -> None:
         """
@@ -494,7 +499,6 @@ class DataStoreIncidentTests(DataStoreTests):
                 incident, "setIncident_locationName", "location.name", name
             )
 
-
     @asyncAsDeferred
     async def test_setIncident_locationConcentricStreet(self) -> None:
         """
@@ -506,10 +510,11 @@ class DataStoreIncidentTests(DataStoreTests):
             (anIncident2, "quux bang"),
         ):
             await self._test_setIncidentAttribute(
-                incident, "setIncident_locationConcentricStreet",
-                "location.address.concentric", streetID,
+                incident,
+                "setIncident_locationConcentricStreet",
+                "location.address.concentric",
+                streetID,
             )
-
 
     @asyncAsDeferred
     async def test_setIncident_locationRadialHour(self) -> None:
@@ -522,10 +527,11 @@ class DataStoreIncidentTests(DataStoreTests):
             (anIncident2, 9),
         ):
             await self._test_setIncidentAttribute(
-                incident, "setIncident_locationRadialHour",
-                "location.address.radialHour", radialHour,
+                incident,
+                "setIncident_locationRadialHour",
+                "location.address.radialHour",
+                radialHour,
             )
-
 
     @asyncAsDeferred
     async def test_setIncident_locationRadialMinute(self) -> None:
@@ -538,10 +544,11 @@ class DataStoreIncidentTests(DataStoreTests):
             (anIncident2, 15),
         ):
             await self._test_setIncidentAttribute(
-                incident, "setIncident_locationRadialMinute",
-                "location.address.radialMinute", radialMinute,
+                incident,
+                "setIncident_locationRadialMinute",
+                "location.address.radialMinute",
+                radialMinute,
             )
-
 
     @asyncAsDeferred
     async def test_setIncident_locationDescription(self) -> None:
@@ -553,10 +560,11 @@ class DataStoreIncidentTests(DataStoreTests):
 
         for description in ("", "foo bar", "beep boop"):
             await self._test_setIncidentAttribute(
-                incident, "setIncident_locationDescription",
-                "location.address.description", description,
+                incident,
+                "setIncident_locationDescription",
+                "location.address.description",
+                description,
             )
-
 
     @asyncAsDeferred
     async def test_setIncident_rangers(self) -> None:
@@ -572,10 +580,8 @@ class DataStoreIncidentTests(DataStoreTests):
             ("Hubcap", "Bucket"),
         ):
             await self._test_setIncidentAttribute(
-                incident, "setIncident_rangers",
-                "rangerHandles", rangerHandles,
+                incident, "setIncident_rangers", "rangerHandles", rangerHandles,
             )
-
 
     @asyncAsDeferred
     async def test_setIncident_rangers_error(self) -> None:
@@ -589,14 +595,15 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.setIncident_rangers(
-                anIncident1.event, anIncident1.number,
-                ("Hubcap", "Dingle"), "Bucket",
+                anIncident1.event,
+                anIncident1.number,
+                ("Hubcap", "Dingle"),
+                "Bucket",
             )
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
-
 
     @asyncAsDeferred
     async def test_setIncident_incidentTypes(self) -> None:
@@ -610,10 +617,11 @@ class DataStoreIncidentTests(DataStoreTests):
             ("Medical", "Fire"),
         ):
             await self._test_setIncidentAttribute(
-                anIncident1, "setIncident_incidentTypes",
-                "incidentTypes", incidentTypes,
+                anIncident1,
+                "setIncident_incidentTypes",
+                "incidentTypes",
+                incidentTypes,
             )
-
 
     @asyncAsDeferred
     async def test_setIncident_incidentTypes_error(self) -> None:
@@ -627,14 +635,15 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.setIncident_incidentTypes(
-                anIncident1.event, anIncident1.number,
-                ("Fun", "Boring"), "Bucket",
+                anIncident1.event,
+                anIncident1.number,
+                ("Fun", "Boring"),
+                "Bucket",
             )
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
-
 
     @asyncAsDeferred
     async def test_addReportEntriesToIncident(self) -> None:
@@ -649,8 +658,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 ((aReportEntry1, aReportEntry2), aReportEntry1.author),
             ):
                 reportEntries, author = cast(
-                    Tuple[Sequence[ReportEntry], str],
-                    entriesBy,
+                    Tuple[Sequence[ReportEntry], str], entriesBy,
                 )
 
                 # Store test data
@@ -676,7 +684,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 # Updated number of incidents should be original plus new
                 self.assertEqual(
                     len(updatedIncident.reportEntries),
-                    len(incident.reportEntries) + len(reportEntries)
+                    len(incident.reportEntries) + len(reportEntries),
                 )
 
                 # Updated entries minus the original entries == the added
@@ -690,9 +698,8 @@ class DataStoreIncidentTests(DataStoreTests):
                     store.reportEntriesEqual(
                         updatedNewEntries, sorted(reportEntries)
                     ),
-                    f"{updatedNewEntries} != {reportEntries}"
+                    f"{updatedNewEntries} != {reportEntries}",
                 )
-
 
     @asyncAsDeferred
     async def test_addReportEntriesToIncident_automatic(self) -> None:
@@ -707,14 +714,15 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.addReportEntriesToIncident(
-                anIncident1.event, anIncident1.number,
-                (reportEntry,), reportEntry.author,
+                anIncident1.event,
+                anIncident1.number,
+                (reportEntry,),
+                reportEntry.author,
             )
         except ValueError as e:
             self.assertIn(" may not be created by user ", str(e))
         else:
             self.fail("StorageError not raised")
-
 
     @asyncAsDeferred
     async def test_addReportEntriesToIncident_wrongAuthor(self) -> None:
@@ -730,14 +738,15 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.addReportEntriesToIncident(
-                anIncident1.event, anIncident1.number,
-                (aReportEntry,), otherAuthor,
+                anIncident1.event,
+                anIncident1.number,
+                (aReportEntry,),
+                otherAuthor,
             )
         except ValueError as e:
             self.assertEndsWith(str(e), f" has author != {otherAuthor}")
         else:
             self.fail("StorageError not raised")
-
 
     @asyncAsDeferred
     async def test_addReportEntriesToIncident_error(self) -> None:
@@ -751,18 +760,22 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.addReportEntriesToIncident(
-                anIncident1.event, anIncident1.number,
-                (aReportEntry,), aReportEntry.author,
+                anIncident1.event,
+                anIncident1.number,
+                (aReportEntry,),
+                aReportEntry.author,
             )
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 
-
     def assertIncidentsEqual(
-        self, store: TestDataStoreABC, incidentA: Incident,
-        incidentB: Incident, ignoreAutomatic: bool = False,
+        self,
+        store: TestDataStoreABC,
+        incidentA: Incident,
+        incidentB: Incident,
+        ignoreAutomatic: bool = False,
     ) -> None:
         if incidentA != incidentB:
             messages = []

@@ -31,7 +31,6 @@ from ...strategies import eventAccesses
 __all__ = ()
 
 
-
 class EventAccessSerializationTests(TestCase):
     """
     Tests for serialization of :class:`EventAccess`
@@ -47,7 +46,6 @@ class EventAccessSerializationTests(TestCase):
         )
 
 
-
 class EventAccessDeserializationTests(TestCase):
     """
     Tests for deserialization of :class:`EventAccess`
@@ -60,5 +58,5 @@ class EventAccessDeserializationTests(TestCase):
         """
         self.assertEqual(
             jsonDeserialize(jsonFromEventAccess(eventAccess), EventAccess),
-            eventAccess
+            eventAccess,
         )

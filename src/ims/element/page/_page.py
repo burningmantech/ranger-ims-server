@@ -40,7 +40,6 @@ from .._element import Element
 __all__ = ()
 
 
-
 @attrs(auto_attribs=True, kw_only=True)
 class Page(Element):
     """
@@ -49,7 +48,6 @@ class Page(Element):
 
     config: Configuration
     name: str
-
 
     def urlsFromImportSpec(self, spec: str) -> Iterable[URL]:
         """
@@ -74,9 +72,7 @@ class Page(Element):
             try:
                 result[name] = getattr(urls, f"{name}JS")
             except AttributeError:
-                raise ValueError(
-                    f"Invalid import {name!r} in spec {spec!r}"
-                )
+                raise ValueError(f"Invalid import {name!r} in spec {spec!r}")
 
             if name == "dataTables":
                 add("dataTablesBootstrap")
@@ -90,14 +86,12 @@ class Page(Element):
 
         return result.values()
 
-
     @renderer
     def title(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         `<title>` element.
         """
         return tag.clone()(self.name)
-
 
     @renderer
     def head(self, request: IRequest, tag: Tag) -> KleinRenderable:
@@ -111,8 +105,9 @@ class Page(Element):
 
         imports = (
             tags.script(src=url.asText())
-            for url in
-            self.urlsFromImportSpec(tag.attributes.get("imports", ""))
+            for url in self.urlsFromImportSpec(
+                tag.attributes.get("imports", "")
+            )
         )
 
         if "imports" in tag.attributes:
@@ -124,16 +119,17 @@ class Page(Element):
             tags.meta(
                 name="viewport", content="width=device-width, initial-scale=1"
             ),
+            tags.link(type="image/png", rel="icon", href=urls.logo.asText(),),
             tags.link(
-                type="image/png", rel="icon",
-                href=urls.logo.asText(),
-            ),
-            tags.link(
-                type="text/css", rel="stylesheet", media="screen",
+                type="text/css",
+                rel="stylesheet",
+                media="screen",
                 href=urls.bootstrapCSS.asText(),
             ),
             tags.link(
-                type="text/css", rel="stylesheet", media="screen",
+                type="text/css",
+                rel="stylesheet",
+                media="screen",
                 href=urls.styleSheet.asText(),
             ),
             self.title(request, tags.title.clone()),
@@ -143,7 +139,6 @@ class Page(Element):
             children,
         )
 
-
     @renderer
     def container(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
@@ -151,7 +146,6 @@ class Page(Element):
         """
         tag.children.insert(0, self.top(request))
         return tag(self.bottom(request), Class="container-fluid")
-
 
     @renderer
     def top(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
@@ -164,14 +158,12 @@ class Page(Element):
             self.title(request, tags.h1.clone()(id="doc-title")),
         )
 
-
     @renderer
     def bottom(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
         """
         Bottom elements.
         """
         return (self.footer(request),)
-
 
     @renderer
     def nav(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
@@ -180,14 +172,12 @@ class Page(Element):
         """
         return NavElement(config=self.config)
 
-
     @renderer
     def header(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
         """
         `<header>` element.
         """
         return HeaderElement(config=self.config)
-
 
     @renderer
     def footer(self, request: IRequest, tag: Tag = None) -> KleinRenderable:

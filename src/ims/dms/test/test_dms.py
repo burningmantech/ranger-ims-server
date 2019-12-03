@@ -31,7 +31,6 @@ from .._dms import fullName, hashPassword
 __all__ = ()
 
 
-
 class DutyManagementSystemTests(TestCase):
     """
     Tests for L{ims.dms.DutyManagementSystem}.
@@ -44,8 +43,8 @@ class DutyManagementSystemTests(TestCase):
         self.dummyADBAPI = DummyADBAPI()
 
         import ims.dms._dms
-        self.patch(ims.dms._dms, "adbapi", self.dummyADBAPI)
 
+        self.patch(ims.dms._dms, "adbapi", self.dummyADBAPI)
 
     def dms(self) -> DutyManagementSystem:
         """
@@ -63,7 +62,6 @@ class DutyManagementSystemTests(TestCase):
             password=self.password,
         )
 
-
     def test_init(self) -> None:
         """
         Initialized state is as expected.
@@ -74,7 +72,6 @@ class DutyManagementSystemTests(TestCase):
         self.assertEquals(dms.database, self.database)
         self.assertEquals(dms.username, self.username)
         self.assertEquals(dms.password, self.password)
-
 
     def test_dbpool(self) -> None:
         """
@@ -91,7 +88,6 @@ class DutyManagementSystemTests(TestCase):
         self.assertEquals(dbpool.connkw["user"], self.username)
         self.assertEquals(dbpool.connkw["password"], self.password)
 
-
     def test_personnel(self) -> None:
         """
         L{DutyManagementSystem.personnel} returns L{Ranger} objects.
@@ -101,10 +97,8 @@ class DutyManagementSystemTests(TestCase):
         personnel = self.successResultOf(dms.personnel())
 
         self.assertEquals(
-            [p.handle for p in personnel],
-            [p[1] for p in cannedPersonnel],
+            [p.handle for p in personnel], [p[1] for p in cannedPersonnel],
         )
-
 
 
 class UtilTests(TestCase):
@@ -120,7 +114,6 @@ class UtilTests(TestCase):
         self.assertEquals(fullName("Bob", "Q", "Smith"), "Bob Q. Smith")
 
 
-
 class DummyQuery(object):
     """
     Represents a call to C{runQuery}.
@@ -129,7 +122,6 @@ class DummyQuery(object):
     def __init__(self, args: tuple, kwargs: dict) -> None:
         self.args = args
         self.kwargs = kwargs
-
 
     def sql(self) -> str:
         """
@@ -143,7 +135,6 @@ class DummyQuery(object):
         return sql
 
 
-
 class DummyConnectionPool(object):
     """
     Mock for L{adbapi.ConnectionPool}.
@@ -153,7 +144,6 @@ class DummyConnectionPool(object):
         self.dbapiname = dbapiname
         self.connkw = connkw
         self.queries: MutableSequence[DummyQuery] = []
-
 
     def runQuery(self, *args: tuple, **kw: dict) -> Deferred:
         query = DummyQuery(args, kw)
@@ -166,8 +156,15 @@ class DummyConnectionPool(object):
             person: Tuple[int, str, str, str, str, str, str, bool, str]
         ) -> Tuple[int, str, str, str, str, str, str, bool, str]:
             return (
-                person[0], person[1], person[2], person[3], person[4],
-                person[5], person[6], person[7], hashPassword(person[8]),
+                person[0],
+                person[1],
+                person[2],
+                person[3],
+                person[4],
+                person[5],
+                person[6],
+                person[7],
+                hashPassword(person[8]),
             )
 
         if sql == (
@@ -179,18 +176,13 @@ class DummyConnectionPool(object):
         ):
             return succeed(fixPassword(p) for p in cannedPersonnel)
 
-        if sql == (
-            "select id, title from position where all_rangers = 0"
-        ):
+        if sql == ("select id, title from position where all_rangers = 0"):
             return succeed(())
 
-        if sql == (
-            "select person_id, position_id from person_position"
-        ):
+        if sql == ("select person_id, position_id from person_position"):
             return succeed(())
 
         return fail(AssertionError(f"No canned response for query: {sql}"))
-
 
 
 class DummyADBAPI(object):  # noqa: B903
@@ -202,30 +194,71 @@ class DummyADBAPI(object):  # noqa: B903
         self.ConnectionPool = DummyConnectionPool
 
 
-
 cannedPersonnel = (
     (
-        1, "Easy E", "Eric", "P", "Grant", "easye@example.com",
-        "active", True, "easypass",
+        1,
+        "Easy E",
+        "Eric",
+        "P",
+        "Grant",
+        "easye@example.com",
+        "active",
+        True,
+        "easypass",
     ),
     (
-        2, "Weso", "Wes", "", "Johnson", "weso@example.com",
-        "active", True, "wespass",
+        2,
+        "Weso",
+        "Wes",
+        "",
+        "Johnson",
+        "weso@example.com",
+        "active",
+        True,
+        "wespass",
     ),
     (
-        3, "SciFi", "Fred", "", "McCord", "scifi@example.com",
-        "active", True, "scipass",
+        3,
+        "SciFi",
+        "Fred",
+        "",
+        "McCord",
+        "scifi@example.com",
+        "active",
+        True,
+        "scipass",
     ),
     (
-        4, "Slumber", "Sleepy", "T", "Dwarf", "slumber@example.com",
-        "inactive", False, "sleepypass",
+        4,
+        "Slumber",
+        "Sleepy",
+        "T",
+        "Dwarf",
+        "slumber@example.com",
+        "inactive",
+        False,
+        "sleepypass",
     ),
     (
-        5, "Tool", "Wilfredo", "", "Sanchez", "tool@example.com",
-        "vintage", True, "toolpass",
+        5,
+        "Tool",
+        "Wilfredo",
+        "",
+        "Sanchez",
+        "tool@example.com",
+        "vintage",
+        True,
+        "toolpass",
     ),
     (
-        6, "Tulsa", "Curtis", "", "Kline", "tulsa@example.com",
-        "vintage", True, "tulsapass",
+        6,
+        "Tulsa",
+        "Curtis",
+        "",
+        "Kline",
+        "tulsa@example.com",
+        "vintage",
+        True,
+        "tulsapass",
     ),
 )

@@ -25,7 +25,9 @@ from attr import attrs
 from twisted.logger import Logger
 
 from ims.ext.json import (
-    jsonTextFromObject, objectFromJSONBytesIO, objectFromJSONText
+    jsonTextFromObject,
+    objectFromJSONBytesIO,
+    objectFromJSONText,
 )
 from ims.model import Event, EventAccess, EventData, IMSData, IncidentType
 from ims.model.json import jsonObjectFromModelObject, modelObjectFromJSONObject
@@ -33,7 +35,6 @@ from ims.model.json import jsonObjectFromModelObject, modelObjectFromJSONObject
 from .._abc import IMSDataStore
 
 __all__ = ()
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -46,7 +47,6 @@ class JSONExporter(object):
 
     store: IMSDataStore
 
-
     async def asBytes(self) -> bytes:
         """
         Export data store as bytes.
@@ -54,7 +54,6 @@ class JSONExporter(object):
         text = await self.asText()
         self._log.info("Encoding exported data as bytes...")
         return text.encode("utf-8")
-
 
     async def asText(self) -> str:
         """
@@ -64,17 +63,14 @@ class JSONExporter(object):
         self._log.info("Encoding exported data as JSON text...")
         return jsonTextFromObject(json)
 
-
     async def asJSON(self) -> Mapping[str, Any]:
         """
         Export data store as JSON.
         """
         self._log.info("Exporting data store as JSON objects...")
         return cast(
-            Mapping[str, Any],
-            jsonObjectFromModelObject(await self.imsData())
+            Mapping[str, Any], jsonObjectFromModelObject(await self.imsData())
         )
-
 
     async def imsData(self) -> IMSData:
         """
@@ -88,14 +84,11 @@ class JSONExporter(object):
             ],
         )
 
-
     async def _incidentTypes(self) -> Iterable[IncidentType]:
         """
         Export incident types.
         """
-        allTypes = frozenset(
-            await self.store.incidentTypes(includeHidden=True)
-        )
+        allTypes = frozenset(await self.store.incidentTypes(includeHidden=True))
         visibleTypes = frozenset(
             await self.store.incidentTypes(includeHidden=False)
         )
@@ -104,7 +97,6 @@ class JSONExporter(object):
             IncidentType(name=name, hidden=(name not in visibleTypes))
             for name in allTypes
         )
-
 
     async def _eventData(self, event: Event) -> EventData:
         """
@@ -119,8 +111,8 @@ class JSONExporter(object):
         )
 
         concentricStreets = await self.store.concentricStreets(event)
-        incidents         = await self.store.incidents(event)
-        incidentReports   = await self.store.incidentReports(event)
+        incidents = await self.store.incidents(event)
+        incidentReports = await self.store.incidentReports(event)
 
         return EventData(
             event=event,
@@ -129,7 +121,6 @@ class JSONExporter(object):
             incidents=incidents,
             incidentReports=incidentReports,
         )
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -143,28 +134,20 @@ class JSONImporter(object):
     store: Optional[IMSDataStore]
     imsData: IMSData
 
-
     @classmethod
-    def fromIO(
-        cls, store: IMSDataStore, io: BinaryIO
-    ) -> "JSONImporter":
+    def fromIO(cls, store: IMSDataStore, io: BinaryIO) -> "JSONImporter":
         cls._log.info("Reading from JSON I/O...")
         return cls.fromJSON(store, objectFromJSONBytesIO(io))
 
-
     @classmethod
-    def fromBytes(
-        cls, store: IMSDataStore, jsonBytes: bytes
-    ) -> "JSONImporter":
+    def fromBytes(cls, store: IMSDataStore, jsonBytes: bytes) -> "JSONImporter":
         cls._log.info("Reading from JSON bytes...")
         return cls.fromText(store, jsonBytes.decode("utf-8"))
-
 
     @classmethod
     def fromText(cls, store: IMSDataStore, jsonText: str) -> "JSONImporter":
         cls._log.info("Reading from JSON text...")
         return cls.fromJSON(store, objectFromJSONText(jsonText))
-
 
     @classmethod
     def fromJSON(
@@ -176,7 +159,6 @@ class JSONImporter(object):
         cls._log.info("Reading from JSON objects...")
         imsData = modelObjectFromJSONObject(json, IMSData)
         return cls(store=store, imsData=imsData)
-
 
     async def _storeIncidentTypes(self) -> None:
         store = self.store
@@ -198,10 +180,9 @@ class JSONImporter(object):
                     incidentType.name, incidentType.hidden
                 )
 
-
     async def _storeEventAccess(self, eventData: EventData) -> None:
-        store       = self.store
-        event       = eventData.event
+        store = self.store
+        event = eventData.event
         eventAccess = eventData.access
 
         assert store is not None
@@ -209,7 +190,6 @@ class JSONImporter(object):
         await store.setReaders(event, eventAccess.readers)
         await store.setWriters(event, eventAccess.writers)
         await store.setReporters(event, eventAccess.reporters)
-
 
     async def _storeConcentricStreets(self, eventData: EventData) -> None:
         store = self.store
@@ -232,15 +212,14 @@ class JSONImporter(object):
             else:
                 await store.createConcentricStreet(event, streetID, streetName)
 
-
     async def _storeIncidents(self, eventData: EventData) -> None:
         store = self.store
 
         assert store is not None
 
         existingIncidentNumbers = frozenset(
-            incident.number for incident in
-            await store.incidents(eventData.event)
+            incident.number
+            for incident in await store.incidents(eventData.event)
         )
 
         for incident in eventData.incidents:
@@ -254,15 +233,14 @@ class JSONImporter(object):
             else:
                 await store.importIncident(incident)
 
-
     async def _storeIncidentReports(self, eventData: EventData) -> None:
         store = self.store
 
         assert store is not None
 
         existingIncidentReportNumbers = frozenset(
-            incidentReport.number for incidentReport in
-            await store.incidentReports(eventData.event)
+            incidentReport.number
+            for incidentReport in await store.incidentReports(eventData.event)
         )
 
         for incidentReport in eventData.incidentReports:
@@ -275,7 +253,6 @@ class JSONImporter(object):
                 )
             else:
                 await store.importIncidentReport(incidentReport)
-
 
     async def storeData(self) -> None:
         store = self.store
@@ -294,8 +271,7 @@ class JSONImporter(object):
 
             if event in existingEvents:
                 self._log.info(
-                    "Not creating existing event: {event}",
-                    event=event,
+                    "Not creating existing event: {event}", event=event,
                 )
             else:
                 await store.createEvent(event)

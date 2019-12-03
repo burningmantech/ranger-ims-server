@@ -26,7 +26,8 @@ from typing import ClassVar, Iterable, Mapping, Optional, Set, Tuple, cast
 from attr import Factory, attrib, attrs
 
 from pymysql import (
-    DatabaseError as SQLDatabaseError, OperationalError as SQLOperationalError
+    DatabaseError as SQLDatabaseError,
+    OperationalError as SQLOperationalError,
 )
 
 from twisted.enterprise import adbapi
@@ -39,7 +40,6 @@ from ims.model import Ranger, RangerStatus
 __all__ = ()
 
 
-
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class DMSError(Exception):
     """
@@ -49,13 +49,11 @@ class DMSError(Exception):
     message: str
 
 
-
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class DatabaseError(DMSError):
     """
     Database error.
     """
-
 
 
 @attrs(frozen=False, auto_attribs=True, kw_only=True)
@@ -67,7 +65,6 @@ class Position(object):
     positionID: str
     name: str
     members: Set[Ranger] = Factory(set)
-
 
 
 # FIXME: make frozen
@@ -85,7 +82,7 @@ class DutyManagementSystem(object):
     # be fine.
     # Refresh after an hour, but don't panic about it until we're stale for >12
     # hours.
-    personnelCacheInterval: ClassVar[int]    = 60 * 5   # 5 minutes
+    personnelCacheInterval: ClassVar[int] = 60 * 5  # 5 minutes
     personnelCacheIntervalMax: ClassVar[int] = 60 * 30  # 30 minutes
 
     host: str
@@ -99,7 +96,6 @@ class DutyManagementSystem(object):
     _dbpool: Optional[adbapi.ConnectionPool] = attrib(default=None, init=False)
     _busy: bool = attrib(default=False, init=False)
 
-
     @property
     def dbpool(self) -> adbapi.ConnectionPool:
         """
@@ -107,12 +103,13 @@ class DutyManagementSystem(object):
         """
         if self._dbpool is None:
             if (
-                not self.host and
-                not self.database and
-                not self.username and
-                not self.password
+                not self.host
+                and not self.database
+                and not self.username
+                and not self.password
             ):
                 from .test.test_dms import DummyConnectionPool
+
                 dbpool = DummyConnectionPool("Dummy")
 
             else:
@@ -131,11 +128,8 @@ class DutyManagementSystem(object):
 
         return self._dbpool
 
-
     async def _queryPositionsByID(self) -> Mapping[str, Position]:
-        self._log.info(
-            "Retrieving positions from Duty Management System..."
-        )
+        self._log.info("Retrieving positions from Duty Management System...")
 
         rows = await self.dbpool.runQuery(
             """
@@ -143,15 +137,10 @@ class DutyManagementSystem(object):
             """
         )
 
-        return {
-            id: Position(positionID=id, name=title) for (id, title) in rows
-        }
-
+        return {id: Position(positionID=id, name=title) for (id, title) in rows}
 
     async def _queryRangersByID(self) -> Mapping[str, Ranger]:
-        self._log.info(
-            "Retrieving personnel from Duty Management System..."
-        )
+        self._log.info("Retrieving personnel from Duty Management System...")
 
         rows = await self.dbpool.runQuery(
             """
@@ -175,14 +164,20 @@ class DutyManagementSystem(object):
                     onSite=bool(onSite),
                     dmsID=int(dmsID),
                     password=password,
-                )
+                ),
             )
             for (
-                dmsID, handle, first, middle, last, email,
-                status, onSite, password,
+                dmsID,
+                handle,
+                first,
+                middle,
+                last,
+                email,
+                status,
+                onSite,
+                password,
             ) in rows
         )
-
 
     async def _queryPositionRangerJoin(self) -> Iterable[Tuple[str, str]]:
         self._log.info(
@@ -196,9 +191,8 @@ class DutyManagementSystem(object):
                 """
                 select person_id, position_id from person_position
                 """
-            )
+            ),
         )
-
 
     async def positions(self) -> Iterable[Position]:
         """
@@ -209,7 +203,6 @@ class DutyManagementSystem(object):
         await self.personnel()
         return self._positions
 
-
     async def personnel(self) -> Iterable[Ranger]:
         """
         Look up all personnel.
@@ -217,7 +210,7 @@ class DutyManagementSystem(object):
         now = time()
         elapsed = now - self._personnelLastUpdated
 
-        if (not self._busy and elapsed > self.personnelCacheInterval):
+        if not self._busy and elapsed > self.personnelCacheInterval:
             self._busy = True
             try:
                 try:
@@ -245,7 +238,7 @@ class DutyManagementSystem(object):
                     if isinstance(e, (SQLDatabaseError, SQLOperationalError)):
                         self._log.warn(
                             "Unable to load personnel data from DMS: {error}",
-                            error=e
+                            error=e,
                         )
                     elif isinstance(e, CancelledError):
                         pass
@@ -268,7 +261,6 @@ class DutyManagementSystem(object):
             raise DMSError("No personnel data loaded.")
 
 
-
 def fullName(first: str, middle: str, last: str) -> str:
     """
     Compose parts of a name into a full name.
@@ -281,15 +273,15 @@ def fullName(first: str, middle: str, last: str) -> str:
 
 def statusFromID(strValue: str) -> RangerStatus:
     return {
-        "active":      RangerStatus.active,
-        "alpha":       RangerStatus.alpha,
-        "bonked":      RangerStatus.bonked,
-        "deceased":    RangerStatus.deceased,
-        "inactive":    RangerStatus.inactive,
+        "active": RangerStatus.active,
+        "alpha": RangerStatus.alpha,
+        "bonked": RangerStatus.bonked,
+        "deceased": RangerStatus.deceased,
+        "inactive": RangerStatus.inactive,
         "prospective": RangerStatus.prospective,
-        "retired":     RangerStatus.retired,
-        "uberbonked":  RangerStatus.uberbonked,
-        "vintage":     RangerStatus.vintage,
+        "retired": RangerStatus.retired,
+        "uberbonked": RangerStatus.uberbonked,
+        "vintage": RangerStatus.vintage,
     }.get(strValue, RangerStatus.other)
 
 

@@ -23,13 +23,15 @@ from enum import Enum, unique
 from typing import Any, Dict, Type, cast
 
 from ._json import (
-    deserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize,
+    jsonSerialize,
+    registerDeserializer,
+    registerSerializer,
 )
 from .._type import IncidentType
 
 
 __all__ = ()
-
 
 
 @unique
@@ -38,9 +40,8 @@ class IncidentTypeJSONKey(Enum):
     Incident type JSON keys
     """
 
-    name   = "name"
+    name = "name"
     hidden = "hidden"
-
 
 
 class IncidentTypeJSONType(Enum):
@@ -48,9 +49,8 @@ class IncidentTypeJSONType(Enum):
     Incident type attribute types
     """
 
-    name   = str   # type: ignore[assignment]
+    name = str  # type: ignore[assignment]
     hidden = bool
-
 
 
 def serializeIncidentType(incidentType: IncidentType) -> Dict[str, Any]:
@@ -59,6 +59,7 @@ def serializeIncidentType(incidentType: IncidentType) -> Dict[str, Any]:
         (key.value, jsonSerialize(getattr(incidentType, key.name)))
         for key in IncidentTypeJSONKey
     )
+
 
 registerSerializer(IncidentType, serializeIncidentType)
 
@@ -70,8 +71,9 @@ def deserializeIncidentType(obj: Dict[str, Any], cl: Type) -> IncidentType:
         IncidentType,
         deserialize(
             obj, IncidentType, IncidentTypeJSONType, IncidentTypeJSONKey
-        )
+        ),
     )
+
 
 registerDeserializer(IncidentType, deserializeIncidentType)
 

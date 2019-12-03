@@ -31,7 +31,6 @@ from ..strategies import events
 __all__ = ()
 
 
-
 class EventTests(TestCase):
     """
     Tests for :class:`Event`
@@ -43,7 +42,6 @@ class EventTests(TestCase):
         :meth:`Event.__str__` renders the event as a string.
         """
         self.assertEqual(str(event), event.id)
-
 
     @given(events(), events())
     def test_ordering(self, eventA: Event, eventB: Event) -> None:

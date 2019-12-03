@@ -32,7 +32,6 @@ __all__ = ()
 builtInTypes = {"Admin", "Junk"}
 
 
-
 class DataStoreIncidentTypeTests(DataStoreTests):
     """
     Tests for :class:`IMSDataStore` incident type access.
@@ -45,12 +44,8 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         """
         for _data in (
             (),
-            (
-                ("MOOP", False),
-            ),
-            (
-                ("MOOP", True),
-            ),
+            (("MOOP", False),),
+            (("MOOP", True),),
             (
                 ("MOOP", False),
                 ("Law Enforcement", False),
@@ -65,12 +60,12 @@ class DataStoreIncidentTypeTests(DataStoreTests):
                 await store.storeIncidentType(name, hidden)
 
             incidentTypes = frozenset(await store.incidentTypes())
-            expected = frozenset(
-                (name for (name, hidden) in data if not hidden)
-            ) | builtInTypes
+            expected = (
+                frozenset((name for (name, hidden) in data if not hidden))
+                | builtInTypes
+            )
 
             self.assertEqual(incidentTypes, expected)
-
 
     @asyncAsDeferred
     async def test_incidentTypes_includeHidden(self) -> None:
@@ -80,12 +75,8 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         """
         for _data in (
             (),
-            (
-                ("MOOP", False),
-            ),
-            (
-                ("MOOP", True),
-            ),
+            (("MOOP", False),),
+            (("MOOP", True),),
             (
                 ("MOOP", False),
                 ("Law Enforcement", False),
@@ -107,7 +98,6 @@ class DataStoreIncidentTypeTests(DataStoreTests):
             )
 
             self.assertEqual(incidentTypes, expected)
-
 
     @asyncAsDeferred
     async def test_createIncidentType(self) -> None:
@@ -134,7 +124,6 @@ class DataStoreIncidentTypeTests(DataStoreTests):
             )
             self.assertIn(incidentType, incidentTypes)
 
-
     @asyncAsDeferred
     async def test_createIncidentType_duplicate(self) -> None:
         """
@@ -152,7 +141,6 @@ class DataStoreIncidentTypeTests(DataStoreTests):
             pass
         else:
             self.fail("StorageError not raised")
-
 
     @asyncAsDeferred
     async def test_showIncidentTypes(self) -> None:
@@ -172,7 +160,6 @@ class DataStoreIncidentTypeTests(DataStoreTests):
         # Again should also work
         await store.showIncidentTypes((incidentType,))
         self.assertIn(incidentType, await store.incidentTypes())
-
 
     @asyncAsDeferred
     async def test_hideIncidentTypes(self) -> None:

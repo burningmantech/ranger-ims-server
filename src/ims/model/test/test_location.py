@@ -27,7 +27,6 @@ from .._location import Location
 __all__ = ()
 
 
-
 class LocationTests(TestCase):
     """
     Tests for :class:`Location`

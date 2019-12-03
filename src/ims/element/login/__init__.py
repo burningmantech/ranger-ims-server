@@ -21,6 +21,4 @@ Login page element.
 from ._login import LoginPage
 
 
-__all__ = (
-    "LoginPage",
-)
+__all__ = ("LoginPage",)

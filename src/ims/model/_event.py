@@ -26,7 +26,6 @@ from attr import attrs
 __all__ = ()
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Event(object):
     """
@@ -36,7 +35,6 @@ class Event(object):
     """
 
     id: str
-
 
     def __str__(self) -> str:
         return self.id

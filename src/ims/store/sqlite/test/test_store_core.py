@@ -19,7 +19,9 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
 from datetime import (
-    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+    datetime as DateTime,
+    timedelta as TimeDelta,
+    timezone as TimeZone,
 )
 from io import StringIO
 from pathlib import Path
@@ -32,8 +34,12 @@ from hypothesis import given, settings
 from hypothesis.strategies import integers
 
 from ims.ext.sqlite import (
-    Connection, SQLITE_MAX_INT, SQLITE_MIN_INT, SQLiteError,
-    createDB, printSchema,
+    Connection,
+    SQLITE_MAX_INT,
+    SQLITE_MIN_INT,
+    SQLiteError,
+    createDB,
+    printSchema,
 )
 from ims.ext.trial import AsynchronousTestCase, TestCase
 
@@ -44,7 +50,6 @@ from ..._exceptions import StorageError
 
 
 __all__ = ()
-
 
 
 class DataStoreCoreTests(AsynchronousTestCase):
@@ -60,7 +65,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
         schema = store.loadSchema()
 
         self.assertStartsWith(schema, "create table SCHEMA_INFO (")
-
 
     def test_printSchema(self) -> None:
         """
@@ -137,11 +141,12 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   5: STRICKEN(numeric) not null
                 SCHEMA_INFO:
                   0: VERSION(integer) not null
-                """[1:]
+                """[
+                    1:
+                ]
             ),
             schemaInfo,
         )
-
 
     def test_printQueries(self) -> None:
         """
@@ -154,36 +159,37 @@ class DataStoreCoreTests(AsynchronousTestCase):
         self.maxDiff = None
         self.assertStartsWith(
             queryInfo,
-            "\n".join((
-                "addEventAccess:",
-                "",
-                "  -- query --",
-                "",
-                "    insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)",
-                "    values "
-                "((select ID from EVENT where NAME = :eventID), "
-                ":expression, :mode)",
-                "",
-                "  -- query plan --",
-                "",
-                "    [None,None] You did not supply a value for binding 1.",
-                "",
-                "attachIncidentReportToIncident:",
-                "",
-                "  -- query --",
-                "",
-                "    update INCIDENT_REPORT set INCIDENT_NUMBER = :value",
-                "    where EVENT = "
-                "(select ID from EVENT where NAME = :eventID) "
-                "and NUMBER = :incidentReportNumber",
-                "",
-                "  -- query plan --",
-                "",
-                "    [None,None] You did not supply a value for binding 1.",
-                "",
-            ))
+            "\n".join(
+                (
+                    "addEventAccess:",
+                    "",
+                    "  -- query --",
+                    "",
+                    "    insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)",
+                    "    values "
+                    "((select ID from EVENT where NAME = :eventID), "
+                    ":expression, :mode)",
+                    "",
+                    "  -- query plan --",
+                    "",
+                    "    [None,None] You did not supply a value for binding 1.",
+                    "",
+                    "attachIncidentReportToIncident:",
+                    "",
+                    "  -- query --",
+                    "",
+                    "    update INCIDENT_REPORT set INCIDENT_NUMBER = :value",
+                    "    where EVENT = "
+                    "(select ID from EVENT where NAME = :eventID) "
+                    "and NUMBER = :incidentReportNumber",
+                    "",
+                    "  -- query plan --",
+                    "",
+                    "    [None,None] You did not supply a value for binding 1.",
+                    "",
+                )
+            ),
         )
-
 
     def test_dbSchemaVersion(self) -> None:
         """
@@ -195,7 +201,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
             self.assertEqual(DataStore._dbSchemaVersion(db), version)
 
-
     def test_db(self) -> None:
         """
         :meth:`DataStore._db` returns a :class:`Connection`.
@@ -203,7 +208,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
         store = TestDataStore(dbPath=None)
 
         self.assertIsInstance(store._db, Connection)
-
 
     def test_db_error(self) -> None:
         """
@@ -224,12 +228,12 @@ class DataStoreCoreTests(AsynchronousTestCase):
             str(e), f"Unable to open SQLite database {store.dbPath}: {message}"
         )
 
-
     def test_upgradeSchema(self) -> None:
         """
         :meth:`DataStore.upgradeSchema` upgrades the data schema to the current
         version.
         """
+
         def getSchemaInfo(db: Connection) -> str:
             out = StringIO()
             printSchema(db, out)
@@ -237,9 +241,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         currentVersion = DataStore.schemaVersion
 
-        with createDB(
-            None, DataStore.loadSchema(version=currentVersion)
-        ) as db:
+        with createDB(None, DataStore.loadSchema(version=currentVersion)) as db:
             currentSchemaInfo = getSchemaInfo(db)
 
         for version in range(1, currentVersion):
@@ -256,7 +258,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
             self.maxDiff = None
             self.assertEqual(schemaInfo, currentSchemaInfo)
 
-
     def test_upgradeSchema_noSchemaInfo(self) -> None:
         """
         :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
@@ -271,7 +272,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         f = self.failureResultOf(store.upgradeSchema(), StorageError)
         self.assertStartsWith(f.getErrorMessage(), "Unable to apply schema: ")
-
 
     def test_upgradeSchema_noSchemaVersion(self) -> None:
         """
@@ -288,7 +288,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
         f = self.failureResultOf(store.upgradeSchema(), StorageError)
         self.assertEqual(f.getErrorMessage(), "Invalid schema: no version")
 
-
     @given(integers(min_value=SQLITE_MIN_INT, max_value=-1))
     @settings(max_examples=10)
     def test_upgradeSchema_fromVersionTooLow(self, version: int) -> None:
@@ -301,7 +300,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute(
                 "update SCHEMA_INFO set VERSION = :version",
-                dict(version=version)
+                dict(version=version),
             )
 
         store = TestDataStore(dbPath=dbPath)
@@ -311,7 +310,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
             f.getErrorMessage(),
             f"No upgrade path from schema version {version}",
         )
-
 
     @given(
         integers(
@@ -330,7 +328,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute(
                 "update SCHEMA_INFO set VERSION = :version",
-                dict(version=version)
+                dict(version=version),
             )
 
         store = TestDataStore(dbPath=dbPath)
@@ -339,9 +337,8 @@ class DataStoreCoreTests(AsynchronousTestCase):
         self.assertEqual(
             f.getErrorMessage(),
             f"Schema version {version} is too new "
-            f"(current version is {store.schemaVersion})"
+            f"(current version is {store.schemaVersion})",
         )
-
 
     def test_validate_super(self) -> None:
         """
@@ -359,7 +356,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
         with patch("ims.store._db.DatabaseStore.validate", errorValidate):
             f = self.failureResultOf(store.validate(), StorageError)
             self.assertEqual(f.getErrorMessage(), message)
-
 
     def test_validate_constraints(self) -> None:
         """
@@ -383,7 +379,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
             )
 
 
-
 class DataStoreHelperTests(TestCase):
     """
     Tests for :class:`DataStore` helper functions.
@@ -399,7 +394,5 @@ class DataStoreHelperTests(TestCase):
         )
         preEpoch = epoch - TimeDelta(seconds=1)
 
-        e = self.assertRaises(
-            StorageError, DataStore.asDateTimeValue, preEpoch
-        )
+        e = self.assertRaises(StorageError, DataStore.asDateTimeValue, preEpoch)
         self.assertStartsWith(str(e), "DateTime is before the UTC epoch: ")

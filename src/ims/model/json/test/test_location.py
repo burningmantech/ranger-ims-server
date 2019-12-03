@@ -32,7 +32,6 @@ from ...strategies import locations
 __all__ = ()
 
 
-
 class LocationSerializationTests(TestCase):
     """
     Tests for serialization of :class:`Location`
@@ -44,7 +43,6 @@ class LocationSerializationTests(TestCase):
         :func:`jsonSerialize` serializes the given location.
         """
         self.assertEqual(jsonSerialize(location), jsonFromLocation(location))
-
 
 
 class LocationDeserializationTests(TestCase):
@@ -61,14 +59,15 @@ class LocationDeserializationTests(TestCase):
             jsonDeserialize(jsonFromLocation(location), Location), location
         )
 
-
     def test_deserialize_invalidType(self) -> None:
         """
         :func:`jsonDeserialize` returns a location with the correct data.
         """
-        json = jsonFromLocation(Location(
-            name="Foo", address=TextOnlyAddress(description="Over there")
-        ))
+        json = jsonFromLocation(
+            Location(
+                name="Foo", address=TextOnlyAddress(description="Over there")
+            )
+        )
 
         # jsonAddress = json["address"]
         jsonAddress = json

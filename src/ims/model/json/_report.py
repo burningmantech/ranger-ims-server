@@ -23,7 +23,10 @@ from enum import Enum, unique
 from typing import Any, Dict, List, Optional, Type, cast
 
 from ._json import (
-    deserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize,
+    jsonSerialize,
+    registerDeserializer,
+    registerSerializer,
 )
 from .._entry import ReportEntry
 from .._event import Event
@@ -33,20 +36,18 @@ from .._report import IncidentReport
 __all__ = ()
 
 
-
 @unique
 class IncidentReportJSONKey(Enum):
     """
     Incident report JSON keys
     """
 
-    event          = "event"
-    number         = "number"
-    created        = "created"
-    summary        = "summary"
+    event = "event"
+    number = "number"
+    created = "created"
+    summary = "summary"
     incidentNumber = "incident"
-    reportEntries  = "report_entries"
-
+    reportEntries = "report_entries"
 
 
 class IncidentReportJSONType(Enum):
@@ -54,13 +55,12 @@ class IncidentReportJSONType(Enum):
     Incident report attribute types
     """
 
-    event          = Event
-    number         = int
-    created        = DateTime
-    summary        = Optional[str]
+    event = Event
+    number = int
+    created = DateTime
+    summary = Optional[str]
     incidentNumber = Optional[int]
-    reportEntries  = List[ReportEntry]
-
+    reportEntries = List[ReportEntry]
 
 
 def serializeIncidentReport(incidentReport: IncidentReport) -> Dict[str, Any]:
@@ -69,6 +69,7 @@ def serializeIncidentReport(incidentReport: IncidentReport) -> Dict[str, Any]:
         (key.value, jsonSerialize(getattr(incidentReport, key.name)))
         for key in IncidentReportJSONKey
     )
+
 
 registerSerializer(IncidentReport, serializeIncidentReport)
 
@@ -79,9 +80,9 @@ def deserializeIncidentReport(obj: Dict[str, Any], cl: Type) -> IncidentReport:
     return cast(
         IncidentReport,
         deserialize(
-            obj, IncidentReport,
-            IncidentReportJSONType, IncidentReportJSONKey,
-        )
+            obj, IncidentReport, IncidentReportJSONType, IncidentReportJSONKey,
+        ),
     )
+
 
 registerDeserializer(IncidentReport, deserializeIncidentReport)

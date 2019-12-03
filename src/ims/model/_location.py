@@ -35,7 +35,6 @@ def convertAddress(address: Optional[Address]) -> Address:
     return address
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Location(Address, ReplaceMixIn):
     """

@@ -26,7 +26,6 @@ from ims.ext.enum import Names, auto, enumOrdering
 __all__ = ()
 
 
-
 @enumOrdering
 class IncidentPriority(Names):
     """
@@ -36,14 +35,12 @@ class IncidentPriority(Names):
     particular incident.
     """
 
-    high   = auto()
+    high = auto()
     normal = auto()
-    low    = auto()
-
+    low = auto()
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}[{self.name!r}]"
-
 
     def __str__(self) -> str:
         return self.name

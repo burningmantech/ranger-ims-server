@@ -21,7 +21,15 @@ Incident Management System data model JSON serialization/deserialization
 from datetime import datetime as DateTime
 from enum import Enum
 from typing import (
-    Any, Callable, Dict, Iterable, List, Mapping, Type, Union, cast
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Type,
+    Union,
+    cast,
 )
 
 from cattr import Converter
@@ -41,12 +49,10 @@ log = Logger()
 JSON = Union[Mapping[str, Any], Iterable, int, str, float, bool, None]
 
 
-
 class JSONCodecError(Exception):
     """
     Error while serializing or deserializing JSON data.
     """
-
 
 
 converter = Converter()
@@ -61,18 +67,22 @@ registerDeserializer = converter.register_structure_hook
 
 registerSerializer(DateTime, dateTimeAsRFC3339Text)
 
+
 def deserializeDateTime(obj: str, cl: Type) -> DateTime:
     assert cl is DateTime, (cl, obj)
 
     return rfc3339TextAsDateTime(obj)
+
 
 registerDeserializer(DateTime, deserializeDateTime)
 
 
 # Tuples and sets should serialize like lists
 
+
 def serializeIterable(iterable: Iterable) -> List:
     return [jsonSerialize(item) for item in iterable]
+
 
 registerSerializer(frozenset, serializeIterable)
 registerSerializer(set, serializeIterable)
@@ -81,10 +91,13 @@ registerSerializer(tuple, serializeIterable)
 
 # FrozenDict
 
+
 def serializeFrozenDict(frozenDict: FrozenDict) -> Any:
     return jsonSerialize(dict(frozenDict))
 
+
 registerSerializer(FrozenDict, serializeFrozenDict)
+
 
 def deserializeFrozenDict(obj: Dict, cl: Type) -> FrozenDict:
     assert cl is FrozenDict, (cl, obj)
@@ -92,8 +105,8 @@ def deserializeFrozenDict(obj: Dict, cl: Type) -> FrozenDict:
     return FrozenDict.fromMapping(obj)
 
 
-
 # Public API
+
 
 def jsonObjectFromModelObject(model: Any) -> JSON:
     return jsonSerialize(model)
@@ -108,6 +121,7 @@ def modelObjectFromJSONObject(json: JSON, modelClass: type) -> Any:
 
 # Utilities
 
+
 def deserialize(
     obj: Dict[str, Any], cls: Type, typeEnum: Type, keyEnum: Type
 ) -> Any:
@@ -121,13 +135,13 @@ def deserialize(
                 )
             )
         try:
-            return jsonDeserialize(
-                obj.get(key.value, None), cls
-            )
+            return jsonDeserialize(obj.get(key.value, None), cls)
         except Exception:
             log.error(
                 "Unable to deserialize {key} as {cls} from {json}",
-                key=key, cls=cls, json=obj
+                key=key,
+                cls=cls,
+                json=obj,
             )
             raise
 

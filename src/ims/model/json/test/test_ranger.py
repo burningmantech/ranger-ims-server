@@ -31,7 +31,6 @@ from ...strategies import rangers
 __all__ = ()
 
 
-
 class RangerSerializationTests(TestCase):
     """
     Tests for serialization of :class:`Ranger`
@@ -43,7 +42,6 @@ class RangerSerializationTests(TestCase):
         :func:`jsonSerialize` serializes the given Ranger.
         """
         self.assertEqual(jsonSerialize(ranger), jsonFromRanger(ranger))
-
 
 
 class RangerDeserializationTests(TestCase):

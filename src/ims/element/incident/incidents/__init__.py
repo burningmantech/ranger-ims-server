@@ -21,6 +21,4 @@ Incidents page element.
 from ._incidents import IncidentsPage
 
 
-__all__ = (
-    "IncidentsPage",
-)
+__all__ = ("IncidentsPage",)

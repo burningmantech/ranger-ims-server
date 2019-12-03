@@ -24,7 +24,6 @@ from attr import attrs
 __all__ = ()
 
 
-
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class NotAuthenticatedError(Exception):
     """
@@ -32,7 +31,6 @@ class NotAuthenticatedError(Exception):
     """
 
     message: str
-
 
 
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)

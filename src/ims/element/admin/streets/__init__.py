@@ -21,6 +21,4 @@ Admin streets page.
 from ._admin_streets import AdminStreetsPage
 
 
-__all__ = (
-    "AdminStreetsPage",
-)
+__all__ = ("AdminStreetsPage",)

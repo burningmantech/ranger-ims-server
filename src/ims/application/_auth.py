@@ -38,9 +38,8 @@ __all__ = ()
 
 def _unprefix(url: URL) -> URL:
     prefix = URLs.auth.path[:-1]
-    assert url.path[:len(prefix)] == prefix, (url.path[len(prefix):], prefix)
-    return url.replace(path=url.path[len(prefix):])
-
+    assert url.path[: len(prefix)] == prefix, (url.path[len(prefix) :], prefix)
+    return url.replace(path=url.path[len(prefix) :])
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
@@ -52,22 +51,18 @@ class AuthApplication(object):
     _log: ClassVar[Logger] = Logger()
     router: ClassVar[Router] = Router()
 
-
     config: Configuration
 
-
     @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
-    def login(
-        self, request: IRequest, failed: bool = False
-    ) -> KleinRenderable:
+    def login(self, request: IRequest, failed: bool = False) -> KleinRenderable:
         """
         Endpoint for the login page.
         """
         self.config.authProvider.authenticateRequest(request, optional=True)
 
         from ims.element.login import LoginPage
-        return LoginPage(config=self.config, failed=failed)
 
+        return LoginPage(config=self.config, failed=failed)
 
     @router.route(_unprefix(URLs.login), methods=("POST",))
     async def loginSubmit(self, request: IRequest) -> KleinRenderable:
@@ -108,11 +103,10 @@ class AuthApplication(object):
             else:
                 self._log.debug(
                     "Login failed: incorrect credentials for user: {user}",
-                    user=user
+                    user=user,
                 )
 
         return self.login(request, failed=True)
-
 
     @router.route(_unprefix(URLs.logout), methods=("HEAD", "GET"))
     def logout(self, request: IRequest) -> KleinRenderable:

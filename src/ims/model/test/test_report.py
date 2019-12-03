@@ -31,7 +31,6 @@ from ..strategies import incidentReports
 __all__ = ()
 
 
-
 class IncidentReportTests(TestCase):
     """
     Tests for :class:`IncidentReport`
@@ -53,7 +52,6 @@ class IncidentReportTests(TestCase):
             f"{incidentReport.event} #{incidentReport.number}: {summary}",
         )
 
-
     @given(incidentReports(), sampled_from((None, "")))
     def test_str_noSummary(
         self, incidentReport: IncidentReport, summary: str
@@ -67,5 +65,5 @@ class IncidentReportTests(TestCase):
         self.assertEqual(
             str(incidentReport),
             f"{incidentReport.event} #{incidentReport.number}: "
-            f"{summaryFromReport(None, incidentReport.reportEntries)}"
+            f"{summaryFromReport(None, incidentReport.reportEntries)}",
         )

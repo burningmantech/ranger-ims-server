@@ -22,13 +22,15 @@ from enum import Enum, unique
 from typing import Any, Dict, FrozenSet, Type, cast
 
 from ._json import (
-    deserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize,
+    jsonSerialize,
+    registerDeserializer,
+    registerSerializer,
 )
 from .._eventaccess import EventAccess
 
 
 __all__ = ()
-
 
 
 @unique
@@ -37,10 +39,9 @@ class EventAccessJSONKey(Enum):
     Event access JSON keys
     """
 
-    readers   = "readers"
-    writers   = "writers"
+    readers = "readers"
+    writers = "writers"
     reporters = "reporters"
-
 
 
 class EventAccessJSONType(Enum):
@@ -48,10 +49,9 @@ class EventAccessJSONType(Enum):
     Event access attribute types
     """
 
-    readers   = FrozenSet[str]
-    writers   = FrozenSet[str]
+    readers = FrozenSet[str]
+    writers = FrozenSet[str]
     reporters = FrozenSet[str]
-
 
 
 def serializeEventAccess(eventAccess: EventAccess) -> Dict[str, Any]:
@@ -61,6 +61,7 @@ def serializeEventAccess(eventAccess: EventAccess) -> Dict[str, Any]:
         for key in EventAccessJSONKey
     )
 
+
 registerSerializer(EventAccess, serializeEventAccess)
 
 
@@ -69,10 +70,8 @@ def deserializeEventAccess(obj: Dict[str, Any], cl: Type) -> EventAccess:
 
     return cast(
         EventAccess,
-        deserialize(
-            obj, EventAccess,
-            EventAccessJSONType, EventAccessJSONKey,
-        )
+        deserialize(obj, EventAccess, EventAccessJSONType, EventAccessJSONKey,),
     )
+
 
 registerDeserializer(EventAccess, deserializeEventAccess)

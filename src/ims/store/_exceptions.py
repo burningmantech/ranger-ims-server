@@ -24,7 +24,6 @@ from attr import attrs
 __all__ = ()
 
 
-
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class StorageError(RuntimeError):
     """
@@ -34,13 +33,11 @@ class StorageError(RuntimeError):
     message: str
 
 
-
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class NoSuchIncidentError(StorageError):
     """
     No such incident.
     """
-
 
 
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)

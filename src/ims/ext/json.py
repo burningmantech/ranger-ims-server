@@ -23,7 +23,6 @@ __all__ = (
 )
 
 
-
 class Encoder(JSONEncoder):
     """
     JSON encoder that attempts to convert :class:`Mapping` to :class:`dict`,
@@ -31,7 +30,6 @@ class Encoder(JSONEncoder):
     """
 
     _log: ClassVar = Logger()
-
 
     def default(self, obj: Any) -> Any:
         iterate = getattr(obj, "__iter__", None)
@@ -47,7 +45,6 @@ class Encoder(JSONEncoder):
         except Exception:
             self._log.critical("Unable to encode object: {obj!r}", obj=obj)
             raise
-
 
 
 def jsonTextFromObject(obj: Any, pretty: bool = False) -> str:
@@ -85,9 +82,7 @@ def objectFromJSONText(text: str) -> Any:
         return loads(text)
     except JSONDecodeError as e:
         raise JSONDecodeError(
-            msg=f"{e.msg} in {text!r}",
-            doc=e.doc,
-            pos=e.pos,
+            msg=f"{e.msg} in {text!r}", doc=e.doc, pos=e.pos,
         )
 
 
@@ -143,5 +138,5 @@ def rfc3339TextAsDateTime(rfc3339: str) -> DateTime:
     return cast(DateTime, DateTimeParser().parse_iso(rfc3339))
 
 
-jsonTrue  = jsonTextFromObject(True)
+jsonTrue = jsonTextFromObject(True)
 jsonFalse = jsonTextFromObject(False)
