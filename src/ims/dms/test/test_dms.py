@@ -193,7 +193,7 @@ class DummyConnectionPool(object):
 
 
 
-class DummyADBAPI(object):
+class DummyADBAPI(object):  # noqa: B903
     """
     Mock for L{adbapi}.
     """

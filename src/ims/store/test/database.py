@@ -20,6 +20,8 @@ Tests for :mod:`ranger-ims-server.store` database stores
 
 from typing import Optional, cast
 
+from twisted.logger import Logger
+
 from ims.model import (
     Event, Incident, IncidentReport, Location,
     RodGarettAddress, TextOnlyAddress,
@@ -39,15 +41,18 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
     MixIn for test data stores backed by databases.
     """
 
-    async def storeEvent(_self, event: Event) -> None:
+    _log = Logger()
+
+
+    async def storeEvent(self, event: Event) -> None:
         """
         Store the given event in the test store.
         """
-        self = cast(DatabaseStore, _self)
+        store = cast(DatabaseStore, self)
 
         try:
-            await self.runOperation(
-                self.query.createEvent, dict(eventID=event.id)
+            await store.runOperation(
+                store.query.createEvent, dict(eventID=event.id)
             )
         except StorageError as e:
             self._log.critical(
@@ -60,16 +65,16 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         )
 
 
-    def _storeIncident(_self, txn: Transaction, incident: Incident) -> None:
-        self = cast(DatabaseStore, _self)
+    def _storeIncident(self, txn: Transaction, incident: Incident) -> None:
+        store = cast(DatabaseStore, self)
 
-        incident = _self.normalizeIncidentAddress(incident)
+        incident = self.normalizeIncidentAddress(incident)
 
         location = incident.location
         address = cast(Optional[RodGarettAddress], location.address)
 
         txn.execute(
-            self.query.createEventOrIgnore.text,
+            store.query.createEventOrIgnore.text,
             dict(eventID=incident.event.id)
         )
 
@@ -85,20 +90,20 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
             locationDescription  = address.description
 
             if address.concentric is not None:
-                _self._storeConcentricStreet(
+                self._storeConcentricStreet(
                     txn, incident.event, address.concentric, "Some Street",
                     ignoreDuplicates=True,
                 )
 
         txn.execute(
-            self.query.createIncident.text,
+            store.query.createIncident.text,
             dict(
                 eventID=incident.event.id,
-                incidentCreated=self.asDateTimeValue(incident.created),
+                incidentCreated=store.asDateTimeValue(incident.created),
                 incidentNumber=incident.number,
                 incidentSummary=incident.summary,
-                incidentPriority=self.asPriorityValue(incident.priority),
-                incidentState=self.asIncidentStateValue(incident.state),
+                incidentPriority=store.asPriorityValue(incident.priority),
+                incidentState=store.asIncidentStateValue(incident.state),
                 locationName=location.name,
                 locationConcentric=locationConcentric,
                 locationRadialHour=locationRadialHour,
@@ -109,7 +114,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         for rangerHandle in incident.rangerHandles:
             txn.execute(
-                self.query.attachRangeHandleToIncident.text,
+                store.query.attachRangeHandleToIncident.text,
                 dict(
                     eventID=incident.event.id,
                     incidentNumber=incident.number,
@@ -119,11 +124,11 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         for incidentType in incident.incidentTypes:
             txn.execute(
-                self.query.createIncidentTypeOrIgnore.text,
+                store.query.createIncidentTypeOrIgnore.text,
                 dict(incidentType=incidentType)
             )
             txn.execute(
-                self.query.attachIncidentTypeToIncident.text,
+                store.query.attachIncidentTypeToIncident.text,
                 dict(
                     eventID=incident.event.id,
                     incidentNumber=incident.number,
@@ -133,16 +138,16 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         for reportEntry in incident.reportEntries:
             txn.execute(
-                self.query.createReportEntry.text,
+                store.query.createReportEntry.text,
                 dict(
-                    created=self.asDateTimeValue(reportEntry.created),
+                    created=store.asDateTimeValue(reportEntry.created),
                     author=reportEntry.author,
                     automatic=reportEntry.automatic,
                     text=reportEntry.text,
                 )
             )
             txn.execute(
-                self.query.attachReportEntryToIncident.text,
+                store.query.attachReportEntryToIncident.text,
                 dict(
                     eventID=incident.event.id,
                     incidentNumber=incident.number,
@@ -151,14 +156,14 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
             )
 
 
-    async def storeIncident(_self, incident: Incident) -> None:
+    async def storeIncident(self, incident: Incident) -> None:
         """
         Store the given incident in the test store.
         """
-        self = cast(DatabaseStore, _self)
+        store = cast(DatabaseStore, self)
 
         try:
-            await self.runInteraction(_self._storeIncident, incident=incident)
+            await store.runInteraction(self._storeIncident, incident=incident)
         except StorageError as e:
             self._log.critical(
                 "Unable to store incident {incident}: {error}",
@@ -172,21 +177,21 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
 
     def _storeIncidentReport(
-        _self, txn: Transaction, incidentReport: IncidentReport
+        self, txn: Transaction, incidentReport: IncidentReport
     ) -> None:
-        self = cast(DatabaseStore, _self)
+        store = cast(DatabaseStore, self)
 
         txn.execute(
-            self.query.createEventOrIgnore.text,
+            store.query.createEventOrIgnore.text,
             dict(eventID=incidentReport.event.id)
         )
 
         txn.execute(
-            self.query.createIncidentReport.text,
+            store.query.createIncidentReport.text,
             dict(
                 eventID=incidentReport.event.id,
                 incidentReportNumber=incidentReport.number,
-                incidentReportCreated=self.asDateTimeValue(
+                incidentReportCreated=store.asDateTimeValue(
                     incidentReport.created
                 ),
                 incidentReportSummary=incidentReport.summary,
@@ -196,16 +201,16 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         for reportEntry in incidentReport.reportEntries:
             txn.execute(
-                self.query.createReportEntry.text,
+                store.query.createReportEntry.text,
                 dict(
-                    created=self.asDateTimeValue(reportEntry.created),
+                    created=store.asDateTimeValue(reportEntry.created),
                     author=reportEntry.author,
                     automatic=reportEntry.automatic,
                     text=reportEntry.text,
                 )
             )
             txn.execute(
-                self.query.attachReportEntryToIncidentReport.text,
+                store.query.attachReportEntryToIncidentReport.text,
                 dict(
                     incidentReportNumber=incidentReport.number,
                     reportEntryID=txn.lastrowid
@@ -214,16 +219,16 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
 
     async def storeIncidentReport(
-        _self, incidentReport: IncidentReport
+        self, incidentReport: IncidentReport
     ) -> None:
         """
         Store the given incident report in the test store.
         """
-        self = cast(DatabaseStore, _self)
+        store = cast(DatabaseStore, self)
 
         try:
-            await self.runInteraction(
-                _self._storeIncidentReport, incidentReport=incidentReport
+            await store.runInteraction(
+                self._storeIncidentReport, incidentReport=incidentReport
             )
         except StorageError as e:
             self._log.critical(
@@ -239,15 +244,15 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
 
     def _storeConcentricStreet(
-        _self, txn: Transaction, event: Event, streetID: str, streetName: str,
+        self, txn: Transaction, event: Event, streetID: str, streetName: str,
         ignoreDuplicates: bool = False,
     ) -> None:
-        self = cast(DatabaseStore, _self)
+        store = cast(DatabaseStore, self)
 
         if ignoreDuplicates:
-            query = self.query.createConcentricStreetOrIgnore
+            query = store.query.createConcentricStreetOrIgnore
         else:
-            query = self.query.createConcentricStreet
+            query = store.query.createConcentricStreet
 
         txn.execute(
             query.text,
@@ -258,18 +263,18 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
 
     async def storeConcentricStreet(
-        _self, event: Event, streetID: str, streetName: str,
+        self, event: Event, streetID: str, streetName: str,
         ignoreDuplicates: bool = False,
     ) -> None:
         """
         Store a concentric street in the given event with the given ID and name
         in the test store.
         """
-        self = cast(DatabaseStore, _self)
+        store = cast(DatabaseStore, self)
 
         try:
-            await self.runInteraction(
-                _self._storeConcentricStreet,
+            await store.runInteraction(
+                self._storeConcentricStreet,
                 event=event, streetID=streetID, streetName=streetName,
                 ignoreDuplicates=ignoreDuplicates,
             )
@@ -292,24 +297,24 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
 
     def _storeIncidentType(
-        _self, txn: Transaction, incidentType: str, hidden: bool
+        self, txn: Transaction, incidentType: str, hidden: bool
     ) -> None:
-        self = cast(DatabaseStore, _self)
+        store = cast(DatabaseStore, self)
 
         txn.execute(
-            self.query.createIncidentType.text,
+            store.query.createIncidentType.text,
             dict(incidentType=incidentType, hidden=hidden)
         )
 
 
     async def storeIncidentType(
-        _self, incidentType: str, hidden: bool
+        self, incidentType: str, hidden: bool
     ) -> None:
-        self = cast(DatabaseStore, _self)
+        store = cast(DatabaseStore, self)
 
         try:
-            await self.runInteraction(
-                _self._storeIncidentType,
+            await store.runInteraction(
+                self._storeIncidentType,
                 incidentType=incidentType, hidden=hidden,
             )
         except StorageError as e:
