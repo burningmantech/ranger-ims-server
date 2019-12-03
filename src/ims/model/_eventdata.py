@@ -36,14 +36,12 @@ from ._report import IncidentReport
 __all__ = ()
 
 
-def sortAndFreezeIncidents(
-    incidents: Iterable[Incident]
-) -> Iterable[Incident]:
+def sortAndFreezeIncidents(incidents: Iterable[Incident]) -> Iterable[Incident]:
     return sorted_tuple(incidents)
 
 
 def sortAndFreezeIncidentReports(
-    incidentReports: Iterable[IncidentReport]
+    incidentReports: Iterable[IncidentReport],
 ) -> Iterable[IncidentReport]:
     return sorted_tuple(incidentReports)
 
@@ -52,7 +50,6 @@ def freezeConcentricStreets(
     concentricStreets: Mapping[str, str]
 ) -> Mapping[str, str]:
     return FrozenDict.fromMapping(concentricStreets)
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)

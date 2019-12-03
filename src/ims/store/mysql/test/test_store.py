@@ -26,26 +26,23 @@ from twisted.logger import Logger
 from .base import TestDataStore
 from .service import MySQLService, randomDatabaseName
 from .test_store_core import mysqlServiceFactory
-from ...test.base import (
-    DataStoreTests as SuperDataStoreTests, TestDataStoreABC
-)
+from ...test.base import DataStoreTests as SuperDataStoreTests, TestDataStoreABC
 from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
 from ...test.incident import (
-    DataStoreIncidentTests as SuperDataStoreIncidentTests
+    DataStoreIncidentTests as SuperDataStoreIncidentTests,
 )
 from ...test.report import (
-    DataStoreIncidentReportTests as SuperDataStoreIncidentReportTests
+    DataStoreIncidentReportTests as SuperDataStoreIncidentReportTests,
 )
 from ...test.street import (
-    DataStoreConcentricStreetTests as SuperDataStoreConcentricStreetTests
+    DataStoreConcentricStreetTests as SuperDataStoreConcentricStreetTests,
 )
 from ...test.type import (
-    DataStoreIncidentTypeTests as SuperDataStoreIncidentTypeTests
+    DataStoreIncidentTypeTests as SuperDataStoreIncidentTypeTests,
 )
 
 
 __all__ = ()
-
 
 
 class DataStoreTests(SuperDataStoreTests):
@@ -58,7 +55,6 @@ class DataStoreTests(SuperDataStoreTests):
 
     mysqlService: MySQLService = mysqlServiceFactory()
 
-
     def setUp(self) -> Deferred:
         async def setUp() -> None:
             self.stores: List[TestDataStore] = []
@@ -68,7 +64,6 @@ class DataStoreTests(SuperDataStoreTests):
         # setUp can't return a coroutine, so convert it to a Deferred
         return ensureDeferred(setUp())
 
-
     def tearDown(self) -> Deferred:
         async def tearDown() -> None:
             for store in self.stores:
@@ -76,7 +71,6 @@ class DataStoreTests(SuperDataStoreTests):
 
         # setUp can't return a coroutine, so convert it to a Deferred
         return ensureDeferred(tearDown())
-
 
     async def store(self) -> TestDataStoreABC:
         service = self.mysqlService
@@ -109,19 +103,16 @@ class DataStoreTests(SuperDataStoreTests):
         return cast(TestDataStoreABC, store)
 
 
-
 class DataStoreEventTests(DataStoreTests, SuperDataStoreEventTests):
     """
     Tests for :class:`DataStore` event access.
     """
 
 
-
 class DataStoreIncidentTests(DataStoreTests, SuperDataStoreIncidentTests):
     """
     Tests for :class:`DataStore` incident access.
     """
-
 
 
 class DataStoreIncidentReportTests(
@@ -132,14 +123,12 @@ class DataStoreIncidentReportTests(
     """
 
 
-
 class DataStoreConcentricStreetTests(
     DataStoreTests, SuperDataStoreConcentricStreetTests
 ):
     """
     Tests for :class:`DataStore` concentric street access.
     """
-
 
 
 class DataStoreIncidentTypeTests(

@@ -26,7 +26,6 @@ from .._priority import IncidentPriority
 __all__ = ()
 
 
-
 class IncidentPriorityTests(TestCase):
     """
     Tests for :class:`IncidentPriority`
@@ -39,9 +38,8 @@ class IncidentPriorityTests(TestCase):
         for priority in IncidentPriority:
             self.assertEqual(
                 repr(priority),
-                f"{IncidentPriority.__name__}[{priority.name!r}]"
+                f"{IncidentPriority.__name__}[{priority.name!r}]",
             )
-
 
     def test_str(self) -> None:
         """

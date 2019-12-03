@@ -27,13 +27,12 @@ __all__ = ()
 
 
 stateDescriptions = {
-    "new":        "new",
-    "onHold":     "on hold",
+    "new": "new",
+    "onHold": "on hold",
     "dispatched": "dispatched",
-    "onScene":    "on scene",
-    "closed":     "closed",
+    "onScene": "on scene",
+    "closed": "closed",
 }
-
 
 
 @enumOrdering
@@ -59,16 +58,14 @@ class IncidentState(Names):
     no longer applies.
     """
 
-    new        = auto()
-    onHold     = auto()
+    new = auto()
+    onHold = auto()
     dispatched = auto()
-    onScene    = auto()
-    closed     = auto()
-
+    onScene = auto()
+    closed = auto()
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}[{self.name!r}]"
-
 
     def __str__(self) -> str:
         return stateDescriptions[self.name]

@@ -33,7 +33,6 @@ from ...test.database import TestDatabaseStoreMixIn
 __all__ = ()
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     """
@@ -43,7 +42,6 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     maxIncidentNumber: ClassVar[int] = 4294967295
     exceptionClass: ClassVar[type] = MySQLError
 
-
     @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State(DataStore._State):
         """
@@ -52,9 +50,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
 
         broken: bool = False
 
-
     _state: _State = attrib(factory=_State, init=False)
-
 
     @property
     def _db(self) -> ConnectionPool:
@@ -63,8 +59,9 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
 
         return cast(  # type: ignore[call-arg]
             property, DataStore._db
-        ).fget(self)
-
+        ).fget(
+            self
+        )
 
     def bringThePain(self) -> None:
         self._state.broken = True

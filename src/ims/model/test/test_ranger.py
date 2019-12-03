@@ -29,7 +29,6 @@ from ..strategies import rangers
 __all__ = ()
 
 
-
 class RangerStatusTests(TestCase):
     """
     Tests for :class:`RangerStatus`
@@ -41,10 +40,8 @@ class RangerStatusTests(TestCase):
         """
         for status in RangerStatus:
             self.assertEqual(
-                repr(status),
-                f"{RangerStatus.__name__}[{status.name!r}]"
+                repr(status), f"{RangerStatus.__name__}[{status.name!r}]"
             )
-
 
     def test_str(self) -> None:
         """
@@ -52,7 +49,6 @@ class RangerStatusTests(TestCase):
         """
         for status in RangerStatus:
             self.assertEqual(str(status), statusDescriptions[status.name])
-
 
 
 class RangerTests(TestCase):
@@ -66,6 +62,5 @@ class RangerTests(TestCase):
         Ranger status renders as a string.
         """
         self.assertEqual(
-            str(ranger),
-            f"{ranger.status} {ranger.handle} ({ranger.name})"
+            str(ranger), f"{ranger.status} {ranger.handle} ({ranger.name})"
         )

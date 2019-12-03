@@ -72,6 +72,32 @@ jobs:
         run: tox -e flake8;
 
 
+  black:
+
+    name: Black (linter)
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@v1
+
+      - name: Install Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.6"
+
+      - name: Install Tox
+        run: pip install tox;
+
+      - name: Run Flake8
+        run: tox -e black;
+        env:
+          TOX_SKIP_MISSING_INTERPRETERS: False
+
+
   mypy:
     name: Mypy (static type checker)
 

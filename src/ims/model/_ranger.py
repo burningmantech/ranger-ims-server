@@ -46,7 +46,6 @@ statusDescriptions = dict(
 )
 
 
-
 @unique
 class RangerStatus(IntEnum):
     """
@@ -56,25 +55,22 @@ class RangerStatus(IntEnum):
     """
 
     prospective = 0
-    alpha       = 1
-    bonked      = 2
-    active      = 3
-    inactive    = 4
-    retired     = 5
-    uberbonked  = 6
-    vintage     = 7
-    deceased    = 8
+    alpha = 1
+    bonked = 2
+    active = 3
+    inactive = 4
+    retired = 5
+    uberbonked = 6
+    vintage = 7
+    deceased = 8
 
     other = -1
-
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}[{self.name!r}]"
 
-
     def __str__(self) -> str:
         return statusDescriptions[self.name]
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -93,7 +89,6 @@ class Ranger(ReplaceMixIn):
     onSite: bool
     dmsID: Optional[int]
     password: Optional[str] = None
-
 
     def __str__(self) -> str:
         return f"{self.status} {self.handle} ({self.name})"

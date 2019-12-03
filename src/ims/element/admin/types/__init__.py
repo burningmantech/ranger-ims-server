@@ -21,6 +21,4 @@ Admin streets page.
 from ._admin_types import AdminIncidentTypesPage
 
 
-__all__ = (
-    "AdminIncidentTypesPage",
-)
+__all__ = ("AdminIncidentTypesPage",)

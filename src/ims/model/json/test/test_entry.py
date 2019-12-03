@@ -31,7 +31,6 @@ from ...strategies import reportEntries
 __all__ = ()
 
 
-
 class ReportEntrySerializationTests(TestCase):
     """
     Tests for serialization of :class:`ReportEntry`
@@ -43,7 +42,6 @@ class ReportEntrySerializationTests(TestCase):
         :func:`jsonSerialize` serializes the given report entry.
         """
         self.assertEqual(jsonSerialize(entry), jsonFromReportEntry(entry))
-
 
 
 class ReportEntryDeserializationTests(TestCase):

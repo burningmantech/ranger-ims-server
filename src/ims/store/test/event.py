@@ -28,7 +28,6 @@ from .._exceptions import StorageError
 __all__ = ()
 
 
-
 class DataStoreEventTests(DataStoreTests):
     """
     Tests for :class:`IMSDataStore` event access.
@@ -51,7 +50,6 @@ class DataStoreEventTests(DataStoreTests):
 
         self.assertEqual(events, {Event(id="Event A"), Event(id="Event B")})
 
-
     @asyncAsDeferred
     async def test_events_error(self) -> None:
         """
@@ -65,7 +63,6 @@ class DataStoreEventTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
-
     @asyncAsDeferred
     async def test_createEvent(self) -> None:
         """
@@ -78,7 +75,6 @@ class DataStoreEventTests(DataStoreTests):
             await store.createEvent(event)
             stored = frozenset(await store.events())
             self.assertEqual(stored, frozenset((event,)))
-
 
     @asyncAsDeferred
     async def test_createEvent_error(self) -> None:
@@ -95,7 +91,6 @@ class DataStoreEventTests(DataStoreTests):
             pass
         else:
             self.fail("StorageError not raised")
-
 
     @asyncAsDeferred
     async def test_createEvent_duplicate(self) -> None:
@@ -114,7 +109,6 @@ class DataStoreEventTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
-
     @asyncAsDeferred
     async def test_setReaders(self) -> None:
         """
@@ -128,7 +122,6 @@ class DataStoreEventTests(DataStoreTests):
             await store.setReaders(event, readers)
             result = frozenset(await store.readers(event))
             self.assertEqual(result, readers)
-
 
     @asyncAsDeferred
     async def test_setReaders_error(self) -> None:
@@ -148,7 +141,6 @@ class DataStoreEventTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
-
     @asyncAsDeferred
     async def test_setWriters(self) -> None:
         """
@@ -162,7 +154,6 @@ class DataStoreEventTests(DataStoreTests):
             await store.setWriters(event, writers)
             result = frozenset(await store.writers(event))
             self.assertEqual(result, writers)
-
 
     @asyncAsDeferred
     async def test_setWriters_error(self) -> None:

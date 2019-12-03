@@ -3,8 +3,10 @@ Tests for :mod:`ranger-ims-server.ext.json`
 """
 
 from datetime import (
-    date as Date, datetime as DateTime,
-    timedelta as TimeDelta, timezone as TimeZone,
+    date as Date,
+    datetime as DateTime,
+    timedelta as TimeDelta,
+    timezone as TimeZone,
 )
 from io import BytesIO
 from json import JSONDecodeError
@@ -13,19 +15,25 @@ from typing import Callable, cast
 
 from hypothesis import given
 from hypothesis.strategies import (
-    composite, dates, datetimes as _datetimes, integers
+    composite,
+    dates,
+    datetimes as _datetimes,
+    integers,
 )
 
 from ..json import (
-    dateAsRFC3339Text, dateTimeAsRFC3339Text,
-    jsonTextFromObject, objectFromJSONBytesIO, objectFromJSONText,
-    rfc3339TextAsDate, rfc3339TextAsDateTime,
+    dateAsRFC3339Text,
+    dateTimeAsRFC3339Text,
+    jsonTextFromObject,
+    objectFromJSONBytesIO,
+    objectFromJSONText,
+    rfc3339TextAsDate,
+    rfc3339TextAsDateTime,
 )
 from ..trial import TestCase
 
 
 __all__ = ()
-
 
 
 @composite
@@ -43,7 +51,6 @@ def datetimes(draw: Callable) -> DateTime:
     return cast(DateTime, draw(_datetimes(timezones=timezones())))
 
 
-
 class JSONEncodingTests(TestCase):
     """
     Tests for :func:`jsonTextFromObject`
@@ -56,11 +63,7 @@ class JSONEncodingTests(TestCase):
 
         This indirectly tests :class:`config_service.util.json.Encoder`.
         """
-        self.assertEqual(
-            jsonTextFromObject(n for n in (1, 2, 3)),
-            "[1,2,3]"
-        )
-
+        self.assertEqual(jsonTextFromObject(n for n in (1, 2, 3)), "[1,2,3]")
 
     def test_encodeUnknown(self) -> None:
         """
@@ -70,7 +73,6 @@ class JSONEncodingTests(TestCase):
         This indirectly tests :class:`config_service.util.json.Encoder`.
         """
         self.assertRaises(TypeError, jsonTextFromObject, object())
-
 
     def test_jsonTextFromObject_ugly(self) -> None:
         """
@@ -82,7 +84,6 @@ class JSONEncodingTests(TestCase):
         self.assertEqual(
             objectFromJSONText(jsonTextFromObject(obj, pretty=False)), obj
         )
-
 
     def test_jsonTextFromObject_pretty(self) -> None:
         """
@@ -104,9 +105,8 @@ class JSONEncodingTests(TestCase):
                   ]
                 }
                 """
-            )[1:-1]
+            )[1:-1],
         )
-
 
 
 class JSONDecodingTests(TestCase):
@@ -131,9 +131,8 @@ class JSONDecodingTests(TestCase):
                 }
                 """
             ),
-            dict(x="Hello", y=["one", "two", "three"])
+            dict(x="Hello", y=["one", "two", "three"]),
         )
-
 
     def test_objectFromJSONText_badInput(self) -> None:
         """
@@ -141,7 +140,6 @@ class JSONDecodingTests(TestCase):
         invalid JSON text.
         """
         self.assertRaises(JSONDecodeError, objectFromJSONText, "foo}")
-
 
     def test_objectFromJSONBytesIO(self) -> None:
         """
@@ -159,12 +157,13 @@ class JSONDecodingTests(TestCase):
                         "three"
                       ]
                     }
-                    """.encode("ascii")
+                    """.encode(
+                        "ascii"
+                    )
                 )
             ),
-            dict(x="Hello", y=["one", "two", "three"])
+            dict(x="Hello", y=["one", "two", "three"]),
         )
-
 
     def test_objectFromJSONBytesIO_badInput(self) -> None:
         """
@@ -176,7 +175,6 @@ class JSONDecodingTests(TestCase):
             objectFromJSONBytesIO,
             BytesIO("foo}".encode("ascii")),
         )
-
 
 
 class DateTimeTests(TestCase):
@@ -195,7 +193,6 @@ class DateTimeTests(TestCase):
         :obj:`date`.
         """
         return f"{date.year:04d}-{date.month:02d}-{date.day:02d}"
-
 
     @staticmethod
     def dateTimeAsRFC3339Text(dateTime: DateTime) -> str:
@@ -238,7 +235,6 @@ class DateTimeTests(TestCase):
             f"{tzSign}{tzHour:02d}:{tzMinute:02d}"
         )
 
-
     @given(dates())
     def test_dateAsRFC3339Text(self, date: Date) -> None:
         """
@@ -247,7 +243,6 @@ class DateTimeTests(TestCase):
         """
         self.assertEqual(dateAsRFC3339Text(date), self.dateAsRFC3339Text(date))
 
-
     @given(dates())
     def test_rfc3339TextAsDate(self, date: Date) -> None:
         """
@@ -255,7 +250,6 @@ class DateTimeTests(TestCase):
         into a :class:`Date`.
         """
         self.assertEqual(rfc3339TextAsDate(self.dateAsRFC3339Text(date)), date)
-
 
     @given(datetimes())
     def test_dateTimeAsRFC3339Text(self, dateTime: DateTime) -> None:
@@ -268,7 +262,6 @@ class DateTimeTests(TestCase):
             self.dateTimeAsRFC3339Text(dateTime),
         )
 
-
     @given(datetimes())
     def test_rfc3339TextAsDateTime(self, dateTime: DateTime) -> None:
         """
@@ -277,5 +270,5 @@ class DateTimeTests(TestCase):
         """
         self.assertEqual(
             rfc3339TextAsDateTime(self.dateTimeAsRFC3339Text(dateTime)),
-            dateTime
+            dateTime,
         )

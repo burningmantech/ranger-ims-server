@@ -42,7 +42,10 @@ from ims.config import URLs
 from ims.dms import DMSError
 from ims.element.redirect import RedirectPage
 from ims.ext.klein import (
-    ContentType, HeaderName, KleinRenderable, KleinRouteMethod
+    ContentType,
+    HeaderName,
+    KleinRenderable,
+    KleinRouteMethod,
 )
 
 
@@ -61,6 +64,7 @@ def renderResponse(f: KleinRouteMethod) -> KleinRouteMethod:
     Decorator to ensure that the returned response is rendered, if applicable.
     Needed because L{Klein.handle_errors} doesn't do rendering for you.
     """
+
     @wraps(f)
     def wrapper(
         self: Any, request: IRequest, *args: Any, **kwargs: Any
@@ -89,7 +93,8 @@ def redirect(
 
     log.debug(
         "Redirect {source} -> {destination}",
-        source=request.uri.decode("utf-8"), destination=location.asText(),
+        source=request.uri.decode("utf-8"),
+        destination=location.asText(),
     )
     url = location.asText().encode("utf-8")
 
@@ -103,6 +108,7 @@ def redirect(
 #
 # Error responses
 #
+
 
 def noContentResponse(
     request: IRequest, etag: Optional[str] = None
@@ -121,9 +127,7 @@ def textResponse(request: IRequest, message: str) -> KleinRenderable:
     Respond with the given text.
     """
     request.setHeader(HeaderName.contentType.value, ContentType.text.value)
-    request.setHeader(
-        HeaderName.etag.value, str(hash(message)).encode("ascii")
-    )
+    request.setHeader(HeaderName.etag.value, str(hash(message)).encode("ascii"))
     return message.encode("utf-8")
 
 
@@ -143,7 +147,7 @@ def methodNotAllowedResponse(request: IRequest) -> KleinRenderable:
     """
     log.debug(
         "Method {request.method} not allowed for resource: {request.uri}",
-        request=request
+        request=request,
     )
 
     request.setResponseCode(http.NOT_ALLOWED)
@@ -156,7 +160,8 @@ def forbiddenResponse(request: IRequest) -> KleinRenderable:
     """
     log.debug(
         "Forbidden resource for user {user}: {request.uri}",
-        request=request, user=getattr(request, "user", None)
+        request=request,
+        user=getattr(request, "user", None),
     )
 
     request.setResponseCode(http.FORBIDDEN)
@@ -171,7 +176,8 @@ def badRequestResponse(
     """
     log.debug(
         "Bad request for resource: {request.uri}: {message}",
-        request=request, message=message
+        request=request,
+        message=message,
     )
 
     request.setResponseCode(http.BAD_REQUEST)
@@ -213,7 +219,8 @@ def internalErrorResponse(
     """
     log.critical(
         "Internal error for resource: {request.uri}: {message}",
-        request=request, message=message
+        request=request,
+        message=message,
     )
 
     request.setResponseCode(http.INTERNAL_SERVER_ERROR)
@@ -227,6 +234,7 @@ def internalErrorResponse(
 #
 # Query arguments
 #
+
 
 def queryValue(
     request: IRequest, name: str, default: Optional[str] = None
@@ -247,8 +255,7 @@ def queryValue(
         If more than one value is found, return the last value found.
     """
     values = cast(
-        Optional[Sequence[bytes]],
-        request.args.get(name.encode("utf-8"))
+        Optional[Sequence[bytes]], request.args.get(name.encode("utf-8"))
     )
 
     if values is None:
@@ -289,6 +296,7 @@ def queryValues(
 # Router
 #
 
+
 class Router(Klein):
     """
     Klein router.
@@ -297,7 +305,6 @@ class Router(Klein):
     def __init__(self) -> None:
         super().__init__()
         self._registerHandlers()
-
 
     def route(
         self, url: Union[str, URL], *args: Any, **kwargs: Any
@@ -334,7 +341,6 @@ class Router(Klein):
 
         return decorator
 
-
     def _registerHandlers(self) -> None:
         @self.handle_errors(RequestRedirect)
         @renderResponse
@@ -346,7 +352,6 @@ class Router(Klein):
             """
             url = URL.fromText(failure.value.args[0])
             return redirect(request, url)
-
 
         @self.handle_errors(NotFound)
         @renderResponse
@@ -362,7 +367,6 @@ class Router(Klein):
             app.config.authProvider.authenticateRequest(request)
             return notFoundResponse(request)
 
-
         @self.handle_errors(MethodNotAllowed)
         @renderResponse
         def methodNotAllowedError(
@@ -377,7 +381,6 @@ class Router(Klein):
             app.config.authProvider.authenticateRequest(request)
             return methodNotAllowedResponse(request)
 
-
         @self.handle_errors(NotAuthorizedError)
         @renderResponse
         def notAuthorizedError(
@@ -387,7 +390,6 @@ class Router(Klein):
             Not authorized.
             """
             return forbiddenResponse(request)
-
 
         @self.handle_errors(NotAuthenticatedError)
         @renderResponse
@@ -405,7 +407,6 @@ class Router(Klein):
             element = redirect(request, URLs.login, origin="o")
             return renderElement(request, element)
 
-
         @self.handle_errors(DMSError)
         @renderResponse
         def dmsError(
@@ -416,7 +417,6 @@ class Router(Klein):
             """
             log.critical("DMS error: {error}", error=failure)
             return internalErrorResponse(request)
-
 
         @self.handle_errors
         @renderResponse

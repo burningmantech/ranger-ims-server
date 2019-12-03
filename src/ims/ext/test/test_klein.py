@@ -13,7 +13,6 @@ from ..trial import TestCase
 __all__ = ()
 
 
-
 class StaticDecoratorTests(TestCase):
     """
     Tests for :func:`static`
@@ -29,7 +28,6 @@ class StaticDecoratorTests(TestCase):
         def root(self, request: IRequest) -> KleinRenderable:
             return self.hello
 
-
     def test_static_entity(self) -> None:
         """
         :func:`static` returns the entity returned by the wrapped method.
@@ -40,7 +38,6 @@ class StaticDecoratorTests(TestCase):
         entity = app.root(request)
 
         self.assertIdentical(entity, app.hello)
-
 
     def test_static_etag(self) -> None:
         """
@@ -55,7 +52,6 @@ class StaticDecoratorTests(TestCase):
         self.assertTrue(len(etags) == 1, etags)
         etag = etags[0]
         self.assertTrue(etag)
-
 
     def test_static_cacheControl(self) -> None:
         """

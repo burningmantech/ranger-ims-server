@@ -27,7 +27,12 @@ from attr import attrib, attrs
 from twisted.logger import Logger
 
 from ims.ext.sqlite import (
-    Connection, SQLiteError, createDB, explainQueryPlans, openDB, printSchema
+    Connection,
+    SQLiteError,
+    createDB,
+    explainQueryPlans,
+    openDB,
+    printSchema,
 )
 
 from ._queries import queries
@@ -39,7 +44,6 @@ __all__ = ()
 
 
 query_eventID = "select ID from EVENT where NAME = :eventID"
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -56,10 +60,7 @@ class DataStore(DatabaseStore):
 
     query: ClassVar[Queries] = queries
 
-
-    @attrs(
-        frozen=False, auto_attribs=True, kw_only=True, eq=False
-    )
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State(object):
         """
         Internal mutable state for :class:`DataStore`.
@@ -67,10 +68,8 @@ class DataStore(DatabaseStore):
 
         db: Optional[Connection] = attrib(default=None, init=False)
 
-
     dbPath: Optional[Path]
     _state: _State = attrib(factory=_State, init=False)
-
 
     @classmethod
     def printSchema(cls, out: TextIO = stdout) -> None:
@@ -81,7 +80,6 @@ class DataStore(DatabaseStore):
             version = cls._dbSchemaVersion(db)
             print(f"Version: {version}", file=out)
             printSchema(db, out=out)
-
 
     @classmethod
     def printQueries(cls, out: TextIO = stdout) -> None:
@@ -98,7 +96,6 @@ class DataStore(DatabaseStore):
                 print(line, file=out)
                 print(file=out)
 
-
     @classmethod
     def _dbSchemaVersion(cls, db: Connection) -> int:
         try:
@@ -113,10 +110,10 @@ class DataStore(DatabaseStore):
 
             cls._log.critical(
                 "Unable to {description}: {error}",
-                description=cls.query.schemaVersion.description, error=e,
+                description=cls.query.schemaVersion.description,
+                error=e,
             )
             raise StorageError(str(e))
-
 
     @property
     def _db(self) -> Connection:
@@ -130,14 +127,14 @@ class DataStore(DatabaseStore):
             except SQLiteError as e:
                 self._log.critical(
                     "Unable to open SQLite database {dbPath}: {error}",
-                    dbPath=self.dbPath, error=e,
+                    dbPath=self.dbPath,
+                    error=e,
                 )
                 raise StorageError(
                     f"Unable to open SQLite database {self.dbPath}: {e}"
                 )
 
         return self._state.db
-
 
     async def disconnect(self) -> None:
         """
@@ -146,7 +143,6 @@ class DataStore(DatabaseStore):
         if self._state.db is not None:
             self._state.db.close()
             self._state.db = None
-
 
     async def runQuery(
         self, query: Query, parameters: Optional[Parameters] = None
@@ -161,16 +157,16 @@ class DataStore(DatabaseStore):
             self._log.critical(
                 "Unable to {description}: {error}",
                 description=query.description,
-                query=query, **parameters, error=e,
+                query=query,
+                **parameters,
+                error=e,
             )
             raise StorageError(str(e))
-
 
     async def runOperation(
         self, query: Query, parameters: Optional[Parameters] = None
     ) -> None:
         await self.runQuery(query, parameters)
-
 
     async def runInteraction(
         self, interaction: Callable, *args: Any, **kwargs: Any
@@ -181,17 +177,16 @@ class DataStore(DatabaseStore):
         except SQLiteError as e:
             self._log.critical(
                 "Interaction {interaction} failed: {error}",
-                interaction=interaction, error=e,
+                interaction=interaction,
+                error=e,
             )
             raise StorageError(str(e))
-
 
     async def dbSchemaVersion(self) -> int:
         """
         See :meth:`DatabaseStore.dbSchemaVersion`.
         """
         return self._dbSchemaVersion(self._db)
-
 
     async def applySchema(self, sql: str) -> None:
         """
@@ -203,7 +198,6 @@ class DataStore(DatabaseStore):
             self._db.commit()
         except SQLiteError as e:
             raise StorageError(f"Unable to apply schema: {e}")
-
 
     async def validate(self) -> None:
         """
@@ -217,8 +211,7 @@ class DataStore(DatabaseStore):
             self._db.validateConstraints()
         except SQLiteError as e:
             self._log.error(
-                "Database constraint violated: {error}",
-                error=e,
+                "Database constraint violated: {error}", error=e,
             )
             valid = False
 

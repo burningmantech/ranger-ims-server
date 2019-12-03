@@ -10,7 +10,6 @@ from ..trial import TestCase
 __all__ = ()
 
 
-
 class ResultOfTests(TestCase):
     """
     Tests for ``*ResultOf`` methods of :class:`TestCase`.
@@ -24,7 +23,6 @@ class ResultOfTests(TestCase):
 
     test_successResultOf.todo = "unimplemented"  # type: ignore[attr-defined]
 
-
     def test_failureResultOf(self) -> None:
         """
         :meth:`TestCase.failureResultOf` works with coroutines.
@@ -32,7 +30,6 @@ class ResultOfTests(TestCase):
         raise NotImplementedError()
 
     test_failureResultOf.todo = "unimplemented"  # type: ignore[attr-defined]
-
 
 
 class AssertionTests(TestCase):
@@ -50,7 +47,6 @@ class AssertionTests(TestCase):
 
         self.assertResponseCode(request, 201)
 
-
     def test_assertResponseCode_mismatch(self) -> None:
         """
         :meth:`TestCase.assertResponseCode` raises :obj:`self.failureException`
@@ -63,7 +59,6 @@ class AssertionTests(TestCase):
             self.failureException, self.assertResponseCode, request, 201
         )
 
-
     def test_assertResponseContentType_match(self) -> None:
         """
         :meth:`TestCase.assertResponseContentType` does not raise when given a
@@ -73,7 +68,6 @@ class AssertionTests(TestCase):
         request.setHeader("content-type", "text/l33t")
 
         self.assertResponseContentType(request, "text/l33t")
-
 
     def test_assertResponseContentType_mismatch(self) -> None:
         """
@@ -86,5 +80,7 @@ class AssertionTests(TestCase):
 
         self.assertRaises(
             self.failureException,
-            self.assertResponseContentType, request, "text/l33t"
+            self.assertResponseContentType,
+            request,
+            "text/l33t",
         )

@@ -35,7 +35,6 @@ from ._replace import ReplaceMixIn
 __all__ = ()
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class IncidentReport(ReplaceMixIn):
     """
@@ -51,10 +50,8 @@ class IncidentReport(ReplaceMixIn):
         converter=sortAndFreezeReportEntries
     )
 
-
     def __str__(self) -> str:
         return f"{self.event} #{self.number}: {self.summaryFromReport()}"
-
 
     def summaryFromReport(self) -> str:
         """

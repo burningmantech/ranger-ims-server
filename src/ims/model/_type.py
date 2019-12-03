@@ -26,25 +26,21 @@ from attr import attrs
 __all__ = ()
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class IncidentType(object):
     """
     Incident Type
     """
 
-    name:   str
+    name: str
     hidden: bool
-
 
     def known(self) -> bool:
         return self.name in knownIncidentTypeNames
 
 
-
 admin = IncidentType(name="Admin", hidden=False)
-junk  = IncidentType(name="Junk",  hidden=False)
-
+junk = IncidentType(name="Junk", hidden=False)
 
 
 @unique
@@ -59,7 +55,7 @@ class KnownIncidentType(Enum):
     """
 
     admin = admin.name
-    junk  = junk.name
+    junk = junk.name
 
 
 knownIncidentTypeNames = frozenset((kt.value for kt in KnownIncidentType))

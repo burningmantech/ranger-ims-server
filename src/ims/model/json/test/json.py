@@ -43,15 +43,14 @@ __all__ = ()
 # Address
 ##
 
+
 def jsonFromAddress(address: Address) -> Dict[str, Any]:
     if isinstance(address, TextOnlyAddress):
         return jsonFromTextOnlyAddress(address)
     elif isinstance(address, RodGarettAddress):
         return jsonFromRodGarettAddress(address)
     else:
-        raise TypeError(
-            f"Unknown address type {address!r}"
-        )
+        raise TypeError(f"Unknown address type {address!r}")
 
 
 def jsonFromTextOnlyAddress(address: TextOnlyAddress) -> Dict[str, Any]:
@@ -72,6 +71,7 @@ def jsonFromRodGarettAddress(address: RodGarettAddress) -> Dict[str, Any]:
 # Entry
 ##
 
+
 def jsonFromReportEntry(entry: ReportEntry) -> Dict[str, Any]:
     return dict(
         created=jsonSerialize(entry.created),
@@ -84,6 +84,7 @@ def jsonFromReportEntry(entry: ReportEntry) -> Dict[str, Any]:
 ##
 # Event
 ##
+
 
 def jsonFromEvent(event: Event) -> str:
     return event.id
@@ -118,6 +119,7 @@ def jsonFromIMSData(imsData: IMSData) -> Dict[str, Any]:
 # Incident
 ##
 
+
 def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
     return dict(
         event=jsonSerialize(incident.event),
@@ -127,12 +129,8 @@ def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
         priority=jsonSerialize(incident.priority),
         summary=jsonSerialize(incident.summary),
         location=jsonSerialize(incident.location),
-        ranger_handles=[
-            jsonSerialize(r) for r in incident.rangerHandles
-        ],
-        incident_types=[
-            jsonSerialize(t) for t in incident.incidentTypes
-        ],
+        ranger_handles=[jsonSerialize(r) for r in incident.rangerHandles],
+        incident_types=[jsonSerialize(t) for t in incident.incidentTypes],
         report_entries=[
             jsonSerialize(e) for e in sorted(incident.reportEntries)
         ],
@@ -145,6 +143,7 @@ def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
 ##
 # Location
 ##
+
 
 def jsonFromLocation(location: Location) -> Dict[str, Any]:
     json = dict(name=location.name)
@@ -159,11 +158,12 @@ def jsonFromLocation(location: Location) -> Dict[str, Any]:
 # Priority
 ##
 
+
 def jsonFromIncidentPriority(priority: IncidentPriority) -> int:
     return {
-        IncidentPriority.high:   1,
+        IncidentPriority.high: 1,
         IncidentPriority.normal: 3,
-        IncidentPriority.low:    5,
+        IncidentPriority.low: 5,
     }[priority]
 
 
@@ -171,18 +171,19 @@ def jsonFromIncidentPriority(priority: IncidentPriority) -> int:
 # Ranger
 ##
 
+
 def jsonFromRangerStatus(status: RangerStatus) -> str:
     return {
         RangerStatus.prospective: "prospective",
-        RangerStatus.alpha:       "alpha",
-        RangerStatus.bonked:      "bonked",
-        RangerStatus.active:      "active",
-        RangerStatus.inactive:    "inactive",
-        RangerStatus.retired:     "retired",
-        RangerStatus.uberbonked:  "uberbonked",
-        RangerStatus.vintage:     "vintage",
-        RangerStatus.deceased:    "deceased",
-        RangerStatus.other:       "(unknown)",
+        RangerStatus.alpha: "alpha",
+        RangerStatus.bonked: "bonked",
+        RangerStatus.active: "active",
+        RangerStatus.inactive: "inactive",
+        RangerStatus.retired: "retired",
+        RangerStatus.uberbonked: "uberbonked",
+        RangerStatus.vintage: "vintage",
+        RangerStatus.deceased: "deceased",
+        RangerStatus.other: "(unknown)",
     }[status]
 
 
@@ -201,6 +202,7 @@ def jsonFromRanger(ranger: Ranger) -> Dict[str, Any]:
 # Report
 ##
 
+
 def jsonFromIncidentReport(report: IncidentReport) -> Dict[str, Any]:
     return dict(
         event=jsonSerialize(report.event),
@@ -216,6 +218,7 @@ def jsonFromIncidentReport(report: IncidentReport) -> Dict[str, Any]:
 # State
 ##
 
+
 def jsonFromIncidentState(state: IncidentState) -> str:
     return {
         IncidentState.new: "new",
@@ -229,6 +232,7 @@ def jsonFromIncidentState(state: IncidentState) -> str:
 ##
 # Type
 ##
+
 
 def jsonFromIncidentType(incidentType: IncidentType) -> Dict[str, Any]:
     return dict(

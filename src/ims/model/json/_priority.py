@@ -28,22 +28,21 @@ from .._priority import IncidentPriority
 __all__ = ()
 
 
-
 class IncidentPriorityJSONValue(Enum):
     """
     Incident priority JSON values
     """
 
-    high   = 1
+    high = 1
     normal = 3
-    low    = 5
-
+    low = 5
 
 
 def serializeIncidentPriority(incidentPriority: IncidentPriority) -> str:
     return cast(
         str, getattr(IncidentPriorityJSONValue, incidentPriority.name).value
     )
+
 
 registerSerializer(IncidentPriority, serializeIncidentPriority)
 
@@ -53,7 +52,8 @@ def deserializeIncidentPriority(obj: int, cl: Type) -> IncidentPriority:
 
     return cast(
         IncidentPriority,
-        getattr(IncidentPriority, IncidentPriorityJSONValue(obj).name)
+        getattr(IncidentPriority, IncidentPriorityJSONValue(obj).name),
     )
+
 
 registerDeserializer(IncidentPriority, deserializeIncidentPriority)

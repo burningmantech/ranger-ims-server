@@ -35,7 +35,6 @@ __all__ = ()
 TRodGarettAddress = TypeVar("TRodGarettAddress", bound="RodGarettAddress")
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class Address(ABC):
     """
@@ -43,7 +42,6 @@ class Address(ABC):
     """
 
     description: Optional[str] = None
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
@@ -56,17 +54,14 @@ class TextOnlyAddress(Address, ComparisonMixIn):
 
     description: Optional[str] = None
 
-
     def _cmpValue(self) -> Any:
         return self.description
-
 
     def _cmp(self, other: Any, methodName: str) -> bool:
         if other is None:
             return self.description is None
 
         return ComparisonMixIn._cmp(self, other, methodName)
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
@@ -78,26 +73,25 @@ class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
     Black Rock City.
     """
 
-    description: Optional[str]  = None
-    concentric: Optional[str]   = None
-    radialHour: Optional[int]   = None
+    description: Optional[str] = None
+    concentric: Optional[str] = None
+    radialHour: Optional[int] = None
     radialMinute: Optional[int] = None
-
 
     def _allNone(self) -> bool:
         return (
-            self.concentric is None and
-            self.radialHour is None and
-            self.radialMinute is None
+            self.concentric is None
+            and self.radialHour is None
+            and self.radialMinute is None
         )
-
 
     def _cmpValue(self) -> Any:
         return (
-            self.concentric, self.radialHour, self.radialMinute,
+            self.concentric,
+            self.radialHour,
+            self.radialMinute,
             self.description,
         )
-
 
     def _cmp(self, other: Any, methodName: str) -> bool:
         if other is None:
@@ -106,13 +100,11 @@ class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
         if other.__class__ is TextOnlyAddress:
             if self._allNone():
                 method = cast(
-                    Callable[[str], bool],
-                    getattr(self.description, methodName)
+                    Callable[[str], bool], getattr(self.description, methodName)
                 )
                 return method(other.description)
 
         return ComparisonMixIn._cmp(self, other, methodName)
-
 
     def __hash__(self) -> int:
         if self._allNone():

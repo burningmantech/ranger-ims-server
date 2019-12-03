@@ -40,10 +40,9 @@ __all__ = ()
 
 
 def sortAndFreezeReportEntries(
-    reportEntries: Iterable[ReportEntry]
+    reportEntries: Iterable[ReportEntry],
 ) -> Iterable[ReportEntry]:
     return sorted_tuple(reportEntries)
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -66,10 +65,8 @@ class Incident(ReplaceMixIn):
     )
     incidentReportNumbers: FrozenSet[int] = attrib(converter=freezeIntegers)
 
-
     def __str__(self) -> str:
         return f"{self.event} #{self.number}: {self.summaryFromReport()}"
-
 
     def summaryFromReport(self) -> str:
         """
@@ -77,7 +74,6 @@ class Incident(ReplaceMixIn):
         :obj:`None` or empty, or the first line of the first report entry.
         """
         return summaryFromReport(self.summary, self.reportEntries)
-
 
 
 def summaryFromReport(

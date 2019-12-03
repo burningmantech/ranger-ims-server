@@ -21,6 +21,4 @@ Admin access control page.
 from ._admin_events import AdminEventsPage
 
 
-__all__ = (
-    "AdminEventsPage",
-)
+__all__ = ("AdminEventsPage",)

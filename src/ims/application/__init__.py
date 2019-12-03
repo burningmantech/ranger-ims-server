@@ -20,6 +20,4 @@ Incident Management System web application.
 
 from ._main import MainApplication as Application
 
-__all__ = (
-    "Application",
-)
+__all__ = ("Application",)

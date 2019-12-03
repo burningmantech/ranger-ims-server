@@ -19,10 +19,19 @@ Report tests for :mod:`ranger-ims-server.store`
 """
 
 from datetime import (
-    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+    datetime as DateTime,
+    timedelta as TimeDelta,
+    timezone as TimeZone,
 )
 from typing import (
-    Any, Awaitable, Callable, Iterable, Sequence, Set, Tuple, cast
+    Any,
+    Awaitable,
+    Callable,
+    Iterable,
+    Sequence,
+    Set,
+    Tuple,
+    cast,
 )
 
 from attr import fields as attrFields
@@ -84,7 +93,6 @@ aReportEntry2 = ReportEntry(
 )
 
 
-
 class DataStoreIncidentReportTests(DataStoreTests):
     """
     Tests for :class:`DataStore` incident report access.
@@ -132,7 +140,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
             self.assertEqual(found, set(r.number for r in incidentReports))
 
-
     @asyncAsDeferred
     async def test_incidentReports_error(self) -> None:
         """
@@ -148,7 +155,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
             self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
-
 
     @asyncAsDeferred
     async def test_incidentReportWithNumber(self) -> None:
@@ -166,7 +172,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
             self.assertIncidentReportsEqual(store, retrieved, incidentReport)
 
-
     @asyncAsDeferred
     async def test_incidentReportWithNumber_notFound(self) -> None:
         """
@@ -182,7 +187,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
             pass
         else:
             self.fail("NoSuchIncidentReportError not raised")
-
 
     @asyncAsDeferred
     async def test_incidentReportWithNumber_tooBig(self) -> None:
@@ -202,7 +206,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
         else:
             self.fail("NoSuchIncidentReportError not raised")
 
-
     @asyncAsDeferred
     async def test_incidentReportWithNumber_error(self) -> None:
         """
@@ -219,7 +222,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
-
     @asyncAsDeferred
     async def test_createIncidentReport(self) -> None:
         """
@@ -228,9 +230,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         """
         for _data in (
             (),
-            (
-                (anIncidentReport1.replace(number=0), "Hubcap"),
-            ),
+            ((anIncidentReport1.replace(number=0), "Hubcap"),),
             (
                 (anIncidentReport1.replace(number=0), "Hubcap"),
                 (anIncidentReport2.replace(number=0), "Bucket"),
@@ -272,7 +272,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
                     store, stored, expected, ignoreAutomatic=True
                 )
 
-
     @asyncAsDeferred
     async def test_createIncidentReport_error(self) -> None:
         """
@@ -290,7 +289,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
-
     @asyncAsDeferred
     async def test_setIncidentReport_summary_error(self) -> None:
         """
@@ -303,18 +301,22 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         try:
             await store.setIncidentReport_summary(
-                anIncidentReport1.event, anIncidentReport1.number,
-                "Never mind", "Bucket",
+                anIncidentReport1.event,
+                anIncidentReport1.number,
+                "Never mind",
+                "Bucket",
             )
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 
-
     async def _test_setIncidentReportAttribute(
-        self, incidentReport: IncidentReport,
-        methodName: str, attributeName: str, value: Any
+        self,
+        incidentReport: IncidentReport,
+        methodName: str,
+        attributeName: str,
+        value: Any,
     ) -> None:
         store = await self.store()
         await store.storeIncidentReport(incidentReport)
@@ -348,7 +350,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
             store, retrieved, incidentReport, ignoreAutomatic=True
         )
 
-
     @asyncAsDeferred
     async def test_setIncidentReport_summary(self) -> None:
         """
@@ -362,7 +363,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
             await self._test_setIncidentReportAttribute(
                 incidentReport, "setIncidentReport_summary", "summary", summary
             )
-
 
     @asyncAsDeferred
     async def test_addReportEntriesToIncidentReport(self) -> None:
@@ -414,7 +414,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 )
             )
 
-
     @asyncAsDeferred
     async def test_addReportEntriesToIncidentReport_automatic(self) -> None:
         """
@@ -428,14 +427,15 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         try:
             await store.addReportEntriesToIncidentReport(
-                anIncidentReport1.event, anIncidentReport1.number,
-                (reportEntry,), reportEntry.author,
+                anIncidentReport1.event,
+                anIncidentReport1.number,
+                (reportEntry,),
+                reportEntry.author,
             )
         except ValueError as e:
             self.assertIn(" may not be created by user ", str(e))
         else:
             self.fail("ValueError not raised")
-
 
     @asyncAsDeferred
     async def test_addReportEntriesToIncidentReport_wrongAuthor(self) -> None:
@@ -451,14 +451,15 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         try:
             await store.addReportEntriesToIncidentReport(
-                anIncidentReport1.event, anIncidentReport1.number,
-                (aReportEntry,), otherAuthor,
+                anIncidentReport1.event,
+                anIncidentReport1.number,
+                (aReportEntry,),
+                otherAuthor,
             )
         except ValueError as e:
             self.assertEndsWith(str(e), f" has author != {otherAuthor}")
         else:
             self.fail("ValueError not raised")
-
 
     @asyncAsDeferred
     async def test_addReportEntriesToIncidentReport_error(self) -> None:
@@ -472,14 +473,15 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         try:
             await store.addReportEntriesToIncidentReport(
-                anIncidentReport1.event, anIncidentReport1.number,
-                (aReportEntry,), aReportEntry.author,
+                anIncidentReport1.event,
+                anIncidentReport1.number,
+                (aReportEntry,),
+                aReportEntry.author,
             )
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
-
 
     @asyncAsDeferred
     async def test_incidentReportsAttachedToIncident_error(self) -> None:
@@ -499,7 +501,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
             self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
-
 
     @asyncAsDeferred
     async def test_attachIncidentReportToIncident_error(self) -> None:
@@ -523,7 +524,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
             self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
-
 
     @asyncAsDeferred
     async def test_detachIncidentReportFromIncident_error(self) -> None:
@@ -555,7 +555,6 @@ class DataStoreIncidentReportTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
-
     def assertMultipleIncidentReportsEqual(
         self,
         store: TestDataStoreABC,
@@ -571,9 +570,9 @@ class DataStoreIncidentReportTests(DataStoreTests):
             self.assertIn(a.number, bByNumber)
             self.assertIncidentReportsEqual(store, a, bByNumber[a.number])
 
-
     def assertIncidentReportsEqual(
-        self, store: TestDataStoreABC,
+        self,
+        store: TestDataStoreABC,
         incidentReportA: IncidentReport,
         incidentReportB: IncidentReport,
         ignoreAutomatic: bool = False,

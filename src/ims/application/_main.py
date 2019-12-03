@@ -41,33 +41,29 @@ from ._klein import Router, redirect
 from ._web import WebApplication
 
 
-__all__ = (
-    "MainApplication",
-)
+__all__ = ("MainApplication",)
 
 
 resourcesDirectory = FilePath(ims.element.__file__).parent().child("static")
 
 
-
-def apiApplicationFactory(parent: 'MainApplication') -> APIApplication:
+def apiApplicationFactory(parent: "MainApplication") -> APIApplication:
     return APIApplication(
-        config=parent.config,
-        storeObserver=parent.storeObserver,
+        config=parent.config, storeObserver=parent.storeObserver,
     )
 
 
-def authApplicationFactory(parent: 'MainApplication') -> AuthApplication:
+def authApplicationFactory(parent: "MainApplication") -> AuthApplication:
     return AuthApplication(config=parent.config)
 
 
 def externalApplicationFactory(
-    parent: 'MainApplication'
+    parent: "MainApplication",
 ) -> ExternalApplication:
     return ExternalApplication(config=parent.config)
 
 
-def webApplicationFactory(parent: 'MainApplication') -> WebApplication:
+def webApplicationFactory(parent: "MainApplication") -> WebApplication:
     return WebApplication(config=parent.config)
 
 
@@ -78,7 +74,6 @@ class MainApplication(object):
     """
 
     router: ClassVar[Router] = Router()
-
 
     config: Configuration
 
@@ -103,7 +98,6 @@ class MainApplication(object):
         default=Factory(webApplicationFactory, takes_self=True), init=False
     )
 
-
     @property
     def dms(self) -> DutyManagementSystem:
         """
@@ -111,14 +105,11 @@ class MainApplication(object):
         """
         return self.config.dms
 
-
     def __attrs_post_init__(self) -> None:
         globalLogPublisher.addObserver(self.storeObserver)
 
-
     def __del__(self) -> None:
         globalLogPublisher.removeObserver(self.storeObserver)
-
 
     #
     # Static content
@@ -134,7 +125,6 @@ class MainApplication(object):
         """
         return redirect(request, URLs.app)
 
-
     @router.route(URLs.prefix, methods=("HEAD", "GET"))
     @static
     def prefixEndpoint(self, request: IRequest) -> KleinRenderable:
@@ -145,7 +135,6 @@ class MainApplication(object):
         """
         return redirect(request, URLs.app)
 
-
     @router.route(URLs.static, branch=True)
     @static
     def staticEndpoint(self, request: IRequest) -> KleinRenderable:
@@ -153,7 +142,6 @@ class MainApplication(object):
         Return endpoint for static resources collection.
         """
         return File(resourcesDirectory.path)
-
 
     #
     # URLs
@@ -166,7 +154,8 @@ class MainApplication(object):
         JavaScript variables for service URLs.
         """
         urls = {
-            k: getattr(URLs, k).asText() for k in URLs.__dict__
+            k: getattr(URLs, k).asText()
+            for k in URLs.__dict__
             if not k.startswith("_")
         }
 
@@ -174,11 +163,12 @@ class MainApplication(object):
             HeaderName.contentType.value, ContentType.javascript.value
         )
 
-        return "\n".join((
-            "var url_{} = {};".format(k, jsonTextFromObject(v))
-            for k, v in urls.items()
-        ))
-
+        return "\n".join(
+            (
+                "var url_{} = {};".format(k, jsonTextFromObject(v))
+                for k, v in urls.items()
+            )
+        )
 
     #
     # Child application endpoints
@@ -192,7 +182,6 @@ class MainApplication(object):
         """
         return self.apiApplication.router.resource()
 
-
     @router.route(URLs.auth, branch=True)
     @static
     def authApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
@@ -201,17 +190,13 @@ class MainApplication(object):
         """
         return self.authApplication.router.resource()
 
-
     @router.route(URLs.external, branch=True)
     @static
-    def externalApplicationEndpoint(
-        self, request: IRequest
-    ) -> KleinRenderable:
+    def externalApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         External application resource.
         """
         return self.externalApplication.router.resource()
-
 
     @router.route(URLs.app, branch=True)
     @static

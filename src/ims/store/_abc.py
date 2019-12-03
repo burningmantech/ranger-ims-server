@@ -22,13 +22,16 @@ from abc import ABC, abstractmethod
 from typing import Iterable, Mapping
 
 from ims.model import (
-    Event, Incident, IncidentPriority, IncidentReport, IncidentState,
+    Event,
+    Incident,
+    IncidentPriority,
+    IncidentReport,
+    IncidentState,
     ReportEntry,
 )
 
 
 __all__ = ()
-
 
 
 class IMSDataStore(ABC):
@@ -49,7 +52,6 @@ class IMSDataStore(ABC):
         necessary.
         """
 
-
     @abstractmethod
     async def validate(self) -> None:
         """
@@ -57,20 +59,15 @@ class IMSDataStore(ABC):
         there are any problems detected.
         """
 
-
     ###
     # Incident Types
     ###
 
-
     @abstractmethod
-    async def incidentTypes(
-        self, includeHidden: bool = False
-    ) -> Iterable[str]:
+    async def incidentTypes(self, includeHidden: bool = False) -> Iterable[str]:
         """
         Look up the incident types used in this store.
         """
-
 
     @abstractmethod
     async def createIncidentType(
@@ -80,13 +77,11 @@ class IMSDataStore(ABC):
         Create the given incident type.
         """
 
-
     @abstractmethod
     async def showIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
         """
         Show the given incident types.
         """
-
 
     @abstractmethod
     async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
@@ -94,11 +89,9 @@ class IMSDataStore(ABC):
         Hide the given incident types.
         """
 
-
     ###
     # Events
     ###
-
 
     @abstractmethod
     async def events(self) -> Iterable[Event]:
@@ -106,13 +99,11 @@ class IMSDataStore(ABC):
         Look up all events in this store.
         """
 
-
     @abstractmethod
     async def createEvent(self, event: Event) -> None:
         """
         Create the given event.
         """
-
 
     @abstractmethod
     async def readers(self, event: Event) -> Iterable[str]:
@@ -120,13 +111,11 @@ class IMSDataStore(ABC):
         Look up the allowed readers for the given event.
         """
 
-
     @abstractmethod
     async def setReaders(self, event: Event, readers: Iterable[str]) -> None:
         """
         Set the allowed readers for the given event.
         """
-
 
     @abstractmethod
     async def writers(self, event: Event) -> Iterable[str]:
@@ -134,13 +123,11 @@ class IMSDataStore(ABC):
         Look up the allowed writers for the given event.
         """
 
-
     @abstractmethod
     async def setWriters(self, event: Event, writers: Iterable[str]) -> None:
         """
         Set the allowed writers for the given event.
         """
-
 
     @abstractmethod
     async def reporters(self, event: Event) -> Iterable[str]:
@@ -148,18 +135,15 @@ class IMSDataStore(ABC):
         Look up the allowed reporters for the given event.
         """
 
-
     @abstractmethod
     async def setReporters(self, event: Event, writers: Iterable[str]) -> None:
         """
         Set the allowed reporters for the given event.
         """
 
-
     ###
     # Concentric Streets
     ###
-
 
     @abstractmethod
     async def concentricStreets(self, event: Event) -> Mapping[str, str]:
@@ -167,7 +151,6 @@ class IMSDataStore(ABC):
         Look up the concentric streets associated with the given event.
         Returns a mapping from street ID to street name.
         """
-
 
     @abstractmethod
     async def createConcentricStreet(
@@ -177,11 +160,9 @@ class IMSDataStore(ABC):
         Create a new concentric street and associated it with the given event.
         """
 
-
     ###
     # Incidents
     ###
-
 
     @abstractmethod
     async def incidents(self, event: Event) -> Iterable[Incident]:
@@ -189,18 +170,14 @@ class IMSDataStore(ABC):
         Look up all incidents for the given event.
         """
 
-
     @abstractmethod
     async def incidentWithNumber(self, event: Event, number: int) -> Incident:
         """
         Look up the incident with the given number in the given event.
         """
 
-
     @abstractmethod
-    async def createIncident(
-        self, incident: Incident, author: str
-    ) -> Incident:
+    async def createIncident(self, incident: Incident, author: str) -> Incident:
         """
         Create a new incident and add it into the event referenced by the
         incident.
@@ -211,7 +188,6 @@ class IMSDataStore(ABC):
         The stored incident is returned with the incident number assigned to it
         by the data store, and with initial (automatic) report entries added.
         """
-
 
     @abstractmethod
     async def importIncident(self, incident: Incident) -> None:
@@ -224,10 +200,12 @@ class IMSDataStore(ABC):
         it.
         """
 
-
     @abstractmethod
     async def setIncident_priority(
-        self, event: Event, incidentNumber: int, priority: IncidentPriority,
+        self,
+        event: Event,
+        incidentNumber: int,
+        priority: IncidentPriority,
         author: str,
     ) -> None:
         """
@@ -235,17 +213,18 @@ class IMSDataStore(ABC):
         event.
         """
 
-
     @abstractmethod
     async def setIncident_state(
-        self, event: Event, incidentNumber: int, state: IncidentState,
+        self,
+        event: Event,
+        incidentNumber: int,
+        state: IncidentState,
         author: str,
     ) -> None:
         """
         Set the state for the incident with the given number in the given
         event.
         """
-
 
     @abstractmethod
     async def setIncident_summary(
@@ -256,7 +235,6 @@ class IMSDataStore(ABC):
         event.
         """
 
-
     @abstractmethod
     async def setIncident_locationName(
         self, event: Event, incidentNumber: int, name: str, author: str
@@ -265,7 +243,6 @@ class IMSDataStore(ABC):
         Set the location name for the incident with the given number in the
         given event.
         """
-
 
     @abstractmethod
     async def setIncident_locationConcentricStreet(
@@ -276,7 +253,6 @@ class IMSDataStore(ABC):
         number in the given event.
         """
 
-
     @abstractmethod
     async def setIncident_locationRadialHour(
         self, event: Event, incidentNumber: int, hour: int, author: str
@@ -285,7 +261,6 @@ class IMSDataStore(ABC):
         Set the location radial hour for the incident with the given number in
         the given event.
         """
-
 
     @abstractmethod
     async def setIncident_locationRadialMinute(
@@ -296,7 +271,6 @@ class IMSDataStore(ABC):
         in the given event.
         """
 
-
     @abstractmethod
     async def setIncident_locationDescription(
         self, event: Event, incidentNumber: int, description: str, author: str
@@ -306,51 +280,54 @@ class IMSDataStore(ABC):
         the given event.
         """
 
-
     @abstractmethod
     async def setIncident_rangers(
-        self, event: Event, incidentNumber: int, rangerHandles: Iterable[str],
-        author: str
+        self,
+        event: Event,
+        incidentNumber: int,
+        rangerHandles: Iterable[str],
+        author: str,
     ) -> None:
         """
         Set the Rangers attached to the incident with the given number in the
         given event.
         """
 
-
     @abstractmethod
     async def setIncident_incidentTypes(
-        self, event: Event, incidentNumber: int, incidentTypes: Iterable[str],
-        author: str
+        self,
+        event: Event,
+        incidentNumber: int,
+        incidentTypes: Iterable[str],
+        author: str,
     ) -> None:
         """
         Set the incident types attached to the incident with the given number
         in the given event.
         """
 
-
     @abstractmethod
     async def addReportEntriesToIncident(
-        self, event: Event, incidentNumber: int,
-        reportEntries: Iterable[ReportEntry], author: str,
+        self,
+        event: Event,
+        incidentNumber: int,
+        reportEntries: Iterable[ReportEntry],
+        author: str,
     ) -> None:
         """
         Add the given report entries to incident with the given number in the
         given event.
         """
 
-
     ###
     # Incident Reports
     ###
-
 
     @abstractmethod
     async def incidentReports(self, event: Event) -> Iterable[IncidentReport]:
         """
         Look up all incident reports in the given event.
         """
-
 
     @abstractmethod
     async def incidentReportWithNumber(
@@ -359,7 +336,6 @@ class IMSDataStore(ABC):
         """
         Look up the incident report with the given number.
         """
-
 
     @abstractmethod
     async def createIncidentReport(
@@ -376,7 +352,6 @@ class IMSDataStore(ABC):
         entries added.
         """
 
-
     @abstractmethod
     async def importIncidentReport(
         self, incidentReport: IncidentReport
@@ -390,31 +365,33 @@ class IMSDataStore(ABC):
         are added to it.
         """
 
-
     @abstractmethod
     async def setIncidentReport_summary(
-        self, event: Event, incidentReportNumber: int,
-        summary: str, author: str,
+        self,
+        event: Event,
+        incidentReportNumber: int,
+        summary: str,
+        author: str,
     ) -> None:
         """
         Set the summary for the incident report with the given number.
         """
 
-
     @abstractmethod
     async def addReportEntriesToIncidentReport(
-        self, event: Event, incidentReportNumber: int,
-        reportEntries: Iterable[ReportEntry], author: str,
+        self,
+        event: Event,
+        incidentReportNumber: int,
+        reportEntries: Iterable[ReportEntry],
+        author: str,
     ) -> None:
         """
         Add the given report entries to incident report with the given number.
         """
 
-
     ###
     # Incident to Incident Report Relationships
     ###
-
 
     @abstractmethod
     async def incidentReportsAttachedToIncident(
@@ -425,10 +402,12 @@ class IMSDataStore(ABC):
         number in the given event.
         """
 
-
     @abstractmethod
     async def attachIncidentReportToIncident(
-        self, incidentReportNumber: int, event: Event, incidentNumber: int,
+        self,
+        incidentReportNumber: int,
+        event: Event,
+        incidentNumber: int,
         author: str,
     ) -> None:
         """
@@ -436,10 +415,12 @@ class IMSDataStore(ABC):
         the given number in the given event.
         """
 
-
     @abstractmethod
     async def detachIncidentReportFromIncident(
-        self, incidentReportNumber: int, event: Event, incidentNumber: int,
+        self,
+        incidentReportNumber: int,
+        event: Event,
+        incidentNumber: int,
         author: str,
     ) -> None:
         """

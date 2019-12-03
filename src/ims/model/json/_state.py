@@ -28,27 +28,26 @@ from .._state import IncidentState
 __all__ = ()
 
 
-
 @unique
 class IncidentStateJSONValue(Enum):
     """
     Incident state JSON values
     """
 
-    new        = "new"
-    onHold     = "on_hold"
+    new = "new"
+    onHold = "on_hold"
     dispatched = "dispatched"
-    onScene    = "on_scene"
-    closed     = "closed"
-
+    onScene = "on_scene"
+    closed = "closed"
 
 
 def serializeIncidentState(incidentState: IncidentState) -> str:
     constant = cast(
         IncidentStateJSONValue,
-        getattr(IncidentStateJSONValue, incidentState.name)
+        getattr(IncidentStateJSONValue, incidentState.name),
     )
     return cast(str, constant.value)
+
 
 registerSerializer(IncidentState, serializeIncidentState)
 
@@ -59,5 +58,6 @@ def deserializeIncidentState(obj: str, cl: Type) -> IncidentState:
     return cast(
         IncidentState, getattr(IncidentState, IncidentStateJSONValue(obj).name)
     )
+
 
 registerDeserializer(IncidentState, deserializeIncidentState)

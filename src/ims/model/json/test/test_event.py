@@ -31,7 +31,6 @@ from ...strategies import events
 __all__ = ()
 
 
-
 class EventSerializationTests(TestCase):
     """
     Tests for serialization of :class:`Event`
@@ -43,7 +42,6 @@ class EventSerializationTests(TestCase):
         :func:`jsonSerialize` serializes the given event using its ID.
         """
         self.assertEqual(jsonSerialize(event), jsonFromEvent(event))
-
 
 
 class EventDeserializationTests(TestCase):

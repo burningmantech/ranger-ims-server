@@ -19,15 +19,25 @@ Test strategies for model data.
 """
 
 from datetime import (
-    datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+    datetime as DateTime,
+    timedelta as TimeDelta,
+    timezone as TimeZone,
 )
 from typing import Callable, Dict, FrozenSet, Hashable, List, Optional, cast
 
 from hypothesis import HealthCheck, settings
 from hypothesis.searchstrategy import SearchStrategy
 from hypothesis.strategies import (
-    booleans, composite, datetimes as _datetimes, dictionaries, integers,
-    lists, none, one_of, sampled_from, text,
+    booleans,
+    composite,
+    datetimes as _datetimes,
+    dictionaries,
+    integers,
+    lists,
+    none,
+    one_of,
+    sampled_from,
+    text,
 )
 
 from ims.dms import hashPassword
@@ -82,9 +92,7 @@ __all__ = (
 
 
 settings.register_profile(
-    "ci",
-    deadline=None,
-    suppress_health_check=[HealthCheck.too_slow],
+    "ci", deadline=None, suppress_health_check=[HealthCheck.too_slow],
 )
 settings.load_profile("ci")
 
@@ -135,14 +143,13 @@ def dateTimes(
     else:
         min = DateTime(1970, 1, 1) + fuzz
 
-    return _datetimes(
-        min_value=min, max_value=max, timezones=timeZones()
-    )
+    return _datetimes(min_value=min, max_value=max, timezones=timeZones())
 
 
 ##
 # Address
 ##
+
 
 @composite
 def textOnlyAddresses(draw: Callable) -> SearchStrategy:  # TextOnlyAddress
@@ -204,12 +211,14 @@ def addresses() -> SearchStrategy:  # Address
 # Entry
 ##
 
+
 @composite
 def reportEntries(
     draw: Callable,
     author: Optional[str] = None,
     automatic: Optional[bool] = None,
-    beforeNow: bool = False, fromNow: bool = False,
+    beforeNow: bool = False,
+    fromNow: bool = False,
 ) -> ReportEntry:
     """
     Strategy that generates :class:`ReportEntry` values.
@@ -232,6 +241,7 @@ def reportEntries(
 # Event
 ##
 
+
 @composite
 def events(draw: Callable) -> Event:
     """
@@ -247,8 +257,7 @@ def accessTexts(draw: Callable) -> str:
     """
     # FIXME: We are using Ranger handles for positions here.
     return "{}:{}".format(
-        draw(sampled_from(("person", "position"))),
-        draw(rangerHandles()),
+        draw(sampled_from(("person", "position"))), draw(rangerHandles()),
     )
 
 
@@ -259,11 +268,11 @@ def eventAccesses(draw: Callable) -> EventAccess:
     """
     readers: FrozenSet[str] = frozenset(draw(lists(accessTexts())))
     writers: FrozenSet[str] = frozenset(
-        a for a in draw(lists(accessTexts()))
-        if a not in readers
+        a for a in draw(lists(accessTexts())) if a not in readers
     )
     reporters: FrozenSet[str] = frozenset(
-        a for a in draw(lists(accessTexts()))
+        a
+        for a in draw(lists(accessTexts()))
         if a not in readers and a not in writers
     )
     return EventAccess(readers=readers, writers=writers, reporters=reporters)
@@ -275,20 +284,20 @@ def eventDatas(draw: Callable) -> EventData:
     Strategy that generates :class:`EventData` values.
     """
     event: Event = draw(events())
-    concentricStreets: Dict[str, str] = draw(dictionaries(
-        keys=concentricStreetIDs(), values=concentricStreetNames()
-    ))
-    situations: List[Incident] = draw(lists(
-        incidents(event=event), unique_by=lambda i: i.number
-    ))
+    concentricStreets: Dict[str, str] = draw(
+        dictionaries(keys=concentricStreetIDs(), values=concentricStreetNames())
+    )
+    situations: List[Incident] = draw(
+        lists(incidents(event=event), unique_by=lambda i: i.number)
+    )
 
     # Add all concentric streets referred to by incidents so the data is valid
     for incident in situations:
         address = incident.location.address
         if (
-            isinstance(address, RodGarettAddress) and
-            address.concentric is not None and
-            address.concentric not in concentricStreets
+            isinstance(address, RodGarettAddress)
+            and address.concentric is not None
+            and address.concentric not in concentricStreets
         ):
             concentricStreets[address.concentric] = draw(
                 concentricStreetNames()
@@ -299,9 +308,9 @@ def eventDatas(draw: Callable) -> EventData:
         access=draw(eventAccesses()),
         concentricStreets=concentricStreets,
         incidents=situations,
-        incidentReports=draw(lists(
-            incidentReports(event=event), unique_by=lambda i: i.number
-        )),
+        incidentReports=draw(
+            lists(incidentReports(event=event), unique_by=lambda i: i.number)
+        ),
     )
 
 
@@ -335,10 +344,8 @@ def imsDatas(draw: Callable) -> IMSData:
 # Incident
 ##
 
-maxIncidentNumber = min((
-    SQLITE_MAX_INT,  # SQLite
-    4294967295,      # MySQL
-))
+maxIncidentNumber = min((SQLITE_MAX_INT, 4294967295,))  # SQLite  # MySQL
+
 
 def incidentNumbers(max: Optional[int] = None) -> SearchStrategy:  # str
     """
@@ -360,7 +367,8 @@ def incidents(
     new: bool = False,
     event: Optional[Event] = None,
     maxNumber: Optional[int] = None,
-    beforeNow: bool = False, fromNow: bool = False,
+    beforeNow: bool = False,
+    fromNow: bool = False,
 ) -> Incident:
     """
     Strategy that generates :class:`Incident` values.
@@ -388,9 +396,13 @@ def incidents(
         location=draw(locations()),
         rangerHandles=draw(lists(rangerHandles())),
         incidentTypes=types,
-        reportEntries=draw(lists(reportEntries(
-            automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
-        ))),
+        reportEntries=draw(
+            lists(
+                reportEntries(
+                    automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
+                )
+            )
+        ),
         incidentReportNumbers=frozenset(),
     )
 
@@ -408,21 +420,26 @@ def incidentLists(
     """
     uniqueBy: Optional[Callable[[Incident], Hashable]]
     if uniqueIDs:
+
         def uniqueBy(incident: Incident) -> Hashable:
             return cast(Hashable, (incident.event, incident.number))
+
     else:
         uniqueBy = None
 
     return lists(
         incidents(event=event, maxNumber=maxNumber),
-        min_size=minSize, max_size=maxSize, average_size=averageSize,
-        unique_by=uniqueBy
+        min_size=minSize,
+        max_size=maxSize,
+        average_size=averageSize,
+        unique_by=uniqueBy,
     )
 
 
 ##
 # Location
 ##
+
 
 def locationNames() -> SearchStrategy:  # str
     """
@@ -443,6 +460,7 @@ def locations(draw: Callable) -> Location:
 # Priority
 ##
 
+
 def incidentPriorities() -> SearchStrategy:  # IncidentPriority
     """
     Strategy that generates :class:`IncidentPriority` values.
@@ -453,6 +471,7 @@ def incidentPriorities() -> SearchStrategy:  # IncidentPriority
 ##
 # Ranger
 ##
+
 
 def rangerHandles() -> SearchStrategy:  # str
     """
@@ -500,7 +519,8 @@ def incidentReports(
     new: bool = False,
     event: Optional[Event] = None,
     maxNumber: Optional[int] = None,
-    beforeNow: bool = False, fromNow: bool = False,
+    beforeNow: bool = False,
+    fromNow: bool = False,
 ) -> IncidentReport:
     """
     Strategy that generates :class:`IncidentReport` values.
@@ -522,9 +542,13 @@ def incidentReports(
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
         summary=draw(incidentReportSummaries()),
         incidentNumber=None,  # FIXME: May allow some to be passed in?
-        reportEntries=draw(lists(reportEntries(
-            automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
-        ))),
+        reportEntries=draw(
+            lists(
+                reportEntries(
+                    automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
+                )
+            )
+        ),
     )
 
 
@@ -538,19 +562,23 @@ def incidentReportLists(
     Strategy that generates :class:`List`s containing :class:`IncidentReport`
     values.
     """
+
     def uniqueBy(incidentReport: IncidentReport) -> Hashable:
         return cast(Hashable, incidentReport.number)
 
     return lists(
         incidentReports(maxNumber=maxNumber),
-        min_size=minSize, max_size=maxSize, average_size=averageSize,
-        unique_by=uniqueBy
+        min_size=minSize,
+        max_size=maxSize,
+        average_size=averageSize,
+        unique_by=uniqueBy,
     )
 
 
 ##
 # State
 ##
+
 
 def incidentStates() -> SearchStrategy:  # IncidentState
     """
@@ -563,15 +591,13 @@ def incidentStates() -> SearchStrategy:  # IncidentState
 # Type
 ##
 
+
 @composite
 def incidentTypes(draw: Callable) -> IncidentType:
     """
     Strategy that generates incident types.
     """
-    return IncidentType(
-        name=draw(text(min_size=1)),
-        hidden=draw(booleans()),
-    )
+    return IncidentType(name=draw(text(min_size=1)), hidden=draw(booleans()),)
 
 
 def knownIncidentTypes() -> SearchStrategy:  # KnownIncidentType

@@ -33,10 +33,7 @@ from ims.ext.json import jsonTextFromObject
 from ims.model import Incident
 
 
-__all__ = (
-    "DataStoreEventSourceLogObserver",
-)
-
+__all__ = ("DataStoreEventSourceLogObserver",)
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -49,7 +46,6 @@ class Event(object):
     eventID: Optional[int]
     eventClass: Optional[str]
     retry: Optional[int] = None
-
 
     def render(self) -> str:
         """
@@ -66,12 +62,9 @@ class Event(object):
         if self.retry is not None:
             parts.append(f"retry: {self.retry}")
 
-        parts.extend(
-            f"data: {line}" for line in self.message.split("\n")
-        )
+        parts.extend(f"data: {line}" for line in self.message.split("\n"))
 
-        return ("\r\n".join(parts) + "\r\n\r\n")
-
+        return "\r\n".join(parts) + "\r\n\r\n"
 
 
 @implementer(ILogObserver)
@@ -90,7 +83,6 @@ class DataStoreEventSourceLogObserver(object):
     _start: float = attrib(init=False, factory=time)
     _counter: List[int] = attrib(init=False, factory=lambda: [0])
 
-
     def addListener(
         self, listener: IRequest, lastEventID: Optional[str] = None
     ) -> None:
@@ -103,7 +95,6 @@ class DataStoreEventSourceLogObserver(object):
 
         self._listeners.append(listener)
 
-
     def removeListener(self, listener: IRequest) -> None:
         """
         Remove a listener.
@@ -111,7 +102,6 @@ class DataStoreEventSourceLogObserver(object):
         self._log.debug("Removing listener: {listener}", listener=listener)
 
         self._listeners.remove(listener)
-
 
     def _transmogrify(
         self, loggerEvent: Mapping, eventID: int
@@ -147,7 +137,8 @@ class DataStoreEventSourceLogObserver(object):
             self._log.critical(
                 "Unknown data store event class {eventClass} "
                 "sent event: {event}",
-                eventClass=eventClass, event=loggerEvent
+                eventClass=eventClass,
+                event=loggerEvent,
             )
             return None
 
@@ -158,10 +149,7 @@ class DataStoreEventSourceLogObserver(object):
         )
         return eventSourceEvent
 
-
-    def _playback(
-        self, listener: IRequest, lastEventID: Optional[str]
-    ) -> None:
+    def _playback(self, listener: IRequest, lastEventID: Optional[str]) -> None:
         if lastEventID is None:
             return
 
@@ -177,7 +165,6 @@ class DataStoreEventSourceLogObserver(object):
             if eventCounter >= counter:
                 listener.write(event.render().encode("utf-8"))
 
-
     def _publish(self, eventSourceEvent: Event, eventID: int) -> None:
         eventText = eventSourceEvent.render().encode("utf-8")
 
@@ -188,12 +175,12 @@ class DataStoreEventSourceLogObserver(object):
                 self._log.error(
                     "Unable to publish to EventSource listener {listener}: "
                     "{error}",
-                    listener=listener, error=e,
+                    listener=listener,
+                    error=e,
                 )
                 self.removeListener(listener)
 
         self._events.append((self._counter[0], eventSourceEvent))
-
 
     def __call__(self, event: Mapping) -> None:
         """

@@ -38,16 +38,13 @@ from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ._klein import Router, internalErrorResponse, notFoundResponse
 
 
-__all__ = (
-    "ExternalApplication",
-)
+__all__ = ("ExternalApplication",)
 
 
 def _unprefix(url: URL) -> URL:
     prefix = URLs.external.path[:-1]
-    assert url.path[:len(prefix)] == prefix, (url.path[len(prefix):], prefix)
-    return url.replace(path=url.path[len(prefix):])
-
+    assert url.path[: len(prefix)] == prefix, (url.path[len(prefix) :], prefix)
+    return url.replace(path=url.path[len(prefix) :])
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
@@ -61,17 +58,17 @@ class ExternalApplication(object):
 
     config: Configuration
 
-    bootstrapVersionNumber  = "3.3.7"
-    jqueryVersionNumber     = "3.1.0"
+    bootstrapVersionNumber = "3.3.7"
+    jqueryVersionNumber = "3.1.0"
     dataTablesVersionNumber = "1.10.12"
-    momentVersionNumber     = "2.22.2"
-    lscacheVersionNumber    = "1.0.5"
+    momentVersionNumber = "2.22.2"
+    lscacheVersionNumber = "1.0.5"
 
-    bootstrapVersion  = f"bootstrap-{bootstrapVersionNumber}-dist"
-    jqueryVersion     = f"jquery-{jqueryVersionNumber}"
+    bootstrapVersion = f"bootstrap-{bootstrapVersionNumber}-dist"
+    jqueryVersion = f"jquery-{jqueryVersionNumber}"
     dataTablesVersion = f"DataTables-{dataTablesVersionNumber}"
-    momentVersion     = f"moment-{momentVersionNumber}"
-    lscacheVersion    = f"lscache-{lscacheVersionNumber}"
+    momentVersion = f"moment-{momentVersionNumber}"
+    lscacheVersion = f"lscache-{lscacheVersionNumber}"
 
     bootstrapSourceURL = URL.fromText(
         f"https://github.com/twbs/bootstrap/releases/download/"
@@ -101,7 +98,6 @@ class ExternalApplication(object):
         f"{lscacheVersionNumber}/lscache.min.js"
     )
 
-
     @router.route(
         _unprefix(URLs.bootstrapBase), methods=("HEAD", "GET"), branch=True
     )
@@ -113,14 +109,16 @@ class ExternalApplication(object):
         requestURL = URL.fromText(request.uri.decode("ascii"))
 
         # Remove URL prefix
-        names = requestURL.path[len(URLs.bootstrapBase.path) - 1:]
+        names = requestURL.path[len(URLs.bootstrapBase.path) - 1 :]
 
         request.setHeader(HeaderName.contentType.value, ContentType.css.value)
         return await self.cachedZippedResource(
-            request, self.bootstrapSourceURL, self.bootstrapVersion,
-            self.bootstrapVersion, *names
+            request,
+            self.bootstrapSourceURL,
+            self.bootstrapVersion,
+            self.bootstrapVersion,
+            *names,
         )
-
 
     @router.route(_unprefix(URLs.jqueryJS), methods=("HEAD", "GET"))
     @static
@@ -135,7 +133,6 @@ class ExternalApplication(object):
             request, self.jqueryJSSourceURL, f"{self.jqueryVersion}.min.js"
         )
 
-
     @router.route(_unprefix(URLs.jqueryMap), methods=("HEAD", "GET"))
     @static
     async def jqueryMapResource(self, request: IRequest) -> KleinRenderable:
@@ -146,7 +143,6 @@ class ExternalApplication(object):
         return await self.cachedResource(
             request, self.jqueryMapSourceURL, f"{self.jqueryVersion}.min.map"
         )
-
 
     @router.route(
         _unprefix(URLs.dataTablesBase), methods=("HEAD", "GET"), branch=True
@@ -159,14 +155,16 @@ class ExternalApplication(object):
         requestURL = URL.fromText(request.uri.decode("ascii"))
 
         # Remove URL prefix
-        names = requestURL.path[len(URLs.dataTablesBase.path) - 1:]
+        names = requestURL.path[len(URLs.dataTablesBase.path) - 1 :]
 
         request.setHeader(HeaderName.contentType.value, ContentType.css.value)
         return await self.cachedZippedResource(
-            request, self.dataTablesSourceURL, self.dataTablesVersion,
-            self.dataTablesVersion, *names
+            request,
+            self.dataTablesSourceURL,
+            self.dataTablesVersion,
+            self.dataTablesVersion,
+            *names,
         )
-
 
     @router.route(_unprefix(URLs.momentJS), methods=("HEAD", "GET"))
     @static
@@ -181,7 +179,6 @@ class ExternalApplication(object):
             request, self.momentJSSourceURL, f"{self.momentVersion}.min.js"
         )
 
-
     @router.route(_unprefix(URLs.lscacheJS), methods=("HEAD", "GET"))
     @static
     async def lscacheJSResource(self, request: IRequest) -> KleinRenderable:
@@ -194,7 +191,6 @@ class ExternalApplication(object):
         return await self.cachedResource(
             request, self.lscacheJSSourceURL, f"{self.lscacheVersion}.min.js"
         )
-
 
     async def cacheFromURL(self, url: URL, name: str) -> Path:
         """
@@ -210,9 +206,7 @@ class ExternalApplication(object):
             ) as tmp:
                 path = Path(tmp.name)
                 try:
-                    await downloadPage(
-                        url.asText().encode("utf-8"), tmp
-                    )
+                    await downloadPage(url.asText().encode("utf-8"), tmp)
                 except BaseException as e:
                     self._log.failure(
                         "Download failed for {url}: {error}", url=url, error=e
@@ -222,13 +216,13 @@ class ExternalApplication(object):
                     except (OSError, IOError) as e:
                         self._log.critical(
                             "Failed to remove temporary file {path}: {error}",
-                            path=path, error=e
+                            path=path,
+                            error=e,
                         )
                 else:
                     path.rename(destination)
 
         return destination
-
 
     async def cachedResource(
         self, request: IRequest, url: URL, name: str
@@ -246,37 +240,41 @@ class ExternalApplication(object):
             )
             return notFoundResponse(request)
 
-
     async def cachedZippedResource(
-        self, request: IRequest, url: URL, archiveName: str, name: str,
+        self,
+        request: IRequest,
+        url: URL,
+        archiveName: str,
+        name: str,
         *names: Any,
     ) -> KleinRenderable:
         """
         Retrieve a cached resource from a zip file.
         """
-        archivePath = await self.cacheFromURL(
-            url, f"{archiveName}.zip"
-        )
+        archivePath = await self.cacheFromURL(url, f"{archiveName}.zip")
 
         try:
             filePath = ZipArchive(str(archivePath))
         except BadZipfile as e:
             self._log.error(
                 "Corrupt zip archive {path}: {error}",
-                path=archivePath, error=e,
+                path=archivePath,
+                error=e,
             )
             try:
                 archivePath.unlink()
             except (OSError, IOError) as e:
                 self._log.critical(
                     "Failed to remove corrupt zip archive {path}: {error}",
-                    path=archivePath, error=e,
+                    path=archivePath,
+                    error=e,
                 )
             return internalErrorResponse(request)
         except (OSError, IOError) as e:
             self._log.critical(
                 "Unable to open zip archive {path}: {error}",
-                path=archivePath, error=e,
+                path=archivePath,
+                error=e,
             )
             return notFoundResponse(request)
 
@@ -289,6 +287,7 @@ class ExternalApplication(object):
         except KeyError:
             self._log.error(
                 "File not found in ZIP archive: {filePath.path}",
-                filePath=filePath, archive=archivePath,
+                filePath=filePath,
+                archive=archivePath,
             )
             return notFoundResponse(request)

@@ -30,7 +30,6 @@ from ..strategies import incidentTypes
 __all__ = ()
 
 
-
 class IncidentTypeTests(TestCase):
     """
     Tests for :class:`IncidentType`
@@ -46,7 +45,6 @@ class IncidentTypeTests(TestCase):
         assume(incidentType.name not in knownIncidentTypeNames)
 
         self.assertFalse(incidentType.known())
-
 
     @given(sampled_from(KnownIncidentType), booleans())
     def test_known_known(

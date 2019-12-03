@@ -21,6 +21,4 @@ Navigation element.
 from ._nav import NavElement
 
 
-__all__ = (
-    "NavElement",
-)
+__all__ = ("NavElement",)

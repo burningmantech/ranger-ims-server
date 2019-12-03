@@ -35,7 +35,6 @@ from ...page import Page
 __all__ = ()
 
 
-
 @attrs(auto_attribs=True, kw_only=True)
 class IncidentReportsPage(Page):
     """
@@ -45,17 +44,15 @@ class IncidentReportsPage(Page):
     name: str = title
     event: Event
 
-
     @renderer
     def editing_allowed(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         JSON boolean, true if editing is allowed.
         """
-        if (request.authorizations & Authorization.writeIncidentReports):
+        if request.authorizations & Authorization.writeIncidentReports:
             return jsonTrue
         else:
             return jsonFalse
-
 
     @renderer
     def event_id(self, request: IRequest, tag: Tag) -> KleinRenderable:

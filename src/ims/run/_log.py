@@ -26,10 +26,7 @@ from twisted.web.iweb import IAccessLogFormatter, IRequest
 from zope.interface import provider
 
 
-__all__ = (
-    "patchCombinedLogFormatter",
-)
-
+__all__ = ("patchCombinedLogFormatter",)
 
 
 @provider(IAccessLogFormatter)
@@ -45,8 +42,7 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
     clientIP = request.getClientIP()
 
     forwardedFor = (
-        request.requestHeaders
-        .getRawHeaders(b"x-forwarded-for", [b""])[0]
+        request.requestHeaders.getRawHeaders(b"x-forwarded-for", [b""])[0]
         .split(b",")[0]
         .strip()
     ).decode("charmap")
@@ -55,7 +51,6 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
         ip = f"{forwardedFor} > {clientIP}"
     else:
         ip = clientIP
-
 
     if hasattr(request, "user") and request.user is not None:
         username = request.user.shortNames[0]
@@ -82,7 +77,6 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
         )
     )
     return line
-
 
 
 def patchCombinedLogFormatter() -> None:

@@ -27,7 +27,11 @@ from hypothesis import given
 from ims.ext.json import jsonTextFromObject, objectFromJSONText
 from ims.ext.trial import TestCase
 from ims.model import (
-    EventAccess, EventData, IMSData, IncidentType, KnownIncidentType
+    EventAccess,
+    EventData,
+    IMSData,
+    IncidentType,
+    KnownIncidentType,
 )
 from ims.model._type import admin, junk
 from ims.model.json import jsonObjectFromModelObject, modelObjectFromJSONObject
@@ -47,9 +51,8 @@ knownIncidentTypesNot = frozenset(
 )
 
 # Make sure this is in sync with KnownIncidentType
-assert (
-    sorted(t.name for t in knownIncidentTypes) ==
-    sorted(k.value for k in KnownIncidentType)
+assert sorted(t.name for t in knownIncidentTypes) == sorted(
+    k.value for k in KnownIncidentType
 )
 
 
@@ -62,7 +65,6 @@ def addKnownIncidentTypes(imsData: IMSData) -> IMSData:
     incidentTypesIn |= knownIncidentTypes
     incidentTypesIn -= knownIncidentTypesNot
     return imsData.replace(incidentTypes=incidentTypesIn)
-
 
 
 class JSONExporterTests(TestCase):
@@ -78,7 +80,6 @@ class JSONExporterTests(TestCase):
         self.successResultOf(importer.storeData())
 
         return store
-
 
     @given(imsDatas())
     def test_asBytes(self, imsDataIn: IMSData) -> None:
@@ -97,7 +98,6 @@ class JSONExporterTests(TestCase):
         # Compare result to input data
         self.assertIMSDataEqual(imsDataOut, imsDataIn)
 
-
     @given(imsDatas())
     def test_asText(self, imsDataIn: IMSData) -> None:
         imsDataIn = addKnownIncidentTypes(imsDataIn)
@@ -114,7 +114,6 @@ class JSONExporterTests(TestCase):
         # Compare result to input data
         self.assertIMSDataEqual(imsDataOut, imsDataIn)
 
-
     @given(imsDatas())
     def test_asJSON(self, imsDataIn: IMSData) -> None:
         imsDataIn = addKnownIncidentTypes(imsDataIn)
@@ -129,7 +128,6 @@ class JSONExporterTests(TestCase):
 
         # Compare result to input data
         self.assertIMSDataEqual(imsDataOut, imsDataIn)
-
 
     @given(imsDatas())
     def test_imsData(self, imsDataIn: IMSData) -> None:
@@ -146,7 +144,6 @@ class JSONExporterTests(TestCase):
         self.assertIMSDataEqual(imsDataOut, imsDataIn)
 
 
-
 class JSONImporterTests(TestCase):
     """
     Tests for :class:`JSONImporter`
@@ -157,7 +154,6 @@ class JSONImporterTests(TestCase):
         self.successResultOf(store.upgradeSchema())
         return store
 
-
     @given(imsDatas())
     def test_fromIO(self, imsDataIn: IMSData) -> None:
         json = jsonObjectFromModelObject(imsDataIn)
@@ -167,7 +163,6 @@ class JSONImporterTests(TestCase):
         importer = JSONImporter.fromIO(store=self.store(), io=jsonIO)
 
         self.assertIMSDataEqual(importer.imsData, imsDataIn)
-
 
     @given(imsDatas())
     def test_fromBytes(self, imsDataIn: IMSData) -> None:
@@ -180,7 +175,6 @@ class JSONImporterTests(TestCase):
 
         self.assertIMSDataEqual(importer.imsData, imsDataIn)
 
-
     @given(imsDatas())
     def test_fromText(self, imsDataIn: IMSData) -> None:
         json = jsonObjectFromModelObject(imsDataIn)
@@ -189,14 +183,12 @@ class JSONImporterTests(TestCase):
 
         self.assertIMSDataEqual(importer.imsData, imsDataIn)
 
-
     @given(imsDatas())
     def test_fromJSON(self, imsDataIn: IMSData) -> None:
         json = cast(Mapping[str, Any], jsonObjectFromModelObject(imsDataIn))
         importer = JSONImporter.fromJSON(store=self.store(), json=json)
 
         self.assertIMSDataEqual(importer.imsData, imsDataIn)
-
 
     @given(imsDatas())
     def test_storeData(self, imsDataIn: IMSData) -> None:
@@ -225,13 +217,9 @@ class JSONImporterTests(TestCase):
                         writers=resultOf(store.writers(event)),
                         reporters=resultOf(store.reporters(event)),
                     ),
-                    concentricStreets=resultOf(
-                        store.concentricStreets(event)
-                    ),
+                    concentricStreets=resultOf(store.concentricStreets(event)),
                     incidents=resultOf(store.incidents(event)),
-                    incidentReports=resultOf(
-                        store.incidentReports(event)
-                    ),
+                    incidentReports=resultOf(store.incidentReports(event)),
                 )
                 for event in resultOf(store.events())
             ),

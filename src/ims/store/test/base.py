@@ -33,17 +33,15 @@ from .._abc import IMSDataStore
 __all__ = ()
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class TestDataStoreMixIn(ABC):
     """
     :class:`IMSDataStore` mix-in for testing.
     """
 
-    maxIncidentNumber: ClassVar[int] = 2**63 - 1  # Default to 64-bit int
+    maxIncidentNumber: ClassVar[int] = 2 ** 63 - 1  # Default to 64-bit int
     exceptionClass: ClassVar[type] = Exception
     exceptionMessage: ClassVar[str] = "I'm broken, yo"
-
 
     @abstractmethod
     def bringThePain(self) -> None:
@@ -51,13 +49,11 @@ class TestDataStoreMixIn(ABC):
         Raise exceptions on future DB queries.
         """
 
-
     def raiseException(self) -> None:
         """
         Raise a database exception.
         """
         raise self.exceptionClass(self.exceptionMessage)
-
 
     @abstractmethod
     async def storeEvent(self, event: Event) -> None:
@@ -65,26 +61,24 @@ class TestDataStoreMixIn(ABC):
         Store the given event in the test store.
         """
 
-
     @abstractmethod
     async def storeIncident(self, incident: Incident) -> None:
         """
         Store the given incident in the test store.
         """
 
-
     @abstractmethod
-    async def storeIncidentReport(
-        self, incidentReport: IncidentReport
-    ) -> None:
+    async def storeIncidentReport(self, incidentReport: IncidentReport) -> None:
         """
         Store the given incident report in the test store.
         """
 
-
     @abstractmethod
     async def storeConcentricStreet(
-        self, event: Event, streetID: str, streetName: str,
+        self,
+        event: Event,
+        streetID: str,
+        streetName: str,
         ignoreDuplicates: bool = False,
     ) -> None:
         """
@@ -92,14 +86,12 @@ class TestDataStoreMixIn(ABC):
         test store.
         """
 
-
     @abstractmethod
     async def storeIncidentType(self, name: str, hidden: bool) -> None:
         """
         Store an incident type with the given name and hidden state in the
         test store.
         """
-
 
     def dateTimesEqual(self, a: DateTime, b: DateTime) -> bool:
         """
@@ -109,7 +101,6 @@ class TestDataStoreMixIn(ABC):
         """
         # Floats stored may be slightly off when round-tripped.
         return a - b < TimeDelta(microseconds=20)
-
 
     def reportEntriesEqual(
         self,
@@ -122,9 +113,7 @@ class TestDataStoreMixIn(ABC):
         :meth:`dateTimesEqual` when comparing date-times.
         """
         if ignoreAutomatic:
-            reportEntriesA = tuple(
-                e for e in reportEntriesA if not e.automatic
-            )
+            reportEntriesA = tuple(e for e in reportEntriesA if not e.automatic)
 
         if len(reportEntriesA) != len(reportEntriesB):
             return False
@@ -137,13 +126,10 @@ class TestDataStoreMixIn(ABC):
                     return False
                 if entryA.text != entryB.text:
                     return False
-                if not self.dateTimesEqual(
-                    entryA.created, entryB.created
-                ):
+                if not self.dateTimesEqual(entryA.created, entryB.created):
                     return False
 
         return True
-
 
     @staticmethod
     def normalizeIncidentAddress(incident: Incident) -> Incident:
@@ -153,13 +139,11 @@ class TestDataStoreMixIn(ABC):
         return incident
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class TestDataStoreABC(IMSDataStore, TestDataStoreMixIn):
     """
     Test Data Store ABC.
     """
-
 
 
 class DataStoreTests(AsynchronousTestCase):
@@ -168,7 +152,6 @@ class DataStoreTests(AsynchronousTestCase):
     """
 
     skip: ClassVar[Optional[str]] = "Parent class of real tests"
-
 
     async def store(self) -> TestDataStoreABC:
         """

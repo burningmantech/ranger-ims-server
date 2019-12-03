@@ -21,6 +21,4 @@ Header element.
 from ._header import HeaderElement
 
 
-__all__ = (
-    "HeaderElement",
-)
+__all__ = ("HeaderElement",)

@@ -23,13 +23,15 @@ from enum import Enum, unique
 from typing import Any, Dict, Type, cast
 
 from ._json import (
-    deserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize,
+    jsonSerialize,
+    registerDeserializer,
+    registerSerializer,
 )
 from .._entry import ReportEntry
 
 
 __all__ = ()
-
 
 
 @unique
@@ -38,11 +40,10 @@ class ReportEntryJSONKey(Enum):
     Incident state JSON keys
     """
 
-    created   = "created"
-    author    = "author"
+    created = "created"
+    author = "author"
     automatic = "system_entry"
-    text      = "text"
-
+    text = "text"
 
 
 class ReportEntryJSONType(Enum):
@@ -50,11 +51,10 @@ class ReportEntryJSONType(Enum):
     Incident state JSON keys
     """
 
-    created   = DateTime
-    author    = str
+    created = DateTime
+    author = str
     automatic = bool
-    text      = str
-
+    text = str
 
 
 def serializeReportEntry(reportEntry: ReportEntry) -> Dict[str, Any]:
@@ -64,6 +64,7 @@ def serializeReportEntry(reportEntry: ReportEntry) -> Dict[str, Any]:
         for key in ReportEntryJSONKey
     )
 
+
 registerSerializer(ReportEntry, serializeReportEntry)
 
 
@@ -72,9 +73,8 @@ def deserializeReportEntry(obj: Dict[str, Any], cl: Type) -> ReportEntry:
 
     return cast(
         ReportEntry,
-        deserialize(
-            obj, ReportEntry, ReportEntryJSONType, ReportEntryJSONKey
-        )
+        deserialize(obj, ReportEntry, ReportEntryJSONType, ReportEntryJSONKey),
     )
+
 
 registerDeserializer(ReportEntry, deserializeReportEntry)

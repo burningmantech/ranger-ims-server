@@ -22,7 +22,10 @@ from enum import Enum, unique
 from typing import Any, Dict, List, Type, cast
 
 from ._json import (
-    deserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize,
+    jsonSerialize,
+    registerDeserializer,
+    registerSerializer,
 )
 from .._event import Event
 from .._eventaccess import EventAccess
@@ -34,19 +37,17 @@ from .._report import IncidentReport
 __all__ = ()
 
 
-
 @unique
 class EventDataJSONKey(Enum):
     """
     Event data JSON keys
     """
 
-    event             = "event"
-    access            = "access"
+    event = "event"
+    access = "access"
     concentricStreets = "concentric_streets"
-    incidents         = "incidents"
-    incidentReports   = "incident_reports"
-
+    incidents = "incidents"
+    incidentReports = "incident_reports"
 
 
 class EventDataJSONType(Enum):
@@ -54,12 +55,11 @@ class EventDataJSONType(Enum):
     Event data attribute types
     """
 
-    event             = Event
-    access            = EventAccess
+    event = Event
+    access = EventAccess
     concentricStreets = Dict[str, str]
-    incidents         = List[Incident]
-    incidentReports   = List[IncidentReport]
-
+    incidents = List[Incident]
+    incidentReports = List[IncidentReport]
 
 
 def serializeEventData(eventData: EventData) -> Dict[str, Any]:
@@ -69,6 +69,7 @@ def serializeEventData(eventData: EventData) -> Dict[str, Any]:
         for key in EventDataJSONKey
     )
 
+
 registerSerializer(EventData, serializeEventData)
 
 
@@ -77,9 +78,8 @@ def deserializeEventData(obj: Dict[str, Any], cl: Type) -> EventData:
 
     return cast(
         EventData,
-        deserialize(
-            obj, EventData, EventDataJSONType, EventDataJSONKey,
-        )
+        deserialize(obj, EventData, EventDataJSONType, EventDataJSONKey,),
     )
+
 
 registerDeserializer(EventData, deserializeEventData)

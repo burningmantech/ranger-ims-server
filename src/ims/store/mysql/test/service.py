@@ -47,15 +47,13 @@ def randomDatabaseName(length: int = 16) -> str:
     """
     Generate a random string.
     """
-    return (
-        choice(ascii_letters) +
-        "".join(choices(ascii_letters + digits, k=(length - 1)))
+    return choice(ascii_letters) + "".join(
+        choices(ascii_letters + digits, k=(length - 1))
     )
 
 
 NO_HOST = ""
 NO_PORT = 0
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -66,14 +64,12 @@ class MySQLService(ABC):
 
     _log: ClassVar[Logger] = Logger()
 
-
     @property
     @abstractmethod
     def host(self) -> str:
         """
         Server network address host name.
         """
-
 
     @property
     @abstractmethod
@@ -82,14 +78,12 @@ class MySQLService(ABC):
         Client host name to use in grant statements.
         """
 
-
     @property
     @abstractmethod
     def port(self) -> int:
         """
         Server network address port number.
         """
-
 
     @property
     @abstractmethod
@@ -98,14 +92,12 @@ class MySQLService(ABC):
         Database user name.
         """
 
-
     @property
     @abstractmethod
     def password(self) -> str:
         """
         Database user password.
         """
-
 
     @property
     @abstractmethod
@@ -114,13 +106,11 @@ class MySQLService(ABC):
         Server root user password.
         """
 
-
     @abstractmethod
     async def start(self) -> None:
         """
         Start the service.
         """
-
 
     @abstractmethod
     async def stop(self) -> None:
@@ -128,14 +118,14 @@ class MySQLService(ABC):
         Stop the service.
         """
 
-
     async def createDatabase(self, name: str) -> None:
         """
         Create a database.
         """
         self._log.info(
             "Creating database {name} in MySQL service {service}.",
-            name=name, service=self,
+            name=name,
+            service=self,
         )
 
         connection = connect(
@@ -156,13 +146,12 @@ class MySQLService(ABC):
                         user=self.user,
                         host=self.clientHost,
                         password=self.password,
-                    )
+                    ),
                 )
 
             connection.commit()
         finally:
             connection.close()
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -172,7 +161,6 @@ class DockerizedMySQLService(MySQLService):
     """
 
     _log: ClassVar[Logger] = Logger()
-
 
     @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State(object):
@@ -185,57 +173,48 @@ class DockerizedMySQLService(MySQLService):
         host = NO_HOST
         port = NO_PORT
 
-
-    _user: str         = Factory(randomDatabaseName)
-    _password: str     = Factory(randomDatabaseName)
+    _user: str = Factory(randomDatabaseName)
+    _password: str = Factory(randomDatabaseName)
     _rootPassword: str = Factory(randomDatabaseName)
 
     _dockerHost: str = "172.17.0.1"
 
     imageRepository = "mysql/mysql-server"
-    imageTag        = "5.6"
+    imageTag = "5.6"
 
     _dockerClient: DockerClient = attrib(
         factory=DockerClient.from_env, init=False
     )
     _state: _State = attrib(factory=_State, init=False)
 
-
     @property
     def host(self) -> str:
         return self._state.host
-
 
     @property
     def clientHost(self) -> str:
         return self._dockerHost
 
-
     @property
     def port(self) -> int:
         return self._state.port
-
 
     @property
     def user(self) -> str:
         return self._user
 
-
     @property
     def password(self) -> str:
         return self._password
-
 
     @property
     def rootPassword(self) -> str:
         return self._rootPassword
 
-
     @property
     def _containerName(self) -> str:
         cid = id(self)
         return f"MySQLService-{cid}"
-
 
     @property
     def _containerEnvironment(self) -> Mapping:
@@ -247,10 +226,12 @@ class DockerizedMySQLService(MySQLService):
             MYSQL_PASSWORD=self.password,
         )
 
-
     def _waitOnContainerLog(
-        self, container: Container, message: str,
-        timeout: float = 60.0, interval: float = 1.0,
+        self,
+        container: Container,
+        message: str,
+        timeout: float = 60.0,
+        interval: float = 1.0,
     ) -> Awaitable:
         d = Deferred()
 
@@ -298,12 +279,10 @@ class DockerizedMySQLService(MySQLService):
 
         return cast(Awaitable, d)
 
-
     def _resetContainerState(self) -> None:
         self._state.host = NO_HOST
         self._state.port = NO_PORT
         self._state.container = None
-
 
     async def start(self) -> None:
         if self._state.container is not None:
@@ -327,32 +306,28 @@ class DockerizedMySQLService(MySQLService):
 
         containerName = self._containerName
 
-        self._log.info(
-            "Creating MySQL container {name}", name=containerName
-        )
+        self._log.info("Creating MySQL container {name}", name=containerName)
 
         container = client.containers.create(
             name=containerName,
             image=image.id,
-            auto_remove=True, detach=True,
+            auto_remove=True,
+            detach=True,
             environment=self._containerEnvironment,
             ports={3306: None},
         )
 
-        self._log.info(
-            "Starting MySQL container {name}", name=containerName
-        )
+        self._log.info("Starting MySQL container {name}", name=containerName)
         container.start()
 
         try:
-            await self._waitOnContainerLog(
-                container, " starting as process 1 "
-            )
+            await self._waitOnContainerLog(container, " starting as process 1 ")
 
             # Clean up the container before the reactor shuts down
             reactor.addSystemEventTrigger(
-                "before", "shutdown",
-                lambda: self._stop(container, containerName)
+                "before",
+                "shutdown",
+                lambda: self._stop(container, containerName),
             )
 
             apiClient = APIClient()
@@ -364,7 +339,9 @@ class DockerizedMySQLService(MySQLService):
 
             self._log.info(
                 "MySQL container {name} ready at: {host}:{port}",
-                name=containerName, host=self.host, port=self.port
+                name=containerName,
+                host=self.host,
+                port=self.port,
             )
 
             self._log.info(
@@ -389,17 +366,16 @@ class DockerizedMySQLService(MySQLService):
             self._resetContainerState()
             self._log.failure(
                 "Stopping MySQL container {name} due to error: {error}",
-                name=containerName, error=e,
+                name=containerName,
+                error=e,
             )
             container.stop()
             raise
-
 
     def _stop(self, container: Container, name: str) -> None:
         self._log.info("Stopping MySQL container {name}", name=name)
         container.stop(timeout=0)
         self._resetContainerState()
-
 
     async def stop(self) -> None:
         if self._state.container is None:
@@ -409,7 +385,6 @@ class DockerizedMySQLService(MySQLService):
         container = await self._state.container
 
         self._stop(container, self._containerName)
-
 
     async def createDatabase(self, name: str) -> None:
         containerName = self._containerName
@@ -436,7 +411,6 @@ class DockerizedMySQLService(MySQLService):
         )
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class ExternalMySQLService(MySQLService):
     """
@@ -451,42 +425,34 @@ class ExternalMySQLService(MySQLService):
     _password: str
     _rootPassword: str
 
-
     @property
     def host(self) -> str:
         return self._host
-
 
     @property
     def clientHost(self) -> str:
         return self._host
 
-
     @property
     def port(self) -> int:
         return self._port
-
 
     @property
     def user(self) -> str:
         return self._user
 
-
     @property
     def password(self) -> str:
         return self._password
-
 
     @property
     def rootPassword(self) -> str:
         return self._rootPassword
 
-
     async def start(self) -> None:
         """
         Start the service.
         """
-
 
     async def stop(self) -> None:
         """

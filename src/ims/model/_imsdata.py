@@ -32,17 +32,14 @@ from ._type import IncidentType
 __all__ = ()
 
 
-def freezeEventDatas(
-    eventDatas: Iterable[EventData]
-) -> FrozenSet[EventData]:
+def freezeEventDatas(eventDatas: Iterable[EventData]) -> FrozenSet[EventData]:
     return frozenset(eventDatas)
 
 
 def freezeIncidentTypes(
-    incidentTypes: Iterable[IncidentType]
+    incidentTypes: Iterable[IncidentType],
 ) -> FrozenSet[IncidentType]:
     return frozenset(incidentTypes)
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)

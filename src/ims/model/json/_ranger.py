@@ -22,13 +22,15 @@ from enum import Enum, unique
 from typing import Any, Dict, Optional, Set, Type, cast
 
 from ._json import (
-    deserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize,
+    jsonSerialize,
+    registerDeserializer,
+    registerSerializer,
 )
 from .._ranger import Ranger, RangerStatus
 
 
 __all__ = ()
-
 
 
 @unique
@@ -38,12 +40,11 @@ class RangerJSONKey(Enum):
     """
 
     handle = "handle"
-    name   = "name"
+    name = "name"
     status = "status"
-    email  = "email"
+    email = "email"
     onSite = "on_site"
-    dmsID  = "dms_id"
-
+    dmsID = "dms_id"
 
 
 class RangerJSONType(Enum):
@@ -52,12 +53,11 @@ class RangerJSONType(Enum):
     """
 
     handle = str
-    name   = str  # type: ignore[assignment]
+    name = str  # type: ignore[assignment]
     status = RangerStatus
-    email  = Set[str]
+    email = Set[str]
     onSite = bool
-    dmsID  = Optional[int]
-
+    dmsID = Optional[int]
 
 
 def serializeRanger(ranger: Ranger) -> Dict[str, Any]:
@@ -67,18 +67,17 @@ def serializeRanger(ranger: Ranger) -> Dict[str, Any]:
         for key in RangerJSONKey
     )
 
+
 registerSerializer(Ranger, serializeRanger)
 
 
 def deserializeRanger(obj: Dict[str, Any], cl: Type) -> Ranger:
     assert cl is Ranger, (cl, obj)
 
-    return cast(
-        Ranger, deserialize(obj, Ranger, RangerJSONType, RangerJSONKey)
-    )
+    return cast(Ranger, deserialize(obj, Ranger, RangerJSONType, RangerJSONKey))
+
 
 registerDeserializer(Ranger, deserializeRanger)
-
 
 
 class RangerStatusJSONValue(Enum):
@@ -87,19 +86,20 @@ class RangerStatusJSONValue(Enum):
     """
 
     prospective = "prospective"
-    alpha       = "alpha"
-    bonked      = "bonked"
-    active      = "active"
-    inactive    = "inactive"
-    retired     = "retired"
-    uberbonked  = "uberbonked"
-    vintage     = "vintage"
-    deceased    = "deceased"
-    other       = "(unknown)"
+    alpha = "alpha"
+    bonked = "bonked"
+    active = "active"
+    inactive = "inactive"
+    retired = "retired"
+    uberbonked = "uberbonked"
+    vintage = "vintage"
+    deceased = "deceased"
+    other = "(unknown)"
 
 
 def serializeRangerStatus(rangerStatus: RangerStatus) -> str:
     return cast(str, getattr(RangerStatusJSONValue, rangerStatus.name).value)
+
 
 registerSerializer(RangerStatus, serializeRangerStatus)
 
@@ -110,5 +110,6 @@ def deserializeRangerStatus(obj: int, cl: Type) -> RangerStatus:
     return cast(
         RangerStatus, getattr(RangerStatus, RangerStatusJSONValue(obj).name)
     )
+
 
 registerDeserializer(RangerStatus, deserializeRangerStatus)

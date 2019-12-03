@@ -26,7 +26,6 @@ from .._state import IncidentState, stateDescriptions
 __all__ = ()
 
 
-
 class IncidentStateTests(TestCase):
     """
     Tests for :class:`IncidentState`
@@ -40,7 +39,6 @@ class IncidentStateTests(TestCase):
             self.assertEqual(
                 repr(state), f"{IncidentState.__name__}[{state.name!r}]"
             )
-
 
     def test_str(self) -> None:
         """

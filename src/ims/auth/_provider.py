@@ -36,7 +36,6 @@ from ._exceptions import NotAuthenticatedError, NotAuthorizedError
 __all__ = ()
 
 
-
 class Authorization(Flag):
     """
     Authorizations
@@ -48,19 +47,18 @@ class Authorization(Flag):
 
     readPersonnel = auto()
 
-    readIncidents  = auto()
+    readIncidents = auto()
     writeIncidents = auto()
 
     writeIncidentReports = auto()
 
     all = (
-        imsAdmin             |
-        readPersonnel        |
-        readIncidents        |
-        writeIncidents       |
-        writeIncidentReports
+        imsAdmin
+        | readPersonnel
+        | readIncidents
+        | writeIncidents
+        | writeIncidentReports
     )
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -72,30 +70,24 @@ class User(object):
     _ranger: Ranger
     groups: Sequence[str]
 
-
     @property
     def shortNames(self) -> Sequence[str]:
         return (self._ranger.handle,)
-
 
     @property
     def hashedPassword(self) -> Optional[str]:
         return self._ranger.password
 
-
     @property
     def active(self) -> bool:
         return self._ranger.onSite
-
 
     @property
     def rangerHandle(self) -> str:
         return self._ranger.handle
 
-
     def __str__(self) -> str:
         return str(self._ranger)
-
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -113,16 +105,12 @@ class AuthProvider(object):
     adminUsers: FrozenSet[str] = frozenset()
     masterKey: str = ""
 
-
     async def verifyCredentials(self, user: User, password: str) -> bool:
         """
         Verify a password for the given user.
         """
         try:
-            if (
-                self.masterKey and
-                password == self.masterKey
-            ):
+            if self.masterKey and password == self.masterKey:
                 return True
 
             hashedPassword = user.hashedPassword
@@ -133,17 +121,18 @@ class AuthProvider(object):
         except Exception as e:
             self._log.critical(
                 "Unable to check password for user {user}: {error}",
-                user=user, error=e,
+                user=user,
+                error=e,
             )
             authenticated = False
 
         self._log.debug(
             "Valid credentials for {user}: {result}",
-            user=user, result=authenticated,
+            user=user,
+            result=authenticated,
         )
 
         return authenticated
-
 
     def authenticateRequest(
         self, request: IRequest, optional: bool = False
@@ -163,13 +152,13 @@ class AuthProvider(object):
             self._log.debug("Authentication failed")
             raise NotAuthenticatedError("No user logged in")
 
-
     async def authorizationsForUser(
         self, user: User, event: Optional[Event]
     ) -> Authorization:
         """
         Look up the authorizations that a user has for a given event.
         """
+
         def matchACL(user: User, acl: Container[str]) -> bool:
             if "**" in acl:
                 return True
@@ -209,29 +198,27 @@ class AuthProvider(object):
 
                     else:
                         if matchACL(
-                            user,
-                            frozenset(await self.store.readers(event))
+                            user, frozenset(await self.store.readers(event))
                         ):
                             authorizations |= Authorization.readIncidents
 
                         if matchACL(
-                            user,
-                            frozenset(await self.store.reporters(event))
+                            user, frozenset(await self.store.reporters(event))
                         ):
-                            authorizations |= (
-                                Authorization.writeIncidentReports
-                            )
+                            authorizations |= Authorization.writeIncidentReports
 
         self._log.debug(
             "Authz for {user}: {authorizations}",
-            user=user, authorizations=authorizations,
+            user=user,
+            authorizations=authorizations,
         )
 
         return authorizations
 
-
     async def authorizeRequest(
-        self, request: IRequest, event: Optional[Event],
+        self,
+        request: IRequest,
+        event: Optional[Event],
         requiredAuthorizations: Authorization,
     ) -> None:
         """
@@ -256,7 +243,6 @@ class AuthProvider(object):
             )
             raise NotAuthorizedError("User not authorized")
 
-
     async def authorizeRequestForIncidentReport(
         self, request: IRequest, incidentReport: IncidentReport
     ) -> None:
@@ -280,7 +266,6 @@ class AuthProvider(object):
         await self.authorizeRequest(
             request, incidentReport.event, Authorization.readIncidents
         )
-
 
     async def lookupUserName(self, username: str) -> Optional[User]:
         """
@@ -308,7 +293,8 @@ class AuthProvider(object):
         positions = tuple(await dms.positions())
 
         groups = tuple(
-            position.name for position in positions
+            position.name
+            for position in positions
             if ranger in position.members
         )
 

@@ -21,6 +21,4 @@ Page-related elements.
 from ._page import Page
 
 
-__all__ = (
-    "Page",
-)
+__all__ = ("Page",)

@@ -22,26 +22,23 @@ from pathlib import Path
 from typing import cast
 
 from .base import TestDataStore
-from ...test.base import (
-    DataStoreTests as SuperDataStoreTests, TestDataStoreABC
-)
+from ...test.base import DataStoreTests as SuperDataStoreTests, TestDataStoreABC
 from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
 from ...test.incident import (
-    DataStoreIncidentTests as SuperDataStoreIncidentTests
+    DataStoreIncidentTests as SuperDataStoreIncidentTests,
 )
 from ...test.report import (
-    DataStoreIncidentReportTests as SuperDataStoreIncidentReportTests
+    DataStoreIncidentReportTests as SuperDataStoreIncidentReportTests,
 )
 from ...test.street import (
-    DataStoreConcentricStreetTests as SuperDataStoreConcentricStreetTests
+    DataStoreConcentricStreetTests as SuperDataStoreConcentricStreetTests,
 )
 from ...test.type import (
-    DataStoreIncidentTypeTests as SuperDataStoreIncidentTypeTests
+    DataStoreIncidentTypeTests as SuperDataStoreIncidentTypeTests,
 )
 
 
 __all__ = ()
-
 
 
 class DataStoreTests(SuperDataStoreTests):
@@ -51,12 +48,10 @@ class DataStoreTests(SuperDataStoreTests):
 
     skip = None
 
-
     async def store(self) -> TestDataStoreABC:
         store = TestDataStore(dbPath=Path(self.mktemp()))
         await store.upgradeSchema()
         return cast(TestDataStoreABC, store)
-
 
 
 class DataStoreEventTests(DataStoreTests, SuperDataStoreEventTests):
@@ -65,12 +60,10 @@ class DataStoreEventTests(DataStoreTests, SuperDataStoreEventTests):
     """
 
 
-
 class DataStoreIncidentTests(DataStoreTests, SuperDataStoreIncidentTests):
     """
     Tests for :class:`DataStore` incident access.
     """
-
 
 
 class DataStoreIncidentReportTests(
@@ -81,14 +74,12 @@ class DataStoreIncidentReportTests(
     """
 
 
-
 class DataStoreConcentricStreetTests(
     DataStoreTests, SuperDataStoreConcentricStreetTests
 ):
     """
     Tests for :class:`DataStore` concentric street access.
     """
-
 
 
 class DataStoreIncidentTypeTests(

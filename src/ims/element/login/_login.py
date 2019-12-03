@@ -31,7 +31,6 @@ from ..page import Page
 __all__ = ()
 
 
-
 @attrs(auto_attribs=True, kw_only=True)
 class LoginPage(Page):
     """
@@ -40,7 +39,6 @@ class LoginPage(Page):
 
     name: str = "Log In"
     failed: bool = False
-
 
     @renderer
     def if_authn_failed(self, request: IRequest, tag: Tag) -> KleinRenderable:
@@ -51,7 +49,6 @@ class LoginPage(Page):
             return tag
         else:
             return ""
-
 
     @renderer
     def if_authz_failed(self, request: IRequest, tag: Tag) -> KleinRenderable:

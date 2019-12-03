@@ -21,6 +21,4 @@ Footer element.
 from ._footer import FooterElement
 
 
-__all__ = (
-    "FooterElement",
-)
+__all__ = ("FooterElement",)

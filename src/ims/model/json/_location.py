@@ -23,7 +23,10 @@ from typing import Any, Dict, Optional, Type
 
 from ._address import AddressJSONKey, AddressTypeJSONValue, serializeAddress
 from ._json import (
-    jsonDeserialize, jsonSerialize, registerDeserializer, registerSerializer
+    jsonDeserialize,
+    jsonSerialize,
+    registerDeserializer,
+    registerSerializer,
 )
 from .._address import RodGarettAddress, TextOnlyAddress
 from .._location import Location
@@ -41,7 +44,6 @@ class LocationJSONKey(Enum):
     name = "name"
 
 
-
 def serializeLocation(location: Location) -> Dict[str, Any]:
     # Map Location attribute names to JSON dict key names
     locationJSON = dict(
@@ -54,6 +56,7 @@ def serializeLocation(location: Location) -> Dict[str, Any]:
 
     return locationJSON
 
+
 registerSerializer(Location, serializeLocation)
 
 
@@ -61,10 +64,7 @@ def deserializeLocation(obj: Optional[Dict[str, Any]], cl: Type) -> Location:
     assert cl is Location, (cl, obj)
 
     if obj is None:
-        return Location(
-            name=None,
-            address=TextOnlyAddress(),
-        )
+        return Location(name=None, address=TextOnlyAddress(),)
 
     # If address were a nested dict, we'd do this:
     # jsonAddress = obj[LocationJSONKey.address.value]
@@ -84,5 +84,6 @@ def deserializeLocation(obj: Optional[Dict[str, Any]], cl: Type) -> Location:
         name=obj.get(LocationJSONKey.name.value, None),
         address=jsonDeserialize(jsonAddress, addressClass),
     )
+
 
 registerDeserializer(Location, deserializeLocation)

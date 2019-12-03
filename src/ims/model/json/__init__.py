@@ -27,7 +27,10 @@ from ._eventdata import EventDataJSONKey
 from ._imsdata import IMSDataJSONKey
 from ._incident import IncidentJSONKey
 from ._json import (
-    JSON, JSONCodecError, jsonObjectFromModelObject, modelObjectFromJSONObject
+    JSON,
+    JSONCodecError,
+    jsonObjectFromModelObject,
+    modelObjectFromJSONObject,
 )
 from ._location import LocationJSONKey
 from ._priority import IncidentPriorityJSONValue

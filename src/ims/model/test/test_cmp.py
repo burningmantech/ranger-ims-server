@@ -30,15 +30,12 @@ from .._cmp import ComparisonMixIn
 __all__ = ()
 
 
-
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class Comparable(ComparisonMixIn):
     value: Any
 
-
     def _cmpValue(self) -> Any:
         return self.value
-
 
 
 class ComparisonMixInTests(TestCase):
@@ -55,7 +52,6 @@ class ComparisonMixInTests(TestCase):
             hash(Comparable(value=1)), hash(Comparable(value=2))
         )
 
-
     def test_eq(self) -> None:
         """
         Equality.
@@ -67,7 +63,6 @@ class ComparisonMixInTests(TestCase):
             Comparable(value=1).__eq__(object()), NotImplemented
         )
 
-
     def test_ne(self) -> None:
         """
         Inequality.
@@ -78,7 +73,6 @@ class ComparisonMixInTests(TestCase):
         self.assertIdentical(
             Comparable(value=1).__ne__(object()), NotImplemented
         )
-
 
     def test_lt(self) -> None:
         """
@@ -92,7 +86,6 @@ class ComparisonMixInTests(TestCase):
             Comparable(value=1).__lt__(object()), NotImplemented
         )
 
-
     def test_le(self) -> None:
         """
         Less-than-or-equal-to comparison.
@@ -105,7 +98,6 @@ class ComparisonMixInTests(TestCase):
             Comparable(value=1).__le__(object()), NotImplemented
         )
 
-
     def test_gt(self) -> None:
         """
         Less-than comparison.
@@ -117,7 +109,6 @@ class ComparisonMixInTests(TestCase):
         self.assertIdentical(
             Comparable(value=1).__gt__(object()), NotImplemented
         )
-
 
     def test_ge(self) -> None:
         """

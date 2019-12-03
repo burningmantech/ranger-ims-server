@@ -31,7 +31,6 @@ from ...strategies import incidentStates
 __all__ = ()
 
 
-
 class IncidentStateSerializationTests(TestCase):
     """
     Tests for serialization of :class:`IncidentState`
@@ -44,7 +43,6 @@ class IncidentStateSerializationTests(TestCase):
         the expected value.
         """
         self.assertEqual(jsonSerialize(state), jsonFromIncidentState(state))
-
 
 
 class IncidentStateDeserializationTests(TestCase):

@@ -31,13 +31,11 @@ from ...strategies import incidentPriorities
 __all__ = ()
 
 
-
 incidentPriorityToJSON = {
     IncidentPriority.high: 1,
     IncidentPriority.normal: 3,
     IncidentPriority.low: 5,
 }
-
 
 
 class IncidentPrioritySerializationTests(TestCase):
@@ -56,7 +54,6 @@ class IncidentPrioritySerializationTests(TestCase):
         )
 
 
-
 class IncidentPriorityDeserializationTests(TestCase):
     """
     Tests for deserialization of :class:`IncidentPriority`
@@ -72,5 +69,5 @@ class IncidentPriorityDeserializationTests(TestCase):
             jsonDeserialize(
                 jsonFromIncidentPriority(priority), IncidentPriority
             ),
-            priority
+            priority,
         )

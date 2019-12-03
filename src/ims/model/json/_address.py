@@ -22,13 +22,15 @@ from enum import Enum, unique
 from typing import Any, Dict, Optional, Type, cast
 
 from ._json import (
-    deserialize, jsonSerialize, registerDeserializer, registerSerializer
+    deserialize,
+    jsonSerialize,
+    registerDeserializer,
+    registerSerializer,
 )
 from .._address import Address, RodGarettAddress, TextOnlyAddress
 
 
 __all__ = ()
-
 
 
 # cattrs defaults for TextOnlyAddress work, but RodGarettAddress requires key
@@ -41,9 +43,8 @@ class AddressTypeJSONValue(Enum):
     Address type JSON values
     """
 
-    text      = "text"
+    text = "text"
     rodGarett = "garett"
-
 
 
 @unique
@@ -56,7 +57,6 @@ class AddressJSONKey(Enum):
     description = "description"
 
 
-
 class AddressJSONType(Enum):
     """
     Text-only address attribute types
@@ -64,7 +64,6 @@ class AddressJSONType(Enum):
 
     addressType = str
     description: Type[Any] = Optional[str]
-
 
 
 @unique
@@ -76,7 +75,6 @@ class TextOnlyAddressJSONKey(Enum):
     description = AddressJSONKey.description.value
 
 
-
 class TextOnlyAddressJSONType(Enum):
     """
     Text-only address attribute types
@@ -85,18 +83,16 @@ class TextOnlyAddressJSONType(Enum):
     description = AddressJSONType.description.value
 
 
-
 @unique
 class RodGarettAddressJSONKey(Enum):
     """
     Rod Garett address JSON keys
     """
 
-    concentric   = "concentric"
-    radialHour   = "radial_hour"
+    concentric = "concentric"
+    radialHour = "radial_hour"
     radialMinute = "radial_minute"
-    description  = AddressJSONKey.description.value
-
+    description = AddressJSONKey.description.value
 
 
 class RodGarettAddressJSONType(Enum):
@@ -104,11 +100,10 @@ class RodGarettAddressJSONType(Enum):
     Rod Garett address JSON keys
     """
 
-    concentric   = Optional[str]
-    radialHour   = Optional[int]
+    concentric = Optional[str]
+    radialHour = Optional[int]
     radialMinute = Optional[int]
-    description  = AddressJSONType.description.value
-
+    description = AddressJSONType.description.value
 
 
 def serializeAddress(address: Address) -> Dict[str, Any]:
@@ -118,6 +113,7 @@ def serializeAddress(address: Address) -> Dict[str, Any]:
         return serializeRodGarettAddress(address)
     else:
         raise TypeError(f"Unknown address type: {address!r}")
+
 
 registerSerializer(Address, serializeAddress)
 
@@ -131,6 +127,7 @@ def serializeTextOnlyAddress(address: TextOnlyAddress) -> Dict[str, Any]:
     json["type"] = "text"
     return json
 
+
 registerSerializer(TextOnlyAddress, serializeTextOnlyAddress)
 
 
@@ -143,8 +140,8 @@ def serializeRodGarettAddress(address: RodGarettAddress) -> Dict[str, Any]:
     json["type"] = "garett"
     return json
 
-registerSerializer(RodGarettAddress, serializeRodGarettAddress)
 
+registerSerializer(RodGarettAddress, serializeRodGarettAddress)
 
 
 def deserializeTextOnlyAddress(
@@ -155,10 +152,13 @@ def deserializeTextOnlyAddress(
     return cast(
         TextOnlyAddress,
         deserialize(
-            obj, TextOnlyAddress,
-            TextOnlyAddressJSONType, TextOnlyAddressJSONKey,
-        )
+            obj,
+            TextOnlyAddress,
+            TextOnlyAddressJSONType,
+            TextOnlyAddressJSONKey,
+        ),
     )
+
 
 registerDeserializer(TextOnlyAddress, deserializeTextOnlyAddress)
 
@@ -171,9 +171,12 @@ def deserializeRodGarettAddress(
     return cast(
         RodGarettAddress,
         deserialize(
-            obj, RodGarettAddress,
-            RodGarettAddressJSONType, RodGarettAddressJSONKey,
-        )
+            obj,
+            RodGarettAddress,
+            RodGarettAddressJSONType,
+            RodGarettAddressJSONKey,
+        ),
     )
+
 
 registerDeserializer(RodGarettAddress, deserializeRodGarettAddress)

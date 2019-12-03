@@ -19,7 +19,10 @@ Incident Management System configuration.
 """
 
 from ._config import (
-    Configuration, ConfigurationError, DataStoreFactory, LogFormat
+    Configuration,
+    ConfigurationError,
+    DataStoreFactory,
+    LogFormat,
 )
 from ._urls import URLs
 

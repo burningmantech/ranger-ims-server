@@ -28,7 +28,9 @@ from ims.ext.json import dateTimeAsRFC3339Text
 from ims.ext.trial import TestCase
 
 from .._json import (
-    jsonDeserialize, jsonObjectFromModelObject, jsonSerialize,
+    jsonDeserialize,
+    jsonObjectFromModelObject,
+    jsonSerialize,
     modelObjectFromJSONObject,
 )
 from ..._incident import Incident
@@ -36,7 +38,6 @@ from ...strategies import incidents
 
 
 __all__ = ()
-
 
 
 class POPOSerializationTests(TestCase):
@@ -61,7 +62,6 @@ class POPOSerializationTests(TestCase):
 
         self.assertIdentical(serialized, obj)
 
-
     # def _test_equal(self, obj: Any) -> None:
     #     """
     #     :func:`jsonSerialize` serializes an object of the given type by
@@ -78,14 +78,12 @@ class POPOSerializationTests(TestCase):
     #     self.assertIdentical(type(serialized), obj.__class__)
     #     self.assertEqual(serialized, obj)
 
-
     @given(text())
     def test_string(self, value: str) -> None:
         """
         :func:`jsonSerialize` correctly serializes a :class:`str`.
         """
         self._test_identical(value)
-
 
     @given(integers())
     def test_integer(self, value: int) -> None:
@@ -94,14 +92,12 @@ class POPOSerializationTests(TestCase):
         """
         self._test_identical(value)
 
-
     @given(floats(allow_nan=True, allow_infinity=True))
     def test_float(self, value: float) -> None:
         """
         :func:`jsonSerialize` correctly serializes a :class:`float`.
         """
         self._test_identical(value)
-
 
     @given(datetimes())
     def test_datetime(self, value: DateTime) -> None:
@@ -111,7 +107,6 @@ class POPOSerializationTests(TestCase):
         serialized = jsonSerialize(value)
 
         self.assertEqual(serialized, dateTimeAsRFC3339Text(value))
-
 
 
 class POPODeserializationTests(TestCase):
@@ -137,7 +132,6 @@ class POPODeserializationTests(TestCase):
         deserialized = jsonDeserialize(serialized, obj.__class__)
         self.assertIdentical(deserialized, obj)
 
-
     def _test_equal(self, obj: Any) -> None:
         """
         :func:`jsonDeserialize` deserializes an object of the given type by
@@ -149,14 +143,12 @@ class POPODeserializationTests(TestCase):
         self.assertIdentical(type(deserialized), obj.__class__)
         self.assertEqual(deserialized, obj)
 
-
     @given(text())
     def test_string(self, value: str) -> None:
         """
         :func:`jsonDeserialize` correctly deserializes a :class:`str`.
         """
         self._test_identical(value)
-
 
     @given(integers())
     def test_integer(self, value: int) -> None:
@@ -165,7 +157,6 @@ class POPODeserializationTests(TestCase):
         """
         self._test_identical(value)
 
-
     @given(floats(allow_nan=True, allow_infinity=True))
     def test_float(self, value: float) -> None:
         """
@@ -173,14 +164,12 @@ class POPODeserializationTests(TestCase):
         """
         self._test_identical(value)
 
-
     @given(datetimes())
     def test_datetime(self, value: DateTime) -> None:
         """
         :func:`jsonDeserialize` correctly deserializes a :class:`DateTime`.
         """
         self._test_equal(value)
-
 
 
 class ModelSerializationTests(TestCase):

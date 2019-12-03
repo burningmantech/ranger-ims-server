@@ -33,14 +33,12 @@ from ..strategies import dateTimes, rangerHandles, reportEntries
 __all__ = ()
 
 
-
 class ReportEntryTests(TestCase):
     """
     Tests for :class:`ReportEntry`
     """
 
     text = "Hello"
-
 
     @given(reportEntries())
     def test_str(self, reportEntry: ReportEntry) -> None:
@@ -51,9 +49,8 @@ class ReportEntryTests(TestCase):
         self.assertEqual(
             str(reportEntry),
             f"{reportEntry.created} {reportEntry.author}"
-            f"{star}: {reportEntry.text}"
+            f"{star}: {reportEntry.text}",
         )
-
 
     @given(reportEntries(), dateTimes(), dateTimes())
     def test_ordering_created(
@@ -69,10 +66,8 @@ class ReportEntryTests(TestCase):
         b = reportEntry.replace(created=createdB)
 
         self.assertEqual(
-            [r.created for r in sorted((a, b))],
-            sorted((createdA, createdB))
+            [r.created for r in sorted((a, b))], sorted((createdA, createdB))
         )
-
 
     @given(reportEntries(), rangerHandles(), rangerHandles())
     def test_ordering_author(
@@ -85,10 +80,8 @@ class ReportEntryTests(TestCase):
         b = reportEntry.replace(author=authorB)
 
         self.assertEqual(
-            [r.author for r in sorted((a, b))],
-            sorted((authorA, authorB))
+            [r.author for r in sorted((a, b))], sorted((authorA, authorB))
         )
-
 
     @given(reportEntries(), booleans(), booleans())
     def test_ordering_automatic(
@@ -104,9 +97,8 @@ class ReportEntryTests(TestCase):
         self.assertEqual(
             [r.automatic for r in sorted((a, b))],
             list(reversed(sorted((autoA, autoB)))),
-            (a, b)
+            (a, b),
         )
-
 
     @given(reportEntries())
     def test_eq(self, reportEntry: ReportEntry) -> None:
@@ -114,7 +106,6 @@ class ReportEntryTests(TestCase):
         Test equality.
         """
         self.assertEqual(reportEntry, reportEntry.replace())
-
 
     @given(reportEntries())
     def test_neq(self, reportEntry: ReportEntry) -> None:

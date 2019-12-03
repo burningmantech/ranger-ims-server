@@ -31,7 +31,6 @@ from ...strategies import imsDatas
 __all__ = ()
 
 
-
 class IMSDataSerializationTests(TestCase):
     """
     Tests for serialization of :class:`IMSData`
@@ -42,10 +41,7 @@ class IMSDataSerializationTests(TestCase):
         """
         :func:`jsonSerialize` serializes the given event data.
         """
-        self.assertEqual(
-            jsonSerialize(imsData), jsonFromIMSData(imsData)
-        )
-
+        self.assertEqual(jsonSerialize(imsData), jsonFromIMSData(imsData))
 
 
 class IMSDataDeserializationTests(TestCase):

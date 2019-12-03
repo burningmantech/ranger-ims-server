@@ -27,7 +27,11 @@ from twisted.python.filepath import FilePath
 from twisted.python.reflect import namedModule
 from twisted.web.iweb import IRequest, ITemplateLoader
 from twisted.web.template import (
-    Element as _Element, Tag, XMLFile, renderer, tags
+    Element as _Element,
+    Tag,
+    XMLFile,
+    renderer,
+    tags,
 )
 
 from ims.auth import Authorization
@@ -39,7 +43,6 @@ from ims.ext.klein import KleinRenderable
 __all__ = ()
 
 
-
 @attrs(auto_attribs=True, kw_only=True)
 class BaseElement(_Element):
     """
@@ -49,12 +52,10 @@ class BaseElement(_Element):
     def __attrs_post_init__(self) -> None:
         super().__init__(loader=self._loader())
 
-
     def _loader(self) -> ITemplateLoader:
         module = namedModule(self.__class__.__module__)
         filePath = FilePath(module.__file__).parent().child("template.xhtml")
         return XMLFile(filePath)
-
 
 
 @attrs(auto_attribs=True, kw_only=True)
@@ -64,7 +65,6 @@ class Element(BaseElement):
     """
 
     config: Configuration
-
 
     ##
     # Main document elements
@@ -90,14 +90,12 @@ class Element(BaseElement):
 
         return tag
 
-
     ##
     # Logged in state
     ##
 
     def isAuthenticated(self, request: IRequest) -> bool:
         return getattr(request, "user", None) is not None
-
 
     def isAdmin(self, request: IRequest) -> bool:
         user = getattr(request, "user", None)
@@ -109,7 +107,6 @@ class Element(BaseElement):
 
         return False
 
-
     @renderer
     def if_logged_in(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
@@ -118,7 +115,6 @@ class Element(BaseElement):
         if self.isAuthenticated(request):
             return tag
         return ""
-
 
     @renderer
     def if_not_logged_in(self, request: IRequest, tag: Tag) -> KleinRenderable:
@@ -129,7 +125,6 @@ class Element(BaseElement):
             return ""
         return tag
 
-
     @renderer
     def if_admin(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
@@ -139,7 +134,6 @@ class Element(BaseElement):
             return tag
         else:
             return ""
-
 
     @renderer
     def logged_in_user(self, request: IRequest, tag: Tag) -> KleinRenderable:
@@ -159,7 +153,6 @@ class Element(BaseElement):
             return username
         else:
             return tag(username)
-
 
     ##
     # Data
@@ -207,15 +200,17 @@ class Element(BaseElement):
             tag.attributes[attributeName] = text
             return tag
 
-
     @renderer
     async def _events(
         self, request: IRequest, tag: Tag, reverse_order: bool = False
     ) -> KleinRenderable:
         if reverse_order:
+
             def order(i: Iterable) -> Iterable:
                 return reversed(sorted(i))
+
         else:
+
             def order(i: Iterable) -> Iterable:
                 return sorted(i)
 
@@ -227,11 +222,13 @@ class Element(BaseElement):
             Authorization.readIncidents | Authorization.writeIncidentReports
         )
 
-        eventIDs = order([
-            event.id for event in
-            await self.config.store.events()
-            if relevantAuthorizations & await authorizationsForUser(event)
-        ])
+        eventIDs = order(
+            [
+                event.id
+                for event in await self.config.store.events()
+                if relevantAuthorizations & await authorizationsForUser(event)
+            ]
+        )
 
         if eventIDs:
             eventPage = self.config.urls.viewEvent.asText()
@@ -246,14 +243,12 @@ class Element(BaseElement):
         else:
             return tag("No events found.")
 
-
     @renderer
     def events(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         Repeat an element once for each event, embedding the event ID.
         """
         return self._events(request, tag)
-
 
     @renderer
     def events_reversed(self, request: IRequest, tag: Tag) -> KleinRenderable:
@@ -263,11 +258,8 @@ class Element(BaseElement):
         """
         return self._events(request, tag, reverse_order=True)
 
-
     @renderer
-    async def events_list(
-        self, request: IRequest, tag: Tag
-    ) -> KleinRenderable:
+    async def events_list(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         JSON list of strings: events IDs.
         """

@@ -37,7 +37,6 @@ from ...page import Page
 __all__ = ()
 
 
-
 @attrs(auto_attribs=True, kw_only=True)
 class IncidentPage(Page):
     """
@@ -48,17 +47,15 @@ class IncidentPage(Page):
     event: Event
     number: Optional[int]
 
-
     @renderer
     def editing_allowed(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         JSON boolean, true if editing is allowed.
         """
-        if (request.authorizations & Authorization.writeIncidents):
+        if request.authorizations & Authorization.writeIncidents:
             return jsonTrue
         else:
             return jsonFalse
-
 
     @renderer
     def event_id(self, request: IRequest, tag: Tag) -> KleinRenderable:
@@ -67,14 +64,12 @@ class IncidentPage(Page):
         """
         return jsonTextFromObject(self.event.id)
 
-
     @renderer
     def incident_number(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         JSON integer: incident number.
         """
         return jsonTextFromObject(self.number)
-
 
     @renderer
     async def concentric_street_name_by_id(
