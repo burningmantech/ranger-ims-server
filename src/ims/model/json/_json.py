@@ -56,6 +56,7 @@ class JSONCodecError(Exception):
 
 
 converter = Converter()
+
 jsonSerialize = converter.unstructure  # type: Callable[[Any], JSON]
 jsonDeserialize = converter.structure
 
