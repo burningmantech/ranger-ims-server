@@ -137,7 +137,7 @@ class MySQLService(ABC):
         )
 
         try:
-            with connection.cursor() as cursor:  # type: ignore[attr-defined]
+            with connection.cursor() as cursor:
                 cursor.execute(f"create database {name}")
                 cursor.execute(
                     f"grant all privileges on {name}.* "
