@@ -112,7 +112,7 @@ class Connection(BaseConnection):
     _log: ClassVar[Logger] = Logger()
 
     def cursor(  # type: ignore[override]
-        self, factory: CursorFactory = cast(CursorFactory, Cursor)
+        self, factory: CursorFactory = cast(CursorFactory, Cursor)  # noqa: M511
     ) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.cursor`.
