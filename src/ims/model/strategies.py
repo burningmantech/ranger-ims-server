@@ -26,8 +26,8 @@ from datetime import (
 from typing import Callable, Dict, FrozenSet, Hashable, List, Optional, cast
 
 from hypothesis import HealthCheck, settings
-from hypothesis.searchstrategy import SearchStrategy
 from hypothesis.strategies import (
+    SearchStrategy,
     booleans,
     composite,
     datetimes as _datetimes,
