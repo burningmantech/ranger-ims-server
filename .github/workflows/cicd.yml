@@ -93,7 +93,7 @@ jobs:
       - name: Install Tox
         run: pip install tox;
 
-      - name: Run Flake8
+      - name: Run Black
         run: tox -e black;
 
 
