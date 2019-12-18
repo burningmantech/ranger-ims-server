@@ -54,7 +54,7 @@ jobs:
     name: Flake8 (linter)
 
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
 
     steps:
 
@@ -78,7 +78,7 @@ jobs:
     name: Black (linter)
 
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
 
     steps:
 
@@ -101,7 +101,7 @@ jobs:
     name: Mypy (static type checker)
 
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
 
     steps:
 
@@ -124,7 +124,7 @@ jobs:
     name: Packaging
 
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
 
     steps:
 
@@ -147,7 +147,7 @@ jobs:
     name: Packaging
 
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
 
     steps:
 
@@ -212,7 +212,7 @@ jobs:
     needs: [flake8, mypy, unit]
 
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
 
@@ -239,7 +239,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
 
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
 
