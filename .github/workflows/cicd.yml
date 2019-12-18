@@ -2,6 +2,7 @@
 # https://help.github.com/en/actions/automating-your-workflow-with-github-actions
 
 
+
 name: CI/CD
 
 on: [push]
@@ -12,7 +13,7 @@ jobs:
   info:
 
     name: Workflow information
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
     timeout-minutes: 1
 
     steps:
@@ -94,8 +95,6 @@ jobs:
 
       - name: Run Flake8
         run: tox -e black;
-        env:
-          TOX_SKIP_MISSING_INTERPRETERS: False
 
 
   mypy:
@@ -121,7 +120,7 @@ jobs:
         run: tox -e mypy;
 
 
-  packaging:
+  docs:
     name: Packaging
 
     runs-on: ubuntu-latest
@@ -140,16 +139,37 @@ jobs:
       - name: Install Tox
         run: pip install tox;
 
+      - name: Build documentation
+        run: tox -e docs;
+
+
+  packaging:
+    name: Packaging
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@v1
+
+      - name: Install Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.8"
+
+      - name: Install Tox
+        run: pip install tox;
+
       - name: Check packaging
         run: tox -e packaging;
-        env:
-          TOX_SKIP_MISSING_INTERPRETERS: False
 
 
   unit:
     name: Unit Tests using Python ${{ matrix.python }} on Ubuntu
 
-    needs: [flake8, mypy]
+    needs: [flake8, black, mypy, docs, packaging]
 
     runs-on: ubuntu-latest
     timeout-minutes: 30
