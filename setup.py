@@ -118,7 +118,7 @@ setup_requirements = []
 
 install_requirements = [
     # Direct dependencies
-    "arrow==0.15.4",
+    "arrow==0.15.5",
     "attrs==19.3.0",
     "cattrs==1.0.0",
     "hyperlink==19.0.0",
