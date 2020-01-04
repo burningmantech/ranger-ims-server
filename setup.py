@@ -130,7 +130,7 @@ install_requirements = [
     "service-identity==18.1.0",
 
     # Indirect dependencies
-    "asn1crypto==1.2.0",
+    "asn1crypto==1.3.0",
     "Automat==0.8.0",
     "cffi==1.13.2",
     "constantly==15.1.0",
