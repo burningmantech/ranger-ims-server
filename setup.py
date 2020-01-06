@@ -118,9 +118,9 @@ setup_requirements = []
 
 install_requirements = [
     # Direct dependencies
-    "arrow==0.15.4",
+    "arrow==0.15.5",
     "attrs==19.3.0",
-    "cattrs==1.0.0rc0",
+    "cattrs==1.0.0",
     "hyperlink==19.0.0",
     "klein==19.6.0",
     "PyMySQL==0.9.3",
@@ -130,7 +130,7 @@ install_requirements = [
     "service-identity==18.1.0",
 
     # Indirect dependencies
-    "asn1crypto==1.2.0",
+    "asn1crypto==1.3.0",
     "Automat==0.8.0",
     "cffi==1.13.2",
     "constantly==15.1.0",
