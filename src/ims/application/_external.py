@@ -213,7 +213,7 @@ class ExternalApplication(object):
                     )
                     try:
                         path.unlink()
-                    except (OSError, IOError) as e:
+                    except OSError as e:
                         self._log.critical(
                             "Failed to remove temporary file {path}: {error}",
                             path=path,
@@ -234,7 +234,7 @@ class ExternalApplication(object):
 
         try:
             return path.read_bytes()
-        except (OSError, IOError) as e:
+        except OSError as e:
             self._log.error(
                 "Unable to open file {path}: {error}", path=path, error=e
             )
@@ -263,14 +263,14 @@ class ExternalApplication(object):
             )
             try:
                 archivePath.unlink()
-            except (OSError, IOError) as e:
+            except OSError as e:
                 self._log.critical(
                     "Failed to remove corrupt zip archive {path}: {error}",
                     path=archivePath,
                     error=e,
                 )
             return internalErrorResponse(request)
-        except (OSError, IOError) as e:
+        except OSError as e:
             self._log.critical(
                 "Unable to open zip archive {path}: {error}",
                 path=archivePath,
