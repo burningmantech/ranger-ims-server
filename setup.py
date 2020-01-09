@@ -137,7 +137,7 @@ install_requirements = [
     "cryptography==2.8",
     "idna==2.8",
     "incremental==17.5.0",
-    "pyasn1-modules==0.2.7",
+    "pyasn1-modules==0.2.8",
     "pyasn1==0.4.8",
     "pycparser==2.19",
     "PyHamcrest==1.10.0",
