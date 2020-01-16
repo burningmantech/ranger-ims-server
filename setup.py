@@ -140,7 +140,7 @@ install_requirements = [
     "pyasn1-modules==0.2.8",
     "pyasn1==0.4.8",
     "pycparser==2.19",
-    "PyHamcrest==1.10.1",
+    "PyHamcrest==2.0.0",
     "python-dateutil==2.8.1",
     "ranger-ims-server==18.0.0.dev0",
     "six==1.14.0",
