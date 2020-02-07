@@ -144,7 +144,7 @@ install_requirements = [
     "python-dateutil==2.8.1",
     "ranger-ims-server==18.0.0.dev0",
     "six==1.14.0",
-    "Werkzeug==0.16.1",
+    "Werkzeug==1.0.0",
 ]
 
 extras_requirements = {}
