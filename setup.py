@@ -132,7 +132,7 @@ install_requirements = [
     # Indirect dependencies
     "asn1crypto==1.3.0",
     "Automat==0.8.0",
-    "cffi==1.13.2",
+    "cffi==1.14.0",
     "constantly==15.1.0",
     "cryptography==2.8",
     "idna==2.8",
