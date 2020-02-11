@@ -211,7 +211,9 @@ class DataStoreCoreTests(AsynchronousTestCase):
         :meth:`DataStore._dbSchemaVersion` returns the schema version for the
         given database.
         """
-        for version in range(2, DataStore.schemaVersion + 1):
+        for version in range(
+            TestDataStore.firstSchemaVersion, DataStore.schemaVersion + 1
+        ):
             with patch("ims.store.mysql.DataStore.schemaVersion", version):
                 store = await self.store()
 
@@ -219,7 +221,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 currentVersion = await store.dbSchemaVersion()
                 assert currentVersion == 0
 
-                # Upgrade and confirm we're not at the desired version
+                # Upgrade and confirm we're at the desired version
                 await store.upgradeSchema()
                 currentVersion = await store.dbSchemaVersion()
                 self.assertEqual(currentVersion, version)
