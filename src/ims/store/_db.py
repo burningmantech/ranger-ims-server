@@ -1842,7 +1842,18 @@ class DatabaseManager(object):
             else:
                 fileID = f"{toVersion}-from-{fromVersion}"
 
-            sql = self.store.loadSchema(version=fileID)
+            try:
+                sql = self.store.loadSchema(version=fileID)
+            except FileNotFoundError:
+                self._log.critical(
+                    "Unable to upgrade schema in store {store.__class__} "
+                    "from {fromVersion} to {toVersion} "
+                    "due to missing schema file",
+                    store=self.store,
+                    fromVersion=fromVersion,
+                    toVersion=toVersion,
+                )
+                raise StorageError("Unable to upgrade schema")
             await self.store.applySchema(sql)
 
         fromVersion = version
