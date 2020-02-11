@@ -47,9 +47,6 @@ class IMSDataStore(ABC):
     async def upgradeSchema(self) -> None:
         """
         Upgrade the data store schema to the current version.
-
-        Return `True` if an upgrade was executed, `False` if no upgrade was
-        necessary.
         """
 
     @abstractmethod

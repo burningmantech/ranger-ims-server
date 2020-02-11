@@ -307,7 +307,7 @@ class DatabaseStore(IMSDataStore):
         Apply the given schema to the database.
         """
 
-    async def upgradeSchema(self, targetVersion: Optional[int] = None) -> bool:
+    async def upgradeSchema(self, targetVersion: Optional[int] = None) -> None:
         """
         See :meth:`IMSDataStore.upgradeSchema`.
         """
@@ -1809,7 +1809,7 @@ class DatabaseManager(object):
 
     store: DatabaseStore
 
-    async def upgradeSchema(self, targetVersion: Optional[int] = None) -> bool:
+    async def upgradeSchema(self, targetVersion: Optional[int] = None) -> None:
         """
         Apply schema updates
         """
@@ -1828,10 +1828,9 @@ class DatabaseManager(object):
         if currentVersion == latestVersion:
             # No upgrade needed
             self._log.debug(
-                "No upgrade required to schema version {version}",
-                version=version,
+                "No upgrade required for schema version {version}",
+                version=currentVersion,
             )
-            return False
 
         if currentVersion > latestVersion:
             raise StorageError(
@@ -1884,5 +1883,3 @@ class DatabaseManager(object):
                     f"({fromVersion} <= {currentVersion})"
                 )
             currentVersion = fromVersion
-
-        return True
