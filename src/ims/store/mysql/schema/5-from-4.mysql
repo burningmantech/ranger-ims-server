@@ -1,11 +1,11 @@
--- Increase column sizes
+/* Increase column sizes */
 
 alter table EVENT modify NAME varchar(128) not null;
 
 alter table CONCENTRIC_STREET modify NAME varchar(128) not null;
 
-alter table INCIDENT modify LOCATION_NAME varchar(1024) not null;
+alter table INCIDENT modify LOCATION_NAME varchar(1024);
 
--- Update schema version
+/* Update schema version */
 
 update SCHEMA_INFO set VERSION = 5;
