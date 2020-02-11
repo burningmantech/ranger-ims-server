@@ -31,7 +31,7 @@ from ims.ext.trial import AsynchronousTestCase, asyncAsDeferred
 
 from .base import TestDataStore
 from .service import MySQLService, randomDatabaseName
-from .._store import DataStore
+from .._store import DataStore, ReconnectingConnectionPool
 
 
 __all__ = ()
@@ -223,3 +223,12 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 await store.upgradeSchema()
                 currentVersion = await store.dbSchemaVersion()
                 self.assertEqual(currentVersion, version)
+
+    @asyncAsDeferred
+    async def test_db(self) -> None:
+        """
+        :meth:`DataStore._db` returns a :class:`ReconnectingConnectionPool`.
+        """
+        store = await self.store()
+
+        self.assertIsInstance(store._db, ReconnectingConnectionPool)
