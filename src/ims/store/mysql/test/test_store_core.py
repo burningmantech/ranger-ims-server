@@ -234,3 +234,45 @@ class DataStoreCoreTests(AsynchronousTestCase):
         store = await self.store()
 
         self.assertIsInstance(store._db, ReconnectingConnectionPool)
+
+    @asyncAsDeferred
+    async def test_upgradeSchema(self) -> None:
+        """
+        :meth:`DataStore.upgradeSchema` upgrades the data schema to the current
+        version.
+        """
+
+        async def getSchemaInfo(store: DataStore) -> str:
+            out = StringIO()
+            await store.printSchema(out)
+            return out.getvalue()
+
+        latestVersion = DataStore.schemaVersion
+
+        store = await self.store()
+        await store.upgradeSchema()
+        latestSchemaInfo = await getSchemaInfo(store)
+
+        for fromVersion in range(
+            TestDataStore.firstSchemaVersion, latestVersion
+        ):
+            store = await self.store()
+
+            # Confirm we're starting with a blank database
+            currentVersion = await store.dbSchemaVersion()
+            assert currentVersion == 0
+
+            # Upgrade to starting version and confirm we're there
+            await store.upgradeSchema(fromVersion)
+            currentVersion = await store.dbSchemaVersion()
+            assert currentVersion == fromVersion, currentVersion
+
+            # Upgrade to latest version and confirm we're there
+            await store.upgradeSchema()
+            currentVersion = await store.dbSchemaVersion()
+            self.assertEqual(currentVersion, latestVersion)
+
+            # Make sure the schema is as we expect
+            currentSchemaInfo = await getSchemaInfo(store)
+            self.maxDiff = None
+            self.assertEqual(currentSchemaInfo, latestSchemaInfo)
