@@ -75,4 +75,4 @@ alter table INCIDENT_INCIDENT_REPORT rename to INCIDENT__INCIDENT_REPORT;
 
 -- Update schema version
 
-update SCHEMA_INFO set version = 2;
+update SCHEMA_INFO set VERSION = 2;

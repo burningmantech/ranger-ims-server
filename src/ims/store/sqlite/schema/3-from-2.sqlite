@@ -58,4 +58,4 @@ pragma foreign_keys = true;
 
 -- Update schema version
 
-update SCHEMA_INFO set version = 3;
+update SCHEMA_INFO set VERSION = 3;

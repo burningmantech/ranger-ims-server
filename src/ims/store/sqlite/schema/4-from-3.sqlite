@@ -112,4 +112,4 @@ insert into ACCESS_MODE (ID) values ('report');
 
 -- Update schema version
 
-update SCHEMA_INFO set version = 4;
+update SCHEMA_INFO set VERSION = 4;
