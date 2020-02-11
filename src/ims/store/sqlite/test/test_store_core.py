@@ -341,7 +341,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         self.assertEqual(
             f.getErrorMessage(),
             f"Schema version {version} is too new "
-            f"(current version is {store.schemaVersion})",
+            f"(latest version is {store.schemaVersion})",
         )
 
     def test_validate_super(self) -> None:
