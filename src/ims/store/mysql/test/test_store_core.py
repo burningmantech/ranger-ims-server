@@ -22,6 +22,7 @@ from io import StringIO
 from os import environ
 from textwrap import dedent
 from typing import ClassVar, List, cast
+from unittest.mock import patch
 
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.logger import Logger
@@ -30,6 +31,7 @@ from ims.ext.trial import AsynchronousTestCase, asyncAsDeferred
 
 from .base import TestDataStore
 from .service import MySQLService, randomDatabaseName
+from .._store import DataStore
 
 
 __all__ = ()
@@ -202,3 +204,22 @@ class DataStoreCoreTests(AsynchronousTestCase):
             ),
             schemaInfo,
         )
+
+    @asyncAsDeferred
+    async def test_dbSchemaVersion(self) -> None:
+        """
+        :meth:`DataStore._dbSchemaVersion` returns the schema version for the
+        given database.
+        """
+        for version in range(2, DataStore.schemaVersion + 1):
+            with patch("ims.store.mysql.DataStore.schemaVersion", version):
+                store = await self.store()
+
+                # Confirm we're starting with a blank database
+                currentVersion = await store.dbSchemaVersion()
+                assert currentVersion == 0
+
+                # Upgrade and confirm we're not at the desired version
+                await store.upgradeSchema()
+                currentVersion = await store.dbSchemaVersion()
+                self.assertEqual(currentVersion, version)
