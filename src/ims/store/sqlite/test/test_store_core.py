@@ -246,9 +246,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         with createDB(None, DataStore.loadSchema(version=latestVersion)) as db:
             currentSchemaInfo = getSchemaInfo(db)
 
-        for version in range(
-            TestDataStore.firstSchemaVersion, latestVersion
-        ):
+        for version in range(TestDataStore.firstSchemaVersion, latestVersion):
             path = Path(self.mktemp())
             createDB(path, DataStore.loadSchema(version=version))
 
