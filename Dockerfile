@@ -6,8 +6,8 @@ FROM python:3.6-alpine3.7 as build
 # Install compiler toolchain and libraries.
 RUN apk add --no-cache build-base libffi-dev libressl-dev
 
-# Install/upgrade pip and virtualenv
-RUN pip install --upgrade pip virtualenv
+# Install/upgrade pip
+RUN python -m pip install --upgrade pip
 
 # Paths
 ENV IMS_SOURCE_DIR="/src/ims"
@@ -26,7 +26,7 @@ COPY ./src/           ./src/
 WORKDIR /tmp
 RUN install -o daemon -g daemon -d "${IMS_INSTALL_DIR}"
 USER daemon:daemon
-RUN virtualenv "${IMS_INSTALL_DIR}"
+RUN python -m venv "${IMS_INSTALL_DIR}"
 RUN "${IMS_INSTALL_DIR}/bin/pip" --no-cache-dir install "${IMS_SOURCE_DIR}"
 
 
@@ -41,7 +41,7 @@ COPY --from=build "${IMS_INSTALL_DIR}" "${IMS_INSTALL_DIR}"
 
 # Allow ims_server to bind to privileged port numbers
 RUN apk add --no-cache libcap
-RUN setcap "cap_net_bind_service=+ep" "${IMS_INSTALL_DIR}/bin/python"
+RUN setcap "cap_net_bind_service=+ep" /usr/local/bin/python3.7
 
 # Configuration
 ENV IMS_HOSTNAME="0.0.0.0"
