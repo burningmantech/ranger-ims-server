@@ -1,0 +1,9 @@
+/.hypothesis
+/.tox
+/build/
+/cached/
+/data/
+/dist/
+/htmlcov/
+/htmldocs/
+/src/*.egg-info/
