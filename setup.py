@@ -142,7 +142,6 @@ install_requirements = [
     "pycparser==2.19",
     "PyHamcrest==2.0.0",
     "python-dateutil==2.8.1",
-    "ranger-ims-server==18.0.0.dev0",
     "six==1.14.0",
     "Werkzeug==1.0.0",
 ]
