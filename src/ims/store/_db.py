@@ -1809,7 +1809,7 @@ class DatabaseManager(object):
 
     store: DatabaseStore
 
-    async def upgradeSchema(self, targetVersion: Optional[int] = None) -> None:
+    async def upgradeSchema(self, targetVersion: Optional[int] = None) -> bool:
         """
         Apply schema updates
         """
@@ -1831,6 +1831,7 @@ class DatabaseManager(object):
                 "No upgrade required for schema version {version}",
                 version=currentVersion,
             )
+            return False
 
         if currentVersion > latestVersion:
             raise StorageError(
@@ -1883,3 +1884,5 @@ class DatabaseManager(object):
                     f"({fromVersion} <= {currentVersion})"
                 )
             currentVersion = fromVersion
+
+        return True
