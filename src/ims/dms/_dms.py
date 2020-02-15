@@ -18,10 +18,16 @@
 Duty Management System.
 """
 
-from hashlib import sha1
-from os import urandom
 from time import time
-from typing import ClassVar, Iterable, Mapping, Optional, Set, Tuple, cast
+from typing import (
+    ClassVar,
+    Iterable,
+    Mapping,
+    Optional,
+    Set,
+    Tuple,
+    cast,
+)
 
 from attr import Factory, attrib, attrs
 
@@ -283,28 +289,3 @@ def statusFromID(strValue: str) -> RangerStatus:
         "uberbonked": RangerStatus.uberbonked,
         "vintage": RangerStatus.vintage,
     }.get(strValue, RangerStatus.other)
-
-
-def hashPassword(password: str, salt: Optional[str] = None) -> str:
-    """
-    Compute a hash for the given password
-    """
-    if salt is None:
-        salt = urandom(16).decode("charmap")
-
-    return salt + ":" + sha1((salt + password).encode("utf-8")).hexdigest()
-
-
-def verifyPassword(password: str, hashedPassword: str) -> bool:
-    """
-    Verify a password against a hashed password.
-    """
-    # Reference Clubhouse code: standard/controllers/security.php#L457
-
-    # DMS password field is a salt and a SHA-1 hash (hex digest), separated by
-    # ":".
-    salt, hashValue = hashedPassword.rsplit(":", 1)
-
-    hashed = sha1((salt + password).encode("utf-8")).hexdigest()
-
-    return hashed == hashValue

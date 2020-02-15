@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for L{ims.dms}.
+Tests for L{ims.dms._dms}.
 """
 
 from typing import MutableSequence, Tuple, cast
@@ -25,7 +25,8 @@ from twisted.internet.defer import Deferred, fail, succeed
 from ims.ext.trial import TestCase
 
 from .. import DutyManagementSystem
-from .._dms import fullName, hashPassword
+from .._auth import hashPassword
+from .._dms import fullName
 
 
 __all__ = ()

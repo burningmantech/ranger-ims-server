@@ -75,7 +75,7 @@ class AuthApplication(object):
         if username is None:
             user = None
         else:
-            user = await self.config.authProvider.lookupUserName(username)
+            user = await self.config.directory.lookupUser(username)
 
         if user is None:
             self._log.debug(
@@ -85,7 +85,7 @@ class AuthApplication(object):
             if password is None:
                 return invalidQueryResponse(request, "password")
 
-            authenticated = await self.config.authProvider.verifyCredentials(
+            authenticated = await self.config.authProvider.verifyPassword(
                 user, password
             )
 

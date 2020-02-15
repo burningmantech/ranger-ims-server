@@ -19,12 +19,23 @@ Incident Management System web authentication.
 """
 
 from ._exceptions import NotAuthenticatedError, NotAuthorizedError
-from ._provider import AuthProvider, Authorization
+from ._provider import (
+    AuthProvider,
+    Authorization,
+    IMSDirectory,
+    IMSGroupID,
+    IMSUser,
+    IMSUserID,
+)
 
 
 __all__ = (
-    "AuthProvider",
     "Authorization",
+    "AuthProvider",
+    "IMSDirectory",
+    "IMSGroupID",
+    "IMSUser",
+    "IMSUserID",
     "NotAuthenticatedError",
     "NotAuthorizedError",
 )

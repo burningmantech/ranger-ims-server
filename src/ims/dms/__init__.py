@@ -18,19 +18,16 @@
 Duty Management System integration.
 """
 
-from ._dms import (
-    DMSError,
-    DatabaseError,
-    DutyManagementSystem,
-    hashPassword,
-    verifyPassword,
-)
+from ._auth import DMSDirectory, DMSUser, hashPassword, verifyPassword
+from ._dms import DMSError, DatabaseError, DutyManagementSystem
 
 
 __all__ = (
+    "DatabaseError",
+    "DMSDirectory",
+    "DMSError",
+    "DMSUser",
+    "DutyManagementSystem",
     "hashPassword",
     "verifyPassword",
-    "DMSError",
-    "DatabaseError",
-    "DutyManagementSystem",
 )

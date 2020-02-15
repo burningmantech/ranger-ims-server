@@ -18,23 +18,77 @@
 Tests for L{ims.auth._provider}.
 """
 
-from typing import Any
-from unittest.mock import patch
+from typing import Any, Optional, Sequence
+
+from attr import attrs
 
 from hypothesis import assume, given
-from hypothesis.strategies import text
+from hypothesis.strategies import booleans, lists, text
 
-from ims.dms import DutyManagementSystem, hashPassword
 from ims.ext.trial import TestCase
-from ims.model import Ranger
-from ims.model.strategies import rangers
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
-from .._provider import AuthProvider, Authorization, User
+from .._provider import (
+    AuthProvider,
+    Authorization,
+    IMSGroupID,
+    IMSUser,
+    IMSUserID,
+)
 
 
 __all__ = ()
+
+
+def oops(*args: Any, **kwargs: Any) -> None:
+    raise RuntimeError()
+
+
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
+class TestUser(IMSUser):
+    """
+    User for testing.
+    """
+
+    _shortNames: Sequence[str]
+    _active: bool
+    _uid: IMSUserID
+    _groups: Sequence[IMSGroupID]
+    _password: Optional[str]
+
+    @property
+    def shortNames(self) -> Sequence[str]:
+        """
+        Short names (usernames).
+        """
+        return self._shortNames
+
+    @property
+    def active(self) -> bool:
+        """
+        Whether the user is allowed to log in to the IMS.
+        """
+        return self._active
+
+    @property
+    def uid(self) -> IMSUserID:
+        """
+        Unique identifier.
+        """
+        return self._uid
+
+    @property
+    def groups(self) -> Sequence[IMSGroupID]:
+        """
+        Groups the user is a member of.
+        """
+        return self._groups
+
+    async def verifyPassword(self, password: Optional[str]) -> bool:
+        if password is None:
+            raise RuntimeError("User has no password")
+        return password == self._password
 
 
 class AuthorizationTests(TestCase):
@@ -53,37 +107,6 @@ class AuthorizationTests(TestCase):
             self.assertIn(authorization, Authorization.all)
 
 
-class UserTests(TestCase):
-    """
-    Tests for :class:`User`
-    """
-
-    @given(rangers())
-    def test_shortNames_handle(self, ranger: Ranger) -> None:
-        user = User(ranger=ranger, groups=())
-        self.assertIn(ranger.handle, user.shortNames)
-
-    @given(rangers())
-    def test_hashedPassword(self, ranger: Ranger) -> None:
-        user = User(ranger=ranger, groups=())
-        self.assertEqual(user.hashedPassword, ranger.password)
-
-    @given(rangers())
-    def test_active(self, ranger: Ranger) -> None:
-        user = User(ranger=ranger, groups=())
-        self.assertEqual(user.active, ranger.onSite)
-
-    @given(rangers())
-    def test_rangerHandle(self, ranger: Ranger) -> None:
-        user = User(ranger=ranger, groups=())
-        self.assertEqual(user.rangerHandle, ranger.handle)
-
-    @given(rangers())
-    def test_str(self, ranger: Ranger) -> None:
-        user = User(ranger=ranger, groups=())
-        self.assertEqual(str(user), str(ranger))
-
-
 class AuthProviderTests(TestCase):
     """
     Tests for :class:`AuthProvider`
@@ -92,87 +115,144 @@ class AuthProviderTests(TestCase):
     def store(self) -> IMSDataStore:
         return SQLiteDataStore(dbPath=None)
 
-    def dms(self) -> DutyManagementSystem:
-        """
-        Gimme a DMS.
-        """
-        return DutyManagementSystem(
-            host="dms-server",
-            database="ims",
-            username="user",
-            password="password",
-        )
-
-    @given(text(min_size=1), rangers())
-    def test_verifyCredentials_masterKey(
-        self, masterKey: str, ranger: Ranger
+    # @given(text(min_size=1), rangers())
+    @given(
+        lists(text()),
+        booleans(),
+        text(),
+        lists(text()),
+        text(),
+        text(min_size=1),
+    )
+    def test_verifyPassword_masterKey(
+        self,
+        shortNames: Sequence[str],
+        active: bool,
+        uid: IMSUserID,
+        groups: Sequence[IMSGroupID],
+        password: str,
+        masterKey: str,
     ) -> None:
-        provider = AuthProvider(
-            store=self.store(), dms=self.dms(), masterKey=masterKey
+        user = TestUser(
+            shortNames=shortNames,
+            active=active,
+            uid=uid,
+            groups=groups,
+            password=password,
         )
-        user = User(ranger=ranger, groups=())
+        provider = AuthProvider(store=self.store(), masterKey=masterKey)
 
         authorization = self.successResultOf(
-            provider.verifyCredentials(user, masterKey)
+            provider.verifyPassword(user, masterKey)
         )
         self.assertTrue(authorization)
 
-    @given(rangers(), text())
-    def test_verifyCredentials_match(
-        self, ranger: Ranger, password: str
+    @given(lists(text()), booleans(), text(), lists(text()), text())
+    def test_verifyPassword_match(
+        self,
+        shortNames: Sequence[str],
+        active: bool,
+        uid: IMSUserID,
+        groups: Sequence[IMSGroupID],
+        password: str,
     ) -> None:
-        provider = AuthProvider(store=self.store(), dms=self.dms())
-        ranger = ranger.replace(password=hashPassword(password))
-        user = User(ranger=ranger, groups=())
+        """
+        AuthProvider.verifyPassword() returns True when the user's password is
+        a match.
+        """
+        user = TestUser(
+            shortNames=shortNames,
+            active=active,
+            uid=uid,
+            groups=groups,
+            password=password,
+        )
+        provider = AuthProvider(store=self.store())
 
         authorization = self.successResultOf(
-            provider.verifyCredentials(user, password)
+            provider.verifyPassword(user, password)
         )
         self.assertTrue(authorization)
 
-    @given(rangers(), text(), text())
-    def test_verifyCredentials_mismatch(
-        self, ranger: Ranger, password: str, otherPassword: str
+    @given(lists(text()), booleans(), text(), lists(text()), text(), text())
+    def test_verifyPassword_mismatch(
+        self,
+        shortNames: Sequence[str],
+        active: bool,
+        uid: IMSUserID,
+        groups: Sequence[IMSGroupID],
+        password: str,
+        notPassword: str,
     ) -> None:
-        assume(password != otherPassword)
+        """
+        AuthProvider.verifyPassword() returns False when the user's password is
+        not a match.
+        """
+        assume(password != notPassword)
 
-        provider = AuthProvider(store=self.store(), dms=self.dms())
-        ranger = ranger.replace(password=hashPassword(password))
-        user = User(ranger=ranger, groups=())
+        user = TestUser(
+            shortNames=shortNames,
+            active=active,
+            uid=uid,
+            groups=groups,
+            password=password,
+        )
+        provider = AuthProvider(store=self.store())
 
         authorization = self.successResultOf(
-            provider.verifyCredentials(user, otherPassword)
+            provider.verifyPassword(user, notPassword)
         )
         self.assertFalse(authorization)
 
-    @given(rangers(), text())
-    def test_verifyCredentials_none(
-        self, ranger: Ranger, password: str
+    @given(lists(text()), booleans(), text(), lists(text()), text())
+    def test_verifyPassword_none(
+        self,
+        shortNames: Sequence[str],
+        active: bool,
+        uid: IMSUserID,
+        groups: Sequence[IMSGroupID],
+        password: str,
     ) -> None:
-        provider = AuthProvider(store=self.store(), dms=self.dms())
-        ranger = ranger.replace(password=None)
-        user = User(ranger=ranger, groups=())
+        """
+        AuthProvider.verifyPassword() returns False when the user's password is
+        None.
+        """
+        user = TestUser(
+            shortNames=shortNames,
+            active=active,
+            uid=uid,
+            groups=groups,
+            password=None,
+        )
+        provider = AuthProvider(store=self.store())
 
         authorization = self.successResultOf(
-            provider.verifyCredentials(user, password)
+            provider.verifyPassword(user, password)
         )
         self.assertFalse(authorization)
 
-    @given(rangers(), text())
-    def test_verifyCredentials_error(
-        self, ranger: Ranger, password: str
-    ) -> None:
-        provider = AuthProvider(store=self.store(), dms=self.dms())
-        ranger = ranger.replace(password=hashPassword(password))
-        user = User(ranger=ranger, groups=())
+    def test_authenticateRequest(self) -> None:
+        raise NotImplementedError()
 
-        def oops(*args: Any, **kwargs: Any) -> None:
-            raise RuntimeError()
+    test_authenticateRequest.todo = (  # type: ignore[attr-defined]
+        "unimplemented"
+    )
 
-        assert self.successResultOf(provider.verifyCredentials(user, password))
+    def test_authorizationsForUser(self) -> None:
+        raise NotImplementedError()
 
-        with patch("ims.auth._provider.verifyPassword", oops):
-            authorization = self.successResultOf(
-                provider.verifyCredentials(user, password)
-            )
-        self.assertFalse(authorization)
+    test_authorizationsForUser.todo = (  # type: ignore[attr-defined]
+        "unimplemented"
+    )
+
+    def test_authorizeRequest(self) -> None:
+        raise NotImplementedError()
+
+    test_authorizeRequest.todo = "unimplemented"  # type: ignore[attr-defined]
+
+    def test_authorizeReqForIncidentReport(self) -> None:
+        raise NotImplementedError()
+
+    test_authorizeReqForIncidentReport.todo = (  # type: ignore[attr-defined]
+        "unimplemented"
+    )

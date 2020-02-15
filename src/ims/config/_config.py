@@ -29,8 +29,8 @@ from attr import Factory, attrib, attrs, evolve
 
 from twisted.logger import Logger
 
-from ims.auth import AuthProvider
-from ims.dms import DutyManagementSystem
+from ims.auth import AuthProvider, IMSDirectory
+from ims.dms import DMSDirectory, DutyManagementSystem
 from ims.ext.enum import Enum, Names, auto
 from ims.store import IMSDataStore
 from ims.store.mysql import DataStore as MySQLDataStore
@@ -391,6 +391,13 @@ class Configuration(object):
         return self._state.dms
 
     @property
+    def directory(self) -> IMSDirectory:
+        """
+        User provider.
+        """
+        return DMSDirectory(dms=self.dms)
+
+    @property
     def authProvider(self) -> AuthProvider:
         """
         Auth provider.
@@ -398,7 +405,6 @@ class Configuration(object):
         if self._state.authProvider is None:
             self._state.authProvider = AuthProvider(
                 store=self.store,
-                dms=self.dms,
                 requireActive=self.requireActive,
                 adminUsers=self.imsAdmins,
                 masterKey=self.masterKey,
