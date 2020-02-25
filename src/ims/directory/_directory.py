@@ -19,7 +19,9 @@ Incident Management System directory service integration.
 """
 
 from abc import ABC, abstractmethod
-from typing import NewType, Optional, Sequence
+from typing import Iterable, NewType, Optional, Sequence
+
+from ims.model import Ranger
 
 
 __all__ = ()
@@ -77,4 +79,9 @@ class IMSDirectory(ABC):
     async def lookupUser(self, searchTerm: str) -> Optional[IMSUser]:
         """
         Look up a user given a text search term.
+        """
+
+    async def personnel(self) -> Iterable[Ranger]:
+        """
+        Look up all personnel.
         """

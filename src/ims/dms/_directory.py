@@ -20,7 +20,7 @@ Duty Management System directory.
 
 from hashlib import sha1
 from os import urandom
-from typing import ClassVar, Optional, Sequence, cast
+from typing import ClassVar, Iterable, Optional, Sequence, cast
 
 from attr import attrs
 
@@ -102,10 +102,10 @@ class DMSDirectory(IMSDirectory):
 
     _dms: DutyManagementSystem
 
+    async def personnel(self) -> Iterable[Ranger]:
+        return tuple(await self._dms.personnel())
+
     async def lookupUser(self, searchTerm: str) -> Optional[IMSUser]:
-        """
-        Look up a user given a text search term.
-        """
         dms = self._dms
 
         # FIXME: a hash would be better (eg. rangersByHandle)

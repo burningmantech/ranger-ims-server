@@ -176,7 +176,7 @@ class Configuration(object):
         """
 
         store: Optional[IMSDataStore] = None
-        dms: Optional[DutyManagementSystem] = None
+        directory: Optional[IMSDirectory] = None
         authProvider: Optional[AuthProvider] = None
         locationsJSONBytes: Optional[bytes] = None
 
@@ -390,21 +390,15 @@ class Configuration(object):
         return self._state.store
 
     @property
-    def dms(self) -> DutyManagementSystem:
-        """
-        Duty Management System.
-        """
-        if self._state.dms is None:
-            self._state.dms = self._dmsFactory()
-
-        return self._state.dms
-
-    @property
     def directory(self) -> IMSDirectory:
         """
         User provider.
         """
-        return DMSDirectory(dms=self.dms)
+        if self._state.directory is None:
+            dms = self._dmsFactory()
+            self._state.directory = DMSDirectory(dms=dms)
+
+        return self._state.directory
 
     @property
     def authProvider(self) -> AuthProvider:

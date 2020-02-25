@@ -131,7 +131,7 @@ class APIApplication(object):
         Data for personnel endpoint.
         """
         try:
-            personnel = await self.config.dms.personnel()
+            personnel = await self.config.directory.personnel()
         except DMSError as e:
             self._log.error("Unable to vend personnel: {failure}", failure=e)
             personnel = ()

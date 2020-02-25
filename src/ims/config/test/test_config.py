@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Iterable, Iterator, Mapping, Optional, Set, Tuple, cast
 
 from ims.auth import AuthProvider
-from ims.dms import DutyManagementSystem
+from ims.dms import DMSDirectory
 from ims.ext.trial import TestCase
 from ims.store import IMSDataStore
 from ims.store.mysql import DataStore as MySQLDataStore
@@ -269,14 +269,14 @@ class ConfigurationTests(TestCase):
                 ConfigurationError, Configuration.fromConfigFile, None
             )
 
-    def test_dms(self) -> None:
+    def test_directory(self) -> None:
         with testingEnvironment({}):
             config = Configuration.fromConfigFile(None)
 
-        self.assertIsNone(config._state.dms)
-        self.assertIsInstance(config.dms, DutyManagementSystem)
-        self.assertIsNotNone(config._state.dms)
-        self.assertIsInstance(config.dms, DutyManagementSystem)
+        self.assertIsNone(config._state.directory)
+        self.assertIsInstance(config.directory, DMSDirectory)
+        self.assertIsNotNone(config._state.directory)
+        self.assertIsInstance(config.directory, DMSDirectory)
 
     def test_authProvider(self) -> None:
         with testingEnvironment({}):
@@ -308,7 +308,7 @@ class ConfigurationTests(TestCase):
             f"Core.LogFormat: {config.logFormat}\n"
             f"\n"
             f"DataStore: {describeFactory(config._storeFactory)}\n"
-            f"DMS: {describeFactory(config._dmsFactory)}\n"
+            f"DMS: {describeFactory(config._dmsFactory)}\n",
         )
 
     def test_replace(self) -> None:
