@@ -131,11 +131,11 @@ install_requirements = [
 
     # Indirect dependencies
     "asn1crypto==1.3.0",
-    "Automat==0.8.0",
+    "Automat==20.2.0",
     "cffi==1.14.0",
     "constantly==15.1.0",
     "cryptography==2.8",
-    "idna==2.8",
+    "idna==2.9",
     "incremental==17.5.0",
     "pyasn1-modules==0.2.8",
     "pyasn1==0.4.8",
