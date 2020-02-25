@@ -37,6 +37,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     See :class:`SuperTestDataStore`.
     """
 
+    firstSchemaVersion: ClassVar[int] = 1
     maxIncidentNumber: ClassVar[int] = SQLITE_MAX_INT
     exceptionClass: ClassVar[type] = SQLiteError
 

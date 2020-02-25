@@ -22,6 +22,7 @@ from io import StringIO
 from os import environ
 from textwrap import dedent
 from typing import ClassVar, List, cast
+from unittest.mock import patch
 
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.logger import Logger
@@ -30,6 +31,8 @@ from ims.ext.trial import AsynchronousTestCase, asyncAsDeferred
 
 from .base import TestDataStore
 from .service import MySQLService, randomDatabaseName
+from .._store import DataStore, ReconnectingConnectionPool
+from ..._exceptions import StorageError
 
 
 __all__ = ()
@@ -202,3 +205,170 @@ class DataStoreCoreTests(AsynchronousTestCase):
             ),
             schemaInfo,
         )
+
+    @asyncAsDeferred
+    async def test_dbSchemaVersion(self) -> None:
+        """
+        :meth:`DataStore._dbSchemaVersion` returns the schema version for the
+        given database.
+        """
+        for version in range(
+            TestDataStore.firstSchemaVersion, DataStore.schemaVersion + 1
+        ):
+            with patch("ims.store.mysql.DataStore.schemaVersion", version):
+                store = await self.store()
+
+                # Confirm we're starting with a blank database
+                currentVersion = await store.dbSchemaVersion()
+                assert currentVersion == 0
+
+                # Upgrade and confirm we're at the desired version
+                await store.upgradeSchema()
+                currentVersion = await store.dbSchemaVersion()
+                self.assertEqual(currentVersion, version)
+
+    @asyncAsDeferred
+    async def test_db(self) -> None:
+        """
+        :meth:`DataStore._db` returns a :class:`ReconnectingConnectionPool`.
+        """
+        store = await self.store()
+
+        self.assertIsInstance(store._db, ReconnectingConnectionPool)
+
+    @asyncAsDeferred
+    async def test_upgradeSchema(self) -> None:
+        """
+        :meth:`DataStore.upgradeSchema` upgrades the data schema to the current
+        version.
+        """
+
+        async def getSchemaInfo(store: DataStore) -> str:
+            out = StringIO()
+            await store.printSchema(out)
+            return out.getvalue()
+
+        latestVersion = DataStore.schemaVersion
+
+        store = await self.store()
+        await store.upgradeSchema()
+        latestSchemaInfo = await getSchemaInfo(store)
+
+        for fromVersion in range(
+            TestDataStore.firstSchemaVersion, latestVersion
+        ):
+            store = await self.store()
+
+            # Confirm we're starting with a blank database
+            currentVersion = await store.dbSchemaVersion()
+            assert currentVersion == 0
+
+            # Upgrade to starting version and confirm we're there
+            await store.upgradeSchema(fromVersion)
+            currentVersion = await store.dbSchemaVersion()
+            assert currentVersion == fromVersion, currentVersion
+
+            # Upgrade to latest version and confirm we're there
+            await store.upgradeSchema()
+            currentVersion = await store.dbSchemaVersion()
+            self.assertEqual(currentVersion, latestVersion)
+
+            # Make sure the schema is as we expect
+            currentSchemaInfo = await getSchemaInfo(store)
+            self.maxDiff = None
+            self.assertEqual(currentSchemaInfo, latestSchemaInfo)
+
+    @asyncAsDeferred
+    async def test_upgradeSchema_noSchemaInfo(self) -> None:
+        """
+        :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
+        database has no SCHEMA_INFO table.
+        """
+        store = await self.store()
+        await store.upgradeSchema()
+
+        # Nuke the SCHEMA_INFO table
+        await store._db.runOperation("drop table SCHEMA_INFO")
+
+        try:
+            await store.upgradeSchema()
+        except StorageError as e:
+            self.assertStartsWith(str(e), "Unable to apply schema: ")
+        else:
+            self.fail("StorageError not raised.")
+
+    @asyncAsDeferred
+    async def test_upgradeSchema_noSchemaVersion(self) -> None:
+        """
+        :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
+        SCHEMA_INFO table has no rows.
+        """
+        store = await self.store()
+        await store.upgradeSchema()
+
+        # Nuke the SCHEMA_INFO table's contents
+        await store._db.runOperation("delete from SCHEMA_INFO")
+
+        try:
+            await store.upgradeSchema()
+        except StorageError as e:
+            self.assertStartsWith(str(e), "Invalid schema: no version")
+        else:
+            self.fail("StorageError not raised.")
+
+    @asyncAsDeferred
+    async def test_upgradeSchema_fromVersionTooLow(self) -> None:
+        """
+        :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
+        database has a schema version less than 0.
+        """
+        # FIXME: Use hypothesis, except async
+        version = -1
+
+        store = await self.store()
+        await store.upgradeSchema()
+
+        # Override schema version
+        await store._db.runOperation(
+            "update SCHEMA_INFO set VERSION = %(version)s",
+            dict(version=version),
+        )
+
+        try:
+            await store.upgradeSchema()
+        except StorageError as e:
+            self.assertEqual(
+                str(e), f"No upgrade path from schema version {version}"
+            )
+        else:
+            self.fail("StorageError not raised.")
+
+    @asyncAsDeferred
+    async def test_upgradeSchema_fromVersionTooHigh(self) -> None:
+        """
+        :meth:`DataStore.upgradeSchema` raises :exc:`StorageError` when the
+        database has a schema version of greater than the current schema
+        version.
+        """
+        # FIXME: Use hypothesis, except async
+        version = DataStore.schemaVersion + 1
+
+        store = await self.store()
+        await store.upgradeSchema()
+
+        # Override schema version
+        await store._db.runOperation(
+            "update SCHEMA_INFO set VERSION = %(version)s",
+            dict(version=version),
+        )
+
+        try:
+            await store.upgradeSchema()
+        except StorageError as e:
+            self.assertEqual(
+                str(e),
+                f"Schema version {version} is too new "
+                f"(latest version is {store.schemaVersion})",
+            )
+        else:
+            self.fail("StorageError not raised.")
