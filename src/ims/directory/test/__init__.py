@@ -15,19 +15,5 @@
 ##
 
 """
-Duty Management System integration.
+Tests for L{ims.directory}.
 """
-
-from ._directory import DMSDirectory, DMSUser, hashPassword, verifyPassword
-from ._dms import DMSError, DatabaseError, DutyManagementSystem
-
-
-__all__ = (
-    "DatabaseError",
-    "DMSDirectory",
-    "DMSError",
-    "DMSUser",
-    "DutyManagementSystem",
-    "hashPassword",
-    "verifyPassword",
-)

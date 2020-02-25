@@ -15,7 +15,7 @@
 ##
 
 """
-Duty Management System auth provider.
+Duty Management System directory.
 """
 
 from hashlib import sha1
@@ -26,7 +26,7 @@ from attr import attrs
 
 from twisted.logger import Logger
 
-from ims.auth import IMSDirectory, IMSGroupID, IMSUser, IMSUserID
+from ims.directory import IMSDirectory, IMSGroupID, IMSUser, IMSUserID
 from ims.model import Ranger
 
 from ._dms import DMSError, DutyManagementSystem

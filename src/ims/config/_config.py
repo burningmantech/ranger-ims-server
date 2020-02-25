@@ -29,7 +29,8 @@ from attr import Factory, attrib, attrs, evolve
 
 from twisted.logger import Logger
 
-from ims.auth import AuthProvider, IMSDirectory
+from ims.auth import AuthProvider
+from ims.directory import IMSDirectory
 from ims.dms import DMSDirectory, DutyManagementSystem
 from ims.ext.enum import Enum, Names, auto
 from ims.store import IMSDataStore

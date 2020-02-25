@@ -29,13 +29,8 @@ from ims.ext.trial import TestCase
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
-from .._provider import (
-    AuthProvider,
-    Authorization,
-    IMSGroupID,
-    IMSUser,
-    IMSUserID,
-)
+from .._provider import AuthProvider, Authorization
+from ...directory import IMSGroupID, IMSUser, IMSUserID
 
 
 __all__ = ()
@@ -85,9 +80,8 @@ class TestUser(IMSUser):
         """
         return self._groups
 
-    async def verifyPassword(self, password: Optional[str]) -> bool:
-        if password is None:
-            raise RuntimeError("User has no password")
+    async def verifyPassword(self, password: str) -> bool:
+        assert self._password is not None
         return password == self._password
 
 

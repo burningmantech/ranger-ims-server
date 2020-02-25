@@ -25,7 +25,7 @@ from twisted.internet.defer import Deferred, fail, succeed
 from ims.ext.trial import TestCase
 
 from .. import DutyManagementSystem
-from .._auth import hashPassword
+from .._directory import hashPassword
 from .._dms import fullName
 
 

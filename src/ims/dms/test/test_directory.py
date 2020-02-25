@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for L{ims.dms._auth}.
+Tests for L{ims.dms._directory}.
 """
 
 from typing import Any, Sequence
@@ -30,9 +30,9 @@ from ims.model.strategies import rangers
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
-from .._auth import DMSUser, hashPassword
+from .._directory import DMSUser, hashPassword
 from .._dms import DMSError, DutyManagementSystem
-from ...auth import IMSGroupID
+from ...directory import IMSGroupID
 
 
 __all__ = ()
@@ -164,7 +164,7 @@ class DMSUserTests(TestCase):
 
         assert self.successResultOf(user.verifyPassword(password))
 
-        with patch("ims.dms._auth.verifyPassword", oops):
+        with patch("ims.dms._directory.verifyPassword", oops):
             f = self.failureResultOf(user.verifyPassword(password), DMSError)
             self.assertEqual(
                 f.getErrorMessage(), f"Unable to verify password: {message}"

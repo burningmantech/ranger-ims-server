@@ -18,15 +18,15 @@
 Incident Management System web application authentication provider.
 """
 
-from abc import ABC, abstractmethod
 from enum import Flag, auto
-from typing import ClassVar, Container, FrozenSet, NewType, Optional, Sequence
+from typing import ClassVar, Container, FrozenSet, Optional
 
 from attr import attrs
 
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
+from ims.directory import IMSUser
 from ims.model import Event, IncidentReport
 from ims.store import IMSDataStore
 
@@ -59,61 +59,6 @@ class Authorization(Flag):
         | writeIncidents
         | writeIncidentReports
     )
-
-
-IMSUserID = NewType("IMSUserID", str)
-IMSGroupID = NewType("IMSGroupID", str)
-
-
-class IMSUser(ABC):
-    """
-    IMS user
-    """
-
-    @property
-    @abstractmethod
-    def shortNames(self) -> Sequence[str]:
-        """
-        Short names (usernames).
-        """
-
-    @property
-    @abstractmethod
-    def active(self) -> bool:
-        """
-        Whether the user is allowed to log in to the IMS.
-        """
-
-    @property
-    @abstractmethod
-    def uid(self) -> IMSUserID:
-        """
-        Unique identifier.
-        """
-
-    @property
-    @abstractmethod
-    def groups(self) -> Sequence[IMSGroupID]:
-        """
-        Groups the user is a member of.
-        """
-
-    @abstractmethod
-    async def verifyPassword(self, password: str) -> bool:
-        """
-        Verify whether a password is valid for the user.
-        """
-
-
-class IMSDirectory(ABC):
-    """
-    IMS directory service.
-    """
-
-    async def lookupUser(self, searchTerm: str) -> Optional[IMSUser]:
-        """
-        Look up a user given a text search term.
-        """
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
