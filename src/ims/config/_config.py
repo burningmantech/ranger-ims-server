@@ -21,10 +21,10 @@ IMS configuration
 from configparser import ConfigParser, NoOptionError, NoSectionError
 from functools import partial
 from os import environ, getcwd
-from os.path import basename, sep as pathsep
+from os.path import basename
 from pathlib import Path
 from sys import argv
-from typing import Any, Callable, ClassVar, FrozenSet, Optional, Tuple, cast
+from typing import Any, Callable, ClassVar, FrozenSet, Optional, Sequence, cast
 
 from attr import Factory, attrib, attrs, evolve
 
@@ -125,22 +125,17 @@ class ConfigFileParser(object):
         section: str,
         option: str,
         root: Path,
-        segments: Tuple[str],
+        segments: Sequence[str],
     ) -> Path:
         text = self.valueFromConfig(variable, section, option)
 
-        if not text:
-            path = root
-            for segment in segments:
-                path = path / segment
-
-        elif text.startswith("/"):
+        if text:
             path = Path(text)
-
         else:
-            path = root
-            for segment in text.split(pathsep):
-                path = path / segment
+            path = root.resolve().joinpath(*segments)
+
+        if not path.is_absolute():
+            path = root.resolve() / path
 
         return path
 
@@ -203,11 +198,7 @@ class Configuration(object):
         cls._log.info("Port: {port}", port=port)
 
         serverRoot = parser.pathFromConfig(
-            "SERVER_ROOT",
-            "Core",
-            "ServerRoot",
-            defaultRoot,
-            cast(Tuple[str], ()),
+            "SERVER_ROOT", "Core", "ServerRoot", defaultRoot, (),
         )
         serverRoot.mkdir(exist_ok=True)
         cls._log.info("Server root: {path}", path=serverRoot)

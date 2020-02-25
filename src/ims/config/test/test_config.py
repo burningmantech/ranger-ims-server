@@ -22,11 +22,20 @@ from contextlib import contextmanager
 from functools import partial
 from os import environ, getcwd
 from pathlib import Path
-from string import ascii_letters
-from typing import Iterable, Iterator, Mapping, Optional, Set, Tuple, cast
+from string import ascii_letters, printable
+from typing import (
+    Iterable,
+    Iterator,
+    Mapping,
+    Optional,
+    Set,
+    Sequence,
+    Tuple,
+    cast,
+)
 
 from hypothesis import assume, given
-from hypothesis.strategies import text
+from hypothesis.strategies import lists, text
 
 from ims.auth import AuthProvider
 from ims.dms import DMSDirectory
@@ -36,7 +45,10 @@ from ims.store.mysql import DataStore as MySQLDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
 from .._config import (
-    Configuration, ConfigFileParser, ConfigurationError, describeFactory
+    Configuration,
+    ConfigFileParser,
+    ConfigurationError,
+    describeFactory,
 )
 
 
@@ -62,8 +74,9 @@ def testingEnvironment(environment: Mapping[str, str]) -> Iterator[None]:
         environ.clear()
         environ.update(savedEnvironment)
 
+
 def writeConfig(path: Path, section: str, option: str, value: str) -> None:
-    value = value.replace('%', '%%')
+    value = value.replace("%", "%%")
     path.write_text(f"[{section}]\n{option} = {value}\n")
 
 
@@ -102,7 +115,7 @@ class ConfigFileParserTests(TestCase):
         text(min_size=1, alphabet=ascii_letters),  # value
         text(min_size=1, alphabet=ascii_letters),  # section
         text(min_size=1, alphabet=ascii_letters),  # option
-        text(),                                    # default
+        text(),  # default
     )
     def test_valueFromConfig(
         self, variable: str, value: str, section: str, option: str, default: str
@@ -114,17 +127,18 @@ class ConfigFileParserTests(TestCase):
         writeConfig(configFilePath, section, option, value)
 
         parser = ConfigFileParser(path=configFilePath)
-        self.assertEqual(
-            parser.valueFromConfig(variable, section, option, default),
-            value
-        )
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.valueFromConfig(variable, section, option, default),
+                value,
+            )
 
     @given(
         text(min_size=1, alphabet=ascii_letters),  # variable
         text(min_size=1, alphabet=ascii_letters),  # value
         text(min_size=1, alphabet=ascii_letters),  # section
         text(min_size=1, alphabet=ascii_letters),  # option
-        text(),                                    # default
+        text(),  # default
     )
     def test_valueFromConfig_env(
         self, variable: str, value: str, section: str, option: str, default: str
@@ -136,7 +150,7 @@ class ConfigFileParserTests(TestCase):
         with testingEnvironment({f"IMS_{variable}": value}):
             self.assertEqual(
                 parser.valueFromConfig(variable, section, option, default),
-                value
+                value,
             )
 
     @given(
@@ -145,7 +159,7 @@ class ConfigFileParserTests(TestCase):
         text(min_size=1, alphabet=ascii_letters),  # otherValue
         text(min_size=1, alphabet=ascii_letters),  # section
         text(min_size=1, alphabet=ascii_letters),  # option
-        text(),                                    # default
+        text(),  # default
     )
     def test_valueFromConfig_env_override(
         self,
@@ -169,7 +183,7 @@ class ConfigFileParserTests(TestCase):
         with testingEnvironment({f"IMS_{variable}": value}):
             self.assertEqual(
                 parser.valueFromConfig(variable, section, option, default),
-                value
+                value,
             )
 
     @given(
@@ -179,7 +193,7 @@ class ConfigFileParserTests(TestCase):
         text(min_size=1, alphabet=ascii_letters),  # option
         text(min_size=1, alphabet=ascii_letters),  # otherSection
         text(min_size=1, alphabet=ascii_letters),  # otherOption
-        text(),                                    # default
+        text(),  # default
     )
     def test_valueFromConfig_notFound(
         self,
@@ -201,12 +215,110 @@ class ConfigFileParserTests(TestCase):
         writeConfig(configFilePath, section, option, value)
 
         parser = ConfigFileParser(path=configFilePath)
-        self.assertEqual(
-            parser.valueFromConfig(
-                variable, otherSection, otherOption, default
-            ),
-            default
-        )
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.valueFromConfig(
+                    variable, otherSection, otherOption, default
+                ),
+                default,
+            )
+
+    @given(
+        text(min_size=1, alphabet=ascii_letters),  # variable
+        text(min_size=1, alphabet=ascii_letters),  # section
+        text(min_size=1, alphabet=ascii_letters),  # option
+        lists(text(min_size=1, alphabet=printable)),  # segments
+    )
+    def test_pathFromConfig_relative(
+        self, variable: str, section: str, option: str, segments: Sequence[str]
+    ) -> None:
+        """
+        ConfigFileParser.pathFromConfig() reads a relative path from the config
+        file.
+        """
+        valuePath = Path(self.mktemp())
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, str(valuePath))
+
+        rootPath = Path.cwd()  # self.mktemp returns a path relative to cwd
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.pathFromConfig(
+                    variable, section, option, rootPath, segments
+                ),
+                valuePath.resolve(),
+            )
+
+    @given(
+        text(min_size=1, alphabet=ascii_letters),  # variable
+        text(min_size=1, alphabet=ascii_letters),  # section
+        text(min_size=1, alphabet=ascii_letters),  # option
+        lists(text(min_size=1, alphabet=printable)),  # segments
+    )
+    def test_pathFromConfig_absolute(
+        self, variable: str, section: str, option: str, segments: Sequence[str]
+    ) -> None:
+        """
+        ConfigFileParser.pathFromConfig() reads an absolute path from the
+        config file.
+        """
+        valuePath = Path(self.mktemp()).resolve()
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, str(valuePath))
+
+        rootPath = Path(self.mktemp())
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.pathFromConfig(
+                    variable, section, option, rootPath, segments
+                ),
+                valuePath,
+            )
+
+    @given(
+        text(min_size=1, alphabet=ascii_letters),  # variable
+        text(min_size=1, alphabet=ascii_letters),  # section
+        text(min_size=1, alphabet=ascii_letters),  # option
+        text(min_size=1, alphabet=ascii_letters),  # otherSection
+        text(min_size=1, alphabet=ascii_letters),  # otherOption
+        lists(text(min_size=1, alphabet=printable)),  # segments
+    )
+    def test_pathFromConfig_notFound(
+        self,
+        variable: str,
+        section: str,
+        option: str,
+        otherSection: str,
+        otherOption: str,
+        segments: Sequence[str],
+    ) -> None:
+        """
+        ConfigFileParser.pathFromConfig() reads an absolute path from the
+        config file.
+        """
+        assume((section, option) != (otherSection, otherOption))
+
+        valuePath = Path(self.mktemp())
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, str(valuePath))
+
+        rootPath = Path(self.mktemp())
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.pathFromConfig(
+                    variable, otherSection, otherOption, rootPath, segments
+                ),
+                rootPath.resolve().joinpath(*segments),
+            )
 
 
 class ConfigurationTests(TestCase):
