@@ -75,10 +75,12 @@ class ConfigurationTests(TestCase):
         self.assertEqual(config.dataRoot, dataRoot)
         self.assertEqual(config.cachedResourcesRoot, cached)
 
-        self.assertEqual(config.dmsHost, "")
-        self.assertEqual(config.dmsDatabase, "")
-        self.assertEqual(config.dmsUsername, "")
-        self.assertEqual(config.dmsPassword, "")
+        dmsArgs = config._dmsFactory.keywords  # type: ignore[attr-defined]
+
+        self.assertEqual(dmsArgs["host"], "")
+        self.assertEqual(dmsArgs["database"], "")
+        self.assertEqual(dmsArgs["username"], "")
+        self.assertEqual(dmsArgs["password"], "")
 
     def test_fromConfigFile_none(self) -> None:
         """
@@ -118,11 +120,13 @@ class ConfigurationTests(TestCase):
         self.assertEqual(config.dataRoot, dataRoot)
         self.assertEqual(config.cachedResourcesRoot, cached)
 
-        self.assertEqual(config.dmsHost, "dms.rangers.example.com")
-        self.assertEqual(config.dmsDatabase, "rangers")
-        self.assertEqual(config.dmsUsername, "ims")
+        dmsArgs = config._dmsFactory.keywords  # type: ignore[attr-defined]
+
+        self.assertEqual(dmsArgs["host"], "dms.rangers.example.com")
+        self.assertEqual(dmsArgs["database"], "rangers")
+        self.assertEqual(dmsArgs["username"], "ims")
         self.assertEqual(
-            config.dmsPassword, "9F29BB2B-E775-489C-9C20-9FE3EFEE1F22"
+            dmsArgs["password"], "9F29BB2B-E775-489C-9C20-9FE3EFEE1F22"
         )
 
     def test_fromConfigFile_environment_value(self) -> None:
@@ -304,11 +308,7 @@ class ConfigurationTests(TestCase):
             f"Core.LogFormat: {config.logFormat}\n"
             f"\n"
             f"DataStore: {describeFactory(config._storeFactory)}\n"
-            f"\n"
-            f"DMS.Hostname: \n"
-            f"DMS.Database: \n"
-            f"DMS.Username: \n"
-            f"DMS.Password: \n",
+            f"DMS: {describeFactory(config._dmsFactory)}\n"
         )
 
     def test_replace(self) -> None:

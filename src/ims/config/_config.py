@@ -46,10 +46,17 @@ __all__ = ()
 
 def describeFactory(f: Callable) -> str:
     if isinstance(f, partial):
-        result = list(f.args)
-        result.extend(f"{k}={v}" for k, v in f.keywords.items())
+        if "password" in f.keywords:
+            keywords = dict(f.keywords)
+            keywords["password"] = "(REDACTED)"
+        else:
+            keywords = f.keywords
+
+        result = [f"{a!r}" for a in f.args]
+        result.extend(f"{k}={v!r}" for k, v in keywords.items())
         args = ", ".join(result)
         return f"{f.func.__name__}({args})"
+
     else:
         return f"{f.__name__}(...)"
 
@@ -320,6 +327,14 @@ class Configuration(object):
             db=dmsDatabase,
         )
 
+        dmsFactory = partial(
+            DutyManagementSystem,
+            host=dmsHost,
+            database=dmsDatabase,
+            username=dmsUsername,
+            password=dmsPassword,
+        )
+
         masterKey = parser.valueFromConfig("MASTER_KEY", "Core", "MasterKey")
 
         #
@@ -331,10 +346,7 @@ class Configuration(object):
             cachedResourcesRoot=cachedResourcesRoot,
             configRoot=configRoot,
             dataRoot=dataRoot,
-            dmsDatabase=dmsDatabase,
-            dmsHost=dmsHost,
-            dmsPassword=dmsPassword,
-            dmsUsername=dmsUsername,
+            dmsFactory=dmsFactory,
             hostName=hostName,
             imsAdmins=imsAdmins,
             logFilePath=logFilePath,
@@ -352,10 +364,6 @@ class Configuration(object):
     cachedResourcesRoot: Path
     configRoot: Path
     dataRoot: Path
-    dmsDatabase: str
-    dmsHost: str
-    dmsPassword: str
-    dmsUsername: str
     hostName: str
     imsAdmins: FrozenSet[str]
     logFilePath: Path
@@ -366,6 +374,7 @@ class Configuration(object):
     requireActive: bool
     serverRoot: Path
 
+    _dmsFactory: Callable[[], DutyManagementSystem]
     _storeFactory: Callable[[], IMSDataStore]
 
     _state: _State = attrib(factory=_State, init=False)
@@ -386,12 +395,7 @@ class Configuration(object):
         Duty Management System.
         """
         if self._state.dms is None:
-            self._state.dms = DutyManagementSystem(
-                host=self.dmsHost,
-                database=self.dmsDatabase,
-                username=self.dmsUsername,
-                password=self.dmsPassword,
-            )
+            self._state.dms = self._dmsFactory()
 
         return self._state.dms
 
@@ -433,11 +437,7 @@ class Configuration(object):
             f"Core.LogFormat: {self.logFormat}\n"
             f"\n"
             f"DataStore: {describeFactory(self._storeFactory)}\n"
-            f"\n"
-            f"DMS.Hostname: {self.dmsHost}\n"
-            f"DMS.Database: {self.dmsDatabase}\n"
-            f"DMS.Username: {self.dmsUsername}\n"
-            f"DMS.Password: {self.dmsPassword}\n"
+            f"DMS: {describeFactory(self._dmsFactory)}\n"
         )
 
     def replace(self, **changes: Any) -> "Configuration":
