@@ -30,7 +30,7 @@ from ims.store import IMSDataStore
 from ims.store.mysql import DataStore as MySQLDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
-from .._config import Configuration, ConfigurationError
+from .._config import Configuration, ConfigurationError, describeFactory
 
 
 __all__ = ()
@@ -303,8 +303,7 @@ class ConfigurationTests(TestCase):
             f"Core.LogFile: {config.logFilePath}\n"
             f"Core.LogFormat: {config.logFormat}\n"
             f"\n"
-            f"DB.Store: {config.storeFactory.name}\n"
-            f"DB.Arguments: {config.storeArguments!r}\n"
+            f"DataStore: {describeFactory(config.storeFactory)}\n"
             f"\n"
             f"DMS.Hostname: \n"
             f"DMS.Database: \n"

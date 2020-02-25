@@ -19,11 +19,12 @@ IMS configuration
 """
 
 from configparser import ConfigParser, NoOptionError, NoSectionError
+from functools import partial
 from os import environ, getcwd
 from os.path import basename, sep as pathsep
 from pathlib import Path
 from sys import argv
-from typing import Any, ClassVar, FrozenSet, Mapping, Optional, Tuple, cast
+from typing import Any, Callable, ClassVar, FrozenSet, Optional, Tuple, cast
 
 from attr import Factory, attrib, attrs, evolve
 
@@ -43,6 +44,16 @@ from ._urls import URLs
 __all__ = ()
 
 
+def describeFactory(f: Callable) -> str:
+    if isinstance(f, partial):
+        result = list(f.args)
+        result.extend(f"{k}={v}" for k, v in f.keywords.items())
+        args = ", ".join(result)
+        return f"{f.func.__name__}({args})"
+    else:
+        return f"{f.__name__}(...)"
+
+
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class ConfigurationError(Exception):
     """
@@ -59,15 +70,6 @@ class LogFormat(Names):
 
     text = auto()
     json = auto()
-
-
-class DataStoreFactory(Enum):
-    """
-    Data store type.
-    """
-
-    SQLite = SQLiteDataStore
-    MySQL = MySQLDataStore
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -254,24 +256,22 @@ class Configuration(object):
             requireActive = True
         cls._log.info("RequireActive: {active}", active=requireActive)
 
-        storeFactory = cast(
-            DataStoreFactory,
-            parser.enumFromConfig(
-                "DATA_STORE", "Core", "DataStore", DataStoreFactory.SQLite
-            ),
+        storeName = parser.valueFromConfig(
+            "DATA_STORE", "Core", "DataStore", "SQLite"
         )
-        cls._log.info("DataStore: {storeName}", storeName=storeFactory.name)
+        cls._log.info("DataStore: {storeName}", storeName=storeName)
 
-        storeArguments: Mapping[str, Any]
+        storeFactory: Callable[[], IMSDataStore]
 
-        if storeFactory is DataStoreFactory.SQLite:
+        if storeName == "SQLite":
             dbPath = parser.pathFromConfig(
                 "DB_PATH", "Store:SQLite", "File", dataRoot, ("db.sqlite",)
             )
             cls._log.info("Database: {path}", path=dbPath)
-            storeArguments = dict(dbPath=dbPath)
 
-        if storeFactory is DataStoreFactory.MySQL:
+            storeFactory = partial(SQLiteDataStore, dbPath=dbPath)
+
+        elif storeName == "MySQL":
             storeHost = parser.valueFromConfig(
                 "DB_HOST_NAME", "Store:MySQL", "HostName", "localhost"
             )
@@ -295,13 +295,18 @@ class Configuration(object):
                 host=storeHost,
                 port=storePort,
             )
-            storeArguments = dict(
+
+            storeFactory = partial(
+                MySQLDataStore,
                 hostName=storeHost,
                 hostPort=storePort,
                 database=storeDatabase,
                 username=storeUser,
                 password=storePassword,
             )
+
+        else:
+            raise ConfigurationError(f"Unknown data store: {storeName}")
 
         dmsHost = parser.valueFromConfig("DMS_HOSTNAME", "DMS", "Hostname")
         dmsDatabase = parser.valueFromConfig("DMS_DATABASE", "DMS", "Database")
@@ -339,7 +344,6 @@ class Configuration(object):
             port=port,
             requireActive=requireActive,
             serverRoot=serverRoot,
-            storeArguments=storeArguments,
             storeFactory=storeFactory,
         )
 
@@ -361,8 +365,7 @@ class Configuration(object):
     port: int
     requireActive: bool
     serverRoot: Path
-    storeArguments: Mapping[str, Any]
-    storeFactory: DataStoreFactory
+    storeFactory: Callable[[], IMSDataStore]
 
     _state: _State = attrib(factory=_State, init=False)
 
@@ -372,7 +375,7 @@ class Configuration(object):
         Data store.
         """
         if self._state.store is None:
-            self._state.store = self.storeFactory.value(**self.storeArguments)
+            self._state.store = self.storeFactory()
 
         return self._state.store
 
@@ -428,8 +431,7 @@ class Configuration(object):
             f"Core.LogFile: {self.logFilePath}\n"
             f"Core.LogFormat: {self.logFormat}\n"
             f"\n"
-            f"DB.Store: {self.storeFactory.name}\n"
-            f"DB.Arguments: {self.storeArguments}\n"
+            f"DataStore: {describeFactory(self.storeFactory)}\n"
             f"\n"
             f"DMS.Hostname: {self.dmsHost}\n"
             f"DMS.Database: {self.dmsDatabase}\n"

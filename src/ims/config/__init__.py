@@ -21,7 +21,6 @@ Incident Management System configuration.
 from ._config import (
     Configuration,
     ConfigurationError,
-    DataStoreFactory,
     LogFormat,
 )
 from ._urls import URLs
@@ -30,7 +29,6 @@ from ._urls import URLs
 __all__ = (
     "Configuration",
     "ConfigurationError",
-    "DataStoreFactory",
     "LogFormat",
     "URLs",
 )
