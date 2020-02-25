@@ -35,10 +35,11 @@ from typing import (
 )
 
 from hypothesis import assume, given
-from hypothesis.strategies import lists, text
+from hypothesis.strategies import lists, sampled_from, text
 
 from ims.auth import AuthProvider
 from ims.dms import DMSDirectory
+from ims.ext.enum import Enum, Names, auto
 from ims.ext.trial import TestCase
 from ims.store import IMSDataStore
 from ims.store.mysql import DataStore as MySQLDataStore
@@ -80,6 +81,18 @@ def writeConfig(path: Path, section: str, option: str, value: str) -> None:
     path.write_text(f"[{section}]\n{option} = {value}\n")
 
 
+class Things(Names):
+    """
+    Some things.
+    """
+
+    cheese = auto()
+    butter = auto()
+    wheels = auto()
+    dogs = auto()
+    dirt = auto()
+
+
 class UtilityTests(TestCase):
     """
     Tests for utilities.
@@ -110,11 +123,41 @@ class ConfigFileParserTests(TestCase):
     Tests for :class:`ConfigFileParser`
     """
 
+    def test_init_path(self) -> None:
+        """
+        Init path is kept.
+        """
+        configFilePath = Path(self.mktemp())
+        configFilePath.write_text("")
+
+        parser = ConfigFileParser(path=configFilePath)
+
+        self.assertEqual(parser.path, configFilePath)
+
+    def test_init_path_none(self) -> None:
+        """
+        Init path may be None.
+        """
+        parser = ConfigFileParser(path=None)
+
+        self.assertIsNone(parser.path)
+
+    def test_init_path_missing(self) -> None:
+        """
+        Init with missing path is OK.
+        """
+        configFilePath = Path(self.mktemp())
+        assert not configFilePath.exists()
+
+        parser = ConfigFileParser(path=configFilePath)
+
+        self.assertEqual(parser.path, configFilePath)
+
     @given(
-        text(min_size=1, alphabet=ascii_letters),  # variable
-        text(min_size=1, alphabet=ascii_letters),  # value
-        text(min_size=1, alphabet=ascii_letters),  # section
-        text(min_size=1, alphabet=ascii_letters),  # option
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # value
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
         text(),  # default
     )
     def test_valueFromConfig(
@@ -134,10 +177,10 @@ class ConfigFileParserTests(TestCase):
             )
 
     @given(
-        text(min_size=1, alphabet=ascii_letters),  # variable
-        text(min_size=1, alphabet=ascii_letters),  # value
-        text(min_size=1, alphabet=ascii_letters),  # section
-        text(min_size=1, alphabet=ascii_letters),  # option
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # value
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
         text(),  # default
     )
     def test_valueFromConfig_env(
@@ -154,11 +197,11 @@ class ConfigFileParserTests(TestCase):
             )
 
     @given(
-        text(min_size=1, alphabet=ascii_letters),  # variable
-        text(min_size=1, alphabet=ascii_letters),  # value
-        text(min_size=1, alphabet=ascii_letters),  # otherValue
-        text(min_size=1, alphabet=ascii_letters),  # section
-        text(min_size=1, alphabet=ascii_letters),  # option
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # value
+        text(alphabet=ascii_letters, min_size=1),  # otherValue
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
         text(),  # default
     )
     def test_valueFromConfig_env_override(
@@ -187,12 +230,12 @@ class ConfigFileParserTests(TestCase):
             )
 
     @given(
-        text(min_size=1, alphabet=ascii_letters),  # variable
-        text(min_size=1, alphabet=ascii_letters),  # value
-        text(min_size=1, alphabet=ascii_letters),  # section
-        text(min_size=1, alphabet=ascii_letters),  # option
-        text(min_size=1, alphabet=ascii_letters),  # otherSection
-        text(min_size=1, alphabet=ascii_letters),  # otherOption
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # value
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        text(alphabet=ascii_letters, min_size=1),  # otherSection
+        text(alphabet=ascii_letters, min_size=1),  # otherOption
         text(),  # default
     )
     def test_valueFromConfig_notFound(
@@ -209,7 +252,10 @@ class ConfigFileParserTests(TestCase):
         ConfigFileParser.valueFromConfig() returns the default value when it
         can't find a value in the environment or config file.
         """
-        assume((section, option) != (otherSection, otherOption))
+        assume(
+            (section.lower(), option.lower())
+            != (otherSection.lower(), otherOption.lower())
+        )
 
         configFilePath = Path(self.mktemp())
         writeConfig(configFilePath, section, option, value)
@@ -224,10 +270,10 @@ class ConfigFileParserTests(TestCase):
             )
 
     @given(
-        text(min_size=1, alphabet=ascii_letters),  # variable
-        text(min_size=1, alphabet=ascii_letters),  # section
-        text(min_size=1, alphabet=ascii_letters),  # option
-        lists(text(min_size=1, alphabet=printable)),  # segments
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        lists(text(alphabet=printable, min_size=1)),  # segments
     )
     def test_pathFromConfig_relative(
         self, variable: str, section: str, option: str, segments: Sequence[str]
@@ -253,10 +299,10 @@ class ConfigFileParserTests(TestCase):
             )
 
     @given(
-        text(min_size=1, alphabet=ascii_letters),  # variable
-        text(min_size=1, alphabet=ascii_letters),  # section
-        text(min_size=1, alphabet=ascii_letters),  # option
-        lists(text(min_size=1, alphabet=printable)),  # segments
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        lists(text(alphabet=printable, min_size=1)),  # segments
     )
     def test_pathFromConfig_absolute(
         self, variable: str, section: str, option: str, segments: Sequence[str]
@@ -282,12 +328,12 @@ class ConfigFileParserTests(TestCase):
             )
 
     @given(
-        text(min_size=1, alphabet=ascii_letters),  # variable
-        text(min_size=1, alphabet=ascii_letters),  # section
-        text(min_size=1, alphabet=ascii_letters),  # option
-        text(min_size=1, alphabet=ascii_letters),  # otherSection
-        text(min_size=1, alphabet=ascii_letters),  # otherOption
-        lists(text(min_size=1, alphabet=printable)),  # segments
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        text(alphabet=ascii_letters, min_size=1),  # otherSection
+        text(alphabet=ascii_letters, min_size=1),  # otherOption
+        lists(text(alphabet=printable, min_size=1)),  # segments
     )
     def test_pathFromConfig_notFound(
         self,
@@ -302,7 +348,10 @@ class ConfigFileParserTests(TestCase):
         ConfigFileParser.pathFromConfig() reads an absolute path from the
         config file.
         """
-        assume((section, option) != (otherSection, otherOption))
+        assume(
+            (section.lower(), option.lower())
+            != (otherSection.lower(), otherOption.lower())
+        )
 
         valuePath = Path(self.mktemp())
 
@@ -318,6 +367,112 @@ class ConfigFileParserTests(TestCase):
                     variable, otherSection, otherOption, rootPath, segments
                 ),
                 rootPath.resolve().joinpath(*segments),
+            )
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        sampled_from(Things),  # value
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        sampled_from(Things),  # default
+    )
+    def test_enumFromConfig(
+        self,
+        variable: str,
+        value: Enum,
+        section: str,
+        option: str,
+        default: Enum,
+    ) -> None:
+        """
+        ConfigFileParser.enumFromConfig() reads a enumerated value from the
+        config file.
+        """
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, value.name)
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.enumFromConfig(variable, section, option, default),
+                value,
+            )
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        sampled_from(Things),  # value
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        text(alphabet=ascii_letters, min_size=1),  # otherSection
+        text(alphabet=ascii_letters, min_size=1),  # otherOption
+        sampled_from(Things),  # default
+    )
+    def test_enumFromConfig_notFound(
+        self,
+        variable: str,
+        value: Enum,
+        section: str,
+        option: str,
+        otherSection: str,
+        otherOption: str,
+        default: Enum,
+    ) -> None:
+        """
+        ConfigFileParser.enumFromConfig() returns the default value when it
+        can't find a value in the environment or config file.
+        """
+        assume(
+            (section.lower(), option.lower())
+            != (otherSection.lower(), otherOption.lower())
+        )
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, value.name)
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.enumFromConfig(
+                    variable, otherSection, otherOption, default
+                ),
+                default,
+            )
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        sampled_from(Things),  # value
+        text(alphabet=ascii_letters, min_size=1),  # otherValue
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        sampled_from(Things),  # default
+    )
+    def test_enumFromConfig_unknown(
+        self,
+        variable: str,
+        value: Enum,
+        otherValue: str,
+        section: str,
+        option: str,
+        default: Enum,
+    ) -> None:
+        """
+        ConfigFileParser.enumFromConfig() reads a enumerated value from the
+        config file.
+        """
+        assume(otherValue not in Things)
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, otherValue)
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertRaises(
+                ConfigurationError,
+                parser.enumFromConfig,
+                variable,
+                section,
+                option,
+                default,
             )
 
 
