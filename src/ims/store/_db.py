@@ -307,11 +307,11 @@ class DatabaseStore(IMSDataStore):
         Apply the given schema to the database.
         """
 
-    async def upgradeSchema(self) -> None:
+    async def upgradeSchema(self, targetVersion: Optional[int] = None) -> None:
         """
         See :meth:`IMSDataStore.upgradeSchema`.
         """
-        if await self.dbManager.upgradeSchema():
+        if await self.dbManager.upgradeSchema(targetVersion):
             await self.disconnect()
 
     async def validate(self) -> None:
@@ -1809,24 +1809,34 @@ class DatabaseManager(object):
 
     store: DatabaseStore
 
-    async def upgradeSchema(self) -> bool:
+    async def upgradeSchema(self, targetVersion: Optional[int] = None) -> bool:
         """
         Apply schema updates
         """
-        currentVersion = self.store.schemaVersion
-        version = await self.store.dbSchemaVersion()
+        if targetVersion is None:
+            latestVersion = self.store.schemaVersion
+        else:
+            latestVersion = targetVersion
 
-        if version < 0:
-            raise StorageError(f"No upgrade path from schema version {version}")
+        currentVersion = await self.store.dbSchemaVersion()
 
-        if version == currentVersion:
+        if currentVersion < 0:
+            raise StorageError(
+                f"No upgrade path from schema version {currentVersion}"
+            )
+
+        if currentVersion == latestVersion:
             # No upgrade needed
+            self._log.debug(
+                "No upgrade required for schema version {version}",
+                version=currentVersion,
+            )
             return False
 
-        if version > currentVersion:
+        if currentVersion > latestVersion:
             raise StorageError(
-                f"Schema version {version} is too new "
-                f"(current version is {currentVersion})"
+                f"Schema version {currentVersion} is too new "
+                f"(latest version is {latestVersion})"
             )
 
         async def sqlUpgrade(fromVersion: int, toVersion: int) -> None:
@@ -1842,14 +1852,25 @@ class DatabaseManager(object):
             else:
                 fileID = f"{toVersion}-from-{fromVersion}"
 
-            sql = self.store.loadSchema(version=fileID)
+            try:
+                sql = self.store.loadSchema(version=fileID)
+            except FileNotFoundError:
+                self._log.critical(
+                    "Unable to upgrade schema in store {store.__class__} "
+                    "from {fromVersion} to {toVersion} "
+                    "due to missing schema file",
+                    store=self.store,
+                    fromVersion=fromVersion,
+                    toVersion=toVersion,
+                )
+                raise StorageError("Unable to upgrade schema")
             await self.store.applySchema(sql)
 
-        fromVersion = version
+        fromVersion = currentVersion
 
-        while fromVersion < currentVersion:
+        while fromVersion < latestVersion:
             if fromVersion == 0:
-                toVersion = currentVersion
+                toVersion = latestVersion
             else:
                 toVersion = fromVersion + 1
 
@@ -1857,11 +1878,11 @@ class DatabaseManager(object):
             fromVersion = await self.store.dbSchemaVersion()
 
             # Make sure the schema version increased from last version
-            if fromVersion <= version:
+            if fromVersion <= currentVersion:
                 raise StorageError(
                     f"Schema upgrade did not increase schema version "
-                    f"({fromVersion} <= {version})"
+                    f"({fromVersion} <= {currentVersion})"
                 )
-            version = fromVersion
+            currentVersion = fromVersion
 
         return True

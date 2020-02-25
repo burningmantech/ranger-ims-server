@@ -196,7 +196,9 @@ class DataStoreCoreTests(AsynchronousTestCase):
         :meth:`DataStore._dbSchemaVersion` returns the schema version for the
         given database.
         """
-        for version in range(1, DataStore.schemaVersion + 1):
+        for version in range(
+            TestDataStore.firstSchemaVersion, DataStore.schemaVersion + 1
+        ):
             db = createDB(None, DataStore.loadSchema(version=version))
 
             self.assertEqual(DataStore._dbSchemaVersion(db), version)
@@ -239,19 +241,19 @@ class DataStoreCoreTests(AsynchronousTestCase):
             printSchema(db, out)
             return out.getvalue()
 
-        currentVersion = DataStore.schemaVersion
+        latestVersion = DataStore.schemaVersion
 
-        with createDB(None, DataStore.loadSchema(version=currentVersion)) as db:
+        with createDB(None, DataStore.loadSchema(version=latestVersion)) as db:
             currentSchemaInfo = getSchemaInfo(db)
 
-        for version in range(1, currentVersion):
+        for version in range(TestDataStore.firstSchemaVersion, latestVersion):
             path = Path(self.mktemp())
             createDB(path, DataStore.loadSchema(version=version))
 
             store = DataStore(dbPath=path)
             self.successResultOf(store.upgradeSchema())
 
-            self.assertEqual(store._dbSchemaVersion(store._db), currentVersion)
+            self.assertEqual(store._dbSchemaVersion(store._db), latestVersion)
 
             schemaInfo = getSchemaInfo(store._db)
 
@@ -337,7 +339,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         self.assertEqual(
             f.getErrorMessage(),
             f"Schema version {version} is too new "
-            f"(current version is {store.schemaVersion})",
+            f"(latest version is {store.schemaVersion})",
         )
 
     def test_validate_super(self) -> None:
