@@ -19,9 +19,14 @@ Tests for L{ims.config._config}.
 """
 
 from contextlib import contextmanager
+from functools import partial
 from os import environ, getcwd
 from pathlib import Path
+from string import ascii_letters
 from typing import Iterable, Iterator, Mapping, Optional, Set, Tuple, cast
+
+from hypothesis import assume, given
+from hypothesis.strategies import text
 
 from ims.auth import AuthProvider
 from ims.dms import DMSDirectory
@@ -30,7 +35,9 @@ from ims.store import IMSDataStore
 from ims.store.mysql import DataStore as MySQLDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
-from .._config import Configuration, ConfigurationError, describeFactory
+from .._config import (
+    Configuration, ConfigFileParser, ConfigurationError, describeFactory
+)
 
 
 __all__ = ()
@@ -54,6 +61,152 @@ def testingEnvironment(environment: Mapping[str, str]) -> Iterator[None]:
     finally:
         environ.clear()
         environ.update(savedEnvironment)
+
+def writeConfig(path: Path, section: str, option: str, value: str) -> None:
+    value = value.replace('%', '%%')
+    path.write_text(f"[{section}]\n{option} = {value}\n")
+
+
+class UtilityTests(TestCase):
+    """
+    Tests for utilities.
+    """
+
+    @staticmethod
+    def factory(a: int, b: str, c: bytes) -> bool:
+        raise NotImplementedError()
+
+    def test_describeFactory_partial(self) -> None:
+        """
+        describeFactory() describes a partial object.
+        """
+        p = partial(self.factory, 1, "some_text", b"some_bytes")
+        self.assertEqual(
+            describeFactory(p), "factory(1, 'some_text', b'some_bytes')"
+        )
+
+    def test_describeFactory_function(self) -> None:
+        """
+        describeFactory() describes a function object.
+        """
+        self.assertEqual(describeFactory(self.factory), "factory(...)")
+
+
+class ConfigFileParserTests(TestCase):
+    """
+    Tests for :class:`ConfigFileParser`
+    """
+
+    @given(
+        text(min_size=1, alphabet=ascii_letters),  # variable
+        text(min_size=1, alphabet=ascii_letters),  # value
+        text(min_size=1, alphabet=ascii_letters),  # section
+        text(min_size=1, alphabet=ascii_letters),  # option
+        text(),                                    # default
+    )
+    def test_valueFromConfig(
+        self, variable: str, value: str, section: str, option: str, default: str
+    ) -> None:
+        """
+        ConfigFileParser.valueFromConfig() reads a value from the config file.
+        """
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, value)
+
+        parser = ConfigFileParser(path=configFilePath)
+        self.assertEqual(
+            parser.valueFromConfig(variable, section, option, default),
+            value
+        )
+
+    @given(
+        text(min_size=1, alphabet=ascii_letters),  # variable
+        text(min_size=1, alphabet=ascii_letters),  # value
+        text(min_size=1, alphabet=ascii_letters),  # section
+        text(min_size=1, alphabet=ascii_letters),  # option
+        text(),                                    # default
+    )
+    def test_valueFromConfig_env(
+        self, variable: str, value: str, section: str, option: str, default: str
+    ) -> None:
+        """
+        ConfigFileParser.valueFromConfig() reads an environment variable.
+        """
+        parser = ConfigFileParser(path=None)
+        with testingEnvironment({f"IMS_{variable}": value}):
+            self.assertEqual(
+                parser.valueFromConfig(variable, section, option, default),
+                value
+            )
+
+    @given(
+        text(min_size=1, alphabet=ascii_letters),  # variable
+        text(min_size=1, alphabet=ascii_letters),  # value
+        text(min_size=1, alphabet=ascii_letters),  # otherValue
+        text(min_size=1, alphabet=ascii_letters),  # section
+        text(min_size=1, alphabet=ascii_letters),  # option
+        text(),                                    # default
+    )
+    def test_valueFromConfig_env_override(
+        self,
+        variable: str,
+        value: str,
+        otherValue: str,
+        section: str,
+        option: str,
+        default: str,
+    ) -> None:
+        """
+        ConfigFileParser.valueFromConfig() reads an environment variable even
+        if the corresponding value is in the config file.
+        """
+        assume(value != otherValue)
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, otherValue)
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({f"IMS_{variable}": value}):
+            self.assertEqual(
+                parser.valueFromConfig(variable, section, option, default),
+                value
+            )
+
+    @given(
+        text(min_size=1, alphabet=ascii_letters),  # variable
+        text(min_size=1, alphabet=ascii_letters),  # value
+        text(min_size=1, alphabet=ascii_letters),  # section
+        text(min_size=1, alphabet=ascii_letters),  # option
+        text(min_size=1, alphabet=ascii_letters),  # otherSection
+        text(min_size=1, alphabet=ascii_letters),  # otherOption
+        text(),                                    # default
+    )
+    def test_valueFromConfig_notFound(
+        self,
+        variable: str,
+        value: str,
+        section: str,
+        option: str,
+        otherSection: str,
+        otherOption: str,
+        default: str,
+    ) -> None:
+        """
+        ConfigFileParser.valueFromConfig() returns the default value when it
+        can't find a value in the environment or config file.
+        """
+        assume((section, option) != (otherSection, otherOption))
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, value)
+
+        parser = ConfigFileParser(path=configFilePath)
+        self.assertEqual(
+            parser.valueFromConfig(
+                variable, otherSection, otherOption, default
+            ),
+            default
+        )
 
 
 class ConfigurationTests(TestCase):
