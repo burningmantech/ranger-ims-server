@@ -303,7 +303,7 @@ class ConfigurationTests(TestCase):
             f"Core.LogFile: {config.logFilePath}\n"
             f"Core.LogFormat: {config.logFormat}\n"
             f"\n"
-            f"DataStore: {describeFactory(config.storeFactory)}\n"
+            f"DataStore: {describeFactory(config._storeFactory)}\n"
             f"\n"
             f"DMS.Hostname: \n"
             f"DMS.Database: \n"

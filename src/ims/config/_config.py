@@ -365,7 +365,8 @@ class Configuration(object):
     port: int
     requireActive: bool
     serverRoot: Path
-    storeFactory: Callable[[], IMSDataStore]
+
+    _storeFactory: Callable[[], IMSDataStore]
 
     _state: _State = attrib(factory=_State, init=False)
 
@@ -375,7 +376,7 @@ class Configuration(object):
         Data store.
         """
         if self._state.store is None:
-            self._state.store = self.storeFactory()
+            self._state.store = self._storeFactory()
 
         return self._state.store
 
@@ -431,7 +432,7 @@ class Configuration(object):
             f"Core.LogFile: {self.logFilePath}\n"
             f"Core.LogFormat: {self.logFormat}\n"
             f"\n"
-            f"DataStore: {describeFactory(self.storeFactory)}\n"
+            f"DataStore: {describeFactory(self._storeFactory)}\n"
             f"\n"
             f"DMS.Hostname: {self.dmsHost}\n"
             f"DMS.Database: {self.dmsDatabase}\n"
