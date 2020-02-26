@@ -28,8 +28,8 @@ from typing import (
     Iterator,
     Mapping,
     Optional,
-    Set,
     Sequence,
+    Set,
     Tuple,
     cast,
 )
