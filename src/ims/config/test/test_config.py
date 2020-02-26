@@ -46,8 +46,8 @@ from ims.store.mysql import DataStore as MySQLDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
 from .._config import (
-    Configuration,
     ConfigFileParser,
+    Configuration,
     ConfigurationError,
     describeFactory,
 )
