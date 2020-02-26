@@ -42,12 +42,14 @@ from twisted.logger import Logger
 
 from ims.model import Ranger, RangerStatus
 
+from .._exceptions import DirectoryError
+
 
 __all__ = ()
 
 
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)
-class DMSError(Exception):
+class DMSError(DirectoryError):
     """
     Duty Management System error.
     """

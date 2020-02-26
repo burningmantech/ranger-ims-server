@@ -19,9 +19,11 @@ Incident Management System directory service integration.
 """
 
 from ._directory import IMSDirectory, IMSGroupID, IMSUser, IMSUserID
+from ._exceptions import DirectoryError
 
 
 __all__ = (
+    "DirectoryError",
     "IMSDirectory",
     "IMSGroupID",
     "IMSUser",

@@ -15,5 +15,5 @@
 ##
 
 """
-Tests for L{ims.dms}.
+Tests for L{ims.directory.clubhouse_db}.
 """

@@ -15,7 +15,7 @@
 ##
 
 """
-Incident Management System auth errors.
+Incident Management System directory service errors.
 """
 
 from attr import attrs
@@ -25,18 +25,9 @@ __all__ = ()
 
 
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)
-class NotAuthenticatedError(Exception):
+class DirectoryError(Exception):
     """
-    Not authorized.
-    """
-
-    message: str
-
-
-@attrs(frozen=False, auto_attribs=True, auto_exc=True)
-class NotAuthorizedError(Exception):
-    """
-    Not authorized.
+    Directory service error.
     """
 
     message: str

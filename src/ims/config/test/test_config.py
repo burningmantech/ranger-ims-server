@@ -38,7 +38,7 @@ from hypothesis import assume, given
 from hypothesis.strategies import lists, sampled_from, text
 
 from ims.auth import AuthProvider
-from ims.dms import DMSDirectory
+from ims.directory.clubhouse_db import DMSDirectory
 from ims.ext.enum import Enum, Names, auto
 from ims.ext.trial import TestCase
 from ims.store import IMSDataStore

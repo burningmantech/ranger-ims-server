@@ -39,7 +39,7 @@ from werkzeug.routing import RequestRedirect
 from ims import __version__ as version
 from ims.auth import NotAuthenticatedError, NotAuthorizedError
 from ims.config import URLs
-from ims.dms import DMSError
+from ims.directory import DirectoryError
 from ims.element.redirect import RedirectPage
 from ims.ext.klein import (
     ContentType,
@@ -407,15 +407,15 @@ class Router(Klein):
             element = redirect(request, URLs.login, origin="o")
             return renderElement(request, element)
 
-        @self.handle_errors(DMSError)
+        @self.handle_errors(DirectoryError)
         @renderResponse
-        def dmsError(
+        def directoryError(
             app: Any, request: IRequest, failure: Failure
         ) -> KleinRenderable:
             """
-            DMS error.
+            Directory service error.
             """
-            log.critical("DMS error: {error}", error=failure)
+            log.critical("Directory service error: {error}", error=failure)
             return internalErrorResponse(request)
 
         @self.handle_errors
