@@ -6,6 +6,8 @@ Extensions to :mod:`twisted.trial`
 from functools import wraps
 from typing import Any, Callable, Optional, Sequence, Type, cast
 
+from hypothesis import HealthCheck, settings
+
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.python.failure import Failure
 from twisted.trial.unittest import (
@@ -19,10 +21,27 @@ from ims.ext.klein import ContentType
 from ims.model import EventData, IMSData
 
 
-__all__ = ("TestCase",)
+__all__ = ("TestCase", "asyncAsDeferred")
+
+
+# Configure Hypothesis
+settings.register_profile(
+    "ci",
+    deadline=None,
+    suppress_health_check=[
+        HealthCheck.data_too_large,
+        HealthCheck.too_slow,
+    ],
+)
+settings.load_profile("ci")
 
 
 def asyncAsDeferred(f: Callable) -> Callable:
+    """
+    Decorator for async methods to return a Deferred object instead of a
+    coroutine.
+    """
+
     @wraps(f)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         result = f(*args, **kwargs)
