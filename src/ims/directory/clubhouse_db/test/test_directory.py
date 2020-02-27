@@ -31,7 +31,7 @@ from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
 from .._directory import DMSUser, hashPassword
-from .._dms import DMSError, DutyManagementSystem
+from .._dms import DMSError
 from ..._directory import IMSGroupID
 
 
@@ -46,20 +46,9 @@ class DMSUserTests(TestCase):
     def store(self) -> IMSDataStore:
         return SQLiteDataStore(dbPath=None)
 
-    def dms(self) -> DutyManagementSystem:
-        """
-        Create a DMS.
-        """
-        return DutyManagementSystem(
-            host="dms-server",
-            database="ims",
-            username="user",
-            password="password",
-        )
-
     @given(rangers(), lists(text()))
     def test_str(self, ranger: Ranger, groups: Sequence[IMSGroupID]) -> None:
-        user = DMSUser(dms=self.dms(), ranger=ranger, groups=groups)
+        user = DMSUser(ranger=ranger, groups=groups)
         self.assertEqual(str(user), str(ranger))
 
     @given(rangers(), lists(text()))
@@ -69,7 +58,7 @@ class DMSUserTests(TestCase):
         """
         Ranger handle is in user short names.
         """
-        user = DMSUser(dms=self.dms(), ranger=ranger, groups=groups)
+        user = DMSUser(ranger=ranger, groups=groups)
         self.assertIn(ranger.handle, user.shortNames)
 
     @given(rangers(), lists(text()))
@@ -77,7 +66,7 @@ class DMSUserTests(TestCase):
         """
         Ranger on site status is used to set user active status.
         """
-        user = DMSUser(dms=self.dms(), ranger=ranger, groups=groups)
+        user = DMSUser(ranger=ranger, groups=groups)
         self.assertEqual(user.active, ranger.onSite)
 
     @given(rangers(), lists(text()))
@@ -85,7 +74,7 @@ class DMSUserTests(TestCase):
         """
         Ranger handle is used as user UID.
         """
-        user = DMSUser(dms=self.dms(), ranger=ranger, groups=groups)
+        user = DMSUser(ranger=ranger, groups=groups)
         self.assertEqual(user.uid, ranger.handle)
 
     @given(rangers(), lists(text()))
@@ -93,7 +82,7 @@ class DMSUserTests(TestCase):
         """
         User groups are as provided.
         """
-        user = DMSUser(dms=self.dms(), ranger=ranger, groups=groups)
+        user = DMSUser(ranger=ranger, groups=groups)
         self.assertEqual(user.groups, groups)
 
     @given(rangers(), lists(text()), text())
@@ -105,7 +94,7 @@ class DMSUserTests(TestCase):
         match.
         """
         ranger = ranger.replace(password=hashPassword(password))
-        user = DMSUser(dms=self.dms(), ranger=ranger, groups=groups)
+        user = DMSUser(ranger=ranger, groups=groups)
 
         authorization = self.successResultOf(user.verifyPassword(password))
         self.assertTrue(authorization)
@@ -125,7 +114,7 @@ class DMSUserTests(TestCase):
         assume(password != otherPassword)
 
         ranger = ranger.replace(password=hashPassword(password))
-        user = DMSUser(dms=self.dms(), ranger=ranger, groups=groups)
+        user = DMSUser(ranger=ranger, groups=groups)
 
         authorization = self.successResultOf(user.verifyPassword(otherPassword))
         self.assertFalse(authorization)
@@ -139,7 +128,7 @@ class DMSUserTests(TestCase):
         None.
         """
         ranger = ranger.replace(password=None)
-        user = DMSUser(dms=self.dms(), ranger=ranger, groups=groups)
+        user = DMSUser(ranger=ranger, groups=groups)
 
         authorization = self.successResultOf(user.verifyPassword(password))
         self.assertFalse(authorization)
@@ -157,7 +146,7 @@ class DMSUserTests(TestCase):
         exception.
         """
         ranger = ranger.replace(password=hashPassword(password))
-        user = DMSUser(dms=self.dms(), ranger=ranger, groups=groups)
+        user = DMSUser(ranger=ranger, groups=groups)
 
         def oops(*args: Any, **kwargs: Any) -> None:
             raise RuntimeError(message)

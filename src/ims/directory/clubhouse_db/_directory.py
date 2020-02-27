@@ -43,7 +43,6 @@ class DMSUser(IMSUser):
 
     _log: ClassVar[Logger] = Logger()
 
-    _dms: DutyManagementSystem
     _ranger: Ranger
     _groups: Sequence[IMSGroupID]
 
@@ -133,7 +132,7 @@ class DMSDirectory(IMSDirectory):
             if ranger in position.members
         )
 
-        return DMSUser(dms=dms, ranger=ranger, groups=groups)
+        return DMSUser(ranger=ranger, groups=groups)
 
 
 def hashPassword(password: str, salt: Optional[str] = None) -> str:
