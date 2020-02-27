@@ -282,12 +282,8 @@ def fullName(first: str, middle: str, last: str) -> str:
 def statusFromID(strValue: str) -> RangerStatus:
     return {
         "active": RangerStatus.active,
-        "alpha": RangerStatus.alpha,
-        "bonked": RangerStatus.bonked,
         "deceased": RangerStatus.deceased,
         "inactive": RangerStatus.inactive,
-        "prospective": RangerStatus.prospective,
         "retired": RangerStatus.retired,
-        "uberbonked": RangerStatus.uberbonked,
         "vintage": RangerStatus.vintage,
     }.get(strValue, RangerStatus.other)

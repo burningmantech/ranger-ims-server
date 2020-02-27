@@ -85,13 +85,9 @@ class RangerStatusJSONValue(Enum):
     Ranger status JSON values
     """
 
-    prospective = "prospective"
-    alpha = "alpha"
-    bonked = "bonked"
     active = "active"
     inactive = "inactive"
     retired = "retired"
-    uberbonked = "uberbonked"
     vintage = "vintage"
     deceased = "deceased"
     other = "(unknown)"

@@ -174,13 +174,9 @@ def jsonFromIncidentPriority(priority: IncidentPriority) -> int:
 
 def jsonFromRangerStatus(status: RangerStatus) -> str:
     return {
-        RangerStatus.prospective: "prospective",
-        RangerStatus.alpha: "alpha",
-        RangerStatus.bonked: "bonked",
         RangerStatus.active: "active",
         RangerStatus.inactive: "inactive",
         RangerStatus.retired: "retired",
-        RangerStatus.uberbonked: "uberbonked",
         RangerStatus.vintage: "vintage",
         RangerStatus.deceased: "deceased",
         RangerStatus.other: "(unknown)",
