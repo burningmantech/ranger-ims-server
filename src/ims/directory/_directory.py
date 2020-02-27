@@ -38,6 +38,13 @@ class IMSUser(ABC):
 
     @property
     @abstractmethod
+    def uid(self) -> IMSUserID:
+        """
+        Unique identifier.
+        """
+
+    @property
+    @abstractmethod
     def shortNames(self) -> Sequence[str]:
         """
         Short names (usernames).
@@ -48,13 +55,6 @@ class IMSUser(ABC):
     def active(self) -> bool:
         """
         Whether the user is allowed to log in to the IMS.
-        """
-
-    @property
-    @abstractmethod
-    def uid(self) -> IMSUserID:
-        """
-        Unique identifier.
         """
 
     @property

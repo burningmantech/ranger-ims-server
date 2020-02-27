@@ -88,9 +88,9 @@ class TestUser(IMSUser):
 @composite
 def testUsers(draw: Callable) -> TestUser:
     return TestUser(
+        uid=IMSUserID(draw(text(min_size=1))),
         shortNames=tuple(draw(lists(text(min_size=1), min_size=1))),
         active=draw(booleans()),
-        uid=IMSUserID(draw(text(min_size=1))),
         groups=tuple(IMSGroupID(g) for g in draw(text(min_size=1))),
         password=draw(one_of(none(), text())),
     )
@@ -105,17 +105,17 @@ class TestTests(TestCase):
         self.assertRaises(AssertionError, oops)
 
     @given(
+        text(min_size=1),
         lists(text(min_size=1), min_size=1),
         booleans(),
-        text(min_size=1),
         lists(text(min_size=1)),
         text(),
     )
     def test_testUser(
         self,
+        _uid: str,
         shortNames: Sequence[str],
         active: bool,
-        _uid: str,
         _groups: Sequence[str],
         password: str,
     ) -> None:
@@ -123,9 +123,9 @@ class TestTests(TestCase):
         groups = tuple(IMSGroupID(g) for g in _groups)
 
         user = TestUser(
+            uid=uid,
             shortNames=shortNames,
             active=active,
-            uid=uid,
             groups=groups,
             password=password,
         )

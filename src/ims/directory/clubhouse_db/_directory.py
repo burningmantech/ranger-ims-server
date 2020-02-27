@@ -41,13 +41,18 @@ class DMSUser(IMSUser):
     IMS user derived from DMS Ranger.
     """
 
-    _log: ClassVar[Logger] = Logger()
-
     _ranger: Ranger
     _groups: Sequence[IMSGroupID]
 
     def __str__(self) -> str:
         return str(self._ranger)
+
+    @property
+    def uid(self) -> IMSUserID:
+        """
+        Unique identifier.
+        """
+        return cast(IMSUserID, self._ranger.handle)
 
     @property
     def shortNames(self) -> Sequence[str]:
@@ -62,13 +67,6 @@ class DMSUser(IMSUser):
         Whether the user is allowed to log in to the IMS.
         """
         return self._ranger.enabled
-
-    @property
-    def uid(self) -> IMSUserID:
-        """
-        Unique identifier.
-        """
-        return cast(IMSUserID, self._ranger.handle)
 
     @property
     def groups(self) -> Sequence[IMSGroupID]:
@@ -94,7 +92,7 @@ class DMSUser(IMSUser):
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
 class DMSDirectory(IMSDirectory):
     """
-    IMS user provider that uses the DMS.
+    IMS directory that uses the DMS.
     """
 
     _log: ClassVar[Logger] = Logger()
