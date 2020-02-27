@@ -163,19 +163,19 @@ class DutyManagementSystem(object):
 
         return dict(
             (
-                dmsID,
+                directoryID,
                 Ranger(
                     handle=handle,
                     name=fullName(first, middle, last),
                     status=statusFromID(status),
                     email=(email,),
                     enabled=bool(enabled),
-                    dmsID=int(dmsID),
+                    directoryID=int(directoryID),
                     password=password,
                 ),
             )
             for (
-                dmsID,
+                directoryID,
                 handle,
                 first,
                 middle,

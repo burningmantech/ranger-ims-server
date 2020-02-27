@@ -502,7 +502,7 @@ def rangers(draw: Callable) -> Ranger:
         status=draw(sampled_from(RangerStatus)),
         email=draw(lists(text(min_size=1))),
         enabled=draw(booleans()),
-        dmsID=draw(one_of(none(), integers())),
+        directoryID=draw(one_of(none(), integers())),
         password=draw(one_of(none(), text())),
     )
 

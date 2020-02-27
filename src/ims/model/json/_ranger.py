@@ -44,7 +44,7 @@ class RangerJSONKey(Enum):
     status = "status"
     email = "email"
     enabled = "enabled"
-    dmsID = "dms_id"
+    directoryID = "directory_id"
 
 
 class RangerJSONType(Enum):
@@ -57,7 +57,7 @@ class RangerJSONType(Enum):
     status = RangerStatus
     email = Set[str]
     enabled = bool
-    dmsID = Optional[int]
+    directoryID = Optional[int]
 
 
 def serializeRanger(ranger: Ranger) -> Dict[str, Any]:

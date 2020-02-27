@@ -192,7 +192,7 @@ def jsonFromRanger(ranger: Ranger) -> Dict[str, Any]:
         handle=ranger.handle,
         name=ranger.name,
         status=jsonFromRangerStatus(ranger.status),
-        dms_id=ranger.dmsID,
+        directory_id=ranger.directoryID,
         email=jsonSerialize([e for e in ranger.email]),
         enabled=ranger.enabled,
     )

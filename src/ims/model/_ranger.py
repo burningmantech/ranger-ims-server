@@ -87,7 +87,7 @@ class Ranger(ReplaceMixIn):
     status: RangerStatus
     email: FrozenSet[str] = attrib(converter=freezeStrings)
     enabled: bool
-    dmsID: Optional[int]
+    directoryID: Optional[int]
     password: Optional[str] = None
 
     def __str__(self) -> str:
