@@ -18,12 +18,12 @@
 Tests for L{ims.auth._provider}.
 """
 
-from typing import Any, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence
 
-from attr import attrs
+from attr import attrs, evolve
 
 from hypothesis import assume, given
-from hypothesis.strategies import booleans, lists, text
+from hypothesis.strategies import booleans, composite, lists, none, one_of, text
 
 from ims.ext.trial import TestCase
 from ims.store import IMSDataStore
@@ -37,7 +37,7 @@ __all__ = ()
 
 
 def oops(*args: Any, **kwargs: Any) -> None:
-    raise RuntimeError()
+    raise AssertionError()
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -85,6 +85,59 @@ class TestUser(IMSUser):
         return password == self._password
 
 
+@composite
+def testUsers(draw: Callable) -> TestUser:
+    return TestUser(
+        shortNames=tuple(draw(lists(text(min_size=1), min_size=1))),
+        active=draw(booleans()),
+        uid=IMSUserID(draw(text(min_size=1))),
+        groups=tuple(IMSGroupID(g) for g in draw(text(min_size=1))),
+        password=draw(one_of(none(), text())),
+    )
+
+
+class TestTests(TestCase):
+    """
+    Tests for tests, because meta.
+    """
+
+    def test_oops(self) -> None:
+        self.assertRaises(AssertionError, oops)
+
+    @given(
+        lists(text(min_size=1), min_size=1),
+        booleans(),
+        text(min_size=1),
+        lists(text(min_size=1)),
+        text(),
+    )
+    def test_testUser(
+        self,
+        shortNames: Sequence[str],
+        active: bool,
+        _uid: str,
+        _groups: Sequence[str],
+        password: str,
+    ) -> None:
+        uid = IMSUserID(_uid)
+        groups = tuple(IMSGroupID(g) for g in _groups)
+
+        user = TestUser(
+            shortNames=shortNames,
+            active=active,
+            uid=uid,
+            groups=groups,
+            password=password,
+        )
+
+        self.assertEqual(tuple(user.shortNames), tuple(shortNames))
+        self.assertEqual(user.active, active)
+        self.assertEqual(user.uid, uid)
+        self.assertEqual(tuple(user.groups), tuple(groups))
+
+        self.assertTrue(user.verifyPassword(password))
+
+
 class AuthorizationTests(TestCase):
     """
     Tests for :class:`Authorization`
@@ -111,29 +164,11 @@ class AuthProviderTests(TestCase):
 
     # @given(text(min_size=1), rangers())
     @given(
-        lists(text()),
-        booleans(),
-        text(),
-        lists(text()),
-        text(),
-        text(min_size=1),
+        testUsers(), text(min_size=1),
     )
     def test_verifyPassword_masterKey(
-        self,
-        shortNames: Sequence[str],
-        active: bool,
-        uid: IMSUserID,
-        groups: Sequence[IMSGroupID],
-        password: str,
-        masterKey: str,
+        self, user: TestUser, masterKey: str
     ) -> None:
-        user = TestUser(
-            shortNames=shortNames,
-            active=active,
-            uid=uid,
-            groups=groups,
-            password=password,
-        )
         provider = AuthProvider(store=self.store(), masterKey=masterKey)
 
         authorization = self.successResultOf(
@@ -141,56 +176,32 @@ class AuthProviderTests(TestCase):
         )
         self.assertTrue(authorization)
 
-    @given(lists(text()), booleans(), text(), lists(text()), text())
-    def test_verifyPassword_match(
-        self,
-        shortNames: Sequence[str],
-        active: bool,
-        uid: IMSUserID,
-        groups: Sequence[IMSGroupID],
-        password: str,
-    ) -> None:
+    @given(testUsers())
+    def test_verifyPassword_match(self, user: TestUser) -> None:
         """
         AuthProvider.verifyPassword() returns True when the user's password is
         a match.
         """
-        user = TestUser(
-            shortNames=shortNames,
-            active=active,
-            uid=uid,
-            groups=groups,
-            password=password,
-        )
+        assume(user._password is not None)
+        assert user._password is not None
+
         provider = AuthProvider(store=self.store())
 
         authorization = self.successResultOf(
-            provider.verifyPassword(user, password)
+            provider.verifyPassword(user, user._password)
         )
         self.assertTrue(authorization)
 
-    @given(lists(text()), booleans(), text(), lists(text()), text(), text())
+    @given(testUsers(), text())
     def test_verifyPassword_mismatch(
-        self,
-        shortNames: Sequence[str],
-        active: bool,
-        uid: IMSUserID,
-        groups: Sequence[IMSGroupID],
-        password: str,
-        notPassword: str,
+        self, user: TestUser, notPassword: str
     ) -> None:
         """
         AuthProvider.verifyPassword() returns False when the user's password is
         not a match.
         """
-        assume(password != notPassword)
+        assume(user._password != notPassword)
 
-        user = TestUser(
-            shortNames=shortNames,
-            active=active,
-            uid=uid,
-            groups=groups,
-            password=password,
-        )
         provider = AuthProvider(store=self.store())
 
         authorization = self.successResultOf(
@@ -198,26 +209,13 @@ class AuthProviderTests(TestCase):
         )
         self.assertFalse(authorization)
 
-    @given(lists(text()), booleans(), text(), lists(text()), text())
-    def test_verifyPassword_none(
-        self,
-        shortNames: Sequence[str],
-        active: bool,
-        uid: IMSUserID,
-        groups: Sequence[IMSGroupID],
-        password: str,
-    ) -> None:
+    @given(testUsers(), text())
+    def test_verifyPassword_none(self, user: TestUser, password: str) -> None:
         """
         AuthProvider.verifyPassword() returns False when the user's password is
         None.
         """
-        user = TestUser(
-            shortNames=shortNames,
-            active=active,
-            uid=uid,
-            groups=groups,
-            password=None,
-        )
+        user = evolve(user, password=None)
         provider = AuthProvider(store=self.store())
 
         authorization = self.successResultOf(
