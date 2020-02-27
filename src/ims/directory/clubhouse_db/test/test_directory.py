@@ -67,7 +67,7 @@ class DMSUserTests(TestCase):
         Ranger on site status is used to set user active status.
         """
         user = DMSUser(ranger=ranger, groups=groups)
-        self.assertEqual(user.active, ranger.onSite)
+        self.assertEqual(user.active, ranger.enabled)
 
     @given(rangers(), lists(text()))
     def test_uid(self, ranger: Ranger, groups: Sequence[IMSGroupID]) -> None:

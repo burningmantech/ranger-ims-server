@@ -61,7 +61,7 @@ class DMSUser(IMSUser):
         """
         Whether the user is allowed to log in to the IMS.
         """
-        return self._ranger.onSite
+        return self._ranger.enabled
 
     @property
     def uid(self) -> IMSUserID:

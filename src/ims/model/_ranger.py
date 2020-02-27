@@ -86,7 +86,7 @@ class Ranger(ReplaceMixIn):
     name: str
     status: RangerStatus
     email: FrozenSet[str] = attrib(converter=freezeStrings)
-    onSite: bool
+    enabled: bool
     dmsID: Optional[int]
     password: Optional[str] = None
 

@@ -501,7 +501,7 @@ def rangers(draw: Callable) -> Ranger:
         name=draw(text(min_size=1)),
         status=draw(sampled_from(RangerStatus)),
         email=draw(lists(text(min_size=1))),
-        onSite=draw(booleans()),
+        enabled=draw(booleans()),
         dmsID=draw(one_of(none(), integers())),
         password=draw(one_of(none(), text())),
     )

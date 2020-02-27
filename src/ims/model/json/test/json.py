@@ -194,7 +194,7 @@ def jsonFromRanger(ranger: Ranger) -> Dict[str, Any]:
         status=jsonFromRangerStatus(ranger.status),
         dms_id=ranger.dmsID,
         email=jsonSerialize([e for e in ranger.email]),
-        on_site=ranger.onSite,
+        enabled=ranger.enabled,
     )
 
 

@@ -43,7 +43,7 @@ class RangerJSONKey(Enum):
     name = "name"
     status = "status"
     email = "email"
-    onSite = "on_site"
+    enabled = "enabled"
     dmsID = "dms_id"
 
 
@@ -56,7 +56,7 @@ class RangerJSONType(Enum):
     name = str  # type: ignore[assignment]
     status = RangerStatus
     email = Set[str]
-    onSite = bool
+    enabled = bool
     dmsID = Optional[int]
 
 

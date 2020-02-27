@@ -169,7 +169,7 @@ class DutyManagementSystem(object):
                     name=fullName(first, middle, last),
                     status=statusFromID(status),
                     email=(email,),
-                    onSite=bool(onSite),
+                    enabled=bool(enabled),
                     dmsID=int(dmsID),
                     password=password,
                 ),
@@ -182,7 +182,7 @@ class DutyManagementSystem(object):
                 last,
                 email,
                 status,
-                onSite,
+                enabled,
                 password,
             ) in rows
         )
