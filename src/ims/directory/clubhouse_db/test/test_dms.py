@@ -24,8 +24,8 @@ from twisted.internet.defer import Deferred, fail, succeed
 
 from ims.ext.trial import TestCase
 
-from .._directory import hashPassword
 from .._dms import DutyManagementSystem, fullName
+from ..._directory import hashPassword
 
 
 __all__ = ()
@@ -164,7 +164,7 @@ class DummyConnectionPool(object):
                 person[5],
                 person[6],
                 person[7],
-                hashPassword(person[8]),
+                hashPassword(person[8], ""),
             )
 
         if sql == (

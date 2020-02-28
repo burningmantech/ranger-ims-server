@@ -42,7 +42,7 @@ from twisted.logger import Logger
 
 from ims.model import Ranger, RangerStatus
 
-from .._exceptions import DirectoryError
+from .._directory import DirectoryError
 
 
 __all__ = ()

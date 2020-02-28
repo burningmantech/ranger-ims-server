@@ -18,7 +18,7 @@
 Duty Management System integration.
 """
 
-from ._directory import DMSDirectory, DMSUser, hashPassword, verifyPassword
+from ._directory import DMSDirectory
 from ._dms import DMSError, DatabaseError, DutyManagementSystem
 
 
@@ -26,8 +26,5 @@ __all__ = (
     "DatabaseError",
     "DMSDirectory",
     "DMSError",
-    "DMSUser",
     "DutyManagementSystem",
-    "hashPassword",
-    "verifyPassword",
 )

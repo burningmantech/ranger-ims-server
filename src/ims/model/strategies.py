@@ -40,7 +40,7 @@ from hypothesis.strategies import (
     text,
 )
 
-from ims.directory.clubhouse_db import hashPassword
+from ims.directory import hashPassword
 from ims.ext.sqlite import SQLITE_MAX_INT
 
 from ._address import RodGarettAddress, TextOnlyAddress
@@ -480,7 +480,7 @@ def passwords(draw: Callable) -> str:
     Strategy that generates hashed passwords.
     """
     password = draw(text())
-    return hashPassword(password)
+    return hashPassword(password, "")
 
 
 @composite
