@@ -135,7 +135,7 @@ class TestTests(TestCase):
         self.assertEqual(user.uid, uid)
         self.assertEqual(tuple(user.groups), tuple(groups))
 
-        self.assertTrue(user.verifyPassword(password))
+        self.assertTrue(self.successResultOf(user.verifyPassword(password)))
 
 
 class AuthorizationTests(TestCase):
