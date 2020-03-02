@@ -52,6 +52,9 @@ class TestUser(IMSUser):
     _groups: Sequence[IMSGroupID]
     _password: Optional[str]
 
+    def __str__(self) -> str:
+        return str(self._shortNames[0])
+
     @property
     def shortNames(self) -> Sequence[str]:
         """
