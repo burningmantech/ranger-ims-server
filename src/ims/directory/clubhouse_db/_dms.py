@@ -86,10 +86,8 @@ class DutyManagementSystem(object):
 
     _log: ClassVar[Logger] = Logger()
 
-    # DMS data changes rarely, so hour intervals between refreshing data should
-    # be fine.
-    # Refresh after an hour, but don't panic about it until we're stale for >12
-    # hours.
+    # Refresh after 5 minutes, but don't panic about errors until we're stale
+    # for >30 minutes.
     personnelCacheInterval: ClassVar[int] = 60 * 5  # 5 minutes
     personnelCacheIntervalMax: ClassVar[int] = 60 * 30  # 30 minutes
 
