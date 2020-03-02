@@ -226,7 +226,7 @@ class DirectoryTests(TestCase):
                 status=RangerStatus.active,
                 email="same@example.com",
                 enabled=True,
-                directoryID=0,
+                directoryID="0",
                 password=None,
             ),
             Ranger(
@@ -235,7 +235,7 @@ class DirectoryTests(TestCase):
                 status=RangerStatus.active,
                 email="same@example.com",
                 enabled=True,
-                directoryID=1,
+                directoryID="1",
                 password=None,
             ),
             Ranger(
@@ -244,7 +244,7 @@ class DirectoryTests(TestCase):
                 status=RangerStatus.active,
                 email="same@example.com",
                 enabled=True,
-                directoryID=2,
+                directoryID="2",
                 password=None,
             ),
         ]

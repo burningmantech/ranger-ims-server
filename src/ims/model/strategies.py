@@ -494,7 +494,7 @@ def rangers(draw: Callable) -> Ranger:
         status=draw(sampled_from(RangerStatus)),
         email=draw(lists(emails())),
         enabled=draw(booleans()),
-        directoryID=draw(one_of(none(), integers())),
+        directoryID=draw(one_of(none(), text())),
         password=draw(one_of(none(), text())),
     )
 

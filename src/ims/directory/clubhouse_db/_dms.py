@@ -168,7 +168,7 @@ class DutyManagementSystem(object):
                     status=statusFromID(status),
                     email=(email,),
                     enabled=bool(enabled),
-                    directoryID=int(directoryID),
+                    directoryID=directoryID,
                     password=password,
                 ),
             )
