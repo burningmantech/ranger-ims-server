@@ -19,13 +19,28 @@ Tests for L{ims.directory.file._directory}.
 """
 
 from pathlib import Path
-from typing import FrozenSet, Sequence, Tuple
+from random import Random
+from typing import (
+    Any, Dict, FrozenSet, Iterable, List, Mapping, Sequence, Tuple, Union
+)
+from unittest.mock import patch
+
+from hypothesis import given, settings
+from hypothesis.strategies import dictionaries, lists, randoms, text
 
 from ims.ext.trial import TestCase
 from ims.model import Ranger, RangerStatus
+from ims.model.strategies import rangers, rangerHandles
 
-from .._directory import FileDirectory
-from ..._directory import RangerUser
+from .._directory import (
+    FileDirectory,
+    positionFromMapping,
+    positionsFromMappings,
+    rangerFromMapping,
+    rangersFromMappings,
+    statusFromID,
+)
+from ..._directory import DirectoryError, RangerUser
 
 
 __all__ = ()
@@ -68,14 +83,215 @@ rangerNine = Ranger(
     password=None,
 )
 
-testRangers = frozenset((
-    rangerBeepBoop, rangerSlumber, rangerYouRine, rangerNine
-))
+testRangers = frozenset(
+    (rangerBeepBoop, rangerSlumber, rangerYouRine, rangerNine)
+)
 
-testPositions: FrozenSet[Tuple[str, Sequence[str]]] = frozenset((
-    ("Build Team", ("Beep Boop", "Slumber")),
-    ("Shift Leads", ("Slumber", "YouRine")),
-))
+testPositions: FrozenSet[Tuple[str, Sequence[str]]] = frozenset(
+    (
+        ("Build Team", ("Beep Boop", "Slumber")),
+        ("Shift Leads", ("Slumber", "YouRine")),
+    )
+)
+
+
+def rangerAsDict(ranger: Ranger, random: Random) -> Dict[str, Any]:
+    email: Union[str, List[str]] = list(ranger.email)
+    if len(ranger.email) == 1:
+        # We allow either a string or a list in the YAML when you have a single
+        # email address, so this creates both.
+        email = random.choice((email[0], email))
+
+    return {
+        "handle": ranger.handle,
+        "name": ranger.name,
+        "status": ranger.status.name,
+        "email": email,
+        "enabled": ranger.enabled,
+        # directoryID is not used
+        "password": ranger.password,
+    }
+
+
+class UtilityTests(TestCase):
+    """
+    Tests for utilities.
+    """
+
+    def test_statusFromID_known(self) -> None:
+        for name, status in (
+            ("active", RangerStatus.active),
+            ("inactive", RangerStatus.inactive),
+            ("vintage", RangerStatus.vintage),
+        ):
+            self.assertIdentical(statusFromID(name), status)
+
+    @given(
+        text().filter(
+            lambda name: name not in ("active", "inactive", "vintage")
+        )
+    )
+    @settings(max_examples=10)
+    def test_statusFromID_unknown(self, name: str) -> None:
+        self.assertIdentical(statusFromID(name), RangerStatus.other)
+
+    @given(lists(rangers()), randoms())
+    @settings(max_examples=10)
+    def test_rangersFromMappings(
+        self, rangers: Sequence[Ranger], random: Random
+    ) -> None:
+        rangers = [ranger.replace(directoryID=None) for ranger in rangers]
+        rangerDicts = [rangerAsDict(ranger, random) for ranger in rangers]
+        result = list(rangersFromMappings(rangerDicts))
+
+        self.assertEqual(result, rangers)
+
+    def test_rangersFromMappings_notList(self) -> None:
+        e = self.assertRaises(DirectoryError, list, rangersFromMappings(()))
+        self.assertEqual(str(e), "Rangers must be sequence: ()")
+
+    def test_rangersFromMappings_reraise(self) -> None:
+        e = self.assertRaises(
+            DirectoryError,
+            list,
+            rangersFromMappings([None]),  # type: ignore[list-item]
+        )
+        self.assertEqual(str(e), "Ranger must be mapping: None")
+
+    def test_rangersFromMappings_error(self) -> None:
+        def poof(mapping: Mapping[str, Any]) -> Ranger:
+            raise RuntimeError("poof")
+
+        with patch("ims.directory.file._directory.rangerFromMapping", poof):
+            e = self.assertRaises(
+                DirectoryError, list, rangersFromMappings([{}])
+            )
+            self.assertEqual(str(e), "Unable to parse Ranger records: poof")
+
+    @given(rangers(), randoms())
+    def test_rangerFromMapping(self, ranger: Ranger, random: Random) -> None:
+        ranger = ranger.replace(directoryID=None)
+        rangerDict = rangerAsDict(ranger, random)
+        result = rangerFromMapping(rangerDict)
+
+        self.assertEqual(result, ranger)
+
+    def test_rangerFromMapping_notDict(self) -> None:
+        e = self.assertRaises(DirectoryError, rangerFromMapping, ())
+        self.assertEqual(str(e), "Ranger must be mapping: ()")
+
+    @given(rangers(), randoms())
+    @settings(max_examples=10)
+    def test_rangerFromMapping_noHandle(
+        self, ranger: Ranger, random: Random
+    ) -> None:
+        ranger = ranger.replace(directoryID=None)
+        rangerDict = rangerAsDict(ranger, random)
+        del rangerDict["handle"]
+
+        e = self.assertRaises(DirectoryError, rangerFromMapping, rangerDict)
+        self.assertEqual(str(e), f"Ranger must have handle: {rangerDict!r}")
+
+    @given(rangers(), randoms())
+    @settings(max_examples=10)
+    def test_rangerFromMapping_handleNotText(
+        self, ranger: Ranger, random: Random
+    ) -> None:
+        ranger = ranger.replace(directoryID=None)
+        rangerDict = rangerAsDict(ranger, random)
+        handle = rangerDict["handle"].encode("utf-8")
+        rangerDict["handle"] = handle
+
+        e = self.assertRaises(DirectoryError, rangerFromMapping, rangerDict)
+        self.assertEqual(str(e), f"Ranger handle must be text: {handle!r}")
+
+    @given(rangers(), randoms())
+    @settings(max_examples=10)
+    def test_rangerFromMapping_nameNotText(
+        self, ranger: Ranger, random: Random
+    ) -> None:
+        ranger = ranger.replace(directoryID=None)
+        rangerDict = rangerAsDict(ranger, random)
+        name = rangerDict["name"].encode("utf-8")
+        rangerDict["name"] = name
+
+        e = self.assertRaises(DirectoryError, rangerFromMapping, rangerDict)
+        self.assertEqual(str(e), f"Ranger name must be text: {name!r}")
+
+    @given(rangers(), randoms())
+    @settings(max_examples=10)
+    def test_rangerFromMapping_statusNotText(
+        self, ranger: Ranger, random: Random
+    ) -> None:
+        ranger = ranger.replace(directoryID=None)
+        rangerDict = rangerAsDict(ranger, random)
+        status = rangerDict["status"].encode("utf-8")
+        rangerDict["status"] = status
+
+        e = self.assertRaises(DirectoryError, rangerFromMapping, rangerDict)
+        self.assertEqual(str(e), f"Ranger status must be text: {status!r}")
+
+    @given(
+        rangers().filter(lambda r: len(r.email) > 0),
+        randoms(),
+    )
+    @settings(max_examples=10)
+    def test_rangerFromMapping_emailNotText(
+        self, ranger: Ranger, random: Random
+    ) -> None:
+        ranger = ranger.replace(directoryID=None)
+
+        rangerDict = rangerAsDict(ranger, random)
+
+        # Make sure we have email in list form for this test.
+        if type(rangerDict["email"]) is str:
+            rangerDict["email"] = [rangerDict["email"]]
+
+        index = random.choice(range(len(ranger.email)))
+        email = rangerDict["email"][index].encode("utf-8")
+        rangerDict["email"][index] = email
+
+        e = self.assertRaises(DirectoryError, rangerFromMapping, rangerDict)
+        self.assertEqual(str(e), f"Ranger email must be text: {email!r}")
+
+    @given(rangers(), randoms())
+    @settings(max_examples=10)
+    def test_rangerFromMapping_emailNotTextOrSequenceOfText(
+        self, ranger: Ranger, random: Random
+    ) -> None:
+        ranger = ranger.replace(directoryID=None)
+        rangerDict = rangerAsDict(ranger, random)
+        email = tuple(rangerDict["email"])
+        rangerDict["email"] = email
+
+        e = self.assertRaises(DirectoryError, rangerFromMapping, rangerDict)
+        self.assertEqual(
+            str(e), f"Ranger email must be text or sequence of text: {email!r}"
+        )
+
+    @given(rangers(), randoms())
+    @settings(max_examples=10)
+    def test_rangerFromMapping_enabledNotBool(
+        self, ranger: Ranger, random: Random
+    ) -> None:
+        ranger = ranger.replace(directoryID=None)
+        rangerDict = rangerAsDict(ranger, random)
+        rangerDict["enabled"] = None
+
+        e = self.assertRaises(DirectoryError, rangerFromMapping, rangerDict)
+        self.assertEqual(str(e), "Ranger enabled must be boolean: None")
+
+    @given(rangers(), randoms())
+    @settings(max_examples=10)
+    def test_rangerFromMapping_passwordNotText(
+        self, ranger: Ranger, random: Random
+    ) -> None:
+        ranger = ranger.replace(directoryID=None)
+        rangerDict = rangerAsDict(ranger, random)
+        rangerDict["password"] = 0
+
+        e = self.assertRaises(DirectoryError, rangerFromMapping, rangerDict)
+        self.assertEqual(str(e), "Ranger password must be text: 0")
 
 
 class FileDirectoryTests(TestCase):

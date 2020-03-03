@@ -44,16 +44,19 @@ def statusFromID(strValue: str) -> RangerStatus:
     }.get(strValue, RangerStatus.other)
 
 
-def rangersFromMappings(sequence: Iterable[Mapping[str, Any]]) -> Iterable[Ranger]:
+def rangersFromMappings(
+    sequence: Iterable[Mapping[str, Any]]
+) -> Iterable[Ranger]:
     if type(sequence) is not list:
         raise DirectoryError(f"Rangers must be sequence: {sequence!r}")
 
-    try:
-        return (rangerFromMapping(m) for m in sequence)
-    except DirectoryError:
-        raise
-    except:
-        raise DirectoryError("Unable to parse Ranger records.")
+    for mapping in sequence:
+        try:
+            yield rangerFromMapping(mapping)
+        except DirectoryError:
+            raise
+        except Exception as e:
+            raise DirectoryError(f"Unable to parse Ranger records: {str(e)}")
 
 
 def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
@@ -115,15 +118,16 @@ def positionsFromMappings(
     if type(sequence) is not list:
         raise DirectoryError(f"Positions must be sequence: {sequence!r}")
 
-    try:
-        return (positionFromMappings(m) for m in sequence)
-    except DirectoryError:
-        raise
-    except:
-        raise DirectoryError("Unable to parse Ranger records.")
+    for mapping in sequence:
+        try:
+            yield positionFromMapping(mapping)
+        except DirectoryError:
+            raise
+        except:
+            raise DirectoryError("Unable to parse Ranger records.")
 
 
-def positionFromMappings(
+def positionFromMapping(
     mapping: Mapping[str, Any]
 ) -> Tuple[str, Sequence[str]]:
     if type(mapping) is not dict:

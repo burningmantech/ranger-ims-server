@@ -21,7 +21,15 @@ Incident Management System directory service integration.
 from abc import ABC, abstractmethod
 from hashlib import sha1
 from typing import (
-    Dict, Iterable, List, NewType, Optional, Sequence, Set, Tuple, cast
+    Dict,
+    Iterable,
+    List,
+    NewType,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    cast,
 )
 
 from attr import Factory, attrs
@@ -175,8 +183,7 @@ class RangerDirectory(IMSDirectory):
         for position, handles in self._positions:
             for handle in handles:
                 cast(
-                    List[str],
-                    self._positionsByHandle.setdefault(handle, [])
+                    List[str], self._positionsByHandle.setdefault(handle, [])
                 ).append(position)
 
         for ranger in self._rangers:
@@ -186,7 +193,7 @@ class RangerDirectory(IMSDirectory):
                 )
             groups = cast(
                 Sequence[IMSGroupID],
-                self._positionsByHandle.get(ranger.handle, ())
+                self._positionsByHandle.get(ranger.handle, ()),
             )
             user = RangerUser(ranger=ranger, groups=groups)
 
