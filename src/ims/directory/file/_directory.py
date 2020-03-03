@@ -39,9 +39,7 @@ __all__ = ()
 def statusFromID(strValue: str) -> RangerStatus:
     return {
         "active": RangerStatus.active,
-        "deceased": RangerStatus.deceased,
         "inactive": RangerStatus.inactive,
-        "retired": RangerStatus.retired,
         "vintage": RangerStatus.vintage,
     }.get(strValue, RangerStatus.other)
 

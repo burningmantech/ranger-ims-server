@@ -36,9 +36,7 @@ __all__ = ()
 statusDescriptions = dict(
     active="Active Ranger",
     inactive="Inactive Ranger",
-    retired="Retired Ranger",
     vintage="Vintage Ranger",
-    deceased="Late Ranger",
     other="(Unknown Person Type)",
 )
 
@@ -53,9 +51,7 @@ class RangerStatus(Names):
 
     active = auto()
     inactive = auto()
-    retired = auto()
     vintage = auto()
-    deceased = auto()
 
     other = auto()
 
