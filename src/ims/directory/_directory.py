@@ -20,7 +20,9 @@ Incident Management System directory service integration.
 
 from abc import ABC, abstractmethod
 from hashlib import sha1
-from typing import Dict, Iterable, NewType, Optional, Sequence, Set
+from typing import (
+    Dict, Iterable, List, NewType, Optional, Sequence, Set, Tuple, cast
+)
 
 from attr import Factory, attrs
 
@@ -160,20 +162,33 @@ class RangerDirectory(IMSDirectory):
     """
 
     _rangers: Sequence[Ranger]
+    _positions: Sequence[Tuple[str, Sequence[str]]]
     _usersByHandle: Dict[str, RangerUser] = Factory(dict)
     _usersByEmail: Dict[str, RangerUser] = Factory(dict)
+    _positionsByHandle: Dict[str, Sequence[str]] = Factory(dict)
 
     def __attrs_post_init__(self) -> None:
         usersByHandle = self._usersByHandle
         usersByEmail = self._usersByEmail
         duplicateEmails: Set[str] = set()
 
+        for position, handles in self._positions:
+            for handle in handles:
+                cast(
+                    List[str],
+                    self._positionsByHandle.setdefault(handle, [])
+                ).append(position)
+
         for ranger in self._rangers:
             if ranger.handle in usersByHandle:
                 raise DirectoryError(
                     f"Duplicate Ranger handle: {ranger.handle}"
                 )
-            user = RangerUser(ranger=ranger, groups=())
+            groups = cast(
+                Sequence[IMSGroupID],
+                self._positionsByHandle.get(ranger.handle, ())
+            )
+            user = RangerUser(ranger=ranger, groups=groups)
 
             usersByHandle[ranger.handle] = user
 

@@ -97,6 +97,7 @@ for tool, (module, function) in script_entry_points.items():
 package_data = dict(
     ims=[
         "config/test/*.conf",
+        "directory/file/test/directory.yaml",
         "element/*/template.xhtml",
         "element/*/*/template.xhtml",
         "element/static/*.css",
@@ -124,6 +125,7 @@ install_requirements = [
     "hyperlink==19.0.0",
     "klein==19.6.0",
     "PyMySQL==0.9.3",
+    "PyYAML==5.3",
     "Twisted==19.10.0",
     "zope.interface==4.7.1",
     "pyOpenSSL==19.1.0",
@@ -133,6 +135,7 @@ install_requirements = [
     "asn1crypto==1.3.0",
     "Automat==20.2.0",
     "cffi==1.14.0",
+    "characteristic==14.3.0",
     "constantly==15.1.0",
     "cryptography==2.8",
     "idna==2.9",
@@ -143,6 +146,8 @@ install_requirements = [
     "PyHamcrest==2.0.1",
     "python-dateutil==2.8.1",
     "six==1.14.0",
+    "Tubes==0.2.0",
+    "typing==3.7.4.1",
     "Werkzeug==1.0.0",
 ]
 

@@ -176,7 +176,7 @@ class DirectoryTests(TestCase):
         RangerDirectory initializer validates the given (valid) Rangers without
         error.
         """
-        RangerDirectory(rangers=rangers)
+        RangerDirectory(rangers=rangers, positions=())
 
     @given(uniqueRangerLists(), lists(rangers(), min_size=2), rangerHandles())
     def test_validateRangers_duplicateHandle(
@@ -195,7 +195,9 @@ class DirectoryTests(TestCase):
         ]
         rangers = tuple(rangers) + tuple(duplicateRangers)
 
-        e = self.assertRaises(DirectoryError, RangerDirectory, rangers=rangers)
+        e = self.assertRaises(
+            DirectoryError, RangerDirectory, rangers=rangers, positions=()
+        )
         self.assertEqual(str(e), f"Duplicate Ranger handle: {duplicateHandle}")
 
     @given(uniqueRangerLists())
@@ -203,14 +205,14 @@ class DirectoryTests(TestCase):
         """
         RangerDirectory.personnel() returns all Rangers.
         """
-        directory = RangerDirectory(rangers=rangers)
+        directory = RangerDirectory(rangers=rangers, positions=())
         personnel = self.successResultOf(directory.personnel())
 
         self.assertEqual(frozenset(personnel), frozenset(rangers))
 
     @given(uniqueRangerLists())
     def test_lookupUser_handle(self, rangers: Sequence[Ranger]) -> None:
-        directory = RangerDirectory(rangers=rangers)
+        directory = RangerDirectory(rangers=rangers, positions=())
 
         for ranger in rangers:
             user = self.successResultOf(directory.lookupUser(ranger.handle))
@@ -250,7 +252,7 @@ class DirectoryTests(TestCase):
         ]
     )
     def test_lookupUser_email(self, rangers: Sequence[Ranger]) -> None:
-        directory = RangerDirectory(rangers=rangers)
+        directory = RangerDirectory(rangers=rangers, positions=())
 
         emailCounts: Dict[str, int] = dict()
         for ranger in rangers:
