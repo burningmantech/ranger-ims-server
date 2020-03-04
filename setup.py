@@ -139,7 +139,7 @@ install_requirements = [
     "incremental==17.5.0",
     "pyasn1-modules==0.2.8",
     "pyasn1==0.4.8",
-    "pycparser==2.19",
+    "pycparser==2.20",
     "PyHamcrest==2.0.2",
     "python-dateutil==2.8.1",
     "six==1.14.0",
