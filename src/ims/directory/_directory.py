@@ -182,9 +182,9 @@ class RangerDirectory(IMSDirectory):
                 raise DirectoryError(
                     f"Duplicate Ranger handle: {ranger.handle}"
                 )
-            groups = cast(
-                Sequence[IMSGroupID],
-                self._positionsByHandle.get(ranger.handle, ()),
+            groups = tuple(
+                IMSGroupID(position.name)
+                for position in self._positionsByHandle.get(ranger.handle, ())
             )
             user = RangerUser(ranger=ranger, groups=groups)
 
@@ -197,6 +197,7 @@ class RangerDirectory(IMSDirectory):
                     duplicateEmails.add(email)
                     del usersByEmail[email]
                     continue
+
                 usersByEmail[email] = user
 
     async def personnel(self) -> Iterable[Ranger]:
