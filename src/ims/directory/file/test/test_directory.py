@@ -34,7 +34,7 @@ from ims.model.strategies import positions, rangers
 
 from .._directory import (
     FileDirectory,
-    # positionFromMapping,
+    positionFromMapping,
     positionsFromMappings,
     rangerFromMapping,
     rangersFromMappings,
@@ -305,27 +305,75 @@ class UtilityTests(TestCase):
 
         self.assertEqual(result, positions)
 
-    # def test_positionsFromMappings_notList(self) -> None:
-    #     e = self.assertRaises(DirectoryError, list, positionsFromMappings(()))
-    #     self.assertEqual(str(e), "Positions must be sequence: ()")
+    def test_positionsFromMappings_notList(self) -> None:
+        e = self.assertRaises(DirectoryError, list, positionsFromMappings(()))
+        self.assertEqual(str(e), "Positions must be sequence: ()")
 
-    # def test_rangersFromMappings_reraise(self) -> None:
-    #     e = self.assertRaises(
-    #         DirectoryError,
-    #         list,
-    #         rangersFromMappings([None]),  # type: ignore[list-item]
-    #     )
-    #     self.assertEqual(str(e), "Ranger must be mapping: None")
+    def test_positionsFromMappings_reraise(self) -> None:
+        e = self.assertRaises(
+            DirectoryError,
+            list,
+            positionsFromMappings([None]),  # type: ignore[list-item]
+        )
+        self.assertEqual(str(e), "Position must be mapping: None")
 
-    # def test_rangersFromMappings_error(self) -> None:
-    #     def poof(mapping: Mapping[str, Any]) -> Ranger:
-    #         raise RuntimeError("poof")
+    def test_positionsFromMappings_error(self) -> None:
+        def poof(mapping: Mapping[str, Any]) -> Position:
+            raise RuntimeError("poof")
 
-    #     with patch("ims.directory.file._directory.rangerFromMapping", poof):
-    #         e = self.assertRaises(
-    #             DirectoryError, list, rangersFromMappings([{}])
-    #         )
-    #         self.assertEqual(str(e), "Unable to parse Ranger records: poof")
+        with patch("ims.directory.file._directory.positionFromMapping", poof):
+            e = self.assertRaises(
+                DirectoryError, list, positionsFromMappings([{}])
+            )
+            self.assertEqual(str(e), "Unable to parse position records: poof")
+
+    @given(positions())
+    @settings(max_examples=10)
+    def test_positionFromMapping_noName(self, position: Position) -> None:
+        positionDict = positionAsDict(position)
+        del positionDict["name"]
+
+        e = self.assertRaises(DirectoryError, positionFromMapping, positionDict)
+        self.assertEqual(str(e), f"Position must have name: {positionDict!r}")
+
+    @given(positions())
+    @settings(max_examples=10)
+    def test_positionFromMapping_nameNotText(self, position: Position) -> None:
+        positionDict = positionAsDict(position)
+        name = positionDict["name"].encode("utf-8")
+        positionDict["name"] = name
+
+        e = self.assertRaises(DirectoryError, positionFromMapping, positionDict)
+        self.assertEqual(str(e), f"Position name must be text: {name!r}")
+
+    @given(positions().filter(lambda p: len(p.members) > 0), randoms())
+    @settings(max_examples=10)
+    def test_positionFromMapping_membersNotText(
+        self, position: Position, random: Random
+    ) -> None:
+        positionDict = positionAsDict(position)
+
+        index = random.choice(range(len(position.members)))
+        members = positionDict["members"][index].encode("utf-8")
+        positionDict["members"][index] = members
+
+        e = self.assertRaises(DirectoryError, positionFromMapping, positionDict)
+        self.assertEqual(str(e), f"Position members must be text: {members!r}")
+
+    @given(positions())
+    @settings(max_examples=10)
+    def test_positionFromMapping_membersNotSequenceOfText(
+        self, position: Position
+    ) -> None:
+        positionDict = positionAsDict(position)
+        members = tuple(positionDict["members"])
+        positionDict["members"] = members
+
+        e = self.assertRaises(DirectoryError, positionFromMapping, positionDict)
+        self.assertEqual(
+            str(e), f"Position members must be sequence of text: {members!r}"
+        )
+
 
 class FileDirectoryTests(TestCase):
     """

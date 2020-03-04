@@ -56,7 +56,7 @@ def rangersFromMappings(
         except DirectoryError:
             raise
         except Exception as e:
-            raise DirectoryError(f"Unable to parse Ranger records: {str(e)}")
+            raise DirectoryError(f"Unable to parse Ranger records: {e}")
 
 
 def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
@@ -122,8 +122,8 @@ def positionsFromMappings(
             yield positionFromMapping(mapping)
         except DirectoryError:
             raise
-        except:
-            raise DirectoryError("Unable to parse Ranger records.")
+        except Exception as e:
+            raise DirectoryError(f"Unable to parse position records: {e}")
 
 
 def positionFromMapping(mapping: Mapping[str, Any]) -> Position:
@@ -139,7 +139,7 @@ def positionFromMapping(mapping: Mapping[str, Any]) -> Position:
     members: Sequence[str] = mapping.get("members", [])
     if type(members) is not list:
         raise DirectoryError(
-            f"Position members must sequence of text: {members!r}"
+            f"Position members must be sequence of text: {members!r}"
         )
     for m in members:
         if type(m) is not str:
