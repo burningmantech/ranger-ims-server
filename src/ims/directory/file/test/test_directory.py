@@ -21,20 +21,20 @@ Tests for L{ims.directory.file._directory}.
 from pathlib import Path
 from random import Random
 from typing import (
-    Any, Dict, FrozenSet, Iterable, List, Mapping, Sequence, Tuple, Union
+    Any, Dict, FrozenSet, List, Mapping, Sequence, Tuple, Union
 )
 from unittest.mock import patch
 
 from hypothesis import given, settings
-from hypothesis.strategies import dictionaries, lists, randoms, text
+from hypothesis.strategies import lists, randoms, text
 
 from ims.ext.trial import TestCase
-from ims.model import Ranger, RangerStatus
-from ims.model.strategies import rangers, rangerHandles
+from ims.model import Position, Ranger, RangerStatus
+from ims.model.strategies import positions, rangers
 
 from .._directory import (
     FileDirectory,
-    positionFromMapping,
+    # positionFromMapping,
     positionsFromMappings,
     rangerFromMapping,
     rangersFromMappings,
@@ -102,15 +102,19 @@ def rangerAsDict(ranger: Ranger, random: Random) -> Dict[str, Any]:
         # email address, so this creates both.
         email = random.choice((email[0], email))
 
-    return {
-        "handle": ranger.handle,
-        "name": ranger.name,
-        "status": ranger.status.name,
-        "email": email,
-        "enabled": ranger.enabled,
+    return dict(
+        handle=ranger.handle,
+        name=ranger.name,
+        status=ranger.status.name,
+        email=email,
+        enabled=ranger.enabled,
         # directoryID is not used
-        "password": ranger.password,
-    }
+        password=ranger.password,
+    )
+
+
+def positionAsDict(position: Position) -> Dict[str, Any]:
+    return dict(name=position.name, members=list(position.members))
 
 
 class UtilityTests(TestCase):
@@ -293,6 +297,35 @@ class UtilityTests(TestCase):
         e = self.assertRaises(DirectoryError, rangerFromMapping, rangerDict)
         self.assertEqual(str(e), "Ranger password must be text: 0")
 
+    @given(lists(positions()))
+    @settings(max_examples=10)
+    def test_positionsFromMappings(self, positions: Sequence[Position]) -> None:
+        positionDicts = [positionAsDict(position) for position in positions]
+        result = list(positionsFromMappings(positionDicts))
+
+        self.assertEqual(result, positions)
+
+    # def test_positionsFromMappings_notList(self) -> None:
+    #     e = self.assertRaises(DirectoryError, list, positionsFromMappings(()))
+    #     self.assertEqual(str(e), "Positions must be sequence: ()")
+
+    # def test_rangersFromMappings_reraise(self) -> None:
+    #     e = self.assertRaises(
+    #         DirectoryError,
+    #         list,
+    #         rangersFromMappings([None]),  # type: ignore[list-item]
+    #     )
+    #     self.assertEqual(str(e), "Ranger must be mapping: None")
+
+    # def test_rangersFromMappings_error(self) -> None:
+    #     def poof(mapping: Mapping[str, Any]) -> Ranger:
+    #         raise RuntimeError("poof")
+
+    #     with patch("ims.directory.file._directory.rangerFromMapping", poof):
+    #         e = self.assertRaises(
+    #             DirectoryError, list, rangersFromMappings([{}])
+    #         )
+    #         self.assertEqual(str(e), "Unable to parse Ranger records: poof")
 
 class FileDirectoryTests(TestCase):
     """

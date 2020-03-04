@@ -51,6 +51,7 @@ from ._eventdata import EventData
 from ._imsdata import IMSData
 from ._incident import Incident
 from ._location import Location
+from ._position import Position
 from ._priority import IncidentPriority
 from ._ranger import Ranger, RangerStatus
 from ._report import IncidentReport
@@ -80,6 +81,7 @@ __all__ = (
     "incidents",
     "locationNames",
     "locations",
+    "positions",
     "radialHours",
     "radialMinutes",
     "rangerHandles",
@@ -496,6 +498,18 @@ def rangers(draw: Callable) -> Ranger:
         enabled=draw(booleans()),
         directoryID=draw(one_of(none(), text())),
         password=draw(one_of(none(), text())),
+    )
+
+
+##
+# Position
+##
+
+@composite
+def positions(draw: Callable) -> Position:
+    return Position(
+        name=draw(text(min_size=1)),
+        members=frozenset(draw(lists(rangerHandles()))),
     )
 
 

@@ -20,7 +20,7 @@ Incident Management System directory service integration.
 
 from time import time
 from pathlib import Path
-from typing import Any, ClassVar, Iterable, Mapping, Optional, Sequence, Tuple
+from typing import Any, ClassVar, Iterable, Mapping, Optional, Sequence
 
 from attr import Factory, attrs
 
@@ -28,7 +28,7 @@ from twisted.logger import Logger
 
 from yaml import safe_load as parseYAML
 
-from ims.model import Ranger, RangerStatus
+from ims.model import Position, Ranger, RangerStatus
 
 from .._directory import DirectoryError, IMSDirectory, IMSUser, RangerDirectory
 
@@ -100,7 +100,7 @@ def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
     if password is not None and type(password) is not str:
         raise DirectoryError(f"Ranger password must be text: {password!r}")
 
-    ranger = Ranger(
+    return Ranger(
         handle=handle,
         name=name,
         status=status,
@@ -109,12 +109,11 @@ def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
         directoryID=None,
         password=mapping.get("password", None),
     )
-    return ranger
 
 
 def positionsFromMappings(
-    sequence: Iterable[Mapping[str, Sequence[str]]]
-) -> Iterable[Tuple[str, Sequence[str]]]:
+    sequence: Iterable[Mapping[str, Any]]
+) -> Iterable[Position]:
     if type(sequence) is not list:
         raise DirectoryError(f"Positions must be sequence: {sequence!r}")
 
@@ -127,9 +126,7 @@ def positionsFromMappings(
             raise DirectoryError("Unable to parse Ranger records.")
 
 
-def positionFromMapping(
-    mapping: Mapping[str, Any]
-) -> Tuple[str, Sequence[str]]:
+def positionFromMapping(mapping: Mapping[str, Any]) -> Position:
     if type(mapping) is not dict:
         raise DirectoryError(f"Position must be mapping: {mapping!r}")
 
@@ -147,9 +144,8 @@ def positionFromMapping(
     for m in members:
         if type(m) is not str:
             raise DirectoryError(f"Position members must be text: {m!r}")
-        members = tuple(members)
 
-    return (name, members)
+    return Position(name=name, members=frozenset(members))
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)

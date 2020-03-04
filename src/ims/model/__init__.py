@@ -28,6 +28,7 @@ from ._imsdata import IMSData
 from ._incident import Incident
 from ._location import Location
 from ._priority import IncidentPriority
+from ._position import Position
 from ._ranger import Ranger, RangerStatus
 from ._report import IncidentReport
 from ._state import IncidentState
@@ -47,6 +48,7 @@ __all__ = (
     "IncidentType",
     "KnownIncidentType",
     "Location",
+    "Position",
     "Ranger",
     "RangerStatus",
     "ReportEntry",
