@@ -505,8 +505,12 @@ def rangers(draw: Callable) -> Ranger:
 # Position
 ##
 
+
 @composite
 def positions(draw: Callable) -> Position:
+    """
+    Strategy that generates :class:`Position` values.
+    """
     return Position(
         name=draw(text(min_size=1)),
         members=frozenset(draw(lists(rangerHandles()))),

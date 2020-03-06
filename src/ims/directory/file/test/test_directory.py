@@ -20,9 +20,7 @@ Tests for L{ims.directory.file._directory}.
 
 from pathlib import Path
 from random import Random
-from typing import (
-    Any, Dict, FrozenSet, List, Mapping, Sequence, Tuple, Union
-)
+from typing import Any, Dict, FrozenSet, List, Mapping, Sequence, Tuple, Union
 from unittest.mock import patch
 
 from hypothesis import given, settings
@@ -236,8 +234,7 @@ class UtilityTests(TestCase):
         self.assertEqual(str(e), f"Ranger status must be text: {status!r}")
 
     @given(
-        rangers().filter(lambda r: len(r.email) > 0),
-        randoms(),
+        rangers().filter(lambda r: len(r.email) > 0), randoms(),
     )
     @settings(max_examples=10)
     def test_rangerFromMapping_emailNotText(

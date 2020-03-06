@@ -20,7 +20,7 @@ Incident Management System directory service integration.
 
 from abc import ABC, abstractmethod
 from hashlib import sha1
-from typing import Dict,Iterable, List, NewType, Optional, Sequence, Set, cast
+from typing import Dict, Iterable, List, NewType, Optional, Sequence, Set, cast
 
 from attr import Factory, attrs
 

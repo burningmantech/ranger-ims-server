@@ -18,8 +18,8 @@
 Incident Management System directory service integration.
 """
 
-from time import time
 from pathlib import Path
+from time import time
 from typing import Any, ClassVar, Iterable, Mapping, Optional, Sequence
 
 from attr import Factory, attrs
