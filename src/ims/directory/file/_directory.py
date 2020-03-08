@@ -20,7 +20,7 @@ Incident Management System directory service integration.
 
 from pathlib import Path
 from time import time
-from typing import Any, ClassVar, Iterable, Mapping, Optional, Sequence
+from typing import Any, ClassVar, IO, Iterable, Mapping, Optional, Sequence
 
 from attr import Factory, attrs
 
@@ -172,16 +172,22 @@ class FileDirectory(IMSDirectory):
 
     _state: _State = Factory(_State)
 
+    def _mtime(self) -> float:
+        return self.path.stat().st_mtime
+
+    def _open(self) -> IO:
+        return self.path.open()
+
     def _reload(self) -> None:
         now = time()
         elapsed = now - self._state.lastLoadTime
 
         if (
             elapsed >= self.checkInterval
-            and self.path.stat().st_mtime > self._state.lastLoadTime
+            and self._mtime() >= self._state.lastLoadTime
         ):
             self._log.info("Reloading directory file...")
-            with self.path.open() as fh:
+            with self._open() as fh:
                 yaml = parseYAML(fh)
 
                 schemaVersion = yaml.get("schema")
@@ -198,6 +204,7 @@ class FileDirectory(IMSDirectory):
                 self._state.directory = RangerDirectory(
                     rangers=rangers, positions=positions
                 )
+                self._state.lastLoadTime = now
 
     async def personnel(self) -> Iterable[Ranger]:
         self._reload()

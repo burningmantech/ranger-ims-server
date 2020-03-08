@@ -20,8 +20,21 @@ Tests for L{ims.directory.file._directory}.
 
 from pathlib import Path
 from random import Random
-from typing import Any, Dict, FrozenSet, List, Mapping, Sequence, Tuple, Union
+from time import time
+from typing import (
+    Any,
+    Dict,
+    FrozenSet,
+    IO,
+    List,
+    Mapping,
+    Sequence,
+    Tuple,
+    Union,
+)
 from unittest.mock import patch
+
+from attr import attrs
 
 from hypothesis import given, settings
 from hypothesis.strategies import lists, randoms, text
@@ -372,14 +385,74 @@ class UtilityTests(TestCase):
         )
 
 
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
+class TestFileDirectory(FileDirectory):
+    def _mtime(self) -> float:
+        if hasattr(self._state, "mtime"):
+            return float(self._state.mtime)  # type: ignore[attr-defined]
+        else:
+            return super()._mtime()
+
+    def _open(self) -> IO:
+        if not hasattr(self._state, "openCount"):
+            self._state.openCount = 0  # type: ignore[attr-defined]
+        self._state.openCount += 1  # type: ignore[attr-defined]
+        return super()._open()
+
+
 class FileDirectoryTests(TestCase):
     """
     Tests for :class:`FileDirectory`
     """
 
-    def directory(self) -> FileDirectory:
+    def directory(self) -> TestFileDirectory:
         path = Path(__file__).parent / "directory.yaml"
-        return FileDirectory(path=path)
+
+        return TestFileDirectory(path=path)
+
+    def test_reload_before(self) -> None:
+        """
+        Reload before the check interval only opens the file once.
+        """
+        directory = self.directory()
+
+        now = time()
+
+        def fakeTime() -> float:
+            return now + 0.1
+
+        with patch("ims.directory.file._directory.time", fakeTime):
+            for _count in range(4):
+                directory._reload()
+                directory._reload()
+                directory._reload()
+                directory._reload()
+
+        self.assertEqual(
+            directory._state.openCount, 1  # type: ignore[attr-defined]
+        )
+
+    def test_reload_past(self) -> None:
+        """
+        Reload past the check interval re-opens the file.
+        """
+        directory = self.directory()
+
+        now = [time()]
+
+        def fakeTime() -> float:
+            now[0] += directory.checkInterval + 0.1
+            return now[0]
+
+        with patch("ims.directory.file._directory.time", fakeTime):
+            for _count in range(4):
+                directory._state.mtime = now[0]  # type: ignore[attr-defined]
+                directory._reload()
+
+        self.assertEqual(
+            directory._state.openCount,  # type: ignore[attr-defined]
+            _count + 1,
+        )
 
     def test_personnel(self) -> None:
         directory = self.directory()
