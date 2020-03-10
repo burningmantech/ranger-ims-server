@@ -125,7 +125,7 @@ install_requirements = [
     "klein==19.6.0",
     "PyMySQL==0.9.3",
     "Twisted==19.10.0",
-    "zope.interface==4.7.1",
+    "zope.interface==4.7.2",
     "pyOpenSSL==19.1.0",
     "service-identity==18.1.0",
 
