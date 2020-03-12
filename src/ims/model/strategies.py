@@ -482,7 +482,7 @@ def passwords(draw: Callable) -> str:
     Strategy that generates hashed passwords.
     """
     password = draw(text())
-    return hashPassword(password, "")
+    return hashPassword(password)
 
 
 @composite

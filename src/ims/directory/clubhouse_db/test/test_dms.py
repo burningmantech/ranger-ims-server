@@ -164,7 +164,7 @@ class DummyConnectionPool(object):
                 person[5],
                 person[6],
                 person[7],
-                hashPassword(person[8], ""),
+                hashPassword(person[8]),
             )
 
         if sql == (

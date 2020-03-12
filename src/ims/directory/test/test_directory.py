@@ -106,7 +106,7 @@ class RangerUserTests(TestCase):
         RangerUser.verifyPassword() returns True when the Ranger's password is a
         match.
         """
-        ranger = user.ranger.replace(password=hashPassword(password, ""))
+        ranger = user.ranger.replace(password=hashPassword(password))
         user = evolve(user, ranger=ranger)
 
         authorization = self.successResultOf(user.verifyPassword(password))
@@ -122,7 +122,7 @@ class RangerUserTests(TestCase):
         """
         assume(password != otherPassword)
 
-        ranger = user.ranger.replace(password=hashPassword(password, ""))
+        ranger = user.ranger.replace(password=hashPassword(password))
         user = evolve(user, ranger=ranger)
 
         authorization = self.successResultOf(user.verifyPassword(otherPassword))
@@ -148,7 +148,7 @@ class RangerUserTests(TestCase):
         RangerUser.verifyPassword() returns False when verifyPassword raises an
         exception.
         """
-        ranger = user.ranger.replace(password=hashPassword(password, ""))
+        ranger = user.ranger.replace(password=hashPassword(password))
         user = evolve(user, ranger=ranger)
 
         def oops(*args: Any, **kwargs: Any) -> None:

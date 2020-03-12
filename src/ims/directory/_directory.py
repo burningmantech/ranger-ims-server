@@ -24,6 +24,8 @@ from typing import Dict, Iterable, List, NewType, Optional, Sequence, Set, cast
 
 from attr import Factory, attrs
 
+from bcrypt import gensalt
+
 from ims.model import Position, Ranger
 
 
@@ -215,10 +217,13 @@ class RangerDirectory(IMSDirectory):
         return None
 
 
-def hashPassword(password: str, salt: str) -> str:
+def hashPassword(password: str, salt: Optional[str] = None) -> str:
     """
     Compute a hash for the given password
     """
+    if salt is None:
+        salt = gensalt().decode("charmap")
+
     return salt + ":" + sha1((salt + password).encode("utf-8")).hexdigest()
 
 

@@ -75,19 +75,7 @@ classifiers = [
 # Entry points
 #
 
-entry_points = {
-    "console_scripts": [],
-}
-
-script_entry_points = {
-    "server"      : ("ims.run", "Command.main"),
-    # "endpoints"   : ("ims.legacy.service.tool", "KleinTool.main"),
-    # "schema"      : ("ims.store.sqlite", "DataStore.printSchema"),
-    # "queries"     : ("ims.store.sqlite", "DataStore.printQueries"),
-}
-
-for tool, (module, function) in script_entry_points.items():
-    entry_points["console_scripts"].append(f"ims_{tool} = {module}:{function}")
+entry_points = dict(console_scripts=["ims = ims.run:Command.main"])
 
 
 #
@@ -121,18 +109,18 @@ install_requirements = [
     # Direct dependencies
     "arrow==0.15.5",
     "attrs==19.3.0",
+    "bcrypt==3.1.7",
     "cattrs==1.0.0",
     "hyperlink==19.0.0",
     "klein==19.6.0",
     "PyMySQL==0.9.3",
+    "pyOpenSSL==19.1.0",
     "PyYAML==5.3",
+    "service-identity==18.1.0",
     "Twisted==19.10.0",
     "zope.interface==4.7.1",
-    "pyOpenSSL==19.1.0",
-    "service-identity==18.1.0",
 
     # Indirect dependencies
-    "asn1crypto==1.3.0",
     "Automat==20.2.0",
     "cffi==1.14.0",
     "characteristic==14.3.0",
