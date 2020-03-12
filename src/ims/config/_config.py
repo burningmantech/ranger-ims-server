@@ -33,6 +33,7 @@ from twisted.logger import Logger
 from ims.auth import AuthProvider
 from ims.directory import IMSDirectory
 from ims.directory.clubhouse_db import DMSDirectory, DutyManagementSystem
+from ims.directory.file import FileDirectory
 from ims.ext.enum import Enum, Names, auto
 from ims.store import IMSDataStore
 from ims.store.mysql import DataStore as MySQLDataStore
@@ -173,7 +174,6 @@ class Configuration(object):
         store: Optional[IMSDataStore] = None
         directory: Optional[IMSDirectory] = None
         authProvider: Optional[AuthProvider] = None
-        locationsJSONBytes: Optional[bytes] = None
 
     @classmethod
     def fromConfigFile(cls, configFile: Optional[Path]) -> "Configuration":
@@ -254,14 +254,14 @@ class Configuration(object):
             requireActive = True
         cls._log.info("RequireActive: {active}", active=requireActive)
 
-        storeName = parser.valueFromConfig(
+        storeType = parser.valueFromConfig(
             "DATA_STORE", "Core", "DataStore", "SQLite"
         )
-        cls._log.info("DataStore: {storeName}", storeName=storeName)
+        cls._log.info("DataStore: {storeType}", storeType=storeType)
 
         storeFactory: Callable[[], IMSDataStore]
 
-        if storeName == "SQLite":
+        if storeType == "SQLite":
             dbPath = parser.pathFromConfig(
                 "DB_PATH", "Store:SQLite", "File", dataRoot, ("db.sqlite",)
             )
@@ -269,7 +269,7 @@ class Configuration(object):
 
             storeFactory = partial(SQLiteDataStore, dbPath=dbPath)
 
-        elif storeName == "MySQL":
+        elif storeType == "MySQL":
             storeHost = parser.valueFromConfig(
                 "DB_HOST_NAME", "Store:MySQL", "HostName", "localhost"
             )
@@ -304,27 +304,59 @@ class Configuration(object):
             )
 
         else:
-            raise ConfigurationError(f"Unknown data store: {storeName}")
+            raise ConfigurationError(f"Unknown data store: {storeType!r}")
 
-        dmsHost = parser.valueFromConfig("DMS_HOSTNAME", "DMS", "Hostname")
-        dmsDatabase = parser.valueFromConfig("DMS_DATABASE", "DMS", "Database")
-        dmsUsername = parser.valueFromConfig("DMS_USERNAME", "DMS", "Username")
-        dmsPassword = parser.valueFromConfig("DMS_PASSWORD", "DMS", "Password")
-
-        cls._log.info(
-            "DMS: {user}@{host}/{db}",
-            user=dmsUsername,
-            host=dmsHost,
-            db=dmsDatabase,
+        directoryType = parser.valueFromConfig(
+            "DIRECTORY", "Core", "Directory", "File"
         )
+        cls._log.info("DataStore: {storeType}", storeType=storeType)
 
-        dmsFactory = partial(
-            DutyManagementSystem,
-            host=dmsHost,
-            database=dmsDatabase,
-            username=dmsUsername,
-            password=dmsPassword,
-        )
+        directory: IMSDirectory
+
+        if directoryType == "File":
+            directoryFilePath = parser.pathFromConfig(
+                "DIRECTORY_FILE",
+                "Directory:File",
+                "DirectoryFile",
+                configRoot,
+                ("directory.yaml",),
+            )
+            cls._log.info("Directory File: {path}", path=directoryFilePath)
+
+            directory = FileDirectory(path=directoryFilePath)
+
+        elif directoryType == "ClubhouseDB":
+            dmsHost = parser.valueFromConfig(
+                "DMS_HOSTNAME", "Directory:ClubhouseDB", "Hostname"
+            )
+            dmsDatabase = parser.valueFromConfig(
+                "DMS_DATABASE", "Directory:ClubhouseDB", "Database"
+            )
+            dmsUsername = parser.valueFromConfig(
+                "DMS_USERNAME", "Directory:ClubhouseDB", "Username"
+            )
+            dmsPassword = parser.valueFromConfig(
+                "DMS_PASSWORD", "Directory:ClubhouseDB", "Password"
+            )
+
+            cls._log.info(
+                "DMS: {user}@{host}/{db}",
+                user=dmsUsername,
+                host=dmsHost,
+                db=dmsDatabase,
+            )
+
+            dms = DutyManagementSystem(
+                host=dmsHost,
+                database=dmsDatabase,
+                username=dmsUsername,
+                password=dmsPassword,
+            )
+
+            directory = DMSDirectory(dms=dms)
+
+        else:
+            raise ConfigurationError(f"Unknown directory: {directoryType!r}")
 
         masterKey = parser.valueFromConfig("MASTER_KEY", "Core", "MasterKey")
 
@@ -337,7 +369,7 @@ class Configuration(object):
             cachedResourcesRoot=cachedResourcesRoot,
             configRoot=configRoot,
             dataRoot=dataRoot,
-            dmsFactory=dmsFactory,
+            directory=directory,
             hostName=hostName,
             imsAdmins=imsAdmins,
             logFilePath=logFilePath,
@@ -355,6 +387,7 @@ class Configuration(object):
     cachedResourcesRoot: Path
     configRoot: Path
     dataRoot: Path
+    directory: IMSDirectory
     hostName: str
     imsAdmins: FrozenSet[str]
     logFilePath: Path
@@ -365,7 +398,6 @@ class Configuration(object):
     requireActive: bool
     serverRoot: Path
 
-    _dmsFactory: Callable[[], DutyManagementSystem]
     _storeFactory: Callable[[], IMSDataStore]
 
     _state: _State = attrib(factory=_State, init=False)
@@ -379,17 +411,6 @@ class Configuration(object):
             self._state.store = self._storeFactory()
 
         return self._state.store
-
-    @property
-    def directory(self) -> IMSDirectory:
-        """
-        User provider.
-        """
-        if self._state.directory is None:
-            dms = self._dmsFactory()
-            self._state.directory = DMSDirectory(dms=dms)
-
-        return self._state.directory
 
     @property
     def authProvider(self) -> AuthProvider:
@@ -422,7 +443,7 @@ class Configuration(object):
             f"Core.LogFormat: {self.logFormat}\n"
             f"\n"
             f"DataStore: {describeFactory(self._storeFactory)}\n"
-            f"DMS: {describeFactory(self._dmsFactory)}\n"
+            f"Directory: {self.directory}\n"
         )
 
     def replace(self, **changes: Any) -> "Configuration":

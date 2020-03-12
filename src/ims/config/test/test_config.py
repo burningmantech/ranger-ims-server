@@ -38,7 +38,9 @@ from hypothesis import assume, given
 from hypothesis.strategies import lists, sampled_from, text
 
 from ims.auth import AuthProvider
+from ims.directory import IMSDirectory
 from ims.directory.clubhouse_db import DMSDirectory
+from ims.directory.file import FileDirectory
 from ims.ext.enum import Enum, Names, auto
 from ims.ext.trial import TestCase
 from ims.store import IMSDataStore
@@ -106,9 +108,19 @@ class UtilityTests(TestCase):
         """
         describeFactory() describes a partial object.
         """
-        p = partial(self.factory, 1, "some_text", b"some_bytes")
+        p = partial(self.factory, 1, "some_text", b"some_bytes", q=False)
         self.assertEqual(
-            describeFactory(p), "factory(1, 'some_text', b'some_bytes')"
+            describeFactory(p),
+            "factory(1, 'some_text', b'some_bytes', q=False)",
+        )
+
+    def test_describeFactory_partial_password(self) -> None:
+        """
+        describeFactory() redacts passwords from partial objects.
+        """
+        p = partial(self.factory, 1, password="super secret")
+        self.assertEqual(
+            describeFactory(p), "factory(1, password='(REDACTED)')"
         )
 
     def test_describeFactory_function(self) -> None:
@@ -466,7 +478,7 @@ class ConfigFileParserTests(TestCase):
 
         parser = ConfigFileParser(path=configFilePath)
         with testingEnvironment({}):
-            self.assertRaises(
+            e = self.assertRaises(
                 ConfigurationError,
                 parser.enumFromConfig,
                 variable,
@@ -474,6 +486,7 @@ class ConfigFileParserTests(TestCase):
                 option,
                 default,
             )
+            self.assertStartsWith(str(e), "Invalid option ")
 
 
 class ConfigurationTests(TestCase):
@@ -495,12 +508,13 @@ class ConfigurationTests(TestCase):
         self.assertEqual(config.dataRoot, dataRoot)
         self.assertEqual(config.cachedResourcesRoot, cached)
 
-        dmsArgs = config._dmsFactory.keywords  # type: ignore[attr-defined]
+        directory = cast(FileDirectory, config.directory)
 
-        self.assertEqual(dmsArgs["host"], "")
-        self.assertEqual(dmsArgs["database"], "")
-        self.assertEqual(dmsArgs["username"], "")
-        self.assertEqual(dmsArgs["password"], "")
+        self.assertIsInstance(directory, FileDirectory)
+        self.assertEqual(
+            directory.path.resolve(),
+            (config.configRoot / "directory.yaml").resolve(),
+        )
 
     def test_fromConfigFile_none(self) -> None:
         """
@@ -539,15 +553,6 @@ class ConfigurationTests(TestCase):
         self.assertEqual(config.configRoot, configRoot)
         self.assertEqual(config.dataRoot, dataRoot)
         self.assertEqual(config.cachedResourcesRoot, cached)
-
-        dmsArgs = config._dmsFactory.keywords  # type: ignore[attr-defined]
-
-        self.assertEqual(dmsArgs["host"], "dms.rangers.example.com")
-        self.assertEqual(dmsArgs["database"], "rangers")
-        self.assertEqual(dmsArgs["username"], "ims")
-        self.assertEqual(
-            dmsArgs["password"], "9F29BB2B-E775-489C-9C20-9FE3EFEE1F22"
-        )
 
     def test_fromConfigFile_environment_value(self) -> None:
         """
@@ -685,18 +690,61 @@ class ConfigurationTests(TestCase):
 
     def test_store_unknown(self) -> None:
         with testingEnvironment(dict(IMS_DATA_STORE="XYZZY")):
-            self.assertRaises(
+            e = self.assertRaises(
                 ConfigurationError, Configuration.fromConfigFile, None
             )
+            self.assertEqual(str(e), f"Unknown data store: 'XYZZY'")
 
     def test_directory(self) -> None:
         with testingEnvironment({}):
             config = Configuration.fromConfigFile(None)
 
-        self.assertIsNone(config._state.directory)
-        self.assertIsInstance(config.directory, DMSDirectory)
-        self.assertIsNotNone(config._state.directory)
-        self.assertIsInstance(config.directory, DMSDirectory)
+        self.assertIsInstance(config.directory, IMSDirectory)
+
+    def test_directory_file(self) -> None:
+        path = Path(self.mktemp()).resolve() / "directory.yaml"
+
+        with testingEnvironment(
+            dict(IMS_DIRECTORY="File", IMS_DIRECTORY_FILE=str(path))
+        ):
+            config = Configuration.fromConfigFile(None)
+
+        directory = cast(FileDirectory, config.directory)
+
+        self.assertIsInstance(directory, FileDirectory)
+        self.assertEqual(directory.path, path)
+
+    def test_directory_clubhouseDB(self) -> None:
+        hostName = "clubhouse_host"
+        database = "rangers"
+        userName = "rangers"
+        password = "hoorj"
+
+        with testingEnvironment(
+            dict(
+                IMS_DIRECTORY="ClubhouseDB",
+                IMS_DMS_HOSTNAME=hostName,
+                IMS_DMS_DATABASE=database,
+                IMS_DMS_USERNAME=userName,
+                IMS_DMS_PASSWORD=password,
+            ),
+        ):
+            config = Configuration.fromConfigFile(None)
+
+        directory = cast(DMSDirectory, config.directory)
+
+        self.assertIsInstance(directory, DMSDirectory)
+        self.assertEqual(directory._dms.host, hostName)
+        self.assertEqual(directory._dms.database, database)
+        self.assertEqual(directory._dms.username, userName)
+        self.assertEqual(directory._dms.password, password)
+
+    def test_directory_unknown(self) -> None:
+        with testingEnvironment(dict(IMS_DIRECTORY="XYZZY")):
+            e = self.assertRaises(
+                ConfigurationError, Configuration.fromConfigFile, None
+            )
+            self.assertEqual(str(e), f"Unknown directory: 'XYZZY'")
 
     def test_authProvider(self) -> None:
         with testingEnvironment({}):
@@ -728,7 +776,7 @@ class ConfigurationTests(TestCase):
             f"Core.LogFormat: {config.logFormat}\n"
             f"\n"
             f"DataStore: {describeFactory(config._storeFactory)}\n"
-            f"DMS: {describeFactory(config._dmsFactory)}\n",
+            f"Directory: {config.directory}\n",
         )
 
     def test_replace(self) -> None:

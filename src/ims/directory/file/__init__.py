@@ -17,3 +17,8 @@
 """
 Flat file user directory.
 """
+
+from ._directory import FileDirectory
+
+
+__all__ = ("FileDirectory",)
