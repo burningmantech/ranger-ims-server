@@ -27,6 +27,7 @@ from attr import attrs
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.application.runner._runner import Runner
 from twisted.internet.defer import Deferred, ensureDeferred
+from twisted.internet.error import CannotListenError
 from twisted.logger import Logger
 from twisted.python.failure import Failure
 from twisted.python.usage import UsageError
@@ -257,19 +258,32 @@ class Command(object):
                 cls.stop()
                 return
 
-            if options.subCommand is None:
-                cls.runServer(config)
-            elif options.subCommand == "server":
-                cls.runServer(config)
-            elif options.subCommand == "export":
-                await cls.runExport(config, options.subOptions)
-            elif options.subCommand == "import":
-                await cls.runImport(config, options.subOptions)
-            elif options.subCommand == "compare":
-                await cls.runCompare(config, options.subOptions)
+            subCommand = options.subCommand
+            if subCommand is None:
+                subCommand = "server"
+
+            try:
+                if subCommand == "server":
+                    cls.runServer(config)
+                elif subCommand == "export":
+                    await cls.runExport(config, options.subOptions)
+                elif subCommand == "import":
+                    await cls.runImport(config, options.subOptions)
+                elif subCommand == "compare":
+                    await cls.runCompare(config, options.subOptions)
+                else:
+                    raise AssertionError(f"Unknown subcommand: {subCommand}")
+            except BaseException as e:
+                cls.log.critical(
+                    "Unable to run {subCommand}: {error}",
+                    subCommand=subCommand,
+                    error=e,
+                )
+                cls.stop()
+                return
 
         def error(f: Failure) -> None:
-            cls.log.failure("Unable to start: {log_failure}", failure=f)
+            cls.log.failure("Uncaught service error: {log_failure}", failure=f)
             cls.stop()
 
         d = ensureDeferred(run())
