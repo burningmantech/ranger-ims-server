@@ -35,7 +35,9 @@ from .._directory import (
     IMSGroupID,
     RangerDirectory,
     RangerUser,
+    _hash,
     hashPassword,
+    verifyPassword,
 )
 
 
@@ -266,3 +268,45 @@ class DirectoryTests(TestCase):
                     self.assertGreater(emailCounts[email], 0)
                 else:
                     self.assertEqual(user.ranger.handle, ranger.handle)
+
+
+class UtilityTests(TestCase):
+    """
+    Tests for utilities.
+    """
+
+    @given(text())
+    def test_hashPassword_noSalt(self, password: str) -> None:
+        hashedPassword = hashPassword(password)
+        saltOut, hashOut = hashedPassword.rsplit(":", 1)
+
+        self.assertGreater(len(saltOut), 0)
+        self.assertEqual(len(hashOut), 40)
+        self.assertEqual(hashOut, _hash(password, saltOut))
+        self.assertNotEqual(password, hashOut)
+
+    @given(text(), text())
+    def test_hashPassword_salt(self, password: str, salt: str) -> None:
+        hashedPassword = hashPassword(password, salt)
+        saltOut, hashOut = hashedPassword.rsplit(":", 1)
+
+        self.assertEqual(saltOut, salt)
+        self.assertEqual(len(hashOut), 40)
+        self.assertEqual(hashOut, _hash(password, salt))
+        self.assertNotEqual(password, hashOut)
+
+    @given(text())
+    def test_verifyPassword_noSalt(self, password: str) -> None:
+        hashedPassword = hashPassword(password)
+        self.assertTrue(verifyPassword(password, hashedPassword))
+
+    @given(text(), text())
+    def test_verifyPassword_salt(self, password: str, salt: str) -> None:
+        hashedPassword = hashPassword(password, salt)
+        self.assertTrue(verifyPassword(password, hashedPassword))
+
+    @given(text(), text().filter(lambda s: ":" not in s))
+    def test_verifyPassword_invalidHash(
+        self, password: str, hashedPassword: str
+    ) -> None:
+        self.assertRaises(ValueError, verifyPassword, password, hashedPassword)

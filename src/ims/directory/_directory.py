@@ -217,6 +217,10 @@ class RangerDirectory(IMSDirectory):
         return None
 
 
+def _hash(password: str, salt: str) -> str:
+    return sha1((salt + password).encode("utf-8")).hexdigest()
+
+
 def hashPassword(password: str, salt: Optional[str] = None) -> str:
     """
     Compute a hash for the given password
@@ -224,7 +228,7 @@ def hashPassword(password: str, salt: Optional[str] = None) -> str:
     if salt is None:
         salt = gensalt().decode("charmap")
 
-    return salt + ":" + sha1((salt + password).encode("utf-8")).hexdigest()
+    return salt + ":" + _hash(password, salt)
 
 
 def verifyPassword(password: str, hashedPassword: str) -> bool:
@@ -237,6 +241,6 @@ def verifyPassword(password: str, hashedPassword: str) -> bool:
     # ":".
     salt, hashValue = hashedPassword.rsplit(":", 1)
 
-    hashed = sha1((salt + password).encode("utf-8")).hexdigest()
+    hashed = _hash(password, salt)
 
     return hashed == hashValue
