@@ -27,7 +27,6 @@ from attr import attrs
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.application.runner._runner import Runner
 from twisted.internet.defer import Deferred, ensureDeferred
-from twisted.internet.error import CannotListenError
 from twisted.logger import Logger
 from twisted.python.failure import Failure
 from twisted.python.usage import UsageError
