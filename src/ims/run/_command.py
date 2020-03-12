@@ -258,10 +258,9 @@ class Command(object):
                 return
 
             subCommand = options.subCommand
-            if subCommand is None:
-                subCommand = "server"
 
             try:
+                assert subCommand is not None, "No subcommand"
                 if subCommand == "server":
                     cls.runServer(config)
                 elif subCommand == "export":

@@ -153,7 +153,6 @@ class IMSOptions(Options):
         ["import", None, ImportOptions, "Import data"],
         ["compare", None, CompareOptions, "Compare two export files"],
     ]
-    # defaultSubCommand = "server"
 
     def getSynopsis(self) -> str:
         return f"{Options.getSynopsis(self)} command [command_options]"
@@ -292,13 +291,16 @@ class IMSOptions(Options):
                 self["logFormat"] = "json"
 
     def parseOptions(self, options: Optional[Sequence[str]] = None) -> None:
-        Options.parseOptions(self, options=options)
+        super().parseOptions(options=options)
 
         self.initLogFile()
         self.selectDefaultLogObserver()
 
     def postOptions(self) -> None:
-        Options.postOptions(self)
+        super().postOptions()
+
+        if self.subCommand is None:
+            raise UsageError(f"No subcommand specified.")
 
         self.initConfig()
 
