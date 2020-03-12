@@ -34,13 +34,21 @@ from twisted.web.server import Session, Site
 
 from ims.application import Application
 from ims.config import Configuration
-from ims.directory import hashPassword
+from ims.directory import hashPassword, verifyPassword
 from ims.model.json import jsonObjectFromModelObject
 from ims.store import IMSDataStore, StorageError
 from ims.store.export import JSONExporter, JSONImporter
 
 from ._log import patchCombinedLogFormatter
-from ._options import CompareOptions, ExportOptions, IMSOptions, ImportOptions
+from ._options import (
+    CompareOptions,
+    ExportOptions,
+    HashPasswordOptions,
+    ImportOptions,
+    IMSOptions,
+    ServerOptions,
+    VerifyPasswordOptions,
+)
 
 
 __all__ = ()
@@ -84,7 +92,7 @@ class Command(object):
         await store.validate()
 
     @classmethod
-    def runServer(cls, config: Configuration) -> None:
+    def runServer(cls, config: Configuration, options: ServerOptions) -> None:
         host = config.hostName
         port = config.port
 
@@ -125,7 +133,7 @@ class Command(object):
         cls.stop()
 
     @classmethod
-    async def runCompare(
+    def runCompare(
         cls, config: Configuration, options: CompareOptions
     ) -> None:
         importers = []  # type: List[JSONImporter]
@@ -242,12 +250,26 @@ class Command(object):
         cls.stop()
 
     @classmethod
-    async def runHashPassword(
-        cls, config: Configuration, options: ImportOptions
+    def runHashPassword(
+        cls, config: Configuration, options: HashPasswordOptions
     ) -> None:
         password = options["password"]
         hashedPassword = hashPassword(password)
         options["stdout"].write(f"{hashedPassword}\n")
+        cls.stop()
+
+    @classmethod
+    def runVerifyPassword(
+        cls, config: Configuration, options: VerifyPasswordOptions
+    ) -> None:
+        options["stdout"].write("*"*80 + "\n")
+        password = options["password"]
+        hashedPassword = options["hashedPassword"]
+        if verifyPassword(password, hashedPassword):
+            options["stdout"].write("Password OK\n")
+        else:
+            options["stdout"].write("Password invalid\n")
+        options["stdout"].write("*"*80 + "\n")
         cls.stop()
 
     @classmethod
@@ -268,19 +290,22 @@ class Command(object):
                 return
 
             subCommand = options.subCommand
+            subOptions = options.subOptions
 
             try:
                 assert subCommand is not None, "No subcommand"
                 if subCommand == "server":
-                    cls.runServer(config)
+                    cls.runServer(config, subOptions)
                 elif subCommand == "export":
-                    await cls.runExport(config, options.subOptions)
+                    await cls.runExport(config, subOptions)
                 elif subCommand == "import":
-                    await cls.runImport(config, options.subOptions)
+                    await cls.runImport(config, subOptions)
                 elif subCommand == "compare":
-                    await cls.runCompare(config, options.subOptions)
+                    cls.runCompare(config, subOptions)
                 elif subCommand == "hash_password":
-                    await cls.runHashPassword(config, options.subOptions)
+                    cls.runHashPassword(config, subOptions)
+                elif subCommand == "verify_password":
+                    cls.runVerifyPassword(config, subOptions)
                 else:
                     raise AssertionError(f"Unknown subcommand: {subCommand}")
             except BaseException as e:

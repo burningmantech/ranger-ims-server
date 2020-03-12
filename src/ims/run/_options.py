@@ -151,6 +151,19 @@ class HashPasswordOptions(Options):
         self["password"] = password
 
 
+class VerifyPasswordOptions(Options):
+    """
+    Command line options for the IMS export comparison tool.
+    """
+
+    def parseArgs(self, password: str, hashedPassword: str) -> None:
+        """
+        Handle password.
+        """
+        self["password"] = password
+        self["hashedPassword"] = hashedPassword
+
+
 class IMSOptions(Options):
     """
     Command line options for all IMS commands.
@@ -165,6 +178,7 @@ class IMSOptions(Options):
         ["import", None, ImportOptions, "Import data"],
         ["export_compare", None, CompareOptions, "Compare two export files"],
         ["hash_password", None, HashPasswordOptions, "Hash a password"],
+        ["verify_password", None, VerifyPasswordOptions, "Verify a password"],
     ]
 
     def getSynopsis(self) -> str:
@@ -314,6 +328,8 @@ class IMSOptions(Options):
 
         if self.subCommand is None:
             raise UsageError(f"No subcommand specified.")
+
+        self.log.info("Running command: {command}...", command=self.subCommand)
 
         self.subOptions["stderr"] = stderr
         self.subOptions["stdin"] = stdin
