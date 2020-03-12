@@ -34,6 +34,7 @@ from twisted.web.server import Session, Site
 
 from ims.application import Application
 from ims.config import Configuration
+from ims.directory import hashPassword
 from ims.model.json import jsonObjectFromModelObject
 from ims.store import IMSDataStore, StorageError
 from ims.store.export import JSONExporter, JSONImporter
@@ -241,6 +242,15 @@ class Command(object):
         cls.stop()
 
     @classmethod
+    async def runHashPassword(
+        cls, config: Configuration, options: ImportOptions
+    ) -> None:
+        password = options["password"]
+        hashedPassword = hashPassword(password)
+        options["stdout"].write(f"{hashedPassword}\n")
+        cls.stop()
+
+    @classmethod
     def whenRunning(cls, options: IMSOptions) -> Deferred:
         """
         Called after the reactor has started.
@@ -269,12 +279,15 @@ class Command(object):
                     await cls.runImport(config, options.subOptions)
                 elif subCommand == "compare":
                     await cls.runCompare(config, options.subOptions)
+                elif subCommand == "hash_password":
+                    await cls.runHashPassword(config, options.subOptions)
                 else:
                     raise AssertionError(f"Unknown subcommand: {subCommand}")
             except BaseException as e:
                 cls.log.critical(
-                    "Unable to run {subCommand}: {error}",
+                    "Unable to run {subCommand}: ({errorClass}) {error}",
                     subCommand=subCommand,
+                    errorClass=e.__class__.__name__,
                     error=e,
                 )
                 cls.stop()
