@@ -44,8 +44,8 @@ from ._options import (
     CompareOptions,
     ExportOptions,
     HashPasswordOptions,
-    ImportOptions,
     IMSOptions,
+    ImportOptions,
     ServerOptions,
     VerifyPasswordOptions,
 )
@@ -262,14 +262,14 @@ class Command(object):
     def runVerifyPassword(
         cls, config: Configuration, options: VerifyPasswordOptions
     ) -> None:
-        options["stdout"].write("*"*80 + "\n")
         password = options["password"]
         hashedPassword = options["hashedPassword"]
+        options["stdout"].write(password + "\n")
+        options["stdout"].write(hashedPassword + "\n")
         if verifyPassword(password, hashedPassword):
             options["stdout"].write("Password OK\n")
         else:
             options["stdout"].write("Password invalid\n")
-        options["stdout"].write("*"*80 + "\n")
         cls.stop()
 
     @classmethod
