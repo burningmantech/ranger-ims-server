@@ -133,9 +133,7 @@ class Command(object):
         cls.stop()
 
     @classmethod
-    def runCompare(
-        cls, config: Configuration, options: CompareOptions
-    ) -> None:
+    def runCompare(cls, config: Configuration, options: CompareOptions) -> None:
         importers = []  # type: List[JSONImporter]
 
         for inFile in options["inFiles"]:
