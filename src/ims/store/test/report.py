@@ -374,9 +374,9 @@ class DataStoreIncidentReportTests(DataStoreTests):
         author = "Bucket"
 
         for reportEntries in (
-            (),
-            (aReportEntry1,),
-            (aReportEntry1, aReportEntry2),
+            frozenset(()),
+            frozenset((aReportEntry1,)),
+            frozenset((aReportEntry1, aReportEntry2)),
         ):
             # Change author in report entries to match the author so we will
             # use to add them
