@@ -7,6 +7,7 @@ include bin/mysql-run
 include bin/run
 include bin/shell
 include codecov.yml
+include conf/directory-sample.yaml
 include conf/imsd-sample.conf
 include COPYRIGHT.rst
 include Dockerfile
