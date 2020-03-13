@@ -20,7 +20,7 @@ Run the IMS server.
 
 import sys
 from sys import stdout
-from typing import ClassVar, List, Sequence
+from typing import ClassVar, List, Optional, Sequence
 
 from attr import attrs
 
@@ -136,13 +136,13 @@ class Command(object):
                     JSONImporter.fromIO(store=config.store, io=inFile)
                 )
 
-        first = None
+        first: Optional[JSONImporter] = None
 
         for importer in importers:
             if first is None:
                 first = importer
             else:
-                cls.log.info("Comparing export files...")  # type: ignore[misc]
+                cls.log.info("Comparing export files...")
 
                 imsDataA = first.imsData
                 imsDataB = importer.imsData
@@ -163,8 +163,8 @@ class Command(object):
                         if eventDataA.event != eventDataB.event:
                             cls.log.error(
                                 "Events do not match: {eventsA} != {eventsB}",
-                                eventsA=[e for e in imsDataA.events.event],
-                                eventsB=[e for e in imsDataB.events.event],
+                                eventsA=[d.event for d in imsDataA.events],
+                                eventsB=[d.event for d in imsDataB.events],
                             )
 
                     for eventDataA, eventDataB in zip(

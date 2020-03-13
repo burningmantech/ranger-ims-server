@@ -90,7 +90,7 @@ class HeaderName(Enum):
 
 
 if False:
-    _staticETag = version  # type: ignore[misc] # unreachable
+    _staticETag = version  # type: ignore[unreachable]
     _maxAge = 60 * 5  # 5 minutes
 else:
     # For debugging, change the ETag on app launch
