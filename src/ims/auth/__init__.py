@@ -23,8 +23,8 @@ from ._provider import AuthProvider, Authorization
 
 
 __all__ = (
-    "AuthProvider",
     "Authorization",
+    "AuthProvider",
     "NotAuthenticatedError",
     "NotAuthorizedError",
 )

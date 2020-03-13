@@ -15,20 +15,28 @@
 ##
 
 """
-Incident Management System configuration.
+Incident Management System directory service integration.
 """
 
-from ._config import (
-    Configuration,
-    ConfigurationError,
-    LogFormat,
+from ._directory import (
+    DirectoryError,
+    IMSDirectory,
+    IMSGroupID,
+    IMSUser,
+    IMSUserID,
+    RangerUser,
+    hashPassword,
+    verifyPassword,
 )
-from ._urls import URLs
 
 
 __all__ = (
-    "Configuration",
-    "ConfigurationError",
-    "LogFormat",
-    "URLs",
+    "DirectoryError",
+    "IMSDirectory",
+    "IMSGroupID",
+    "IMSUser",
+    "IMSUserID",
+    "RangerUser",
+    "hashPassword",
+    "verifyPassword",
 )

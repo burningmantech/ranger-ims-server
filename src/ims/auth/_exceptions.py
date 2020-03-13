@@ -15,7 +15,7 @@
 ##
 
 """
-Incident Management System service errors.
+Incident Management System auth errors.
 """
 
 from attr import attrs

@@ -19,15 +19,15 @@ Incident Management System web application authentication provider.
 """
 
 from enum import Flag, auto
-from typing import ClassVar, Container, FrozenSet, Optional, Sequence
+from typing import ClassVar, Container, FrozenSet, Optional
 
 from attr import attrs
 
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
-from ims.dms import DMSError, DutyManagementSystem, verifyPassword
-from ims.model import Event, IncidentReport, Ranger
+from ims.directory import IMSUser
+from ims.model import Event, IncidentReport
 from ims.store import IMSDataStore
 
 from ._exceptions import NotAuthenticatedError, NotAuthorizedError
@@ -62,35 +62,6 @@ class Authorization(Flag):
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class User(object):
-    """
-    Application user.
-    """
-
-    _ranger: Ranger
-    groups: Sequence[str]
-
-    @property
-    def shortNames(self) -> Sequence[str]:
-        return (self._ranger.handle,)
-
-    @property
-    def hashedPassword(self) -> Optional[str]:
-        return self._ranger.password
-
-    @property
-    def active(self) -> bool:
-        return self._ranger.onSite
-
-    @property
-    def rangerHandle(self) -> str:
-        return self._ranger.handle
-
-    def __str__(self) -> str:
-        return str(self._ranger)
-
-
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class AuthProvider(object):
     """
     Provider for authentication and authorization support.
@@ -99,25 +70,20 @@ class AuthProvider(object):
     _log: ClassVar[Logger] = Logger()
 
     store: IMSDataStore
-    dms: DutyManagementSystem
 
     requireActive: bool = True
     adminUsers: FrozenSet[str] = frozenset()
     masterKey: str = ""
 
-    async def verifyCredentials(self, user: User, password: str) -> bool:
+    async def verifyPassword(self, user: IMSUser, password: str) -> bool:
         """
         Verify a password for the given user.
         """
+        if self.masterKey and password == self.masterKey:
+            return True
+
         try:
-            if self.masterKey and password == self.masterKey:
-                return True
-
-            hashedPassword = user.hashedPassword
-            if hashedPassword is None:
-                return False
-
-            authenticated = verifyPassword(password, hashedPassword)
+            authenticated = await user.verifyPassword(password)
         except Exception as e:
             self._log.critical(
                 "Unable to check password for user {user}: {error}",
@@ -153,13 +119,13 @@ class AuthProvider(object):
             raise NotAuthenticatedError("No user logged in")
 
     async def authorizationsForUser(
-        self, user: User, event: Optional[Event]
+        self, user: IMSUser, event: Optional[Event]
     ) -> Authorization:
         """
         Look up the authorizations that a user has for a given event.
         """
 
-        def matchACL(user: User, acl: Container[str]) -> bool:
+        def matchACL(user: IMSUser, acl: Container[str]) -> bool:
             if "**" in acl:
                 return True
 
@@ -266,36 +232,3 @@ class AuthProvider(object):
         await self.authorizeRequest(
             request, incidentReport.event, Authorization.readIncidents
         )
-
-    async def lookupUserName(self, username: str) -> Optional[User]:
-        """
-        Look up the user record for a user short name.
-        """
-        dms = self.dms
-
-        # FIXME: a hash would be better (eg. rangersByHandle)
-        try:
-            rangers = tuple(await dms.personnel())
-        except DMSError as e:
-            self._log.critical("Unable to load personnel: {error}", error=e)
-            return None
-
-        for ranger in rangers:
-            if ranger.handle == username:
-                break
-        else:
-            for ranger in rangers:
-                if username in ranger.email:
-                    break
-            else:
-                return None
-
-        positions = tuple(await dms.positions())
-
-        groups = tuple(
-            position.name
-            for position in positions
-            if ranger in position.members
-        )
-
-        return User(ranger=ranger, groups=groups)

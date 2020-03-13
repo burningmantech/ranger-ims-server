@@ -46,7 +46,7 @@ from twisted.web.iweb import IRequest
 
 from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
-from ims.dms import DMSError
+from ims.directory import DirectoryError
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 from ims.model import (
@@ -131,8 +131,8 @@ class APIApplication(object):
         Data for personnel endpoint.
         """
         try:
-            personnel = await self.config.dms.personnel()
-        except DMSError as e:
+            personnel = await self.config.directory.personnel()
+        except DirectoryError as e:
             self._log.error("Unable to vend personnel: {failure}", failure=e)
             personnel = ()
 

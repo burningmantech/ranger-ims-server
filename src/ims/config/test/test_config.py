@@ -19,18 +19,40 @@ Tests for L{ims.config._config}.
 """
 
 from contextlib import contextmanager
+from functools import partial
 from os import environ, getcwd
 from pathlib import Path
-from typing import Iterable, Iterator, Mapping, Optional, Set, Tuple, cast
+from string import ascii_letters, printable
+from typing import (
+    Iterable,
+    Iterator,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    cast,
+)
+
+from hypothesis import assume, given
+from hypothesis.strategies import lists, sampled_from, text
 
 from ims.auth import AuthProvider
-from ims.dms import DutyManagementSystem
+from ims.directory import IMSDirectory
+from ims.directory.clubhouse_db import DMSDirectory
+from ims.directory.file import FileDirectory
+from ims.ext.enum import Enum, Names, auto
 from ims.ext.trial import TestCase
 from ims.store import IMSDataStore
 from ims.store.mysql import DataStore as MySQLDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
-from .._config import Configuration, ConfigurationError
+from .._config import (
+    ConfigFileParser,
+    Configuration,
+    ConfigurationError,
+    describeFactory,
+)
 
 
 __all__ = ()
@@ -56,6 +78,417 @@ def testingEnvironment(environment: Mapping[str, str]) -> Iterator[None]:
         environ.update(savedEnvironment)
 
 
+def writeConfig(path: Path, section: str, option: str, value: str) -> None:
+    value = value.replace("%", "%%")
+    path.write_text(f"[{section}]\n{option} = {value}\n")
+
+
+class Things(Names):
+    """
+    Some things.
+    """
+
+    cheese = auto()
+    butter = auto()
+    wheels = auto()
+    dogs = auto()
+    dirt = auto()
+
+
+class UtilityTests(TestCase):
+    """
+    Tests for utilities.
+    """
+
+    @staticmethod
+    def factory(a: int, b: str, c: bytes) -> bool:
+        raise NotImplementedError()
+
+    def test_describeFactory_partial(self) -> None:
+        """
+        describeFactory() describes a partial object.
+        """
+        p = partial(self.factory, 1, "some_text", b"some_bytes", q=False)
+        self.assertEqual(
+            describeFactory(p),
+            "factory(1, 'some_text', b'some_bytes', q=False)",
+        )
+
+    def test_describeFactory_partial_password(self) -> None:
+        """
+        describeFactory() redacts passwords from partial objects.
+        """
+        p = partial(self.factory, 1, password="super secret")
+        self.assertEqual(
+            describeFactory(p), "factory(1, password='(REDACTED)')"
+        )
+
+    def test_describeFactory_function(self) -> None:
+        """
+        describeFactory() describes a function object.
+        """
+        self.assertEqual(describeFactory(self.factory), "factory(...)")
+
+
+class ConfigFileParserTests(TestCase):
+    """
+    Tests for :class:`ConfigFileParser`
+    """
+
+    def test_init_path(self) -> None:
+        """
+        Init path is kept.
+        """
+        configFilePath = Path(self.mktemp())
+        configFilePath.write_text("")
+
+        parser = ConfigFileParser(path=configFilePath)
+
+        self.assertEqual(parser.path, configFilePath)
+
+    def test_init_path_none(self) -> None:
+        """
+        Init path may be None.
+        """
+        parser = ConfigFileParser(path=None)
+
+        self.assertIsNone(parser.path)
+
+    def test_init_path_missing(self) -> None:
+        """
+        Init with missing path is OK.
+        """
+        configFilePath = Path(self.mktemp())
+        assert not configFilePath.exists()
+
+        parser = ConfigFileParser(path=configFilePath)
+
+        self.assertEqual(parser.path, configFilePath)
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # value
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        text(),  # default
+    )
+    def test_valueFromConfig(
+        self, variable: str, value: str, section: str, option: str, default: str
+    ) -> None:
+        """
+        ConfigFileParser.valueFromConfig() reads a value from the config file.
+        """
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, value)
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.valueFromConfig(variable, section, option, default),
+                value,
+            )
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # value
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        text(),  # default
+    )
+    def test_valueFromConfig_env(
+        self, variable: str, value: str, section: str, option: str, default: str
+    ) -> None:
+        """
+        ConfigFileParser.valueFromConfig() reads an environment variable.
+        """
+        parser = ConfigFileParser(path=None)
+        with testingEnvironment({f"IMS_{variable}": value}):
+            self.assertEqual(
+                parser.valueFromConfig(variable, section, option, default),
+                value,
+            )
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # value
+        text(alphabet=ascii_letters, min_size=1),  # otherValue
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        text(),  # default
+    )
+    def test_valueFromConfig_env_override(
+        self,
+        variable: str,
+        value: str,
+        otherValue: str,
+        section: str,
+        option: str,
+        default: str,
+    ) -> None:
+        """
+        ConfigFileParser.valueFromConfig() reads an environment variable even
+        if the corresponding value is in the config file.
+        """
+        assume(value != otherValue)
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, otherValue)
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({f"IMS_{variable}": value}):
+            self.assertEqual(
+                parser.valueFromConfig(variable, section, option, default),
+                value,
+            )
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # value
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        text(alphabet=ascii_letters, min_size=1),  # otherSection
+        text(alphabet=ascii_letters, min_size=1),  # otherOption
+        text(),  # default
+    )
+    def test_valueFromConfig_notFound(
+        self,
+        variable: str,
+        value: str,
+        section: str,
+        option: str,
+        otherSection: str,
+        otherOption: str,
+        default: str,
+    ) -> None:
+        """
+        ConfigFileParser.valueFromConfig() returns the default value when it
+        can't find a value in the environment or config file.
+        """
+        assume(
+            (section.lower(), option.lower())
+            != (otherSection.lower(), otherOption.lower())
+        )
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, value)
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.valueFromConfig(
+                    variable, otherSection, otherOption, default
+                ),
+                default,
+            )
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        lists(text(alphabet=printable, min_size=1)),  # segments
+    )
+    def test_pathFromConfig_relative(
+        self, variable: str, section: str, option: str, segments: Sequence[str]
+    ) -> None:
+        """
+        ConfigFileParser.pathFromConfig() reads a relative path from the config
+        file.
+        """
+        valuePath = Path(self.mktemp())
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, str(valuePath))
+
+        rootPath = Path.cwd()  # self.mktemp returns a path relative to cwd
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.pathFromConfig(
+                    variable, section, option, rootPath, segments
+                ),
+                valuePath.resolve(),
+            )
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        lists(text(alphabet=printable, min_size=1)),  # segments
+    )
+    def test_pathFromConfig_absolute(
+        self, variable: str, section: str, option: str, segments: Sequence[str]
+    ) -> None:
+        """
+        ConfigFileParser.pathFromConfig() reads an absolute path from the
+        config file.
+        """
+        valuePath = Path(self.mktemp()).resolve()
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, str(valuePath))
+
+        rootPath = Path(self.mktemp())
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.pathFromConfig(
+                    variable, section, option, rootPath, segments
+                ),
+                valuePath,
+            )
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        text(alphabet=ascii_letters, min_size=1),  # otherSection
+        text(alphabet=ascii_letters, min_size=1),  # otherOption
+        lists(text(alphabet=printable, min_size=1)),  # segments
+    )
+    def test_pathFromConfig_notFound(
+        self,
+        variable: str,
+        section: str,
+        option: str,
+        otherSection: str,
+        otherOption: str,
+        segments: Sequence[str],
+    ) -> None:
+        """
+        ConfigFileParser.pathFromConfig() reads an absolute path from the
+        config file.
+        """
+        assume(
+            (section.lower(), option.lower())
+            != (otherSection.lower(), otherOption.lower())
+        )
+
+        valuePath = Path(self.mktemp())
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, str(valuePath))
+
+        rootPath = Path(self.mktemp())
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.pathFromConfig(
+                    variable, otherSection, otherOption, rootPath, segments
+                ),
+                rootPath.resolve().joinpath(*segments),
+            )
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        sampled_from(Things),  # value
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        sampled_from(Things),  # default
+    )
+    def test_enumFromConfig(
+        self,
+        variable: str,
+        value: Enum,
+        section: str,
+        option: str,
+        default: Enum,
+    ) -> None:
+        """
+        ConfigFileParser.enumFromConfig() reads a enumerated value from the
+        config file.
+        """
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, value.name)
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.enumFromConfig(variable, section, option, default),
+                value,
+            )
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        sampled_from(Things),  # value
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        text(alphabet=ascii_letters, min_size=1),  # otherSection
+        text(alphabet=ascii_letters, min_size=1),  # otherOption
+        sampled_from(Things),  # default
+    )
+    def test_enumFromConfig_notFound(
+        self,
+        variable: str,
+        value: Enum,
+        section: str,
+        option: str,
+        otherSection: str,
+        otherOption: str,
+        default: Enum,
+    ) -> None:
+        """
+        ConfigFileParser.enumFromConfig() returns the default value when it
+        can't find a value in the environment or config file.
+        """
+        assume(
+            (section.lower(), option.lower())
+            != (otherSection.lower(), otherOption.lower())
+        )
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, value.name)
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            self.assertEqual(
+                parser.enumFromConfig(
+                    variable, otherSection, otherOption, default
+                ),
+                default,
+            )
+
+    @given(
+        text(alphabet=ascii_letters, min_size=1),  # variable
+        sampled_from(Things),  # value
+        text(alphabet=ascii_letters, min_size=1),  # otherValue
+        text(alphabet=ascii_letters, min_size=1),  # section
+        text(alphabet=ascii_letters, min_size=1),  # option
+        sampled_from(Things),  # default
+    )
+    def test_enumFromConfig_unknown(
+        self,
+        variable: str,
+        value: Enum,
+        otherValue: str,
+        section: str,
+        option: str,
+        default: Enum,
+    ) -> None:
+        """
+        ConfigFileParser.enumFromConfig() reads a enumerated value from the
+        config file.
+        """
+        assume(otherValue not in Things)
+
+        configFilePath = Path(self.mktemp())
+        writeConfig(configFilePath, section, option, otherValue)
+
+        parser = ConfigFileParser(path=configFilePath)
+        with testingEnvironment({}):
+            e = self.assertRaises(
+                ConfigurationError,
+                parser.enumFromConfig,
+                variable,
+                section,
+                option,
+                default,
+            )
+            self.assertStartsWith(str(e), "Invalid option ")
+
+
 class ConfigurationTests(TestCase):
     """
     Tests for :class:`Configuration`
@@ -75,10 +508,13 @@ class ConfigurationTests(TestCase):
         self.assertEqual(config.dataRoot, dataRoot)
         self.assertEqual(config.cachedResourcesRoot, cached)
 
-        self.assertEqual(config.dmsHost, "")
-        self.assertEqual(config.dmsDatabase, "")
-        self.assertEqual(config.dmsUsername, "")
-        self.assertEqual(config.dmsPassword, "")
+        directory = cast(FileDirectory, config.directory)
+
+        self.assertIsInstance(directory, FileDirectory)
+        self.assertEqual(
+            directory.path.resolve(),
+            (config.configRoot / "directory.yaml").resolve(),
+        )
 
     def test_fromConfigFile_none(self) -> None:
         """
@@ -117,13 +553,6 @@ class ConfigurationTests(TestCase):
         self.assertEqual(config.configRoot, configRoot)
         self.assertEqual(config.dataRoot, dataRoot)
         self.assertEqual(config.cachedResourcesRoot, cached)
-
-        self.assertEqual(config.dmsHost, "dms.rangers.example.com")
-        self.assertEqual(config.dmsDatabase, "rangers")
-        self.assertEqual(config.dmsUsername, "ims")
-        self.assertEqual(
-            config.dmsPassword, "9F29BB2B-E775-489C-9C20-9FE3EFEE1F22"
-        )
 
     def test_fromConfigFile_environment_value(self) -> None:
         """
@@ -261,18 +690,61 @@ class ConfigurationTests(TestCase):
 
     def test_store_unknown(self) -> None:
         with testingEnvironment(dict(IMS_DATA_STORE="XYZZY")):
-            self.assertRaises(
+            e = self.assertRaises(
                 ConfigurationError, Configuration.fromConfigFile, None
             )
+            self.assertEqual(str(e), f"Unknown data store: 'XYZZY'")
 
-    def test_dms(self) -> None:
+    def test_directory(self) -> None:
         with testingEnvironment({}):
             config = Configuration.fromConfigFile(None)
 
-        self.assertIsNone(config._state.dms)
-        self.assertIsInstance(config.dms, DutyManagementSystem)
-        self.assertIsNotNone(config._state.dms)
-        self.assertIsInstance(config.dms, DutyManagementSystem)
+        self.assertIsInstance(config.directory, IMSDirectory)
+
+    def test_directory_file(self) -> None:
+        path = Path(self.mktemp()).resolve() / "directory.yaml"
+
+        with testingEnvironment(
+            dict(IMS_DIRECTORY="File", IMS_DIRECTORY_FILE=str(path))
+        ):
+            config = Configuration.fromConfigFile(None)
+
+        directory = cast(FileDirectory, config.directory)
+
+        self.assertIsInstance(directory, FileDirectory)
+        self.assertEqual(directory.path, path)
+
+    def test_directory_clubhouseDB(self) -> None:
+        hostName = "clubhouse_host"
+        database = "rangers"
+        userName = "rangers"
+        password = "hoorj"
+
+        with testingEnvironment(
+            dict(
+                IMS_DIRECTORY="ClubhouseDB",
+                IMS_DMS_HOSTNAME=hostName,
+                IMS_DMS_DATABASE=database,
+                IMS_DMS_USERNAME=userName,
+                IMS_DMS_PASSWORD=password,
+            ),
+        ):
+            config = Configuration.fromConfigFile(None)
+
+        directory = cast(DMSDirectory, config.directory)
+
+        self.assertIsInstance(directory, DMSDirectory)
+        self.assertEqual(directory._dms.host, hostName)
+        self.assertEqual(directory._dms.database, database)
+        self.assertEqual(directory._dms.username, userName)
+        self.assertEqual(directory._dms.password, password)
+
+    def test_directory_unknown(self) -> None:
+        with testingEnvironment(dict(IMS_DIRECTORY="XYZZY")):
+            e = self.assertRaises(
+                ConfigurationError, Configuration.fromConfigFile, None
+            )
+            self.assertEqual(str(e), f"Unknown directory: 'XYZZY'")
 
     def test_authProvider(self) -> None:
         with testingEnvironment({}):
@@ -303,13 +775,8 @@ class ConfigurationTests(TestCase):
             f"Core.LogFile: {config.logFilePath}\n"
             f"Core.LogFormat: {config.logFormat}\n"
             f"\n"
-            f"DB.Store: {config.storeFactory.name}\n"
-            f"DB.Arguments: {config.storeArguments!r}\n"
-            f"\n"
-            f"DMS.Hostname: \n"
-            f"DMS.Database: \n"
-            f"DMS.Username: \n"
-            f"DMS.Password: \n",
+            f"DataStore: {describeFactory(config._storeFactory)}\n"
+            f"Directory: {config.directory}\n",
         )
 
     def test_replace(self) -> None:

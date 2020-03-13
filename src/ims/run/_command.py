@@ -34,12 +34,21 @@ from twisted.web.server import Session, Site
 
 from ims.application import Application
 from ims.config import Configuration
+from ims.directory import hashPassword, verifyPassword
 from ims.model.json import jsonObjectFromModelObject
 from ims.store import IMSDataStore, StorageError
 from ims.store.export import JSONExporter, JSONImporter
 
 from ._log import patchCombinedLogFormatter
-from ._options import CompareOptions, ExportOptions, IMSOptions, ImportOptions
+from ._options import (
+    CompareOptions,
+    ExportOptions,
+    HashPasswordOptions,
+    IMSOptions,
+    ImportOptions,
+    ServerOptions,
+    VerifyPasswordOptions,
+)
 
 
 __all__ = ()
@@ -83,7 +92,7 @@ class Command(object):
         await store.validate()
 
     @classmethod
-    def runServer(cls, config: Configuration) -> None:
+    def runServer(cls, config: Configuration, options: ServerOptions) -> None:
         host = config.hostName
         port = config.port
 
@@ -124,9 +133,7 @@ class Command(object):
         cls.stop()
 
     @classmethod
-    async def runCompare(
-        cls, config: Configuration, options: CompareOptions
-    ) -> None:
+    def runCompare(cls, config: Configuration, options: CompareOptions) -> None:
         importers = []  # type: List[JSONImporter]
 
         for inFile in options["inFiles"]:
@@ -241,6 +248,29 @@ class Command(object):
         cls.stop()
 
     @classmethod
+    def runHashPassword(
+        cls, config: Configuration, options: HashPasswordOptions
+    ) -> None:
+        password = options["password"]
+        hashedPassword = hashPassword(password)
+        options["stdout"].write(f"{hashedPassword}\n")
+        cls.stop()
+
+    @classmethod
+    def runVerifyPassword(
+        cls, config: Configuration, options: VerifyPasswordOptions
+    ) -> None:
+        password = options["password"]
+        hashedPassword = options["hashedPassword"]
+        options["stdout"].write(password + "\n")
+        options["stdout"].write(hashedPassword + "\n")
+        if verifyPassword(password, hashedPassword):
+            options["stdout"].write("Password OK\n")
+        else:
+            options["stdout"].write("Password invalid\n")
+        cls.stop()
+
+    @classmethod
     def whenRunning(cls, options: IMSOptions) -> Deferred:
         """
         Called after the reactor has started.
@@ -257,19 +287,37 @@ class Command(object):
                 cls.stop()
                 return
 
-            if options.subCommand is None:
-                cls.runServer(config)
-            elif options.subCommand == "server":
-                cls.runServer(config)
-            elif options.subCommand == "export":
-                await cls.runExport(config, options.subOptions)
-            elif options.subCommand == "import":
-                await cls.runImport(config, options.subOptions)
-            elif options.subCommand == "compare":
-                await cls.runCompare(config, options.subOptions)
+            subCommand = options.subCommand
+            subOptions = options.subOptions
+
+            try:
+                assert subCommand is not None, "No subcommand"
+                if subCommand == "server":
+                    cls.runServer(config, subOptions)
+                elif subCommand == "export":
+                    await cls.runExport(config, subOptions)
+                elif subCommand == "import":
+                    await cls.runImport(config, subOptions)
+                elif subCommand == "compare":
+                    cls.runCompare(config, subOptions)
+                elif subCommand == "hash_password":
+                    cls.runHashPassword(config, subOptions)
+                elif subCommand == "verify_password":
+                    cls.runVerifyPassword(config, subOptions)
+                else:
+                    raise AssertionError(f"Unknown subcommand: {subCommand}")
+            except BaseException as e:
+                cls.log.critical(
+                    "Unable to run {subCommand}: ({errorClass}) {error}",
+                    subCommand=subCommand,
+                    errorClass=e.__class__.__name__,
+                    error=e,
+                )
+                cls.stop()
+                return
 
         def error(f: Failure) -> None:
-            cls.log.failure("Unable to start: {log_failure}", failure=f)
+            cls.log.failure("Uncaught service error: {log_failure}", failure=f)
             cls.stop()
 
         d = ensureDeferred(run())

@@ -15,20 +15,5 @@
 ##
 
 """
-Incident Management System configuration.
+Tests for L{ims.directory}.
 """
-
-from ._config import (
-    Configuration,
-    ConfigurationError,
-    LogFormat,
-)
-from ._urls import URLs
-
-
-__all__ = (
-    "Configuration",
-    "ConfigurationError",
-    "LogFormat",
-    "URLs",
-)

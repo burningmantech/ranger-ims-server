@@ -15,20 +15,16 @@
 ##
 
 """
-Incident Management System configuration.
+Duty Management System integration.
 """
 
-from ._config import (
-    Configuration,
-    ConfigurationError,
-    LogFormat,
-)
-from ._urls import URLs
+from ._directory import DMSDirectory
+from ._dms import DMSError, DatabaseError, DutyManagementSystem
 
 
 __all__ = (
-    "Configuration",
-    "ConfigurationError",
-    "LogFormat",
-    "URLs",
+    "DatabaseError",
+    "DMSDirectory",
+    "DMSError",
+    "DutyManagementSystem",
 )

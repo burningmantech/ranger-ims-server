@@ -15,22 +15,5 @@
 ##
 
 """
-Duty Management System integration.
+Tests for L{ims.directory.clubhouse_db}.
 """
-
-from ._dms import (
-    DMSError,
-    DatabaseError,
-    DutyManagementSystem,
-    hashPassword,
-    verifyPassword,
-)
-
-
-__all__ = (
-    "hashPassword",
-    "verifyPassword",
-    "DMSError",
-    "DatabaseError",
-    "DutyManagementSystem",
-)

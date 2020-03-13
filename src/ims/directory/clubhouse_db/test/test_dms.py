@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for L{ims.dms}.
+Tests for L{ims.directory.clubhouse_db._dms}.
 """
 
 from typing import MutableSequence, Tuple, cast
@@ -24,8 +24,8 @@ from twisted.internet.defer import Deferred, fail, succeed
 
 from ims.ext.trial import TestCase
 
-from .. import DutyManagementSystem
-from .._dms import fullName, hashPassword
+from .._dms import DutyManagementSystem, fullName
+from ..._directory import hashPassword
 
 
 __all__ = ()
@@ -33,7 +33,7 @@ __all__ = ()
 
 class DutyManagementSystemTests(TestCase):
     """
-    Tests for L{ims.dms.DutyManagementSystem}.
+    Tests for L{DutyManagementSystem}.
     """
 
     def setUp(self) -> None:
@@ -42,9 +42,9 @@ class DutyManagementSystemTests(TestCase):
         """
         self.dummyADBAPI = DummyADBAPI()
 
-        import ims.dms._dms
+        import ims.directory.clubhouse_db._dms
 
-        self.patch(ims.dms._dms, "adbapi", self.dummyADBAPI)
+        self.patch(ims.directory.clubhouse_db._dms, "adbapi", self.dummyADBAPI)
 
     def dms(self) -> DutyManagementSystem:
         """
@@ -103,7 +103,7 @@ class DutyManagementSystemTests(TestCase):
 
 class UtilTests(TestCase):
     """
-    Tests for L{ims.dms}.
+    Tests for L{ims.directory.clubhouse_db}.
     """
 
     def test_fullName(self) -> None:

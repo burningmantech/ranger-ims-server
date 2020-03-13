@@ -55,4 +55,4 @@ USER daemon:daemon
 
 EXPOSE 80
 
-CMD [ "/opt/ims/bin/ims_server", "--log-file", "-" ]
+CMD [ "/opt/ims/bin/ims", "--log-file", "-", "server" ]

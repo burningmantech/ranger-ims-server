@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_ranger -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -15,20 +17,30 @@
 ##
 
 """
-Incident Management System configuration.
+Position
 """
 
-from ._config import (
-    Configuration,
-    ConfigurationError,
-    LogFormat,
-)
-from ._urls import URLs
+from typing import FrozenSet
+
+from attr import attrs
+
+from ._replace import ReplaceMixIn
 
 
-__all__ = (
-    "Configuration",
-    "ConfigurationError",
-    "LogFormat",
-    "URLs",
-)
+__all__ = ()
+
+
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
+class Position(ReplaceMixIn):
+    """
+    Position
+
+    A position is a role that a subset of Rangers can participate in during an
+    event.
+    """
+
+    name: str
+    members: FrozenSet[str]
+
+    def __str__(self) -> str:
+        return self.name

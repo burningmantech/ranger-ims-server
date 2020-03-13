@@ -19,18 +19,21 @@ IMS configuration
 """
 
 from configparser import ConfigParser, NoOptionError, NoSectionError
+from functools import partial
 from os import environ, getcwd
-from os.path import basename, sep as pathsep
+from os.path import basename
 from pathlib import Path
 from sys import argv
-from typing import Any, ClassVar, FrozenSet, Mapping, Optional, Tuple, cast
+from typing import Any, Callable, ClassVar, FrozenSet, Optional, Sequence, cast
 
 from attr import Factory, attrib, attrs, evolve
 
 from twisted.logger import Logger
 
 from ims.auth import AuthProvider
-from ims.dms import DutyManagementSystem
+from ims.directory import IMSDirectory
+from ims.directory.clubhouse_db import DMSDirectory, DutyManagementSystem
+from ims.directory.file import FileDirectory
 from ims.ext.enum import Enum, Names, auto
 from ims.store import IMSDataStore
 from ims.store.mysql import DataStore as MySQLDataStore
@@ -40,6 +43,23 @@ from ._urls import URLs
 
 
 __all__ = ()
+
+
+def describeFactory(f: Callable) -> str:
+    if isinstance(f, partial):
+        if "password" in f.keywords:
+            keywords = dict(f.keywords)
+            keywords["password"] = "(REDACTED)"
+        else:
+            keywords = f.keywords
+
+        result = [f"{a!r}" for a in f.args]
+        result.extend(f"{k}={v!r}" for k, v in keywords.items())
+        args = ", ".join(result)
+        return f"{f.func.__name__}({args})"
+
+    else:
+        return f"{f.__name__}(...)"
 
 
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)
@@ -58,15 +78,6 @@ class LogFormat(Names):
 
     text = auto()
     json = auto()
-
-
-class DataStoreFactory(Enum):
-    """
-    Data store type.
-    """
-
-    SQLite = SQLiteDataStore
-    MySQL = MySQLDataStore
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -115,22 +126,17 @@ class ConfigFileParser(object):
         section: str,
         option: str,
         root: Path,
-        segments: Tuple[str],
+        segments: Sequence[str],
     ) -> Path:
         text = self.valueFromConfig(variable, section, option)
 
-        if not text:
-            path = root
-            for segment in segments:
-                path = path / segment
-
-        elif text.startswith("/"):
+        if text:
             path = Path(text)
-
         else:
-            path = root
-            for segment in text.split(pathsep):
-                path = path / segment
+            path = root.resolve().joinpath(*segments)
+
+        if not path.is_absolute():
+            path = root.resolve() / path
 
         return path
 
@@ -166,9 +172,8 @@ class Configuration(object):
         """
 
         store: Optional[IMSDataStore] = None
-        dms: Optional[DutyManagementSystem] = None
+        directory: Optional[IMSDirectory] = None
         authProvider: Optional[AuthProvider] = None
-        locationsJSONBytes: Optional[bytes] = None
 
     @classmethod
     def fromConfigFile(cls, configFile: Optional[Path]) -> "Configuration":
@@ -193,11 +198,7 @@ class Configuration(object):
         cls._log.info("Port: {port}", port=port)
 
         serverRoot = parser.pathFromConfig(
-            "SERVER_ROOT",
-            "Core",
-            "ServerRoot",
-            defaultRoot,
-            cast(Tuple[str], ()),
+            "SERVER_ROOT", "Core", "ServerRoot", defaultRoot, (),
         )
         serverRoot.mkdir(exist_ok=True)
         cls._log.info("Server root: {path}", path=serverRoot)
@@ -253,24 +254,22 @@ class Configuration(object):
             requireActive = True
         cls._log.info("RequireActive: {active}", active=requireActive)
 
-        storeFactory = cast(
-            DataStoreFactory,
-            parser.enumFromConfig(
-                "DATA_STORE", "Core", "DataStore", DataStoreFactory.SQLite
-            ),
+        storeType = parser.valueFromConfig(
+            "DATA_STORE", "Core", "DataStore", "SQLite"
         )
-        cls._log.info("DataStore: {storeName}", storeName=storeFactory.name)
+        cls._log.info("DataStore: {storeType}", storeType=storeType)
 
-        storeArguments: Mapping[str, Any]
+        storeFactory: Callable[[], IMSDataStore]
 
-        if storeFactory is DataStoreFactory.SQLite:
+        if storeType == "SQLite":
             dbPath = parser.pathFromConfig(
                 "DB_PATH", "Store:SQLite", "File", dataRoot, ("db.sqlite",)
             )
             cls._log.info("Database: {path}", path=dbPath)
-            storeArguments = dict(dbPath=dbPath)
 
-        if storeFactory is DataStoreFactory.MySQL:
+            storeFactory = partial(SQLiteDataStore, dbPath=dbPath)
+
+        elif storeType == "MySQL":
             storeHost = parser.valueFromConfig(
                 "DB_HOST_NAME", "Store:MySQL", "HostName", "localhost"
             )
@@ -294,7 +293,9 @@ class Configuration(object):
                 host=storeHost,
                 port=storePort,
             )
-            storeArguments = dict(
+
+            storeFactory = partial(
+                MySQLDataStore,
                 hostName=storeHost,
                 hostPort=storePort,
                 database=storeDatabase,
@@ -302,17 +303,60 @@ class Configuration(object):
                 password=storePassword,
             )
 
-        dmsHost = parser.valueFromConfig("DMS_HOSTNAME", "DMS", "Hostname")
-        dmsDatabase = parser.valueFromConfig("DMS_DATABASE", "DMS", "Database")
-        dmsUsername = parser.valueFromConfig("DMS_USERNAME", "DMS", "Username")
-        dmsPassword = parser.valueFromConfig("DMS_PASSWORD", "DMS", "Password")
+        else:
+            raise ConfigurationError(f"Unknown data store: {storeType!r}")
 
-        cls._log.info(
-            "DMS: {user}@{host}/{db}",
-            user=dmsUsername,
-            host=dmsHost,
-            db=dmsDatabase,
+        directoryType = parser.valueFromConfig(
+            "DIRECTORY", "Core", "Directory", "File"
         )
+        cls._log.info("DataStore: {storeType}", storeType=storeType)
+
+        directory: IMSDirectory
+
+        if directoryType == "File":
+            directoryFilePath = parser.pathFromConfig(
+                "DIRECTORY_FILE",
+                "Directory:File",
+                "DirectoryFile",
+                configRoot,
+                ("directory.yaml",),
+            )
+            cls._log.info("Directory File: {path}", path=directoryFilePath)
+
+            directory = FileDirectory(path=directoryFilePath)
+
+        elif directoryType == "ClubhouseDB":
+            dmsHost = parser.valueFromConfig(
+                "DMS_HOSTNAME", "Directory:ClubhouseDB", "Hostname"
+            )
+            dmsDatabase = parser.valueFromConfig(
+                "DMS_DATABASE", "Directory:ClubhouseDB", "Database"
+            )
+            dmsUsername = parser.valueFromConfig(
+                "DMS_USERNAME", "Directory:ClubhouseDB", "Username"
+            )
+            dmsPassword = parser.valueFromConfig(
+                "DMS_PASSWORD", "Directory:ClubhouseDB", "Password"
+            )
+
+            cls._log.info(
+                "DMS: {user}@{host}/{db}",
+                user=dmsUsername,
+                host=dmsHost,
+                db=dmsDatabase,
+            )
+
+            dms = DutyManagementSystem(
+                host=dmsHost,
+                database=dmsDatabase,
+                username=dmsUsername,
+                password=dmsPassword,
+            )
+
+            directory = DMSDirectory(dms=dms)
+
+        else:
+            raise ConfigurationError(f"Unknown directory: {directoryType!r}")
 
         masterKey = parser.valueFromConfig("MASTER_KEY", "Core", "MasterKey")
 
@@ -325,10 +369,7 @@ class Configuration(object):
             cachedResourcesRoot=cachedResourcesRoot,
             configRoot=configRoot,
             dataRoot=dataRoot,
-            dmsDatabase=dmsDatabase,
-            dmsHost=dmsHost,
-            dmsPassword=dmsPassword,
-            dmsUsername=dmsUsername,
+            directory=directory,
             hostName=hostName,
             imsAdmins=imsAdmins,
             logFilePath=logFilePath,
@@ -338,7 +379,6 @@ class Configuration(object):
             port=port,
             requireActive=requireActive,
             serverRoot=serverRoot,
-            storeArguments=storeArguments,
             storeFactory=storeFactory,
         )
 
@@ -347,10 +387,7 @@ class Configuration(object):
     cachedResourcesRoot: Path
     configRoot: Path
     dataRoot: Path
-    dmsDatabase: str
-    dmsHost: str
-    dmsPassword: str
-    dmsUsername: str
+    directory: IMSDirectory
     hostName: str
     imsAdmins: FrozenSet[str]
     logFilePath: Path
@@ -360,8 +397,8 @@ class Configuration(object):
     port: int
     requireActive: bool
     serverRoot: Path
-    storeArguments: Mapping[str, Any]
-    storeFactory: DataStoreFactory
+
+    _storeFactory: Callable[[], IMSDataStore]
 
     _state: _State = attrib(factory=_State, init=False)
 
@@ -371,24 +408,9 @@ class Configuration(object):
         Data store.
         """
         if self._state.store is None:
-            self._state.store = self.storeFactory.value(**self.storeArguments)
+            self._state.store = self._storeFactory()
 
         return self._state.store
-
-    @property
-    def dms(self) -> DutyManagementSystem:
-        """
-        Duty Management System.
-        """
-        if self._state.dms is None:
-            self._state.dms = DutyManagementSystem(
-                host=self.dmsHost,
-                database=self.dmsDatabase,
-                username=self.dmsUsername,
-                password=self.dmsPassword,
-            )
-
-        return self._state.dms
 
     @property
     def authProvider(self) -> AuthProvider:
@@ -398,7 +420,6 @@ class Configuration(object):
         if self._state.authProvider is None:
             self._state.authProvider = AuthProvider(
                 store=self.store,
-                dms=self.dms,
                 requireActive=self.requireActive,
                 adminUsers=self.imsAdmins,
                 masterKey=self.masterKey,
@@ -421,13 +442,8 @@ class Configuration(object):
             f"Core.LogFile: {self.logFilePath}\n"
             f"Core.LogFormat: {self.logFormat}\n"
             f"\n"
-            f"DB.Store: {self.storeFactory.name}\n"
-            f"DB.Arguments: {self.storeArguments}\n"
-            f"\n"
-            f"DMS.Hostname: {self.dmsHost}\n"
-            f"DMS.Database: {self.dmsDatabase}\n"
-            f"DMS.Username: {self.dmsUsername}\n"
-            f"DMS.Password: {self.dmsPassword}\n"
+            f"DataStore: {describeFactory(self._storeFactory)}\n"
+            f"Directory: {self.directory}\n"
         )
 
     def replace(self, **changes: Any) -> "Configuration":

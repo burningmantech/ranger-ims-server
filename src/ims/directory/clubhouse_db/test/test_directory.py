@@ -15,20 +15,26 @@
 ##
 
 """
-Incident Management System configuration.
+Tests for L{ims.directory.clubhouse_db._directory}.
 """
 
-from ._config import (
-    Configuration,
-    ConfigurationError,
-    LogFormat,
-)
-from ._urls import URLs
+from ims.ext.trial import TestCase
 
 
-__all__ = (
-    "Configuration",
-    "ConfigurationError",
-    "LogFormat",
-    "URLs",
-)
+__all__ = ()
+
+
+class DMSDirectoryTests(TestCase):
+    """
+    Tests for :class:`DMSDirectory`
+    """
+
+    def test_personnel(self) -> None:
+        raise NotImplementedError()
+
+    test_personnel.todo = "unimplemented"  # type: ignore[attr-defined]
+
+    def test_lookupUser(self) -> None:
+        raise NotImplementedError()
+
+    test_lookupUser.todo = "unimplemented"  # type: ignore[attr-defined]

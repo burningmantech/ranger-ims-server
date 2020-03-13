@@ -18,10 +18,16 @@
 Duty Management System.
 """
 
-from hashlib import sha1
-from os import urandom
 from time import time
-from typing import ClassVar, Iterable, Mapping, Optional, Set, Tuple, cast
+from typing import (
+    ClassVar,
+    Iterable,
+    Mapping,
+    Optional,
+    Set,
+    Tuple,
+    cast,
+)
 
 from attr import Factory, attrib, attrs
 
@@ -36,12 +42,14 @@ from twisted.logger import Logger
 
 from ims.model import Ranger, RangerStatus
 
+from .._directory import DirectoryError
+
 
 __all__ = ()
 
 
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)
-class DMSError(Exception):
+class DMSError(DirectoryError):
     """
     Duty Management System error.
     """
@@ -78,10 +86,8 @@ class DutyManagementSystem(object):
 
     _log: ClassVar[Logger] = Logger()
 
-    # DMS data changes rarely, so hour intervals between refreshing data should
-    # be fine.
-    # Refresh after an hour, but don't panic about it until we're stale for >12
-    # hours.
+    # Refresh after 5 minutes, but don't panic about errors until we're stale
+    # for >30 minutes.
     personnelCacheInterval: ClassVar[int] = 60 * 5  # 5 minutes
     personnelCacheIntervalMax: ClassVar[int] = 60 * 30  # 30 minutes
 
@@ -155,26 +161,26 @@ class DutyManagementSystem(object):
 
         return dict(
             (
-                dmsID,
+                directoryID,
                 Ranger(
                     handle=handle,
                     name=fullName(first, middle, last),
                     status=statusFromID(status),
                     email=(email,),
-                    onSite=bool(onSite),
-                    dmsID=int(dmsID),
+                    enabled=bool(enabled),
+                    directoryID=directoryID,
                     password=password,
                 ),
             )
             for (
-                dmsID,
+                directoryID,
                 handle,
                 first,
                 middle,
                 last,
                 email,
                 status,
-                onSite,
+                enabled,
                 password,
             ) in rows
         )
@@ -274,37 +280,6 @@ def fullName(first: str, middle: str, last: str) -> str:
 def statusFromID(strValue: str) -> RangerStatus:
     return {
         "active": RangerStatus.active,
-        "alpha": RangerStatus.alpha,
-        "bonked": RangerStatus.bonked,
-        "deceased": RangerStatus.deceased,
         "inactive": RangerStatus.inactive,
-        "prospective": RangerStatus.prospective,
-        "retired": RangerStatus.retired,
-        "uberbonked": RangerStatus.uberbonked,
         "vintage": RangerStatus.vintage,
     }.get(strValue, RangerStatus.other)
-
-
-def hashPassword(password: str, salt: Optional[str] = None) -> str:
-    """
-    Compute a hash for the given password
-    """
-    if salt is None:
-        salt = urandom(16).decode("charmap")
-
-    return salt + ":" + sha1((salt + password).encode("utf-8")).hexdigest()
-
-
-def verifyPassword(password: str, hashedPassword: str) -> bool:
-    """
-    Verify a password against a hashed password.
-    """
-    # Reference Clubhouse code: standard/controllers/security.php#L457
-
-    # DMS password field is a salt and a SHA-1 hash (hex digest), separated by
-    # ":".
-    salt, hashValue = hashedPassword.rsplit(":", 1)
-
-    hashed = sha1((salt + password).encode("utf-8")).hexdigest()
-
-    return hashed == hashValue

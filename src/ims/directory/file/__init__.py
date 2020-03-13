@@ -15,20 +15,10 @@
 ##
 
 """
-Incident Management System configuration.
+Flat file user directory.
 """
 
-from ._config import (
-    Configuration,
-    ConfigurationError,
-    LogFormat,
-)
-from ._urls import URLs
+from ._directory import FileDirectory
 
 
-__all__ = (
-    "Configuration",
-    "ConfigurationError",
-    "LogFormat",
-    "URLs",
-)
+__all__ = ("FileDirectory",)

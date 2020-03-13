@@ -25,13 +25,13 @@ from datetime import (
 )
 from typing import Callable, Dict, FrozenSet, Hashable, List, Optional, cast
 
-from hypothesis import HealthCheck, settings
 from hypothesis.strategies import (
     SearchStrategy,
     booleans,
     composite,
     datetimes as _datetimes,
     dictionaries,
+    emails,
     integers,
     lists,
     none,
@@ -40,7 +40,7 @@ from hypothesis.strategies import (
     text,
 )
 
-from ims.dms import hashPassword
+from ims.directory import hashPassword
 from ims.ext.sqlite import SQLITE_MAX_INT
 
 from ._address import RodGarettAddress, TextOnlyAddress
@@ -51,6 +51,7 @@ from ._eventdata import EventData
 from ._imsdata import IMSData
 from ._incident import Incident
 from ._location import Location
+from ._position import Position
 from ._priority import IncidentPriority
 from ._ranger import Ranger, RangerStatus
 from ._report import IncidentReport
@@ -80,6 +81,7 @@ __all__ = (
     "incidents",
     "locationNames",
     "locations",
+    "positions",
     "radialHours",
     "radialMinutes",
     "rangerHandles",
@@ -89,12 +91,6 @@ __all__ = (
     "textOnlyAddresses",
     "timeZones",
 )
-
-
-settings.register_profile(
-    "ci", deadline=None, suppress_health_check=[HealthCheck.too_slow],
-)
-settings.load_profile("ci")
 
 
 ##
@@ -498,10 +494,26 @@ def rangers(draw: Callable) -> Ranger:
         handle=draw(rangerHandles()),
         name=draw(text(min_size=1)),
         status=draw(sampled_from(RangerStatus)),
-        email=draw(lists(text(min_size=1))),
-        onSite=draw(booleans()),
-        dmsID=draw(one_of(none(), integers())),
+        email=draw(lists(emails())),
+        enabled=draw(booleans()),
+        directoryID=draw(one_of(none(), text())),
         password=draw(one_of(none(), text())),
+    )
+
+
+##
+# Position
+##
+
+
+@composite
+def positions(draw: Callable) -> Position:
+    """
+    Strategy that generates :class:`Position` values.
+    """
+    return Position(
+        name=draw(text(min_size=1)),
+        members=frozenset(draw(lists(rangerHandles()))),
     )
 
 

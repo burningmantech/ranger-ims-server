@@ -1,0 +1,56 @@
+schema: 0
+
+#
+# To generate a password hash, run:
+#     ims hash_password <password>
+#
+# Passwords for sample Rangers are the same as their Ranger handles.
+#
+
+rangers:
+  -
+    handle: Parenthetical
+    name: Allyssa P. Hacker
+    status: active
+    email: parenthetical@rangers.brc
+    enabled: true
+    password: $2b$12$Ooe3QrEIfbjusEbD26jKi.:25691cd619e9c112339d419f8c9add7108f6f10c
+
+  -
+    handle: Hardware
+    name: Ben Bitdiddle
+    status: active
+    email: [hardware@rangers.brc, hw@rangers.brc]
+    enabled: true
+    password: $2b$12$kQZDz/YGj8EyLlBkod.TVO:273cf31b6128199b28aa3b849aeb851d7da8cf36
+
+  -
+    handle: Defect
+    name: Cy D. Fect
+    status: active
+    email: defect@rangers.brc
+    enabled: true
+    password: $2b$12$6DE/2Rztc5Wm0.UKBnIp4O:f718ef1110dc57282422b09ecf3504586f990f95
+
+  -
+    handle: Irate
+    name: Lem E. Tweakit
+    status: active
+    email: irate@rangers.brc
+    enabled: false
+    password: $2b$12$WBU9OAOwHK9/jt4rs.ORuO:5b3f33677daab7efea690d12014253cb9c7cc7f6
+
+  -
+    handle: Loosy
+    name: Louis Reasoner
+    status: active
+    email: loosy@rangers.brc
+    enabled: true
+    password: $2b$12$Zw7o6YZ6nbPcSoPSKC4ITe:99fb32729d2a5d6405b101cf887e9e6688c93295
+
+positions:
+  -
+    name: Shift Command
+    members:
+      - Parenthetical
+      - Hardware

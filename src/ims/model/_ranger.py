@@ -20,10 +20,11 @@
 Ranger
 """
 
-from enum import IntEnum, unique
 from typing import FrozenSet, Optional
 
 from attr import attrib, attrs
+
+from ims.ext.enum import Names, auto, unique
 
 from ._convert import freezeStrings
 from ._replace import ReplaceMixIn
@@ -33,38 +34,26 @@ __all__ = ()
 
 
 statusDescriptions = dict(
-    prospective="Prospective",
-    alpha="Alpha",
-    bonked="Bonked Prospective",
     active="Active Ranger",
     inactive="Inactive Ranger",
-    retired="Retired Ranger",
-    uberbonked="Uberbonked Participant",
     vintage="Vintage Ranger",
-    deceased="Late Ranger",
     other="(Unknown Person Type)",
 )
 
 
 @unique
-class RangerStatus(IntEnum):
+class RangerStatus(Names):
     """
     Ranger status
 
     A Ranger status denotes the status of a Ranger in the Ranger department.
     """
 
-    prospective = 0
-    alpha = 1
-    bonked = 2
-    active = 3
-    inactive = 4
-    retired = 5
-    uberbonked = 6
-    vintage = 7
-    deceased = 8
+    active = auto()
+    inactive = auto()
+    vintage = auto()
 
-    other = -1
+    other = auto()
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}[{self.name!r}]"
@@ -86,8 +75,8 @@ class Ranger(ReplaceMixIn):
     name: str
     status: RangerStatus
     email: FrozenSet[str] = attrib(converter=freezeStrings)
-    onSite: bool
-    dmsID: Optional[int]
+    enabled: bool
+    directoryID: Optional[str]
     password: Optional[str] = None
 
     def __str__(self) -> str:

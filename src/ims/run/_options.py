@@ -139,6 +139,31 @@ class CompareOptions(Options):
         self["inFiles"] = files
 
 
+class HashPasswordOptions(Options):
+    """
+    Command line options for the IMS export comparison tool.
+    """
+
+    def parseArgs(self, password: str) -> None:
+        """
+        Handle password.
+        """
+        self["password"] = password
+
+
+class VerifyPasswordOptions(Options):
+    """
+    Command line options for the IMS export comparison tool.
+    """
+
+    def parseArgs(self, password: str, hashedPassword: str) -> None:
+        """
+        Handle password.
+        """
+        self["password"] = password
+        self["hashedPassword"] = hashedPassword
+
+
 class IMSOptions(Options):
     """
     Command line options for all IMS commands.
@@ -151,9 +176,10 @@ class IMSOptions(Options):
         ["server", None, ServerOptions, "Run the IMS server"],
         ["export", None, ExportOptions, "Export data"],
         ["import", None, ImportOptions, "Import data"],
-        ["compare", None, CompareOptions, "Compare two export files"],
+        ["export_compare", None, CompareOptions, "Compare two export files"],
+        ["hash_password", None, HashPasswordOptions, "Hash a password"],
+        ["verify_password", None, VerifyPasswordOptions, "Verify a password"],
     ]
-    # defaultSubCommand = "server"
 
     def getSynopsis(self) -> str:
         return f"{Options.getSynopsis(self)} command [command_options]"
@@ -292,13 +318,22 @@ class IMSOptions(Options):
                 self["logFormat"] = "json"
 
     def parseOptions(self, options: Optional[Sequence[str]] = None) -> None:
-        Options.parseOptions(self, options=options)
+        super().parseOptions(options=options)
 
         self.initLogFile()
         self.selectDefaultLogObserver()
 
     def postOptions(self) -> None:
-        Options.postOptions(self)
+        super().postOptions()
+
+        if self.subCommand is None:
+            raise UsageError(f"No subcommand specified.")
+
+        self.log.info("Running command: {command}...", command=self.subCommand)
+
+        self.subOptions["stderr"] = stderr
+        self.subOptions["stdin"] = stdin
+        self.subOptions["stdout"] = stdout
 
         self.initConfig()
 

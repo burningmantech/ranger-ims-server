@@ -8,3 +8,4 @@
 /htmlcov/
 /htmldocs/
 /src/*.egg-info/
+__pycache__

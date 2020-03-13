@@ -29,7 +29,6 @@ from twisted.web.static import File
 
 import ims.element
 from ims.config import Configuration, URLs
-from ims.dms import DutyManagementSystem
 from ims.ext.json import jsonTextFromObject
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
@@ -97,13 +96,6 @@ class MainApplication(object):
     webApplication: WebApplication = attrib(
         default=Factory(webApplicationFactory, takes_self=True), init=False
     )
-
-    @property
-    def dms(self) -> DutyManagementSystem:
-        """
-        Return the :class:`DutyManagementSystem` object.
-        """
-        return self.config.dms
 
     def __attrs_post_init__(self) -> None:
         globalLogPublisher.addObserver(self.storeObserver)

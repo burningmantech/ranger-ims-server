@@ -1,0 +1,46 @@
+schema: 0
+
+rangers:
+  -
+    handle: Beep Boop
+    name: Ann Droid
+    status: active
+    email: ad@example.com
+    enabled: true
+    password: 73415783-F274-4505-9F3B-42F07E219A56
+
+  -
+    handle: Slumber
+    name: Sleepy T. Dwarf
+    status: inactive
+    email: [slumber@example.com, sleepy@example.com]
+    enabled: true
+    password: 5A23692C-B751-4567-8848-F4F177C9EF69
+
+  -
+    handle: YouRine
+    name: I. P. Freely
+    status: active
+    email: yourine@example.com
+    enabled: false
+    password: 43272914-C2DB-460A-B1AB-E3A4743DC5B9
+
+  -
+    handle: Nine
+    name: Nein Statushaven
+    status: rando
+    enabled: true
+
+positions:
+  -
+    name: Build Team
+    members:
+      - Beep Boop
+      - Slumber
+
+  -
+    name: Shift Leads
+    members:
+      - Slumber
+      - YouRine
+    always_enabled: true

@@ -174,15 +174,9 @@ def jsonFromIncidentPriority(priority: IncidentPriority) -> int:
 
 def jsonFromRangerStatus(status: RangerStatus) -> str:
     return {
-        RangerStatus.prospective: "prospective",
-        RangerStatus.alpha: "alpha",
-        RangerStatus.bonked: "bonked",
         RangerStatus.active: "active",
         RangerStatus.inactive: "inactive",
-        RangerStatus.retired: "retired",
-        RangerStatus.uberbonked: "uberbonked",
         RangerStatus.vintage: "vintage",
-        RangerStatus.deceased: "deceased",
         RangerStatus.other: "(unknown)",
     }[status]
 
@@ -192,9 +186,9 @@ def jsonFromRanger(ranger: Ranger) -> Dict[str, Any]:
         handle=ranger.handle,
         name=ranger.name,
         status=jsonFromRangerStatus(ranger.status),
-        dms_id=ranger.dmsID,
+        directory_id=ranger.directoryID,
         email=jsonSerialize([e for e in ranger.email]),
-        on_site=ranger.onSite,
+        enabled=ranger.enabled,
     )
 
 

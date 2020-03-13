@@ -15,20 +15,28 @@
 ##
 
 """
-Incident Management System configuration.
+Tests for :mod:`ranger-ims-server.model._entry`
 """
 
-from ._config import (
-    Configuration,
-    ConfigurationError,
-    LogFormat,
-)
-from ._urls import URLs
+from hypothesis import given
+
+from ims.ext.trial import TestCase
+
+from .._position import Position
+from ..strategies import positions
 
 
-__all__ = (
-    "Configuration",
-    "ConfigurationError",
-    "LogFormat",
-    "URLs",
-)
+__all__ = ()
+
+
+class RangerTests(TestCase):
+    """
+    Tests for :class:`Ranger`
+    """
+
+    @given(positions())
+    def test_str(self, position: Position) -> None:
+        """
+        Position renders as a string.
+        """
+        self.assertEqual(str(position), position.name)
