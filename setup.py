@@ -119,7 +119,7 @@ install_requirements = [
     "PyYAML==5.3.1",
     "service-identity==18.1.0",
     "Twisted==19.10.0",
-    "zope.interface==4.7.2",
+    "zope.interface==5.0.0",
 
     # Indirect dependencies
     "Automat==20.2.0",
