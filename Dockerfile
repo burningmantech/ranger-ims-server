@@ -35,23 +35,29 @@ RUN "${IMS_INSTALL_DIR}/bin/pip" --no-cache-dir install "${IMS_SOURCE_DIR}"
 # -----------------------------------------------------------------------------
 FROM python:3.7-alpine3.11 as application
 
-# Copy build result
-ENV IMS_INSTALL_DIR="/opt/ims"
-COPY --from=build "${IMS_INSTALL_DIR}" "${IMS_INSTALL_DIR}"
+# Install libraries.
+RUN apk add --no-cache libressl
 
 # Allow ims_server to bind to privileged port numbers
 RUN apk add --no-cache libcap
 RUN setcap "cap_net_bind_service=+ep" /usr/local/bin/python3.7
 
-# Configuration
+# Create server root and make that our working directory
+RUN install -o daemon -g daemon -d "${IMS_SERVER_ROOT}"
+WORKDIR "${IMS_SERVER_ROOT}"
+
+# Set user
+USER daemon:daemon
+
+# Docker-specific default configuration
 ENV IMS_HOSTNAME="0.0.0.0"
 ENV IMS_CONFIG_ROOT="${IMS_INSTALL_DIR}/conf"
 ENV IMS_SERVER_ROOT="/srv/ims"
 ENV IMS_DATA_STORE="MySQL"
 
-RUN install -o daemon -g daemon -d "${IMS_SERVER_ROOT}"
-WORKDIR "${IMS_SERVER_ROOT}"
-USER daemon:daemon
+# Copy build result
+ENV IMS_INSTALL_DIR="/opt/ims"
+COPY --from=build "${IMS_INSTALL_DIR}" "${IMS_INSTALL_DIR}"
 
 EXPOSE 80
 
