@@ -27,6 +27,7 @@ WORKDIR /tmp
 RUN install -o daemon -g daemon -d "${IMS_INSTALL_DIR}"
 USER daemon:daemon
 RUN python -m venv "${IMS_INSTALL_DIR}"
+RUN "${IMS_INSTALL_DIR}/bin/pip" --no-cache-dir install --upgrade pip
 RUN "${IMS_INSTALL_DIR}/bin/pip" --no-cache-dir install "${IMS_SOURCE_DIR}"
 
 
@@ -34,6 +35,13 @@ RUN "${IMS_INSTALL_DIR}/bin/pip" --no-cache-dir install "${IMS_SOURCE_DIR}"
 # This stage builds the application container.
 # -----------------------------------------------------------------------------
 FROM python:3.7-alpine3.11 as application
+
+# Docker-specific default configuration
+ENV IMS_HOSTNAME="0.0.0.0"
+ENV IMS_CONFIG_ROOT="${IMS_INSTALL_DIR}/conf"
+ENV IMS_SERVER_ROOT="/srv/ims"
+ENV IMS_DATA_STORE="MySQL"
+ENV IMS_DIRECTORY="ClubhouseDB"
 
 # Install libraries.
 RUN apk add --no-cache libressl
@@ -48,12 +56,6 @@ WORKDIR "${IMS_SERVER_ROOT}"
 
 # Set user
 USER daemon:daemon
-
-# Docker-specific default configuration
-ENV IMS_HOSTNAME="0.0.0.0"
-ENV IMS_CONFIG_ROOT="${IMS_INSTALL_DIR}/conf"
-ENV IMS_SERVER_ROOT="/srv/ims"
-ENV IMS_DATA_STORE="MySQL"
 
 # Copy build result
 ENV IMS_INSTALL_DIR="/opt/ims"
