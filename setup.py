@@ -118,7 +118,7 @@ install_requirements = [
     "pyOpenSSL==19.1.0",
     "PyYAML==5.3.1",
     "service-identity==18.1.0",
-    "Twisted==19.10.0",
+    "Twisted==20.3.0",
     "zope.interface==5.0.0",
 
     # Indirect dependencies
