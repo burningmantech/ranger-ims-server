@@ -210,7 +210,7 @@ jobs:
   docker:
     name: Build Docker image
 
-    needs: [flake8, mypy, unit]
+    needs: [unit]
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -233,10 +233,36 @@ jobs:
           path: image.tgz
 
 
+  test-docker:
+
+    name: Test Docker image
+
+    needs: [docker]
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@v1
+
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: docker
+
+      - name: Load Docker image
+        run: gzip --uncompress --stdout docker/image.tgz | docker image load;
+
+      - name: Test Docker image
+        run: ./bin/test_docker;
+
+
   deploy-staging:
     name: Deploy image built from master branch to the staging environment
 
-    needs: [docker]
+    needs: [test-docker]
     if: github.ref == 'refs/heads/master'
 
     runs-on: ubuntu-latest
