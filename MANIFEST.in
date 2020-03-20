@@ -3,9 +3,11 @@ include .dockerignore
 include bin/.common.sh
 include bin/build
 include bin/deploy
+include bin/find_port
 include bin/mysql-run
 include bin/run
 include bin/shell
+include bin/test_docker
 include codecov.yml
 include conf/directory-sample.yaml
 include conf/imsd-sample.conf
