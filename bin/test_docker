@@ -1,0 +1,358 @@
+#!/bin/sh
+#
+# Start the IMS application in a Docker container and test it
+#
+
+. "$(dirname "$0")/.common.sh";
+
+db_database="rangers";
+    db_user="rangers";
+db_password="$(uuidgen)";
+
+host_ims_port="$("${wd}/bin/find_port")";
+
+ db_container_name="";
+ims_container_name="";
+
+
+##
+# HTTP
+##
+
+http_status() {
+    head -1 | cut -d " " -f 2;
+}
+
+
+http_header() {
+    name="$1"; shift;
+
+    # FIXME: We're matching the ending carriage return with '.' here because
+    # '\r ' doesn't seem to work.
+    sed -n -e 's|^'"${name}"': \(.*\).$|\1|p';
+}
+
+
+http_body() {
+    sed -n -e '/^.$/,$p' | tail -n +2;
+}
+
+
+http_get() {
+    local port="$1"; shift;
+    local path="$1"; shift;
+
+    local e;
+
+    curl                                        \
+        --include --fail --silent --show-error  \
+        "http://localhost:${port}${path}"       \
+        && e=0 || e=$?;
+
+    return ${e};
+}
+
+
+http_get_error() {
+    local port="$1"; shift;
+    local path="$1"; shift;
+
+    local e;
+
+    curl                                   \
+        --include --silent --show-error    \
+        "http://localhost:${port}${path}"  \
+        && e=0 || e=$?;
+
+    return ${e};
+}
+
+
+##
+# DB Container
+##
+
+start_db_container() {
+    trap cleanup_db_container EXIT;
+
+    db_container_name="ranger-ims-db-test_${$}";
+
+    echo "Starting database container: ${db_container_name}...";
+
+    docker run                                  \
+        --rm --detach                           \
+        --name="${db_container_name}"           \
+        --env="MYSQL_RANDOM_ROOT_PASSWORD=yes"  \
+        --env="MYSQL_DATABASE=${db_database}"   \
+        --env="MYSQL_USER=${db_user}"           \
+        --env="MYSQL_PASSWORD=${db_password}"   \
+        --env="MYSQL_ROOT_HOST=%"               \
+        "${mysql_image_name}"                   \
+        > /dev/null;
+}
+
+
+wait_for_db() {
+    started() {
+        docker logs "${db_container_name}" 2>&1 \
+            | grep -e 'mysqld (mysqld .*) starting as process 1 ' \
+            ;
+    }
+
+    while true; do
+        printf "Waiting on database to start... ";
+
+        if [ -n "$(started)" ]; then
+            echo "Database started.";
+            break;
+        fi;
+        sleep 1;
+        echo "";
+    done;
+}
+
+
+db_sql() {
+    docker exec "${db_container_name}"                       \
+        mysql                                                \
+            --user="${db_user}" --password="${db_password}"  \
+            --database="${db_database}"                      \
+            "$@"                                             \
+            ;
+}
+
+
+db_init() {
+    if [ -n "${RANGER_IMS_TEST_DB_DUMP:-}" ]; then
+        echo "Importing test database dump...";
+        gunzip < "${RANGER_IMS_TEST_DB_DUMP}" | db_sql;
+    fi;
+}
+
+
+cleanup_db_container() {
+    if [ -n "${db_container_name}" ]; then
+        echo "Terminating database container: ${db_container_name}...";
+
+        docker kill "${db_container_name}" > /dev/null;
+
+        db_container_name="";
+    fi;
+}
+
+
+##
+# IMS Container
+##
+
+start_ims_container() {
+    start_db_container;
+    wait_for_db;
+    db_init;
+
+    ims_container_name="ranger-ims-test_${$}";
+
+    trap cleanup_ims_container EXIT;
+
+    echo "Starting IMS application container: ${ims_container_name}...";
+
+    docker run                                         \
+        --rm --detach                                  \
+        --name="${ims_container_name}"                 \
+        --env="IMS_DB_HOST_NAME=${db_container_name}"  \
+        --env="IMS_DB_DATABASE=${db_database}"         \
+        --env="IMS_DB_USER_NAME=${db_user}"            \
+        --env="IMS_DB_PASSWORD=${db_password}"         \
+        --link="${db_container_name}"                  \
+        --publish="${host_ims_port}:80"                \
+        "${ims_image_name}"                            \
+        > /dev/null;
+}
+
+
+wait_for_ims() {
+    local response="$(mktemp)";
+    local    error="$(mktemp)";
+
+    local count=0;
+    local e;
+
+    check_timeout() {
+        local timeout=60;
+
+        if [ ${count} -gt ${timeout} ]; then
+            echo "ERROR: Timed out";
+            echo "Logs:";
+            docker logs "${ims_container_name}";
+            return 1;
+        fi;
+    }
+
+    while true; do
+        printf "Waiting on IMS application to start... ";
+
+        http_get "${host_ims_port}" / > "${response}" 2> "${error}" \
+            && e=0 || e=$?;
+
+        count=$((${count} + 1));
+
+        check_timeout || return 1;
+
+        if [ ${e} -eq 7 ]; then
+            echo "Connection refused from server. ";
+            sleep 1;
+            continue;
+        fi;
+
+        if [ ${e} -eq 52 ]; then
+            echo "Empty reply from server. ";
+            sleep 1;
+            continue;
+        fi;
+
+        if [ ${e} -eq 56 ]; then
+            echo "Connection to server reset. ";
+            sleep 1;
+            continue;
+        fi;
+
+        if [ ${e} -ne 0 ]; then
+            fail "Error HTTP status from server.";
+            echo "Error from curl:"; cat "${error}";
+            echo "Response:"; cat "${response}";
+            return 1;
+        fi;
+
+        echo "IMS application is responding.";
+        break;
+    done;
+
+    rm "${response}" "${error}";
+}
+
+
+cleanup_ims_container() {
+    if [ -n "${ims_container_name}" ]; then
+        echo "Terminating IMS application container: ${ims_container_name}...";
+
+        docker kill "${ims_container_name}" > /dev/null;
+
+        ims_container_name="";
+    fi;
+
+    cleanup_db_container;
+}
+
+
+##
+# Tests
+##
+
+fail() {
+    echo "FAIL:" "$@";
+}
+
+
+diff_body() {
+    local expected="$1"; shift;
+    local received="$1"; shift;
+
+    if ! diff --brief "${expected}" "${received}" > /dev/null; then
+        fail "Received body does not match expected output.";
+        diff -ud "${expected}" "${received}";
+        return 1;
+    fi;
+}
+
+
+test_root_resource() {
+    echo "Testing root resource...";
+
+    local response="$(mktemp)";
+    local    error="$(mktemp)";
+
+    local e;
+
+    http_get "${host_ims_port}" / > "${response}" 2> "${error}" && e=0 || e=$?;
+
+    if [ ${e} -eq 22 ]; then
+        fail "Root resource not found.  Expected redirect.";
+        return 1;
+    fi;
+
+    if [ ${e} -ne 0 ]; then
+        fail "Error HTTP status from server.";
+        echo "Error from curl:"; cat "${error}";
+        echo "Response:"; cat "${response}";
+        return 1;
+    fi;
+
+    local status="$(http_status < "${response}")";
+
+    if [ ${status} -ne 302 ]; then
+        fail "Expected HTTP status 302 (Found) for root resource.";
+        echo "Response:"; cat "${response}";
+        return 1;
+    fi;
+
+    local location="$(http_header Location < "${response}")";
+
+    if [ "${location}" != "/ims/app/" ]; then
+        fail "Expected redirect location /ims/app/.";
+        echo "Location: ${location}";
+        echo "Response:"; cat "${response}";
+        return 1;
+    fi;
+
+    rm "${response}" "${error}";
+}
+
+
+test_bootstrap() {
+    echo "Testing Bootstrap resource...";
+
+    local response="$(mktemp)";
+    local     body="$(mktemp)";
+    local    error="$(mktemp)";
+
+    if ! http_get "${host_ims_port}"              \
+        /ims/ext/bootstrap/css/bootstrap.min.css  \
+        > "${response}" 2> "${error}";
+    then
+        fail "Error HTTP status from server.";
+        echo "Error from curl:"; cat "${error}";
+        echo "Response:"; cat "${response}";
+        return 1;
+    fi;
+
+    local content_type="$(http_header Content-Type < "${response}")";
+
+    if [ "${content_type}" != "text/css" ]; then
+        fail "Expected text/css content type.";
+        echo "Content-Type: ${content_type}";
+        echo "Response:"; cat "${response}";
+        return 1;
+    fi;
+
+    http_body < "${response}" > "${body}";
+
+    # Received payload should have "Bootstrap v3" in it
+    if ! grep 'Bootstrap v3' "${body}" > /dev/null; then
+        fail "Bootstrap payload is not Bootstrap v3.";
+        echo "Response:"; cat "${response}";
+        return 1;
+    fi;
+
+    rm "${response}" "${body}" "${error}";
+}
+
+
+start_ims_container || exit 10;
+wait_for_ims        || exit 11;
+test_root_resource  || exit 100;
+test_bootstrap      || exit 101;
+
+echo "Tests passed.";
+
+cleanup_ims_container;
+cleanup_db_container;
