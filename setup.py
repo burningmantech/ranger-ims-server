@@ -137,7 +137,7 @@ install_requirements = [
     "six==1.14.0",
     "Tubes==0.2.0",
     "typing==3.7.4.1",
-    "Werkzeug==1.0.0",
+    "Werkzeug==1.0.1",
 ]
 
 extras_requirements = {}
