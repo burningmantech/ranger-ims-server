@@ -134,7 +134,7 @@ install_requirements = [
     "pycparser==2.20",
     "PyHamcrest==2.0.2",
     "python-dateutil==2.8.1",
-    "six==1.14.0",
+    "six==1.15.0",
     "Tubes==0.2.0",
     "typing==3.7.4.1",
     "Werkzeug==1.0.1",
