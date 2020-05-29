@@ -201,7 +201,9 @@ class IMSOptions(Options):
             raise UsageError(f"Invalid log level: {levelName}")
 
     opt_log_level.__doc__ = dedent(cast(str, opt_log_level.__doc__)).format(
-        options=", ".join(f'"{l.name}"' for l in LogLevel.iterconstants()),
+        options=", ".join(
+            f'"{level.name}"' for level in LogLevel.iterconstants()
+        ),
         default=defaultLogLevel.name,
     )
 
@@ -327,7 +329,7 @@ class IMSOptions(Options):
         super().postOptions()
 
         if self.subCommand is None:
-            raise UsageError(f"No subcommand specified.")
+            raise UsageError("No subcommand specified.")
 
         self.log.info("Running command: {command}...", command=self.subCommand)
 

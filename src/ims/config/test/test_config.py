@@ -689,11 +689,12 @@ class ConfigurationTests(TestCase):
         self.assertEqual(store.password, password)
 
     def test_store_unknown(self) -> None:
-        with testingEnvironment(dict(IMS_DATA_STORE="XYZZY")):
+        storeName = "XYZZY"
+        with testingEnvironment(dict(IMS_DATA_STORE=storeName)):
             e = self.assertRaises(
                 ConfigurationError, Configuration.fromConfigFile, None
             )
-            self.assertEqual(str(e), f"Unknown data store: 'XYZZY'")
+            self.assertEqual(str(e), f"Unknown data store: {storeName!r}")
 
     def test_directory(self) -> None:
         with testingEnvironment({}):
@@ -740,11 +741,12 @@ class ConfigurationTests(TestCase):
         self.assertEqual(directory._dms.password, password)
 
     def test_directory_unknown(self) -> None:
-        with testingEnvironment(dict(IMS_DIRECTORY="XYZZY")):
+        storeName = "XYZZY"
+        with testingEnvironment(dict(IMS_DIRECTORY=storeName)):
             e = self.assertRaises(
                 ConfigurationError, Configuration.fromConfigFile, None
             )
-            self.assertEqual(str(e), f"Unknown directory: 'XYZZY'")
+            self.assertEqual(str(e), f"Unknown directory: {storeName!r}")
 
     def test_authProvider(self) -> None:
         with testingEnvironment({}):
