@@ -136,7 +136,7 @@ install_requirements = [
     "python-dateutil==2.8.1",
     "six==1.15.0",
     "Tubes==0.2.0",
-    "typing==3.7.4.1",
+    "typing==3.7.4.2",
     "Werkzeug==1.0.1",
 ]
 
