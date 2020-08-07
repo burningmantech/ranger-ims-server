@@ -57,7 +57,15 @@ class Cursor(DictCursor):
 
     _log: ClassVar[Logger] = Logger()
 
-    def execute(self, sql: str, parameters: Optional[Parameters] = None) -> int:
+    # Override of parameters argument violates the Liskov substitution
+    # principle by requiring a more specific type.
+    # This is intentional, so there.
+    # (In our usage, we always want a mapping.)
+    def execute(  # type: ignore[override]
+        self,
+        sql: str,
+        parameters: Optional[Parameters] = None,
+    ) -> int:
         """
         See :meth:`sqlite3.Cursor.execute`.
         """
@@ -66,7 +74,7 @@ class Cursor(DictCursor):
         self._log.debug(
             "EXECUTE: {sql} <- {parameters}", sql=sql, parameters=parameters
         )
-        return super().execute(sql, parameters)
+        return super().execute(sql, parameters)  # type: ignore[arg-type]
 
     def executescript(self, sql_script: str) -> int:
         self._log.debug("Executing script", script=sql_script)
