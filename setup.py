@@ -108,13 +108,13 @@ setup_requirements = []
 
 install_requirements = [
     # Direct dependencies
-    "arrow==0.15.5",
+    "arrow==0.15.8",
     "attrs==19.3.0",
     "bcrypt==3.1.7",
     "cattrs==1.0.0",
-    "hyperlink==19.0.0",
-    "klein==19.6.0",
-    "PyMySQL==0.9.3",
+    "hyperlink==20.0.1",
+    "klein==20.6.0",
+    "PyMySQL==0.10.0",
     "pyOpenSSL==19.1.0",
     "PyYAML==5.3.1",
     "service-identity==18.1.0",
@@ -123,20 +123,20 @@ install_requirements = [
 
     # Indirect dependencies
     "Automat==20.2.0",
-    "cffi==1.14.0",
+    "cffi==1.14.1",
     "characteristic==14.3.0",
     "constantly==15.1.0",
-    "cryptography==2.9.2",
-    "idna==2.9",
+    "cryptography==3.0",
+    "idna==2.10",
     "incremental==17.5.0",
     "pyasn1-modules==0.2.8",
     "pyasn1==0.4.8",
     "pycparser==2.20",
     "PyHamcrest==2.0.2",
     "python-dateutil==2.8.1",
-    "six==1.14.0",
+    "six==1.15.0",
     "Tubes==0.2.0",
-    "typing==3.7.4.1",
+    "typing==3.7.4.3",
     "Werkzeug==1.0.1",
 ]
 
