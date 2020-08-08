@@ -1,10 +1,64 @@
 [build-system]
 
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry>=1"]
+build-backend = "poetry.masonry.api"
+
 
 
 [tool.black]
 
 line-length = 80
 target-version = ["py37"]
+
+
+[tool.poetry]
+
+name = "ranger-ims-server"
+version = "0"
+description = "Ranger Incident Management System"
+license = "Apache-2.0"
+authors = ["Burning Man <rangers@burningman.org>"]
+readme = "README.rst"
+#homepage = "https://github.com/burningmantech/ranger-ims-server"
+repository = "https://github.com/burningmantech/ranger-ims-server"
+#documentation = "https://github.com/burningmantech/ranger-ims-server"
+keywords = []
+classifiers = [
+    "Framework :: Twisted",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Other Audience",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Topic :: Office/Business",
+]
+packages = [{ include = "ims", from = "src" }]
+
+
+[tool.poetry.dependencies]
+python = ">=3.6,<3.8"
+
+arrow = { version="*" }
+attrs = { version="*" }
+bcrypt = { version="*" }
+cattrs = { version="*" }
+hyperlink = { version="*" }
+klein = { version="*" }
+PyMySQL = { version="*", optional = true }
+pyOpenSSL = { version="*" }
+PyYAML = { version="*" }
+service-identity = { version="*" }
+Twisted = { version="*" }
+"zope.interface" = { version="*" }
+
+
+[tool.poetry.dev-dependencies]
+
+
+[tool.poetry.extras]
+mysql = ["PyMySQL"]
+
+
+[tool.poetry.scripts]
+ims = "ims.run:Command.main"
