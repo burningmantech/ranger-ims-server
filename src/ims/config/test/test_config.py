@@ -665,7 +665,7 @@ class ConfigurationTests(TestCase):
         hostPort = 72984
         database = "ranger_ims"
         userName = "ims_user"
-        password = "hoorj"
+        password = "hoorj"  # nosec
 
         with testingEnvironment(
             dict(
@@ -719,7 +719,7 @@ class ConfigurationTests(TestCase):
         hostName = "clubhouse_host"
         database = "rangers"
         userName = "rangers"
-        password = "hoorj"
+        password = "hoorj"  # nosec
 
         with testingEnvironment(
             dict(
