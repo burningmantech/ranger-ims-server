@@ -305,7 +305,7 @@ jobs:
         run: gzip --uncompress --stdout docker/image.tgz | docker image load;
 
       - name: Run Trivy
-        run: docker run -v /var/run/docker.sock:/var/run/docker.sock --rm aquasec/trivy ranger-ims-server:dev;
+        run: docker run -v /var/run/docker.sock:/var/run/docker.sock --rm aquasec/trivy image --exit-code 1 --no-progress ranger-ims-server:dev;
 
 
   deploy-staging:
