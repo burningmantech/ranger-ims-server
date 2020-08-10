@@ -281,8 +281,8 @@ jobs:
       - name: Load Docker image
         run: gzip --uncompress --stdout docker/image.tgz | docker image load;
 
-      - name: Test Docker image
-        run: docker run --rm aquasec/trivy ranger-ims-server:dev;
+      - name: Run Trivy
+        run: docker run -v /var/run/docker.sock:/var/run/docker.sock --rm aquasec/trivy ranger-ims-server:dev;
 
 
   deploy-staging:
