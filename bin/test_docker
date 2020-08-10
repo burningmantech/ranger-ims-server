@@ -356,7 +356,3 @@ echo "Tests passed.";
 
 cleanup_ims_container;
 cleanup_db_container;
-
-echo "Running Trivy:";
-
-docker run --rm -v /tmp/cache:/root/.cache/ aquasec/trivy "${ims_image_name}";

@@ -259,6 +259,32 @@ jobs:
         run: ./bin/test_docker;
 
 
+  test-docker-trivy:
+
+    name: Trivy (security scan)
+
+    needs: [docker]
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: docker
+
+      - name: Load Docker image
+        run: gzip --uncompress --stdout docker/image.tgz | docker image load;
+
+      - name: Test Docker image
+        run: docker run --rm aquasec/trivy ranger-ims-server:dev;
+
+
   deploy-staging:
     name: Deploy image built from master branch to the staging environment
 
