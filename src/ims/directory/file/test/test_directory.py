@@ -57,7 +57,7 @@ from ..._directory import DirectoryError, RangerUser
 __all__ = ()
 
 
-rangerBeepBoop = Ranger(
+rangerBeepBoop = Ranger(  # nosec
     handle="Beep Boop",
     name="Ann Droid",
     status=RangerStatus.active,
@@ -66,7 +66,7 @@ rangerBeepBoop = Ranger(
     directoryID=None,
     password="73415783-F274-4505-9F3B-42F07E219A56",
 )
-rangerSlumber = Ranger(
+rangerSlumber = Ranger(  # nosec
     handle="Slumber",
     name="Sleepy T. Dwarf",
     status=RangerStatus.inactive,
@@ -75,7 +75,7 @@ rangerSlumber = Ranger(
     directoryID=None,
     password="5A23692C-B751-4567-8848-F4F177C9EF69",
 )
-rangerYouRine = Ranger(
+rangerYouRine = Ranger(  # nosec
     handle="YouRine",
     name="I. P. Freely",
     status=RangerStatus.active,
@@ -111,7 +111,7 @@ def rangerAsDict(ranger: Ranger, random: Random) -> Dict[str, Any]:
     if len(ranger.email) == 1:
         # We allow either a string or a list in the YAML when you have a single
         # email address, so this creates both.
-        email = random.choice((email[0], email))
+        email = random.choice((email[0], email))  # nosec
 
     return dict(
         handle=ranger.handle,
@@ -261,7 +261,7 @@ class UtilityTests(TestCase):
         if type(rangerDict["email"]) is str:
             rangerDict["email"] = [rangerDict["email"]]
 
-        index = random.choice(range(len(ranger.email)))
+        index = random.choice(range(len(ranger.email)))  # nosec
         email = rangerDict["email"][index].encode("utf-8")
         rangerDict["email"][index] = email
 
@@ -363,7 +363,7 @@ class UtilityTests(TestCase):
     ) -> None:
         positionDict = positionAsDict(position)
 
-        index = random.choice(range(len(position.members)))
+        index = random.choice(range(len(position.members)))  # nosec
         members = positionDict["members"][index].encode("utf-8")
         positionDict["members"][index] = members
 

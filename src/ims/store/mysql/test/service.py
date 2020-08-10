@@ -47,7 +47,7 @@ def randomDatabaseName(length: int = 16) -> str:
     """
     Generate a random string.
     """
-    return choice(ascii_letters) + "".join(
+    return choice(ascii_letters) + "".join(  # nosec
         choices(ascii_letters + digits, k=(length - 1))
     )
 

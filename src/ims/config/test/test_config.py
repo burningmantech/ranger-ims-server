@@ -118,7 +118,7 @@ class UtilityTests(TestCase):
         """
         describeFactory() redacts passwords from partial objects.
         """
-        p = partial(self.factory, 1, password="super secret")
+        p = partial(self.factory, 1, password="super secret")  # nosec
         self.assertEqual(
             describeFactory(p), "factory(1, password='(REDACTED)')"
         )
