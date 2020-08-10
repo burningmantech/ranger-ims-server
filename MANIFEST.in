@@ -1,3 +1,4 @@
+include .bandit
 include .coveragerc
 include .dockerignore
 include bin/.common.sh
