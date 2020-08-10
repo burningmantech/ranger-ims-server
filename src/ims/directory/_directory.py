@@ -218,7 +218,8 @@ class RangerDirectory(IMSDirectory):
 
 
 def _hash(password: str, salt: str) -> str:
-    return sha1((salt + password).encode("utf-8")).hexdigest()
+    # SHA1 is vulnerable; need to fix in Clubhouse
+    return sha1((salt + password).encode("utf-8")).hexdigest()  # nosec
 
 
 def hashPassword(password: str, salt: Optional[str] = None) -> str:

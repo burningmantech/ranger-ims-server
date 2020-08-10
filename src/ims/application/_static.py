@@ -18,7 +18,7 @@
 Incident Management System web application authentication endpoints.
 """
 
-from hashlib import sha1
+from hashlib import sha256
 from typing import Iterable, Optional
 
 from twisted.logger import Logger
@@ -46,7 +46,7 @@ def jsonBytes(
     """
     request.setHeader(HeaderName.contentType.value, ContentType.json.value)
     if etag is None:
-        etag = sha1(data).hexdigest()
+        etag = sha256(data).hexdigest()
     request.setHeader(HeaderName.etag.value, etag)
     return data
 

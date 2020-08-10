@@ -120,6 +120,29 @@ jobs:
         run: tox -e mypy;
 
 
+  bandit:
+    name: Bandit (security static analyzer)
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Install Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.7"
+
+      - name: Install Tox
+        run: pip install tox;
+
+      - name: Run Bandit
+        run: tox -e bandit;
+
+
   safety:
     name: Safety (dependency security checker)
 
