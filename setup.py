@@ -123,7 +123,7 @@ install_requirements = [
 
     # Indirect dependencies
     "Automat==20.2.0",
-    "cffi==1.14.1",
+    "cffi==1.14.2",
     "characteristic==14.3.0",
     "constantly==15.1.0",
     "cryptography==3.0",
