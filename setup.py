@@ -110,7 +110,7 @@ install_requirements = [
     # Direct dependencies
     "arrow==0.15.8",
     "attrs==19.3.0",
-    "bcrypt==3.1.7",
+    "bcrypt==3.2.0",
     "cattrs==1.0.0",
     "hyperlink==20.0.1",
     "klein==20.6.0",
