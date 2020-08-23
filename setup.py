@@ -108,7 +108,7 @@ setup_requirements = []
 
 install_requirements = [
     # Direct dependencies
-    "arrow==0.15.8",
+    "arrow==0.16.0",
     "attrs==20.1.0",
     "bcrypt==3.2.0",
     "cattrs==1.0.0",
