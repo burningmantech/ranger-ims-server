@@ -109,7 +109,7 @@ setup_requirements = []
 install_requirements = [
     # Direct dependencies
     "arrow==0.16.0",
-    "attrs==20.1.0",
+    "attrs==20.2.0",
     "bcrypt==3.2.0",
     "cattrs==1.0.0",
     "hyperlink==20.0.1",
