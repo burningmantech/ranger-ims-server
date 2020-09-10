@@ -114,7 +114,7 @@ install_requirements = [
     "cattrs==1.0.0",
     "hyperlink==20.0.1",
     "klein==20.6.0",
-    "PyMySQL==0.10.0",
+    "PyMySQL==0.10.1",
     "pyOpenSSL==19.1.0",
     "PyYAML==5.3.1",
     "service-identity==18.1.0",
