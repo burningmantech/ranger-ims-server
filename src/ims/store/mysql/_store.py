@@ -62,7 +62,9 @@ class Cursor(DictCursor):
     # This is intentional, so there.
     # (In our usage, we always want a mapping.)
     def execute(  # type: ignore[override]
-        self, sql: str, parameters: Optional[Parameters] = None,
+        self,
+        sql: str,
+        parameters: Optional[Parameters] = None,
     ) -> int:
         """
         See :meth:`sqlite3.Cursor.execute`.

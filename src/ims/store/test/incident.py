@@ -580,7 +580,10 @@ class DataStoreIncidentTests(DataStoreTests):
             ("Hubcap", "Bucket"),
         ):
             await self._test_setIncidentAttribute(
-                incident, "setIncident_rangers", "rangerHandles", rangerHandles,
+                incident,
+                "setIncident_rangers",
+                "rangerHandles",
+                rangerHandles,
             )
 
     @asyncAsDeferred
@@ -658,7 +661,8 @@ class DataStoreIncidentTests(DataStoreTests):
                 ((aReportEntry1, aReportEntry2), aReportEntry1.author),
             ):
                 reportEntries, author = cast(
-                    Tuple[Sequence[ReportEntry], str], entriesBy,
+                    Tuple[Sequence[ReportEntry], str],
+                    entriesBy,
                 )
 
                 # Store test data

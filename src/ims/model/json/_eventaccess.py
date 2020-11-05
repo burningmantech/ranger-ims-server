@@ -70,7 +70,12 @@ def deserializeEventAccess(obj: Dict[str, Any], cl: Type) -> EventAccess:
 
     return cast(
         EventAccess,
-        deserialize(obj, EventAccess, EventAccessJSONType, EventAccessJSONKey,),
+        deserialize(
+            obj,
+            EventAccess,
+            EventAccessJSONType,
+            EventAccessJSONKey,
+        ),
     )
 
 

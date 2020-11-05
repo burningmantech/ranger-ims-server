@@ -21,4 +21,4 @@ def sorted_tuple(iterable: Iterable[T]) -> Tuple[T, ...]:
     """
     Sort and convert an iterable into a tuple.
     """
-    return tuple(sorted(iterable))
+    return tuple(sorted(iterable))  # type: ignore[type-var]

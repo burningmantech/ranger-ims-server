@@ -185,9 +185,7 @@ class Connection(BaseConnection):
         if not valid:
             raise IntegrityError("Foreign key constraints violated")
 
-    def __enter__(  # type: ignore[override]
-        self: "Connection",
-    ) -> "Connection":
+    def __enter__(self: "Connection") -> "Connection":
         self._log.debug("---------- ENTER ----------")
         super().__enter__()
         return self
@@ -331,7 +329,9 @@ def explainQueryPlans(
         except SQLiteError as e:
             lines = (
                 QueryPlanExplanation.Line(
-                    nestingOrder=None, selectFrom=None, details=f"{e}",
+                    nestingOrder=None,
+                    selectFrom=None,
+                    details=f"{e}",
                 ),
             )
 

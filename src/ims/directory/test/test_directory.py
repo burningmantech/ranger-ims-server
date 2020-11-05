@@ -47,20 +47,25 @@ __all__ = ()
 @composite
 def groupIDs(draw: Callable) -> Iterable[IMSGroupID]:
     return cast(
-        Iterable[IMSGroupID], iterables(IMSGroupID(draw(text(min_size=1)))),
+        Iterable[IMSGroupID],
+        iterables(IMSGroupID(draw(text(min_size=1)))),
     )
 
 
 @composite
 def uniqueRangerLists(draw: Callable) -> RangerDirectory:
     return cast(
-        RangerDirectory, draw(lists(rangers(), unique_by=lambda r: r.handle)),
+        RangerDirectory,
+        draw(lists(rangers(), unique_by=lambda r: r.handle)),
     )
 
 
 @composite
 def rangerUsers(draw: Callable) -> RangerUser:
-    return RangerUser(ranger=draw(rangers()), groups=draw(groupIDs()),)
+    return RangerUser(
+        ranger=draw(rangers()),
+        groups=draw(groupIDs()),
+    )
 
 
 class RangerUserTests(TestCase):

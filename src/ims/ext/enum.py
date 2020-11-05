@@ -40,7 +40,7 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
                 elif enumInstance is other:
                     return not lessThan
 
-        return NotImplemented  # type: ignore[no-any-return]
+        return NotImplemented
 
     def lessThan(self: Enum, other: Any) -> bool:
         if self is other:
@@ -66,21 +66,11 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
 
         return compare(self, other, False)
 
-    enumClass.__eq__ = cast(  # type: ignore[assignment]
-        Callable, equal
-    )
-    enumClass.__ne__ = cast(  # type: ignore[assignment]
-        Callable, notEqual
-    )
-    enumClass.__lt__ = cast(  # type: ignore[operator]
-        Callable, lessThan
-    )
-    enumClass.__le__ = cast(  # type: ignore[operator]
-        Callable, lessThanOrEqual
-    )
-    enumClass.__gt__ = cast(  # type: ignore[operator]
-        Callable, greaterThan
-    )
+    enumClass.__eq__ = cast(Callable, equal)  # type: ignore[assignment]
+    enumClass.__ne__ = cast(Callable, notEqual)  # type: ignore[assignment]
+    enumClass.__lt__ = cast(Callable, lessThan)  # type: ignore[operator]
+    enumClass.__le__ = cast(Callable, lessThanOrEqual)  # type: ignore[operator]
+    enumClass.__gt__ = cast(Callable, greaterThan)  # type: ignore[operator]
     enumClass.__ge__ = cast(  # type: ignore[operator]
         Callable, greaterThanOrEqual
     )

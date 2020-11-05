@@ -288,7 +288,10 @@ class DatabaseStore(IMSDataStore):
 
     @abstractmethod
     async def runInteraction(
-        self, interaction: Callable[..., T], *args: Any, **kwargs: Any,
+        self,
+        interaction: Callable[..., T],
+        *args: Any,
+        **kwargs: Any,
     ) -> T:
         """
         Create a transaction and call the given interaction with the
@@ -353,7 +356,9 @@ class DatabaseStore(IMSDataStore):
         await self.runOperation(self.query.createEvent, dict(eventID=event.id))
 
         self._log.info(
-            "Created event: {event}", storeWriteClass=Event, event=event,
+            "Created event: {event}",
+            storeWriteClass=Event,
+            event=event,
         )
 
     async def _eventAccess(self, event: Event, mode: str) -> Iterable[str]:
@@ -381,7 +386,11 @@ class DatabaseStore(IMSDataStore):
                 )
                 txn.execute(
                     self.query.addEventAccess.text,
-                    dict(eventID=event.id, expression=expression, mode=mode,),
+                    dict(
+                        eventID=event.id,
+                        expression=expression,
+                        mode=mode,
+                    ),
                 )
 
         try:
@@ -583,7 +592,8 @@ class DatabaseStore(IMSDataStore):
             return await self.runInteraction(detachedReportEntries)
         except StorageError as e:
             self._log.critical(
-                "Unable to look up detached report entries: {error}", error=e,
+                "Unable to look up detached report entries: {error}",
+                error=e,
             )
             raise
 
@@ -899,7 +909,10 @@ class DatabaseStore(IMSDataStore):
         return tuple(reportEntries)
 
     async def _createIncident(
-        self, incident: Incident, author: Optional[str], directImport: bool,
+        self,
+        incident: Incident,
+        author: Optional[str],
+        directImport: bool,
     ) -> Incident:
         if directImport:
             if author is not None:
@@ -966,17 +979,26 @@ class DatabaseStore(IMSDataStore):
 
             # Join with Ranger handles
             self._attachRangeHandlesToIncident(
-                incident.event, incident.number, incident.rangerHandles, txn,
+                incident.event,
+                incident.number,
+                incident.rangerHandles,
+                txn,
             )
 
             # Attach incident types
             self._attachIncidentTypesToIncident(
-                incident.event, incident.number, incident.incidentTypes, txn,
+                incident.event,
+                incident.number,
+                incident.incidentTypes,
+                txn,
             )
 
             # Add report entries
             self._createAndAttachReportEntriesToIncident(
-                incident.event, incident.number, incident.reportEntries, txn,
+                incident.event,
+                incident.number,
+                incident.reportEntries,
+                txn,
             )
 
             return incident
@@ -1035,7 +1057,10 @@ class DatabaseStore(IMSDataStore):
 
             # Add automatic report entry
             self._createAndAttachReportEntriesToIncident(
-                event, incidentNumber, (autoEntry,), txn,
+                event,
+                incidentNumber,
+                (autoEntry,),
+                txn,
             )
 
         try:
@@ -1222,7 +1247,10 @@ class DatabaseStore(IMSDataStore):
 
             # Add automatic report entry
             self._createAndAttachReportEntriesToIncident(
-                event, incidentNumber, (autoEntry,), txn,
+                event,
+                incidentNumber,
+                (autoEntry,),
+                txn,
             )
 
         try:
@@ -1277,7 +1305,10 @@ class DatabaseStore(IMSDataStore):
 
             # Add automatic report entry
             self._createAndAttachReportEntriesToIncident(
-                event, incidentNumber, (autoEntry,), txn,
+                event,
+                incidentNumber,
+                (autoEntry,),
+                txn,
             )
 
         try:
@@ -1357,7 +1388,8 @@ class DatabaseStore(IMSDataStore):
         self, event: Event, incidentReportNumber: int, txn: Transaction
     ) -> IncidentReport:
         parameters: Parameters = dict(
-            eventID=event.id, incidentReportNumber=incidentReportNumber,
+            eventID=event.id,
+            incidentReportNumber=incidentReportNumber,
         )
 
         def notFound() -> NoReturn:
@@ -1422,7 +1454,8 @@ class DatabaseStore(IMSDataStore):
             raise
         except StorageError as e:
             self._log.critical(
-                "Unable to look up incident reports: {error}", error=e,
+                "Unable to look up incident reports: {error}",
+                error=e,
             )
             raise
 
@@ -1612,7 +1645,10 @@ class DatabaseStore(IMSDataStore):
 
             # Add report entries
             self._createAndAttachReportEntriesToIncidentReport(
-                event, incidentReportNumber, (autoEntry,), txn,
+                event,
+                incidentReportNumber,
+                (autoEntry,),
+                txn,
             )
 
         try:

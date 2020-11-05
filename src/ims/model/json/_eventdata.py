@@ -78,7 +78,12 @@ def deserializeEventData(obj: Dict[str, Any], cl: Type) -> EventData:
 
     return cast(
         EventData,
-        deserialize(obj, EventData, EventDataJSONType, EventDataJSONKey,),
+        deserialize(
+            obj,
+            EventData,
+            EventDataJSONType,
+            EventDataJSONKey,
+        ),
     )
 
 

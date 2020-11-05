@@ -271,7 +271,8 @@ class JSONImporter(object):
 
             if event in existingEvents:
                 self._log.info(
-                    "Not creating existing event: {event}", event=event,
+                    "Not creating existing event: {event}",
+                    event=event,
                 )
             else:
                 await store.createEvent(event)
