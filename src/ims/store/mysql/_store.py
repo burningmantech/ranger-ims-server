@@ -259,8 +259,8 @@ class DataStore(DatabaseStore):
             tableName = cast(str, row["TABLE_NAME"])
             columnName = cast(str, row["COLUMN_NAME"])
             columnType = cast(str, row["DATA_TYPE"])
-            columnNullable = cast(bool, row["IS_NULLABLE"])
-            columnDefault = cast(bool, row["COLUMN_DEFAULT"])
+            columnNullable = cast(str, row["IS_NULLABLE"])
+            columnDefault = cast(Optional[str], row["COLUMN_DEFAULT"])
             columnPosition = cast(int, row["ORDINAL_POSITION"])
             columnMaxChars = cast(
                 Optional[int], row["CHARACTER_MAXIMUM_LENGTH"]
@@ -280,10 +280,10 @@ class DataStore(DatabaseStore):
             else:
                 notNull = " not null"
 
-            if columnDefault:
-                default = f" := {columnDefault}"
-            else:
+            if columnDefault is None:
                 default = ""
+            else:
+                default = f" := {columnDefault}"
 
             text = (
                 f"  {columnPosition}: "
