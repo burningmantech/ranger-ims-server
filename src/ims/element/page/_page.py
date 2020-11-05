@@ -119,7 +119,11 @@ class Page(Element):
             tags.meta(
                 name="viewport", content="width=device-width, initial-scale=1"
             ),
-            tags.link(type="image/png", rel="icon", href=urls.logo.asText(),),
+            tags.link(
+                type="image/png",
+                rel="icon",
+                href=urls.logo.asText(),
+            ),
             tags.link(
                 type="text/css",
                 rel="stylesheet",

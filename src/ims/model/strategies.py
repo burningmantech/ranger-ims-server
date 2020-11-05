@@ -253,7 +253,8 @@ def accessTexts(draw: Callable) -> str:
     """
     # FIXME: We are using Ranger handles for positions here.
     return "{}:{}".format(
-        draw(sampled_from(("person", "position"))), draw(rangerHandles()),
+        draw(sampled_from(("person", "position"))),
+        draw(rangerHandles()),
     )
 
 
@@ -340,7 +341,12 @@ def imsDatas(draw: Callable) -> IMSData:
 # Incident
 ##
 
-maxIncidentNumber = min((SQLITE_MAX_INT, 4294967295,))  # SQLite  # MySQL
+maxIncidentNumber = min(
+    (
+        SQLITE_MAX_INT,
+        4294967295,
+    )
+)  # SQLite  # MySQL
 
 
 def incidentNumbers(max: Optional[int] = None) -> SearchStrategy:  # str
@@ -609,7 +615,10 @@ def incidentTypes(draw: Callable) -> IncidentType:
     """
     Strategy that generates incident types.
     """
-    return IncidentType(name=draw(text(min_size=1)), hidden=draw(booleans()),)
+    return IncidentType(
+        name=draw(text(min_size=1)),
+        hidden=draw(booleans()),
+    )
 
 
 def knownIncidentTypes() -> SearchStrategy:  # KnownIncidentType

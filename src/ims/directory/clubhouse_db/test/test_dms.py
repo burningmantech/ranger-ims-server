@@ -97,7 +97,8 @@ class DutyManagementSystemTests(TestCase):
         personnel = self.successResultOf(dms.personnel())
 
         self.assertEquals(
-            [p.handle for p in personnel], [p[1] for p in cannedPersonnel],
+            [p.handle for p in personnel],
+            [p[1] for p in cannedPersonnel],
         )
 
 

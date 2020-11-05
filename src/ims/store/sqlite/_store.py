@@ -211,7 +211,8 @@ class DataStore(DatabaseStore):
             self._db.validateConstraints()
         except SQLiteError as e:
             self._log.error(
-                "Database constraint violated: {error}", error=e,
+                "Database constraint violated: {error}",
+                error=e,
             )
             valid = False
 

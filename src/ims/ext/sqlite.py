@@ -331,7 +331,9 @@ def explainQueryPlans(
         except SQLiteError as e:
             lines = (
                 QueryPlanExplanation.Line(
-                    nestingOrder=None, selectFrom=None, details=f"{e}",
+                    nestingOrder=None,
+                    selectFrom=None,
+                    details=f"{e}",
                 ),
             )
 

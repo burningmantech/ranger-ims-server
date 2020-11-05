@@ -28,7 +28,10 @@ __all__ = ("TestCase", "asyncAsDeferred")
 settings.register_profile(
     "ci",
     deadline=None,
-    suppress_health_check=[HealthCheck.data_too_large, HealthCheck.too_slow,],
+    suppress_health_check=[
+        HealthCheck.data_too_large,
+        HealthCheck.too_slow,
+    ],
 )
 settings.load_profile("ci")
 

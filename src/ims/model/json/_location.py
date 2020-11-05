@@ -64,7 +64,10 @@ def deserializeLocation(obj: Optional[Dict[str, Any]], cl: Type) -> Location:
     assert cl is Location, (cl, obj)
 
     if obj is None:
-        return Location(name=None, address=TextOnlyAddress(),)
+        return Location(
+            name=None,
+            address=TextOnlyAddress(),
+        )
 
     # If address were a nested dict, we'd do this:
     # jsonAddress = obj[LocationJSONKey.address.value]

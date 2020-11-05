@@ -69,7 +69,13 @@ def deserializeIMSData(obj: Dict[str, Any], cl: Type) -> IMSData:
     assert cl is IMSData, (cl, obj)
 
     return cast(
-        IMSData, deserialize(obj, IMSData, IMSDataJSONType, IMSDataJSONKey,)
+        IMSData,
+        deserialize(
+            obj,
+            IMSData,
+            IMSDataJSONType,
+            IMSDataJSONKey,
+        ),
     )
 
 

@@ -127,14 +127,14 @@ class URLs(object):
     viewIncidentTemplate: ClassVar = app.child("incident.html")
     viewIncidentJS: ClassVar = static.child("incident.js")
 
-    viewIncidentReports: ClassVar = (
-        viewEvent.child("incident_reports").child("")
+    viewIncidentReports: ClassVar = viewEvent.child("incident_reports").child(
+        ""
     )
     viewIncidentReportsTemplate: ClassVar = app.child("incident_reports.html")
     viewIncidentReportsJS: ClassVar = static.child("incident_reports.js")
-    viewIncidentReportsRelative: ClassVar = (
-        URL.fromText("incident_reports").child("")
-    )
+    viewIncidentReportsRelative: ClassVar = URL.fromText(
+        "incident_reports"
+    ).child("")
 
     viewIncidentReportNew: ClassVar = viewIncidentReports.child("new")
     viewIncidentReportNumber: ClassVar = viewIncidentReports.child("<number>")

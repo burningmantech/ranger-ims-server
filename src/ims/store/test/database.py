@@ -345,7 +345,9 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
             incident = incident.replace(
                 location=Location(
                     name=incident.location.name,
-                    address=RodGarettAddress(description=address.description,),
+                    address=RodGarettAddress(
+                        description=address.description,
+                    ),
                 )
             )
         else:

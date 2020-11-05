@@ -101,7 +101,8 @@ class ConfigFileParser(object):
             break
         else:
             self._log.error(
-                "Unable to read configuration file: {path}", path=self.path,
+                "Unable to read configuration file: {path}",
+                path=self.path,
             )
 
     def valueFromConfig(
@@ -141,7 +142,11 @@ class ConfigFileParser(object):
         return path
 
     def enumFromConfig(
-        self, variable: str, section: str, option: str, default: Enum,
+        self,
+        variable: str,
+        section: str,
+        option: str,
+        default: Enum,
     ) -> Enum:
         name = self.valueFromConfig(variable, section, option)
 
@@ -198,7 +203,11 @@ class Configuration(object):
         cls._log.info("Port: {port}", port=port)
 
         serverRoot = parser.pathFromConfig(
-            "SERVER_ROOT", "Core", "ServerRoot", defaultRoot, (),
+            "SERVER_ROOT",
+            "Core",
+            "ServerRoot",
+            defaultRoot,
+            (),
         )
         serverRoot.mkdir(exist_ok=True)
         cls._log.info("Server root: {path}", path=serverRoot)

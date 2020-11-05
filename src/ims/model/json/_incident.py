@@ -91,7 +91,13 @@ def deserializeIncident(obj: Dict[str, Any], cl: Type) -> Incident:
     assert cl is Incident, (cl, obj)
 
     return cast(
-        Incident, deserialize(obj, Incident, IncidentJSONType, IncidentJSONKey,)
+        Incident,
+        deserialize(
+            obj,
+            Incident,
+            IncidentJSONType,
+            IncidentJSONKey,
+        ),
     )
 
 

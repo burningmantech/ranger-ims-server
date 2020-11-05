@@ -198,7 +198,8 @@ class SummaryFromReportTests(TestCase):
         :func:`summaryFromReport` uses the given non-empty summary.
         """
         result = summaryFromReport(
-            summary="A thing happened", reportEntries=(),
+            summary="A thing happened",
+            reportEntries=(),
         )
 
         self.assertEqual(result, "A thing happened")
@@ -241,6 +242,9 @@ class SummaryFromReportTests(TestCase):
         :func:`summaryFromReport` returns am empty string if given no report
         entries.
         """
-        result = summaryFromReport(summary=None, reportEntries=(),)
+        result = summaryFromReport(
+            summary=None,
+            reportEntries=(),
+        )
 
         self.assertEqual(result, "")

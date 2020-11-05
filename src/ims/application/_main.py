@@ -48,7 +48,8 @@ resourcesDirectory = FilePath(ims.element.__file__).parent().child("static")
 
 def apiApplicationFactory(parent: "MainApplication") -> APIApplication:
     return APIApplication(
-        config=parent.config, storeObserver=parent.storeObserver,
+        config=parent.config,
+        storeObserver=parent.storeObserver,
     )
 
 

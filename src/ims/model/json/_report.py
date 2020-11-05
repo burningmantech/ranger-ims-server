@@ -80,7 +80,10 @@ def deserializeIncidentReport(obj: Dict[str, Any], cl: Type) -> IncidentReport:
     return cast(
         IncidentReport,
         deserialize(
-            obj, IncidentReport, IncidentReportJSONType, IncidentReportJSONKey,
+            obj,
+            IncidentReport,
+            IncidentReportJSONType,
+            IncidentReportJSONKey,
         ),
     )
 

@@ -58,9 +58,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
         if getattr(self._state, "broken", False):
             self.raiseException()
 
-        return cast(  # type: ignore[call-arg]
-            property, DataStore._db
-        ).fget(
+        return cast(property, DataStore._db).fget(  # type: ignore[call-arg]
             self
         )
 

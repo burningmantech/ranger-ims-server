@@ -52,7 +52,9 @@ def jsonBytes(
 
 
 def writeJSONStream(
-    request: IRequest, jsonStream: Iterable[bytes], etag: Optional[str] = None,
+    request: IRequest,
+    jsonStream: Iterable[bytes],
+    etag: Optional[str] = None,
 ) -> None:
     """
     Respond with a stream of JSON data.

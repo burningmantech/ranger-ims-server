@@ -167,7 +167,8 @@ class AuthProviderTests(TestCase):
 
     # @given(text(min_size=1), rangers())
     @given(
-        testUsers(), text(min_size=1),
+        testUsers(),
+        text(min_size=1),
     )
     def test_verifyPassword_masterKey(
         self, user: TestUser, masterKey: str

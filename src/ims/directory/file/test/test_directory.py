@@ -247,7 +247,8 @@ class UtilityTests(TestCase):
         self.assertEqual(str(e), f"Ranger status must be text: {status!r}")
 
     @given(
-        rangers().filter(lambda r: len(r.email) > 0), randoms(),
+        rangers().filter(lambda r: len(r.email) > 0),
+        randoms(),
     )
     @settings(max_examples=10)
     def test_rangerFromMapping_emailNotText(
