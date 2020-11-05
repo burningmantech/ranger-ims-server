@@ -22,6 +22,7 @@ from pathlib import Path
 from sys import stderr, stdin, stdout
 from textwrap import dedent
 from typing import (
+    Any,
     ClassVar,
     IO,
     Mapping,
@@ -50,14 +51,14 @@ from ims.config import Configuration, LogFormat
 __all__ = ()
 
 
-def openFile(fileName: str, mode: str) -> IO:
+def openFile(fileName: str, mode: str) -> IO[Any]:
     """
     Open a file, given a name.
     Handles "+" and "-" as stdin/stdout.
     """
-    file: IO
+    file: IO[Any]
 
-    def openNamedFile() -> IO:
+    def openNamedFile() -> IO[Any]:
         try:
             file = open(fileName, mode)
         except EnvironmentError as e:
@@ -188,7 +189,7 @@ class IMSOptions(Options):
         """
         Location of configuration file.
         """
-        cast(MutableMapping, self)["configFile"] = Path(path)
+        cast(MutableMapping[str, Any], self)["configFile"] = Path(path)
 
     def opt_log_level(self, levelName: str) -> None:
         """
@@ -260,7 +261,7 @@ class IMSOptions(Options):
     def initConfig(self) -> None:
         try:
             configFile = cast(
-                Optional[Path], cast(Mapping, self).get("configFile")
+                Optional[Path], cast(Mapping[str, Any], self).get("configFile")
             )
 
             if configFile and not configFile.is_file():
@@ -269,7 +270,7 @@ class IMSOptions(Options):
 
             configuration = Configuration.fromConfigFile(configFile)
 
-            options = cast(MutableMapping, self)
+            options = cast(MutableMapping[str, Any], self)
 
             if "overrides" in options:
                 for _override in options["overrides"]:

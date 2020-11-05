@@ -217,7 +217,7 @@ class DockerizedMySQLService(MySQLService):
         return f"MySQLService-{cid}"
 
     @property
-    def _containerEnvironment(self) -> Mapping:
+    def _containerEnvironment(self) -> Mapping[str, str]:
         return dict(
             MYSQL_ROOT_PASSWORD=self.rootPassword,
             # So we can connect as root from the Docker host
@@ -232,7 +232,7 @@ class DockerizedMySQLService(MySQLService):
         message: str,
         timeout: float = 60.0,
         interval: float = 1.0,
-    ) -> Awaitable:
+    ) -> Awaitable[None]:
         d = Deferred()
 
         def waitOnDBStartup(elapsed: float = 0.0) -> None:
@@ -277,7 +277,7 @@ class DockerizedMySQLService(MySQLService):
 
         waitOnDBStartup()
 
-        return cast(Awaitable, d)
+        return cast(Awaitable[None], d)
 
     def _resetContainerState(self) -> None:
         self._state.host = NO_HOST

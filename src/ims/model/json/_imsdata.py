@@ -65,7 +65,7 @@ def serializeIMSData(imsData: IMSData) -> Dict[str, Any]:
 registerSerializer(IMSData, serializeIMSData)
 
 
-def deserializeIMSData(obj: Dict[str, Any], cl: Type) -> IMSData:
+def deserializeIMSData(obj: Dict[str, Any], cl: Type[IMSData]) -> IMSData:
     assert cl is IMSData, (cl, obj)
 
     return cast(

@@ -20,7 +20,7 @@ Incident Management System SQLite data store.
 
 from pathlib import Path
 from sys import stdout
-from typing import Any, Callable, ClassVar, Optional, TextIO, cast
+from typing import Any, Callable, ClassVar, Optional, TextIO, TypeVar, cast
 
 from attr import attrib, attrs
 
@@ -42,6 +42,8 @@ from .._exceptions import StorageError
 
 __all__ = ()
 
+
+T = TypeVar("T")
 
 query_eventID = "select ID from EVENT where NAME = :eventID"
 
@@ -169,11 +171,15 @@ class DataStore(DatabaseStore):
         await self.runQuery(query, parameters)
 
     async def runInteraction(
-        self, interaction: Callable, *args: Any, **kwargs: Any
-    ) -> Any:
+        self,
+        interaction: Callable[..., T],
+        *args: Any,
+        **kwargs: Any,
+    ) -> T:
         try:
             with self._db as db:
                 return interaction(db.cursor(), *args, **kwargs)
+            assert False
         except SQLiteError as e:
             self._log.critical(
                 "Interaction {interaction} failed: {error}",

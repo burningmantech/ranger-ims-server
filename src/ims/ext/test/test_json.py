@@ -11,7 +11,7 @@ from datetime import (
 from io import BytesIO
 from json import JSONDecodeError
 from textwrap import dedent
-from typing import Callable, cast
+from typing import Any, Callable, cast
 
 from hypothesis import given
 from hypothesis.strategies import (
@@ -37,7 +37,7 @@ __all__ = ()
 
 
 @composite
-def timezones(draw: Callable) -> TimeZone:
+def timezones(draw: Callable[..., Any]) -> TimeZone:
     offset = cast(
         int, draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
     )
@@ -47,7 +47,7 @@ def timezones(draw: Callable) -> TimeZone:
 
 
 @composite
-def datetimes(draw: Callable) -> DateTime:
+def datetimes(draw: Callable[..., Any]) -> DateTime:
     return cast(DateTime, draw(_datetimes(timezones=timezones())))
 
 

@@ -65,7 +65,9 @@ def serializeEventAccess(eventAccess: EventAccess) -> Dict[str, Any]:
 registerSerializer(EventAccess, serializeEventAccess)
 
 
-def deserializeEventAccess(obj: Dict[str, Any], cl: Type) -> EventAccess:
+def deserializeEventAccess(
+    obj: Dict[str, Any], cl: Type[EventAccess]
+) -> EventAccess:
     assert cl is EventAccess, (cl, obj)
 
     return cast(

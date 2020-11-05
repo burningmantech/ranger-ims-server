@@ -64,7 +64,9 @@ def serializeIncidentType(incidentType: IncidentType) -> Dict[str, Any]:
 registerSerializer(IncidentType, serializeIncidentType)
 
 
-def deserializeIncidentType(obj: Dict[str, Any], cl: Type) -> IncidentType:
+def deserializeIncidentType(
+    obj: Dict[str, Any], cl: Type[IncidentType]
+) -> IncidentType:
     assert cl is IncidentType, (cl, obj)
 
     return cast(

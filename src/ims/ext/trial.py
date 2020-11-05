@@ -4,7 +4,7 @@ Extensions to :mod:`twisted.trial`
 """
 
 from functools import wraps
-from typing import Any, Callable, Optional, Sequence, Type, cast
+from typing import Any, Callable, Optional, Sequence, Type, TypeVar, cast
 
 from hypothesis import HealthCheck, settings
 
@@ -36,7 +36,7 @@ settings.register_profile(
 settings.load_profile("ci")
 
 
-def asyncAsDeferred(f: Callable) -> Callable:
+def asyncAsDeferred(f: Callable[..., Any]) -> Callable[..., Any]:
     """
     Decorator for async methods to return a Deferred object instead of a
     coroutine.
