@@ -4,7 +4,7 @@ Extensions to :mod:`twisted.trial`
 """
 
 from functools import wraps
-from typing import Any, Callable, Optional, Sequence, Type, TypeVar, cast
+from typing import Any, Callable, Optional, Sequence, Type, cast
 
 from hypothesis import HealthCheck, settings
 

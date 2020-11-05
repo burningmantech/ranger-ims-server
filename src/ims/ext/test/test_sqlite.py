@@ -9,7 +9,6 @@ from sqlite3 import Error as SQLiteError
 from textwrap import dedent
 from typing import (
     Any,
-    Generator,
     Iterator,
     List,
     Mapping,

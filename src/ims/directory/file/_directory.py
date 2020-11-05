@@ -20,7 +20,7 @@ Incident Management System directory service integration.
 
 from pathlib import Path
 from time import time
-from typing import Any, ClassVar, Iterable, Mapping, Optional, TextIO, Sequence
+from typing import Any, ClassVar, Iterable, Mapping, Optional, Sequence, TextIO
 
 from attr import Factory, attrs
 

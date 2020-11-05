@@ -135,7 +135,7 @@ class Queries(object):
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class Transaction():
+class Transaction:
     lastrowid: int
 
     @abstractmethod
