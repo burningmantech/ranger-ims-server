@@ -47,7 +47,7 @@ class ComparisonMixIn(ABC):
             )
             return selfValueCmp(otherValue)
         else:
-            return NotImplemented  # type: ignore[no-any-return]
+            return NotImplemented
 
     def __hash__(self) -> int:
         return hash(self._cmpValue())

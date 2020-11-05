@@ -40,7 +40,7 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
                 elif enumInstance is other:
                     return not lessThan
 
-        return NotImplemented  # type: ignore[no-any-return]
+        return NotImplemented
 
     def lessThan(self: Enum, other: Any) -> bool:
         if self is other:
