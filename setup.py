@@ -22,10 +22,6 @@ Setuptools configuration
 
 import sys
 
-if sys.version_info < (3, 6, 0):
-    sys.stderr.write("ERROR: Python 3.6 or later is required.\n")
-    exit(1)
-
 from pathlib import Path  # noqa
 from setuptools import setup, find_packages  # noqa
 
@@ -66,7 +62,6 @@ classifiers = [
     "Intended Audience :: Other Audience",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Topic :: Office/Business",
 ]
@@ -102,7 +97,7 @@ package_data = dict(
 # Dependencies
 #
 
-python_requirements = ">=3.6,<3.8"
+python_requirements = ">=3.7,<3.8"
 
 setup_requirements = []
 
