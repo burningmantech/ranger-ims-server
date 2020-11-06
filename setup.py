@@ -20,10 +20,10 @@
 Setuptools configuration
 """
 
-import sys
-
 from pathlib import Path  # noqa
 from setuptools import setup, find_packages  # noqa
+import sys
+from typing import Dict, List, Optional
 
 sys.path.insert(0, "src")
 
@@ -40,7 +40,7 @@ description = "Ranger Incident Management System"
 
 readme_path = Path(__file__).parent / "README.rst"
 try:
-    long_description = readme_path.open().read()
+    long_description: Optional[str] = readme_path.open().read()
 except IOError:
     long_description = None
 
@@ -99,7 +99,7 @@ package_data = dict(
 
 python_requirements = ">=3.9"
 
-setup_requirements = []
+setup_requirements: List[str] = []
 
 install_requirements = [
     # Direct dependencies
@@ -115,7 +115,6 @@ install_requirements = [
     "service-identity==18.1.0",
     "Twisted==20.3.0",
     "zope.interface==5.1.2",
-
     # Indirect dependencies
     "Automat==20.2.0",
     "cffi==1.14.3",
@@ -134,21 +133,22 @@ install_requirements = [
     "Werkzeug==1.0.1",
 ]
 
-extras_requirements = {}
+extras_requirements: Dict[str, str] = {}
 
 
 #
 # Set up Extension modules that need to be built
 #
 
-extensions = []
+extensions: List[str] = []
 
 
 #
 # Run setup
 #
 
-def main():
+
+def main() -> None:
     """
     Run :func:`setup`.
     """
