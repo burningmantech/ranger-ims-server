@@ -62,7 +62,7 @@ classifiers = [
     "Intended Audience :: Other Audience",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.9",
     "Topic :: Office/Business",
 ]
 
@@ -97,7 +97,7 @@ package_data = dict(
 # Dependencies
 #
 
-python_requirements = ">=3.7,<3.8"
+python_requirements = ">=3.9"
 
 setup_requirements = []
 
