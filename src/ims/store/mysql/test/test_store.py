@@ -81,7 +81,7 @@ class DataStoreTests(SuperDataStoreTests):
         for _ in range(100):
             databaseName = randomDatabaseName()
             try:
-                self._log.info("Creating database: {name}", name=databaseName)
+                self.log.info("Creating database: {name}", name=databaseName)
                 await service.createDatabase(name=databaseName)
             except Exception as e:  # pragma: no cover
                 self.log.warn("Unable to create database: {error}", error=e)
