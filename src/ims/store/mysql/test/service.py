@@ -75,6 +75,22 @@ class MySQLService(ABC):
 
     _log: ClassVar[Logger] = Logger()
 
+    def __repr__(self) -> str:
+        return (
+            f"<{self.__class__.__name__}("
+            + ",".join(
+                (
+                    f"host={self.host}",
+                    f"clientHost={self.clientHost}",
+                    f"port={self.port}",
+                    f"user={self.user}",
+                    "password=<fnord>",
+                    "rootPassword=<fnord>",
+                )
+            )
+            + ">"
+        )
+
     @property
     @abstractmethod
     def host(self) -> str:
@@ -245,7 +261,7 @@ class DockerizedMySQLService(MySQLService):
         timeout: float = 60.0,
         interval: float = 1.0,
     ) -> Awaitable[None]:
-        lastLogs = [b""]
+        containerLog = [b""]
 
         d = Deferred()
 
@@ -269,31 +285,30 @@ class DockerizedMySQLService(MySQLService):
 
                 # FIXME: We fetch the full logs each time because the streaming
                 # API logs(stream=True) blocks.
-                logs = container.logs()
+                logs = containerLog[0] = container.logs()
 
                 messageBytes = message.encode("latin-1")
 
                 for line in logs.split(b"\n"):
                     if messageBytes in line:
                         self._log.info(
-                            "MySQL container {name} started",
+                            "MySQL container {name} started: {logs}",
                             name=containerName,
+                            logs=logs.decode("latin-1"),
                         )
-                        self._log.info("{logs}", logs=logs.decode("latin-1"))
                         d.callback(logs)
                         return
-
-                lastLogs[0] = logs
 
                 reactor.callLater(
                     interval, waitOnDBStartup, elapsed=(elapsed + interval)
                 )
-            except Exception as e:
+            except Exception:
                 self._log.error(
-                    "Last seen log output:\n{log}",
-                    log=lastLogs[0].decode("utf-8"),
+                    "MySQL container {name} failed to start: {logs}",
+                    name=containerName,
+                    logs=logs.decode("latin-1"),
                 )
-                d.errback(e)
+                d.errback()
 
         waitOnDBStartup()
 
