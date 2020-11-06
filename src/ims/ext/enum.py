@@ -4,7 +4,7 @@ Extensions to :mod:`enum`
 """
 
 from enum import Enum, auto, unique
-from typing import Any, Callable, Iterable, List, cast
+from typing import Any, Callable, List, Tuple, cast
 
 
 __all__ = (
@@ -36,11 +36,12 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
         return self is not other
 
     def compare(self: Enum, other: Any, lessThan: bool) -> bool:
-        if other in cast(Iterable[object], enumClass):
-            for enumInstance in cast(Iterable[object], enumClass):
-                if enumInstance is self:
+        members: Tuple[Enum, ...] = tuple(enumClass)  # type: ignore[arg-type]
+        if other in members:
+            for member in members:
+                if member is self:
                     return lessThan
-                elif enumInstance is other:
+                elif member is other:
                     return not lessThan
 
         return NotImplemented

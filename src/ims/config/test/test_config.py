@@ -471,7 +471,7 @@ class ConfigFileParserTests(TestCase):
         ConfigFileParser.enumFromConfig() reads a enumerated value from the
         config file.
         """
-        assume(otherValue not in Things)
+        assume(otherValue not in [t.name for t in Things])
 
         configFilePath = Path(self.mktemp())
         writeConfig(configFilePath, section, option, otherValue)
