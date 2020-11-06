@@ -20,9 +20,8 @@ This implementation uses Docker containers.
 """
 
 from abc import ABC, abstractmethod
-from random import choice, choices
-from string import ascii_letters, digits
 from typing import Awaitable, ClassVar, Mapping, Optional, cast
+from uuid import uuid4
 
 from attr import Factory, attrib, attrs
 
@@ -43,13 +42,25 @@ from twisted.logger import Logger
 __all__ = ()
 
 
-def randomDatabaseName(length: int = 16) -> str:
+def randomDatabaseName() -> str:
     """
-    Generate a random string.
+    Generate a unique string for use as a database name.
     """
-    return choice(ascii_letters) + "".join(  # nosec
-        choices(ascii_letters + digits, k=(length - 1))
-    )
+    return f"d{uuid4().hex}"
+
+
+def randomUserName() -> str:
+    """
+    Generate a unique string for use as a database name.
+    """
+    return f"u{uuid4().hex}"[:16]
+
+
+def randomPassword() -> str:
+    """
+    Generate a unique string for use as a database name.
+    """
+    return f"p{uuid4().hex}"
 
 
 NO_HOST = ""
@@ -173,9 +184,9 @@ class DockerizedMySQLService(MySQLService):
         host = NO_HOST
         port = NO_PORT
 
-    _user: str = Factory(randomDatabaseName)
-    _password: str = Factory(randomDatabaseName)
-    _rootPassword: str = Factory(randomDatabaseName)
+    _user: str = Factory(randomUserName)
+    _password: str = Factory(randomPassword)
+    _rootPassword: str = Factory(randomPassword)
 
     _dockerHost: str = "172.17.0.1"
 
@@ -219,8 +230,9 @@ class DockerizedMySQLService(MySQLService):
     @property
     def _containerEnvironment(self) -> Mapping[str, str]:
         return dict(
+            # Set root password so that we can connect as root from the Docker
+            # host for debugging
             MYSQL_ROOT_PASSWORD=self.rootPassword,
-            # So we can connect as root from the Docker host
             MYSQL_ROOT_HOST=self._dockerHost,
             MYSQL_USER=self.user,
             MYSQL_PASSWORD=self.password,
@@ -233,6 +245,8 @@ class DockerizedMySQLService(MySQLService):
         timeout: float = 60.0,
         interval: float = 1.0,
     ) -> Awaitable[None]:
+        lastLogs = [b""]
+
         d = Deferred()
 
         def waitOnDBStartup(elapsed: float = 0.0) -> None:
@@ -269,11 +283,17 @@ class DockerizedMySQLService(MySQLService):
                         d.callback(logs)
                         return
 
+                lastLogs[0] = logs
+
                 reactor.callLater(
                     interval, waitOnDBStartup, elapsed=(elapsed + interval)
                 )
-            except Exception:
-                d.errback()
+            except Exception as e:
+                self._log.error(
+                    "Last seen log output:\n{log}",
+                    log=lastLogs[0].decode("utf-8")
+                )
+                d.errback(e)
 
         waitOnDBStartup()
 
@@ -307,6 +327,9 @@ class DockerizedMySQLService(MySQLService):
         containerName = self._containerName
 
         self._log.info("Creating MySQL container {name}", name=containerName)
+        self._log.info(
+            "Container environment: {env}", env=self._containerEnvironment
+        )
 
         container = client.containers.create(
             name=containerName,
@@ -345,6 +368,7 @@ class DockerizedMySQLService(MySQLService):
             )
 
             self._log.info(
+                "To connect to MySQL, run:\n"
                 "docker exec"
                 " --interactive"
                 " --tty"
@@ -387,8 +411,6 @@ class DockerizedMySQLService(MySQLService):
         self._stop(container, self._containerName)
 
     async def createDatabase(self, name: str) -> None:
-        containerName = self._containerName
-
         await super().createDatabase(name)
 
         self._log.info(
@@ -403,7 +425,7 @@ class DockerizedMySQLService(MySQLService):
             " --password={password}"
             " --database={database}"
             "",
-            container=containerName,
+            container=self._containerName,
             port=self.port,
             user=self.user,
             password=self.password,
