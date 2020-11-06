@@ -291,7 +291,7 @@ class DockerizedMySQLService(MySQLService):
             except Exception as e:
                 self._log.error(
                     "Last seen log output:\n{log}",
-                    log=lastLogs[0].decode("utf-8")
+                    log=lastLogs[0].decode("utf-8"),
                 )
                 d.errback(e)
 
