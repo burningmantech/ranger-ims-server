@@ -124,14 +124,13 @@ install_requirements = [
     "cryptography==3.2.1",
     "idna==2.10",
     "incremental==17.5.0",
-    "pyasn1-modules==0.2.8",
     "pyasn1==0.4.8",
+    "pyasn1-modules==0.2.8",
     "pycparser==2.20",
     "PyHamcrest==2.0.2",
     "python-dateutil==2.8.1",
     "six==1.15.0",
     "Tubes==0.2.0",
-    "typing==3.7.4.3",
     "Werkzeug==1.0.1",
 ]
 
