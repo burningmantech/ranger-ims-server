@@ -20,10 +20,11 @@
 Setuptools configuration
 """
 
-from pathlib import Path  # noqa
-from setuptools import setup, find_packages  # noqa
 import sys
+from pathlib import Path  # noqa
 from typing import Dict, List, Optional
+
+from setuptools import find_packages, setup  # noqa
 
 sys.path.insert(0, "src")
 
