@@ -179,7 +179,7 @@ class DataStore(DatabaseStore):
         try:
             with self._db as db:
                 return interaction(db.cursor(), *args, **kwargs)
-            assert False
+            raise AssertionError("We shouldn't be here")
         except SQLiteError as e:
             self._log.critical(
                 "Interaction {interaction} failed: {error}",

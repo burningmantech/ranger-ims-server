@@ -188,7 +188,7 @@ class DummyConnectionPool(object):
         return fail(AssertionError(f"No canned response for query: {sql}"))
 
 
-class DummyADBAPI(object):
+class DummyADBAPI(object):  # noqa: B903
     """
     Mock for L{adbapi}.
     """
