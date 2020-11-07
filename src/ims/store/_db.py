@@ -19,7 +19,6 @@ Incident Management System database tooling.
 """
 
 from abc import abstractmethod
-from collections.abc import Iterable as IterableABC
 from datetime import datetime as DateTime, timezone as TimeZone
 from pathlib import Path
 from textwrap import dedent
@@ -136,7 +135,7 @@ class Queries(object):
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class Transaction(IterableABC):
+class Transaction:
     lastrowid: int
 
     @abstractmethod
@@ -673,10 +672,10 @@ class DatabaseStore(IMSDataStore):
                     ),
                 ),
             ),
-            rangerHandles=cast(Iterable, rangerHandles),
-            incidentTypes=cast(Iterable, incidentTypes),
-            reportEntries=cast(Iterable, reportEntries),
-            incidentReportNumbers=cast(Iterable, incidentReportNumbers),
+            rangerHandles=cast(Iterable[str], rangerHandles),
+            incidentTypes=cast(Iterable[str], incidentTypes),
+            reportEntries=cast(Iterable[ReportEntry], reportEntries),
+            incidentReportNumbers=incidentReportNumbers,
         )
 
     def _fetchIncidentNumbers(
@@ -1424,7 +1423,7 @@ class DatabaseStore(IMSDataStore):
             created=self.fromDateTimeValue(row["CREATED"]),
             summary=cast(Optional[str], row["SUMMARY"]),
             incidentNumber=cast(Optional[int], row["INCIDENT_NUMBER"]),
-            reportEntries=cast(Iterable, reportEntries),
+            reportEntries=cast(Iterable[ReportEntry], reportEntries),
         )
 
     def _fetchIncidentReportNumbers(

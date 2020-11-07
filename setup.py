@@ -21,9 +21,10 @@ Setuptools configuration
 """
 
 import sys
-
 from pathlib import Path  # noqa
-from setuptools import setup, find_packages  # noqa
+from typing import Dict, List, Optional
+
+from setuptools import find_packages, setup  # noqa
 
 sys.path.insert(0, "src")
 
@@ -40,7 +41,7 @@ description = "Ranger Incident Management System"
 
 readme_path = Path(__file__).parent / "README.rst"
 try:
-    long_description = readme_path.open().read()
+    long_description: Optional[str] = readme_path.open().read()
 except IOError:
     long_description = None
 
@@ -62,7 +63,7 @@ classifiers = [
     "Intended Audience :: Other Audience",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.9",
     "Topic :: Office/Business",
 ]
 
@@ -97,9 +98,9 @@ package_data = dict(
 # Dependencies
 #
 
-python_requirements = ">=3.7,<3.8"
+python_requirements = ">=3.9"
 
-setup_requirements = []
+setup_requirements: List[str] = []
 
 install_requirements = [
     # Direct dependencies
@@ -124,32 +125,32 @@ install_requirements = [
     "cryptography==3.2.1",
     "idna==2.10",
     "incremental==17.5.0",
-    "pyasn1-modules==0.2.8",
     "pyasn1==0.4.8",
+    "pyasn1-modules==0.2.8",
     "pycparser==2.20",
     "PyHamcrest==2.0.2",
     "python-dateutil==2.8.1",
     "six==1.15.0",
     "Tubes==0.2.0",
-    "typing==3.7.4.3",
     "Werkzeug==1.0.1",
 ]
 
-extras_requirements = {}
+extras_requirements: Dict[str, str] = {}
 
 
 #
 # Set up Extension modules that need to be built
 #
 
-extensions = []
+extensions: List[str] = []
 
 
 #
 # Run setup
 #
 
-def main():
+
+def main() -> None:
     """
     Run :func:`setup`.
     """

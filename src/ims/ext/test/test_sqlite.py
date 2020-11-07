@@ -7,7 +7,15 @@ from io import StringIO
 from pathlib import Path
 from sqlite3 import Error as SQLiteError
 from textwrap import dedent
-from typing import Any, Generator, List, Mapping, Optional, Union, cast
+from typing import (
+    Any,
+    Iterator,
+    List,
+    Mapping,
+    Optional,
+    Union,
+    cast,
+)
 
 from .. import sqlite
 from ..sqlite import (
@@ -276,7 +284,7 @@ class ErrneousSQLiteConnection(Connection):
     _generateErrors = False
 
     @contextmanager
-    def noErrors(self) -> Generator:
+    def noErrors(self) -> Iterator[None]:
         """
         Context manager that suspends the generation of errors.
         """
@@ -291,7 +299,7 @@ class ErrneousSQLiteConnection(Connection):
         return super().executescript(sql_script)
 
     def execute(  # type: ignore[override]
-        self, sql: str, parameters: Optional[Mapping] = None
+        self, sql: str, parameters: Optional[Mapping[str, object]] = None
     ) -> BaseCursor:
         if parameters is None:
             parameters = {}

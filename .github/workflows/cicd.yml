@@ -64,7 +64,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: "3.7"
+          python-version: "3.9"
 
       - name: Install Tox
         run: pip install tox;
@@ -88,7 +88,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: "3.7"
+          python-version: "3.9"
 
       - name: Install Tox
         run: pip install tox;
@@ -111,7 +111,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: "3.7"
+          python-version: "3.9"
 
       - name: Install Tox
         run: pip install tox;
@@ -134,7 +134,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: "3.7"
+          python-version: "3.9"
 
       - name: Install Tox
         run: pip install tox;
@@ -157,7 +157,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: "3.7"
+          python-version: "3.9"
 
       - name: Install Tox
         run: pip install tox;
@@ -180,7 +180,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: "3.7"
+          python-version: "3.9"
 
       - name: Install Tox
         run: pip install tox;
@@ -203,7 +203,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: "3.7"
+          python-version: "3.9"
 
       - name: Install Tox
         run: pip install tox;
@@ -221,7 +221,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        python: ["3.7"]
+        python: ["3.9"]
 
     steps:
 
@@ -356,7 +356,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v1
         with:
-          python-version: "3.7"
+          python-version: "3.9"
 
       - name: Deploy to staging
         run: ./bin/deploy staging;

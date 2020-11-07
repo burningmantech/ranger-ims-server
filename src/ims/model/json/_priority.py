@@ -47,7 +47,9 @@ def serializeIncidentPriority(incidentPriority: IncidentPriority) -> str:
 registerSerializer(IncidentPriority, serializeIncidentPriority)
 
 
-def deserializeIncidentPriority(obj: int, cl: Type) -> IncidentPriority:
+def deserializeIncidentPriority(
+    obj: int, cl: Type[IncidentPriority]
+) -> IncidentPriority:
     assert cl is IncidentPriority, (cl, obj)
 
     return cast(

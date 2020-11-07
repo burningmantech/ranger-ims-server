@@ -20,7 +20,7 @@ Incident Management System SQL data store.
 
 from pathlib import Path
 from sys import stdout
-from typing import Any, Callable, ClassVar, Optional, TextIO, cast
+from typing import Any, Callable, ClassVar, Optional, TextIO, TypeVar, cast
 
 from attr import attrib, attrs
 
@@ -36,6 +36,9 @@ from .._exceptions import StorageError
 
 
 __all__ = ()
+
+
+T = TypeVar("T")
 
 
 class ReconnectingConnectionPool(ConnectionPool):
@@ -183,10 +186,15 @@ class DataStore(DatabaseStore):
             raise StorageError(str(e))
 
     async def runInteraction(
-        self, interaction: Callable, *args: Any, **kwargs: Any
-    ) -> Any:
+        self,
+        interaction: Callable[..., T],
+        *args: Any,
+        **kwargs: Any,
+    ) -> T:
         try:
-            return await self._db.runInteraction(interaction, *args, **kwargs)
+            return cast(
+                T, await self._db.runInteraction(interaction, *args, **kwargs)
+            )
         except MySQLError as e:
             self._log.critical(
                 "Interaction {interaction} failed: {error}",
@@ -251,8 +259,8 @@ class DataStore(DatabaseStore):
             tableName = cast(str, row["TABLE_NAME"])
             columnName = cast(str, row["COLUMN_NAME"])
             columnType = cast(str, row["DATA_TYPE"])
-            columnNullable = cast(bool, row["IS_NULLABLE"])
-            columnDefault = cast(bool, row["COLUMN_DEFAULT"])
+            columnNullable = cast(str, row["IS_NULLABLE"])
+            columnDefault = cast(Optional[str], row["COLUMN_DEFAULT"])
             columnPosition = cast(int, row["ORDINAL_POSITION"])
             columnMaxChars = cast(
                 Optional[int], row["CHARACTER_MAXIMUM_LENGTH"]
@@ -272,10 +280,10 @@ class DataStore(DatabaseStore):
             else:
                 notNull = " not null"
 
-            if columnDefault:
-                default = f" := {columnDefault}"
-            else:
+            if columnDefault is None:
                 default = ""
+            else:
+                default = f" := {columnDefault}"
 
             text = (
                 f"  {columnPosition}: "

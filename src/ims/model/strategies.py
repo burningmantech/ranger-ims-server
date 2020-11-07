@@ -23,7 +23,16 @@ from datetime import (
     timedelta as TimeDelta,
     timezone as TimeZone,
 )
-from typing import Callable, Dict, FrozenSet, Hashable, List, Optional, cast
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    FrozenSet,
+    Hashable,
+    List,
+    Optional,
+    cast,
+)
 
 from hypothesis.strategies import (
     SearchStrategy,
@@ -99,7 +108,7 @@ __all__ = (
 
 
 @composite
-def timeZones(draw: Callable) -> TimeZone:
+def timeZones(draw: Callable[..., Any]) -> TimeZone:
     """
     Strategy that generates :class:`TimeZone` values.
     """
@@ -148,7 +157,9 @@ def dateTimes(
 
 
 @composite
-def textOnlyAddresses(draw: Callable) -> SearchStrategy:  # TextOnlyAddress
+def textOnlyAddresses(
+    draw: Callable[..., Any]
+) -> SearchStrategy:  # TextOnlyAddress
     """
     Strategy that generates :class:`TextOnlyAddress` values.
     """
@@ -184,7 +195,7 @@ def radialMinutes() -> SearchStrategy:  # str
 
 
 @composite
-def rodGarettAddresses(draw: Callable) -> RodGarettAddress:
+def rodGarettAddresses(draw: Callable[..., Any]) -> RodGarettAddress:
     """
     Strategy that generates :class:`RodGarettAddress` values.
     """
@@ -210,7 +221,7 @@ def addresses() -> SearchStrategy:  # Address
 
 @composite
 def reportEntries(
-    draw: Callable,
+    draw: Callable[..., Any],
     author: Optional[str] = None,
     automatic: Optional[bool] = None,
     beforeNow: bool = False,
@@ -239,7 +250,7 @@ def reportEntries(
 
 
 @composite
-def events(draw: Callable) -> Event:
+def events(draw: Callable[..., Any]) -> Event:
     """
     Strategy that generates :class:`Event` values.
     """
@@ -247,7 +258,7 @@ def events(draw: Callable) -> Event:
 
 
 @composite
-def accessTexts(draw: Callable) -> str:
+def accessTexts(draw: Callable[..., Any]) -> str:
     """
     Strategy that generates event access strings.
     """
@@ -259,7 +270,7 @@ def accessTexts(draw: Callable) -> str:
 
 
 @composite
-def eventAccesses(draw: Callable) -> EventAccess:
+def eventAccesses(draw: Callable[..., Any]) -> EventAccess:
     """
     Strategy that generates :class:`EventAccess` values.
     """
@@ -276,7 +287,7 @@ def eventAccesses(draw: Callable) -> EventAccess:
 
 
 @composite
-def eventDatas(draw: Callable) -> EventData:
+def eventDatas(draw: Callable[..., Any]) -> EventData:
     """
     Strategy that generates :class:`EventData` values.
     """
@@ -312,7 +323,7 @@ def eventDatas(draw: Callable) -> EventData:
 
 
 @composite
-def imsDatas(draw: Callable) -> IMSData:
+def imsDatas(draw: Callable[..., Any]) -> IMSData:
     """
     Strategy that generates :class:`IMSData` values.
     """
@@ -365,7 +376,7 @@ def incidentSummaries() -> SearchStrategy:  # str
 
 @composite
 def incidents(
-    draw: Callable,
+    draw: Callable[..., Any],
     new: bool = False,
     event: Optional[Event] = None,
     maxNumber: Optional[int] = None,
@@ -451,7 +462,7 @@ def locationNames() -> SearchStrategy:  # str
 
 
 @composite
-def locations(draw: Callable) -> Location:
+def locations(draw: Callable[..., Any]) -> Location:
     """
     Strategy that generates :class:`Location` values.
     """
@@ -483,7 +494,7 @@ def rangerHandles() -> SearchStrategy:  # str
 
 
 @composite
-def passwords(draw: Callable) -> str:
+def passwords(draw: Callable[..., Any]) -> str:
     """
     Strategy that generates hashed passwords.
     """
@@ -492,7 +503,7 @@ def passwords(draw: Callable) -> str:
 
 
 @composite
-def rangers(draw: Callable) -> Ranger:
+def rangers(draw: Callable[..., Any]) -> Ranger:
     """
     Strategy that generates :class:`Ranger` values.
     """
@@ -513,7 +524,7 @@ def rangers(draw: Callable) -> Ranger:
 
 
 @composite
-def positions(draw: Callable) -> Position:
+def positions(draw: Callable[..., Any]) -> Position:
     """
     Strategy that generates :class:`Position` values.
     """
@@ -533,7 +544,7 @@ incidentReportSummaries = incidentSummaries
 
 @composite
 def incidentReports(
-    draw: Callable,
+    draw: Callable[..., Any],
     new: bool = False,
     event: Optional[Event] = None,
     maxNumber: Optional[int] = None,
@@ -611,7 +622,7 @@ def incidentStates() -> SearchStrategy:  # IncidentState
 
 
 @composite
-def incidentTypes(draw: Callable) -> IncidentType:
+def incidentTypes(draw: Callable[..., Any]) -> IncidentType:
     """
     Strategy that generates incident types.
     """

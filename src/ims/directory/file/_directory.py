@@ -20,7 +20,7 @@ Incident Management System directory service integration.
 
 from pathlib import Path
 from time import time
-from typing import Any, ClassVar, IO, Iterable, Mapping, Optional, Sequence
+from typing import Any, ClassVar, Iterable, Mapping, Optional, Sequence, TextIO
 
 from attr import Factory, attrs
 
@@ -175,7 +175,7 @@ class FileDirectory(IMSDirectory):
     def _mtime(self) -> float:
         return self.path.stat().st_mtime
 
-    def _open(self) -> IO:
+    def _open(self) -> TextIO:
         return self.path.open()
 
     def _reload(self) -> None:
