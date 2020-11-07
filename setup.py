@@ -21,14 +21,14 @@ Setuptools configuration
 """
 
 import sys
-from pathlib import Path  # noqa
+from pathlib import Path
 from typing import Dict, List, Optional
 
-from setuptools import find_packages, setup  # noqa
+from setuptools import find_packages, setup
 
 sys.path.insert(0, "src")
 
-from ims import __version__ as version_string  # noqa
+from ims import __version__ as version_string  # noqa: E402
 
 
 #
