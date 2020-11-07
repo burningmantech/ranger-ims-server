@@ -20,7 +20,7 @@ HTML5 EventSource support.
 
 from collections import deque
 from time import time
-from typing import ClassVar, Deque, List, Mapping, Optional, Tuple
+from typing import Any, ClassVar, Deque, List, Mapping, Optional, Tuple
 
 from attr import attrib, attrs
 
@@ -104,7 +104,7 @@ class DataStoreEventSourceLogObserver(object):
         self._listeners.remove(listener)
 
     def _transmogrify(
-        self, loggerEvent: Mapping, eventID: int
+        self, loggerEvent: Mapping[str, Any], eventID: int
     ) -> Optional[Event]:
         """
         Convert a logger event into an EventSource event.
@@ -182,7 +182,7 @@ class DataStoreEventSourceLogObserver(object):
 
         self._events.append((self._counter[0], eventSourceEvent))
 
-    def __call__(self, event: Mapping) -> None:
+    def __call__(self, event: Mapping[str, Any]) -> None:
         """
         See L{ILogObserver.__call__}.
         """

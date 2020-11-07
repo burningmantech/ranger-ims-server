@@ -15,6 +15,7 @@ include conf/imsd-sample.conf
 include COPYRIGHT.rst
 include Dockerfile
 include LICENSE.txt
+include mypy.ini
 include pyproject.toml
 include README.rst
 include tox.ini

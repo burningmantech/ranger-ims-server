@@ -71,7 +71,7 @@ def serializeRanger(ranger: Ranger) -> Dict[str, Any]:
 registerSerializer(Ranger, serializeRanger)
 
 
-def deserializeRanger(obj: Dict[str, Any], cl: Type) -> Ranger:
+def deserializeRanger(obj: Dict[str, Any], cl: Type[Ranger]) -> Ranger:
     assert cl is Ranger, (cl, obj)
 
     return cast(Ranger, deserialize(obj, Ranger, RangerJSONType, RangerJSONKey))
@@ -98,7 +98,7 @@ def serializeRangerStatus(rangerStatus: RangerStatus) -> str:
 registerSerializer(RangerStatus, serializeRangerStatus)
 
 
-def deserializeRangerStatus(obj: int, cl: Type) -> RangerStatus:
+def deserializeRangerStatus(obj: int, cl: Type[RangerStatus]) -> RangerStatus:
     assert cl is RangerStatus, (cl, obj)
 
     return cast(

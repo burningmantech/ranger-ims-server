@@ -4,7 +4,7 @@ Extensions to :mod:`enum`
 """
 
 from enum import Enum, auto, unique
-from typing import Any, Callable, Iterable, List, cast
+from typing import Any, Callable, List, Tuple, cast
 
 
 __all__ = (
@@ -20,6 +20,9 @@ __all__ = (
 EnumMeta = type
 
 
+Comparator = Callable[[object, object], bool]
+
+
 def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
     """
     Decorate an `Enum` class to add comparison methods that order instances in
@@ -33,11 +36,12 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
         return self is not other
 
     def compare(self: Enum, other: Any, lessThan: bool) -> bool:
-        if other in cast(Iterable, enumClass):
-            for enumInstance in cast(Iterable, enumClass):
-                if enumInstance is self:
+        members: Tuple[Enum, ...] = tuple(enumClass)  # type: ignore[arg-type]
+        if other in members:
+            for member in members:
+                if member is self:
                     return lessThan
-                elif enumInstance is other:
+                elif member is other:
                     return not lessThan
 
         return NotImplemented
@@ -66,13 +70,15 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
 
         return compare(self, other, False)
 
-    enumClass.__eq__ = cast(Callable, equal)  # type: ignore[assignment]
-    enumClass.__ne__ = cast(Callable, notEqual)  # type: ignore[assignment]
-    enumClass.__lt__ = cast(Callable, lessThan)  # type: ignore[operator]
-    enumClass.__le__ = cast(Callable, lessThanOrEqual)  # type: ignore[operator]
-    enumClass.__gt__ = cast(Callable, greaterThan)  # type: ignore[operator]
+    enumClass.__eq__ = cast(Comparator, equal)  # type: ignore[assignment]
+    enumClass.__ne__ = cast(Comparator, notEqual)  # type: ignore[assignment]
+    enumClass.__lt__ = cast(Comparator, lessThan)  # type: ignore[operator]
+    enumClass.__le__ = cast(  # type: ignore[operator]
+        Comparator, lessThanOrEqual
+    )
+    enumClass.__gt__ = cast(Comparator, greaterThan)  # type: ignore[operator]
     enumClass.__ge__ = cast(  # type: ignore[operator]
-        Callable, greaterThanOrEqual
+        Comparator, greaterThanOrEqual
     )
 
     return enumClass
@@ -85,6 +91,6 @@ class Names(Enum):
 
     @staticmethod
     def _generate_next_value_(
-        name: str, start: int, count: int, last_values: List
+        name: str, start: int, count: int, last_values: List[object]
     ) -> str:
         return name

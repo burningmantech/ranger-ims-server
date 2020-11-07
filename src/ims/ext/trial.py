@@ -36,7 +36,7 @@ settings.register_profile(
 settings.load_profile("ci")
 
 
-def asyncAsDeferred(f: Callable) -> Callable:
+def asyncAsDeferred(f: Callable[..., Any]) -> Callable[..., Any]:
     """
     Decorator for async methods to return a Deferred object instead of a
     coroutine.

@@ -20,9 +20,8 @@ This implementation uses Docker containers.
 """
 
 from abc import ABC, abstractmethod
-from random import choice, choices
-from string import ascii_letters, digits
 from typing import Awaitable, ClassVar, Mapping, Optional, cast
+from uuid import uuid4
 
 from attr import Factory, attrib, attrs
 
@@ -31,7 +30,7 @@ from docker.client import DockerClient
 from docker.errors import ImageNotFound
 from docker.models.containers import Container
 
-from pymysql import connect
+from pymysql import ProgrammingError, connect
 from pymysql.cursors import DictCursor as Cursor
 
 from twisted.internet import reactor
@@ -43,17 +42,38 @@ from twisted.logger import Logger
 __all__ = ()
 
 
-def randomDatabaseName(length: int = 16) -> str:
+def randomDatabaseName() -> str:
     """
-    Generate a random string.
+    Generate a unique string for use as a database name.
     """
-    return choice(ascii_letters) + "".join(  # nosec
-        choices(ascii_letters + digits, k=(length - 1))
-    )
+    return f"d{uuid4().hex}"
+
+
+def randomUserName() -> str:
+    """
+    Generate a unique string for use as a database name.
+    """
+    return f"u{uuid4().hex}"[:16]
+
+
+def randomPassword() -> str:
+    """
+    Generate a unique string for use as a database name.
+    """
+    return f"p{uuid4().hex}"
 
 
 NO_HOST = ""
 NO_PORT = 0
+
+
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
+class DatabaseExistsError(Exception):
+    """
+    Database already exists.
+    """
+
+    name: str
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -63,6 +83,22 @@ class MySQLService(ABC):
     """
 
     _log: ClassVar[Logger] = Logger()
+
+    def __repr__(self) -> str:
+        return (
+            f"<{self.__class__.__name__}("
+            + ",".join(
+                (
+                    f"host={self.host}",
+                    f"clientHost={self.clientHost}",
+                    f"port={self.port}",
+                    f"user={self.user}",
+                    "password=<fnord>",
+                    "rootPassword=<fnord>",
+                )
+            )
+            + ">"
+        )
 
     @property
     @abstractmethod
@@ -138,7 +174,13 @@ class MySQLService(ABC):
 
         try:
             with connection.cursor() as cursor:
-                cursor.execute(f"create database {name}")
+                try:
+                    cursor.execute(f"create database {name}")
+                except ProgrammingError as e:
+                    if e.args[1].endswith("; database exists"):
+                        raise DatabaseExistsError(name) from None
+                    else:
+                        raise
                 cursor.execute(
                     f"grant all privileges on {name}.* "
                     f"to %(user)s@%(host)s identified by %(password)s",
@@ -173,9 +215,9 @@ class DockerizedMySQLService(MySQLService):
         host = NO_HOST
         port = NO_PORT
 
-    _user: str = Factory(randomDatabaseName)
-    _password: str = Factory(randomDatabaseName)
-    _rootPassword: str = Factory(randomDatabaseName)
+    _user: str = Factory(randomUserName)
+    _password: str = Factory(randomPassword)
+    _rootPassword: str = Factory(randomPassword)
 
     _dockerHost: str = "172.17.0.1"
 
@@ -217,10 +259,11 @@ class DockerizedMySQLService(MySQLService):
         return f"MySQLService-{cid}"
 
     @property
-    def _containerEnvironment(self) -> Mapping:
+    def _containerEnvironment(self) -> Mapping[str, str]:
         return dict(
+            # Set root password so that we can connect as root from the Docker
+            # host for debugging
             MYSQL_ROOT_PASSWORD=self.rootPassword,
-            # So we can connect as root from the Docker host
             MYSQL_ROOT_HOST=self._dockerHost,
             MYSQL_USER=self.user,
             MYSQL_PASSWORD=self.password,
@@ -232,7 +275,9 @@ class DockerizedMySQLService(MySQLService):
         message: str,
         timeout: float = 60.0,
         interval: float = 1.0,
-    ) -> Awaitable:
+    ) -> Awaitable[None]:
+        containerLog = [b""]
+
         d = Deferred()
 
         def waitOnDBStartup(elapsed: float = 0.0) -> None:
@@ -255,17 +300,17 @@ class DockerizedMySQLService(MySQLService):
 
                 # FIXME: We fetch the full logs each time because the streaming
                 # API logs(stream=True) blocks.
-                logs = container.logs()
+                logs = containerLog[0] = container.logs()
 
                 messageBytes = message.encode("latin-1")
 
                 for line in logs.split(b"\n"):
                     if messageBytes in line:
                         self._log.info(
-                            "MySQL container {name} started",
+                            "MySQL container {name} started: {logs}",
                             name=containerName,
+                            logs=logs.decode("latin-1"),
                         )
-                        self._log.info("{logs}", logs=logs.decode("latin-1"))
                         d.callback(logs)
                         return
 
@@ -273,11 +318,16 @@ class DockerizedMySQLService(MySQLService):
                     interval, waitOnDBStartup, elapsed=(elapsed + interval)
                 )
             except Exception:
+                self._log.error(
+                    "MySQL container {name} failed to start: {logs}",
+                    name=containerName,
+                    logs=logs.decode("latin-1"),
+                )
                 d.errback()
 
         waitOnDBStartup()
 
-        return cast(Awaitable, d)
+        return cast(Awaitable[None], d)
 
     def _resetContainerState(self) -> None:
         self._state.host = NO_HOST
@@ -307,6 +357,9 @@ class DockerizedMySQLService(MySQLService):
         containerName = self._containerName
 
         self._log.info("Creating MySQL container {name}", name=containerName)
+        self._log.info(
+            "Container environment: {env}", env=self._containerEnvironment
+        )
 
         container = client.containers.create(
             name=containerName,
@@ -345,6 +398,7 @@ class DockerizedMySQLService(MySQLService):
             )
 
             self._log.info(
+                "To connect to MySQL, run:\n"
                 "docker exec"
                 " --interactive"
                 " --tty"
@@ -387,8 +441,6 @@ class DockerizedMySQLService(MySQLService):
         self._stop(container, self._containerName)
 
     async def createDatabase(self, name: str) -> None:
-        containerName = self._containerName
-
         await super().createDatabase(name)
 
         self._log.info(
@@ -403,7 +455,7 @@ class DockerizedMySQLService(MySQLService):
             " --password={password}"
             " --database={database}"
             "",
-            container=containerName,
+            container=self._containerName,
             port=self.port,
             user=self.user,
             password=self.password,

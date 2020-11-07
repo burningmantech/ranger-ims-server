@@ -89,7 +89,7 @@ class TestUser(IMSUser):
 
 
 @composite
-def testUsers(draw: Callable) -> TestUser:
+def testUsers(draw: Callable[..., Any]) -> TestUser:
     return TestUser(
         uid=IMSUserID(draw(text(min_size=1))),
         shortNames=tuple(draw(lists(text(min_size=1), min_size=1))),

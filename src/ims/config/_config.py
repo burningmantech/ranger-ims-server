@@ -45,7 +45,7 @@ from ._urls import URLs
 __all__ = ()
 
 
-def describeFactory(f: Callable) -> str:
+def describeFactory(f: Callable[..., Any]) -> str:
     if isinstance(f, partial):
         if "password" in f.keywords:
             keywords = dict(f.keywords)

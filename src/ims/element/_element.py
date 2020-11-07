@@ -206,12 +206,12 @@ class Element(BaseElement):
     ) -> KleinRenderable:
         if reverse_order:
 
-            def order(i: Iterable) -> Iterable:
+            def order(i: Iterable[str]) -> Iterable[str]:
                 return reversed(sorted(i))
 
         else:
 
-            def order(i: Iterable) -> Iterable:
+            def order(i: Iterable[str]) -> Iterable[str]:
                 return sorted(i)
 
         authorizationsForUser = partial(

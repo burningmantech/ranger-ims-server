@@ -73,7 +73,7 @@ def serializeEventData(eventData: EventData) -> Dict[str, Any]:
 registerSerializer(EventData, serializeEventData)
 
 
-def deserializeEventData(obj: Dict[str, Any], cl: Type) -> EventData:
+def deserializeEventData(obj: Dict[str, Any], cl: Type[EventData]) -> EventData:
     assert cl is EventData, (cl, obj)
 
     return cast(
