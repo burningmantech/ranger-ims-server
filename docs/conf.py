@@ -12,12 +12,15 @@
 
 from os.path import abspath, join
 from sys import path
+
 path.insert(0, abspath(join("..", "src")))
 
 from os import environ
 from pprint import pprint
+
 pprint(environ)
 import sys
+
 pprint(sys.path)
 
 # -- Project information -----------------------------------------------------
