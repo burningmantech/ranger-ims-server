@@ -104,7 +104,7 @@ setup_requirements = []
 install_requirements = [
     # Direct dependencies
     "arrow==0.17.0",
-    "attrs==20.2.0",
+    "attrs==20.3.0",
     "bcrypt==3.2.0",
     "cattrs==1.1.1",
     "hyperlink==20.0.1",
@@ -114,7 +114,7 @@ install_requirements = [
     "PyYAML==5.3.1",
     "service-identity==18.1.0",
     "Twisted==20.3.0",
-    "zope.interface==5.1.2",
+    "zope.interface==5.2.0",
 
     # Indirect dependencies
     "Automat==20.2.0",
