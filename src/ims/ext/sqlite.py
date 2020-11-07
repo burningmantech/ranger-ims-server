@@ -128,7 +128,7 @@ class Connection(BaseConnection):
         Execute the given SQL and print the results in a table format.
         """
 
-        def emit(row: Iterable) -> None:
+        def emit(row: Iterable[object]) -> None:
             print(" | ".join(str(i) for i in row))
 
         printHeader = True
@@ -139,7 +139,7 @@ class Connection(BaseConnection):
             if printHeader:
                 emit(row.keys())
                 printHeader = False
-            emit(cast(Iterable, row))
+            emit(cast(Iterable[object], row))
 
     def commit(self) -> None:
         """

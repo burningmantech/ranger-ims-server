@@ -4,7 +4,7 @@ Frozen dictionary
 """
 
 from collections.abc import Mapping as MappingABC
-from typing import Any, Iterator, List, Mapping
+from typing import Any, Iterator, List, Mapping, TypeVar
 
 from attr import attrib, attrs
 
@@ -12,20 +12,26 @@ from attr import attrib, attrs
 __all__ = "FrozenDict"
 
 
+_Key = TypeVar("_Key")
+_Value = TypeVar("_Value")
+
+
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
-class FrozenDict(MappingABC):
+class FrozenDict(MappingABC[_Key, _Value]):
     """
     Frozen dictionary.
     """
 
     @classmethod
-    def fromMapping(cls, mapping: Mapping) -> "FrozenDict":
+    def fromMapping(
+        cls, mapping: Mapping[_Key, _Value]
+    ) -> "FrozenDict[_Key, _Value]":
         """
         Create a FrozenDict from a Mapping.
         """
         return cls(map_=mapping)
 
-    _map_: Mapping
+    _map_: Mapping[_Key, _Value]
     _hash: List[int] = attrib(init=False, factory=list)
 
     def __repr__(self) -> str:
@@ -53,7 +59,7 @@ class FrozenDict(MappingABC):
 
         return self._hash[0]
 
-    def copy(self) -> "FrozenDict":
+    def copy(self) -> "FrozenDict[_Key, _Value]":
         """
         See Mapping.copy.
         """

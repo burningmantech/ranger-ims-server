@@ -18,7 +18,7 @@
 Tests for L{ims.directory.clubhouse_db._dms}.
 """
 
-from typing import MutableSequence, Tuple, cast
+from typing import Any, Dict, MutableSequence, Tuple, cast
 
 from twisted.internet.defer import Deferred, fail, succeed
 
@@ -120,7 +120,7 @@ class DummyQuery(object):
     Represents a call to C{runQuery}.
     """
 
-    def __init__(self, args: tuple, kwargs: dict) -> None:
+    def __init__(self, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
         self.args = args
         self.kwargs = kwargs
 
@@ -141,12 +141,14 @@ class DummyConnectionPool(object):
     Mock for L{adbapi.ConnectionPool}.
     """
 
-    def __init__(self, dbapiname: str, **connkw: dict) -> None:
+    def __init__(self, dbapiname: str, **connkw: Dict[str, Any]) -> None:
         self.dbapiname = dbapiname
         self.connkw = connkw
         self.queries: MutableSequence[DummyQuery] = []
 
-    def runQuery(self, *args: tuple, **kw: dict) -> Deferred:
+    def runQuery(
+        self, *args: Tuple[Any, ...], **kw: Dict[str, Any]
+    ) -> Deferred:
         query = DummyQuery(args, kw)
 
         self.queries.append(query)

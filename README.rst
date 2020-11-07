@@ -20,7 +20,7 @@ Clients connect to the server over the network and provide an interface to users
 This package provides the server component, which includes a web client and some web-based reporting features.
 All functionality is exposed via JSON endpoints.
 
-The server is implemented using Twisted_ Klein_ and requires Python 3.7.
+The server is implemented using Twisted_ Klein_ and requires Python 3.9+.
 
 
 Development

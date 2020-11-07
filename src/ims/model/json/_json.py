@@ -69,7 +69,7 @@ registerDeserializer = converter.register_structure_hook
 registerSerializer(DateTime, dateTimeAsRFC3339Text)
 
 
-def deserializeDateTime(obj: str, cl: Type) -> DateTime:
+def deserializeDateTime(obj: str, cl: Type[DateTime]) -> DateTime:
     assert cl is DateTime, (cl, obj)
 
     return rfc3339TextAsDateTime(obj)
@@ -81,7 +81,7 @@ registerDeserializer(DateTime, deserializeDateTime)
 # Tuples and sets should serialize like lists
 
 
-def serializeIterable(iterable: Iterable) -> List:
+def serializeIterable(iterable: Iterable[Any]) -> List[JSON]:
     return [jsonSerialize(item) for item in iterable]
 
 
@@ -93,14 +93,16 @@ registerSerializer(tuple, serializeIterable)
 # FrozenDict
 
 
-def serializeFrozenDict(frozenDict: FrozenDict) -> Any:
+def serializeFrozenDict(frozenDict: FrozenDict[str, Any]) -> JSON:
     return jsonSerialize(dict(frozenDict))
 
 
 registerSerializer(FrozenDict, serializeFrozenDict)
 
 
-def deserializeFrozenDict(obj: Dict, cl: Type) -> FrozenDict:
+def deserializeFrozenDict(
+    obj: Mapping[str, JSON], cl: Type[FrozenDict[str, JSON]]
+) -> FrozenDict[str, JSON]:
     assert cl is FrozenDict, (cl, obj)
 
     return FrozenDict.fromMapping(obj)
@@ -124,7 +126,10 @@ def modelObjectFromJSONObject(json: JSON, modelClass: type) -> Any:
 
 
 def deserialize(
-    obj: Dict[str, Any], cls: Type, typeEnum: Type, keyEnum: Type
+    obj: Dict[str, Any],
+    cls: Type[Any],
+    typeEnum: Type[Enum],
+    keyEnum: Type[Enum],
 ) -> Any:
     def deserializeKey(key: Enum) -> Any:
         try:
@@ -147,6 +152,8 @@ def deserialize(
             raise
 
     return cls(
-        # Map JSON dict key names to RodGarettAddress attribute names
-        **{key.name: deserializeKey(key) for key in cast(Iterable, keyEnum)}
+        **{
+            key.name: deserializeKey(key)
+            for key in cast(Iterable[Enum], keyEnum)
+        }
     )

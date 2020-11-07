@@ -145,7 +145,7 @@ registerSerializer(RodGarettAddress, serializeRodGarettAddress)
 
 
 def deserializeTextOnlyAddress(
-    obj: Dict[str, Any], cl: Type
+    obj: Dict[str, Any], cl: Type[TextOnlyAddress]
 ) -> TextOnlyAddress:
     assert cl is TextOnlyAddress, (cl, obj)
 
@@ -164,7 +164,7 @@ registerDeserializer(TextOnlyAddress, deserializeTextOnlyAddress)
 
 
 def deserializeRodGarettAddress(
-    obj: Dict[str, Any], cl: Type
+    obj: Dict[str, Any], cl: Type[RodGarettAddress]
 ) -> RodGarettAddress:
     assert cl is RodGarettAddress, (cl, obj)
 

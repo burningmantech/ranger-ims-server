@@ -25,10 +25,10 @@ from typing import (
     Any,
     Dict,
     FrozenSet,
-    IO,
     List,
     Mapping,
     Sequence,
+    TextIO,
     Tuple,
     Union,
 )
@@ -394,7 +394,7 @@ class TestFileDirectory(FileDirectory):
         else:
             return super()._mtime()
 
-    def _open(self) -> IO:
+    def _open(self) -> TextIO:
         if not hasattr(self._state, "openCount"):
             self._state.openCount = 0  # type: ignore[attr-defined]
         self._state.openCount += 1  # type: ignore[attr-defined]

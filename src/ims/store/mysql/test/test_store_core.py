@@ -94,6 +94,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         for _ in range(100):
             databaseName = randomDatabaseName()
             try:
+                self._log.info("Creating database: {name}", name=databaseName)
                 await service.createDatabase(name=databaseName)
             except Exception as e:  # pragma: no cover
                 self._log.warn("Unable to create database: {error}", error=e)

@@ -28,7 +28,7 @@ from ._json import (
     registerDeserializer,
     registerSerializer,
 )
-from .._address import RodGarettAddress, TextOnlyAddress
+from .._address import Address, RodGarettAddress, TextOnlyAddress
 from .._location import Location
 
 
@@ -60,7 +60,9 @@ def serializeLocation(location: Location) -> Dict[str, Any]:
 registerSerializer(Location, serializeLocation)
 
 
-def deserializeLocation(obj: Optional[Dict[str, Any]], cl: Type) -> Location:
+def deserializeLocation(
+    obj: Optional[Dict[str, Any]], cl: Type[Location]
+) -> Location:
     assert cl is Location, (cl, obj)
 
     if obj is None:
@@ -75,7 +77,7 @@ def deserializeLocation(obj: Optional[Dict[str, Any]], cl: Type) -> Location:
     jsonAddress = obj
     addressType = jsonAddress[AddressJSONKey.addressType.value]
 
-    addressClass: Type
+    addressClass: Type[Address]
     if addressType == AddressTypeJSONValue.rodGarett.value:
         addressClass = RodGarettAddress
     elif addressType == AddressTypeJSONValue.text.value:
