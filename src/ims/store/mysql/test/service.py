@@ -30,7 +30,7 @@ from docker.client import DockerClient
 from docker.errors import ImageNotFound
 from docker.models.containers import Container
 
-from pymysql import connect
+from pymysql import ProgrammingError, connect
 from pymysql.cursors import DictCursor as Cursor
 
 from twisted.internet import reactor
@@ -65,6 +65,15 @@ def randomPassword() -> str:
 
 NO_HOST = ""
 NO_PORT = 0
+
+
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
+class DatabaseExistsError(Exception):
+    """
+    Database already exists.
+    """
+
+    name: str
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
@@ -165,7 +174,13 @@ class MySQLService(ABC):
 
         try:
             with connection.cursor() as cursor:
-                cursor.execute(f"create database {name}")
+                try:
+                    cursor.execute(f"create database {name}")
+                except ProgrammingError as e:
+                    if e.args[1].endswith("; database exists"):
+                        raise DatabaseExistsError(name) from None
+                    else:
+                        raise
                 cursor.execute(
                     f"grant all privileges on {name}.* "
                     f"to %(user)s@%(host)s identified by %(password)s",

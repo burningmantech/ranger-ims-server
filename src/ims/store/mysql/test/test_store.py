@@ -24,7 +24,7 @@ from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.logger import Logger
 
 from .base import TestDataStore
-from .service import MySQLService, randomDatabaseName
+from .service import DatabaseExistsError, MySQLService, randomDatabaseName
 from .test_store_core import mysqlServiceFactory
 from ...test.base import DataStoreTests as SuperDataStoreTests, TestDataStoreABC
 from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
@@ -83,8 +83,10 @@ class DataStoreTests(SuperDataStoreTests):
             try:
                 self.log.info("Creating database: {name}", name=databaseName)
                 await service.createDatabase(name=databaseName)
-            except Exception as e:  # pragma: no cover
-                self.log.warn("Unable to create database: {error}", error=e)
+            except DatabaseExistsError:
+                self.log.warn(
+                    "Database {name} already exists.", name=databaseName
+                )
             else:
                 break
         else:
