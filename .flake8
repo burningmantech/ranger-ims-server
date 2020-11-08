@@ -1,0 +1,78 @@
+[flake8]
+
+# !!! BRING THE PAIN !!!
+select = A,B,B9,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+
+show-source = True
+doctests    = True
+
+max-line-length = 80
+
+# Codes: http://flake8.pycqa.org/en/latest/user/error-codes.html
+ignore =
+    # Do not perform calls in argument defaults
+    # (Necessary for cast())
+    B008,
+
+    # Missing docstring in magic method
+    D105,
+
+    # Missing docstring in __init__
+    D107,
+
+    # One-line docstring should fit on one line with quotes
+    D200,
+
+    # No blank lines allowed after function docstring
+    D202,
+
+    # 1 blank line required between summary line and description
+    D205,
+
+    # First line should end with a period
+    D400,
+
+    # First line should be in imperative mood
+    D401,
+
+    # First word of the first line should be properly capitalized
+    D403,
+
+    # whitespace before ':'
+    E203,
+
+    # missing whitespace after ','
+    E231,
+
+    # f-string is missing placeholders
+    F999,
+
+    # function name should be lowercase
+    N802,
+
+    # argument name should be lowercase
+    N803,
+
+    # variable in function should be lowercase
+    N806,
+
+    # lowercase imported as non lowercase
+    N812,
+
+    # variable in class scope should not be mixedCase
+    N815,
+
+    # variable in global scope should not be mixedCase
+    N816,
+
+    # line break before binary operator
+    W503,
+
+    # End of list (allows last item to end with trailing ',')
+    EOL
+
+# flake8-import-order: local module name space
+application-import-names = ims
+
+# McCabe complexity checker
+max-complexity = 23
