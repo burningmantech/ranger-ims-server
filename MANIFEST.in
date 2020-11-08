@@ -1,4 +1,5 @@
 include .bandit
+include .codecov.yml
 include .coveragerc
 include .dockerignore
 include .flake8
