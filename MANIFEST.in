@@ -1,6 +1,8 @@
 include .bandit
 include .coveragerc
 include .dockerignore
+include .flake8
+include .pre-commit-config.yaml
 include bin/.common.sh
 include bin/build
 include bin/deploy
