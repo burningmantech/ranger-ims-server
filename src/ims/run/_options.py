@@ -61,7 +61,7 @@ def openFile(fileName: str, mode: str) -> IO[Any]:
     def openNamedFile() -> IO[Any]:
         try:
             file = open(fileName, mode)
-        except EnvironmentError as e:
+        except OSError as e:
             exit(ExitStatus.EX_IOERR, f"Unable to open file {fileName!r}: {e}")
         return file
 
@@ -342,7 +342,7 @@ class IMSOptions(Options):
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class Override(object):
+class Override:
     """
     Configuration option override.
     """

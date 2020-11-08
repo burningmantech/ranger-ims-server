@@ -43,7 +43,7 @@ def _unprefix(url: URL) -> URL:
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
-class AuthApplication(object):
+class AuthApplication:
     """
     Application with login and logout endpoints.
     """

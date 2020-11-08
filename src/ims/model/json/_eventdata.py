@@ -64,10 +64,10 @@ class EventDataJSONType(Enum):
 
 def serializeEventData(eventData: EventData) -> Dict[str, Any]:
     # Map event data attribute names to JSON dict key names
-    return dict(
-        (key.value, jsonSerialize(getattr(eventData, key.name)))
+    return {
+        key.value: jsonSerialize(getattr(eventData, key.name))
         for key in EventDataJSONKey
-    )
+    }
 
 
 registerSerializer(EventData, serializeEventData)

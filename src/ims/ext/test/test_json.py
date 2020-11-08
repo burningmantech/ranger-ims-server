@@ -173,7 +173,7 @@ class JSONDecodingTests(TestCase):
         self.assertRaises(
             JSONDecodeError,
             objectFromJSONBytesIO,
-            BytesIO("foo}".encode("ascii")),
+            BytesIO(b"foo}"),
         )
 
 

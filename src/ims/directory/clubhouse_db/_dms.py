@@ -65,7 +65,7 @@ class DatabaseError(DMSError):
 
 
 @attrs(frozen=False, auto_attribs=True, kw_only=True)
-class Position(object):
+class Position:
     """
     A Ranger position.
     """
@@ -77,7 +77,7 @@ class Position(object):
 
 # FIXME: make frozen
 @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
-class DutyManagementSystem(object):
+class DutyManagementSystem:
     """
     Duty Management System
 
@@ -159,18 +159,15 @@ class DutyManagementSystem(object):
             """
         )
 
-        return dict(
-            (
-                directoryID,
-                Ranger(
-                    handle=handle,
-                    name=fullName(first, middle, last),
-                    status=statusFromID(status),
-                    email=(email,),
-                    enabled=bool(enabled),
-                    directoryID=directoryID,
-                    password=password,
-                ),
+        return {
+            directoryID: Ranger(
+                handle=handle,
+                name=fullName(first, middle, last),
+                status=statusFromID(status),
+                email=(email,),
+                enabled=bool(enabled),
+                directoryID=directoryID,
+                password=password,
             )
             for (
                 directoryID,
@@ -183,7 +180,7 @@ class DutyManagementSystem(object):
                 enabled,
                 password,
             ) in rows
-        )
+        }
 
     async def _queryPositionRangerJoin(self) -> Iterable[Tuple[str, str]]:
         self._log.info(

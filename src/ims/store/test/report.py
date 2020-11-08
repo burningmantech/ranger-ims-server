@@ -138,7 +138,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 )
                 found.add(retrieved.number)
 
-            self.assertEqual(found, set(r.number for r in incidentReports))
+            self.assertEqual(found, {r.number for r in incidentReports})
 
     @asyncAsDeferred
     async def test_incidentReports_error(self) -> None:

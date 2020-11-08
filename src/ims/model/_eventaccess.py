@@ -31,7 +31,7 @@ __all__ = ()
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class EventAccess(object):
+class EventAccess:
     """
     Event Access
 

@@ -42,7 +42,7 @@ description = "Ranger Incident Management System"
 readme_path = Path(__file__).parent / "README.rst"
 try:
     long_description: Optional[str] = readme_path.open().read()
-except IOError:
+except OSError:
     long_description = None
 
 url = "https://github.com/burningmantech/ranger-ims-server"

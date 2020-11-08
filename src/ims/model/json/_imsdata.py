@@ -56,10 +56,10 @@ class IMSDataJSONType(Enum):
 
 def serializeIMSData(imsData: IMSData) -> Dict[str, Any]:
     # Map event data attribute names to JSON dict key names
-    return dict(
-        (key.value, jsonSerialize(getattr(imsData, key.name)))
+    return {
+        key.value: jsonSerialize(getattr(imsData, key.name))
         for key in IMSDataJSONKey
-    )
+    }
 
 
 registerSerializer(IMSData, serializeIMSData)

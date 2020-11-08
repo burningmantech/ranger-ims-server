@@ -48,7 +48,7 @@ def _unprefix(url: URL) -> URL:
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
-class ExternalApplication(object):
+class ExternalApplication:
     """
     Application with endpoints for cached external resources.
     """

@@ -18,7 +18,7 @@ class StaticDecoratorTests(TestCase):
     Tests for :func:`static`
     """
 
-    class Application(object):
+    class Application:
         router = Klein()
 
         hello = "Hello"

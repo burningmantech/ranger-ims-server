@@ -61,7 +61,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
 
             incidentTypes = frozenset(await store.incidentTypes())
             expected = (
-                frozenset((name for (name, hidden) in data if not hidden))
+                frozenset(name for (name, hidden) in data if not hidden)
                 | builtInTypes
             )
 
@@ -93,9 +93,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
             incidentTypes = frozenset(
                 await store.incidentTypes(includeHidden=True)
             )
-            expected = (
-                frozenset((name for (name, hidden) in data)) | builtInTypes
-            )
+            expected = frozenset(name for (name, hidden) in data) | builtInTypes
 
             self.assertEqual(incidentTypes, expected)
 

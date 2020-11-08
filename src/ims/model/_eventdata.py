@@ -53,7 +53,7 @@ def freezeConcentricStreets(
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class EventData(object):
+class EventData:
     """
     Event Data container
 

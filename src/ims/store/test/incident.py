@@ -151,9 +151,7 @@ class DataStoreIncidentTests(DataStoreTests):
                     )
                     found.add((event, retrieved.number))
 
-            self.assertEqual(
-                found, set(((i.event, i.number) for i in incidents))
-            )
+            self.assertEqual(found, {(i.event, i.number) for i in incidents})
 
     @asyncAsDeferred
     async def test_incidents_sameEvent(self) -> None:

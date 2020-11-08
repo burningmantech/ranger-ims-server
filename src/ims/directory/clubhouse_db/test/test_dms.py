@@ -115,7 +115,7 @@ class UtilTests(TestCase):
         self.assertEquals(fullName("Bob", "Q", "Smith"), "Bob Q. Smith")
 
 
-class DummyQuery(object):
+class DummyQuery:
     """
     Represents a call to C{runQuery}.
     """
@@ -136,7 +136,7 @@ class DummyQuery(object):
         return sql
 
 
-class DummyConnectionPool(object):
+class DummyConnectionPool:
     """
     Mock for L{adbapi.ConnectionPool}.
     """
@@ -188,7 +188,7 @@ class DummyConnectionPool(object):
         return fail(AssertionError(f"No canned response for query: {sql}"))
 
 
-class DummyADBAPI(object):  # noqa: B903
+class DummyADBAPI:  # noqa: B903
     """
     Mock for L{adbapi}.
     """

@@ -29,7 +29,7 @@ __all__ = ()
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class URLs(object):
+class URLs:
     """
     Incident Management System URL schema.
     """

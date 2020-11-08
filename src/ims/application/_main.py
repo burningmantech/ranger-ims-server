@@ -68,7 +68,7 @@ def webApplicationFactory(parent: "MainApplication") -> WebApplication:
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
-class MainApplication(object):
+class MainApplication:
     """
     Incident Management System main application.
     """
