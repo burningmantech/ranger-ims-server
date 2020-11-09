@@ -46,10 +46,10 @@ class LocationJSONKey(Enum):
 
 def serializeLocation(location: Location) -> Dict[str, Any]:
     # Map Location attribute names to JSON dict key names
-    locationJSON = dict(
-        (key.value, jsonSerialize(getattr(location, key.name)))
+    locationJSON = {
+        key.value: jsonSerialize(getattr(location, key.name))
         for key in LocationJSONKey
-    )
+    }
 
     addressJSON = serializeAddress(location.address)
     locationJSON.update(addressJSON)

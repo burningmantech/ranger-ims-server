@@ -65,10 +65,10 @@ class IncidentReportJSONType(Enum):
 
 def serializeIncidentReport(incidentReport: IncidentReport) -> Dict[str, Any]:
     # Map IncidentReport attribute names to JSON dict key names
-    return dict(
-        (key.value, jsonSerialize(getattr(incidentReport, key.name)))
+    return {
+        key.value: jsonSerialize(getattr(incidentReport, key.name))
         for key in IncidentReportJSONKey
-    )
+    }
 
 
 registerSerializer(IncidentReport, serializeIncidentReport)

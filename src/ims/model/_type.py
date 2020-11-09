@@ -27,7 +27,7 @@ __all__ = ()
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class IncidentType(object):
+class IncidentType:
     """
     Incident Type
     """
@@ -58,4 +58,4 @@ class KnownIncidentType(Enum):
     junk = junk.name
 
 
-knownIncidentTypeNames = frozenset((kt.value for kt in KnownIncidentType))
+knownIncidentTypeNames = frozenset(kt.value for kt in KnownIncidentType)

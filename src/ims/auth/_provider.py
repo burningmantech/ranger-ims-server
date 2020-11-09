@@ -62,7 +62,7 @@ class Authorization(Flag):
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class AuthProvider(object):
+class AuthProvider:
     """
     Provider for authentication and authorization support.
     """

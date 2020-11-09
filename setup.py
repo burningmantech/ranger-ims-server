@@ -21,14 +21,14 @@ Setuptools configuration
 """
 
 import sys
-from pathlib import Path  # noqa
+from pathlib import Path
 from typing import Dict, List, Optional
 
-from setuptools import find_packages, setup  # noqa
+from setuptools import find_packages, setup
 
 sys.path.insert(0, "src")
 
-from ims import __version__ as version_string  # noqa
+from ims import __version__ as version_string  # noqa: E402
 
 
 #
@@ -42,7 +42,7 @@ description = "Ranger Incident Management System"
 readme_path = Path(__file__).parent / "README.rst"
 try:
     long_description: Optional[str] = readme_path.open().read()
-except IOError:
+except OSError:
     long_description = None
 
 url = "https://github.com/burningmantech/ranger-ims-server"

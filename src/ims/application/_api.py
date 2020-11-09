@@ -93,7 +93,7 @@ def _unprefix(url: URL) -> URL:
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
-class APIApplication(object):
+class APIApplication:
     """
     Application with JSON API endpoints.
     """

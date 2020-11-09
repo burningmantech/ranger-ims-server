@@ -56,10 +56,10 @@ class EventAccessJSONType(Enum):
 
 def serializeEventAccess(eventAccess: EventAccess) -> Dict[str, Any]:
     # Map EventAccess attribute names to JSON dict key names
-    return dict(
-        (key.value, jsonSerialize(getattr(eventAccess, key.name)))
+    return {
+        key.value: jsonSerialize(getattr(eventAccess, key.name))
         for key in EventAccessJSONKey
-    )
+    }
 
 
 registerSerializer(EventAccess, serializeEventAccess)

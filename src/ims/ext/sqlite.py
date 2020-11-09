@@ -273,13 +273,13 @@ def printSchema(db: Connection, out: TextIO) -> None:
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class QueryPlanExplanation(object):
+class QueryPlanExplanation:
     """
     Container for information about a query plan.
     """
 
     @attrs(frozen=True, auto_attribs=True, kw_only=True)
-    class Line(object):
+    class Line:
         """
         A line of information about a query plan.
         """
@@ -314,7 +314,7 @@ def explainQueryPlans(
     Explain query plans for the given queries.
     """
     for query, name in queries:
-        params = dict((x, x) for x in range(query.count(":")))  # Dummy params
+        params = {x: x for x in range(query.count(":"))}  # Dummy params
         try:
             lines = tuple(
                 QueryPlanExplanation.Line(

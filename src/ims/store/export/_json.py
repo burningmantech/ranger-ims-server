@@ -38,7 +38,7 @@ __all__ = ()
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class JSONExporter(object):
+class JSONExporter:
     """
     Incident Management System data store JSON exporter.
     """
@@ -124,7 +124,7 @@ class JSONExporter(object):
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class JSONImporter(object):
+class JSONImporter:
     """
     Incident Management System data store JSON importer.
     """

@@ -63,7 +63,7 @@ class DataStore(DatabaseStore):
     query: ClassVar[Queries] = queries
 
     @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
-    class _State(object):
+    class _State:
         """
         Internal mutable state for :class:`DataStore`.
         """
@@ -179,7 +179,7 @@ class DataStore(DatabaseStore):
         try:
             with self._db as db:
                 return interaction(db.cursor(), *args, **kwargs)
-            assert False  # noqa: B011
+            raise AssertionError("We shouldn't be here")
         except SQLiteError as e:
             self._log.critical(
                 "Interaction {interaction} failed: {error}",

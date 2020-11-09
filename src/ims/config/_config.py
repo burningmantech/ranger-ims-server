@@ -81,7 +81,7 @@ class LogFormat(Names):
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class ConfigFileParser(object):
+class ConfigFileParser:
     """
     Configuration parser.
     """
@@ -162,7 +162,7 @@ class ConfigFileParser(object):
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class Configuration(object):
+class Configuration:
     """
     Configuration
     """
@@ -171,7 +171,7 @@ class Configuration(object):
     urls: ClassVar = URLs
 
     @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
-    class _State(object):
+    class _State:
         """
         Internal mutable state for :class:`Configuration`.
         """

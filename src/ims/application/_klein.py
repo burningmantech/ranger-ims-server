@@ -18,7 +18,6 @@
 Incident Management System Klein application.
 """
 
-from __future__ import absolute_import
 
 from functools import wraps
 from typing import Any, Callable, Iterable, Optional, Sequence, Union, cast

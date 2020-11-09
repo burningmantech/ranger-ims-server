@@ -120,10 +120,10 @@ registerSerializer(Address, serializeAddress)
 
 def serializeTextOnlyAddress(address: TextOnlyAddress) -> Dict[str, Any]:
     # Map TextOnlyAddress attribute names to JSON dict key names
-    json = dict(
-        (key.value, jsonSerialize(getattr(address, key.name)))
+    json = {
+        key.value: jsonSerialize(getattr(address, key.name))
         for key in TextOnlyAddressJSONKey
-    )
+    }
     json["type"] = "text"
     return json
 
@@ -133,10 +133,10 @@ registerSerializer(TextOnlyAddress, serializeTextOnlyAddress)
 
 def serializeRodGarettAddress(address: RodGarettAddress) -> Dict[str, Any]:
     # Map RodGarettAddress attribute names to JSON dict key names
-    json = dict(
-        (key.value, jsonSerialize(getattr(address, key.name)))
+    json = {
+        key.value: jsonSerialize(getattr(address, key.name))
         for key in RodGarettAddressJSONKey
-    )
+    }
     json["type"] = "garett"
     return json
 

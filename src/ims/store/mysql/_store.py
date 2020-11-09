@@ -108,7 +108,7 @@ class DataStore(DatabaseStore):
     query: ClassVar[Queries] = queries
 
     @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
-    class _State(object):
+    class _State:
         """
         Internal mutable state for :class:`DataStore`.
         """

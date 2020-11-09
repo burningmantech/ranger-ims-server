@@ -62,10 +62,10 @@ class RangerJSONType(Enum):
 
 def serializeRanger(ranger: Ranger) -> Dict[str, Any]:
     # Map Ranger attribute names to JSON dict key names
-    return dict(
-        (key.value, jsonSerialize(getattr(ranger, key.name)))
+    return {
+        key.value: jsonSerialize(getattr(ranger, key.name))
         for key in RangerJSONKey
-    )
+    }
 
 
 registerSerializer(Ranger, serializeRanger)

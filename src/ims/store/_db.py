@@ -77,13 +77,13 @@ def now() -> DateTime:
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=False)
-class Query(object):
+class Query:
     description: str
     text: str = attrib(converter=dedent)
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class Queries(object):
+class Queries:
     schemaVersion: Query
     events: Query
     createEvent: Query
@@ -536,12 +536,12 @@ class DatabaseStore(IMSDataStore):
         See :meth:`IMSDataStore.concentricStreets`.
         """
         return MappingProxyType(
-            dict(
-                (cast(str, row["ID"]), cast(str, row["NAME"]))
+            {
+                cast(str, row["ID"]): cast(str, row["NAME"])
                 for row in await self.runQuery(
                     self.query.concentricStreets, dict(eventID=event.id)
                 )
-            )
+            }
         )
 
     async def createConcentricStreet(
@@ -1835,7 +1835,7 @@ class DatabaseStore(IMSDataStore):
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
-class DatabaseManager(object):
+class DatabaseManager:
     """
     Generic manager for databases.
     """
