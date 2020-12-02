@@ -104,6 +104,26 @@ class APIApplication:
     config: Configuration
     storeObserver: ILogObserver
 
+    _bag = jsonTextFromObject(
+        dict(
+            urls=dict(
+                ping=URLs.ping.to_text(),
+                bag=URLs.bag.to_text(),
+                acl=URLs.acl.to_text(),
+                streets=URLs.streets.to_text(),
+                personnel=URLs.personnel.to_text(),
+                incidentTypes=URLs.incidentTypes.to_text(),
+                events=URLs.events.to_text(),
+                event=URLs.event.to_text(),
+                incidents=URLs.incidents.to_text(),
+                incidentNumber=URLs.incidentNumber.to_text(),
+                incidentReports=URLs.incidentReports.to_text(),
+                incidentReport=URLs.incidentReport.to_text(),
+                eventSource=URLs.eventSource.to_text(),
+            ),
+        )
+    ).encode("utf-8")
+
     @router.route(_unprefix(URLs.ping), methods=("HEAD", "GET"))
     @static
     def pingResource(self, request: IRequest) -> KleinRenderable:
@@ -112,6 +132,14 @@ class APIApplication:
         """
         ack = b'"ack"'
         return jsonBytes(request, ack, str(hash(ack)))
+
+    @router.route(_unprefix(URLs.bag), methods=("HEAD", "GET"))
+    @static
+    def bagResource(self, request: IRequest) -> KleinRenderable:
+        """
+        Ping (health check) endpoint.
+        """
+        return jsonBytes(request, self._bag, str(hash(self._bag)))
 
     @router.route(_unprefix(URLs.personnel), methods=("HEAD", "GET"))
     async def personnelResource(self, request: IRequest) -> KleinRenderable:
