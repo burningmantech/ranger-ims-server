@@ -20,11 +20,11 @@ Incident Management System web application authentication provider.
 
 from enum import Flag, auto
 from typing import ClassVar, Container, FrozenSet, Optional
-from uuid import uuid4
 
 from attr import Factory, attrs
 
-from jwt import encode as encodeJWT
+from jwcrypto.jwk import JWK
+from jwcrypto.jwt import JWT
 
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
@@ -79,7 +79,7 @@ class AuthProvider:
         Internal mutable state for :class:`RangerDirectory`.
         """
 
-        jwtSecret: Optional[str] = None
+        jwtSecret: Optional[object] = None
 
     store: IMSDataStore
 
@@ -115,11 +115,13 @@ class AuthProvider:
         return authenticated
 
     @property
-    def jwtSecret(self) -> str:
+    def _jwtSecret(self) -> object:
         if self._state.jwtSecret is None:
-            secret = uuid4().hex
-            self._log.info("Generated JWT secret: {secret}", secret=secret)
-            self._state.jwtSecret = secret
+            key = JWK(generate="oct", size=256)
+            self._log.info(
+                "Generated JWT secret: {secret}", secret=key.export()
+            )
+            self._state.jwtSecret = key
         return self._state.jwtSecret
 
     async def authorizationForUser(self, user: IMSUser) -> str:
@@ -128,26 +130,28 @@ class AuthProvider:
         """
         expiration = None
 
-        jwt = encodeJWT(
-            dict(
+        token = JWT(
+            header=dict(typ="JWT", alg="HS256"),
+            claims=dict(
                 iss="ranger-ims-server",  # Issuer
                 sub=user.uid,  # Subject
-                aud=None,  # Audience
+                # aud=None,  # Audience
                 exp=expiration,
-                nbf=None,  # Not before
-                iat=None,  # Issued at
-                jti=None,  # JWT ID
+                # nbf=None,  # Not before
+                # iat=None,  # Issued at
+                # jti=None,  # JWT ID
                 username=user.shortNames[0],
             ),
-            self.jwtSecret,
-            "HS256"
         )
-        return jsonTextFromObject(dict(
-            token=jwt,
-            person_id=user.uid,
-            username=user.shortNames[0],
-            expires_in=None,
-        ))
+        token.make_signed_token(self._jwtSecret)
+        return jsonTextFromObject(
+            dict(
+                token=token.serialize(),
+                person_id=user.uid,
+                username=user.shortNames[0],
+                expires_in=None,
+            )
+        )
 
     def authenticateRequest(
         self, request: IRequest, optional: bool = False

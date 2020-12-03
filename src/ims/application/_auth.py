@@ -98,9 +98,7 @@ class AuthApplication:
             )
         else:
             authProvider = self.config.authProvider
-            authenticated = await authProvider.verifyPassword(
-                user, password
-            )
+            authenticated = await authProvider.verifyPassword(user, password)
             if not authenticated:
                 self._log.debug(
                     "Login failed: incorrect credentials for user: {user}",
