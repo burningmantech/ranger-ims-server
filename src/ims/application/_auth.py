@@ -106,7 +106,9 @@ class AuthApplication:
                 )
 
             else:
-                return await authProvider.authorizationForUser(user)
+                return await authProvider.authorizationForUser(
+                    user, self.config.tokenLifetimeNormal
+                )
 
         request.setResponseCode(http.UNAUTHORIZED)
         return jsonTextFromObject(dict(status="invalid-credentials"))

@@ -18,6 +18,7 @@
 Incident Management System web application authentication provider.
 """
 
+from datetime import datetime as DateTime, timedelta as TimeDelta
 from enum import Flag, auto
 from typing import ClassVar, Container, FrozenSet, Optional
 
@@ -117,30 +118,33 @@ class AuthProvider:
     @property
     def _jwtSecret(self) -> object:
         if self._state.jwtSecret is None:
-            key = JWK(generate="oct", size=256)
+            key = JWK.generate(kty="oct", size=256)
             self._log.info(
                 "Generated JWT secret: {secret}", secret=key.export()
             )
             self._state.jwtSecret = key
         return self._state.jwtSecret
 
-    async def authorizationForUser(self, user: IMSUser) -> str:
+    async def authorizationForUser(
+        self, user: IMSUser, duration: TimeDelta
+    ) -> str:
         """
         Generate a JWT token for the given user.
         """
-        expiration = None
+        now = DateTime.now()
+        expiration = now + duration
 
         token = JWT(
             header=dict(typ="JWT", alg="HS256"),
             claims=dict(
                 iss="ranger-ims-server",  # Issuer
                 sub=user.uid,  # Subject
-                # aud=None,  # Audience
-                exp=expiration,
+                # aud=None, # Audience
+                exp=int(expiration.timestamp()),  # Expiration
                 # nbf=None,  # Not before
-                # iat=None,  # Issued at
+                iat=int(now.timestamp()),  # Issued at
                 # jti=None,  # JWT ID
-                username=user.shortNames[0],
+                name=user.shortNames[0],
             ),
         )
         token.make_signed_token(self._jwtSecret)
