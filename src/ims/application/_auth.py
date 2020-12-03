@@ -18,6 +18,7 @@
 Incident Management System web application authentication endpoints.
 """
 
+from json import JSONDecodeError
 from typing import ClassVar
 
 from attr import attrs
@@ -25,12 +26,21 @@ from attr import attrs
 from hyperlink import URL
 
 from twisted.logger import Logger
+from twisted.web import http
 from twisted.web.iweb import IRequest
 
 from ims.config import Configuration, URLs
-from ims.ext.klein import KleinRenderable
+from ims.ext.json import jsonTextFromObject, objectFromJSONText
+from ims.ext.klein import ContentType, HeaderName, KleinRenderable
 
-from ._klein import Router, invalidQueryResponse, queryValue, redirect
+from ._klein import (
+    Router,
+    badRequestResponse,
+    invalidJSONResponse,
+    invalidQueryResponse,
+    queryValue,
+    redirect,
+)
 
 
 __all__ = ()
@@ -52,6 +62,56 @@ class AuthApplication:
     router: ClassVar[Router] = Router()
 
     config: Configuration
+
+    @router.route(_unprefix(URLs.auth), methods=("POST",))
+    async def auth(self, request: IRequest) -> KleinRenderable:
+        """
+        Authentication endpoint.
+        """
+        contentType = request.getHeader(HeaderName.contentType.value)
+
+        if contentType != ContentType.json.value:
+            return badRequestResponse(
+                request, f"Unsupported request Content-Type: {contentType}"
+            )
+
+        body = request.content.read()
+        try:
+            json = objectFromJSONText(body.decode("utf-8"))
+        except JSONDecodeError as e:
+            return invalidJSONResponse(request, e)
+
+        username = json.get("identification")
+        password = json.get("password")
+
+        if username is None:
+            return badRequestResponse(request, "Missing identification.")
+
+        if password is None:
+            return badRequestResponse(request, "Missing password.")
+
+        user = await self.config.directory.lookupUser(username)
+
+        if user is None:
+            self._log.debug(
+                "Login failed: no such user: {username}", username=username
+            )
+        else:
+            authProvider = self.config.authProvider
+            authenticated = await authProvider.verifyPassword(
+                user, password
+            )
+            if not authenticated:
+                self._log.debug(
+                    "Login failed: incorrect credentials for user: {user}",
+                    user=user,
+                )
+
+            else:
+                return await authProvider.authorizationForUser(user)
+
+        request.setResponseCode(http.UNAUTHORIZED)
+        return jsonTextFromObject(dict(status="invalid-credentials"))
 
     @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
     def login(self, request: IRequest, failed: bool = False) -> KleinRenderable:

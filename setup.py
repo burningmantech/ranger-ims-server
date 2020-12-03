@@ -110,6 +110,7 @@ install_requirements = [
     "cattrs==1.1.1",
     "hyperlink==20.0.1",
     "klein==20.6.0",
+    "pyjwt==2.0.0a1",
     "PyMySQL==0.10.1",
     "pyOpenSSL==19.1.0",
     "PyYAML==5.3.1",

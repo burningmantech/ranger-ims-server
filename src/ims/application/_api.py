@@ -109,6 +109,7 @@ class APIApplication:
             urls=dict(
                 ping=URLs.ping.to_text(),
                 bag=URLs.bag.to_text(),
+                auth=URLs.auth.to_text(),
                 acl=URLs.acl.to_text(),
                 streets=URLs.streets.to_text(),
                 personnel=URLs.personnel.to_text(),
