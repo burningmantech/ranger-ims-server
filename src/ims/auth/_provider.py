@@ -144,7 +144,7 @@ class AuthProvider:
                 # nbf=None,  # Not before
                 iat=int(now.timestamp()),  # Issued at
                 # jti=None,  # JWT ID
-                name=user.shortNames[0],
+                preferred_username=user.shortNames[0],
             ),
         )
         token.make_signed_token(self._jwtSecret)
