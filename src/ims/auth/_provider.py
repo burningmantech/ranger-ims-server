@@ -125,7 +125,7 @@ class AuthProvider:
             self._state.jwtSecret = key
         return self._state.jwtSecret
 
-    async def authorizationForUser(
+    async def credentialsForUser(
         self, user: IMSUser, duration: TimeDelta
     ) -> str:
         """

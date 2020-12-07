@@ -63,17 +63,39 @@ class AuthApplication:
 
     config: Configuration
 
-    @router.route(_unprefix(URLs.auth), methods=("POST",))
-    async def auth(self, request: IRequest) -> KleinRenderable:
+    @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
+    def login(self, request: IRequest, failed: bool = False) -> KleinRenderable:
         """
-        Authentication endpoint.
+        Endpoint for the login page.
+        """
+        self.config.authProvider.authenticateRequest(request, optional=True)
+
+        from ims.element.login import LoginPage
+
+        return LoginPage(config=self.config, failed=failed)
+
+    @router.route(_unprefix(URLs.login), methods=("POST",))
+    async def loginPOST(self, request: IRequest) -> KleinRenderable:
+        """
+        Endpoint for a login form submission.
         """
         contentType = request.getHeader(HeaderName.contentType.value)
 
-        if contentType != ContentType.json.value:
-            return badRequestResponse(
-                request, f"Unsupported request Content-Type: {contentType}"
+        if contentType == ContentType.json.value:
+            return self._loginJSON(request)
+        else:
+            self._log.info(
+                "Login Content-Type: {contentType}", contentType=contentType
             )
+            return self._loginSubmitForm(request)
+
+    async def _loginJSON(self, request: IRequest) -> KleinRenderable:
+        # contentType = request.getHeader(HeaderName.contentType.value)
+
+        # if contentType != ContentType.json.value:
+        #     return badRequestResponse(
+        #         request, f"Unsupported request Content-Type: {contentType}"
+        #     )
 
         body = request.content.read()
         try:
@@ -106,29 +128,14 @@ class AuthApplication:
                 )
 
             else:
-                return await authProvider.authorizationForUser(
+                return await authProvider.credentialsForUser(
                     user, self.config.tokenLifetimeNormal
                 )
 
         request.setResponseCode(http.UNAUTHORIZED)
         return jsonTextFromObject(dict(status="invalid-credentials"))
 
-    @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
-    def login(self, request: IRequest, failed: bool = False) -> KleinRenderable:
-        """
-        Endpoint for the login page.
-        """
-        self.config.authProvider.authenticateRequest(request, optional=True)
-
-        from ims.element.login import LoginPage
-
-        return LoginPage(config=self.config, failed=failed)
-
-    @router.route(_unprefix(URLs.login), methods=("POST",))
-    async def loginSubmit(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for a login form submission.
-        """
+    async def _loginSubmitForm(self, request: IRequest) -> KleinRenderable:
         username = queryValue(request, "username")
         password = queryValue(request, "password", default="")
 
