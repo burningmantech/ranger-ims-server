@@ -147,7 +147,7 @@ class APIApplication:
         """
         return jsonBytes(request, self._bag, str(hash(self._bag)))
 
-    @router.route(_unprefix(URLs.auth), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.auth), methods=("POST",))
     async def authResource(self, request: IRequest) -> KleinRenderable:
         """
         Authentication endpoint.
@@ -190,12 +190,20 @@ class APIApplication:
                 )
 
             else:
-                return await authProvider.credentialsForUser(
+                credentials = await authProvider.credentialsForUser(
                     user, self.config.tokenLifetimeNormal
+                )
+                return jsonBytes(
+                    request, jsonTextFromObject(credentials).encode("utf-8")
                 )
 
         request.setResponseCode(http.UNAUTHORIZED)
-        return jsonTextFromObject(dict(status="invalid-credentials"))
+        return jsonBytes(
+            request,
+            jsonTextFromObject(dict(status="invalid-credentials")).encode(
+                "utf-8"
+            ),
+        )
 
     @router.route(_unprefix(URLs.personnel), methods=("HEAD", "GET"))
     async def personnelResource(self, request: IRequest) -> KleinRenderable:

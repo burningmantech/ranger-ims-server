@@ -20,7 +20,7 @@ Incident Management System web application authentication provider.
 
 from datetime import datetime as DateTime, timedelta as TimeDelta
 from enum import Flag, auto
-from typing import ClassVar, Container, FrozenSet, Optional
+from typing import Any, ClassVar, Container, Mapping, FrozenSet, Optional
 
 from attr import Factory, attrs
 
@@ -31,7 +31,6 @@ from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
 from ims.directory import IMSUser
-from ims.ext.json import jsonTextFromObject
 from ims.model import Event, IncidentReport
 from ims.store import IMSDataStore
 
@@ -127,7 +126,7 @@ class AuthProvider:
 
     async def credentialsForUser(
         self, user: IMSUser, duration: TimeDelta
-    ) -> str:
+    ) -> Mapping[str, Any]:
         """
         Generate a JWT token for the given user.
         """
@@ -148,13 +147,11 @@ class AuthProvider:
             ),
         )
         token.make_signed_token(self._jwtSecret)
-        return jsonTextFromObject(
-            dict(
-                token=token.serialize(),
-                person_id=user.uid,
-                username=user.shortNames[0],
-                expires_in=None,
-            )
+        return dict(
+            token=token.serialize(),
+            person_id=user.uid,
+            username=user.shortNames[0],
+            expires_in=None,
         )
 
     def authenticateRequest(
