@@ -18,7 +18,6 @@
 Incident Management System web application authentication endpoints.
 """
 
-from json import JSONDecodeError
 from typing import ClassVar
 
 from attr import attrs
@@ -26,28 +25,19 @@ from attr import attrs
 from hyperlink import URL
 
 from twisted.logger import Logger
-from twisted.web import http
 from twisted.web.iweb import IRequest
 
 from ims.config import Configuration, URLs
-from ims.ext.json import jsonTextFromObject, objectFromJSONText
-from ims.ext.klein import ContentType, HeaderName, KleinRenderable
+from ims.ext.klein import KleinRenderable
 
-from ._klein import (
-    Router,
-    badRequestResponse,
-    invalidJSONResponse,
-    invalidQueryResponse,
-    queryValue,
-    redirect,
-)
+from ._klein import Router, invalidQueryResponse, queryValue, redirect
 
 
 __all__ = ()
 
 
 def _unprefix(url: URL) -> URL:
-    prefix = URLs.auth.path[:-1]
+    prefix = URLs.authApp.path[:-1]
     assert url.path[: len(prefix)] == prefix, (url.path[len(prefix) :], prefix)
     return url.replace(path=url.path[len(prefix) :])
 
@@ -75,67 +65,10 @@ class AuthApplication:
         return LoginPage(config=self.config, failed=failed)
 
     @router.route(_unprefix(URLs.login), methods=("POST",))
-    async def loginPOST(self, request: IRequest) -> KleinRenderable:
+    async def loginSubmit(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for a login form submission.
         """
-        contentType = request.getHeader(HeaderName.contentType.value)
-
-        if contentType == ContentType.json.value:
-            return self._loginJSON(request)
-        else:
-            self._log.info(
-                "Login Content-Type: {contentType}", contentType=contentType
-            )
-            return self._loginSubmitForm(request)
-
-    async def _loginJSON(self, request: IRequest) -> KleinRenderable:
-        # contentType = request.getHeader(HeaderName.contentType.value)
-
-        # if contentType != ContentType.json.value:
-        #     return badRequestResponse(
-        #         request, f"Unsupported request Content-Type: {contentType}"
-        #     )
-
-        body = request.content.read()
-        try:
-            json = objectFromJSONText(body.decode("utf-8"))
-        except JSONDecodeError as e:
-            return invalidJSONResponse(request, e)
-
-        username = json.get("identification")
-        password = json.get("password")
-
-        if username is None:
-            return badRequestResponse(request, "Missing identification.")
-
-        if password is None:
-            return badRequestResponse(request, "Missing password.")
-
-        user = await self.config.directory.lookupUser(username)
-
-        if user is None:
-            self._log.debug(
-                "Login failed: no such user: {username}", username=username
-            )
-        else:
-            authProvider = self.config.authProvider
-            authenticated = await authProvider.verifyPassword(user, password)
-            if not authenticated:
-                self._log.debug(
-                    "Login failed: incorrect credentials for user: {user}",
-                    user=user,
-                )
-
-            else:
-                return await authProvider.credentialsForUser(
-                    user, self.config.tokenLifetimeNormal
-                )
-
-        request.setResponseCode(http.UNAUTHORIZED)
-        return jsonTextFromObject(dict(status="invalid-credentials"))
-
-    async def _loginSubmitForm(self, request: IRequest) -> KleinRenderable:
         username = queryValue(request, "username")
         password = queryValue(request, "password", default="")
 

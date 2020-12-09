@@ -175,7 +175,7 @@ class MainApplication:
         """
         return self.apiApplication.router.resource()
 
-    @router.route(URLs.auth, branch=True)
+    @router.route(URLs.authApp, branch=True)
     @static
     def authApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
