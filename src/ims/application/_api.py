@@ -319,7 +319,9 @@ class APIApplication:
             if Authorization.readIncidents & await authorizationsForUser(event)
         ]
 
-        return jsonTextFromObject(jsonEvents).encode("utf-8")
+        data = jsonTextFromObject(jsonEvents).encode("utf-8")
+
+        return jsonBytes(request, data, str(hash(data)))
 
     @router.route(_unprefix(URLs.events), methods=("POST",))
     async def editEventsResource(self, request: IRequest) -> KleinRenderable:
