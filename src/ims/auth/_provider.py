@@ -20,7 +20,7 @@ Incident Management System web application authentication provider.
 
 from datetime import datetime as DateTime, timedelta as TimeDelta
 from enum import Flag, auto
-from typing import Any, ClassVar, Container, Mapping, FrozenSet, Optional
+from typing import Any, ClassVar, Container, FrozenSet, Mapping, Optional
 
 from attr import Factory, attrs
 
