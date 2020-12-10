@@ -18,7 +18,7 @@
 JSON serialization/deserialization for events
 """
 
-from typing import Type
+from typing import Any, Dict, Type
 
 from ._json import registerDeserializer, registerSerializer
 from .._event import Event
@@ -27,17 +27,22 @@ from .._event import Event
 __all__ = ()
 
 
-def serializeEvent(event: Event) -> str:
-    return event.id
+def serializeEvent(event: Event) -> Dict[str, Any]:
+    # Add name for future use.
+    # Reverse ID to make use of ID where name was intended more visible.
+    return dict(id=event.id[::-1], name=event.id)
 
 
 registerSerializer(Event, serializeEvent)
 
 
-def deserializeEvent(obj: str, cl: Type[Event]) -> Event:
+def deserializeEvent(obj: Dict[str, Any], cl: Type[Event]) -> Event:
     assert cl is Event, (cl, obj)
 
-    return Event(id=obj)
+    eventID = obj["id"][::-1]
+    assert obj["name"] == eventID
+
+    return Event(id=eventID)
 
 
 registerDeserializer(Event, deserializeEvent)

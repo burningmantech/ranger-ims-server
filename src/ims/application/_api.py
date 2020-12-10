@@ -313,21 +313,13 @@ class APIApplication:
             self.config.authProvider.authorizationsForUser, request.user
         )
 
-        events = sorted(
-            [
-                event
-                for event in await self.config.store.events()
-                if Authorization.readIncidents
-                & await authorizationsForUser(event)
-            ]
-        )
+        jsonEvents = [
+            jsonObjectFromModelObject(event)
+            for event in await self.config.store.events()
+            if Authorization.readIncidents & await authorizationsForUser(event)
+        ]
 
-        stream = buildJSONArray(
-            jsonTextFromObject(event).encode("utf-8") for event in events
-        )
-
-        writeJSONStream(request, stream, None)
-        return None
+        return jsonTextFromObject(jsonEvents).encode("utf-8")
 
     @router.route(_unprefix(URLs.events), methods=("POST",))
     async def editEventsResource(self, request: IRequest) -> KleinRenderable:
