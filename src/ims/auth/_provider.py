@@ -147,12 +147,7 @@ class AuthProvider:
             ),
         )
         token.make_signed_token(self._jwtSecret)
-        return dict(
-            token=token.serialize(),
-            person_id=user.uid,
-            username=user.shortNames[0],
-            expires_in=None,
-        )
+        return dict(token=token.serialize())
 
     def authenticateRequest(
         self, request: IRequest, optional: bool = False
