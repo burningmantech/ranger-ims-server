@@ -31,6 +31,7 @@ from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
 from ims.directory import IMSUser
+from ims.ext.klein import HeaderName
 from ims.model import Event, IncidentReport
 from ims.store import IMSDataStore
 
@@ -72,6 +73,7 @@ class AuthProvider:
     """
 
     _log: ClassVar[Logger] = Logger()
+    _jwtIssuer: ClassVar[str] = "ranger-ims-server"
 
     @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State:
@@ -82,6 +84,7 @@ class AuthProvider:
         jwtSecret: Optional[object] = None
 
     store: IMSDataStore
+    directory: IMSDataStore
 
     requireActive: bool = True
     adminUsers: FrozenSet[str] = frozenset()
@@ -136,7 +139,7 @@ class AuthProvider:
         token = JWT(
             header=dict(typ="JWT", alg="HS256"),
             claims=dict(
-                iss="ranger-ims-server",  # Issuer
+                iss=self._jwtIssuer,  # Issuer
                 sub=user.uid,  # Subject
                 # aud=None, # Audience
                 exp=int(expiration.timestamp()),  # Expiration
@@ -160,8 +163,19 @@ class AuthProvider:
         @param optional: If true, do not raise NotAuthenticatedError() if no
             user is associated with the request.
         """
-        session = request.getSession()
-        request.user = getattr(session, "user", None)
+        authorization = request.getHeader(HeaderName.authorization.value)
+        if authorization is not None and authorization.startswith("Bearer "):
+            token = authorization[7:]
+            jwt = JWT(
+                jwt=token,
+                key=self._jwtSecret,
+                check_claims=dict(iss=self._jwtIssuer),
+            )
+            # request.username = jwt.sub
+            raise NotImplementedError()
+        else:
+            session = request.getSession()
+            request.user = getattr(session, "user", None)
 
         if request.user is None and not optional:
             self._log.debug("Authentication failed")
