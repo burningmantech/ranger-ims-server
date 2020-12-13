@@ -228,7 +228,7 @@ def badGatewayResponse(request: IRequest, message: str) -> KleinRenderable:
     """
     Respond with a BAD GATEWAY status.
     """
-    log.debug("Bad gateway: {message}", request=request)
+    log.debug("Bad gateway: {message}", request=request, message=message)
 
     request.setResponseCode(http.BAD_GATEWAY)
     return textResponse(request, message)
@@ -422,10 +422,16 @@ class Router(Klein):
             """
             Not authenticated.
             """
+            contentType = request.getHeader(HeaderName.contentType.value)
+            if (
+                contentType is not None
+                and contentType == ContentType.json.value
+            ):
+                return notAuthenticatedResponse(request)
+
             requestedWith = request.getHeader("X-Requested-With")
-            if requestedWith is not None:
-                if requestedWith == "XMLHttpRequest":
-                    return forbiddenResponse(request)
+            if requestedWith is not None and requestedWith == "XMLHttpRequest":
+                return forbiddenResponse(request)
 
             element = redirect(request, URLs.login, origin="o")
             return renderElement(request, element)
