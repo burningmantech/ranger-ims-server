@@ -78,6 +78,7 @@ from ims.store import NoSuchIncidentError
 
 from ._klein import (
     Router,
+    badGatewayResponse,
     badRequestResponse,
     invalidJSONResponse,
     invalidQueryResponse,
@@ -174,7 +175,13 @@ class APIApplication:
         if password is None:
             return badRequestResponse(request, "Missing password.")
 
-        user = await self.config.directory.lookupUser(username)
+        try:
+            user = await self.config.directory.lookupUser(username)
+        except DirectoryError as e:
+            self._log.error("Directory error: {error}", error=e)
+            return badGatewayResponse(
+                request, "Unable to contact directory service"
+            )
 
         if user is None:
             self._log.debug(
@@ -368,7 +375,6 @@ class APIApplication:
         Incident list endpoint.
         """
         event = Event(id=eventID)
-        del eventID
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
@@ -392,7 +398,6 @@ class APIApplication:
         New incident endpoint.
         """
         event = Event(id=eventID)
-        del eventID
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.writeIncidents

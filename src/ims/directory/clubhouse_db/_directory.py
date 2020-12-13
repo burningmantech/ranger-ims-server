@@ -50,11 +50,7 @@ class DMSDirectory(IMSDirectory):
         dms = self._dms
 
         # FIXME: a hash would be better (eg. rangersByHandle)
-        try:
-            rangers = tuple(await dms.personnel())
-        except DMSError as e:
-            self._log.critical("Unable to load personnel: {error}", error=e)
-            return None
+        rangers = tuple(await dms.personnel())
 
         for ranger in rangers:
             if ranger.handle == searchTerm:

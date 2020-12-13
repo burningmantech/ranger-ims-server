@@ -167,6 +167,20 @@ def forbiddenResponse(request: IRequest) -> KleinRenderable:
     return textResponse(request, "Permission denied")
 
 
+def notAuthenticatedResponse(request: IRequest) -> KleinRenderable:
+    """
+    Respond with a FORBIDDEN status.
+    """
+    log.debug(
+        "Forbidden resource for user {user}: {request.uri}",
+        request=request,
+        user=getattr(request, "user", None),
+    )
+
+    request.setResponseCode(http.UNAUTHORIZED)
+    return textResponse(request, "Not authenticated")
+
+
 def badRequestResponse(
     request: IRequest, message: Optional[str] = None
 ) -> KleinRenderable:
@@ -208,6 +222,16 @@ def invalidQueryResponse(
         )
     else:
         return badRequestResponse(request, f"Invalid query: {arg}={value}")
+
+
+def badGatewayResponse(request: IRequest, message: str) -> KleinRenderable:
+    """
+    Respond with a BAD GATEWAY status.
+    """
+    log.debug("Bad gateway: {message}", request=request)
+
+    request.setResponseCode(http.BAD_GATEWAY)
+    return textResponse(request, message)
 
 
 def internalErrorResponse(
