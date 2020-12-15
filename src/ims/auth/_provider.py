@@ -20,11 +20,21 @@ Incident Management System web application authentication provider.
 
 from datetime import datetime as DateTime, timedelta as TimeDelta
 from enum import Flag, auto
-from typing import Any, ClassVar, Container, FrozenSet, Mapping, Optional
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    ClassVar,
+    Container,
+    FrozenSet,
+    Mapping,
+    Optional,
+)
 
 from attr import Factory, attrs
 
 from jwcrypto.jwk import JWK
+from jwcrypto.jws import InvalidJWSSignature
 from jwcrypto.jwt import JWT
 
 from twisted.logger import Logger
@@ -35,7 +45,11 @@ from ims.ext.klein import HeaderName
 from ims.model import Event, IncidentReport
 from ims.store import IMSDataStore
 
-from ._exceptions import NotAuthenticatedError, NotAuthorizedError
+from ._exceptions import (
+    InvalidCredentialsError,
+    NotAuthenticatedError,
+    NotAuthorizedError,
+)
 
 
 __all__ = ()
@@ -165,13 +179,25 @@ class AuthProvider:
         authorization = request.getHeader(HeaderName.authorization.value)
         if authorization is not None and authorization.startswith("Bearer "):
             token = authorization[7:]
-            jwt = JWT(
-                jwt=token,
-                key=self._jwtSecret,
-                check_claims=dict(iss=self._jwtIssuer),
-            )
-            # request.username = jwt.sub
-            raise NotImplementedError()
+            try:
+                jwt = JWT(
+                    jwt=token,
+                    key=self._jwtSecret,
+                    check_claims=dict(iss=self._jwtIssuer),
+                )
+            except InvalidJWSSignature as e:
+                self._log.info(
+                    "Invalid JWT signature in authorization header to "
+                    "{request.uri}",
+                    error=e,
+                    request=request,
+                )
+                raise InvalidCredentialsError("Invalid token")
+            else:
+                jwt
+                # breakpoint()
+                # request.username = jwt.sub
+                raise NotImplementedError()
         else:
             session = request.getSession()
             request.user = getattr(session, "user", None)
