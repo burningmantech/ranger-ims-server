@@ -251,7 +251,7 @@ class APIApplication:
         """
         Incident types endpoint.
         """
-        self.config.authProvider.authenticateRequest(request)
+        await self.config.authProvider.authenticateRequest(request)
 
         hidden = queryValue(request, "hidden") == "true"
 
@@ -315,7 +315,7 @@ class APIApplication:
         """
         Events endpoint.
         """
-        self.config.authProvider.authenticateRequest(request)
+        await self.config.authProvider.authenticateRequest(request)
 
         authorizationsForUser = partial(
             self.config.authProvider.authorizationsForUser,
@@ -884,7 +884,7 @@ class APIApplication:
         try:
             incidentReportNumber = int(number)
         except ValueError:
-            self.config.authProvider.authenticateRequest(request)
+            await self.config.authProvider.authenticateRequest(request)
             return notFoundResponse(request)
         del number
 

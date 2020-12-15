@@ -165,7 +165,7 @@ class AuthProvider:
         token.make_signed_token(self._jwtSecret)
         return dict(token=token.serialize())
 
-    def authenticateRequest(
+    async def authenticateRequest(
         self, request: IRequest, optional: bool = False
     ) -> None:
         """
@@ -296,7 +296,7 @@ class AuthProvider:
         Determine whether the user attached to a request has the required
         authorizations in the context of a given event.
         """
-        self.authenticateRequest(request)
+        await self.authenticateRequest(request)
 
         userAuthorizations = await self.authorizationsForUser(
             request.user, event

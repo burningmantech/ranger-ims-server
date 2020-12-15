@@ -54,11 +54,15 @@ class AuthApplication:
     config: Configuration
 
     @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
-    def login(self, request: IRequest, failed: bool = False) -> KleinRenderable:
+    async def login(
+        self, request: IRequest, failed: bool = False
+    ) -> KleinRenderable:
         """
         Endpoint for the login page.
         """
-        self.config.authProvider.authenticateRequest(request, optional=True)
+        authProvider = self.config.authProvider
+
+        await authProvider.authenticateRequest(request, optional=True)
 
         from ims.element.login import LoginPage
 
