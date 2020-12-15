@@ -18,6 +18,7 @@
 Tests for L{ims.auth._provider}.
 """
 
+from pathlib import Path
 from typing import Any, Callable, Optional, Sequence
 
 from attr import attrs, evolve
@@ -25,6 +26,8 @@ from attr import attrs, evolve
 from hypothesis import assume, given
 from hypothesis.strategies import booleans, composite, lists, none, one_of, text
 
+from ims.directory import IMSDirectory
+from ims.directory.file import FileDirectory
 from ims.ext.trial import TestCase
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
@@ -165,6 +168,15 @@ class AuthProviderTests(TestCase):
     def store(self) -> IMSDataStore:
         return SQLiteDataStore(dbPath=None)
 
+    def directory(self) -> IMSDirectory:
+        path = (
+            Path(__file__).parent.parent.parent
+            / "file"
+            / "test"
+            / "directory.yaml"
+        )
+        return FileDirectory(path=path)
+
     # @given(text(min_size=1), rangers())
     @given(
         testUsers(),
@@ -173,7 +185,9 @@ class AuthProviderTests(TestCase):
     def test_verifyPassword_masterKey(
         self, user: TestUser, masterKey: str
     ) -> None:
-        provider = AuthProvider(store=self.store(), masterKey=masterKey)
+        provider = AuthProvider(
+            store=self.store(), directory=self.directory(), masterKey=masterKey
+        )
 
         authorization = self.successResultOf(
             provider.verifyPassword(user, masterKey)
@@ -189,7 +203,7 @@ class AuthProviderTests(TestCase):
         assume(user._password is not None)
         assert user._password is not None
 
-        provider = AuthProvider(store=self.store())
+        provider = AuthProvider(store=self.store(), directory=self.directory())
 
         authorization = self.successResultOf(
             provider.verifyPassword(user, user._password)
@@ -206,7 +220,7 @@ class AuthProviderTests(TestCase):
         """
         assume(user._password != notPassword)
 
-        provider = AuthProvider(store=self.store())
+        provider = AuthProvider(store=self.store(), directory=self.directory())
 
         authorization = self.successResultOf(
             provider.verifyPassword(user, notPassword)
@@ -220,7 +234,7 @@ class AuthProviderTests(TestCase):
         None.
         """
         user = evolve(user, password=None)
-        provider = AuthProvider(store=self.store())
+        provider = AuthProvider(store=self.store(), directory=self.directory())
 
         authorization = self.successResultOf(
             provider.verifyPassword(user, password)
