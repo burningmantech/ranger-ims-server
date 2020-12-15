@@ -318,7 +318,8 @@ class APIApplication:
         self.config.authProvider.authenticateRequest(request)
 
         authorizationsForUser = partial(
-            self.config.authProvider.authorizationsForUser, request.user
+            self.config.authProvider.authorizationsForUser,
+            getattr(request, "user", None),
         )
 
         jsonEvents = [

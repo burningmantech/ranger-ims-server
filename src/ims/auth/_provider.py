@@ -84,7 +84,6 @@ class AuthProvider:
         jwtSecret: Optional[object] = None
 
     store: IMSDataStore
-    directory: IMSDataStore
 
     requireActive: bool = True
     adminUsers: FrozenSet[str] = frozenset()
@@ -177,34 +176,35 @@ class AuthProvider:
             session = request.getSession()
             request.user = getattr(session, "user", None)
 
-        if request.user is None and not optional:
+        if not optional and getattr(request, "user", None) is None:
             self._log.debug("Authentication failed")
             raise NotAuthenticatedError("No user logged in")
 
     async def authorizationsForUser(
-        self, user: IMSUser, event: Optional[Event]
+        self, user: Optional[IMSUser], event: Optional[Event]
     ) -> Authorization:
         """
         Look up the authorizations that a user has for a given event.
         """
 
-        def matchACL(user: IMSUser, acl: Container[str]) -> bool:
+        def matchACL(user: Optional[IMSUser], acl: Container[str]) -> bool:
             if "**" in acl:
                 return True
 
-            if self.requireActive and not user.active:
-                return False
+            if user is not None:
+                if self.requireActive and not user.active:
+                    return False
 
-            if "*" in acl:
-                return True
-
-            for shortName in user.shortNames:
-                if ("person:" + shortName) in acl:
+                if "*" in acl:
                     return True
 
-            for group in user.groups:
-                if ("position:" + group) in acl:
-                    return True
+                for shortName in user.shortNames:
+                    if ("person:" + shortName) in acl:
+                        return True
+
+                for group in user.groups:
+                    if ("position:" + group) in acl:
+                        return True
 
             return False
 
@@ -217,24 +217,18 @@ class AuthProvider:
                 if shortName in self.adminUsers:
                     authorizations |= Authorization.imsAdmin
 
-                if event is not None:
-                    if matchACL(
-                        user, frozenset(await self.store.writers(event))
-                    ):
-                        authorizations |= Authorization.writeIncidents
-                        authorizations |= Authorization.readIncidents
-                        authorizations |= Authorization.writeIncidentReports
+        if event is not None:
+            if matchACL(user, frozenset(await self.store.writers(event))):
+                authorizations |= Authorization.writeIncidents
+                authorizations |= Authorization.readIncidents
+                authorizations |= Authorization.writeIncidentReports
 
-                    else:
-                        if matchACL(
-                            user, frozenset(await self.store.readers(event))
-                        ):
-                            authorizations |= Authorization.readIncidents
+            else:
+                if matchACL(user, frozenset(await self.store.readers(event))):
+                    authorizations |= Authorization.readIncidents
 
-                        if matchACL(
-                            user, frozenset(await self.store.reporters(event))
-                        ):
-                            authorizations |= Authorization.writeIncidentReports
+                if matchACL(user, frozenset(await self.store.reporters(event))):
+                    authorizations |= Authorization.writeIncidentReports
 
         self._log.debug(
             "Authz for {user}: {authorizations}",
