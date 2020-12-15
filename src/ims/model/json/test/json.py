@@ -86,8 +86,8 @@ def jsonFromReportEntry(entry: ReportEntry) -> Dict[str, Any]:
 ##
 
 
-def jsonFromEvent(event: Event) -> str:
-    return event.id
+def jsonFromEvent(event: Event) -> Dict[str, str]:
+    return dict(id=event.id[::-1], name=event.id)
 
 
 def jsonFromEventAccess(eventAccess: EventAccess) -> Dict[str, List[str]]:
