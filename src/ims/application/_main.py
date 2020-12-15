@@ -23,27 +23,18 @@ from typing import ClassVar
 from attr import Factory, attrib, attrs
 
 from twisted.logger import ILogObserver, globalLogPublisher
-from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
-from twisted.web.static import File
 
-import ims.element
 from ims.config import Configuration, URLs
 from ims.ext.json import jsonTextFromObject
 from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
 
 from ._api import APIApplication
-from ._auth import AuthApplication
 from ._eventsource import DataStoreEventSourceLogObserver
-from ._external import ExternalApplication
-from ._klein import Router, redirect
-from ._web import WebApplication
+from ._klein import Router
 
 
 __all__ = ("MainApplication",)
-
-
-resourcesDirectory = FilePath(ims.element.__file__).parent().child("static")
 
 
 def apiApplicationFactory(parent: "MainApplication") -> APIApplication:
@@ -51,20 +42,6 @@ def apiApplicationFactory(parent: "MainApplication") -> APIApplication:
         config=parent.config,
         storeObserver=parent.storeObserver,
     )
-
-
-def authApplicationFactory(parent: "MainApplication") -> AuthApplication:
-    return AuthApplication(config=parent.config)
-
-
-def externalApplicationFactory(
-    parent: "MainApplication",
-) -> ExternalApplication:
-    return ExternalApplication(config=parent.config)
-
-
-def webApplicationFactory(parent: "MainApplication") -> WebApplication:
-    return WebApplication(config=parent.config)
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
@@ -85,19 +62,6 @@ class MainApplication:
         default=Factory(apiApplicationFactory, takes_self=True), init=False
     )
 
-    authApplication: AuthApplication = attrib(
-        default=Factory(authApplicationFactory, takes_self=True), init=False
-    )
-
-    externalApplication: ExternalApplication = attrib(
-        default=Factory(externalApplicationFactory, takes_self=True),
-        init=False,
-    )
-
-    webApplication: WebApplication = attrib(
-        default=Factory(webApplicationFactory, takes_self=True), init=False
-    )
-
     def __attrs_post_init__(self) -> None:
         globalLogPublisher.addObserver(self.storeObserver)
 
@@ -116,25 +80,7 @@ class MainApplication:
 
         This redirects to the application root page.
         """
-        return redirect(request, URLs.app)
-
-    @router.route(URLs.prefix, methods=("HEAD", "GET"))
-    @static
-    def prefixEndpoint(self, request: IRequest) -> KleinRenderable:
-        """
-        IMS root page.
-
-        This redirects to the application root page.
-        """
-        return redirect(request, URLs.app)
-
-    @router.route(URLs.static, branch=True)
-    @static
-    def staticEndpoint(self, request: IRequest) -> KleinRenderable:
-        """
-        Return endpoint for static resources collection.
-        """
-        return File(resourcesDirectory.path)
+        return "IMS"
 
     #
     # URLs
@@ -174,27 +120,3 @@ class MainApplication:
         API application resource.
         """
         return self.apiApplication.router.resource()
-
-    @router.route(URLs.authApp, branch=True)
-    @static
-    def authApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
-        """
-        Auth application resource.
-        """
-        return self.authApplication.router.resource()
-
-    @router.route(URLs.external, branch=True)
-    @static
-    def externalApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
-        """
-        External application resource.
-        """
-        return self.externalApplication.router.resource()
-
-    @router.route(URLs.app, branch=True)
-    @static
-    def webApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
-        """
-        Web application resource.
-        """
-        return self.webApplication.router.resource()
