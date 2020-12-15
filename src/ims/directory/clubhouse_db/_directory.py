@@ -27,7 +27,7 @@ from twisted.logger import Logger
 from ims.directory import IMSDirectory, IMSGroupID, IMSUser, RangerUser
 from ims.model import Ranger
 
-from ._dms import DMSError, DutyManagementSystem
+from ._dms import DutyManagementSystem
 
 
 __all__ = ()

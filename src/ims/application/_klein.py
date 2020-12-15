@@ -172,7 +172,7 @@ def notAuthenticatedResponse(request: IRequest) -> KleinRenderable:
     Respond with a FORBIDDEN status.
     """
     log.debug(
-        "Forbidden resource for user {user}: {request.uri}",
+        "Not authenticated resource for user {user}: {request.uri}",
         request=request,
         user=getattr(request, "user", None),
     )
