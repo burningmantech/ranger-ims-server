@@ -455,6 +455,7 @@ class Configuration:
         if self._state.authProvider is None:
             self._state.authProvider = AuthProvider(
                 store=self.store,
+                directory=self.directory,
                 requireActive=self.requireActive,
                 adminUsers=self.imsAdmins,
                 masterKey=self.masterKey,

@@ -39,7 +39,7 @@ from jwcrypto.jwt import JWT
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
-from ims.directory import IMSUser
+from ims.directory import IMSDirectory, IMSUser
 from ims.ext.json import objectFromJSONText
 from ims.ext.klein import HeaderName
 from ims.model import Event, IncidentReport
@@ -98,6 +98,7 @@ class AuthProvider:
         jwtSecret: Optional[object] = None
 
     store: IMSDataStore
+    directory: IMSDirectory
 
     requireActive: bool = True
     adminUsers: FrozenSet[str] = frozenset()
@@ -219,7 +220,11 @@ class AuthProvider:
                 if subject is None:
                     raise InvalidCredentialsError("JWT token has no subject")
 
-                raise NotImplementedError(f"Log in as {subject}")
+                self._log.debug(
+                    "Valid JWT token for user {subject}", subject=subject
+                )
+
+                request.user = await self.directory.lookupUser(subject)
         else:
             session = request.getSession()
             request.user = getattr(session, "user", None)
