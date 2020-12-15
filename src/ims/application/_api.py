@@ -197,7 +197,7 @@ class APIApplication:
                 )
 
             else:
-                self._log.info("Authenticated user {user}", user=user)
+                self._log.info("Issuing credentials for user {user}", user=user)
                 credentials = await authProvider.credentialsForUser(
                     user, self.config.tokenLifetimeNormal
                 )
