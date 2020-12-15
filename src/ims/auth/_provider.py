@@ -20,10 +20,9 @@ Incident Management System web application authentication provider.
 
 from datetime import datetime as DateTime, timedelta as TimeDelta
 from enum import Flag, auto
+from time import time
 from typing import (
     Any,
-    Awaitable,
-    Callable,
     ClassVar,
     Container,
     FrozenSet,
@@ -41,6 +40,7 @@ from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
 from ims.directory import IMSUser
+from ims.ext.json import objectFromJSONText
 from ims.ext.klein import HeaderName
 from ims.model import Event, IncidentReport
 from ims.store import IMSDataStore
@@ -180,11 +180,7 @@ class AuthProvider:
         if authorization is not None and authorization.startswith("Bearer "):
             token = authorization[7:]
             try:
-                jwt = JWT(
-                    jwt=token,
-                    key=self._jwtSecret,
-                    check_claims=dict(iss=self._jwtIssuer),
-                )
+                jwt = JWT(jwt=token, key=self._jwtSecret)
             except InvalidJWSSignature as e:
                 self._log.info(
                     "Invalid JWT signature in authorization header to "
@@ -194,10 +190,36 @@ class AuthProvider:
                 )
                 raise InvalidCredentialsError("Invalid token")
             else:
-                jwt
-                # breakpoint()
-                # request.username = jwt.sub
-                raise NotImplementedError()
+                claims = objectFromJSONText(jwt.claims)
+
+                issuer = claims.get("iss")
+                if issuer != self._jwtIssuer:
+                    raise InvalidCredentialsError(
+                        f"JWT token was issued by {issuer}, "
+                        f"not {self._jwtIssuer}"
+                    )
+
+                now = time()
+
+                issued = claims.get("iat")
+                if issued is None:
+                    raise InvalidCredentialsError("JWT token has no issue time")
+                if issued > now:
+                    raise InvalidCredentialsError(
+                        "JWT token was issued in the future"
+                    )
+
+                expiration = claims.get("iat")
+                if expiration is None:
+                    raise InvalidCredentialsError("JWT token has no expiration")
+                if expiration > now:
+                    raise InvalidCredentialsError("JWT token is expired")
+
+                subject = claims.get("sub")
+                if subject is None:
+                    raise InvalidCredentialsError("JWT token has no subject")
+
+                raise NotImplementedError(f"Log in as {subject}")
         else:
             session = request.getSession()
             request.user = getattr(session, "user", None)
