@@ -351,13 +351,6 @@ class Router(Klein):
                     f"Incident Management System/{version}",
                 )
 
-                # Capture authentication info if sent by the client, (ie. it's
-                # been previously asked to authenticate), so we can log it, but
-                # don't require authentication.
-                app.config.authProvider.authenticateRequest(
-                    request, optional=True
-                )
-
                 return f(app, request, *args, **kwargs)
 
             return cast(KleinRouteMethod, wrapper)
@@ -384,10 +377,6 @@ class Router(Klein):
             """
             Not found.
             """
-            # Require authentication.
-            # This is because exposing what resources do or do not exist can
-            # expose information that was not meant to be exposed.
-            app.config.authProvider.authenticateRequest(request)
             return notFoundResponse(request)
 
         @self.handle_errors(MethodNotAllowed)
@@ -398,10 +387,6 @@ class Router(Klein):
             """
             HTTP method not allowed.
             """
-            # Require authentication.
-            # This is because exposing what resources do or do not exist can
-            # expose information that was not meant to be exposed.
-            app.config.authProvider.authenticateRequest(request)
             return methodNotAllowedResponse(request)
 
         @self.handle_errors(NotAuthorizedError)
