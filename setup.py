@@ -108,7 +108,7 @@ install_requirements = [
     "attrs==20.3.0",
     "bcrypt==3.2.0",
     "cattrs==1.1.2",
-    "hyperlink==20.0.1",
+    "hyperlink==21.0.0",
     "klein==20.6.0",
     "PyMySQL==1.0.1",
     "pyOpenSSL==20.0.1",
