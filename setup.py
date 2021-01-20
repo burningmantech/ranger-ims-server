@@ -112,7 +112,7 @@ install_requirements = [
     "klein==20.6.0",
     "PyMySQL==1.0.2",
     "pyOpenSSL==20.0.1",
-    "PyYAML==5.4",
+    "PyYAML==5.4.1",
     "service-identity==18.1.0",
     "Twisted==20.3.0",
     "zope.interface==5.2.0",
