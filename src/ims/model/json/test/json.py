@@ -236,4 +236,4 @@ def jsonFromIncidentType(incidentType: IncidentType) -> Dict[str, Any]:
 
 
 def jsonFromKnownIncidentType(incidentType: KnownIncidentType) -> str:
-    return cast(str, incidentType.value)
+    return incidentType.value
