@@ -46,7 +46,7 @@ def serializeIncidentState(incidentState: IncidentState) -> str:
         IncidentStateJSONValue,
         getattr(IncidentStateJSONValue, incidentState.name),
     )
-    return cast(str, constant.value)
+    return constant.value
 
 
 registerSerializer(IncidentState, serializeIncidentState)
