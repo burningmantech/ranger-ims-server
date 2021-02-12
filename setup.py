@@ -118,7 +118,7 @@ install_requirements = [
     "zope.interface==5.2.0",
     # Indirect dependencies
     "Automat==20.2.0",
-    "cffi==1.14.4",
+    "cffi==1.14.5",
     "characteristic==14.3.0",
     "constantly==15.1.0",
     "cryptography==3.4.4",
