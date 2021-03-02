@@ -123,7 +123,7 @@ install_requirements = [
     "constantly==15.1.0",
     "cryptography==3.4.6",
     "idna==3.1",
-    "incremental==17.5.0",
+    "incremental==21.3.0",
     "pyasn1==0.4.8",
     "pyasn1-modules==0.2.8",
     "pycparser==2.20",
