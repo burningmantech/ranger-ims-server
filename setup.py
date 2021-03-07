@@ -104,7 +104,7 @@ setup_requirements: List[str] = []
 
 install_requirements = [
     # Direct dependencies
-    "arrow==1.0.2",
+    "arrow==1.0.3",
     "attrs==20.3.0",
     "bcrypt==3.2.0",
     "cattrs==1.3.0",
