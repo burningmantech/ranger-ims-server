@@ -115,7 +115,7 @@ install_requirements = [
     "PyYAML==5.4.1",
     "service-identity==18.1.0",
     "Twisted==21.2.0",
-    "zope.interface==5.3.0",
+    "zope.interface==5.4.0",
     # Indirect dependencies
     "Automat==20.2.0",
     "cffi==1.14.5",
