@@ -113,7 +113,7 @@ install_requirements = [
     "PyMySQL==1.0.2",
     "pyOpenSSL==20.0.1",
     "PyYAML==5.4.1",
-    "service-identity==18.1.0",
+    "service-identity==21.1.0",
     "Twisted==21.2.0",
     "zope.interface==5.4.0",
     # Indirect dependencies
