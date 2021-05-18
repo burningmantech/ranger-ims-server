@@ -131,7 +131,7 @@ install_requirements = [
     "python-dateutil==2.8.1",
     "six==1.16.0",
     "Tubes==0.2.0",
-    "Werkzeug==2.0.0",
+    "Werkzeug==2.0.1",
 ]
 
 extras_requirements: Dict[str, str] = {}
