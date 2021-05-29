@@ -122,7 +122,7 @@ install_requirements = [
     "characteristic==14.3.0",
     "constantly==15.1.0",
     "cryptography==3.4.7",
-    "idna==3.1",
+    "idna==3.2",
     "incremental==21.3.0",
     "pyasn1==0.4.8",
     "pyasn1-modules==0.2.8",
