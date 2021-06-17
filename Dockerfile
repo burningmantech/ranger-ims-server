@@ -1,7 +1,7 @@
-FROM python:3.9-alpine3.12 as build
 # -----------------------------------------------------------------------------
 # This stage builds the build container.
 # -----------------------------------------------------------------------------
+FROM python:3.9-alpine3.12 as build
 
 # Install compiler toolchain and libraries.
 RUN apk add --no-cache build-base libffi-dev libressl-dev
@@ -46,7 +46,7 @@ ENV IMS_DIRECTORY="ClubhouseDB"
 # Install libraries.
 RUN apk add --no-cache libressl
 
-# Allow ims_server to bind to privileged port numbers
+# Allow Python to bind to privileged port numbers
 RUN apk add --no-cache libcap
 RUN setcap "cap_net_bind_service=+ep" /usr/local/bin/python3.9
 
