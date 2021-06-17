@@ -229,15 +229,10 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest"]
-        python-version: []  # Additional supported versions to test
-        coverage: [""]
+        python-version: ["3.9"]
+        coverage: ["coverage-"]
         optional: [false]
         include:
-          # Run Python 3.9 with coverage
-          - os: "ubuntu-latest"
-            python-version: "3.9"
-            optional: false
-            coverage: "coverage-"
           # Run Python 3.10 but allow it to fail
           - os: "ubuntu-latest"
             python-version: "3.10.0-beta.2"
