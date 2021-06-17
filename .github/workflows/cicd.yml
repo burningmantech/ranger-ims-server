@@ -112,7 +112,7 @@ jobs:
         with:
           python-path: .tox/bandit/*/python
 
-      - name: Run Mypy
+      - name: Run Bandit
         run: tox -e bandit;
 
 
@@ -146,7 +146,7 @@ jobs:
         with:
           python-path: .tox/safety/*/python
 
-      - name: Run Mypy
+      - name: Run Safety
         run: tox -e safety;
 
 
