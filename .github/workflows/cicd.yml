@@ -341,7 +341,7 @@ jobs:
 
     name: Test Docker image
 
-    needs: [docker]
+    needs: [docker-build]
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -367,7 +367,7 @@ jobs:
 
     name: Trivy (security scan)
 
-    needs: [docker]
+    needs: [docker-build]
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -392,7 +392,7 @@ jobs:
   deploy-staging:
     name: Deploy image built from master branch to the staging environment
 
-    needs: [test-docker]
+    needs: [docker-test]
     if: github.ref == 'refs/heads/master'
 
     runs-on: ubuntu-latest
