@@ -110,7 +110,7 @@ jobs:
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
         with:
-          python-path: .tox/mypy/*/python
+          python-path: .tox/bandit/*/python
 
       - name: Run Mypy
         run: tox -e bandit;
@@ -144,7 +144,7 @@ jobs:
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
         with:
-          python-path: .tox/mypy/*/python
+          python-path: .tox/safety/*/python
 
       - name: Run Mypy
         run: tox -e safety;
