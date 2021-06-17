@@ -21,6 +21,7 @@ include LICENSE.txt
 include mypy.ini
 include pyproject.toml
 include README.rst
+include requirements/requirements*.txt
 include tox.ini
 recursive-include docs *.py
 recursive-include docs *.rst

@@ -39,7 +39,9 @@ name = "ranger-ims-server"
 
 description = "Ranger Incident Management System"
 
-readme_path = Path(__file__).parent / "README.rst"
+project_root = Path(__file__).parent
+
+readme_path = project_root / "README.rst"
 try:
     long_description: Optional[str] = readme_path.open().read()
 except OSError:
@@ -102,36 +104,14 @@ python_requirements = ">=3.9"
 
 setup_requirements: List[str] = []
 
+# Use a requirements.txt file for ease with Dependabot and/or Requires.io
+requirements_path = project_root / "requirements" / "requirements.txt"
 install_requirements = [
-    # Direct dependencies
-    "arrow==0.17.0",
-    "attrs==20.3.0",
-    "bcrypt==3.2.0",
-    "cattrs==1.1.2",
-    "hyperlink==21.0.0",
-    "klein==20.6.0",
-    "PyMySQL==1.0.2",
-    "pyOpenSSL==20.0.1",
-    "PyYAML==5.4.1",
-    "service-identity==18.1.0",
-    "Twisted==20.3.0",
-    "zope.interface==5.2.0",
-    # Indirect dependencies
-    "Automat==20.2.0",
-    "cffi==1.14.4",
-    "characteristic==14.3.0",
-    "constantly==15.1.0",
-    "cryptography==3.3.1",
-    "idna==3.1",
-    "incremental==17.5.0",
-    "pyasn1==0.4.8",
-    "pyasn1-modules==0.2.8",
-    "pycparser==2.20",
-    "PyHamcrest==2.0.2",
-    "python-dateutil==2.8.1",
-    "six==1.15.0",
-    "Tubes==0.2.0",
-    "Werkzeug==1.0.1",
+    requirement
+    for requirement in (
+        line.split("#", 1)[0].strip() for line in requirements_path.open()
+    )
+    if requirement
 ]
 
 extras_requirements: Dict[str, str] = {}
