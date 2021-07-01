@@ -157,10 +157,7 @@ class MainApplication:
         )
 
         return "\n".join(
-            (
-                "var url_{} = {};".format(k, jsonTextFromObject(v))
-                for k, v in urls.items()
-            )
+            (f"var url_{k} = {jsonTextFromObject(v)};" for k, v in urls.items())
         )
 
     #

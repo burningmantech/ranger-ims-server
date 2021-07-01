@@ -20,7 +20,7 @@ JSON serialization/deserialization for report entries
 
 from datetime import datetime as DateTime
 from enum import Enum, unique
-from typing import Any, Dict, Type, cast
+from typing import Any, cast
 
 from ._json import (
     deserialize,
@@ -57,7 +57,7 @@ class ReportEntryJSONType(Enum):
     text = str
 
 
-def serializeReportEntry(reportEntry: ReportEntry) -> Dict[str, Any]:
+def serializeReportEntry(reportEntry: ReportEntry) -> dict[str, Any]:
     # Map ReportEntry attribute names to JSON dict key names
     return {
         key.value: jsonSerialize(getattr(reportEntry, key.name))
@@ -69,7 +69,7 @@ registerSerializer(ReportEntry, serializeReportEntry)
 
 
 def deserializeReportEntry(
-    obj: Dict[str, Any], cl: Type[ReportEntry]
+    obj: dict[str, Any], cl: type[ReportEntry]
 ) -> ReportEntry:
     assert cl is ReportEntry, (cl, obj)
 

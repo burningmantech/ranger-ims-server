@@ -19,7 +19,7 @@ Incident Management System web application authentication provider.
 """
 
 from enum import Flag, auto
-from typing import ClassVar, Container, FrozenSet, Optional
+from typing import ClassVar, Container, Optional
 
 from attr import attrs
 
@@ -72,7 +72,7 @@ class AuthProvider:
     store: IMSDataStore
 
     requireActive: bool = True
-    adminUsers: FrozenSet[str] = frozenset()
+    adminUsers: frozenset[str] = frozenset()
     masterKey: str = ""
 
     async def verifyPassword(self, user: IMSUser, password: str) -> bool:

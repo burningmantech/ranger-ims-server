@@ -19,7 +19,7 @@ JSON serialization/deserialization for IMS data
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, FrozenSet, Type, cast
+from typing import Any, cast
 
 from ._json import (
     deserialize,
@@ -50,11 +50,11 @@ class IMSDataJSONType(Enum):
     Event data attribute types
     """
 
-    events = FrozenSet[EventData]
-    incidentTypes = FrozenSet[IncidentType]
+    events = frozenset[EventData]
+    incidentTypes = frozenset[IncidentType]
 
 
-def serializeIMSData(imsData: IMSData) -> Dict[str, Any]:
+def serializeIMSData(imsData: IMSData) -> dict[str, Any]:
     # Map event data attribute names to JSON dict key names
     return {
         key.value: jsonSerialize(getattr(imsData, key.name))
@@ -65,7 +65,7 @@ def serializeIMSData(imsData: IMSData) -> Dict[str, Any]:
 registerSerializer(IMSData, serializeIMSData)
 
 
-def deserializeIMSData(obj: Dict[str, Any], cl: Type[IMSData]) -> IMSData:
+def deserializeIMSData(obj: dict[str, Any], cl: type[IMSData]) -> IMSData:
     assert cl is IMSData, (cl, obj)
 
     return cast(

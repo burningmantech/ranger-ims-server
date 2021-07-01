@@ -20,8 +20,6 @@ from typing import (
     Mapping,
     Optional,
     TextIO,
-    Tuple,
-    Type,
     Union,
     cast,
 )
@@ -192,7 +190,7 @@ class Connection(BaseConnection):
 
     def __exit__(  # type: ignore[override]
         self,
-        exc_type: Type[BaseException],
+        exc_type: type[BaseException],
         exc_val: BaseException,
         exc_tb: Any,
     ) -> bool:
@@ -308,7 +306,7 @@ class QueryPlanExplanation:
 
 
 def explainQueryPlans(
-    db: Connection, queries: Iterable[Tuple[str, str]]
+    db: Connection, queries: Iterable[tuple[str, str]]
 ) -> Iterable[QueryPlanExplanation]:
     """
     Explain query plans for the given queries.

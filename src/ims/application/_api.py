@@ -30,7 +30,6 @@ from typing import (
     Iterable,
     Mapping,
     Optional,
-    Tuple,
     cast,
 )
 
@@ -126,7 +125,7 @@ class APIApplication:
         writeJSONStream(request, stream, etag)
         return None
 
-    async def personnelData(self) -> Tuple[Iterable[bytes], str]:
+    async def personnelData(self) -> tuple[Iterable[bytes], str]:
         """
         Data for personnel endpoint.
         """
@@ -222,12 +221,9 @@ class APIApplication:
         )
 
         events = sorted(
-            [
-                event
-                for event in await self.config.store.events()
-                if Authorization.readIncidents
-                & await authorizationsForUser(event)
-            ]
+            event
+            for event in await self.config.store.events()
+            if Authorization.readIncidents & await authorizationsForUser(event)
         )
 
         stream = buildJSONArray(

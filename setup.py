@@ -22,7 +22,7 @@ Setuptools configuration
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 from setuptools import find_packages, setup
 
@@ -102,7 +102,7 @@ package_data = dict(
 
 python_requirements = ">=3.9"
 
-setup_requirements: List[str] = []
+setup_requirements: list[str] = []
 
 # Use a requirements.txt file for ease with Dependabot and/or Requires.io
 requirements_path = project_root / "requirements" / "requirements.txt"
@@ -114,14 +114,14 @@ install_requirements = [
     if requirement
 ]
 
-extras_requirements: Dict[str, str] = {}
+extras_requirements: dict[str, str] = {}
 
 
 #
 # Set up Extension modules that need to be built
 #
 
-extensions: List[str] = []
+extensions: list[str] = []
 
 
 #

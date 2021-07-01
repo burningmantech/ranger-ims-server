@@ -19,7 +19,7 @@ JSON serialization/deserialization for addresses
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional
 
 from ._address import AddressJSONKey, AddressTypeJSONValue, serializeAddress
 from ._json import (
@@ -44,7 +44,7 @@ class LocationJSONKey(Enum):
     name = "name"
 
 
-def serializeLocation(location: Location) -> Dict[str, Any]:
+def serializeLocation(location: Location) -> dict[str, Any]:
     # Map Location attribute names to JSON dict key names
     locationJSON = {
         key.value: jsonSerialize(getattr(location, key.name))
@@ -61,7 +61,7 @@ registerSerializer(Location, serializeLocation)
 
 
 def deserializeLocation(
-    obj: Optional[Dict[str, Any]], cl: Type[Location]
+    obj: Optional[dict[str, Any]], cl: type[Location]
 ) -> Location:
     assert cl is Location, (cl, obj)
 
@@ -77,7 +77,7 @@ def deserializeLocation(
     jsonAddress = obj
     addressType = jsonAddress[AddressJSONKey.addressType.value]
 
-    addressClass: Type[Address]
+    addressClass: type[Address]
     if addressType == AddressTypeJSONValue.rodGarett.value:
         addressClass = RodGarettAddress
     elif addressType == AddressTypeJSONValue.text.value:

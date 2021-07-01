@@ -29,8 +29,6 @@ from typing import (
     Mapping,
     Optional,
     Sequence,
-    Set,
-    Tuple,
     cast,
 )
 
@@ -610,8 +608,8 @@ class ConfigurationTests(TestCase):
         """
         Admins from list
         """
-        empty: Set[str] = set()
-        data: Iterable[Tuple[str, Set[str]]] = (
+        empty: set[str] = set()
+        data: Iterable[tuple[str, set[str]]] = (
             ("", empty),
             (",,", empty),
             ("a,b,c", {"a", "b", "c"}),

@@ -18,7 +18,7 @@
 Tests for L{ims.directory.clubhouse_db._dms}.
 """
 
-from typing import Any, Dict, MutableSequence, Tuple, cast
+from typing import Any, MutableSequence, cast
 
 from twisted.internet.defer import Deferred, fail, succeed
 
@@ -120,7 +120,7 @@ class DummyQuery:
     Represents a call to C{runQuery}.
     """
 
-    def __init__(self, args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> None:
+    def __init__(self, args: tuple[Any, ...], kwargs: dict[str, Any]) -> None:
         self.args = args
         self.kwargs = kwargs
 
@@ -141,13 +141,13 @@ class DummyConnectionPool:
     Mock for L{adbapi.ConnectionPool}.
     """
 
-    def __init__(self, dbapiname: str, **connkw: Dict[str, Any]) -> None:
+    def __init__(self, dbapiname: str, **connkw: dict[str, Any]) -> None:
         self.dbapiname = dbapiname
         self.connkw = connkw
         self.queries: MutableSequence[DummyQuery] = []
 
     def runQuery(
-        self, *args: Tuple[Any, ...], **kw: Dict[str, Any]
+        self, *args: tuple[Any, ...], **kw: dict[str, Any]
     ) -> Deferred:
         query = DummyQuery(args, kw)
 
@@ -156,8 +156,8 @@ class DummyConnectionPool:
         sql = query.sql()
 
         def fixPassword(
-            person: Tuple[int, str, str, str, str, str, str, bool, str]
-        ) -> Tuple[int, str, str, str, str, str, str, bool, str]:
+            person: tuple[int, str, str, str, str, str, str, bool, str]
+        ) -> tuple[int, str, str, str, str, str, str, bool, str]:
             return (
                 person[0],
                 person[1],
@@ -188,7 +188,7 @@ class DummyConnectionPool:
         return fail(AssertionError(f"No canned response for query: {sql}"))
 
 
-class DummyADBAPI:  # noqa: B903
+class DummyADBAPI:
     """
     Mock for L{adbapi}.
     """

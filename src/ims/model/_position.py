@@ -20,8 +20,6 @@
 Position
 """
 
-from typing import FrozenSet
-
 from attr import attrs
 
 from ._replace import ReplaceMixIn
@@ -40,7 +38,7 @@ class Position(ReplaceMixIn):
     """
 
     name: str
-    members: FrozenSet[str]
+    members: frozenset[str]
 
     def __str__(self) -> str:
         return self.name

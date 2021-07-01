@@ -26,10 +26,7 @@ from datetime import (
 from typing import (
     Any,
     Callable,
-    Dict,
-    FrozenSet,
     Hashable,
-    List,
     Optional,
     cast,
 )
@@ -274,11 +271,11 @@ def eventAccesses(draw: Callable[..., Any]) -> EventAccess:
     """
     Strategy that generates :class:`EventAccess` values.
     """
-    readers: FrozenSet[str] = frozenset(draw(lists(accessTexts())))
-    writers: FrozenSet[str] = frozenset(
+    readers: frozenset[str] = frozenset(draw(lists(accessTexts())))
+    writers: frozenset[str] = frozenset(
         a for a in draw(lists(accessTexts())) if a not in readers
     )
-    reporters: FrozenSet[str] = frozenset(
+    reporters: frozenset[str] = frozenset(
         a
         for a in draw(lists(accessTexts()))
         if a not in readers and a not in writers
@@ -292,10 +289,10 @@ def eventDatas(draw: Callable[..., Any]) -> EventData:
     Strategy that generates :class:`EventData` values.
     """
     event: Event = draw(events())
-    concentricStreets: Dict[str, str] = draw(
+    concentricStreets: dict[str, str] = draw(
         dictionaries(keys=concentricStreetIDs(), values=concentricStreetNames())
     )
-    situations: List[Incident] = draw(
+    situations: list[Incident] = draw(
         lists(incidents(event=event), unique_by=lambda i: i.number)
     )
 
@@ -327,11 +324,11 @@ def imsDatas(draw: Callable[..., Any]) -> IMSData:
     """
     Strategy that generates :class:`IMSData` values.
     """
-    events: List[EventData] = draw(
+    events: list[EventData] = draw(
         lists(eventDatas(), unique_by=lambda d: d.event.id)
     )
 
-    types: Dict[str, IncidentType] = {
+    types: dict[str, IncidentType] = {
         incidentType.name: incidentType
         for incidentType in draw(
             lists(incidentTypes(), unique_by=lambda t: t.name)

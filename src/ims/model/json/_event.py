@@ -18,8 +18,6 @@
 JSON serialization/deserialization for events
 """
 
-from typing import Type
-
 from ._json import registerDeserializer, registerSerializer
 from .._event import Event
 
@@ -34,7 +32,7 @@ def serializeEvent(event: Event) -> str:
 registerSerializer(Event, serializeEvent)
 
 
-def deserializeEvent(obj: str, cl: Type[Event]) -> Event:
+def deserializeEvent(obj: str, cl: type[Event]) -> Event:
     assert cl is Event, (cl, obj)
 
     return Event(id=obj)
