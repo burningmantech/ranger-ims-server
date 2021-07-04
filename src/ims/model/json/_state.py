@@ -19,7 +19,7 @@ JSON serialization/deserialization for incident state
 """
 
 from enum import Enum, unique
-from typing import Type, cast
+from typing import cast
 
 from ._json import registerDeserializer, registerSerializer
 from .._state import IncidentState
@@ -53,7 +53,7 @@ registerSerializer(IncidentState, serializeIncidentState)
 
 
 def deserializeIncidentState(
-    obj: str, cl: Type[IncidentState]
+    obj: str, cl: type[IncidentState]
 ) -> IncidentState:
     assert cl is IncidentState, (cl, obj)
 

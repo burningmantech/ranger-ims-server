@@ -18,7 +18,7 @@
 Incident type tests for :mod:`ranger-ims-server.store`
 """
 
-from typing import Tuple, cast
+from typing import cast
 
 from ims.ext.trial import asyncAsDeferred
 
@@ -53,7 +53,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
                 ("Foo", True),
             ),
         ):
-            data = cast(Tuple[Tuple[str, bool]], _data)
+            data = cast(tuple[tuple[str, bool]], _data)
 
             store = await self.store()
             for name, hidden in data:
@@ -84,7 +84,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
                 ("Foo", True),
             ),
         ):
-            data = cast(Tuple[Tuple[str, bool]], _data)
+            data = cast(tuple[tuple[str, bool]], _data)
 
             store = await self.store()
             for name, hidden in data:

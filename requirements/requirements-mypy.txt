@@ -1,0 +1,6 @@
+# Note: mypy-zope pins the mypy version
+
+mypy==0.800
+
+#mypy==0.902
+#mypy-zope==0.3.1

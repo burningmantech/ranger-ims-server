@@ -24,7 +24,7 @@ from datetime import (
     timedelta as TimeDelta,
     timezone as TimeZone,
 )
-from typing import Any, Dict, Iterable, Optional, Sequence, Set, Tuple, cast
+from typing import Any, Iterable, Optional, Sequence, cast
 
 from attr import fields as attrFields
 
@@ -134,7 +134,7 @@ class DataStoreIncidentTests(DataStoreTests):
         ):
             incidents = tuple(cast(Iterable[Incident], _incidents))
 
-            events: Dict[Event, Dict[int, Incident]] = defaultdict(defaultdict)
+            events: dict[Event, dict[int, Incident]] = defaultdict(defaultdict)
 
             store = await self.store()
 
@@ -143,7 +143,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
                 events[incident.event][incident.number] = incident
 
-            found: Set[Tuple[Event, int]] = set()
+            found: set[tuple[Event, int]] = set()
             for event in events:
                 for retrieved in await store.incidents(event):
                     self.assertIncidentsEqual(
@@ -276,16 +276,16 @@ class DataStoreIncidentTests(DataStoreTests):
                 (anIncident2.replace(number=0), "Bucket"),
             ),
         ):
-            data = cast(Iterable[Tuple[Incident, str]], _data)
+            data = cast(Iterable[tuple[Incident, str]], _data)
 
             store = await self.store()
 
-            createdEvents: Set[Event] = set()
-            createdIncidentTypes: Set[str] = set()
-            createdConcentricStreets: Dict[Event, Set[str]] = defaultdict(set)
+            createdEvents: set[Event] = set()
+            createdIncidentTypes: set[str] = set()
+            createdConcentricStreets: dict[Event, set[str]] = defaultdict(set)
 
-            expectedStoredIncidents: Set[Incident] = set()
-            nextNumbers: Dict[Event, int] = {}
+            expectedStoredIncidents: set[Incident] = set()
+            nextNumbers: dict[Event, int] = {}
 
             for incident, author in data:
                 event = incident.event
@@ -659,7 +659,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 ((aReportEntry1, aReportEntry2), aReportEntry1.author),
             ):
                 reportEntries, author = cast(
-                    Tuple[Sequence[ReportEntry], str],
+                    tuple[Sequence[ReportEntry], str],
                     entriesBy,
                 )
 

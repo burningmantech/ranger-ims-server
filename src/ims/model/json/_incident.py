@@ -20,7 +20,7 @@ JSON serialization/deserialization for incidents
 
 from datetime import datetime as DateTime
 from enum import Enum, unique
-from typing import Any, Dict, List, Optional, Set, Type, cast
+from typing import Any, Optional, cast
 
 from ._json import (
     deserialize,
@@ -70,13 +70,13 @@ class IncidentJSONType(Enum):
     priority = IncidentPriority
     summary = Optional[str]
     location = Location
-    rangerHandles = Set[str]
-    incidentTypes = Set[str]
-    reportEntries = List[ReportEntry]
-    incidentReportNumbers = Set[int]
+    rangerHandles = set[str]
+    incidentTypes = set[str]
+    reportEntries = list[ReportEntry]
+    incidentReportNumbers = set[int]
 
 
-def serializeIncident(incident: Incident) -> Dict[str, Any]:
+def serializeIncident(incident: Incident) -> dict[str, Any]:
     # Map Incident attribute names to JSON dict key names
     return {
         key.value: jsonSerialize(getattr(incident, key.name))
@@ -87,7 +87,7 @@ def serializeIncident(incident: Incident) -> Dict[str, Any]:
 registerSerializer(Incident, serializeIncident)
 
 
-def deserializeIncident(obj: Dict[str, Any], cl: Type[Incident]) -> Incident:
+def deserializeIncident(obj: dict[str, Any], cl: type[Incident]) -> Incident:
     assert cl is Incident, (cl, obj)
 
     return cast(

@@ -18,7 +18,7 @@
 Tests for L{ims.directory._directory}.
 """
 
-from typing import Any, Callable, Dict, Iterable, Sequence, cast
+from typing import Any, Callable, Iterable, Sequence, cast
 from unittest.mock import patch
 
 from attr import evolve
@@ -261,7 +261,7 @@ class DirectoryTests(TestCase):
     def test_lookupUser_email(self, rangers: Sequence[Ranger]) -> None:
         directory = RangerDirectory(rangers=rangers, positions=())
 
-        emailCounts: Dict[str, int] = dict()
+        emailCounts: dict[str, int] = {}
         for ranger in rangers:
             for email in ranger.email:
                 emailCounts[email] = emailCounts.get(email, 0) + 1

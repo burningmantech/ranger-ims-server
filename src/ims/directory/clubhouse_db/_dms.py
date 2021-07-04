@@ -24,8 +24,6 @@ from typing import (
     Iterable,
     Mapping,
     Optional,
-    Set,
-    Tuple,
     cast,
 )
 
@@ -72,7 +70,7 @@ class Position:
 
     positionID: str
     name: str
-    members: Set[Ranger] = Factory(set)
+    members: set[Ranger] = Factory(set)
 
 
 # FIXME: make frozen
@@ -182,14 +180,14 @@ class DutyManagementSystem:
             ) in rows
         }
 
-    async def _queryPositionRangerJoin(self) -> Iterable[Tuple[str, str]]:
+    async def _queryPositionRangerJoin(self) -> Iterable[tuple[str, str]]:
         self._log.info(
             "Retrieving position-personnel relations from "
             "Duty Management System..."
         )
 
         return cast(
-            Iterable[Tuple[str, str]],
+            Iterable[tuple[str, str]],
             await self.dbpool.runQuery(
                 """
                 select person_id, position_id from person_position

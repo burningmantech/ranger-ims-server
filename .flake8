@@ -14,6 +14,9 @@ ignore =
     # (Necessary for cast())
     B008,
 
+    # Data class should either be immutable or use __slots__
+    B903,
+
     # Missing docstring in magic method
     D105,
 

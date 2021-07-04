@@ -23,11 +23,8 @@ from enum import Enum
 from typing import (
     Any,
     Callable,
-    Dict,
     Iterable,
-    List,
     Mapping,
-    Type,
     Union,
     cast,
 )
@@ -57,7 +54,7 @@ class JSONCodecError(Exception):
 
 converter = Converter()
 
-jsonSerialize = converter.unstructure  # type: Callable[[Any], JSON]
+jsonSerialize: Callable[[Any], JSON] = converter.unstructure
 jsonDeserialize = converter.structure
 
 registerSerializer = converter.register_unstructure_hook
@@ -69,7 +66,7 @@ registerDeserializer = converter.register_structure_hook
 registerSerializer(DateTime, dateTimeAsRFC3339Text)
 
 
-def deserializeDateTime(obj: str, cl: Type[DateTime]) -> DateTime:
+def deserializeDateTime(obj: str, cl: type[DateTime]) -> DateTime:
     assert cl is DateTime, (cl, obj)
 
     return rfc3339TextAsDateTime(obj)
@@ -81,7 +78,7 @@ registerDeserializer(DateTime, deserializeDateTime)
 # Tuples and sets should serialize like lists
 
 
-def serializeIterable(iterable: Iterable[Any]) -> List[JSON]:
+def serializeIterable(iterable: Iterable[Any]) -> list[JSON]:
     return [jsonSerialize(item) for item in iterable]
 
 
@@ -101,7 +98,7 @@ registerSerializer(FrozenDict, serializeFrozenDict)
 
 
 def deserializeFrozenDict(
-    obj: Mapping[str, JSON], cl: Type[FrozenDict[str, JSON]]
+    obj: Mapping[str, JSON], cl: type[FrozenDict[str, JSON]]
 ) -> FrozenDict[str, JSON]:
     assert cl is FrozenDict, (cl, obj)
 
@@ -126,10 +123,10 @@ def modelObjectFromJSONObject(json: JSON, modelClass: type) -> Any:
 
 
 def deserialize(
-    obj: Dict[str, Any],
-    cls: Type[Any],
-    typeEnum: Type[Enum],
-    keyEnum: Type[Enum],
+    obj: dict[str, Any],
+    cls: type[Any],
+    typeEnum: type[Enum],
+    keyEnum: type[Enum],
 ) -> Any:
     def deserializeKey(key: Enum) -> Any:
         try:

@@ -19,7 +19,7 @@ JSON serialization/deserialization for addresses
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, Optional, Type, cast
+from typing import Any, Optional, cast
 
 from ._json import (
     deserialize,
@@ -63,7 +63,7 @@ class AddressJSONType(Enum):
     """
 
     addressType = str
-    description = cast(Type[Any], Optional[str])
+    description = cast(type[Any], Optional[str])
 
 
 @unique
@@ -106,7 +106,7 @@ class RodGarettAddressJSONType(Enum):
     description = AddressJSONType.description.value
 
 
-def serializeAddress(address: Address) -> Dict[str, Any]:
+def serializeAddress(address: Address) -> dict[str, Any]:
     if isinstance(address, TextOnlyAddress):
         return serializeTextOnlyAddress(address)
     elif isinstance(address, RodGarettAddress):
@@ -118,7 +118,7 @@ def serializeAddress(address: Address) -> Dict[str, Any]:
 registerSerializer(Address, serializeAddress)
 
 
-def serializeTextOnlyAddress(address: TextOnlyAddress) -> Dict[str, Any]:
+def serializeTextOnlyAddress(address: TextOnlyAddress) -> dict[str, Any]:
     # Map TextOnlyAddress attribute names to JSON dict key names
     json = {
         key.value: jsonSerialize(getattr(address, key.name))
@@ -131,7 +131,7 @@ def serializeTextOnlyAddress(address: TextOnlyAddress) -> Dict[str, Any]:
 registerSerializer(TextOnlyAddress, serializeTextOnlyAddress)
 
 
-def serializeRodGarettAddress(address: RodGarettAddress) -> Dict[str, Any]:
+def serializeRodGarettAddress(address: RodGarettAddress) -> dict[str, Any]:
     # Map RodGarettAddress attribute names to JSON dict key names
     json = {
         key.value: jsonSerialize(getattr(address, key.name))
@@ -145,7 +145,7 @@ registerSerializer(RodGarettAddress, serializeRodGarettAddress)
 
 
 def deserializeTextOnlyAddress(
-    obj: Dict[str, Any], cl: Type[TextOnlyAddress]
+    obj: dict[str, Any], cl: type[TextOnlyAddress]
 ) -> TextOnlyAddress:
     assert cl is TextOnlyAddress, (cl, obj)
 
@@ -164,7 +164,7 @@ registerDeserializer(TextOnlyAddress, deserializeTextOnlyAddress)
 
 
 def deserializeRodGarettAddress(
-    obj: Dict[str, Any], cl: Type[RodGarettAddress]
+    obj: dict[str, Any], cl: type[RodGarettAddress]
 ) -> RodGarettAddress:
     assert cl is RodGarettAddress, (cl, obj)
 

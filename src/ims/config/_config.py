@@ -24,7 +24,7 @@ from os import environ, getcwd
 from os.path import basename
 from pathlib import Path
 from sys import argv
-from typing import Any, Callable, ClassVar, FrozenSet, Optional, Sequence, cast
+from typing import Any, Callable, ClassVar, Optional, Sequence, cast
 
 from attr import Factory, attrib, attrs, evolve
 
@@ -248,7 +248,7 @@ class Configuration:
         cls._log.info("LogFile: {path}", path=logFilePath)
 
         admins = parser.valueFromConfig("ADMINS", "Core", "Admins")
-        imsAdmins: FrozenSet[str] = frozenset(
+        imsAdmins: frozenset[str] = frozenset(
             a for a in map(str.strip, admins.split(",")) if a
         )
         cls._log.info("Admins: {admins}", admins=tuple(imsAdmins))
@@ -398,7 +398,7 @@ class Configuration:
     dataRoot: Path
     directory: IMSDirectory
     hostName: str
-    imsAdmins: FrozenSet[str]
+    imsAdmins: frozenset[str]
     logFilePath: Path
     logFormat: LogFormat
     logLevelName: str

@@ -19,7 +19,7 @@ JSON serialization/deserialization for Rangers
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, Optional, Set, Type, cast
+from typing import Any, Optional, cast
 
 from ._json import (
     deserialize,
@@ -55,12 +55,12 @@ class RangerJSONType(Enum):
     handle = str
     name = str  # type: ignore[assignment]
     status = RangerStatus
-    email = Set[str]
+    email = set[str]
     enabled = bool
     directoryID = Optional[str]
 
 
-def serializeRanger(ranger: Ranger) -> Dict[str, Any]:
+def serializeRanger(ranger: Ranger) -> dict[str, Any]:
     # Map Ranger attribute names to JSON dict key names
     return {
         key.value: jsonSerialize(getattr(ranger, key.name))
@@ -71,7 +71,7 @@ def serializeRanger(ranger: Ranger) -> Dict[str, Any]:
 registerSerializer(Ranger, serializeRanger)
 
 
-def deserializeRanger(obj: Dict[str, Any], cl: Type[Ranger]) -> Ranger:
+def deserializeRanger(obj: dict[str, Any], cl: type[Ranger]) -> Ranger:
     assert cl is Ranger, (cl, obj)
 
     return cast(Ranger, deserialize(obj, Ranger, RangerJSONType, RangerJSONKey))
@@ -98,7 +98,7 @@ def serializeRangerStatus(rangerStatus: RangerStatus) -> str:
 registerSerializer(RangerStatus, serializeRangerStatus)
 
 
-def deserializeRangerStatus(obj: int, cl: Type[RangerStatus]) -> RangerStatus:
+def deserializeRangerStatus(obj: int, cl: type[RangerStatus]) -> RangerStatus:
     assert cl is RangerStatus, (cl, obj)
 
     return cast(

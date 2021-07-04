@@ -5,53 +5,18 @@
 
 name: CI/CD
 
-on: [push]
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
 
 
 jobs:
 
-  info:
-
-    name: Workflow information
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-
-    steps:
-
-      - name: Print GitHub Context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "${GITHUB_CONTEXT}";
-
-      - name: Print Job Context
-        env:
-          JOB_CONTEXT: ${{ toJson(job) }}
-        run: echo "${JOB_CONTEXT}";
-
-      - name: Print Steps Context
-        env:
-          STEPS_CONTEXT: ${{ toJson(steps) }}
-        run: echo "${STEPS_CONTEXT}";
-
-      - name: Print Runner Context
-        env:
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-        run: echo "${RUNNER_CONTEXT}";
-
-      - name: Print Strategy Context
-        env:
-          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
-        run: echo "${STRATEGY_CONTEXT}";
-
-      - name: Print Matrix Context
-        env:
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
-        run: echo "${MATRIX_CONTEXT}";
-
-
   lint:
 
-    name: Lint
+    name: Linters
 
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -62,18 +27,29 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: "3.9"
 
-      - name: Install Tox
-        run: pip install tox;
+      - name: System Python Information
+        uses: twisted/python-info-action@v1
 
-      - name: Run linters
+      - name: Set up Tox environment
+        run: |
+          pip install tox;
+          tox -e lint --notest;
+
+      - name: Tox Python Information
+        uses: twisted/python-info-action@v1
+        with:
+          python-path: .tox/lint/*/python
+
+      - name: Run Linters
         run: tox -e lint;
 
 
   mypy:
+
     name: Mypy (static type checker)
 
     runs-on: ubuntu-latest
@@ -85,18 +61,29 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: "3.9"
 
-      - name: Install Tox
-        run: pip install tox;
+      - name: System Python Information
+        uses: twisted/python-info-action@v1
+
+      - name: Set up Tox environment
+        run: |
+          pip install tox;
+          tox -e mypy --notest;
+
+      - name: Tox Python Information
+        uses: twisted/python-info-action@v1
+        with:
+          python-path: .tox/mypy/*/python
 
       - name: Run Mypy
         run: tox -e mypy;
 
 
   bandit:
+
     name: Bandit (security static analyzer)
 
     runs-on: ubuntu-latest
@@ -108,18 +95,29 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: "3.9"
 
-      - name: Install Tox
-        run: pip install tox;
+      - name: System Python Information
+        uses: twisted/python-info-action@v1
+
+      - name: Set up Tox environment
+        run: |
+          pip install tox;
+          tox -e bandit --notest;
+
+      - name: Tox Python Information
+        uses: twisted/python-info-action@v1
+        with:
+          python-path: .tox/bandit/*/python
 
       - name: Run Bandit
         run: tox -e bandit;
 
 
   safety:
+
     name: Safety (dependency security checker)
 
     runs-on: ubuntu-latest
@@ -131,18 +129,29 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: "3.9"
 
-      - name: Install Tox
-        run: pip install tox;
+      - name: System Python Information
+        uses: twisted/python-info-action@v1
+
+      - name: Set up Tox environment
+        run: |
+          pip install tox;
+          tox -e safety --notest;
+
+      - name: Tox Python Information
+        uses: twisted/python-info-action@v1
+        with:
+          python-path: .tox/safety/*/python
 
       - name: Run Safety
         run: tox -e safety;
 
 
   docs:
+
     name: Build documentation
 
     runs-on: ubuntu-latest
@@ -154,12 +163,22 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: "3.9"
 
-      - name: Install Tox
-        run: pip install tox;
+      - name: System Python Information
+        uses: twisted/python-info-action@v1
+
+      - name: Set up Tox environment
+        run: |
+          pip install tox;
+          tox -e docs --notest;
+
+      - name: Tox Python Information
+        uses: twisted/python-info-action@v1
+        with:
+          python-path: .tox/docs/*/python
 
       - name: Build documentation
         run: tox -e docs;
@@ -177,43 +196,108 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: "3.9"
 
-      - name: Install Tox
-        run: pip install tox;
+      - name: System Python Information
+        uses: twisted/python-info-action@v1
+
+      - name: Set up Tox environment
+        run: |
+          pip install tox;
+          tox -e packaging --notest;
+
+      - name: Tox Python Information
+        uses: twisted/python-info-action@v1
+        with:
+          python-path: .tox/packaging/*/python
 
       - name: Check packaging
         run: tox -e packaging;
 
 
   unit:
-    name: Unit Tests using Python ${{ matrix.python }} on Ubuntu
+
+    name: "Py:${{ matrix.python-version }} - ${{ matrix.os }}"
 
     needs: [lint, mypy, docs, packaging]
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    continue-on-error: ${{ matrix.optional }}
     strategy:
       matrix:
-        python: ["3.9"]
+        os: ["ubuntu-latest"]
+        python-version: ["3.9"]
+        coverage: ["coverage-"]
+        optional: [false]
+        include:
+          # Run Python 3.10 but allow it to fail
+          - os: "ubuntu-latest"
+            python-version: "3.10.0-beta.2"
+            optional: true
+            coverage: ""
 
     steps:
 
       - name: Checkout source code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
 
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ matrix.python-version }}
 
-      - name: Install Tox
-        run: pip install tox;
+      - name: System Python Information
+        uses: twisted/python-info-action@v1
+
+      - name: Translate Python version to Tox environment
+        id: tox_env
+        shell: python
+        run: |
+          py = "${{ matrix.python-version }}"
+          py = "".join(py.split(".")[:2])   # Combine major/minor, toss rest
+          py = py.replace("pypy", "py")     # For Pypy: have a litte less py
+          print(f"::set-output name=value::${{ matrix.coverage }}py{py}")
+          print(f"::set-output name=has_coverage::${{ matrix.coverage }}")
+
+      - name: Set up Tox environment
+        run: |
+          pip install tox;
+          tox -e ${{ steps.tox_env.outputs.value }} --notest;
+
+      - name: Tox Python Information
+        uses: twisted/python-info-action@v1
+        with:
+          python-path: .tox/${{ steps.tox_env.outputs.value }}/*/python
 
       - name: Run unit tests
-        run: tox -e coverage-py,codecov;
+        run: tox -e ${{ steps.tox_env.outputs.value }};
+
+      - name: Upload Trial log artifact
+        if: failure()
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: trial
+          path: .tox/${{ steps.tox_env.outputs.value }}/log/trial.log
+
+      # Use the latest supported Python version for combining coverage to
+      # prevent parsing errors in older versions when looking at modern code.
+      - uses: "actions/setup-python@v2"
+        if: steps.tox_env.outputs.has_coverage
+        with:
+          python-version: "3.9"
+
+      - name: "Upload coverage to Codecov"
+        uses: "codecov/codecov-action@v1"
+        if: steps.tox_env.outputs.has_coverage
+        with:
+          files: .tox/coverage.xml
+          env_vars: GITHUB_REF,GITHUB_COMMIT,GITHUB_USER,GITHUB_WORKFLOW
+          fail_ci_if_error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           GITHUB_REF: ${{ github.ref }}
@@ -221,15 +305,8 @@ jobs:
           GITHUB_USER: ${{ github.actor }}
           GITHUB_WORKFLOW: ${{ github.workflow }}
 
-      - name: Upload Trial log artifact
-        if: failure()
-        uses: actions/upload-artifact@v1
-        with:
-          name: trial
-          path: .tox/coverage-py/log/trial.log
 
-
-  docker:
+  docker-build:
     name: Build Docker image
 
     needs: [unit]
@@ -255,11 +332,11 @@ jobs:
           path: image.tgz
 
 
-  test-docker:
+  docker-test:
 
     name: Test Docker image
 
-    needs: [docker]
+    needs: [docker-build]
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -281,11 +358,11 @@ jobs:
         run: ./bin/test_docker;
 
 
-  test-docker-trivy:
+  docker-trivy:
 
     name: Trivy (security scan)
 
-    needs: [docker]
+    needs: [docker-build]
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -310,7 +387,7 @@ jobs:
   deploy-staging:
     name: Deploy image built from master branch to the staging environment
 
-    needs: [test-docker]
+    needs: [docker-test]
     if: github.ref == 'refs/heads/master'
 
     runs-on: ubuntu-latest

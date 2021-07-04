@@ -21,7 +21,7 @@ Incident
 """
 
 from datetime import datetime as DateTime
-from typing import FrozenSet, Iterable, Optional, Sequence
+from typing import Iterable, Optional, Sequence
 
 from attr import attrib, attrs
 
@@ -58,12 +58,12 @@ class Incident(ReplaceMixIn):
     priority: IncidentPriority
     summary: Optional[str]
     location: Location
-    rangerHandles: FrozenSet[str] = attrib(converter=freezeStrings)
-    incidentTypes: FrozenSet[str] = attrib(converter=freezeStrings)
+    rangerHandles: frozenset[str] = attrib(converter=freezeStrings)
+    incidentTypes: frozenset[str] = attrib(converter=freezeStrings)
     reportEntries: Sequence[ReportEntry] = attrib(
         converter=sortAndFreezeReportEntries
     )
-    incidentReportNumbers: FrozenSet[int] = attrib(converter=freezeIntegers)
+    incidentReportNumbers: frozenset[int] = attrib(converter=freezeIntegers)
 
     def __str__(self) -> str:
         return f"{self.event} #{self.number}: {self.summaryFromReport()}"

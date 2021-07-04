@@ -4,7 +4,7 @@ Extensions to :mod:`enum`
 """
 
 from enum import Enum, auto, unique
-from typing import Any, Callable, List, Tuple, cast
+from typing import Any, Callable, cast
 
 
 __all__ = (
@@ -36,7 +36,7 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
         return self is not other
 
     def compare(self: Enum, other: Any, lessThan: bool) -> bool:
-        members: Tuple[Enum, ...] = tuple(enumClass)  # type: ignore[arg-type]
+        members: tuple[Enum, ...] = tuple(enumClass)  # type: ignore[arg-type]
         if other in members:
             for member in members:
                 if member is self:
@@ -91,6 +91,6 @@ class Names(Enum):
 
     @staticmethod
     def _generate_next_value_(
-        name: str, start: int, count: int, last_values: List[object]
+        name: str, start: int, count: int, last_values: list[object]
     ) -> str:
         return name

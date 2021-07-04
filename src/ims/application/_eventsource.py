@@ -20,7 +20,7 @@ HTML5 EventSource support.
 
 from collections import deque
 from time import time
-from typing import Any, ClassVar, Deque, List, Mapping, Optional, Tuple
+from typing import Any, ClassVar, Deque, Mapping, Optional
 
 from attr import attrib, attrs
 
@@ -76,12 +76,12 @@ class DataStoreEventSourceLogObserver:
 
     _log: ClassVar[Logger] = Logger()
 
-    _listeners: List[IRequest] = attrib(init=False, factory=list)
-    _events: Deque[Tuple[int, Event]] = attrib(
+    _listeners: list[IRequest] = attrib(init=False, factory=list)
+    _events: Deque[tuple[int, Event]] = attrib(
         init=False, factory=lambda: deque(maxlen=1000)
     )
     _start: float = attrib(init=False, factory=time)
-    _counter: List[int] = attrib(init=False, factory=lambda: [0])
+    _counter: list[int] = attrib(init=False, factory=lambda: [0])
 
     def addListener(
         self, listener: IRequest, lastEventID: Optional[str] = None

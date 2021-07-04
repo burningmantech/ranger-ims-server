@@ -4,7 +4,7 @@ Extensions to :mod:`twisted.trial`
 """
 
 from functools import wraps
-from typing import Any, Callable, Optional, Sequence, Type, cast
+from typing import Any, Callable, Optional, Sequence, cast
 
 from hypothesis import HealthCheck, settings
 
@@ -64,7 +64,7 @@ class TestCase(SuperTestCase):
         return super().successResultOf(deferred)
 
     def failureResultOf(
-        self, deferred: Deferred, *expectedExceptionTypes: Type[BaseException]
+        self, deferred: Deferred, *expectedExceptionTypes: type[BaseException]
     ) -> Failure:
         """
         Override :meth:`SuperTestCase.failureResultOf` to enable handling of

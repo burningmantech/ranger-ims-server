@@ -10,7 +10,6 @@ from textwrap import dedent
 from typing import (
     Any,
     Iterator,
-    List,
     Mapping,
     Optional,
     Union,
@@ -44,7 +43,7 @@ class ConnectionTests(TestCase):
             self.connections.append(database)
             return Connection(":memory:")
 
-        self.connections: List[str] = []
+        self.connections: list[str] = []
         self.patch(sqlite, name, _connect)
 
     def test_row_get(self) -> None:
