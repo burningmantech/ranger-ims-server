@@ -30,7 +30,7 @@ from twisted.logger import Logger
 from ims.ext.trial import AsynchronousTestCase, asyncAsDeferred
 
 from .base import TestDataStore
-from .service import MySQLService, randomDatabaseName
+from .service import DatabaseExistsError, MySQLService, randomDatabaseName
 from .._store import DataStore, ReconnectingConnectionPool
 from ..._exceptions import StorageError
 
@@ -66,7 +66,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
     _log: ClassVar[Logger] = Logger()
 
-    mysqlService: MySQLService = mysqlServiceFactory()
+    mysqlService: ClassVar[MySQLService] = mysqlServiceFactory()
 
     def setUp(self) -> Deferred:
         async def setUp() -> None:
@@ -82,6 +82,8 @@ class DataStoreCoreTests(AsynchronousTestCase):
             for store in self.stores:
                 await store.disconnect()
 
+            await self.mysqlService.stop()
+
         # setUp can't return a coroutine, so convert it to a Deferred
         return ensureDeferred(tearDown())
 
@@ -96,8 +98,10 @@ class DataStoreCoreTests(AsynchronousTestCase):
             try:
                 self._log.info("Creating database: {name}", name=databaseName)
                 await service.createDatabase(name=databaseName)
-            except Exception as e:  # pragma: no cover
-                self._log.warn("Unable to create database: {error}", error=e)
+            except DatabaseExistsError:
+                self._log.warn(
+                    "Database {name} already exists.", name=databaseName
+                )
             else:
                 break
         else:

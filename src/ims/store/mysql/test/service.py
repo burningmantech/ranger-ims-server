@@ -27,7 +27,7 @@ from attr import Factory, attrib, attrs
 
 from docker.api import APIClient
 from docker.client import DockerClient
-from docker.errors import ImageNotFound
+from docker.errors import ImageNotFound, NotFound
 from docker.models.containers import Container
 
 from pymysql import ProgrammingError, connect
@@ -215,6 +215,8 @@ class DockerizedMySQLService(MySQLService):
         host = NO_HOST
         port = NO_PORT
 
+        refcount = 0
+
     _user: str = Factory(randomUserName)
     _password: str = Factory(randomPassword)
     _rootPassword: str = Factory(randomPassword)
@@ -276,11 +278,11 @@ class DockerizedMySQLService(MySQLService):
         timeout: float = 60.0,
         interval: float = 1.0,
     ) -> Awaitable[None]:
-        containerLog = [b""]
-
         d = Deferred()
 
         def waitOnDBStartup(elapsed: float = 0.0) -> None:
+            logs = b""
+
             try:
                 containerName = self._containerName
 
@@ -300,19 +302,22 @@ class DockerizedMySQLService(MySQLService):
 
                 # FIXME: We fetch the full logs each time because the streaming
                 # API logs(stream=True) blocks.
-                logs = containerLog[0] = container.logs()
+                try:
+                    logs = container.logs()
+                except NotFound:
+                    pass
+                else:
+                    messageBytes = message.encode("latin-1")
 
-                messageBytes = message.encode("latin-1")
-
-                for line in logs.split(b"\n"):
-                    if messageBytes in line:
-                        self._log.info(
-                            "MySQL container {name} started: {logs}",
-                            name=containerName,
-                            logs=logs.decode("latin-1"),
-                        )
-                        d.callback(logs)
-                        return
+                    for line in logs.split(b"\n"):
+                        if messageBytes in line:
+                            self._log.info(
+                                "MySQL container {name} started: {logs}",
+                                name=containerName,
+                                logs=logs.decode("latin-1"),
+                            )
+                            d.callback(logs)
+                            return
 
                 reactor.callLater(
                     interval, waitOnDBStartup, elapsed=(elapsed + interval)
@@ -335,7 +340,15 @@ class DockerizedMySQLService(MySQLService):
         self._state.container = None
 
     async def start(self) -> None:
+        self._state.refcount += 1
+
+        self._log.info(
+            "Starting MySQL service... (refs={refcount})",
+            refcount=self._state.refcount,
+        )
+
         if self._state.container is not None:
+            self._log.info("MySQL service has already been started.")
             # Already started or starting
             await self._state.container
             return
@@ -376,12 +389,7 @@ class DockerizedMySQLService(MySQLService):
         try:
             await self._waitOnContainerLog(container, " starting as process 1 ")
 
-            # Clean up the container before the reactor shuts down
-            reactor.addSystemEventTrigger(
-                "before",
-                "shutdown",
-                lambda: self._stop(container, containerName),
-            )
+            # Get host and port
 
             apiClient = APIClient()
 
@@ -414,6 +422,8 @@ class DockerizedMySQLService(MySQLService):
                 password=self.rootPassword,
             )
 
+            # Notify that we are ready
+
             self._state.container.callback(container)
 
         except Exception as e:
@@ -427,9 +437,20 @@ class DockerizedMySQLService(MySQLService):
             raise
 
     def _stop(self, container: Container, name: str) -> None:
-        self._log.info("Stopping MySQL container {name}", name=name)
-        container.stop(timeout=0)
-        self._resetContainerState()
+        self._state.refcount -= 1
+
+        self._log.info(
+            "Stopping MySQL service... (refs={refcount})",
+            refcount=self._state.refcount,
+        )
+
+        if self._state.refcount < 0:
+            self._log.critical("MySQL service stopped more times than started.")
+
+        if self._state.refcount == 0:
+            self._resetContainerState()
+            self._log.info("Stopping MySQL container {name}", name=name)
+            container.stop(timeout=0)
 
     async def stop(self) -> None:
         if self._state.container is None:
