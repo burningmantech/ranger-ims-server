@@ -30,7 +30,7 @@ from docker.client import DockerClient
 from docker.errors import ImageNotFound, NotFound
 from docker.models.containers import Container
 
-from pymysql import ProgrammingError, connect
+from pymysql import OperationalError, ProgrammingError, connect
 from pymysql.cursors import DictCursor as Cursor
 
 from twisted.internet import reactor
@@ -164,13 +164,30 @@ class MySQLService(ABC):
             service=self,
         )
 
-        connection = connect(
-            host=self.host,
-            port=self.port,
-            user="root",
-            password=self.rootPassword,
-            cursorclass=Cursor,
-        )
+        def sleep(interval: float) -> Deferred:
+            d = Deferred()
+            reactor.callLater(interval, lambda: d.callback(None))
+            return d
+
+        error = None
+        for _ in range(30):
+            try:
+                connection = connect(
+                    host=self.host,
+                    port=self.port,
+                    user="root",
+                    password=self.rootPassword,
+                    cursorclass=Cursor,
+                )
+            except OperationalError as e:
+                self._log.warn("Error creating database: {error}", error=e)
+                error = e
+                await sleep(1)
+            else:
+                break
+        else:
+            assert error is not None
+            raise error
 
         try:
             with connection.cursor() as cursor:
