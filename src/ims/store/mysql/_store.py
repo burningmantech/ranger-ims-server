@@ -77,7 +77,7 @@ class Cursor(DictCursor):
         self._log.debug(
             "EXECUTE: {sql} <- {parameters}", sql=sql, parameters=parameters
         )
-        return super().execute(sql, parameters)  # type: ignore[arg-type]
+        return super().execute(sql, parameters)
 
     def executescript(self, sql_script: str) -> int:
         self._log.debug("Executing script", script=sql_script)
