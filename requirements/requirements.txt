@@ -8,23 +8,23 @@ klein==20.6.0
 PyMySQL==1.0.2
 pyOpenSSL==20.0.1
 PyYAML==5.4.1
-service-identity==18.1.0
+service-identity==21.1.0
 Twisted==20.3.0
 zope.interface==5.4.0
 
 # Indirect dependencies
 Automat==20.2.0
-cffi==1.14.4
+cffi==1.14.5
 characteristic==14.3.0
 constantly==15.1.0
 cryptography==3.4.7
-idna==3.1
-incremental==17.5.0
+idna==3.2
+incremental==21.3.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.20
 PyHamcrest==2.0.2
 python-dateutil==2.8.1
-six==1.15.0
+six==1.16.0
 Tubes==0.2.0
 Werkzeug==2.0.1
