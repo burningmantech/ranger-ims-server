@@ -42,6 +42,7 @@ if environ.get("IMS_TEST_MYSQL_HOST", None) is None:
     from .service import DockerizedMySQLService
 
     def mysqlServiceFactory() -> MySQLService:
+        Logger().info("Using test MySQL service via Docker")
         return DockerizedMySQLService()
 
 
@@ -49,6 +50,7 @@ else:
     from .service import ExternalMySQLService
 
     def mysqlServiceFactory() -> MySQLService:
+        Logger().info("Using configured test MySQL service")
         env = environ.get
         return ExternalMySQLService(
             host=cast(str, env("IMS_TEST_MYSQL_HOST")),
