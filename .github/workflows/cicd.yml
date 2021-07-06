@@ -290,7 +290,9 @@ jobs:
           python-path: .tox/${{ steps.tox_env.outputs.value }}/*/python
 
       - name: Run unit tests
-        run: tox -e ${{ steps.tox_env.outputs.value }};
+        run: |
+          env
+          tox -e ${{ steps.tox_env.outputs.value }} ims.store.mysql.test.test_store.DataStoreEventTests
         env:
           IMS_TEST_MYSQL_ROOT_PASSWORD: ""
           IMS_TEST_MYSQL_HOST: localhost
