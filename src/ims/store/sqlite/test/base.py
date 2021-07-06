@@ -58,7 +58,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
 
         return cast(
             Connection,
-            cast(property, DataStore._db).fget(self),  # type: ignore[call-arg]
+            DataStore._db.fget(self),  # type: ignore[attr-defined]
         )
 
     def bringThePain(self) -> None:
