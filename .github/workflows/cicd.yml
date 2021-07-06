@@ -241,9 +241,9 @@ jobs:
 
     services:
       mysql:
-        image: mysql:5.6
+        image: mysql/mysql-server:5.6
         env:
-          MYSQL_RANDOM_ROOT_PASSWORD: yes
+          MYSQL_ROOT_PASSWORD: ""
           MYSQL_USER: ims
           MYSQL_PASSWORD: ""
         ports:
@@ -292,6 +292,7 @@ jobs:
       - name: Run unit tests
         run: tox -e ${{ steps.tox_env.outputs.value }};
         env:
+          IMS_TEST_MYSQL_ROOT_PASSWORD: ""
           IMS_TEST_MYSQL_HOST: localhost
           IMS_TEST_MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
           IMS_TEST_MYSQL_USERNAME: ims
