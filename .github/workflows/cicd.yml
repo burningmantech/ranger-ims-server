@@ -36,8 +36,8 @@ jobs:
 
       - name: Set up Tox environment
         run: |
-          pip install tox;
-          tox -e lint --notest;
+          pip install tox
+          tox -e lint --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -45,7 +45,7 @@ jobs:
           python-path: .tox/lint/*/python
 
       - name: Run Linters
-        run: tox -e lint;
+        run: tox -e lint
 
 
   mypy:
@@ -70,8 +70,8 @@ jobs:
 
       - name: Set up Tox environment
         run: |
-          pip install tox;
-          tox -e mypy --notest;
+          pip install tox
+          tox -e mypy --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -79,7 +79,7 @@ jobs:
           python-path: .tox/mypy/*/python
 
       - name: Run Mypy
-        run: tox -e mypy;
+        run: tox -e mypy
 
 
   bandit:
@@ -104,8 +104,8 @@ jobs:
 
       - name: Set up Tox environment
         run: |
-          pip install tox;
-          tox -e bandit --notest;
+          pip install tox
+          tox -e bandit --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -113,7 +113,7 @@ jobs:
           python-path: .tox/bandit/*/python
 
       - name: Run Bandit
-        run: tox -e bandit;
+        run: tox -e bandit
 
 
   safety:
@@ -138,8 +138,8 @@ jobs:
 
       - name: Set up Tox environment
         run: |
-          pip install tox;
-          tox -e safety --notest;
+          pip install tox
+          tox -e safety --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -147,7 +147,7 @@ jobs:
           python-path: .tox/safety/*/python
 
       - name: Run Safety
-        run: tox -e safety;
+        run: tox -e safety
 
 
   docs:
@@ -172,8 +172,8 @@ jobs:
 
       - name: Set up Tox environment
         run: |
-          pip install tox;
-          tox -e docs --notest;
+          pip install tox
+          tox -e docs --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -181,7 +181,7 @@ jobs:
           python-path: .tox/docs/*/python
 
       - name: Build documentation
-        run: tox -e docs;
+        run: tox -e docs
 
 
   packaging:
@@ -205,8 +205,8 @@ jobs:
 
       - name: Set up Tox environment
         run: |
-          pip install tox;
-          tox -e packaging --notest;
+          pip install tox
+          tox -e packaging --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -214,7 +214,7 @@ jobs:
           python-path: .tox/packaging/*/python
 
       - name: Check packaging
-        run: tox -e packaging;
+        run: tox -e packaging
 
 
   unit:
@@ -230,14 +230,30 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.9"]
-        coverage: ["coverage-"]
+        tox-prefix: ["coverage"]
         optional: [false]
         include:
           # Run Python 3.10 but allow it to fail
           - os: "ubuntu-latest"
             python-version: "3.10.0-beta.2"
             optional: true
-            coverage: ""
+            tox-prefix: "test"
+
+    services:
+      mysql:
+        image: mysql/mysql-server:5.6
+        env:
+          MYSQL_ROOT_HOST: "%"
+          MYSQL_ROOT_PASSWORD: ims
+          MYSQL_USER: ims
+          MYSQL_PASSWORD: ims
+        ports:
+          - 3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
 
@@ -261,13 +277,12 @@ jobs:
           py = "${{ matrix.python-version }}"
           py = "".join(py.split(".")[:2])   # Combine major/minor, toss rest
           py = py.replace("pypy", "py")     # For Pypy: have a litte less py
-          print(f"::set-output name=value::${{ matrix.coverage }}py{py}")
-          print(f"::set-output name=has_coverage::${{ matrix.coverage }}")
+          print(f"::set-output name=value::${{ matrix.tox-prefix }}-py{py}")
 
       - name: Set up Tox environment
         run: |
-          pip install tox;
-          tox -e ${{ steps.tox_env.outputs.value }} --notest;
+          pip install tox
+          tox -e ${{ steps.tox_env.outputs.value }} --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -275,10 +290,16 @@ jobs:
           python-path: .tox/${{ steps.tox_env.outputs.value }}/*/python
 
       - name: Run unit tests
-        run: tox -e ${{ steps.tox_env.outputs.value }};
+        run: tox -e ${{ steps.tox_env.outputs.value }}
+        env:
+          IMS_TEST_MYSQL_HOST: localhost
+          IMS_TEST_MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+          IMS_TEST_MYSQL_ROOT_PASSWORD: ims
+          IMS_TEST_MYSQL_USERNAME: ims
+          IMS_TEST_MYSQL_PASSWORD: ims
 
       - name: Upload Trial log artifact
-        if: failure()
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v2.2.4
         with:
           name: trial
@@ -287,13 +308,13 @@ jobs:
       # Use the latest supported Python version for combining coverage to
       # prevent parsing errors in older versions when looking at modern code.
       - uses: "actions/setup-python@v2"
-        if: steps.tox_env.outputs.has_coverage
+        if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
           python-version: "3.9"
 
       - name: "Upload coverage to Codecov"
         uses: "codecov/codecov-action@v1"
-        if: steps.tox_env.outputs.has_coverage
+        if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
           files: .tox/coverage.xml
           env_vars: GITHUB_REF,GITHUB_COMMIT,GITHUB_USER,GITHUB_WORKFLOW
@@ -320,10 +341,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build Docker image
-        run: ./bin/build;
+        run: ./bin/build
 
       - name: Save Docker image
-        run: docker image save ranger-ims-server:dev | gzip -9 > image.tgz;
+        run: docker image save ranger-ims-server:dev | gzip -9 > image.tgz
 
       - name: Upload Docker image artifacts
         uses: actions/upload-artifact@v1
@@ -352,10 +373,10 @@ jobs:
           name: docker
 
       - name: Load Docker image
-        run: gzip --uncompress --stdout docker/image.tgz | docker image load;
+        run: gzip --uncompress --stdout docker/image.tgz | docker image load
 
       - name: Test Docker image
-        run: ./bin/test_docker;
+        run: ./bin/test_docker
 
 
   docker-trivy:
@@ -378,17 +399,17 @@ jobs:
           name: docker
 
       - name: Load Docker image
-        run: gzip --uncompress --stdout docker/image.tgz | docker image load;
+        run: gzip --uncompress --stdout docker/image.tgz | docker image load
 
       - name: Run Trivy
-        run: docker run -v /var/run/docker.sock:/var/run/docker.sock --rm aquasec/trivy image --exit-code 1 --no-progress ranger-ims-server:dev;
+        run: docker run -v /var/run/docker.sock:/var/run/docker.sock --rm aquasec/trivy image --exit-code 1 --no-progress ranger-ims-server:dev
 
 
   deploy-staging:
     name: Deploy image built from master branch to the staging environment
 
     needs: [docker-test]
-    if: github.ref == 'refs/heads/master'
+    if: ${{ github.ref == 'refs/heads/master' }}
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -404,7 +425,7 @@ jobs:
           name: docker
 
       - name: Load Docker image
-        run: gzip --uncompress --stdout docker/image.tgz | docker image load;
+        run: gzip --uncompress --stdout docker/image.tgz | docker image load
 
       - name: Install Python
         uses: actions/setup-python@v1
@@ -412,7 +433,7 @@ jobs:
           python-version: "3.9"
 
       - name: Deploy to staging
-        run: ./bin/deploy staging;
+        run: ./bin/deploy staging
         env:
           # https://github.com/burningmantech/ranger-ims-server/settings/secrets
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
