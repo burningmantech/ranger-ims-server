@@ -25,7 +25,7 @@ from twisted.logger import Logger
 
 from .base import TestDataStore
 from .service import DatabaseExistsError, MySQLService, randomDatabaseName
-from .test_store_core import mysqlServiceFactory
+from .test_store_core import DataStoreCoreTests
 from ...test.base import DataStoreTests as SuperDataStoreTests, TestDataStoreABC
 from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
 from ...test.incident import (
@@ -51,9 +51,9 @@ class DataStoreTests(SuperDataStoreTests):
     """
 
     skip: ClassVar[Optional[str]] = None
-    log: ClassVar[Logger] = Logger()
+    _log: ClassVar[Logger] = Logger()
 
-    mysqlService: MySQLService = mysqlServiceFactory()
+    mysqlService: ClassVar[MySQLService] = DataStoreCoreTests.mysqlService
 
     def setUp(self) -> Deferred:
         async def setUp() -> None:
@@ -69,6 +69,8 @@ class DataStoreTests(SuperDataStoreTests):
             for store in self.stores:
                 await store.disconnect()
 
+            await self.mysqlService.stop()
+
         # setUp can't return a coroutine, so convert it to a Deferred
         return ensureDeferred(tearDown())
 
@@ -81,10 +83,10 @@ class DataStoreTests(SuperDataStoreTests):
         for _ in range(100):
             databaseName = randomDatabaseName()
             try:
-                self.log.info("Creating database: {name}", name=databaseName)
+                self._log.info("Creating database: {name}", name=databaseName)
                 await service.createDatabase(name=databaseName)
             except DatabaseExistsError:
-                self.log.warn(
+                self._log.warn(
                     "Database {name} already exists.", name=databaseName
                 )
             else:
