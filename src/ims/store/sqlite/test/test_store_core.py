@@ -156,40 +156,40 @@ class DataStoreCoreTests(AsynchronousTestCase):
         DataStore.printQueries(out)
         queryInfo = out.getvalue()
 
-        self.maxDiff = None
-        self.assertStartsWith(
-            queryInfo,
-            "\n".join(
-                (
-                    "addEventAccess:",
-                    "",
-                    "  -- query --",
-                    "",
-                    "    insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)",
-                    "    values "
-                    "((select ID from EVENT where NAME = :eventID), "
-                    ":expression, :mode)",
-                    "",
-                    "  -- query plan --",
-                    "",
-                    "    [None,None] You did not supply a value for binding 1.",
-                    "",
-                    "attachIncidentReportToIncident:",
-                    "",
-                    "  -- query --",
-                    "",
-                    "    update INCIDENT_REPORT set INCIDENT_NUMBER = :value",
-                    "    where EVENT = "
-                    "(select ID from EVENT where NAME = :eventID) "
-                    "and NUMBER = :incidentReportNumber",
-                    "",
-                    "  -- query plan --",
-                    "",
-                    "    [None,None] You did not supply a value for binding 1.",
-                    "",
-                )
-            ),
+        expected = (
+            r"addEventAccess:",
+            r"",
+            r"  -- query --",
+            r"",
+            r"    insert into EVENT_ACCESS \(EVENT, EXPRESSION, MODE\)",
+            r"    values \("
+            r"\(select ID from EVENT where NAME = :eventID\), "
+            r":expression, :mode"
+            r"\)",
+            r"",
+            r"  -- query plan --",
+            r"",
+            r"    \[None,None\] You did not supply a value for binding"
+            r".*",
+            r"",
+            r"attachIncidentReportToIncident:",
+            r"",
+            r"  -- query --",
+            r"",
+            r"    update INCIDENT_REPORT set INCIDENT_NUMBER = :value",
+            r"    where EVENT = "
+            r"\(select ID from EVENT where NAME = :eventID\) "
+            r"and NUMBER = :incidentReportNumber",
+            r"",
+            r"  -- query plan --",
+            r"",
+            r"    \[None,None\] You did not supply a value for binding"
+            r".*",
+            r"",
         )
+
+        self.maxDiff = None
+        self.assertRegex(queryInfo, "\n".join(expected))
 
     def test_dbSchemaVersion(self) -> None:
         """
