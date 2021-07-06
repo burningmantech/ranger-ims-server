@@ -18,7 +18,7 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from typing import ClassVar, cast
+from typing import ClassVar
 
 from attr import attrib, attrs
 
