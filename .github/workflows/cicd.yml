@@ -293,7 +293,7 @@ jobs:
         run: tox -e ${{ steps.tox_env.outputs.value }};
         env:
           IMS_TEST_MYSQL_HOST: localhost
-          IMS_TEST_MYSQL_PORT: ${{ job.services.mysql.ports["3306"] }}
+          IMS_TEST_MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
           IMS_TEST_MYSQL_USERNAME: ims
           IMS_TEST_MYSQL_PASSWORD: ""
 
