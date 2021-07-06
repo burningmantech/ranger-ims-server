@@ -243,6 +243,7 @@ jobs:
       mysql:
         image: mysql/mysql-server:5.6
         env:
+          MYSQL_ROOT_HOST: "%"
           MYSQL_ROOT_PASSWORD: ims
           MYSQL_USER: ims
           MYSQL_PASSWORD: ims
@@ -289,13 +290,11 @@ jobs:
           python-path: .tox/${{ steps.tox_env.outputs.value }}/*/python
 
       - name: Run unit tests
-        run: |
-          env
-          tox -e ${{ steps.tox_env.outputs.value }} ims.store.mysql.test.test_store.DataStoreEventTests
+        run: tox -e ${{ steps.tox_env.outputs.value }} ims.store.mysql.test.test_store.DataStoreEventTests
         env:
-          IMS_TEST_MYSQL_ROOT_PASSWORD: ims
           IMS_TEST_MYSQL_HOST: localhost
           IMS_TEST_MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+          IMS_TEST_MYSQL_ROOT_PASSWORD: ims
           IMS_TEST_MYSQL_USERNAME: ims
           IMS_TEST_MYSQL_PASSWORD: ims
 

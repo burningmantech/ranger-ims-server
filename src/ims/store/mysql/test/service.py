@@ -521,7 +521,7 @@ class ExternalMySQLService(MySQLService):
 
     @property
     def clientHost(self) -> str:
-        return self._host
+        return "%"
 
     @property
     def port(self) -> int:
@@ -548,4 +548,3 @@ class ExternalMySQLService(MySQLService):
         """
         Stop the service.
         """
-        raise RuntimeError("Can't stop external MySQL service")
