@@ -344,13 +344,13 @@ jobs:
         run: ./bin/build
 
       - name: Save Docker image
-        run: docker image save ranger-ims-server:dev | gzip -9 > image.tgz
+        run: docker image save ranger-ims-server:dev | gzip -9 > docker_image.tgz
 
       - name: Upload Docker image artifacts
         uses: actions/upload-artifact@v1
         with:
           name: docker
-          path: image.tgz
+          path: docker_image.tgz
 
 
   docker-test:
@@ -368,12 +368,12 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download Docker image artifact
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v2.0.10
         with:
           name: docker
 
       - name: Load Docker image
-        run: gzip --uncompress --stdout docker/image.tgz | docker image load
+        run: gzip --uncompress --stdout docker_image.tgz | docker image load
 
       - name: Test Docker image
         run: ./bin/test_docker
@@ -394,12 +394,12 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download Docker image artifact
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v2.0.10
         with:
           name: docker
 
       - name: Load Docker image
-        run: gzip --uncompress --stdout docker/image.tgz | docker image load
+        run: gzip --uncompress --stdout docker_image.tgz | docker image load
 
       - name: Run Trivy
         run: docker run -v /var/run/docker.sock:/var/run/docker.sock --rm aquasec/trivy image --exit-code 1 --no-progress ranger-ims-server:dev
@@ -420,12 +420,12 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download Docker image artifacts
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v2.0.10
         with:
           name: docker
 
       - name: Load Docker image
-        run: gzip --uncompress --stdout docker/image.tgz | docker image load
+        run: gzip --uncompress --stdout docker_image.tgz | docker image load
 
       - name: Install Python
         uses: actions/setup-python@v1
