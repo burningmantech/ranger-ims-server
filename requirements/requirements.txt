@@ -1,5 +1,5 @@
 # Direct dependencies
-arrow==0.17.0
+arrow==1.1.1
 attrs==21.2.0
 bcrypt==3.2.0
 cattrs==1.1.2
