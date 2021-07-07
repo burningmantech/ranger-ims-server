@@ -20,13 +20,12 @@
 Setuptools configuration
 """
 
-import sys
 from pathlib import Path
-from typing import Optional
+from sys import path
 
 from setuptools import find_packages, setup
 
-sys.path.insert(0, "src")
+path.insert(0, "src")
 
 from ims import __version__ as version_string  # noqa: E402
 
@@ -42,16 +41,13 @@ description = "Ranger Incident Management System"
 project_root = Path(__file__).parent
 
 readme_path = project_root / "README.rst"
-try:
-    long_description: Optional[str] = readme_path.open().read()
-except OSError:
-    long_description = None
+long_description = readme_path.open().read()
 
 url = "https://github.com/burningmantech/ranger-ims-server"
 
 author = "Burning Man"
 
-author_email = "rangers@burningman.org"
+author_email = "ranger-tech-ninjas@burningman.org"
 
 license = "Apache License, Version 2.0"
 
@@ -74,7 +70,9 @@ classifiers = [
 # Entry points
 #
 
-entry_points = dict(console_scripts=["ims = ims.run:Command.main"])
+entry_points = {
+    "console_scripts": ["ims = ims.run:Command.main"],
+}
 
 
 #
