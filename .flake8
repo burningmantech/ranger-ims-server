@@ -8,11 +8,20 @@ doctests    = True
 
 max-line-length = 80
 
+extend-exclude =
+    .git,
+    .tox,
+    __pycache__,
+    dist
+
 # Codes: http://flake8.pycqa.org/en/latest/user/error-codes.html
-ignore =
+extend-ignore =
     # Do not perform calls in argument defaults
     # (Necessary for cast())
     B008,
+
+    # Data class should either be immutable or use __slots__
+    B903,
 
     # Missing docstring in magic method
     D105,
@@ -43,9 +52,6 @@ ignore =
 
     # missing whitespace after ','
     E231,
-
-    # f-string is missing placeholders
-    F999,
 
     # function name should be lowercase
     N802,

@@ -19,7 +19,7 @@ JSON serialization/deserialization for event data
 """
 
 from enum import Enum, unique
-from typing import Any, Dict, List, Type, cast
+from typing import Any, cast
 
 from ._json import (
     deserialize,
@@ -57,12 +57,12 @@ class EventDataJSONType(Enum):
 
     event = Event
     access = EventAccess
-    concentricStreets = Dict[str, str]
-    incidents = List[Incident]
-    incidentReports = List[IncidentReport]
+    concentricStreets = dict[str, str]
+    incidents = list[Incident]
+    incidentReports = list[IncidentReport]
 
 
-def serializeEventData(eventData: EventData) -> Dict[str, Any]:
+def serializeEventData(eventData: EventData) -> dict[str, Any]:
     # Map event data attribute names to JSON dict key names
     return {
         key.value: jsonSerialize(getattr(eventData, key.name))
@@ -73,7 +73,7 @@ def serializeEventData(eventData: EventData) -> Dict[str, Any]:
 registerSerializer(EventData, serializeEventData)
 
 
-def deserializeEventData(obj: Dict[str, Any], cl: Type[EventData]) -> EventData:
+def deserializeEventData(obj: dict[str, Any], cl: type[EventData]) -> EventData:
     assert cl is EventData, (cl, obj)
 
     return cast(

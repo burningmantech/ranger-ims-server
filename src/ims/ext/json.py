@@ -5,7 +5,7 @@ Extensions to :mod:`json`
 
 from datetime import date as Date, datetime as DateTime
 from json import JSONDecodeError, JSONEncoder, dumps, load, loads
-from typing import Any, BinaryIO, ClassVar, Optional, cast
+from typing import Any, BinaryIO, ClassVar, Optional
 
 from arrow.parser import DateTimeParser
 
@@ -114,7 +114,7 @@ def rfc3339TextAsDate(rfc3339: str) -> Date:
 
     :return: An :class:`Date` corresponding to :obj:`rfc3339`.
     """
-    return cast(Date, DateTimeParser().parse_iso(rfc3339).date())
+    return DateTimeParser().parse_iso(rfc3339).date()
 
 
 def dateTimeAsRFC3339Text(dateTime: DateTime) -> str:
@@ -137,7 +137,7 @@ def rfc3339TextAsDateTime(rfc3339: str) -> DateTime:
 
     :return: A :class:`DateTime` corresponding to :obj:`rfc3339`.
     """
-    return cast(DateTime, DateTimeParser().parse_iso(rfc3339))
+    return DateTimeParser().parse_iso(rfc3339)
 
 
 jsonTrue = jsonTextFromObject(True)

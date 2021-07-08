@@ -29,8 +29,6 @@ from typing import (
     Callable,
     Iterable,
     Sequence,
-    Set,
-    Tuple,
     cast,
 )
 
@@ -127,7 +125,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
                     "HubCap",
                 )
 
-            found: Set[int] = set()
+            found: set[int] = set()
             for retrieved in await store.incidentReports(anIncident1.event):
                 self.assertIn(retrieved.number, incidentReportsByNumber)
                 self.assertIncidentReportsEqual(
@@ -236,12 +234,12 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 (anIncidentReport2.replace(number=0), "Bucket"),
             ),
         ):
-            data = cast(Iterable[Tuple[IncidentReport, str]], _data)
+            data = cast(Iterable[tuple[IncidentReport, str]], _data)
 
             store = await self.store()
             await store.createEvent(anEvent)
 
-            expectedStoredIncidentReports: Set[IncidentReport] = set()
+            expectedStoredIncidentReports: set[IncidentReport] = set()
             nextNumber = 1
 
             for incidentReport, author in data:

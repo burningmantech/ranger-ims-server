@@ -18,7 +18,7 @@
 Expected JSON encoding for model data.
 """
 
-from typing import Any, Dict, List, cast
+from typing import Any, cast
 
 from .._json import jsonSerialize
 from ..._address import Address, RodGarettAddress, TextOnlyAddress
@@ -44,7 +44,7 @@ __all__ = ()
 ##
 
 
-def jsonFromAddress(address: Address) -> Dict[str, Any]:
+def jsonFromAddress(address: Address) -> dict[str, Any]:
     if isinstance(address, TextOnlyAddress):
         return jsonFromTextOnlyAddress(address)
     elif isinstance(address, RodGarettAddress):
@@ -53,11 +53,11 @@ def jsonFromAddress(address: Address) -> Dict[str, Any]:
         raise TypeError(f"Unknown address type {address!r}")
 
 
-def jsonFromTextOnlyAddress(address: TextOnlyAddress) -> Dict[str, Any]:
+def jsonFromTextOnlyAddress(address: TextOnlyAddress) -> dict[str, Any]:
     return dict(type="text", description=jsonSerialize(address.description))
 
 
-def jsonFromRodGarettAddress(address: RodGarettAddress) -> Dict[str, Any]:
+def jsonFromRodGarettAddress(address: RodGarettAddress) -> dict[str, Any]:
     return dict(
         type="garett",
         concentric=jsonSerialize(address.concentric),
@@ -72,7 +72,7 @@ def jsonFromRodGarettAddress(address: RodGarettAddress) -> Dict[str, Any]:
 ##
 
 
-def jsonFromReportEntry(entry: ReportEntry) -> Dict[str, Any]:
+def jsonFromReportEntry(entry: ReportEntry) -> dict[str, Any]:
     return dict(
         created=jsonSerialize(entry.created),
         author=jsonSerialize(entry.author),
@@ -86,19 +86,19 @@ def jsonFromReportEntry(entry: ReportEntry) -> Dict[str, Any]:
 ##
 
 
-def jsonFromEvent(event: Event) -> Dict[str, str]:
+def jsonFromEvent(event: Event) -> dict[str, str]:
     return dict(id=event.id[::-1], name=event.id)
 
 
-def jsonFromEventAccess(eventAccess: EventAccess) -> Dict[str, List[str]]:
+def jsonFromEventAccess(eventAccess: EventAccess) -> dict[str, list[str]]:
     return dict(
-        readers=cast(List[str], jsonSerialize(eventAccess.readers)),
-        writers=cast(List[str], jsonSerialize(eventAccess.writers)),
-        reporters=cast(List[str], jsonSerialize(eventAccess.reporters)),
+        readers=cast(list[str], jsonSerialize(eventAccess.readers)),
+        writers=cast(list[str], jsonSerialize(eventAccess.writers)),
+        reporters=cast(list[str], jsonSerialize(eventAccess.reporters)),
     )
 
 
-def jsonFromEventData(eventData: EventData) -> Dict[str, Any]:
+def jsonFromEventData(eventData: EventData) -> dict[str, Any]:
     return dict(
         event=jsonSerialize(eventData.event),
         access=jsonSerialize(eventData.access),
@@ -108,7 +108,7 @@ def jsonFromEventData(eventData: EventData) -> Dict[str, Any]:
     )
 
 
-def jsonFromIMSData(imsData: IMSData) -> Dict[str, Any]:
+def jsonFromIMSData(imsData: IMSData) -> dict[str, Any]:
     return dict(
         events=[jsonSerialize(e) for e in imsData.events],
         incident_types=[jsonSerialize(t) for t in imsData.incidentTypes],
@@ -120,7 +120,7 @@ def jsonFromIMSData(imsData: IMSData) -> Dict[str, Any]:
 ##
 
 
-def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
+def jsonFromIncident(incident: Incident) -> dict[str, Any]:
     return dict(
         event=jsonSerialize(incident.event),
         number=jsonSerialize(incident.number),
@@ -145,7 +145,7 @@ def jsonFromIncident(incident: Incident) -> Dict[str, Any]:
 ##
 
 
-def jsonFromLocation(location: Location) -> Dict[str, Any]:
+def jsonFromLocation(location: Location) -> dict[str, Any]:
     json = dict(name=location.name)
 
     addressJSON = jsonFromAddress(location.address)
@@ -181,7 +181,7 @@ def jsonFromRangerStatus(status: RangerStatus) -> str:
     }[status]
 
 
-def jsonFromRanger(ranger: Ranger) -> Dict[str, Any]:
+def jsonFromRanger(ranger: Ranger) -> dict[str, Any]:
     return dict(
         handle=ranger.handle,
         name=ranger.name,
@@ -197,7 +197,7 @@ def jsonFromRanger(ranger: Ranger) -> Dict[str, Any]:
 ##
 
 
-def jsonFromIncidentReport(report: IncidentReport) -> Dict[str, Any]:
+def jsonFromIncidentReport(report: IncidentReport) -> dict[str, Any]:
     return dict(
         event=jsonSerialize(report.event),
         number=jsonSerialize(report.number),
@@ -228,7 +228,7 @@ def jsonFromIncidentState(state: IncidentState) -> str:
 ##
 
 
-def jsonFromIncidentType(incidentType: IncidentType) -> Dict[str, Any]:
+def jsonFromIncidentType(incidentType: IncidentType) -> dict[str, Any]:
     return dict(
         name=jsonSerialize(incidentType.name),
         hidden=jsonSerialize(incidentType.hidden),

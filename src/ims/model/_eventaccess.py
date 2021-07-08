@@ -20,8 +20,6 @@
 Event Access
 """
 
-from typing import FrozenSet
-
 from attr import attrib, attrs
 
 from ._convert import freezeStrings
@@ -38,6 +36,6 @@ class EventAccess:
     Contains access control configuration for an event.
     """
 
-    readers: FrozenSet[str] = attrib(converter=freezeStrings)
-    writers: FrozenSet[str] = attrib(converter=freezeStrings)
-    reporters: FrozenSet[str] = attrib(converter=freezeStrings)
+    readers: frozenset[str] = attrib(converter=freezeStrings)
+    writers: frozenset[str] = attrib(converter=freezeStrings)
+    reporters: frozenset[str] = attrib(converter=freezeStrings)

@@ -1,7 +1,16 @@
 [run]
 branch = True
+parallel = True
 source = ims
 
+[paths]
+source=
+   src/ims
+   .tox/*/lib/python*/site-packages/ims
+   .tox/*/Lib/site-packages/ims
+   .tox/pypy*/site-packages/ims
+
 [report]
-precision = 2
-show_missing = True
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:

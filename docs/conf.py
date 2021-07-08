@@ -17,7 +17,6 @@ from os import environ
 from os.path import abspath, join
 from pprint import pprint
 from sys import path
-from typing import List
 
 path.insert(0, abspath(join("..", "src")))
 
@@ -60,7 +59,7 @@ templates_path = ["templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns: List[str] = []
+exclude_patterns: list[str] = []
 
 
 # -- Options for HTML output -------------------------------------------------

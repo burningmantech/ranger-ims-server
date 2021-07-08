@@ -23,13 +23,9 @@ from random import Random
 from time import time
 from typing import (
     Any,
-    Dict,
-    FrozenSet,
-    List,
     Mapping,
     Sequence,
     TextIO,
-    Tuple,
     Union,
 )
 from unittest.mock import patch
@@ -98,7 +94,7 @@ testRangers = frozenset(
     (rangerBeepBoop, rangerSlumber, rangerYouRine, rangerNine)
 )
 
-testPositions: FrozenSet[Tuple[str, Sequence[str]]] = frozenset(
+testPositions: frozenset[tuple[str, Sequence[str]]] = frozenset(
     (
         ("Build Team", ("Beep Boop", "Slumber")),
         ("Shift Leads", ("Slumber", "YouRine")),
@@ -106,8 +102,8 @@ testPositions: FrozenSet[Tuple[str, Sequence[str]]] = frozenset(
 )
 
 
-def rangerAsDict(ranger: Ranger, random: Random) -> Dict[str, Any]:
-    email: Union[str, List[str]] = list(ranger.email)
+def rangerAsDict(ranger: Ranger, random: Random) -> dict[str, Any]:
+    email: Union[str, list[str]] = list(ranger.email)
     if len(ranger.email) == 1:
         # We allow either a string or a list in the YAML when you have a single
         # email address, so this creates both.
@@ -124,7 +120,7 @@ def rangerAsDict(ranger: Ranger, random: Random) -> Dict[str, Any]:
     )
 
 
-def positionAsDict(position: Position) -> Dict[str, Any]:
+def positionAsDict(position: Position) -> dict[str, Any]:
     return dict(name=position.name, members=list(position.members))
 
 

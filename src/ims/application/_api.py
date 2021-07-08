@@ -30,7 +30,6 @@ from typing import (
     Iterable,
     Mapping,
     Optional,
-    Tuple,
     cast,
 )
 
@@ -226,7 +225,7 @@ class APIApplication:
         writeJSONStream(request, stream, etag)
         return None
 
-    async def personnelData(self) -> Tuple[Iterable[bytes], str]:
+    async def personnelData(self) -> tuple[Iterable[bytes], str]:
         """
         Data for personnel endpoint.
         """

@@ -21,17 +21,17 @@ Converters
 """
 
 from datetime import datetime as DateTime
-from typing import FrozenSet, Iterable
+from typing import Iterable
 
 
 __all__ = ()
 
 
-def freezeIntegers(integers: Iterable[int]) -> FrozenSet[int]:
+def freezeIntegers(integers: Iterable[int]) -> frozenset[int]:
     return frozenset(integers)
 
 
-def freezeStrings(strings: Iterable[str]) -> FrozenSet[str]:
+def freezeStrings(strings: Iterable[str]) -> frozenset[str]:
     return frozenset(strings)
 
 

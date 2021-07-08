@@ -25,7 +25,6 @@ from typing import (
     Any,
     ClassVar,
     Container,
-    FrozenSet,
     Mapping,
     Optional,
 )
@@ -101,7 +100,7 @@ class AuthProvider:
     directory: IMSDirectory
 
     requireActive: bool = True
-    adminUsers: FrozenSet[str] = frozenset()
+    adminUsers: frozenset[str] = frozenset()
     masterKey: str = ""
 
     _state: _State = Factory(_State)

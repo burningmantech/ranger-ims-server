@@ -21,7 +21,7 @@ Tests for :mod:`ranger-ims-server.store.mysql._store`
 from io import StringIO
 from os import environ
 from textwrap import dedent
-from typing import ClassVar, List, cast
+from typing import ClassVar, cast
 from unittest.mock import patch
 
 from twisted.internet.defer import Deferred, ensureDeferred
@@ -30,7 +30,7 @@ from twisted.logger import Logger
 from ims.ext.trial import AsynchronousTestCase, asyncAsDeferred
 
 from .base import TestDataStore
-from .service import MySQLService, randomDatabaseName
+from .service import DatabaseExistsError, MySQLService, randomDatabaseName
 from .._store import DataStore, ReconnectingConnectionPool
 from ..._exceptions import StorageError
 
@@ -42,6 +42,7 @@ if environ.get("IMS_TEST_MYSQL_HOST", None) is None:
     from .service import DockerizedMySQLService
 
     def mysqlServiceFactory() -> MySQLService:
+        Logger().info("Using test MySQL service via Docker")
         return DockerizedMySQLService()
 
 
@@ -49,6 +50,7 @@ else:
     from .service import ExternalMySQLService
 
     def mysqlServiceFactory() -> MySQLService:
+        Logger().info("Using configured test MySQL service")
         env = environ.get
         return ExternalMySQLService(
             host=cast(str, env("IMS_TEST_MYSQL_HOST")),
@@ -66,11 +68,11 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
     _log: ClassVar[Logger] = Logger()
 
-    mysqlService: MySQLService = mysqlServiceFactory()
+    mysqlService: ClassVar[MySQLService] = mysqlServiceFactory()
 
     def setUp(self) -> Deferred:
         async def setUp() -> None:
-            self.stores: List[TestDataStore] = []
+            self.stores: list[TestDataStore] = []
 
             await self.mysqlService.start()
 
@@ -81,6 +83,8 @@ class DataStoreCoreTests(AsynchronousTestCase):
         async def tearDown() -> None:
             for store in self.stores:
                 await store.disconnect()
+
+            await self.mysqlService.stop()
 
         # setUp can't return a coroutine, so convert it to a Deferred
         return ensureDeferred(tearDown())
@@ -96,8 +100,10 @@ class DataStoreCoreTests(AsynchronousTestCase):
             try:
                 self._log.info("Creating database: {name}", name=databaseName)
                 await service.createDatabase(name=databaseName)
-            except Exception as e:  # pragma: no cover
-                self._log.warn("Unable to create database: {error}", error=e)
+            except DatabaseExistsError:
+                self._log.warn(
+                    "Database {name} already exists.", name=databaseName
+                )
             else:
                 break
         else:
