@@ -273,10 +273,10 @@ test_root_resource() {
 
     local e;
 
-    http_get "${host_ims_port}" / > "${response}" 2> "${error}" && e=0 || e=$?;
+    http_get "${host_ims_port}" "/" > "${response}" 2> "${error}" && e=0 || e=$?;
 
     if [ ${e} -eq 22 ]; then
-        fail "Root resource not found.  Expected redirect.";
+        fail "Root resource not found.";
         return 1;
     fi;
 
@@ -289,17 +289,16 @@ test_root_resource() {
 
     local status="$(http_status < "${response}")";
 
-    if [ ${status} -ne 302 ]; then
-        fail "Expected HTTP status 302 (Found) for root resource.";
+    if [ ${status} -ne 200 ]; then
+        fail "Expected HTTP status 200 (OK) for root resource.";
         echo "Response:"; cat "${response}";
         return 1;
     fi;
 
-    local location="$(http_header Location < "${response}")";
+    local body="$(http_body < "${response}")";
 
-    if [ "${location}" != "/ims/app/" ]; then
-        fail "Expected redirect location /ims/app/.";
-        echo "Location: ${location}";
+    if [ "${body}" != "IMS" ]; then
+        fail "Unexpected response body. (Expected \"IMS\".)"
         echo "Response:"; cat "${response}";
         return 1;
     fi;
@@ -308,49 +307,52 @@ test_root_resource() {
 }
 
 
-test_bootstrap() {
-    echo "Testing Bootstrap resource...";
+test_ping_resource() {
+    echo "Testing ping endpoint resource...";
 
     local response="$(mktemp)";
-    local     body="$(mktemp)";
     local    error="$(mktemp)";
 
-    if ! http_get "${host_ims_port}"              \
-        /ims/ext/bootstrap/css/bootstrap.min.css  \
-        > "${response}" 2> "${error}";
-    then
+    local e;
+
+    http_get "${host_ims_port}" "/ims/api/ping/" > "${response}" 2> "${error}" && e=0 || e=$?;
+
+    if [ ${e} -eq 22 ]; then
+        fail "Ping endpoint resource not found.";
+        return 1;
+    fi;
+
+    if [ ${e} -ne 0 ]; then
         fail "Error HTTP status from server.";
         echo "Error from curl:"; cat "${error}";
         echo "Response:"; cat "${response}";
         return 1;
     fi;
 
-    local content_type="$(http_header Content-Type < "${response}")";
+    local status="$(http_status < "${response}")";
 
-    if [ "${content_type}" != "text/css" ]; then
-        fail "Expected text/css content type.";
-        echo "Content-Type: ${content_type}";
+    if [ ${status} -ne 200 ]; then
+        fail "Expected HTTP status 200 (OK) for ping endpoint resource.";
         echo "Response:"; cat "${response}";
         return 1;
     fi;
 
-    http_body < "${response}" > "${body}";
+    local body="$(http_body < "${response}")";
 
-    # Received payload should have "Bootstrap v3" in it
-    if ! grep 'Bootstrap v3' "${body}" > /dev/null; then
-        fail "Bootstrap payload is not Bootstrap v3.";
+    if [ "${body}" != '"ack"' ]; then
+        fail "Unexpected response body. (Expected \"ack\".)"
         echo "Response:"; cat "${response}";
         return 1;
     fi;
 
-    rm "${response}" "${body}" "${error}";
+    rm "${response}" "${error}";
 }
 
 
 start_ims_container || exit 10;
 wait_for_ims        || exit 11;
 test_root_resource  || exit 100;
-test_bootstrap      || exit 101;
+test_ping_resource  || exit 200;
 
 echo "Tests passed.";
 
