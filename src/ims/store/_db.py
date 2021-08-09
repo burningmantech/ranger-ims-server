@@ -19,7 +19,8 @@ Incident Management System database tooling.
 """
 
 from abc import abstractmethod
-from datetime import datetime as DateTime, timezone as TimeZone
+from datetime import datetime as DateTime
+from datetime import timezone as TimeZone
 from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
@@ -38,7 +39,6 @@ from typing import (
 )
 
 from attr import attrib, attrs
-
 from twisted.logger import Logger
 
 from ims.model import (

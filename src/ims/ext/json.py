@@ -3,12 +3,12 @@
 Extensions to :mod:`json`
 """
 
-from datetime import date as Date, datetime as DateTime
+from datetime import date as Date
+from datetime import datetime as DateTime
 from json import JSONDecodeError, JSONEncoder, dumps, load, loads
 from typing import Any, BinaryIO, ClassVar, Optional
 
 from arrow.parser import DateTimeParser
-
 from twisted.logger import Logger
 
 

@@ -21,13 +21,13 @@ JSON serialization/deserialization for Rangers
 from enum import Enum, unique
 from typing import Any, Optional, cast
 
+from .._ranger import Ranger, RangerStatus
 from ._json import (
     deserialize,
     jsonSerialize,
     registerDeserializer,
     registerSerializer,
 )
-from .._ranger import Ranger, RangerStatus
 
 
 __all__ = ()

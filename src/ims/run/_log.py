@@ -22,7 +22,6 @@ username.
 import twisted.web.http
 from twisted.web.http import _escape
 from twisted.web.iweb import IAccessLogFormatter, IRequest
-
 from zope.interface import provider
 
 

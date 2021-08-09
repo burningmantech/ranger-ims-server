@@ -21,13 +21,11 @@ Tests for :mod:`ranger-ims-server.store.mysql._store`
 from typing import ClassVar
 
 from attr import attrib, attrs
-
 from pymysql.err import MySQLError
-
 from twisted.enterprise.adbapi import ConnectionPool
 
-from .._store import DataStore
 from ...test.database import TestDatabaseStoreMixIn
+from .._store import DataStore
 
 
 __all__ = ()

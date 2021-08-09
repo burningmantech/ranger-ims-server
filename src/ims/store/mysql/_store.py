@@ -23,16 +23,14 @@ from sys import stdout
 from typing import Any, Callable, ClassVar, Optional, TextIO, TypeVar, cast
 
 from attr import attrib, attrs
-
 from pymysql.cursors import DictCursor
 from pymysql.err import MySQLError
-
 from twisted.enterprise.adbapi import Connection, ConnectionPool
 from twisted.logger import Logger
 
-from ._queries import queries
 from .._db import DatabaseStore, Parameters, Queries, Query, Rows, Transaction
 from .._exceptions import StorageError
+from ._queries import queries
 
 
 __all__ = ()

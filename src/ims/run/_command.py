@@ -23,7 +23,6 @@ from sys import stdout
 from typing import ClassVar, Optional, Sequence
 
 from attr import attrs
-
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.application.runner._runner import Runner
 from twisted.internet.defer import Deferred, ensureDeferred
@@ -44,8 +43,8 @@ from ._options import (
     CompareOptions,
     ExportOptions,
     HashPasswordOptions,
-    IMSOptions,
     ImportOptions,
+    IMSOptions,
     ServerOptions,
     VerifyPasswordOptions,
 )

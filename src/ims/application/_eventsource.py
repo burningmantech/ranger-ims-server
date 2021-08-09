@@ -23,10 +23,8 @@ from time import time
 from typing import Any, ClassVar, Deque, Mapping, Optional
 
 from attr import attrib, attrs
-
 from twisted.logger import ILogObserver, Logger
 from twisted.web.iweb import IRequest
-
 from zope.interface import implementer
 
 from ims.ext.json import jsonTextFromObject

@@ -18,11 +18,9 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
-from datetime import (
-    datetime as DateTime,
-    timedelta as TimeDelta,
-    timezone as TimeZone,
-)
+from datetime import datetime as DateTime
+from datetime import timedelta as TimeDelta
+from datetime import timezone as TimeZone
 from io import StringIO
 from pathlib import Path
 from sqlite3 import IntegrityError
@@ -34,19 +32,19 @@ from hypothesis import given, settings
 from hypothesis.strategies import integers
 
 from ims.ext.sqlite import (
-    Connection,
     SQLITE_MAX_INT,
     SQLITE_MIN_INT,
+    Connection,
     SQLiteError,
     createDB,
     printSchema,
 )
 from ims.ext.trial import AsynchronousTestCase, TestCase
 
-from .base import TestDataStore
+from ..._exceptions import StorageError
 from .. import _store
 from .._store import DataStore
-from ..._exceptions import StorageError
+from .base import TestDataStore
 
 
 __all__ = ()

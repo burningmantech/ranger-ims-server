@@ -22,13 +22,13 @@ from datetime import datetime as DateTime
 from enum import Enum, unique
 from typing import Any, cast
 
+from .._entry import ReportEntry
 from ._json import (
     deserialize,
     jsonSerialize,
     registerDeserializer,
     registerSerializer,
 )
-from .._entry import ReportEntry
 
 
 __all__ = ()

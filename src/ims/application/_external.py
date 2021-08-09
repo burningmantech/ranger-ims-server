@@ -24,9 +24,7 @@ from typing import Any, ClassVar
 from zipfile import BadZipfile
 
 from attr import attrs
-
 from hyperlink import URL
-
 from twisted.logger import Logger
 from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage

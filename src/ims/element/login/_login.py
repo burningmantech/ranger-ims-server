@@ -19,7 +19,6 @@ Login page.
 """
 
 from attr import attrs
-
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 

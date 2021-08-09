@@ -22,8 +22,8 @@ from typing import cast
 
 from ims.ext.trial import asyncAsDeferred
 
-from .base import DataStoreTests
 from .._exceptions import StorageError
+from .base import DataStoreTests
 
 
 __all__ = ()

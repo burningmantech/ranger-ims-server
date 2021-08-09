@@ -21,9 +21,7 @@ Incident Management System web interface.
 from typing import ClassVar, Optional
 
 from attr import attrs
-
 from hyperlink import URL
-
 from twisted.web.iweb import IRequest
 
 from ims.auth import Authorization, NotAuthorizedError

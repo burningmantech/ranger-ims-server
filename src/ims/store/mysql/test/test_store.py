@@ -23,10 +23,8 @@ from typing import ClassVar, Optional, cast
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.logger import Logger
 
-from .base import TestDataStore
-from .service import DatabaseExistsError, MySQLService, randomDatabaseName
-from .test_store_core import DataStoreCoreTests
-from ...test.base import DataStoreTests as SuperDataStoreTests, TestDataStoreABC
+from ...test.base import DataStoreTests as SuperDataStoreTests
+from ...test.base import TestDataStoreABC
 from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
 from ...test.incident import (
     DataStoreIncidentTests as SuperDataStoreIncidentTests,
@@ -40,6 +38,9 @@ from ...test.street import (
 from ...test.type import (
     DataStoreIncidentTypeTests as SuperDataStoreIncidentTypeTests,
 )
+from .base import TestDataStore
+from .service import DatabaseExistsError, MySQLService, randomDatabaseName
+from .test_store_core import DataStoreCoreTests
 
 
 __all__ = ()

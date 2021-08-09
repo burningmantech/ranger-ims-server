@@ -22,17 +22,11 @@ from functools import partial
 from typing import Iterable
 
 from attr import attrs
-
 from twisted.python.filepath import FilePath
 from twisted.python.reflect import namedModule
 from twisted.web.iweb import IRequest, ITemplateLoader
-from twisted.web.template import (
-    Element as _Element,
-    Tag,
-    XMLFile,
-    renderer,
-    tags,
-)
+from twisted.web.template import Element as _Element
+from twisted.web.template import Tag, XMLFile, renderer, tags
 
 from ims.auth import Authorization
 from ims.config import Configuration

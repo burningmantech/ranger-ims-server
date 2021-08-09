@@ -31,9 +31,9 @@ from ims.model import (
     TextOnlyAddress,
 )
 
-from .base import TestDataStoreMixIn
 from .._db import DatabaseStore, Transaction
 from .._exceptions import StorageError
+from .base import TestDataStoreMixIn
 
 
 __all__ = ()

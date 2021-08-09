@@ -23,15 +23,12 @@ from functools import wraps
 from typing import Any, Callable, Iterable, Optional, Sequence, Union, cast
 
 from hyperlink import URL
-
 from klein import Klein
-
 from twisted.logger import Logger
 from twisted.python.failure import Failure
 from twisted.web import http
 from twisted.web.iweb import IRenderable, IRequest
 from twisted.web.template import renderElement
-
 from werkzeug.exceptions import MethodNotAllowed, NotFound
 from werkzeug.routing import RequestRedirect
 

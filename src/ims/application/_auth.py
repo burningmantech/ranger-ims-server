@@ -21,9 +21,7 @@ Incident Management System web application authentication endpoints.
 from typing import ClassVar
 
 from attr import attrs
-
 from hyperlink import URL
-
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 

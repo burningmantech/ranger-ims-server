@@ -18,7 +18,8 @@
 Incident Management System JSON API endpoints.
 """
 
-from datetime import datetime as DateTime, timezone as TimeZone
+from datetime import datetime as DateTime
+from datetime import timezone as TimeZone
 from enum import Enum
 from functools import partial
 from json import JSONDecodeError
@@ -34,9 +35,7 @@ from typing import (
 )
 
 from attr import attrs
-
 from hyperlink import URL
-
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
 from twisted.logger import ILogObserver, Logger

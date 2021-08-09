@@ -19,21 +19,11 @@ Duty Management System.
 """
 
 from time import time
-from typing import (
-    ClassVar,
-    Iterable,
-    Mapping,
-    Optional,
-    cast,
-)
+from typing import ClassVar, Iterable, Mapping, Optional, cast
 
 from attr import Factory, attrib, attrs
-
-from pymysql import (
-    DatabaseError as SQLDatabaseError,
-    OperationalError as SQLOperationalError,
-)
-
+from pymysql import DatabaseError as SQLDatabaseError
+from pymysql import OperationalError as SQLOperationalError
 from twisted.enterprise import adbapi
 from twisted.internet.defer import CancelledError
 from twisted.logger import Logger

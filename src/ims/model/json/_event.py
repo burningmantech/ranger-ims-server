@@ -18,8 +18,8 @@
 JSON serialization/deserialization for events
 """
 
-from ._json import registerDeserializer, registerSerializer
 from .._event import Event
+from ._json import registerDeserializer, registerSerializer
 
 
 __all__ = ()

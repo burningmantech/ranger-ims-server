@@ -2,24 +2,19 @@
 Tests for :mod:`ranger-ims-server.ext.json`
 """
 
-from datetime import (
-    date as Date,
-    datetime as DateTime,
-    timedelta as TimeDelta,
-    timezone as TimeZone,
-)
+from datetime import date as Date
+from datetime import datetime as DateTime
+from datetime import timedelta as TimeDelta
+from datetime import timezone as TimeZone
 from io import BytesIO
 from json import JSONDecodeError
 from textwrap import dedent
 from typing import Any, Callable, cast
 
 from hypothesis import given
-from hypothesis.strategies import (
-    composite,
-    dates,
-    datetimes as _datetimes,
-    integers,
-)
+from hypothesis.strategies import composite, dates
+from hypothesis.strategies import datetimes as _datetimes
+from hypothesis.strategies import integers
 
 from ..json import (
     dateAsRFC3339Text,

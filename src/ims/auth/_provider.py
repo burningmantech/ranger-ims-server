@@ -22,7 +22,6 @@ from enum import Flag, auto
 from typing import ClassVar, Container, Optional
 
 from attr import attrs
-
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 

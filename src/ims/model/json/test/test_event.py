@@ -22,10 +22,10 @@ from hypothesis import given
 
 from ims.ext.trial import TestCase
 
-from .json import jsonFromEvent
-from .._json import jsonDeserialize, jsonSerialize
 from ..._event import Event
 from ...strategies import events
+from .._json import jsonDeserialize, jsonSerialize
+from .json import jsonFromEvent
 
 
 __all__ = ()

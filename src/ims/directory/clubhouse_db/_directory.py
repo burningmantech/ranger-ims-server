@@ -21,7 +21,6 @@ Duty Management System directory.
 from typing import ClassVar, Iterable, Optional
 
 from attr import attrs
-
 from twisted.logger import Logger
 
 from ims.directory import IMSDirectory, IMSGroupID, IMSUser, RangerUser
