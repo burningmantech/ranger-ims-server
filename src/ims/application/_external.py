@@ -83,8 +83,13 @@ class ExternalApplication:
         f"https://code.jquery.com/{jqueryVersion}.min.map"
     )
 
+    # datatables.net has busted TLS
+    # dataTablesSourceURL = URL.fromText(
+    #     f"https://datatables.net/releases/"
+    #     f"DataTables-{dataTablesVersionNumber}.zip"
+    # )
     dataTablesSourceURL = URL.fromText(
-        f"https://datatables.net/releases/"
+        f"http://www.wsanchez.net/brr/"
         f"DataTables-{dataTablesVersionNumber}.zip"
     )
 
@@ -157,7 +162,15 @@ class ExternalApplication:
         # Remove URL prefix
         names = requestURL.path[len(URLs.dataTablesBase.path) - 1 :]
 
-        request.setHeader(HeaderName.contentType.value, ContentType.css.value)
+        if names[-1].endswith(".css"):
+            contentType = ContentType.css.value
+        elif names[-1].endswith(".js"):
+            contentType = ContentType.javascript.value
+        else:
+            return notFoundResponse(request)
+
+        request.setHeader(HeaderName.contentType.value, contentType)
+
         return await self.cachedZippedResource(
             request,
             self.dataTablesSourceURL,
@@ -208,7 +221,7 @@ class ExternalApplication:
                 try:
                     await downloadPage(url.asText().encode("utf-8"), tmp)
                 except BaseException as e:
-                    self._log.failure(
+                    self._log.critical(
                         "Download failed for {url}: {error}", url=url, error=e
                     )
                     try:
