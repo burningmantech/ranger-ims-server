@@ -387,6 +387,7 @@ jobs:
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    continue-on-error: true
 
     steps:
 
@@ -447,7 +448,7 @@ jobs:
           NOTIFY_SMTP_PASSWORD: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
           NOTIFY_EMAIL_RECIPIENT: ${{ secrets.NOTIFY_EMAIL_RECIPIENT }}
           NOTIFY_EMAIL_SENDER: ${{ secrets.NOTIFY_EMAIL_SENDER }}
-          CI: true
+          CI: "true"
           PROJECT_NAME: Ranger IMS Server
           REPOSITORY_ID: ${{ github.repository }}
           BUILD_NUMBER: 0
