@@ -14,7 +14,7 @@ extend-exclude =
     __pycache__,
     dist
 
-# Codes: http://flake8.pycqa.org/en/latest/user/error-codes.html
+# Codes: https://flake8.pycqa.org/en/latest/user/error-codes.html
 extend-ignore =
     # Do not perform calls in argument defaults
     # (Necessary for cast())
@@ -79,6 +79,3 @@ extend-ignore =
 
 # flake8-import-order: local module name space
 application-import-names = ims
-
-# McCabe complexity checker
-max-complexity = 23
