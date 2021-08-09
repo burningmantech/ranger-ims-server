@@ -221,7 +221,7 @@ class ExternalApplication:
                 try:
                     await downloadPage(url.asText().encode("utf-8"), tmp)
                 except BaseException as e:
-                    self._log.failure(
+                    self._log.critical(
                         "Download failed for {url}: {error}", url=url, error=e
                     )
                     try:
