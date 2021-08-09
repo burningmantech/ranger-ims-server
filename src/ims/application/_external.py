@@ -162,7 +162,15 @@ class ExternalApplication:
         # Remove URL prefix
         names = requestURL.path[len(URLs.dataTablesBase.path) - 1 :]
 
-        request.setHeader(HeaderName.contentType.value, ContentType.css.value)
+        if names[-1].endswith(".css"):
+            contentType = ContentType.css.value
+        elif names[-1].endswith(".js"):
+            contentType = ContentType.javascript.value
+        else:
+            return notFoundResponse(request)
+
+        request.setHeader(HeaderName.contentType.value, contentType)
+
         return await self.cachedZippedResource(
             request,
             self.dataTablesSourceURL,
