@@ -7,7 +7,7 @@ FROM python:3.9.6-alpine3.14 as build
 RUN apk add --no-cache build-base libffi-dev libressl-dev
 
 # Install Rust for cryptography
-RUN apk add --no-cache build-base rust cargo
+RUN apk add --no-cache python3-dev rust cargo
 
 # Paths
 ENV IMS_SOURCE_DIR="/src/ims"
