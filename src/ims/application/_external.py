@@ -83,8 +83,13 @@ class ExternalApplication:
         f"https://code.jquery.com/{jqueryVersion}.min.map"
     )
 
+    # datatables.net has busted TLS
+    # dataTablesSourceURL = URL.fromText(
+    #     f"https://datatables.net/releases/"
+    #     f"DataTables-{dataTablesVersionNumber}.zip"
+    # )
     dataTablesSourceURL = URL.fromText(
-        f"https://datatables.net/releases/"
+        f"http://www.wsanchez.net/brr/"
         f"DataTables-{dataTablesVersionNumber}.zip"
     )
 
