@@ -1,6 +1,4 @@
-# Docs:
-# https://help.github.com/en/actions/automating-your-workflow-with-github-actions
-
+# Docs: https://docs.github.com/en/actions
 
 
 name: CI/CD
