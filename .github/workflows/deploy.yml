@@ -36,6 +36,8 @@ jobs:
         env:
           # https://github.com/burningmantech/ranger-ims-server/settings/secrets
           AWS_ECR_IMAGE_NAME: ${{ secrets.AWS_ECR_IMAGE_NAME }}
+          AWS_ECS_CLUSTER_STAGING: rangers
+          AWS_ECS_SERVICE_STAGING: ${{ secrets.AWS_ECS_SERVICE_STAGING }}
           AWS_ECS_CLUSTER_PRODUCTION: rangers
           AWS_ECS_SERVICE_PRODUCTION: ${{ secrets.AWS_ECS_SERVICE_PRODUCTION }}
           NOTIFY_SMTP_HOST: ${{ secrets.NOTIFY_SMTP_HOST }}
