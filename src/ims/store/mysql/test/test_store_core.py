@@ -29,10 +29,10 @@ from twisted.logger import Logger
 
 from ims.ext.trial import AsynchronousTestCase, asyncAsDeferred
 
+from ..._exceptions import StorageError
+from .._store import DataStore, ReconnectingConnectionPool
 from .base import TestDataStore
 from .service import DatabaseExistsError, MySQLService, randomDatabaseName
-from .._store import DataStore, ReconnectingConnectionPool
-from ..._exceptions import StorageError
 
 
 __all__ = ()

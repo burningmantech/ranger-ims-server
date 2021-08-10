@@ -21,17 +21,10 @@ Tests for L{ims.directory.file._directory}.
 from pathlib import Path
 from random import Random
 from time import time
-from typing import (
-    Any,
-    Mapping,
-    Sequence,
-    TextIO,
-    Union,
-)
+from typing import Any, Mapping, Sequence, TextIO, Union
 from unittest.mock import patch
 
 from attr import attrs
-
 from hypothesis import given, settings
 from hypothesis.strategies import lists, randoms, text
 
@@ -39,6 +32,7 @@ from ims.ext.trial import TestCase
 from ims.model import Position, Ranger, RangerStatus
 from ims.model.strategies import positions, rangers
 
+from ..._directory import DirectoryError, RangerUser
 from .._directory import (
     FileDirectory,
     positionFromMapping,
@@ -47,7 +41,6 @@ from .._directory import (
     rangersFromMappings,
     statusFromID,
 )
-from ..._directory import DirectoryError, RangerUser
 
 
 __all__ = ()

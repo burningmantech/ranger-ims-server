@@ -24,15 +24,12 @@ from typing import Awaitable, ClassVar, Mapping, Optional, cast
 from uuid import uuid4
 
 from attr import Factory, attrib, attrs
-
 from docker.api import APIClient
 from docker.client import DockerClient
 from docker.errors import ImageNotFound, NotFound
 from docker.models.containers import Container
-
 from pymysql import OperationalError, ProgrammingError, connect
 from pymysql.cursors import DictCursor as Cursor
-
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 from twisted.internet.threads import deferToThread

@@ -18,24 +18,14 @@
 Test strategies for model data.
 """
 
-from datetime import (
-    datetime as DateTime,
-    timedelta as TimeDelta,
-    timezone as TimeZone,
-)
-from typing import (
-    Any,
-    Callable,
-    Hashable,
-    Optional,
-    cast,
-)
+from datetime import datetime as DateTime
+from datetime import timedelta as TimeDelta
+from datetime import timezone as TimeZone
+from typing import Any, Callable, Hashable, Optional, cast
 
+from hypothesis.strategies import SearchStrategy, booleans, composite
+from hypothesis.strategies import datetimes as _datetimes
 from hypothesis.strategies import (
-    SearchStrategy,
-    booleans,
-    composite,
-    datetimes as _datetimes,
     dictionaries,
     emails,
     integers,

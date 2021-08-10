@@ -22,18 +22,18 @@ from datetime import datetime as DateTime
 from enum import Enum, unique
 from typing import Any, Optional, cast
 
-from ._json import (
-    deserialize,
-    jsonSerialize,
-    registerDeserializer,
-    registerSerializer,
-)
 from .._entry import ReportEntry
 from .._event import Event
 from .._incident import Incident
 from .._location import Location
 from .._priority import IncidentPriority
 from .._state import IncidentState
+from ._json import (
+    deserialize,
+    jsonSerialize,
+    registerDeserializer,
+    registerSerializer,
+)
 
 
 __all__ = ()

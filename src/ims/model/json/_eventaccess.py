@@ -21,13 +21,13 @@ JSON serialization/deserialization for event access
 from enum import Enum, unique
 from typing import Any, cast
 
+from .._eventaccess import EventAccess
 from ._json import (
     deserialize,
     jsonSerialize,
     registerDeserializer,
     registerSerializer,
 )
-from .._eventaccess import EventAccess
 
 
 __all__ = ()

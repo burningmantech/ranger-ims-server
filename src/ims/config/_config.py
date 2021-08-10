@@ -27,7 +27,6 @@ from sys import argv
 from typing import Any, Callable, ClassVar, Optional, Sequence, cast
 
 from attr import Factory, attrib, attrs, evolve
-
 from twisted.logger import Logger
 
 from ims.auth import AuthProvider

@@ -19,7 +19,6 @@ Incident reports page element.
 """
 
 from attr import attrs
-
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 
@@ -28,8 +27,8 @@ from ims.ext.json import jsonFalse, jsonTextFromObject, jsonTrue
 from ims.ext.klein import KleinRenderable
 from ims.model import Event
 
-from ..reports_template._reports_template import title
 from ...page import Page
+from ..reports_template._reports_template import title
 
 
 __all__ = ()

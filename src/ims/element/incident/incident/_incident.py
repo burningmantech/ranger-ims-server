@@ -21,7 +21,6 @@ Incident page.
 from typing import Optional
 
 from attr import attrs
-
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 
@@ -30,8 +29,8 @@ from ims.ext.json import jsonFalse, jsonTextFromObject, jsonTrue
 from ims.ext.klein import KleinRenderable
 from ims.model import Event
 
-from ..incident_template._incident_template import title
 from ...page import Page
+from ..incident_template._incident_template import title
 
 
 __all__ = ()

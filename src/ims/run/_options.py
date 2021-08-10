@@ -22,9 +22,9 @@ from pathlib import Path
 from sys import stderr, stdin, stdout
 from textwrap import dedent
 from typing import (
+    IO,
     Any,
     ClassVar,
-    IO,
     Mapping,
     MutableMapping,
     Optional,
@@ -33,16 +33,16 @@ from typing import (
 )
 
 from attr import attrs
-
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.logger import (
     InvalidLogLevelError,
-    LogLevel,
     Logger,
+    LogLevel,
     jsonFileLogObserver,
     textFileLogObserver,
 )
-from twisted.python.usage import Options as BaseOptions, UsageError
+from twisted.python.usage import Options as BaseOptions
+from twisted.python.usage import UsageError
 
 from ims import __version__ as version
 from ims.config import Configuration, LogFormat

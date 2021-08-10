@@ -7,13 +7,10 @@ from functools import wraps
 from typing import Any, Callable, Optional, Sequence, cast
 
 from hypothesis import HealthCheck, settings
-
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.python.failure import Failure
-from twisted.trial.unittest import (
-    SynchronousTestCase as SuperTestCase,
-    TestCase as SuperAsynchronousTestCase,
-)
+from twisted.trial.unittest import SynchronousTestCase as SuperTestCase
+from twisted.trial.unittest import TestCase as SuperAsynchronousTestCase
 from twisted.web import http
 from twisted.web.iweb import IRequest
 

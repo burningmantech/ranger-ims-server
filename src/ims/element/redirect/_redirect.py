@@ -21,9 +21,7 @@ Redirect page.
 from typing import cast
 
 from attr import attrs
-
 from hyperlink import URL
-
 from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest, ITemplateLoader
 from twisted.web.template import Tag, XMLFile, renderer

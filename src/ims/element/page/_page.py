@@ -22,19 +22,17 @@ from collections import OrderedDict
 from typing import Iterable, MutableMapping
 
 from attr import attrs
-
 from hyperlink import URL
-
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer, tags
 
 from ims.config import Configuration
 from ims.ext.klein import KleinRenderable
 
+from .._element import Element
 from .footer import FooterElement
 from .header import HeaderElement
 from .nav import NavElement
-from .._element import Element
 
 
 __all__ = ()

@@ -22,10 +22,10 @@ from hypothesis import given
 
 from ims.ext.trial import TestCase
 
-from .json import jsonFromRodGarettAddress, jsonFromTextOnlyAddress
-from .._json import jsonDeserialize, jsonSerialize
 from ..._address import Address, RodGarettAddress, TextOnlyAddress
 from ...strategies import rodGarettAddresses, textOnlyAddresses
+from .._json import jsonDeserialize, jsonSerialize
+from .json import jsonFromRodGarettAddress, jsonFromTextOnlyAddress
 
 
 __all__ = ()
