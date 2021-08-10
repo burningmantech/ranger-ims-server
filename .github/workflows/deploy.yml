@@ -36,8 +36,8 @@ jobs:
         env:
           # https://github.com/burningmantech/ranger-ims-server/settings/secrets
           AWS_ECR_IMAGE_NAME: ${{ secrets.AWS_ECR_IMAGE_NAME }}
-          AWS_ECS_CLUSTER_STAGING: rangers
-          AWS_ECS_SERVICE_STAGING: ${{ secrets.AWS_ECS_SERVICE_STAGING }}
+          AWS_ECS_CLUSTER_PRODUCTION: rangers
+          AWS_ECS_SERVICE_PRODUCTION: ${{ secrets.AWS_ECS_SERVICE_PRODUCTION }}
           NOTIFY_SMTP_HOST: ${{ secrets.NOTIFY_SMTP_HOST }}
           NOTIFY_SMTP_USER: ${{ secrets.NOTIFY_SMTP_USER }}
           NOTIFY_SMTP_PASSWORD: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
@@ -48,9 +48,5 @@ jobs:
           REPOSITORY_ID: ${{ github.repository }}
           BUILD_NUMBER: 0
           BUILD_URL: https://github.com/burningmantech/ranger-ims-server/commit/${{ github.sha }}/checks
-          COMMIT_ID: ${{ github.event.head_commit.id }}
-          COMMIT_URL: ${{ github.event.head_commit.url }}
-          COMMIT_AUTHOR_USER: ${{ github.event.head_commit.author.username }}
-          COMMIT_AUTHOR_NAME: ${{ github.event.head_commit.author.name }}
-          COMMIT_AUTHOR_EMAIL: ${{ github.event.head_commit.author.email }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_ID: ${{ github.sha }}
+          COMMIT_AUTHOR_USER: ${{ github.actor }}
