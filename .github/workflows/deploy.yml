@@ -13,6 +13,10 @@ jobs:
 
     steps:
 
+      - name: Check user
+        if: ! contains('["wsanchez"]', github.actor)
+        run: false
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
