@@ -221,8 +221,8 @@ class AuthProvider:
                 )
         else:
             session = request.getSession()
-            request.user = (  # type: ignore[attr-defined]
-                getattr(session, "user", None)
+            request.user = getattr(  # type: ignore[attr-defined]
+                session, "user", None
             )
 
         if not optional and getattr(request, "user", None) is None:
