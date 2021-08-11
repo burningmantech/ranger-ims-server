@@ -25,13 +25,14 @@ from zipfile import BadZipfile
 
 from attr import attrs
 from hyperlink import URL
+from klein import KleinRenderable
 from twisted.logger import Logger
 from twisted.python.zippath import ZipArchive
 from twisted.web.client import downloadPage
 from twisted.web.iweb import IRequest
 
 from ims.config import Configuration, URLs
-from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
+from ims.ext.klein import ContentType, HeaderName, static
 
 from ._klein import Router, internalErrorResponse, notFoundResponse
 

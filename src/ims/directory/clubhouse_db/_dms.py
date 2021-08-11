@@ -104,7 +104,9 @@ class DutyManagementSystem:
             ):
                 from .test.test_dms import DummyConnectionPool
 
-                dbpool = DummyConnectionPool("Dummy")
+                dbpool = cast(
+                    adbapi.ConnectionPool, DummyConnectionPool("Dummy")
+                )
 
             else:
                 dbpool = adbapi.ConnectionPool(

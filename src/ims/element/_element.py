@@ -19,9 +19,11 @@ Element base classes.
 """
 
 from functools import partial
-from typing import Iterable
+from typing import Iterable, cast
+from unittest.mock import sentinel
 
 from attr import attrs
+from klein import KleinRenderable
 from twisted.python.filepath import FilePath
 from twisted.python.reflect import namedModule
 from twisted.web.iweb import IRequest, ITemplateLoader
@@ -31,7 +33,6 @@ from twisted.web.template import Tag, XMLFile, renderer, tags
 from ims.auth import Authorization
 from ims.config import Configuration
 from ims.ext.json import jsonTextFromObject
-from ims.ext.klein import KleinRenderable
 
 
 __all__ = ()
@@ -164,9 +165,9 @@ class Element(BaseElement):
         For C{"img"} tags, C{"attr"} defaults to C{"src"}.
         If the C{"attr"} attribute is defined C{""}, return the URL as text.
         """
-        name = tag.attributes.pop("url", None)
+        name = cast(str, tag.attributes.pop("url", sentinel.name))
 
-        if name is None:
+        if name is sentinel.name:
             raise ValueError("Rendered URL must have a url attribute")
 
         try:
@@ -179,8 +180,8 @@ class Element(BaseElement):
         if tag.tagName == "json":
             return jsonTextFromObject(text)
 
-        attributeName = tag.attributes.pop("attr", None)
-        if attributeName is None:
+        attributeName = cast(str, tag.attributes.pop("attr", sentinel.name))
+        if attributeName is sentinel.name:
             if tag.tagName in ("a", "link"):
                 attributeName = "href"
             elif tag.tagName in ("script", "img"):
@@ -209,7 +210,8 @@ class Element(BaseElement):
                 return sorted(i)
 
         authorizationsForUser = partial(
-            self.config.authProvider.authorizationsForUser, request.user
+            self.config.authProvider.authorizationsForUser,
+            request.user,  # type: ignore[attr-defined]
         )
 
         relevantAuthorizations = (

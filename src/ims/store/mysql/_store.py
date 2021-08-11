@@ -47,7 +47,7 @@ class ReconnectingConnectionPool(ConnectionPool):
     def connect(self) -> Connection:
         connection = ConnectionPool.connect(self)
         connection.ping(reconnect=True)
-        return connection
+        return cast(Connection, connection)
 
 
 class Cursor(DictCursor):
