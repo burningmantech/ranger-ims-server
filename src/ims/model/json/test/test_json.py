@@ -27,14 +27,14 @@ from hypothesis.strategies import datetimes, floats, integers, text
 from ims.ext.json import dateTimeAsRFC3339Text
 from ims.ext.trial import TestCase
 
+from ..._incident import Incident
+from ...strategies import incidents
 from .._json import (
     jsonDeserialize,
     jsonObjectFromModelObject,
     jsonSerialize,
     modelObjectFromJSONObject,
 )
-from ..._incident import Incident
-from ...strategies import incidents
 
 
 __all__ = ()

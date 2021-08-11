@@ -21,17 +21,17 @@ JSON serialization/deserialization for event data
 from enum import Enum, unique
 from typing import Any, cast
 
+from .._event import Event
+from .._eventaccess import EventAccess
+from .._eventdata import EventData
+from .._incident import Incident
+from .._report import IncidentReport
 from ._json import (
     deserialize,
     jsonSerialize,
     registerDeserializer,
     registerSerializer,
 )
-from .._event import Event
-from .._eventaccess import EventAccess
-from .._eventdata import EventData
-from .._incident import Incident
-from .._report import IncidentReport
 
 
 __all__ = ()

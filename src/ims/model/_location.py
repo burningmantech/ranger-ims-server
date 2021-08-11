@@ -25,6 +25,7 @@ from attr import attrib, attrs
 from ._address import Address, TextOnlyAddress
 from ._replace import ReplaceMixIn
 
+
 __all__ = ()
 
 

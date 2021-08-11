@@ -1,0 +1,58 @@
+# Docs: https://docs.github.com/en/actions
+
+
+name: Deploy to production
+
+on: workflow_dispatch
+
+jobs:
+
+  push-to-production:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Check user
+        if: ${{ ! contains('["wsanchez", "mikeburg", "plapsley"]', github.actor) }}
+        run: false
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - name: System Python Information
+        uses: twisted/python-info-action@v1
+
+      - name: Deploy to production
+        run: ./bin/deploy production
+        env:
+          # https://github.com/burningmantech/ranger-ims-server/settings/secrets
+          AWS_ECR_IMAGE_NAME: ${{ secrets.AWS_ECR_IMAGE_NAME }}
+          AWS_ECS_CLUSTER_STAGING: rangers
+          AWS_ECS_SERVICE_STAGING: ${{ secrets.AWS_ECS_SERVICE_STAGING }}
+          AWS_ECS_CLUSTER_PRODUCTION: rangers
+          AWS_ECS_SERVICE_PRODUCTION: ${{ secrets.AWS_ECS_SERVICE_PRODUCTION }}
+          NOTIFY_SMTP_HOST: ${{ secrets.NOTIFY_SMTP_HOST }}
+          NOTIFY_SMTP_USER: ${{ secrets.NOTIFY_SMTP_USER }}
+          NOTIFY_SMTP_PASSWORD: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
+          NOTIFY_EMAIL_RECIPIENT: ${{ secrets.NOTIFY_EMAIL_RECIPIENT }}
+          NOTIFY_EMAIL_SENDER: ${{ secrets.NOTIFY_EMAIL_SENDER }}
+          CI: true
+          PROJECT_NAME: Ranger IMS Server
+          REPOSITORY_ID: ${{ github.repository }}
+          BUILD_NUMBER: 0
+          BUILD_URL: https://github.com/burningmantech/ranger-ims-server/commit/${{ github.sha }}/checks
+          COMMIT_ID: ${{ github.sha }}
+          COMMIT_AUTHOR_USER: ${{ github.actor }}

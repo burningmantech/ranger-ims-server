@@ -23,7 +23,6 @@ from hashlib import sha1
 from typing import Iterable, NewType, Optional, Sequence, cast
 
 from attr import Factory, attrs
-
 from bcrypt import gensalt
 
 from ims.model import Position, Ranger

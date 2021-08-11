@@ -22,15 +22,15 @@ from datetime import datetime as DateTime
 from enum import Enum, unique
 from typing import Any, Optional, cast
 
+from .._entry import ReportEntry
+from .._event import Event
+from .._report import IncidentReport
 from ._json import (
     deserialize,
     jsonSerialize,
     registerDeserializer,
     registerSerializer,
 )
-from .._entry import ReportEntry
-from .._event import Event
-from .._report import IncidentReport
 
 
 __all__ = ()

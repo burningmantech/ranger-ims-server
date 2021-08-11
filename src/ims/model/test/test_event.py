@@ -19,7 +19,6 @@ Tests for :mod:`ranger-ims-server.model._event`
 """
 
 from hypothesis import given
-
 from twisted.python.compat import cmp
 
 from ims.ext.trial import TestCase

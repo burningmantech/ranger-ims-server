@@ -22,13 +22,13 @@ JSON serialization/deserialization for incident type
 from enum import Enum, unique
 from typing import Any, cast
 
+from .._type import IncidentType
 from ._json import (
     deserialize,
     jsonSerialize,
     registerDeserializer,
     registerSerializer,
 )
-from .._type import IncidentType
 
 
 __all__ = ()

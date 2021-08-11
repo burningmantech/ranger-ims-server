@@ -22,7 +22,6 @@ from datetime import datetime as DateTime
 from typing import Any, Iterable
 
 from attr import asdict
-
 from hypothesis import given
 from hypothesis.strategies import lists, sampled_from, text
 
@@ -40,14 +39,15 @@ from ..strategies import (
     events,
     incidentNumbers,
     incidentPriorities,
+    incidents,
     incidentStates,
     incidentSummaries,
     incidentTypes,
-    incidents,
     locations,
     rangerHandles,
     reportEntries,
 )
+
 
 __all__ = ()
 

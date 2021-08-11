@@ -20,13 +20,13 @@ Run the IMS server.
 
 import sys
 from sys import stdout
-from typing import ClassVar, Optional, Sequence
+from typing import ClassVar, Optional, Sequence, cast
 
 from attr import attrs
-
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.application.runner._runner import Runner
 from twisted.internet.defer import Deferred, ensureDeferred
+from twisted.internet.interfaces import IReactorCore, IReactorTCP
 from twisted.logger import Logger
 from twisted.python.failure import Failure
 from twisted.python.usage import UsageError
@@ -44,8 +44,8 @@ from ._options import (
     CompareOptions,
     ExportOptions,
     HashPasswordOptions,
-    IMSOptions,
     ImportOptions,
+    IMSOptions,
     ServerOptions,
     VerifyPasswordOptions,
 )
@@ -84,7 +84,7 @@ class Command:
     def stop(cls) -> None:
         from twisted.internet import reactor
 
-        reactor.stop()
+        cast(IReactorCore, reactor).stop()
 
     @classmethod
     async def initStore(cls, store: IMSDataStore) -> None:
@@ -111,7 +111,9 @@ class Command:
 
         from twisted.internet import reactor
 
-        reactor.listenTCP(port, factory, interface=host)
+        cast(IReactorTCP, reactor).listenTCP(  # type: ignore[call-arg]
+            port, factory, interface=host
+        )
 
     @classmethod
     async def runExport(
@@ -271,7 +273,7 @@ class Command:
         cls.stop()
 
     @classmethod
-    def whenRunning(cls, options: IMSOptions) -> Deferred:
+    def whenRunning(cls, options: IMSOptions) -> Deferred[None]:
         """
         Called after the reactor has started.
         """
@@ -332,11 +334,11 @@ class Command:
         from twisted.internet import reactor
 
         runner = Runner(
-            reactor=reactor,
+            reactor=cast(IReactorCore, reactor),
             defaultLogLevel=options.get("logLevel", options.defaultLogLevel),
             logFile=options.get("logFile", stdout),
             fileLogObserverFactory=options["fileLogObserverFactory"],
-            whenRunning=cls.whenRunning,
+            whenRunning=cls.whenRunning,  # type: ignore[arg-type]
             whenRunningArguments=dict(options=options),
         )
         runner.run()

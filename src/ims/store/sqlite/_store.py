@@ -23,7 +23,6 @@ from sys import stdout
 from typing import Any, Callable, ClassVar, Optional, TextIO, TypeVar, cast
 
 from attr import attrib, attrs
-
 from twisted.logger import Logger
 
 from ims.ext.sqlite import (
@@ -35,9 +34,9 @@ from ims.ext.sqlite import (
     printSchema,
 )
 
-from ._queries import queries
 from .._db import DatabaseStore, Parameters, Queries, Query, Rows
 from .._exceptions import StorageError
+from ._queries import queries
 
 
 __all__ = ()

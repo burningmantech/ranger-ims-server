@@ -18,11 +18,7 @@
 Incident Management System configuration.
 """
 
-from ._config import (
-    Configuration,
-    ConfigurationError,
-    LogFormat,
-)
+from ._config import Configuration, ConfigurationError, LogFormat
 from ._urls import URLs
 
 

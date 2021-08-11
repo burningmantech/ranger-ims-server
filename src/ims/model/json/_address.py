@@ -21,13 +21,13 @@ JSON serialization/deserialization for addresses
 from enum import Enum, unique
 from typing import Any, Optional, cast
 
+from .._address import Address, RodGarettAddress, TextOnlyAddress
 from ._json import (
     deserialize,
     jsonSerialize,
     registerDeserializer,
     registerSerializer,
 )
-from .._address import Address, RodGarettAddress, TextOnlyAddress
 
 
 __all__ = ()

@@ -25,6 +25,7 @@ from sys import path
 
 from setuptools import find_packages, setup
 
+
 path.insert(0, "src")
 
 from ims import __version__ as version_string  # noqa: E402

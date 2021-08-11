@@ -20,7 +20,6 @@ Expected JSON encoding for model data.
 
 from typing import Any, cast
 
-from .._json import jsonSerialize
 from ..._address import Address, RodGarettAddress, TextOnlyAddress
 from ..._entry import ReportEntry
 from ..._event import Event
@@ -34,6 +33,7 @@ from ..._ranger import Ranger, RangerStatus
 from ..._report import IncidentReport
 from ..._state import IncidentState
 from ..._type import IncidentType, KnownIncidentType
+from .._json import jsonSerialize
 
 
 __all__ = ()

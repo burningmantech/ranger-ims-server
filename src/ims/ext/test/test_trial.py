@@ -2,7 +2,7 @@
 Tests for :mod:`ranger-ims-server.ext.trial`
 """
 
-from klein.test.test_resource import requestMock
+from klein.test.test_resource import MockRequest
 
 from ..trial import TestCase
 
@@ -42,7 +42,7 @@ class AssertionTests(TestCase):
         :meth:`TestCase.assertResponseCode` does not raise when given a request
         with the expected response code.
         """
-        request = requestMock(b"/")
+        request = MockRequest(b"/")
         request.code = 201
 
         self.assertResponseCode(request, 201)
@@ -52,7 +52,7 @@ class AssertionTests(TestCase):
         :meth:`TestCase.assertResponseCode` raises :obj:`self.failureException`
         when given a request without the expected response code.
         """
-        request = requestMock(b"/")
+        request = MockRequest(b"/")
         request.code = 500
 
         self.assertRaises(
@@ -64,7 +64,7 @@ class AssertionTests(TestCase):
         :meth:`TestCase.assertResponseContentType` does not raise when given a
         request with the expected response ``Content-Type`` header.
         """
-        request = requestMock(b"/")
+        request = MockRequest(b"/")
         request.setHeader("content-type", "text/l33t")
 
         self.assertResponseContentType(request, "text/l33t")
@@ -75,7 +75,7 @@ class AssertionTests(TestCase):
         :obj:`self.failureException` when given a request without the expected
         response ``Content-Type`` header.
         """
-        request = requestMock(b"/")
+        request = MockRequest(b"/")
         request.setHeader("content-type", "text/plain")
 
         self.assertRaises(

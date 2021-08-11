@@ -4,14 +4,12 @@ SQLite utilities
 """
 
 from pathlib import Path
-from sqlite3 import (
-    Connection as BaseConnection,
-    Cursor as BaseCursor,
-    Error as SQLiteError,
-    IntegrityError,
-    Row as BaseRow,
-    connect as sqliteConnect,
-)
+from sqlite3 import Connection as BaseConnection
+from sqlite3 import Cursor as BaseCursor
+from sqlite3 import Error as SQLiteError
+from sqlite3 import IntegrityError
+from sqlite3 import Row as BaseRow
+from sqlite3 import connect as sqliteConnect
 from typing import (
     Any,
     Callable,
@@ -25,7 +23,6 @@ from typing import (
 )
 
 from attr import attrs
-
 from twisted.logger import Logger
 
 

@@ -23,15 +23,12 @@ from functools import wraps
 from typing import Any, Callable, Iterable, Optional, Sequence, Union, cast
 
 from hyperlink import URL
-
-from klein import Klein
-
+from klein import Klein, KleinRenderable, KleinRouteHandler
 from twisted.logger import Logger
 from twisted.python.failure import Failure
 from twisted.web import http
 from twisted.web.iweb import IRenderable, IRequest
 from twisted.web.template import renderElement
-
 from werkzeug.exceptions import MethodNotAllowed, NotFound
 from werkzeug.routing import RequestRedirect
 
@@ -39,12 +36,7 @@ from ims import __version__ as version
 from ims.auth import NotAuthenticatedError, NotAuthorizedError
 from ims.config import URLs
 from ims.directory import DirectoryError
-from ims.ext.klein import (
-    ContentType,
-    HeaderName,
-    KleinRenderable,
-    KleinRouteMethod,
-)
+from ims.ext.klein import ContentType, HeaderName
 
 
 __all__ = (
@@ -57,7 +49,7 @@ __all__ = (
 log = Logger()
 
 
-def renderResponse(f: KleinRouteMethod) -> KleinRouteMethod:
+def renderResponse(f: KleinRouteHandler) -> KleinRouteHandler:
     """
     Decorator to ensure that the returned response is rendered, if applicable.
     Needed because L{Klein.handle_errors} doesn't do rendering for you.
@@ -331,7 +323,7 @@ class Router(Klein):
 
     def route(
         self, url: Union[str, URL], *args: Any, **kwargs: Any
-    ) -> Callable[[KleinRouteMethod], KleinRouteMethod]:
+    ) -> Callable[[KleinRouteHandler], KleinRouteHandler]:
         """
         See :meth:`Klein.route`.
         """
@@ -340,7 +332,7 @@ class Router(Klein):
         if isinstance(url, URL):
             url = url.asText()
 
-        def decorator(f: KleinRouteMethod) -> KleinRouteMethod:
+        def decorator(f: KleinRouteHandler) -> KleinRouteHandler:
             @superRoute(url, *args, **kwargs)
             @wraps(f)
             def wrapper(
@@ -353,7 +345,7 @@ class Router(Klein):
 
                 return f(app, request, *args, **kwargs)
 
-            return cast(KleinRouteMethod, wrapper)
+            return cast(KleinRouteHandler, wrapper)
 
         return decorator
 
@@ -366,6 +358,7 @@ class Router(Klein):
             """
             Redirect.
             """
+            assert failure.value is not None
             url = URL.fromText(failure.value.args[0])
             return redirect(request, url)
 

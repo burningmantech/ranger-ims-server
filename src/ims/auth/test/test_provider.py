@@ -22,7 +22,6 @@ from pathlib import Path
 from typing import Any, Callable, Optional, Sequence
 
 from attr import attrs, evolve
-
 from hypothesis import assume, given
 from hypothesis.strategies import booleans, composite, lists, none, one_of, text
 
@@ -32,8 +31,8 @@ from ims.ext.trial import TestCase
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
-from .._provider import AuthProvider, Authorization
 from ...directory import IMSGroupID, IMSUser, IMSUserID
+from .._provider import Authorization, AuthProvider
 
 
 __all__ = ()

@@ -18,23 +18,16 @@
 Incident Management System web application authentication provider.
 """
 
-from datetime import datetime as DateTime, timedelta as TimeDelta
+from datetime import datetime as DateTime
+from datetime import timedelta as TimeDelta
 from enum import Flag, auto
 from time import time
-from typing import (
-    Any,
-    ClassVar,
-    Container,
-    Mapping,
-    Optional,
-)
+from typing import Any, ClassVar, Container, Mapping, Optional
 
 from attr import Factory, attrs
-
 from jwcrypto.jwk import JWK
 from jwcrypto.jws import InvalidJWSSignature
 from jwcrypto.jwt import JWT
-
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
@@ -223,10 +216,14 @@ class AuthProvider:
                     "Valid JWT token for user {subject}", subject=subject
                 )
 
-                request.user = await self.directory.lookupUser(subject)
+                request.user = (  # type: ignore[attr-defined]
+                    await self.directory.lookupUser(subject)
+                )
         else:
             session = request.getSession()
-            request.user = getattr(session, "user", None)
+            request.user = (  # type: ignore[attr-defined]
+                getattr(session, "user", None)
+            )
 
         if not optional and getattr(request, "user", None) is None:
             self._log.debug("Authentication failed")
@@ -303,9 +300,11 @@ class AuthProvider:
         await self.authenticateRequest(request)
 
         userAuthorizations = await self.authorizationsForUser(
-            request.user, event
+            request.user, event  # type: ignore[attr-defined]
         )
-        request.authorizations = userAuthorizations
+        request.authorizations = (  # type: ignore[attr-defined]
+            userAuthorizations
+        )
 
         if not (requiredAuthorizations & userAuthorizations):
             self._log.debug(
@@ -328,11 +327,15 @@ class AuthProvider:
         # The author of the incident report should be allowed to read and write
         # to it.
 
-        if request.user is not None and incidentReport.reportEntries:
-            rangerHandle = request.user.rangerHandle
+        user = request.user  # type: ignore[attr-defined]
+
+        if user is not None and incidentReport.reportEntries:
+            rangerHandle = user.rangerHandle
             for reportEntry in incidentReport.reportEntries:
                 if reportEntry.author == rangerHandle:
-                    request.authorizations = Authorization.writeIncidentReports
+                    request.authorizations = (  # type: ignore[attr-defined]
+                        Authorization.writeIncidentReports
+                    )
                     return
 
         # Otherwise, use the ACL for the event associated with the incident

@@ -18,16 +18,14 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from typing import ClassVar
+from typing import ClassVar, cast
 
 from attr import attrib, attrs
-
 from pymysql.err import MySQLError
-
 from twisted.enterprise.adbapi import ConnectionPool
 
-from .._store import DataStore
 from ...test.database import TestDatabaseStoreMixIn
+from .._store import DataStore
 
 
 __all__ = ()
@@ -58,7 +56,10 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
         if getattr(self._state, "broken", False):
             self.raiseException()
 
-        return DataStore._db.fget(self)  # type: ignore[attr-defined]
+        return cast(
+            ConnectionPool,
+            DataStore._db.fget(self),  # type: ignore[attr-defined]
+        )
 
     def bringThePain(self) -> None:
         self._state.broken = True

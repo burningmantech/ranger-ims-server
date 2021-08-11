@@ -5,12 +5,12 @@ bcrypt==3.2.0
 cattrs==1.7.1
 hyperlink==21.0.0
 jwcrypto==0.9.1
-klein==20.6.0
+klein==21.8.0
 PyMySQL==1.0.2
 pyOpenSSL==20.0.1
 PyYAML==5.4.1
 service-identity==21.1.0
-Twisted==20.3.0
+Twisted==21.7.0
 zope.interface==5.4.0
 
 # Indirect dependencies
@@ -25,7 +25,7 @@ pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.20
 PyHamcrest==2.0.2
-python-dateutil==2.8.1
+python-dateutil==2.8.2
 six==1.16.0
 Tubes==0.2.0
 Werkzeug==2.0.1

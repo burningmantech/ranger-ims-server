@@ -21,7 +21,6 @@ Incident Management System URL schema.
 from typing import ClassVar
 
 from attr import attrs
-
 from hyperlink import URL
 
 

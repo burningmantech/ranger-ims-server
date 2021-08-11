@@ -23,9 +23,7 @@ from time import time
 from typing import Any, ClassVar, Iterable, Mapping, Optional, Sequence, TextIO
 
 from attr import Factory, attrs
-
 from twisted.logger import Logger
-
 from yaml import safe_load as parseYAML
 
 from ims.model import Position, Ranger, RangerStatus

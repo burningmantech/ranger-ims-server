@@ -21,7 +21,6 @@ Incident Management System data store export.
 from typing import Any, BinaryIO, ClassVar, Iterable, Mapping, Optional, cast
 
 from attr import attrs
-
 from twisted.logger import Logger
 
 from ims.ext.json import (
@@ -33,6 +32,7 @@ from ims.model import Event, EventAccess, EventData, IMSData, IncidentType
 from ims.model.json import jsonObjectFromModelObject, modelObjectFromJSONObject
 
 from .._abc import IMSDataStore
+
 
 __all__ = ()
 

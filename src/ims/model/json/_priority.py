@@ -21,8 +21,8 @@ JSON serialization/deserialization for incident priority
 from enum import Enum
 from typing import cast
 
-from ._json import registerDeserializer, registerSerializer
 from .._priority import IncidentPriority
+from ._json import registerDeserializer, registerSerializer
 
 
 __all__ = ()

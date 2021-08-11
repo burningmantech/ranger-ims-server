@@ -1,6 +1,4 @@
-# Docs:
-# https://help.github.com/en/actions/automating-your-workflow-with-github-actions
-
+# Docs: https://docs.github.com/en/actions
 
 
 name: CI/CD
@@ -313,7 +311,7 @@ jobs:
           python-version: "3.9"
 
       - name: "Upload coverage to Codecov"
-        uses: "codecov/codecov-action@v1"
+        uses: "codecov/codecov-action@v2.0.2"
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
           files: .tox/coverage.xml

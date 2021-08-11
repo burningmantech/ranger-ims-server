@@ -3,6 +3,7 @@ include .codecov.yml
 include .coveragerc
 include .dockerignore
 include .flake8
+include .isort.cfg
 include .pre-commit-config.yaml
 include bin/.common.sh
 include bin/build

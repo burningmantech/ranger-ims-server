@@ -21,8 +21,8 @@ JSON serialization/deserialization for incident state
 from enum import Enum, unique
 from typing import cast
 
-from ._json import registerDeserializer, registerSerializer
 from .._state import IncidentState
+from ._json import registerDeserializer, registerSerializer
 
 
 __all__ = ()
