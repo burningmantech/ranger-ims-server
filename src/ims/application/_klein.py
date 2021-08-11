@@ -346,6 +346,7 @@ class Router(Klein):
             """
             Redirect.
             """
+            assert failure.value is not None
             url = URL.fromText(failure.value.args[0])
             return redirect(request, url)
 

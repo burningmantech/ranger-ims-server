@@ -19,7 +19,7 @@ Element base classes.
 """
 
 from collections import OrderedDict
-from typing import Iterable, MutableMapping
+from typing import Iterable, MutableMapping, Optional, cast
 
 from attr import attrs
 from hyperlink import URL
@@ -104,7 +104,7 @@ class Page(Element):
         imports = (
             tags.script(src=url.asText())
             for url in self.urlsFromImportSpec(
-                tag.attributes.get("imports", "")
+                cast(str, tag.attributes.get("imports", ""))
             )
         )
 
@@ -150,7 +150,9 @@ class Page(Element):
         return tag(self.bottom(request), Class="container-fluid")
 
     @renderer
-    def top(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
+    def top(
+        self, request: IRequest, tag: Optional[Tag] = None
+    ) -> KleinRenderable:
         """
         Top elements.
         """
@@ -161,28 +163,36 @@ class Page(Element):
         )
 
     @renderer
-    def bottom(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
+    def bottom(
+        self, request: IRequest, tag: Optional[Tag] = None
+    ) -> KleinRenderable:
         """
         Bottom elements.
         """
         return (self.footer(request),)
 
     @renderer
-    def nav(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
+    def nav(
+        self, request: IRequest, tag: Optional[Tag] = None
+    ) -> KleinRenderable:
         """
         `<nav>` element.
         """
         return NavElement(config=self.config)
 
     @renderer
-    def header(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
+    def header(
+        self, request: IRequest, tag: Optional[Tag] = None
+    ) -> KleinRenderable:
         """
         `<header>` element.
         """
         return HeaderElement(config=self.config)
 
     @renderer
-    def footer(self, request: IRequest, tag: Tag = None) -> KleinRenderable:
+    def footer(
+        self, request: IRequest, tag: Optional[Tag] = None
+    ) -> KleinRenderable:
         """
         `<footer>` element.
         """

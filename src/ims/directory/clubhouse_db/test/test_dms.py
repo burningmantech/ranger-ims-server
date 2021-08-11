@@ -23,6 +23,7 @@ from typing import Any, MutableSequence, cast
 from twisted.internet.defer import Deferred, fail, succeed
 
 from ims.ext.trial import TestCase
+from ims.store._db import Rows
 
 from ..._directory import hashPassword
 from .._dms import DutyManagementSystem, fullName
@@ -78,7 +79,7 @@ class DutyManagementSystemTests(TestCase):
         L{DutyManagementSystem.dbpool} returns a DB pool.
         """
         dms = self.dms()
-        dbpool = dms.dbpool
+        dbpool = cast(DummyConnectionPool, dms.dbpool)
 
         self.assertIsInstance(dbpool, DummyConnectionPool)
 
@@ -148,7 +149,7 @@ class DummyConnectionPool:
 
     def runQuery(
         self, *args: tuple[Any, ...], **kw: dict[str, Any]
-    ) -> Deferred:
+    ) -> Deferred[Rows]:
         query = DummyQuery(args, kw)
 
         self.queries.append(query)
@@ -177,13 +178,14 @@ class DummyConnectionPool:
             "from person where status in "
             "('active', 'inactive', 'vintage', 'auditor')"
         ):
-            return succeed(fixPassword(p) for p in cannedPersonnel)
+            rows = (fixPassword(p) for p in cannedPersonnel)
+            return succeed(rows)  # type: ignore[arg-type]
 
         if sql == ("select id, title from position where all_rangers = 0"):
-            return succeed(())
+            return succeed(())  # type: ignore[arg-type]
 
         if sql == ("select person_id, position_id from person_position"):
-            return succeed(())
+            return succeed(())  # type: ignore[arg-type]
 
         return fail(AssertionError(f"No canned response for query: {sql}"))
 

@@ -19,7 +19,8 @@ Element base classes.
 """
 
 from functools import partial
-from typing import Iterable
+from typing import Iterable, cast
+from unittest.mock import sentinel
 
 from attr import attrs
 from twisted.python.filepath import FilePath
@@ -164,9 +165,9 @@ class Element(BaseElement):
         For C{"img"} tags, C{"attr"} defaults to C{"src"}.
         If the C{"attr"} attribute is defined C{""}, return the URL as text.
         """
-        name = tag.attributes.pop("url", None)
+        name = cast(str, tag.attributes.pop("url", sentinel.name))
 
-        if name is None:
+        if name is sentinel.name:
             raise ValueError("Rendered URL must have a url attribute")
 
         try:
@@ -179,8 +180,8 @@ class Element(BaseElement):
         if tag.tagName == "json":
             return jsonTextFromObject(text)
 
-        attributeName = tag.attributes.pop("attr", None)
-        if attributeName is None:
+        attributeName = cast(str, tag.attributes.pop("attr", sentinel.name))
+        if attributeName is sentinel.name:
             if tag.tagName in ("a", "link"):
                 attributeName = "href"
             elif tag.tagName in ("script", "img"):
@@ -209,7 +210,8 @@ class Element(BaseElement):
                 return sorted(i)
 
         authorizationsForUser = partial(
-            self.config.authProvider.authorizationsForUser, request.user
+            self.config.authProvider.authorizationsForUser,
+            request.user,  # type: ignore[attr-defined]
         )
 
         relevantAuthorizations = (

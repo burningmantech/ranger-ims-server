@@ -4,11 +4,10 @@ Extensions to :mod:`klein`
 """
 
 from functools import wraps
-from typing import Any, Awaitable, Callable, Union
+from typing import Any
 
-from twisted.web.iweb import IRenderable, IRequest
-from twisted.web.resource import IResource
-from twisted.web.template import Tag
+from klein import KleinRenderable, KleinRouteMethod
+from twisted.web.iweb import IRequest
 
 from ims.ext.enum import Enum, Names, auto
 
@@ -23,13 +22,6 @@ __all__ = (
     "Method",
     "static",
 )
-
-
-# Expected return types for route methods
-KleinRenderable = Union[str, bytes, IResource, IRenderable, Tag]
-KleinRouteMethod = Callable[
-    ..., Union[KleinRenderable, Awaitable[KleinRenderable]]
-]
 
 
 class Method(Names):

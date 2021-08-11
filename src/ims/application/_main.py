@@ -21,7 +21,7 @@ Incident Management System web service.
 from typing import ClassVar
 
 from attr import Factory, attrib, attrs
-from twisted.logger import ILogObserver, globalLogPublisher
+from twisted.logger import globalLogPublisher
 from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
 from twisted.web.static import File
@@ -76,7 +76,7 @@ class MainApplication:
 
     config: Configuration
 
-    storeObserver: ILogObserver = attrib(
+    storeObserver: DataStoreEventSourceLogObserver = attrib(
         factory=DataStoreEventSourceLogObserver, init=False
     )
 

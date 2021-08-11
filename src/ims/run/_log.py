@@ -51,8 +51,11 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
     else:
         ip = clientIP
 
-    if hasattr(request, "user") and request.user is not None:
-        username = request.user.shortNames[0]
+    if (
+        hasattr(request, "user")
+        and request.user is not None  # type: ignore[attr-defined]
+    ):
+        username = request.user.shortNames[0]  # type: ignore[attr-defined]
         try:
             username = _escape(username)
         except Exception:
@@ -67,9 +70,9 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
             timestamp=timestamp,
             method=_escape(request.method),
             uri=_escape(request.uri),
-            protocol=_escape(request.clientproto),
-            code=request.code,
-            length=request.sentLength or "-",
+            protocol=_escape(request.clientproto),  # type: ignore[attr-defined]
+            code=request.code,  # type: ignore[attr-defined]
+            length=request.sentLength or "-",  # type: ignore[attr-defined]
             referrer=referrer,
             agent=agent,
             user=username,

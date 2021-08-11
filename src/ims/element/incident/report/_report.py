@@ -51,7 +51,10 @@ class IncidentReportPage(Page):
         """
         JSON boolean, true if editing is allowed.
         """
-        if request.authorizations & Authorization.writeIncidentReports:
+        if (
+            request.authorizations  # type: ignore[attr-defined]
+            & Authorization.writeIncidentReports
+        ):
             return jsonTrue
         else:
             return jsonFalse

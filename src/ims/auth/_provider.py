@@ -111,9 +111,10 @@ class AuthProvider:
             user is associated with the request.
         """
         session = request.getSession()
-        request.user = getattr(session, "user", None)
+        user = getattr(session, "user", None)
+        request.user = user  # type: ignore[attr-defined]
 
-        if request.user is None and not optional:
+        if user is None and not optional:
             self._log.debug("Authentication failed")
             raise NotAuthenticatedError("No user logged in")
 
@@ -193,9 +194,11 @@ class AuthProvider:
         self.authenticateRequest(request)
 
         userAuthorizations = await self.authorizationsForUser(
-            request.user, event
+            request.user, event  # type: ignore[attr-defined]
         )
-        request.authorizations = userAuthorizations
+        request.authorizations = (  # type: ignore[attr-defined]
+            userAuthorizations
+        )
 
         if not (requiredAuthorizations & userAuthorizations):
             self._log.debug(
@@ -218,11 +221,15 @@ class AuthProvider:
         # The author of the incident report should be allowed to read and write
         # to it.
 
-        if request.user is not None and incidentReport.reportEntries:
-            rangerHandle = request.user.rangerHandle
+        user = request.user  # type: ignore[attr-defined]
+
+        if user is not None and incidentReport.reportEntries:
+            rangerHandle = user.rangerHandle
             for reportEntry in incidentReport.reportEntries:
                 if reportEntry.author == rangerHandle:
-                    request.authorizations = Authorization.writeIncidentReports
+                    request.authorizations = (  # type: ignore[attr-defined]
+                        Authorization.writeIncidentReports
+                    )
                     return
 
         # Otherwise, use the ACL for the event associated with the incident

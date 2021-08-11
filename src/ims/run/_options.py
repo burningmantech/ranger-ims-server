@@ -145,7 +145,7 @@ class HashPasswordOptions(Options):
     Command line options for the IMS export comparison tool.
     """
 
-    def parseArgs(self, password: str) -> None:
+    def parseArgs(self, password: str) -> None:  # type: ignore[override]
         """
         Handle password.
         """
@@ -157,7 +157,9 @@ class VerifyPasswordOptions(Options):
     Command line options for the IMS export comparison tool.
     """
 
-    def parseArgs(self, password: str, hashedPassword: str) -> None:
+    def parseArgs(  # type: ignore[override]
+        self, password: str, hashedPassword: str
+    ) -> None:
         """
         Handle password.
         """
