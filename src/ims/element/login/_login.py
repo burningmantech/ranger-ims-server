@@ -19,10 +19,9 @@ Login page.
 """
 
 from attr import attrs
+from klein import KleinRenderable
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
-
-from ims.ext.klein import KleinRenderable
 
 from ..page import Page
 

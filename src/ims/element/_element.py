@@ -23,6 +23,7 @@ from typing import Iterable, cast
 from unittest.mock import sentinel
 
 from attr import attrs
+from klein import KleinRenderable
 from twisted.python.filepath import FilePath
 from twisted.python.reflect import namedModule
 from twisted.web.iweb import IRequest, ITemplateLoader
@@ -32,7 +33,6 @@ from twisted.web.template import Tag, XMLFile, renderer, tags
 from ims.auth import Authorization
 from ims.config import Configuration
 from ims.ext.json import jsonTextFromObject
-from ims.ext.klein import KleinRenderable
 
 
 __all__ = ()

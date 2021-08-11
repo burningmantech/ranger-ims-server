@@ -22,11 +22,11 @@ from typing import ClassVar
 
 from attr import attrs
 from hyperlink import URL
+from klein import KleinRenderable
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
 from ims.config import Configuration, URLs
-from ims.ext.klein import KleinRenderable
 
 from ._klein import Router, invalidQueryResponse, queryValue, redirect
 

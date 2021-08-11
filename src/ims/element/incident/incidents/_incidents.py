@@ -19,12 +19,12 @@ Incidents page.
 """
 
 from attr import attrs
+from klein import KleinRenderable
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 
 from ims.auth import Authorization
 from ims.ext.json import jsonFalse, jsonTextFromObject, jsonTrue
-from ims.ext.klein import KleinRenderable
 from ims.model import Event
 
 from ...page import Page

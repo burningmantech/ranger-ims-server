@@ -36,6 +36,7 @@ from typing import (
 
 from attr import attrs
 from hyperlink import URL
+from klein import KleinRenderable
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
 from twisted.logger import Logger
@@ -46,7 +47,7 @@ from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
 from ims.directory import DirectoryError
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
-from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
+from ims.ext.klein import ContentType, HeaderName, static
 from ims.model import (
     Event,
     Incident,

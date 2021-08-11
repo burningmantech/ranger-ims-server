@@ -23,11 +23,11 @@ from typing import Iterable, MutableMapping, Optional, cast
 
 from attr import attrs
 from hyperlink import URL
+from klein import KleinRenderable
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer, tags
 
 from ims.config import Configuration
-from ims.ext.klein import KleinRenderable
 
 from .._element import Element
 from .footer import FooterElement
