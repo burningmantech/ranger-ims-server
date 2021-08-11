@@ -6,7 +6,7 @@ Extensions to :mod:`klein`
 from functools import wraps
 from typing import Any
 
-from klein import KleinRenderable, KleinRouteMethod
+from klein import KleinRenderable, KleinRouteHandler
 from twisted.web.iweb import IRequest
 
 from ims.ext.enum import Enum, Names, auto
@@ -17,8 +17,6 @@ from .. import __version__ as version
 __all__ = (
     "ContentType",
     "HeaderName",
-    "KleinRenderable",
-    "KleinRouteMethod",
     "Method",
     "static",
 )
@@ -94,7 +92,7 @@ else:
 _cacheControl = f"max-age={_maxAge}"
 
 
-def static(f: KleinRouteMethod) -> KleinRouteMethod:
+def static(f: KleinRouteHandler) -> KleinRouteHandler:
     """
     Decorate a route handler to add fixed ETag and Cache-Control headers, which
     are appropriate for static resources.
