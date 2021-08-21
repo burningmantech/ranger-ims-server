@@ -25,7 +25,7 @@ from attr import attrs
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
-from ims.directory import IMSUser
+from ims.directory import IMSUser, RangerUser
 from ims.model import Event, IncidentReport
 from ims.store import IMSDataStore
 
@@ -221,10 +221,10 @@ class AuthProvider:
         # The author of the incident report should be allowed to read and write
         # to it.
 
-        user = request.user  # type: ignore[attr-defined]
+        user: RangerUser = request.user  # type: ignore[attr-defined]
 
         if user is not None and incidentReport.reportEntries:
-            rangerHandle = user.rangerHandle
+            rangerHandle = user.ranger.handle
             for reportEntry in incidentReport.reportEntries:
                 if reportEntry.author == rangerHandle:
                     request.authorizations = (  # type: ignore[attr-defined]
