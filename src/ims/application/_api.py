@@ -45,7 +45,7 @@ from twisted.web.iweb import IRequest
 
 from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
-from ims.directory import DirectoryError
+from ims.directory import DirectoryError, RangerUser
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
 from ims.ext.klein import ContentType, HeaderName, static
 from ims.model import (
@@ -315,7 +315,7 @@ class APIApplication:
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
 
-        user = request.user  # type: ignore[attr-defined]
+        user: RangerUser = request.user  # type: ignore[attr-defined]
         author = user.shortNames[0]
         now = DateTime.now(TimeZone.utc)
         jsonNow = jsonObjectFromModelObject(now)
@@ -464,7 +464,7 @@ class APIApplication:
             request, event, Authorization.writeIncidents
         )
 
-        user = request.user  # type: ignore[attr-defined]
+        user: RangerUser = request.user  # type: ignore[attr-defined]
         author = user.shortNames[0]
 
         try:
@@ -641,11 +641,11 @@ class APIApplication:
 
         incidentReports: Iterable[IncidentReport]
         if limitedAccess:
-            user = request.user  # type: ignore[attr-defined]
+            user: RangerUser = request.user  # type: ignore[attr-defined]
             incidentReports = (
                 incidentReport
                 for incidentReport in await store.incidentReports(event=event)
-                if user.rangerHandle
+                if user.ranger.handle
                 in (entry.author for entry in incidentReport.reportEntries)
             )
         elif incidentNumberText is None:
@@ -704,7 +704,7 @@ class APIApplication:
                 f"{json[IncidentReportJSONKey.incidentNumber.value]}",
             )
 
-        user = request.user  # type: ignore[attr-defined]
+        user: RangerUser = request.user  # type: ignore[attr-defined]
         author = user.shortNames[0]
         now = DateTime.now(TimeZone.utc)
         jsonNow = jsonObjectFromModelObject(now)
@@ -828,7 +828,7 @@ class APIApplication:
             request, event, Authorization.writeIncidentReports
         )
 
-        user = request.user  # type: ignore[attr-defined]
+        user: RangerUser = request.user  # type: ignore[attr-defined]
         author = user.shortNames[0]
 
         try:
