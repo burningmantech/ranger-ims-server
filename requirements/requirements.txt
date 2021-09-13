@@ -17,7 +17,7 @@ Automat==20.2.0
 cffi==1.14.6
 characteristic==14.3.0
 constantly==15.1.0
-cryptography==3.4.7
+cryptography==3.4.8
 idna==3.2
 incremental==21.3.0
 pyasn1==0.4.8
