@@ -23,10 +23,8 @@ from typing import ClassVar, Optional, cast
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.logger import Logger
 
-from .base import TestDataStore
-from .service import DatabaseExistsError, MySQLService, randomDatabaseName
-from .test_store_core import DataStoreCoreTests
-from ...test.base import DataStoreTests as SuperDataStoreTests, TestDataStoreABC
+from ...test.base import DataStoreTests as SuperDataStoreTests
+from ...test.base import TestDataStoreABC
 from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
 from ...test.incident import (
     DataStoreIncidentTests as SuperDataStoreIncidentTests,
@@ -40,6 +38,9 @@ from ...test.street import (
 from ...test.type import (
     DataStoreIncidentTypeTests as SuperDataStoreIncidentTypeTests,
 )
+from .base import TestDataStore
+from .service import DatabaseExistsError, MySQLService, randomDatabaseName
+from .test_store_core import DataStoreCoreTests
 
 
 __all__ = ()
@@ -55,7 +56,7 @@ class DataStoreTests(SuperDataStoreTests):
 
     mysqlService: ClassVar[MySQLService] = DataStoreCoreTests.mysqlService
 
-    def setUp(self) -> Deferred:
+    def setUp(self) -> Deferred[None]:  # type: ignore[override]
         async def setUp() -> None:
             self.stores: list[TestDataStore] = []
 
@@ -64,7 +65,7 @@ class DataStoreTests(SuperDataStoreTests):
         # setUp can't return a coroutine, so convert it to a Deferred
         return ensureDeferred(setUp())
 
-    def tearDown(self) -> Deferred:
+    def tearDown(self) -> Deferred[None]:  # type: ignore[override]
         async def tearDown() -> None:
             for store in self.stores:
                 await store.disconnect()

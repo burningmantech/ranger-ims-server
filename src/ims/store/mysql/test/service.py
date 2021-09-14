@@ -24,17 +24,15 @@ from typing import Awaitable, ClassVar, Mapping, Optional, cast
 from uuid import uuid4
 
 from attr import Factory, attrib, attrs
-
 from docker.api import APIClient
 from docker.client import DockerClient
 from docker.errors import ImageNotFound, NotFound
 from docker.models.containers import Container
-
 from pymysql import OperationalError, ProgrammingError, connect
 from pymysql.cursors import DictCursor as Cursor
-
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
+from twisted.internet.interfaces import IReactorTime
 from twisted.internet.threads import deferToThread
 from twisted.logger import Logger
 
@@ -164,9 +162,11 @@ class MySQLService(ABC):
             service=self,
         )
 
-        def sleep(interval: float) -> Deferred:
-            d = Deferred()
-            reactor.callLater(interval, lambda: d.callback(None))
+        def sleep(interval: float) -> Deferred[None]:
+            d: Deferred[None] = Deferred()
+            cast(IReactorTime, reactor).callLater(
+                interval, lambda: d.callback(None)
+            )
             return d
 
         error = None
@@ -227,7 +227,7 @@ class DockerizedMySQLService(MySQLService):
         Internal mutable state for :class:`DataStore`.
         """
 
-        container: Optional[Deferred] = None
+        container: Optional[Deferred[Container]] = None
 
         host = NO_HOST
         port = NO_PORT
@@ -295,7 +295,7 @@ class DockerizedMySQLService(MySQLService):
         timeout: float = 60.0,
         interval: float = 1.0,
     ) -> Awaitable[None]:
-        d = Deferred()
+        d: Deferred[None] = Deferred()
 
         def waitOnDBStartup(elapsed: float = 0.0) -> None:
             logs = b""
@@ -333,10 +333,10 @@ class DockerizedMySQLService(MySQLService):
                                 name=containerName,
                                 logs=logs.decode("latin-1"),
                             )
-                            d.callback(logs)
+                            d.callback(None)
                             return
 
-                reactor.callLater(
+                cast(IReactorTime, reactor).callLater(
                     interval, waitOnDBStartup, elapsed=(elapsed + interval)
                 )
             except Exception:
@@ -349,7 +349,7 @@ class DockerizedMySQLService(MySQLService):
 
         waitOnDBStartup()
 
-        return cast(Awaitable[None], d)
+        return d
 
     def _resetContainerState(self) -> None:
         self._state.host = NO_HOST

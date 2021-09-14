@@ -29,10 +29,10 @@ from twisted.logger import Logger
 
 from ims.ext.trial import AsynchronousTestCase, asyncAsDeferred
 
+from ..._exceptions import StorageError
+from .._store import DataStore, ReconnectingConnectionPool
 from .base import TestDataStore
 from .service import DatabaseExistsError, MySQLService, randomDatabaseName
-from .._store import DataStore, ReconnectingConnectionPool
-from ..._exceptions import StorageError
 
 
 __all__ = ()
@@ -70,7 +70,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
     mysqlService: ClassVar[MySQLService] = mysqlServiceFactory()
 
-    def setUp(self) -> Deferred:
+    def setUp(self) -> Deferred[None]:  # type: ignore[override]
         async def setUp() -> None:
             self.stores: list[TestDataStore] = []
 
@@ -79,7 +79,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         # setUp can't return a coroutine, so convert it to a Deferred
         return ensureDeferred(setUp())
 
-    def tearDown(self) -> Deferred:
+    def tearDown(self) -> Deferred[None]:  # type: ignore[override]
         async def tearDown() -> None:
             for store in self.stores:
                 await store.disconnect()

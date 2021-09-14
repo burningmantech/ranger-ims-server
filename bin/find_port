@@ -6,6 +6,7 @@ Find an unused port on this host.
 
 from socket import socket as Socket
 
+
 socket = Socket()
 socket.bind(("", 0))
 number = socket.getsockname()[1]

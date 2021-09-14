@@ -7,13 +7,9 @@ from functools import wraps
 from typing import Any, Callable, Optional, Sequence, cast
 
 from hypothesis import HealthCheck, settings
-
-from twisted.internet.defer import Deferred, ensureDeferred
-from twisted.python.failure import Failure
-from twisted.trial.unittest import (
-    SynchronousTestCase as SuperTestCase,
-    TestCase as SuperAsynchronousTestCase,
-)
+from twisted.internet.defer import ensureDeferred
+from twisted.trial.unittest import SynchronousTestCase as SuperTestCase
+from twisted.trial.unittest import TestCase as SuperAsynchronousTestCase
 from twisted.web import http
 from twisted.web.iweb import IRequest
 
@@ -55,24 +51,6 @@ class TestCase(SuperTestCase):
     A unit test.
     """
 
-    def successResultOf(self, deferred: Deferred) -> Any:
-        """
-        Override :meth:`SuperTestCase.successResultOf` to enable handling of
-        coroutines as well as :class:`Deferred` s.
-        """
-        deferred = ensureDeferred(deferred)
-        return super().successResultOf(deferred)
-
-    def failureResultOf(
-        self, deferred: Deferred, *expectedExceptionTypes: type[BaseException]
-    ) -> Failure:
-        """
-        Override :meth:`SuperTestCase.failureResultOf` to enable handling of
-        coroutines as well as :class:`Deferred` s.
-        """
-        deferred = ensureDeferred(deferred)
-        return super().failureResultOf(deferred, *expectedExceptionTypes)
-
     def _headerValues(self, request: IRequest, name: str) -> Sequence[str]:
         return cast(
             Sequence[str],
@@ -108,7 +86,7 @@ class TestCase(SuperTestCase):
         """
         Assert that the response code on a request matches the given code.
         """
-        self.assertEqual(request.code, code)
+        self.assertEqual(request.code, code)  # type: ignore[attr-defined]
 
     def assertResponseContentType(
         self, request: IRequest, contentType: str
@@ -129,7 +107,8 @@ class TestCase(SuperTestCase):
 
         # FIXME: Check encoding, default to UTF-8
 
-        return cast(bytes, request.getWrittenData()).decode()
+        data = request.getWrittenData()  # type: ignore[attr-defined]
+        return cast(bytes, data).decode()
 
     def assertJSONResponse(
         self, request: IRequest, status: int = http.OK
@@ -142,7 +121,8 @@ class TestCase(SuperTestCase):
 
         # FIXME: Check encoding, default to UTF-8
 
-        return cast(bytes, request.getWrittenData()).decode()
+        data = request.getWrittenData()  # type: ignore[attr-defined]
+        return cast(bytes, data).decode()
 
     def assertEventDataEqual(
         self, eventDataA: EventData, eventDataB: EventData

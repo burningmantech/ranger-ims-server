@@ -21,8 +21,8 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 from pathlib import Path
 from typing import cast
 
-from .base import TestDataStore
-from ...test.base import DataStoreTests as SuperDataStoreTests, TestDataStoreABC
+from ...test.base import DataStoreTests as SuperDataStoreTests
+from ...test.base import TestDataStoreABC
 from ...test.event import DataStoreEventTests as SuperDataStoreEventTests
 from ...test.incident import (
     DataStoreIncidentTests as SuperDataStoreIncidentTests,
@@ -36,6 +36,7 @@ from ...test.street import (
 from ...test.type import (
     DataStoreIncidentTypeTests as SuperDataStoreIncidentTypeTests,
 )
+from .base import TestDataStore
 
 
 __all__ = ()

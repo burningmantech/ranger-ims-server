@@ -21,9 +21,8 @@ Incident Management System web interface.
 from typing import ClassVar, Optional
 
 from attr import attrs
-
 from hyperlink import URL
-
+from klein import KleinRenderable
 from twisted.web.iweb import IRequest
 
 from ims.auth import Authorization, NotAuthorizedError
@@ -41,7 +40,7 @@ from ims.element.incident.report_template import IncidentReportTemplatePage
 from ims.element.incident.reports import IncidentReportsPage
 from ims.element.incident.reports_template import IncidentReportsTemplatePage
 from ims.element.root import RootPage
-from ims.ext.klein import KleinRenderable, static
+from ims.ext.klein import static
 from ims.model import Event
 from ims.store import NoSuchIncidentReportError
 

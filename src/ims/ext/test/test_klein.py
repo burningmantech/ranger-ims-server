@@ -2,11 +2,11 @@
 Tests for :mod:`ranger-ims-server.ext.klein`
 """
 
-from klein.test.test_resource import Klein, requestMock
-
+from klein import KleinRenderable
+from klein.test.test_resource import Klein, MockRequest
 from twisted.web.iweb import IRequest
 
-from ..klein import KleinRenderable, static
+from ..klein import static
 from ..trial import TestCase
 
 
@@ -33,7 +33,7 @@ class StaticDecoratorTests(TestCase):
         :func:`static` returns the entity returned by the wrapped method.
         """
         app = self.Application()
-        request = requestMock(b"/")
+        request = MockRequest(b"/")
 
         entity = app.root(request)
 
@@ -44,7 +44,7 @@ class StaticDecoratorTests(TestCase):
         :func:`static` sets an ``ETag`` header.
         """
         app = self.Application()
-        request = requestMock(b"/")
+        request = MockRequest(b"/")
 
         app.root(request)
 
@@ -58,7 +58,7 @@ class StaticDecoratorTests(TestCase):
         :func:`static` sets a ``Cache-Control`` header.
         """
         app = self.Application()
-        request = requestMock(b"/")
+        request = MockRequest(b"/")
 
         app.root(request)
 

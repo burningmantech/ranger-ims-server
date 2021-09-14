@@ -21,6 +21,8 @@ JSON serialization/deserialization for addresses
 from enum import Enum, unique
 from typing import Any, Optional
 
+from .._address import Address, RodGarettAddress, TextOnlyAddress
+from .._location import Location
 from ._address import AddressJSONKey, AddressTypeJSONValue, serializeAddress
 from ._json import (
     jsonDeserialize,
@@ -28,8 +30,6 @@ from ._json import (
     registerDeserializer,
     registerSerializer,
 )
-from .._address import Address, RodGarettAddress, TextOnlyAddress
-from .._location import Location
 
 
 __all__ = ()

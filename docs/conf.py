@@ -18,6 +18,7 @@ from os.path import abspath, join
 from pprint import pprint
 from sys import path
 
+
 path.insert(0, abspath(join("..", "src")))
 
 pprint(environ)

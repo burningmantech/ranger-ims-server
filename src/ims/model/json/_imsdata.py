@@ -21,15 +21,15 @@ JSON serialization/deserialization for IMS data
 from enum import Enum, unique
 from typing import Any, cast
 
+from .._eventdata import EventData
+from .._imsdata import IMSData
+from .._type import IncidentType
 from ._json import (
     deserialize,
     jsonSerialize,
     registerDeserializer,
     registerSerializer,
 )
-from .._eventdata import EventData
-from .._imsdata import IMSData
-from .._type import IncidentType
 
 
 __all__ = ()

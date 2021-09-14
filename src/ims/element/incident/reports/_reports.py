@@ -19,17 +19,16 @@ Incident reports page element.
 """
 
 from attr import attrs
-
+from klein import KleinRenderable
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 
 from ims.auth import Authorization
 from ims.ext.json import jsonFalse, jsonTextFromObject, jsonTrue
-from ims.ext.klein import KleinRenderable
 from ims.model import Event
 
-from ..reports_template._reports_template import title
 from ...page import Page
+from ..reports_template._reports_template import title
 
 
 __all__ = ()
@@ -49,7 +48,10 @@ class IncidentReportsPage(Page):
         """
         JSON boolean, true if editing is allowed.
         """
-        if request.authorizations & Authorization.writeIncidentReports:
+        if (
+            request.authorizations  # type: ignore[attr-defined]
+            & Authorization.writeIncidentReports
+        ):
             return jsonTrue
         else:
             return jsonFalse

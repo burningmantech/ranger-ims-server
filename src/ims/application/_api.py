@@ -18,7 +18,8 @@
 Incident Management System JSON API endpoints.
 """
 
-from datetime import datetime as DateTime, timezone as TimeZone
+from datetime import datetime as DateTime
+from datetime import timezone as TimeZone
 from enum import Enum
 from functools import partial
 from json import JSONDecodeError
@@ -34,20 +35,19 @@ from typing import (
 )
 
 from attr import attrs
-
 from hyperlink import URL
-
+from klein import KleinRenderable
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
-from twisted.logger import ILogObserver, Logger
+from twisted.logger import Logger
 from twisted.python.failure import Failure
 from twisted.web.iweb import IRequest
 
 from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
-from ims.directory import DirectoryError
+from ims.directory import DirectoryError, RangerUser
 from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
-from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
+from ims.ext.klein import ContentType, HeaderName, static
 from ims.model import (
     Event,
     Incident,
@@ -70,6 +70,7 @@ from ims.model.json import (
 )
 from ims.store import NoSuchIncidentError
 
+from ._eventsource import DataStoreEventSourceLogObserver
 from ._klein import (
     Router,
     badRequestResponse,
@@ -101,7 +102,7 @@ class APIApplication:
     router: ClassVar[Router] = Router()
 
     config: Configuration
-    storeObserver: ILogObserver
+    storeObserver: DataStoreEventSourceLogObserver
 
     @router.route(_unprefix(URLs.ping), methods=("HEAD", "GET"))
     @static
@@ -217,7 +218,8 @@ class APIApplication:
         self.config.authProvider.authenticateRequest(request)
 
         authorizationsForUser = partial(
-            self.config.authProvider.authorizationsForUser, request.user
+            self.config.authProvider.authorizationsForUser,
+            request.user,  # type: ignore[attr-defined]
         )
 
         events = sorted(
@@ -313,7 +315,8 @@ class APIApplication:
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
 
-        author = request.user.shortNames[0]
+        user: RangerUser = request.user  # type: ignore[attr-defined]
+        author = user.shortNames[0]
         now = DateTime.now(TimeZone.utc)
         jsonNow = jsonObjectFromModelObject(now)
 
@@ -461,7 +464,8 @@ class APIApplication:
             request, event, Authorization.writeIncidents
         )
 
-        author = request.user.shortNames[0]
+        user: RangerUser = request.user  # type: ignore[attr-defined]
+        author = user.shortNames[0]
 
         try:
             incidentNumber = int(number)
@@ -637,10 +641,11 @@ class APIApplication:
 
         incidentReports: Iterable[IncidentReport]
         if limitedAccess:
+            user: RangerUser = request.user  # type: ignore[attr-defined]
             incidentReports = (
                 incidentReport
                 for incidentReport in await store.incidentReports(event=event)
-                if request.user.rangerHandle
+                if user.ranger.handle
                 in (entry.author for entry in incidentReport.reportEntries)
             )
         elif incidentNumberText is None:
@@ -688,16 +693,19 @@ class APIApplication:
 
         if json.get(IncidentReportJSONKey.event.value, event.id) != event.id:
             return badRequestResponse(
+                request,
                 "Event ID mismatch: "
-                f"{json[IncidentReportJSONKey.event.value]} != {event.id}"
+                f"{json[IncidentReportJSONKey.event.value]} != {event.id}",
             )
         if json.get(IncidentReportJSONKey.incidentNumber.value):
             return badRequestResponse(
+                request,
                 "New incident report may not be attached to an incident: "
-                f"{json[IncidentReportJSONKey.incidentNumber.value]}"
+                f"{json[IncidentReportJSONKey.incidentNumber.value]}",
             )
 
-        author = request.user.shortNames[0]
+        user: RangerUser = request.user  # type: ignore[attr-defined]
+        author = user.shortNames[0]
         now = DateTime.now(TimeZone.utc)
         jsonNow = jsonObjectFromModelObject(now)
 
@@ -820,7 +828,8 @@ class APIApplication:
             request, event, Authorization.writeIncidentReports
         )
 
-        author = request.user.shortNames[0]
+        user: RangerUser = request.user  # type: ignore[attr-defined]
+        author = user.shortNames[0]
 
         try:
             incidentReportNumber = int(number)
@@ -1061,7 +1070,8 @@ class APIApplication:
             raise AssertionError("This was not expected")
 
         # Handle disconnect
-        request.notifyFinish().addCallbacks(finished, disconnected)
+        d = request.notifyFinish()  # type: ignore[attr-defined]
+        d.addCallbacks(finished, disconnected)
 
         # Return an unfired deferred, so the connection doesn't close on this
         # end...

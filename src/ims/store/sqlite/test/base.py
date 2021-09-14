@@ -22,10 +22,10 @@ from typing import ClassVar, cast
 
 from attr import attrib, attrs
 
-from ims.ext.sqlite import Connection, SQLITE_MAX_INT, SQLiteError
+from ims.ext.sqlite import SQLITE_MAX_INT, Connection, SQLiteError
 
-from .._store import DataStore
 from ...test.database import TestDatabaseStoreMixIn
+from .._store import DataStore
 
 
 __all__ = ()

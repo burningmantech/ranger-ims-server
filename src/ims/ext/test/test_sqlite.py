@@ -7,14 +7,7 @@ from io import StringIO
 from pathlib import Path
 from sqlite3 import Error as SQLiteError
 from textwrap import dedent
-from typing import (
-    Any,
-    Iterator,
-    Mapping,
-    Optional,
-    Union,
-    cast,
-)
+from typing import Any, Iterator, Mapping, Optional, Union, cast
 
 from .. import sqlite
 from ..sqlite import (

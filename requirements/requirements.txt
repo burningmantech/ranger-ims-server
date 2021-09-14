@@ -4,12 +4,12 @@ attrs==21.2.0
 bcrypt==3.2.0
 cattrs==1.7.1
 hyperlink==21.0.0
-klein==20.6.0
+klein==21.8.0
 PyMySQL==1.0.2
 pyOpenSSL==20.0.1
 PyYAML==5.4.1
 service-identity==21.1.0
-Twisted==20.3.0
+Twisted==21.7.0
 zope.interface==5.4.0
 
 # Indirect dependencies
@@ -17,7 +17,7 @@ Automat==20.2.0
 cffi==1.14.6
 characteristic==14.3.0
 constantly==15.1.0
-cryptography==3.4.7
+cryptography==3.4.8
 idna==3.2
 incremental==21.3.0
 pyasn1==0.4.8

@@ -21,8 +21,8 @@ Incident Management System web service.
 from typing import ClassVar
 
 from attr import Factory, attrib, attrs
-
-from twisted.logger import ILogObserver, globalLogPublisher
+from klein import KleinRenderable
+from twisted.logger import globalLogPublisher
 from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
 from twisted.web.static import File
@@ -30,7 +30,7 @@ from twisted.web.static import File
 import ims.element
 from ims.config import Configuration, URLs
 from ims.ext.json import jsonTextFromObject
-from ims.ext.klein import ContentType, HeaderName, KleinRenderable, static
+from ims.ext.klein import ContentType, HeaderName, static
 
 from ._api import APIApplication
 from ._auth import AuthApplication
@@ -77,7 +77,7 @@ class MainApplication:
 
     config: Configuration
 
-    storeObserver: ILogObserver = attrib(
+    storeObserver: DataStoreEventSourceLogObserver = attrib(
         factory=DataStoreEventSourceLogObserver, init=False
     )
 
