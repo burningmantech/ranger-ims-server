@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # This stage builds the build container.
 # -----------------------------------------------------------------------------
-FROM python:3.9.7-alpine3.13 as build
+FROM python:3.10.0-alpine3.13 as build
 
 # Install compiler toolchain and libraries.
 RUN apk add --no-cache build-base libffi-dev libressl-dev
@@ -35,7 +35,7 @@ RUN "${IMS_INSTALL_DIR}/bin/pip" --no-cache-dir install "${IMS_SOURCE_DIR}"
 # -----------------------------------------------------------------------------
 # This stage builds the application container.
 # -----------------------------------------------------------------------------
-FROM python:3.9.7-alpine3.13 as application
+FROM python:3.10.0-alpine3.13 as application
 
 # Docker-specific default configuration
 ENV IMS_HOSTNAME="0.0.0.0"
@@ -49,7 +49,7 @@ RUN apk add --no-cache libressl
 
 # Allow Python to bind to privileged port numbers
 RUN apk add --no-cache libcap
-RUN setcap "cap_net_bind_service=+ep" /usr/local/bin/python3.9
+RUN setcap "cap_net_bind_service=+ep" /usr/local/bin/python3.10
 
 # Create server root and make that our working directory
 RUN install -o daemon -g daemon -d "${IMS_SERVER_ROOT}"
