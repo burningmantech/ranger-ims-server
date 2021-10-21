@@ -228,14 +228,14 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.9"]
-        tox-prefix: ["coverage"]
+        tox-prefix: ["test"]
         optional: [false]
         include:
           # Run Python 3.10 but allow it to fail
           - os: "ubuntu-latest"
             python-version: "3.10.0-beta.2"
             optional: true
-            tox-prefix: "test"
+            tox-prefix: "coverage"
 
     services:
       mysql:
