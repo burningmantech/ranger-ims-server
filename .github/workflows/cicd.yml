@@ -235,12 +235,12 @@ jobs:
           - os: "ubuntu-latest"
             python-version: "3.10.0"
             optional: false
-            tox-prefix: "test"
+            tox-prefix: "coverage"
           # test Python 3.11 but allow it to fail
           - os: "ubuntu-latest"
             python-version: "3.11.0-alpha.1"
             optional: true
-            tox-prefix: "coverage"
+            tox-prefix: "test"
 
     services:
       mysql:
