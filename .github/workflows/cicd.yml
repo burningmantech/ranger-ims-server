@@ -231,6 +231,11 @@ jobs:
         tox-prefix: ["test"]
         optional: [false]
         include:
+          # test Python 3.10 with coverage
+          - os: "ubuntu-latest"
+            python-version: "3.10.0"
+            optional: false
+            tox-prefix: "test"
           # test Python 3.11 but allow it to fail
           - os: "ubuntu-latest"
             python-version: "3.11.0-alpha.1"
