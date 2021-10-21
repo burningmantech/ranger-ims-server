@@ -300,7 +300,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         try:
             await store.upgradeSchema()
         except StorageError as e:
-            self.assertStartsWith(str(e), "Unable to apply schema: ")
+            self.assertStartsWith(str(e), "Unable to upgrade schema from ")
         else:
             self.fail("StorageError not raised.")
 
