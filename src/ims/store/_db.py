@@ -1899,7 +1899,7 @@ class DatabaseManager:
                         fromVersion=fromVersion,
                         toVersion=toVersion,
                     )
-                    raise StorageError(f"schema upgrade file not found")
+                    raise StorageError("schema upgrade file not found")
                 await self.store.applySchema(sql)
             except StorageError as e:
                 raise StorageError(
