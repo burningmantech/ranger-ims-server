@@ -1,13 +1,13 @@
 # -----------------------------------------------------------------------------
 # This stage builds the build container.
 # -----------------------------------------------------------------------------
-FROM python:3.10.0-alpine3.13 as build
+FROM python:3.10.0-alpine3.14 as build
 
 # Install compiler toolchain and libraries.
 RUN apk add --no-cache build-base libffi-dev libressl-dev
 
 # Install Rust for cryptography
-RUN apk add --no-cache build-base rust cargo
+RUN apk add --no-cache python3-dev rust cargo
 
 # Paths
 ENV IMS_SOURCE_DIR="/src/ims"
@@ -35,7 +35,7 @@ RUN "${IMS_INSTALL_DIR}/bin/pip" --no-cache-dir install "${IMS_SOURCE_DIR}"
 # -----------------------------------------------------------------------------
 # This stage builds the application container.
 # -----------------------------------------------------------------------------
-FROM python:3.10.0-alpine3.13 as application
+FROM python:3.10.0-alpine3.14 as application
 
 # Docker-specific default configuration
 ENV IMS_HOSTNAME="0.0.0.0"
