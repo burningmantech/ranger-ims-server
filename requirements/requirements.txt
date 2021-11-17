@@ -1,31 +1,31 @@
 # Direct dependencies
-arrow==1.1.1
+arrow==1.2.1
 attrs==21.2.0
 bcrypt==3.2.0
-cattrs==1.7.1
+cattrs==1.8.0
 hyperlink==21.0.0
 jwcrypto==0.9.1
 klein==21.8.0
 PyMySQL==1.0.2
-pyOpenSSL==20.0.1
-PyYAML==5.4.1
+pyOpenSSL==21.0.0
+PyYAML==6.0
 service-identity==21.1.0
 Twisted==21.7.0
 zope.interface==5.4.0
 
 # Indirect dependencies
 Automat==20.2.0
-cffi==1.14.6
+cffi==1.15.0
 characteristic==14.3.0
 constantly==15.1.0
-cryptography==3.4.7
-idna==3.2
+cryptography==35.0.0
+idna==3.3
 incremental==21.3.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
-pycparser==2.20
+pycparser==2.21
 PyHamcrest==2.0.2
 python-dateutil==2.8.2
 six==1.16.0
 Tubes==0.2.0
-Werkzeug==2.0.1
+Werkzeug==2.0.2

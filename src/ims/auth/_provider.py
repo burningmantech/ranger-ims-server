@@ -31,7 +31,7 @@ from jwcrypto.jwt import JWT
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
-from ims.directory import IMSDirectory, IMSUser
+from ims.directory import IMSDirectory, IMSUser, RangerUser
 from ims.ext.json import objectFromJSONText
 from ims.ext.klein import HeaderName
 from ims.model import Event, IncidentReport
@@ -327,10 +327,10 @@ class AuthProvider:
         # The author of the incident report should be allowed to read and write
         # to it.
 
-        user = request.user  # type: ignore[attr-defined]
+        user: RangerUser = request.user  # type: ignore[attr-defined]
 
         if user is not None and incidentReport.reportEntries:
-            rangerHandle = user.rangerHandle
+            rangerHandle = user.ranger.handle
             for reportEntry in incidentReport.reportEntries:
                 if reportEntry.author == rangerHandle:
                     request.authorizations = (  # type: ignore[attr-defined]
