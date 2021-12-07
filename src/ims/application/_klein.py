@@ -34,7 +34,6 @@ from werkzeug.routing import RequestRedirect
 
 from ims import __version__ as version
 from ims.auth import NotAuthenticatedError, NotAuthorizedError
-from ims.config import URLs
 from ims.directory import DirectoryError
 from ims.ext.klein import ContentType, HeaderName
 
@@ -400,19 +399,7 @@ class Router(Klein):
             """
             Not authenticated.
             """
-            contentType = request.getHeader(HeaderName.contentType.value)
-            if (
-                contentType is not None
-                and contentType == ContentType.json.value
-            ):
-                return notAuthenticatedResponse(request)
-
-            requestedWith = request.getHeader("X-Requested-With")
-            if requestedWith is not None and requestedWith == "XMLHttpRequest":
-                return forbiddenResponse(request)
-
-            element = redirect(request, URLs.login, origin="o")
-            return renderElement(request, element)
+            return notAuthenticatedResponse(request)
 
         @self.handle_errors(DirectoryError)
         @renderResponse
@@ -438,7 +425,7 @@ class Router(Klein):
             # We don't do that for a few reasons:
             #  - It's a poor security practice to explain to an attacker what
             #    exactly is causing an internal error.
-            #  - Most users don't know what to do with that inforrmation.
+            #  - Most users don't know what to do with that information.
             #  - The admins should be able to find the errors in the logs.
             #  - Klein doing that is a developer feature; developers can also
             #    watch the logs.
