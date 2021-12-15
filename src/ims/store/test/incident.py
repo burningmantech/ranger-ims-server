@@ -143,7 +143,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
             found: set[tuple[Event, int]] = set()
             for event in events:
-                for retrieved in await store.incidents(event):
+                for retrieved in await store.incidents(event.id):
                     self.assertIncidentsEqual(
                         store, retrieved, events[event][retrieved.number]
                     )
@@ -173,7 +173,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
             assert event is not None
 
-            retrieved = await store.incidents(event)
+            retrieved = await store.incidents(event.id)
 
             for r, i in zip(sorted(retrieved), sorted(incidents)):
                 self.assertIncidentsEqual(store, r, i)
@@ -189,7 +189,7 @@ class DataStoreIncidentTests(DataStoreTests):
         store.bringThePain()
 
         try:
-            await store.incidents(anEvent)
+            await store.incidents(anEvent.id)
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
@@ -206,7 +206,7 @@ class DataStoreIncidentTests(DataStoreTests):
             await store.storeIncident(incident)
 
             retrieved = await store.incidentWithNumber(
-                incident.event, incident.number
+                incident.event.id, incident.number
             )
 
             self.assertIncidentsEqual(store, retrieved, incident)
@@ -221,7 +221,7 @@ class DataStoreIncidentTests(DataStoreTests):
         await store.createEvent(anEvent)
 
         try:
-            await store.incidentWithNumber(anEvent, 1)
+            await store.incidentWithNumber(anEvent.id, 1)
         except NoSuchIncidentError:
             pass
         else:
@@ -238,7 +238,9 @@ class DataStoreIncidentTests(DataStoreTests):
         await store.createEvent(anEvent)
 
         try:
-            await store.incidentWithNumber(anEvent, store.maxIncidentNumber + 1)
+            await store.incidentWithNumber(
+                anEvent.id, store.maxIncidentNumber + 1
+            )
         except NoSuchIncidentError:
             pass
         else:
@@ -255,7 +257,7 @@ class DataStoreIncidentTests(DataStoreTests):
         store.bringThePain()
 
         try:
-            await store.incidentWithNumber(anEvent, 1)
+            await store.incidentWithNumber(anEvent.id, 1)
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
@@ -305,7 +307,7 @@ class DataStoreIncidentTests(DataStoreTests):
                         and concentric not in createdConcentricStreets[event]
                     ):
                         await store.createConcentricStreet(
-                            event, concentric, "Sesame Street"
+                            event.id, concentric, "Sesame Street"
                         )
                         createdConcentricStreets[event].add(concentric)
 
@@ -334,7 +336,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 expectedIncidents = sorted(
                     i for i in expectedStoredIncidents if i.event == event
                 )
-                storedIncidents = sorted(await store.incidents(event=event))
+                storedIncidents = sorted(await store.incidents(event.id))
 
                 self.assertEqual(
                     len(storedIncidents),
@@ -376,7 +378,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.setIncident_priority(
-                anIncident1.event,
+                anIncident1.event.id,
                 anIncident1.number,
                 IncidentPriority.high,
                 "Bucket",
@@ -415,10 +417,10 @@ class DataStoreIncidentTests(DataStoreTests):
             ):
                 await store.createIncidentType(incidentType)
 
-        await setter(incident.event, incident.number, value, "Hubcap")
+        await setter(incident.event.id, incident.number, value, "Hubcap")
 
         retrieved = await store.incidentWithNumber(
-            incident.event, incident.number
+            incident.event.id, incident.number
         )
 
         # Normalize location if we're updating the address.
@@ -594,7 +596,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.setIncident_rangers(
-                anIncident1.event,
+                anIncident1.event.id,
                 anIncident1.number,
                 ("Hubcap", "Dingle"),
                 "Bucket",
@@ -634,7 +636,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.setIncident_incidentTypes(
-                anIncident1.event,
+                anIncident1.event.id,
                 anIncident1.number,
                 ("Fun", "Boring"),
                 "Bucket",
@@ -668,17 +670,17 @@ class DataStoreIncidentTests(DataStoreTests):
 
                 # Fetch incident back so we have the same data as the DB
                 incident = await store.incidentWithNumber(
-                    incident.event, incident.number
+                    incident.event.id, incident.number
                 )
 
                 # Add report entries
                 await store.addReportEntriesToIncident(
-                    incident.event, incident.number, reportEntries, author
+                    incident.event.id, incident.number, reportEntries, author
                 )
 
                 # Get the updated incident with the new report entries
                 updatedIncident = await store.incidentWithNumber(
-                    incident.event, incident.number
+                    incident.event.id, incident.number
                 )
 
                 # Updated number of incidents should be original plus new
@@ -714,7 +716,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.addReportEntriesToIncident(
-                anIncident1.event,
+                anIncident1.event.id,
                 anIncident1.number,
                 (reportEntry,),
                 reportEntry.author,
@@ -738,7 +740,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.addReportEntriesToIncident(
-                anIncident1.event,
+                anIncident1.event.id,
                 anIncident1.number,
                 (aReportEntry,),
                 otherAuthor,
@@ -760,7 +762,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
         try:
             await store.addReportEntriesToIncident(
-                anIncident1.event,
+                anIncident1.event.id,
                 anIncident1.number,
                 (aReportEntry,),
                 aReportEntry.author,

@@ -105,14 +105,14 @@ class JSONExporter:
         self._log.info("Exporting event {event}...", event=event)
 
         eventAccess = EventAccess(
-            readers=(await self.store.readers(event)),
-            writers=(await self.store.writers(event)),
-            reporters=(await self.store.reporters(event)),
+            readers=(await self.store.readers(event.id)),
+            writers=(await self.store.writers(event.id)),
+            reporters=(await self.store.reporters(event.id)),
         )
 
-        concentricStreets = await self.store.concentricStreets(event)
-        incidents = await self.store.incidents(event)
-        incidentReports = await self.store.incidentReports(event)
+        concentricStreets = await self.store.concentricStreets(event.id)
+        incidents = await self.store.incidents(event.id)
+        incidentReports = await self.store.incidentReports(event.id)
 
         return EventData(
             event=event,
@@ -187,9 +187,9 @@ class JSONImporter:
 
         assert store is not None
 
-        await store.setReaders(event, eventAccess.readers)
-        await store.setWriters(event, eventAccess.writers)
-        await store.setReporters(event, eventAccess.reporters)
+        await store.setReaders(event.id, eventAccess.readers)
+        await store.setWriters(event.id, eventAccess.writers)
+        await store.setReporters(event.id, eventAccess.reporters)
 
     async def _storeConcentricStreets(self, eventData: EventData) -> None:
         store = self.store
@@ -198,7 +198,7 @@ class JSONImporter:
         assert store is not None
 
         existingStreetIDs = frozenset(
-            (await store.concentricStreets(event)).keys()
+            (await store.concentricStreets(event.id)).keys()
         )
 
         for streetID, streetName in eventData.concentricStreets.items():
@@ -210,7 +210,9 @@ class JSONImporter:
                     streetID=streetID,
                 )
             else:
-                await store.createConcentricStreet(event, streetID, streetName)
+                await store.createConcentricStreet(
+                    event.id, streetID, streetName
+                )
 
     async def _storeIncidents(self, eventData: EventData) -> None:
         store = self.store
@@ -219,7 +221,7 @@ class JSONImporter:
 
         existingIncidentNumbers = frozenset(
             incident.number
-            for incident in await store.incidents(eventData.event)
+            for incident in await store.incidents(eventData.event.id)
         )
 
         for incident in eventData.incidents:
@@ -240,7 +242,9 @@ class JSONImporter:
 
         existingIncidentReportNumbers = frozenset(
             incidentReport.number
-            for incidentReport in await store.incidentReports(eventData.event)
+            for incidentReport in await store.incidentReports(
+                eventData.event.id
+            )
         )
 
         for incidentReport in eventData.incidentReports:

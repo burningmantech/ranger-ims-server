@@ -276,7 +276,7 @@ class WebApplication:
 
             try:
                 incidentReport = await config.store.incidentReportWithNumber(
-                    event, incidentReportNumber
+                    event.id, incidentReportNumber
                 )
             except NoSuchIncidentReportError:
                 await config.authProvider.authorizeRequest(
