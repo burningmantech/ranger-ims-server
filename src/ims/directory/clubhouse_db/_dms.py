@@ -229,7 +229,7 @@ class DutyManagementSystem:
                     self._dbpool = None
 
                     if isinstance(e, (SQLDatabaseError, SQLOperationalError)):
-                        self._log.warn(
+                        self._log.critical(
                             "Unable to load personnel data from DMS: {error}",
                             error=e,
                         )
