@@ -48,7 +48,7 @@ class DataStoreConcentricStreetTests(DataStoreTests):
             await store.createEvent(event)
             await store.storeConcentricStreet(event, streetID, streetName)
 
-            concentricStreets = await store.concentricStreets(event)
+            concentricStreets = await store.concentricStreets(event.id)
 
             self.assertEqual(len(concentricStreets), 1)
             self.assertEqual(concentricStreets.get(streetID), streetName)
@@ -68,10 +68,10 @@ class DataStoreConcentricStreetTests(DataStoreTests):
 
             await store.createEvent(event)
             await store.createConcentricStreet(
-                event=event, id=streetID, name=streetName
+                eventID=event.id, id=streetID, name=streetName
             )
 
-            stored = await store.concentricStreets(event=event)
+            stored = await store.concentricStreets(eventID=event.id)
 
             self.assertEqual(len(stored), 1)
             self.assertEqual(stored.get(streetID), streetName)

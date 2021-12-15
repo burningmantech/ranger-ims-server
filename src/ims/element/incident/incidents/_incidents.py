@@ -70,5 +70,5 @@ class IncidentsPage(Page):
         """
         JSON dictionary: concentric streets by ID.
         """
-        namesByID = await self.config.store.concentricStreets(self.event)
+        namesByID = await self.config.store.concentricStreets(self.event.id)
         return jsonTextFromObject(namesByID)

@@ -156,7 +156,7 @@ class AuthProvider:
 
                 if event is not None:
                     if matchACL(
-                        user, frozenset(await self.store.writers(event))
+                        user, frozenset(await self.store.writers(event.id))
                     ):
                         authorizations |= Authorization.writeIncidents
                         authorizations |= Authorization.readIncidents
@@ -164,12 +164,13 @@ class AuthProvider:
 
                     else:
                         if matchACL(
-                            user, frozenset(await self.store.readers(event))
+                            user, frozenset(await self.store.readers(event.id))
                         ):
                             authorizations |= Authorization.readIncidents
 
                         if matchACL(
-                            user, frozenset(await self.store.reporters(event))
+                            user,
+                            frozenset(await self.store.reporters(event.id)),
                         ):
                             authorizations |= Authorization.writeIncidentReports
 

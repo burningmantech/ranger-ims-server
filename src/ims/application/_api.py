@@ -290,7 +290,7 @@ class APIApplication:
             jsonTextFromObject(jsonObjectFromModelObject(incident)).encode(
                 "utf-8"
             )
-            for incident in await self.config.store.incidents(event)
+            for incident in await self.config.store.incidents(event.id)
         )
 
         writeJSONStream(request, stream, None)
@@ -439,7 +439,7 @@ class APIApplication:
 
         try:
             incident = await self.config.store.incidentWithNumber(
-                event, incidentNumber
+                event.id, incidentNumber
             )
         except NoSuchIncidentError:
             return notFoundResponse(request)
@@ -503,7 +503,7 @@ class APIApplication:
             )
 
         IncidentAttributeSetter = Callable[
-            [Event, int, Any, str], Awaitable[None]
+            [str, int, Any, str], Awaitable[None]
         ]
 
         async def applyEdit(
@@ -522,7 +522,7 @@ class APIApplication:
                 _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                await setter(event, incidentNumber, _cast(value), author)
+                await setter(event.id, incidentNumber, _cast(value), author)
 
         store = self.config.store
 
@@ -565,7 +565,7 @@ class APIApplication:
                     store.setIncident_locationDescription,
                 ):
                     cast(IncidentAttributeSetter, setter)(
-                        event, incidentNumber, None, author
+                        event.id, incidentNumber, None, author
                     )
             else:
                 await applyEdit(
@@ -609,7 +609,7 @@ class APIApplication:
             )
 
             await store.addReportEntriesToIncident(
-                event, incidentNumber, entries, author
+                event.id, incidentNumber, entries, author
             )
 
         return noContentResponse(request)
@@ -644,12 +644,12 @@ class APIApplication:
             user: RangerUser = request.user  # type: ignore[attr-defined]
             incidentReports = (
                 incidentReport
-                for incidentReport in await store.incidentReports(event=event)
+                for incidentReport in await store.incidentReports(event.id)
                 if user.ranger.handle
                 in (entry.author for entry in incidentReport.reportEntries)
             )
         elif incidentNumberText is None:
-            incidentReports = await store.incidentReports(event=event)
+            incidentReports = await store.incidentReports(event.id)
         else:
             try:
                 incidentNumber = int(incidentNumberText)
@@ -659,7 +659,7 @@ class APIApplication:
                 )
 
             incidentReports = await store.incidentReportsAttachedToIncident(
-                event=event, incidentNumber=incidentNumber
+                eventID=event.id, incidentNumber=incidentNumber
             )
 
         stream = buildJSONArray(
@@ -803,7 +803,7 @@ class APIApplication:
         del eventID
 
         incidentReport = await self.config.store.incidentReportWithNumber(
-            event, incidentReportNumber
+            event.id, incidentReportNumber
         )
 
         await self.config.authProvider.authorizeRequestForIncidentReport(
@@ -859,11 +859,11 @@ class APIApplication:
 
             if action == "attach":
                 await store.attachIncidentReportToIncident(
-                    incidentReportNumber, event, incidentNumber, author
+                    incidentReportNumber, event.id, incidentNumber, author
                 )
             elif action == "detach":
                 await store.detachIncidentReportFromIncident(
-                    incidentReportNumber, event, incidentNumber, author
+                    incidentReportNumber, event.id, incidentNumber, author
                 )
             else:
                 return invalidQueryResponse(request, "action", action)
@@ -900,7 +900,7 @@ class APIApplication:
         async def applyEdit(
             json: Mapping[str, Any],
             key: Enum,
-            setter: Callable[[Event, int, Any, str], Awaitable[None]],
+            setter: Callable[[str, int, Any, str], Awaitable[None]],
             cast: Optional[Callable[[Any], Any]] = None,
         ) -> None:
             _cast: Callable[[Any], Any]
@@ -913,7 +913,9 @@ class APIApplication:
                 _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                await setter(event, incidentReportNumber, _cast(value), author)
+                await setter(
+                    event.id, incidentReportNumber, _cast(value), author
+                )
 
         await applyEdit(
             edits,
@@ -938,7 +940,7 @@ class APIApplication:
             )
 
             await store.addReportEntriesToIncidentReport(
-                event, incidentReportNumber, entries, author
+                event.id, incidentReportNumber, entries, author
             )
 
         return noContentResponse(request)
@@ -959,9 +961,9 @@ class APIApplication:
         acl = {}
         for event in await store.events():
             acl[event.id] = dict(
-                readers=(await store.readers(event)),
-                writers=(await store.writers(event)),
-                reporters=(await store.reporters(event)),
+                readers=(await store.readers(event.id)),
+                writers=(await store.writers(event.id)),
+                reporters=(await store.reporters(event.id)),
             )
         return jsonTextFromObject(acl)
 
@@ -984,13 +986,12 @@ class APIApplication:
             return invalidJSONResponse(request, e)
 
         for eventID, acl in edits.items():
-            event = Event(id=eventID)
             if "readers" in acl:
-                await store.setReaders(event, acl["readers"])
+                await store.setReaders(eventID, acl["readers"])
             if "writers" in acl:
-                await store.setWriters(event, acl["writers"])
+                await store.setWriters(eventID, acl["writers"])
             if "reporters" in acl:
-                await store.setReporters(event, acl["reporters"])
+                await store.setReporters(eventID, acl["reporters"])
 
         return noContentResponse(request)
 
@@ -1007,7 +1008,7 @@ class APIApplication:
 
         streets = {}
         for event in await store.events():
-            streets[event.id] = await store.concentricStreets(event)
+            streets[event.id] = await store.concentricStreets(event.id)
         return jsonTextFromObject(streets)
 
     @router.route(_unprefix(URLs.streets), methods=("POST",))
@@ -1027,20 +1028,18 @@ class APIApplication:
             return invalidJSONResponse(request, e)
 
         for eventID, _streets in edits.items():
-            event = Event(id=eventID)
-            existing = await store.concentricStreets(event)
+            existing = await store.concentricStreets(eventID)
 
             for _streetID, _streetName in existing.items():
                 raise NotAuthorizedError("Removal of streets is not allowed.")
 
         for eventID, streets in edits.items():
-            event = Event(id=eventID)
-            existing = await store.concentricStreets(event)
+            existing = await store.concentricStreets(eventID)
 
             for streetID, streetName in streets.items():
                 if streetID not in existing:
                     await store.createConcentricStreet(
-                        event, streetID, streetName
+                        eventID, streetID, streetName
                     )
 
         return noContentResponse(request)
