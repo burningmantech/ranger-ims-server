@@ -26,7 +26,7 @@ from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
 from ims.directory import IMSUser, RangerUser
-from ims.model import Event, IncidentReport
+from ims.model import IncidentReport
 from ims.store import IMSDataStore
 
 from ._exceptions import NotAuthenticatedError, NotAuthorizedError
@@ -119,7 +119,7 @@ class AuthProvider:
             raise NotAuthenticatedError("No user logged in")
 
     async def authorizationsForUser(
-        self, user: IMSUser, event: Optional[Event]
+        self, user: IMSUser, eventID: Optional[str]
     ) -> Authorization:
         """
         Look up the authorizations that a user has for a given event.
@@ -154,9 +154,9 @@ class AuthProvider:
                 if shortName in self.adminUsers:
                     authorizations |= Authorization.imsAdmin
 
-                if event is not None:
+                if eventID is not None:
                     if matchACL(
-                        user, frozenset(await self.store.writers(event.id))
+                        user, frozenset(await self.store.writers(eventID))
                     ):
                         authorizations |= Authorization.writeIncidents
                         authorizations |= Authorization.readIncidents
@@ -164,13 +164,13 @@ class AuthProvider:
 
                     else:
                         if matchACL(
-                            user, frozenset(await self.store.readers(event.id))
+                            user, frozenset(await self.store.readers(eventID))
                         ):
                             authorizations |= Authorization.readIncidents
 
                         if matchACL(
                             user,
-                            frozenset(await self.store.reporters(event.id)),
+                            frozenset(await self.store.reporters(eventID)),
                         ):
                             authorizations |= Authorization.writeIncidentReports
 
@@ -185,7 +185,7 @@ class AuthProvider:
     async def authorizeRequest(
         self,
         request: IRequest,
-        event: Optional[Event],
+        eventID: Optional[str],
         requiredAuthorizations: Authorization,
     ) -> None:
         """
@@ -195,7 +195,7 @@ class AuthProvider:
         self.authenticateRequest(request)
 
         userAuthorizations = await self.authorizationsForUser(
-            request.user, event  # type: ignore[attr-defined]
+            request.user, eventID  # type: ignore[attr-defined]
         )
         request.authorizations = (  # type: ignore[attr-defined]
             userAuthorizations
@@ -237,5 +237,5 @@ class AuthProvider:
         # report.
 
         await self.authorizeRequest(
-            request, incidentReport.event, Authorization.readIncidents
+            request, incidentReport.event.id, Authorization.readIncidents
         )
