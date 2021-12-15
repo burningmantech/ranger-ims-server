@@ -98,6 +98,10 @@ def _unprefix(url: URL) -> URL:
     return url.replace(path=url.path[len(prefix) :])
 
 
+def _urlToTextForBag(url: URL) -> str:
+    return url.to_text().replace("<", "{").replace(">", "}")
+
+
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class APIApplication:
     """
@@ -113,20 +117,20 @@ class APIApplication:
     _bag = jsonTextFromObject(
         dict(
             urls=dict(
-                ping=URLs.ping.to_text(),
-                bag=URLs.bag.to_text(),
-                auth=URLs.auth.to_text(),
-                access=URLs.acl.to_text(),
-                streets=URLs.streets.to_text(),
-                personnel=URLs.personnel.to_text(),
-                incident_types=URLs.incidentTypes.to_text(),
-                events=URLs.events.to_text(),
-                event=URLs.event.to_text(),
-                incidents=URLs.incidents.to_text(),
-                incident=URLs.incidentNumber.to_text(),
-                incident_reports=URLs.incidentReports.to_text(),
-                incident_report=URLs.incidentReport.to_text(),
-                event_source=URLs.eventSource.to_text(),
+                ping=_urlToTextForBag(URLs.ping),
+                bag=_urlToTextForBag(URLs.bag),
+                auth=_urlToTextForBag(URLs.auth),
+                access=_urlToTextForBag(URLs.acl),
+                streets=_urlToTextForBag(URLs.streets),
+                personnel=_urlToTextForBag(URLs.personnel),
+                incident_types=_urlToTextForBag(URLs.incidentTypes),
+                events=_urlToTextForBag(URLs.events),
+                event=_urlToTextForBag(URLs.event),
+                incidents=_urlToTextForBag(URLs.incidents),
+                incident=_urlToTextForBag(URLs.incidentNumber),
+                incident_reports=_urlToTextForBag(URLs.incidentReports),
+                incident_report=_urlToTextForBag(URLs.incidentReport),
+                event_source=_urlToTextForBag(URLs.eventSource),
             ),
         )
     ).encode("utf-8")
@@ -371,12 +375,12 @@ class APIApplication:
 
     @router.route(_unprefix(URLs.incidents), methods=("HEAD", "GET"))
     async def listIncidentsResource(
-        self, request: IRequest, eventID: str
+        self, request: IRequest, event_id: str
     ) -> None:
         """
         Incident list endpoint.
         """
-        event = Event(id=eventID)
+        event = Event(id=event_id)
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
@@ -394,12 +398,12 @@ class APIApplication:
 
     @router.route(_unprefix(URLs.incidents), methods=("POST",))
     async def newIncidentResource(
-        self, request: IRequest, eventID: str
+        self, request: IRequest, event_id: str
     ) -> KleinRenderable:
         """
         New incident endpoint.
         """
-        event = Event(id=eventID)
+        event = Event(id=event_id)
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.writeIncidents
@@ -514,13 +518,12 @@ class APIApplication:
 
     @router.route(_unprefix(URLs.incidentNumber), methods=("HEAD", "GET"))
     async def readIncidentResource(
-        self, request: IRequest, eventID: str, number: str
+        self, request: IRequest, event_id: str, number: str
     ) -> KleinRenderable:
         """
         Incident endpoint.
         """
-        event = Event(id=eventID)
-        del eventID
+        event = Event(id=event_id)
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.readIncidents
@@ -547,13 +550,12 @@ class APIApplication:
 
     @router.route(_unprefix(URLs.incidentNumber), methods=("POST",))
     async def editIncidentResource(
-        self, request: IRequest, eventID: str, number: str
+        self, request: IRequest, event_id: str, number: str
     ) -> KleinRenderable:
         """
         Incident edit endpoint.
         """
-        event = Event(id=eventID)
-        del eventID
+        event = Event(id=event_id)
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.writeIncidents
@@ -711,13 +713,12 @@ class APIApplication:
 
     @router.route(_unprefix(URLs.incidentReports), methods=("HEAD", "GET"))
     async def listIncidentReportsResource(
-        self, request: IRequest, eventID: str
+        self, request: IRequest, event_id: str
     ) -> KleinRenderable:
         """
         Incident reports endpoint.
         """
-        event = Event(id=eventID)
-        del eventID
+        event = Event(id=event_id)
 
         try:
             await self.config.authProvider.authorizeRequest(
@@ -769,13 +770,12 @@ class APIApplication:
 
     @router.route(_unprefix(URLs.incidentReports), methods=("POST",))
     async def newIncidentReportResource(
-        self, request: IRequest, eventID: str
+        self, request: IRequest, event_id: str
     ) -> KleinRenderable:
         """
         New incident report endpoint.
         """
-        event = Event(id=eventID)
-        del eventID
+        event = Event(id=event_id)
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.writeIncidentReports
@@ -882,7 +882,7 @@ class APIApplication:
 
     @router.route(_unprefix(URLs.incidentReport), methods=("HEAD", "GET"))
     async def readIncidentReportResource(
-        self, request: IRequest, eventID: str, number: str
+        self, request: IRequest, event_id: str, number: str
     ) -> KleinRenderable:
         """
         Incident report endpoint.
@@ -894,8 +894,7 @@ class APIApplication:
             return notFoundResponse(request)
         del number
 
-        event = Event(id=eventID)
-        del eventID
+        event = Event(id=event_id)
 
         incidentReport = await self.config.store.incidentReportWithNumber(
             event, incidentReportNumber
@@ -911,13 +910,12 @@ class APIApplication:
 
     @router.route(_unprefix(URLs.incidentReport), methods=("POST",))
     async def editIncidentReportResource(
-        self, request: IRequest, eventID: str, number: str
+        self, request: IRequest, event_id: str, number: str
     ) -> KleinRenderable:
         """
         Incident report edit endpoint.
         """
-        event = Event(id=eventID)
-        del eventID
+        event = Event(id=event_id)
 
         await self.config.authProvider.authorizeRequest(
             request, event, Authorization.writeIncidentReports

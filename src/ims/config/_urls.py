@@ -51,10 +51,10 @@ class URLs:
     personnel: ClassVar = api.child("personnel").child("")
     incidentTypes: ClassVar = api.child("incident_types").child("")
     events: ClassVar = api.child("events").child("")
-    event: ClassVar = events.child("{event_id}").child("")
+    event: ClassVar = events.child("<event_id>").child("")
     incidents: ClassVar = event.child("incidents").child("")
-    incidentNumber: ClassVar = incidents.child("{incident_number}")
+    incidentNumber: ClassVar = incidents.child("<incident_number>")
     incidentReports: ClassVar = event.child("incident_reports").child("")
-    incidentReport: ClassVar = incidentReports.child("{incident_report_number}")
+    incidentReport: ClassVar = incidentReports.child("<incident_report_number>")
 
     eventSource: ClassVar = api.child("eventsource")
