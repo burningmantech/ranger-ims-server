@@ -329,7 +329,8 @@ class APIApplication:
         jsonEvents = [
             jsonObjectFromModelObject(event)
             for event in await self.config.store.events()
-            if Authorization.readIncidents & await authorizationsForUser(event)
+            if Authorization.readIncidents
+            & await authorizationsForUser(event.id)
         ]
 
         data = jsonTextFromObject(jsonEvents).encode("utf-8")
@@ -380,17 +381,15 @@ class APIApplication:
         """
         Incident list endpoint.
         """
-        event = Event(id=event_id)
-
         await self.config.authProvider.authorizeRequest(
-            request, event, Authorization.readIncidents
+            request, event_id, Authorization.readIncidents
         )
 
         stream = buildJSONArray(
             jsonTextFromObject(jsonObjectFromModelObject(incident)).encode(
                 "utf-8"
             )
-            for incident in await self.config.store.incidents(event)
+            for incident in await self.config.store.incidents(event_id)
         )
 
         writeJSONStream(request, stream, None)
@@ -403,10 +402,8 @@ class APIApplication:
         """
         New incident endpoint.
         """
-        event = Event(id=event_id)
-
         await self.config.authProvider.authorizeRequest(
-            request, event, Authorization.writeIncidents
+            request, event_id, Authorization.writeIncidents
         )
 
         try:
@@ -437,7 +434,7 @@ class APIApplication:
         # If not provided, set JSON event, state to new, priority to normal
 
         if IncidentJSONKey.event.value not in json:
-            json[IncidentJSONKey.event.value] = event.id
+            json[IncidentJSONKey.event.value] = event_id
 
         if IncidentJSONKey.state.value not in json:
             json[IncidentJSONKey.state.value] = IncidentStateJSONValue.new.value
@@ -489,11 +486,11 @@ class APIApplication:
 
         # Validate data
 
-        if incident.event != event:
+        if incident.event.id != event_id:
             return badRequestResponse(
                 request,
-                f"Incident's event {incident.event} does not match event in "
-                f"URL {event}",
+                f"Incident's event {incident.event} does not match event ID "
+                f"in URL {event_id}",
             )
 
         # Store the incident
@@ -523,10 +520,8 @@ class APIApplication:
         """
         Incident endpoint.
         """
-        event = Event(id=event_id)
-
         await self.config.authProvider.authorizeRequest(
-            request, event, Authorization.readIncidents
+            request, event_id, Authorization.readIncidents
         )
 
         try:
@@ -537,7 +532,7 @@ class APIApplication:
 
         try:
             incident = await self.config.store.incidentWithNumber(
-                event, incidentNumber
+                event_id, incidentNumber
             )
         except NoSuchIncidentError:
             return notFoundResponse(request)
@@ -555,10 +550,8 @@ class APIApplication:
         """
         Incident edit endpoint.
         """
-        event = Event(id=event_id)
-
         await self.config.authProvider.authorizeRequest(
-            request, event, Authorization.writeIncidents
+            request, event_id, Authorization.writeIncidents
         )
 
         user: RangerUser = request.user  # type: ignore[attr-defined]
@@ -600,7 +593,7 @@ class APIApplication:
             )
 
         IncidentAttributeSetter = Callable[
-            [Event, int, Any, str], Awaitable[None]
+            [str, int, Any, str], Awaitable[None]
         ]
 
         async def applyEdit(
@@ -619,7 +612,7 @@ class APIApplication:
                 _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                await setter(event, incidentNumber, _cast(value), author)
+                await setter(event_id, incidentNumber, _cast(value), author)
 
         store = self.config.store
 
@@ -662,7 +655,7 @@ class APIApplication:
                     store.setIncident_locationDescription,
                 ):
                     cast(IncidentAttributeSetter, setter)(
-                        event, incidentNumber, None, author
+                        event_id, incidentNumber, None, author
                     )
             else:
                 await applyEdit(
@@ -706,7 +699,7 @@ class APIApplication:
             )
 
             await store.addReportEntriesToIncident(
-                event, incidentNumber, entries, author
+                event_id, incidentNumber, entries, author
             )
 
         return noContentResponse(request)
@@ -718,16 +711,14 @@ class APIApplication:
         """
         Incident reports endpoint.
         """
-        event = Event(id=event_id)
-
         try:
             await self.config.authProvider.authorizeRequest(
-                request, event, Authorization.readIncidents
+                request, event_id, Authorization.readIncidents
             )
             limitedAccess = False
         except NotAuthorizedError:
             await self.config.authProvider.authorizeRequest(
-                request, event, Authorization.writeIncidentReports
+                request, event_id, Authorization.writeIncidentReports
             )
             limitedAccess = True
 
@@ -740,12 +731,12 @@ class APIApplication:
             user: RangerUser = request.user  # type: ignore[attr-defined]
             incidentReports = (
                 incidentReport
-                for incidentReport in await store.incidentReports(event=event)
+                for incidentReport in await store.incidentReports(event_id)
                 if user.ranger.handle
                 in (entry.author for entry in incidentReport.reportEntries)
             )
         elif incidentNumberText is None:
-            incidentReports = await store.incidentReports(event=event)
+            incidentReports = await store.incidentReports(event_id)
         else:
             try:
                 incidentNumber = int(incidentNumberText)
@@ -755,7 +746,7 @@ class APIApplication:
                 )
 
             incidentReports = await store.incidentReportsAttachedToIncident(
-                event=event, incidentNumber=incidentNumber
+                eventID=event_id, incidentNumber=incidentNumber
             )
 
         stream = buildJSONArray(
@@ -775,10 +766,8 @@ class APIApplication:
         """
         New incident report endpoint.
         """
-        event = Event(id=event_id)
-
         await self.config.authProvider.authorizeRequest(
-            request, event, Authorization.writeIncidentReports
+            request, event_id, Authorization.writeIncidentReports
         )
 
         try:
@@ -786,11 +775,11 @@ class APIApplication:
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
 
-        if json.get(IncidentReportJSONKey.event.value, event.id) != event.id:
+        if json.get(IncidentReportJSONKey.event.value, event_id) != event_id:
             return badRequestResponse(
                 request,
                 "Event ID mismatch: "
-                f"{json[IncidentReportJSONKey.event.value]} != {event.id}",
+                f"{json[IncidentReportJSONKey.event.value]} != {event_id}",
             )
         if json.get(IncidentReportJSONKey.incidentNumber.value):
             return badRequestResponse(
@@ -819,7 +808,7 @@ class APIApplication:
                     f"{incidentReportKey.value}",
                 )
 
-        json[IncidentReportJSONKey.event.value] = event.id
+        json[IncidentReportJSONKey.event.value] = event_id
         json[IncidentReportJSONKey.number.value] = 0
         json[IncidentReportJSONKey.created.value] = jsonNow
 
@@ -894,10 +883,8 @@ class APIApplication:
             return notFoundResponse(request)
         del number
 
-        event = Event(id=event_id)
-
         incidentReport = await self.config.store.incidentReportWithNumber(
-            event, incidentReportNumber
+            event_id, incidentReportNumber
         )
 
         await self.config.authProvider.authorizeRequestForIncidentReport(
@@ -915,10 +902,8 @@ class APIApplication:
         """
         Incident report edit endpoint.
         """
-        event = Event(id=event_id)
-
         await self.config.authProvider.authorizeRequest(
-            request, event, Authorization.writeIncidentReports
+            request, event_id, Authorization.writeIncidentReports
         )
 
         user: RangerUser = request.user  # type: ignore[attr-defined]
@@ -952,11 +937,11 @@ class APIApplication:
 
             if action == "attach":
                 await store.attachIncidentReportToIncident(
-                    incidentReportNumber, event, incidentNumber, author
+                    incidentReportNumber, event_id, incidentNumber, author
                 )
             elif action == "detach":
                 await store.detachIncidentReportFromIncident(
-                    incidentReportNumber, event, incidentNumber, author
+                    incidentReportNumber, event_id, incidentNumber, author
                 )
             else:
                 return invalidQueryResponse(request, "action", action)
@@ -993,7 +978,7 @@ class APIApplication:
         async def applyEdit(
             json: Mapping[str, Any],
             key: Enum,
-            setter: Callable[[Event, int, Any, str], Awaitable[None]],
+            setter: Callable[[str, int, Any, str], Awaitable[None]],
             cast: Optional[Callable[[Any], Any]] = None,
         ) -> None:
             _cast: Callable[[Any], Any]
@@ -1006,7 +991,9 @@ class APIApplication:
                 _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                await setter(event, incidentReportNumber, _cast(value), author)
+                await setter(
+                    event_id, incidentReportNumber, _cast(value), author
+                )
 
         await applyEdit(
             edits,
@@ -1031,7 +1018,7 @@ class APIApplication:
             )
 
             await store.addReportEntriesToIncidentReport(
-                event, incidentReportNumber, entries, author
+                event_id, incidentReportNumber, entries, author
             )
 
         return noContentResponse(request)
@@ -1051,10 +1038,11 @@ class APIApplication:
 
         acl = {}
         for event in await store.events():
-            acl[event.id] = dict(
-                readers=(await store.readers(event)),
-                writers=(await store.writers(event)),
-                reporters=(await store.reporters(event)),
+            eventID = event.id
+            acl[eventID] = dict(
+                readers=(await store.readers(eventID)),
+                writers=(await store.writers(eventID)),
+                reporters=(await store.reporters(eventID)),
             )
         return jsonTextFromObject(acl)
 
@@ -1077,13 +1065,12 @@ class APIApplication:
             return invalidJSONResponse(request, e)
 
         for eventID, acl in edits.items():
-            event = Event(id=eventID)
             if "readers" in acl:
-                await store.setReaders(event, acl["readers"])
+                await store.setReaders(eventID, acl["readers"])
             if "writers" in acl:
-                await store.setWriters(event, acl["writers"])
+                await store.setWriters(eventID, acl["writers"])
             if "reporters" in acl:
-                await store.setReporters(event, acl["reporters"])
+                await store.setReporters(eventID, acl["reporters"])
 
         return noContentResponse(request)
 
@@ -1100,7 +1087,8 @@ class APIApplication:
 
         streets = {}
         for event in await store.events():
-            streets[event.id] = await store.concentricStreets(event)
+            eventID = event.id
+            streets[eventID] = await store.concentricStreets(eventID)
         return jsonTextFromObject(streets)
 
     @router.route(_unprefix(URLs.streets), methods=("POST",))
@@ -1120,20 +1108,18 @@ class APIApplication:
             return invalidJSONResponse(request, e)
 
         for eventID, _streets in edits.items():
-            event = Event(id=eventID)
-            existing = await store.concentricStreets(event)
+            existing = await store.concentricStreets(eventID)
 
             for _streetID, _streetName in existing.items():
                 raise NotAuthorizedError("Removal of streets is not allowed.")
 
         for eventID, streets in edits.items():
-            event = Event(id=eventID)
-            existing = await store.concentricStreets(event)
+            existing = await store.concentricStreets(eventID)
 
             for streetID, streetName in streets.items():
                 if streetID not in existing:
                     await store.createConcentricStreet(
-                        event, streetID, streetName
+                        eventID, streetID, streetName
                     )
 
         return noContentResponse(request)

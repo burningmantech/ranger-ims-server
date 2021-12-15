@@ -119,8 +119,8 @@ class DataStoreEventTests(DataStoreTests):
         for readers in ({"a"}, {"a", "b", "c"}):
             store = await self.store()
             await store.createEvent(event)
-            await store.setReaders(event, readers)
-            result = frozenset(await store.readers(event))
+            await store.setReaders(event.id, readers)
+            result = frozenset(await store.readers(event.id))
             self.assertEqual(result, readers)
 
     @asyncAsDeferred
@@ -135,7 +135,7 @@ class DataStoreEventTests(DataStoreTests):
         store.bringThePain()
 
         try:
-            await store.setReaders(event, ())
+            await store.setReaders(event.id, ())
         except StorageError:
             pass
         else:
@@ -151,8 +151,8 @@ class DataStoreEventTests(DataStoreTests):
         for writers in ({"a"}, {"a", "b", "c"}):
             store = await self.store()
             await store.createEvent(event)
-            await store.setWriters(event, writers)
-            result = frozenset(await store.writers(event))
+            await store.setWriters(event.id, writers)
+            result = frozenset(await store.writers(event.id))
             self.assertEqual(result, writers)
 
     @asyncAsDeferred
@@ -167,7 +167,7 @@ class DataStoreEventTests(DataStoreTests):
         store.bringThePain()
 
         try:
-            await store.setWriters(event, ())
+            await store.setWriters(event.id, ())
         except StorageError:
             pass
         else:

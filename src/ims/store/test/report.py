@@ -26,7 +26,7 @@ from typing import Any, Awaitable, Callable, Iterable, Sequence, cast
 from attr import fields as attrFields
 
 from ims.ext.trial import asyncAsDeferred
-from ims.model import Event, IncidentReport, ReportEntry
+from ims.model import IncidentReport, ReportEntry
 
 from .._exceptions import NoSuchIncidentReportError, StorageError
 from .base import DataStoreTests, TestDataStoreABC
@@ -111,13 +111,13 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 await store.storeIncidentReport(incidentReport)
                 await store.attachIncidentReportToIncident(
                     incidentReport.number,
-                    anIncident1.event,
+                    anIncident1.event.id,
                     anIncident1.number,
                     "HubCap",
                 )
 
             found: set[int] = set()
-            for retrieved in await store.incidentReports(anIncident1.event):
+            for retrieved in await store.incidentReports(anIncident1.event.id):
                 self.assertIn(retrieved.number, incidentReportsByNumber)
                 self.assertIncidentReportsEqual(
                     store,
@@ -139,7 +139,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         store.bringThePain()
 
         try:
-            await store.incidentReports(event=anEvent)
+            await store.incidentReports(anEvent.id)
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
@@ -156,7 +156,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
             await store.storeIncidentReport(incidentReport)
 
             retrieved = await store.incidentReportWithNumber(
-                anEvent, incidentReport.number
+                anEvent.id, incidentReport.number
             )
 
             self.assertIncidentReportsEqual(store, retrieved, incidentReport)
@@ -171,7 +171,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         store = await self.store()
 
         try:
-            await store.incidentReportWithNumber(anEvent, 1)
+            await store.incidentReportWithNumber(anEvent.id, 1)
         except NoSuchIncidentReportError:
             pass
         else:
@@ -188,7 +188,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         try:
             await store.incidentReportWithNumber(
-                anEvent, store.maxIncidentNumber + 1
+                anEvent.id, store.maxIncidentNumber + 1
             )
         except NoSuchIncidentReportError:
             pass
@@ -205,7 +205,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         store.bringThePain()
 
         try:
-            await store.incidentReportWithNumber(anEvent, 1)
+            await store.incidentReportWithNumber(anEvent.id, 1)
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
@@ -247,7 +247,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 nextNumber += 1
 
             storedIncidentReports = sorted(
-                await store.incidentReports(event=anEvent)
+                await store.incidentReports(anEvent.id)
             )
 
             self.assertEqual(
@@ -290,7 +290,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         try:
             await store.setIncidentReport_summary(
-                anIncidentReport1.event,
+                anIncidentReport1.event.id,
                 anIncidentReport1.number,
                 "Never mind",
                 "Bucket",
@@ -311,16 +311,16 @@ class DataStoreIncidentReportTests(DataStoreTests):
         await store.storeIncidentReport(incidentReport)
 
         setter = cast(
-            Callable[[Event, int, str, str], Awaitable[None]],
+            Callable[[str, int, str, str], Awaitable[None]],
             getattr(store, methodName),
         )
 
         await setter(
-            incidentReport.event, incidentReport.number, value, "Hubcap"
+            incidentReport.event.id, incidentReport.number, value, "Hubcap"
         )
 
         retrieved = await store.incidentReportWithNumber(
-            incidentReport.event, incidentReport.number
+            incidentReport.event.id, incidentReport.number
         )
 
         # Replace the specified incident attribute with the given value.
@@ -380,18 +380,18 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
             # Fetch incident report back so we have the version from the DB
             incidentReport = await store.incidentReportWithNumber(
-                anEvent, incidentReport.number
+                anEvent.id, incidentReport.number
             )
             originalEntries = frozenset(incidentReport.reportEntries)
 
             # Add report entries
             await store.addReportEntriesToIncidentReport(
-                anEvent, incidentReport.number, reportEntries, author
+                anEvent.id, incidentReport.number, reportEntries, author
             )
 
             # Get the updated incident report with the new report entries
             updated = await store.incidentReportWithNumber(
-                anEvent, incidentReport.number
+                anEvent.id, incidentReport.number
             )
             updatedEntries = frozenset(updated.reportEntries)
 
@@ -416,7 +416,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         try:
             await store.addReportEntriesToIncidentReport(
-                anIncidentReport1.event,
+                anIncidentReport1.event.id,
                 anIncidentReport1.number,
                 (reportEntry,),
                 reportEntry.author,
@@ -440,7 +440,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         try:
             await store.addReportEntriesToIncidentReport(
-                anIncidentReport1.event,
+                anIncidentReport1.event.id,
                 anIncidentReport1.number,
                 (aReportEntry,),
                 otherAuthor,
@@ -462,7 +462,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         try:
             await store.addReportEntriesToIncidentReport(
-                anIncidentReport1.event,
+                anIncidentReport1.event.id,
                 anIncidentReport1.number,
                 (aReportEntry,),
                 aReportEntry.author,
@@ -484,7 +484,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         try:
             await store.incidentReportsAttachedToIncident(
-                anIncidentReport1.event, anIncidentReport1.number
+                anIncidentReport1.event.id, anIncidentReport1.number
             )
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
@@ -505,7 +505,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         try:
             await store.attachIncidentReportToIncident(
                 anIncidentReport1.number,
-                anIncident1.event,
+                anIncident1.event.id,
                 anIncident1.number,
                 "Hubcap",
             )
@@ -526,7 +526,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         await store.attachIncidentReportToIncident(
             anIncidentReport1.number,
-            anIncident1.event,
+            anIncident1.event.id,
             anIncident1.number,
             "Hubcap",
         )
@@ -535,7 +535,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         try:
             await store.detachIncidentReportFromIncident(
                 anIncidentReport1.number,
-                anIncident1.event,
+                anIncident1.event.id,
                 anIncident1.number,
                 "Hubcap",
             )

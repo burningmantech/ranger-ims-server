@@ -213,13 +213,15 @@ class JSONImporterTests(TestCase):
                 EventData(
                     event=event,
                     access=EventAccess(
-                        readers=resultOf(store.readers(event)),
-                        writers=resultOf(store.writers(event)),
-                        reporters=resultOf(store.reporters(event)),
+                        readers=resultOf(store.readers(event.id)),
+                        writers=resultOf(store.writers(event.id)),
+                        reporters=resultOf(store.reporters(event.id)),
                     ),
-                    concentricStreets=resultOf(store.concentricStreets(event)),
-                    incidents=resultOf(store.incidents(event)),
-                    incidentReports=resultOf(store.incidentReports(event)),
+                    concentricStreets=resultOf(
+                        store.concentricStreets(event.id)
+                    ),
+                    incidents=resultOf(store.incidents(event.id)),
+                    incidentReports=resultOf(store.incidentReports(event.id)),
                 )
                 for event in resultOf(store.events())
             ),

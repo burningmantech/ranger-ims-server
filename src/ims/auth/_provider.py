@@ -34,7 +34,7 @@ from twisted.web.iweb import IRequest
 from ims.directory import IMSDirectory, IMSUser, RangerUser
 from ims.ext.json import objectFromJSONText
 from ims.ext.klein import HeaderName
-from ims.model import Event, IncidentReport
+from ims.model import IncidentReport
 from ims.store import IMSDataStore
 
 from ._exceptions import (
@@ -230,7 +230,7 @@ class AuthProvider:
             raise NotAuthenticatedError("No user logged in")
 
     async def authorizationsForUser(
-        self, user: Optional[IMSUser], event: Optional[Event]
+        self, user: Optional[IMSUser], eventID: Optional[str]
     ) -> Authorization:
         """
         Look up the authorizations that a user has for a given event.
@@ -266,17 +266,19 @@ class AuthProvider:
                 if shortName in self.adminUsers:
                     authorizations |= Authorization.imsAdmin
 
-        if event is not None:
-            if matchACL(user, frozenset(await self.store.writers(event))):
+        if eventID is not None:
+            if matchACL(user, frozenset(await self.store.writers(eventID))):
                 authorizations |= Authorization.writeIncidents
                 authorizations |= Authorization.readIncidents
                 authorizations |= Authorization.writeIncidentReports
 
             else:
-                if matchACL(user, frozenset(await self.store.readers(event))):
+                if matchACL(user, frozenset(await self.store.readers(eventID))):
                     authorizations |= Authorization.readIncidents
 
-                if matchACL(user, frozenset(await self.store.reporters(event))):
+                if matchACL(
+                    user, frozenset(await self.store.reporters(eventID))
+                ):
                     authorizations |= Authorization.writeIncidentReports
 
         self._log.debug(
@@ -290,7 +292,7 @@ class AuthProvider:
     async def authorizeRequest(
         self,
         request: IRequest,
-        event: Optional[Event],
+        eventID: Optional[str],
         requiredAuthorizations: Authorization,
     ) -> None:
         """
@@ -300,7 +302,7 @@ class AuthProvider:
         await self.authenticateRequest(request)
 
         userAuthorizations = await self.authorizationsForUser(
-            request.user, event  # type: ignore[attr-defined]
+            request.user, eventID  # type: ignore[attr-defined]
         )
         request.authorizations = (  # type: ignore[attr-defined]
             userAuthorizations
@@ -342,5 +344,5 @@ class AuthProvider:
         # report.
 
         await self.authorizeRequest(
-            request, incidentReport.event, Authorization.readIncidents
+            request, incidentReport.event.id, Authorization.readIncidents
         )
