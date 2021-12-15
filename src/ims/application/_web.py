@@ -86,16 +86,14 @@ class WebApplication:
 
         This redirects to the event's incidents page.
         """
-        event = Event(id=eventID)
-        del eventID
         try:
             await self.config.authProvider.authorizeRequest(
-                request, event, Authorization.readIncidents
+                request, eventID, Authorization.readIncidents
             )
             url = URLs.viewIncidentsRelative
         except NotAuthorizedError:
             await self.config.authProvider.authorizeRequest(
-                request, event, Authorization.writeIncidentReports
+                request, eventID, Authorization.writeIncidentReports
             )
             url = URLs.viewIncidentReportsRelative
 
@@ -163,14 +161,13 @@ class WebApplication:
         """
         Endpoint for the incidents page.
         """
-        event = Event(id=eventID)
-        del eventID
         # FIXME: Not strictly required because the underlying data is
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
         await self.config.authProvider.authorizeRequest(
-            request, event, Authorization.readIncidents
+            request, eventID, Authorization.readIncidents
         )
+        event = Event(id=eventID)
         return IncidentsPage(config=self.config, event=event)
 
     @router.route(
@@ -190,9 +187,6 @@ class WebApplication:
         """
         Endpoint for the incident page.
         """
-        event = Event(id=eventID)
-        del eventID
-
         numberValue: Optional[int]
         if number == "new":
             authz = Authorization.writeIncidents
@@ -204,8 +198,9 @@ class WebApplication:
             except ValueError:
                 return notFoundResponse(request)
 
-        await self.config.authProvider.authorizeRequest(request, event, authz)
+        await self.config.authProvider.authorizeRequest(request, eventID, authz)
 
+        event = Event(id=eventID)
         return IncidentPage(config=self.config, event=event, number=numberValue)
 
     @router.route(_unprefix(URLs.viewIncidentTemplate), methods=("HEAD", "GET"))
@@ -223,16 +218,15 @@ class WebApplication:
         """
         Endpoint for the incident reports page.
         """
-        event = Event(id=eventID)
-        del eventID
         try:
             await self.config.authProvider.authorizeRequest(
-                request, event, Authorization.readIncidents
+                request, eventID, Authorization.readIncidents
             )
         except NotAuthorizedError:
             await self.config.authProvider.authorizeRequest(
-                request, event, Authorization.writeIncidentReports
+                request, eventID, Authorization.writeIncidentReports
             )
+        event = Event(id=eventID)
         return IncidentReportsPage(config=self.config, event=event)
 
     @router.route(
@@ -256,14 +250,11 @@ class WebApplication:
         """
         Endpoint for the incident report page.
         """
-        event = Event(id=eventID)
-        del eventID
-
         incidentReportNumber: Optional[int]
         config = self.config
         if number == "new":
             await config.authProvider.authorizeRequest(
-                request, event, Authorization.writeIncidentReports
+                request, eventID, Authorization.writeIncidentReports
             )
             incidentReportNumber = None
             del number
@@ -276,11 +267,11 @@ class WebApplication:
 
             try:
                 incidentReport = await config.store.incidentReportWithNumber(
-                    event.id, incidentReportNumber
+                    eventID, incidentReportNumber
                 )
             except NoSuchIncidentReportError:
                 await config.authProvider.authorizeRequest(
-                    request, event, Authorization.readIncidents
+                    request, eventID, Authorization.readIncidents
                 )
                 return notFoundResponse(request)
 
@@ -288,6 +279,7 @@ class WebApplication:
                 request, incidentReport
             )
 
+        event = Event(id=eventID)
         return IncidentReportPage(
             config=config, event=event, number=incidentReportNumber
         )
