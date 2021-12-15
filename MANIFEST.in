@@ -16,7 +16,7 @@ include bin/test_docker
 include codecov.yml
 include conf/directory-sample.yaml
 include conf/imsd-sample.conf
-include COPYRIGHT.rst
+include COPYRIGHT.txt
 include Dockerfile
 include LICENSE.txt
 include mypy.ini
