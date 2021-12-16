@@ -30,7 +30,7 @@ __all__ = ()
 def serializeEvent(event: Event) -> dict[str, Any]:
     # Add name for future use.
     # Reverse ID to make use of ID where name was intended more visible.
-    return dict(id=event.id[::-1], name=event.id)
+    return dict(id=event.id, name=event.id)
 
 
 registerSerializer(Event, serializeEvent)
@@ -39,7 +39,7 @@ registerSerializer(Event, serializeEvent)
 def deserializeEvent(obj: dict[str, Any], cl: type[Event]) -> Event:
     assert cl is Event, (cl, obj)
 
-    eventID = obj["id"][::-1]
+    eventID = obj["id"]
     assert obj["name"] == eventID
 
     return Event(id=eventID)
