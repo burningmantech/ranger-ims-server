@@ -1,8 +1,8 @@
 # Direct dependencies
 arrow==1.2.1
-attrs==21.2.0
+attrs==21.4.0
 bcrypt==3.2.0
-cattrs==1.9.0
+cattrs==1.10.0
 hyperlink==21.0.0
 jwcrypto==0.9.1
 klein==21.8.0
