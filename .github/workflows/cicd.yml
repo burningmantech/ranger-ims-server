@@ -236,11 +236,11 @@ jobs:
             python-version: "3.10"
             optional: false
             tox-prefix: "coverage"
-          # test Python 3.11 but allow it to fail
-          - os: "ubuntu-latest"
-            python-version: "3.11"
-            optional: true
-            tox-prefix: "test"
+          # # test Python 3.11 but allow it to fail
+          # - os: "ubuntu-latest"
+          #   python-version: "3.11"
+          #   optional: true
+          #   tox-prefix: "test"
 
     services:
       mysql:
