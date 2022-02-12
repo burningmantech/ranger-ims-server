@@ -1,5 +1,5 @@
 # Direct dependencies
-arrow==1.2.1
+arrow==1.2.2
 attrs==21.4.0
 bcrypt==3.2.0
 cattrs==1.10.0
@@ -7,7 +7,7 @@ hyperlink==21.0.0
 jwcrypto==0.9.1
 klein==21.8.0
 PyMySQL==1.0.2
-pyOpenSSL==21.0.0
+pyOpenSSL==22.0.0
 PyYAML==6.0
 service-identity==21.1.0
 Twisted==21.7.0
