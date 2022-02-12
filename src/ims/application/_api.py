@@ -434,8 +434,8 @@ class APIApplication:
 
         # If not provided, set JSON event, state to new, priority to normal
 
-        if IncidentJSONKey.event.value not in json:
-            json[IncidentJSONKey.event.value] = event_id
+        if IncidentJSONKey.eventID.value not in json:
+            json[IncidentJSONKey.eventID.value] = event_id
 
         if IncidentJSONKey.state.value not in json:
             json[IncidentJSONKey.state.value] = IncidentStateJSONValue.new.value
@@ -487,7 +487,7 @@ class APIApplication:
 
         # Validate data
 
-        if incident.event.id != event_id:
+        if incident.event != event_id:
             return badRequestResponse(
                 request,
                 f"Incident's event {incident.event} does not match event ID "
@@ -776,11 +776,11 @@ class APIApplication:
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
 
-        if json.get(IncidentReportJSONKey.event.value, event_id) != event_id:
+        if json.get(IncidentReportJSONKey.eventID.value, event_id) != event_id:
             return badRequestResponse(
                 request,
                 "Event ID mismatch: "
-                f"{json[IncidentReportJSONKey.event.value]} != {event_id}",
+                f"{json[IncidentReportJSONKey.eventID.value]} != {event_id}",
             )
         if json.get(IncidentReportJSONKey.incidentNumber.value):
             return badRequestResponse(
@@ -809,7 +809,7 @@ class APIApplication:
                     f"{incidentReportKey.value}",
                 )
 
-        json[IncidentReportJSONKey.event.value] = event_id
+        json[IncidentReportJSONKey.eventID.value] = event_id
         json[IncidentReportJSONKey.number.value] = 0
         json[IncidentReportJSONKey.created.value] = jsonNow
 

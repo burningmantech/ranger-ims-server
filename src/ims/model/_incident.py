@@ -29,7 +29,6 @@ from ims.ext.attr import sorted_tuple
 
 from ._convert import freezeIntegers, freezeStrings, normalizeDateTime
 from ._entry import ReportEntry
-from ._event import Event
 from ._location import Location
 from ._priority import IncidentPriority
 from ._replace import ReplaceMixIn
@@ -51,7 +50,7 @@ class Incident(ReplaceMixIn):
     Incident
     """
 
-    event: Event
+    eventID: str
     number: int
     created: DateTime = attrib(converter=normalizeDateTime)
     state: IncidentState
@@ -66,7 +65,7 @@ class Incident(ReplaceMixIn):
     incidentReportNumbers: frozenset[int] = attrib(converter=freezeIntegers)
 
     def __str__(self) -> str:
-        return f"{self.event} #{self.number}: {self.summaryFromReport()}"
+        return f"{self.eventID}#{self.number}: {self.summaryFromReport()}"
 
     def summaryFromReport(self) -> str:
         """

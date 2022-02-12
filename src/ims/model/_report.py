@@ -27,7 +27,6 @@ from attr import attrib, attrs
 
 from ._convert import normalizeDateTime
 from ._entry import ReportEntry
-from ._event import Event
 from ._incident import sortAndFreezeReportEntries, summaryFromReport
 from ._replace import ReplaceMixIn
 
@@ -41,7 +40,7 @@ class IncidentReport(ReplaceMixIn):
     Incident
     """
 
-    event: Event
+    eventID: str
     number: int
     created: DateTime = attrib(converter=normalizeDateTime)
     summary: Optional[str]
@@ -51,7 +50,7 @@ class IncidentReport(ReplaceMixIn):
     )
 
     def __str__(self) -> str:
-        return f"{self.event} #{self.number}: {self.summaryFromReport()}"
+        return f"{self.eventID}#{self.number}: {self.summaryFromReport()}"
 
     def summaryFromReport(self) -> str:
         """

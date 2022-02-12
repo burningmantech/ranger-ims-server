@@ -46,7 +46,7 @@ class DataStoreConcentricStreetTests(DataStoreTests):
             store = await self.store()
 
             await store.createEvent(event)
-            await store.storeConcentricStreet(event, streetID, streetName)
+            await store.storeConcentricStreet(event.id, streetID, streetName)
 
             concentricStreets = await store.concentricStreets(event.id)
 

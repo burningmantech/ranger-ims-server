@@ -66,7 +66,7 @@ class IncidentTests(TestCase):
         incident = incident.replace(summary=summary)
 
         self.assertEqual(
-            str(incident), f"{incident.event} #{incident.number}: {summary}"
+            str(incident), f"{incident.eventID}#{incident.number}: {summary}"
         )
 
     @given(incidents(), sampled_from((None, "")))
@@ -79,7 +79,7 @@ class IncidentTests(TestCase):
 
         self.assertEqual(
             str(incident),
-            f"{incident.event} #{incident.number}: "
+            f"{incident.eventID}#{incident.number}: "
             f"{summaryFromReport(None, incident.reportEntries)}",
         )
 
@@ -97,7 +97,7 @@ class IncidentTests(TestCase):
         """
         :meth:`Incident.replace` with an event argument replaces the event.
         """
-        self._test_replace(incident, "event", event)
+        self._test_replace(incident, "eventID", event.id)
 
     @given(incidents(), incidentNumbers())
     def test_replace_number(self, incident: Incident, number: int) -> None:

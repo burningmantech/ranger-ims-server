@@ -77,7 +77,7 @@ class TestDataStoreMixIn(ABC):
     @abstractmethod
     async def storeConcentricStreet(
         self,
-        event: Event,
+        eventID: str,
         streetID: str,
         streetName: str,
         ignoreDuplicates: bool = False,
