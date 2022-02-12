@@ -1,2 +1,2 @@
 readme-renderer==32.0
-twine==3.7.1
+twine==3.8.0
