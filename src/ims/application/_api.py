@@ -25,6 +25,7 @@ from functools import partial
 from json import JSONDecodeError
 from typing import (
     Any,
+    AsyncIterable,
     Awaitable,
     Callable,
     ClassVar,
@@ -1079,17 +1080,28 @@ class APIApplication:
         """
         Street list endpoint.
         """
-        await self.config.authProvider.authorizeRequest(
-            request, None, Authorization.imsAdmin
-        )
-
         store = self.config.store
 
-        streets = {}
-        for event in await store.events():
-            eventID = event.id
-            streets[eventID] = await store.concentricStreets(eventID)
-        return jsonTextFromObject(streets)
+        async def authorizedEvents() -> AsyncIterable[Event]:
+            for event in await store.events():
+                try:
+                    await self.config.authProvider.authorizeRequest(
+                        request, event.id, Authorization.readIncidents
+                    )
+                except NotAuthorizedError:
+                    pass
+                else:
+                    yield event
+
+        return jsonBytes(
+            request,
+            jsonTextFromObject(
+                {
+                    event.id: await store.concentricStreets(event.id)
+                    async for event in authorizedEvents()
+                }
+            ).encode("utf-8"),
+        )
 
     @router.route(_unprefix(URLs.streets), methods=("POST",))
     async def editStreetsResource(self, request: IRequest) -> KleinRenderable:
