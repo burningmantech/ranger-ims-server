@@ -9,7 +9,7 @@ PyMySQL==1.0.2
 pyOpenSSL==22.0.0
 PyYAML==6.0
 service-identity==21.1.0
-Twisted==21.7.0
+Twisted==22.1.0
 zope.interface==5.4.0
 
 # Indirect dependencies
