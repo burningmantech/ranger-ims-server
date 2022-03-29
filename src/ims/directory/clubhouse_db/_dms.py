@@ -82,7 +82,7 @@ class DutyManagementSystem:
     host: str
     database: str
     username: str
-    password: str
+    password: str = attrib(repr=lambda _: "*")
 
     _personnel: Iterable[Ranger] = attrib(default=(), init=False)
     _positions: Iterable[Position] = attrib(default=(), init=False)
