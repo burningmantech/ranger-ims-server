@@ -18,6 +18,8 @@
 JSON serialization/deserialization for events
 """
 
+from typing import Any
+
 from .._event import Event
 from ._json import registerDeserializer, registerSerializer
 
@@ -25,17 +27,22 @@ from ._json import registerDeserializer, registerSerializer
 __all__ = ()
 
 
-def serializeEvent(event: Event) -> str:
-    return event.id
+def serializeEvent(event: Event) -> dict[str, Any]:
+    # Add name for future use.
+    # Reverse ID to make use of ID where name was intended more visible.
+    return dict(id=event.id, name=event.id)
 
 
 registerSerializer(Event, serializeEvent)
 
 
-def deserializeEvent(obj: str, cl: type[Event]) -> Event:
+def deserializeEvent(obj: dict[str, Any], cl: type[Event]) -> Event:
     assert cl is Event, (cl, obj)
 
-    return Event(id=obj)
+    eventID = obj["id"]
+    assert obj["name"] == eventID
+
+    return Event(id=eventID)
 
 
 registerDeserializer(Event, deserializeEvent)

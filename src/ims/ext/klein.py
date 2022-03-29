@@ -72,11 +72,11 @@ class HeaderName(Enum):
     HTTP header names.
     """
 
-    server = "Server"
     cacheControl = "Cache-Control"
     contentType = "Content-Type"
     etag = "ETag"
     location = "Location"
+    server = "Server"
 
 
 if False:

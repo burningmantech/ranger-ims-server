@@ -237,5 +237,5 @@ class AuthProvider:
         # report.
 
         await self.authorizeRequest(
-            request, incidentReport.event.id, Authorization.readIncidents
+            request, incidentReport.eventID, Authorization.readIncidents
         )

@@ -86,8 +86,8 @@ def jsonFromReportEntry(entry: ReportEntry) -> dict[str, Any]:
 ##
 
 
-def jsonFromEvent(event: Event) -> str:
-    return event.id
+def jsonFromEvent(event: Event) -> dict[str, str]:
+    return dict(id=event.id, name=event.id)
 
 
 def jsonFromEventAccess(eventAccess: EventAccess) -> dict[str, list[str]]:
@@ -122,7 +122,7 @@ def jsonFromIMSData(imsData: IMSData) -> dict[str, Any]:
 
 def jsonFromIncident(incident: Incident) -> dict[str, Any]:
     return dict(
-        event=jsonSerialize(incident.event),
+        event=jsonSerialize(incident.eventID),
         number=jsonSerialize(incident.number),
         created=jsonSerialize(incident.created),
         state=jsonSerialize(incident.state),
@@ -199,7 +199,7 @@ def jsonFromRanger(ranger: Ranger) -> dict[str, Any]:
 
 def jsonFromIncidentReport(report: IncidentReport) -> dict[str, Any]:
     return dict(
-        event=jsonSerialize(report.event),
+        event=jsonSerialize(report.eventID),
         number=jsonSerialize(report.number),
         created=jsonSerialize(report.created),
         summary=jsonSerialize(report.summary),

@@ -40,8 +40,7 @@ def asyncAsDeferred(f: Callable[..., Any]) -> Callable[..., Any]:
 
     @wraps(f)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        result = f(*args, **kwargs)
-        return ensureDeferred(result)
+        return ensureDeferred(f(*args, **kwargs))
 
     return wrapper
 

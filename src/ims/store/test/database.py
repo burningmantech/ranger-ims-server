@@ -74,7 +74,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         txn.execute(
             store.query.createEventOrIgnore.text,
-            dict(eventID=incident.event.id),
+            dict(eventID=incident.eventID),
         )
 
         if address is None:
@@ -91,7 +91,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
             if address.concentric is not None:
                 self._storeConcentricStreet(
                     txn,
-                    incident.event,
+                    incident.eventID,
                     address.concentric,
                     "Some Street",
                     ignoreDuplicates=True,
@@ -100,7 +100,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         txn.execute(
             store.query.createIncident.text,
             dict(
-                eventID=incident.event.id,
+                eventID=incident.eventID,
                 incidentCreated=store.asDateTimeValue(incident.created),
                 incidentNumber=incident.number,
                 incidentSummary=incident.summary,
@@ -118,7 +118,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
             txn.execute(
                 store.query.attachRangeHandleToIncident.text,
                 dict(
-                    eventID=incident.event.id,
+                    eventID=incident.eventID,
                     incidentNumber=incident.number,
                     rangerHandle=rangerHandle,
                 ),
@@ -132,7 +132,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
             txn.execute(
                 store.query.attachIncidentTypeToIncident.text,
                 dict(
-                    eventID=incident.event.id,
+                    eventID=incident.eventID,
                     incidentNumber=incident.number,
                     incidentType=incidentType,
                 ),
@@ -151,7 +151,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
             txn.execute(
                 store.query.attachReportEntryToIncident.text,
                 dict(
-                    eventID=incident.event.id,
+                    eventID=incident.eventID,
                     incidentNumber=incident.number,
                     reportEntryID=txn.lastrowid,
                 ),
@@ -182,13 +182,13 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         txn.execute(
             store.query.createEventOrIgnore.text,
-            dict(eventID=incidentReport.event.id),
+            dict(eventID=incidentReport.eventID),
         )
 
         txn.execute(
             store.query.createIncidentReport.text,
             dict(
-                eventID=incidentReport.event.id,
+                eventID=incidentReport.eventID,
                 incidentReportNumber=incidentReport.number,
                 incidentReportCreated=store.asDateTimeValue(
                     incidentReport.created
@@ -242,7 +242,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
     def _storeConcentricStreet(
         self,
         txn: Transaction,
-        event: Event,
+        eventID: str,
         streetID: str,
         streetName: str,
         ignoreDuplicates: bool = False,
@@ -256,12 +256,12 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         txn.execute(
             query.text,
-            dict(eventID=event.id, streetID=streetID, streetName=streetName),
+            dict(eventID=eventID, streetID=streetID, streetName=streetName),
         )
 
     async def storeConcentricStreet(
         self,
-        event: Event,
+        eventID: str,
         streetID: str,
         streetName: str,
         ignoreDuplicates: bool = False,
@@ -275,7 +275,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         try:
             await store.runInteraction(
                 self._storeConcentricStreet,
-                event=event,
+                eventID=eventID,
                 streetID=streetID,
                 streetName=streetName,
                 ignoreDuplicates=ignoreDuplicates,
@@ -283,9 +283,9 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         except StorageError as e:
             self._log.critical(
                 "Unable to store concentric street {streetName} "
-                "({streetID}, ignore={ignoreDuplicates}) in event {event}: "
+                "({streetID}, ignore={ignoreDuplicates}) in event {eventID}: "
                 "{error}",
-                event=event,
+                eventID=eventID,
                 streetID=streetID,
                 streetName=streetName,
                 ignoreDuplicates=ignoreDuplicates,
@@ -295,8 +295,8 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         self._log.info(
             "Stored concentric street {streetName} "
-            "({streetID}, ignore={ignoreDuplicates}) in event {event}.",
-            event=event,
+            "({streetID}, ignore={ignoreDuplicates}) in event {eventID}.",
+            eventID=eventID,
             streetID=streetID,
             streetName=streetName,
             ignoreDuplicates=ignoreDuplicates,

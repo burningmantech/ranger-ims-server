@@ -23,7 +23,6 @@ from enum import Enum, unique
 from typing import Any, Optional, cast
 
 from .._entry import ReportEntry
-from .._event import Event
 from .._incident import Incident
 from .._location import Location
 from .._priority import IncidentPriority
@@ -45,7 +44,7 @@ class IncidentJSONKey(Enum):
     Incident JSON keys
     """
 
-    event = "event"
+    eventID = "event"
     number = "number"
     created = "created"
     state = "state"
@@ -63,7 +62,7 @@ class IncidentJSONType(Enum):
     Incident attribute types
     """
 
-    event = Event
+    eventID = str
     number = int
     created = DateTime
     state = IncidentState
