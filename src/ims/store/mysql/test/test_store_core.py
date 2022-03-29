@@ -45,7 +45,6 @@ if environ.get("IMS_TEST_MYSQL_HOST", None) is None:
         Logger().info("Using test MySQL service via Docker")
         return DockerizedMySQLService()
 
-
 else:
     from .service import ExternalMySQLService
 
