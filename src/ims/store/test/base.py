@@ -40,7 +40,7 @@ class TestDataStoreMixIn(ABC):
     :class:`IMSDataStore` mix-in for testing.
     """
 
-    maxIncidentNumber: ClassVar[int] = 2 ** 63 - 1  # Default to 64-bit int
+    maxIncidentNumber: ClassVar[int] = 2**63 - 1  # Default to 64-bit int
     exceptionClass: ClassVar[type] = Exception
     exceptionMessage: ClassVar[str] = "I'm broken, yo"
 
