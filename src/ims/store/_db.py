@@ -647,7 +647,7 @@ class DatabaseStore(IMSDataStore):
         )
 
         return Incident(
-            event=Event(id=eventID),
+            eventID=eventID,
             number=incidentNumber,
             created=self.fromDateTimeValue(row["CREATED"]),
             state=self.fromIncidentStateValue(row["STATE"]),
@@ -949,14 +949,14 @@ class DatabaseStore(IMSDataStore):
         ) -> Incident:
             if not directImport:
                 # Assign the incident number a number
-                number = self._nextIncidentNumber(incident.event.id, txn)
+                number = self._nextIncidentNumber(incident.eventID, txn)
                 incident = incident.replace(number=number)
 
             # Write incident row
             txn.execute(
                 self.query.createIncident.text,
                 dict(
-                    eventID=incident.event.id,
+                    eventID=incident.eventID,
                     incidentNumber=incident.number,
                     incidentCreated=self.asDateTimeValue(incident.created),
                     incidentPriority=self.asPriorityValue(incident.priority),
@@ -972,7 +972,7 @@ class DatabaseStore(IMSDataStore):
 
             # Join with Ranger handles
             self._attachRangeHandlesToIncident(
-                incident.event.id,
+                incident.eventID,
                 incident.number,
                 incident.rangerHandles,
                 txn,
@@ -980,7 +980,7 @@ class DatabaseStore(IMSDataStore):
 
             # Attach incident types
             self._attachIncidentTypesToIncident(
-                incident.event.id,
+                incident.eventID,
                 incident.number,
                 incident.incidentTypes,
                 txn,
@@ -988,7 +988,7 @@ class DatabaseStore(IMSDataStore):
 
             # Add report entries
             self._createAndAttachReportEntriesToIncident(
-                incident.event.id,
+                incident.eventID,
                 incident.number,
                 incident.reportEntries,
                 txn,
@@ -1412,7 +1412,7 @@ class DatabaseStore(IMSDataStore):
         )
 
         return IncidentReport(
-            event=Event(id=eventID),
+            eventID=eventID,
             number=incidentReportNumber,
             created=self.fromDateTimeValue(row["CREATED"]),
             summary=cast(Optional[str], row["SUMMARY"]),
@@ -1560,7 +1560,7 @@ class DatabaseStore(IMSDataStore):
             txn.execute(
                 self.query.createIncidentReport.text,
                 dict(
-                    eventID=incidentReport.event.id,
+                    eventID=incidentReport.eventID,
                     incidentReportNumber=incidentReport.number,
                     incidentReportCreated=self.asDateTimeValue(
                         incidentReport.created
@@ -1572,7 +1572,7 @@ class DatabaseStore(IMSDataStore):
 
             # Add report entries
             self._createAndAttachReportEntriesToIncidentReport(
-                incidentReport.event.id,
+                incidentReport.eventID,
                 incidentReport.number,
                 incidentReport.reportEntries,
                 txn,

@@ -387,7 +387,7 @@ def incidents(
     types = [t.name for t in draw(lists(incidentTypes()))]
 
     return Incident(
-        event=cast(Event, event),
+        eventID=event.id,
         number=number,
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
         state=draw(incidentStates()),
@@ -422,7 +422,7 @@ def incidentLists(
     if uniqueIDs:
 
         def uniqueBy(incident: Incident) -> Hashable:
-            return cast(Hashable, (incident.event, incident.number))
+            return cast(Hashable, (incident.eventID, incident.number))
 
     else:
         uniqueBy = None
@@ -553,7 +553,7 @@ def incidentReports(
         event = draw(events())
 
     return IncidentReport(
-        event=event,
+        eventID=event.id,
         number=number,
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
         summary=draw(incidentReportSummaries()),

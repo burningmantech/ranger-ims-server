@@ -49,7 +49,7 @@ class IncidentReportTests(TestCase):
 
         self.assertEqual(
             str(incidentReport),
-            f"{incidentReport.event} #{incidentReport.number}: {summary}",
+            f"{incidentReport.eventID}#{incidentReport.number}: {summary}",
         )
 
     @given(incidentReports(), sampled_from((None, "")))
@@ -64,6 +64,6 @@ class IncidentReportTests(TestCase):
 
         self.assertEqual(
             str(incidentReport),
-            f"{incidentReport.event} #{incidentReport.number}: "
+            f"{incidentReport.eventID}#{incidentReport.number}: "
             f"{summaryFromReport(None, incidentReport.reportEntries)}",
         )
