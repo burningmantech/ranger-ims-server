@@ -239,12 +239,11 @@ class DutyManagementSystem:
                                 error=e,
                             )
                             return await self.personnel()
-                        else:
-                            self._log.critical(
-                                "Failed to load personnel data from DMS"
-                                "after error: {error}",
-                                error=e,
-                            )
+                        self._log.critical(
+                            "Failed to load personnel data from DMS"
+                            "after error: {error}",
+                            error=e,
+                        )
                     elif isinstance(e, CancelledError):
                         pass
                     else:
