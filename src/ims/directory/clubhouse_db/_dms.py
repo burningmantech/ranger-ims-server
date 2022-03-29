@@ -89,6 +89,7 @@ class DutyManagementSystem:
     _personnelLastUpdated: float = attrib(default=0.0, init=False)
     _dbpool: Optional[adbapi.ConnectionPool] = attrib(default=None, init=False)
     _busy: bool = attrib(default=False, init=False)
+    _dbErrorCount: int = attrib(default=0, init=False)
 
     @property
     def dbpool(self) -> adbapi.ConnectionPool:
@@ -223,14 +224,24 @@ class DutyManagementSystem:
                     self._personnel = tuple(rangersByID.values())
                     self._positions = tuple(positionsByID.values())
                     self._personnelLastUpdated = time()
+                    self._dbErrorCount = 0
 
                 except Exception as e:
                     self._personnelLastUpdated = 0
                     self._dbpool = None
+                    self._dbErrorCount += 1
 
                     if isinstance(e, (SQLDatabaseError, SQLOperationalError)):
+                        if self._dbErrorCount < 2:
+                            self._log.info(
+                                "Retrying loading personnel from DMS"
+                                "after error: {error}",
+                                error=e,
+                            )
+                            return await self.personnel()
                         self._log.critical(
-                            "Unable to load personnel data from DMS: {error}",
+                            "Failed to load personnel data from DMS"
+                            "after error: {error}",
                             error=e,
                         )
                     elif isinstance(e, CancelledError):
@@ -242,7 +253,8 @@ class DutyManagementSystem:
 
                     if elapsed > self.personnelCacheIntervalMax:
                         raise DatabaseError(
-                            f"Unable to load personnel data from DMS: {e}"
+                            f"Unable to load expired personnel data "
+                            f"from DMS: {e}"
                         )
 
             finally:
