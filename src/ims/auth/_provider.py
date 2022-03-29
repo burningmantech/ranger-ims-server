@@ -119,29 +119,30 @@ class AuthProvider:
             raise NotAuthenticatedError("No user logged in")
 
     async def authorizationsForUser(
-        self, user: IMSUser, eventID: Optional[str]
+        self, user: Optional[IMSUser], eventID: Optional[str]
     ) -> Authorization:
         """
         Look up the authorizations that a user has for a given event.
         """
 
-        def matchACL(user: IMSUser, acl: Container[str]) -> bool:
+        def matchACL(user: Optional[IMSUser], acl: Container[str]) -> bool:
             if "**" in acl:
                 return True
 
-            if self.requireActive and not user.active:
-                return False
+            if user is not None:
+                if self.requireActive and not user.active:
+                    return False
 
-            if "*" in acl:
-                return True
-
-            for shortName in user.shortNames:
-                if ("person:" + shortName) in acl:
+                if "*" in acl:
                     return True
 
-            for group in user.groups:
-                if ("position:" + group) in acl:
-                    return True
+                for shortName in user.shortNames:
+                    if ("person:" + shortName) in acl:
+                        return True
+
+                for group in user.groups:
+                    if ("position:" + group) in acl:
+                        return True
 
             return False
 
@@ -154,25 +155,20 @@ class AuthProvider:
                 if shortName in self.adminUsers:
                     authorizations |= Authorization.imsAdmin
 
-                if eventID is not None:
-                    if matchACL(
-                        user, frozenset(await self.store.writers(eventID))
-                    ):
-                        authorizations |= Authorization.writeIncidents
-                        authorizations |= Authorization.readIncidents
-                        authorizations |= Authorization.writeIncidentReports
+        if eventID is not None:
+            if matchACL(user, frozenset(await self.store.writers(eventID))):
+                authorizations |= Authorization.writeIncidents
+                authorizations |= Authorization.readIncidents
+                authorizations |= Authorization.writeIncidentReports
 
-                    else:
-                        if matchACL(
-                            user, frozenset(await self.store.readers(eventID))
-                        ):
-                            authorizations |= Authorization.readIncidents
+            else:
+                if matchACL(user, frozenset(await self.store.readers(eventID))):
+                    authorizations |= Authorization.readIncidents
 
-                        if matchACL(
-                            user,
-                            frozenset(await self.store.reporters(eventID)),
-                        ):
-                            authorizations |= Authorization.writeIncidentReports
+                if matchACL(
+                    user, frozenset(await self.store.reporters(eventID))
+                ):
+                    authorizations |= Authorization.writeIncidentReports
 
         self._log.debug(
             "Authz for {user}: {authorizations}",
