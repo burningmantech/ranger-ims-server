@@ -70,7 +70,7 @@ class DataStore(DatabaseStore):
         db: Optional[Connection] = attrib(default=None, init=False)
 
     dbPath: Optional[Path]
-    _state: _State = attrib(factory=_State, init=False)
+    _state: _State = attrib(factory=_State, init=False, repr=False)
 
     @classmethod
     def printSchema(cls, out: TextIO = stdout) -> None:

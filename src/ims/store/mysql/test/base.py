@@ -49,7 +49,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
 
         broken: bool = False
 
-    _state: _State = attrib(factory=_State, init=False)
+    _state: _State = attrib(factory=_State, init=False, repr=False)
 
     @property
     def _db(self) -> ConnectionPool:
