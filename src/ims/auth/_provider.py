@@ -125,17 +125,7 @@ class AuthProvider:
         Look up the authorizations that a user has for a given event.
         """
 
-        self._log.critical(
-            "Authing user {user} with event {eventID}",
-            user=user,
-            eventID=eventID,
-        )
-
         def matchACL(user: Optional[IMSUser], acl: Container[str]) -> bool:
-            self._log.critical(
-                "Matching user {user} with acl {acl}", user=user, acl=acl
-            )
-
             # Public
             if "**" in acl:
                 return True
