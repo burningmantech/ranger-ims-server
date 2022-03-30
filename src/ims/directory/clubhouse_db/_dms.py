@@ -156,7 +156,7 @@ class DutyManagementSystem:
                 name=fullName(first, middle, last),
                 status=statusFromID(status),
                 email=(email,),
-                enabled=bool(enabled),
+                enabled=bool(onSite),
                 directoryID=directoryID,
                 password=password,
             )
@@ -168,7 +168,7 @@ class DutyManagementSystem:
                 last,
                 email,
                 status,
-                enabled,
+                onSite,
                 password,
             ) in rows
         }

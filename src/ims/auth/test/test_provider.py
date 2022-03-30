@@ -18,17 +18,19 @@
 Tests for L{ims.auth._provider}.
 """
 
-from typing import Any, Callable, Optional, Sequence
+from pathlib import Path
+from typing import Any, Callable, Optional, Sequence, cast
 
 from attr import attrs, evolve
 from hypothesis import assume, given
 from hypothesis.strategies import booleans, composite, lists, none, one_of, text
 
 from ims.ext.trial import TestCase
+from ims.model import Event, Ranger, RangerStatus
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
-from ...directory import IMSGroupID, IMSUser, IMSUserID
+from ...directory import IMSGroupID, IMSUser, IMSUserID, RangerUser
 from .._provider import Authorization, AuthProvider
 
 
@@ -162,9 +164,8 @@ class AuthProviderTests(TestCase):
     """
 
     def store(self) -> IMSDataStore:
-        return SQLiteDataStore(dbPath=None)
+        return SQLiteDataStore(dbPath=Path(self.mktemp()))
 
-    # @given(text(min_size=1), rangers())
     @given(
         testUsers(),
         text(min_size=1),
@@ -172,6 +173,10 @@ class AuthProviderTests(TestCase):
     def test_verifyPassword_masterKey(
         self, user: TestUser, masterKey: str
     ) -> None:
+        """
+        AuthProvider.verifyPassword() returns True when the master key is used
+        as the password.
+        """
         provider = AuthProvider(store=self.store(), masterKey=masterKey)
 
         authorization = self.successResultOf(
@@ -233,12 +238,160 @@ class AuthProviderTests(TestCase):
         "unimplemented"
     )
 
-    def test_authorizationsForUser(self) -> None:
-        raise NotImplementedError()
+    async def storeWithEvent(self, event: Event) -> IMSDataStore:
+        store = self.store()
+        self.successResultOf(store.upgradeSchema())
+        self.successResultOf(store.createEvent(event))
+        return store
 
-    test_authorizationsForUser.todo = (  # type: ignore[attr-defined]
-        "unimplemented"
-    )
+    def userWithRangerHandle(self, handle: str, *, active: bool) -> IMSUser:
+        return RangerUser(
+            ranger=Ranger(
+                handle=handle,
+                name="Pail Container",
+                status=RangerStatus.active,
+                email=[],
+                enabled=active,
+                directoryID=None,
+                password=None,
+            ),
+            groups=[],
+        )
+
+    def authorizationsForUser(
+        self,
+        user: Optional[IMSUser],
+        admin: bool = False,
+        reader: bool = False,
+        reporter: bool = False,
+        writer: bool = False,
+    ) -> Authorization:
+        if admin:
+            assert user is not None
+            adminUsers = frozenset([user.uid])
+        else:
+            adminUsers = frozenset()
+
+        event = Event(id="Event")
+        store = self.successResultOf(self.storeWithEvent(event))
+        provider = AuthProvider(store=store, adminUsers=adminUsers)
+
+        if reader:
+            assert user is not None
+            self.successResultOf(
+                store.setReaders(event.id, (f"person:{user.shortNames[0]}",))
+            )
+
+        if reporter:
+            assert user is not None
+            self.successResultOf(
+                store.setReporters(event.id, (f"person:{user.shortNames[0]}",))
+            )
+
+        if writer:
+            assert user is not None
+            self.successResultOf(
+                store.setWriters(event.id, (f"person:{user.shortNames[0]}",))
+            )
+
+        return cast(
+            Authorization,
+            self.successResultOf(
+                provider.authorizationsForUser(user, event.id)
+            ),
+        )
+
+    def test_authorization_default_noneUser(self) -> None:
+        """
+        None user is not authorized for anything by default.
+        """
+        authorizations = self.authorizationsForUser(None)
+        self.assertEqual(authorizations, Authorization.none)
+
+    def test_authorization_default_user(self) -> None:
+        """
+        Users by default get readPersonnel only.
+        """
+        for active in (True, False):
+            user = self.userWithRangerHandle("Bucket", active=active)
+            authorizations = self.authorizationsForUser(user)
+
+            self.assertFalse(authorizations & Authorization.imsAdmin)
+            self.assertTrue(authorizations & Authorization.readPersonnel)
+            self.assertFalse(authorizations & Authorization.readIncidents)
+            self.assertFalse(authorizations & Authorization.writeIncidents)
+            self.assertFalse(
+                authorizations & Authorization.writeIncidentReports
+            )
+
+    def test_authorization_admin_not(self) -> None:
+        """
+        User not in admin list is not an admin.
+        """
+        for active in (True, False):
+            user = self.userWithRangerHandle("Bucket", active=active)
+            authorizations = self.authorizationsForUser(user)
+
+            self.assertFalse(authorizations & Authorization.imsAdmin)
+
+    def test_authorization_admin(self) -> None:
+        """
+        User in admin list is an admin.
+        """
+        for active in (True, False):
+            user = self.userWithRangerHandle("Bucket", active=active)
+            authorizations = self.authorizationsForUser(user, admin=True)
+
+            self.assertTrue(authorizations & Authorization.imsAdmin)
+
+    def test_authorization_reader(self) -> None:
+        """
+        User has readIncidents if reader and is active, otherwise defaults.
+        """
+        for active in (True, False):
+            user = self.userWithRangerHandle("Bucket", active=active)
+            authorizations = self.authorizationsForUser(user, reader=True)
+            assertIfActive = self.assertTrue if active else self.assertFalse
+
+            self.assertFalse(authorizations & Authorization.imsAdmin)
+            self.assertTrue(authorizations & Authorization.readPersonnel)
+            assertIfActive(authorizations & Authorization.readIncidents)
+            self.assertFalse(authorizations & Authorization.writeIncidents)
+            self.assertFalse(
+                authorizations & Authorization.writeIncidentReports
+            )
+
+    def test_authorization_reporter(self) -> None:
+        """
+        User has writeIncidentReports if reporter and is active, otherwise
+        defaults.
+        """
+        for active in (True, False):
+            user = self.userWithRangerHandle("Bucket", active=active)
+            authorizations = self.authorizationsForUser(user, reporter=True)
+            assertIfActive = self.assertTrue if active else self.assertFalse
+
+            self.assertFalse(authorizations & Authorization.imsAdmin)
+            self.assertTrue(authorizations & Authorization.readPersonnel)
+            self.assertFalse(authorizations & Authorization.readIncidents)
+            self.assertFalse(authorizations & Authorization.writeIncidents)
+            assertIfActive(authorizations & Authorization.writeIncidentReports)
+
+    def test_authorization_writer(self) -> None:
+        """
+        User has writeIncidents, readIncidents, and writeIncidentReports if
+        writer and is active, otherwise defaults.
+        """
+        for active in (True, False):
+            user = self.userWithRangerHandle("Bucket", active=active)
+            authorizations = self.authorizationsForUser(user, writer=True)
+            assertIfActive = self.assertTrue if active else self.assertFalse
+
+            self.assertFalse(authorizations & Authorization.imsAdmin)
+            self.assertTrue(authorizations & Authorization.readPersonnel)
+            assertIfActive(authorizations & Authorization.readIncidents)
+            assertIfActive(authorizations & Authorization.writeIncidents)
+            assertIfActive(authorizations & Authorization.writeIncidentReports)
 
     def test_authorizeRequest(self) -> None:
         raise NotImplementedError()

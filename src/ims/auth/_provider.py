@@ -125,46 +125,70 @@ class AuthProvider:
         Look up the authorizations that a user has for a given event.
         """
 
+        self._log.critical(
+            "Authing user {user} with event {eventID}",
+            user=user,
+            eventID=eventID,
+        )
+
         def matchACL(user: Optional[IMSUser], acl: Container[str]) -> bool:
+            self._log.critical(
+                "Matching user {user} with acl {acl}", user=user, acl=acl
+            )
+
+            # Public
             if "**" in acl:
                 return True
 
             if user is not None:
+                # Screen out non-active users if so configured
+                # NOTE: Active here refers to ability to use IMS, not the
+                # Ranger status. (Clubhouse equivalent is the "On Site" flag.)
                 if self.requireActive and not user.active:
                     return False
 
+                # Check if any user is authorized
                 if "*" in acl:
                     return True
 
+                # Check if this user is authorized
                 for shortName in user.shortNames:
                     if ("person:" + shortName) in acl:
                         return True
 
+                # Check if this user is in a group that is authorized
                 for group in user.groups:
                     if ("position:" + group) in acl:
                         return True
 
             return False
 
+        # Start with no authorizations
         authorizations = Authorization.none
 
         if user is not None:
+            # Any user can read personnel info
             authorizations |= Authorization.readPersonnel
 
+            # Admin users are in a list
             for shortName in user.shortNames:
                 if shortName in self.adminUsers:
                     authorizations |= Authorization.imsAdmin
 
+        # Event-specific authorizations
         if eventID is not None:
+            # Writers in ACL, which are automatically readers and reporters
             if matchACL(user, frozenset(await self.store.writers(eventID))):
                 authorizations |= Authorization.writeIncidents
                 authorizations |= Authorization.readIncidents
                 authorizations |= Authorization.writeIncidentReports
 
             else:
+                # Readers in ACL
                 if matchACL(user, frozenset(await self.store.readers(eventID))):
                     authorizations |= Authorization.readIncidents
 
+                # Reporters in ACL
                 if matchACL(
                     user, frozenset(await self.store.reporters(eventID))
                 ):
