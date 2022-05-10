@@ -63,8 +63,7 @@ class Position:
     members: set[Ranger] = Factory(set)
 
 
-# FIXME: make frozen
-@attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class DutyManagementSystem:
     """
     Duty Management System
@@ -79,24 +78,34 @@ class DutyManagementSystem:
     personnelCacheInterval: ClassVar[int] = 60 * 5  # 5 minutes
     personnelCacheIntervalMax: ClassVar[int] = 60 * 30  # 30 minutes
 
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+    class _State:
+        """
+        Internal mutable state for :class:`Configuration`.
+        """
+
+        _personnel: Iterable[Ranger] = attrib(default=(), init=False)
+        _positions: Iterable[Position] = attrib(default=(), init=False)
+        _personnelLastUpdated: float = attrib(default=0.0, init=False)
+        _dbpool: Optional[adbapi.ConnectionPool] = attrib(
+            default=None, init=False
+        )
+        _busy: bool = attrib(default=False, init=False)
+        _dbErrorCount: int = attrib(default=0, init=False)
+
     host: str
     database: str
     username: str
-    password: str
+    password: str = attrib(repr=lambda _: "*")
 
-    _personnel: Iterable[Ranger] = attrib(default=(), init=False)
-    _positions: Iterable[Position] = attrib(default=(), init=False)
-    _personnelLastUpdated: float = attrib(default=0.0, init=False)
-    _dbpool: Optional[adbapi.ConnectionPool] = attrib(default=None, init=False)
-    _busy: bool = attrib(default=False, init=False)
-    _dbErrorCount: int = attrib(default=0, init=False)
+    _state: _State = attrib(factory=_State, init=False, repr=False)
 
     @property
     def dbpool(self) -> adbapi.ConnectionPool:
         """
         Set up a database pool if needed and return it.
         """
-        if self._dbpool is None:
+        if self._state._dbpool is None:
             if (
                 not self.host
                 and not self.database
@@ -121,9 +130,9 @@ class DutyManagementSystem:
             if dbpool is None:
                 raise DatabaseError("Unable to set up database pool.")
 
-            self._dbpool = dbpool
+            self._state._dbpool = dbpool
 
-        return self._dbpool
+        return self._state._dbpool
 
     async def _queryPositionsByID(self) -> Mapping[str, Position]:
         self._log.info("Retrieving positions from Duty Management System...")
@@ -193,19 +202,19 @@ class DutyManagementSystem:
         Look up all positions.
         """
         # Call self.personnel() to make sure we have current data, then return
-        # self._positions, which will have been set.
+        # self._state._positions, which will have been set.
         await self.personnel()
-        return self._positions
+        return self._state._positions
 
     async def personnel(self) -> Iterable[Ranger]:
         """
         Look up all personnel.
         """
         now = time()
-        elapsed = now - self._personnelLastUpdated
+        elapsed = now - self._state._personnelLastUpdated
 
-        if not self._busy and elapsed > self.personnelCacheInterval:
-            self._busy = True
+        if not self._state._busy and elapsed > self.personnelCacheInterval:
+            self._state._busy = True
             try:
                 try:
                     rangersByID = await self._queryRangersByID()
@@ -221,18 +230,18 @@ class DutyManagementSystem:
                             continue
                         position.members.add(ranger)
 
-                    self._personnel = tuple(rangersByID.values())
-                    self._positions = tuple(positionsByID.values())
-                    self._personnelLastUpdated = time()
-                    self._dbErrorCount = 0
+                    self._state._personnel = tuple(rangersByID.values())
+                    self._state._positions = tuple(positionsByID.values())
+                    self._state._personnelLastUpdated = time()
+                    self._state._dbErrorCount = 0
 
                 except Exception as e:
-                    self._personnelLastUpdated = 0
-                    self._dbpool = None
-                    self._dbErrorCount += 1
+                    self._state._personnelLastUpdated = 0
+                    self._state._dbpool = None
+                    self._state._dbErrorCount += 1
 
                     if isinstance(e, (SQLDatabaseError, SQLOperationalError)):
-                        if self._dbErrorCount < 2:
+                        if self._state._dbErrorCount < 2:
                             self._log.info(
                                 "Retrying loading personnel from DMS"
                                 "after error: {error}",
@@ -258,10 +267,10 @@ class DutyManagementSystem:
                         )
 
             finally:
-                self._busy = False
+                self._state._busy = False
 
         try:
-            return self._personnel
+            return self._state._personnel
         except AttributeError:
             raise DMSError("No personnel data loaded.")
 

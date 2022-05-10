@@ -434,7 +434,7 @@ class Configuration:
 
     _storeFactory: Callable[[], IMSDataStore]
 
-    _state: _State = attrib(factory=_State, init=False)
+    _state: _State = attrib(factory=_State, init=False, repr=False)
 
     @property
     def store(self) -> IMSDataStore:

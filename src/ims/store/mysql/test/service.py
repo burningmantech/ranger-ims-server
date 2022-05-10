@@ -246,7 +246,7 @@ class DockerizedMySQLService(MySQLService):
     _dockerClient: DockerClient = attrib(
         factory=DockerClient.from_env, init=False
     )
-    _state: _State = attrib(factory=_State, init=False)
+    _state: _State = attrib(factory=_State, init=False, repr=False)
 
     @property
     def host(self) -> str:
