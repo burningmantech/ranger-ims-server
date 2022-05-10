@@ -117,9 +117,9 @@ class DataStore(DatabaseStore):
     hostPort: int
     database: str
     username: str
-    password: str
+    password: str = attrib(repr=lambda _: "*")
 
-    _state: _State = attrib(factory=_State, init=False)
+    _state: _State = attrib(factory=_State, init=False, repr=False)
 
     @property
     def _db(self) -> ConnectionPool:
