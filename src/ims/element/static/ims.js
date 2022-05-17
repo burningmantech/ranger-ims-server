@@ -43,7 +43,7 @@ function htmlAsText(html) {
 //
 function urlReplace(url) {
     if (eventID) {
-        url = url.replace("<eventID>", eventID);
+        url = url.replace("<event_id>", eventID);
     }
     return url;
 }

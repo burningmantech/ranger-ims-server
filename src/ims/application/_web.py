@@ -79,7 +79,7 @@ class WebApplication:
 
     @router.route(_unprefix(URLs.viewEvent), methods=("HEAD", "GET"))
     async def viewIncidentsResource(
-        self, request: IRequest, eventID: str
+        self, request: IRequest, event_id: str
     ) -> KleinRenderable:
         """
         Event root page.
@@ -88,12 +88,12 @@ class WebApplication:
         """
         try:
             await self.config.authProvider.authorizeRequest(
-                request, eventID, Authorization.readIncidents
+                request, event_id, Authorization.readIncidents
             )
             url = URLs.viewIncidentsRelative
         except NotAuthorizedError:
             await self.config.authProvider.authorizeRequest(
-                request, eventID, Authorization.writeIncidentReports
+                request, event_id, Authorization.writeIncidentReports
             )
             url = URLs.viewIncidentReportsRelative
 
@@ -156,7 +156,7 @@ class WebApplication:
 
     @router.route(_unprefix(URLs.viewIncidents), methods=("HEAD", "GET"))
     async def viewIncidentsPage(
-        self, request: IRequest, eventID: str
+        self, request: IRequest, event_id: str
     ) -> KleinRenderable:
         """
         Endpoint for the incidents page.
@@ -165,9 +165,9 @@ class WebApplication:
         # protected.
         # But the error you get is stupid, so let's avoid that for now.
         await self.config.authProvider.authorizeRequest(
-            request, eventID, Authorization.readIncidents
+            request, event_id, Authorization.readIncidents
         )
-        event = Event(id=eventID)
+        event = Event(id=event_id)
         return IncidentsPage(config=self.config, event=event)
 
     @router.route(
@@ -182,7 +182,7 @@ class WebApplication:
 
     @router.route(_unprefix(URLs.viewIncidentNumber), methods=("HEAD", "GET"))
     async def viewIncidentPage(
-        self, request: IRequest, eventID: str, number: str
+        self, request: IRequest, event_id: str, number: str
     ) -> KleinRenderable:
         """
         Endpoint for the incident page.
@@ -198,9 +198,11 @@ class WebApplication:
             except ValueError:
                 return notFoundResponse(request)
 
-        await self.config.authProvider.authorizeRequest(request, eventID, authz)
+        await self.config.authProvider.authorizeRequest(
+            request, event_id, authz
+        )
 
-        event = Event(id=eventID)
+        event = Event(id=event_id)
         return IncidentPage(config=self.config, event=event, number=numberValue)
 
     @router.route(_unprefix(URLs.viewIncidentTemplate), methods=("HEAD", "GET"))
@@ -213,20 +215,20 @@ class WebApplication:
 
     @router.route(_unprefix(URLs.viewIncidentReports), methods=("HEAD", "GET"))
     async def viewIncidentReportsPage(
-        self, request: IRequest, eventID: str
+        self, request: IRequest, event_id: str
     ) -> KleinRenderable:
         """
         Endpoint for the incident reports page.
         """
         try:
             await self.config.authProvider.authorizeRequest(
-                request, eventID, Authorization.readIncidents
+                request, event_id, Authorization.readIncidents
             )
         except NotAuthorizedError:
             await self.config.authProvider.authorizeRequest(
-                request, eventID, Authorization.writeIncidentReports
+                request, event_id, Authorization.writeIncidentReports
             )
-        event = Event(id=eventID)
+        event = Event(id=event_id)
         return IncidentReportsPage(config=self.config, event=event)
 
     @router.route(
@@ -245,7 +247,7 @@ class WebApplication:
         _unprefix(URLs.viewIncidentReportNumber), methods=("HEAD", "GET")
     )
     async def viewIncidentReportPage(
-        self, request: IRequest, eventID: str, number: str
+        self, request: IRequest, event_id: str, number: str
     ) -> KleinRenderable:
         """
         Endpoint for the incident report page.
@@ -254,7 +256,7 @@ class WebApplication:
         config = self.config
         if number == "new":
             await config.authProvider.authorizeRequest(
-                request, eventID, Authorization.writeIncidentReports
+                request, event_id, Authorization.writeIncidentReports
             )
             incidentReportNumber = None
             del number
@@ -267,11 +269,11 @@ class WebApplication:
 
             try:
                 incidentReport = await config.store.incidentReportWithNumber(
-                    eventID, incidentReportNumber
+                    event_id, incidentReportNumber
                 )
             except NoSuchIncidentReportError:
                 await config.authProvider.authorizeRequest(
-                    request, eventID, Authorization.readIncidents
+                    request, event_id, Authorization.readIncidents
                 )
                 return notFoundResponse(request)
 
@@ -279,7 +281,7 @@ class WebApplication:
                 request, incidentReport
             )
 
-        event = Event(id=eventID)
+        event = Event(id=event_id)
         return IncidentReportPage(
             config=config, event=event, number=incidentReportNumber
         )

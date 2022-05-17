@@ -87,7 +87,7 @@ class URLs:
     personnel: ClassVar = api.child("personnel").child("")
     incidentTypes: ClassVar = api.child("incident_types").child("")
     events: ClassVar = api.child("events").child("")
-    event: ClassVar = events.child("<eventID>").child("")
+    event: ClassVar = events.child("<event_id>").child("")
     locations: ClassVar = event.child("locations").child("")
     incidents: ClassVar = event.child("incidents").child("")
     incidentNumber: ClassVar = incidents.child("<number>")
@@ -115,7 +115,7 @@ class URLs:
     adminStreetsJS: ClassVar = static.child("admin_streets.js")
 
     viewEvents: ClassVar = app.child("events").child("")
-    viewEvent: ClassVar = viewEvents.child("<eventID>").child("")
+    viewEvent: ClassVar = viewEvents.child("<event_id>").child("")
 
     viewIncidents: ClassVar = viewEvent.child("incidents").child("")
     viewIncidentsTemplate: ClassVar = app.child("incidents.html")
