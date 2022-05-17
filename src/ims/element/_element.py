@@ -231,7 +231,7 @@ class Element(BaseElement):
             return (
                 tag.clone()(
                     tags.a(
-                        eventID, href=eventPage.replace("<eventID>", eventID)
+                        eventID, href=eventPage.replace("<event_id>", eventID)
                     )
                 )
                 for eventID in eventIDs
