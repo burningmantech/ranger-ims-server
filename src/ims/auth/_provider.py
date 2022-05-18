@@ -126,11 +126,8 @@ class AuthProvider:
     @property
     def _jwtSecret(self) -> object:
         if self._state.jwtSecret is None:
-            key = JWK.generate(kty="oct", size=256)
-            self._log.info(
-                "Generated JWT secret: {secret}", secret=key.export()
-            )
-            self._state.jwtSecret = key
+            self._log.info("Generating JWT secret")
+            self._state.jwtSecret = JWK.generate(kty="oct", size=256)
         return self._state.jwtSecret
 
     async def credentialsForUser(
