@@ -347,6 +347,17 @@ class Configuration:
             dmsPassword = parser.valueFromConfig(
                 "DMS_PASSWORD", "Directory:ClubhouseDB", "Password"
             )
+            dmsPassword = parser.valueFromConfig(
+                "DMS_CACHE_INTERVAL", "Directory:ClubhouseDB", "CacheInterval"
+            )
+            dmsCacheInterval = int(
+                parser.valueFromConfig(
+                    "DMS_CACHE_INTERVAL",
+                    "Directory:ClubhouseDB",
+                    "CacheInterval",
+                    "5",
+                )
+            )
 
             cls._log.info(
                 "DMS: {user}@{host}/{db}",
@@ -360,6 +371,7 @@ class Configuration:
                 database=dmsDatabase,
                 username=dmsUsername,
                 password=dmsPassword,
+                cacheInterval=dmsCacheInterval,
             )
 
             directory = DMSDirectory(dms=dms)

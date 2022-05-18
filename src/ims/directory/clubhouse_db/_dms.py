@@ -73,11 +73,6 @@ class DutyManagementSystem:
 
     _log: ClassVar[Logger] = Logger()
 
-    # Refresh after 5 minutes, but don't panic about errors until we're stale
-    # for >30 minutes.
-    personnelCacheInterval: ClassVar[int] = 60 * 5  # 5 minutes
-    personnelCacheIntervalMax: ClassVar[int] = 60 * 30  # 30 minutes
-
     @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State:
         """
@@ -97,6 +92,7 @@ class DutyManagementSystem:
     database: str
     username: str
     password: str = attrib(repr=lambda _: "*")
+    cacheInterval: int
 
     _state: _State = attrib(factory=_State, init=False, repr=False)
 
@@ -213,7 +209,7 @@ class DutyManagementSystem:
         now = time()
         elapsed = now - self._state._personnelLastUpdated
 
-        if not self._state._busy and elapsed > self.personnelCacheInterval:
+        if not self._state._busy and elapsed > self.cacheInterval:
             self._state._busy = True
             try:
                 try:
@@ -260,7 +256,7 @@ class DutyManagementSystem:
                             "Unable to load personnel data from DMS"
                         )
 
-                    if elapsed > self.personnelCacheIntervalMax:
+                    if elapsed > self.cacheInterval * 5:
                         raise DatabaseError(
                             f"Unable to load expired personnel data "
                             f"from DMS: {e}"
