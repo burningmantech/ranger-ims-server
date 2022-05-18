@@ -35,7 +35,7 @@ from ims.ext.klein import ContentType, HeaderName, static
 from ._api import APIApplication
 from ._auth import AuthApplication
 from ._eventsource import DataStoreEventSourceLogObserver
-from ._external import ExternalApplication
+from ._external import ExternalApplication  # type: ignore[attr-defined]
 from ._klein import Router, redirect
 from ._web import WebApplication
 
