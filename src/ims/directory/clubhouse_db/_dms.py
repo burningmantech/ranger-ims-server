@@ -239,13 +239,13 @@ class DutyManagementSystem:
                     if isinstance(e, (SQLDatabaseError, SQLOperationalError)):
                         if self._state._dbErrorCount < 2:
                             self._log.info(
-                                "Retrying loading personnel from DMS"
+                                "Retrying loading personnel from DMS "
                                 "after error: {error}",
                                 error=e,
                             )
                             return await self.personnel()
                         self._log.critical(
-                            "Failed to load personnel data from DMS"
+                            "Failed to load personnel data from DMS "
                             "after error: {error}",
                             error=e,
                         )
