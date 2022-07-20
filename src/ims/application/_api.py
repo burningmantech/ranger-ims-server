@@ -383,11 +383,11 @@ class APIApplication:
 
         # Validate data
 
-        if incident.event != event_id:
+        if incident.eventID != event_id:
             return badRequestResponse(
                 request,
-                f"Incident's event {incident.event} does not match event ID "
-                f"in URL {event_id}",
+                f"Incident's event ID {incident.eventID} does not match event "
+                f"ID in URL {event_id}",
             )
 
         # Store the incident
