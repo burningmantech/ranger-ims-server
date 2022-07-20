@@ -212,9 +212,9 @@ class DataStore(DatabaseStore):
                 raise StorageError("Invalid schema: no version")
 
         except MySQLError as e:
-            message = e.args[1]
-            if message.startswith("Table '") and message.endswith(
-                ".SCHEMA_INFO' doesn't exist"
+            message = e.args[1].lower()
+            if message.startswith("table '") and message.endswith(
+                ".schema_info' doesn't exist"
             ):
                 return 0
 
