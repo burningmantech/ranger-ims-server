@@ -54,7 +54,7 @@ class DutyManagementSystemTests(TestCase):
         self.host = "the-server"
         self.database = "the-db"
         self.username = "the-user"
-        self.password = "the-password"
+        self.password = "the-password"  # nosec: B105
 
         return DutyManagementSystem(
             host=self.host,
