@@ -23,7 +23,7 @@ incremental==21.3.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.21
-PyHamcrest==2.0.3
+PyHamcrest==2.0.4
 python-dateutil==2.8.2
 six==1.16.0
 Tubes==0.2.1
