@@ -1,6 +1,6 @@
 # Direct dependencies
 arrow==1.2.3
-attrs==21.4.0
+attrs==22.1.0
 bcrypt==3.2.2
 cattrs==22.1.0
 hyperlink==21.0.0
