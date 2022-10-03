@@ -238,7 +238,7 @@ jobs:
             tox-prefix: "coverage"
           # test Python 3.11 but allow it to fail
           - os: "ubuntu-latest"
-            python-version: "3.11.0-alpha.5"
+            python-version: "3.11.0-rc.2"
             optional: true
             tox-prefix: "test"
 
