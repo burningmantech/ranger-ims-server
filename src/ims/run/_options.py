@@ -18,19 +18,11 @@
 Command line options for the IMS server.
 """
 
+from collections.abc import Mapping, MutableMapping, Sequence
 from pathlib import Path
 from sys import stderr, stdin, stdout
 from textwrap import dedent
-from typing import (
-    IO,
-    Any,
-    ClassVar,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Sequence,
-    cast,
-)
+from typing import IO, Any, ClassVar, Optional, cast
 
 from attr import attrs
 from twisted.application.runner._exit import ExitStatus, exit
@@ -200,8 +192,8 @@ class IMSOptions(Options):
         """
         try:
             self["logLevel"] = LogLevel.levelWithName(levelName)
-        except InvalidLogLevelError:
-            raise UsageError(f"Invalid log level: {levelName}")
+        except InvalidLogLevelError as e:
+            raise UsageError(f"Invalid log level: {levelName}") from e
 
     opt_log_level.__doc__ = dedent(cast(str, opt_log_level.__doc__)).format(
         options=", ".join(
@@ -225,7 +217,7 @@ class IMSOptions(Options):
         try:
             logFormat = LogFormat[logFormatName.lower()]
         except KeyError:
-            raise UsageError(f"Invalid log format: {logFormatName}")
+            raise UsageError(f"Invalid log format: {logFormatName}") from None
 
         if logFormat is LogFormat.text:
             self["fileLogObserverFactory"] = textFileLogObserver
@@ -251,7 +243,7 @@ class IMSOptions(Options):
                 rest = arg
             name, value = rest.split("=", 1)
         except ValueError:
-            raise UsageError(f"Invalid option specifier: {arg}")
+            raise UsageError(f"Invalid option specifier: {arg}") from None
 
         if "overrides" not in self:
             self["overrides"] = []

@@ -19,10 +19,11 @@ Incident tests for :mod:`ranger-ims-server.store`
 """
 
 from collections import defaultdict
+from collections.abc import Iterable, Sequence
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
-from typing import Any, Iterable, Optional, Sequence, cast
+from typing import Any, Optional, cast
 
 from attr import fields as attrFields
 

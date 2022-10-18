@@ -18,9 +18,10 @@
 Incident Management System directory service integration.
 """
 
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from time import time
-from typing import Any, ClassVar, Iterable, Mapping, Optional, Sequence, TextIO
+from typing import Any, ClassVar, Optional, TextIO
 
 from attr import Factory, attrib, attrs
 from twisted.logger import Logger
@@ -54,7 +55,7 @@ def rangersFromMappings(
         except DirectoryError:
             raise
         except Exception as e:
-            raise DirectoryError(f"Unable to parse Ranger records: {e}")
+            raise DirectoryError(f"Unable to parse Ranger records: {e}") from e
 
 
 def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
@@ -121,7 +122,9 @@ def positionsFromMappings(
         except DirectoryError:
             raise
         except Exception as e:
-            raise DirectoryError(f"Unable to parse position records: {e}")
+            raise DirectoryError(
+                f"Unable to parse position records: {e}"
+            ) from e
 
 
 def positionFromMapping(mapping: Mapping[str, Any]) -> Position:

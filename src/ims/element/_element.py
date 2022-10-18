@@ -18,8 +18,9 @@
 Element base classes.
 """
 
+from collections.abc import Iterable
 from functools import partial
-from typing import Iterable, cast
+from typing import cast
 from unittest.mock import sentinel
 
 from attr import attrs
@@ -173,7 +174,7 @@ class Element(BaseElement):
         try:
             url = getattr(self.config.urls, name)
         except AttributeError:
-            raise ValueError(f"Unknown URL name: {name}")
+            raise ValueError(f"Unknown URL name: {name}") from None
 
         text = url.asText()
 

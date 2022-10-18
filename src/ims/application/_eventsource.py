@@ -19,8 +19,9 @@ HTML5 EventSource support.
 """
 
 from collections import deque
+from collections.abc import Mapping
 from time import time
-from typing import Any, ClassVar, Deque, Mapping, Optional
+from typing import Any, ClassVar, Deque, Optional
 
 from attr import attrib, attrs
 from twisted.logger import ILogObserver, Logger

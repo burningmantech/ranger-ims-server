@@ -660,9 +660,8 @@ def downloadPage(url, file, contextFactory=None, *args, **kwargs):
     factoryFactory = lambda url, *a, **kw: HTTPDownloader(  # noqa: E731
         url, file, *a, **kw
     )
-    return _makeGetterFactory(
-        url, factoryFactory, contextFactory=contextFactory, *args, **kwargs
-    ).deferred
+    kwargs["contextFactory"] = contextFactory
+    return _makeGetterFactory(url, factoryFactory, *args, **kwargs).deferred
 
 
 def _unprefix(url: URL) -> URL:

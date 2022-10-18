@@ -18,7 +18,8 @@
 Tests for L{ims.directory.clubhouse_db._dms}.
 """
 
-from typing import Any, MutableSequence, cast
+from collections.abc import MutableSequence
+from typing import Any, cast
 
 from twisted.internet.defer import Deferred, fail, succeed
 
@@ -69,10 +70,10 @@ class DutyManagementSystemTests(TestCase):
         """
         dms = self.dms()
 
-        self.assertEquals(dms.host, self.host)
-        self.assertEquals(dms.database, self.database)
-        self.assertEquals(dms.username, self.username)
-        self.assertEquals(dms.password, self.password)
+        self.assertEqual(dms.host, self.host)
+        self.assertEqual(dms.database, self.database)
+        self.assertEqual(dms.username, self.username)
+        self.assertEqual(dms.password, self.password)
 
     def test_dbpool(self) -> None:
         """
@@ -83,11 +84,11 @@ class DutyManagementSystemTests(TestCase):
 
         self.assertIsInstance(dbpool, DummyConnectionPool)
 
-        self.assertEquals(dbpool.dbapiname, "pymysql")
-        self.assertEquals(dbpool.connkw["host"], self.host)
-        self.assertEquals(dbpool.connkw["database"], self.database)
-        self.assertEquals(dbpool.connkw["user"], self.username)
-        self.assertEquals(dbpool.connkw["password"], self.password)
+        self.assertEqual(dbpool.dbapiname, "pymysql")
+        self.assertEqual(dbpool.connkw["host"], self.host)
+        self.assertEqual(dbpool.connkw["database"], self.database)
+        self.assertEqual(dbpool.connkw["user"], self.username)
+        self.assertEqual(dbpool.connkw["password"], self.password)
 
     def test_personnel(self) -> None:
         """
@@ -97,7 +98,7 @@ class DutyManagementSystemTests(TestCase):
 
         personnel = self.successResultOf(dms.personnel())
 
-        self.assertEquals(
+        self.assertEqual(
             [p.handle for p in personnel],
             [p[1] for p in cannedPersonnel],
         )
@@ -112,8 +113,8 @@ class UtilTests(TestCase):
         """
         L{fullName} combines first/middle/last correctly.
         """
-        self.assertEquals(fullName("Bob", "", "Smith"), "Bob Smith")
-        self.assertEquals(fullName("Bob", "Q", "Smith"), "Bob Q. Smith")
+        self.assertEqual(fullName("Bob", "", "Smith"), "Bob Smith")
+        self.assertEqual(fullName("Bob", "Q", "Smith"), "Bob Q. Smith")
 
 
 class DummyQuery:

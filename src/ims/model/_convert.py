@@ -20,8 +20,8 @@
 Converters
 """
 
+from collections.abc import Iterable
 from datetime import datetime as DateTime
-from typing import Iterable
 
 
 __all__ = ()
