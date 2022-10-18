@@ -3,8 +3,10 @@
 Frozen dictionary
 """
 
+from collections.abc import Iterator
+from collections.abc import Mapping
 from collections.abc import Mapping as MappingABC
-from typing import Any, Iterator, Mapping, TypeVar
+from typing import Any, TypeVar
 
 from attr import attrib, attrs
 

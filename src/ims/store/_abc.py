@@ -19,7 +19,7 @@ Incident Management System data store abstract base classes.
 """
 
 from abc import ABC, abstractmethod
-from typing import Iterable, Mapping
+from collections.abc import Iterable, Mapping
 
 from ims.model import (
     Event,

@@ -18,8 +18,9 @@
 Incident Management System web application authentication provider.
 """
 
+from collections.abc import Container
 from enum import Flag, auto
-from typing import ClassVar, Container, Optional
+from typing import ClassVar, Optional
 
 from attr import attrs
 from twisted.logger import Logger

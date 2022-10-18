@@ -3,6 +3,7 @@
 SQLite utilities
 """
 
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from sqlite3 import Connection as BaseConnection
 from sqlite3 import Cursor as BaseCursor
@@ -10,17 +11,7 @@ from sqlite3 import Error as SQLiteError
 from sqlite3 import IntegrityError
 from sqlite3 import Row as BaseRow
 from sqlite3 import connect as sqliteConnect
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Iterable,
-    Mapping,
-    Optional,
-    TextIO,
-    Union,
-    cast,
-)
+from typing import Any, Callable, ClassVar, Optional, TextIO, Union, cast
 
 from attr import attrs
 from twisted.logger import Logger

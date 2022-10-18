@@ -18,7 +18,8 @@
 Incident Management System data store export.
 """
 
-from typing import Any, BinaryIO, ClassVar, Iterable, Mapping, Optional, cast
+from collections.abc import Iterable, Mapping
+from typing import Any, BinaryIO, ClassVar, Optional, cast
 
 from attr import attrs
 from twisted.logger import Logger

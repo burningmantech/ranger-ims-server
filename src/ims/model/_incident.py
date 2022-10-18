@@ -20,8 +20,9 @@
 Incident
 """
 
+from collections.abc import Iterable, Sequence
 from datetime import datetime as DateTime
-from typing import Iterable, Optional, Sequence
+from typing import Optional
 
 from attr import attrib, attrs
 

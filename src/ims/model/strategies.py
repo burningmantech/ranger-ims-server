@@ -18,10 +18,11 @@
 Test strategies for model data.
 """
 
+from collections.abc import Hashable
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
-from typing import Any, Callable, Hashable, Optional, cast
+from typing import Any, Callable, Optional, cast
 
 from hypothesis.strategies import SearchStrategy, booleans, composite
 from hypothesis.strategies import datetimes as _datetimes

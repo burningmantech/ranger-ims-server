@@ -18,22 +18,13 @@
 Incident Management System JSON API endpoints.
 """
 
+from collections.abc import AsyncIterable, Awaitable, Iterable, Mapping
 from datetime import datetime as DateTime
 from datetime import timezone as TimeZone
 from enum import Enum
 from functools import partial
 from json import JSONDecodeError
-from typing import (
-    Any,
-    AsyncIterable,
-    Awaitable,
-    Callable,
-    ClassVar,
-    Iterable,
-    Mapping,
-    Optional,
-    cast,
-)
+from typing import Any, Callable, ClassVar, Optional, cast
 
 from attr import attrs
 from hyperlink import URL
@@ -383,11 +374,11 @@ class APIApplication:
 
         # Validate data
 
-        if incident.event != event_id:
+        if incident.eventID != event_id:
             return badRequestResponse(
                 request,
-                f"Incident's event {incident.event} does not match event ID "
-                f"in URL {event_id}",
+                f"Incident's event ID {incident.eventID} does not match event "
+                f"ID in URL {event_id}",
             )
 
         # Store the incident
