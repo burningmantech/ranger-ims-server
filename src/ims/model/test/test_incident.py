@@ -88,10 +88,12 @@ class IncidentTests(TestCase):
         mod = {name: value}
         new = incident.replace(**mod)
 
-        expected = asdict(incident, recurse=False)
+        expected = asdict(incident, recurse=False)  # type: ignore[arg-type]
         expected.update(mod)
 
-        self.assertEqual(asdict(new, recurse=False), expected)
+        self.assertEqual(
+            asdict(new, recurse=False), expected  # type: ignore[arg-type]
+        )
 
     @given(incidents(), events())
     def test_replace_event(self, incident: Incident, event: Event) -> None:
