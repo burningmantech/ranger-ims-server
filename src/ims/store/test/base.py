@@ -19,9 +19,10 @@ Tests for :mod:`ranger-ims-server.store`
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
-from typing import ClassVar, Optional, Sequence
+from typing import ClassVar, Optional
 
 from attr import attrs
 

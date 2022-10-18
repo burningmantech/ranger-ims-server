@@ -18,7 +18,8 @@
 Tests for L{ims.auth._provider}.
 """
 
-from typing import Any, Callable, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any, Callable, Optional
 
 from attr import attrs, evolve
 from hypothesis import assume, given

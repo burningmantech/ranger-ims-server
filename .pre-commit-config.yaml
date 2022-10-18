@@ -75,7 +75,6 @@ repos:
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: fix-byte-order-marker
-      - id: fix-encoding-pragma
       - id: forbid-new-submodules
       - id: mixed-line-ending
       - id: name-tests-test
@@ -83,6 +82,8 @@ repos:
           - --pytest-test-first
       - id: requirements-txt-fixer
       - id: trailing-whitespace
+      # flake8 takes these back out…
+      # - id: fix-encoding-pragma
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: "v1.9.0"

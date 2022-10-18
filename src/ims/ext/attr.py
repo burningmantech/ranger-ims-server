@@ -3,7 +3,8 @@
 Extensions to :mod:`attr`
 """
 
-from typing import Iterable, TypeVar
+from collections.abc import Iterable
+from typing import TypeVar
 
 
 __all__ = ("sorted_tuple",)

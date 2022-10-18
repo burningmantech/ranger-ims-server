@@ -18,8 +18,9 @@
 Tests for :mod:`ranger-ims-server.model._incident`
 """
 
+from collections.abc import Iterable
 from datetime import datetime as DateTime
-from typing import Any, Iterable
+from typing import Any
 
 from attr import asdict
 from hypothesis import given

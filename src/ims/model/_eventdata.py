@@ -20,7 +20,7 @@
 Event Data
 """
 
-from typing import Iterable, Mapping
+from collections.abc import Iterable, Mapping
 
 from attr import attrib, attrs
 

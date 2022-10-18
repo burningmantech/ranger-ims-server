@@ -85,7 +85,7 @@ def objectFromJSONText(text: str) -> Any:
             msg=f"{e.msg} in {text!r}",
             doc=e.doc,
             pos=e.pos,
-        )
+        ) from e
 
 
 def objectFromJSONBytesIO(io: BinaryIO, encoding: str = "utf-8") -> Any:

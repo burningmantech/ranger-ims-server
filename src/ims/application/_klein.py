@@ -19,8 +19,9 @@ Incident Management System Klein application.
 """
 
 
+from collections.abc import Iterable, Sequence
 from functools import wraps
-from typing import Any, Callable, Iterable, Optional, Sequence, Union, cast
+from typing import Any, Callable, Optional, Union, cast
 
 from hyperlink import URL
 from klein import Klein, KleinRenderable, KleinRouteHandler

@@ -19,7 +19,8 @@ Element base classes.
 """
 
 from collections import OrderedDict
-from typing import Iterable, MutableMapping, Optional, cast
+from collections.abc import Iterable, MutableMapping
+from typing import Optional, cast
 
 from attr import attrs
 from hyperlink import URL
@@ -70,7 +71,9 @@ class Page(Element):
             try:
                 result[name] = getattr(urls, f"{name}JS")
             except AttributeError:
-                raise ValueError(f"Invalid import {name!r} in spec {spec!r}")
+                raise ValueError(
+                    f"Invalid import {name!r} in spec {spec!r}"
+                ) from None
 
             if name == "dataTables":
                 add("dataTablesBootstrap")

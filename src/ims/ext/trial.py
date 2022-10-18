@@ -3,8 +3,9 @@
 Extensions to :mod:`twisted.trial`
 """
 
+from collections.abc import Sequence
 from functools import wraps
-from typing import Any, Callable, Optional, Sequence, cast
+from typing import Any, Callable, Optional, cast
 
 from hypothesis import HealthCheck, settings
 from twisted.internet.defer import ensureDeferred

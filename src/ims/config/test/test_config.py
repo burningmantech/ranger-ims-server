@@ -18,12 +18,13 @@
 Tests for L{ims.config._config}.
 """
 
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from functools import partial
 from os import environ, getcwd
 from pathlib import Path
 from string import ascii_letters, printable
-from typing import Iterable, Iterator, Mapping, Optional, Sequence, cast
+from typing import Optional, cast
 
 from hypothesis import assume, given
 from hypothesis.strategies import lists, sampled_from, text

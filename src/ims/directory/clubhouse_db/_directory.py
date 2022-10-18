@@ -18,7 +18,8 @@
 Duty Management System directory.
 """
 
-from typing import ClassVar, Iterable, Optional
+from collections.abc import Iterable
+from typing import ClassVar, Optional
 
 from attr import attrs
 from twisted.logger import Logger

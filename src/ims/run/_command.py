@@ -19,8 +19,9 @@ Run the IMS server.
 """
 
 import sys
+from collections.abc import Sequence
 from sys import stdout
-from typing import ClassVar, Optional, Sequence, cast
+from typing import ClassVar, Optional, cast
 
 from attr import attrs
 from twisted.application.runner._exit import ExitStatus, exit

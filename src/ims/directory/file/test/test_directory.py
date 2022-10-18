@@ -18,10 +18,11 @@
 Tests for L{ims.directory.file._directory}.
 """
 
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from random import Random
 from time import time
-from typing import Any, Mapping, Sequence, TextIO, Union
+from typing import Any, TextIO, Union
 from unittest.mock import patch
 
 from attr import attrs

@@ -18,8 +18,9 @@
 Incident Management System web application authentication endpoints.
 """
 
+from collections.abc import Iterable
 from hashlib import sha256
-from typing import Iterable, Optional
+from typing import Optional
 
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest

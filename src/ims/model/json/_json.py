@@ -18,9 +18,10 @@
 Incident Management System data model JSON serialization/deserialization
 """
 
+from collections.abc import Iterable, Mapping
 from datetime import datetime as DateTime
 from enum import Enum
-from typing import Any, Callable, Iterable, Mapping, Union, cast
+from typing import Any, Callable, Union, cast
 
 from cattr import Converter
 from twisted.logger import Logger
@@ -107,8 +108,10 @@ def jsonObjectFromModelObject(model: Any) -> JSON:
 def modelObjectFromJSONObject(json: JSON, modelClass: type) -> Any:
     try:
         return jsonDeserialize(json, modelClass)
-    except KeyError:
-        raise JSONCodecError(f"Invalid JSON for {modelClass.__name__}: {json}")
+    except KeyError as e:
+        raise JSONCodecError(
+            f"Invalid JSON for {modelClass.__name__}: {json}"
+        ) from e
 
 
 # Utilities
@@ -123,12 +126,12 @@ def deserialize(
     def deserializeKey(key: Enum) -> Any:
         try:
             cls = getattr(typeEnum, key.name).value
-        except AttributeError:
+        except AttributeError as e:
             raise AttributeError(
                 "No attribute {attribute!r} in type enum {enum!r}".format(
                     attribute=key.name, enum=typeEnum
                 )
-            )
+            ) from e
         try:
             return jsonDeserialize(obj.get(key.value, None), cls)
         except Exception:

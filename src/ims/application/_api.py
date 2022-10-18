@@ -18,22 +18,13 @@
 Incident Management System JSON API endpoints.
 """
 
+from collections.abc import AsyncIterable, Awaitable, Iterable, Mapping
 from datetime import datetime as DateTime
 from datetime import timezone as TimeZone
 from enum import Enum
 from functools import partial
 from json import JSONDecodeError
-from typing import (
-    Any,
-    AsyncIterable,
-    Awaitable,
-    Callable,
-    ClassVar,
-    Iterable,
-    Mapping,
-    Optional,
-    cast,
-)
+from typing import Any, Callable, ClassVar, Optional, cast
 
 from attr import attrs
 from hyperlink import URL

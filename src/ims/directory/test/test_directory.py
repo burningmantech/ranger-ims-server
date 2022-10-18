@@ -18,7 +18,8 @@
 Tests for L{ims.directory._directory}.
 """
 
-from typing import Any, Callable, Iterable, Sequence, cast
+from collections.abc import Iterable, Sequence
+from typing import Any, Callable, cast
 from unittest.mock import patch
 
 from attr import evolve
