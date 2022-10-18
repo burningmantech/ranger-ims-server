@@ -390,6 +390,7 @@ jobs:
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    continue-on-error: true
 
     steps:
 
@@ -406,10 +407,6 @@ jobs:
 
       - name: Run Trivy
         run: docker run -v /var/run/docker.sock:/var/run/docker.sock --rm aquasec/trivy image --exit-code 1 --no-progress ranger-ims-server:dev
-
-      - name: Supress error
-        if: ${{ failure() }}
-        run: echo Trivy check failed.
 
   deploy-staging:
     name: Deploy image built from master branch to the staging environment
