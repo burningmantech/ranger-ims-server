@@ -5,7 +5,7 @@ attrs==22.1.0
 # Indirect dependencies
 Automat==20.2.0
 bcrypt==4.0.1
-cattrs==22.1.0
+cattrs==22.2.0
 cffi==1.15.1
 characteristic==14.3.0
 constantly==15.1.0
