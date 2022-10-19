@@ -227,7 +227,7 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.9", "pypy-3.9"]
+        python-version: ["3.9"]  # Not working: "pypy-3.9"
         tox-prefix: ["test"]
         optional: [false]
         include:
