@@ -8,7 +8,7 @@ from io import StringIO
 from pathlib import Path
 from sqlite3 import Error as SQLiteError
 from textwrap import dedent
-from typing import Any, Optional, Union, cast
+from typing import Any, Optional, cast
 
 from .. import sqlite
 from ..sqlite import (
@@ -286,7 +286,7 @@ class ErrneousSQLiteConnection(Connection):
         yield
         self._generateErrors = generateErrors
 
-    def executescript(self, sql_script: Union[bytes, str]) -> BaseCursor:
+    def executescript(self, sql_script: str) -> BaseCursor:
         if self._generateErrors:
             raise SQLiteError("executescript()")
         return super().executescript(sql_script)
