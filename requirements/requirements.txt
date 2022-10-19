@@ -25,6 +25,6 @@ PyYAML==6.0
 service-identity==21.1.0
 six==1.16.0
 Tubes==0.2.1
-Twisted==22.4.0
+Twisted==22.8.0
 Werkzeug==2.2.2
 zope.interface==5.5.0
