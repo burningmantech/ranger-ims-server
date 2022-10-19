@@ -68,7 +68,7 @@ class Cursor(BaseCursor):
 
     _log: ClassVar[Logger] = Logger()
 
-    def executescript(self, sql_script: Union[bytes, str]) -> "Cursor":
+    def executescript(self, sql_script: str) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.executescript`.
         """
@@ -86,7 +86,7 @@ class Cursor(BaseCursor):
         self._log.debug(
             "EXECUTE: {sql} <- {parameters}", sql=sql, parameters=parameters
         )
-        return cast("Cursor", super().execute(sql, parameters))
+        return super().execute(sql, parameters)
 
 
 class Connection(BaseConnection):
@@ -104,7 +104,8 @@ class Connection(BaseConnection):
         See :meth:`sqlite3.Cursor.cursor`.
         """
         return cast(
-            "Cursor", super().cursor(factory=factory)  # type: ignore[call-arg]
+            "Cursor",
+            super().cursor(factory=factory),  # type: ignore[call-overload]
         )
 
     def executeAndPrint(
