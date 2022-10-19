@@ -227,16 +227,16 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.9"]
+        python-version: ["3.9"]  # Not working: "pypy-3.9"
         tox-prefix: ["test"]
         optional: [false]
         include:
-          # test Python 3.10 with coverage
+          # Test Python 3.10 with coverage
           - os: "ubuntu-latest"
             python-version: "3.10"
             optional: false
             tox-prefix: "coverage"
-          # test Python 3.11 but allow it to fail
+          # Test Python 3.11 but allow it to fail
           - os: "ubuntu-latest"
             python-version: "3.11.0-rc.2"
             optional: true
@@ -279,7 +279,7 @@ jobs:
         run: |
           py = "${{ matrix.python-version }}"
           py = "".join(py.split(".")[:2])   # Combine major/minor, toss rest
-          py = py.replace("pypy", "py")     # For Pypy: have a litte less py
+          py = py.replace("pypy-", "py")     # For Pypy: have a litte less py
           print(f"::set-output name=value::${{ matrix.tox-prefix }}-py{py}")
 
       - name: Set up Tox environment
