@@ -284,7 +284,7 @@ jobs:
           py = py.replace("pypy-", "py")     # For Pypy: have a litte less py
           env = f"${{ matrix.tox-prefix }}-py{py}"
 
-          printf(f"TOX_ENV={env}")
+          print(f"TOX_ENV={env}")
 
           p = Path(environ["GITHUB_ENV"])
           f = p.open(mode="a")
