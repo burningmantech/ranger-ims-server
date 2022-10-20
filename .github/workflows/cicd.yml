@@ -274,26 +274,34 @@ jobs:
         uses: twisted/python-info-action@v1
 
       - name: Translate Python version to Tox environment
-        id: tox_env
         shell: python
         run: |
+          from os import environ
+          from pathlib import Path
+
           py = "${{ matrix.python-version }}"
           py = "".join(py.split(".")[:2])   # Combine major/minor, toss rest
           py = py.replace("pypy-", "py")     # For Pypy: have a litte less py
-          print(f"::set-output name=value::${{ matrix.tox-prefix }}-py{py}")
+          env = f"${{ matrix.tox-prefix }}-py{py}"
+
+          print(f"TOX_ENV={env}")
+
+          p = Path(environ["GITHUB_ENV"])
+          f = p.open(mode="a")
+          f.write(f"TOX_ENV={env}\n")
 
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e ${{ steps.tox_env.outputs.value }} --notest
+          tox -e ${TOX_ENV} --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
         with:
-          python-path: .tox/${{ steps.tox_env.outputs.value }}/*/python
+          python-path: .tox/${TOX_ENV}/*/python
 
       - name: Run unit tests
-        run: tox -e ${{ steps.tox_env.outputs.value }}
+        run: tox -e ${TOX_ENV}
         env:
           IMS_TEST_MYSQL_HOST: localhost
           IMS_TEST_MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
@@ -306,7 +314,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: trial
-          path: .tox/${{ steps.tox_env.outputs.value }}/log/trial.log
+          path: .tox/${TOX_ENV}/log/trial.log
 
       # Use the latest supported Python version for combining coverage to
       # prevent parsing errors in older versions when looking at modern code.
