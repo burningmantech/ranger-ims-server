@@ -20,9 +20,9 @@ Tests for :mod:`ranger-ims-server.model._incident`
 
 from collections.abc import Iterable
 from datetime import datetime as DateTime
-from typing import Any, cast
+from typing import Any
 
-from attr import AttrsInstance, asdict
+from attr import asdict
 from hypothesis import given
 from hypothesis.strategies import lists, sampled_from, text
 
@@ -88,11 +88,11 @@ class IncidentTests(TestCase):
         mod = {name: value}
         new = incident.replace(**mod)
 
-        expected = asdict(cast(AttrsInstance, incident), recurse=False)
+        expected = asdict(incident, recurse=False)  # type: ignore[arg-type]
         expected.update(mod)
 
         self.assertEqual(
-            asdict(cast(AttrsInstance, new), recurse=False), expected
+            asdict(new, recurse=False), expected  # type: ignore[arg-type]
         )
 
     @given(incidents(), events())
