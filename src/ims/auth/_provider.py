@@ -18,11 +18,12 @@
 Incident Management System web application authentication provider.
 """
 
+from collections.abc import Container, Mapping
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from enum import Flag, auto
 from time import time
-from typing import Any, ClassVar, Container, Mapping, Optional
+from typing import Any, ClassVar, Optional
 
 from attr import Factory, attrs
 from jwcrypto.jwk import JWK
@@ -178,7 +179,7 @@ class AuthProvider:
                     error=e,
                     request=request,
                 )
-                raise InvalidCredentialsError("Invalid token")
+                raise InvalidCredentialsError("Invalid token") from e
             else:
                 claims = objectFromJSONText(jwt.claims)
 

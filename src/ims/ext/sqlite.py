@@ -3,6 +3,7 @@
 SQLite utilities
 """
 
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from sqlite3 import Connection as BaseConnection
 from sqlite3 import Cursor as BaseCursor
@@ -10,17 +11,7 @@ from sqlite3 import Error as SQLiteError
 from sqlite3 import IntegrityError
 from sqlite3 import Row as BaseRow
 from sqlite3 import connect as sqliteConnect
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Iterable,
-    Mapping,
-    Optional,
-    TextIO,
-    Union,
-    cast,
-)
+from typing import Any, Callable, ClassVar, Optional, TextIO, Union, cast
 
 from attr import attrs
 from twisted.logger import Logger
@@ -77,7 +68,7 @@ class Cursor(BaseCursor):
 
     _log: ClassVar[Logger] = Logger()
 
-    def executescript(self, sql_script: Union[bytes, str]) -> "Cursor":
+    def executescript(self, sql_script: str) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.executescript`.
         """
@@ -95,7 +86,7 @@ class Cursor(BaseCursor):
         self._log.debug(
             "EXECUTE: {sql} <- {parameters}", sql=sql, parameters=parameters
         )
-        return cast("Cursor", super().execute(sql, parameters))
+        return super().execute(sql, parameters)
 
 
 class Connection(BaseConnection):
@@ -113,7 +104,8 @@ class Connection(BaseConnection):
         See :meth:`sqlite3.Cursor.cursor`.
         """
         return cast(
-            "Cursor", super().cursor(factory=factory)  # type: ignore[call-arg]
+            "Cursor",
+            super().cursor(factory=factory),  # type: ignore[call-overload]
         )
 
     def executeAndPrint(

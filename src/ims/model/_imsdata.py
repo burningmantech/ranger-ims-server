@@ -20,7 +20,7 @@
 IMS Data
 """
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from attr import attrib, attrs
 

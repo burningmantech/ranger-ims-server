@@ -19,6 +19,7 @@ Incident Management System database tooling.
 """
 
 from abc import abstractmethod
+from collections.abc import Iterable, Iterator, Mapping
 from datetime import datetime as DateTime
 from datetime import timezone as TimeZone
 from pathlib import Path
@@ -28,9 +29,6 @@ from typing import (
     Any,
     Callable,
     ClassVar,
-    Iterable,
-    Iterator,
-    Mapping,
     NoReturn,
     Optional,
     TypeVar,
@@ -501,7 +499,7 @@ class DatabaseStore(IMSDataStore):
                 incidentTypes=incidentTypes,
                 hidden=hidden,
             )
-            raise StorageError(f"Unable to set hidden: {e}")
+            raise StorageError(f"Unable to set hidden: {e}") from e
 
         self._log.info(
             "Set hidden to {hidden} for incident types: {incidentTypes}",
@@ -1884,7 +1882,7 @@ class DatabaseManager:
             try:
                 try:
                     sql = self.store.loadSchema(version=fileID)
-                except FileNotFoundError:
+                except FileNotFoundError as e:
                     self._log.critical(
                         "Unable to upgrade schema in store {store.__class__} "
                         "from {fromVersion} to {toVersion} "
@@ -1893,13 +1891,13 @@ class DatabaseManager:
                         fromVersion=fromVersion,
                         toVersion=toVersion,
                     )
-                    raise StorageError("schema upgrade file not found")
+                    raise StorageError("schema upgrade file not found") from e
                 await self.store.applySchema(sql)
             except StorageError as e:
                 raise StorageError(
                     f"Unable to upgrade schema from "
                     f"{fromVersion} to {toVersion}: {e}"
-                )
+                ) from e
 
         fromVersion = currentVersion
 

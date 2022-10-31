@@ -20,7 +20,8 @@ This implementation uses Docker containers.
 """
 
 from abc import ABC, abstractmethod
-from typing import Awaitable, ClassVar, Mapping, Optional, cast
+from collections.abc import Awaitable, Mapping
+from typing import ClassVar, Optional, cast
 from uuid import uuid4
 
 from attr import Factory, attrib, attrs

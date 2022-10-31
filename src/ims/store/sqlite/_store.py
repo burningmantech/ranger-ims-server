@@ -114,7 +114,7 @@ class DataStore(DatabaseStore):
                 description=cls.query.schemaVersion.description,
                 error=e,
             )
-            raise StorageError(str(e))
+            raise StorageError(str(e)) from e
 
     @property
     def _db(self) -> Connection:
@@ -133,7 +133,7 @@ class DataStore(DatabaseStore):
                 )
                 raise StorageError(
                     f"Unable to open SQLite database {self.dbPath}: {e}"
-                )
+                ) from e
 
         return self._state.db
 
@@ -162,7 +162,7 @@ class DataStore(DatabaseStore):
                 **parameters,
                 error=e,
             )
-            raise StorageError(str(e))
+            raise StorageError(str(e)) from e
 
     async def runOperation(
         self, query: Query, parameters: Optional[Parameters] = None
@@ -185,7 +185,7 @@ class DataStore(DatabaseStore):
                 interaction=interaction,
                 error=e,
             )
-            raise StorageError(str(e))
+            raise StorageError(str(e)) from e
 
     async def dbSchemaVersion(self) -> int:
         """
@@ -202,7 +202,7 @@ class DataStore(DatabaseStore):
             self._db.validateConstraints()
             self._db.commit()
         except SQLiteError as e:
-            raise StorageError(f"Unable to apply schema: {e}")
+            raise StorageError(f"Unable to apply schema: {e}") from e
 
     async def validate(self) -> None:
         """

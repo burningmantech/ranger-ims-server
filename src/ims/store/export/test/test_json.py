@@ -18,9 +18,10 @@
 Tests for :mod:`ranger-ims-server.store.export._json`
 """
 
+from collections.abc import Mapping
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Mapping, cast
+from typing import Any, cast
 
 from hypothesis import given
 

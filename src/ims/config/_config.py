@@ -18,6 +18,7 @@
 IMS configuration
 """
 
+from collections.abc import Sequence
 from configparser import ConfigParser, NoOptionError, NoSectionError
 from datetime import timedelta as TimeDelta
 from functools import partial
@@ -25,7 +26,7 @@ from os import environ, getcwd
 from os.path import basename
 from pathlib import Path
 from sys import argv
-from typing import Any, Callable, ClassVar, Optional, Sequence, cast
+from typing import Any, Callable, ClassVar, Optional, cast
 
 from attr import Factory, attrib, attrs, evolve
 from twisted.logger import Logger
@@ -155,10 +156,10 @@ class ConfigFileParser:
 
         try:
             return type(default)[name]
-        except KeyError:
+        except KeyError as e:
             raise ConfigurationError(
                 f"Invalid option {name!r} for {section}.{option}"
-            )
+            ) from e
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)

@@ -18,8 +18,9 @@
 Duty Management System.
 """
 
+from collections.abc import Iterable, Mapping
 from time import time
-from typing import ClassVar, Iterable, Mapping, Optional, cast
+from typing import ClassVar, Optional, cast
 
 from attr import Factory, attrib, attrs
 from pymysql import DatabaseError as SQLDatabaseError
@@ -260,7 +261,7 @@ class DutyManagementSystem:
                         raise DatabaseError(
                             f"Unable to load expired personnel data "
                             f"from DMS: {e}"
-                        )
+                        ) from e
 
             finally:
                 self._state._busy = False
@@ -268,7 +269,7 @@ class DutyManagementSystem:
         try:
             return self._state._personnel
         except AttributeError:
-            raise DMSError("No personnel data loaded.")
+            raise DMSError("No personnel data loaded.") from None
 
 
 def fullName(first: str, middle: str, last: str) -> str:

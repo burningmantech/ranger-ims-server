@@ -164,7 +164,7 @@ class DataStore(DatabaseStore):
                 **parameters,
                 error=e,
             )
-            raise StorageError(str(e))
+            raise StorageError(str(e)) from e
 
     async def runOperation(
         self, query: Query, parameters: Optional[Parameters] = None
@@ -181,7 +181,7 @@ class DataStore(DatabaseStore):
                 description=query.description,
                 error=e,
             )
-            raise StorageError(str(e))
+            raise StorageError(str(e)) from e
 
     async def runInteraction(
         self,
@@ -199,7 +199,7 @@ class DataStore(DatabaseStore):
                 interaction=interaction,
                 error=e,
             )
-            raise StorageError(str(e))
+            raise StorageError(str(e)) from e
 
     async def dbSchemaVersion(self) -> int:
         """
@@ -212,9 +212,9 @@ class DataStore(DatabaseStore):
                 raise StorageError("Invalid schema: no version")
 
         except MySQLError as e:
-            message = e.args[1]
-            if message.startswith("Table '") and message.endswith(
-                ".SCHEMA_INFO' doesn't exist"
+            message = e.args[1].lower()
+            if message.startswith("table '") and message.endswith(
+                ".schema_info' doesn't exist"
             ):
                 return 0
 
@@ -223,7 +223,7 @@ class DataStore(DatabaseStore):
                 description=self.query.schemaVersion.description,
                 error=e,
             )
-            raise StorageError(str(e))
+            raise StorageError(str(e)) from e
 
     async def printSchema(self, out: TextIO = stdout) -> None:
         """
@@ -304,4 +304,4 @@ class DataStore(DatabaseStore):
             self._log.critical(
                 "Unable to apply schema: {error}", sql=sql, error=e
             )
-            raise StorageError(f"Unable to apply schema: {e}")
+            raise StorageError(f"Unable to apply schema: {e}") from e

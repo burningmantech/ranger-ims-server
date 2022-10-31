@@ -18,8 +18,9 @@
 Tests for L{ims.auth._provider}.
 """
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Callable, Optional
 
 from attr import attrs, evolve
 from hypothesis import assume, given

@@ -19,8 +19,9 @@ Incident Management System directory service integration.
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Sequence
 from hashlib import sha1
-from typing import Iterable, NewType, Optional, Sequence, cast
+from typing import NewType, Optional, cast
 
 from attr import Factory, attrs
 from bcrypt import gensalt
@@ -89,11 +90,13 @@ class IMSDirectory(ABC):
     IMS directory service.
     """
 
+    @abstractmethod
     async def lookupUser(self, searchTerm: str) -> Optional[IMSUser]:
         """
         Look up a user given a text search term.
         """
 
+    @abstractmethod
     async def personnel(self) -> Iterable[Ranger]:
         """
         Look up all personnel.
@@ -151,7 +154,7 @@ class RangerUser(IMSUser):
             try:
                 return verifyPassword(password, hashedPassword)
             except Exception as e:
-                raise DirectoryError(f"Unable to verify password: {e}")
+                raise DirectoryError(f"Unable to verify password: {e}") from e
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True)
