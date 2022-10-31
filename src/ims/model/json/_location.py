@@ -41,7 +41,7 @@ class LocationJSONKey(Enum):
     Location JSON keys
     """
 
-    name = "name"
+    name = "name"  # type: ignore[assignment]
 
 
 def serializeLocation(location: Location) -> dict[str, Any]:
