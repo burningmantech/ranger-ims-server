@@ -8,6 +8,6 @@ klein==21.8.0
 PyMySQL==1.0.2
 PyYAML==6.0
 service-identity==21.1.0
-Twisted==22.4.0
+Twisted==22.10.0
 Werkzeug==2.2.2
 zope.interface==5.5.0
