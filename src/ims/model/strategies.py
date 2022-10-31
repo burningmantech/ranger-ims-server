@@ -18,11 +18,11 @@
 Test strategies for model data.
 """
 
-from collections.abc import Hashable
+from collections.abc import Callable, Hashable
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
-from typing import Any, Callable, Optional, cast
+from typing import Any, cast
 
 from hypothesis.strategies import SearchStrategy, booleans, composite
 from hypothesis.strategies import datetimes as _datetimes
@@ -210,8 +210,8 @@ def addresses() -> SearchStrategy:  # Address
 @composite
 def reportEntries(
     draw: Callable[..., Any],
-    author: Optional[str] = None,
-    automatic: Optional[bool] = None,
+    author: str | None = None,
+    automatic: bool | None = None,
     beforeNow: bool = False,
     fromNow: bool = False,
 ) -> ReportEntry:
@@ -348,7 +348,7 @@ maxIncidentNumber = min(
 )  # SQLite  # MySQL
 
 
-def incidentNumbers(max: Optional[int] = None) -> SearchStrategy:  # str
+def incidentNumbers(max: int | None = None) -> SearchStrategy:  # str
     """
     Strategy that generates incident numbers.
     """
@@ -366,15 +366,15 @@ def incidentSummaries() -> SearchStrategy:  # str
 def incidents(
     draw: Callable[..., Any],
     new: bool = False,
-    event: Optional[Event] = None,
-    maxNumber: Optional[int] = None,
+    event: Event | None = None,
+    maxNumber: int | None = None,
     beforeNow: bool = False,
     fromNow: bool = False,
 ) -> Incident:
     """
     Strategy that generates :class:`Incident` values.
     """
-    automatic: Optional[bool]
+    automatic: bool | None
     if new:
         number = 0
         automatic = False
@@ -409,17 +409,17 @@ def incidents(
 
 
 def incidentLists(
-    event: Optional[Event] = None,
-    maxNumber: Optional[int] = None,
-    minSize: Optional[int] = None,
-    maxSize: Optional[int] = None,
-    averageSize: Optional[int] = None,
+    event: Event | None = None,
+    maxNumber: int | None = None,
+    minSize: int | None = None,
+    maxSize: int | None = None,
+    averageSize: int | None = None,
     uniqueIDs: bool = False,
 ) -> SearchStrategy:  # List[Incident]
     """
     Strategy that generates :class:`List`s containing :class:`Incident` values.
     """
-    uniqueBy: Optional[Callable[[Incident], Hashable]]
+    uniqueBy: Callable[[Incident], Hashable] | None
     if uniqueIDs:
 
         def uniqueBy(incident: Incident) -> Hashable:
@@ -534,15 +534,15 @@ incidentReportSummaries = incidentSummaries
 def incidentReports(
     draw: Callable[..., Any],
     new: bool = False,
-    event: Optional[Event] = None,
-    maxNumber: Optional[int] = None,
+    event: Event | None = None,
+    maxNumber: int | None = None,
     beforeNow: bool = False,
     fromNow: bool = False,
 ) -> IncidentReport:
     """
     Strategy that generates :class:`IncidentReport` values.
     """
-    automatic: Optional[bool]
+    automatic: bool | None
     if new:
         number = 0
         automatic = False
@@ -570,10 +570,10 @@ def incidentReports(
 
 
 def incidentReportLists(
-    maxNumber: Optional[int] = None,
-    minSize: Optional[int] = None,
-    maxSize: Optional[int] = None,
-    averageSize: Optional[int] = None,
+    maxNumber: int | None = None,
+    minSize: int | None = None,
+    maxSize: int | None = None,
+    averageSize: int | None = None,
 ) -> SearchStrategy:  # List[IncidentReport]
     """
     Strategy that generates :class:`List`s containing :class:`IncidentReport`

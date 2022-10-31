@@ -18,7 +18,7 @@
 Tests for :mod:`ranger-ims-server.store.mysql._store`
 """
 
-from typing import ClassVar, Optional, cast
+from typing import ClassVar, cast
 
 from twisted.internet.defer import Deferred, ensureDeferred
 from twisted.logger import Logger
@@ -51,7 +51,7 @@ class DataStoreTests(SuperDataStoreTests):
     Parent test class.
     """
 
-    skip: ClassVar[Optional[str]] = None
+    skip: ClassVar[str | None] = None
     _log: ClassVar[Logger] = Logger()
 
     mysqlService: ClassVar[MySQLService] = DataStoreCoreTests.mysqlService

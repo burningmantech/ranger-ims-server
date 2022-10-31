@@ -3,8 +3,9 @@
 Extensions to :mod:`enum`
 """
 
+from collections.abc import Callable
 from enum import Enum, auto, unique
-from typing import Any, Callable, cast
+from typing import Any, cast
 
 
 __all__ = (

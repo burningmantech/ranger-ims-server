@@ -18,9 +18,10 @@
 Incident Management System SQL data store.
 """
 
+from collections.abc import Callable
 from pathlib import Path
 from sys import stdout
-from typing import Any, Callable, ClassVar, Optional, TextIO, TypeVar, cast
+from typing import Any, ClassVar, Optional, TextIO, TypeVar, cast
 
 from attr import attrib, attrs
 from pymysql.cursors import DictCursor
@@ -65,7 +66,7 @@ class Cursor(DictCursor):
     def execute(  # type: ignore[override]
         self,
         sql: str,
-        parameters: Optional[Parameters] = None,
+        parameters: Parameters | None = None,
     ) -> int:
         """
         See :meth:`sqlite3.Cursor.execute`.
@@ -111,7 +112,7 @@ class DataStore(DatabaseStore):
         Internal mutable state for :class:`DataStore`.
         """
 
-        db: Optional[ConnectionPool] = attrib(default=None, init=False)
+        db: ConnectionPool | None = attrib(default=None, init=False)
 
     hostName: str
     hostPort: int
@@ -148,7 +149,7 @@ class DataStore(DatabaseStore):
             self._state.db = None
 
     async def runQuery(
-        self, query: Query, parameters: Optional[Parameters] = None
+        self, query: Query, parameters: Parameters | None = None
     ) -> Rows:
         if parameters is None:
             parameters = {}
@@ -167,7 +168,7 @@ class DataStore(DatabaseStore):
             raise StorageError(str(e)) from e
 
     async def runOperation(
-        self, query: Query, parameters: Optional[Parameters] = None
+        self, query: Query, parameters: Parameters | None = None
     ) -> None:
         if parameters is None:
             parameters = {}

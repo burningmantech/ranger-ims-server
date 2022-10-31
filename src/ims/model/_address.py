@@ -21,7 +21,8 @@ Address
 """
 
 from abc import ABC
-from typing import Any, Callable, Optional, TypeVar, cast
+from collections.abc import Callable
+from typing import Any, TypeVar, cast
 
 from attr import attrs
 
@@ -41,7 +42,7 @@ class Address(ABC):  # noqa: B024
     Location address
     """
 
-    description: Optional[str] = None
+    description: str | None = None
 
 
 @attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
@@ -52,7 +53,7 @@ class TextOnlyAddress(Address, ComparisonMixIn):
     An address contains a description of a location.
     """
 
-    description: Optional[str] = None
+    description: str | None = None
 
     def _cmpValue(self) -> Any:
         return self.description
@@ -73,10 +74,10 @@ class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
     Black Rock City.
     """
 
-    description: Optional[str] = None
-    concentric: Optional[str] = None
-    radialHour: Optional[int] = None
-    radialMinute: Optional[int] = None
+    description: str | None = None
+    concentric: str | None = None
+    radialHour: int | None = None
+    radialMinute: int | None = None
 
     def _allNone(self) -> bool:
         return (

@@ -18,14 +18,14 @@
 IMS configuration
 """
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from configparser import ConfigParser, NoOptionError, NoSectionError
 from functools import partial
 from os import environ, getcwd
 from os.path import basename
 from pathlib import Path
 from sys import argv
-from typing import Any, Callable, ClassVar, Optional, cast
+from typing import Any, ClassVar, cast
 
 from attr import Factory, attrib, attrs, evolve
 from twisted.logger import Logger
@@ -88,7 +88,7 @@ class ConfigFileParser:
 
     _log: ClassVar[Logger] = Logger()
 
-    path: Optional[Path]
+    path: Path | None
     _configParser: ConfigParser = Factory(ConfigParser)
 
     def __attrs_post_init__(self) -> None:
@@ -176,12 +176,12 @@ class Configuration:
         Internal mutable state for :class:`Configuration`.
         """
 
-        store: Optional[IMSDataStore] = None
-        directory: Optional[IMSDirectory] = None
-        authProvider: Optional[AuthProvider] = None
+        store: IMSDataStore | None = None
+        directory: IMSDirectory | None = None
+        authProvider: AuthProvider | None = None
 
     @classmethod
-    def fromConfigFile(cls, configFile: Optional[Path]) -> "Configuration":
+    def fromConfigFile(cls, configFile: Path | None) -> "Configuration":
         """
         Load the configuration.
         """
@@ -391,7 +391,7 @@ class Configuration:
             storeFactory=storeFactory,
         )
 
-    configFile: Optional[Path]
+    configFile: Path | None
 
     cachedResourcesRoot: Path
     configRoot: Path

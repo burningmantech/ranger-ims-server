@@ -19,7 +19,7 @@ Duty Management System directory.
 """
 
 from collections.abc import Iterable
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from attr import attrs
 from twisted.logger import Logger
@@ -46,7 +46,7 @@ class DMSDirectory(IMSDirectory):
     async def personnel(self) -> Iterable[Ranger]:
         return tuple(await self._dms.personnel())
 
-    async def lookupUser(self, searchTerm: str) -> Optional[IMSUser]:
+    async def lookupUser(self, searchTerm: str) -> IMSUser | None:
         dms = self._dms
 
         # FIXME: a hash would be better (eg. rangersByHandle)

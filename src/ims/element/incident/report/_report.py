@@ -18,7 +18,6 @@
 Incident report page.
 """
 
-from typing import Optional
 
 from attr import attrs
 from klein import KleinRenderable
@@ -44,7 +43,7 @@ class IncidentReportPage(Page):
 
     name: str = title
     event: Event
-    number: Optional[int]
+    number: int | None
 
     @renderer
     def editing_allowed(self, request: IRequest, tag: Tag) -> KleinRenderable:

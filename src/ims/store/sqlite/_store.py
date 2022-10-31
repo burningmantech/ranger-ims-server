@@ -18,9 +18,10 @@
 Incident Management System SQLite data store.
 """
 
+from collections.abc import Callable
 from pathlib import Path
 from sys import stdout
-from typing import Any, Callable, ClassVar, Optional, TextIO, TypeVar, cast
+from typing import Any, ClassVar, TextIO, TypeVar, cast
 
 from attr import attrib, attrs
 from twisted.logger import Logger
@@ -67,9 +68,9 @@ class DataStore(DatabaseStore):
         Internal mutable state for :class:`DataStore`.
         """
 
-        db: Optional[Connection] = attrib(default=None, init=False)
+        db: Connection | None = attrib(default=None, init=False)
 
-    dbPath: Optional[Path]
+    dbPath: Path | None
     _state: _State = attrib(factory=_State, init=False, repr=False)
 
     @classmethod
@@ -146,7 +147,7 @@ class DataStore(DatabaseStore):
             self._state.db = None
 
     async def runQuery(
-        self, query: Query, parameters: Optional[Parameters] = None
+        self, query: Query, parameters: Parameters | None = None
     ) -> Rows:
         if parameters is None:
             parameters = {}
@@ -165,7 +166,7 @@ class DataStore(DatabaseStore):
             raise StorageError(str(e)) from e
 
     async def runOperation(
-        self, query: Query, parameters: Optional[Parameters] = None
+        self, query: Query, parameters: Parameters | None = None
     ) -> None:
         await self.runQuery(query, parameters)
 

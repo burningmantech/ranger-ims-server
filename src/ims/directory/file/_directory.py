@@ -21,7 +21,7 @@ Incident Management System directory service integration.
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from time import time
-from typing import Any, ClassVar, Optional, TextIO
+from typing import Any, ClassVar, TextIO
 
 from attr import Factory, attrib, attrs
 from twisted.logger import Logger
@@ -131,7 +131,7 @@ def positionFromMapping(mapping: Mapping[str, Any]) -> Position:
     if type(mapping) is not dict:
         raise DirectoryError(f"Position must be mapping: {mapping!r}")
 
-    name: Optional[str] = mapping.get("name", None)
+    name: str | None = mapping.get("name", None)
     if name is None:
         raise DirectoryError(f"Position must have name: {mapping!r}")
     elif type(name) is not str:
@@ -211,6 +211,6 @@ class FileDirectory(IMSDirectory):
         self._reload()
         return await self._state.directory.personnel()
 
-    async def lookupUser(self, searchTerm: str) -> Optional[IMSUser]:
+    async def lookupUser(self, searchTerm: str) -> IMSUser | None:
         self._reload()
         return await self._state.directory.lookupUser(searchTerm)

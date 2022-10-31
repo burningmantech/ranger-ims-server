@@ -18,7 +18,6 @@
 Location
 """
 
-from typing import Optional
 
 from attr import attrib, attrs
 
@@ -29,7 +28,7 @@ from ._replace import ReplaceMixIn
 __all__ = ()
 
 
-def convertAddress(address: Optional[Address]) -> Address:
+def convertAddress(address: Address | None) -> Address:
     if address is None:
         address = TextOnlyAddress(description=None)
 
@@ -42,5 +41,5 @@ class Location(Address, ReplaceMixIn):
     Location
     """
 
-    name: Optional[str]
+    name: str | None
     address: Address = attrib(converter=convertAddress)
