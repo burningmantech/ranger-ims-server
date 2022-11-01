@@ -45,6 +45,7 @@ class URLs:
     api: ClassVar[URL] = prefix.child("api").child("")
     ping: ClassVar[URL] = api.child("ping").child("")
     bag: ClassVar[URL] = api.child("bag")
+    auth: ClassVar[URL] = api.child("auth")
     acl: ClassVar[URL] = api.child("access")
     streets: ClassVar[URL] = api.child("streets")
     personnel: ClassVar[URL] = api.child("personnel").child("")
@@ -66,9 +67,9 @@ class URLs:
 
     # Auth application
 
-    auth: ClassVar[URL] = prefix.child("auth").child("")
-    login: ClassVar[URL] = auth.child("login")
-    logout: ClassVar[URL] = auth.child("logout")
+    authApp: ClassVar[URL] = prefix.child("auth").child("")
+    login: ClassVar[URL] = authApp.child("login")
+    logout: ClassVar[URL] = authApp.child("logout")
 
     # External application
 

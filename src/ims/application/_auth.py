@@ -35,7 +35,7 @@ __all__ = ()
 
 
 def _unprefix(url: URL) -> URL:
-    prefix = URLs.auth.path[:-1]
+    prefix = URLs.authApp.path[:-1]
     assert url.path[: len(prefix)] == prefix, (url.path[len(prefix) :], prefix)
     return url.replace(path=url.path[len(prefix) :])
 
