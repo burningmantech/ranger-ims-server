@@ -3,9 +3,9 @@
 Extensions to :mod:`twisted.trial`
 """
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from functools import wraps
-from typing import Any, Callable, Optional, cast
+from typing import Any, cast
 
 from hypothesis import HealthCheck, settings
 from twisted.internet.defer import ensureDeferred
@@ -57,7 +57,7 @@ class TestCase(SuperTestCase):
             request.responseHeaders.getRawHeaders(name, default=[]),
         )
 
-    def _headerValue(self, request: IRequest, name: str) -> Optional[str]:
+    def _headerValue(self, request: IRequest, name: str) -> str | None:
         values = self._headerValues(request, name)
         if len(values) == 0:
             return None

@@ -22,7 +22,6 @@ Incident
 
 from collections.abc import Iterable, Sequence
 from datetime import datetime as DateTime
-from typing import Optional
 
 from attr import attrib, attrs
 
@@ -56,7 +55,7 @@ class Incident(ReplaceMixIn):
     created: DateTime = attrib(converter=normalizeDateTime)
     state: IncidentState
     priority: IncidentPriority
-    summary: Optional[str]
+    summary: str | None
     location: Location
     rangerHandles: frozenset[str] = attrib(converter=freezeStrings)
     incidentTypes: frozenset[str] = attrib(converter=freezeStrings)
@@ -77,7 +76,7 @@ class Incident(ReplaceMixIn):
 
 
 def summaryFromReport(
-    summary: Optional[str], reportEntries: Iterable[ReportEntry]
+    summary: str | None, reportEntries: Iterable[ReportEntry]
 ) -> str:
     """
     Generate a summary by either using ``self.summary`` if it is not

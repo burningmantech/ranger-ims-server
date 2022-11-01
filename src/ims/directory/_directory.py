@@ -21,7 +21,7 @@ Incident Management System directory service integration.
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Sequence
 from hashlib import sha1
-from typing import NewType, Optional, cast
+from typing import NewType, cast
 
 from attr import Factory, attrs
 from bcrypt import gensalt
@@ -91,7 +91,7 @@ class IMSDirectory(ABC):
     """
 
     @abstractmethod
-    async def lookupUser(self, searchTerm: str) -> Optional[IMSUser]:
+    async def lookupUser(self, searchTerm: str) -> IMSUser | None:
         """
         Look up a user given a text search term.
         """
@@ -207,7 +207,7 @@ class RangerDirectory(IMSDirectory):
     async def personnel(self) -> Iterable[Ranger]:
         return self._rangers
 
-    async def lookupUser(self, searchTerm: str) -> Optional[IMSUser]:
+    async def lookupUser(self, searchTerm: str) -> IMSUser | None:
         user = self._usersByHandle.get(searchTerm)
         if user is not None:
             return user
@@ -224,7 +224,7 @@ def _hash(password: str, salt: str) -> str:
     return sha1((salt + password).encode("utf-8")).hexdigest()  # nosec
 
 
-def hashPassword(password: str, salt: Optional[str] = None) -> str:
+def hashPassword(password: str, salt: str | None = None) -> str:
     """
     Compute a hash for the given password
     """

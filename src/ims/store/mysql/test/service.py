@@ -21,7 +21,7 @@ This implementation uses Docker containers.
 
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Mapping
-from typing import ClassVar, Optional, cast
+from typing import ClassVar, cast
 from uuid import uuid4
 
 from attr import Factory, attrib, attrs
@@ -228,7 +228,7 @@ class DockerizedMySQLService(MySQLService):
         Internal mutable state for :class:`DataStore`.
         """
 
-        container: Optional[Deferred[Container]] = None
+        container: Deferred[Container] | None = None
 
         host = NO_HOST
         port = NO_PORT

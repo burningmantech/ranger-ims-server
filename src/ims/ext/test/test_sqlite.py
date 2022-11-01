@@ -8,7 +8,7 @@ from io import StringIO
 from pathlib import Path
 from sqlite3 import Error as SQLiteError
 from textwrap import dedent
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from .. import sqlite
 from ..sqlite import (
@@ -109,7 +109,7 @@ class ConnectionTests(TestCase):
         out = StringIO()
         printSchema(db, out)
         self.assertEqual(
-            out.getvalue(),
+            out.getvalue().lower(),
             dedent(
                 """
                 PERSON:
@@ -118,7 +118,7 @@ class ConnectionTests(TestCase):
                 """[
                     1:
                 ]
-            ),
+            ).lower(),
         )
 
     def test_openDB_exists(self) -> None:
@@ -292,7 +292,7 @@ class ErrneousSQLiteConnection(Connection):
         return super().executescript(sql_script)
 
     def execute(  # type: ignore[override]
-        self, sql: str, parameters: Optional[Mapping[str, object]] = None
+        self, sql: str, parameters: Mapping[str, object] | None = None
     ) -> BaseCursor:
         if parameters is None:
             parameters = {}
@@ -306,7 +306,7 @@ def patchConnect_errors(testCase: TestCase) -> None:
     Patch :func:`connect` to create :class:`ErrneousSQLiteConnection`s.
     """
 
-    def connect(database: Optional[str]) -> Connection:
+    def connect(database: str | None) -> Connection:
         if database is None:
             database = ":memory:"
         db = ErrneousSQLiteConnection(database)

@@ -314,7 +314,7 @@ class IMSOptions(Options):
                 self["fileLogObserverFactory"] = jsonFileLogObserver
                 self["logFormat"] = "json"
 
-    def parseOptions(self, options: Optional[Sequence[str]] = None) -> None:
+    def parseOptions(self, options: Sequence[str] | None = None) -> None:
         super().parseOptions(options=options)
 
         self.initLogFile()

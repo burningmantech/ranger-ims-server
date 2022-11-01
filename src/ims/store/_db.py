@@ -19,22 +19,13 @@ Incident Management System database tooling.
 """
 
 from abc import abstractmethod
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from datetime import datetime as DateTime
 from datetime import timezone as TimeZone
 from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    NoReturn,
-    Optional,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import Any, ClassVar, NoReturn, Optional, TypeVar, Union, cast
 
 from attr import attrib, attrs
 from twisted.logger import Logger
@@ -137,9 +128,7 @@ class Transaction:
     lastrowid: int
 
     @abstractmethod
-    def execute(
-        self, sql: str, parameters: Optional[Parameters] = None
-    ) -> None:
+    def execute(self, sql: str, parameters: Parameters | None = None) -> None:
         """
         Executes an SQL statement.
         """
@@ -151,7 +140,7 @@ class Transaction:
         """
 
     @abstractmethod
-    def fetchone(self) -> Optional[Row]:
+    def fetchone(self) -> Row | None:
         """
         Fetch the next row.
         """
@@ -245,7 +234,7 @@ class DatabaseStore(IMSDataStore):
         return DateTime.fromtimestamp(value, tz=TimeZone.utc)
 
     @classmethod
-    def loadSchema(cls, version: Optional[Union[int, str]] = None) -> str:
+    def loadSchema(cls, version: int | str | None = None) -> str:
         """
         Read the schema file with the given version name.
         """
@@ -268,7 +257,7 @@ class DatabaseStore(IMSDataStore):
 
     @abstractmethod
     async def runQuery(
-        self, query: Query, parameters: Optional[Parameters] = None
+        self, query: Query, parameters: Parameters | None = None
     ) -> Rows:
         """
         Execute the given query with the given parameters, returning the
@@ -277,7 +266,7 @@ class DatabaseStore(IMSDataStore):
 
     @abstractmethod
     async def runOperation(
-        self, query: Query, parameters: Optional[Parameters] = None
+        self, query: Query, parameters: Parameters | None = None
     ) -> None:
         """
         Execute the given query with the given parameters.
@@ -307,7 +296,7 @@ class DatabaseStore(IMSDataStore):
         Apply the given schema to the database.
         """
 
-    async def upgradeSchema(self, targetVersion: Optional[int] = None) -> None:
+    async def upgradeSchema(self, targetVersion: int | None = None) -> None:
         """
         See :meth:`IMSDataStore.upgradeSchema`.
         """
@@ -851,7 +840,7 @@ class DatabaseStore(IMSDataStore):
         )
 
     def _initialReportEntries(
-        self, incident: Union[Incident, IncidentReport], author: str
+        self, incident: Incident | IncidentReport, author: str
     ) -> Iterable[ReportEntry]:
         created = now()
 
@@ -902,7 +891,7 @@ class DatabaseStore(IMSDataStore):
     async def _createIncident(
         self,
         incident: Incident,
-        author: Optional[str],
+        author: str | None,
         directImport: bool,
     ) -> Incident:
         if directImport:
@@ -1517,7 +1506,7 @@ class DatabaseStore(IMSDataStore):
     async def _createIncidentReport(
         self,
         incidentReport: IncidentReport,
-        author: Optional[str],
+        author: str | None,
         directImport: bool,
     ) -> IncidentReport:
         if directImport:
@@ -1836,7 +1825,7 @@ class DatabaseManager:
 
     store: DatabaseStore
 
-    async def upgradeSchema(self, targetVersion: Optional[int] = None) -> bool:
+    async def upgradeSchema(self, targetVersion: int | None = None) -> bool:
         """
         Apply schema updates
         """

@@ -20,7 +20,6 @@
 Ranger
 """
 
-from typing import Optional
 
 from attr import attrib, attrs
 
@@ -76,8 +75,8 @@ class Ranger(ReplaceMixIn):
     status: RangerStatus
     email: frozenset[str] = attrib(converter=freezeStrings)
     enabled: bool
-    directoryID: Optional[str]
-    password: Optional[str] = attrib(repr=lambda _: "*", default=None)
+    directoryID: str | None
+    password: str | None = attrib(repr=lambda _: "*", default=None)
 
     def __str__(self) -> str:
         return f"{self.status} {self.handle} ({self.name})"

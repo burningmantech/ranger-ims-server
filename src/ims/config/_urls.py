@@ -35,26 +35,28 @@ class URLs:
 
     # Main application
 
-    root: ClassVar = URL.fromText("/")
+    root: ClassVar[URL] = URL.fromText("/")
 
-    prefix: ClassVar = root.child("ims").child("")
-    urlsJS: ClassVar = prefix.child("urls.js")
+    prefix: ClassVar[URL] = root.child("ims").child("")
+    urlsJS: ClassVar[URL] = prefix.child("urls.js")
 
     # API application
 
-    api: ClassVar = prefix.child("api").child("")
-    ping: ClassVar = api.child("ping").child("")
-    bag: ClassVar = api.child("bag")
-    auth: ClassVar = api.child("auth")
-    acl: ClassVar = api.child("access")
-    streets: ClassVar = api.child("streets")
-    personnel: ClassVar = api.child("personnel").child("")
-    incidentTypes: ClassVar = api.child("incident_types").child("")
-    events: ClassVar = api.child("events").child("")
-    event: ClassVar = events.child("<event_id>").child("")
-    incidents: ClassVar = event.child("incidents").child("")
-    incidentNumber: ClassVar = incidents.child("<incident_number>")
-    incidentReports: ClassVar = event.child("incident_reports").child("")
-    incidentReport: ClassVar = incidentReports.child("<incident_report_number>")
+    api: ClassVar[URL] = prefix.child("api").child("")
+    ping: ClassVar[URL] = api.child("ping").child("")
+    bag: ClassVar[URL] = api.child("bag")
+    auth: ClassVar[URL] = api.child("auth")
+    acl: ClassVar[URL] = api.child("access")
+    streets: ClassVar[URL] = api.child("streets")
+    personnel: ClassVar[URL] = api.child("personnel").child("")
+    incidentTypes: ClassVar[URL] = api.child("incident_types").child("")
+    events: ClassVar[URL] = api.child("events").child("")
+    event: ClassVar[URL] = events.child("<event_id>").child("")
+    incidents: ClassVar[URL] = event.child("incidents").child("")
+    incidentNumber: ClassVar[URL] = incidents.child("<incident_number>")
+    incidentReports: ClassVar[URL] = event.child("incident_reports").child("")
+    incidentReport: ClassVar[URL] = incidentReports.child(
+        "<incident_report_number>"
+    )
 
-    eventSource: ClassVar = api.child("eventsource")
+    eventSource: ClassVar[URL] = api.child("eventsource")

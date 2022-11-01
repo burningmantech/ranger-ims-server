@@ -20,7 +20,7 @@ Duty Management System.
 
 from collections.abc import Iterable, Mapping
 from time import time
-from typing import ClassVar, Optional, cast
+from typing import ClassVar, cast
 
 from attr import Factory, attrib, attrs
 from pymysql import DatabaseError as SQLDatabaseError
@@ -83,9 +83,7 @@ class DutyManagementSystem:
         _personnel: Iterable[Ranger] = attrib(default=(), init=False)
         _positions: Iterable[Position] = attrib(default=(), init=False)
         _personnelLastUpdated: float = attrib(default=0.0, init=False)
-        _dbpool: Optional[adbapi.ConnectionPool] = attrib(
-            default=None, init=False
-        )
+        _dbpool: adbapi.ConnectionPool | None = attrib(default=None, init=False)
         _busy: bool = attrib(default=False, init=False)
         _dbErrorCount: int = attrib(default=0, init=False)
 

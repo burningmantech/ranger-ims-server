@@ -21,7 +21,8 @@ Comparison mix-in
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 
 __all__ = ()

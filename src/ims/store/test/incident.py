@@ -23,7 +23,7 @@ from collections.abc import Iterable, Sequence
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from attr import fields as attrFields
 
@@ -165,7 +165,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
             store = await self.store()
 
-            eventID: Optional[str] = None
+            eventID: str | None = None
 
             for incident in incidents:
                 eventID = incident.eventID

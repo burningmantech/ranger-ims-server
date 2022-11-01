@@ -18,11 +18,11 @@
 Report tests for :mod:`ranger-ims-server.store`
 """
 
-from collections.abc import Awaitable, Iterable, Sequence
+from collections.abc import Awaitable, Callable, Iterable, Sequence
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
-from typing import Any, Callable, cast
+from typing import Any, cast
 
 from attr import fields as attrFields
 

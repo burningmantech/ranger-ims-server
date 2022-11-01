@@ -40,7 +40,7 @@ class RangerJSONKey(Enum):
     """
 
     handle = "handle"
-    name = "name"
+    name = "name"  # type: ignore[assignment]
     status = "status"
     email = "email"
     enabled = "enabled"

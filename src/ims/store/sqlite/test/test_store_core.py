@@ -25,7 +25,6 @@ from io import StringIO
 from pathlib import Path
 from sqlite3 import IntegrityError
 from textwrap import dedent
-from typing import Optional
 from unittest.mock import patch
 
 from hypothesis import given, settings
@@ -74,6 +73,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         self.maxDiff = None
         self.assertEqual(
+            schemaInfo.lower(),
             dedent(
                 """
                 Version: 4
@@ -142,8 +142,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 """[
                     1:
                 ]
-            ),
-            schemaInfo,
+            ).lower(),
         )
 
     def test_printQueries(self) -> None:
@@ -216,7 +215,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         """
         message = "Nyargh"
 
-        def oops(path: Path, schema: Optional[str] = None) -> Connection:
+        def oops(path: Path, schema: str | None = None) -> Connection:
             raise SQLiteError(message)
 
         self.patch(_store, "createDB", oops)

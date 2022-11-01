@@ -19,7 +19,7 @@ Incident Management System data store export.
 """
 
 from collections.abc import Iterable, Mapping
-from typing import Any, BinaryIO, ClassVar, Optional, cast
+from typing import Any, BinaryIO, ClassVar, cast
 
 from attr import attrs
 from twisted.logger import Logger
@@ -132,7 +132,7 @@ class JSONImporter:
 
     _log: ClassVar[Logger] = Logger()
 
-    store: Optional[IMSDataStore]
+    store: IMSDataStore | None
     imsData: IMSData
 
     @classmethod

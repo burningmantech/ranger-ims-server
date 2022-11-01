@@ -22,7 +22,6 @@ Incident Report
 
 from collections.abc import Sequence
 from datetime import datetime as DateTime
-from typing import Optional
 
 from attr import attrib, attrs
 
@@ -44,8 +43,8 @@ class IncidentReport(ReplaceMixIn):
     eventID: str
     number: int
     created: DateTime = attrib(converter=normalizeDateTime)
-    summary: Optional[str]
-    incidentNumber: Optional[int]
+    summary: str | None
+    incidentNumber: int | None
     reportEntries: Sequence[ReportEntry] = attrib(
         converter=sortAndFreezeReportEntries
     )

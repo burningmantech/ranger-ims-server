@@ -23,7 +23,7 @@ from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from enum import Flag, auto
 from time import time
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 from attr import Factory, attrs
 from jwcrypto.jwk import JWK
@@ -88,7 +88,7 @@ class AuthProvider:
         Internal mutable state for :class:`RangerDirectory`.
         """
 
-        jwtSecret: Optional[object] = None
+        jwtSecret: object | None = None
 
     store: IMSDataStore
     directory: IMSDirectory
@@ -228,13 +228,13 @@ class AuthProvider:
             raise NotAuthenticatedError("No user logged in")
 
     async def authorizationsForUser(
-        self, user: Optional[IMSUser], eventID: Optional[str]
+        self, user: IMSUser | None, eventID: str | None
     ) -> Authorization:
         """
         Look up the authorizations that a user has for a given event.
         """
 
-        def matchACL(user: Optional[IMSUser], acl: Container[str]) -> bool:
+        def matchACL(user: IMSUser | None, acl: Container[str]) -> bool:
             if "**" in acl:
                 return True
 
@@ -290,7 +290,7 @@ class AuthProvider:
     async def authorizeRequest(
         self,
         request: IRequest,
-        eventID: Optional[str],
+        eventID: str | None,
         requiredAuthorizations: Authorization,
     ) -> None:
         """

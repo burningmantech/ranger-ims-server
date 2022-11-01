@@ -18,10 +18,10 @@
 Incident Management System data model JSON serialization/deserialization
 """
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from datetime import datetime as DateTime
 from enum import Enum
-from typing import Any, Callable, Union, cast
+from typing import Any, Union, cast
 
 from cattr import Converter
 from twisted.logger import Logger

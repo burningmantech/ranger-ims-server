@@ -19,9 +19,9 @@ Incident Management System Klein application.
 """
 
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from functools import wraps
-from typing import Any, Callable, Optional, Union, cast
+from typing import Any, Optional, cast
 
 from hyperlink import URL
 from klein import Klein, KleinRenderable, KleinRouteHandler
@@ -70,7 +70,7 @@ def renderResponse(f: KleinRouteHandler) -> KleinRouteHandler:
 
 
 def redirect(
-    request: IRequest, location: URL, origin: Optional[str] = None
+    request: IRequest, location: URL, origin: str | None = None
 ) -> KleinRenderable:
     """
     Perform a redirect.
@@ -102,7 +102,7 @@ def redirect(
 
 
 def noContentResponse(
-    request: IRequest, etag: Optional[str] = None
+    request: IRequest, etag: str | None = None
 ) -> KleinRenderable:
     """
     Respond with no content.
@@ -174,7 +174,7 @@ def notAuthenticatedResponse(request: IRequest) -> KleinRenderable:
 
 
 def badRequestResponse(
-    request: IRequest, message: Optional[str] = None
+    request: IRequest, message: str | None = None
 ) -> KleinRenderable:
     """
     Respond with a BAD REQUEST status.
@@ -194,7 +194,7 @@ def badRequestResponse(
 
 
 def invalidJSONResponse(
-    request: IRequest, error: Optional[Exception] = None
+    request: IRequest, error: Exception | None = None
 ) -> KleinRenderable:
     """
     Respond with a BAD REQUEST status for invalid JSON request data.
@@ -203,7 +203,7 @@ def invalidJSONResponse(
 
 
 def invalidQueryResponse(
-    request: IRequest, arg: str, value: Optional[str] = None
+    request: IRequest, arg: str, value: str | None = None
 ) -> KleinRenderable:
     """
     Respond with a BAD REQUEST status due to an invalid query.
@@ -227,7 +227,7 @@ def badGatewayResponse(request: IRequest, message: str) -> KleinRenderable:
 
 
 def internalErrorResponse(
-    request: IRequest, message: Optional[str] = None
+    request: IRequest, message: str | None = None
 ) -> KleinRenderable:
     """
     Respond with an INTERNAL SERVER ERROR status.
@@ -252,8 +252,8 @@ def internalErrorResponse(
 
 
 def queryValue(
-    request: IRequest, name: str, default: Optional[str] = None
-) -> Optional[str]:
+    request: IRequest, name: str, default: str | None = None
+) -> str | None:
     """
     Look up the value of a query parameter with the given name in the
     given request.
@@ -322,7 +322,7 @@ class Router(Klein):
         self._registerHandlers()
 
     def route(
-        self, url: Union[str, URL], *args: Any, **kwargs: Any
+        self, url: str | URL, *args: Any, **kwargs: Any
     ) -> Callable[[KleinRouteHandler], KleinRouteHandler]:
         """
         See :meth:`Klein.route`.

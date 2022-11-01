@@ -22,7 +22,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from attr import attrs
 
@@ -153,7 +153,7 @@ class DataStoreTests(AsynchronousTestCase):
     Tests for :class:`IMSDataStore` event access.
     """
 
-    skip: ClassVar[Optional[str]] = "Parent class of real tests"
+    skip: ClassVar[str | None] = "Parent class of real tests"
 
     async def store(self) -> TestDataStoreABC:
         """
