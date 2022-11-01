@@ -53,7 +53,7 @@ RUN apk add --no-cache libressl
 
 # Allow Python to bind to privileged port numbers
 RUN apk add --no-cache libcap
-RUN setcap "cap_net_bind_service=+ep" /usr/local/bin/python3.10
+RUN setcap "cap_net_bind_service=+ep" /usr/local/bin/python3.11
 
 # Create server root and make that our working directory
 RUN install -o daemon -g daemon -d "${IMS_SERVER_ROOT}"
