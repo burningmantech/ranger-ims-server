@@ -103,10 +103,7 @@ class APIApplication:
     _log: ClassVar[Logger] = Logger()
     router: ClassVar[Router] = Router()
 
-    config: Configuration
-    storeObserver: DataStoreEventSourceLogObserver
-
-    _bag = jsonTextFromObject(
+    _bag: ClassVar[bytes] = jsonTextFromObject(
         dict(
             urls=dict(
                 ping=_urlToTextForBag(URLs.ping),
@@ -126,6 +123,9 @@ class APIApplication:
             ),
         )
     ).encode("utf-8")
+
+    config: Configuration
+    storeObserver: DataStoreEventSourceLogObserver
 
     @router.route(_unprefix(URLs.ping), methods=("HEAD", "GET"))
     @static
