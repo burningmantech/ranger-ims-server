@@ -6,6 +6,7 @@ cryptography==38.0.1
 hyperlink==21.0.0
 klein==21.8.0
 PyMySQL==1.0.2
+pyOpenSSL==22.1.0
 PyYAML==6.0
 service-identity==21.1.0
 Twisted==22.10.0
