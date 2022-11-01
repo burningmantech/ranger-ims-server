@@ -21,7 +21,7 @@ Run the IMS server.
 import sys
 from collections.abc import Sequence
 from sys import stdout
-from typing import ClassVar, Optional, cast
+from typing import ClassVar, cast
 
 from attr import attrs
 from twisted.application.runner._exit import ExitStatus, exit
@@ -146,7 +146,7 @@ class Command:
                     JSONImporter.fromIO(store=config.store, io=inFile)
                 )
 
-        first: Optional[JSONImporter] = None
+        first: JSONImporter | None = None
 
         for importer in importers:
             if first is None:

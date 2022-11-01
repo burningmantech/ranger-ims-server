@@ -20,7 +20,7 @@ Element base classes.
 
 from collections import OrderedDict
 from collections.abc import Iterable, MutableMapping
-from typing import Optional, cast
+from typing import cast
 
 from attr import attrs
 from hyperlink import URL
@@ -153,9 +153,7 @@ class Page(Element):
         return tag(self.bottom(request), Class="container-fluid")
 
     @renderer
-    def top(
-        self, request: IRequest, tag: Optional[Tag] = None
-    ) -> KleinRenderable:
+    def top(self, request: IRequest, tag: Tag | None = None) -> KleinRenderable:
         """
         Top elements.
         """
@@ -167,7 +165,7 @@ class Page(Element):
 
     @renderer
     def bottom(
-        self, request: IRequest, tag: Optional[Tag] = None
+        self, request: IRequest, tag: Tag | None = None
     ) -> KleinRenderable:
         """
         Bottom elements.
@@ -175,9 +173,7 @@ class Page(Element):
         return (self.footer(request),)
 
     @renderer
-    def nav(
-        self, request: IRequest, tag: Optional[Tag] = None
-    ) -> KleinRenderable:
+    def nav(self, request: IRequest, tag: Tag | None = None) -> KleinRenderable:
         """
         `<nav>` element.
         """
@@ -185,7 +181,7 @@ class Page(Element):
 
     @renderer
     def header(
-        self, request: IRequest, tag: Optional[Tag] = None
+        self, request: IRequest, tag: Tag | None = None
     ) -> KleinRenderable:
         """
         `<header>` element.
@@ -194,7 +190,7 @@ class Page(Element):
 
     @renderer
     def footer(
-        self, request: IRequest, tag: Optional[Tag] = None
+        self, request: IRequest, tag: Tag | None = None
     ) -> KleinRenderable:
         """
         `<footer>` element.

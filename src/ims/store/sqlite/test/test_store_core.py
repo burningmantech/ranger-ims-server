@@ -25,7 +25,6 @@ from io import StringIO
 from pathlib import Path
 from sqlite3 import IntegrityError
 from textwrap import dedent
-from typing import Optional
 from unittest.mock import patch
 
 from hypothesis import given, settings
@@ -216,7 +215,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         """
         message = "Nyargh"
 
-        def oops(path: Path, schema: Optional[str] = None) -> Connection:
+        def oops(path: Path, schema: str | None = None) -> Connection:
             raise SQLiteError(message)
 
         self.patch(_store, "createDB", oops)

@@ -3,7 +3,7 @@
 SQLite utilities
 """
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 from sqlite3 import Connection as BaseConnection
 from sqlite3 import Cursor as BaseCursor
@@ -11,7 +11,7 @@ from sqlite3 import Error as SQLiteError
 from sqlite3 import IntegrityError
 from sqlite3 import Row as BaseRow
 from sqlite3 import connect as sqliteConnect
-from typing import Any, Callable, ClassVar, Optional, TextIO, Union, cast
+from typing import Any, ClassVar, Optional, TextIO, Union, cast
 
 from attr import attrs
 from twisted.logger import Logger
@@ -48,8 +48,8 @@ class Row(BaseRow):
     """
 
     def get(
-        self, key: str, default: Optional[ParameterValue] = None
-    ) -> Optional[ParameterValue]:
+        self, key: str, default: ParameterValue | None = None
+    ) -> ParameterValue | None:
         """
         Return the value for the column named `key`.
         Returns :obj:`None` if there is no such column.
@@ -76,7 +76,7 @@ class Cursor(BaseCursor):
         return cast("Cursor", super().executescript(sql_script))
 
     def execute(  # type: ignore[override]
-        self, sql: str, parameters: Optional[Parameters] = None
+        self, sql: str, parameters: Parameters | None = None
     ) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.execute`.
@@ -109,7 +109,7 @@ class Connection(BaseConnection):
         )
 
     def executeAndPrint(
-        self, sql: str, parameters: Optional[Parameters] = None
+        self, sql: str, parameters: Parameters | None = None
     ) -> None:
         """
         Execute the given SQL and print the results in a table format.
@@ -187,7 +187,7 @@ class Connection(BaseConnection):
         return cast(bool, super().__exit__(exc_type, exc_val, exc_tb))
 
 
-def connect(path: Optional[Path]) -> Connection:
+def connect(path: Path | None) -> Connection:
     """
     Open the database at the given path and configure it.
     """
@@ -203,7 +203,7 @@ def connect(path: Optional[Path]) -> Connection:
     return db
 
 
-def createDB(path: Optional[Path], schema: str) -> Connection:
+def createDB(path: Path | None, schema: str) -> Connection:
     """
     Create a new database at the given path.
     """
@@ -215,7 +215,7 @@ def createDB(path: Optional[Path], schema: str) -> Connection:
     return db
 
 
-def openDB(path: Path, schema: Optional[str] = None) -> Connection:
+def openDB(path: Path, schema: str | None = None) -> Connection:
     """
     Open an SQLite DB with the schema for this application.
     """
@@ -271,8 +271,8 @@ class QueryPlanExplanation:
         A line of information about a query plan.
         """
 
-        nestingOrder: Optional[int]
-        selectFrom: Optional[int]
+        nestingOrder: int | None
+        selectFrom: int | None
         details: str
 
         def __str__(self) -> str:

@@ -18,8 +18,8 @@
 Tests for L{ims.auth._provider}.
 """
 
-from collections.abc import Sequence
-from typing import Any, Callable, Optional
+from collections.abc import Callable, Sequence
+from typing import Any
 
 from attr import attrs, evolve
 from hypothesis import assume, given
@@ -50,7 +50,7 @@ class TestUser(IMSUser):
     _active: bool
     _uid: IMSUserID
     _groups: Sequence[IMSGroupID]
-    _password: Optional[str]
+    _password: str | None
 
     def __str__(self) -> str:
         return str(self._shortNames[0])

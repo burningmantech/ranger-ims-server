@@ -18,13 +18,19 @@
 Incident Management System JSON API endpoints.
 """
 
-from collections.abc import AsyncIterable, Awaitable, Iterable, Mapping
+from collections.abc import (
+    AsyncIterable,
+    Awaitable,
+    Callable,
+    Iterable,
+    Mapping,
+)
 from datetime import datetime as DateTime
 from datetime import timezone as TimeZone
 from enum import Enum
 from functools import partial
 from json import JSONDecodeError
-from typing import Any, Callable, ClassVar, Optional, cast
+from typing import Any, ClassVar, cast
 
 from attr import attrs
 from hyperlink import URL
@@ -521,7 +527,7 @@ class APIApplication:
             json: Mapping[str, Any],
             key: Enum,
             setter: IncidentAttributeSetter,
-            cast: Optional[Callable[[Any], Any]] = None,
+            cast: Callable[[Any], Any] | None = None,
         ) -> None:
             _cast: Callable[[Any], Any]
             if cast is None:
@@ -900,7 +906,7 @@ class APIApplication:
             json: Mapping[str, Any],
             key: Enum,
             setter: Callable[[str, int, Any, str], Awaitable[None]],
-            cast: Optional[Callable[[Any], Any]] = None,
+            cast: Callable[[Any], Any] | None = None,
         ) -> None:
             _cast: Callable[[Any], Any]
             if cast is None:

@@ -40,7 +40,7 @@ class IncidentTypeJSONKey(Enum):
     Incident type JSON keys
     """
 
-    name = "name"
+    name = "name"  # type: ignore[assignment]
     hidden = "hidden"
 
 

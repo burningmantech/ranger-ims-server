@@ -22,7 +22,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from random import Random
 from time import time
-from typing import Any, TextIO, Union
+from typing import Any, TextIO
 from unittest.mock import patch
 
 from attr import attrs
@@ -97,7 +97,7 @@ testPositions: frozenset[tuple[str, Sequence[str]]] = frozenset(
 
 
 def rangerAsDict(ranger: Ranger, random: Random) -> dict[str, Any]:
-    email: Union[str, list[str]] = list(ranger.email)
+    email: str | list[str] = list(ranger.email)
     if len(ranger.email) == 1:
         # We allow either a string or a list in the YAML when you have a single
         # email address, so this creates both.

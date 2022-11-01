@@ -18,7 +18,7 @@
 Incident Management System web interface.
 """
 
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from attr import attrs
 from hyperlink import URL
@@ -187,7 +187,7 @@ class WebApplication:
         """
         Endpoint for the incident page.
         """
-        numberValue: Optional[int]
+        numberValue: int | None
         if number == "new":
             authz = Authorization.writeIncidents
             numberValue = None
@@ -252,7 +252,7 @@ class WebApplication:
         """
         Endpoint for the incident report page.
         """
-        incidentReportNumber: Optional[int]
+        incidentReportNumber: int | None
         config = self.config
         if number == "new":
             await config.authProvider.authorizeRequest(

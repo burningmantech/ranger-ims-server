@@ -24,7 +24,7 @@ from functools import partial
 from os import environ, getcwd
 from pathlib import Path
 from string import ascii_letters, printable
-from typing import Optional, cast
+from typing import cast
 
 from hypothesis import assume, given
 from hypothesis.strategies import lists, sampled_from, text
@@ -487,7 +487,7 @@ class ConfigurationTests(TestCase):
     """
 
     def _test_fromConfigFile_defaults(
-        self, configFile: Optional[Path], serverRoot: Path
+        self, configFile: Path | None, serverRoot: Path
     ) -> None:
         config = Configuration.fromConfigFile(configFile)
 

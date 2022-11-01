@@ -6,7 +6,7 @@ Extensions to :mod:`json`
 from datetime import date as Date
 from datetime import datetime as DateTime
 from json import JSONDecodeError, JSONEncoder, dumps, load, loads
-from typing import Any, BinaryIO, ClassVar, Optional
+from typing import Any, BinaryIO, ClassVar
 
 from arrow.parser import DateTimeParser
 from twisted.logger import Logger
@@ -57,7 +57,7 @@ def jsonTextFromObject(obj: Any, pretty: bool = False) -> str:
     """
     if pretty:
         separators = (",", ": ")
-        indent: Optional[int] = 2
+        indent: int | None = 2
         sortKeys = True
     else:
         separators = (",", ":")

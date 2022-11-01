@@ -20,7 +20,7 @@ Incident Management System web application authentication provider.
 
 from collections.abc import Container
 from enum import Flag, auto
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from attr import attrs
 from twisted.logger import Logger
@@ -120,7 +120,7 @@ class AuthProvider:
             raise NotAuthenticatedError("No user logged in")
 
     async def authorizationsForUser(
-        self, user: IMSUser, eventID: Optional[str]
+        self, user: IMSUser, eventID: str | None
     ) -> Authorization:
         """
         Look up the authorizations that a user has for a given event.
@@ -186,7 +186,7 @@ class AuthProvider:
     async def authorizeRequest(
         self,
         request: IRequest,
-        eventID: Optional[str],
+        eventID: str | None,
         requiredAuthorizations: Authorization,
     ) -> None:
         """

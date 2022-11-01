@@ -21,7 +21,7 @@ HTML5 EventSource support.
 from collections import deque
 from collections.abc import Mapping
 from time import time
-from typing import Any, ClassVar, Deque, Optional
+from typing import Any, ClassVar, Deque
 
 from attr import attrib, attrs
 from twisted.logger import ILogObserver, Logger
@@ -42,9 +42,9 @@ class Event:
     """
 
     message: str
-    eventID: Optional[int]
-    eventClass: Optional[str]
-    retry: Optional[int] = None
+    eventID: int | None
+    eventClass: str | None
+    retry: int | None = None
 
     def render(self) -> str:
         """
@@ -83,7 +83,7 @@ class DataStoreEventSourceLogObserver:
     _counter: list[int] = attrib(init=False, factory=lambda: [0])
 
     def addListener(
-        self, listener: IRequest, lastEventID: Optional[str] = None
+        self, listener: IRequest, lastEventID: str | None = None
     ) -> None:
         """
         Add a listener.
@@ -104,7 +104,7 @@ class DataStoreEventSourceLogObserver:
 
     def _transmogrify(
         self, loggerEvent: Mapping[str, Any], eventID: int
-    ) -> Optional[Event]:
+    ) -> Event | None:
         """
         Convert a logger event into an EventSource event.
         """
@@ -148,7 +148,7 @@ class DataStoreEventSourceLogObserver:
         )
         return eventSourceEvent
 
-    def _playback(self, listener: IRequest, lastEventID: Optional[str]) -> None:
+    def _playback(self, listener: IRequest, lastEventID: str | None) -> None:
         if lastEventID is None:
             return
 
