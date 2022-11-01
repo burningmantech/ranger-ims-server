@@ -109,7 +109,7 @@ class ConnectionTests(TestCase):
         out = StringIO()
         printSchema(db, out)
         self.assertEqual(
-            out.getvalue(),
+            out.getvalue().lower(),
             dedent(
                 """
                 PERSON:
@@ -118,7 +118,7 @@ class ConnectionTests(TestCase):
                 """[
                     1:
                 ]
-            ),
+            ).lower(),
         )
 
     def test_openDB_exists(self) -> None:
