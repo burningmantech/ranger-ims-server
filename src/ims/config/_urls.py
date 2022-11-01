@@ -35,107 +35,116 @@ class URLs:
 
     # Main application
 
-    root: ClassVar = URL.fromText("/")
+    root: ClassVar[URL] = URL.fromText("/")
 
-    prefix: ClassVar = root.child("ims").child("")
-    urlsJS: ClassVar = prefix.child("urls.js")
-
-    # Static resources
-    static: ClassVar = prefix.child("static")
-    styleSheet: ClassVar = static.child("style.css")
-    logo: ClassVar = static.child("logo.png")
-
-    # Auth application
-
-    auth: ClassVar = prefix.child("auth").child("")
-    login: ClassVar = auth.child("login")
-    logout: ClassVar = auth.child("logout")
-
-    # External application
-
-    external: ClassVar = prefix.child("ext").child("")
-
-    jqueryBase: ClassVar = external.child("jquery").child("")
-    jqueryJS: ClassVar = jqueryBase.child("jquery.min.js")
-    jqueryMap: ClassVar = jqueryBase.child("jquery.min.map")
-
-    bootstrapBase: ClassVar = external.child("bootstrap").child("")
-    bootstrapCSS: ClassVar = bootstrapBase.child("css", "bootstrap.min.css")
-    bootstrapJS: ClassVar = bootstrapBase.child("js", "bootstrap.min.js")
-
-    dataTablesBase: ClassVar = external.child("datatables").child("")
-    dataTablesJS: ClassVar = dataTablesBase.child(
-        "media", "js", "jquery.dataTables.min.js"
-    )
-    dataTablesBootstrapCSS: ClassVar = dataTablesBase.child(
-        "media", "css", "dataTables.bootstrap.min.css"
-    )
-    dataTablesBootstrapJS: ClassVar = dataTablesBase.child(
-        "media", "js", "dataTables.bootstrap.min.js"
-    )
-
-    momentJS: ClassVar = external.child("moment.min.js")
-
-    lscacheJS: ClassVar = external.child("lscache.min.js")
+    prefix: ClassVar[URL] = root.child("ims").child("")
+    urlsJS: ClassVar[URL] = prefix.child("urls.js")
 
     # API application
 
-    api: ClassVar = prefix.child("api").child("")
-    ping: ClassVar = api.child("ping").child("")
-    acl: ClassVar = api.child("access")
-    streets: ClassVar = api.child("streets")
-    personnel: ClassVar = api.child("personnel").child("")
-    incidentTypes: ClassVar = api.child("incident_types").child("")
-    events: ClassVar = api.child("events").child("")
-    event: ClassVar = events.child("<event_id>").child("")
-    locations: ClassVar = event.child("locations").child("")
-    incidents: ClassVar = event.child("incidents").child("")
-    incidentNumber: ClassVar = incidents.child("<number>")
-    incidentReports: ClassVar = event.child("incident_reports").child("")
-    incidentReport: ClassVar = incidentReports.child("<number>")
+    api: ClassVar[URL] = prefix.child("api").child("")
+    ping: ClassVar[URL] = api.child("ping").child("")
+    bag: ClassVar[URL] = api.child("bag")
+    acl: ClassVar[URL] = api.child("access")
+    streets: ClassVar[URL] = api.child("streets")
+    personnel: ClassVar[URL] = api.child("personnel").child("")
+    incidentTypes: ClassVar[URL] = api.child("incident_types").child("")
+    events: ClassVar[URL] = api.child("events").child("")
+    event: ClassVar[URL] = events.child("<event_id>").child("")
+    locations: ClassVar[URL] = event.child("locations").child("")
+    incidents: ClassVar[URL] = event.child("incidents").child("")
+    incidentNumber: ClassVar[URL] = incidents.child("<number>")
+    incidentReports: ClassVar[URL] = event.child("incident_reports").child("")
+    incidentReport: ClassVar[URL] = incidentReports.child("<number>")
 
-    eventSource: ClassVar = api.child("eventsource")
+    eventSource: ClassVar[URL] = api.child("eventsource")
+
+    # Static resources
+    static: ClassVar[URL] = prefix.child("static")
+    styleSheet: ClassVar[URL] = static.child("style.css")
+    logo: ClassVar[URL] = static.child("logo.png")
+
+    # Auth application
+
+    auth: ClassVar[URL] = prefix.child("auth").child("")
+    login: ClassVar[URL] = auth.child("login")
+    logout: ClassVar[URL] = auth.child("logout")
+
+    # External application
+
+    external: ClassVar[URL] = prefix.child("ext").child("")
+
+    jqueryBase: ClassVar[URL] = external.child("jquery").child("")
+    jqueryJS: ClassVar[URL] = jqueryBase.child("jquery.min.js")
+    jqueryMap: ClassVar[URL] = jqueryBase.child("jquery.min.map")
+
+    bootstrapBase: ClassVar[URL] = external.child("bootstrap").child("")
+    bootstrapCSS: ClassVar[URL] = bootstrapBase.child(
+        "css", "bootstrap.min.css"
+    )
+    bootstrapJS: ClassVar[URL] = bootstrapBase.child("js", "bootstrap.min.js")
+
+    dataTablesBase: ClassVar[URL] = external.child("datatables").child("")
+    dataTablesJS: ClassVar[URL] = dataTablesBase.child(
+        "media", "js", "jquery.dataTables.min.js"
+    )
+    dataTablesBootstrapCSS: ClassVar[URL] = dataTablesBase.child(
+        "media", "css", "dataTables.bootstrap.min.css"
+    )
+    dataTablesBootstrapJS: ClassVar[URL] = dataTablesBase.child(
+        "media", "js", "dataTables.bootstrap.min.js"
+    )
+
+    momentJS: ClassVar[URL] = external.child("moment.min.js")
+
+    lscacheJS: ClassVar[URL] = external.child("lscache.min.js")
 
     # Web application
 
-    app: ClassVar = prefix.child("app").child("")
+    app: ClassVar[URL] = prefix.child("app").child("")
 
-    imsJS: ClassVar = static.child("ims.js")
+    imsJS: ClassVar[URL] = static.child("ims.js")
 
-    admin: ClassVar = app.child("admin").child("")
-    adminJS: ClassVar = static.child("admin.js")
+    admin: ClassVar[URL] = app.child("admin").child("")
+    adminJS: ClassVar[URL] = static.child("admin.js")
 
-    adminEvents: ClassVar = admin.child("events")
-    adminEventsJS: ClassVar = static.child("admin_events.js")
+    adminEvents: ClassVar[URL] = admin.child("events")
+    adminEventsJS: ClassVar[URL] = static.child("admin_events.js")
 
-    adminIncidentTypes: ClassVar = admin.child("types")
-    adminIncidentTypesJS: ClassVar = static.child("admin_types.js")
+    adminIncidentTypes: ClassVar[URL] = admin.child("types")
+    adminIncidentTypesJS: ClassVar[URL] = static.child("admin_types.js")
 
-    adminStreets: ClassVar = admin.child("streets")
-    adminStreetsJS: ClassVar = static.child("admin_streets.js")
+    adminStreets: ClassVar[URL] = admin.child("streets")
+    adminStreetsJS: ClassVar[URL] = static.child("admin_streets.js")
 
-    viewEvents: ClassVar = app.child("events").child("")
-    viewEvent: ClassVar = viewEvents.child("<event_id>").child("")
+    viewEvents: ClassVar[URL] = app.child("events").child("")
+    viewEvent: ClassVar[URL] = viewEvents.child("<event_id>").child("")
 
-    viewIncidents: ClassVar = viewEvent.child("incidents").child("")
-    viewIncidentsTemplate: ClassVar = app.child("incidents.html")
-    viewIncidentsJS: ClassVar = static.child("incidents.js")
-    viewIncidentsRelative: ClassVar = URL.fromText("incidents").child("")
+    viewIncidents: ClassVar[URL] = viewEvent.child("incidents").child("")
+    viewIncidentsTemplate: ClassVar[URL] = app.child("incidents.html")
+    viewIncidentsJS: ClassVar[URL] = static.child("incidents.js")
+    viewIncidentsRelative: ClassVar[URL] = URL.fromText("incidents").child("")
 
-    viewIncidentNumber: ClassVar = viewIncidents.child("<number>")
-    viewIncidentTemplate: ClassVar = app.child("incident.html")
-    viewIncidentJS: ClassVar = static.child("incident.js")
+    viewIncidentNumber: ClassVar[URL] = viewIncidents.child("<number>")
+    viewIncidentTemplate: ClassVar[URL] = app.child("incident.html")
+    viewIncidentJS: ClassVar[URL] = static.child("incident.js")
 
-    viewIncidentReports: ClassVar = viewEvent.child("incident_reports").child(
-        ""
+    viewIncidentReports: ClassVar[URL] = viewEvent.child(
+        "incident_reports"
+    ).child("")
+    viewIncidentReportsTemplate: ClassVar[URL] = app.child(
+        "incident_reports.html"
     )
-    viewIncidentReportsTemplate: ClassVar = app.child("incident_reports.html")
-    viewIncidentReportsJS: ClassVar = static.child("incident_reports.js")
-    viewIncidentReportsRelative: ClassVar = URL.fromText(
+    viewIncidentReportsJS: ClassVar[URL] = static.child("incident_reports.js")
+    viewIncidentReportsRelative: ClassVar[URL] = URL.fromText(
         "incident_reports"
     ).child("")
 
-    viewIncidentReportNew: ClassVar = viewIncidentReports.child("new")
-    viewIncidentReportNumber: ClassVar = viewIncidentReports.child("<number>")
-    viewIncidentReportTemplate: ClassVar = app.child("incident_report.html")
-    viewIncidentReportJS: ClassVar = static.child("incident_report.js")
+    viewIncidentReportNew: ClassVar[URL] = viewIncidentReports.child("new")
+    viewIncidentReportNumber: ClassVar[URL] = viewIncidentReports.child(
+        "<number>"
+    )
+    viewIncidentReportTemplate: ClassVar[URL] = app.child(
+        "incident_report.html"
+    )
+    viewIncidentReportJS: ClassVar[URL] = static.child("incident_report.js")
