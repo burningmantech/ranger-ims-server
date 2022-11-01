@@ -4,6 +4,7 @@ bcrypt==4.0.1
 cattrs==22.2.0
 cryptography==38.0.1
 hyperlink==21.0.0
+jwcrypto==0.9.1
 klein==21.8.0
 PyMySQL==1.0.2
 pyOpenSSL==22.1.0
