@@ -37,7 +37,6 @@ from ims import __version__ as version
 from ims.auth import NotAuthenticatedError, NotAuthorizedError
 from ims.config import URLs
 from ims.directory import DirectoryError
-from ims.element.redirect import RedirectPage
 from ims.ext.klein import ContentType, HeaderName
 
 
@@ -83,18 +82,20 @@ def redirect(
         except ValueError:
             return badRequestResponse(request, "Invalid origin URI")
 
+    url = location.asText()
+
     log.debug(
         "Redirect {source} -> {destination}",
         source=request.uri.decode("utf-8"),
-        destination=location.asText(),
+        destination=url,
     )
     url = location.asText().encode("utf-8")
 
-    request.setHeader(HeaderName.contentType.value, ContentType.html.value)
-    request.setHeader(HeaderName.location.value, url)
+    request.setHeader(HeaderName.contentType.value, ContentType.text.value)
+    request.setHeader(HeaderName.location.value, url.encode("utf-8"))
     request.setResponseCode(http.FOUND)
 
-    return RedirectPage(location=location)
+    return f"Moved to {url}"
 
 
 #
