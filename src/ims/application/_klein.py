@@ -89,7 +89,6 @@ def redirect(
         source=request.uri.decode("utf-8"),
         destination=url,
     )
-    url = location.asText().encode("utf-8")
 
     request.setHeader(HeaderName.contentType.value, ContentType.text.value)
     request.setHeader(HeaderName.location.value, url.encode("utf-8"))
