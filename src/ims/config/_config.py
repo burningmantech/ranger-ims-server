@@ -20,6 +20,7 @@ IMS configuration
 
 from collections.abc import Callable, Sequence
 from configparser import ConfigParser, NoOptionError, NoSectionError
+from datetime import timedelta as TimeDelta
 from functools import partial
 from os import environ, getcwd
 from os.path import basename
@@ -369,6 +370,27 @@ class Configuration:
 
         masterKey = parser.valueFromConfig("MASTER_KEY", "Core", "MasterKey")
 
+        tokenLifetimeNormal = TimeDelta(
+            seconds=int(
+                parser.valueFromConfig(
+                    "TOKEN_LIFETIME_NORMAL",
+                    "Core",
+                    "TokenLifetime",
+                    str(1 * 60 * 60),
+                )
+            )
+        )
+        tokenLifetimeExtended = TimeDelta(
+            seconds=int(
+                parser.valueFromConfig(
+                    "TOKEN_LIFETIME_EXTENDED",
+                    "Core",
+                    "TokenLifetime",
+                    str(30 * 24 * 60 * 60),
+                )
+            )
+        )
+
         #
         # Persist some objects
         #
@@ -385,6 +407,8 @@ class Configuration:
             logFormat=logFormat,
             logLevelName=logLevelName,
             masterKey=masterKey,
+            tokenLifetimeNormal=tokenLifetimeNormal,
+            tokenLifetimeExtended=tokenLifetimeExtended,
             port=port,
             requireActive=requireActive,
             serverRoot=serverRoot,
@@ -403,6 +427,8 @@ class Configuration:
     logFormat: LogFormat
     logLevelName: str
     masterKey: str
+    tokenLifetimeNormal: TimeDelta
+    tokenLifetimeExtended: TimeDelta
     port: int
     requireActive: bool
     serverRoot: Path

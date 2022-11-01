@@ -203,6 +203,16 @@ def invalidQueryResponse(
         return badRequestResponse(request, f"Invalid query: {arg}={value}")
 
 
+def badGatewayResponse(request: IRequest, message: str) -> KleinRenderable:
+    """
+    Respond with a BAD GATEWAY status.
+    """
+    log.debug("Bad gateway: {message}", request=request, message=message)
+
+    request.setResponseCode(http.BAD_GATEWAY)
+    return textResponse(request, message)
+
+
 def internalErrorResponse(
     request: IRequest, message: str | None = None
 ) -> KleinRenderable:

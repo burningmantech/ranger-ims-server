@@ -18,11 +18,15 @@
 Incident Management System web application authentication provider.
 """
 
-from collections.abc import Container
+from collections.abc import Container, Mapping
+from datetime import datetime as DateTime
+from datetime import timedelta as TimeDelta
 from enum import Flag, auto
-from typing import ClassVar
+from typing import Any, ClassVar
 
-from attr import attrs
+from attr import Factory, attrs
+from jwcrypto.jwk import JWK
+from jwcrypto.jwt import JWT
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
@@ -68,12 +72,23 @@ class AuthProvider:
     """
 
     _log: ClassVar[Logger] = Logger()
+    _jwtIssuer: ClassVar[str] = "ranger-ims-server"
+
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+    class _State:
+        """
+        Internal mutable state for :class:`RangerDirectory`.
+        """
+
+        jwtSecret: object | None = None
 
     store: IMSDataStore
 
     requireActive: bool = True
     adminUsers: frozenset[str] = frozenset()
     masterKey: str = ""
+
+    _state: _State = Factory(_State)
 
     async def verifyPassword(self, user: IMSUser, password: str) -> bool:
         """
@@ -99,6 +114,38 @@ class AuthProvider:
         )
 
         return authenticated
+
+    @property
+    def _jwtSecret(self) -> object:
+        if self._state.jwtSecret is None:
+            self._log.info("Generating JWT secret")
+            self._state.jwtSecret = JWK.generate(kty="oct", size=256)
+        return self._state.jwtSecret
+
+    async def credentialsForUser(
+        self, user: IMSUser, duration: TimeDelta
+    ) -> Mapping[str, Any]:
+        """
+        Generate a JWT token for the given user.
+        """
+        now = DateTime.now()
+        expiration = now + duration
+
+        token = JWT(
+            header=dict(typ="JWT", alg="HS256"),
+            claims=dict(
+                iss=self._jwtIssuer,  # Issuer
+                sub=user.uid,  # Subject
+                # aud=None, # Audience
+                exp=int(expiration.timestamp()),  # Expiration
+                # nbf=None,  # Not before
+                iat=int(now.timestamp()),  # Issued at
+                # jti=None,  # JWT ID
+                preferred_username=user.shortNames[0],
+            ),
+        )
+        token.make_signed_token(self._jwtSecret)
+        return dict(token=token.serialize())
 
     def authenticateRequest(
         self, request: IRequest, optional: bool = False

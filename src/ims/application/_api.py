@@ -39,12 +39,17 @@ from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
 from twisted.logger import Logger
 from twisted.python.failure import Failure
+from twisted.web import http
 from twisted.web.iweb import IRequest
 
 from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
 from ims.directory import DirectoryError, RangerUser
-from ims.ext.json import jsonTextFromObject, objectFromJSONBytesIO
+from ims.ext.json import (
+    jsonTextFromObject,
+    objectFromJSONBytesIO,
+    objectFromJSONText,
+)
 from ims.ext.klein import ContentType, HeaderName, static
 from ims.model import (
     Event,
@@ -71,6 +76,7 @@ from ims.store import NoSuchIncidentError
 from ._eventsource import DataStoreEventSourceLogObserver
 from ._klein import (
     Router,
+    badGatewayResponse,
     badRequestResponse,
     invalidJSONResponse,
     invalidQueryResponse,
@@ -143,6 +149,71 @@ class APIApplication:
         Ping (health check) endpoint.
         """
         return jsonBytes(request, self._bag, str(hash(self._bag)))
+
+    @router.route(_unprefix(URLs.auth), methods=("POST",))
+    async def authResource(self, request: IRequest) -> KleinRenderable:
+        """
+        Authentication endpoint.
+        """
+        contentType = request.getHeader(HeaderName.contentType.value)
+
+        if contentType != ContentType.json.value:
+            return badRequestResponse(
+                request, f"Unsupported request Content-Type: {contentType}"
+            )
+
+        body = request.content.read()
+        try:
+            json = objectFromJSONText(body.decode("utf-8"))
+        except JSONDecodeError as e:
+            return invalidJSONResponse(request, e)
+
+        username = json.get("identification")
+        password = json.get("password")
+
+        if username is None:
+            return badRequestResponse(request, "Missing identification.")
+
+        if password is None:
+            return badRequestResponse(request, "Missing password.")
+
+        try:
+            user = await self.config.directory.lookupUser(username)
+        except DirectoryError as e:
+            self._log.error("Directory error: {error}", error=e)
+            return badGatewayResponse(
+                request, "Unable to contact directory service"
+            )
+
+        if user is None:
+            self._log.debug(
+                "Login failed: no such user: {username}", username=username
+            )
+        else:
+            authProvider = self.config.authProvider
+            authenticated = await authProvider.verifyPassword(user, password)
+            if not authenticated:
+                self._log.debug(
+                    "Login failed: incorrect credentials for user: {user}",
+                    user=user,
+                )
+
+            else:
+                self._log.info("Issuing credentials for user {user}", user=user)
+                credentials = await authProvider.credentialsForUser(
+                    user, self.config.tokenLifetimeNormal
+                )
+                return jsonBytes(
+                    request, jsonTextFromObject(credentials).encode("utf-8")
+                )
+
+        request.setResponseCode(http.UNAUTHORIZED)
+        return jsonBytes(
+            request,
+            jsonTextFromObject(dict(status="invalid-credentials")).encode(
+                "utf-8"
+            ),
+        )
 
     @router.route(_unprefix(URLs.personnel), methods=("HEAD", "GET"))
     async def personnelResource(self, request: IRequest) -> KleinRenderable:
