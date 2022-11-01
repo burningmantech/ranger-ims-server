@@ -73,6 +73,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         self.maxDiff = None
         self.assertEqual(
+            schemaInfo.lower(),
             dedent(
                 """
                 Version: 4
@@ -141,8 +142,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 """[
                     1:
                 ]
-            ),
-            schemaInfo,
+            ).lower(),
         )
 
     def test_printQueries(self) -> None:
