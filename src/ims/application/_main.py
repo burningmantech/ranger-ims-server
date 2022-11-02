@@ -113,10 +113,8 @@ class MainApplication:
     def rootEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Server root page.
-
-        This redirects to the application root page.
         """
-        return redirect(request, URLs.app)
+        return "IMS"
 
     @router.route(URLs.prefix, methods=("HEAD", "GET"))
     @static
