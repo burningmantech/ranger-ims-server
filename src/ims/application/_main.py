@@ -77,8 +77,6 @@ class MainApplication:
     def rootEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Server root page.
-
-        This redirects to the application root page.
         """
         return "IMS"
 
