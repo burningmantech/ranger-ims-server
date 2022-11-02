@@ -19,11 +19,19 @@ Tests for L{ims.auth._provider}.
 """
 
 from collections.abc import Callable, Sequence
-from typing import Any, Callable
+from typing import Any
 
 from attr import attrs, evolve
 from hypothesis import assume, given
-from hypothesis.strategies import booleans, composite, lists, none, one_of, text
+from hypothesis.strategies import (
+    booleans,
+    composite,
+    lists,
+    none,
+    one_of,
+    sets,
+    text,
+)
 from jwcrypto.jwk import JWK
 
 from ims.ext.trial import TestCase
@@ -106,7 +114,9 @@ def authorizations(draw: Callable[..., Any]) -> Authorization:
     Strategy that generates :class:`Authorization` values.
     """
     authorization = Authorization.none
-    for subAuthorization in draw(sets(Authorization, max_size=len(Authorization))):
+    for subAuthorization in draw(
+        sets(Authorization, max_size=len(Authorization))
+    ):
         authorization |= subAuthorization
     return authorization
 
