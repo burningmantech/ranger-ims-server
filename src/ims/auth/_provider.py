@@ -235,16 +235,16 @@ class AuthProvider:
             if self.requireActive and not user.active:
                 return False
 
-                if "*" in acl:
+            if "*" in acl:
+                return True
+
+            for shortName in user.shortNames:
+                if ("person:" + shortName) in acl:
                     return True
 
-                for shortName in user.shortNames:
-                    if ("person:" + shortName) in acl:
-                        return True
-
-                for group in user.groups:
-                    if ("position:" + group) in acl:
-                        return True
+            for group in user.groups:
+                if ("position:" + group) in acl:
+                    return True
 
         return False
 
