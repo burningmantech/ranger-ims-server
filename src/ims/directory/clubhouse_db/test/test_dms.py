@@ -62,6 +62,7 @@ class DutyManagementSystemTests(TestCase):
             database=self.database,
             username=self.username,
             password=self.password,
+            cacheInterval=5,
         )
 
     def test_init(self) -> None:

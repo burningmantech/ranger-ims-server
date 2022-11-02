@@ -72,6 +72,7 @@ class HeaderName(Enum):
     HTTP header names.
     """
 
+    authorization = "Authorization"
     cacheControl = "Cache-Control"
     contentType = "Content-Type"
     etag = "ETag"

@@ -298,10 +298,11 @@ class Configuration:
                 "DB_PASSWORD", "Store:MySQL", "Password"
             )
             cls._log.info(
-                "Database: {user}@{host}:{port}",
+                "Database: {user}@{host}:{port}/{db}",
                 user=storeUser,
                 host=storeHost,
                 port=storePort,
+                db=storeDatabase,
             )
 
             storeFactory = partial(
@@ -348,7 +349,14 @@ class Configuration:
             dmsPassword = parser.valueFromConfig(
                 "DMS_PASSWORD", "Directory:ClubhouseDB", "Password"
             )
-
+            dmsCacheInterval = int(
+                parser.valueFromConfig(
+                    "DMS_CACHE_INTERVAL",
+                    "Directory:ClubhouseDB",
+                    "CacheInterval",
+                    "5",
+                )
+            )
             cls._log.info(
                 "DMS: {user}@{host}/{db}",
                 user=dmsUsername,
@@ -361,6 +369,7 @@ class Configuration:
                 database=dmsDatabase,
                 username=dmsUsername,
                 password=dmsPassword,
+                cacheInterval=dmsCacheInterval,
             )
 
             directory = DMSDirectory(dms=dms)
