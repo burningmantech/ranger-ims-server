@@ -160,6 +160,20 @@ def forbiddenResponse(request: IRequest) -> KleinRenderable:
     return textResponse(request, "Permission denied")
 
 
+def notAuthenticatedResponse(request: IRequest) -> KleinRenderable:
+    """
+    Respond with a UNAUTHORIZED status.
+    """
+    log.debug(
+        "Not authenticated resource for user {user}: {request.uri}",
+        request=request,
+        user=getattr(request, "user", None),
+    )
+
+    request.setResponseCode(http.UNAUTHORIZED)
+    return textResponse(request, "Not authenticated")
+
+
 def badRequestResponse(
     request: IRequest, message: str | None = None
 ) -> KleinRenderable:
@@ -434,7 +448,7 @@ class Router(Klein):
             # We don't do that for a few reasons:
             #  - It's a poor security practice to explain to an attacker what
             #    exactly is causing an internal error.
-            #  - Most users don't know what to do with that inforrmation.
+            #  - Most users don't know what to do with that information.
             #  - The admins should be able to find the errors in the logs.
             #  - Klein doing that is a developer feature; developers can also
             #    watch the logs.
