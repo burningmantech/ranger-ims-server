@@ -289,17 +289,16 @@ test_root_resource() {
 
     local status="$(http_status < "${response}")";
 
-    if [ ${status} -ne 302 ]; then
-        fail "Expected HTTP status 302 (Found) for root resource.";
+    if [ ${status} -ne 200 ]; then
+        fail "Expected HTTP status 200 (OK) for root resource.";
         echo "Response:"; cat "${response}";
         return 1;
     fi;
 
-    local location="$(http_header Location < "${response}")";
+    local body="$(http_body < "${response}")";
 
-    if [ "${location}" != "/ims/app/" ]; then
-        fail "Expected redirect location /ims/app/.";
-        echo "Location: ${location}";
+    if [ "${body}" != "IMS" ]; then
+        fail "Unexpected response body. (Expected \"IMS\".)"
         echo "Response:"; cat "${response}";
         return 1;
     fi;
