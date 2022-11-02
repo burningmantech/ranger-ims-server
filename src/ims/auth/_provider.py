@@ -228,6 +228,23 @@ class AuthProvider:
             raise NotAuthenticatedError("No user logged in")
 
     def _matchACL(self, user: IMSUser | None, acl: Container[str]) -> bool:
+        """
+        Match a user against a set of ACLs associated with an event's readers,
+        writers and reporters.
+
+        An ACL of "**" will always match, even for the None user.
+
+        If the requireActive of this instance is True, all other ACLs will never
+        match a user if the user is not active.
+
+        An ACL of "*" matches all users other than the None user.
+
+        An ACL of the form "person:{user}" will match a user of one of the
+        user's short names equals {user}.
+
+        An ACL of the form "position:{group}" will match a user if the ID of
+        one of the groups that the user is a member of equals {group}.
+        """
         if "**" in acl:
             return True
 

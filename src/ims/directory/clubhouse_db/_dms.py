@@ -255,7 +255,8 @@ class DutyManagementSystem:
                             "Unable to load personnel data from DMS"
                         )
 
-                    if elapsed > self.cacheInterval * 5:
+                    # Try 2 times before raising an error
+                    if elapsed > self.cacheInterval * 2:
                         raise DatabaseError(
                             f"Unable to load expired personnel data "
                             f"from DMS: {e}"
