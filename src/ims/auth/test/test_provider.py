@@ -274,7 +274,7 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._jwtSecret generates a JWT secret.
         """
-        provider = AuthProvider(store=self.store())
+        provider = AuthProvider(store=self.store(), directory=self.directory())
 
         self.assertIsInstance(provider._jwtSecret, JWK)
 
@@ -282,7 +282,7 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._jwtSecret is the same secret.
         """
-        provider = AuthProvider(store=self.store())
+        provider = AuthProvider(store=self.store(), directory=self.directory())
 
         self.assertIdentical(provider._jwtSecret, provider._jwtSecret)
 
@@ -290,7 +290,7 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._matchACL does not match no access with None user.
         """
-        provider = AuthProvider(store=self.store())
+        provider = AuthProvider(store=self.store(), directory=self.directory())
 
         self.assertFalse(provider._matchACL(None, []))
 
@@ -299,7 +299,7 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._matchACL does not match no access with a user.
         """
-        provider = AuthProvider(store=self.store())
+        provider = AuthProvider(store=self.store(), directory=self.directory())
 
         self.assertFalse(provider._matchACL(user, []))
 
@@ -307,7 +307,7 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._matchACL matches public ("**") access with None user.
         """
-        provider = AuthProvider(store=self.store())
+        provider = AuthProvider(store=self.store(), directory=self.directory())
 
         self.assertTrue(provider._matchACL(None, ["**"]))
 
@@ -316,7 +316,7 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._matchACL matches public ("**") access with a user.
         """
-        provider = AuthProvider(store=self.store())
+        provider = AuthProvider(store=self.store(), directory=self.directory())
 
         self.assertTrue(provider._matchACL(user, ["**"]))
 
@@ -324,7 +324,9 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._matchACL does not match any ("*") access with None user.
         """
-        provider = AuthProvider(store=self.store(), requireActive=False)
+        provider = AuthProvider(
+            store=self.store(), directory=self.directory(), requireActive=False
+        )
 
         self.assertFalse(provider._matchACL(None, ["*"]))
 
@@ -333,7 +335,9 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._matchACL matches any ("*") access with a user.
         """
-        provider = AuthProvider(store=self.store(), requireActive=False)
+        provider = AuthProvider(
+            store=self.store(), directory=self.directory(), requireActive=False
+        )
 
         self.assertTrue(provider._matchACL(user, ["*"]))
 
@@ -342,7 +346,9 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._matchACL matches person access with a matching user.
         """
-        provider = AuthProvider(store=self.store(), requireActive=False)
+        provider = AuthProvider(
+            store=self.store(), directory=self.directory(), requireActive=False
+        )
 
         for shortName in user.shortNames:
             self.assertTrue(provider._matchACL(user, [f"person:{shortName}"]))
@@ -352,7 +358,9 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._matchACL matches group access with a matching user.
         """
-        provider = AuthProvider(store=self.store(), requireActive=False)
+        provider = AuthProvider(
+            store=self.store(), directory=self.directory(), requireActive=False
+        )
 
         for groupID in user.groups:
             self.assertTrue(provider._matchACL(user, [f"position:{groupID}"]))
