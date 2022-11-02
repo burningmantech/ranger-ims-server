@@ -30,7 +30,7 @@ from jwcrypto.jwt import JWT
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
-from ims.directory import IMSUser, RangerUser
+from ims.directory import IMSDirectory, IMSUser, RangerUser
 from ims.model import IncidentReport
 from ims.store import IMSDataStore
 
@@ -83,6 +83,7 @@ class AuthProvider:
         jwtSecret: object | None = None
 
     store: IMSDataStore
+    directory: IMSDirectory
 
     requireActive: bool = True
     adminUsers: frozenset[str] = frozenset()

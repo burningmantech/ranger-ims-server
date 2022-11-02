@@ -357,6 +357,7 @@ class Configuration:
                     "5",
                 )
             )
+
             cls._log.info(
                 "DMS: {user}@{host}/{db}",
                 user=dmsUsername,
@@ -464,6 +465,7 @@ class Configuration:
         if self._state.authProvider is None:
             self._state.authProvider = AuthProvider(
                 store=self.store,
+                directory=self.directory,
                 requireActive=self.requireActive,
                 adminUsers=self.imsAdmins,
                 masterKey=self.masterKey,
