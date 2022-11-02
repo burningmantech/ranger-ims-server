@@ -34,6 +34,13 @@ class NotAuthenticatedError(Exception):
 
 
 @attrs(frozen=False, auto_attribs=True, auto_exc=True)
+ class InvalidCredentialsError(NotAuthenticatedError):
+     """
+     Not authorized.
+     """
+
+
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class NotAuthorizedError(Exception):
     """
     Not authorized.
