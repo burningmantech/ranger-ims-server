@@ -24,7 +24,16 @@ from typing import Any
 
 from attr import attrs, evolve
 from hypothesis import assume, given
-from hypothesis.strategies import booleans, composite, lists, none, one_of, text
+from hypothesis.strategies import (
+    booleans,
+    composite,
+    lists,
+    none,
+    one_of,
+    sets,
+    text,
+)
+from jwcrypto.jwk import JWK
 
 from ims.directory import IMSDirectory
 from ims.directory.file import FileDirectory
@@ -100,6 +109,19 @@ def testUsers(draw: Callable[..., Any]) -> TestUser:
         groups=tuple(IMSGroupID(g) for g in draw(text(min_size=1))),
         password=draw(one_of(none(), text())),
     )
+
+
+@composite
+def authorizations(draw: Callable[..., Any]) -> Authorization:
+    """
+    Strategy that generates :class:`Authorization` values.
+    """
+    authorization = Authorization.none
+    for subAuthorization in draw(
+        sets(Authorization, max_size=len(Authorization))
+    ):
+        authorization |= subAuthorization
+    return authorization
 
 
 class TestTests(TestCase):
@@ -189,10 +211,10 @@ class AuthProviderTests(TestCase):
             store=self.store(), directory=self.directory(), masterKey=masterKey
         )
 
-        authorization = self.successResultOf(
+        authenticated = self.successResultOf(
             provider.verifyPassword(user, masterKey)
         )
-        self.assertTrue(authorization)
+        self.assertTrue(authenticated)
 
     @given(testUsers())
     def test_verifyPassword_match(self, user: TestUser) -> None:
@@ -205,10 +227,10 @@ class AuthProviderTests(TestCase):
 
         provider = AuthProvider(store=self.store(), directory=self.directory())
 
-        authorization = self.successResultOf(
+        authenticated = self.successResultOf(
             provider.verifyPassword(user, user._password)
         )
-        self.assertTrue(authorization)
+        self.assertTrue(authenticated)
 
     @given(testUsers(), text())
     def test_verifyPassword_mismatch(
@@ -222,10 +244,10 @@ class AuthProviderTests(TestCase):
 
         provider = AuthProvider(store=self.store(), directory=self.directory())
 
-        authorization = self.successResultOf(
+        authenticated = self.successResultOf(
             provider.verifyPassword(user, notPassword)
         )
-        self.assertFalse(authorization)
+        self.assertFalse(authenticated)
 
     @given(testUsers(), text())
     def test_verifyPassword_none(self, user: TestUser, password: str) -> None:
@@ -236,10 +258,10 @@ class AuthProviderTests(TestCase):
         user = evolve(user, password=None)
         provider = AuthProvider(store=self.store(), directory=self.directory())
 
-        authorization = self.successResultOf(
+        authenticated = self.successResultOf(
             provider.verifyPassword(user, password)
         )
-        self.assertFalse(authorization)
+        self.assertFalse(authenticated)
 
     def test_authenticateRequest(self) -> None:
         raise NotImplementedError()
@@ -247,6 +269,93 @@ class AuthProviderTests(TestCase):
     test_authenticateRequest.todo = (  # type: ignore[attr-defined]
         "unimplemented"
     )
+
+    def test_jwtSecret(self) -> None:
+        """
+        AuthProvider._jwtSecret generates a JWT secret.
+        """
+        provider = AuthProvider(store=self.store())
+
+        self.assertIsInstance(provider._jwtSecret, JWK)
+
+    def test_jwtSecret_same(self) -> None:
+        """
+        AuthProvider._jwtSecret is the same secret.
+        """
+        provider = AuthProvider(store=self.store())
+
+        self.assertIdentical(provider._jwtSecret, provider._jwtSecret)
+
+    def test_matchACL_none_noUser(self) -> None:
+        """
+        AuthProvider._matchACL does not match no access with None user.
+        """
+        provider = AuthProvider(store=self.store())
+
+        self.assertFalse(provider._matchACL(None, []))
+
+    @given(testUsers())
+    def test_matchACL_none_user(self, user: TestUser) -> None:
+        """
+        AuthProvider._matchACL does not match no access with a user.
+        """
+        provider = AuthProvider(store=self.store())
+
+        self.assertFalse(provider._matchACL(user, []))
+
+    def test_matchACL_public_noUser(self) -> None:
+        """
+        AuthProvider._matchACL matches public ("**") access with None user.
+        """
+        provider = AuthProvider(store=self.store())
+
+        self.assertTrue(provider._matchACL(None, ["**"]))
+
+    @given(testUsers())
+    def test_matchACL_public_user(self, user: TestUser) -> None:
+        """
+        AuthProvider._matchACL matches public ("**") access with a user.
+        """
+        provider = AuthProvider(store=self.store())
+
+        self.assertTrue(provider._matchACL(user, ["**"]))
+
+    def test_matchACL_any_noUser(self) -> None:
+        """
+        AuthProvider._matchACL does not match any ("*") access with None user.
+        """
+        provider = AuthProvider(store=self.store(), requireActive=False)
+
+        self.assertFalse(provider._matchACL(None, ["*"]))
+
+    @given(testUsers())
+    def test_matchACL_any_user(self, user: TestUser) -> None:
+        """
+        AuthProvider._matchACL matches any ("*") access with a user.
+        """
+        provider = AuthProvider(store=self.store(), requireActive=False)
+
+        self.assertTrue(provider._matchACL(user, ["*"]))
+
+    @given(testUsers())
+    def test_matchACL_person(self, user: TestUser) -> None:
+        """
+        AuthProvider._matchACL matches person access with a matching user.
+        """
+        provider = AuthProvider(store=self.store(), requireActive=False)
+
+        for shortName in user.shortNames:
+            self.assertTrue(provider._matchACL(user, [f"person:{shortName}"]))
+
+    @given(testUsers())
+    def test_matchACL_position(self, user: TestUser) -> None:
+        """
+        AuthProvider._matchACL matches group access with a matching user.
+        """
+        provider = AuthProvider(store=self.store(), requireActive=False)
+
+        for groupID in user.groups:
+            self.assertTrue(provider._matchACL(user, [f"position:{groupID}"]))
 
     def test_authorizationsForUser(self) -> None:
         raise NotImplementedError()
