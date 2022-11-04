@@ -23,7 +23,7 @@ Incident
 from collections.abc import Iterable, Sequence
 from datetime import datetime as DateTime
 
-from attr import attrib, attrs
+from attrs import field, mutable
 
 from ims.ext.attr import sorted_tuple
 
@@ -44,7 +44,7 @@ def sortAndFreezeReportEntries(
     return sorted_tuple(reportEntries)
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@mutable(kw_only=True)
 class Incident(ReplaceMixIn):
     """
     Incident
@@ -52,17 +52,17 @@ class Incident(ReplaceMixIn):
 
     eventID: str
     number: int
-    created: DateTime = attrib(converter=normalizeDateTime)
+    created: DateTime = field(converter=normalizeDateTime)
     state: IncidentState
     priority: IncidentPriority
     summary: str | None
     location: Location
-    rangerHandles: frozenset[str] = attrib(converter=freezeStrings)
-    incidentTypes: frozenset[str] = attrib(converter=freezeStrings)
-    reportEntries: Sequence[ReportEntry] = attrib(
+    rangerHandles: frozenset[str] = field(converter=freezeStrings)
+    incidentTypes: frozenset[str] = field(converter=freezeStrings)
+    reportEntries: Sequence[ReportEntry] = field(
         converter=sortAndFreezeReportEntries
     )
-    incidentReportNumbers: frozenset[int] = attrib(converter=freezeIntegers)
+    incidentReportNumbers: frozenset[int] = field(converter=freezeIntegers)
 
     def __str__(self) -> str:
         return f"{self.eventID}#{self.number}: {self.summaryFromReport()}"

@@ -20,7 +20,7 @@
 Position
 """
 
-from attr import attrs
+from attrs import mutable
 
 from ._replace import ReplaceMixIn
 
@@ -28,7 +28,7 @@ from ._replace import ReplaceMixIn
 __all__ = ()
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@mutable(kw_only=True)
 class Position(ReplaceMixIn):
     """
     Position

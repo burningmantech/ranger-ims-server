@@ -23,7 +23,7 @@ from collections.abc import Mapping
 from time import time
 from typing import Any, ClassVar, Deque
 
-from attr import attrib, attrs
+from attrs import field, mutable
 from twisted.logger import ILogObserver, Logger
 from twisted.web.iweb import IRequest
 from zope.interface import implementer
@@ -35,7 +35,7 @@ from ims.model import Incident
 __all__ = ("DataStoreEventSourceLogObserver",)
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@mutable(kw_only=True)
 class Event:
     """
     HTML5 EventSource event.
@@ -67,7 +67,7 @@ class Event:
 
 
 @implementer(ILogObserver)
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@mutable(kw_only=True)
 class DataStoreEventSourceLogObserver:
     """
     Observer for events related to any updates to the data store.
@@ -75,12 +75,12 @@ class DataStoreEventSourceLogObserver:
 
     _log: ClassVar[Logger] = Logger()
 
-    _listeners: list[IRequest] = attrib(init=False, factory=list)
-    _events: Deque[tuple[int, Event]] = attrib(
+    _listeners: list[IRequest] = field(init=False, factory=list)
+    _events: Deque[tuple[int, Event]] = field(
         init=False, factory=lambda: deque(maxlen=1000)
     )
-    _start: float = attrib(init=False, factory=time)
-    _counter: list[int] = attrib(init=False, factory=lambda: [0])
+    _start: float = field(init=False, factory=time)
+    _counter: list[int] = field(init=False, factory=lambda: [0])
 
     def addListener(
         self, listener: IRequest, lastEventID: str | None = None

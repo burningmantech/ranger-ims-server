@@ -23,7 +23,7 @@ from pathlib import Path
 from time import time
 from typing import Any, ClassVar, TextIO
 
-from attr import Factory, attrib, attrs
+from attrs import Factory, field, mutable
 from twisted.logger import Logger
 from yaml import safe_load as parseYAML
 
@@ -149,7 +149,7 @@ def positionFromMapping(mapping: Mapping[str, Any]) -> Position:
     return Position(name=name, members=frozenset(members))
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@mutable(kw_only=True)
 class FileDirectory(IMSDirectory):
     """
     IMS directory loaded from a file.
@@ -157,7 +157,7 @@ class FileDirectory(IMSDirectory):
 
     _log: ClassVar[Logger] = Logger()
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+    @mutable(kw_only=True, eq=False)
     class _State:
         """
         Internal mutable state for :class:`RangerDirectory`.
@@ -171,7 +171,7 @@ class FileDirectory(IMSDirectory):
     path: Path
     checkInterval = 1.0  # Don't restat the file more often than this (seconds)
 
-    _state: _State = attrib(factory=_State, repr=False)
+    _state: _State = field(factory=_State, repr=False)
 
     def _mtime(self) -> float:
         return self.path.stat().st_mtime

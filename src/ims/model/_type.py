@@ -20,13 +20,13 @@ Incident type
 
 from enum import Enum, unique
 
-from attr import attrs
+from attrs import mutable
 
 
 __all__ = ()
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@mutable(kw_only=True)
 class IncidentType:
     """
     Incident Type

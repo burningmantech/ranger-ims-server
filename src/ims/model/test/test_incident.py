@@ -22,7 +22,7 @@ from collections.abc import Iterable
 from datetime import datetime as DateTime
 from typing import Any
 
-from attr import asdict
+from attrs import asdict
 from hypothesis import given
 from hypothesis.strategies import lists, sampled_from, text
 

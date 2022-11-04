@@ -28,7 +28,7 @@ from pathlib import Path
 from sys import argv
 from typing import Any, ClassVar, cast
 
-from attr import Factory, attrib, attrs, evolve
+from attrs import Factory, evolve, field, mutable
 from twisted.logger import Logger
 
 from ims.auth import AuthProvider
@@ -63,7 +63,7 @@ def describeFactory(f: Callable[..., Any]) -> str:
         return f"{f.__name__}(...)"
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True)
+@mutable
 class ConfigurationError(Exception):
     """
     Configuration error.
@@ -81,7 +81,7 @@ class LogFormat(Names):
     json = auto()
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@mutable(kw_only=True)
 class ConfigFileParser:
     """
     Configuration parser.
@@ -162,7 +162,7 @@ class ConfigFileParser:
             ) from e
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@mutable(kw_only=True)
 class Configuration:
     """
     Configuration
@@ -171,7 +171,7 @@ class Configuration:
     _log: ClassVar[Logger] = Logger()
     urls: ClassVar = URLs
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+    @mutable(kw_only=True, eq=False)
     class _State:
         """
         Internal mutable state for :class:`Configuration`.
@@ -445,7 +445,7 @@ class Configuration:
 
     _storeFactory: Callable[[], IMSDataStore]
 
-    _state: _State = attrib(factory=_State, init=False, repr=False)
+    _state: _State = field(factory=_State, init=False, repr=False)
 
     @property
     def store(self) -> IMSDataStore:
