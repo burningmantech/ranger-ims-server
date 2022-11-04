@@ -18,13 +18,13 @@
 Incident Management System data store exceptions.
 """
 
-from attrs import mutable
+from attr import attrs
 
 
 __all__ = ()
 
 
-@mutable
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class StorageError(RuntimeError):
     """
     Storage error.
@@ -33,14 +33,14 @@ class StorageError(RuntimeError):
     message: str
 
 
-@mutable
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class NoSuchIncidentError(StorageError):
     """
     No such incident.
     """
 
 
-@mutable
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class NoSuchIncidentReportError(StorageError):
     """
     No such incident.

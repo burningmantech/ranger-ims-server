@@ -20,7 +20,7 @@ Incident Management System web service.
 
 from typing import ClassVar
 
-from attrs import Factory, field, frozen
+from attr import Factory, attrib, attrs
 from klein import KleinRenderable
 from twisted.logger import globalLogPublisher
 from twisted.python.filepath import FilePath
@@ -67,7 +67,7 @@ def webApplicationFactory(parent: "MainApplication") -> WebApplication:
     return WebApplication(config=parent.config)
 
 
-@frozen(kw_only=True, eq=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class MainApplication:
     """
     Incident Management System main application.
@@ -77,24 +77,24 @@ class MainApplication:
 
     config: Configuration
 
-    storeObserver: DataStoreEventSourceLogObserver = field(
+    storeObserver: DataStoreEventSourceLogObserver = attrib(
         factory=DataStoreEventSourceLogObserver, init=False
     )
 
-    apiApplication: APIApplication = field(
+    apiApplication: APIApplication = attrib(
         default=Factory(apiApplicationFactory, takes_self=True), init=False
     )
 
-    authApplication: AuthApplication = field(
+    authApplication: AuthApplication = attrib(
         default=Factory(authApplicationFactory, takes_self=True), init=False
     )
 
-    externalApplication: ExternalApplication = field(
+    externalApplication: ExternalApplication = attrib(
         default=Factory(externalApplicationFactory, takes_self=True),
         init=False,
     )
 
-    webApplication: WebApplication = field(
+    webApplication: WebApplication = attrib(
         default=Factory(webApplicationFactory, takes_self=True), init=False
     )
 

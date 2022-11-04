@@ -23,7 +23,7 @@ from collections.abc import Iterable, Sequence
 from hashlib import sha1
 from typing import NewType, cast
 
-from attrs import Factory, mutable
+from attr import Factory, attrs
 from bcrypt import gensalt
 
 from ims.model import Position, Ranger
@@ -36,7 +36,7 @@ IMSUserID = NewType("IMSUserID", str)
 IMSGroupID = NewType("IMSGroupID", str)
 
 
-@mutable
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class DirectoryError(Exception):
     """
     Directory service error.
@@ -103,7 +103,7 @@ class IMSDirectory(ABC):
         """
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class RangerUser(IMSUser):
     """
     IMS user derived from a Ranger.
@@ -157,7 +157,7 @@ class RangerUser(IMSUser):
                 raise DirectoryError(f"Unable to verify password: {e}") from e
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class RangerDirectory(IMSDirectory):
     """
     IMS directory derived from a sequence of Rangers.

@@ -20,7 +20,7 @@ Replace mix-in
 
 from typing import Any, TypeVar
 
-from attrs import evolve
+from attr import evolve
 
 
 __all__ = ()

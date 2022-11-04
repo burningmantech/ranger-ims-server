@@ -22,7 +22,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
-from attrs import evolve, mutable
+from attr import attrs, evolve
 from hypothesis import assume, given
 from hypothesis.strategies import (
     booleans,
@@ -52,7 +52,7 @@ def oops(*args: Any, **kwargs: Any) -> None:
     raise AssertionError()
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class TestUser(IMSUser):
     """
     User for testing.

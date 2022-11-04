@@ -22,7 +22,7 @@ from collections.abc import Iterable, Mapping
 from time import time
 from typing import ClassVar, cast
 
-from attrs import Factory, field, frozen, mutable
+from attr import Factory, attrib, attrs
 from pymysql import DatabaseError as SQLDatabaseError
 from pymysql import OperationalError as SQLOperationalError
 from twisted.enterprise import adbapi
@@ -37,7 +37,7 @@ from .._directory import DirectoryError
 __all__ = ()
 
 
-@mutable
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class DMSError(DirectoryError):
     """
     Duty Management System error.
@@ -46,14 +46,14 @@ class DMSError(DirectoryError):
     message: str
 
 
-@mutable
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class DatabaseError(DMSError):
     """
     Database error.
     """
 
 
-@mutable(kw_only=True)
+@attrs(frozen=False, auto_attribs=True, kw_only=True)
 class Position:
     """
     A Ranger position.
@@ -64,7 +64,7 @@ class Position:
     members: set[Ranger] = Factory(set)
 
 
-@frozen(kw_only=True, eq=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class DutyManagementSystem:
     """
     Duty Management System
@@ -74,26 +74,26 @@ class DutyManagementSystem:
 
     _log: ClassVar[Logger] = Logger()
 
-    @mutable(kw_only=True, eq=False)
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State:
         """
         Internal mutable state for :class:`Configuration`.
         """
 
-        _personnel: Iterable[Ranger] = field(default=(), init=False)
-        _positions: Iterable[Position] = field(default=(), init=False)
-        _personnelLastUpdated: float = field(default=0.0, init=False)
-        _dbpool: adbapi.ConnectionPool | None = field(default=None, init=False)
-        _busy: bool = field(default=False, init=False)
-        _dbErrorCount: int = field(default=0, init=False)
+        _personnel: Iterable[Ranger] = attrib(default=(), init=False)
+        _positions: Iterable[Position] = attrib(default=(), init=False)
+        _personnelLastUpdated: float = attrib(default=0.0, init=False)
+        _dbpool: adbapi.ConnectionPool | None = attrib(default=None, init=False)
+        _busy: bool = attrib(default=False, init=False)
+        _dbErrorCount: int = attrib(default=0, init=False)
 
     host: str
     database: str
     username: str
-    password: str = field(repr=lambda _: "*")
+    password: str = attrib(repr=lambda _: "*")
     cacheInterval: int
 
-    _state: _State = field(factory=_State, init=False, repr=False)
+    _state: _State = attrib(factory=_State, init=False, repr=False)
 
     @property
     def dbpool(self) -> adbapi.ConnectionPool:

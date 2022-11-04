@@ -24,7 +24,7 @@ from datetime import timedelta as TimeDelta
 from enum import Flag, auto
 from typing import Any, ClassVar
 
-from attrs import Factory, mutable
+from attr import Factory, attrs
 from jwcrypto.jwk import JWK
 from jwcrypto.jwt import JWT
 from twisted.logger import Logger
@@ -65,7 +65,7 @@ class Authorization(Flag):
     )
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class AuthProvider:
     """
     Provider for authentication and authorization support.
@@ -74,7 +74,7 @@ class AuthProvider:
     _log: ClassVar[Logger] = Logger()
     _jwtIssuer: ClassVar[str] = "ranger-ims-server"
 
-    @mutable(kw_only=True, eq=False)
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State:
         """
         Internal mutable state for :class:`RangerDirectory`.

@@ -20,13 +20,13 @@
 Event
 """
 
-from attrs import mutable
+from attr import attrs
 
 
 __all__ = ()
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Event:
     """
     Event

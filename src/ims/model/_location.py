@@ -19,7 +19,7 @@ Location
 """
 
 
-from attrs import field, mutable
+from attr import attrib, attrs
 
 from ._address import Address, TextOnlyAddress
 from ._replace import ReplaceMixIn
@@ -35,11 +35,11 @@ def convertAddress(address: Address | None) -> Address:
     return address
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Location(Address, ReplaceMixIn):
     """
     Location
     """
 
     name: str | None
-    address: Address = field(converter=convertAddress)
+    address: Address = attrib(converter=convertAddress)

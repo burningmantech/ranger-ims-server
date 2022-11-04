@@ -23,7 +23,7 @@ from pathlib import Path
 from sys import stdout
 from typing import Any, ClassVar, Optional, TextIO, TypeVar, cast
 
-from attrs import field, mutable
+from attr import attrib, attrs
 from pymysql.cursors import DictCursor
 from pymysql.err import MySQLError
 from twisted.enterprise.adbapi import Connection, ConnectionPool
@@ -92,7 +92,7 @@ class Cursor(DictCursor):
         return count
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class DataStore(DatabaseStore):
     """
     Incident Management System MySQL data store.
@@ -106,21 +106,21 @@ class DataStore(DatabaseStore):
 
     query: ClassVar[Queries] = queries
 
-    @mutable(kw_only=True, eq=False)
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State:
         """
         Internal mutable state for :class:`DataStore`.
         """
 
-        db: ConnectionPool | None = field(default=None, init=False)
+        db: ConnectionPool | None = attrib(default=None, init=False)
 
     hostName: str
     hostPort: int
     database: str
     username: str
-    password: str = field(repr=lambda _: "*")
+    password: str = attrib(repr=lambda _: "*")
 
-    _state: _State = field(factory=_State, init=False, repr=False)
+    _state: _State = attrib(factory=_State, init=False, repr=False)
 
     @property
     def _db(self) -> ConnectionPool:

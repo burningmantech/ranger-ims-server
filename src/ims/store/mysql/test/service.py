@@ -24,7 +24,7 @@ from collections.abc import Awaitable, Mapping
 from typing import ClassVar, cast
 from uuid import uuid4
 
-from attrs import Factory, field, mutable
+from attr import Factory, attrib, attrs
 from docker.api import APIClient
 from docker.client import DockerClient
 from docker.errors import ImageNotFound, NotFound
@@ -66,7 +66,7 @@ NO_HOST = ""
 NO_PORT = 0
 
 
-@mutable
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class DatabaseExistsError(Exception):
     """
     Database already exists.
@@ -75,7 +75,7 @@ class DatabaseExistsError(Exception):
     name: str
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class MySQLService(ABC):
     """
     MySQL database service.
@@ -214,7 +214,7 @@ class MySQLService(ABC):
             connection.close()
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class DockerizedMySQLService(MySQLService):
     """
     Manages a MySQL instance.
@@ -222,7 +222,7 @@ class DockerizedMySQLService(MySQLService):
 
     _log: ClassVar[Logger] = Logger()
 
-    @mutable(kw_only=True, eq=False)
+    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
     class _State:
         """
         Internal mutable state for :class:`DataStore`.
@@ -244,10 +244,10 @@ class DockerizedMySQLService(MySQLService):
     imageRepository = "mysql/mysql-server"
     imageTag = "5.6"
 
-    _dockerClient: DockerClient = field(
+    _dockerClient: DockerClient = attrib(
         factory=DockerClient.from_env, init=False
     )
-    _state: _State = field(factory=_State, init=False, repr=False)
+    _state: _State = attrib(factory=_State, init=False, repr=False)
 
     @property
     def host(self) -> str:
@@ -502,7 +502,7 @@ class DockerizedMySQLService(MySQLService):
         )
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class ExternalMySQLService(MySQLService):
     """
     Externally hosted MySQL instance.

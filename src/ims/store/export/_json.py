@@ -21,7 +21,7 @@ Incident Management System data store export.
 from collections.abc import Iterable, Mapping
 from typing import Any, BinaryIO, ClassVar, cast
 
-from attrs import mutable
+from attr import attrs
 from twisted.logger import Logger
 
 from ims.ext.json import (
@@ -38,7 +38,7 @@ from .._abc import IMSDataStore
 __all__ = ()
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class JSONExporter:
     """
     Incident Management System data store JSON exporter.
@@ -124,7 +124,7 @@ class JSONExporter:
         )
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class JSONImporter:
     """
     Incident Management System data store JSON importer.

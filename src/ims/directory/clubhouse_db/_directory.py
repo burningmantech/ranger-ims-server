@@ -21,7 +21,7 @@ Duty Management System directory.
 from collections.abc import Iterable
 from typing import ClassVar
 
-from attrs import mutable
+from attr import attrs
 from twisted.logger import Logger
 
 from ims.directory import IMSDirectory, IMSGroupID, IMSUser, RangerUser
@@ -33,7 +33,7 @@ from ._dms import DutyManagementSystem
 __all__ = ()
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class DMSDirectory(IMSDirectory):
     """
     IMS directory that uses the DMS.

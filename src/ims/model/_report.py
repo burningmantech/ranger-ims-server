@@ -23,7 +23,7 @@ Incident Report
 from collections.abc import Sequence
 from datetime import datetime as DateTime
 
-from attrs import field, mutable
+from attr import attrib, attrs
 
 from ._convert import normalizeDateTime
 from ._entry import ReportEntry
@@ -34,7 +34,7 @@ from ._replace import ReplaceMixIn
 __all__ = ()
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class IncidentReport(ReplaceMixIn):
     """
     Incident
@@ -42,10 +42,10 @@ class IncidentReport(ReplaceMixIn):
 
     eventID: str
     number: int
-    created: DateTime = field(converter=normalizeDateTime)
+    created: DateTime = attrib(converter=normalizeDateTime)
     summary: str | None
     incidentNumber: int | None
-    reportEntries: Sequence[ReportEntry] = field(
+    reportEntries: Sequence[ReportEntry] = attrib(
         converter=sortAndFreezeReportEntries
     )
 

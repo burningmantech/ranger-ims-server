@@ -23,7 +23,7 @@ from functools import partial
 from typing import cast
 from unittest.mock import sentinel
 
-from attrs import mutable
+from attr import attrs
 from klein import KleinRenderable
 from twisted.python.filepath import FilePath
 from twisted.python.reflect import namedModule
@@ -39,7 +39,7 @@ from ims.ext.json import jsonTextFromObject
 __all__ = ()
 
 
-@mutable(kw_only=True)
+@attrs(auto_attribs=True, kw_only=True)
 class BaseElement(_Element):
     """
     XHTML element.
@@ -54,7 +54,7 @@ class BaseElement(_Element):
         return XMLFile(filePath)
 
 
-@mutable(kw_only=True)
+@attrs(auto_attribs=True, kw_only=True)
 class Element(BaseElement):
     """
     XHTML element.

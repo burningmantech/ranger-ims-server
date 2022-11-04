@@ -25,7 +25,7 @@ from time import time
 from typing import Any, TextIO
 from unittest.mock import patch
 
-from attrs import mutable
+from attr import attrs
 from hypothesis import given, settings
 from hypothesis.strategies import lists, randoms, text
 
@@ -376,7 +376,7 @@ class UtilityTests(TestCase):
         )
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class TestFileDirectory(FileDirectory):
     def _mtime(self) -> float:
         if hasattr(self._state, "mtime"):

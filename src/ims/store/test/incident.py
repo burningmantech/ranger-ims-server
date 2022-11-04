@@ -25,7 +25,7 @@ from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
 from typing import Any, cast
 
-from attrs import fields as attrFields
+from attr import fields as attrFields
 
 from ims.ext.trial import asyncAsDeferred
 from ims.model import (

@@ -18,13 +18,13 @@
 Incident Management System auth errors.
 """
 
-from attrs import mutable
+from attr import attrs
 
 
 __all__ = ()
 
 
-@mutable
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class NotAuthenticatedError(Exception):
     """
     Not authorized.
@@ -33,14 +33,14 @@ class NotAuthenticatedError(Exception):
     message: str
 
 
-@mutable
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class InvalidCredentialsError(NotAuthenticatedError):
     """
     Not authorized.
     """
 
 
-@mutable
+@attrs(frozen=False, auto_attribs=True, auto_exc=True)
 class NotAuthorizedError(Exception):
     """
     Not authorized.

@@ -22,7 +22,7 @@ IMS Data
 
 from collections.abc import Iterable
 
-from attrs import field, mutable
+from attr import attrib, attrs
 
 from ._eventdata import EventData
 from ._replace import ReplaceMixIn
@@ -42,7 +42,7 @@ def freezeIncidentTypes(
     return frozenset(incidentTypes)
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class IMSData(ReplaceMixIn):
     """
     IMS Data container
@@ -50,7 +50,7 @@ class IMSData(ReplaceMixIn):
     Encapsulates all data associated with an IMS service.
     """
 
-    events: frozenset[EventData] = field(converter=freezeEventDatas)
-    incidentTypes: frozenset[IncidentType] = field(
+    events: frozenset[EventData] = attrib(converter=freezeEventDatas)
+    incidentTypes: frozenset[IncidentType] = attrib(
         converter=freezeIncidentTypes
     )

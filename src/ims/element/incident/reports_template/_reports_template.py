@@ -18,7 +18,7 @@
 Incident reports template page element.
 """
 
-from attrs import mutable
+from attr import attrs
 
 from ...page import Page
 
@@ -29,7 +29,7 @@ __all__ = ()
 title = "Incident Reports"
 
 
-@mutable(kw_only=True)
+@attrs(auto_attribs=True, kw_only=True)
 class IncidentReportsTemplatePage(Page):
     """
     Incident reports template page element.

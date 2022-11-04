@@ -18,7 +18,7 @@
 Admin access control page.
 """
 
-from attrs import mutable
+from attr import attrs
 
 from ...page import Page
 
@@ -26,7 +26,7 @@ from ...page import Page
 __all__ = ()
 
 
-@mutable(kw_only=True)
+@attrs(auto_attribs=True, kw_only=True)
 class AdminEventsPage(Page):
     """
     Admin events page.

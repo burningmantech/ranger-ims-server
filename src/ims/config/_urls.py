@@ -20,14 +20,14 @@ Incident Management System URL schema.
 
 from typing import ClassVar
 
-from attrs import mutable
+from attr import attrs
 from hyperlink import URL
 
 
 __all__ = ()
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class URLs:
     """
     Incident Management System URL schema.

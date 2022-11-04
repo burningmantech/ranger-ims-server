@@ -26,7 +26,7 @@ from tempfile import NamedTemporaryFile
 from typing import Any, ClassVar
 from zipfile import BadZipfile
 
-from attrs import frozen
+from attr import attrs
 from hyperlink import URL
 from klein import KleinRenderable
 from twisted.internet import defer, protocol
@@ -670,7 +670,7 @@ def _unprefix(url: URL) -> URL:
     return url.replace(path=url.path[len(prefix) :])
 
 
-@frozen(kw_only=True, eq=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class ExternalApplication:
     """
     Application with endpoints for cached external resources.

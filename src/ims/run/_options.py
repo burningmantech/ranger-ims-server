@@ -24,7 +24,7 @@ from sys import stderr, stdin, stdout
 from textwrap import dedent
 from typing import IO, Any, ClassVar, Optional, cast
 
-from attrs import mutable
+from attr import attrs
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.logger import (
     InvalidLogLevelError,
@@ -335,7 +335,7 @@ class IMSOptions(Options):
         self.initConfig()
 
 
-@mutable(kw_only=True)
+@attrs(frozen=True, auto_attribs=True, kw_only=True)
 class Override:
     """
     Configuration option override.

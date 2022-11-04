@@ -18,7 +18,7 @@
 Incident reports page element.
 """
 
-from attrs import mutable
+from attr import attrs
 from klein import KleinRenderable
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
@@ -34,7 +34,7 @@ from ..reports_template._reports_template import title
 __all__ = ()
 
 
-@mutable(kw_only=True)
+@attrs(auto_attribs=True, kw_only=True)
 class IncidentReportsPage(Page):
     """
     Incident reports page element.

@@ -18,7 +18,7 @@
 <header> Element.
 """
 
-from attrs import mutable
+from attr import attrs
 
 from ..._element import Element
 
@@ -26,7 +26,7 @@ from ..._element import Element
 __all__ = ()
 
 
-@mutable(kw_only=True)
+@attrs(auto_attribs=True, kw_only=True)
 class HeaderElement(Element):
     """
     <header> Element.

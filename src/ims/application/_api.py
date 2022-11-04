@@ -32,7 +32,7 @@ from functools import partial
 from json import JSONDecodeError
 from typing import Any, ClassVar, cast
 
-from attrs import frozen
+from attr import attrs
 from hyperlink import URL
 from klein import KleinRenderable
 from twisted.internet.defer import Deferred
@@ -100,7 +100,7 @@ def _urlToTextForBag(url: URL) -> str:
     return url.to_text().replace("<", "{").replace(">", "}")
 
 
-@frozen(kw_only=True, eq=False)
+@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
 class APIApplication:
     """
     Application with JSON API endpoints.
