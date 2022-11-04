@@ -706,13 +706,8 @@ class ExternalApplication:
         f"https://code.jquery.com/{jqueryVersion}.min.map"
     )
 
-    # datatables.net has busted TLS
-    # dataTablesSourceURL = URL.fromText(
-    #     f"https://datatables.net/releases/"
-    #     f"DataTables-{dataTablesVersionNumber}.zip"
-    # )
     dataTablesSourceURL = URL.fromText(
-        f"http://www.wsanchez.net/brr/"
+        f"https://datatables.net/releases/"
         f"DataTables-{dataTablesVersionNumber}.zip"
     )
 
@@ -794,10 +789,14 @@ class ExternalApplication:
 
         request.setHeader(HeaderName.contentType.value, contentType)
 
-        return await self.cachedZippedResource(
+        return self.cachedZippedResourceFromPath(
             request,
-            self.dataTablesSourceURL,
-            self.dataTablesVersion,
+            (
+                Path(__file__).parent.parent
+                / "element"
+                / "static"
+                / f"DataTables-{self.dataTablesVersionNumber}.zip"
+            ),
             self.dataTablesVersion,
             *names,
         )
@@ -887,8 +886,22 @@ class ExternalApplication:
         """
         Retrieve a cached resource from a zip file.
         """
-        archivePath = await self.cacheFromURL(url, f"{archiveName}.zip")
 
+        archivePath = await self.cacheFromURL(url, f"{archiveName}.zip")
+        return self.cachedZippedResourceFromPath(
+            request, archivePath, name, *names
+        )
+
+    def cachedZippedResourceFromPath(
+        self,
+        request: IRequest,
+        archivePath: Path,
+        name: str,
+        *names: Any,
+    ) -> KleinRenderable:
+        """
+        Retrieve a cached resource from a zip file.
+        """
         try:
             filePath = ZipArchive(str(archivePath))
         except BadZipfile as e:
