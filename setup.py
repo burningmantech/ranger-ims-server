@@ -90,6 +90,7 @@ package_data = dict(
         "element/static/*.css",
         "element/static/*.js",
         "element/static/*.png",
+        "element/static/*.zip",
         "store/mysql/schema/*.mysql",
         "store/sqlite/schema/*.sqlite",
     ],
