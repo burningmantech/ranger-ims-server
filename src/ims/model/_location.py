@@ -19,7 +19,8 @@ Location
 """
 
 
-from attr import attrib, attrs
+from attr import attrib
+from attrs import frozen
 
 from ._address import Address, TextOnlyAddress
 from ._replace import ReplaceMixIn
@@ -35,7 +36,7 @@ def convertAddress(address: Address | None) -> Address:
     return address
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True, order=True)
 class Location(Address, ReplaceMixIn):
     """
     Location

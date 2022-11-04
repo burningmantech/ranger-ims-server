@@ -24,6 +24,7 @@ from sys import stdout
 from typing import Any, ClassVar, TextIO, TypeVar, cast
 
 from attr import attrib, attrs
+from attrs import frozen
 from twisted.logger import Logger
 
 from ims.ext.sqlite import (
@@ -48,7 +49,7 @@ T = TypeVar("T")
 query_eventID = "select ID from EVENT where NAME = :eventID"
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class DataStore(DatabaseStore):
     """
     Incident Management System SQLite data store.

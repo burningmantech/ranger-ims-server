@@ -24,6 +24,7 @@ from sys import stdout
 from typing import Any, ClassVar, Optional, TextIO, TypeVar, cast
 
 from attr import attrib, attrs
+from attrs import frozen
 from pymysql.cursors import DictCursor
 from pymysql.err import MySQLError
 from twisted.enterprise.adbapi import Connection, ConnectionPool
@@ -92,7 +93,7 @@ class Cursor(DictCursor):
         return count
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class DataStore(DatabaseStore):
     """
     Incident Management System MySQL data store.

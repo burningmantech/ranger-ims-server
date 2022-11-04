@@ -23,7 +23,8 @@ from collections.abc import Mapping
 from time import time
 from typing import Any, ClassVar, Deque
 
-from attr import attrib, attrs
+from attr import attrib
+from attrs import frozen
 from twisted.logger import ILogObserver, Logger
 from twisted.web.iweb import IRequest
 from zope.interface import implementer
@@ -35,7 +36,7 @@ from ims.model import Incident
 __all__ = ("DataStoreEventSourceLogObserver",)
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class Event:
     """
     HTML5 EventSource event.
@@ -67,7 +68,7 @@ class Event:
 
 
 @implementer(ILogObserver)
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class DataStoreEventSourceLogObserver:
     """
     Observer for events related to any updates to the data store.

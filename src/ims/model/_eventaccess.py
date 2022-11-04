@@ -20,7 +20,8 @@
 Event Access
 """
 
-from attr import attrib, attrs
+from attr import attrib
+from attrs import frozen
 
 from ._convert import freezeStrings
 
@@ -28,7 +29,7 @@ from ._convert import freezeStrings
 __all__ = ()
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class EventAccess:
     """
     Event Access

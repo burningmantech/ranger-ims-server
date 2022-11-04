@@ -21,6 +21,7 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 from typing import ClassVar, cast
 
 from attr import attrib, attrs
+from attrs import frozen
 
 from ims.ext.sqlite import SQLITE_MAX_INT, Connection, SQLiteError
 
@@ -31,7 +32,7 @@ from .._store import DataStore
 __all__ = ()
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     """
     See :class:`SuperTestDataStore`.

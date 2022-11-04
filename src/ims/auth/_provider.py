@@ -25,6 +25,7 @@ from enum import Flag, auto
 from typing import Any, ClassVar
 
 from attr import Factory, attrs
+from attrs import frozen
 from jwcrypto.jwk import JWK
 from jwcrypto.jwt import JWT
 from twisted.logger import Logger
@@ -65,7 +66,7 @@ class Authorization(Flag):
     )
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class AuthProvider:
     """
     Provider for authentication and authorization support.

@@ -25,6 +25,7 @@ from typing import ClassVar, cast
 from uuid import uuid4
 
 from attr import Factory, attrib, attrs
+from attrs import frozen
 from docker.api import APIClient
 from docker.client import DockerClient
 from docker.errors import ImageNotFound, NotFound
@@ -75,7 +76,7 @@ class DatabaseExistsError(Exception):
     name: str
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class MySQLService(ABC):
     """
     MySQL database service.
@@ -214,7 +215,7 @@ class MySQLService(ABC):
             connection.close()
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class DockerizedMySQLService(MySQLService):
     """
     Manages a MySQL instance.
@@ -502,7 +503,7 @@ class DockerizedMySQLService(MySQLService):
         )
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class ExternalMySQLService(MySQLService):
     """
     Externally hosted MySQL instance.

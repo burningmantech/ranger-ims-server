@@ -21,6 +21,7 @@ Tests for :mod:`ranger-ims-server.store.mysql._store`
 from typing import ClassVar, cast
 
 from attr import attrib, attrs
+from attrs import frozen
 from pymysql.err import MySQLError
 from twisted.enterprise.adbapi import ConnectionPool
 
@@ -31,7 +32,7 @@ from .._store import DataStore
 __all__ = ()
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     """
     See :class:`SuperTestDataStore`.

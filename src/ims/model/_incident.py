@@ -23,7 +23,8 @@ Incident
 from collections.abc import Iterable, Sequence
 from datetime import datetime as DateTime
 
-from attr import attrib, attrs
+from attr import attrib
+from attrs import frozen
 
 from ims.ext.attr import sorted_tuple
 
@@ -44,7 +45,7 @@ def sortAndFreezeReportEntries(
     return sorted_tuple(reportEntries)
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True, order=True)
 class Incident(ReplaceMixIn):
     """
     Incident

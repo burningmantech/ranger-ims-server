@@ -29,6 +29,7 @@ from sys import argv
 from typing import Any, ClassVar, cast
 
 from attr import Factory, attrib, attrs, evolve
+from attrs import frozen
 from twisted.logger import Logger
 
 from ims.auth import AuthProvider
@@ -81,7 +82,7 @@ class LogFormat(Names):
     json = auto()
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class ConfigFileParser:
     """
     Configuration parser.
@@ -162,7 +163,7 @@ class ConfigFileParser:
             ) from e
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class Configuration:
     """
     Configuration

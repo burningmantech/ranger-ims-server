@@ -24,6 +24,7 @@ from time import time
 from typing import Any, ClassVar, TextIO
 
 from attr import Factory, attrib, attrs
+from attrs import frozen
 from twisted.logger import Logger
 from yaml import safe_load as parseYAML
 
@@ -149,7 +150,7 @@ def positionFromMapping(mapping: Mapping[str, Any]) -> Position:
     return Position(name=name, members=frozenset(members))
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class FileDirectory(IMSDirectory):
     """
     IMS directory loaded from a file.
