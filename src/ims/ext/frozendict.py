@@ -8,8 +8,7 @@ from collections.abc import Mapping
 from collections.abc import Mapping as MappingABC
 from typing import Any, TypeVar
 
-from attr import attrib
-from attrs import frozen
+from attrs import field, frozen
 
 
 __all__ = "FrozenDict"
@@ -35,7 +34,7 @@ class FrozenDict(MappingABC[_Key, _Value]):
         return cls(map_=mapping)
 
     _map_: Mapping[_Key, _Value]
-    _hash: list[int] = attrib(init=False, factory=list)
+    _hash: list[int] = field(init=False, factory=list)
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self._map_}>"

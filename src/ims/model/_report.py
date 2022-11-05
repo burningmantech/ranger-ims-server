@@ -23,8 +23,7 @@ Incident Report
 from collections.abc import Sequence
 from datetime import datetime as DateTime
 
-from attr import attrib
-from attrs import frozen
+from attrs import field, frozen
 
 from ._convert import normalizeDateTime
 from ._entry import ReportEntry
@@ -43,10 +42,10 @@ class IncidentReport(ReplaceMixIn):
 
     eventID: str
     number: int
-    created: DateTime = attrib(converter=normalizeDateTime)
+    created: DateTime = field(converter=normalizeDateTime)
     summary: str | None
     incidentNumber: int | None
-    reportEntries: Sequence[ReportEntry] = attrib(
+    reportEntries: Sequence[ReportEntry] = field(
         converter=sortAndFreezeReportEntries
     )
 

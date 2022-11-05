@@ -22,8 +22,8 @@ from collections.abc import Iterable, Mapping
 from time import time
 from typing import ClassVar, cast
 
-from attr import Factory, attrib
-from attrs import frozen, mutable
+from attr import Factory
+from attrs import field, frozen, mutable
 from pymysql import DatabaseError as SQLDatabaseError
 from pymysql import OperationalError as SQLOperationalError
 from twisted.enterprise import adbapi
@@ -81,20 +81,20 @@ class DutyManagementSystem:
         Internal mutable state for :class:`Configuration`.
         """
 
-        _personnel: Iterable[Ranger] = attrib(default=(), init=False)
-        _positions: Iterable[Position] = attrib(default=(), init=False)
-        _personnelLastUpdated: float = attrib(default=0.0, init=False)
-        _dbpool: adbapi.ConnectionPool | None = attrib(default=None, init=False)
-        _busy: bool = attrib(default=False, init=False)
-        _dbErrorCount: int = attrib(default=0, init=False)
+        _personnel: Iterable[Ranger] = field(default=(), init=False)
+        _positions: Iterable[Position] = field(default=(), init=False)
+        _personnelLastUpdated: float = field(default=0.0, init=False)
+        _dbpool: adbapi.ConnectionPool | None = field(default=None, init=False)
+        _busy: bool = field(default=False, init=False)
+        _dbErrorCount: int = field(default=0, init=False)
 
     host: str
     database: str
     username: str
-    password: str = attrib(repr=lambda _: "*")
+    password: str = field(repr=lambda _: "*")
     cacheInterval: int
 
-    _state: _State = attrib(factory=_State, init=False, repr=False)
+    _state: _State = field(factory=_State, init=False, repr=False)
 
     @property
     def dbpool(self) -> adbapi.ConnectionPool:

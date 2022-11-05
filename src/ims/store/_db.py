@@ -27,8 +27,7 @@ from textwrap import dedent
 from types import MappingProxyType
 from typing import Any, ClassVar, NoReturn, Optional, TypeVar, Union, cast
 
-from attr import attrib
-from attrs import frozen
+from attrs import field, frozen
 from twisted.logger import Logger
 
 from ims.model import (
@@ -69,7 +68,7 @@ def now() -> DateTime:
 @frozen
 class Query:
     description: str
-    text: str = attrib(converter=dedent)
+    text: str = field(converter=dedent)
 
 
 @frozen(kw_only=True)

@@ -24,8 +24,8 @@ from collections.abc import Awaitable, Mapping
 from typing import ClassVar, cast
 from uuid import uuid4
 
-from attr import Factory, attrib
-from attrs import frozen, mutable
+from attr import Factory
+from attrs import field, frozen, mutable
 from docker.api import APIClient
 from docker.client import DockerClient
 from docker.errors import ImageNotFound, NotFound
@@ -245,10 +245,10 @@ class DockerizedMySQLService(MySQLService):
     imageRepository = "mysql/mysql-server"
     imageTag = "5.6"
 
-    _dockerClient: DockerClient = attrib(
+    _dockerClient: DockerClient = field(
         factory=DockerClient.from_env, init=False
     )
-    _state: _State = attrib(factory=_State, init=False, repr=False)
+    _state: _State = field(factory=_State, init=False, repr=False)
 
     @property
     def host(self) -> str:

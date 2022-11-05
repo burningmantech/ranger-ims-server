@@ -19,8 +19,7 @@ Location
 """
 
 
-from attr import attrib
-from attrs import frozen
+from attrs import field, frozen
 
 from ._address import Address, TextOnlyAddress
 from ._replace import ReplaceMixIn
@@ -43,4 +42,4 @@ class Location(Address, ReplaceMixIn):
     """
 
     name: str | None
-    address: Address = attrib(converter=convertAddress)
+    address: Address = field(converter=convertAddress)

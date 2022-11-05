@@ -28,8 +28,8 @@ from pathlib import Path
 from sys import argv
 from typing import Any, ClassVar, cast
 
-from attr import Factory, attrib, evolve
-from attrs import frozen, mutable
+from attr import Factory, evolve
+from attrs import field, frozen, mutable
 from twisted.logger import Logger
 
 from ims.auth import AuthProvider
@@ -446,7 +446,7 @@ class Configuration:
 
     _storeFactory: Callable[[], IMSDataStore]
 
-    _state: _State = attrib(factory=_State, init=False, repr=False)
+    _state: _State = field(factory=_State, init=False, repr=False)
 
     @property
     def store(self) -> IMSDataStore:

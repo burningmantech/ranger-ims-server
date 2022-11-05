@@ -23,8 +23,7 @@ from pathlib import Path
 from sys import stdout
 from typing import Any, ClassVar, TextIO, TypeVar, cast
 
-from attr import attrib
-from attrs import frozen, mutable
+from attrs import field, frozen, mutable
 from twisted.logger import Logger
 
 from ims.ext.sqlite import (
@@ -69,10 +68,10 @@ class DataStore(DatabaseStore):
         Internal mutable state for :class:`DataStore`.
         """
 
-        db: Connection | None = attrib(default=None, init=False)
+        db: Connection | None = field(default=None, init=False)
 
     dbPath: Path | None
-    _state: _State = attrib(factory=_State, init=False, repr=False)
+    _state: _State = field(factory=_State, init=False, repr=False)
 
     @classmethod
     def printSchema(cls, out: TextIO = stdout) -> None:

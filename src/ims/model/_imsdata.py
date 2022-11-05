@@ -22,8 +22,7 @@ IMS Data
 
 from collections.abc import Iterable
 
-from attr import attrib
-from attrs import frozen
+from attrs import field, frozen
 
 from ._eventdata import EventData
 from ._replace import ReplaceMixIn
@@ -51,7 +50,7 @@ class IMSData(ReplaceMixIn):
     Encapsulates all data associated with an IMS service.
     """
 
-    events: frozenset[EventData] = attrib(converter=freezeEventDatas)
-    incidentTypes: frozenset[IncidentType] = attrib(
+    events: frozenset[EventData] = field(converter=freezeEventDatas)
+    incidentTypes: frozenset[IncidentType] = field(
         converter=freezeIncidentTypes
     )

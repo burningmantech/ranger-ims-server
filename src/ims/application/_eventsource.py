@@ -23,8 +23,7 @@ from collections.abc import Mapping
 from time import time
 from typing import Any, ClassVar, Deque
 
-from attr import attrib
-from attrs import frozen
+from attrs import field, frozen
 from twisted.logger import ILogObserver, Logger
 from twisted.web.iweb import IRequest
 from zope.interface import implementer
@@ -76,12 +75,12 @@ class DataStoreEventSourceLogObserver:
 
     _log: ClassVar[Logger] = Logger()
 
-    _listeners: list[IRequest] = attrib(init=False, factory=list)
-    _events: Deque[tuple[int, Event]] = attrib(
+    _listeners: list[IRequest] = field(init=False, factory=list)
+    _events: Deque[tuple[int, Event]] = field(
         init=False, factory=lambda: deque(maxlen=1000)
     )
-    _start: float = attrib(init=False, factory=time)
-    _counter: list[int] = attrib(init=False, factory=lambda: [0])
+    _start: float = field(init=False, factory=time)
+    _counter: list[int] = field(init=False, factory=lambda: [0])
 
     def addListener(
         self, listener: IRequest, lastEventID: str | None = None

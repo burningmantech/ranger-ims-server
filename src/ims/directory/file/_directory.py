@@ -23,8 +23,8 @@ from pathlib import Path
 from time import time
 from typing import Any, ClassVar, TextIO
 
-from attr import Factory, attrib
-from attrs import frozen, mutable
+from attr import Factory
+from attrs import field, frozen, mutable
 from twisted.logger import Logger
 from yaml import safe_load as parseYAML
 
@@ -172,7 +172,7 @@ class FileDirectory(IMSDirectory):
     path: Path
     checkInterval = 1.0  # Don't restat the file more often than this (seconds)
 
-    _state: _State = attrib(factory=_State, repr=False)
+    _state: _State = field(factory=_State, repr=False)
 
     def _mtime(self) -> float:
         return self.path.stat().st_mtime
