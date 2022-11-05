@@ -18,7 +18,7 @@
 Admin page.
 """
 
-from attr import attrs
+from attrs import mutable
 
 from ...page import Page
 
@@ -26,7 +26,7 @@ from ...page import Page
 __all__ = ()
 
 
-@attrs(auto_attribs=True, kw_only=True)
+@mutable(kw_only=True)
 class AdminRootPage(Page):
     """
     Admin page.

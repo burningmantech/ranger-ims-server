@@ -18,7 +18,7 @@
 <footer> Element.
 """
 
-from attr import attrs
+from attrs import mutable
 
 from ..._element import Element
 
@@ -26,7 +26,7 @@ from ..._element import Element
 __all__ = ()
 
 
-@attrs(auto_attribs=True, kw_only=True)
+@mutable(kw_only=True)
 class FooterElement(Element):
     """
     <footer> Element.

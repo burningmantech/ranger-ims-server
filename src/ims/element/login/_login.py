@@ -18,7 +18,7 @@
 Login page.
 """
 
-from attr import attrs
+from attrs import mutable
 from klein import KleinRenderable
 from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
@@ -29,7 +29,7 @@ from ..page import Page
 __all__ = ()
 
 
-@attrs(auto_attribs=True, kw_only=True)
+@mutable(kw_only=True)
 class LoginPage(Page):
     """
     Login page.

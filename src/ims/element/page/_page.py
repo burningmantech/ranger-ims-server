@@ -22,7 +22,7 @@ from collections import OrderedDict
 from collections.abc import Iterable, MutableMapping
 from typing import cast
 
-from attr import attrs
+from attrs import mutable
 from hyperlink import URL
 from klein import KleinRenderable
 from twisted.web.iweb import IRequest
@@ -39,7 +39,7 @@ from .nav import NavElement
 __all__ = ()
 
 
-@attrs(auto_attribs=True, kw_only=True)
+@mutable(kw_only=True)
 class Page(Element):
     """
     XHTML page element.
