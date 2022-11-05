@@ -8,7 +8,8 @@ from collections.abc import Mapping
 from collections.abc import Mapping as MappingABC
 from typing import Any, TypeVar
 
-from attr import attrib, attrs
+from attr import attrib
+from attrs import frozen
 
 
 __all__ = "FrozenDict"
@@ -18,7 +19,7 @@ _Key = TypeVar("_Key")
 _Value = TypeVar("_Value")
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
+@frozen(kw_only=True, eq=False)
 class FrozenDict(MappingABC[_Key, _Value]):
     """
     Frozen dictionary.

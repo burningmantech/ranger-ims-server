@@ -20,7 +20,8 @@ Incident Management System web service.
 
 from typing import ClassVar
 
-from attr import Factory, attrib, attrs
+from attr import Factory, attrib
+from attrs import frozen
 from klein import KleinRenderable
 from twisted.logger import globalLogPublisher
 from twisted.python.filepath import FilePath
@@ -67,7 +68,7 @@ def webApplicationFactory(parent: "MainApplication") -> WebApplication:
     return WebApplication(config=parent.config)
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
+@frozen(kw_only=True, eq=False)
 class MainApplication:
     """
     Incident Management System main application.

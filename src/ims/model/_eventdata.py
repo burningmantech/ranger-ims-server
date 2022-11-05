@@ -53,7 +53,7 @@ def freezeConcentricStreets(
     return FrozenDict.fromMapping(concentricStreets)
 
 
-@frozen(kw_only=True)
+@frozen(kw_only=True, order=True)
 class EventData:
     """
     Event Data container
@@ -62,11 +62,16 @@ class EventData:
     """
 
     event: Event
-    access: EventAccess
+    access: EventAccess = attrib(order=False)
     concentricStreets: Mapping[str, str] = attrib(
-        converter=freezeConcentricStreets
+        order=False,
+        converter=freezeConcentricStreets,
     )
-    incidents: Iterable[Incident] = attrib(converter=sortAndFreezeIncidents)
+    incidents: Iterable[Incident] = attrib(
+        order=False,
+        converter=sortAndFreezeIncidents,
+    )
     incidentReports: Iterable[IncidentReport] = attrib(
-        converter=sortAndFreezeIncidentReports
+        order=False,
+        converter=sortAndFreezeIncidentReports,
     )

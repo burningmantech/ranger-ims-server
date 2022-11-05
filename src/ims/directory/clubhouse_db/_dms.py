@@ -23,6 +23,7 @@ from time import time
 from typing import ClassVar, cast
 
 from attr import Factory, attrib, attrs
+from attrs import frozen
 from pymysql import DatabaseError as SQLDatabaseError
 from pymysql import OperationalError as SQLOperationalError
 from twisted.enterprise import adbapi
@@ -64,7 +65,7 @@ class Position:
     members: set[Ranger] = Factory(set)
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
+@frozen(kw_only=True, eq=False)
 class DutyManagementSystem:
     """
     Duty Management System

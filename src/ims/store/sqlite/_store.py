@@ -18,7 +18,7 @@
 Incident Management System SQLite data store.
 """
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from sys import stdout
 from typing import Any, ClassVar, TextIO, TypeVar, cast
@@ -89,13 +89,17 @@ class DataStore(DatabaseStore):
         """
         Print a summary of queries.
         """
-        queries = (
-            (getattr(cls.query, name).text, name)
-            for name in sorted(vars(cls.query))
-        )
+
+        def queries() -> Iterable[tuple[str, str]]:
+            for name in sorted(
+                cls.query.__slots__  # type: ignore[attr-defined]
+            ):
+                query = getattr(cls.query, name)
+                if type(getattr(cls.query, name)) is Query:
+                    yield (query.text, name)
 
         with createDB(None, cls.loadSchema()) as db:
-            for line in explainQueryPlans(db, queries):
+            for line in explainQueryPlans(db, queries()):
                 print(line, file=out)
                 print(file=out)
 

@@ -24,7 +24,7 @@ from abc import ABC
 from collections.abc import Callable
 from typing import Any, TypeVar, cast
 
-from attr import attrs
+from attrs import frozen
 
 from ._cmp import ComparisonMixIn
 from ._replace import ReplaceMixIn
@@ -36,7 +36,7 @@ __all__ = ()
 TRodGarettAddress = TypeVar("TRodGarettAddress", bound="RodGarettAddress")
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
+@frozen(kw_only=True, eq=False)
 class Address(ABC):  # noqa: B024
     """
     Location address
@@ -45,7 +45,7 @@ class Address(ABC):  # noqa: B024
     description: str | None = None
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
+@frozen(kw_only=True, eq=False)
 class TextOnlyAddress(Address, ComparisonMixIn):
     """
     Address
@@ -65,7 +65,7 @@ class TextOnlyAddress(Address, ComparisonMixIn):
         return ComparisonMixIn._cmp(self, other, methodName)
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
+@frozen(kw_only=True, eq=False)
 class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
     """
     Rod Garett Address
