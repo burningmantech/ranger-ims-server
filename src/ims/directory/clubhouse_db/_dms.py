@@ -22,7 +22,6 @@ from collections.abc import Iterable, Mapping
 from time import time
 from typing import ClassVar, cast
 
-from attr import Factory
 from attrs import field, frozen, mutable
 from pymysql import DatabaseError as SQLDatabaseError
 from pymysql import OperationalError as SQLOperationalError
@@ -62,7 +61,7 @@ class Position:
 
     positionID: str
     name: str
-    members: set[Ranger] = Factory(set)
+    members: set[Ranger] = field(factory=set)
 
 
 @frozen(kw_only=True, eq=False)

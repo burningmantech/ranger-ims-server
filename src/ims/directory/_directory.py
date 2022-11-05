@@ -23,8 +23,7 @@ from collections.abc import Iterable, Sequence
 from hashlib import sha1
 from typing import NewType, cast
 
-from attr import Factory
-from attrs import frozen, mutable
+from attrs import field, frozen, mutable
 from bcrypt import gensalt
 
 from ims.model import Position, Ranger
@@ -166,9 +165,9 @@ class RangerDirectory(IMSDirectory):
 
     _rangers: Sequence[Ranger]
     _positions: Sequence[Position]
-    _usersByHandle: dict[str, RangerUser] = Factory(dict)
-    _usersByEmail: dict[str, RangerUser] = Factory(dict)
-    _positionsByHandle: dict[str, Sequence[Position]] = Factory(dict)
+    _usersByHandle: dict[str, RangerUser] = field(factory=dict)
+    _usersByEmail: dict[str, RangerUser] = field(factory=dict)
+    _positionsByHandle: dict[str, Sequence[Position]] = field(factory=dict)
 
     def __attrs_post_init__(self) -> None:
         usersByHandle = self._usersByHandle

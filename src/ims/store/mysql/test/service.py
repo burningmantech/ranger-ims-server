@@ -24,7 +24,6 @@ from collections.abc import Awaitable, Mapping
 from typing import ClassVar, cast
 from uuid import uuid4
 
-from attr import Factory
 from attrs import field, frozen, mutable
 from docker.api import APIClient
 from docker.client import DockerClient
@@ -231,19 +230,19 @@ class DockerizedMySQLService(MySQLService):
 
         container: Deferred[Container] | None = None
 
-        host = NO_HOST
-        port = NO_PORT
+        host: str = NO_HOST
+        port: int = NO_PORT
 
-        refcount = 0
+        refcount: int = 0
 
-    _user: str = Factory(randomUserName)
-    _password: str = Factory(randomPassword)
-    _rootPassword: str = Factory(randomPassword)
+    _user: str = field(factory=randomUserName)
+    _password: str = field(factory=randomPassword)
+    _rootPassword: str = field(factory=randomPassword)
 
     _dockerHost: str = "172.17.0.1"
 
-    imageRepository = "mysql/mysql-server"
-    imageTag = "5.6"
+    imageRepository: str = "mysql/mysql-server"
+    imageTag: str = "5.6"
 
     _dockerClient: DockerClient = field(
         factory=DockerClient.from_env, init=False

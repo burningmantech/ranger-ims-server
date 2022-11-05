@@ -23,7 +23,6 @@ from pathlib import Path
 from time import time
 from typing import Any, ClassVar, TextIO
 
-from attr import Factory
 from attrs import field, frozen, mutable
 from twisted.logger import Logger
 from yaml import safe_load as parseYAML
@@ -164,8 +163,8 @@ class FileDirectory(IMSDirectory):
         Internal mutable state for :class:`RangerDirectory`.
         """
 
-        directory: RangerDirectory = Factory(
-            lambda: RangerDirectory(rangers=(), positions=())
+        directory: RangerDirectory = field(
+            factory=lambda: RangerDirectory(rangers=(), positions=())
         )
         lastLoadTime: float = 0.0
 

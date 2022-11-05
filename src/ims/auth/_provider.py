@@ -24,8 +24,7 @@ from datetime import timedelta as TimeDelta
 from enum import Flag, auto
 from typing import Any, ClassVar
 
-from attr import Factory
-from attrs import frozen, mutable
+from attrs import field, frozen, mutable
 from jwcrypto.jwk import JWK
 from jwcrypto.jwt import JWT
 from twisted.logger import Logger
@@ -90,7 +89,7 @@ class AuthProvider:
     adminUsers: frozenset[str] = frozenset()
     masterKey: str = ""
 
-    _state: _State = Factory(_State)
+    _state: _State = field(factory=_State)
 
     async def verifyPassword(self, user: IMSUser, password: str) -> bool:
         """

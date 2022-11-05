@@ -20,8 +20,7 @@ Incident Management System web service.
 
 from typing import ClassVar
 
-from attr import Factory
-from attrs import field, frozen
+from attrs import Factory, field, frozen
 from klein import KleinRenderable
 from twisted.logger import globalLogPublisher
 from twisted.python.filepath import FilePath

@@ -28,8 +28,7 @@ from pathlib import Path
 from sys import argv
 from typing import Any, ClassVar, cast
 
-from attr import Factory, evolve
-from attrs import field, frozen, mutable
+from attrs import evolve, field, frozen, mutable
 from twisted.logger import Logger
 
 from ims.auth import AuthProvider
@@ -91,7 +90,7 @@ class ConfigFileParser:
     _log: ClassVar[Logger] = Logger()
 
     path: Path | None
-    _configParser: ConfigParser = Factory(ConfigParser)
+    _configParser: ConfigParser = field(factory=ConfigParser)
 
     def __attrs_post_init__(self) -> None:
         if self.path is None:

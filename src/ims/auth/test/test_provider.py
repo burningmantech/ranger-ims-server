@@ -22,8 +22,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
-from attr import evolve
-from attrs import frozen
+from attrs import evolve, frozen
 from hypothesis import assume, given
 from hypothesis.strategies import (
     booleans,
