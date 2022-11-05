@@ -18,8 +18,9 @@
 Tests for :mod:`ranger-ims-server.store` database stores
 """
 
-from typing import Optional, cast
+from typing import ClassVar, Optional, cast
 
+from attrs import frozen
 from twisted.logger import Logger
 
 from ims.model import (
@@ -39,12 +40,13 @@ from .base import TestDataStoreMixIn
 __all__ = ()
 
 
+@frozen(kw_only=True)
 class TestDatabaseStoreMixIn(TestDataStoreMixIn):
     """
     MixIn for test data stores backed by databases.
     """
 
-    _log = Logger()
+    _log: ClassVar[Logger] = Logger()
 
     async def storeEvent(self, event: Event) -> None:
         """

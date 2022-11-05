@@ -24,7 +24,7 @@ from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from typing import ClassVar
 
-from attr import attrs
+from attrs import frozen
 
 from ims.ext.trial import AsynchronousTestCase
 from ims.model import Event, Incident, IncidentReport, ReportEntry
@@ -35,7 +35,7 @@ from .._abc import IMSDataStore
 __all__ = ()
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class TestDataStoreMixIn(ABC):
     """
     :class:`IMSDataStore` mix-in for testing.
@@ -141,7 +141,7 @@ class TestDataStoreMixIn(ABC):
         return incident
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class TestDataStoreABC(IMSDataStore, TestDataStoreMixIn):
     """
     Test Data Store ABC.

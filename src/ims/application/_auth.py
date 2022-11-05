@@ -20,7 +20,7 @@ Incident Management System web application authentication endpoints.
 
 from typing import ClassVar
 
-from attr import attrs
+from attrs import frozen
 from hyperlink import URL
 from klein import KleinRenderable
 from twisted.logger import Logger
@@ -40,7 +40,7 @@ def _unprefix(url: URL) -> URL:
     return url.replace(path=url.path[len(prefix) :])
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
+@frozen(kw_only=True, eq=False)
 class AuthApplication:
     """
     Application with login and logout endpoints.

@@ -27,7 +27,7 @@ from textwrap import dedent
 from types import MappingProxyType
 from typing import Any, ClassVar, NoReturn, Optional, TypeVar, Union, cast
 
-from attr import attrib, attrs
+from attrs import field, frozen
 from twisted.logger import Logger
 
 from ims.model import (
@@ -65,13 +65,13 @@ def now() -> DateTime:
     return DateTime.now(TimeZone.utc)
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=False)
+@frozen
 class Query:
     description: str
-    text: str = attrib(converter=dedent)
+    text: str = field(converter=dedent)
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class Queries:
     schemaVersion: Query
     events: Query
@@ -123,7 +123,7 @@ class Queries:
     attachedIncidentReportNumbers: Query
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class Transaction:
     lastrowid: int
 
@@ -152,7 +152,7 @@ class Transaction:
         """
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class DatabaseStore(IMSDataStore):
     """
     Incident Management System data store using a managed database.
@@ -1815,7 +1815,7 @@ class DatabaseStore(IMSDataStore):
         )
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class DatabaseManager:
     """
     Generic manager for databases.

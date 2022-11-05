@@ -18,12 +18,12 @@
 Incident Management System SQLite data store.
 """
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from sys import stdout
 from typing import Any, ClassVar, TextIO, TypeVar, cast
 
-from attr import attrib, attrs
+from attrs import field, frozen, mutable
 from twisted.logger import Logger
 
 from ims.ext.sqlite import (
@@ -48,7 +48,7 @@ T = TypeVar("T")
 query_eventID = "select ID from EVENT where NAME = :eventID"
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class DataStore(DatabaseStore):
     """
     Incident Management System SQLite data store.
@@ -62,16 +62,16 @@ class DataStore(DatabaseStore):
 
     query: ClassVar[Queries] = queries
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+    @mutable(kw_only=True, eq=False)
     class _State:
         """
         Internal mutable state for :class:`DataStore`.
         """
 
-        db: Connection | None = attrib(default=None, init=False)
+        db: Connection | None = field(default=None, init=False)
 
     dbPath: Path | None
-    _state: _State = attrib(factory=_State, init=False, repr=False)
+    _state: _State = field(factory=_State, init=False, repr=False)
 
     @classmethod
     def printSchema(cls, out: TextIO = stdout) -> None:
@@ -88,13 +88,17 @@ class DataStore(DatabaseStore):
         """
         Print a summary of queries.
         """
-        queries = (
-            (getattr(cls.query, name).text, name)
-            for name in sorted(vars(cls.query))
-        )
+
+        def queries() -> Iterable[tuple[str, str]]:
+            for name in sorted(
+                cls.query.__slots__  # type: ignore[attr-defined]
+            ):
+                query = getattr(cls.query, name)
+                if type(getattr(cls.query, name)) is Query:
+                    yield (query.text, name)
 
         with createDB(None, cls.loadSchema()) as db:
-            for line in explainQueryPlans(db, queries):
+            for line in explainQueryPlans(db, queries()):
                 print(line, file=out)
                 print(file=out)
 

@@ -21,7 +21,7 @@ Ranger
 """
 
 
-from attr import attrib, attrs
+from attrs import field, frozen
 
 from ims.ext.enum import Names, auto, unique
 
@@ -61,7 +61,7 @@ class RangerStatus(Names):
         return statusDescriptions[self.name]
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True, order=True)
 class Ranger(ReplaceMixIn):
     """
     Ranger
@@ -73,10 +73,10 @@ class Ranger(ReplaceMixIn):
     handle: str
     name: str
     status: RangerStatus
-    email: frozenset[str] = attrib(converter=freezeStrings)
+    email: frozenset[str] = field(converter=freezeStrings)
     enabled: bool
     directoryID: str | None
-    password: str | None = attrib(repr=lambda _: "*", default=None)
+    password: str | None = field(order=False, repr=lambda _: "*", default=None)
 
     def __str__(self) -> str:
         return f"{self.status} {self.handle} ({self.name})"

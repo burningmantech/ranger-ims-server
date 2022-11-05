@@ -24,7 +24,7 @@ from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
 from typing import Any, cast
 
-from attr import fields as attrFields
+from attrs import fields as attrsFields
 
 from ims.ext.trial import asyncAsDeferred
 from ims.model import Event, IncidentReport, ReportEntry
@@ -570,7 +570,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         if incidentReportA != incidentReportB:
             messages = []
 
-            for attribute in attrFields(IncidentReport):
+            for attribute in attrsFields(IncidentReport):
                 name = attribute.name
                 valueA = getattr(incidentReportA, name)
                 valueB = getattr(incidentReportB, name)

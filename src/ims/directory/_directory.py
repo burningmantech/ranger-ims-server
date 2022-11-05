@@ -23,7 +23,7 @@ from collections.abc import Iterable, Sequence
 from hashlib import sha1
 from typing import NewType, cast
 
-from attr import Factory, attrs
+from attrs import field, frozen, mutable
 from bcrypt import gensalt
 
 from ims.model import Position, Ranger
@@ -36,7 +36,7 @@ IMSUserID = NewType("IMSUserID", str)
 IMSGroupID = NewType("IMSGroupID", str)
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True)
+@mutable
 class DirectoryError(Exception):
     """
     Directory service error.
@@ -103,7 +103,7 @@ class IMSDirectory(ABC):
         """
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class RangerUser(IMSUser):
     """
     IMS user derived from a Ranger.
@@ -157,7 +157,7 @@ class RangerUser(IMSUser):
                 raise DirectoryError(f"Unable to verify password: {e}") from e
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class RangerDirectory(IMSDirectory):
     """
     IMS directory derived from a sequence of Rangers.
@@ -165,9 +165,9 @@ class RangerDirectory(IMSDirectory):
 
     _rangers: Sequence[Ranger]
     _positions: Sequence[Position]
-    _usersByHandle: dict[str, RangerUser] = Factory(dict)
-    _usersByEmail: dict[str, RangerUser] = Factory(dict)
-    _positionsByHandle: dict[str, Sequence[Position]] = Factory(dict)
+    _usersByHandle: dict[str, RangerUser] = field(factory=dict)
+    _usersByEmail: dict[str, RangerUser] = field(factory=dict)
+    _positionsByHandle: dict[str, Sequence[Position]] = field(factory=dict)
 
     def __attrs_post_init__(self) -> None:
         usersByHandle = self._usersByHandle
