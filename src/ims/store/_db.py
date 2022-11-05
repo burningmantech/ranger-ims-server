@@ -66,7 +66,7 @@ def now() -> DateTime:
     return DateTime.now(TimeZone.utc)
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=False)
+@frozen
 class Query:
     description: str
     text: str = attrib(converter=dedent)

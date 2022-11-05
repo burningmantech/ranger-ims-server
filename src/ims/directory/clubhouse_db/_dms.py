@@ -54,7 +54,7 @@ class DatabaseError(DMSError):
     """
 
 
-@attrs(frozen=False, auto_attribs=True, kw_only=True)
+@frozen
 class Position:
     """
     A Ranger position.
