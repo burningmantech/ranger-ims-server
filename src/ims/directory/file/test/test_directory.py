@@ -18,14 +18,14 @@
 Tests for L{ims.directory.file._directory}.
 """
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
+from contextlib import AbstractContextManager
 from pathlib import Path
 from random import Random
 from time import time
 from typing import Any, TextIO
 from unittest.mock import patch
 
-from attrs import frozen
 from hypothesis import given, settings
 from hypothesis.strategies import lists, randoms, text
 
@@ -376,30 +376,58 @@ class UtilityTests(TestCase):
         )
 
 
-@frozen(kw_only=True)
-class TestFileDirectory(FileDirectory):
-    def _mtime(self) -> float:
-        if hasattr(self._state, "mtime"):
-            return float(self._state.mtime)  # type: ignore[attr-defined]
-        else:
-            return super()._mtime()
-
-    def _open(self) -> TextIO:
-        if not hasattr(self._state, "openCount"):
-            self._state.openCount = 0  # type: ignore[attr-defined]
-        self._state.openCount += 1  # type: ignore[attr-defined]
-        return super()._open()
-
-
 class FileDirectoryTests(TestCase):
     """
     Tests for :class:`FileDirectory`
     """
 
-    def directory(self) -> TestFileDirectory:
+    def directory(self) -> FileDirectory:
         path = Path(__file__).parent / "directory.yaml"
 
-        return TestFileDirectory(path=path)
+        return FileDirectory(path=path)
+
+    def patchTime(self) -> AbstractContextManager[Callable[[], float]]:
+        self.now = time()
+        self.timeIncrement = 0.1
+
+        def fakeTime() -> float:
+            self.now += self.timeIncrement
+            return self.now
+
+        return patch("ims.directory.file._directory.time", fakeTime)
+
+    def patchDirectoryOpen(
+        self,
+    ) -> AbstractContextManager[Callable[[FileDirectory], TextIO]]:
+        self.openCount = 0
+
+        superOpen = FileDirectory._open
+
+        def openAndCount(directorySelf: FileDirectory) -> TextIO:
+            self.openCount += 1
+            return superOpen(directorySelf)
+
+        return patch(
+            "ims.directory.file._directory.FileDirectory._open", openAndCount
+        )
+
+    def patchDirectoryMTime(
+        self,
+    ) -> AbstractContextManager[Callable[[FileDirectory], float]]:
+        self.mtime: float | None = None
+
+        superMTime = FileDirectory._mtime
+
+        def overridableMTime(directorySelf: FileDirectory) -> float:
+            if self.mtime is None:
+                return superMTime(directorySelf)
+            else:
+                return self.mtime
+
+        return patch(
+            "ims.directory.file._directory.FileDirectory._mtime",
+            overridableMTime,
+        )
 
     def test_reload_before(self) -> None:
         """
@@ -407,21 +435,14 @@ class FileDirectoryTests(TestCase):
         """
         directory = self.directory()
 
-        now = time()
-
-        def fakeTime() -> float:
-            return now + 0.1
-
-        with patch("ims.directory.file._directory.time", fakeTime):
+        with self.patchTime(), self.patchDirectoryOpen():
             for _count in range(4):
                 directory._reload()
                 directory._reload()
                 directory._reload()
                 directory._reload()
 
-        self.assertEqual(
-            directory._state.openCount, 1  # type: ignore[attr-defined]
-        )
+        self.assertEqual(self.openCount, 1)
 
     def test_reload_past(self) -> None:
         """
@@ -429,21 +450,17 @@ class FileDirectoryTests(TestCase):
         """
         directory = self.directory()
 
-        now = [time()]
-
-        def fakeTime() -> float:
-            now[0] += directory.checkInterval + 0.1
-            return now[0]
-
-        with patch("ims.directory.file._directory.time", fakeTime):
-            for _count in range(4):
-                directory._state.mtime = now[0]  # type: ignore[attr-defined]
+        with (
+            self.patchTime(),
+            self.patchDirectoryOpen(),
+            self.patchDirectoryMTime(),
+        ):
+            self.timeIncrement = directory.checkInterval + 0.1
+            for count in range(4):  # noqa: B007
+                self.mtime = self.now
                 directory._reload()
 
-        self.assertEqual(
-            directory._state.openCount,  # type: ignore[attr-defined]
-            _count + 1,
-        )
+        self.assertEqual(self.openCount, count + 1)
 
     def test_personnel(self) -> None:
         directory = self.directory()

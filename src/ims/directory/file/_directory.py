@@ -167,7 +167,7 @@ class FileDirectory(IMSDirectory):
         directory: RangerDirectory = Factory(
             lambda: RangerDirectory(rangers=(), positions=())
         )
-        lastLoadTime = 0.0
+        lastLoadTime: float = 0.0
 
     path: Path
     checkInterval = 1.0  # Don't restat the file more often than this (seconds)
