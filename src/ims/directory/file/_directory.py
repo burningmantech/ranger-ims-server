@@ -23,8 +23,8 @@ from pathlib import Path
 from time import time
 from typing import Any, ClassVar, TextIO
 
-from attr import Factory, attrib, attrs
-from attrs import frozen
+from attr import Factory, attrib
+from attrs import frozen, mutable
 from twisted.logger import Logger
 from yaml import safe_load as parseYAML
 
@@ -158,7 +158,7 @@ class FileDirectory(IMSDirectory):
 
     _log: ClassVar[Logger] = Logger()
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+    @mutable(kw_only=True, eq=False)
     class _State:
         """
         Internal mutable state for :class:`RangerDirectory`.

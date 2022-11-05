@@ -24,7 +24,7 @@ from collections.abc import Awaitable, Mapping
 from typing import ClassVar, cast
 from uuid import uuid4
 
-from attr import Factory, attrib, attrs
+from attr import Factory, attrib
 from attrs import frozen, mutable
 from docker.api import APIClient
 from docker.client import DockerClient
@@ -223,7 +223,7 @@ class DockerizedMySQLService(MySQLService):
 
     _log: ClassVar[Logger] = Logger()
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+    @mutable(kw_only=True, eq=False)
     class _State:
         """
         Internal mutable state for :class:`DataStore`.

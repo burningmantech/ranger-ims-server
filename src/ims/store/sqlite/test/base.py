@@ -20,8 +20,8 @@ Tests for :mod:`ranger-ims-server.store.sqlite._store`
 
 from typing import ClassVar, cast
 
-from attr import attrib, attrs
-from attrs import frozen
+from attr import attrib
+from attrs import frozen, mutable
 
 from ims.ext.sqlite import SQLITE_MAX_INT, Connection, SQLiteError
 
@@ -42,7 +42,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     maxIncidentNumber: ClassVar[int] = SQLITE_MAX_INT
     exceptionClass: ClassVar[type] = SQLiteError
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+    @mutable(kw_only=True, eq=False)
     class _State(DataStore._State):
         """
         Internal mutable state for :class:`DataStore`.

@@ -20,8 +20,8 @@ Tests for :mod:`ranger-ims-server.store.mysql._store`
 
 from typing import ClassVar, cast
 
-from attr import attrib, attrs
-from attrs import frozen
+from attr import attrib
+from attrs import frozen, mutable
 from pymysql.err import MySQLError
 from twisted.enterprise.adbapi import ConnectionPool
 
@@ -42,7 +42,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     maxIncidentNumber: ClassVar[int] = 4294967295
     exceptionClass: ClassVar[type] = MySQLError
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+    @mutable(kw_only=True, eq=False)
     class _State(DataStore._State):
         """
         Internal mutable state for :class:`DataStore`.

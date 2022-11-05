@@ -28,7 +28,7 @@ from pathlib import Path
 from sys import argv
 from typing import Any, ClassVar, cast
 
-from attr import Factory, attrib, attrs, evolve
+from attr import Factory, attrib, evolve
 from attrs import frozen, mutable
 from twisted.logger import Logger
 
@@ -172,7 +172,7 @@ class Configuration:
     _log: ClassVar[Logger] = Logger()
     urls: ClassVar = URLs
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+    @mutable(kw_only=True, eq=False)
     class _State:
         """
         Internal mutable state for :class:`Configuration`.

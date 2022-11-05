@@ -23,8 +23,8 @@ from pathlib import Path
 from sys import stdout
 from typing import Any, ClassVar, Optional, TextIO, TypeVar, cast
 
-from attr import attrib, attrs
-from attrs import frozen
+from attr import attrib
+from attrs import frozen, mutable
 from pymysql.cursors import DictCursor
 from pymysql.err import MySQLError
 from twisted.enterprise.adbapi import Connection, ConnectionPool
@@ -107,7 +107,7 @@ class DataStore(DatabaseStore):
 
     query: ClassVar[Queries] = queries
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+    @mutable(kw_only=True, eq=False)
     class _State:
         """
         Internal mutable state for :class:`DataStore`.
