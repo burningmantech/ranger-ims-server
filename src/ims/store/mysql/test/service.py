@@ -25,7 +25,7 @@ from typing import ClassVar, cast
 from uuid import uuid4
 
 from attr import Factory, attrib, attrs
-from attrs import frozen
+from attrs import frozen, mutable
 from docker.api import APIClient
 from docker.client import DockerClient
 from docker.errors import ImageNotFound, NotFound
@@ -67,7 +67,7 @@ NO_HOST = ""
 NO_PORT = 0
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True)
+@mutable
 class DatabaseExistsError(Exception):
     """
     Database already exists.

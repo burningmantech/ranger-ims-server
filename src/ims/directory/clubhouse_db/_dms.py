@@ -23,7 +23,7 @@ from time import time
 from typing import ClassVar, cast
 
 from attr import Factory, attrib, attrs
-from attrs import frozen
+from attrs import frozen, mutable
 from pymysql import DatabaseError as SQLDatabaseError
 from pymysql import OperationalError as SQLOperationalError
 from twisted.enterprise import adbapi
@@ -38,7 +38,7 @@ from .._directory import DirectoryError
 __all__ = ()
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True)
+@mutable
 class DMSError(DirectoryError):
     """
     Duty Management System error.
@@ -47,7 +47,7 @@ class DMSError(DirectoryError):
     message: str
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True)
+@mutable
 class DatabaseError(DMSError):
     """
     Database error.

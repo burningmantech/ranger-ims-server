@@ -783,7 +783,7 @@ class DataStoreIncidentTests(DataStoreTests):
         if incidentA != incidentB:
             messages = []
 
-            for attribute in attrFields(Incident):
+            for attribute in attrFields(Incident):  # type: ignore[arg-type]
                 name = attribute.name
                 valueA = getattr(incidentA, name)
                 valueB = getattr(incidentB, name)

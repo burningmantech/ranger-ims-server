@@ -29,7 +29,7 @@ from sys import argv
 from typing import Any, ClassVar, cast
 
 from attr import Factory, attrib, attrs, evolve
-from attrs import frozen
+from attrs import frozen, mutable
 from twisted.logger import Logger
 
 from ims.auth import AuthProvider
@@ -64,7 +64,7 @@ def describeFactory(f: Callable[..., Any]) -> str:
         return f"{f.__name__}(...)"
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True)
+@mutable
 class ConfigurationError(Exception):
     """
     Configuration error.

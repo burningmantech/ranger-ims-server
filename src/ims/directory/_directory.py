@@ -23,8 +23,8 @@ from collections.abc import Iterable, Sequence
 from hashlib import sha1
 from typing import NewType, cast
 
-from attr import Factory, attrs
-from attrs import frozen
+from attr import Factory
+from attrs import frozen, mutable
 from bcrypt import gensalt
 
 from ims.model import Position, Ranger
@@ -37,7 +37,7 @@ IMSUserID = NewType("IMSUserID", str)
 IMSGroupID = NewType("IMSGroupID", str)
 
 
-@attrs(frozen=False, auto_attribs=True, auto_exc=True)
+@mutable
 class DirectoryError(Exception):
     """
     Directory service error.
