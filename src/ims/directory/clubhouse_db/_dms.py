@@ -22,7 +22,7 @@ from collections.abc import Iterable, Mapping
 from time import time
 from typing import ClassVar, cast
 
-from attr import Factory, attrib, attrs
+from attr import Factory, attrib
 from attrs import frozen, mutable
 from pymysql import DatabaseError as SQLDatabaseError
 from pymysql import OperationalError as SQLOperationalError

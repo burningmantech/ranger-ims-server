@@ -27,7 +27,7 @@ from textwrap import dedent
 from types import MappingProxyType
 from typing import Any, ClassVar, NoReturn, Optional, TypeVar, Union, cast
 
-from attr import attrib, attrs
+from attr import attrib
 from attrs import frozen
 from twisted.logger import Logger
 
