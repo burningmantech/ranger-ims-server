@@ -504,10 +504,10 @@ class APIApplication:
             "New incident: {json}", json=jsonObjectFromModelObject(incident)
         )
 
-        request.setHeader("Incident-Number", str(incident.number))
+        request.setHeader("X-IMS-Incident-Number", str(incident.number))
         request.setHeader(
             HeaderName.location.value,
-            f"{URLs.incidentNumber.asText()}/{incident.number}",
+            URLs.incidents.child(str(incident.number)).asText(),
         )
         return noContentResponse(request)
 
@@ -860,10 +860,13 @@ class APIApplication:
             json=jsonObjectFromModelObject(incidentReport),
         )
 
-        request.setHeader("Incident-Report-Number", str(incidentReport.number))
+        request.setHeader(
+            "X-IMS-Incident-Report-Number",
+            str(incidentReport.number),
+        )
         request.setHeader(
             HeaderName.location.value,
-            f"{URLs.incidentNumber.asText()}/{incidentReport.number}",
+            URLs.incidentReports.child(str(incidentReport.number)).asText(),
         )
         return noContentResponse(request)
 
