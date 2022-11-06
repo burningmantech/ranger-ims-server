@@ -27,4 +27,3 @@ include tox.ini
 recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include src *.txt
-recursive-include tools *.py
