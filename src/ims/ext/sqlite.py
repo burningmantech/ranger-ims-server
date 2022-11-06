@@ -13,7 +13,7 @@ from sqlite3 import Row as BaseRow
 from sqlite3 import connect as sqliteConnect
 from typing import Any, ClassVar, Optional, TextIO, Union, cast
 
-from attr import attrs
+from attrs import frozen
 from twisted.logger import Logger
 
 
@@ -259,13 +259,13 @@ def printSchema(db: Connection, out: TextIO) -> None:
             )
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class QueryPlanExplanation:
     """
     Container for information about a query plan.
     """
 
-    @attrs(frozen=True, auto_attribs=True, kw_only=True)
+    @frozen(kw_only=True)
     class Line:
         """
         A line of information about a query plan.

@@ -25,7 +25,7 @@ from enum import Flag, auto
 from time import time
 from typing import Any, ClassVar
 
-from attr import Factory, attrs
+from attrs import field, frozen, mutable
 from jwcrypto.jwk import JWK
 from jwcrypto.jws import InvalidJWSSignature
 from jwcrypto.jwt import JWT
@@ -73,7 +73,7 @@ class Authorization(Flag):
     )
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class AuthProvider:
     """
     Provider for authentication and authorization support.
@@ -82,7 +82,7 @@ class AuthProvider:
     _log: ClassVar[Logger] = Logger()
     _jwtIssuer: ClassVar[str] = "ranger-ims-server"
 
-    @attrs(frozen=False, auto_attribs=True, kw_only=True, eq=False)
+    @mutable(kw_only=True, eq=False)
     class _State:
         """
         Internal mutable state for :class:`RangerDirectory`.
@@ -97,7 +97,7 @@ class AuthProvider:
     adminUsers: frozenset[str] = frozenset()
     masterKey: str = ""
 
-    _state: _State = Factory(_State)
+    _state: _State = field(factory=_State)
 
     async def verifyPassword(self, user: IMSUser, password: str) -> bool:
         """

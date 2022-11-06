@@ -20,7 +20,7 @@
 Event Access
 """
 
-from attr import attrib, attrs
+from attrs import field, frozen
 
 from ._convert import freezeStrings
 
@@ -28,7 +28,7 @@ from ._convert import freezeStrings
 __all__ = ()
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class EventAccess:
     """
     Event Access
@@ -36,6 +36,6 @@ class EventAccess:
     Contains access control configuration for an event.
     """
 
-    readers: frozenset[str] = attrib(converter=freezeStrings)
-    writers: frozenset[str] = attrib(converter=freezeStrings)
-    reporters: frozenset[str] = attrib(converter=freezeStrings)
+    readers: frozenset[str] = field(converter=freezeStrings)
+    writers: frozenset[str] = field(converter=freezeStrings)
+    reporters: frozenset[str] = field(converter=freezeStrings)

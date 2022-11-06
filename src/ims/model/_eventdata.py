@@ -22,7 +22,7 @@ Event Data
 
 from collections.abc import Iterable, Mapping
 
-from attr import attrib, attrs
+from attrs import field, frozen
 
 from ims.ext.attr import sorted_tuple
 from ims.ext.frozendict import FrozenDict
@@ -52,7 +52,7 @@ def freezeConcentricStreets(
     return FrozenDict.fromMapping(concentricStreets)
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True, order=True)
 class EventData:
     """
     Event Data container
@@ -61,11 +61,16 @@ class EventData:
     """
 
     event: Event
-    access: EventAccess
-    concentricStreets: Mapping[str, str] = attrib(
-        converter=freezeConcentricStreets
+    access: EventAccess = field(order=False)
+    concentricStreets: Mapping[str, str] = field(
+        order=False,
+        converter=freezeConcentricStreets,
     )
-    incidents: Iterable[Incident] = attrib(converter=sortAndFreezeIncidents)
-    incidentReports: Iterable[IncidentReport] = attrib(
-        converter=sortAndFreezeIncidentReports
+    incidents: Iterable[Incident] = field(
+        order=False,
+        converter=sortAndFreezeIncidents,
+    )
+    incidentReports: Iterable[IncidentReport] = field(
+        order=False,
+        converter=sortAndFreezeIncidentReports,
     )

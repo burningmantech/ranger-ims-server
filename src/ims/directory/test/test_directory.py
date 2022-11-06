@@ -22,7 +22,7 @@ from collections.abc import Callable, Iterable, Sequence
 from typing import Any, cast
 from unittest.mock import patch
 
-from attr import evolve
+from attrs import evolve
 from hypothesis import assume, example, given
 from hypothesis.strategies import composite, iterables, lists, text
 

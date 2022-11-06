@@ -20,7 +20,7 @@
 Position
 """
 
-from attr import attrs
+from attrs import field, frozen
 
 from ._replace import ReplaceMixIn
 
@@ -28,7 +28,7 @@ from ._replace import ReplaceMixIn
 __all__ = ()
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True, order=True)
 class Position(ReplaceMixIn):
     """
     Position
@@ -38,7 +38,7 @@ class Position(ReplaceMixIn):
     """
 
     name: str
-    members: frozenset[str]
+    members: frozenset[str] = field(order=False)
 
     def __str__(self) -> str:
         return self.name

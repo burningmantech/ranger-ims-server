@@ -23,7 +23,7 @@ from collections.abc import Sequence
 from sys import stdout
 from typing import ClassVar, cast
 
-from attr import attrs
+from attrs import frozen
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.application.runner._runner import Runner
 from twisted.internet.defer import Deferred, ensureDeferred
@@ -59,7 +59,7 @@ class IMSSession(Session):
     sessionTimeout = 60 * 60 * 1  # 1 hour
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True)
+@frozen(kw_only=True)
 class Command:
     """
     Run the IMS server.

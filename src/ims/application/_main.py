@@ -20,7 +20,7 @@ Incident Management System web service.
 
 from typing import ClassVar
 
-from attr import Factory, attrib, attrs
+from attrs import Factory, field, frozen
 from klein import KleinRenderable
 from twisted.logger import globalLogPublisher
 from twisted.web.iweb import IRequest
@@ -44,7 +44,7 @@ def apiApplicationFactory(parent: "MainApplication") -> APIApplication:
     )
 
 
-@attrs(frozen=True, auto_attribs=True, kw_only=True, eq=False)
+@frozen(kw_only=True, eq=False)
 class MainApplication:
     """
     Incident Management System main application.
@@ -54,11 +54,11 @@ class MainApplication:
 
     config: Configuration
 
-    storeObserver: DataStoreEventSourceLogObserver = attrib(
+    storeObserver: DataStoreEventSourceLogObserver = field(
         factory=DataStoreEventSourceLogObserver, init=False
     )
 
-    apiApplication: APIApplication = attrib(
+    apiApplication: APIApplication = field(
         default=Factory(apiApplicationFactory, takes_self=True), init=False
     )
 
