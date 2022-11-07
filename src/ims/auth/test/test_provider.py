@@ -221,7 +221,7 @@ class AuthProviderTests(TestCase):
         AuthProvider.verifyPassword() returns False when the user's password is
         None.
         """
-        user = evolve(user, password=None)
+        user = evolve(user, hashedPassword=None)
         provider = AuthProvider(store=self.store(), directory=self.directory())
 
         authenticated = self.successResultOf(

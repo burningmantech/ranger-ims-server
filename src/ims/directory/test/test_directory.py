@@ -120,7 +120,7 @@ class DirectoryTests(TestCase):
         for ranger in rangers:
             user = self.successResultOf(directory.lookupUser(ranger.handle))
             self.assertIsNotNone(user)
-            self.assertEqual(user.ranger.handle, ranger.handle)
+            self.assertEqual(user.shortNames[0], ranger.handle)
 
     @given(uniqueRangerLists())
     @example(
@@ -168,7 +168,7 @@ class DirectoryTests(TestCase):
                 if user is None:
                     self.assertGreater(emailCounts[email], 0)
                 else:
-                    self.assertEqual(user.ranger.handle, ranger.handle)
+                    self.assertEqual(user.shortNames[0], ranger.handle)
 
 
 class UtilityTests(TestCase):

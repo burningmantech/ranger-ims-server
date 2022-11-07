@@ -478,7 +478,6 @@ class FileDirectoryTests(TestCase):
 
         for ranger in testRangers:
             user = self.successResultOf(directory.lookupUser(ranger.handle))
-            self.assertEqual(user.ranger, ranger)
             self.assertCorrectPositions(user)
 
     def test_lookupUser_email(self) -> None:
@@ -487,5 +486,4 @@ class FileDirectoryTests(TestCase):
         for ranger in testRangers:
             for email in ranger.email:
                 user = self.successResultOf(directory.lookupUser(email))
-                self.assertEqual(user.ranger, ranger)
                 self.assertCorrectPositions(user)
