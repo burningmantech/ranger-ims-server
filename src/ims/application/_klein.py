@@ -34,7 +34,11 @@ from werkzeug.exceptions import MethodNotAllowed, NotFound
 from werkzeug.routing import RequestRedirect
 
 from ims import __version__ as version
-from ims.auth import NotAuthenticatedError, NotAuthorizedError
+from ims.auth import (
+    InvalidCredentialsError,
+    NotAuthenticatedError,
+    NotAuthorizedError,
+)
 from ims.config import URLs
 from ims.directory import DirectoryError
 from ims.ext.klein import ContentType, HeaderName
