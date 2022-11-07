@@ -25,6 +25,7 @@ from ._provider import Authorization, AuthProvider
 __all__ = (
     "Authorization",
     "AuthProvider",
+    "InvalidCredentialsError",
     "NotAuthenticatedError",
     "NotAuthorizedError",
 )
