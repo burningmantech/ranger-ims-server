@@ -31,6 +31,7 @@ from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
 from ims.directory import IMSDirectory, IMSUser, RangerUser
+from ims.ext.klein import HeaderName
 from ims.model import IncidentReport
 from ims.store import IMSDataStore
 
@@ -148,9 +149,23 @@ class AuthProvider:
         token.make_signed_token(self._jwtSecret)
         return dict(token=token.serialize())
 
-    def authenticateRequest(
-        self, request: IRequest, optional: bool = False
-    ) -> None:
+    def checkAuthentication(self, request: IRequest) -> bool:
+        """
+        Check whether the request has previously been authenticated, and if so,
+        set request.user and return True. Otherwise, return False.
+        """
+        authorization = request.getHeader(HeaderName.authorization.value)
+        if authorization is not None and authorization.startswith("Bearer "):
+            raise NotImplementedError()
+        else:
+            session = request.getSession()
+            user = getattr(session, "user", None)
+            request.user = user  # type: ignore[attr-defined]
+            return True
+
+        # return False
+
+    def authenticateRequest(self, request: IRequest) -> None:
         """
         Authenticate a request.
 
@@ -159,11 +174,14 @@ class AuthProvider:
         @param optional: If true, do not raise NotAuthenticatedError() if no
             user is associated with the request.
         """
-        session = request.getSession()
-        user = getattr(session, "user", None)
-        request.user = user  # type: ignore[attr-defined]
+        if self.checkAuthentication(request):
+            return
 
-        if user is None and not optional:
+        authorization = request.getHeader(HeaderName.authorization.value)
+        if authorization is not None and authorization.startswith("Bearer "):
+            raise NotImplementedError()
+
+        if request.user is None:  # type: ignore[attr-defined]
             self._log.debug("Authentication failed")
             raise NotAuthenticatedError("No user logged in")
 

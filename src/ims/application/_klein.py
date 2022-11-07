@@ -347,9 +347,7 @@ class Router(Klein):
                 # Capture authentication info if sent by the client, (ie. it's
                 # been previously asked to authenticate), so we can log it, but
                 # don't require authentication.
-                app.config.authProvider.authenticateRequest(
-                    request, optional=True
-                )
+                app.config.authProvider.checkAuthentication(request)
 
                 return f(app, request, *args, **kwargs)
 
