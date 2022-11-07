@@ -410,6 +410,16 @@ class Router(Klein):
             """
             return forbiddenResponse(request)
 
+        @self.handle_errors(InvalidCredentialsError)
+        @renderResponse
+        def invalidCredentialsError(
+            app: Any, request: IRequest, failure: Failure
+        ) -> KleinRenderable:
+            """
+            Invalid credentials.
+            """
+            return forbiddenResponse(request)
+
         @self.handle_errors(NotAuthenticatedError)
         @renderResponse
         def notAuthenticatedError(
