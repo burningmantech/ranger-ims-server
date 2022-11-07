@@ -45,44 +45,42 @@ class DirectoryError(Exception):
     message: str
 
 
-class IMSUser(ABC):
+@frozen(kw_only=True)
+class IMSUser:
     """
-    IMS user
+    IMS user derived from a JWT payload.
     """
 
-    @property
-    @abstractmethod
-    def uid(self) -> IMSUserID:
-        """
-        Unique identifier.
-        """
+    uid: IMSUserID
+    shortNames: Sequence[str]
+    active: bool
+    groups: Sequence[IMSGroupID]
+    hashedPassword: str | None
 
-    @property
-    @abstractmethod
-    def shortNames(self) -> Sequence[str]:
-        """
-        Short names (usernames).
-        """
-
-    @property
-    @abstractmethod
-    def active(self) -> bool:
-        """
-        Whether the user is allowed to log in to the IMS.
-        """
-
-    @property
-    @abstractmethod
-    def groups(self) -> Sequence[IMSGroupID]:
-        """
-        Groups the user is a member of.
-        """
-
-    @abstractmethod
-    async def verifyPassword(self, password: str) -> bool:
+    def verifyPassword(self, password: str) -> bool:
         """
         Verify whether a password is valid for the user.
         """
+        if self.hashedPassword is None:
+            return False
+        else:
+            try:
+                return verifyPassword(password, self.hashedPassword)
+            except Exception as e:
+                raise DirectoryError(f"Unable to verify password: {e}") from e
+
+
+def userFromRanger(*, ranger: Ranger, groups: Sequence[IMSGroupID]) -> IMSUser:
+    """
+    Create an IMS user from a Ranger.
+    """
+    return IMSUser(
+        uid=IMSUserID(ranger.handle),
+        shortNames=(ranger.handle,),
+        active=ranger.enabled,
+        groups=tuple(groups),
+        hashedPassword=ranger.password,
+    )
 
 
 class IMSDirectory(ABC):
@@ -104,60 +102,6 @@ class IMSDirectory(ABC):
 
 
 @frozen(kw_only=True)
-class RangerUser(IMSUser):
-    """
-    IMS user derived from a Ranger.
-    """
-
-    ranger: Ranger
-    _groups: Sequence[IMSGroupID]
-
-    def __str__(self) -> str:
-        return str(self.ranger)
-
-    @property
-    def uid(self) -> IMSUserID:
-        """
-        Unique identifier.
-        """
-        return IMSUserID(self.ranger.handle)
-
-    @property
-    def shortNames(self) -> Sequence[str]:
-        """
-        Short names (i.e. usernames).
-        """
-        return (self.ranger.handle,)
-
-    @property
-    def active(self) -> bool:
-        """
-        Whether the user is allowed to log in to the IMS.
-        """
-        return self.ranger.enabled
-
-    @property
-    def groups(self) -> Sequence[IMSGroupID]:
-        """
-        Groups the user is a member of.
-        """
-        return self._groups
-
-    async def verifyPassword(self, password: str) -> bool:
-        """
-        Verify whether a password is valid for the user.
-        """
-        hashedPassword = self.ranger.password
-        if hashedPassword is None:
-            return False
-        else:
-            try:
-                return verifyPassword(password, hashedPassword)
-            except Exception as e:
-                raise DirectoryError(f"Unable to verify password: {e}") from e
-
-
-@frozen(kw_only=True)
 class RangerDirectory(IMSDirectory):
     """
     IMS directory derived from a sequence of Rangers.
@@ -165,8 +109,8 @@ class RangerDirectory(IMSDirectory):
 
     _rangers: Sequence[Ranger]
     _positions: Sequence[Position]
-    _usersByHandle: dict[str, RangerUser] = field(factory=dict)
-    _usersByEmail: dict[str, RangerUser] = field(factory=dict)
+    _usersByHandle: dict[str, IMSUser] = field(factory=dict)
+    _usersByEmail: dict[str, IMSUser] = field(factory=dict)
     _positionsByHandle: dict[str, Sequence[Position]] = field(factory=dict)
 
     def __attrs_post_init__(self) -> None:
@@ -190,7 +134,7 @@ class RangerDirectory(IMSDirectory):
                 IMSGroupID(position.name)
                 for position in self._positionsByHandle.get(ranger.handle, ())
             )
-            user = RangerUser(ranger=ranger, groups=groups)
+            user = userFromRanger(ranger=ranger, groups=groups)
 
             usersByHandle[ranger.handle] = user
 

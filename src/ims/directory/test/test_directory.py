@@ -20,10 +20,9 @@ Tests for L{ims.directory._directory}.
 
 from collections.abc import Callable, Iterable, Sequence
 from typing import Any, cast
-from unittest.mock import patch
 
 from attrs import evolve
-from hypothesis import assume, example, given
+from hypothesis import example, given
 from hypothesis.strategies import composite, iterables, lists, text
 
 from ims.ext.trial import TestCase
@@ -33,10 +32,11 @@ from ims.model.strategies import rangerHandles, rangers
 from .._directory import (
     DirectoryError,
     IMSGroupID,
+    IMSUser,
     RangerDirectory,
-    RangerUser,
     _hash,
     hashPassword,
+    userFromRanger,
     verifyPassword,
 )
 
@@ -61,115 +61,11 @@ def uniqueRangerLists(draw: Callable[..., Any]) -> RangerDirectory:
 
 
 @composite
-def rangerUsers(draw: Callable[..., Any]) -> RangerUser:
-    return RangerUser(
+def imsUsers(draw: Callable[..., Any]) -> IMSUser:
+    return userFromRanger(
         ranger=draw(rangers()),
         groups=draw(groupIDs()),
     )
-
-
-class RangerUserTests(TestCase):
-    """
-    Tests for :class:`RangerUser`
-    """
-
-    @given(rangerUsers())
-    def test_str(self, user: RangerUser) -> None:
-        self.assertEqual(str(user), str(user.ranger))
-
-    @given(rangerUsers())
-    def test_shortNames_handle(self, user: RangerUser) -> None:
-        """
-        Ranger handle is in user short names.
-        """
-        self.assertIn(user.ranger.handle, user.shortNames)
-
-    @given(rangerUsers())
-    def test_active(self, user: RangerUser) -> None:
-        """
-        Ranger on site status is used to set user active status.
-        """
-        self.assertEqual(user.active, user.ranger.enabled)
-
-    @given(rangerUsers())
-    def test_uid(self, user: RangerUser) -> None:
-        """
-        Ranger handle is used as user UID.
-        """
-        self.assertEqual(user.uid, user.ranger.handle)
-
-    @given(rangerUsers())
-    def test_groups(self, user: RangerUser) -> None:
-        """
-        User groups are as provided.
-        """
-        self.assertEqual(user.groups, user._groups)
-
-    @given(rangerUsers(), text())
-    def test_verifyPassword_match(
-        self, user: RangerUser, password: str
-    ) -> None:
-        """
-        RangerUser.verifyPassword() returns True when the Ranger's password is a
-        match.
-        """
-        ranger = user.ranger.replace(password=hashPassword(password))
-        user = evolve(user, ranger=ranger)
-
-        authorization = self.successResultOf(user.verifyPassword(password))
-        self.assertTrue(authorization)
-
-    @given(rangerUsers(), text(), text())
-    def test_verifyPassword_mismatch(
-        self, user: RangerUser, password: str, otherPassword: str
-    ) -> None:
-        """
-        RangerUser.verifyPassword() returns False when the Ranger's password is
-        not a match.
-        """
-        assume(password != otherPassword)
-
-        ranger = user.ranger.replace(password=hashPassword(password))
-        user = evolve(user, ranger=ranger)
-
-        authorization = self.successResultOf(user.verifyPassword(otherPassword))
-        self.assertFalse(authorization)
-
-    @given(rangerUsers(), text())
-    def test_verifyPassword_none(self, user: RangerUser, password: str) -> None:
-        """
-        RangerUser.verifyPassword() returns False when the Ranger's password is
-        None.
-        """
-        ranger = user.ranger.replace(password=None)
-        user = evolve(user, ranger=ranger)
-
-        authorization = self.successResultOf(user.verifyPassword(password))
-        self.assertFalse(authorization)
-
-    @given(rangerUsers(), text(), text())
-    def test_verifyPassword_error(
-        self, user: RangerUser, password: str, message: str
-    ) -> None:
-        """
-        RangerUser.verifyPassword() returns False when verifyPassword raises an
-        exception.
-        """
-        ranger = user.ranger.replace(password=hashPassword(password))
-        user = evolve(user, ranger=ranger)
-
-        def oops(*args: Any, **kwargs: Any) -> None:
-            raise RuntimeError(message)
-
-        assert self.successResultOf(user.verifyPassword(password))
-
-        with patch("ims.directory._directory.verifyPassword", oops):
-            f = self.failureResultOf(
-                user.verifyPassword(password), DirectoryError
-            )
-            self.assertEqual(
-                f.getErrorMessage(), f"Unable to verify password: {message}"
-            )
 
 
 class DirectoryTests(TestCase):

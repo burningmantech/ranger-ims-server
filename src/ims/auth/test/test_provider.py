@@ -58,56 +58,22 @@ class TestUser(IMSUser):
     User for testing.
     """
 
-    _shortNames: Sequence[str]
-    _active: bool
-    _uid: IMSUserID
-    _groups: Sequence[IMSGroupID]
-    _password: str | None
-
     def __str__(self) -> str:
-        return str(self._shortNames[0])
+        return str(self.shortNames[0])
 
-    @property
-    def shortNames(self) -> Sequence[str]:
-        """
-        Short names (usernames).
-        """
-        return self._shortNames
-
-    @property
-    def active(self) -> bool:
-        """
-        Whether the user is allowed to log in to the IMS.
-        """
-        return self._active
-
-    @property
-    def uid(self) -> IMSUserID:
-        """
-        Unique identifier.
-        """
-        return self._uid
-
-    @property
-    def groups(self) -> Sequence[IMSGroupID]:
-        """
-        Groups the user is a member of.
-        """
-        return self._groups
-
-    async def verifyPassword(self, password: str) -> bool:
-        assert self._password is not None
-        return password == self._password
+    def verifyPassword(self, password: str) -> bool:
+        assert self.hashedPassword is not None
+        return password == self.hashedPassword
 
 
 @composite
-def testUsers(draw: Callable[..., Any]) -> TestUser:
+def testUsers(draw: Callable[..., Any]) -> IMSUser:
     return TestUser(
         uid=IMSUserID(draw(text(min_size=1))),
         shortNames=tuple(draw(lists(text(min_size=1), min_size=1))),
         active=draw(booleans()),
         groups=tuple(IMSGroupID(g) for g in draw(text(min_size=1))),
-        password=draw(one_of(none(), text())),
+        hashedPassword=draw(one_of(none(), text())),
     )
 
 
@@ -155,15 +121,15 @@ class TestTests(TestCase):
             shortNames=shortNames,
             active=active,
             groups=groups,
-            password=password,
+            hashedPassword=password,
         )
 
+        self.assertEqual(user.uid, uid)
         self.assertEqual(tuple(user.shortNames), tuple(shortNames))
         self.assertEqual(user.active, active)
-        self.assertEqual(user.uid, uid)
         self.assertEqual(tuple(user.groups), tuple(groups))
 
-        self.assertTrue(self.successResultOf(user.verifyPassword(password)))
+        self.assertTrue(user.verifyPassword(password))
 
 
 class AuthorizationTests(TestCase):
@@ -205,7 +171,7 @@ class AuthProviderTests(TestCase):
         text(min_size=1),
     )
     def test_verifyPassword_masterKey(
-        self, user: TestUser, masterKey: str
+        self, user: IMSUser, masterKey: str
     ) -> None:
         provider = AuthProvider(
             store=self.store(), directory=self.directory(), masterKey=masterKey
@@ -217,30 +183,30 @@ class AuthProviderTests(TestCase):
         self.assertTrue(authenticated)
 
     @given(testUsers())
-    def test_verifyPassword_match(self, user: TestUser) -> None:
+    def test_verifyPassword_match(self, user: IMSUser) -> None:
         """
         AuthProvider.verifyPassword() returns True when the user's password is
         a match.
         """
-        assume(user._password is not None)
-        assert user._password is not None
+        assume(user.hashedPassword is not None)
+        assert user.hashedPassword is not None
 
         provider = AuthProvider(store=self.store(), directory=self.directory())
 
         authenticated = self.successResultOf(
-            provider.verifyPassword(user, user._password)
+            provider.verifyPassword(user, user.hashedPassword)
         )
         self.assertTrue(authenticated)
 
     @given(testUsers(), text())
     def test_verifyPassword_mismatch(
-        self, user: TestUser, notPassword: str
+        self, user: IMSUser, notPassword: str
     ) -> None:
         """
         AuthProvider.verifyPassword() returns False when the user's password is
         not a match.
         """
-        assume(user._password != notPassword)
+        assume(user.hashedPassword != notPassword)
 
         provider = AuthProvider(store=self.store(), directory=self.directory())
 
@@ -250,7 +216,7 @@ class AuthProviderTests(TestCase):
         self.assertFalse(authenticated)
 
     @given(testUsers(), text())
-    def test_verifyPassword_none(self, user: TestUser, password: str) -> None:
+    def test_verifyPassword_none(self, user: IMSUser, password: str) -> None:
         """
         AuthProvider.verifyPassword() returns False when the user's password is
         None.
@@ -295,7 +261,7 @@ class AuthProviderTests(TestCase):
         self.assertFalse(provider._matchACL(None, []))
 
     @given(testUsers())
-    def test_matchACL_none_user(self, user: TestUser) -> None:
+    def test_matchACL_none_user(self, user: IMSUser) -> None:
         """
         AuthProvider._matchACL does not match no access with a user.
         """
@@ -312,7 +278,7 @@ class AuthProviderTests(TestCase):
         self.assertTrue(provider._matchACL(None, ["**"]))
 
     @given(testUsers())
-    def test_matchACL_public_user(self, user: TestUser) -> None:
+    def test_matchACL_public_user(self, user: IMSUser) -> None:
         """
         AuthProvider._matchACL matches public ("**") access with a user.
         """
@@ -331,7 +297,7 @@ class AuthProviderTests(TestCase):
         self.assertFalse(provider._matchACL(None, ["*"]))
 
     @given(testUsers())
-    def test_matchACL_any_user(self, user: TestUser) -> None:
+    def test_matchACL_any_user(self, user: IMSUser) -> None:
         """
         AuthProvider._matchACL matches any ("*") access with a user.
         """
@@ -342,7 +308,7 @@ class AuthProviderTests(TestCase):
         self.assertTrue(provider._matchACL(user, ["*"]))
 
     @given(testUsers())
-    def test_matchACL_person(self, user: TestUser) -> None:
+    def test_matchACL_person(self, user: IMSUser) -> None:
         """
         AuthProvider._matchACL matches person access with a matching user.
         """
@@ -354,7 +320,7 @@ class AuthProviderTests(TestCase):
             self.assertTrue(provider._matchACL(user, [f"person:{shortName}"]))
 
     @given(testUsers())
-    def test_matchACL_position(self, user: TestUser) -> None:
+    def test_matchACL_position(self, user: IMSUser) -> None:
         """
         AuthProvider._matchACL matches group access with a matching user.
         """

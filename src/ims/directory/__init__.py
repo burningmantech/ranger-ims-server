@@ -24,8 +24,8 @@ from ._directory import (
     IMSGroupID,
     IMSUser,
     IMSUserID,
-    RangerUser,
     hashPassword,
+    userFromRanger,
     verifyPassword,
 )
 
@@ -36,7 +36,7 @@ __all__ = (
     "IMSGroupID",
     "IMSUser",
     "IMSUserID",
-    "RangerUser",
     "hashPassword",
+    "userFromRanger",
     "verifyPassword",
 )

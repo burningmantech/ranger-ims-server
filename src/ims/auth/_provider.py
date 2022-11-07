@@ -30,7 +30,7 @@ from jwcrypto.jwt import JWT
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
-from ims.directory import IMSDirectory, IMSUser, RangerUser
+from ims.directory import IMSDirectory, IMSUser
 from ims.ext.klein import HeaderName
 from ims.model import IncidentReport
 from ims.store import IMSDataStore
@@ -100,7 +100,7 @@ class AuthProvider:
             return True
 
         try:
-            authenticated = await user.verifyPassword(password)
+            authenticated = user.verifyPassword(password)
         except Exception as e:
             self._log.critical(
                 "Unable to check password for user {user}: {error}",
@@ -317,10 +317,10 @@ class AuthProvider:
         # The author of the incident report should be allowed to read and write
         # to it.
 
-        user: RangerUser = request.user  # type: ignore[attr-defined]
+        user: IMSUser = request.user  # type: ignore[attr-defined]
 
         if user is not None and incidentReport.reportEntries:
-            rangerHandle = user.ranger.handle
+            rangerHandle = user.shortNames[0]
             for reportEntry in incidentReport.reportEntries:
                 if reportEntry.author == rangerHandle:
                     request.authorizations = (  # type: ignore[attr-defined]
