@@ -18,7 +18,11 @@
 Incident Management System web authentication.
 """
 
-from ._exceptions import NotAuthenticatedError, NotAuthorizedError
+from ._exceptions import (
+    InvalidCredentialsError,
+    NotAuthenticatedError,
+    NotAuthorizedError,
+)
 from ._provider import Authorization, AuthProvider
 
 
