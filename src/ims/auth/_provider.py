@@ -149,38 +149,47 @@ class AuthProvider:
         token.make_signed_token(self._jwtSecret)
         return dict(token=token.serialize())
 
-    def checkAuthentication(self, request: IRequest) -> bool:
+    def checkAuthentication(self, request: IRequest) -> None:
         """
         Check whether the request has previously been authenticated, and if so,
-        set request.user and return True. Otherwise, return False.
+        set request.user.
         """
-        authorization = request.getHeader(HeaderName.authorization.value)
-        if authorization is not None and authorization.startswith("Bearer "):
-            raise NotImplementedError()
-        else:
-            session = request.getSession()
-            user = getattr(session, "user", None)
-            request.user = user  # type: ignore[attr-defined]
-            return True
+        if request.user is None:  # type: ignore[attr-defined]
+            authorization = request.getHeader(HeaderName.authorization.value)
+            if authorization is not None and authorization.startswith(
+                "Bearer "
+            ):
+                raise NotImplementedError()
+            else:
+                session = request.getSession()
+                user = getattr(session, "user", None)
+                request.user = user  # type: ignore[attr-defined]
 
-        # return False
-
-    def authenticateRequest(self, request: IRequest) -> None:
+    async def authenticateRequest(self, request: IRequest) -> None:
         """
-        Authenticate a request.
+        Authenticate a request's user.
 
         @param request: The request to authenticate.
 
-        @param optional: If true, do not raise NotAuthenticatedError() if no
-            user is associated with the request.
+        @raises NotAuthenticatedError: If no user is authenticated.
         """
-        if self.checkAuthentication(request):
-            return
+        self.checkAuthentication(request)
 
-        authorization = request.getHeader(HeaderName.authorization.value)
-        if authorization is not None and authorization.startswith("Bearer "):
-            raise NotImplementedError()
+        if request.user is None:  # type: ignore[attr-defined]
+            authorization = request.getHeader(HeaderName.authorization.value)
+            if authorization is not None and authorization.startswith(
+                "Bearer "
+            ):
+                raise NotImplementedError()
 
+        self.requireAuthentication(request)
+
+    def requireAuthentication(self, request: IRequest) -> None:
+        """
+        Require existing authentication for the given request.
+
+        @raises NotAuthenticatedError: If no user is authenticated.
+        """
         if request.user is None:  # type: ignore[attr-defined]
             self._log.debug("Authentication failed")
             raise NotAuthenticatedError("No user logged in")
@@ -276,7 +285,7 @@ class AuthProvider:
         Determine whether the user attached to a request has the required
         authorizations in the context of a given event.
         """
-        self.authenticateRequest(request)
+        await self.authenticateRequest(request)
 
         userAuthorizations = await self.authorizationsForUser(
             request.user, eventID  # type: ignore[attr-defined]
