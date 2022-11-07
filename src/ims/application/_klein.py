@@ -383,9 +383,7 @@ class Router(Klein):
             # Require authentication.
             # This is because exposing what resources do or do not exist can
             # expose information that was not meant to be exposed.
-            authProvider = app.config.authProvider
-            authProvider.checkAuthentication(request)
-            authProvider.requireAuthentication()
+            app.config.authProvider.authenticateRequest(request)
             return notFoundResponse(request)
 
         @self.handle_errors(MethodNotAllowed)
@@ -399,9 +397,7 @@ class Router(Klein):
             # Require authentication.
             # This is because exposing what resources do or do not exist can
             # expose information that was not meant to be exposed.
-            authProvider = app.config.authProvider
-            authProvider.checkAuthentication(request)
-            authProvider.requireAuthentication()
+            app.config.authProvider.authenticateRequest(request)
             return methodNotAllowedResponse(request)
 
         @self.handle_errors(NotAuthorizedError)

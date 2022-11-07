@@ -167,7 +167,7 @@ class AuthProvider:
                 user = getattr(session, "user", None)
                 request.user = user  # type: ignore[attr-defined]
 
-    async def authenticateRequest(self, request: IRequest) -> None:
+    def authenticateRequest(self, request: IRequest) -> None:
         """
         Authenticate a request's user.
 
@@ -177,21 +177,6 @@ class AuthProvider:
         """
         self.checkAuthentication(request)
 
-        if request.user is None:  # type: ignore[attr-defined]
-            authorization = request.getHeader(HeaderName.authorization.value)
-            if authorization is not None and authorization.startswith(
-                "Bearer "
-            ):
-                raise NotImplementedError()
-
-        self.requireAuthentication(request)
-
-    def requireAuthentication(self, request: IRequest) -> None:
-        """
-        Require existing authentication for the given request.
-
-        @raises NotAuthenticatedError: If no user is authenticated.
-        """
         if request.user is None:  # type: ignore[attr-defined]
             self._log.debug("Authentication failed")
             raise NotAuthenticatedError("No user logged in")
@@ -287,7 +272,7 @@ class AuthProvider:
         Determine whether the user attached to a request has the required
         authorizations in the context of a given event.
         """
-        await self.authenticateRequest(request)
+        self.authenticateRequest(request)
 
         userAuthorizations = await self.authorizationsForUser(
             request.user, eventID  # type: ignore[attr-defined]
