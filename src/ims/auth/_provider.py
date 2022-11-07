@@ -144,6 +144,8 @@ class AuthProvider:
                 iat=int(now.timestamp()),  # Issued at
                 # jti=None,  # JWT ID
                 preferred_username=user.shortNames[0],
+                bmp_ranger_on_site=user.active,
+                bmp_ranger_positions=",".join(user.groups),
             ),
         )
         token.make_signed_token(self._jwtSecret)
