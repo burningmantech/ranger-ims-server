@@ -156,6 +156,33 @@ class JSONWebTokenClaims:
 
 
 @frozen(kw_only=True)
+class JSONWebToken:
+    """
+    JSON Web Token
+    """
+
+    _log: ClassVar[Logger] = Logger()
+
+    @classmethod
+    def fromText(cls, tokenText: str, secret: object) -> "JSONWebToken":
+        """
+        Create a token from text.
+        """
+        try:
+            jwt = JWT(jwt=tokenText, key=secret)
+        except InvalidJWSSignature as e:
+            raise InvalidCredentialsError("Invalid JWT token") from e
+
+        return cls(jwt=jwt)
+
+    _jwt: JWT
+
+    @property
+    def claims(self) -> JSONWebTokenClaims:
+        return jsonConverter.loads(self._jwt.claims, JSONWebTokenClaims)
+
+
+@frozen(kw_only=True)
 class AuthProvider:
     """
     Provider for authentication and authorization support.
@@ -179,7 +206,7 @@ class AuthProvider:
     adminUsers: frozenset[str] = frozenset()
     masterKey: str = ""
 
-    _state: _State = field(factory=_State)
+    _state: _State = field(factory=_State, init=False, repr=False)
 
     async def verifyPassword(self, user: IMSUser, password: str) -> bool:
         """
@@ -252,34 +279,34 @@ class AuthProvider:
         if not authorization:
             return None
 
-        token = authorization.removeprefix("Bearer ")
+        tokenText = authorization.removeprefix("Bearer ")
 
-        if token is authorization:  # Prefix doesn't match
+        if tokenText is authorization:  # Prefix doesn't match
             return None
 
         try:
-            jwt = JWT(jwt=token, key=self._jwtSecret)
+            jwt = JSONWebToken.fromText(tokenText, self._jwtSecret)
         except InvalidJWSSignature as e:
             self._log.info(
                 "Invalid JWT signature in authorization header", error=e
             )
-            raise InvalidCredentialsError("Invalid JWT token") from e
-        else:
-            claims = jsonConverter.loads(jwt.claims, JSONWebTokenClaims)
-            claims.validate(issuer=self._jwtIssuer)
-            self._log.debug(
-                "Valid JWT token for subject {subject}", subject=claims.sub
-            )
+            raise
 
-            return IMSUser(
-                uid=IMSUserID(claims.sub),
-                shortNames=(claims.preferred_username,),
-                active=claims.ranger_on_site,
-                groups=tuple(
-                    IMSGroupID(gid)
-                    for gid in claims.ranger_positions.split(",")
-                ),
-            )
+        claims = jwt.claims
+        claims.validate(issuer=self._jwtIssuer)
+
+        self._log.debug(
+            "Valid JWT token for subject {subject}", subject=claims.sub
+        )
+
+        return IMSUser(
+            uid=IMSUserID(claims.sub),
+            shortNames=(claims.preferred_username,),
+            active=claims.ranger_on_site,
+            groups=tuple(
+                IMSGroupID(gid) for gid in claims.ranger_positions.split(",")
+            ),
+        )
 
     def checkAuthentication(self, request: IRequest) -> None:
         """

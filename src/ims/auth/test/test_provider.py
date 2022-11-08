@@ -44,7 +44,12 @@ from ims.store.sqlite import DataStore as SQLiteDataStore
 
 from ...directory import IMSGroupID, IMSUser, IMSUserID
 from .._exceptions import InvalidCredentialsError
-from .._provider import Authorization, AuthProvider, JSONWebTokenClaims
+from .._provider import (
+    Authorization,
+    AuthProvider,
+    JSONWebToken,
+    JSONWebTokenClaims,
+)
 
 
 __all__ = ()
@@ -155,7 +160,7 @@ class JSONWebTokenClaimsTests(TestCase):
     Tests for :class:`JSONWebTokenClaims`
     """
 
-    now = 100000000
+    now = 1000000000
 
     def test_now_float(self) -> None:
         self.assertEqual(JSONWebTokenClaims._now(self.now), self.now)
@@ -218,6 +223,55 @@ class JSONWebTokenClaimsTests(TestCase):
         JSONWebTokenClaims.validate with valid claim doesn't raise.
         """
         self.token().validate(issuer="my-issuer", now=self.now)
+
+
+class JSONWebTokenTests(TestCase):
+    """
+    Tests for :class:`JSONWebToken`
+    """
+
+    def test_fromText(self) -> None:
+        # {
+        #     "iss": "my-issuer",
+        #     "iat": 1000000000,
+        #     "exp": 5000000000,
+        #     "sub": "some-uid",
+        #     "preferred_username": "some-user",
+        #     "ranger_on_site": true,
+        #     "ranger_positions": "some-position,another-position"
+        # }
+        tokenText = (
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1pc3N1ZXIiLC"
+            "JpYXQiOjEwMDAwMDAwMDAsImV4cCI6NTAwMDAwMDAwMCwic3ViIjoic29tZS11a"
+            "WQiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzb21lLXVzZXIiLCJyYW5nZXJfb25f"
+            "c2l0ZSI6dHJ1ZSwicmFuZ2VyX3Bvc2l0aW9ucyI6InNvbWUtcG9zaXRpb24sYW5"
+            "vdGhlci1wb3NpdGlvbiJ9.xFkqa5ZSejA0RGmwuPtiYwjsPyjubXwKwdqhuwOiS8w"
+        )
+        jwt = JSONWebToken.fromText(tokenText, JWK.from_password("sekret"))
+        claims = jwt.claims
+
+        self.assertEqual(claims.iss, "my-issuer")
+        self.assertEqual(claims.iat, 1000000000)
+        self.assertEqual(claims.exp, 5000000000)
+        self.assertEqual(claims.sub, "some-uid")
+        self.assertEqual(claims.preferred_username, "some-user")
+        self.assertEqual(claims.ranger_on_site, True)
+        self.assertEqual(
+            claims.ranger_positions, "some-position,another-position"
+        )
+
+    def test_fromText_badKey(self) -> None:
+        tokenText = (
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1pc3N1ZXIiLC"
+            "JpYXQiOjEwMDAwMDAwMDAsImV4cCI6NTAwMDAwMDAwMCwic3ViIjoic29tZS11a"
+            "WQiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzb21lLXVzZXIiLCJyYW5nZXJfb25f"
+            "c2l0ZSI6dHJ1ZSwicmFuZ2VyX3Bvc2l0aW9ucyI6InNvbWUtcG9zaXRpb24sYW5"
+            "vdGhlci1wb3NpdGlvbiJ9.xFkqa5ZSejA0RGmwuPtiYwjsPyjubXwKwdqhuwOiS8w"
+        )
+        self.assertRaises(
+            InvalidCredentialsError,
+            JSONWebToken.fromText, tokenText, JWK.from_password("XYZZY"),
+        )
 
 
 class AuthProviderTests(TestCase):

@@ -171,7 +171,7 @@ class FileDirectory(IMSDirectory):
     path: Path
     checkInterval = 1.0  # Don't restat the file more often than this (seconds)
 
-    _state: _State = field(factory=_State, repr=False)
+    _state: _State = field(factory=_State, init=False, repr=False)
 
     def _mtime(self) -> float:
         return self.path.stat().st_mtime
