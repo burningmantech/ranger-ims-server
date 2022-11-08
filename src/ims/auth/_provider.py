@@ -212,17 +212,23 @@ class AuthProvider:
             if subject is None:
                 raise InvalidCredentialsError("JWT token has no subject")
 
-            userName = claims.get("preferred_username")
-            if userName is None:
-                userName = False
+            preferredUserName = claims.get("preferred_username")
+            if preferredUserName is None:
+                raise InvalidCredentialsError(
+                    "JWT token has no preferred username"
+                )
 
             onSite = claims.get("bmp_ranger_on_site")
             if onSite is None:
-                onSite = False
+                active = False
+            else:
+                active = bool(onSite)
 
             positions = claims.get("bmp_ranger_positions")
             if positions is None:
-                positions = False
+                groups = ()
+            else:
+                groups = tuple(IMSGroupID(gid) for gid in positions.split(","))
 
             self._log.debug(
                 "Valid JWT token for subject {subject}", subject=subject
@@ -230,9 +236,9 @@ class AuthProvider:
 
             return IMSUser(
                 uid=IMSUserID(subject),
-                shortNames=(userName,),
-                active=bool(onSite),
-                groups=tuple(IMSGroupID(gid) for gid in positions.split(",")),
+                shortNames=(preferredUserName,),
+                active=active,
+                groups=groups,
             )
 
     def checkAuthentication(self, request: IRequest) -> None:
@@ -240,7 +246,7 @@ class AuthProvider:
         Check whether the request has previously been authenticated, and if so,
         set request.user.
         """
-        if request.user is None:  # type: ignore[attr-defined]
+        if getattr(request, "user", None) is None:
             authorization = request.getHeader(HeaderName.authorization.value)
             user = self._userFromBearerAuthorization(authorization)
 
@@ -260,7 +266,7 @@ class AuthProvider:
         """
         self.checkAuthentication(request)
 
-        if request.user is None:  # type: ignore[attr-defined]
+        if getattr(request, "user", None) is None:
             self._log.debug("Authentication failed")
             raise NotAuthenticatedError("No user logged in")
 
