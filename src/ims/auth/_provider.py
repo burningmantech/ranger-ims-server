@@ -26,6 +26,7 @@ from time import time
 from typing import Any, ClassVar
 
 from attrs import field, frozen, mutable
+from attrs.validators import instance_of
 from cattrs.preconf.json import make_converter as makeJSONConverter
 from jwcrypto.jwk import JWK
 from jwcrypto.jws import InvalidJWSSignature
@@ -82,13 +83,27 @@ class JSONWebTokenClaims:
     Claims made by a JSON web token.
     """
 
-    iss: str  # issuer
-    iat: int  # issued timestamp
-    exp: int  # expiration timestamp
-    sub: str  # subject
-    preferred_username: str  # preferred username
-    ranger_on_site: bool  # on site (actively working)
-    ranger_positions: str  # positions
+    @staticmethod
+    def _now(now: float | None) -> float:
+        if now is None:
+            return time()
+        else:
+            return now
+
+    # issuer
+    iss: str = field(validator=instance_of(str))
+    # issued timestamp
+    iat: float = field(validator=instance_of((int, float)))
+    # expiration timestamp
+    exp: float = field(validator=instance_of((int, float)))
+    # subject
+    sub: str = field(validator=instance_of(str))
+    # preferred username
+    preferred_username: str = field(validator=instance_of(str))
+    # on site (actively working)
+    ranger_on_site: bool = field(validator=instance_of(bool))
+    # positions
+    ranger_positions: str = field(validator=instance_of(str))
 
     def validateIssuer(self, issuer: str) -> None:
         """
@@ -101,40 +116,41 @@ class JSONWebTokenClaims:
                 f"JWT token was issued by {self.iss}, not {issuer}"
             )
 
-    def validateIssued(self, now: int | None = None) -> None:
+    def validateIssued(self, now: float | None = None) -> None:
         """
         Validate claim's issued time against the current time.
 
         @raise InvalidCredentialsError: if the issued time is not valid.
         """
-        if now is None:
-            now = int(time())
+        now = self._now(now)
 
-        if self.iat > time():
+        if self.iat > now:
             raise InvalidCredentialsError("JWT token was issued in the future")
 
-    def validateExpiration(self, now: int | None = None) -> None:
+    def validateExpiration(self, now: float | None = None) -> None:
         """
         Validate claim's expiration time against the current time.
 
         @raise InvalidCredentialsError: if the expiration time is not valid.
         """
-        if now is None:
-            now = int(time())
+        now = self._now(now)
 
-        if self.exp > now:
+        if self.exp < now:
             raise InvalidCredentialsError("JWT token is expired")
 
-    def validate(self, *, issuer: str, now: int | None = None) -> None:
+    def validate(
+        self, *, issuer: str | None = None, now: float | None = None
+    ) -> None:
         """
         Validate claim.
 
         @raise InvalidCredentialsError: if the claim is not valid.
         """
-        if now is None:
-            now = int(time())
+        now = self._now(now)
 
-        self.validateIssuer(issuer)
+        if issuer is not None:
+            self.validateIssuer(issuer)
+
         self.validateIssued(now)
         self.validateExpiration(now)
 

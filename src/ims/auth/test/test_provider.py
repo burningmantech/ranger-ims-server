@@ -21,6 +21,7 @@ Tests for L{ims.auth._provider}.
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 from attrs import evolve, frozen
 from hypothesis import assume, given
@@ -42,7 +43,8 @@ from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
 from ...directory import IMSGroupID, IMSUser, IMSUserID
-from .._provider import Authorization, AuthProvider
+from .._exceptions import InvalidCredentialsError
+from .._provider import Authorization, AuthProvider, JSONWebTokenClaims
 
 
 __all__ = ()
@@ -146,6 +148,76 @@ class AuthorizationTests(TestCase):
     def test_authorization_all(self) -> None:
         for authorization in Authorization:
             self.assertIn(authorization, Authorization.all)
+
+
+class JSONWebTokenClaimsTests(TestCase):
+    """
+    Tests for :class:`JSONWebTokenClaims`
+    """
+
+    now = 100000000
+
+    def test_now_float(self) -> None:
+        self.assertEqual(JSONWebTokenClaims._now(self.now), self.now)
+
+    def test_now_none(self) -> None:
+        def time() -> float:
+            return self.now
+
+        with patch("ims.auth._provider.time", time):
+            JSONWebTokenClaims._now(self.now)
+            self.assertEqual(JSONWebTokenClaims._now(None), self.now)
+
+    def token(self, **kwargs: Any) -> JSONWebTokenClaims:
+        defaults: dict[str, Any] = dict(
+            iss="my-issuer",
+            iat=self.now - 100,
+            exp=self.now + 100,
+            sub="some-uid",
+            preferred_username="some-user",
+            ranger_on_site=True,
+            ranger_positions="some-position,another-position",
+        )
+        defaults.update(kwargs)
+        return JSONWebTokenClaims(**defaults)
+
+    def test_validateIssuer(self) -> None:
+        """
+        JSONWebTokenClaims.validateIssuer catches incorrect issuer.
+        """
+        token = self.token()
+        self.assertRaises(
+            InvalidCredentialsError, token.validateIssuer, "some-other-issuer"
+        )
+        self.assertRaises(
+            InvalidCredentialsError, token.validate, issuer="some-other-issuer"
+        )
+
+    def test_validateIssued(self) -> None:
+        """
+        JSONWebTokenClaims.validateIssued catches future issue time.
+        """
+        token = self.token(iat=self.now + 1)
+        self.assertRaises(
+            InvalidCredentialsError, token.validateIssued, now=self.now
+        )
+        self.assertRaises(InvalidCredentialsError, token.validate, now=self.now)
+
+    def test_validateExpiration(self) -> None:
+        """
+        JSONWebTokenClaims.validateExpiration catches elapsed expiration time.
+        """
+        token = self.token(exp=self.now - 1)
+        self.assertRaises(
+            InvalidCredentialsError, token.validateExpiration, now=self.now
+        )
+        self.assertRaises(InvalidCredentialsError, token.validate, now=self.now)
+
+    def test_validate(self) -> None:
+        """
+        JSONWebTokenClaims.validate with valid claim doesn't raise.
+        """
+        self.token().validate(issuer="my-issuer", now=self.now)
 
 
 class AuthProviderTests(TestCase):
