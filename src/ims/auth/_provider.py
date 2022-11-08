@@ -22,20 +22,27 @@ from collections.abc import Container, Mapping
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from enum import Flag, auto
+from time import time
 from typing import Any, ClassVar
 
 from attrs import field, frozen, mutable
 from jwcrypto.jwk import JWK
+from jwcrypto.jws import InvalidJWSSignature
 from jwcrypto.jwt import JWT
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
-from ims.directory import IMSDirectory, IMSUser
+from ims.directory import IMSDirectory, IMSGroupID, IMSUser, IMSUserID
+from ims.ext.json import objectFromJSONText
 from ims.ext.klein import HeaderName
 from ims.model import IncidentReport
 from ims.store import IMSDataStore
 
-from ._exceptions import NotAuthenticatedError, NotAuthorizedError
+from ._exceptions import (
+    InvalidCredentialsError,
+    NotAuthenticatedError,
+    NotAuthorizedError,
+)
 
 
 __all__ = ()
@@ -151,6 +158,83 @@ class AuthProvider:
         token.make_signed_token(self._jwtSecret)
         return dict(token=token.serialize())
 
+    def _userFromBearerAuthorization(
+        self, authorization: str | None
+    ) -> IMSUser | None:
+        """
+        Given an Authorization header value with a bearer token, create an
+        IMSUser.
+
+        @raises InvalidCredentialsError: if the token is invalid.
+        """
+        if not authorization:
+            return None
+
+        token = authorization.removeprefix("Bearer ")
+
+        if token is authorization:  # Prefix doesn't match
+            return None
+
+        try:
+            jwt = JWT(jwt=token, key=self._jwtSecret)
+        except InvalidJWSSignature as e:
+            self._log.info(
+                "Invalid JWT signature in authorization header", error=e
+            )
+            raise InvalidCredentialsError("Invalid JWT token") from e
+        else:
+            claims = objectFromJSONText(jwt.claims)
+
+            issuer = claims.get("iss")
+            if issuer != self._jwtIssuer:
+                raise InvalidCredentialsError(
+                    f"JWT token was issued by {issuer}, "
+                    f"not {self._jwtIssuer}"
+                )
+
+            now = time()
+
+            issued = claims.get("iat")
+            if issued is None:
+                raise InvalidCredentialsError("JWT token has no issue time")
+            if issued > now:
+                raise InvalidCredentialsError(
+                    "JWT token was issued in the future"
+                )
+
+            expiration = claims.get("iat")
+            if expiration is None:
+                raise InvalidCredentialsError("JWT token has no expiration")
+            if expiration > now:
+                raise InvalidCredentialsError("JWT token is expired")
+
+            subject = claims.get("sub")
+            if subject is None:
+                raise InvalidCredentialsError("JWT token has no subject")
+
+            userName = claims.get("preferred_username")
+            if userName is None:
+                userName = False
+
+            onSite = claims.get("bmp_ranger_on_site")
+            if onSite is None:
+                onSite = False
+
+            positions = claims.get("bmp_ranger_positions")
+            if positions is None:
+                positions = False
+
+            self._log.debug(
+                "Valid JWT token for subject {subject}", subject=subject
+            )
+
+            return IMSUser(
+                uid=IMSUserID(subject),
+                shortNames=(userName,),
+                active=bool(onSite),
+                groups=tuple(IMSGroupID(gid) for gid in positions.split(",")),
+            )
+
     def checkAuthentication(self, request: IRequest) -> None:
         """
         Check whether the request has previously been authenticated, and if so,
@@ -158,14 +242,13 @@ class AuthProvider:
         """
         if request.user is None:  # type: ignore[attr-defined]
             authorization = request.getHeader(HeaderName.authorization.value)
-            if authorization is not None and authorization.startswith(
-                "Bearer "
-            ):
-                raise NotImplementedError()
-            else:
+            user = self._userFromBearerAuthorization(authorization)
+
+            if user is None:
                 session = request.getSession()
                 user = getattr(session, "user", None)
-                request.user = user  # type: ignore[attr-defined]
+
+            request.user = user  # type: ignore[attr-defined]
 
     def authenticateRequest(self, request: IRequest) -> None:
         """

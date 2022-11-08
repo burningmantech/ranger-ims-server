@@ -55,7 +55,7 @@ class IMSUser:
     shortNames: Sequence[str]
     active: bool
     groups: Sequence[IMSGroupID]
-    hashedPassword: str | None
+    hashedPassword: str | None = None
 
     def verifyPassword(self, password: str) -> bool:
         """
