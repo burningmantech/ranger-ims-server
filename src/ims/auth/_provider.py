@@ -225,10 +225,10 @@ class AuthProvider:
                 active = bool(onSite)
 
             positions = claims.get("bmp_ranger_positions")
-            if positions is None:
-                groups = ()
-            else:
+            if positions is not None:
                 groups = tuple(IMSGroupID(gid) for gid in positions.split(","))
+            else:
+                groups = ()
 
             self._log.debug(
                 "Valid JWT token for subject {subject}", subject=subject
