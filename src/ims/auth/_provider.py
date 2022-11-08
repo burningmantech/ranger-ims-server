@@ -26,6 +26,7 @@ from time import time
 from typing import Any, ClassVar
 
 from attrs import field, frozen, mutable
+from cattrs.preconf.json import make_converter as makeJSONConverter
 from jwcrypto.jwk import JWK
 from jwcrypto.jws import InvalidJWSSignature
 from jwcrypto.jwt import JWT
@@ -33,7 +34,6 @@ from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
 from ims.directory import IMSDirectory, IMSGroupID, IMSUser, IMSUserID
-from ims.ext.json import objectFromJSONText
 from ims.ext.klein import HeaderName
 from ims.model import IncidentReport
 from ims.store import IMSDataStore
@@ -46,6 +46,9 @@ from ._exceptions import (
 
 
 __all__ = ()
+
+
+jsonConverter = makeJSONConverter()
 
 
 class Authorization(Flag):
@@ -71,6 +74,69 @@ class Authorization(Flag):
         | writeIncidents
         | writeIncidentReports
     )
+
+
+@frozen(kw_only=True)
+class JSONWebTokenClaims:
+    """
+    Claims made by a JSON web token.
+    """
+
+    iss: str  # issuer
+    iat: int  # issued timestamp
+    exp: int  # expiration timestamp
+    sub: str  # subject
+    preferred_username: str  # preferred username
+    ranger_on_site: bool  # on site (actively working)
+    ranger_positions: str  # positions
+
+    def validateIssuer(self, issuer: str) -> None:
+        """
+        Validate claim's issuer against an expected issuer.
+
+        @raise InvalidCredentialsError: if the issuer is incorrect.
+        """
+        if self.iss != issuer:
+            raise InvalidCredentialsError(
+                f"JWT token was issued by {self.iss}, not {issuer}"
+            )
+
+    def validateIssued(self, now: int | None = None) -> None:
+        """
+        Validate claim's issued time against the current time.
+
+        @raise InvalidCredentialsError: if the issued time is not valid.
+        """
+        if now is None:
+            now = int(time())
+
+        if self.iat > time():
+            raise InvalidCredentialsError("JWT token was issued in the future")
+
+    def validateExpiration(self, now: int | None = None) -> None:
+        """
+        Validate claim's expiration time against the current time.
+
+        @raise InvalidCredentialsError: if the expiration time is not valid.
+        """
+        if now is None:
+            now = int(time())
+
+        if self.exp > now:
+            raise InvalidCredentialsError("JWT token is expired")
+
+    def validate(self, *, issuer: str, now: int | None = None) -> None:
+        """
+        Validate claim.
+
+        @raise InvalidCredentialsError: if the claim is not valid.
+        """
+        if now is None:
+            now = int(time())
+
+        self.validateIssuer(issuer)
+        self.validateIssued(now)
+        self.validateExpiration(now)
 
 
 @frozen(kw_only=True)
@@ -151,8 +217,8 @@ class AuthProvider:
                 iat=int(now.timestamp()),  # Issued at
                 # jti=None,  # JWT ID
                 preferred_username=user.shortNames[0],
-                bmp_ranger_on_site=user.active,
-                bmp_ranger_positions=",".join(user.groups),
+                ranger_on_site=user.active,
+                ranger_positions=",".join(user.groups),
             ),
         )
         token.make_signed_token(self._jwtSecret)
@@ -183,62 +249,20 @@ class AuthProvider:
             )
             raise InvalidCredentialsError("Invalid JWT token") from e
         else:
-            claims = objectFromJSONText(jwt.claims)
-
-            issuer = claims.get("iss")
-            if issuer != self._jwtIssuer:
-                raise InvalidCredentialsError(
-                    f"JWT token was issued by {issuer}, "
-                    f"not {self._jwtIssuer}"
-                )
-
-            now = time()
-
-            issued = claims.get("iat")
-            if issued is None:
-                raise InvalidCredentialsError("JWT token has no issue time")
-            if issued > now:
-                raise InvalidCredentialsError(
-                    "JWT token was issued in the future"
-                )
-
-            expiration = claims.get("iat")
-            if expiration is None:
-                raise InvalidCredentialsError("JWT token has no expiration")
-            if expiration > now:
-                raise InvalidCredentialsError("JWT token is expired")
-
-            subject = claims.get("sub")
-            if subject is None:
-                raise InvalidCredentialsError("JWT token has no subject")
-
-            preferredUserName = claims.get("preferred_username")
-            if preferredUserName is None:
-                raise InvalidCredentialsError(
-                    "JWT token has no preferred username"
-                )
-
-            onSite = claims.get("bmp_ranger_on_site")
-            if onSite is None:
-                active = False
-            else:
-                active = bool(onSite)
-
-            positions = claims.get("bmp_ranger_positions")
-            if positions is not None:
-                groups = tuple(IMSGroupID(gid) for gid in positions.split(","))
-            else:
-                groups = ()
-
+            claims = jsonConverter.loads(jwt.claims, JSONWebTokenClaims)
+            claims.validate(issuer=self._jwtIssuer)
             self._log.debug(
-                "Valid JWT token for subject {subject}", subject=subject
+                "Valid JWT token for subject {subject}", subject=claims.sub
             )
 
             return IMSUser(
-                uid=IMSUserID(subject),
-                shortNames=(preferredUserName,),
-                active=active,
-                groups=groups,
+                uid=IMSUserID(claims.sub),
+                shortNames=(claims.preferred_username,),
+                active=claims.ranger_on_site,
+                groups=tuple(
+                    IMSGroupID(gid)
+                    for gid in claims.ranger_positions.split(",")
+                ),
             )
 
     def checkAuthentication(self, request: IRequest) -> None:
