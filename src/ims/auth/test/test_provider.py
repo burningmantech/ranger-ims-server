@@ -230,24 +230,31 @@ class JSONWebTokenTests(TestCase):
     Tests for :class:`JSONWebToken`
     """
 
+    # {
+    #     "iss": "my-issuer",
+    #     "iat": 1000000000,
+    #     "exp": 5000000000,
+    #     "sub": "some-uid",
+    #     "preferred_username": "some-user",
+    #     "ranger_on_site": true,
+    #     "ranger_positions": "some-position,another-position"
+    # }
+    tokenText = (
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1pc3N1ZXIiLC"
+        "JpYXQiOjEwMDAwMDAwMDAsImV4cCI6NTAwMDAwMDAwMCwic3ViIjoic29tZS11a"
+        "WQiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzb21lLXVzZXIiLCJyYW5nZXJfb25f"
+        "c2l0ZSI6dHJ1ZSwicmFuZ2VyX3Bvc2l0aW9ucyI6InNvbWUtcG9zaXRpb24sYW5"
+        "vdGhlci1wb3NpdGlvbiJ9.xFkqa5ZSejA0RGmwuPtiYwjsPyjubXwKwdqhuwOiS8w"
+    )
+    tokenSecret = "sekret"
+
     def test_fromText(self) -> None:
-        # {
-        #     "iss": "my-issuer",
-        #     "iat": 1000000000,
-        #     "exp": 5000000000,
-        #     "sub": "some-uid",
-        #     "preferred_username": "some-user",
-        #     "ranger_on_site": true,
-        #     "ranger_positions": "some-position,another-position"
-        # }
-        tokenText = (
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1pc3N1ZXIiLC"
-            "JpYXQiOjEwMDAwMDAwMDAsImV4cCI6NTAwMDAwMDAwMCwic3ViIjoic29tZS11a"
-            "WQiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzb21lLXVzZXIiLCJyYW5nZXJfb25f"
-            "c2l0ZSI6dHJ1ZSwicmFuZ2VyX3Bvc2l0aW9ucyI6InNvbWUtcG9zaXRpb24sYW5"
-            "vdGhlci1wb3NpdGlvbiJ9.xFkqa5ZSejA0RGmwuPtiYwjsPyjubXwKwdqhuwOiS8w"
+        """
+        JSONWebToken.fromText() decodes a token string correctly.
+        """
+        jwt = JSONWebToken.fromText(
+            self.tokenText, key=JWK.from_password(self.tokenSecret)
         )
-        jwt = JSONWebToken.fromText(tokenText, JWK.from_password("sekret"))
         claims = jwt.claims
 
         self.assertEqual(claims.iss, "my-issuer")
@@ -260,18 +267,66 @@ class JSONWebTokenTests(TestCase):
             claims.ranger_positions, "some-position,another-position"
         )
 
-    def test_fromText_badKey(self) -> None:
-        tokenText = (
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1pc3N1ZXIiLC"
-            "JpYXQiOjEwMDAwMDAwMDAsImV4cCI6NTAwMDAwMDAwMCwic3ViIjoic29tZS11a"
-            "WQiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzb21lLXVzZXIiLCJyYW5nZXJfb25f"
-            "c2l0ZSI6dHJ1ZSwicmFuZ2VyX3Bvc2l0aW9ucyI6InNvbWUtcG9zaXRpb24sYW5"
-            "vdGhlci1wb3NpdGlvbiJ9.xFkqa5ZSejA0RGmwuPtiYwjsPyjubXwKwdqhuwOiS8w"
+    def test_fromClaims(self) -> None:
+        """
+        JSONWebToken.fromClaims() builds a token correctly.
+        """
+
+        jwt = JSONWebToken.fromClaims(
+            JSONWebTokenClaims(
+                iss="my-issuer",
+                iat=1000000000,
+                exp=5000000000,
+                sub="some-uid",
+                preferred_username="some-user",
+                ranger_on_site=True,
+                ranger_positions="some-position,another-position",
+            ),
+            key=JWK.from_password("blah"),
         )
+        claims = jwt.claims
+
+        self.assertEqual(claims.iss, "my-issuer")
+        self.assertEqual(claims.iat, 1000000000)
+        self.assertEqual(claims.exp, 5000000000)
+        self.assertEqual(claims.sub, "some-uid")
+        self.assertEqual(claims.preferred_username, "some-user")
+        self.assertEqual(claims.ranger_on_site, True)
+        self.assertEqual(
+            claims.ranger_positions, "some-position,another-position"
+        )
+
+    def test_fromText_wrongKey(self) -> None:
+        """
+        JSONWebToken.fromText() raises if the key doesn't match.
+        """
         self.assertRaises(
             InvalidCredentialsError,
-            JSONWebToken.fromText, tokenText, JWK.from_password("XYZZY"),
+            JSONWebToken.fromText,
+            self.tokenText,
+            key=JWK.from_password("XYZZY"),
         )
+
+    def test_asText(self) -> None:
+        """
+        JSONWebToken.asText() renders the token correctly.
+        """
+        claims = JSONWebTokenClaims(
+            iss="my-issuer",
+            iat=1000000000,
+            exp=5000000000,
+            sub="some-uid",
+            preferred_username="some-user",
+            ranger_on_site=True,
+            ranger_positions="some-position,another-position",
+        )
+        key = key = JWK.from_password(self.tokenSecret)
+        jwt = JSONWebToken.fromClaims(claims, key=key)
+        jwtText = jwt.asText()
+
+        # Parse the text again so we can compare the claims
+        jwtFromText = JSONWebToken.fromText(jwtText, key=key)
+        self.assertEqual(jwtFromText.claims, jwt.claims)
 
 
 class AuthProviderTests(TestCase):

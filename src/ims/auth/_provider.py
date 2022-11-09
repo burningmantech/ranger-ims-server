@@ -23,9 +23,9 @@ from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from enum import Flag, auto
 from time import time
-from typing import Any, ClassVar
+from typing import Any, ClassVar, cast
 
-from attrs import field, frozen, mutable
+from attrs import asdict, field, frozen, mutable
 from attrs.validators import instance_of
 from cattrs.preconf.json import make_converter as makeJSONConverter
 from jwcrypto.jwk import JWK
@@ -154,6 +154,9 @@ class JSONWebTokenClaims:
         self.validateIssued(now)
         self.validateExpiration(now)
 
+    def asJSON(self) -> dict[str, Any]:
+        return asdict(self)
+
 
 @frozen(kw_only=True)
 class JSONWebToken:
@@ -164,14 +167,26 @@ class JSONWebToken:
     _log: ClassVar[Logger] = Logger()
 
     @classmethod
-    def fromText(cls, tokenText: str, secret: object) -> "JSONWebToken":
+    def fromText(cls, tokenText: str, *, key: object) -> "JSONWebToken":
         """
         Create a token from text.
         """
         try:
-            jwt = JWT(jwt=tokenText, key=secret)
+            jwt = JWT(jwt=tokenText, key=key)
         except InvalidJWSSignature as e:
             raise InvalidCredentialsError("Invalid JWT token") from e
+
+        return cls(jwt=jwt)
+
+    @classmethod
+    def fromClaims(
+        cls, claims: JSONWebTokenClaims, *, key: object
+    ) -> "JSONWebToken":
+        """
+        Create a token from text.
+        """
+        jwt = JWT(header=dict(typ="JWT", alg="HS256"), claims=claims.asJSON())
+        jwt.make_signed_token(key)
 
         return cls(jwt=jwt)
 
@@ -180,6 +195,9 @@ class JSONWebToken:
     @property
     def claims(self) -> JSONWebTokenClaims:
         return jsonConverter.loads(self._jwt.claims, JSONWebTokenClaims)
+
+    def asText(self) -> str:
+        return cast(str, self._jwt.serialize())
 
 
 @frozen(kw_only=True)
@@ -248,24 +266,19 @@ class AuthProvider:
         """
         now = DateTime.now()
         expiration = now + duration
-
-        token = JWT(
-            header=dict(typ="JWT", alg="HS256"),
-            claims=dict(
-                iss=self._jwtIssuer,  # Issuer
-                sub=user.uid,  # Subject
-                # aud=None, # Audience
-                exp=int(expiration.timestamp()),  # Expiration
-                # nbf=None,  # Not before
-                iat=int(now.timestamp()),  # Issued at
-                # jti=None,  # JWT ID
+        jwt = JSONWebToken.fromClaims(
+            JSONWebTokenClaims(
+                iss=self._jwtIssuer,
+                iat=int(now.timestamp()),
+                exp=int(expiration.timestamp()),
+                sub=user.uid,
                 preferred_username=user.shortNames[0],
                 ranger_on_site=user.active,
                 ranger_positions=",".join(user.groups),
             ),
+            key=self._jwtSecret,
         )
-        token.make_signed_token(self._jwtSecret)
-        return dict(token=token.serialize())
+        return dict(token=jwt.asText())
 
     def _userFromBearerAuthorization(
         self, authorization: str | None
@@ -285,7 +298,7 @@ class AuthProvider:
             return None
 
         try:
-            jwt = JSONWebToken.fromText(tokenText, self._jwtSecret)
+            jwt = JSONWebToken.fromText(tokenText, key=self._jwtSecret)
         except InvalidJWSSignature as e:
             self._log.info(
                 "Invalid JWT signature in authorization header", error=e
