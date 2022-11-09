@@ -44,7 +44,7 @@ from twisted.web.iweb import IRequest
 
 from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
-from ims.directory import DirectoryError, RangerUser
+from ims.directory import DirectoryError, IMSUser
 from ims.ext.json import (
     jsonTextFromObject,
     objectFromJSONBytesIO,
@@ -253,7 +253,7 @@ class APIApplication:
         """
         Incident types endpoint.
         """
-        await self.config.authProvider.authenticateRequest(request)
+        self.config.authProvider.authenticateRequest(request)
 
         hidden = queryValue(request, "hidden") == "true"
 
@@ -317,7 +317,7 @@ class APIApplication:
         """
         Events endpoint.
         """
-        await self.config.authProvider.authenticateRequest(request)
+        self.config.authProvider.authenticateRequest(request)
 
         authorizationsForUser = partial(
             self.config.authProvider.authorizationsForUser,
@@ -409,7 +409,7 @@ class APIApplication:
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
 
-        user: RangerUser = request.user  # type: ignore[attr-defined]
+        user: IMSUser = request.user  # type: ignore[attr-defined]
         author = user.shortNames[0]
         now = DateTime.now(TimeZone.utc)
         jsonNow = jsonObjectFromModelObject(now)
@@ -552,7 +552,7 @@ class APIApplication:
             request, event_id, Authorization.writeIncidents
         )
 
-        user: RangerUser = request.user  # type: ignore[attr-defined]
+        user: IMSUser = request.user  # type: ignore[attr-defined]
         author = user.shortNames[0]
 
         try:
@@ -726,11 +726,11 @@ class APIApplication:
 
         incidentReports: Iterable[IncidentReport]
         if limitedAccess:
-            user: RangerUser = request.user  # type: ignore[attr-defined]
+            user: IMSUser = request.user  # type: ignore[attr-defined]
             incidentReports = (
                 incidentReport
                 for incidentReport in await store.incidentReports(event_id)
-                if user.ranger.handle
+                if user.shortNames[0]
                 in (entry.author for entry in incidentReport.reportEntries)
             )
         elif incidentNumberText is None:
@@ -786,7 +786,7 @@ class APIApplication:
                 f"{json[IncidentReportJSONKey.incidentNumber.value]}",
             )
 
-        user: RangerUser = request.user  # type: ignore[attr-defined]
+        user: IMSUser = request.user  # type: ignore[attr-defined]
         author = user.shortNames[0]
         now = DateTime.now(TimeZone.utc)
         jsonNow = jsonObjectFromModelObject(now)
@@ -880,7 +880,7 @@ class APIApplication:
         try:
             incidentReportNumber = int(number)
         except ValueError:
-            await self.config.authProvider.authenticateRequest(request)
+            self.config.authProvider.authenticateRequest(request)
             return notFoundResponse(request)
         del number
 
@@ -907,7 +907,7 @@ class APIApplication:
             request, event_id, Authorization.writeIncidentReports
         )
 
-        user: RangerUser = request.user  # type: ignore[attr-defined]
+        user: IMSUser = request.user  # type: ignore[attr-defined]
         author = user.shortNames[0]
 
         try:

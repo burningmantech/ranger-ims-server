@@ -33,7 +33,7 @@ from ims.ext.trial import TestCase
 from ims.model import Position, Ranger, RangerStatus
 from ims.model.strategies import positions, rangers
 
-from ..._directory import DirectoryError, RangerUser
+from ..._directory import DirectoryError, IMSUser
 from .._directory import (
     FileDirectory,
     positionFromMapping,
@@ -468,9 +468,9 @@ class FileDirectoryTests(TestCase):
 
         self.assertEqual(personnel, testRangers)
 
-    def assertCorrectPositions(self, user: RangerUser) -> None:
+    def assertCorrectPositions(self, user: IMSUser) -> None:
         for name, members in testPositions:
-            if user.ranger.handle in members:
+            if user.shortNames[0] in members:
                 self.assertIn(name, user.groups)
 
     def test_lookupUser_handle(self) -> None:
@@ -478,7 +478,6 @@ class FileDirectoryTests(TestCase):
 
         for ranger in testRangers:
             user = self.successResultOf(directory.lookupUser(ranger.handle))
-            self.assertEqual(user.ranger, ranger)
             self.assertCorrectPositions(user)
 
     def test_lookupUser_email(self) -> None:
@@ -487,5 +486,4 @@ class FileDirectoryTests(TestCase):
         for ranger in testRangers:
             for email in ranger.email:
                 user = self.successResultOf(directory.lookupUser(email))
-                self.assertEqual(user.ranger, ranger)
                 self.assertCorrectPositions(user)
