@@ -34,7 +34,13 @@ from jwcrypto.jwt import JWT
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
-from ims.directory import IMSDirectory, IMSGroupID, IMSUser, IMSUserID
+from ims.directory import (
+    DirectoryUser,
+    IMSDirectory,
+    IMSGroupID,
+    IMSUser,
+    IMSUserID,
+)
 from ims.ext.klein import HeaderName
 from ims.model import IncidentReport
 from ims.store import IMSDataStore
@@ -233,21 +239,7 @@ class AuthProvider:
         if self.masterKey and password == self.masterKey:
             return True
 
-        try:
-            authenticated = user.verifyPassword(password)
-        except Exception as e:
-            self._log.critical(
-                "Unable to check password for user {user}: {error}",
-                user=user,
-                error=e,
-            )
-            authenticated = False
-
-        self._log.debug(
-            "Valid credentials for {user}: {result}",
-            user=user,
-            result=authenticated,
-        )
+        authenticated = self.directory.verifyPassword(user, password)
 
         return authenticated
 
@@ -312,7 +304,7 @@ class AuthProvider:
             "Valid JWT token for subject {subject}", subject=claims.sub
         )
 
-        return IMSUser(
+        return DirectoryUser(
             uid=IMSUserID(claims.sub),
             shortNames=(claims.preferred_username,),
             active=claims.ranger_on_site,

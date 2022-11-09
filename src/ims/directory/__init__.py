@@ -20,6 +20,7 @@ Incident Management System directory service integration.
 
 from ._directory import (
     DirectoryError,
+    DirectoryUser,
     IMSDirectory,
     IMSGroupID,
     IMSUser,
@@ -32,6 +33,7 @@ from ._directory import (
 
 __all__ = (
     "DirectoryError",
+    "DirectoryUser",
     "IMSDirectory",
     "IMSGroupID",
     "IMSUser",

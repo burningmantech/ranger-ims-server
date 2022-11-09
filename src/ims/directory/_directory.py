@@ -21,7 +21,7 @@ Incident Management System directory service integration.
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Sequence
 from hashlib import sha1
-from typing import NewType, cast
+from typing import NewType, Protocol, cast
 
 from attrs import field, frozen, mutable
 from bcrypt import gensalt
@@ -45,8 +45,20 @@ class DirectoryError(Exception):
     message: str
 
 
+class IMSUser(Protocol):
+    """
+    IMS user.
+    """
+
+    uid: IMSUserID
+    shortNames: Sequence[str]
+    active: bool
+    groups: Sequence[IMSGroupID]
+    hashedPassword: str | None
+
+
 @frozen(kw_only=True)
-class IMSUser:
+class DirectoryUser(IMSUser):
     """
     IMS user derived from a JWT payload.
     """
@@ -57,24 +69,12 @@ class IMSUser:
     groups: Sequence[IMSGroupID]
     hashedPassword: str | None = None
 
-    def verifyPassword(self, password: str) -> bool:
-        """
-        Verify whether a password is valid for the user.
-        """
-        if self.hashedPassword is None:
-            return False
-        else:
-            try:
-                return verifyPassword(password, self.hashedPassword)
-            except Exception as e:
-                raise DirectoryError(f"Unable to verify password: {e}") from e
-
 
 def userFromRanger(*, ranger: Ranger, groups: Sequence[IMSGroupID]) -> IMSUser:
     """
     Create an IMS user from a Ranger.
     """
-    return IMSUser(
+    return DirectoryUser(
         uid=IMSUserID(ranger.handle),
         shortNames=(ranger.handle,),
         active=ranger.enabled,
@@ -99,6 +99,12 @@ class IMSDirectory(ABC):
         """
         Look up all personnel.
         """
+
+    def verifyPassword(self, user: IMSUser, password: str) -> bool:
+        if user.hashedPassword is None:
+            return False
+        else:
+            return verifyPassword(password, user.hashedPassword)
 
 
 @frozen(kw_only=True)

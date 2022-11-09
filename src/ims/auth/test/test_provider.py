@@ -42,7 +42,13 @@ from ims.ext.trial import TestCase
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
-from ...directory import IMSGroupID, IMSUser, IMSUserID
+from ...directory import (
+    IMSGroupID,
+    IMSUser,
+    IMSUserID,
+    hashPassword,
+    verifyPassword,
+)
 from .._exceptions import InvalidCredentialsError
 from .._provider import (
     Authorization,
@@ -65,22 +71,28 @@ class TestUser(IMSUser):
     User for testing.
     """
 
-    def __str__(self) -> str:
-        return str(self.shortNames[0])
+    uid: IMSUserID
+    shortNames: Sequence[str]
+    active: bool
+    groups: Sequence[IMSGroupID]
+    plainTextPassword: str | None
 
-    def verifyPassword(self, password: str) -> bool:
-        assert self.hashedPassword is not None
-        return password == self.hashedPassword
+    @property
+    def hashedPassword(self) -> str | None:  # type: ignore[override]
+        if self.plainTextPassword is None:
+            return None
+        else:
+            return hashPassword(self.plainTextPassword)
 
 
 @composite
-def testUsers(draw: Callable[..., Any]) -> IMSUser:
+def testUsers(draw: Callable[..., Any]) -> TestUser:
     return TestUser(
         uid=IMSUserID(draw(text(min_size=1))),
         shortNames=tuple(draw(lists(text(min_size=1), min_size=1))),
         active=draw(booleans()),
         groups=tuple(IMSGroupID(g) for g in draw(text(min_size=1))),
-        hashedPassword=draw(one_of(none(), text())),
+        plainTextPassword=draw(one_of(none(), text())),
     )
 
 
@@ -128,15 +140,21 @@ class TestTests(TestCase):
             shortNames=shortNames,
             active=active,
             groups=groups,
-            hashedPassword=password,
+            plainTextPassword=password,
         )
 
         self.assertEqual(user.uid, uid)
         self.assertEqual(tuple(user.shortNames), tuple(shortNames))
         self.assertEqual(user.active, active)
         self.assertEqual(tuple(user.groups), tuple(groups))
+        self.assertEqual(user.plainTextPassword, password)
 
-        self.assertTrue(user.verifyPassword(password))
+        if user.plainTextPassword is not None:
+            self.assertIsNotNone(user.hashedPassword)
+            assert user.hashedPassword is not None
+            self.assertTrue(
+                verifyPassword(user.plainTextPassword, user.hashedPassword)
+            )
 
 
 class AuthorizationTests(TestCase):
@@ -364,30 +382,30 @@ class AuthProviderTests(TestCase):
         self.assertTrue(authenticated)
 
     @given(testUsers())
-    def test_verifyPassword_match(self, user: IMSUser) -> None:
+    def test_verifyPassword_match(self, user: TestUser) -> None:
         """
         AuthProvider.verifyPassword() returns True when the user's password is
         a match.
         """
-        assume(user.hashedPassword is not None)
-        assert user.hashedPassword is not None
+        assume(user.plainTextPassword is not None)
+        assert user.plainTextPassword is not None
 
         provider = AuthProvider(store=self.store(), directory=self.directory())
 
         authenticated = self.successResultOf(
-            provider.verifyPassword(user, user.hashedPassword)
+            provider.verifyPassword(user, user.plainTextPassword)
         )
         self.assertTrue(authenticated)
 
     @given(testUsers(), text())
     def test_verifyPassword_mismatch(
-        self, user: IMSUser, notPassword: str
+        self, user: TestUser, notPassword: str
     ) -> None:
         """
         AuthProvider.verifyPassword() returns False when the user's password is
         not a match.
         """
-        assume(user.hashedPassword != notPassword)
+        assume(user.plainTextPassword != notPassword)
 
         provider = AuthProvider(store=self.store(), directory=self.directory())
 
@@ -402,7 +420,7 @@ class AuthProviderTests(TestCase):
         AuthProvider.verifyPassword() returns False when the user's password is
         None.
         """
-        user = evolve(user, hashedPassword=None)
+        user = evolve(user, plainTextPassword=None)
         provider = AuthProvider(store=self.store(), directory=self.directory())
 
         authenticated = self.successResultOf(
