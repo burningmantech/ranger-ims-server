@@ -34,7 +34,11 @@ from werkzeug.exceptions import MethodNotAllowed, NotFound
 from werkzeug.routing import RequestRedirect
 
 from ims import __version__ as version
-from ims.auth import NotAuthenticatedError, NotAuthorizedError
+from ims.auth import (
+    InvalidCredentialsError,
+    NotAuthenticatedError,
+    NotAuthorizedError,
+)
 from ims.config import URLs
 from ims.directory import DirectoryError
 from ims.ext.klein import ContentType, HeaderName
@@ -347,9 +351,7 @@ class Router(Klein):
                 # Capture authentication info if sent by the client, (ie. it's
                 # been previously asked to authenticate), so we can log it, but
                 # don't require authentication.
-                app.config.authProvider.authenticateRequest(
-                    request, optional=True
-                )
+                app.config.authProvider.checkAuthentication(request)
 
                 return f(app, request, *args, **kwargs)
 
@@ -405,6 +407,16 @@ class Router(Klein):
         ) -> KleinRenderable:
             """
             Not authorized.
+            """
+            return forbiddenResponse(request)
+
+        @self.handle_errors(InvalidCredentialsError)
+        @renderResponse
+        def invalidCredentialsError(
+            app: Any, request: IRequest, failure: Failure
+        ) -> KleinRenderable:
+            """
+            Invalid credentials.
             """
             return forbiddenResponse(request)
 

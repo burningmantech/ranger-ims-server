@@ -56,7 +56,7 @@ class AuthApplication:
         """
         Endpoint for the login page.
         """
-        self.config.authProvider.authenticateRequest(request, optional=True)
+        self.config.authProvider.checkAuthentication(request)
 
         from ims.element.login import LoginPage
 

@@ -24,7 +24,7 @@ from typing import ClassVar
 from attrs import frozen
 from twisted.logger import Logger
 
-from ims.directory import IMSDirectory, IMSGroupID, IMSUser, RangerUser
+from ims.directory import IMSDirectory, IMSGroupID, IMSUser, userFromRanger
 from ims.model import Ranger
 
 from ._dms import DutyManagementSystem
@@ -70,4 +70,4 @@ class DMSDirectory(IMSDirectory):
             if ranger in position.members
         )
 
-        return RangerUser(ranger=ranger, groups=groups)
+        return userFromRanger(ranger=ranger, groups=groups)

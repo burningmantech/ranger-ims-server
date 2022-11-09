@@ -22,22 +22,40 @@ from collections.abc import Container, Mapping
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from enum import Flag, auto
-from typing import Any, ClassVar
+from time import time
+from typing import Any, ClassVar, cast
 
-from attrs import field, frozen, mutable
+from attrs import asdict, field, frozen, mutable
+from attrs.validators import instance_of
+from cattrs.preconf.json import make_converter as makeJSONConverter
 from jwcrypto.jwk import JWK
+from jwcrypto.jws import InvalidJWSSignature
 from jwcrypto.jwt import JWT
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
-from ims.directory import IMSDirectory, IMSUser, RangerUser
+from ims.directory import (
+    DirectoryUser,
+    IMSDirectory,
+    IMSGroupID,
+    IMSUser,
+    IMSUserID,
+)
+from ims.ext.klein import HeaderName
 from ims.model import IncidentReport
 from ims.store import IMSDataStore
 
-from ._exceptions import NotAuthenticatedError, NotAuthorizedError
+from ._exceptions import (
+    InvalidCredentialsError,
+    NotAuthenticatedError,
+    NotAuthorizedError,
+)
 
 
 __all__ = ()
+
+
+jsonConverter = makeJSONConverter()
 
 
 class Authorization(Flag):
@@ -66,6 +84,129 @@ class Authorization(Flag):
 
 
 @frozen(kw_only=True)
+class JSONWebTokenClaims:
+    """
+    Claims made by a JSON web token.
+    """
+
+    @staticmethod
+    def _now(now: float | None) -> float:
+        if now is None:
+            return time()
+        else:
+            return now
+
+    # issuer
+    iss: str = field(validator=instance_of(str))
+    # issued timestamp
+    iat: float = field(validator=instance_of((int, float)))
+    # expiration timestamp
+    exp: float = field(validator=instance_of((int, float)))
+    # subject
+    sub: str = field(validator=instance_of(str))
+    # preferred username
+    preferred_username: str = field(validator=instance_of(str))
+    # on site (actively working)
+    ranger_on_site: bool = field(validator=instance_of(bool))
+    # positions
+    ranger_positions: str = field(validator=instance_of(str))
+
+    def validateIssuer(self, issuer: str) -> None:
+        """
+        Validate claim's issuer against an expected issuer.
+
+        @raise InvalidCredentialsError: if the issuer is incorrect.
+        """
+        if self.iss != issuer:
+            raise InvalidCredentialsError(
+                f"JWT token was issued by {self.iss}, not {issuer}"
+            )
+
+    def validateIssued(self, now: float | None = None) -> None:
+        """
+        Validate claim's issued time against the current time.
+
+        @raise InvalidCredentialsError: if the issued time is not valid.
+        """
+        now = self._now(now)
+
+        if self.iat > now:
+            raise InvalidCredentialsError("JWT token was issued in the future")
+
+    def validateExpiration(self, now: float | None = None) -> None:
+        """
+        Validate claim's expiration time against the current time.
+
+        @raise InvalidCredentialsError: if the expiration time is not valid.
+        """
+        now = self._now(now)
+
+        if self.exp < now:
+            raise InvalidCredentialsError("JWT token is expired")
+
+    def validate(
+        self, *, issuer: str | None = None, now: float | None = None
+    ) -> None:
+        """
+        Validate claim.
+
+        @raise InvalidCredentialsError: if the claim is not valid.
+        """
+        now = self._now(now)
+
+        if issuer is not None:
+            self.validateIssuer(issuer)
+
+        self.validateIssued(now)
+        self.validateExpiration(now)
+
+    def asJSON(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@frozen(kw_only=True)
+class JSONWebToken:
+    """
+    JSON Web Token
+    """
+
+    _log: ClassVar[Logger] = Logger()
+
+    @classmethod
+    def fromText(cls, tokenText: str, *, key: object) -> "JSONWebToken":
+        """
+        Create a token from text.
+        """
+        try:
+            jwt = JWT(jwt=tokenText, key=key)
+        except InvalidJWSSignature as e:
+            raise InvalidCredentialsError("Invalid JWT token") from e
+
+        return cls(jwt=jwt)
+
+    @classmethod
+    def fromClaims(
+        cls, claims: JSONWebTokenClaims, *, key: object
+    ) -> "JSONWebToken":
+        """
+        Create a token from text.
+        """
+        jwt = JWT(header=dict(typ="JWT", alg="HS256"), claims=claims.asJSON())
+        jwt.make_signed_token(key)
+
+        return cls(jwt=jwt)
+
+    _jwt: JWT
+
+    @property
+    def claims(self) -> JSONWebTokenClaims:
+        return jsonConverter.loads(self._jwt.claims, JSONWebTokenClaims)
+
+    def asText(self) -> str:
+        return cast(str, self._jwt.serialize())
+
+
+@frozen(kw_only=True)
 class AuthProvider:
     """
     Provider for authentication and authorization support.
@@ -89,7 +230,7 @@ class AuthProvider:
     adminUsers: frozenset[str] = frozenset()
     masterKey: str = ""
 
-    _state: _State = field(factory=_State)
+    _state: _State = field(factory=_State, init=False, repr=False)
 
     async def verifyPassword(self, user: IMSUser, password: str) -> bool:
         """
@@ -98,21 +239,7 @@ class AuthProvider:
         if self.masterKey and password == self.masterKey:
             return True
 
-        try:
-            authenticated = await user.verifyPassword(password)
-        except Exception as e:
-            self._log.critical(
-                "Unable to check password for user {user}: {error}",
-                user=user,
-                error=e,
-            )
-            authenticated = False
-
-        self._log.debug(
-            "Valid credentials for {user}: {result}",
-            user=user,
-            result=authenticated,
-        )
+        authenticated = self.directory.verifyPassword(user, password)
 
         return authenticated
 
@@ -131,39 +258,87 @@ class AuthProvider:
         """
         now = DateTime.now()
         expiration = now + duration
-
-        token = JWT(
-            header=dict(typ="JWT", alg="HS256"),
-            claims=dict(
-                iss=self._jwtIssuer,  # Issuer
-                sub=user.uid,  # Subject
-                # aud=None, # Audience
-                exp=int(expiration.timestamp()),  # Expiration
-                # nbf=None,  # Not before
-                iat=int(now.timestamp()),  # Issued at
-                # jti=None,  # JWT ID
+        jwt = JSONWebToken.fromClaims(
+            JSONWebTokenClaims(
+                iss=self._jwtIssuer,
+                iat=int(now.timestamp()),
+                exp=int(expiration.timestamp()),
+                sub=user.uid,
                 preferred_username=user.shortNames[0],
+                ranger_on_site=user.active,
+                ranger_positions=",".join(user.groups),
+            ),
+            key=self._jwtSecret,
+        )
+        return dict(token=jwt.asText())
+
+    def _userFromBearerAuthorization(
+        self, authorization: str | None
+    ) -> IMSUser | None:
+        """
+        Given an Authorization header value with a bearer token, create an
+        IMSUser.
+
+        @raises InvalidCredentialsError: if the token is invalid.
+        """
+        if not authorization:
+            return None
+
+        tokenText = authorization.removeprefix("Bearer ")
+
+        if tokenText is authorization:  # Prefix doesn't match
+            return None
+
+        try:
+            jwt = JSONWebToken.fromText(tokenText, key=self._jwtSecret)
+        except InvalidJWSSignature as e:
+            self._log.info(
+                "Invalid JWT signature in authorization header", error=e
+            )
+            raise
+
+        claims = jwt.claims
+        claims.validate(issuer=self._jwtIssuer)
+
+        self._log.debug(
+            "Valid JWT token for subject {subject}", subject=claims.sub
+        )
+
+        return DirectoryUser(
+            uid=IMSUserID(claims.sub),
+            shortNames=(claims.preferred_username,),
+            active=claims.ranger_on_site,
+            groups=tuple(
+                IMSGroupID(gid) for gid in claims.ranger_positions.split(",")
             ),
         )
-        token.make_signed_token(self._jwtSecret)
-        return dict(token=token.serialize())
 
-    def authenticateRequest(
-        self, request: IRequest, optional: bool = False
-    ) -> None:
+    def checkAuthentication(self, request: IRequest) -> None:
         """
-        Authenticate a request.
+        Check whether the request has previously been authenticated, and if so,
+        set request.user.
+        """
+        if getattr(request, "user", None) is None:
+            authorization = request.getHeader(HeaderName.authorization.value)
+            user = self._userFromBearerAuthorization(authorization)
+
+            if user is None:
+                session = request.getSession()
+                user = getattr(session, "user", None)
+
+            request.user = user  # type: ignore[attr-defined]
+
+    def authenticateRequest(self, request: IRequest) -> None:
+        """
+        Authenticate a request's user.
 
         @param request: The request to authenticate.
 
-        @param optional: If true, do not raise NotAuthenticatedError() if no
-            user is associated with the request.
+        @raises NotAuthenticatedError: If no user is authenticated.
         """
-        session = request.getSession()
-        user = getattr(session, "user", None)
-        request.user = user  # type: ignore[attr-defined]
+        self.checkAuthentication(request)
 
-        if user is None and not optional:
+        if getattr(request, "user", None) is None:
             self._log.debug("Authentication failed")
             raise NotAuthenticatedError("No user logged in")
 
@@ -288,10 +463,10 @@ class AuthProvider:
         # The author of the incident report should be allowed to read and write
         # to it.
 
-        user: RangerUser = request.user  # type: ignore[attr-defined]
+        user: IMSUser = request.user  # type: ignore[attr-defined]
 
         if user is not None and incidentReport.reportEntries:
-            rangerHandle = user.ranger.handle
+            rangerHandle = user.shortNames[0]
             for reportEntry in incidentReport.reportEntries:
                 if reportEntry.author == rangerHandle:
                     request.authorizations = (  # type: ignore[attr-defined]
