@@ -504,16 +504,16 @@ class APIApplication:
             "New incident: {json}", json=jsonObjectFromModelObject(incident)
         )
 
-        request.setHeader("Incident-Number", str(incident.number))
+        request.setHeader("X-IMS-Incident-Number", str(incident.number))
         request.setHeader(
             HeaderName.location.value,
-            f"{URLs.incidentNumber.asText()}/{incident.number}",
+            URLs.incidents.child(str(incident.number)).asText(),
         )
         return noContentResponse(request)
 
     @router.route(_unprefix(URLs.incidentNumber), methods=("HEAD", "GET"))
     async def readIncidentResource(
-        self, request: IRequest, event_id: str, number: str
+        self, request: IRequest, event_id: str, incident_number: str
     ) -> KleinRenderable:
         """
         Incident endpoint.
@@ -523,10 +523,10 @@ class APIApplication:
         )
 
         try:
-            incidentNumber = int(number)
+            incidentNumber = int(incident_number)
         except ValueError:
             return notFoundResponse(request)
-        del number
+        del incident_number
 
         try:
             incident = await self.config.store.incidentWithNumber(
@@ -543,7 +543,7 @@ class APIApplication:
 
     @router.route(_unprefix(URLs.incidentNumber), methods=("POST",))
     async def editIncidentResource(
-        self, request: IRequest, event_id: str, number: str
+        self, request: IRequest, event_id: str, incident_number: str
     ) -> KleinRenderable:
         """
         Incident edit endpoint.
@@ -556,10 +556,10 @@ class APIApplication:
         author = user.shortNames[0]
 
         try:
-            incidentNumber = int(number)
+            incidentNumber = int(incident_number)
         except ValueError:
             return notFoundResponse(request)
-        del number
+        del incident_number
 
         #
         # Get the edits requested by the client
@@ -860,26 +860,29 @@ class APIApplication:
             json=jsonObjectFromModelObject(incidentReport),
         )
 
-        request.setHeader("Incident-Report-Number", str(incidentReport.number))
+        request.setHeader(
+            "X-IMS-Incident-Report-Number",
+            str(incidentReport.number),
+        )
         request.setHeader(
             HeaderName.location.value,
-            f"{URLs.incidentNumber.asText()}/{incidentReport.number}",
+            URLs.incidentReports.child(str(incidentReport.number)).asText(),
         )
         return noContentResponse(request)
 
     @router.route(_unprefix(URLs.incidentReport), methods=("HEAD", "GET"))
     async def readIncidentReportResource(
-        self, request: IRequest, event_id: str, number: str
+        self, request: IRequest, event_id: str, incident_report_number: str
     ) -> KleinRenderable:
         """
         Incident report endpoint.
         """
         try:
-            incidentReportNumber = int(number)
+            incidentReportNumber = int(incident_report_number)
         except ValueError:
             self.config.authProvider.authenticateRequest(request)
             return notFoundResponse(request)
-        del number
+        del incident_report_number
 
         incidentReport = await self.config.store.incidentReportWithNumber(
             event_id, incidentReportNumber
@@ -895,7 +898,7 @@ class APIApplication:
 
     @router.route(_unprefix(URLs.incidentReport), methods=("POST",))
     async def editIncidentReportResource(
-        self, request: IRequest, event_id: str, number: str
+        self, request: IRequest, event_id: str, incident_report_number: str
     ) -> KleinRenderable:
         """
         Incident report edit endpoint.
@@ -908,10 +911,10 @@ class APIApplication:
         author = user.shortNames[0]
 
         try:
-            incidentReportNumber = int(number)
+            incidentReportNumber = int(incident_report_number)
         except ValueError:
             return notFoundResponse(request)
-        del number
+        del incident_report_number
 
         store = self.config.store
 
