@@ -244,7 +244,7 @@ jobs:
 
     services:
       mysql:
-        image: mariadb:10.5.12
+        image: mariadb:10.5.17
         env:
           MYSQL_ROOT_HOST: "%"
           MYSQL_ROOT_PASSWORD: ims
