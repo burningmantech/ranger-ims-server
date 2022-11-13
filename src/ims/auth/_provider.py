@@ -416,8 +416,9 @@ class AuthProvider:
                     authorizations |= Authorization.writeIncidentReports
 
         self._log.debug(
-            "Authz for {user}: {authorizations}",
+            "Authz for {user} in event {event}: {authorizations}",
             user=user,
+            event=eventID,
             authorizations=authorizations,
         )
 
