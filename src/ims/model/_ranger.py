@@ -77,7 +77,7 @@ class Ranger(ReplaceMixIn):
     enabled: bool
     directoryID: str | None
     password: str | None = field(
-        order=False, p: "\N{ZIPPER-MOUTH FACE}", default=None
+        order=False, repr=lambda p: "\N{ZIPPER-MOUTH FACE}", default=None
     )
 
     def __str__(self) -> str:
