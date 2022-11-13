@@ -67,7 +67,9 @@ class DirectoryUser(IMSUser):
     shortNames: Sequence[str]
     active: bool
     groups: Sequence[IMSGroupID]
-    hashedPassword: str | None = None
+    hashedPassword: str | None = field(
+        default=None, repr=lambda p: "\N{ZIPPER-MOUTH FACE}"
+    )
 
 
 def userFromRanger(*, ranger: Ranger, groups: Sequence[IMSGroupID]) -> IMSUser:

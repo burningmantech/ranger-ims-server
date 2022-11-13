@@ -76,7 +76,9 @@ class Ranger(ReplaceMixIn):
     email: frozenset[str] = field(converter=freezeStrings)
     enabled: bool
     directoryID: str | None
-    password: str | None = field(order=False, repr=lambda _: "*", default=None)
+    password: str | None = field(
+        order=False, p: "\N{ZIPPER-MOUTH FACE}", default=None
+    )
 
     def __str__(self) -> str:
         return f"{self.status} {self.handle} ({self.name})"
