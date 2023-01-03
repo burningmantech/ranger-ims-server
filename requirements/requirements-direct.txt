@@ -2,7 +2,7 @@ arrow==1.2.3
 attrs==22.1.0
 bcrypt==4.0.1
 cattrs==22.2.0
-cryptography==38.0.3
+cryptography==38.0.4
 hyperlink==21.0.0
 jwcrypto==1.4.2
 klein==21.8.0
