@@ -37,7 +37,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
     See :class:`SuperTestDataStore`.
     """
 
-    firstSchemaVersion: ClassVar[int] = 4
+    firstSchemaVersion: ClassVar[int] = 6
     maxIncidentNumber: ClassVar[int] = 4294967295
     exceptionClass: ClassVar[type] = MySQLError
 
