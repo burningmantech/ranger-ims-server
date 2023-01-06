@@ -35,7 +35,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e lint --notest
+          tox run -e lint --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -43,7 +43,7 @@ jobs:
           python-path: .tox/lint/*/python
 
       - name: Run Linters
-        run: tox -e lint
+        run: tox run -e lint
 
 
   mypy:
@@ -69,7 +69,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e mypy --notest
+          tox run -e mypy --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -77,7 +77,7 @@ jobs:
           python-path: .tox/mypy/*/python
 
       - name: Run Mypy
-        run: tox -e mypy
+        run: tox run -e mypy
 
 
   bandit:
@@ -103,7 +103,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e bandit --notest
+          tox run -e bandit --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -111,7 +111,7 @@ jobs:
           python-path: .tox/bandit/*/python
 
       - name: Run Bandit
-        run: tox -e bandit
+        run: tox run -e bandit
 
 
   safety:
@@ -137,7 +137,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e safety --notest
+          tox run -e safety --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -145,7 +145,7 @@ jobs:
           python-path: .tox/safety/*/python
 
       - name: Run Safety
-        run: tox -e safety
+        run: tox run -e safety
 
 
   docs:
@@ -171,7 +171,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e docs --notest
+          tox run -e docs --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -179,7 +179,7 @@ jobs:
           python-path: .tox/docs/*/python
 
       - name: Build documentation
-        run: tox -e docs
+        run: tox run -e docs
 
 
   packaging:
@@ -204,7 +204,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e packaging --notest
+          tox run -e packaging --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -212,7 +212,7 @@ jobs:
           python-path: .tox/packaging/*/python
 
       - name: Check packaging
-        run: tox -e packaging
+        run: tox run -e packaging
 
 
   unit:
@@ -293,7 +293,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e ${TOX_ENV} --notest
+          tox run -e ${TOX_ENV} --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -301,7 +301,7 @@ jobs:
           python-path: .tox/${TOX_ENV}/*/python
 
       - name: Run unit tests
-        run: tox -e ${TOX_ENV}
+        run: tox run -e ${TOX_ENV}
         env:
           IMS_TEST_MYSQL_HOST: localhost
           IMS_TEST_MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}

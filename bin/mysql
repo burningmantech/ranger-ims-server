@@ -1,0 +1,26 @@
+#!/bin/sh
+
+#
+# Run mysql in the running Docker container
+#
+
+. "$(dirname "$0")/.common.sh";
+
+env_file="${wd}/.docker_environment";
+
+if [ ! -f "${env_file}" ]; then
+    touch "${env_file}";
+fi;
+
+if [ -t 0 ]; then
+    tty_args="--interactive --tty";
+else
+    tty_args="--interactive";
+fi;
+
+exec docker exec ${tty_args}         \
+    "${mysql_container_name}" mysql  \
+    --database="${mysql_database}"   \
+    --user="${mysql_user}"           \
+    --password="${mysql_password}"   \
+    "$@";
