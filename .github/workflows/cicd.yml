@@ -21,9 +21,15 @@ jobs:
 
     steps:
 
-      - uses: step-security/harden-runner@v2.0.0
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.0.0
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
 
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -59,9 +65,15 @@ jobs:
 
     steps:
 
-      - uses: step-security/harden-runner@v2.0.0
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.0.0
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
 
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -97,9 +109,15 @@ jobs:
 
     steps:
 
-      - uses: step-security/harden-runner@v2.0.0
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.0.0
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
 
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -135,9 +153,16 @@ jobs:
 
     steps:
 
-      - uses: step-security/harden-runner@v2.0.0
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.0.0
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+            pyup.io:443
 
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -173,9 +198,15 @@ jobs:
 
     steps:
 
-      - uses: step-security/harden-runner@v2.0.0
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.0.0
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
 
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -210,9 +241,15 @@ jobs:
 
     steps:
 
-      - uses: step-security/harden-runner@v2.0.0
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.0.0
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
 
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -284,9 +321,18 @@ jobs:
 
     steps:
 
-      - uses: step-security/harden-runner@v2.0.0
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.0.0
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            codecov.io:443
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+            storage.googleapis.com:443
+            uploader.codecov.io:443
 
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -376,9 +422,19 @@ jobs:
 
     steps:
 
-      - uses: step-security/harden-runner@v2.0.0
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.0.0
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            auth.docker.io:443
+            dl-cdn.alpinelinux.org:443
+            files.pythonhosted.org:443
+            github.com:443
+            production.cloudflare.docker.com:443
+            pypi.org:443
+            registry-1.docker.io:443
 
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -407,9 +463,15 @@ jobs:
 
     steps:
 
-      - uses: step-security/harden-runner@v2.0.0
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.0.0
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            production.cloudflare.docker.com:443
+            registry-1.docker.io:443
 
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -470,7 +532,8 @@ jobs:
 
     steps:
 
-      - uses: step-security/harden-runner@v2.0.0
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.0.0
         with:
           egress-policy: audit
 
