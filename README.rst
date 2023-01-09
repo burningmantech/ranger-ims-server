@@ -29,7 +29,7 @@ Running the Test Suite
 This project uses Tox_ for running tests.
 To run all of the default test environments::
 
-    tox
+    tox run
 
 Running the Server
 ~~~~~~~~~~~~~~~~~~
@@ -49,7 +49,7 @@ To set up a configuration for development, start by copying the example configur
 
 To build and run the server (for development only)::
 
-    tox -e run
+    tox run -e exec
 
 In your browser, open http://localhost:8080/ to reach the server. Log in as any user in the ``conf/directory.yaml`` directory file. In the ``conf/imsd.conf`` sample configuration file, the users ``Hardware`` and ``Loosy`` are administrators, and in the sample directory, all users have passwords that match their handles. You'll want to log in as one of those to set up an Event.
 
