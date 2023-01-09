@@ -8,7 +8,7 @@ exceptiongroup==1.1.0
 idna==3.4
 incremental==22.10.0
 MarkupSafe==2.1.1
-packaging==22.0
+packaging==23.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.21
