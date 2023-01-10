@@ -469,10 +469,11 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            auth.docker.io:443
             github.com:443
             production.cloudflare.docker.com:443
-            registry.docker.io:443
             registry-1.docker.io:443
+            registry.docker.io:443
 
       - name: Checkout source code
         uses: actions/checkout@v3
