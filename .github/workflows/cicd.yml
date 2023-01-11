@@ -25,6 +25,7 @@ jobs:
         uses: step-security/harden-runner@v2.0.0
         with:
           disable-sudo: true
+          disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
             files.pythonhosted.org:443
@@ -69,6 +70,7 @@ jobs:
         uses: step-security/harden-runner@v2.0.0
         with:
           disable-sudo: true
+          disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
             files.pythonhosted.org:443
@@ -113,6 +115,7 @@ jobs:
         uses: step-security/harden-runner@v2.0.0
         with:
           disable-sudo: true
+          disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
             files.pythonhosted.org:443
@@ -157,6 +160,7 @@ jobs:
         uses: step-security/harden-runner@v2.0.0
         with:
           disable-sudo: true
+          disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
             files.pythonhosted.org:443
@@ -202,6 +206,7 @@ jobs:
         uses: step-security/harden-runner@v2.0.0
         with:
           disable-sudo: true
+          disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
             files.pythonhosted.org:443
@@ -245,6 +250,7 @@ jobs:
         uses: step-security/harden-runner@v2.0.0
         with:
           disable-sudo: true
+          disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
             files.pythonhosted.org:443
@@ -325,6 +331,7 @@ jobs:
         uses: step-security/harden-runner@v2.0.0
         with:
           disable-sudo: true
+          disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
             codecov.io:443
