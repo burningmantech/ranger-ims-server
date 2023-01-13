@@ -107,7 +107,7 @@ class DutyManagementSystem:
                 and not self.username
                 and not self.password
             ):
-                from .test.test_dms import DummyConnectionPool
+                from .test.dummy import DummyConnectionPool
 
                 dbpool = cast(
                     adbapi.ConnectionPool, DummyConnectionPool("Dummy")
