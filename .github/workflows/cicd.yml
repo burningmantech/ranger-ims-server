@@ -286,8 +286,6 @@ jobs:
 
     name: "Py:${{ matrix.python-version }} - ${{ matrix.os }}"
 
-    needs: [lint, mypy, docs, packaging]
-
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     continue-on-error: ${{ matrix.optional }}
@@ -421,8 +419,6 @@ jobs:
 
   docker-build:
     name: Build Docker image
-
-    needs: [unit]
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
