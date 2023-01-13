@@ -1,12 +1,12 @@
 #!/bin/sh
 
 #
-# Build the Docker container
+# Run the MySQL container
 #
 
-. "$(dirname "$0")/.common.sh";
+IMS_DB_CONTAINER_NAME="ranger-ims-db";
 
-export IMS_DB_CONTAINER_NAME="${mysql_container_name}";
+. "$(dirname "$0")/.common.sh";
 
 start_db_container;
 wait_for_db;
@@ -14,4 +14,4 @@ db_init;
 
 echo "Ready.";
 
-exec docker logs --follow "${mysql_container_name}";
+docker logs --follow "${IMS_DB_CONTAINER_NAME}";

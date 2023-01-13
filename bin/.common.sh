@@ -20,8 +20,8 @@ container_name="ranger-ims-server";
 
 # State
 host_ims_port="$("${wd}/bin/find_port")";
- db_container_name="";
-ims_container_name="";
+ db_container_name="${IMS_DB_CONTAINER_NAME:-}";
+ims_container_name="${IMS_CONTAINER_NAME:-}";
 
 
 ##
@@ -29,11 +29,11 @@ ims_container_name="";
 ##
 
 start_db_container() {
-    trap cleanup_db_container EXIT;
-
-    db_container_name="${IMS_DB_CONTAINER_NAME:-ranger-ims-db-tests_${$}}";
+    db_container_name="${IMS_DB_CONTAINER_NAME:-ranger-db_${$}}";
 
     echo "Starting database container: ${db_container_name}...";
+
+    trap cleanup_db_container EXIT;
 
     docker run                                    \
         --rm --detach                             \
@@ -56,7 +56,7 @@ wait_for_db() {
     }
 
     while true; do
-        printf "Waiting on database to start... ";
+        printf "Waiting on database ${db_container_name} to start... ";
 
         if [ -n "$(started)" ]; then
             echo "Database started.";
@@ -115,11 +115,13 @@ mysql_port () {
 ##
 
 start_ims_container() {
-    ims_container_name="ranger-ims-test_${$}";
+    wait_for_db;
 
-    trap cleanup_ims_container EXIT;
+    ims_container_name="${IMS_CONTAINER_NAME:-ranger-ims_${$}}";
 
     echo "Starting IMS application container: ${ims_container_name}...";
+
+    trap cleanup_ims_container EXIT;
 
     docker run                                         \
         --rm --detach                                  \
