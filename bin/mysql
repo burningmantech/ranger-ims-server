@@ -4,6 +4,8 @@
 # Run mysql in the running Docker container
 #
 
+export IMS_DB_HOST_NAME="localhost";
+
 . "$(dirname "$0")/.common.sh";
 
 env_file="${wd}/.docker_environment";
