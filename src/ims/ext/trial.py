@@ -175,7 +175,7 @@ class TestCase(SuperTestCase):
             )
 
         for eventDataA, eventDataB in zip(
-            sorted(imsDataA.events), sorted(imsDataB.events)
+            sorted(imsDataA.events), sorted(imsDataB.events), strict=True
         ):
             try:
                 self.assertEventDataEqual(eventDataA, eventDataB)
