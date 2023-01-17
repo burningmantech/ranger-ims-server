@@ -245,7 +245,7 @@ def printSchema(db: Connection, out: TextIO) -> None:
             colNotNull,
             colDefault,
             colPK,
-        ) in db.execute(f"pragma table_info('{tableName}');"):
+        ) in db.execute(f"pragma table_info({tableName!r});"):
             print(
                 "  {n}: {name}({type}){null}{default}{pk}".format(
                     n=rowNumber,

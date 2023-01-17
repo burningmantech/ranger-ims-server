@@ -120,7 +120,7 @@ class TestDataStoreMixIn(ABC):
         if len(reportEntriesA) != len(reportEntriesB):
             return False
 
-        for entryA, entryB in zip(reportEntriesA, reportEntriesB):
+        for entryA, entryB in zip(reportEntriesA, reportEntriesB, strict=True):
             if entryA != entryB:
                 if entryA.author != entryB.author:
                     return False
