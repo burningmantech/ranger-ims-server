@@ -4,4 +4,4 @@ mypy==0.981
 mypy-zope==0.3.11
 
 types-PyMySQL==1.0.19.1
-types-PyYAML==6.0.12.2
+types-PyYAML==6.0.12.3
