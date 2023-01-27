@@ -7,7 +7,7 @@ Deprecated==1.2.13
 exceptiongroup==1.1.0
 idna==3.4
 incremental==22.10.0
-MarkupSafe==2.1.1
+MarkupSafe==2.1.2
 packaging==23.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
