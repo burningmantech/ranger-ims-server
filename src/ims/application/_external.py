@@ -97,7 +97,7 @@ class HTTPPageGetter(http.HTTPClient):
             self.sendHeader(b"Content-Length", b"%d" % (len(data),))
 
         cookieData = []
-        for (key, value) in self.factory.headers.items():
+        for key, value in self.factory.headers.items():
             if key.lower() not in self._specialHeaders:
                 # we calculated it on our own
                 self.sendHeader(key, value)
@@ -269,7 +269,6 @@ class HTTPPageGetter(http.HTTPClient):
 
 
 class HTTPPageDownloader(HTTPPageGetter):
-
     transmittingPage = 0
 
     def handleStatus_200(self, partialContent=0):
