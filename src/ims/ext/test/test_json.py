@@ -204,7 +204,7 @@ class DateTimeTests(TestCase):
         timeZone = cast(TimeZone, dateTime.tzinfo)
         assert timeZone is not None
 
-        offset = cast(TimeDelta, timeZone.utcoffset(dateTime))
+        offset = timeZone.utcoffset(dateTime)
         assert offset is not None
 
         utcOffset = offset.total_seconds()

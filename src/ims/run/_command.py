@@ -158,7 +158,6 @@ class Command:
                 imsDataB = importer.imsData
 
                 if imsDataA != imsDataB:
-
                     if imsDataA.incidentTypes != imsDataB.incidentTypes:
                         cls.log.error(
                             "Incident Types do not match: "
