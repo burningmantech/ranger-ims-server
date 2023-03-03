@@ -53,6 +53,7 @@ from .._exceptions import InvalidCredentialsError
 from .._provider import (
     Authorization,
     AuthProvider,
+    JSONWebKey,
     JSONWebToken,
     JSONWebTokenClaims,
 )
@@ -435,21 +436,21 @@ class AuthProviderTests(TestCase):
         "unimplemented"
     )
 
-    def test_jwtSecret(self) -> None:
+    def test_jwk(self) -> None:
         """
-        AuthProvider._jwtSecret generates a JWT secret.
-        """
-        provider = AuthProvider(store=self.store(), directory=self.directory())
-
-        self.assertIsInstance(provider._jwtSecret, JWK)
-
-    def test_jwtSecret_same(self) -> None:
-        """
-        AuthProvider._jwtSecret is the same secret.
+        AuthProvider._jwk generates a JWT secret.
         """
         provider = AuthProvider(store=self.store(), directory=self.directory())
 
-        self.assertIdentical(provider._jwtSecret, provider._jwtSecret)
+        self.assertIsInstance(provider._jwk, JSONWebKey)
+
+    def test_jwk_same(self) -> None:
+        """
+        AuthProvider._jwk is the same secret.
+        """
+        provider = AuthProvider(store=self.store(), directory=self.directory())
+
+        self.assertIdentical(provider._jwk, provider._jwk)
 
     def test_matchACL_none_noUser(self) -> None:
         """
