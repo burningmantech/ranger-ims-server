@@ -29,7 +29,7 @@ from typing import cast
 from hypothesis import assume, given
 from hypothesis.strategies import lists, sampled_from, text
 
-from ims.auth import AuthProvider
+from ims.auth import AuthProvider, JSONWebKey
 from ims.directory import IMSDirectory
 from ims.directory.clubhouse_db import DMSDirectory
 from ims.directory.file import FileDirectory
@@ -631,6 +631,28 @@ class ConfigurationTests(TestCase):
 
         for value in ("true", "True", "TRUE", "yes", "Yes", "YES", "1"):
             self.assertTrue(test(value))
+
+    def test_fromConfigFile_jwtSecret(self) -> None:
+        """
+        JWTSecret value creates a corresponding key.
+        """
+
+        def test(secret: str) -> JSONWebKey:
+            with testingEnvironment(dict(JWT_SECRET=secret)):
+                config = Configuration.fromConfigFile(None)
+            return config.jsonWebKey
+
+        for secret in ("", "sekret", "BF0F468E-99C1-4E0D-8C8D-B724EED76C53"):
+            self.assertEqual(test(secret), JSONWebKey.fromSecret(secret))
+
+    def test_fromConfigFile_jwtSecret_none(self) -> None:
+        """
+        JWTSecret with no value creates a random key.
+        """
+        with testingEnvironment({}):
+            config = Configuration.fromConfigFile(None)
+
+        self.assertIsInstance(config.jsonWebKey, JSONWebKey)
 
     def test_store(self) -> None:
         with testingEnvironment({}):
