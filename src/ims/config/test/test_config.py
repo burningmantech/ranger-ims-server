@@ -632,20 +632,19 @@ class ConfigurationTests(TestCase):
         for value in ("true", "True", "TRUE", "yes", "Yes", "YES", "1"):
             self.assertTrue(test(value))
 
-    def test_fromConfigFile_jwtSecret(self) -> None:
+    @given(text(alphabet=printable, min_size=1))
+    def test_fromConfigFile_jwtSecret(self, secret: str) -> None:
         """
         JWTSecret value creates a corresponding key.
         """
-
         def test(secret: str) -> JSONWebKey:
-            with testingEnvironment(dict(JWT_SECRET=secret)):
+            with testingEnvironment(dict(IMS_JWT_SECRET=secret)):
                 config = Configuration.fromConfigFile(None)
             return config.jsonWebKey
 
-        for secret in ("", "sekret", "BF0F468E-99C1-4E0D-8C8D-B724EED76C53"):
-            self.assertEqual(test(secret), JSONWebKey.fromSecret(secret))
+        self.assertEqual(test(secret), JSONWebKey.fromSecret(secret))
 
-    def test_fromConfigFile_jwtSecret_none(self) -> None:
+    def test_fromConfigFile_jwtSecret_empty(self) -> None:
         """
         JWTSecret with no value creates a random key.
         """
