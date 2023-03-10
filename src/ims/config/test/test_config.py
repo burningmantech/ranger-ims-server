@@ -637,6 +637,7 @@ class ConfigurationTests(TestCase):
         """
         JWTSecret value creates a corresponding key.
         """
+
         def test(secret: str) -> JSONWebKey:
             with testingEnvironment(dict(IMS_JWT_SECRET=secret)):
                 config = Configuration.fromConfigFile(None)
