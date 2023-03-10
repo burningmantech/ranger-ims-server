@@ -19,6 +19,8 @@ Tests for L{ims.auth._provider}.
 """
 
 from collections.abc import Callable, Sequence
+from datetime import datetime as DateTime
+from datetime import timedelta as TimeDelta
 from pathlib import Path
 from typing import Any
 from unittest.mock import patch
@@ -33,6 +35,7 @@ from hypothesis.strategies import (
     one_of,
     sets,
     text,
+    timedeltas,
 )
 
 from ims.directory import IMSDirectory
@@ -364,11 +367,7 @@ class AuthProviderTests(TestCase):
         )
         return FileDirectory(path=path)
 
-    # @given(text(min_size=1), rangers())
-    @given(
-        testUsers(),
-        text(min_size=1),
-    )
+    @given(testUsers(), text(min_size=1))
     def test_verifyPassword_masterKey(
         self, user: IMSUser, masterKey: str
     ) -> None:
@@ -442,6 +441,48 @@ class AuthProviderTests(TestCase):
             provider.verifyPassword(user, password)
         )
         self.assertFalse(authenticated)
+
+    @given(
+        testUsers(),
+        timedeltas(
+            min_value=TimeDelta(seconds=0), max_value=TimeDelta(days=1000)
+        ),
+    )
+    def test_credentialsForUser(
+        self, user: IMSUser, duration: TimeDelta
+    ) -> None:
+        """
+        AuthProvider.credentialsForUser generates a valid token for the user.
+        """
+        jsonWebKey = JSONWebKey.generate()
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=jsonWebKey,
+        )
+
+        now = DateTime.now()
+
+        def approximateTimestamps(a: float, b: float) -> bool:
+            fuzz = 1.5
+            return b < a + fuzz and b > a - fuzz
+
+        credentials = self.successResultOf(
+            provider.credentialsForUser(user, duration)
+        )
+        tokenText = credentials.get("token")
+        token = JSONWebToken.fromText(tokenText, key=jsonWebKey)
+        claims = token.claims
+
+        self.assertEqual(claims.iss, AuthProvider._jwtIssuer)
+        self.assertTrue(approximateTimestamps(claims.iat, now.timestamp()))
+        self.assertTrue(
+            approximateTimestamps(claims.exp, (now + duration).timestamp())
+        )
+        self.assertEqual(claims.sub, user.uid)
+        self.assertEqual(claims.preferred_username, user.shortNames[0])
+        self.assertEqual(claims.ranger_on_site, user.active)
+        self.assertEqual(claims.ranger_positions, ",".join(user.groups))
 
     def test_authenticateRequest(self) -> None:
         raise NotImplementedError()
