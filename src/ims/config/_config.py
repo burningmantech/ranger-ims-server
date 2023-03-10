@@ -31,7 +31,7 @@ from typing import Any, ClassVar, cast
 from attrs import evolve, field, frozen, mutable
 from twisted.logger import Logger
 
-from ims.auth import AuthProvider
+from ims.auth import AuthProvider, JSONWebKey
 from ims.directory import IMSDirectory
 from ims.directory.clubhouse_db import DMSDirectory, DutyManagementSystem
 from ims.directory.file import FileDirectory
@@ -264,6 +264,14 @@ class Configuration:
             requireActive = True
         cls._log.info("RequireActive: {active}", active=requireActive)
 
+        jwtSecret = parser.valueFromConfig("JWT_SECRET", "Core", "JWTSecret")
+        if not jwtSecret:
+            cls._log.info("Generating random JWT key")
+            jsonWebKey = JSONWebKey.generate()
+        else:
+            cls._log.info("Generating JWT key from configured secret")
+            jsonWebKey = JSONWebKey.fromSecret(jwtSecret)
+
         storeType = parser.valueFromConfig(
             "DATA_STORE", "Core", "DataStore", "SQLite"
         )
@@ -406,42 +414,43 @@ class Configuration:
         #
 
         return cls(
-            configFile=configFile,
             cachedResourcesRoot=cachedResourcesRoot,
+            configFile=configFile,
             configRoot=configRoot,
             dataRoot=dataRoot,
             directory=directory,
             hostName=hostName,
             imsAdmins=imsAdmins,
+            jsonWebKey=jsonWebKey,
             logFilePath=logFilePath,
             logFormat=logFormat,
             logLevelName=logLevelName,
             masterKey=masterKey,
-            tokenLifetimeNormal=tokenLifetimeNormal,
-            tokenLifetimeExtended=tokenLifetimeExtended,
             port=port,
             requireActive=requireActive,
             serverRoot=serverRoot,
             storeFactory=storeFactory,
+            tokenLifetimeExtended=tokenLifetimeExtended,
+            tokenLifetimeNormal=tokenLifetimeNormal,
         )
 
-    configFile: Path | None
-
     cachedResourcesRoot: Path
+    configFile: Path | None
     configRoot: Path
     dataRoot: Path
     directory: IMSDirectory
     hostName: str
     imsAdmins: frozenset[str]
+    jsonWebKey: JSONWebKey
     logFilePath: Path
     logFormat: LogFormat
     logLevelName: str
     masterKey: str
-    tokenLifetimeNormal: TimeDelta
-    tokenLifetimeExtended: TimeDelta
     port: int
     requireActive: bool
     serverRoot: Path
+    tokenLifetimeExtended: TimeDelta
+    tokenLifetimeNormal: TimeDelta
 
     _storeFactory: Callable[[], IMSDataStore]
 
@@ -466,6 +475,7 @@ class Configuration:
             self._state.authProvider = AuthProvider(
                 store=self.store,
                 directory=self.directory,
+                jsonWebKey=self.jsonWebKey,
                 requireActive=self.requireActive,
                 adminUsers=self.imsAdmins,
                 masterKey=self.masterKey,

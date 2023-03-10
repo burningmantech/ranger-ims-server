@@ -272,7 +272,7 @@ class JSONWebTokenTests(TestCase):
         JSONWebToken.fromText() decodes a token string correctly.
         """
         jwt = JSONWebToken.fromText(
-            self.tokenText, key=JWK.from_password(self.tokenSecret)
+            self.tokenText, key=JSONWebKey.fromSecret(self.tokenSecret)
         )
         claims = jwt.claims
 
@@ -301,7 +301,7 @@ class JSONWebTokenTests(TestCase):
                 ranger_on_site=True,
                 ranger_positions="some-position,another-position",
             ),
-            key=JWK.from_password("blah"),
+            key=JSONWebKey.fromSecret("blah"),
         )
         claims = jwt.claims
 
@@ -323,7 +323,7 @@ class JSONWebTokenTests(TestCase):
             InvalidCredentialsError,
             JSONWebToken.fromText,
             self.tokenText,
-            key=JWK.from_password("XYZZY"),
+            key=JSONWebKey.fromSecret("XYZZY"),
         )
 
     def test_asText(self) -> None:
@@ -339,7 +339,7 @@ class JSONWebTokenTests(TestCase):
             ranger_on_site=True,
             ranger_positions="some-position,another-position",
         )
-        key = key = JWK.from_password(self.tokenSecret)
+        key = JSONWebKey.fromSecret(self.tokenSecret)
         jwt = JSONWebToken.fromClaims(claims, key=key)
         jwtText = jwt.asText()
 
@@ -374,7 +374,10 @@ class AuthProviderTests(TestCase):
         self, user: IMSUser, masterKey: str
     ) -> None:
         provider = AuthProvider(
-            store=self.store(), directory=self.directory(), masterKey=masterKey
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+            masterKey=masterKey,
         )
 
         authenticated = self.successResultOf(
@@ -391,7 +394,11 @@ class AuthProviderTests(TestCase):
         assume(user.plainTextPassword is not None)
         assert user.plainTextPassword is not None
 
-        provider = AuthProvider(store=self.store(), directory=self.directory())
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
 
         authenticated = self.successResultOf(
             provider.verifyPassword(user, user.plainTextPassword)
@@ -408,7 +415,11 @@ class AuthProviderTests(TestCase):
         """
         assume(user.plainTextPassword != notPassword)
 
-        provider = AuthProvider(store=self.store(), directory=self.directory())
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
 
         authenticated = self.successResultOf(
             provider.verifyPassword(user, notPassword)
@@ -422,7 +433,11 @@ class AuthProviderTests(TestCase):
         None.
         """
         user = evolve(user, plainTextPassword=None)
-        provider = AuthProvider(store=self.store(), directory=self.directory())
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
 
         authenticated = self.successResultOf(
             provider.verifyPassword(user, password)
@@ -436,27 +451,39 @@ class AuthProviderTests(TestCase):
         "unimplemented"
     )
 
-    def test_jwk(self) -> None:
+    def test_jsonWebKey(self) -> None:
         """
-        AuthProvider._jwk generates a JWT secret.
+        AuthProvider._jsonWebKey generates a JWT secret.
         """
-        provider = AuthProvider(store=self.store(), directory=self.directory())
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
 
-        self.assertIsInstance(provider._jwk, JSONWebKey)
+        self.assertIsInstance(provider._jsonWebKey, JSONWebKey)
 
-    def test_jwk_same(self) -> None:
+    def test_jsonWebKey_same(self) -> None:
         """
-        AuthProvider._jwk is the same secret.
+        AuthProvider._jsonWebKey is the same secret.
         """
-        provider = AuthProvider(store=self.store(), directory=self.directory())
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
 
-        self.assertIdentical(provider._jwk, provider._jwk)
+        self.assertIdentical(provider._jsonWebKey, provider._jsonWebKey)
 
     def test_matchACL_none_noUser(self) -> None:
         """
         AuthProvider._matchACL does not match no access with None user.
         """
-        provider = AuthProvider(store=self.store(), directory=self.directory())
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
 
         self.assertFalse(provider._matchACL(None, []))
 
@@ -465,7 +492,11 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._matchACL does not match no access with a user.
         """
-        provider = AuthProvider(store=self.store(), directory=self.directory())
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
 
         self.assertFalse(provider._matchACL(user, []))
 
@@ -473,7 +504,11 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._matchACL matches public ("**") access with None user.
         """
-        provider = AuthProvider(store=self.store(), directory=self.directory())
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
 
         self.assertTrue(provider._matchACL(None, ["**"]))
 
@@ -482,7 +517,11 @@ class AuthProviderTests(TestCase):
         """
         AuthProvider._matchACL matches public ("**") access with a user.
         """
-        provider = AuthProvider(store=self.store(), directory=self.directory())
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
 
         self.assertTrue(provider._matchACL(user, ["**"]))
 
@@ -491,7 +530,10 @@ class AuthProviderTests(TestCase):
         AuthProvider._matchACL does not match any ("*") access with None user.
         """
         provider = AuthProvider(
-            store=self.store(), directory=self.directory(), requireActive=False
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+            requireActive=False,
         )
 
         self.assertFalse(provider._matchACL(None, ["*"]))
@@ -502,7 +544,10 @@ class AuthProviderTests(TestCase):
         AuthProvider._matchACL matches any ("*") access with a user.
         """
         provider = AuthProvider(
-            store=self.store(), directory=self.directory(), requireActive=False
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+            requireActive=False,
         )
 
         self.assertTrue(provider._matchACL(user, ["*"]))
@@ -513,7 +558,10 @@ class AuthProviderTests(TestCase):
         AuthProvider._matchACL matches person access with a matching user.
         """
         provider = AuthProvider(
-            store=self.store(), directory=self.directory(), requireActive=False
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+            requireActive=False,
         )
 
         for shortName in user.shortNames:
@@ -525,7 +573,10 @@ class AuthProviderTests(TestCase):
         AuthProvider._matchACL matches group access with a matching user.
         """
         provider = AuthProvider(
-            store=self.store(), directory=self.directory(), requireActive=False
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+            requireActive=False,
         )
 
         for groupID in user.groups:
