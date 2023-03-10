@@ -34,7 +34,6 @@ from hypothesis.strategies import (
     sets,
     text,
 )
-from jwcrypto.jwk import JWK
 
 from ims.directory import IMSDirectory
 from ims.directory.file import FileDirectory
