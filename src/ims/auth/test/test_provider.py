@@ -22,11 +22,12 @@ from collections.abc import Callable, Sequence
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from pathlib import Path
+from string import ascii_letters, digits
 from typing import Any
 from unittest.mock import patch
 
 from attrs import evolve, frozen
-from hypothesis import assume, given
+from hypothesis import assume, given, note
 from hypothesis.strategies import (
     booleans,
     composite,
@@ -94,7 +95,7 @@ def testUsers(draw: Callable[..., Any]) -> TestUser:
         uid=IMSUserID(draw(text(min_size=1))),
         shortNames=tuple(draw(lists(text(min_size=1), min_size=1))),
         active=draw(booleans()),
-        groups=tuple(IMSGroupID(g) for g in draw(text(min_size=1))),
+        groups=tuple(IMSGroupID(g) for g in draw(text(min_size=1, alphabet=ascii_letters+digits+"_"))),
         plainTextPassword=draw(one_of(none(), text())),
     )
 
@@ -483,6 +484,37 @@ class AuthProviderTests(TestCase):
         self.assertEqual(claims.preferred_username, user.shortNames[0])
         self.assertEqual(claims.ranger_on_site, user.active)
         self.assertEqual(claims.ranger_positions, ",".join(user.groups))
+
+    @given(
+        testUsers(),
+        timedeltas(
+            min_value=TimeDelta(seconds=1), max_value=TimeDelta(days=1000)
+        ),
+    )
+    def test_userFromBearerAuthorization(
+        self, user: IMSUser, duration: TimeDelta
+    ) -> None:
+        """
+        AuthProvider._userFromBearerAuthorization converts a bearer token from
+        an HTTP authorization header into a user.
+        """
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
+        token = provider._tokenForUser(user, duration).asText()
+        userFromToken = provider._userFromBearerAuthorization(f"Bearer {token}")
+
+        note(f"user={user}")
+        note(f"user={userFromToken}")
+
+        self.assertEqual(userFromToken.uid, user.uid)
+        # Only the first shortName is kept
+        self.assertEqual(userFromToken.shortNames, (user.shortNames[0],))
+        self.assertEqual(userFromToken.active, user.active)
+        self.assertEqual(userFromToken.groups, user.groups)
+        self.assertEqual(userFromToken.hashedPassword, None)
 
     def test_authenticateRequest(self) -> None:
         raise NotImplementedError()

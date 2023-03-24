@@ -256,15 +256,12 @@ class AuthProvider:
 
         return authenticated
 
-    async def credentialsForUser(
+    def _tokenForUser(
         self, user: IMSUser, duration: TimeDelta
-    ) -> Mapping[str, Any]:
-        """
-        Generate a JWT token for the given user.
-        """
+    ) -> JSONWebToken:
         now = DateTime.now()
         expiration = now + duration
-        jwt = JSONWebToken.fromClaims(
+        return JSONWebToken.fromClaims(
             JSONWebTokenClaims(
                 iss=self._jwtIssuer,
                 iat=int(now.timestamp()),
@@ -276,7 +273,14 @@ class AuthProvider:
             ),
             key=self._jsonWebKey,
         )
-        return dict(token=jwt.asText())
+
+    async def credentialsForUser(
+        self, user: IMSUser, duration: TimeDelta
+    ) -> Mapping[str, Any]:
+        """
+        Generate a JWT token for the given user.
+        """
+        return dict(token=self._tokenForUser(user, duration).asText())
 
     def _userFromBearerAuthorization(
         self, authorization: str | None
