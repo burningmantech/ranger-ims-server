@@ -514,6 +514,9 @@ class AuthProviderTests(TestCase):
         note(f"user={user}")
         note(f"user={userFromToken}")
 
+        self.assertIsNotNone(userFromToken)
+        assert userFromToken is not None  # for mypy
+
         self.assertEqual(userFromToken.uid, user.uid)
         # Only the first shortName is kept
         self.assertEqual(userFromToken.shortNames, (user.shortNames[0],))
