@@ -256,9 +256,7 @@ class AuthProvider:
 
         return authenticated
 
-    def _tokenForUser(
-        self, user: IMSUser, duration: TimeDelta
-    ) -> JSONWebToken:
+    def _tokenForUser(self, user: IMSUser, duration: TimeDelta) -> JSONWebToken:
         now = DateTime.now()
         expiration = now + duration
         return JSONWebToken.fromClaims(

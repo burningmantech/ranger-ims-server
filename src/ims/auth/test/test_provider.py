@@ -95,7 +95,12 @@ def testUsers(draw: Callable[..., Any]) -> TestUser:
         uid=IMSUserID(draw(text(min_size=1))),
         shortNames=tuple(draw(lists(text(min_size=1), min_size=1))),
         active=draw(booleans()),
-        groups=tuple(IMSGroupID(g) for g in draw(text(min_size=1, alphabet=ascii_letters+digits+"_"))),
+        groups=tuple(
+            IMSGroupID(g)
+            for g in draw(
+                text(min_size=1, alphabet=ascii_letters + digits + "_")
+            )
+        ),
         plainTextPassword=draw(one_of(none(), text())),
     )
 
