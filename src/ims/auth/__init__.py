@@ -23,13 +23,14 @@ from ._exceptions import (
     NotAuthenticatedError,
     NotAuthorizedError,
 )
-from ._provider import Authorization, AuthProvider
+from ._provider import Authorization, AuthProvider, JSONWebKey
 
 
 __all__ = (
     "Authorization",
     "AuthProvider",
     "InvalidCredentialsError",
+    "JSONWebKey",
     "NotAuthenticatedError",
     "NotAuthorizedError",
 )

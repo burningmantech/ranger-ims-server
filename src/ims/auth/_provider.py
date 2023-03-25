@@ -25,7 +25,7 @@ from enum import Flag, auto
 from time import time
 from typing import Any, ClassVar, cast
 
-from attrs import asdict, field, frozen, mutable
+from attrs import asdict, field, frozen
 from attrs.validators import instance_of
 from cattrs.preconf.json import make_converter as makeJSONConverter
 from jwcrypto.jwk import JWK
@@ -81,6 +81,29 @@ class Authorization(Flag):
         | writeIncidents
         | writeIncidentReports
     )
+
+
+@frozen(kw_only=True)
+class JSONWebKey:
+    """
+    JSON Web Key
+    """
+
+    @classmethod
+    def generate(cls) -> "JSONWebKey":
+        """
+        Generate a new random key.
+        """
+        return cls(jwk=JWK.generate(kty="oct", size=256))
+
+    @classmethod
+    def fromSecret(cls, secret: str) -> "JSONWebKey":
+        """
+        Create a key from a secret.
+        """
+        return cls(jwk=JWK.from_password(secret))
+
+    _jwk: JWK
 
 
 @frozen(kw_only=True)
@@ -170,15 +193,13 @@ class JSONWebToken:
     JSON Web Token
     """
 
-    _log: ClassVar[Logger] = Logger()
-
     @classmethod
-    def fromText(cls, tokenText: str, *, key: object) -> "JSONWebToken":
+    def fromText(cls, tokenText: str, *, key: JSONWebKey) -> "JSONWebToken":
         """
         Create a token from text.
         """
         try:
-            jwt = JWT(jwt=tokenText, key=key)
+            jwt = JWT(jwt=tokenText, key=key._jwk)
         except InvalidJWSSignature as e:
             raise InvalidCredentialsError("Invalid JWT token") from e
 
@@ -186,13 +207,13 @@ class JSONWebToken:
 
     @classmethod
     def fromClaims(
-        cls, claims: JSONWebTokenClaims, *, key: object
+        cls, claims: JSONWebTokenClaims, *, key: JSONWebKey
     ) -> "JSONWebToken":
         """
         Create a token from text.
         """
         jwt = JWT(header=dict(typ="JWT", alg="HS256"), claims=claims.asJSON())
-        jwt.make_signed_token(key)
+        jwt.make_signed_token(key._jwk)
 
         return cls(jwt=jwt)
 
@@ -215,22 +236,14 @@ class AuthProvider:
     _log: ClassVar[Logger] = Logger()
     _jwtIssuer: ClassVar[str] = "ranger-ims-server"
 
-    @mutable(kw_only=True, eq=False)
-    class _State:
-        """
-        Internal mutable state for :class:`RangerDirectory`.
-        """
-
-        jwtSecret: object | None = None
-
     store: IMSDataStore
     directory: IMSDirectory
+
+    _jsonWebKey: JSONWebKey
 
     requireActive: bool = True
     adminUsers: frozenset[str] = frozenset()
     masterKey: str = ""
-
-    _state: _State = field(factory=_State, init=False, repr=False)
 
     async def verifyPassword(self, user: IMSUser, password: str) -> bool:
         """
@@ -243,22 +256,10 @@ class AuthProvider:
 
         return authenticated
 
-    @property
-    def _jwtSecret(self) -> object:
-        if self._state.jwtSecret is None:
-            self._log.info("Generating JWT secret")
-            self._state.jwtSecret = JWK.generate(kty="oct", size=256)
-        return self._state.jwtSecret
-
-    async def credentialsForUser(
-        self, user: IMSUser, duration: TimeDelta
-    ) -> Mapping[str, Any]:
-        """
-        Generate a JWT token for the given user.
-        """
+    def _tokenForUser(self, user: IMSUser, duration: TimeDelta) -> JSONWebToken:
         now = DateTime.now()
         expiration = now + duration
-        jwt = JSONWebToken.fromClaims(
+        return JSONWebToken.fromClaims(
             JSONWebTokenClaims(
                 iss=self._jwtIssuer,
                 iat=int(now.timestamp()),
@@ -268,9 +269,16 @@ class AuthProvider:
                 ranger_on_site=user.active,
                 ranger_positions=",".join(user.groups),
             ),
-            key=self._jwtSecret,
+            key=self._jsonWebKey,
         )
-        return dict(token=jwt.asText())
+
+    async def credentialsForUser(
+        self, user: IMSUser, duration: TimeDelta
+    ) -> Mapping[str, Any]:
+        """
+        Generate a JWT token for the given user.
+        """
+        return dict(token=self._tokenForUser(user, duration).asText())
 
     def _userFromBearerAuthorization(
         self, authorization: str | None
@@ -290,7 +298,7 @@ class AuthProvider:
             return None
 
         try:
-            jwt = JSONWebToken.fromText(tokenText, key=self._jwtSecret)
+            jwt = JSONWebToken.fromText(tokenText, key=self._jsonWebKey)
         except InvalidJWSSignature as e:
             self._log.info(
                 "Invalid JWT signature in authorization header", error=e
