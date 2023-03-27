@@ -5,12 +5,22 @@
 #
 
 IMS_DB_CONTAINER_NAME="ranger-ims-db";
+  IMS_DB_PUBLISH_PORT="3306";
 
 . "$(dirname "$0")/.common.sh";
 
 start_db_container;
 wait_for_db;
 db_init;
+
+if [ -n "${CLUBHOUSE_DB_DUMPFILE:-}" ]; then
+    echo "Importing Clubhouse data..."
+    gzcat "${CLUBHOUSE_DB_DUMPFILE}" | "${wd}/bin/mysql";
+fi;
+if [ -n "${IMS_DB_DUMPFILE:-}" ]; then
+    echo "Importing IMS data..."
+    gzcat "${IMS_DB_DUMPFILE}" | "${wd}/bin/mysql";
+fi;
 
 echo "Ready.";
 

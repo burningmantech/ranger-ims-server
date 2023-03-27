@@ -2,7 +2,7 @@ set -eu
 
 wd="$(cd "$(dirname "$0")/.." && pwd)";
     mysql_image_name="mariadb:10.5.12";
-mysql_container_name="ranger-ims-server_mysql";
+mysql_container_name="${IMS_DB_CONTAINER_NAME:-ranger-ims-db}";
           mysql_host="${IMS_DB_HOST_NAME:-host.docker.internal}";
       mysql_database="${IMS_DB_DATABASE:-ims}";
           mysql_user="${IMS_DB_USER_NAME:-ims}";
@@ -31,11 +31,17 @@ ims_container_name="${IMS_CONTAINER_NAME:-}";
 start_db_container() {
     db_container_name="${IMS_DB_CONTAINER_NAME:-ranger-db_${$}}";
 
+    if [ -n "${IMS_DB_PUBLISH_PORT:-}" ]; then
+        publish_arg="--publish=127.0.0.1:${IMS_DB_PUBLISH_PORT}:3306/tcp";
+    else
+        publish_arg="";
+    fi;
+
     echo "Starting database container: ${db_container_name}...";
 
     trap cleanup_db_container EXIT;
 
-    docker run                                    \
+    docker run ${publish_arg}                     \
         --rm --detach                             \
         --name="${db_container_name}"             \
         --env="MYSQL_RANDOM_ROOT_PASSWORD=yes"    \
