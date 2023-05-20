@@ -414,11 +414,11 @@ jobs:
         uses: "codecov/codecov-action@v3.1.1"
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: .tox/coverage.xml
           env_vars: GITHUB_REF,GITHUB_COMMIT,GITHUB_USER,GITHUB_WORKFLOW
           fail_ci_if_error: true
         env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           GITHUB_REF: ${{ github.ref }}
           GITHUB_COMMIT: ${{ github.sha }}
           GITHUB_USER: ${{ github.actor }}
