@@ -75,6 +75,7 @@ jobs:
           disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
@@ -120,6 +121,7 @@ jobs:
           disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
@@ -165,6 +167,7 @@ jobs:
           disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
@@ -211,6 +214,7 @@ jobs:
           disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
@@ -255,6 +259,7 @@ jobs:
           disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
@@ -334,6 +339,7 @@ jobs:
           disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             codecov.io:443
             files.pythonhosted.org:443
             github.com:443
@@ -433,6 +439,7 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             auth.docker.io:443
             dl-cdn.alpinelinux.org:443
             files.pythonhosted.org:443
@@ -474,6 +481,7 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             auth.docker.io:443
             github.com:443
             production.cloudflare.docker.com:443
