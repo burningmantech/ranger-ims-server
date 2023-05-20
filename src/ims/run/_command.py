@@ -158,7 +158,6 @@ class Command:
                 imsDataB = importer.imsData
 
                 if imsDataA != imsDataB:
-
                     if imsDataA.incidentTypes != imsDataB.incidentTypes:
                         cls.log.error(
                             "Incident Types do not match: "
@@ -168,7 +167,9 @@ class Command:
                         )
 
                     for eventDataA, eventDataB in zip(
-                        sorted(imsDataA.events), sorted(imsDataB.events)
+                        sorted(imsDataA.events),
+                        sorted(imsDataB.events),
+                        strict=True,
                     ):
                         if eventDataA.event != eventDataB.event:
                             cls.log.error(
@@ -178,7 +179,9 @@ class Command:
                             )
 
                     for eventDataA, eventDataB in zip(
-                        sorted(imsDataA.events), sorted(imsDataB.events)
+                        sorted(imsDataA.events),
+                        sorted(imsDataB.events),
+                        strict=True,
                     ):
                         if eventDataA.access != eventDataB.access:
                             cls.log.error(
@@ -220,6 +223,7 @@ class Command:
                             for incidentA, incidentB in zip(
                                 sorted(eventDataA.incidents),
                                 sorted(eventDataB.incidents),
+                                strict=True,
                             ):
                                 if incidentA != incidentB:
                                     cls.log.error(

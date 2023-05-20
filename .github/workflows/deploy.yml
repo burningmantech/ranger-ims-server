@@ -2,6 +2,7 @@
 
 
 name: Deploy to production
+run-name: Deploy to production by @${{ github.actor }}
 
 on: workflow_dispatch
 
@@ -13,12 +14,17 @@ jobs:
 
     steps:
 
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.4.0
+        with:
+          egress-policy: audit
+
       - name: Check user
         if: ${{ ! contains('["wsanchez", "mikeburg", "plapsley"]', github.actor) }}
         run: false
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

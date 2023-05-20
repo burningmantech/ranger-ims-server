@@ -256,7 +256,9 @@ class DataStoreIncidentReportTests(DataStoreTests):
             )
 
             for stored, expected in zip(
-                storedIncidentReports, sorted(expectedStoredIncidentReports)
+                storedIncidentReports,
+                sorted(expectedStoredIncidentReports),
+                strict=True,
             ):
                 self.assertIncidentReportsEqual(
                     store, stored, expected, ignoreAutomatic=True

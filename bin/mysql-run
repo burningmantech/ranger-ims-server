@@ -1,25 +1,27 @@
 #!/bin/sh
 
 #
-# Build the Docker container
+# Run the MySQL container
 #
+
+IMS_DB_CONTAINER_NAME="ranger-ims-db";
+  IMS_DB_PUBLISH_PORT="3306";
 
 . "$(dirname "$0")/.common.sh";
 
-env_file="${wd}/.docker_environment";
+start_db_container;
+wait_for_db;
+db_init;
 
-if [ ! -f "${env_file}" ]; then
-    touch "${env_file}";
+if [ -n "${CLUBHOUSE_DB_DUMPFILE:-}" ]; then
+    echo "Importing Clubhouse data..."
+    gzcat "${CLUBHOUSE_DB_DUMPFILE}" | "${wd}/bin/mysql";
+fi;
+if [ -n "${IMS_DB_DUMPFILE:-}" ]; then
+    echo "Importing IMS data..."
+    gzcat "${IMS_DB_DUMPFILE}" | "${wd}/bin/mysql";
 fi;
 
-exec docker run                               \
-    --rm                                      \
-    --name="${mysql_container_name}"          \
-    --env="MYSQL_RANDOM_ROOT_PASSWORD=yes"    \
-    --env="MYSQL_DATABASE=${mysql_database}"  \
-    --env="MYSQL_USER=${mysql_user}"          \
-    --env="MYSQL_PASSWORD=${mysql_password}"  \
-    --env-file="${env_file}"                  \
-    --publish=3306:3306                       \
-    "${mysql_image_name}"                     \
-    ;
+echo "Ready.";
+
+docker logs --follow "${IMS_DB_CONTAINER_NAME}";

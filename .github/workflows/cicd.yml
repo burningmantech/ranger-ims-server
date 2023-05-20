@@ -8,7 +8,8 @@ on:
     branches: ["master"]
   pull_request:
     branches: ["master"]
-
+  merge_group:
+    types: [checks_requested]
 
 jobs:
 
@@ -21,6 +22,18 @@ jobs:
 
     steps:
 
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.4.0
+        with:
+          disable-sudo: true
+          disable-file-monitoring: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+
       - name: Checkout source code
         uses: actions/checkout@v3
 
@@ -35,7 +48,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e lint --notest
+          tox run -e lint --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -43,7 +56,7 @@ jobs:
           python-path: .tox/lint/*/python
 
       - name: Run Linters
-        run: tox -e lint
+        run: tox run -e lint
 
 
   mypy:
@@ -55,6 +68,18 @@ jobs:
 
     steps:
 
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.4.0
+        with:
+          disable-sudo: true
+          disable-file-monitoring: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+
       - name: Checkout source code
         uses: actions/checkout@v3
 
@@ -69,7 +94,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e mypy --notest
+          tox run -e mypy --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -77,7 +102,7 @@ jobs:
           python-path: .tox/mypy/*/python
 
       - name: Run Mypy
-        run: tox -e mypy
+        run: tox run -e mypy
 
 
   bandit:
@@ -89,6 +114,18 @@ jobs:
 
     steps:
 
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.4.0
+        with:
+          disable-sudo: true
+          disable-file-monitoring: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+
       - name: Checkout source code
         uses: actions/checkout@v3
 
@@ -103,7 +140,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e bandit --notest
+          tox run -e bandit --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -111,7 +148,7 @@ jobs:
           python-path: .tox/bandit/*/python
 
       - name: Run Bandit
-        run: tox -e bandit
+        run: tox run -e bandit
 
 
   safety:
@@ -123,6 +160,19 @@ jobs:
 
     steps:
 
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.4.0
+        with:
+          disable-sudo: true
+          disable-file-monitoring: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+            pyup.io:443
+
       - name: Checkout source code
         uses: actions/checkout@v3
 
@@ -137,7 +187,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e safety --notest
+          tox run -e safety --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -145,7 +195,7 @@ jobs:
           python-path: .tox/safety/*/python
 
       - name: Run Safety
-        run: tox -e safety
+        run: tox run -e safety
 
 
   docs:
@@ -157,6 +207,18 @@ jobs:
 
     steps:
 
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.4.0
+        with:
+          disable-sudo: true
+          disable-file-monitoring: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+
       - name: Checkout source code
         uses: actions/checkout@v3
 
@@ -171,7 +233,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e docs --notest
+          tox run -e docs --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -179,7 +241,7 @@ jobs:
           python-path: .tox/docs/*/python
 
       - name: Build documentation
-        run: tox -e docs
+        run: tox run -e docs
 
 
   packaging:
@@ -190,6 +252,18 @@ jobs:
 
     steps:
 
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.4.0
+        with:
+          disable-sudo: true
+          disable-file-monitoring: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+
       - name: Checkout source code
         uses: actions/checkout@v3
 
@@ -204,7 +278,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e packaging --notest
+          tox run -e packaging --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -212,14 +286,12 @@ jobs:
           python-path: .tox/packaging/*/python
 
       - name: Check packaging
-        run: tox -e packaging
+        run: tox run -e packaging
 
 
   unit:
 
     name: "Py:${{ matrix.python-version }} - ${{ matrix.os }}"
-
-    needs: [lint, mypy, docs, packaging]
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -260,6 +332,21 @@ jobs:
 
     steps:
 
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.4.0
+        with:
+          disable-sudo: true
+          disable-file-monitoring: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            codecov.io:443
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+            storage.googleapis.com:443
+            uploader.codecov.io:443
+
       - name: Checkout source code
         uses: actions/checkout@v3
         with:
@@ -293,7 +380,7 @@ jobs:
       - name: Set up Tox environment
         run: |
           pip install tox
-          tox -e ${TOX_ENV} --notest
+          tox run -e ${TOX_ENV} --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -301,7 +388,7 @@ jobs:
           python-path: .tox/${TOX_ENV}/*/python
 
       - name: Run unit tests
-        run: tox -e ${TOX_ENV}
+        run: tox run -e ${TOX_ENV}
         env:
           IMS_TEST_MYSQL_HOST: localhost
           IMS_TEST_MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
@@ -327,11 +414,11 @@ jobs:
         uses: "codecov/codecov-action@v3.1.1"
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: .tox/coverage.xml
           env_vars: GITHUB_REF,GITHUB_COMMIT,GITHUB_USER,GITHUB_WORKFLOW
           fail_ci_if_error: true
         env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           GITHUB_REF: ${{ github.ref }}
           GITHUB_COMMIT: ${{ github.sha }}
           GITHUB_USER: ${{ github.actor }}
@@ -341,12 +428,25 @@ jobs:
   docker-build:
     name: Build Docker image
 
-    needs: [unit]
-
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
+
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.4.0
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            auth.docker.io:443
+            dl-cdn.alpinelinux.org:443
+            files.pythonhosted.org:443
+            github.com:443
+            production.cloudflare.docker.com:443
+            pypi.org:443
+            registry-1.docker.io:443
 
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -375,10 +475,22 @@ jobs:
 
     steps:
 
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.4.0
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            auth.docker.io:443
+            github.com:443
+            production.cloudflare.docker.com:443
+            registry-1.docker.io:443
+
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: Download Docker image artifact
+      - name: Download Docker image artifacts
         uses: actions/download-artifact@v3
         with:
           name: docker
@@ -405,10 +517,14 @@ jobs:
 
   #   steps:
 
+  #     - uses: step-security/harden-runner@v2.4.0
+  #       with:
+  #         egress-policy: audit
+
   #     - name: Checkout source code
   #       uses: actions/checkout@v3
 
-  #     - name: Download Docker image artifact
+  #     - name: Download Docker image artifacts
   #       uses: actions/download-artifact@v3
   #       with:
   #         name: docker
@@ -429,6 +545,11 @@ jobs:
     timeout-minutes: 10
 
     steps:
+
+      - name: Harden CI
+        uses: step-security/harden-runner@v2.4.0
+        with:
+          egress-policy: audit
 
       - name: Checkout source code
         uses: actions/checkout@v3

@@ -176,7 +176,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
             retrieved = await store.incidents(eventID)
 
-            for r, i in zip(sorted(retrieved), sorted(incidents)):
+            for r, i in zip(sorted(retrieved), sorted(incidents), strict=True):
                 self.assertIncidentsEqual(store, r, i)
 
     @asyncAsDeferred
@@ -345,7 +345,9 @@ class DataStoreIncidentTests(DataStoreTests):
                     f"{storedIncidents} != {expectedIncidents}",
                 )
 
-                for stored, expected in zip(storedIncidents, expectedIncidents):
+                for stored, expected in zip(
+                    storedIncidents, expectedIncidents, strict=True
+                ):
                     self.assertIncidentsEqual(
                         store, stored, expected, ignoreAutomatic=True
                     )

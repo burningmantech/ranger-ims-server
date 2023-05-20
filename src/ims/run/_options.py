@@ -197,7 +197,8 @@ class IMSOptions(Options):
 
     opt_log_level.__doc__ = dedent(cast(str, opt_log_level.__doc__)).format(
         options=", ".join(
-            f'"{level.name}"' for level in LogLevel.iterconstants()
+            f'"{level.name}"'  # noqa: B028
+            for level in LogLevel.iterconstants()
         ),
         default=defaultLogLevel.name,
     )

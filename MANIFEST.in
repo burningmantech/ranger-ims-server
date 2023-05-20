@@ -9,6 +9,7 @@ include bin/.common.sh
 include bin/build
 include bin/deploy
 include bin/find_port
+include bin/mysql
 include bin/mysql-run
 include bin/run
 include bin/shell
