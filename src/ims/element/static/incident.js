@@ -824,10 +824,10 @@ function sendEdits(edits, success, error) {
             // We need to find out the create incident number so that future
             // edits don't keep creating new resources.
 
-            newNumber = xhr.getResponseHeader("Incident-Number")
+            newNumber = xhr.getResponseHeader("X-IMS-Incident-Number")
             // Check that we got a value back
             if (newNumber == null) {
-                fail("No Incident-Number header provided.", status, xhr);
+                fail("No X-IMS-Incident-Number header provided.", status, xhr);
                 return;
             }
 
@@ -835,7 +835,7 @@ function sendEdits(edits, success, error) {
             // Check that the value we got back is valid
             if (isNaN(newNumber)) {
                 fail(
-                    "Non-integer Incident-Number header provided:" + newNumber,
+                    "Non-integer X-IMS-Incident-Number header provided:" + newNumber,
                     status, xhr
                 );
                 return;
