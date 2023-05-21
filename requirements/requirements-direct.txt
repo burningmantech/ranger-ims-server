@@ -7,7 +7,7 @@ hyperlink==21.0.0
 jwcrypto==1.4.2
 klein==21.8.0
 PyMySQL==1.0.3
-pyOpenSSL==23.1.0
+pyOpenSSL==23.1.1
 PyYAML==6.0
 service-identity==21.1.0
 Twisted==22.10.0
