@@ -28,8 +28,8 @@ pprint(sys.path)
 # -- Project information -----------------------------------------------------
 
 project = "ranger-deploy"
-copyright = "2019, Burning Man"
-author = "Burning Man"
+copyright = "Burning Man Project"
+author = "Burning Man Project"
 
 
 # -- General configuration ---------------------------------------------------
