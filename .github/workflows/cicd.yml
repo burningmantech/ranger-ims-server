@@ -538,7 +538,7 @@ jobs:
   deploy-staging:
     name: Deploy image built from master branch to the staging environment
 
-    needs: [docker-test]
+    needs: [docker-test, packaging, unit]
     if: ${{ github.ref == 'refs/heads/master' }}
 
     runs-on: ubuntu-latest
