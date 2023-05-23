@@ -5,7 +5,9 @@ cattrs==22.2.0
 cryptography==40.0.2
 hyperlink==21.0.0
 jwcrypto==1.4.2
-klein==21.8.0
+#klein==21.8.0
+klein @ git+https://github.com/twisted/klein@trunk
+#klein @ file:///Users/wsanchez/Developer/Twisted/klein
 PyMySQL==1.0.3
 pyOpenSSL==23.1.1
 PyYAML==6.0
