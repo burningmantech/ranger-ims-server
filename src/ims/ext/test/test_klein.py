@@ -49,6 +49,7 @@ class StaticDecoratorTests(TestCase):
         app.root(request)
 
         etags = request.responseHeaders.getRawHeaders("etag")
+        assert etags is not None
         self.assertTrue(len(etags) == 1, etags)
         etag = etags[0]
         self.assertTrue(etag)
@@ -63,6 +64,7 @@ class StaticDecoratorTests(TestCase):
         app.root(request)
 
         etags = request.responseHeaders.getRawHeaders("cache-control")
+        assert etags is not None
         self.assertTrue(len(etags) == 1, etags)
         etag = etags[0]
         self.assertTrue(etag)
