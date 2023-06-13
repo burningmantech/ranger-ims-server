@@ -1,6 +1,6 @@
 # Note: mypy-zope pins the mypy version
 
-mypy==1.0.0
+mypy==1.3.0
 mypy-zope==0.9.1
 
 types-PyMySQL==1.0.19.7
