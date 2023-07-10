@@ -299,20 +299,15 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.10"]  # Versions to test without coverage
-        tox-prefix: ["test"]
+        python-version: ["3.11"]  # Versions to test with coverage
+        tox-prefix: ["coverage"]
         optional: [false]
         include:
-          # Test Python 3.11 with coverage
+          # Test Python 3.12 but allow it to fail
           - os: "ubuntu-latest"
-            python-version: "3.11"
-            optional: false
-            tox-prefix: "coverage"
-          # # Test Python 3.12 but allow it to fail
-          # - os: "ubuntu-latest"
-          #   python-version: "3.12.0-rc.1"
-          #   optional: true
-          #   tox-prefix: "test"
+            python-version: "3.12.0-beta.3"
+            optional: true
+            tox-prefix: "test"
 
     services:
       mysql:
@@ -343,6 +338,7 @@ jobs:
             codecov.io:443
             files.pythonhosted.org:443
             github.com:443
+            objects.githubusercontent.com:443
             pypi.org:443
             storage.googleapis.com:443
             uploader.codecov.io:443

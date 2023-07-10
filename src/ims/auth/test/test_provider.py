@@ -436,7 +436,7 @@ class AuthProviderTests(TestCase):
         AuthProvider.verifyPassword() returns False when the user's password is
         None.
         """
-        user = evolve(user, plainTextPassword=None)
+        user = evolve(user, plainTextPassword=None)  # type: ignore[misc]
         provider = AuthProvider(
             store=self.store(),
             directory=self.directory(),
