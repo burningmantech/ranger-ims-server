@@ -299,15 +299,10 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest"]
-        python-version: []  # Versions to test without coverage
-        tox-prefix: ["test"]
+        python-version: ["3.11"]  # Versions to test with coverage
+        tox-prefix: ["coverage"]
         optional: [false]
         include:
-          # Test Python 3.11 with coverage
-          - os: "ubuntu-latest"
-            python-version: "3.11"
-            optional: false
-            tox-prefix: "coverage"
           # Test Python 3.12 but allow it to fail
           - os: "ubuntu-latest"
             python-version: "3.12.0-beta.3"
