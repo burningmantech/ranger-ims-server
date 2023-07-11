@@ -46,7 +46,7 @@ long_description = readme_path.open().read()
 
 url = "https://github.com/burningmantech/ranger-ims-server"
 
-author = "Burning Man"
+author = "Burning Man Project, Black Rock Rangers"
 
 author_email = "ranger-tech-ninjas@burningman.org"
 
