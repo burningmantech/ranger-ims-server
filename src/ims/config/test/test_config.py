@@ -19,7 +19,7 @@ Tests for L{ims.config._config}.
 """
 
 from collections.abc import Iterable, Iterator, Mapping, Sequence
-from contextlib import chdir, contextmanager
+from contextlib import contextmanager
 from functools import partial
 from os import environ, getcwd
 from pathlib import Path
