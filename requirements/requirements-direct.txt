@@ -2,14 +2,14 @@ arrow==1.2.3
 attrs==23.1.0
 bcrypt==4.0.1
 cattrs==23.1.2
-cryptography==41.0.1
+cryptography==41.0.2
 hyperlink==21.0.0
 jwcrypto==1.5.0
 klein==21.8.0
 PyMySQL==1.1.0
 pyOpenSSL==23.2.0
 PyYAML==6.0.1
-service-identity==21.1.0
+service-identity==23.1.0
 Twisted==22.10.0
 Werkzeug==2.2.3
 zope.interface==6.0
