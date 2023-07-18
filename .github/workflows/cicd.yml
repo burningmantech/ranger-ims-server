@@ -303,9 +303,9 @@ jobs:
         tox-prefix: ["coverage"]
         optional: [false]
         include:
-          # Test Python 3.12 but allow it to fail
+          # Test Python 3.12 beta but allow it to fail
           - os: "ubuntu-latest"
-            python-version: "3.12.0-beta.3"
+            python-version: "3.12.0-beta.4"
             optional: true
             tox-prefix: "test"
 

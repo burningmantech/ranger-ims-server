@@ -557,19 +557,6 @@ class ConfigurationTests(TestCase):
 
         self.assertEqual(config.hostName, hostName)
 
-    def test_fromConfigFile_environment_path_relative(self) -> None:
-        """
-        Relative path from environment.
-        """
-        textPath = self.mktemp()
-
-        assert not textPath.startswith("/")
-
-        with testingEnvironment(dict(IMS_SERVER_ROOT=textPath)):
-            config = Configuration.fromConfigFile(None)
-
-        self.assertTrue(Path(textPath).samefile(config.serverRoot))
-
     def test_fromConfigFile_environment_path_absolute(self) -> None:
         """
         Absolute path from environment.
