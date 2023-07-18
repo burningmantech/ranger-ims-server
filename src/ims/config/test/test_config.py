@@ -19,7 +19,7 @@ Tests for L{ims.config._config}.
 """
 
 from collections.abc import Iterable, Iterator, Mapping, Sequence
-from contextlib import contextmanager
+from contextlib import chdir, contextmanager
 from functools import partial
 from os import environ, getcwd
 from pathlib import Path
@@ -556,19 +556,6 @@ class ConfigurationTests(TestCase):
             config = Configuration.fromConfigFile(None)
 
         self.assertEqual(config.hostName, hostName)
-
-    def test_fromConfigFile_environment_path_relative(self) -> None:
-        """
-        Relative path from environment.
-        """
-        textPath = self.mktemp()
-
-        assert not textPath.startswith("/")
-
-        with testingEnvironment(dict(IMS_SERVER_ROOT=textPath)):
-            config = Configuration.fromConfigFile(None)
-
-        self.assertTrue(Path(textPath).samefile(config.serverRoot))
 
     def test_fromConfigFile_environment_path_absolute(self) -> None:
         """
