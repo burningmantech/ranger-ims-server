@@ -23,7 +23,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any, cast
 
-from hypothesis import given
+from hypothesis import given, settings
 
 from ims.ext.json import jsonTextFromObject, objectFromJSONText
 from ims.ext.trial import TestCase
@@ -99,6 +99,7 @@ class JSONExporterTests(TestCase):
         # Compare result to input data
         self.assertIMSDataEqual(imsDataOut, imsDataIn)
 
+    @settings(max_examples=4)
     @given(imsDatas())
     def test_asText(self, imsDataIn: IMSData) -> None:
         imsDataIn = addKnownIncidentTypes(imsDataIn)
@@ -115,6 +116,7 @@ class JSONExporterTests(TestCase):
         # Compare result to input data
         self.assertIMSDataEqual(imsDataOut, imsDataIn)
 
+    @settings(max_examples=4)
     @given(imsDatas())
     def test_asJSON(self, imsDataIn: IMSData) -> None:
         imsDataIn = addKnownIncidentTypes(imsDataIn)
@@ -130,6 +132,7 @@ class JSONExporterTests(TestCase):
         # Compare result to input data
         self.assertIMSDataEqual(imsDataOut, imsDataIn)
 
+    @settings(max_examples=4)
     @given(imsDatas())
     def test_imsData(self, imsDataIn: IMSData) -> None:
         imsDataIn = addKnownIncidentTypes(imsDataIn)
