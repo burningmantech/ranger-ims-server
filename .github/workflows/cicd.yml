@@ -23,7 +23,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.0
+        uses: step-security/harden-runner@v2.4.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -69,7 +69,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.0
+        uses: step-security/harden-runner@v2.4.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -115,7 +115,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.0
+        uses: step-security/harden-runner@v2.4.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -161,7 +161,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.0
+        uses: step-security/harden-runner@v2.4.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -208,7 +208,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.0
+        uses: step-security/harden-runner@v2.4.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -253,7 +253,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.0
+        uses: step-security/harden-runner@v2.4.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -299,20 +299,15 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.10"]  # Versions to test without coverage
-        tox-prefix: ["test"]
+        python-version: ["3.11"]  # Versions to test with coverage
+        tox-prefix: ["coverage"]
         optional: [false]
         include:
-          # Test Python 3.11 with coverage
+          # Test Python 3.12 beta but allow it to fail
           - os: "ubuntu-latest"
-            python-version: "3.11"
-            optional: false
-            tox-prefix: "coverage"
-          # # Test Python 3.12 but allow it to fail
-          # - os: "ubuntu-latest"
-          #   python-version: "3.12.0-rc.1"
-          #   optional: true
-          #   tox-prefix: "test"
+            python-version: "3.12.0-beta.4"
+            optional: true
+            tox-prefix: "test"
 
     services:
       mysql:
@@ -333,7 +328,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.0
+        uses: step-security/harden-runner@v2.4.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -343,6 +338,7 @@ jobs:
             codecov.io:443
             files.pythonhosted.org:443
             github.com:443
+            objects.githubusercontent.com:443
             pypi.org:443
             storage.googleapis.com:443
             uploader.codecov.io:443
@@ -434,7 +430,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.0
+        uses: step-security/harden-runner@v2.4.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -476,7 +472,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.0
+        uses: step-security/harden-runner@v2.4.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -517,7 +513,7 @@ jobs:
 
   #   steps:
 
-  #     - uses: step-security/harden-runner@v2.4.0
+  #     - uses: step-security/harden-runner@v2.4.1
   #       with:
   #         egress-policy: audit
 
@@ -538,7 +534,7 @@ jobs:
   deploy-staging:
     name: Deploy image built from master branch to the staging environment
 
-    needs: [docker-test]
+    needs: [docker-test, packaging, unit]
     if: ${{ github.ref == 'refs/heads/master' }}
 
     runs-on: ubuntu-latest
@@ -547,7 +543,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.0
+        uses: step-security/harden-runner@v2.4.1
         with:
           egress-policy: audit
 

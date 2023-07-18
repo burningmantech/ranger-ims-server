@@ -18,7 +18,7 @@
 Replace mix-in
 """
 
-from typing import Any, TypeVar
+from typing import Any, Self
 
 from attrs import evolve
 
@@ -26,17 +26,14 @@ from attrs import evolve
 __all__ = ()
 
 
-TAttrsObject = TypeVar("TAttrsObject")
-
-
 class ReplaceMixIn:
     """
     Mix-in class with replace method for :mod:`attr` classes.
     """
 
-    def replace(self: TAttrsObject, **kwargs: Any) -> TAttrsObject:
+    def replace(self, **kwargs: Any) -> Self:
         """
         Return a new address with the same values, except those specified by
         keyword arguments.
         """
-        return evolve(self, **kwargs)
+        return evolve(self, **kwargs)  # type: ignore[misc]

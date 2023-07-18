@@ -5,19 +5,19 @@ ci:
 repos:
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: "v3.4.0"
+    rev: "v3.9.0"
     hooks:
       - id: pyupgrade
         args: ["--py310-plus"]
 
   - repo: https://github.com/psf/black
-    rev: "23.3.0"
+    rev: "23.7.0"
     hooks:
       - id: black
-        args: ["--target-version", "py310"]
+        args: ["--target-version", "py311"]
 
   - repo: https://github.com/PyCQA/autoflake
-    rev: v2.1.1
+    rev: "v2.2.0"
     hooks:
       - id: autoflake
         args:
@@ -28,29 +28,38 @@ repos:
           - --remove-unused-variables
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+    rev: "6.0.0"
     hooks:
       - id: flake8
         additional_dependencies:
-          - flake8-bugbear==23.1.14
-          - flake8-docstrings==1.6.0
+          - flake8-bugbear==23.3.23
+          - flake8-docstrings==1.7.0
           - flake8-mutable==1.2.0
           - flake8-pep3101==2.0.0
           - pep8-naming==0.13.3
           - pycodestyle==2.10.0
-          - pydocstyle==6.2.3
+          - pydocstyle==6.3.0
+          - pyflakes==3.0.1
+
+  - repo: https://github.com/asottile/yesqa
+    rev: "v1.5.0"
+    hooks:
+      - id: yesqa
+        additional_dependencies:
+          - flake8-bugbear==23.3.23
+          - flake8-docstrings==1.7.0
+          - flake8-mutable==1.2.0
+          - flake8-pep3101==2.0.0
+          - pep8-naming==0.13.3
+          - pycodestyle==2.10.0
+          - pydocstyle==6.3.0
           - pyflakes==3.0.1
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: "5.12.0"
     hooks:
     - id: isort
       args: ["--filter-files"]
-
-  # - repo: https://github.com/asottile/yesqa
-  #   rev: "v1.2.3"
-  #   hooks:
-  #     - id: yesqa
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v4.4.0"
