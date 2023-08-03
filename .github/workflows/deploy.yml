@@ -15,7 +15,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.1
+        uses: step-security/harden-runner@v2.5.0
         with:
           egress-policy: audit
 
@@ -70,7 +70,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.1
+        uses: step-security/harden-runner@v2.5.0
         with:
           egress-policy: audit
 
