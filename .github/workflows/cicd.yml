@@ -35,7 +35,7 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
         uses: actions/setup-python@v4
@@ -81,7 +81,7 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
         uses: actions/setup-python@v4
@@ -127,7 +127,7 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
         uses: actions/setup-python@v4
@@ -174,7 +174,7 @@ jobs:
             pyup.io:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
         uses: actions/setup-python@v4
@@ -220,7 +220,7 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
         uses: actions/setup-python@v4
@@ -265,7 +265,7 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
         uses: actions/setup-python@v4
@@ -344,7 +344,7 @@ jobs:
             uploader.codecov.io:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
@@ -445,7 +445,7 @@ jobs:
             registry-1.docker.io:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build Docker image
         run: ./bin/build
@@ -484,7 +484,7 @@ jobs:
             registry-1.docker.io:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download Docker image artifacts
         uses: actions/download-artifact@v3
@@ -518,7 +518,7 @@ jobs:
   #         egress-policy: audit
 
   #     - name: Checkout source code
-  #       uses: actions/checkout@v3
+  #       uses: actions/checkout@v4
 
   #     - name: Download Docker image artifacts
   #       uses: actions/download-artifact@v3
@@ -548,7 +548,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download Docker image artifacts
         uses: actions/download-artifact@v3
