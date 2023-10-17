@@ -40,7 +40,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: System Python Information
         uses: twisted/python-info-action@v1
@@ -86,7 +86,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: System Python Information
         uses: twisted/python-info-action@v1
@@ -132,7 +132,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: System Python Information
         uses: twisted/python-info-action@v1
@@ -179,7 +179,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: System Python Information
         uses: twisted/python-info-action@v1
@@ -225,7 +225,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: System Python Information
         uses: twisted/python-info-action@v1
@@ -270,7 +270,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: System Python Information
         uses: twisted/python-info-action@v1
@@ -299,13 +299,13 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.11"]  # Versions to test with coverage
+        python-version: ["3.12"]  # Versions to test with coverage
         tox-prefix: ["coverage"]
         optional: [false]
         include:
-          # Test Python 3.12 beta but allow it to fail
+          # Test Python beta but allow it to fail
           - os: "ubuntu-latest"
-            python-version: "3.12.0-beta.4"
+            python-version: "3.13.0-alpha.1"
             optional: true
             tox-prefix: "test"
 
@@ -404,7 +404,7 @@ jobs:
       - uses: "actions/setup-python@v4"
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: "Upload coverage to Codecov"
         uses: "codecov/codecov-action@v3.1.4"
@@ -561,7 +561,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Deploy to staging
         run: ./bin/deploy staging
