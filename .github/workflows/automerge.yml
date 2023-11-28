@@ -14,11 +14,11 @@ jobs:
 
     if: ${{ github.actor == 'dependabot[bot]' }}
     steps:
-      - name: Get Dependabot metadata
-        id: dependabot-metadata
-        uses: dependabot/fetch-metadata@v1.6.0
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      # - name: Get Dependabot metadata
+      #   id: dependabot-metadata
+      #   uses: dependabot/fetch-metadata@v1.6.0
+      #   with:
+      #     github-token: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Approve the PR
         run: gh pr review --approve "${{ github.event.pull_request.html_url }}"

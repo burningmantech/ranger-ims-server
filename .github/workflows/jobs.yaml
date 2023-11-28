@@ -1,0 +1,20 @@
+name: Update branch for PRs that are passing and approved for merging
+
+on:
+  schedule:
+  - cron: "40 * * * *"  # Hourly at :55
+
+jobs:
+  update-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Update branches
+        uses: brainly/action-autoupdate-branch@2.0.0
+        id: autoUpdateBranch
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          requiredPassedChecks: 1
+          requiredApprovals: 1
+          update-limits: 2
