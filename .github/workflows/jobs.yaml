@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Update branches
-        uses: brainly/action-autoupdate-branch@2.0.0
+        uses: brainly/action-autoupdate-branch@2.1.1
         id: autoUpdateBranch
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
