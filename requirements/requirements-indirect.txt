@@ -19,5 +19,5 @@ sortedcontainers==2.4.0
 Tubes==0.2.1
 typing_extensions==4.8.0
 urllib3==2.1.0
-websocket-client==1.6.4
+websocket-client==1.7.0
 wrapt==1.16.0
