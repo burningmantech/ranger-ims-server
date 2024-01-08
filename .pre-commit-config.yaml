@@ -11,7 +11,7 @@ repos:
         args: ["--py310-plus"]
 
   - repo: https://github.com/psf/black
-    rev: "23.11.0"
+    rev: "23.12.1"
     hooks:
       - id: black
         args: ["--target-version", "py311"]
@@ -28,7 +28,7 @@ repos:
           - --remove-unused-variables
 
   - repo: https://github.com/PyCQA/flake8
-    rev: "6.1.0"
+    rev: "7.0.0"
     hooks:
       - id: flake8
         additional_dependencies:
@@ -56,7 +56,7 @@ repos:
           - pyflakes==3.1.0
 
   - repo: https://github.com/PyCQA/isort
-    rev: "5.13.0"
+    rev: "5.13.2"
     hooks:
     - id: isort
       args: ["--filter-files"]
