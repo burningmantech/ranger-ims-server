@@ -313,7 +313,7 @@ class Command:
                     cls.runVerifyPassword(config, subOptions)
                 else:
                     raise AssertionError(f"Unknown subcommand: {subCommand}")
-            except BaseException as e:
+            except BaseException as e:  # noqa: B036
                 cls.log.critical(
                     "Unable to run {subCommand}: ({errorClass}) {error}",
                     subCommand=subCommand,
