@@ -8,8 +8,6 @@ on:
     branches: ["master"]
   pull_request:
     branches: ["master"]
-  merge_group:
-    types: [checks_requested]
 
 jobs:
 
@@ -23,7 +21,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.1
+        uses: step-security/harden-runner@v2.6.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -35,10 +33,10 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -69,7 +67,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.1
+        uses: step-security/harden-runner@v2.6.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -81,10 +79,10 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -115,7 +113,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.1
+        uses: step-security/harden-runner@v2.6.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -127,10 +125,10 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -161,7 +159,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.1
+        uses: step-security/harden-runner@v2.6.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -174,10 +172,10 @@ jobs:
             pyup.io:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -208,7 +206,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.1
+        uses: step-security/harden-runner@v2.6.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -220,10 +218,10 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -253,7 +251,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.1
+        uses: step-security/harden-runner@v2.6.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -265,10 +263,10 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -328,7 +326,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.1
+        uses: step-security/harden-runner@v2.6.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -344,12 +342,12 @@ jobs:
             uploader.codecov.io:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -394,14 +392,14 @@ jobs:
 
       - name: Upload Trial log artifact
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: trial
           path: .tox/${TOX_ENV}/log/trial.log
 
       # Use the latest supported Python version for combining coverage to
       # prevent parsing errors in older versions when looking at modern code.
-      - uses: "actions/setup-python@v4"
+      - uses: "actions/setup-python@v5"
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
           python-version: "3.11"
@@ -430,7 +428,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.1
+        uses: step-security/harden-runner@v2.6.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -445,7 +443,7 @@ jobs:
             registry-1.docker.io:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build Docker image
         run: ./bin/build
@@ -454,7 +452,7 @@ jobs:
         run: docker image save ranger-ims-server:dev | gzip -9 > docker_image.tgz
 
       - name: Upload Docker image artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker
           path: docker_image.tgz
@@ -472,7 +470,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.1
+        uses: step-security/harden-runner@v2.6.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -484,10 +482,10 @@ jobs:
             registry-1.docker.io:443
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download Docker image artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docker
 
@@ -513,15 +511,15 @@ jobs:
 
   #   steps:
 
-  #     - uses: step-security/harden-runner@v2.4.1
+  #     - uses: step-security/harden-runner@v2.6.1
   #       with:
   #         egress-policy: audit
 
   #     - name: Checkout source code
-  #       uses: actions/checkout@v3
+  #       uses: actions/checkout@v4
 
   #     - name: Download Docker image artifacts
-  #       uses: actions/download-artifact@v3
+  #       uses: actions/download-artifact@v4
   #       with:
   #         name: docker
 
@@ -543,15 +541,15 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.4.1
+        uses: step-security/harden-runner@v2.6.1
         with:
           egress-policy: audit
 
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download Docker image artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docker
 
@@ -559,7 +557,7 @@ jobs:
         run: gzip --uncompress --stdout docker_image.tgz | docker image load
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
