@@ -720,9 +720,7 @@ class ExternalApplication:
         f"{lscacheVersionNumber}/lscache.min.js"
     )
 
-    @router.route(
-        _unprefix(URLs.bootstrapBase), methods=("HEAD", "GET"), branch=True
-    )
+    @router.route(_unprefix(URLs.bootstrapBase), branch=True)
     @static
     async def bootstrapResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -742,7 +740,7 @@ class ExternalApplication:
             *names,
         )
 
-    @router.route(_unprefix(URLs.jqueryJS), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.jqueryJS))
     @static
     async def jqueryJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -755,7 +753,7 @@ class ExternalApplication:
             request, self.jqueryJSSourceURL, f"{self.jqueryVersion}.min.js"
         )
 
-    @router.route(_unprefix(URLs.jqueryMap), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.jqueryMap))
     @static
     async def jqueryMapResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -766,9 +764,7 @@ class ExternalApplication:
             request, self.jqueryMapSourceURL, f"{self.jqueryVersion}.min.map"
         )
 
-    @router.route(
-        _unprefix(URLs.dataTablesBase), methods=("HEAD", "GET"), branch=True
-    )
+    @router.route(_unprefix(URLs.dataTablesBase), branch=True)
     @static
     async def dataTablesResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -800,7 +796,7 @@ class ExternalApplication:
             *names,
         )
 
-    @router.route(_unprefix(URLs.momentJS), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.momentJS))
     @static
     async def momentJSResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -813,7 +809,7 @@ class ExternalApplication:
             request, self.momentJSSourceURL, f"{self.momentVersion}.min.js"
         )
 
-    @router.route(_unprefix(URLs.lscacheJS), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.lscacheJS))
     @static
     async def lscacheJSResource(self, request: IRequest) -> KleinRenderable:
         """

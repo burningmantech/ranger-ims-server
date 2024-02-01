@@ -133,7 +133,7 @@ class APIApplication:
     config: Configuration
     storeObserver: DataStoreEventSourceLogObserver
 
-    @router.route(_unprefix(URLs.ping), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.ping))
     @static
     def pingResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -142,7 +142,7 @@ class APIApplication:
         ack = b'"ack"'
         return jsonBytes(request, ack, str(hash(ack)))
 
-    @router.route(_unprefix(URLs.bag), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.bag))
     @static
     def bagResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -150,7 +150,7 @@ class APIApplication:
         """
         return jsonBytes(request, self._bag, str(hash(self._bag)))
 
-    @router.route(_unprefix(URLs.auth), methods=("POST",))
+    @router.route(_unprefix(URLs.auth), methods=(b"POST",))
     async def authResource(self, request: IRequest) -> KleinRenderable:
         """
         Authentication endpoint.
@@ -215,7 +215,7 @@ class APIApplication:
             ),
         )
 
-    @router.route(_unprefix(URLs.personnel), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.personnel))
     async def personnelResource(self, request: IRequest) -> KleinRenderable:
         """
         Personnel endpoint.
@@ -248,7 +248,7 @@ class APIApplication:
             str(hash(personnel)),
         )
 
-    @router.route(_unprefix(URLs.incidentTypes), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.incidentTypes))
     async def incidentTypesResource(self, request: IRequest) -> KleinRenderable:
         """
         Incident types endpoint.
@@ -269,7 +269,7 @@ class APIApplication:
         writeJSONStream(request, stream, None)
         return None
 
-    @router.route(_unprefix(URLs.incidentTypes), methods=("POST",))
+    @router.route(_unprefix(URLs.incidentTypes), methods=(b"POST",))
     async def editIncidentTypesResource(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -312,7 +312,7 @@ class APIApplication:
 
         return noContentResponse(request)
 
-    @router.route(_unprefix(URLs.events), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.events))
     async def eventsResource(self, request: IRequest) -> KleinRenderable:
         """
         Events endpoint.
@@ -335,7 +335,7 @@ class APIApplication:
 
         return jsonBytes(request, data, str(hash(data)))
 
-    @router.route(_unprefix(URLs.events), methods=("POST",))
+    @router.route(_unprefix(URLs.events), methods=(b"POST",))
     async def editEventsResource(self, request: IRequest) -> KleinRenderable:
         """
         Events editing endpoint.
@@ -372,7 +372,7 @@ class APIApplication:
 
         return noContentResponse(request)
 
-    @router.route(_unprefix(URLs.incidents), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.incidents))
     async def listIncidentsResource(
         self, request: IRequest, event_id: str
     ) -> None:
@@ -393,7 +393,7 @@ class APIApplication:
         writeJSONStream(request, stream, None)
         return None
 
-    @router.route(_unprefix(URLs.incidents), methods=("POST",))
+    @router.route(_unprefix(URLs.incidents), methods=(b"POST",))
     async def newIncidentResource(
         self, request: IRequest, event_id: str
     ) -> KleinRenderable:
@@ -511,7 +511,7 @@ class APIApplication:
         )
         return noContentResponse(request)
 
-    @router.route(_unprefix(URLs.incidentNumber), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.incidentNumber))
     async def readIncidentResource(
         self, request: IRequest, event_id: str, incident_number: str
     ) -> KleinRenderable:
@@ -541,7 +541,7 @@ class APIApplication:
 
         return jsonBytes(request, data)
 
-    @router.route(_unprefix(URLs.incidentNumber), methods=("POST",))
+    @router.route(_unprefix(URLs.incidentNumber), methods=(b"POST",))
     async def editIncidentResource(
         self, request: IRequest, event_id: str, incident_number: str
     ) -> KleinRenderable:
@@ -702,7 +702,7 @@ class APIApplication:
 
         return noContentResponse(request)
 
-    @router.route(_unprefix(URLs.incidentReports), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.incidentReports))
     async def listIncidentReportsResource(
         self, request: IRequest, event_id: str
     ) -> KleinRenderable:
@@ -757,7 +757,7 @@ class APIApplication:
         writeJSONStream(request, stream, None)
         return None
 
-    @router.route(_unprefix(URLs.incidentReports), methods=("POST",))
+    @router.route(_unprefix(URLs.incidentReports), methods=(b"POST",))
     async def newIncidentReportResource(
         self, request: IRequest, event_id: str
     ) -> KleinRenderable:
@@ -870,7 +870,7 @@ class APIApplication:
         )
         return noContentResponse(request)
 
-    @router.route(_unprefix(URLs.incidentReport), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.incidentReport))
     async def readIncidentReportResource(
         self, request: IRequest, event_id: str, incident_report_number: str
     ) -> KleinRenderable:
@@ -896,7 +896,7 @@ class APIApplication:
 
         return jsonBytes(request, text.encode("utf-8"))
 
-    @router.route(_unprefix(URLs.incidentReport), methods=("POST",))
+    @router.route(_unprefix(URLs.incidentReport), methods=(b"POST",))
     async def editIncidentReportResource(
         self, request: IRequest, event_id: str, incident_report_number: str
     ) -> KleinRenderable:
@@ -1024,7 +1024,7 @@ class APIApplication:
 
         return noContentResponse(request)
 
-    @router.route(_unprefix(URLs.acl), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.acl))
     async def readAdminAccessResource(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -1047,7 +1047,7 @@ class APIApplication:
             )
         return jsonTextFromObject(acl)
 
-    @router.route(_unprefix(URLs.acl), methods=("POST",))
+    @router.route(_unprefix(URLs.acl), methods=(b"POST",))
     async def editAdminAccessResource(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -1075,7 +1075,7 @@ class APIApplication:
 
         return noContentResponse(request)
 
-    @router.route(_unprefix(URLs.streets), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.streets))
     async def readStreetsResource(self, request: IRequest) -> KleinRenderable:
         """
         Street list endpoint.
@@ -1103,7 +1103,7 @@ class APIApplication:
             ).encode("utf-8"),
         )
 
-    @router.route(_unprefix(URLs.streets), methods=("POST",))
+    @router.route(_unprefix(URLs.streets), methods=(b"POST",))
     async def editStreetsResource(self, request: IRequest) -> KleinRenderable:
         """
         Street list edit endpoint.

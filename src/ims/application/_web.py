@@ -70,14 +70,14 @@ class WebApplication:
     # Web interface
     #
 
-    @router.route(_unprefix(URLs.app), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.app))
     def applicationRootResource(self, request: IRequest) -> KleinRenderable:
         """
         Application root page.
         """
         return RootPage(config=self.config)
 
-    @router.route(_unprefix(URLs.viewEvent), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.viewEvent))
     async def viewIncidentsResource(
         self, request: IRequest, event_id: str
     ) -> KleinRenderable:
@@ -99,7 +99,7 @@ class WebApplication:
 
         return redirect(request, url)
 
-    @router.route(_unprefix(URLs.admin), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.admin))
     @static
     async def adminPage(self, request: IRequest) -> KleinRenderable:
         """
@@ -113,7 +113,7 @@ class WebApplication:
         )
         return AdminRootPage(config=self.config)
 
-    @router.route(_unprefix(URLs.adminEvents), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.adminEvents))
     async def adminEventsPage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for access control page.
@@ -126,7 +126,7 @@ class WebApplication:
         )
         return AdminEventsPage(config=self.config)
 
-    @router.route(_unprefix(URLs.adminIncidentTypes), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.adminIncidentTypes))
     async def adminAdminIncidentTypesPagePage(
         self, request: IRequest
     ) -> KleinRenderable:
@@ -141,7 +141,7 @@ class WebApplication:
         )
         return AdminIncidentTypesPage(config=self.config)
 
-    @router.route(_unprefix(URLs.adminStreets), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.adminStreets))
     async def adminStreetsPage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for streets admin page.
@@ -154,7 +154,7 @@ class WebApplication:
         )
         return AdminStreetsPage(config=self.config)
 
-    @router.route(_unprefix(URLs.viewIncidents), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.viewIncidents))
     async def viewIncidentsPage(
         self, request: IRequest, event_id: str
     ) -> KleinRenderable:
@@ -171,7 +171,7 @@ class WebApplication:
         return IncidentsPage(config=self.config, event=event)
 
     @router.route(
-        _unprefix(URLs.viewIncidentsTemplate), methods=("HEAD", "GET")
+        _unprefix(URLs.viewIncidentsTemplate)
     )
     @static
     def viewIncidentsTemplatePage(self, request: IRequest) -> KleinRenderable:
@@ -180,7 +180,7 @@ class WebApplication:
         """
         return IncidentsTemplatePage(config=self.config)
 
-    @router.route(_unprefix(URLs.viewIncidentNumber), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.viewIncidentNumber))
     async def viewIncidentPage(
         self, request: IRequest, event_id: str, number: str
     ) -> KleinRenderable:
@@ -205,7 +205,7 @@ class WebApplication:
         event = Event(id=event_id)
         return IncidentPage(config=self.config, event=event, number=numberValue)
 
-    @router.route(_unprefix(URLs.viewIncidentTemplate), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.viewIncidentTemplate))
     @static
     def viewIncidentTemplatePage(self, request: IRequest) -> KleinRenderable:
         """
@@ -213,7 +213,7 @@ class WebApplication:
         """
         return IncidentTemplatePage(config=self.config)
 
-    @router.route(_unprefix(URLs.viewIncidentReports), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.viewIncidentReports))
     async def viewIncidentReportsPage(
         self, request: IRequest, event_id: str
     ) -> KleinRenderable:
@@ -232,7 +232,7 @@ class WebApplication:
         return IncidentReportsPage(config=self.config, event=event)
 
     @router.route(
-        _unprefix(URLs.viewIncidentReportsTemplate), methods=("HEAD", "GET")
+        _unprefix(URLs.viewIncidentReportsTemplate)
     )
     @static
     def viewIncidentReportsTemplatePage(
@@ -244,7 +244,7 @@ class WebApplication:
         return IncidentReportsTemplatePage(config=self.config)
 
     @router.route(
-        _unprefix(URLs.viewIncidentReportNumber), methods=("HEAD", "GET")
+        _unprefix(URLs.viewIncidentReportNumber)
     )
     async def viewIncidentReportPage(
         self, request: IRequest, event_id: str, number: str
@@ -287,7 +287,7 @@ class WebApplication:
         )
 
     @router.route(
-        _unprefix(URLs.viewIncidentReportTemplate), methods=("HEAD", "GET")
+        _unprefix(URLs.viewIncidentReportTemplate)
     )
     @static
     def viewIncidentReportTemplatePage(

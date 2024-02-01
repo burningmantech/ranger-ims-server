@@ -108,7 +108,7 @@ class MainApplication:
     # Static content
     #
 
-    @router.route(URLs.root, methods=("HEAD", "GET"))
+    @router.route(URLs.root)
     @static
     def rootEndpoint(self, request: IRequest) -> KleinRenderable:
         """
@@ -116,7 +116,7 @@ class MainApplication:
         """
         return "IMS"
 
-    @router.route(URLs.prefix, methods=("HEAD", "GET"))
+    @router.route(URLs.prefix)
     @static
     def prefixEndpoint(self, request: IRequest) -> KleinRenderable:
         """
@@ -138,7 +138,7 @@ class MainApplication:
     # URLs
     #
 
-    @router.route(URLs.urlsJS, methods=("HEAD", "GET"))
+    @router.route(URLs.urlsJS)
     @static
     def urlsEndpoint(self, request: IRequest) -> KleinRenderable:
         """

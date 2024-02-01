@@ -51,7 +51,7 @@ class AuthApplication:
 
     config: Configuration
 
-    @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.login))
     def login(self, request: IRequest, failed: bool = False) -> KleinRenderable:
         """
         Endpoint for the login page.
@@ -62,7 +62,7 @@ class AuthApplication:
 
         return LoginPage(config=self.config, failed=failed)
 
-    @router.route(_unprefix(URLs.login), methods=("POST",))
+    @router.route(_unprefix(URLs.login), methods=(b"POST",))
     async def loginSubmit(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for a login form submission.
@@ -106,7 +106,7 @@ class AuthApplication:
 
         return self.login(request, failed=True)
 
-    @router.route(_unprefix(URLs.logout), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.logout))
     def logout(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for logging out.
