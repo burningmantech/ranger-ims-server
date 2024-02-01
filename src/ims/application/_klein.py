@@ -21,10 +21,11 @@ Incident Management System Klein application.
 
 from collections.abc import Callable, Iterable, Sequence
 from functools import wraps
-from typing import Any, Optional, cast
+from typing import Any, Optional, TypeVar, cast
 
 from hyperlink import URL
 from klein import Klein, KleinRenderable, KleinRouteHandler
+from klein._app import KleinSynchronousRenderable
 from twisted.logger import Logger
 from twisted.python.failure import Failure
 from twisted.web import http
@@ -54,6 +55,9 @@ __all__ = (
 log = Logger()
 
 
+KleinRouteHandlerT = TypeVar("KleinRouteHandlerT", bound=KleinRouteHandler)
+
+
 def renderResponse(f: KleinRouteHandler) -> KleinRouteHandler:
     """
     Decorator to ensure that the returned response is rendered, if applicable.
@@ -67,7 +71,9 @@ def renderResponse(f: KleinRouteHandler) -> KleinRouteHandler:
         response = f(self, request, *args, **kwargs)
 
         if IRenderable.providedBy(response):
-            return renderElement(request, response)
+            return renderElement(  # type: ignore[return-value]
+                request, response
+            )
 
         return response
 
@@ -76,7 +82,7 @@ def renderResponse(f: KleinRouteHandler) -> KleinRouteHandler:
 
 def redirect(
     request: IRequest, location: URL, origin: str | None = None
-) -> KleinRenderable:
+) -> KleinSynchronousRenderable:
     """
     Perform a redirect.
     """
@@ -108,7 +114,7 @@ def redirect(
 
 def noContentResponse(
     request: IRequest, etag: str | None = None
-) -> KleinRenderable:
+) -> KleinSynchronousRenderable:
     """
     Respond with no content.
     """
@@ -118,7 +124,7 @@ def noContentResponse(
     return b""
 
 
-def textResponse(request: IRequest, message: str) -> KleinRenderable:
+def textResponse(request: IRequest, message: str) -> KleinSynchronousRenderable:
     """
     Respond with the given text.
     """
@@ -127,7 +133,7 @@ def textResponse(request: IRequest, message: str) -> KleinRenderable:
     return message.encode("utf-8")
 
 
-def notFoundResponse(request: IRequest) -> KleinRenderable:
+def notFoundResponse(request: IRequest) -> KleinSynchronousRenderable:
     """
     Respond with a NOT FOUND status.
     """
@@ -137,7 +143,7 @@ def notFoundResponse(request: IRequest) -> KleinRenderable:
     return textResponse(request, "Not found")
 
 
-def methodNotAllowedResponse(request: IRequest) -> KleinRenderable:
+def methodNotAllowedResponse(request: IRequest) -> KleinSynchronousRenderable:
     """
     Respond with a METHOD NOT ALLOWED status.
     """
@@ -150,7 +156,7 @@ def methodNotAllowedResponse(request: IRequest) -> KleinRenderable:
     return textResponse(request, "HTTP method not allowed")
 
 
-def forbiddenResponse(request: IRequest) -> KleinRenderable:
+def forbiddenResponse(request: IRequest) -> KleinSynchronousRenderable:
     """
     Respond with a FORBIDDEN status.
     """
@@ -164,7 +170,7 @@ def forbiddenResponse(request: IRequest) -> KleinRenderable:
     return textResponse(request, "Permission denied")
 
 
-def notAuthenticatedResponse(request: IRequest) -> KleinRenderable:
+def notAuthenticatedResponse(request: IRequest) -> KleinSynchronousRenderable:
     """
     Respond with a UNAUTHORIZED status.
     """
@@ -180,7 +186,7 @@ def notAuthenticatedResponse(request: IRequest) -> KleinRenderable:
 
 def badRequestResponse(
     request: IRequest, message: str | None = None
-) -> KleinRenderable:
+) -> KleinSynchronousRenderable:
     """
     Respond with a BAD REQUEST status.
     """
@@ -200,7 +206,7 @@ def badRequestResponse(
 
 def invalidJSONResponse(
     request: IRequest, error: Exception | None = None
-) -> KleinRenderable:
+) -> KleinSynchronousRenderable:
     """
     Respond with a BAD REQUEST status for invalid JSON request data.
     """
@@ -209,7 +215,7 @@ def invalidJSONResponse(
 
 def invalidQueryResponse(
     request: IRequest, arg: str, value: str | None = None
-) -> KleinRenderable:
+) -> KleinSynchronousRenderable:
     """
     Respond with a BAD REQUEST status due to an invalid query.
     """
@@ -221,7 +227,9 @@ def invalidQueryResponse(
         return badRequestResponse(request, f"Invalid query: {arg}={value}")
 
 
-def badGatewayResponse(request: IRequest, message: str) -> KleinRenderable:
+def badGatewayResponse(
+    request: IRequest, message: str
+) -> KleinSynchronousRenderable:
     """
     Respond with a BAD GATEWAY status.
     """
@@ -233,7 +241,7 @@ def badGatewayResponse(request: IRequest, message: str) -> KleinRenderable:
 
 def internalErrorResponse(
     request: IRequest, message: str | None = None
-) -> KleinRenderable:
+) -> KleinSynchronousRenderable:
     """
     Respond with an INTERNAL SERVER ERROR status.
     """
@@ -328,7 +336,7 @@ class Router(Klein):
 
     def route(
         self, url: str | URL, *args: Any, **kwargs: Any
-    ) -> Callable[[KleinRouteHandler], KleinRouteHandler]:
+    ) -> Callable[[KleinRouteHandlerT], KleinRouteHandlerT]:
         """
         See :meth:`Klein.route`.
         """
@@ -337,7 +345,7 @@ class Router(Klein):
         if isinstance(url, URL):
             url = url.asText()
 
-        def decorator(f: KleinRouteHandler) -> KleinRouteHandler:
+        def decorator(f: KleinRouteHandlerT) -> KleinRouteHandlerT:
             @superRoute(url, *args, **kwargs)
             @wraps(f)
             def wrapper(
@@ -355,7 +363,7 @@ class Router(Klein):
 
                 return f(app, request, *args, **kwargs)
 
-            return cast(KleinRouteHandler, wrapper)
+            return wrapper  # type: ignore[return-value]
 
         return decorator
 
@@ -434,7 +442,9 @@ class Router(Klein):
                     return forbiddenResponse(request)
 
             element = redirect(request, URLs.login, origin="o")
-            return renderElement(request, element)
+            return renderElement(  # type: ignore[return-value]
+                request, element  # type: ignore[arg-type]
+            )
 
         @self.handle_errors(DirectoryError)
         @renderResponse

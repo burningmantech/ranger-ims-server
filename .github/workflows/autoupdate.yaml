@@ -2,7 +2,7 @@ name: Update branch for PRs that are passing and approved for merging
 
 on:
   schedule:
-  - cron: "40 * * * *"  # Hourly at :55
+  - cron: "0 4 * * *"  # Daily at 4am
 
 jobs:
   update-branches:

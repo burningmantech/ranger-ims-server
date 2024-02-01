@@ -12,20 +12,14 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    if: ${{ github.actor == 'dependabot[bot]' }}
+    if: ${{ contains('["dependabot[bot]", "pre-commit-ci[bot]"]', github.actor) }}
     steps:
-      # - name: Get Dependabot metadata
-      #   id: dependabot-metadata
-      #   uses: dependabot/fetch-metadata@v1.6.0
-      #   with:
-      #     github-token: "${{ secrets.GITHUB_TOKEN }}"
-
       - name: Approve the PR
         run: gh pr review --approve "${{ github.event.pull_request.html_url }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Enable auto-merge
-        run: gh pr merge --merge --auto "${{ github.event.pull_request.html_url }}"
+        run: gh pr merge --squash --auto "${{ github.event.pull_request.html_url }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
