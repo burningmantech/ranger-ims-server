@@ -303,7 +303,7 @@ jobs:
         include:
           # Test Python beta but allow it to fail
           - os: "ubuntu-latest"
-            python-version: "3.13.0-alpha.1"
+            python-version: "3.13.0-alpha.3"
             optional: true
             tox-prefix: "test"
 
