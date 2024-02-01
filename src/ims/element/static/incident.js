@@ -523,7 +523,7 @@ function drawRangers() {
     if (handles == undefined) {
         handles = [];
     } else {
-        handles.sort();
+        handles.sort((a, b) => a.localeCompare(b));
     }
 
     for (var i in handles) {
@@ -553,7 +553,7 @@ function drawRangersToAdd() {
     for (var handle in personnel) {
         handles.push(handle);
     }
-    handles.sort();
+    handles.sort((a, b) => a.localeCompare(b));
 
     select.empty();
     select.append($("<option />"));
