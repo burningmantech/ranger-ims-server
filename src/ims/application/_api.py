@@ -438,9 +438,9 @@ class APIApplication:
             json[IncidentJSONKey.state.value] = IncidentStateJSONValue.new.value
 
         if IncidentJSONKey.priority.value not in json:
-            json[
-                IncidentJSONKey.priority.value
-            ] = IncidentPriorityJSONValue.normal.value
+            json[IncidentJSONKey.priority.value] = (
+                IncidentPriorityJSONValue.normal.value
+            )
 
         # If not provided, set JSON handles, types, entries,
         # incident report numbers to an empty list

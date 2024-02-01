@@ -27,6 +27,13 @@ Running the Test Suite
 ~~~~~~~~~~~~~~~~~~~~~~
 
 This project uses Tox_ for running tests.
+
+If you do not have tox installed, the recommended way is to use pipx_::
+
+    python3 -m pip install pipx
+    pipx install tox
+    pipx upgrade tox
+
 To run all of the default test environments::
 
     tox run
@@ -68,8 +75,9 @@ Pull requests in GitHub will run all tests on Travis CI, and all are required to
 
 .. ------------------------------------------------------------------------- ..
 
-.. _Twisted: https://twistedmatrix.com/
-.. _Klein: https://klein.readthedocs.io/
-.. _Tox: http://tox.readthedocs.io/
 .. _Flake8: http://flake8.pycqa.org/
+.. _Klein: https://klein.readthedocs.io/
 .. _Mypy: http://mypy.readthedocs.io/
+.. _pipx: https://pipx.pypa.io/stable/
+.. _Tox: http://tox.readthedocs.io/
+.. _Twisted: https://twistedmatrix.com/
