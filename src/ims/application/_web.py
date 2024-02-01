@@ -170,9 +170,7 @@ class WebApplication:
         event = Event(id=event_id)
         return IncidentsPage(config=self.config, event=event)
 
-    @router.route(
-        _unprefix(URLs.viewIncidentsTemplate)
-    )
+    @router.route(_unprefix(URLs.viewIncidentsTemplate))
     @static
     def viewIncidentsTemplatePage(self, request: IRequest) -> KleinRenderable:
         """
@@ -231,9 +229,7 @@ class WebApplication:
         event = Event(id=event_id)
         return IncidentReportsPage(config=self.config, event=event)
 
-    @router.route(
-        _unprefix(URLs.viewIncidentReportsTemplate)
-    )
+    @router.route(_unprefix(URLs.viewIncidentReportsTemplate))
     @static
     def viewIncidentReportsTemplatePage(
         self, request: IRequest
@@ -243,9 +239,7 @@ class WebApplication:
         """
         return IncidentReportsTemplatePage(config=self.config)
 
-    @router.route(
-        _unprefix(URLs.viewIncidentReportNumber)
-    )
+    @router.route(_unprefix(URLs.viewIncidentReportNumber))
     async def viewIncidentReportPage(
         self, request: IRequest, event_id: str, number: str
     ) -> KleinRenderable:
@@ -286,9 +280,7 @@ class WebApplication:
             config=config, event=event, number=incidentReportNumber
         )
 
-    @router.route(
-        _unprefix(URLs.viewIncidentReportTemplate)
-    )
+    @router.route(_unprefix(URLs.viewIncidentReportTemplate))
     @static
     def viewIncidentReportTemplatePage(
         self, request: IRequest
