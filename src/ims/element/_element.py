@@ -176,7 +176,7 @@ class Element(BaseElement):
         except AttributeError:
             raise ValueError(f"Unknown URL name: {name}") from None
 
-        text = url.asText()
+        text = cast(str, url.asText())
 
         if tag.tagName == "json":
             return jsonTextFromObject(text)
@@ -223,7 +223,8 @@ class Element(BaseElement):
             [
                 event.id
                 for event in await self.config.store.events()
-                if relevantAuthorizations & await authorizationsForUser(event)
+                if relevantAuthorizations
+                & await authorizationsForUser(event.id)
             ]
         )
 
@@ -245,7 +246,7 @@ class Element(BaseElement):
         """
         Repeat an element once for each event, embedding the event ID.
         """
-        return self._events(request, tag)
+        return cast(KleinRenderable, self._events(request, tag))
 
     @renderer
     def events_reversed(self, request: IRequest, tag: Tag) -> KleinRenderable:
@@ -253,7 +254,9 @@ class Element(BaseElement):
         Repeat an element once for each event in reverse order, embedding the
         event ID.
         """
-        return self._events(request, tag, reverse_order=True)
+        return cast(
+            KleinRenderable, self._events(request, tag, reverse_order=True)
+        )
 
     @renderer
     async def events_list(self, request: IRequest, tag: Tag) -> KleinRenderable:

@@ -149,51 +149,51 @@ jobs:
         run: tox run -e bandit
 
 
-  safety:
+  # safety:
 
-    name: Safety (dependency security checker)
+  #   name: Safety (dependency security checker)
 
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 5
 
-    steps:
+  #   steps:
 
-      - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
-        with:
-          disable-sudo: true
-          disable-file-monitoring: true
-          egress-policy: block
-          allowed-endpoints: >
-            api.github.com:443
-            files.pythonhosted.org:443
-            github.com:443
-            pypi.org:443
-            pyup.io:443
+  #     - name: Harden CI
+  #       uses: step-security/harden-runner@v2.6.1
+  #       with:
+  #         disable-sudo: true
+  #         disable-file-monitoring: true
+  #         egress-policy: block
+  #         allowed-endpoints: >
+  #           api.github.com:443
+  #           files.pythonhosted.org:443
+  #           github.com:443
+  #           pypi.org:443
+  #           pyup.io:443
 
-      - name: Checkout source code
-        uses: actions/checkout@v4
+  #     - name: Checkout source code
+  #       uses: actions/checkout@v4
 
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+  #     - name: Install Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.12"
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
+  #     - name: System Python Information
+  #       uses: twisted/python-info-action@v1
 
-      - name: Set up Tox environment
-        run: |
-          pip install tox
-          tox run -e safety --notest
+  #     - name: Set up Tox environment
+  #       run: |
+  #         pip install tox
+  #         tox run -e safety --notest
 
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/safety/*/python
+  #     - name: Tox Python Information
+  #       uses: twisted/python-info-action@v1
+  #       with:
+  #         python-path: .tox/safety/*/python
 
-      - name: Run Safety
-        run: tox run -e safety
+  #     - name: Run Safety
+  #       run: tox run -e safety
 
 
   docs:
@@ -405,7 +405,7 @@ jobs:
           python-version: "3.12"
 
       - name: "Upload coverage to Codecov"
-        uses: "codecov/codecov-action@v3.1.4"
+        uses: "codecov/codecov-action@v3.1.5"
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

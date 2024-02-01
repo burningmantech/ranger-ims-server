@@ -103,10 +103,7 @@ class Connection(BaseConnection):
         """
         See :meth:`sqlite3.Cursor.cursor`.
         """
-        return cast(
-            "Cursor",
-            super().cursor(factory=factory),  # type: ignore[call-overload]
-        )
+        return super().cursor(factory=factory)
 
     def executeAndPrint(
         self, sql: str, parameters: Parameters | None = None
