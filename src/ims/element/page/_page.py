@@ -24,8 +24,7 @@ from typing import cast
 
 from attrs import mutable
 from hyperlink import URL
-from klein import KleinRenderable
-from twisted.web.iweb import IRequest
+from twisted.web.iweb import IRenderable, IRequest
 from twisted.web.template import Tag, renderer, tags
 
 from ims.config import Configuration
@@ -88,14 +87,14 @@ class Page(Element):
         return result.values()
 
     @renderer
-    def title(self, request: IRequest, tag: Tag) -> KleinRenderable:
+    def title(self, request: IRequest, tag: Tag) -> IRenderable:
         """
         `<title>` element.
         """
-        return tag.clone()(self.name)
+        return tag.clone()(self.name)  # type: ignore[return-value]
 
     @renderer
-    def head(self, request: IRequest, tag: Tag) -> KleinRenderable:
+    def head(self, request: IRequest, tag: Tag) -> IRenderable:
         """
         `<head>` element.
         """
@@ -114,7 +113,7 @@ class Page(Element):
         if "imports" in tag.attributes:
             del tag.attributes["imports"]
 
-        return tag(
+        return tag(  # type: ignore[return-value]
             # Resource metadata
             tags.meta(charset="utf-8"),
             tags.meta(
@@ -145,53 +144,49 @@ class Page(Element):
         )
 
     @renderer
-    def container(self, request: IRequest, tag: Tag) -> KleinRenderable:
+    def container(self, request: IRequest, tag: Tag) -> IRenderable:
         """
         App container.
         """
         tag.children.insert(0, self.top(request))
-        return tag(self.bottom(request), Class="container-fluid")
+        return tag(  # type: ignore[return-value]
+            self.bottom(request), Class="container-fluid"
+        )
 
     @renderer
-    def top(self, request: IRequest, tag: Tag | None = None) -> KleinRenderable:
+    def top(self, request: IRequest, tag: Tag | None = None) -> IRenderable:
         """
         Top elements.
         """
-        return (
+        return (  # type: ignore[return-value]
             self.nav(request),
             self.header(request),
             self.title(request, tags.h1.clone()(id="doc-title")),
         )
 
     @renderer
-    def bottom(
-        self, request: IRequest, tag: Tag | None = None
-    ) -> KleinRenderable:
+    def bottom(self, request: IRequest, tag: Tag | None = None) -> IRenderable:
         """
         Bottom elements.
         """
-        return (self.footer(request),)
+        return (self.footer(request),)  # type: ignore[return-value]
 
     @renderer
-    def nav(self, request: IRequest, tag: Tag | None = None) -> KleinRenderable:
+    def nav(self, request: IRequest, tag: Tag | None = None) -> IRenderable:
         """
         `<nav>` element.
         """
         return NavElement(config=self.config)
 
     @renderer
-    def header(
-        self, request: IRequest, tag: Tag | None = None
-    ) -> KleinRenderable:
+    def header(self, request: IRequest, tag: Tag | None = None) -> IRenderable:
         """
         `<header>` element.
         """
         return HeaderElement(config=self.config)
 
     @renderer
-    def footer(
-        self, request: IRequest, tag: Tag | None = None
-    ) -> KleinRenderable:
+    def footer(self, request: IRequest, tag: Tag | None = None) -> IRenderable:
         """
         `<footer>` element.
         """

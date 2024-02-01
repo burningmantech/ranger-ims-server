@@ -23,6 +23,7 @@ from typing import ClassVar
 from attrs import frozen
 from hyperlink import URL
 from klein import KleinRenderable
+from klein._app import KleinSynchronousRenderable
 from twisted.web.iweb import IRequest
 
 from ims.auth import Authorization, NotAuthorizedError
@@ -80,7 +81,7 @@ class WebApplication:
     @router.route(_unprefix(URLs.viewEvent), methods=("HEAD", "GET"))
     async def viewIncidentsResource(
         self, request: IRequest, event_id: str
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Event root page.
 
@@ -101,7 +102,7 @@ class WebApplication:
 
     @router.route(_unprefix(URLs.admin), methods=("HEAD", "GET"))
     @static
-    async def adminPage(self, request: IRequest) -> KleinRenderable:
+    async def adminPage(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Endpoint for admin page.
         """
@@ -114,7 +115,9 @@ class WebApplication:
         return AdminRootPage(config=self.config)
 
     @router.route(_unprefix(URLs.adminEvents), methods=("HEAD", "GET"))
-    async def adminEventsPage(self, request: IRequest) -> KleinRenderable:
+    async def adminEventsPage(
+        self, request: IRequest
+    ) -> KleinSynchronousRenderable:
         """
         Endpoint for access control page.
         """
@@ -129,7 +132,7 @@ class WebApplication:
     @router.route(_unprefix(URLs.adminIncidentTypes), methods=("HEAD", "GET"))
     async def adminAdminIncidentTypesPagePage(
         self, request: IRequest
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Endpoint for incident types admin page.
         """
@@ -142,7 +145,9 @@ class WebApplication:
         return AdminIncidentTypesPage(config=self.config)
 
     @router.route(_unprefix(URLs.adminStreets), methods=("HEAD", "GET"))
-    async def adminStreetsPage(self, request: IRequest) -> KleinRenderable:
+    async def adminStreetsPage(
+        self, request: IRequest
+    ) -> KleinSynchronousRenderable:
         """
         Endpoint for streets admin page.
         """
@@ -157,7 +162,7 @@ class WebApplication:
     @router.route(_unprefix(URLs.viewIncidents), methods=("HEAD", "GET"))
     async def viewIncidentsPage(
         self, request: IRequest, event_id: str
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Endpoint for the incidents page.
         """
@@ -183,7 +188,7 @@ class WebApplication:
     @router.route(_unprefix(URLs.viewIncidentNumber), methods=("HEAD", "GET"))
     async def viewIncidentPage(
         self, request: IRequest, event_id: str, number: str
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Endpoint for the incident page.
         """
@@ -216,7 +221,7 @@ class WebApplication:
     @router.route(_unprefix(URLs.viewIncidentReports), methods=("HEAD", "GET"))
     async def viewIncidentReportsPage(
         self, request: IRequest, event_id: str
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Endpoint for the incident reports page.
         """
@@ -248,7 +253,7 @@ class WebApplication:
     )
     async def viewIncidentReportPage(
         self, request: IRequest, event_id: str, number: str
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Endpoint for the incident report page.
         """

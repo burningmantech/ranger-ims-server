@@ -18,13 +18,14 @@
 Incident Management System web service.
 """
 
-from typing import ClassVar
+from typing import ClassVar, cast
 
 from attrs import Factory, field, frozen
 from klein import KleinRenderable
 from twisted.logger import globalLogPublisher
 from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
+from twisted.web.resource import IResource
 from twisted.web.static import File
 
 import ims.element
@@ -184,7 +185,7 @@ class MainApplication:
         """
         External application resource.
         """
-        return self.externalApplication.router.resource()
+        return cast(IResource, self.externalApplication.router.resource())
 
     @router.route(URLs.app, branch=True)
     @static

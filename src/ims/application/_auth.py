@@ -23,6 +23,7 @@ from typing import ClassVar
 from attrs import frozen
 from hyperlink import URL
 from klein import KleinRenderable
+from klein._app import KleinSynchronousRenderable
 from twisted.logger import Logger
 from twisted.web.iweb import IRequest
 
@@ -52,7 +53,9 @@ class AuthApplication:
     config: Configuration
 
     @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
-    def login(self, request: IRequest, failed: bool = False) -> KleinRenderable:
+    def login(
+        self, request: IRequest, failed: bool = False
+    ) -> KleinSynchronousRenderable:
         """
         Endpoint for the login page.
         """
@@ -63,7 +66,9 @@ class AuthApplication:
         return LoginPage(config=self.config, failed=failed)
 
     @router.route(_unprefix(URLs.login), methods=("POST",))
-    async def loginSubmit(self, request: IRequest) -> KleinRenderable:
+    async def loginSubmit(
+        self, request: IRequest
+    ) -> KleinSynchronousRenderable:
         """
         Endpoint for a login form submission.
         """
