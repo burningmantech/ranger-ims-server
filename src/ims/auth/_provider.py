@@ -404,12 +404,6 @@ class AuthProvider:
                     authorizations |= Authorization.imsAdmin
 
         if eventID is not None:
-            # When using SQLite, eventID seems to be of type Event, rather than
-            # of type str. That leads to calls to this function all failing,
-            # in self.store.writers(eventID). This hack at least unbreaks the
-            # function.
-            if not isinstance(eventID, str):
-                eventID = eventID.id
             if self._matchACL(
                 user, frozenset(await self.store.writers(eventID))
             ):
