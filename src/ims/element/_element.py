@@ -223,7 +223,8 @@ class Element(BaseElement):
             [
                 event.id
                 for event in await self.config.store.events()
-                if relevantAuthorizations & await authorizationsForUser(event.id)
+                if relevantAuthorizations
+                & await authorizationsForUser(event.id)
             ]
         )
 
