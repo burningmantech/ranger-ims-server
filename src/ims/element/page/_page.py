@@ -24,7 +24,7 @@ from typing import cast
 
 from attrs import mutable
 from hyperlink import URL
-from twisted.web.iweb import IRequest, IRenderable
+from twisted.web.iweb import IRenderable, IRequest
 from twisted.web.template import Tag, renderer, tags
 
 from ims.config import Configuration
@@ -165,9 +165,7 @@ class Page(Element):
         )
 
     @renderer
-    def bottom(
-        self, request: IRequest, tag: Tag | None = None
-    ) -> IRenderable:
+    def bottom(self, request: IRequest, tag: Tag | None = None) -> IRenderable:
         """
         Bottom elements.
         """
@@ -181,18 +179,14 @@ class Page(Element):
         return NavElement(config=self.config)
 
     @renderer
-    def header(
-        self, request: IRequest, tag: Tag | None = None
-    ) -> IRenderable:
+    def header(self, request: IRequest, tag: Tag | None = None) -> IRenderable:
         """
         `<header>` element.
         """
         return HeaderElement(config=self.config)
 
     @renderer
-    def footer(
-        self, request: IRequest, tag: Tag | None = None
-    ) -> IRenderable:
+    def footer(self, request: IRequest, tag: Tag | None = None) -> IRenderable:
         """
         `<footer>` element.
         """
