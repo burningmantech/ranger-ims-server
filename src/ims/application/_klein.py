@@ -377,7 +377,8 @@ class Router(Klein):
             Redirect.
             """
             assert failure.value is not None
-            url = URL.fromText(failure.value.args[0])
+            assert isinstance(failure.value, RequestRedirect)
+            url = URL.fromText(failure.value.new_url)
             return redirect(request, url)
 
         @self.handle_errors(NotFound)
