@@ -17,7 +17,7 @@ jobs:
       - name: Harden CI
         uses: step-security/harden-runner@v2.7.0
         with:
-          egress-policy: audit
+          egress-policy: block
 
       - name: Check user
         if: ${{ ! contains('["wsanchez", "mikeburg", "plapsley"]', github.actor) }}
@@ -72,7 +72,7 @@ jobs:
       - name: Harden CI
         uses: step-security/harden-runner@v2.7.0
         with:
-          egress-policy: audit
+          egress-policy: block
 
       - name: Check user
         if: ${{ ! contains('["wsanchez", "mikeburg", "plapsley"]', github.actor) }}
