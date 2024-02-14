@@ -306,9 +306,21 @@ jobs:
           name: trial
           path: .tox/${TOX_ENV}/log/trial.log
 
+      # The Codecov service causes too many CI failures.
+      # We'll verify coverage ourselves but attempt to upload to Codecov so that
+      # (when uploads work) we can use its features without relying on it to pass CI.
+
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.tox-prefix == 'coverage' }}
+        with:
+          name: coverage-data-${{ matrix.os }}-${{ matrix.python-version }}
+          path: .coverage.*
+  
       # Use the latest supported Python version for combining coverage to
       # prevent parsing errors in older versions when looking at modern code.
-      - uses: "actions/setup-python@v5"
+      - name: Install latest Python
+        uses: "actions/setup-python@v5"
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
           python-version: "3.12"
@@ -320,7 +332,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: .tox/coverage.xml
           env_vars: GITHUB_REF,GITHUB_COMMIT,GITHUB_USER,GITHUB_WORKFLOW
-          fail_ci_if_error: true
+          fail_ci_if_error: false
         env:
           GITHUB_REF: ${{ github.ref }}
           GITHUB_COMMIT: ${{ github.sha }}
@@ -328,6 +340,47 @@ jobs:
           GITHUB_WORKFLOW: ${{ github.workflow }}
 
 
+  coverage:
+    name: Check code coverage
+
+    needs: unit
+    if: ${{ always() }}
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      # Use the latest supported Python version for combining coverage to
+      # prevent parsing errors in older versions when looking at modern code.
+      - name: Install Python
+        uses: "actions/setup-python@v5"
+        if: ${{ matrix.tox-prefix == 'coverage' }}
+        with:
+          python-version: "3.12"
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-data-*
+          merge-multiple: true
+
+      - name: Check coverage
+        run: |
+          pip install coverage
+          coverage combine
+          if ! coverage report --fail-under=100; then
+            coverage html --skip-covered --skip-empty
+            coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Upload coverage report if check failed
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() }}
+        with:
+          name: coverage-report
+          path: htmlcov
+
+  
   docker-build:
     name: Build Docker image
 
