@@ -310,12 +310,16 @@ jobs:
       # We'll verify coverage ourselves but attempt to upload to Codecov so that
       # (when uploads work) we can use its features without relying on it to pass CI.
 
+      - name: DEBUG
+        if: ${{ matrix.tox-prefix == 'coverage' }}
+        run: find . -name '*coverage*' -print
+
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
           name: coverage-data-${{ matrix.os }}-${{ matrix.python-version }}
-          path: .coverage.*
+          path: .tox/coverage.*
 
       # Use the latest supported Python version for combining coverage to
       # prevent parsing errors in older versions when looking at modern code.
@@ -365,6 +369,8 @@ jobs:
 
       - name: Check coverage
         run: |
+          export COVERAGE_FILE="./.tox/coverage"
+          find . -name '*coverage*' -print
           pip install coverage
           coverage combine
           if ! coverage report --fail-under=100; then
