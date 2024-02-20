@@ -365,6 +365,9 @@ jobs:
 
       - name: Check coverage
         run: |
+          echo "-------------------------"
+          find . -name '*coverage*' -print
+          echo "-------------------------"
           COVERAGE_FILE="coverage"
           pip install coverage
           coverage combine
