@@ -10,6 +10,6 @@ PyMySQL==1.1.0
 pyOpenSSL==24.0.0
 PyYAML==6.0.1
 service-identity==24.1.0
-Twisted==23.10.0
+Twisted==24.3.0
 Werkzeug==3.0.1
 zope.interface==6.2
