@@ -1,7 +1,7 @@
 version: '3.7'
 
 services:
-  ims_server: 
+  ims_server:
     container_name: ims_server
     user: :${DAEMON_GROUP_ID:-1420}
     build:
