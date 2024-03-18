@@ -1,6 +1,7 @@
 services:
-  server:
+  app: 
     build: .
+    container_name: ranger_ims_server
     user: :${DAEMON_GROUP_ID:-1420}
     environment:
       IMS_DIRECTORY: File
@@ -21,6 +22,7 @@ services:
       - "--config"
       - "/opt/ims/conf/imsd.conf"
       - server
+      
   mysql:
     image: mariadb:10.5.24
     environment:
