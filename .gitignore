@@ -10,3 +10,4 @@
 /htmldocs/
 /src/*.egg-info/
 __pycache__/
+.sample.env
