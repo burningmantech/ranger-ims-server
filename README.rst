@@ -87,6 +87,17 @@ In the box labeled ``Access for Test (writers)``, enter the string ``*``.  That 
 
 You should now be able to select your new event from the ``Event`` menu at the top right, and then create new incidents within that event.
 
+Development with docker
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Build the Docker Image:
+
+    docker compose build app
+
+Run the App
+
+    docker compose up app -d
+
 Pull Requests
 ~~~~~~~~~~~~~
 
