@@ -1,4 +1,3 @@
-include .bandit
 include .codecov.yml
 include .coveragerc
 include .dockerignore

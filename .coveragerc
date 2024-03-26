@@ -6,9 +6,7 @@ source = ims
 [paths]
 source=
    src/ims
-   .tox/*/lib/python*/site-packages/ims
-   .tox/*/Lib/site-packages/ims
-   .tox/pypy*/site-packages/ims
+   .tox/py*/**/site-packages
 
 [report]
 exclude_lines =
