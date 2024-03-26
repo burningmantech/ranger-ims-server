@@ -76,6 +76,3 @@ extend-ignore =
 
     # End of list (allows last item to end with trailing ',')
     EOL
-
-# flake8-import-order: local module name space
-application-import-names = ims
