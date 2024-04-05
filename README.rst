@@ -41,6 +41,21 @@ To run all of the default test environments::
 Running the Server
 ~~~~~~~~~~~~~~~~~~
 
+------------------
+ With docker-compose
+------------------
+
+Run::
+
+    # First time setup; these files are mounted into the container
+    cp conf/directory-sample.yaml conf/directory.yaml
+
+    docker-compose up
+
+------------------
+ Outside docker
+------------------
+
 To run the server will require some configuration, and if you try to start the server with the default configuration, you will probably see an error such as this::
 
     2020-03-12T09:16:55-0700 [ims.run._command.Command#info] Setting up web service at http://localhost:80/

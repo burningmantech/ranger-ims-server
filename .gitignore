@@ -1,6 +1,7 @@
 /.docker_environment
 /.hypothesis
 /.tox
+/.docker
 /build/
 /cached/
 /data/
