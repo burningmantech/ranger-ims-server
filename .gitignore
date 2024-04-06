@@ -1,7 +1,6 @@
 /.docker_environment
 /.hypothesis
 /.tox
-/.docker
 /build/
 /cached/
 /data/
@@ -10,4 +9,6 @@
 /htmldocs/
 /src/*.egg-info/
 __pycache__/
-.sample.env
+*.env
+/.docker/*
+!/.docker/sample.env
