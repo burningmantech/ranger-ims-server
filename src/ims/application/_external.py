@@ -38,6 +38,7 @@ from twisted.python.zippath import ZipArchive
 from twisted.web import error, http
 from twisted.web._newclient import _ensureValidMethod, _ensureValidURI
 from twisted.web.client import URI, PartialDownloadError
+from twisted.web.static import File
 from twisted.web.iweb import IRequest
 
 from ims.config import Configuration, URLs
@@ -697,14 +698,6 @@ class ExternalApplication:
         f"v{bootstrapVersionNumber}/{bootstrapVersion}.zip"
     )
 
-    jqueryJSSourceURL = URL.fromText(
-        f"https://code.jquery.com/{jqueryVersion}.min.js"
-    )
-
-    jqueryMapSourceURL = URL.fromText(
-        f"https://code.jquery.com/{jqueryVersion}.min.map"
-    )
-
     dataTablesSourceURL = URL.fromText(
         f"https://datatables.net/releases/"
         f"DataTables-{dataTablesVersionNumber}.zip"
@@ -751,8 +744,12 @@ class ExternalApplication:
         request.setHeader(
             HeaderName.contentType.value, ContentType.javascript.value
         )
-        return await self.cachedResource(
-            request, self.jqueryJSSourceURL, f"{self.jqueryVersion}.min.js"
+
+        return File(
+            (Path(__file__).parent.parent
+            / "element"
+            / "static"
+            / f"{self.jqueryVersion}.min.js").absolute()
         )
 
     @router.route(_unprefix(URLs.jqueryMap), methods=("HEAD", "GET"))
@@ -762,8 +759,11 @@ class ExternalApplication:
         Endpoint for the jQuery map file.
         """
         request.setHeader(HeaderName.contentType.value, ContentType.json.value)
-        return await self.cachedResource(
-            request, self.jqueryMapSourceURL, f"{self.jqueryVersion}.min.map"
+        return File(
+            (Path(__file__).parent.parent
+            / "element"
+            / "static"
+            / f"{self.jqueryVersion}.min.map").absolute()
         )
 
     @router.route(

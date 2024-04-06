@@ -28,3 +28,5 @@ recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include src *.txt
 recursive-include src/ims/element/static *.zip
+recursive-include src/ims/element/static *.js
+recursive-include src/ims/element/static *.map
