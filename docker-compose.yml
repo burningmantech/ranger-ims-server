@@ -16,10 +16,8 @@ services:
     ports:
      - ${IMS_SERVER_PORT:-8080}:8080
     depends_on:
-      mysql:
+      database:
         condition: service_healthy
-    links:
-      - mysql
     command:
       - /opt/ims/bin/ims
       - "--log-file"
@@ -29,7 +27,7 @@ services:
       - server
 
   database:
-    image: mariadb:10.5.24
+    image: ${IMS_DB_IMAGE:-mariadb:10.5.24}"
     container_name: ranger_ims_database
     environment:
       MARIADB_DATABASE: "${IMS_DB_DATABASE:-ims}"
