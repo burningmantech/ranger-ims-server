@@ -9,7 +9,7 @@ services:
       IMS_DB_HOST_NAME: "${IMS_DB_HOST_NAME:-ranger_ims_database}" 
       IMS_DB_DATABASE: "${IMS_DB_DATABASE:-ims}" 
       IMS_DB_USER_NAME: "${IMS_DB_USER_NAME:-ims}" 
-      IMS_DB_PASSWORD: "${IMS_DB_PASSWORD:-7B33108D-4CD4-41B5-A244-B16F97038860}"
+      IMS_DB_PASSWORD: "${IMS_DB_PASSWORD:-ims}"
     volumes:
       - ./conf:/opt/ims/conf
       - ./:/srv/ims
@@ -31,7 +31,7 @@ services:
     container_name: ranger_ims_database
     environment:
       MARIADB_DATABASE: "${IMS_DB_DATABASE:-ims}"
-      MARIADB_PASSWORD: "${IMS_DB_PASSWORD:-7B33108D-4CD4-41B5-A244-B16F97038860}"
+      MARIADB_PASSWORD: "${IMS_DB_PASSWORD:-ims}"
       MARIADB_ROOT_HOST: "${IMS_DB_ROOT_HOST:-%}"
       MARIADB_ROOT_PASSWORD: "${IMS_DB_ROOT_PASSWORD:-ims-root}"
     volumes:
