@@ -51,6 +51,10 @@ Run::
     cp conf/imsd-docker-compose-sample.conf conf/imsd.conf
     cp conf/directory-sample.yaml conf/directory.yaml
 
+    If you need to override any of the environment variables set in 
+    `docker-compose.yml`, copy `.docker/sample.env` to `/.env` and 
+    uncomment and edit the neccessary variables.
+
     docker compose up
 
 ------------------
@@ -87,16 +91,6 @@ In the box labeled ``Access for Test (writers)``, enter the string ``*``.  That 
 
 You should now be able to select your new event from the ``Event`` menu at the top right, and then create new incidents within that event.
 
-Development with docker
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Build the Docker Image:
-
-    docker compose build app
-
-Run the App
-
-    docker compose up app -d
 
 Pull Requests
 ~~~~~~~~~~~~~
