@@ -38,8 +38,8 @@ from twisted.python.zippath import ZipArchive
 from twisted.web import error, http
 from twisted.web._newclient import _ensureValidMethod, _ensureValidURI
 from twisted.web.client import URI, PartialDownloadError
-from twisted.web.static import File
 from twisted.web.iweb import IRequest
+from twisted.web.static import File
 
 from ims.config import Configuration, URLs
 from ims.ext.klein import ContentType, HeaderName, static
@@ -746,10 +746,12 @@ class ExternalApplication:
         )
 
         return File(
-            (Path(__file__).parent.parent
-            / "element"
-            / "static"
-            / f"{self.jqueryVersion}.min.js").absolute()
+            (
+                Path(__file__).parent.parent
+                / "element"
+                / "static"
+                / f"{self.jqueryVersion}.min.js"
+            ).absolute()
         )
 
     @router.route(_unprefix(URLs.jqueryMap), methods=("HEAD", "GET"))
@@ -760,10 +762,12 @@ class ExternalApplication:
         """
         request.setHeader(HeaderName.contentType.value, ContentType.json.value)
         return File(
-            (Path(__file__).parent.parent
-            / "element"
-            / "static"
-            / f"{self.jqueryVersion}.min.map").absolute()
+            (
+                Path(__file__).parent.parent
+                / "element"
+                / "static"
+                / f"{self.jqueryVersion}.min.map"
+            ).absolute()
         )
 
     @router.route(
