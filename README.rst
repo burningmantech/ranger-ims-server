@@ -51,8 +51,8 @@ Run::
     cp conf/imsd-docker-compose-sample.conf conf/imsd.conf
     cp conf/directory-sample.yaml conf/directory.yaml
 
-    If you need to override any of the environment variables set in 
-    `docker-compose.yml`, copy `.docker/sample.env` to `/.env` and 
+    If you need to override any of the environment variables set in
+    `docker-compose.yml`, copy `.docker/sample.env` to `/.env` and
     uncomment and edit the neccessary variables.
 
     docker compose up

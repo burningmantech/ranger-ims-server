@@ -1,14 +1,14 @@
 services:
-  app: 
+  app:
     build: .
     container_name: ranger_ims_server
     user: :${DAEMON_GROUP_ID:-1420}
     environment:
       IMS_DIRECTORY: "${IMS_DIRECTORY:-File}"
       IMS_DIRECTORY_FILE: "${IMS_DIRECTORY_FILE:-/opt/ims/conf/directory.yaml}"
-      IMS_DB_HOST_NAME: "${IMS_DB_HOST_NAME:-ranger_ims_database}" 
-      IMS_DB_DATABASE: "${IMS_DB_DATABASE:-ims}" 
-      IMS_DB_USER_NAME: "${IMS_DB_USER_NAME:-ims}" 
+      IMS_DB_HOST_NAME: "${IMS_DB_HOST_NAME:-ranger_ims_database}"
+      IMS_DB_DATABASE: "${IMS_DB_DATABASE:-ims}"
+      IMS_DB_USER_NAME: "${IMS_DB_USER_NAME:-ims}"
       IMS_DB_PASSWORD: "${IMS_DB_PASSWORD:-ims}"
     volumes:
       - ./conf:/opt/ims/conf
@@ -31,7 +31,7 @@ services:
     container_name: ranger_ims_database
     environment:
       MARIADB_DATABASE: "${IMS_DB_DATABASE:-ims}"
-      MARIADB_USER: "${IMS_DB_USER_NAME:-ims}" 
+      MARIADB_USER: "${IMS_DB_USER_NAME:-ims}"
       MARIADB_PASSWORD: "${IMS_DB_PASSWORD:-ims}"
       MARIADB_ROOT_HOST: "${IMS_DB_ROOT_HOST:-%}"
       MARIADB_ROOT_PASSWORD: "${IMS_DB_ROOT_PASSWORD:-ims-root}"
@@ -42,7 +42,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    
+
 networks:
   default:
     name: "${DOCKER_RANGERS_NETWORK:-rangers}"
