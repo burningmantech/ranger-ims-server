@@ -61,6 +61,10 @@ RUN install -o daemon -g daemon -d "${IMS_SERVER_ROOT}"
 # Copy build result
 COPY --from=build "${IMS_INSTALL_DIR}" "${IMS_INSTALL_DIR}"
 
+RUN python -m pip --no-cache-dir install pipx
+RUN pipx install tox
+#RUN tox deps
+
 # Set user and default working directory
 USER daemon:daemon
 WORKDIR "${IMS_SERVER_ROOT}"
