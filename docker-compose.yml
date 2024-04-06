@@ -3,6 +3,7 @@ version: "3.8"
 services:
   server:
     build: .
+    user: :${DAEMON_GROUP_ID:-1420}
     environment:
       IMS_DIRECTORY: File
       IMS_DIRECTORY_FILE: /opt/ims/conf/directory.yaml
