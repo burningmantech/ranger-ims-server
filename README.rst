@@ -48,9 +48,10 @@ Running the Server
 Run::
 
     # First time setup; these files are mounted into the container
+    cp conf/imsd-docker-compose-sample.conf conf/imsd.conf
     cp conf/directory-sample.yaml conf/directory.yaml
 
-    docker-compose up
+    docker compose up
 
 ------------------
  Outside docker
@@ -72,6 +73,11 @@ To set up a configuration for development, start by copying the example configur
 To build and run the server (for development only)::
 
     tox run -e exec
+
+
+------------------
+ Settings Permissions
+------------------
 
 In your browser, open http://localhost:8080/ to reach the server. Log in as any user in the ``conf/directory.yaml`` directory file. In the ``conf/imsd.conf`` sample configuration file, the users ``Hardware`` and ``Loosy`` are administrators, and in the sample directory, all users have passwords that match their handles. You'll want to log in as one of those to set up an Event.
 

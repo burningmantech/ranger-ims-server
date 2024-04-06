@@ -6,23 +6,25 @@ services:
     user: :${DAEMON_GROUP_ID:-1420}
     environment:
       IMS_DIRECTORY: File
-      IMS_DIRECTORY_FILE: /opt/ims/conf/directory.yaml
-      IMS_DB_HOST_NAME: mysql
-      IMS_DB_DATABASE: ims
-      IMS_DB_USER_NAME: ims
-      IMS_DB_PASSWORD: ims
     volumes:
       - ./conf:/opt/ims/conf
       - ./:/srv/ims
     ports:
-      - "8080:80"
+      - "8080:8080"
     depends_on:
       mysql:
         condition: service_healthy
     links:
       - mysql
+    command:
+      - /opt/ims/bin/ims
+      - "--log-file"
+      - "-"
+      - "--config"
+      - "/opt/ims/conf/imsd.conf"
+      - server
   mysql:
-    image: mariadb:10.5.17
+    image: mariadb:10.5.24
     environment:
       MARIADB_DATABASE: ims
       MARIADB_USER: ims
@@ -32,7 +34,7 @@ services:
     volumes:
       - ./.docker/mysql/data/:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "--password=ims-root"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 5
