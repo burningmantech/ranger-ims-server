@@ -1,6 +1,7 @@
 include .codecov.yml
 include .coveragerc
 include .dockerignore
+include .docker/sample.env
 include .flake8
 include .isort.cfg
 include .pre-commit-config.yaml
@@ -17,6 +18,7 @@ include codecov.yml
 include conf/directory-sample.yaml
 include conf/imsd-sample.conf
 include COPYRIGHT.txt
+include docker-compose.yml
 include Dockerfile
 include LICENSE.txt
 include mypy.ini
@@ -24,6 +26,7 @@ include pyproject.toml
 include README.rst
 include requirements/requirements*.txt
 include tox.ini
+recursive-include conf *.conf
 recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include src *.txt
