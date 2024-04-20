@@ -210,7 +210,7 @@ jobs:
         include:
           # Test Python beta but allow it to fail
           - os: "ubuntu-latest"
-            python-version: "3.13.0-alpha.3"
+            python-version: "3.13.0-alpha.6"
             optional: true
             tox-prefix: "test"
             if: github.ref != 'refs/heads/master'
