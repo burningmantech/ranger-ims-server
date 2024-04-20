@@ -11,5 +11,5 @@ pyOpenSSL==24.1.0
 PyYAML==6.0.1
 service-identity==24.1.0
 Twisted==24.3.0
-Werkzeug==3.0.1
-zope.interface==6.2
+Werkzeug==3.0.2
+zope.interface==6.3
