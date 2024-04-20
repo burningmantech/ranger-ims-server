@@ -213,6 +213,7 @@ jobs:
             python-version: "3.13.0-alpha.3"
             optional: true
             tox-prefix: "test"
+            if: github.ref != 'refs/heads/master'
 
     services:
       mysql:
@@ -330,7 +331,7 @@ jobs:
           python-version: "3.12"
 
       - name: "Upload coverage to Codecov"
-        uses: "codecov/codecov-action@v3"
+        uses: "codecov/codecov-action@v4"
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -511,7 +512,7 @@ jobs:
       - name: Harden CI
         uses: step-security/harden-runner@v2.7.0
         with:
-          egress-policy: block
+          egress-policy: audit
 
       - name: Checkout source code
         uses: actions/checkout@v4
