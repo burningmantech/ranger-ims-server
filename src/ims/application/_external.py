@@ -698,11 +698,11 @@ class ExternalApplication:
     )
 
     jqueryJSSourceURL = URL.fromText(
-        f"https://code.jquery.com/{jqueryVersion}.min.js"
+        f"http://code.jquery.com/{jqueryVersion}.min.js"
     )
 
     jqueryMapSourceURL = URL.fromText(
-        f"https://code.jquery.com/{jqueryVersion}.min.map"
+        f"http://code.jquery.com/{jqueryVersion}.min.map"
     )
 
     dataTablesSourceURL = URL.fromText(
