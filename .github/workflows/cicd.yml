@@ -213,7 +213,6 @@ jobs:
             python-version: "3.13.0-alpha.3"
             optional: true
             tox-prefix: "test"
-            if: github.ref != 'refs/heads/master'
 
     services:
       mysql:
