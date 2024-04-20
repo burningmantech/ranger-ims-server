@@ -452,7 +452,7 @@ jobs:
       - name: Harden CI
         uses: step-security/harden-runner@v2.7.0
         with:
-          egress-policy: block
+          egress-policy: audit
 
       - name: Checkout source code
         uses: actions/checkout@v4
