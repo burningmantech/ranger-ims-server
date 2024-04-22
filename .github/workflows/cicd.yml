@@ -452,7 +452,17 @@ jobs:
       - name: Harden CI
         uses: step-security/harden-runner@v2.7.0
         with:
+          disable-sudo: true
           egress-policy: block
+          allowed-endpoints: >
+            655216687927.dkr.ecr.us-west-2.amazonaws.com:443
+            api.ecr.us-west-2.amazonaws.com:443
+            ecs.us-west-2.amazonaws.com:443
+            email-smtp.us-west-2.amazonaws.com:465
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+            raw.githubusercontent.com:443
 
       - name: Checkout source code
         uses: actions/checkout@v4

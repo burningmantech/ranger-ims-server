@@ -11,7 +11,7 @@ repos:
         args: ["--py312-plus"]
 
   - repo: https://github.com/psf/black
-    rev: "24.3.0"
+    rev: "24.4.0"
     hooks:
       - id: black
         args: ["--target-version", "py312"]
@@ -82,12 +82,15 @@ repos:
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: fix-byte-order-marker
+      - id: end-of-file-fixer
       - id: forbid-new-submodules
       - id: mixed-line-ending
       - id: name-tests-test
         args:
           - --pytest-test-first
       - id: requirements-txt-fixer
+      - id: no-commit-to-branch
+        args: ["--branch", "master"]
       - id: trailing-whitespace
 
   - repo: https://github.com/pre-commit/pygrep-hooks
