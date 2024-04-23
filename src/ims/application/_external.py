@@ -698,11 +698,13 @@ class ExternalApplication:
     )
 
     jqueryJSSourceURL = URL.fromText(
-        f"https://cdnjs.cloudflare.com/ajax/libs/jquery/{jqueryVersionNumber}/jquery.min.js"
+        f"https://cdnjs.cloudflare.com/ajax/libs/jquery/"
+        f"{jqueryVersionNumber}/jquery.min.js"
     )
 
     jqueryMapSourceURL = URL.fromText(
-        f"https://cdnjs.cloudflare.com/ajax/libs/jquery/{jqueryVersionNumber}/jquery.min.map"
+        f"https://cdnjs.cloudflare.com/ajax/libs/jquery/"
+        f"{jqueryVersionNumber}/jquery.min.map"
     )
 
     dataTablesSourceURL = URL.fromText(
