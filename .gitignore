@@ -9,3 +9,6 @@
 /htmldocs/
 /src/*.egg-info/
 __pycache__/
+*.env
+/.docker/*
+!/.docker/sample.env

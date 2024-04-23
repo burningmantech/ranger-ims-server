@@ -41,6 +41,26 @@ To run all of the default test environments::
 Running the Server
 ~~~~~~~~~~~~~~~~~~
 
+--------------------
+With docker-compose
+--------------------
+
+Run::
+
+    # First time setup; these files are mounted into the container
+    cp conf/imsd-docker-compose-sample.conf conf/imsd.conf
+    cp conf/directory-sample.yaml conf/directory.yaml
+
+    If you need to override any of the environment variables set in
+    `docker-compose.yml`, copy `.docker/sample.env` to `/.env` and
+    uncomment and edit the neccessary variables.
+
+    docker compose up
+
+------------------
+Outside docker
+------------------
+
 To run the server will require some configuration, and if you try to start the server with the default configuration, you will probably see an error such as this::
 
     2020-03-12T09:16:55-0700 [ims.run._command.Command#info] Setting up web service at http://localhost:80/
@@ -58,6 +78,11 @@ To build and run the server (for development only)::
 
     tox run -e exec
 
+
+---------------------
+Settings Permissions
+---------------------
+
 In your browser, open http://localhost:8080/ to reach the server. Log in as any user in the ``conf/directory.yaml`` directory file. In the ``conf/imsd.conf`` sample configuration file, the users ``Hardware`` and ``Loosy`` are administrators, and in the sample directory, all users have passwords that match their handles. You'll want to log in as one of those to set up an Event.
 
 Use the pull-down menu at the top right corner of the page (it will show the logged in user's Ranger handle), and select ``Admin``. On the next page, navigate to the Events page and create an event called ``Test``.
@@ -65,6 +90,7 @@ Use the pull-down menu at the top right corner of the page (it will show the log
 In the box labeled ``Access for Test (writers)``, enter the string ``*``.  That will give all users the ability to create and edit incidents in that event.
 
 You should now be able to select your new event from the ``Event`` menu at the top right, and then create new incidents within that event.
+
 
 Pull Requests
 ~~~~~~~~~~~~~

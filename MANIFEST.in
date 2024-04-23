@@ -1,5 +1,6 @@
 include .codecov.yml
 include .coveragerc
+include .docker/sample.env
 include .dockerignore
 include .flake8
 include .isort.cfg
@@ -15,8 +16,10 @@ include bin/shell
 include bin/test_docker
 include codecov.yml
 include conf/directory-sample.yaml
+include conf/imsd-docker-compose-sample.conf
 include conf/imsd-sample.conf
 include COPYRIGHT.txt
+include docker-compose.yml
 include Dockerfile
 include LICENSE.txt
 include mypy.ini
