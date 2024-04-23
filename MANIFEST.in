@@ -1,6 +1,6 @@
-exclude docker-compose.yml
 include .codecov.yml
 include .coveragerc
+include .docker/sample.env
 include .dockerignore
 include .flake8
 include .isort.cfg
@@ -16,8 +16,10 @@ include bin/shell
 include bin/test_docker
 include codecov.yml
 include conf/directory-sample.yaml
+include conf/imsd-docker-compose-sample.conf
 include conf/imsd-sample.conf
 include COPYRIGHT.txt
+include docker-compose.yml
 include Dockerfile
 include LICENSE.txt
 include mypy.ini
@@ -25,9 +27,7 @@ include pyproject.toml
 include README.rst
 include requirements/requirements*.txt
 include tox.ini
-recursive-include conf *.conf
 recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include src *.txt
 recursive-include src/ims/element/static *.zip
-recursive-exclude .docker *.env
