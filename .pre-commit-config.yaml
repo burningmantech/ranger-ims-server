@@ -11,7 +11,7 @@ repos:
         args: ["--py312-plus"]
 
   - repo: https://github.com/psf/black
-    rev: "24.4.0"
+    rev: "24.4.2"
     hooks:
       - id: black
         args: ["--target-version", "py312"]
