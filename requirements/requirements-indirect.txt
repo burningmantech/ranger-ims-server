@@ -5,7 +5,7 @@ charset-normalizer==3.3.2
 constantly==23.10.4
 Deprecated==1.2.14
 exceptiongroup==1.2.2
-idna==3.8
+idna==3.10
 incremental==24.7.2
 MarkupSafe==2.1.5
 packaging==24.1
