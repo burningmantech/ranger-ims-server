@@ -547,7 +547,7 @@ function drawRangers() {
 
 
 function drawRangersToAdd() {
-    var select = $("#ranger_add");
+    var datalist = $("#ranger_handles");
 
     var handles = [];
     for (var handle in personnel) {
@@ -555,8 +555,8 @@ function drawRangersToAdd() {
     }
     handles.sort((a, b) => a.localeCompare(b));
 
-    select.empty();
-    select.append($("<option />"));
+    datalist.empty();
+    datalist.append($("<option />"));
 
     for (var i in handles) {
         var handle = handles[i];
@@ -566,7 +566,7 @@ function drawRangersToAdd() {
         option.val(handle);
         option.text(rangerAsString(ranger));
 
-        select.append(option);
+        datalist.append(option);
     }
 }
 
@@ -1000,6 +1000,12 @@ function addRanger() {
 
     if (handles.indexOf(handle) != -1) {
         // Already in the list, so… move along.
+        select.val("");
+        return;
+    }
+
+    if (!(handle in personnel)) {
+        // Not a valid handle
         select.val("");
         return;
     }
