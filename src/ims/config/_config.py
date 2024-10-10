@@ -388,23 +388,13 @@ class Configuration:
 
         masterKey = parser.valueFromConfig("MASTER_KEY", "Core", "MasterKey")
 
-        tokenLifetimeNormal = TimeDelta(
+        tokenLifetime = TimeDelta(
             seconds=int(
                 parser.valueFromConfig(
-                    "TOKEN_LIFETIME_NORMAL",
+                    "TOKEN_LIFETIME",
                     "Core",
                     "TokenLifetime",
                     str(1 * 60 * 60),
-                )
-            )
-        )
-        tokenLifetimeExtended = TimeDelta(
-            seconds=int(
-                parser.valueFromConfig(
-                    "TOKEN_LIFETIME_EXTENDED",
-                    "Core",
-                    "TokenLifetime",
-                    str(30 * 24 * 60 * 60),
                 )
             )
         )
@@ -430,8 +420,7 @@ class Configuration:
             requireActive=requireActive,
             serverRoot=serverRoot,
             storeFactory=storeFactory,
-            tokenLifetimeExtended=tokenLifetimeExtended,
-            tokenLifetimeNormal=tokenLifetimeNormal,
+            tokenLifetime=tokenLifetime,
         )
 
     cachedResourcesRoot: Path
@@ -449,8 +438,7 @@ class Configuration:
     port: int
     requireActive: bool
     serverRoot: Path
-    tokenLifetimeExtended: TimeDelta
-    tokenLifetimeNormal: TimeDelta
+    tokenLifetime: TimeDelta
 
     _storeFactory: Callable[[], IMSDataStore]
 
