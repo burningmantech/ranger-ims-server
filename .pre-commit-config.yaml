@@ -5,13 +5,13 @@ ci:
 repos:
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: "v3.17.0"
+    rev: "v3.18.0"
     hooks:
       - id: pyupgrade
         args: ["--py312-plus"]
 
   - repo: https://github.com/psf/black
-    rev: "24.8.0"
+    rev: "24.10.0"
     hooks:
       - id: black
         args: ["--target-version", "py312"]
@@ -106,6 +106,6 @@ repos:
       - id: text-unicode-replacement-char
 
   - repo: https://github.com/mgedmin/check-manifest
-    rev: "0.49"
+    rev: "0.50"
     hooks:
       - id: check-manifest
