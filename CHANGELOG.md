@@ -7,22 +7,32 @@ This file must use the [Common Changelog format](https://common-changelog.org/),
 that we use months rather than version numbers. We don't include dependency version upgrades in the
 changelog, as those would pollute this too much.
 
+<!--
+Each month below should look like the following, using the same ordering for the four categories:
+## YYYY-MM
+### Changed
+### Added
+### Removed
+### Fixed
+-->
+
 ## 2024-10
 
-### Added
+### Changed
 
-- Encourage users to log in by email address, rather than by Ranger handle ([#1293](https://github.com/burningmantech/ranger-ims-server/pull/1293))
-- Use text and datalist for "Add Ranger" on incident page, rather than a select ([#1292](https://github.com/burningmantech/ranger-ims-server/pull/1292))
+- Changed login screen to encourage users to log in by email address, rather than by Ranger handle ([#1293](https://github.com/burningmantech/ranger-ims-server/pull/1293))
+- Used text and datalist for "Add Ranger" on incident page, rather than a select field ([#1292](https://github.com/burningmantech/ranger-ims-server/pull/1292))
+- Removed email address from the personnel API endpoint ([#1317](https://github.com/burningmantech/ranger-ims-server/pull/1317))
 
 ### Fixed
 
-- Stop using hardcoded 1-hour limit on IMS sessions; use timeout from JWT instead ([#1301](https://github.com/burningmantech/ranger-ims-server/pull/1301))
+- Stopped using hardcoded 1-hour limit on IMS sessions; use timeout from JWT instead ([#1301](https://github.com/burningmantech/ranger-ims-server/pull/1301))
 
 ## 2024-01
 
 ### Added
 
-- Help user not lose unsaved changes to incident entries and incident report entries ([#1088](https://github.com/burningmantech/ranger-ims-server/pull/1088))
+- Added "Changes you made may not be saved" browser popup when a user might otherwise lose data on incident entries and incident report entries ([#1088](https://github.com/burningmantech/ranger-ims-server/pull/1088))
 
 ### Fixed
 
