@@ -56,5 +56,8 @@ class RangerDeserializationTests(TestCase):
         """
         self.assertEqual(
             jsonDeserialize(jsonFromRanger(ranger), Ranger),
-            ranger.replace(password=None),
+            ranger.replace(
+                email=frozenset(),
+                password=None,
+            ),
         )

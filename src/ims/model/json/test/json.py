@@ -186,9 +186,10 @@ def jsonFromRanger(ranger: Ranger) -> dict[str, Any]:
         handle=ranger.handle,
         name=ranger.name,
         status=jsonFromRangerStatus(ranger.status),
-        directory_id=ranger.directoryID,
-        email=jsonSerialize([e for e in ranger.email]),
+        # email is intentionally not serialized
         enabled=ranger.enabled,
+        directory_id=ranger.directoryID,
+        # password is intentionally not serialized
     )
 
 
