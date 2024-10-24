@@ -327,7 +327,16 @@ function loadUnattachedIncidentReports(success) {
     }
 
     function ok(data, status, xhr) {
-        unattachedIncidentReports = data;
+        const _unattachedIncidentReports = [];
+        for (const d of data) {
+            _unattachedIncidentReports.push(d);
+        }
+        // apply an ascending sort based on the incident report number,
+        // being cautious about incident report number being null
+        _unattachedIncidentReports.sort(function (a, b) {
+            return (a.number ?? -1) - (b.number ?? -1);
+        })
+        unattachedIncidentReports = _unattachedIncidentReports;
 
         if (success != undefined) {
             success();
@@ -789,15 +798,35 @@ function drawIncidentReportsToAttach() {
     if (unattachedIncidentReports.length == 0) {
         container.addClass("hidden");
     } else {
-        for (var i in unattachedIncidentReports) {
-            var report = unattachedIncidentReports[i];
 
-            var option = $("<option />");
+        select.append($("<optgroup label=\"Unattached to any incident\">"));
+        for (const report of unattachedIncidentReports) {
+            // Skip incident reports that *are* attached to an incident
+            if (report.incident != null) {
+                continue;
+            }
+            const option = $("<option />");
             option.val(report.number);
             option.text(incidentReportAsString(report));
 
             select.append(option);
         }
+        select.append($("</optgroup>"));
+
+        select.append($("<optgroup label=\"Attached to another incident\">"));
+        for (const report of unattachedIncidentReports) {
+            // Skip incident reports that *are not* attached to an incident
+            if (report.incident == null) {
+                continue;
+            }
+            const option = $("<option />");
+            option.val(report.number);
+            option.text(incidentReportAsString(report));
+
+            select.append(option);
+        }
+        select.append($("</optgroup>"));
+
         container.removeClass("hidden");
     }
 }
