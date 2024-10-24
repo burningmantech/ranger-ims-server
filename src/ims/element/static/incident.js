@@ -47,19 +47,19 @@ function initIncidentPage() {
 
         // Updates
 
-        subscribeToUpdates();
+        // TODO: this ignores the returned promise, because we don't want to wait on it.
+        //  Is there a more correct way to do that?
+        acquireEventSourceLock();
 
-        eventSource.addEventListener("Incident", function(e) {
-            var jsonText = e.data;
-            var json = JSON.parse(jsonText);
-            var number = json["incident_number"];
-
+        const incidentUpdates = new BroadcastChannel(incidentUpdateChannel);
+        incidentUpdates.onmessage = function (e) {
+            const number = e.data;
             if (number == incidentNumber) {
-                console.log("Got incident update");
+                console.log("Got incident update: " + number);
                 loadAndDisplayIncident();
                 loadAndDisplayIncidentReports();
             }
-        }, true);
+        }
 
         // Keyboard shortcuts
 

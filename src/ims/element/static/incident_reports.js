@@ -75,16 +75,16 @@ function initIncidentReportsTable() {
         enableEditing();
     }
 
-    subscribeToUpdates();
+    // TODO: this ignores the returned promise, because we don't want to wait on it.
+    //  Is there a more correct way to do that?
+    acquireEventSourceLock();
 
-    eventSource.addEventListener("IncidentReport", function(e) {
-        var jsonText = e.data;
-        var json = JSON.parse(jsonText);
-        var number = json["incident_report_number"];
-
+    const incidentReportUpdates = new BroadcastChannel(incidentReportUpdateChannel);
+    incidentReportUpdates.onmessage = function (e) {
+        const number = e.data;
         console.log("Got incident report update: " + number);
         incidentReportsTable.ajax.reload();
-    }, true);
+    }
 }
 
 
