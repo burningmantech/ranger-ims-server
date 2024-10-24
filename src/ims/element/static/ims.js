@@ -831,10 +831,32 @@ function editFromElement(element, jsonKey, transform) {
 // EventSource
 //
 
-var eventSource = null;
+const incidentUpdateChannel = "incident_update";
+const incidentReportUpdateChannel= "incident_report_update";
+const lockName = "eventsource_lock";
 
+// Call this from each browser tab, so that it can queue up to become a leader
+// to manage the eventsource.
+async function acquireEventSourceLock() {
+    console.log("in acquireEventSourceLock");
+    // Acquire the lock, set up the event source, and start
+    // broadcasting events to other tabs
+    await navigator.locks.request(lockName, async () => {
+        console.log("holding lock, calling subscribeToUpdates");
+        subscribeToUpdates();
+        // Await a broken promise, so that the lock is only returned when
+        // the browser navigates away from this page.
+        await new Promise((resolve)=>{})
+    });
+    // we'll never get past the preceding await, because it waits on a broken Promise
+    console.log("released lock...this should never happen");
+}
+
+// This starts the eventsource call and configures event listeners to propagate
+// updates to BroadcastChannels. This function should only be called once in the
+// browser session, across all tabs.
 function subscribeToUpdates() {
-    eventSource = new EventSource(
+    const eventSource = new EventSource(
         url_eventSource, { withCredentials: true }
     );
 
@@ -849,4 +871,29 @@ function subscribeToUpdates() {
             console.log("Event listener error");
         }
     }, true);
+
+    eventSource.addEventListener("Incident", function(e) {
+        const jsonText = e.data;
+        const json = JSON.parse(jsonText);
+        const number = json["incident_number"];
+        console.log("posted incident update to incident " + number);
+
+        const sendChannel = new BroadcastChannel(incidentUpdateChannel);
+        sendChannel.postMessage(number);
+    }, true);
+
+    // TODO: this will never receive any events currently, since the server isn't configured to
+    //  fire events for IncidentReports. See
+    //  https://github.com/burningmantech/ranger-ims-server/blob/954498eb125bb9a83d2b922361abef4935f228ba/src/ims/application/_eventsource.py#L113-L135
+    eventSource.addEventListener("IncidentReport", function(e) {
+        const jsonText = e.data;
+        const json = JSON.parse(jsonText);
+        const number = json["incident_report_number"];
+        console.log("posted incident report update for " + number);
+
+        const sendChannel = new BroadcastChannel(incidentReportUpdateChannel);
+        sendChannel.postMessage(number);
+    }, true);
+
+    console.log("started listening to the event source");
 }
