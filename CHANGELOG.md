@@ -24,9 +24,13 @@ Each month below should look like the following, using the same ordering for the
 - Used text and datalist for "Add Ranger" on incident page, rather than a select field ([#1292](https://github.com/burningmantech/ranger-ims-server/pull/1292))
 - Removed email address from the personnel API endpoint ([#1317](https://github.com/burningmantech/ranger-ims-server/pull/1317))
 
+### Added
+
+- Added groupings to the "add incident report" dropdown, which emphasize which incident reports are or are not attached to any other incident. This also simplified the sort order for that list ([#1321](https://github.com/burningmantech/ranger-ims-server/pull/1321))
+
 ### Fixed
 
-- Stopped using hardcoded 1-hour limit on IMS sessions; use timeout from JWT instead ([#1301](https://github.com/burningmantech/ranger-ims-server/pull/1301))
+- Stopped using hardcoded 1-hour limit on IMS sessions; used timeout from JWT instead ([#1301](https://github.com/burningmantech/ranger-ims-server/pull/1301))
 
 ## 2024-01
 
