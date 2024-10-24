@@ -831,22 +831,69 @@ function editFromElement(element, jsonKey, transform) {
 // EventSource
 //
 
-var eventSource = null;
+const incidentChannelName = "incident_update";
+const incidentReportChannelName= "incident_report_update";
 
-function subscribeToUpdates() {
-    eventSource = new EventSource(
+// Call this from each browsing context, so that it can queue up to become a leader
+// to manage the EventSource.
+function requestEventSourceLock() {
+    // Acquire the lock, set up the event source, and start
+    // broadcasting events to other browsing contexts.
+    navigator.locks.request("ims_eventsource_lock", () => {
+        let resolve;
+        const p = new Promise((res) => {
+            resolve = res;
+        });
+        subscribeToUpdates(resolve);
+        return p;
+    });
+}
+
+// This starts the EventSource call and configures event listeners to propagate
+// updates to BroadcastChannels. The idea is that only one browsing context should
+// have an EventSource connection at any given time.
+//
+// The "closed" param is a callback to notify the caller that the EventSource has
+// been closed.
+function subscribeToUpdates(closed) {
+    const eventSource = new EventSource(
         url_eventSource, { withCredentials: true }
     );
 
-    eventSource.addEventListener("open", function(e) {
+    eventSource.addEventListener("open", function() {
         console.log("Event listener opened");
     }, true);
 
-    eventSource.addEventListener("error", function(e) {
-        if (e.readyState == EventSource.CLOSED) {
+    eventSource.addEventListener("error", function() {
+        if (eventSource.readyState === EventSource.CLOSED) {
             console.log("Event listener closed");
+            eventSource.close();
+            closed();
         } else {
+            // This is likely a retriable error, and EventSource will automatically
+            // attempt reconnection.
             console.log("Event listener error");
         }
+    }, true);
+
+    eventSource.addEventListener("Incident", function(e) {
+        const jsonText = e.data;
+        const json = JSON.parse(jsonText);
+        const number = json["incident_number"];
+
+        const send = new BroadcastChannel(incidentChannelName);
+        send.postMessage(number);
+    }, true);
+
+    // TODO: this will never receive any events currently, since the server isn't configured to
+    //  fire events for IncidentReports. See
+    //  https://github.com/burningmantech/ranger-ims-server/blob/954498eb125bb9a83d2b922361abef4935f228ba/src/ims/application/_eventsource.py#L113-L135
+    eventSource.addEventListener("IncidentReport", function(e) {
+        const jsonText = e.data;
+        const json = JSON.parse(jsonText);
+        const number = json["incident_report_number"];
+
+        const send = new BroadcastChannel(incidentReportChannelName);
+        send.postMessage(number);
     }, true);
 }
