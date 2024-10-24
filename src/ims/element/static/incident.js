@@ -46,20 +46,17 @@ function initIncidentPage() {
         loadAndDisplayIncident(loadedIncident);
 
         // Updates
+        requestEventSourceLock();
 
-        subscribeToUpdates();
-
-        eventSource.addEventListener("Incident", function(e) {
-            var jsonText = e.data;
-            var json = JSON.parse(jsonText);
-            var number = json["incident_number"];
-
+        const incidentChannel = new BroadcastChannel(incidentChannelName);
+        incidentChannel.onmessage = function (e) {
+            const number = e.data;
             if (number == incidentNumber) {
-                console.log("Got incident update");
+                console.log("Got incident update: " + number);
                 loadAndDisplayIncident();
                 loadAndDisplayIncidentReports();
             }
-        }, true);
+        }
 
         // Keyboard shortcuts
 
