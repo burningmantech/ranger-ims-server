@@ -20,6 +20,7 @@ Each month below should look like the following, using the same ordering for the
 
 ### Changed
 
+- Resolved IMS's longstanding 6-open-tab limitation ([#1320](https://github.com/burningmantech/ranger-ims-server/issues/1320)) ([#1322](https://github.com/burningmantech/ranger-ims-server/pull/1322))
 - Changed login screen to encourage users to log in by email address, rather than by Ranger handle ([#1293](https://github.com/burningmantech/ranger-ims-server/pull/1293))
 - Used text and datalist for "Add Ranger" on incident page, rather than a select field ([#1292](https://github.com/burningmantech/ranger-ims-server/pull/1292))
 - Removed email address from the personnel API endpoint ([#1317](https://github.com/burningmantech/ranger-ims-server/pull/1317))
