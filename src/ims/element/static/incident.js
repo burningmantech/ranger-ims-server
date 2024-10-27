@@ -46,20 +46,17 @@ function initIncidentPage() {
         loadAndDisplayIncident(loadedIncident);
 
         // Updates
+        requestEventSourceLock();
 
-        subscribeToUpdates();
-
-        eventSource.addEventListener("Incident", function(e) {
-            var jsonText = e.data;
-            var json = JSON.parse(jsonText);
-            var number = json["incident_number"];
-
+        const incidentChannel = new BroadcastChannel(incidentChannelName);
+        incidentChannel.onmessage = function (e) {
+            const number = e.data;
             if (number == incidentNumber) {
-                console.log("Got incident update");
+                console.log("Got incident update: " + number);
                 loadAndDisplayIncident();
                 loadAndDisplayIncidentReports();
             }
-        }, true);
+        }
 
         // Keyboard shortcuts
 
@@ -327,7 +324,16 @@ function loadUnattachedIncidentReports(success) {
     }
 
     function ok(data, status, xhr) {
-        unattachedIncidentReports = data;
+        const _unattachedIncidentReports = [];
+        for (const d of data) {
+            _unattachedIncidentReports.push(d);
+        }
+        // apply an ascending sort based on the incident report number,
+        // being cautious about incident report number being null
+        _unattachedIncidentReports.sort(function (a, b) {
+            return (a.number ?? -1) - (b.number ?? -1);
+        })
+        unattachedIncidentReports = _unattachedIncidentReports;
 
         if (success != undefined) {
             success();
@@ -547,7 +553,7 @@ function drawRangers() {
 
 
 function drawRangersToAdd() {
-    var select = $("#ranger_add");
+    var datalist = $("#ranger_handles");
 
     var handles = [];
     for (var handle in personnel) {
@@ -555,8 +561,8 @@ function drawRangersToAdd() {
     }
     handles.sort((a, b) => a.localeCompare(b));
 
-    select.empty();
-    select.append($("<option />"));
+    datalist.empty();
+    datalist.append($("<option />"));
 
     for (var i in handles) {
         var handle = handles[i];
@@ -566,7 +572,7 @@ function drawRangersToAdd() {
         option.val(handle);
         option.text(rangerAsString(ranger));
 
-        select.append(option);
+        datalist.append(option);
     }
 }
 
@@ -789,15 +795,35 @@ function drawIncidentReportsToAttach() {
     if (unattachedIncidentReports.length == 0) {
         container.addClass("hidden");
     } else {
-        for (var i in unattachedIncidentReports) {
-            var report = unattachedIncidentReports[i];
 
-            var option = $("<option />");
+        select.append($("<optgroup label=\"Unattached to any incident\">"));
+        for (const report of unattachedIncidentReports) {
+            // Skip incident reports that *are* attached to an incident
+            if (report.incident != null) {
+                continue;
+            }
+            const option = $("<option />");
             option.val(report.number);
             option.text(incidentReportAsString(report));
 
             select.append(option);
         }
+        select.append($("</optgroup>"));
+
+        select.append($("<optgroup label=\"Attached to another incident\">"));
+        for (const report of unattachedIncidentReports) {
+            // Skip incident reports that *are not* attached to an incident
+            if (report.incident == null) {
+                continue;
+            }
+            const option = $("<option />");
+            option.val(report.number);
+            option.text(incidentReportAsString(report));
+
+            select.append(option);
+        }
+        select.append($("</optgroup>"));
+
         container.removeClass("hidden");
     }
 }
@@ -1000,6 +1026,12 @@ function addRanger() {
 
     if (handles.indexOf(handle) != -1) {
         // Already in the list, so… move along.
+        select.val("");
+        return;
+    }
+
+    if (!(handle in personnel)) {
+        // Not a valid handle
         select.val("");
         return;
     }

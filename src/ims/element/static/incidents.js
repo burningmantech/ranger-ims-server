@@ -113,16 +113,14 @@ function initIncidentsTable() {
         enableEditing();
     }
 
-    subscribeToUpdates();
+    requestEventSourceLock();
 
-    eventSource.addEventListener("Incident", function(e) {
-        var jsonText = e.data;
-        var json = JSON.parse(jsonText);
-        var number = json["incident_number"];
-
+    const incidentChannel = new BroadcastChannel(incidentChannelName);
+    incidentChannel.onmessage = function (e) {
+        const number = e.data;
         console.log("Got incident update: " + number);
         incidentsTable.ajax.reload();
-    }, true);
+    }
 }
 
 

@@ -73,13 +73,16 @@
         </ul>
         <div>
           <label class="control-label">Add:</label>
-          <select
+          <input
+            type="text"
             id="ranger_add"
+            list="ranger_handles"
             class="form-control input-sm auto-width"
             onchange="addRanger()"
-          >
+          />
+          <datalist id="ranger_handles">
             <option value="" />
-          </select>
+          </datalist>
         </div>
       </div>
     </div>

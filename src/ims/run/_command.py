@@ -55,10 +55,6 @@ from ._options import (
 __all__ = ()
 
 
-class IMSSession(Session):
-    sessionTimeout = 60 * 60 * 1  # 1 hour
-
-
 @frozen(kw_only=True)
 class Command:
     """
@@ -106,6 +102,9 @@ class Command:
         )
 
         patchCombinedLogFormatter()
+
+        class IMSSession(Session):
+            sessionTimeout = int(config.tokenLifetime.total_seconds())
 
         factory = Site(application.router.resource())
         factory.sessionFactory = IMSSession

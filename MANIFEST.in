@@ -14,6 +14,7 @@ include bin/mysql-run
 include bin/run
 include bin/shell
 include bin/test_docker
+include CHANGELOG.md
 include codecov.yml
 include conf/directory-sample.yaml
 include conf/imsd-docker-compose-sample.conf

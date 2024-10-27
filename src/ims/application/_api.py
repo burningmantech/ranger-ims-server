@@ -204,7 +204,7 @@ class APIApplication:
             else:
                 self._log.info("Issuing credentials for user {user}", user=user)
                 credentials = await authProvider.credentialsForUser(
-                    user, self.config.tokenLifetimeNormal
+                    user, self.config.tokenLifetime
                 )
                 return jsonBytes(
                     request, jsonTextFromObject(credentials).encode("utf-8")
