@@ -1,6 +1,11 @@
+__pycache__/
+!/.docker/sample.env
+*.env
 /.docker_environment
-/.hypothesis
-/.tox
+/.docker/*
+/.hypothesis/
+/.tox/
+/.venv/
 /build/
 /cached/
 /data/
@@ -8,7 +13,4 @@
 /htmlcov/
 /htmldocs/
 /src/*.egg-info/
-__pycache__/
-*.env
-/.docker/*
-!/.docker/sample.env
+/wheels/
