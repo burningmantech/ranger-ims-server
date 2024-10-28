@@ -122,9 +122,9 @@ function loadIncident(success) {
 
     function fail(error, status, xhr) {
         disableEditing();
-        var message = "Failed to load incident:\n" + error;
-        console.error(message);
-        window.alert(message);
+        var message = "Failed to load incident";
+        console.error(message + ": " + error);
+        setErrorMessage(message);
     }
 
     if (number == null) {
@@ -140,17 +140,30 @@ function loadIncident(success) {
     }
 }
 
+// Set the user-visible error information on the page to the provided
+// string, or clear the information if the parameter is falsy.
+function setErrorMessage(msg) {
+    if (msg) {
+        msg = "Error: Please reload this page. (" + msg + ")"
+        $("#error_info").removeClass("hidden");
+        $("#error_text").text(msg);
+    } else {
+        $("#error_info").addClass("hidden");
+        $("#error_text").text("");
+    }
+}
 
 function loadAndDisplayIncident(success) {
     function loaded() {
         if (incident == null) {
             var message = "Incident failed to load";
             console.log(message);
-            alert(message);
+            setErrorMessage(message);
             return;
         }
 
         drawIncidentFields();
+        setErrorMessage("");
 
         if (editingAllowed) {
             enableEditing();
@@ -227,9 +240,9 @@ function loadPersonnel(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load personnel:\n" + error;
-        console.error(message);
-        window.alert(message);
+        var message = "Failed to load personnel";
+        console.error(message + ": " + error);
+        setErrorMessage(message);
     }
 
     jsonRequest(url_personnel, null, ok, fail);
@@ -289,9 +302,9 @@ function loadIncidentTypes(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load incident types:\n" + error;
-        console.error(message);
-        window.alert(message);
+        var message = "Failed to load incident types";
+        console.error(message + ": " + error);
+        setErrorMessage(message);
     }
 
     jsonRequest(url_incidentTypes, null, ok, fail);
@@ -345,11 +358,9 @@ function loadUnattachedIncidentReports(success) {
             // We're not allowed to look these up.
             unattachedIncidentReports = undefined;
         } else {
-            var message = (
-                "Failed to load unattached incident reports:\n" + error
-            );
-            console.error(message);
-            window.alert(message);
+            var message = "Failed to load unattached incident reports";
+            console.error(message + ": " + error);
+            setErrorMessage(message);
         }
     }
 
@@ -380,9 +391,9 @@ function loadAttachedIncidentReports(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load attached incident reports:\n" + error;
-        console.error(message);
-        window.alert(message);
+        var message = "Failed to load attached incident reports";
+        console.error(message + ": " + error);
+        setErrorMessage(message);
     }
 
     var url = (
@@ -890,11 +901,11 @@ function sendEdits(edits, success, error) {
     }
 
     function fail(requestError, status, xhr) {
-        var message = "Failed to apply edit:\n" + requestError
-        console.log(message);
+        var message = "Failed to apply edit";
+        console.log(message + ": " + requestError);
         error();
         loadAndDisplayIncident();
-        window.alert(message);
+        setErrorMessage(message);
     }
 
     jsonRequest(url, edits, ok, fail);
@@ -1100,10 +1111,10 @@ function detachIncidentReport(sender) {
         // FIXME
         // controlHasError(sender);
 
-        var message = "Failed to detach incident report:\n" + requestError
-        console.log(message);
+        var message = "Failed to detach incident report";
+        console.log(message + ": " + requestError);
         loadAndDisplayIncidentReports();
-        window.alert(message);
+        setErrorMessage(message);
     }
 
     var url = (
@@ -1130,10 +1141,10 @@ function attachIncidentReport() {
     }
 
     function fail(requestError, status, xhr) {
-        var message = "Failed to attach incident report:\n" + requestError
-        console.log(message);
+        var message = "Failed to attach incident report";
+        console.log(message + ": " + requestError);
         loadAndDisplayIncidentReports();
-        window.alert(message);
+        setErrorMessage(message);
     }
 
     var url = (
