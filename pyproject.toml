@@ -74,6 +74,9 @@ target-version = ["py312"]
 [tool.setuptools.dynamic]
 version = {attr = "ims.__version__"}
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 
 [tool.uv]
 

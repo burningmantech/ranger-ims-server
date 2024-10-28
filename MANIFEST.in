@@ -1,4 +1,3 @@
-include .codecov.yml
 include .coveragerc
 include .docker/sample.env
 include .dockerignore
@@ -16,6 +15,7 @@ include bin/shell
 include bin/test_docker
 include CHANGELOG.md
 include codecov.yml
+include codecov.yml
 include conf/directory-sample.yaml
 include conf/imsd-docker-compose-sample.conf
 include conf/imsd-sample.conf
@@ -27,8 +27,16 @@ include mypy.ini
 include pyproject.toml
 include README.rst
 include requirements/requirements*.txt
+include src/ims/config/test/*.conf
+include src/ims/directory/file/test/*.yaml
+include src/ims/element/**/template.xhtml
+include src/ims/element/static/*.css
+include src/ims/element/static/*.js
+include src/ims/element/static/*.png
+include src/ims/element/static/*.zip
+include src/ims/store/mysql/schema/*.mysql
+include src/ims/store/sqlite/schema/*.sqlite
 include tox.ini
-recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include src *.txt
 recursive-include src/ims/element/static *.zip
