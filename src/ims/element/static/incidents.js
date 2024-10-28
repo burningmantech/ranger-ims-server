@@ -145,7 +145,7 @@ function initDataTables() {
         return incidents;
     }
 
-    $.fn.dataTable.ext.errMode = "throw";
+    $.fn.dataTable.ext.errMode = "none";
     incidentsTable = $("#queue_table").DataTable({
         "deferRender": true,
         "paging": true,

@@ -108,7 +108,7 @@ function initDataTables() {
         return incidentReports;
     }
 
-    $.fn.dataTable.ext.errMode = "throw";
+    $.fn.dataTable.ext.errMode = "none";
     incidentReportsTable = $("#incident_reports_table").DataTable({
         "deferRender": true,
         "paging": true,
