@@ -20,7 +20,6 @@
 function initIncidentsPage() {
     function loadedBody() {
         disableEditing();
-
         loadEventIncidentReports(initIncidentsTable);
 
         var command = false;
@@ -83,9 +82,9 @@ function loadEventIncidentReports(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load event incident reports:\n" + error;
-        console.error(message);
-        window.alert(message);
+        var message = "Failed to load event incident reports";
+        console.error(message + ": " + error);
+        setErrorMessage(message);
     }
 
     jsonRequest(urlReplace(url_incidentReports), null, ok, fail);
@@ -96,6 +95,18 @@ function loadEventIncidentReports(success) {
     }
 }
 
+// Set the user-visible error information on the page to the provided
+// string, or clear the information if the parameter is falsy.
+function setErrorMessage(msg) {
+    if (msg) {
+        msg = "Error: Please reload this page. (" + msg + ")"
+        $("#error_info").removeClass("hidden");
+        $("#error_text").text(msg);
+    } else {
+        $("#error_info").addClass("hidden");
+        $("#error_text").text("");
+    }
+}
 
 //
 // Dispatch queue table
@@ -108,13 +119,13 @@ function initIncidentsTable() {
     initTableButtons();
     initSearchField();
     initSearch();
+    setErrorMessage("");
 
     if (editingAllowed) {
         enableEditing();
     }
 
     requestEventSourceLock();
-
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = function (e) {
         const number = e.data;
@@ -130,9 +141,11 @@ function initIncidentsTable() {
 
 function initDataTables() {
     function dataHandler(incidents) {
+        setErrorMessage("");
         return incidents;
     }
 
+    $.fn.dataTable.ext.errMode = "throw";
     incidentsTable = $("#queue_table").DataTable({
         "deferRender": true,
         "paging": true,
@@ -143,6 +156,16 @@ function initDataTables() {
         "ajax": {
             "url": dataURL,
             "dataSrc": dataHandler,
+            "error": function (request, status, error) {
+                // The "abort" case is a special snowflake.
+                // There are times we do two table refreshes in quick succession, and in
+                // those cases, the first call gets aborted. We don't want to set an error
+                // messages in those cases.
+                if (error == "abort") {
+                    return;
+                }
+                setErrorMessage(error);
+            },
         },
         "columns": [
             {   // 0

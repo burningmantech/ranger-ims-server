@@ -70,21 +70,33 @@ function initIncidentReportsTable() {
     initTableButtons();
     initSearchField();
     initSearch();
+    setErrorMessage("");
 
     if (editingAllowed) {
         enableEditing();
     }
 
     requestEventSourceLock();
-
     const incidentReportChannel = new BroadcastChannel(incidentReportChannelName);
-    incidentReportChannel.onmessageonmessage = function (e) {
+    incidentReportChannel.onmessage = function (e) {
         const number = e.data;
         console.log("Got incident report update: " + number);
         incidentReportsTable.ajax.reload();
     }
 }
 
+// Set the user-visible error information on the page to the provided
+// string, or clear the information if the parameter is falsy.
+function setErrorMessage(msg) {
+    if (msg) {
+        msg = "Error: Please reload this page. (" + msg + ")"
+        $("#error_info").removeClass("hidden");
+        $("#error_text").text(msg);
+    } else {
+        $("#error_info").addClass("hidden");
+        $("#error_text").text("");
+    }
+}
 
 //
 // Initialize DataTables
@@ -92,9 +104,11 @@ function initIncidentReportsTable() {
 
 function initDataTables() {
     function dataHandler(incidentReports) {
+        setErrorMessage("");
         return incidentReports;
     }
 
+    $.fn.dataTable.ext.errMode = "throw";
     incidentReportsTable = $("#incident_reports_table").DataTable({
         "deferRender": true,
         "paging": true,
@@ -105,6 +119,16 @@ function initDataTables() {
         "ajax": {
             "url": urlReplace(url_incidentReports, eventID),
             "dataSrc": dataHandler,
+            "error": function (request, status, error) {
+                // The "abort" case is a special snowflake.
+                // There are times we do two table refreshes in quick succession, and in
+                // those cases, the first call gets aborted. We don't want to set an error
+                // messages in those cases.
+                if (error == "abort") {
+                    return;
+                }
+                setErrorMessage(error);
+            },
         },
         "columns": [
             {   // 0
