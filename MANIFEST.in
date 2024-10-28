@@ -23,6 +23,8 @@ include conf/imsd-sample.conf
 include COPYRIGHT.txt
 include docker-compose.yml
 include Dockerfile
+include docs/*.py
+include docs/*.rst
 include LICENSE.txt
 include mypy.ini
 include pyproject.toml
@@ -30,15 +32,13 @@ include README.rst
 include requirements/requirements*.txt
 include src/ims/config/test/*.conf
 include src/ims/directory/file/test/*.yaml
-include src/ims/element/**/template.xhtml
 include src/ims/element/static/*.css
 include src/ims/element/static/*.js
 include src/ims/element/static/*.png
 include src/ims/element/static/*.zip
+include src/ims/store/file/*.txt
 include src/ims/store/mysql/schema/*.mysql
 include src/ims/store/sqlite/schema/*.sqlite
 include tox.ini
 include uv.lock
-recursive-include docs *.rst
-recursive-include src *.txt
-recursive-include src/ims/element/static *.zip
+recursive-include src/ims/element *.xhtml
