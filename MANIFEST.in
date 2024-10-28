@@ -4,6 +4,7 @@ include .dockerignore
 include .flake8
 include .isort.cfg
 include .pre-commit-config.yaml
+include .python-version
 include bin/.common.sh
 include bin/build
 include bin/deploy
@@ -37,6 +38,7 @@ include src/ims/element/static/*.zip
 include src/ims/store/mysql/schema/*.mysql
 include src/ims/store/sqlite/schema/*.sqlite
 include tox.ini
+include uv.lock
 recursive-include docs *.rst
 recursive-include src *.txt
 recursive-include src/ims/element/static *.zip
