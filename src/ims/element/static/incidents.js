@@ -91,7 +91,7 @@ function loadEventIncidentReports(success) {
 
     console.log("Loaded event incident reports");
     if (incidentsTable != null) {
-        incidentsTable.ajax.reload();
+        incidentsTable.ajax.reload(clearErrorMessage);
     }
 }
 
@@ -106,6 +106,10 @@ function setErrorMessage(msg) {
         $("#error_info").addClass("hidden");
         $("#error_text").text("");
     }
+}
+
+function clearErrorMessage() {
+    setErrorMessage("");
 }
 
 //
@@ -130,7 +134,7 @@ function initIncidentsTable() {
     incidentChannel.onmessage = function (e) {
         const number = e.data;
         console.log("Got incident update: " + number);
-        incidentsTable.ajax.reload();
+        incidentsTable.ajax.reload(clearErrorMessage);
     }
 }
 
@@ -141,7 +145,6 @@ function initIncidentsTable() {
 
 function initDataTables() {
     function dataHandler(incidents) {
-        setErrorMessage("");
         return incidents;
     }
 

@@ -81,7 +81,7 @@ function initIncidentReportsTable() {
     incidentReportChannel.onmessage = function (e) {
         const number = e.data;
         console.log("Got incident report update: " + number);
-        incidentReportsTable.ajax.reload();
+        incidentReportsTable.ajax.reload(clearErrorMessage);
     }
 }
 
@@ -98,13 +98,16 @@ function setErrorMessage(msg) {
     }
 }
 
+function clearErrorMessage() {
+    setErrorMessage("");
+}
+
 //
 // Initialize DataTables
 //
 
 function initDataTables() {
     function dataHandler(incidentReports) {
-        setErrorMessage("");
         return incidentReports;
     }
 
