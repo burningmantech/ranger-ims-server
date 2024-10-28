@@ -72,6 +72,19 @@ function initIncidentReportPage() {
     loadBody(loadedBody);
 }
 
+// Set the user-visible error information on the page to the provided
+// string, or clear the information if the parameter is falsy.
+function setErrorMessage(msg) {
+    if (msg) {
+        msg = "Error: Please reload this page. (" + msg + ")"
+        $("#error_info").removeClass("hidden");
+        $("#error_text").text(msg);
+    } else {
+        $("#error_info").addClass("hidden");
+        $("#error_text").text("");
+    }
+}
+
 
 //
 // Load incident report
@@ -99,9 +112,9 @@ function loadIncidentReport(success) {
 
     function fail(error, status, xhr) {
         disableEditing();
-        var message = "Failed to load incident report:\n" + error;
-        console.error(message);
-        window.alert(message);
+        var message = "Failed to load incident report";
+        console.error(message + ": " + error);
+        setErrorMessage(message);
     }
 
     if (number == null) {
@@ -121,7 +134,7 @@ function loadAndDisplayIncidentReport(success) {
         if (incidentReport == null) {
             var message = "Incident report failed to load";
             console.log(message);
-            alert(message);
+            setErrorMessage(message);
             return;
         }
 
@@ -129,6 +142,7 @@ function loadAndDisplayIncidentReport(success) {
         drawNumber();
         drawSummary();
         drawReportEntries(incidentReport.report_entries);
+        setErrorMessage("");
 
         $("#incident_report_add").on("input", reportEntryEdited);
 
@@ -252,11 +266,11 @@ function sendEdits(edits, success, error) {
     }
 
     function fail(requestError, status, xhr) {
-        var message = "Failed to apply edit:\n" + requestError
-        console.log(message);
+        var message = "Failed to apply edit";
+        console.log(message + ": " + requestError);
         error();
         loadAndDisplayIncidentReport();
-        window.alert(message);
+        setErrorMessage(message);
     }
 
     jsonRequest(url, edits, ok, fail);
