@@ -51,6 +51,11 @@ jobs:
 
       - name: Run Linters
         run: tox run -e lint
+        env:
+          # no-commit-to-branch always fails in CI, because this pre-commit
+          # is only designed for running locally (i.e. when committing to a
+          # local master branch)
+          SKIP: no-commit-to-branch
 
 
   mypy:
