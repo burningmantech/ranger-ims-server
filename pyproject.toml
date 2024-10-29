@@ -1,10 +1,112 @@
+##
+# Project settings
+##
+
+[project]
+
+name = "ranger-ims-server"
+dynamic = ["version"]
+description = "Ranger Incident Management System"
+readme = "README.rst"
+license = {file = "LICENSE.txt"}
+
+# Requirements
+requires-python = ">=3.12"
+dependencies = [
+    "arrow==1.3.0",
+    "attrs==24.2.0",
+    "bcrypt==4.2.0",
+    "cattrs==24.1.2",
+    "cryptography==43.0.1",
+    "hyperlink==21.0.0",
+    "jwcrypto==1.5.6",
+    "klein==24.8.0",
+    "pymysql==1.1.1",
+    "pyopenssl==24.2.1",
+    "pyyaml==6.0.2",
+    "service-identity==24.1.0",
+    "twisted==24.7.0",
+    "werkzeug==3.0.4",
+    "zope-interface==7.0.3",
+]
+
+# Authors/maintainers
+authors = [
+    {name="Wilfredo Sánchez Vega", email="tool@burningman.org"},
+]
+maintainers = [
+  {name = "Burning Man Project, Black Rock Rangers", email = "ranger-tech-ninjas@burningman.org"},
+]
+
+# Search metadata
+classifiers = [
+    "Framework :: Twisted",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Other Audience",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business",
+]
+keywords = ["incident management", "ranger"]
+
+
+[project.scripts]
+ims = "ims.run:Command.main"
+
+
+[project.urls]
+Homepage = "https://github.com/burningmantech/ranger-ims-server"
+#Documentation = ""
+Repository = "https://github.com/burningmantech/ranger-ims-server.git"
+Issues = "https://github.com/burningmantech/ranger-ims-server/issues"
+Changelog = "https://github.com/burningmantech/ranger-ims-server/blob/master/CHANGELOG.md"
+
+
 [build-system]
 
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 
+##
+# Black
+##
+
 [tool.black]
 
 line-length = 80
 target-version = ["py312"]
+
+
+##
+# Setuptools
+##
+
+[tool.setuptools.dynamic]
+version = {attr = "ims.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+##
+# uv
+##
+
+[tool.uv]
+
+default-groups = []
+[dependency-groups]
+unit = [
+    "coverage==7.6.1",
+    "docker==7.1.0",
+    "hypothesis==6.112.4",
+    "mock==5.1.0",
+]
+mypy = [
+    "mypy-zope==1.0.5",
+    "mypy==1.9.0",
+    "types-pymysql==1.1.0.20240524",
+    "types-pyyaml==6.0.12.20240917",
+]

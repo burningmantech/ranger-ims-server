@@ -30,6 +30,7 @@ jobs:
             api.github.com:443
             files.pythonhosted.org:443
             github.com:443
+            objects.githubusercontent.com:443
             pypi.org:443
 
       - name: Checkout source code
@@ -38,20 +39,15 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version-file: ".python-version"
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
       - name: Set up Tox environment
         run: |
-          pip install tox
+          uv tool install tox --with tox-uv
           tox run -e lint --notest
-
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/lint/*/python
 
       - name: Run Linters
         run: tox run -e lint
@@ -81,6 +77,7 @@ jobs:
             api.github.com:443
             files.pythonhosted.org:443
             github.com:443
+            objects.githubusercontent.com:443
             pypi.org:443
 
       - name: Checkout source code
@@ -89,69 +86,18 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version-file: ".python-version"
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
       - name: Set up Tox environment
         run: |
-          pip install tox
-          tox run -e mypy --notest
-
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/mypy/*/python
+          uv tool install tox --with tox-uv
+          tox run -e lint --notest
 
       - name: Run Mypy
         run: tox run -e mypy
-
-
-  docs:
-
-    name: Build documentation
-
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-
-      - name: Harden CI
-        uses: step-security/harden-runner@v2.10.1
-        with:
-          disable-sudo: true
-          disable-file-monitoring: true
-          egress-policy: block
-          allowed-endpoints: >
-            api.github.com:443
-            files.pythonhosted.org:443
-            github.com:443
-            pypi.org:443
-
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
-
-      - name: Set up Tox environment
-        run: |
-          pip install tox
-          tox run -e docs --notest
-
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/docs/*/python
-
-      - name: Build documentation
-        run: tox run -e docs
 
 
   packaging:
@@ -172,6 +118,7 @@ jobs:
             api.github.com:443
             files.pythonhosted.org:443
             github.com:443
+            objects.githubusercontent.com:443
             pypi.org:443
 
       - name: Checkout source code
@@ -180,20 +127,15 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version-file: ".python-version"
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
       - name: Set up Tox environment
         run: |
-          pip install tox
-          tox run -e packaging --notest
-
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/packaging/*/python
+          uv tool install tox --with tox-uv
+          tox run -e lint --notest
 
       - name: Check packaging
         run: tox run -e packaging
@@ -202,6 +144,8 @@ jobs:
   unit:
 
     name: "Py:${{ matrix.python-version }} - ${{ matrix.os }}"
+    # Available versions:
+    # https://github.com/actions/python-versions/blob/main/versions-manifest.json
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -215,7 +159,7 @@ jobs:
         include:
           # Test Python beta but allow it to fail
           - os: "ubuntu-latest"
-            python-version: "3.13.0-alpha.3"
+            python-version: "3.13.0"
             optional: true
             tox-prefix: "test"
 
@@ -265,9 +209,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
-
       - name: Translate Python version to Tox environment
         shell: python
         run: |
@@ -285,15 +226,13 @@ jobs:
           f = p.open(mode="a")
           f.write(f"TOX_ENV={env}\n")
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
       - name: Set up Tox environment
         run: |
-          pip install tox
-          tox run -e ${TOX_ENV} --notest
-
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/${TOX_ENV}/*/python
+          uv tool install tox --with tox-uv
+          tox run -e lint --notest
 
       - name: Run unit tests
         run: tox run -e ${TOX_ENV}
@@ -316,7 +255,7 @@ jobs:
       - uses: "actions/setup-python@v5"
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
-          python-version: "3.12"
+          python-version-file: ".python-version"
 
       - name: "Upload coverage to Codecov"
         uses: "codecov/codecov-action@v4"
@@ -483,7 +422,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version-file: ".python-version"
 
       - name: Deploy to staging
         run: ./bin/deploy staging
