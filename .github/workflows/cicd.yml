@@ -139,6 +139,8 @@ jobs:
   unit:
 
     name: "Py:${{ matrix.python-version }} - ${{ matrix.os }}"
+    # Available versions:
+    # https://github.com/actions/python-versions/blob/main/versions-manifest.json
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -146,13 +148,13 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.12"]  # Versions to test with coverage
+        python-version: ["3.12", "3.13"]  # Versions to test with coverage
         tox-prefix: ["coverage"]
         optional: [false]
         include:
           # Test Python beta but allow it to fail
           - os: "ubuntu-latest"
-            python-version: "3.13.0-alpha.3"
+            python-version: "3.14.0-alpha.1"
             optional: true
             tox-prefix: "test"
 
