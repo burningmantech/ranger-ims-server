@@ -140,17 +140,16 @@ function loadIncident(success) {
     }
 }
 
-// Set the user-visible error information on the page to the provided
-// string, or clear the information if the parameter is falsy.
+// Set the user-visible error information on the page to the provided string.
 function setErrorMessage(msg) {
-    if (msg) {
-        msg = "Error: Please reload this page. (" + msg + ")"
-        $("#error_info").removeClass("hidden");
-        $("#error_text").text(msg);
-    } else {
-        $("#error_info").addClass("hidden");
-        $("#error_text").text("");
-    }
+    msg = "Error: Please reload this page. (Cause: " + msg + ")"
+    $("#error_info").removeClass("hidden");
+    $("#error_text").text(msg);
+}
+
+function clearErrorMessage() {
+    $("#error_info").addClass("hidden");
+    $("#error_text").text("");
 }
 
 function loadAndDisplayIncident(success) {
@@ -163,7 +162,7 @@ function loadAndDisplayIncident(success) {
         }
 
         drawIncidentFields();
-        setErrorMessage("");
+        clearErrorMessage();
 
         if (editingAllowed) {
             enableEditing();

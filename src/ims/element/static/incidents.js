@@ -95,21 +95,16 @@ function loadEventIncidentReports(success) {
     }
 }
 
-// Set the user-visible error information on the page to the provided
-// string, or clear the information if the parameter is falsy.
+// Set the user-visible error information on the page to the provided string.
 function setErrorMessage(msg) {
-    if (msg) {
-        msg = "Error: Please reload this page. (" + msg + ")"
-        $("#error_info").removeClass("hidden");
-        $("#error_text").text(msg);
-    } else {
-        $("#error_info").addClass("hidden");
-        $("#error_text").text("");
-    }
+    msg = "Error: Please reload this page. (Cause: " + msg + ")"
+    $("#error_info").removeClass("hidden");
+    $("#error_text").text(msg);
 }
 
 function clearErrorMessage() {
-    setErrorMessage("");
+    $("#error_info").addClass("hidden");
+    $("#error_text").text("");
 }
 
 //
@@ -123,7 +118,7 @@ function initIncidentsTable() {
     initTableButtons();
     initSearchField();
     initSearch();
-    setErrorMessage("");
+    clearErrorMessage();
 
     if (editingAllowed) {
         enableEditing();
@@ -167,7 +162,15 @@ function initDataTables() {
                 if (error == "abort") {
                     return;
                 }
-                setErrorMessage(error);
+                let errMsg = "";
+                if (error) {
+                    errMsg = error;
+                } else if (request.responseText) {
+                    errMsg = request.responseText;
+                } else {
+                    errMsg = "DataTables error";
+                }
+                setErrorMessage(errMsg);
             },
         },
         "columns": [
