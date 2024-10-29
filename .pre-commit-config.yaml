@@ -8,13 +8,13 @@ repos:
     rev: "v3.19.0"
     hooks:
       - id: pyupgrade
-        args: ["--py312-plus"]
+        args: ["--py313-plus"]
 
   - repo: https://github.com/psf/black
     rev: "24.10.0"
     hooks:
       - id: black
-        args: ["--target-version", "py312"]
+        args: ["--target-version", "py313"]
 
   - repo: https://github.com/PyCQA/autoflake
     rev: "v2.3.1"
