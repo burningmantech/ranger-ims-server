@@ -95,48 +95,6 @@ jobs:
         run: tox run -e mypy
 
 
-  docs:
-
-    name: Build documentation
-
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-
-      - name: Harden CI
-        uses: step-security/harden-runner@v2.10.1
-        with:
-          disable-sudo: true
-          disable-file-monitoring: true
-          egress-policy: block
-          allowed-endpoints: >
-            api.github.com:443
-            files.pythonhosted.org:443
-            github.com:443
-            objects.githubusercontent.com:443
-            pypi.org:443
-
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: ".python-version"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-
-      - name: Set up Tox environment
-        run: |
-          uv tool install tox --with tox-uv
-          tox run -e lint --notest
-
-      - name: Build documentation
-        run: tox run -e docs
-
-
   packaging:
     name: Packaging
 
