@@ -42,9 +42,10 @@ class RangerJSONKey(Enum):
     handle = "handle"
     name = "name"
     status = "status"
-    email = "email"
+    # email is intentionally not serialized, since no web client needs it
     enabled = "enabled"
     directoryID = "directory_id"
+    # password is intentionally not serialized, since no web client needs it
 
 
 class RangerJSONType(Enum):
@@ -55,9 +56,10 @@ class RangerJSONType(Enum):
     handle = str
     name = str  # type: ignore[assignment]
     status = RangerStatus
-    email = set[str]
+    # email is intentionally not serialized, since no web client needs it
     enabled = bool
     directoryID = Optional[str]
+    # password is intentionally not serialized, since no web client needs it
 
 
 def serializeRanger(ranger: Ranger) -> dict[str, Any]:

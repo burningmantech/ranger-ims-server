@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # This stage builds the build container.
 # -----------------------------------------------------------------------------
-FROM python:3.11.0-alpine3.16 as build
+FROM python:3.12.3-alpine3.18 AS build
 
 # Install compiler toolchain and libraries.
 RUN apk add --no-cache build-base libffi-dev libressl-dev
@@ -18,24 +18,27 @@ WORKDIR "${IMS_SOURCE_DIR}"
 
 COPY ./COPYRIGHT.txt  ./
 COPY ./LICENSE.txt    ./
+COPY ./MANIFEST.in    ./
 COPY ./pyproject.toml ./
 COPY ./README.rst     ./
-COPY ./requirements/  ./requirements/
-COPY ./setup.py       ./
 COPY ./src/           ./src/
+COPY ./uv.lock        ./
 
 # Install the application
 WORKDIR /tmp
 RUN install -o daemon -g daemon -d "${IMS_INSTALL_DIR}"
-RUN python -m venv "${IMS_INSTALL_DIR}"
-RUN "${IMS_INSTALL_DIR}/bin/pip" --no-cache-dir install --upgrade pip
-RUN "${IMS_INSTALL_DIR}/bin/pip" --no-cache-dir install "${IMS_SOURCE_DIR}"
+RUN pip install --no-cache-dir --upgrade pip uv
+RUN uv venv "${IMS_INSTALL_DIR}"
+RUN uv pip --no-progress install \
+    --python="${IMS_INSTALL_DIR}/bin/python" \
+    --no-cache --exact --compile-bytecode \
+    "${IMS_SOURCE_DIR}"
 
 
 # -----------------------------------------------------------------------------
 # This stage builds the application container.
 # -----------------------------------------------------------------------------
-FROM python:3.11.0-alpine3.16 as application
+FROM python:3.12.3-alpine3.18 AS application
 
 # Paths
 ARG IMS_INSTALL_DIR="/opt/ims"
@@ -53,7 +56,7 @@ RUN apk add --no-cache libressl
 
 # Allow Python to bind to privileged port numbers
 RUN apk add --no-cache libcap
-RUN setcap "cap_net_bind_service=+ep" /usr/local/bin/python3.11
+RUN setcap "cap_net_bind_service=+ep" /usr/local/bin/python3.12
 
 # Create server root and make that our working directory
 RUN install -o daemon -g daemon -d "${IMS_SERVER_ROOT}"

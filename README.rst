@@ -23,16 +23,47 @@ The server is implemented using Twisted_ Klein_ and requires Python 3.9+.
 Development
 -----------
 
-Running the Test Suite
-~~~~~~~~~~~~~~~~~~~~~~
+This project requires uv_ and pre-commit_ for development and Tox_ and running tests.
 
-This project uses Tox_ for running tests.
+If you do not have uv installed, see the uv documentation for instructions.
+
+If you do not have pre-commit and/or tox installed, use uv. Be sure to include the tox-uv_ plugin::
+
+    uv tool install pre-commit
+    pre-commit install
+    uv tool install tox --with tox-uv
+
+The ``pre-commit install`` step installs a Git hook which runs pre-commit automatically when you run ``git commit``.
+This is very useful as a measure to prevent commits that would later fail during CI builds.
+
 To run all of the default test environments::
 
     tox run
 
 Running the Server
 ~~~~~~~~~~~~~~~~~~
+
+--------------------
+With docker-compose
+--------------------
+
+First, get the configuration set up::
+
+    # These files are mounted into the container
+    cp conf/imsd-docker-compose-sample.conf conf/imsd.conf
+    cp conf/directory-sample.yaml conf/directory.yaml
+
+If you need to override any of the environment variables set in
+``docker-compose.yml``, copy ``.docker/sample.env`` to ``/.env`` and
+uncomment and edit the neccessary variables.
+
+Start the server::
+
+    docker compose up
+
+------------------
+Outside docker
+------------------
 
 To run the server will require some configuration, and if you try to start the server with the default configuration, you will probably see an error such as this::
 
@@ -49,15 +80,25 @@ To set up a configuration for development, start by copying the example configur
 
 To build and run the server (for development only)::
 
-    tox run -e exec
+    uv run ims server
 
-In your browser, open http://localhost:8080/ to reach the server. Log in as any user in the ``conf/directory.yaml`` directory file. In the ``conf/imsd.conf`` sample configuration file, the users ``Hardware`` and ``Loosy`` are administrators, and in the sample directory, all users have passwords that match their handles. You'll want to log in as one of those to set up an Event.
 
-Use the pull-down menu at the top right corner of the page (it will show the logged in user's Ranger handle), and select ``Admin``. On the next page, navigate to the Events page and create an event called ``Test``.
+---------------------
+Settings Permissions
+---------------------
 
-In the box labeled ``Access for Test (writers)``, enter the string ``*``.  That will give all users the ability to create and edit incidents in that event.
+In your browser, open http://localhost:8080/ to reach the server. Log in as any user in the ``conf/directory.yaml`` directory file.
+In the ``conf/imsd-sample.conf`` sample configuration file, the users ``Hardware`` and ``Loosy`` are administrators, and in the sample directory, all users have passwords that match their handles.
+You'll want to log in as one of those to set up an Event.
+
+Use the pull-down menu at the top right corner of the page (it will show the logged in user's Ranger handle), and select ``Admin``.
+On the next page, navigate to the Events page and create an event called ``Test``.
+
+In the box labeled ``Access for Test (writers)``, enter the string ``*``.
+That will give all users the ability to create and edit incidents in that event.
 
 You should now be able to select your new event from the ``Event`` menu at the top right, and then create new incidents within that event.
+
 
 Pull Requests
 ~~~~~~~~~~~~~
@@ -68,8 +109,12 @@ Pull requests in GitHub will run all tests on Travis CI, and all are required to
 
 .. ------------------------------------------------------------------------- ..
 
-.. _Twisted: https://twistedmatrix.com/
-.. _Klein: https://klein.readthedocs.io/
-.. _Tox: http://tox.readthedocs.io/
 .. _Flake8: http://flake8.pycqa.org/
+.. _Klein: https://klein.readthedocs.io/
 .. _Mypy: http://mypy.readthedocs.io/
+.. _pipx: https://pipx.pypa.io/stable/
+.. _pre-commit: https://pre-commit.com/
+.. _tox-uv: https://github.com/tox-dev/tox-uv
+.. _Tox: http://tox.readthedocs.io/
+.. _Twisted: https://twistedmatrix.com/
+.. _uv: https://docs.astral.sh/uv/

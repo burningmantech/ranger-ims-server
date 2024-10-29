@@ -21,7 +21,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
+        uses: step-security/harden-runner@v2.10.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -30,6 +30,7 @@ jobs:
             api.github.com:443
             files.pythonhosted.org:443
             github.com:443
+            objects.githubusercontent.com:443
             pypi.org:443
 
       - name: Checkout source code
@@ -38,23 +39,23 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version-file: ".python-version"
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
       - name: Set up Tox environment
         run: |
-          pip install tox
+          uv tool install tox --with tox-uv
           tox run -e lint --notest
-
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/lint/*/python
 
       - name: Run Linters
         run: tox run -e lint
+        env:
+          # no-commit-to-branch always fails in CI, because this pre-commit
+          # is only designed for running locally (i.e. when committing to a
+          # local master branch)
+          SKIP: no-commit-to-branch
 
 
   mypy:
@@ -67,7 +68,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
+        uses: step-security/harden-runner@v2.10.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -76,6 +77,7 @@ jobs:
             api.github.com:443
             files.pythonhosted.org:443
             github.com:443
+            objects.githubusercontent.com:443
             pypi.org:443
 
       - name: Checkout source code
@@ -84,162 +86,18 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version-file: ".python-version"
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
       - name: Set up Tox environment
         run: |
-          pip install tox
-          tox run -e mypy --notest
-
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/mypy/*/python
+          uv tool install tox --with tox-uv
+          tox run -e lint --notest
 
       - name: Run Mypy
         run: tox run -e mypy
-
-
-  bandit:
-
-    name: Bandit (security static analyzer)
-
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-
-      - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
-        with:
-          disable-sudo: true
-          disable-file-monitoring: true
-          egress-policy: block
-          allowed-endpoints: >
-            api.github.com:443
-            files.pythonhosted.org:443
-            github.com:443
-            pypi.org:443
-
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
-
-      - name: Set up Tox environment
-        run: |
-          pip install tox
-          tox run -e bandit --notest
-
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/bandit/*/python
-
-      - name: Run Bandit
-        run: tox run -e bandit
-
-
-  safety:
-
-    name: Safety (dependency security checker)
-
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-
-      - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
-        with:
-          disable-sudo: true
-          disable-file-monitoring: true
-          egress-policy: block
-          allowed-endpoints: >
-            api.github.com:443
-            files.pythonhosted.org:443
-            github.com:443
-            pypi.org:443
-            pyup.io:443
-
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
-
-      - name: Set up Tox environment
-        run: |
-          pip install tox
-          tox run -e safety --notest
-
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/safety/*/python
-
-      - name: Run Safety
-        run: tox run -e safety
-
-
-  docs:
-
-    name: Build documentation
-
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-
-      - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
-        with:
-          disable-sudo: true
-          disable-file-monitoring: true
-          egress-policy: block
-          allowed-endpoints: >
-            api.github.com:443
-            files.pythonhosted.org:443
-            github.com:443
-            pypi.org:443
-
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
-
-      - name: Set up Tox environment
-        run: |
-          pip install tox
-          tox run -e docs --notest
-
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/docs/*/python
-
-      - name: Build documentation
-        run: tox run -e docs
 
 
   packaging:
@@ -251,7 +109,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
+        uses: step-security/harden-runner@v2.10.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -260,6 +118,7 @@ jobs:
             api.github.com:443
             files.pythonhosted.org:443
             github.com:443
+            objects.githubusercontent.com:443
             pypi.org:443
 
       - name: Checkout source code
@@ -268,20 +127,15 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version-file: ".python-version"
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
       - name: Set up Tox environment
         run: |
-          pip install tox
-          tox run -e packaging --notest
-
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/packaging/*/python
+          uv tool install tox --with tox-uv
+          tox run -e lint --notest
 
       - name: Check packaging
         run: tox run -e packaging
@@ -290,6 +144,8 @@ jobs:
   unit:
 
     name: "Py:${{ matrix.python-version }} - ${{ matrix.os }}"
+    # Available versions:
+    # https://github.com/actions/python-versions/blob/main/versions-manifest.json
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -297,13 +153,13 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.11"]  # Versions to test with coverage
+        python-version: ["3.12"]  # Versions to test with coverage
         tox-prefix: ["coverage"]
         optional: [false]
         include:
-          # Test Python 3.12 beta but allow it to fail
+          # Test Python beta but allow it to fail
           - os: "ubuntu-latest"
-            python-version: "3.12.0-beta.4"
+            python-version: "3.13.0"
             optional: true
             tox-prefix: "test"
 
@@ -326,13 +182,15 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
+        uses: step-security/harden-runner@v2.10.1
         with:
           disable-sudo: true
           disable-file-monitoring: true
           egress-policy: block
           allowed-endpoints: >
+            api.codecov.io:443
             api.github.com:443
+            cli.codecov.io:443
             codecov.io:443
             files.pythonhosted.org:443
             github.com:443
@@ -351,9 +209,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
-
       - name: Translate Python version to Tox environment
         shell: python
         run: |
@@ -371,15 +226,13 @@ jobs:
           f = p.open(mode="a")
           f.write(f"TOX_ENV={env}\n")
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
       - name: Set up Tox environment
         run: |
-          pip install tox
-          tox run -e ${TOX_ENV} --notest
-
-      - name: Tox Python Information
-        uses: twisted/python-info-action@v1
-        with:
-          python-path: .tox/${TOX_ENV}/*/python
+          uv tool install tox --with tox-uv
+          tox run -e lint --notest
 
       - name: Run unit tests
         run: tox run -e ${TOX_ENV}
@@ -402,10 +255,10 @@ jobs:
       - uses: "actions/setup-python@v5"
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
-          python-version: "3.11"
+          python-version-file: ".python-version"
 
       - name: "Upload coverage to Codecov"
-        uses: "codecov/codecov-action@v3.1.4"
+        uses: "codecov/codecov-action@v4"
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -428,7 +281,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
+        uses: step-security/harden-runner@v2.10.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -470,7 +323,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
+        uses: step-security/harden-runner@v2.10.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -511,7 +364,7 @@ jobs:
 
   #   steps:
 
-  #     - uses: step-security/harden-runner@v2.6.1
+  #     - uses: step-security/harden-runner@v2.10.1
   #       with:
   #         egress-policy: audit
 
@@ -541,9 +394,19 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
+        uses: step-security/harden-runner@v2.10.1
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            655216687927.dkr.ecr.us-west-2.amazonaws.com:443
+            api.ecr.us-west-2.amazonaws.com:443
+            ecs.us-west-2.amazonaws.com:443
+            email-smtp.us-west-2.amazonaws.com:465
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+            raw.githubusercontent.com:443
 
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -559,7 +422,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version-file: ".python-version"
 
       - name: Deploy to staging
         run: ./bin/deploy staging

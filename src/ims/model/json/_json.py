@@ -36,7 +36,7 @@ __all__ = ()
 log = Logger()
 
 
-JSON = Union[Mapping[str, Any], Iterable, int, str, float, bool, None]
+JSON = Union[Mapping[str, Any], Iterable[Any], int, str, float, bool, None]
 
 
 class JSONCodecError(Exception):

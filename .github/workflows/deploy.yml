@@ -15,9 +15,17 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
+        uses: step-security/harden-runner@v2.10.1
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            ecs.us-west-2.amazonaws.com:443
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+            raw.githubusercontent.com:443
+            sts.us-west-2.amazonaws.com:443
 
       - name: Check user
         if: ${{ ! contains('["wsanchez", "mikeburg", "plapsley"]', github.actor) }}
@@ -36,7 +44,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       - name: System Python Information
         uses: twisted/python-info-action@v1
@@ -70,9 +78,17 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.6.1
+        uses: step-security/harden-runner@v2.10.1
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            ecs.us-west-2.amazonaws.com:443
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+            raw.githubusercontent.com:443
+            sts.us-west-2.amazonaws.com:443
 
       - name: Check user
         if: ${{ ! contains('["wsanchez", "mikeburg", "plapsley"]', github.actor) }}
@@ -91,7 +107,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       - name: System Python Information
         uses: twisted/python-info-action@v1

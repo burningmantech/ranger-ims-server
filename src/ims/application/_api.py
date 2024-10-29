@@ -35,6 +35,7 @@ from typing import Any, ClassVar, cast
 from attrs import frozen
 from hyperlink import URL
 from klein import KleinRenderable
+from klein._app import KleinSynchronousRenderable
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
 from twisted.logger import Logger
@@ -151,7 +152,9 @@ class APIApplication:
         return jsonBytes(request, self._bag, str(hash(self._bag)))
 
     @router.route(_unprefix(URLs.auth), methods=("POST",))
-    async def authResource(self, request: IRequest) -> KleinRenderable:
+    async def authResource(
+        self, request: IRequest
+    ) -> KleinSynchronousRenderable:
         """
         Authentication endpoint.
         """
@@ -201,7 +204,7 @@ class APIApplication:
             else:
                 self._log.info("Issuing credentials for user {user}", user=user)
                 credentials = await authProvider.credentialsForUser(
-                    user, self.config.tokenLifetimeNormal
+                    user, self.config.tokenLifetime
                 )
                 return jsonBytes(
                     request, jsonTextFromObject(credentials).encode("utf-8")
@@ -216,7 +219,9 @@ class APIApplication:
         )
 
     @router.route(_unprefix(URLs.personnel), methods=("HEAD", "GET"))
-    async def personnelResource(self, request: IRequest) -> KleinRenderable:
+    async def personnelResource(
+        self, request: IRequest
+    ) -> KleinSynchronousRenderable:
         """
         Personnel endpoint.
         """
@@ -249,7 +254,9 @@ class APIApplication:
         )
 
     @router.route(_unprefix(URLs.incidentTypes), methods=("HEAD", "GET"))
-    async def incidentTypesResource(self, request: IRequest) -> KleinRenderable:
+    async def incidentTypesResource(
+        self, request: IRequest
+    ) -> KleinSynchronousRenderable:
         """
         Incident types endpoint.
         """
@@ -272,7 +279,7 @@ class APIApplication:
     @router.route(_unprefix(URLs.incidentTypes), methods=("POST",))
     async def editIncidentTypesResource(
         self, request: IRequest
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Incident types editing endpoint.
         """
@@ -313,7 +320,9 @@ class APIApplication:
         return noContentResponse(request)
 
     @router.route(_unprefix(URLs.events), methods=("HEAD", "GET"))
-    async def eventsResource(self, request: IRequest) -> KleinRenderable:
+    async def eventsResource(
+        self, request: IRequest
+    ) -> KleinSynchronousRenderable:
         """
         Events endpoint.
         """
@@ -336,7 +345,9 @@ class APIApplication:
         return jsonBytes(request, data, str(hash(data)))
 
     @router.route(_unprefix(URLs.events), methods=("POST",))
-    async def editEventsResource(self, request: IRequest) -> KleinRenderable:
+    async def editEventsResource(
+        self, request: IRequest
+    ) -> KleinSynchronousRenderable:
         """
         Events editing endpoint.
         """
@@ -396,7 +407,7 @@ class APIApplication:
     @router.route(_unprefix(URLs.incidents), methods=("POST",))
     async def newIncidentResource(
         self, request: IRequest, event_id: str
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         New incident endpoint.
         """
@@ -438,9 +449,9 @@ class APIApplication:
             json[IncidentJSONKey.state.value] = IncidentStateJSONValue.new.value
 
         if IncidentJSONKey.priority.value not in json:
-            json[
-                IncidentJSONKey.priority.value
-            ] = IncidentPriorityJSONValue.normal.value
+            json[IncidentJSONKey.priority.value] = (
+                IncidentPriorityJSONValue.normal.value
+            )
 
         # If not provided, set JSON handles, types, entries,
         # incident report numbers to an empty list
@@ -514,7 +525,7 @@ class APIApplication:
     @router.route(_unprefix(URLs.incidentNumber), methods=("HEAD", "GET"))
     async def readIncidentResource(
         self, request: IRequest, event_id: str, incident_number: str
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Incident endpoint.
         """
@@ -544,7 +555,7 @@ class APIApplication:
     @router.route(_unprefix(URLs.incidentNumber), methods=("POST",))
     async def editIncidentResource(
         self, request: IRequest, event_id: str, incident_number: str
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Incident edit endpoint.
         """
@@ -705,7 +716,7 @@ class APIApplication:
     @router.route(_unprefix(URLs.incidentReports), methods=("HEAD", "GET"))
     async def listIncidentReportsResource(
         self, request: IRequest, event_id: str
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Incident reports endpoint.
         """
@@ -760,7 +771,7 @@ class APIApplication:
     @router.route(_unprefix(URLs.incidentReports), methods=("POST",))
     async def newIncidentReportResource(
         self, request: IRequest, event_id: str
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         New incident report endpoint.
         """
@@ -873,7 +884,7 @@ class APIApplication:
     @router.route(_unprefix(URLs.incidentReport), methods=("HEAD", "GET"))
     async def readIncidentReportResource(
         self, request: IRequest, event_id: str, incident_report_number: str
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Incident report endpoint.
         """
@@ -899,7 +910,7 @@ class APIApplication:
     @router.route(_unprefix(URLs.incidentReport), methods=("POST",))
     async def editIncidentReportResource(
         self, request: IRequest, event_id: str, incident_report_number: str
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Incident report edit endpoint.
         """
@@ -1027,7 +1038,7 @@ class APIApplication:
     @router.route(_unprefix(URLs.acl), methods=("HEAD", "GET"))
     async def readAdminAccessResource(
         self, request: IRequest
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Admin access control endpoint.
         """
@@ -1050,7 +1061,7 @@ class APIApplication:
     @router.route(_unprefix(URLs.acl), methods=("POST",))
     async def editAdminAccessResource(
         self, request: IRequest
-    ) -> KleinRenderable:
+    ) -> KleinSynchronousRenderable:
         """
         Admin access control edit endpoint.
         """
@@ -1076,7 +1087,9 @@ class APIApplication:
         return noContentResponse(request)
 
     @router.route(_unprefix(URLs.streets), methods=("HEAD", "GET"))
-    async def readStreetsResource(self, request: IRequest) -> KleinRenderable:
+    async def readStreetsResource(
+        self, request: IRequest
+    ) -> KleinSynchronousRenderable:
         """
         Street list endpoint.
         """
@@ -1104,7 +1117,9 @@ class APIApplication:
         )
 
     @router.route(_unprefix(URLs.streets), methods=("POST",))
-    async def editStreetsResource(self, request: IRequest) -> KleinRenderable:
+    async def editStreetsResource(
+        self, request: IRequest
+    ) -> KleinSynchronousRenderable:
         """
         Street list edit endpoint.
         """

@@ -9,7 +9,7 @@ updates:
     allow:
       - dependency-type: "all"
     schedule:
-      interval: weekly
+      interval: "weekly"
     open-pull-requests-limit: 10
     labels:
       - "Task"
@@ -17,13 +17,13 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: weekly
+      interval: "weekly"
     labels:
       - "Task"
 
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
-      interval: weekly
+      interval: "weekly"
     labels:
       - "Task"
