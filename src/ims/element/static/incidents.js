@@ -62,6 +62,9 @@ function initIncidentsPage() {
 //
 // Load event incident reports
 //
+// Note that nothing from these data is displayed in the incidents table.
+// We do this fetch in order to make incidents searchable by text in their
+// attached incident reports.
 
 var eventIncidentReports = null;
 
