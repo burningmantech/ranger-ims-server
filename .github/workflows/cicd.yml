@@ -279,12 +279,12 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
-  
+
       - name: Set up Tox environment
         run: |
           uv tool install tox --with tox-uv
           tox run -e lint --notest
-  
+
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
         with:
