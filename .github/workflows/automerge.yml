@@ -12,7 +12,7 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    if: ${{ contains('["dependabot[bot]", "pre-commit-ci[bot]"]', github.actor) }}
+    if: ${{ contains('["dependabot[bot]"]', github.actor) }}
     steps:
       - name: Approve the PR
         run: gh pr review --approve "${{ github.event.pull_request.html_url }}"
