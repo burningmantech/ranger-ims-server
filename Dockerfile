@@ -30,10 +30,10 @@ WORKDIR /tmp
 RUN install -o daemon -g daemon -d "${IMS_INSTALL_DIR}"
 RUN pip install --upgrade pip uv
 RUN uv venv "${IMS_INSTALL_DIR}"
-RUN . "${IMS_INSTALL_DIR}/bin/activate" \
-    && uv pip --no-progress install \
-        --no-cache --exact --compile-bytecode \
-        "${IMS_SOURCE_DIR}"
+RUN uv pip --no-progress install \
+    --python="${IMS_INSTALL_DIR}/bin/python" \
+    --no-cache --exact --compile-bytecode \
+    "${IMS_SOURCE_DIR}"
 
 
 # -----------------------------------------------------------------------------
