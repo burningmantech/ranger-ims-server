@@ -29,7 +29,6 @@ include LICENSE.txt
 include mypy.ini
 include pyproject.toml
 include README.rst
-include requirements/requirements*.txt
 include src/ims/config/test/*.conf
 include src/ims/directory/file/test/*.yaml
 include src/ims/element/static/*.css

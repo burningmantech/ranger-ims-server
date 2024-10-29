@@ -1,3 +1,7 @@
+##
+# Project settings
+##
+
 [project]
 
 name = "ranger-ims-server"
@@ -65,11 +69,19 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 
+##
+# Black
+##
+
 [tool.black]
 
 line-length = 80
 target-version = ["py312"]
 
+
+##
+# Setuptools
+##
 
 [tool.setuptools.dynamic]
 version = {attr = "ims.__version__"}
@@ -78,18 +90,19 @@ version = {attr = "ims.__version__"}
 where = ["src"]
 
 
+##
+# uv
+##
+
 [tool.uv]
 
-default-groups = ["mypy", "unit", "vc"]
+default-groups = []
 [dependency-groups]
 unit = [
     "coverage==7.6.1",
     "docker==7.1.0",
     "hypothesis==6.112.4",
     "mock==5.1.0",
-]
-vc = [
-    "pre-commit==4.0.0",
 ]
 mypy = [
     "mypy-zope==1.0.5",

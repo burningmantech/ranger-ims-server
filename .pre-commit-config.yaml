@@ -88,7 +88,6 @@ repos:
       - id: name-tests-test
         args:
           - --pytest-test-first
-      - id: requirements-txt-fixer
       - id: no-commit-to-branch
         args: ["--branch", "master"]
       - id: trailing-whitespace

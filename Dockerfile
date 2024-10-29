@@ -21,7 +21,6 @@ COPY ./LICENSE.txt    ./
 COPY ./MANIFEST.in    ./
 COPY ./pyproject.toml ./
 COPY ./README.rst     ./
-COPY ./requirements/  ./requirements/
 COPY ./src/           ./src/
 COPY ./uv.lock        ./
 

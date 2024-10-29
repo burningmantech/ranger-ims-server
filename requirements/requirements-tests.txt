@@ -1,3 +1,0 @@
-docker==7.1.0
-hypothesis==6.115.5
-mock==5.1.0
