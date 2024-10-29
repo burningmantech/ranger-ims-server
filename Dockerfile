@@ -27,7 +27,7 @@ COPY ./uv.lock        ./
 # Install the application
 WORKDIR /tmp
 RUN install -o daemon -g daemon -d "${IMS_INSTALL_DIR}"
-RUN pip install --upgrade pip uv
+RUN pip install --no-cache-dir --upgrade pip uv
 RUN uv venv "${IMS_INSTALL_DIR}"
 RUN uv pip --no-progress install \
     --python="${IMS_INSTALL_DIR}/bin/python" \
