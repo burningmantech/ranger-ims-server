@@ -38,14 +38,14 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version-file: ".python-version"
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
       - name: Set up Tox environment
         run: |
-          pip install tox
+          uv tool install tox --with tox-uv
           tox run -e lint --notest
 
       - name: Tox Python Information
@@ -84,15 +84,15 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version-file: ".python-version"
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
       - name: Set up Tox environment
         run: |
-          pip install tox
-          tox run -e mypy --notest
+          uv tool install tox --with tox-uv
+          tox run -e lint --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -130,15 +130,15 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version-file: ".python-version"
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
       - name: Set up Tox environment
         run: |
-          pip install tox
-          tox run -e docs --notest
+          uv tool install tox --with tox-uv
+          tox run -e lint --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -175,15 +175,15 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version-file: ".python-version"
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
       - name: Set up Tox environment
         run: |
-          pip install tox
-          tox run -e packaging --notest
+          uv tool install tox --with tox-uv
+          tox run -e lint --notest
 
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
@@ -260,9 +260,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: System Python Information
-        uses: twisted/python-info-action@v1
-
       - name: Translate Python version to Tox environment
         shell: python
         run: |
@@ -280,11 +277,14 @@ jobs:
           f = p.open(mode="a")
           f.write(f"TOX_ENV={env}\n")
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+  
       - name: Set up Tox environment
         run: |
-          pip install tox
-          tox run -e ${TOX_ENV} --notest
-
+          uv tool install tox --with tox-uv
+          tox run -e lint --notest
+  
       - name: Tox Python Information
         uses: twisted/python-info-action@v1
         with:
@@ -311,7 +311,7 @@ jobs:
       - uses: "actions/setup-python@v5"
         if: ${{ matrix.tox-prefix == 'coverage' }}
         with:
-          python-version: "3.12"
+          python-version-file: ".python-version"
 
       - name: "Upload coverage to Codecov"
         uses: "codecov/codecov-action@v4"
@@ -478,7 +478,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version-file: ".python-version"
 
       - name: Deploy to staging
         run: ./bin/deploy staging
