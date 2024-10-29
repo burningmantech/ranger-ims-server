@@ -40,7 +40,6 @@ from ims.auth import (
     NotAuthenticatedError,
     NotAuthorizedError,
 )
-from ims.config import URLs
 from ims.directory import DirectoryError
 from ims.ext.klein import ContentType, HeaderName
 
@@ -389,10 +388,6 @@ class Router(Klein):
             """
             Not found.
             """
-            # Require authentication.
-            # This is because exposing what resources do or do not exist can
-            # expose information that was not meant to be exposed.
-            app.config.authProvider.authenticateRequest(request)
             return notFoundResponse(request)
 
         @self.handle_errors(MethodNotAllowed)
@@ -403,10 +398,6 @@ class Router(Klein):
             """
             HTTP method not allowed.
             """
-            # Require authentication.
-            # This is because exposing what resources do or do not exist can
-            # expose information that was not meant to be exposed.
-            app.config.authProvider.authenticateRequest(request)
             return methodNotAllowedResponse(request)
 
         @self.handle_errors(NotAuthorizedError)
@@ -437,15 +428,7 @@ class Router(Klein):
             """
             Not authenticated.
             """
-            requestedWith = request.getHeader("X-Requested-With")
-            if requestedWith is not None:
-                if requestedWith == "XMLHttpRequest":
-                    return forbiddenResponse(request)
-
-            element = redirect(request, URLs.login, origin="o")
-            return renderElement(  # type: ignore[return-value]
-                request, element  # type: ignore[arg-type]
-            )
+            return notAuthenticatedResponse(request)
 
         @self.handle_errors(DirectoryError)
         @renderResponse
