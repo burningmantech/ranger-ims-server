@@ -235,6 +235,7 @@ jobs:
           tox run -e lint --notest
 
       - name: Run unit tests
+        id: test
         run: |
           if ! tox run -e ${TOX_ENV}; then
             status=$?
@@ -255,7 +256,7 @@ jobs:
           IMS_TEST_MYSQL_PASSWORD: ims
 
       - name: Upload Trial log artifact
-        if: ${{ failure() }}
+        if: ${{ failure() || steps.test.outputs.optional_fail == "true" }}
         uses: actions/upload-artifact@v4
         with:
           name: trial
