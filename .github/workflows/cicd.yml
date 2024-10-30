@@ -235,7 +235,12 @@ jobs:
           tox run -e lint --notest
 
       - name: Run unit tests
-        run: tox run -e ${TOX_ENV}
+        run:
+          if ! tox run -e ${TOX_ENV}; then
+            status=$?
+            echo "${{ matrix.optional }}"
+            exit ${status}
+          fi;
         env:
           IMS_TEST_MYSQL_HOST: localhost
           IMS_TEST_MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
