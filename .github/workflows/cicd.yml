@@ -159,7 +159,7 @@ jobs:
         include:
           # Test next Python version but allow it to fail
           - os: "ubuntu-latest"
-            python-version: "3.14"
+            python-version: "3.14.0-alpha"
             optional: true
             tox-prefix: "test"
 
