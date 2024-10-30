@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # This stage builds the build container.
 # -----------------------------------------------------------------------------
-FROM python:3.12.3-alpine3.18 AS build
+FROM python:3.13.0-alpine3.20 AS build
 
 # Install compiler toolchain and libraries.
 RUN apk add --no-cache build-base libffi-dev libressl-dev
@@ -38,7 +38,7 @@ RUN uv pip --no-progress install \
 # -----------------------------------------------------------------------------
 # This stage builds the application container.
 # -----------------------------------------------------------------------------
-FROM python:3.12.3-alpine3.18 AS application
+FROM python:3.13.0-alpine3.20 AS application
 
 # Paths
 ARG IMS_INSTALL_DIR="/opt/ims"
@@ -56,7 +56,7 @@ RUN apk add --no-cache libressl
 
 # Allow Python to bind to privileged port numbers
 RUN apk add --no-cache libcap
-RUN setcap "cap_net_bind_service=+ep" /usr/local/bin/python3.12
+RUN setcap "cap_net_bind_service=+ep" /usr/local/bin/python3.13
 
 # Create server root and make that our working directory
 RUN install -o daemon -g daemon -d "${IMS_SERVER_ROOT}"
