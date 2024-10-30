@@ -235,7 +235,7 @@ jobs:
           tox run -e lint --notest
 
       - name: Run unit tests
-        run:
+        run: |
           if ! tox run -e ${TOX_ENV}; then
             status=$?
             echo "${{ matrix.optional }}"
