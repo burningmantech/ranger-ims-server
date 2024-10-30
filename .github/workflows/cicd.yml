@@ -243,7 +243,7 @@ jobs:
               echo "optional_fail=true" >> "${GITHUB_OUTPUT}"
               echo "### Optional matrix job Py:${{ matrix.python-version }} - ${{ matrix.os }} failed" >> "${GITHUB_STEP_SUMMARY}"
               echo " - tox-prefix: ${{ matrix.tox-prefix }}"
-              echo " - exit status: "${status}" >> "${GITHUB_STEP_SUMMARY}"
+              echo " - exit status: ${status}" >> "${GITHUB_STEP_SUMMARY}"
             fi;
             exit ${status}
           fi;
