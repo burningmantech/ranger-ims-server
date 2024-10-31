@@ -260,21 +260,17 @@ jobs:
           name: trial
           path: .tox/${TOX_ENV}/log/trial.log
 
-      - name: Clear prior optional job failed comment, if any
+      - name: Add comment if optional job failed; delete otherwise
+        if: ${{ matrix.optional }}
         uses: thollander/actions-comment-pull-request@v3
         with:
+          # Note: tag must be unique to each matrix case
           comment-tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
-          mode: delete
-
-      # - name: Add comment if optional job failed
-      #   if: ${{ steps.test.outputs.optional_fail == 'true' }}
-      #   uses: thollander/actions-comment-pull-request@v3
-      #   with:
-      #     comment-tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
-      #     message: |
-      #       ### Optional matrix job Py:${{ matrix.python-version }} - ${{ matrix.os }} failed!
-      #        - tox prefix: ${{ matrix.tox-prefix }}
-      #        - exit status: ${{ steps.test.outputs.optional_fail_status }}
+          message: |
+            ### ⚠️ Optional matrix job Py:${{ matrix.python-version }} - ${{ matrix.os }} failed ⚠️
+             - tox prefix: ${{ matrix.tox-prefix }}
+             - exit status: ${{ steps.test.outputs.optional_fail_status }}
+          mode: ${{ steps.test.outputs.optional_fail == 'true' && 'upsert' || 'delete' }}
 
       # Use the latest supported Python version for combining coverage to
       # prevent parsing errors in older versions when looking at modern code.
