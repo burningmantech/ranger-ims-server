@@ -237,15 +237,14 @@ jobs:
       - name: Run unit tests
         id: test
         run: |
-          if ! tox run -e ${TOX_ENV}; then
-            status=$?
-            if [ "${{ matrix.optional }}" == "true" ]; then
-              echo "::warning::Optional matrix job failed."
-              echo "optional_fail=true" >> "${GITHUB_OUTPUT}"
-              echo "optional_fail_status=${status}" >> "${GITHUB_OUTPUT}"
-            fi;
-            exit ${status}
+          status=0
+          tox run -e "${TOX_ENV}" || status=$?
+          if [ ! ${status} && "${{ matrix.optional }}" == "true" ]; then
+            echo "::warning::Optional matrix job failed."
+            echo "optional_fail=true" >> "${GITHUB_OUTPUT}"
+            echo "optional_fail_status=${status}" >> "${GITHUB_OUTPUT}"
           fi;
+          exit ${status}
         env:
           IMS_TEST_MYSQL_HOST: localhost
           IMS_TEST_MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
@@ -266,7 +265,7 @@ jobs:
         with:
           comment-tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
           message: |
-            ### Optional matrix job Py:${{ matrix.python-version }} - ${{ matrix.os }} failed
+            ### Optional matrix job Py:${{ matrix.python-version }} - ${{ matrix.os }} failed!
              - tox prefix: ${{ matrix.tox-prefix }}
              - exit status: ${{ steps.test.outputs.optional_fail_status }}
 
