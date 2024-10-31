@@ -261,7 +261,6 @@ jobs:
           path: .tox/${TOX_ENV}/log/trial.log
 
       - name: Clear prior optional job failed comment, if any
-        if: ${{ steps.test.outputs.optional_fail == 'true' }}
         uses: thollander/actions-comment-pull-request@v3
         with:
           comment-tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
