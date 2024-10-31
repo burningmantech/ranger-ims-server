@@ -235,7 +235,17 @@ jobs:
           tox run -e lint --notest
 
       - name: Run unit tests
-        run: tox run -e ${TOX_ENV}
+        id: test
+        run: |
+          status=0
+          tox run -e "${TOX_ENV}" || status=$?
+          if [ ${status} -ne 0 ] && [ "${{ matrix.optional }}" == "true" ]; then
+            echo "::warning::Optional matrix job failed."
+            echo "optional_fail=true" >> "${GITHUB_OUTPUT}"
+            echo "optional_fail_status=${status}" >> "${GITHUB_OUTPUT}"
+            exit 0  # Ignore error here to keep the green checkmark going
+          fi;
+          exit ${status}
         env:
           IMS_TEST_MYSQL_HOST: localhost
           IMS_TEST_MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
@@ -244,11 +254,23 @@ jobs:
           IMS_TEST_MYSQL_PASSWORD: ims
 
       - name: Upload Trial log artifact
-        if: ${{ failure() }}
+        if: ${{ failure() || steps.test.outputs.optional_fail == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: trial
           path: .tox/${TOX_ENV}/log/trial.log
+
+      - name: Add comment if optional job failed; delete otherwise
+        if: ${{ matrix.optional }}
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          # Note: tag must be unique to each matrix case
+          comment-tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
+          message: |
+            ### ⚠️ Optional matrix job Py:${{ matrix.python-version }} - ${{ matrix.os }} failed ⚠️
+             - tox prefix: ${{ matrix.tox-prefix }}
+             - exit status: ${{ steps.test.outputs.optional_fail_status }}
+          mode: ${{ steps.test.outputs.optional_fail == 'true' && 'upsert' || 'delete' }}
 
       # Use the latest supported Python version for combining coverage to
       # prevent parsing errors in older versions when looking at modern code.
