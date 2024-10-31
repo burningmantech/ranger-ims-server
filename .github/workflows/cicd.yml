@@ -429,6 +429,7 @@ jobs:
             github.com:443
             pypi.org:443
             raw.githubusercontent.com:443
+            api.github.com:443
 
       - name: Checkout source code
         uses: actions/checkout@v4
