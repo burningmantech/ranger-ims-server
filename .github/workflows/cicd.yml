@@ -242,9 +242,7 @@ jobs:
             if [ "${{ matrix.optional }}" == "true" ]; then
               echo "::warning::Optional matrix job failed."
               echo "optional_fail=true" >> "${GITHUB_OUTPUT}"
-              echo "### Optional matrix job Py:${{ matrix.python-version }} - ${{ matrix.os }} failed" >> "${GITHUB_STEP_SUMMARY}"
-              echo " - tox-prefix: ${{ matrix.tox-prefix }}" >> "${GITHUB_STEP_SUMMARY}"
-              echo " - exit status: ${status}" >> "${GITHUB_STEP_SUMMARY}"
+              echo "optional_fail_status=${status}" >> "${GITHUB_OUTPUT}"
             fi;
             exit ${status}
           fi;
@@ -267,7 +265,10 @@ jobs:
         uses: thollander/actions-comment-pull-request@v3
         with:
           comment-tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
-          file-path: "${GITHUB_STEP_SUMMARY}"
+          message: |
+            ### Optional matrix job Py:${{ matrix.python-version }} - ${{ matrix.os }} failed
+             - tox prefix: ${{ matrix.tox-prefix }}
+             - exit status: ${{ steps.test.outputs.optional_fail_status }}
 
       # Use the latest supported Python version for combining coverage to
       # prevent parsing errors in older versions when looking at modern code.
