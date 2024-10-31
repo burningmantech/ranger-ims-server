@@ -207,6 +207,67 @@ queries = Queries(
         select max(NUMBER) from INCIDENT where EVENT = ({query_eventID})
         """,
     ),
+    incidents=Query(
+        "look up incidents for event",
+        f"""
+        select
+            i.NUMBER,
+            i.CREATED,
+            i.PRIORITY,
+            i.STATE,
+            i.SUMMARY,
+            i.LOCATION_NAME,
+            i.LOCATION_CONCENTRIC,
+            i.LOCATION_RADIAL_HOUR,
+            i.LOCATION_RADIAL_MINUTE,
+            i.LOCATION_DESCRIPTION,
+            i.EVENT,
+            (
+                select json_group_array(it.NAME)
+                from INCIDENT__INCIDENT_TYPE iit
+                join INCIDENT_TYPE it
+                    on i.EVENT = iit.EVENT
+                    and i.NUMBER = iit.INCIDENT_NUMBER
+                    and iit.INCIDENT_TYPE = it.ID
+            ) as INCIDENT_TYPES,
+            (
+                select json_group_array(irep.NUMBER)
+                from INCIDENT_REPORT irep
+                where i.EVENT = irep.EVENT
+                    and i.NUMBER = irep.INCIDENT_NUMBER
+            ) as INCIDENT_REPORT_NUMBERS,
+            (
+                select json_group_array(ir.RANGER_HANDLE)
+                from INCIDENT__RANGER ir
+                where i.EVENT = ir.EVENT
+                    and i.NUMBER = ir.INCIDENT_NUMBER
+            ) as RANGER_HANDLES
+        from
+            INCIDENT i
+        where
+            i.EVENT = ({query_eventID})
+        group by
+            i.NUMBER
+        """,
+    ),
+    incidents_reportEntries=Query(
+        "look up report entries for all incidents in an event",
+        f"""
+        select
+            ire.INCIDENT_NUMBER,
+            re.AUTHOR,
+            re.TEXT,
+            re.CREATED,
+            re.GENERATED
+        from
+            INCIDENT__REPORT_ENTRY ire
+            join REPORT_ENTRY re
+                on re.ID = ire.REPORT_ENTRY
+        where
+            ire.EVENT = ({query_eventID})
+        ;
+        """,
+    ),
     attachRangeHandleToIncident=Query(
         "add Ranger to incident",
         f"""

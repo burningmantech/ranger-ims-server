@@ -19,9 +19,11 @@ Incident Management System database tooling.
 """
 
 from abc import abstractmethod
+from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from datetime import datetime as DateTime
 from datetime import timezone as TimeZone
+from json import loads
 from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
@@ -96,6 +98,8 @@ class Queries:
     incident_reportEntries: Query
     incidentNumbers: Query
     maxIncidentNumber: Query
+    incidents: Query
+    incidents_reportEntries: Query
     attachRangeHandleToIncident: Query
     attachIncidentTypeToIncident: Query
     createReportEntry: Query
@@ -581,6 +585,86 @@ class DatabaseStore(IMSDataStore):
     # Incidents
     ###
 
+    def _fetchIncidents(
+        self, eventID: str, txn: Transaction
+    ) -> Iterable[Incident]:
+        parameters: Parameters = dict(eventID=eventID)
+
+        reportEntries = defaultdict[int, list[ReportEntry]](list)
+        txn.execute(self.query.incidents_reportEntries.text, parameters)
+        for row in txn.fetchall():
+            if row["TEXT"]:
+                incidentNumber = cast(int, row["INCIDENT_NUMBER"])
+                reportEntries[incidentNumber].append(
+                    ReportEntry(
+                        created=self.fromDateTimeValue(row["CREATED"]),
+                        author=cast(str, row["AUTHOR"]),
+                        automatic=bool(row["GENERATED"]),
+                        text=cast(str, row["TEXT"]),
+                    )
+                )
+
+        txn.execute(self.query.incidents.text, parameters)
+        results = []
+        for row in txn.fetchall():
+            # FIXME: This is because schema thinks concentric is an int
+            if row["LOCATION_CONCENTRIC"] is None:
+                concentric = None
+            else:
+                concentric = str(row["LOCATION_CONCENTRIC"])
+
+            rangerHandles = (
+                loads(str(row["RANGER_HANDLES"]))
+                if row["RANGER_HANDLES"]
+                else []
+            )
+            incidentTypes = (
+                loads(str(row["INCIDENT_TYPES"]))
+                if row["INCIDENT_TYPES"]
+                else []
+            )
+            incidentReportNumbers = []
+            if row["INCIDENT_REPORT_NUMBERS"]:
+                incidentReportNumbers = [
+                    int(val)
+                    for val in loads(str(row["INCIDENT_REPORT_NUMBERS"]))
+                ]
+            incidentNumber = cast(int, row["NUMBER"])
+            results.append(
+                Incident(
+                    eventID=eventID,
+                    number=incidentNumber,
+                    created=self.fromDateTimeValue(row["CREATED"]),
+                    state=self.fromIncidentStateValue(row["STATE"]),
+                    priority=self.fromPriorityValue(row["PRIORITY"]),
+                    summary=cast(Optional[str], row["SUMMARY"]),
+                    location=Location(
+                        name=cast(str, row["LOCATION_NAME"]),
+                        address=RodGarettAddress(
+                            concentric=concentric,
+                            radialHour=cast(
+                                Optional[int], row["LOCATION_RADIAL_HOUR"]
+                            ),
+                            radialMinute=cast(
+                                Optional[int], row["LOCATION_RADIAL_MINUTE"]
+                            ),
+                            description=cast(
+                                Optional[str], row["LOCATION_DESCRIPTION"]
+                            ),
+                        ),
+                    ),
+                    rangerHandles=cast(Iterable[str], rangerHandles),
+                    incidentTypes=cast(Iterable[str], incidentTypes),
+                    reportEntries=cast(
+                        Iterable[ReportEntry], reportEntries[incidentNumber]
+                    ),
+                    incidentReportNumbers=cast(
+                        Iterable[int], incidentReportNumbers
+                    ),
+                )
+            )
+        return results
+
     def _fetchIncident(
         self, eventID: str, incidentNumber: int, txn: Transaction
     ) -> Incident:
@@ -674,10 +758,12 @@ class DatabaseStore(IMSDataStore):
         """
 
         def incidents(txn: Transaction) -> Iterable[Incident]:
-            return tuple(
-                self._fetchIncident(eventID, number, txn)
-                for number in tuple(self._fetchIncidentNumbers(eventID, txn))
-            )
+            return self._fetchIncidents(eventID, txn)
+            # TODO: remove this if the _fetchIncidents way performs better
+            # return tuple(
+            #     self._fetchIncident(eventID, number, txn)
+            #     for number in tuple(self._fetchIncidentNumbers(eventID, txn))
+            # )
 
         try:
             return await self.runInteraction(incidents)
