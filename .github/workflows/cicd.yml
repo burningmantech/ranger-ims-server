@@ -239,7 +239,7 @@ jobs:
         run: |
           status=0
           tox run -e "${TOX_ENV}" || status=$?
-          if [ ! ${status} && "${{ matrix.optional }}" == "true" ]; then
+          if [ ${status} -ne 0 ] && [ "${{ matrix.optional }}" == "true" ]; then
             echo "::warning::Optional matrix job failed."
             echo "optional_fail=true" >> "${GITHUB_OUTPUT}"
             echo "optional_fail_status=${status}" >> "${GITHUB_OUTPUT}"
