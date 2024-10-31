@@ -243,6 +243,7 @@ jobs:
             echo "::warning::Optional matrix job failed."
             echo "optional_fail=true" >> "${GITHUB_OUTPUT}"
             echo "optional_fail_status=${status}" >> "${GITHUB_OUTPUT}"
+            exit 0  # Ignore error here to keep the green checkmark going
           fi;
           exit ${status}
         env:
@@ -253,19 +254,21 @@ jobs:
           IMS_TEST_MYSQL_PASSWORD: ims
 
       - name: Upload Trial log artifact
+        if: ${{ failure() || steps.test.outputs.optional_fail == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: trial
           path: .tox/${TOX_ENV}/log/trial.log
 
       - name: Clear prior optional job failed comment, if any
+        if: ${{ steps.test.outputs.optional_fail == 'true' }}
         uses: thollander/actions-comment-pull-request@v3
         with:
           comment-tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
           mode: delete
 
       # - name: Add comment if optional job failed
-      #   if: ${{ failure() && steps.test.outputs.optional_fail == 'true' }}
+      #   if: ${{ steps.test.outputs.optional_fail == 'true' }}
       #   uses: thollander/actions-comment-pull-request@v3
       #   with:
       #     comment-tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
