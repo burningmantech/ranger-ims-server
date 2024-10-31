@@ -253,21 +253,26 @@ jobs:
           IMS_TEST_MYSQL_PASSWORD: ims
 
       - name: Upload Trial log artifact
-        if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
           name: trial
           path: .tox/${TOX_ENV}/log/trial.log
 
-      - name: Add comment if optional job failed
-        if: ${{ failure() && steps.test.outputs.optional_fail == 'true' }}
+      - name: Clear prior optional job failed comment, if any
         uses: thollander/actions-comment-pull-request@v3
         with:
           comment-tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
-          message: |
-            ### Optional matrix job Py:${{ matrix.python-version }} - ${{ matrix.os }} failed!
-             - tox prefix: ${{ matrix.tox-prefix }}
-             - exit status: ${{ steps.test.outputs.optional_fail_status }}
+          mode: delete
+
+      # - name: Add comment if optional job failed
+      #   if: ${{ failure() && steps.test.outputs.optional_fail == 'true' }}
+      #   uses: thollander/actions-comment-pull-request@v3
+      #   with:
+      #     comment-tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
+      #     message: |
+      #       ### Optional matrix job Py:${{ matrix.python-version }} - ${{ matrix.os }} failed!
+      #        - tox prefix: ${{ matrix.tox-prefix }}
+      #        - exit status: ${{ steps.test.outputs.optional_fail_status }}
 
       # Use the latest supported Python version for combining coverage to
       # prevent parsing errors in older versions when looking at modern code.
