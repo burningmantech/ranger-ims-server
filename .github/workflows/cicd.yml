@@ -266,8 +266,8 @@ jobs:
         if: ${{ steps.test.outputs.optional_fail == 'true' }}
         uses: thollander/actions-comment-pull-request@v3
         with:
-          comment_tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
-          filePath: "${GITHUB_STEP_SUMMARY}"
+          comment-tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
+          file-path: "${GITHUB_STEP_SUMMARY}"
 
       # Use the latest supported Python version for combining coverage to
       # prevent parsing errors in older versions when looking at modern code.
