@@ -46,7 +46,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.12"
 
       - name: System Python Information
         uses: twisted/python-info-action@v1
@@ -109,7 +109,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.12"
 
       - name: System Python Information
         uses: twisted/python-info-action@v1
