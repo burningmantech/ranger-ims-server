@@ -256,7 +256,7 @@ jobs:
           IMS_TEST_MYSQL_PASSWORD: ims
 
       - name: Upload Trial log artifact
-        if: ${{ failure() || steps.test.outputs.optional_fail == "true" }}
+        if: ${{ failure() || steps.test.outputs.optional_fail == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: trial
