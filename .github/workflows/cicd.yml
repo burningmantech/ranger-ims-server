@@ -263,7 +263,7 @@ jobs:
           path: .tox/${TOX_ENV}/log/trial.log
 
       - name: Add comment if optional job failed
-        if: {{ steps.test.outputs.optional_fail == 'true' }}
+        if: ${{ steps.test.outputs.optional_fail == 'true' }}
         uses: thollander/actions-comment-pull-request@v3
         with:
           comment_tag: "${{ matrix.python-version }}-${{ matrix.os }}-optional-notice"
