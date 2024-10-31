@@ -27,6 +27,7 @@ jobs:
             raw.githubusercontent.com:443
             sts.us-west-2.amazonaws.com:443
             api.github.com:443
+            objects.githubusercontent.com:443
 
       - name: Check user
         if: ${{ ! contains('["wsanchez", "mikeburg", "plapsley"]', github.actor) }}
