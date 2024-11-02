@@ -1,8 +1,8 @@
 create table SCHEMA_INFO (
     VERSION smallint not null
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-insert into SCHEMA_INFO (VERSION) values (6);
+insert into SCHEMA_INFO (VERSION) values (7);
 
 
 create table EVENT (
@@ -11,7 +11,7 @@ create table EVENT (
 
     primary key (ID),
     unique key (NAME)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 create table CONCENTRIC_STREET (
@@ -20,7 +20,7 @@ create table CONCENTRIC_STREET (
     NAME  varchar(128) not null,
 
     primary key (EVENT, ID)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 create table INCIDENT_TYPE (
@@ -30,7 +30,7 @@ create table INCIDENT_TYPE (
 
     primary key (ID),
     unique key (NAME)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 insert into INCIDENT_TYPE (NAME, HIDDEN) values ('Admin', 0);
 insert into INCIDENT_TYPE (NAME, HIDDEN) values ('Junk' , 0);
@@ -48,7 +48,7 @@ create table REPORT_ENTRY (
     -- Primary key is DMS Person ID.
 
     primary key (ID)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 create table INCIDENT (
@@ -75,7 +75,7 @@ create table INCIDENT (
     references CONCENTRIC_STREET(EVENT, ID),
 
     primary key (EVENT, NUMBER)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 create table INCIDENT__RANGER (
@@ -90,7 +90,7 @@ create table INCIDENT__RANGER (
     -- Primary key is DMS Person ID.
 
     primary key (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 create table INCIDENT__INCIDENT_TYPE (
@@ -103,7 +103,7 @@ create table INCIDENT__INCIDENT_TYPE (
     foreign key (INCIDENT_TYPE) references INCIDENT_TYPE(ID),
 
     primary key (EVENT, INCIDENT_NUMBER, INCIDENT_TYPE)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 create table INCIDENT__REPORT_ENTRY (
@@ -116,7 +116,7 @@ create table INCIDENT__REPORT_ENTRY (
     foreign key (REPORT_ENTRY) references REPORT_ENTRY(ID),
 
     primary key (EVENT, INCIDENT_NUMBER, REPORT_ENTRY)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 create table EVENT_ACCESS (
@@ -128,7 +128,7 @@ create table EVENT_ACCESS (
     foreign key (EVENT) references EVENT(ID),
 
     primary key (EVENT, EXPRESSION)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 create table INCIDENT_REPORT (
@@ -143,7 +143,7 @@ create table INCIDENT_REPORT (
     foreign key (EVENT, INCIDENT_NUMBER) references INCIDENT(EVENT, NUMBER),
 
     primary key (EVENT, NUMBER)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 create table INCIDENT_REPORT__REPORT_ENTRY (
@@ -157,4 +157,4 @@ create table INCIDENT_REPORT__REPORT_ENTRY (
     foreign key (REPORT_ENTRY) references REPORT_ENTRY(ID),
 
     primary key (EVENT, INCIDENT_REPORT_NUMBER, REPORT_ENTRY)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

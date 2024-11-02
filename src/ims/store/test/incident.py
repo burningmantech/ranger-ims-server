@@ -86,7 +86,7 @@ anIncident2 = Incident(
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=3),
     state=IncidentState.new,
     priority=IncidentPriority.normal,
-    summary="Another thing happened",
+    summary="Another thing happened 🙂",
     location=Location(name="Here", address=None),
     rangerHandles=(),
     incidentTypes=(),

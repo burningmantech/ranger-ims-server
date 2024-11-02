@@ -241,8 +241,10 @@ class DockerizedMySQLService(MySQLService):
 
     _dockerHost: str = "172.17.0.1"
 
-    imageRepository: str = "mysql/mysql-server"
-    imageTag: str = "5.6"
+    imageRepository: str = "mariadb"
+    # this should match the value in
+    # https://github.com/burningmantech/ranger-ims-server/blob/master/docker-compose.yml
+    imageTag: str = "10.5.24"
 
     _dockerClient: DockerClient = field(
         factory=DockerClient.from_env, init=False
@@ -283,10 +285,10 @@ class DockerizedMySQLService(MySQLService):
         return dict(
             # Set root password so that we can connect as root from the Docker
             # host for debugging
-            MYSQL_ROOT_PASSWORD=self.rootPassword,
-            MYSQL_ROOT_HOST=self._dockerHost,
-            MYSQL_USER=self.user,
-            MYSQL_PASSWORD=self.password,
+            MARIADB_ROOT_PASSWORD=self.rootPassword,
+            MARIADB_ROOT_HOST=self._dockerHost,
+            MARIADB_USER=self.user,
+            MARIADB_PASSWORD=self.password,
         )
 
     def _waitOnContainerLog(
@@ -377,6 +379,7 @@ class DockerizedMySQLService(MySQLService):
 
         imageName = f"{self.imageRepository}:{self.imageTag}"
 
+        self._log.info(f"Pulling image {imageName}")
         try:
             image = client.images.get(imageName)
         except ImageNotFound:
@@ -404,8 +407,9 @@ class DockerizedMySQLService(MySQLService):
         self._log.info("Starting MySQL container {name}", name=containerName)
         container.start()
 
+        # We should really do a healthcheck here rather than scrape logs
         try:
-            await self._waitOnContainerLog(container, " starting as process 1 ")
+            await self._waitOnContainerLog(container, "ready for connections")
 
             # Get host and port
 
