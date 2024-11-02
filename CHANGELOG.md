@@ -16,6 +16,12 @@ Each month below should look like the following, using the same ordering for the
 ### Fixed
 -->
 
+## 2024-11
+
+### Added
+
+- Added full Unicode support to IMS. All text fields now accept previously unsupported characters, like those from Cyrillic, Chinese, emoji, and much more ([#1353](https://github.com/burningmantech/ranger-ims-server/issues/1353))
+
 ## 2024-10
 
 ### Changed
@@ -24,6 +30,7 @@ Each month below should look like the following, using the same ordering for the
 - Changed login screen to encourage users to log in by email address, rather than by Ranger handle ([#1293](https://github.com/burningmantech/ranger-ims-server/pull/1293))
 - Used text and datalist for "Add Ranger" on incident page, rather than a select field ([#1292](https://github.com/burningmantech/ranger-ims-server/pull/1292))
 - Removed email address from the personnel API endpoint ([#1317](https://github.com/burningmantech/ranger-ims-server/pull/1317))
+- Optimized the API calls that back the incidents endpoint. This speeds up the web UI incidents table load by around 3x ([#1349](https://github.com/burningmantech/ranger-ims-server/pull/1349)) ([#1324](https://github.com/burningmantech/ranger-ims-server/issues/1324))
 
 ### Added
 
