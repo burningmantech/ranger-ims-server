@@ -397,8 +397,6 @@ class AuthProvider:
         authorizations = Authorization.none
 
         if user is not None:
-            authorizations |= Authorization.readPersonnel
-
             for shortName in user.shortNames:
                 if shortName in self.adminUsers:
                     authorizations |= Authorization.imsAdmin
@@ -410,12 +408,14 @@ class AuthProvider:
                 authorizations |= Authorization.writeIncidents
                 authorizations |= Authorization.readIncidents
                 authorizations |= Authorization.writeIncidentReports
+                authorizations |= Authorization.readPersonnel
 
             else:
                 if self._matchACL(
                     user, frozenset(await self.store.readers(eventID))
                 ):
                     authorizations |= Authorization.readIncidents
+                    authorizations |= Authorization.readPersonnel
 
                 if self._matchACL(
                     user,

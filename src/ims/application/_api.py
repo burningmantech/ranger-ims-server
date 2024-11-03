@@ -225,8 +225,9 @@ class APIApplication:
         """
         Personnel endpoint.
         """
+        eventId = queryValue(request, "event_id")
         await self.config.authProvider.authorizeRequest(
-            request, None, Authorization.readPersonnel
+            request, eventId, Authorization.readPersonnel
         )
 
         stream, etag = await self.personnelData()
