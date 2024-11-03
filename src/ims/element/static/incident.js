@@ -244,7 +244,7 @@ function loadPersonnel(success) {
         setErrorMessage(message);
     }
 
-    jsonRequest(url_personnel, null, ok, fail);
+    jsonRequest(urlReplace(url_personnel + "?event_id=<event_id>"), null, ok, fail);
 }
 
 
