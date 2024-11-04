@@ -27,7 +27,7 @@ dependencies = [
     "service-identity==24.2.0",
     "twisted==24.10.0",
     "werkzeug==3.0.4",
-    "zope-interface==7.0.3",
+    "zope-interface==7.1.1",
 ]
 
 # Authors/maintainers
