@@ -24,7 +24,7 @@ dependencies = [
     "pymysql==1.1.1",
     "pyopenssl==24.2.1",
     "pyyaml==6.0.2",
-    "service-identity==24.1.0",
+    "service-identity==24.2.0",
     "twisted==24.7.0",
     "werkzeug==3.0.4",
     "zope-interface==7.0.3",
