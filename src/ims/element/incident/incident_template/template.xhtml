@@ -75,7 +75,7 @@
             </span>
           </li>
         </ul>
-        <div>
+        <div class="flex-input-container">
           <label class="control-label">Add:</label>
           <input
             type="text"
@@ -100,15 +100,18 @@
             </span>
           </li>
         </ul>
-        <div>
+        <div class="flex-input-container">
           <label class="control-label">Add:</label>
-          <select
+          <input
+            type="text"
             id="incident_type_add"
+            list="incident_types"
             class="form-control input-sm auto-width"
             onchange="addIncidentType()"
-          >
+          />
+          <datalist id="incident_types">
             <option value="" />
-          </select>
+          </datalist>
         </div>
       </div>
     </div>
