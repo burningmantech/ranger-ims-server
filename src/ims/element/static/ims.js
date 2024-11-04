@@ -543,13 +543,15 @@ function shortDescribeLocation(location) {
             }
             break;
         case "garett":
-            locationBits.push(" (");
-            locationBits.push(padTwo(location.radial_hour));
-            locationBits.push(":");
-            locationBits.push(padTwo(location.radial_minute));
-            locationBits.push("@");
-            locationBits.push(concentricStreetFromID(location.concentric));
-            locationBits.push(")");
+            if (location.radial_hour || location.radial_minute || location.concentric) {
+                locationBits.push(" (");
+                locationBits.push(padTwo(location.radial_hour));
+                locationBits.push(":");
+                locationBits.push(padTwo(location.radial_minute));
+                locationBits.push("@");
+                locationBits.push(concentricStreetFromID(location.concentric));
+                locationBits.push(")");
+            }
             break;
         default:
             locationBits.push(
