@@ -637,19 +637,18 @@ function drawIncidentTypes() {
 
 
 function drawIncidentTypesToAdd() {
-    var select = $("#incident_type_add");
+    var datalist = $("#incident_types");
 
-    select.empty();
-    select.append($("<option />"));
+    datalist.empty();
+    datalist.append($("<option />"));
 
     for (var i in incidentTypes) {
         var incidentType = incidentTypes[i];
 
         var option = $("<option />");
         option.val(incidentType);
-        option.text(incidentType);
 
-        select.append(option);
+        datalist.append(option);
     }
 }
 
@@ -1065,21 +1064,27 @@ function addRanger() {
 function addIncidentType() {
     var select = $("#incident_type_add");
     var incidentType = $(select).val();
-    var incidentTypes = incident.incident_types
+    var currentIncidentTypes = incident.incident_types
 
-    if (incidentTypes == undefined) {
-        incidentTypes = [];
+    if (currentIncidentTypes == undefined) {
+        currentIncidentTypes = [];
     } else {
-        incidentTypes = incidentTypes.slice();  // copy
+        currentIncidentTypes = currentIncidentTypes.slice();  // copy
     }
 
-    if (incidentTypes.indexOf(incidentType) != -1) {
+    if (currentIncidentTypes.indexOf(incidentType) != -1) {
         // Already in the list, so… move along.
         select.val("");
         return;
     }
 
-    incidentTypes.push(incidentType);
+    if (incidentTypes.indexOf(incidentType) == -1) {
+        // Not a valid incident type
+        select.val("");
+        return;
+    }
+
+    currentIncidentTypes.push(incidentType);
 
     function ok() {
         select.val("");
@@ -1091,7 +1096,7 @@ function addIncidentType() {
         select.val("");
     }
 
-    sendEdits({"incident_types": incidentTypes}, ok, fail);
+    sendEdits({"incident_types": currentIncidentTypes}, ok, fail);
 }
 
 
