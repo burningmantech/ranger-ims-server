@@ -27,7 +27,7 @@ from attrs import field, frozen
 
 from ims.ext.attr import sorted_tuple
 
-from ._convert import freezeIntegers, freezeStrings, normalizeDateTime
+from ._convert import dedupeStrings, freezeIntegers, normalizeDateTime
 from ._entry import ReportEntry
 from ._location import Location
 from ._priority import IncidentPriority
@@ -57,8 +57,8 @@ class Incident(ReplaceMixIn):
     priority: IncidentPriority
     summary: str | None
     location: Location
-    rangerHandles: frozenset[str] = field(converter=freezeStrings)
-    incidentTypes: frozenset[str] = field(converter=freezeStrings)
+    rangerHandles: tuple[str, ...] = field(converter=dedupeStrings)
+    incidentTypes: tuple[str, ...] = field(converter=dedupeStrings)
     reportEntries: Sequence[ReportEntry] = field(
         converter=sortAndFreezeReportEntries
     )

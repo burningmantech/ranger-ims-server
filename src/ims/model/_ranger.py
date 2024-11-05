@@ -25,7 +25,7 @@ from attrs import field, frozen
 
 from ims.ext.enum import Names, auto, unique
 
-from ._convert import freezeStrings
+from ._convert import dedupeStrings
 from ._replace import ReplaceMixIn
 
 
@@ -73,8 +73,8 @@ class Ranger(ReplaceMixIn):
     handle: str
     name: str
     status: RangerStatus
-    email: frozenset[str] = field(
-        converter=freezeStrings, default=frozenset[str]()
+    email: tuple[str, ...] = field(
+        converter=dedupeStrings, default=tuple[str, ...]()
     )
     enabled: bool
     directoryID: str | None

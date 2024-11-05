@@ -35,6 +35,11 @@ def freezeStrings(strings: Iterable[str]) -> frozenset[str]:
     return frozenset(strings)
 
 
+def dedupeStrings(strings: Iterable[str]) -> tuple[str, ...]:
+    deduped = {s: None for s in strings}
+    return tuple(s for s in deduped)
+
+
 def normalizeDateTime(dateTime: DateTime) -> DateTime:
     """
     Shave some precision off of DateTimes, since it may not round-trip well
