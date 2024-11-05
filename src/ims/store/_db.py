@@ -831,7 +831,6 @@ class DatabaseStore(IMSDataStore):
         self._log.info(
             "Attached Rangers {rangerHandles} to incident "
             "{eventID}#{incidentNumber}",
-            storeWriteClass=Incident,
             eventID=eventID,
             incidentNumber=incidentNumber,
             rangerHandles=rangerHandles,
@@ -859,7 +858,6 @@ class DatabaseStore(IMSDataStore):
         self._log.info(
             "Attached incident types {incidentTypes} to incident "
             "{eventID}#{incidentNumber}",
-            storeWriteClass=Incident,
             eventID=eventID,
             incidentNumber=incidentNumber,
             incidentTypes=incidentTypes,
@@ -882,6 +880,19 @@ class DatabaseStore(IMSDataStore):
             "Created report entry: {reportEntry}",
             storeWriteClass=ReportEntry,
             reportEntry=reportEntry,
+        )
+
+    def _notifyIncidentUpdate(
+        self,
+        eventID: str,
+        incidentNumber: int,
+    ) -> None:
+        # This will trigger the DataStoreEventSourceLogObserver
+        self._log.info(
+            "Firing incident update event for {eventID}#{incidentNumber}",
+            storeWriteClass=Incident,
+            eventID=eventID,
+            incidentNumber=incidentNumber,
         )
 
     def _createAndAttachReportEntriesToIncident(
@@ -909,7 +920,6 @@ class DatabaseStore(IMSDataStore):
         self._log.info(
             "Attached report entries to incident {eventID}#{incidentNumber}: "
             "{reportEntries}",
-            storeWriteClass=Incident,
             eventID=eventID,
             incidentNumber=incidentNumber,
             reportEntries=reportEntries,
@@ -1082,9 +1092,10 @@ class DatabaseStore(IMSDataStore):
 
         self._log.info(
             "Created incident {incident}",
-            storeWriteClass=Incident,
             incident=incident,
         )
+
+        self._notifyIncidentUpdate(incident.eventID, incident.number)
 
         return incident
 
@@ -1148,7 +1159,6 @@ class DatabaseStore(IMSDataStore):
         self._log.info(
             "{author} updated incident {eventID}#{incidentNumber}: "
             "{attribute}={value}",
-            storeWriteClass=Incident,
             query=query,
             eventID=eventID,
             incidentNumber=incidentNumber,
@@ -1156,6 +1166,8 @@ class DatabaseStore(IMSDataStore):
             value=value,
             author=author,
         )
+
+        self._notifyIncidentUpdate(eventID, incidentNumber)
 
     async def setIncident_priority(
         self,
@@ -1336,12 +1348,13 @@ class DatabaseStore(IMSDataStore):
         self._log.info(
             "{author} set Rangers for incident {eventID}#{incidentNumber}: "
             "{rangerHandles}",
-            storeWriteClass=Incident,
             author=author,
             eventID=eventID,
             incidentNumber=incidentNumber,
             rangerHandles=rangerHandles,
         )
+
+        self._notifyIncidentUpdate(eventID, incidentNumber)
 
     async def setIncident_incidentTypes(
         self,
@@ -1395,12 +1408,13 @@ class DatabaseStore(IMSDataStore):
         self._log.info(
             "{author} set incident types for incident "
             "{eventID}#{incidentNumber}: {incidentTypes}",
-            storeWriteClass=Incident,
             author=author,
             eventID=eventID,
             incidentNumber=incidentNumber,
             incidentTypes=incidentTypes,
         )
+
+        self._notifyIncidentUpdate(eventID, incidentNumber)
 
     async def addReportEntriesToIncident(
         self,
@@ -1445,6 +1459,8 @@ class DatabaseStore(IMSDataStore):
                 error=e,
             )
             raise
+
+        self._notifyIncidentUpdate(eventID, incidentNumber)
 
     ###
     # Incident Reports
