@@ -27,6 +27,10 @@ Each month below should look like the following, using the same ordering for the
 
 - Added full Unicode support to IMS. All text fields now accept previously unsupported characters, like those from Cyrillic, Chinese, emoji, and much more ([#1353](https://github.com/burningmantech/ranger-ims-server/issues/1353))
 
+### Fixed
+
+- Fixed bug that caused the incident page to reload data multiple times for each incident update ([#1369](https://github.com/burningmantech/ranger-ims-server/issues/1369))
+
 ## 2024-10
 
 ### Changed
