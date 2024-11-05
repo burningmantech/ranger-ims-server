@@ -119,6 +119,8 @@ class Queries:
     incidentReport_reportEntries: Query
     incidentReportNumbers: Query
     maxIncidentReportNumber: Query
+    incidentReports: Query
+    incidentReports_reportEntries: Query
     createIncidentReport: Query
     attachReportEntryToIncidentReport: Query
     setIncidentReport_summary: Query
@@ -759,11 +761,6 @@ class DatabaseStore(IMSDataStore):
 
         def incidents(txn: Transaction) -> Iterable[Incident]:
             return self._fetchIncidents(eventID, txn)
-            # TODO: remove this if the _fetchIncidents way performs better
-            # return tuple(
-            #     self._fetchIncident(eventID, number, txn)
-            #     for number in tuple(self._fetchIncidentNumbers(eventID, txn))
-            # )
 
         try:
             return await self.runInteraction(incidents)
@@ -1466,6 +1463,45 @@ class DatabaseStore(IMSDataStore):
     # Incident Reports
     ###
 
+    def _fetchIncidentReports(
+        self, eventID: str, txn: Transaction
+    ) -> Iterable[IncidentReport]:
+        parameters: Parameters = dict(eventID=eventID)
+
+        txn.execute(self.query.incidentReports_reportEntries.text, parameters)
+
+        # incident report number -> report entry
+        reports = defaultdict[int, list[ReportEntry]](list)
+        for row in txn.fetchall():
+            incidentReportNumber = cast(int, row["INCIDENT_REPORT_NUMBER"])
+            reports[incidentReportNumber].append(
+                ReportEntry(
+                    created=self.fromDateTimeValue(row["CREATED"]),
+                    author=cast(str, row["AUTHOR"]),
+                    automatic=bool(row["GENERATED"]),
+                    text=cast(str, row["TEXT"]),
+                ),
+            )
+
+        results = list[IncidentReport]()
+        txn.execute(self.query.incidentReports.text, parameters)
+        for row in txn.fetchall():
+            incidentReportNumber = cast(int, row["NUMBER"])
+            results.append(
+                IncidentReport(
+                    eventID=eventID,
+                    number=incidentReportNumber,
+                    created=self.fromDateTimeValue(row["CREATED"]),
+                    summary=cast(Optional[str], row["SUMMARY"]),
+                    incidentNumber=cast(Optional[int], row["INCIDENT_NUMBER"]),
+                    reportEntries=cast(
+                        Iterable[ReportEntry], reports[incidentReportNumber]
+                    ),
+                )
+            )
+
+        return tuple[IncidentReport, ...](r for r in results)
+
     def _fetchIncidentReport(
         self, eventID: str, incidentReportNumber: int, txn: Transaction
     ) -> IncidentReport:
@@ -1523,12 +1559,15 @@ class DatabaseStore(IMSDataStore):
         """
 
         def incidentReports(txn: Transaction) -> Iterable[IncidentReport]:
-            return tuple(
-                self._fetchIncidentReport(eventID, number, txn)
-                for number in tuple(
-                    self._fetchIncidentReportNumbers(eventID, txn)
-                )
-            )
+            return self._fetchIncidentReports(eventID, txn)
+            # TODO: see if the above way is faster in staging before
+            #  removing this
+            # return tuple(
+            #     self._fetchIncidentReport(eventID, number, txn)
+            #     for number in tuple(
+            #         self._fetchIncidentReportNumbers(eventID, txn)
+            #     )
+            # )
 
         try:
             return await self.runInteraction(incidentReports)

@@ -421,6 +421,38 @@ queries = Queries(
         select max(NUMBER) from INCIDENT_REPORT
         """,
     ),
+    incidentReports=Query(
+        "look up all incident reports for an event",
+        f"""
+        select
+            NUMBER,
+            CREATED,
+            SUMMARY,
+            INCIDENT_NUMBER
+        from
+            INCIDENT_REPORT
+        where
+            EVENT = ({query_eventID})
+        """,
+    ),
+    incidentReports_reportEntries=Query(
+        "look up all incident report report entries for an event",
+        f"""
+        select
+            irre.INCIDENT_REPORT_NUMBER,
+            re.AUTHOR,
+            re.CREATED,
+            re.GENERATED,
+            re.ID,
+            re.TEXT
+        from
+            INCIDENT_REPORT__REPORT_ENTRY irre
+            join REPORT_ENTRY re
+                on irre.REPORT_ENTRY = re.ID
+        where
+            irre.EVENT = ({query_eventID})
+        """,
+    ),
     createIncidentReport=Query(
         "create incident report",
         f"""
