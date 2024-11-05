@@ -18,6 +18,11 @@ Each month below should look like the following, using the same ordering for the
 
 ## 2024-11
 
+### Changed
+- Switched to text-fields with datalists for "Add Ranger" and "Add Incident Types" on the incident page. Previously we used select fields, which were long and cumbersome ([#1292](https://github.com/burningmantech/ranger-ims-server/pull/1292), [#1365](https://github.com/burningmantech/ranger-ims-server/pull/1365))
+- Stopped showing empty locations in the UI as "(?:?)@?", but rather as just an empty string ([#1362](https://github.com/burningmantech/ranger-ims-server/pull/1362))
+- Tightened security on the personnel endpoint, by restricting it to those with at least readIncident permission, and by removing Ranger email addresses from the response ([#1355](https://github.com/burningmantech/ranger-ims-server/pull/1355), [#1317](https://github.com/burningmantech/ranger-ims-server/pull/1317))
+
 ### Added
 
 - Added full Unicode support to IMS. All text fields now accept previously unsupported characters, like those from Cyrillic, Chinese, emoji, and much more ([#1353](https://github.com/burningmantech/ranger-ims-server/issues/1353))
@@ -26,11 +31,9 @@ Each month below should look like the following, using the same ordering for the
 
 ### Changed
 
-- Resolved IMS's longstanding 6-open-tab limitation ([#1320](https://github.com/burningmantech/ranger-ims-server/issues/1320)) ([#1322](https://github.com/burningmantech/ranger-ims-server/pull/1322))
+- Resolved IMS's longstanding 6-open-tab limitation, by using a BroadcastChannel to share one EventSource connection between tabs ([#1320](https://github.com/burningmantech/ranger-ims-server/issues/1320), [#1322](https://github.com/burningmantech/ranger-ims-server/pull/1322))
 - Changed login screen to encourage users to log in by email address, rather than by Ranger handle ([#1293](https://github.com/burningmantech/ranger-ims-server/pull/1293))
-- Used text and datalist for "Add Ranger" on incident page, rather than a select field ([#1292](https://github.com/burningmantech/ranger-ims-server/pull/1292))
-- Removed email address from the personnel API endpoint ([#1317](https://github.com/burningmantech/ranger-ims-server/pull/1317))
-- Optimized the API calls that back the incidents endpoint. This speeds up the web UI incidents table load by around 3x ([#1349](https://github.com/burningmantech/ranger-ims-server/pull/1349)) ([#1324](https://github.com/burningmantech/ranger-ims-server/issues/1324))
+- Optimized the API calls that back the incidents endpoint. This speeds up the web UI incidents table load by around 3x ([#1349](https://github.com/burningmantech/ranger-ims-server/pull/1349), [#1324](https://github.com/burningmantech/ranger-ims-server/issues/1324))
 
 ### Added
 
