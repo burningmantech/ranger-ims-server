@@ -80,7 +80,7 @@ function initIncidentReportsTable() {
     const incidentReportChannel = new BroadcastChannel(incidentReportChannelName);
     incidentReportChannel.onmessage = function (e) {
         const number = e.data;
-        console.log("Got incident report update: " + number);
+        console.log("Got field report update: " + number);
         incidentReportsTable.ajax.reload(clearErrorMessage);
     }
 }

@@ -324,7 +324,7 @@ function localLoadIncidentTypes() {
 
 
 //
-// Load unattached incident reports
+// Load unattached field reports
 //
 
 var unattachedIncidentReports = null;
@@ -339,8 +339,8 @@ function loadUnattachedIncidentReports(success) {
         for (const d of data) {
             _unattachedIncidentReports.push(d);
         }
-        // apply an ascending sort based on the incident report number,
-        // being cautious about incident report number being null
+        // apply an ascending sort based on the field report number,
+        // being cautious about field report number being null
         _unattachedIncidentReports.sort(function (a, b) {
             return (a.number ?? -1) - (b.number ?? -1);
         })
@@ -356,7 +356,7 @@ function loadUnattachedIncidentReports(success) {
             // We're not allowed to look these up.
             unattachedIncidentReports = undefined;
         } else {
-            var message = "Failed to load unattached incident reports";
+            var message = "Failed to load unattached field reports";
             console.error(message + ": " + error);
             setErrorMessage(message);
         }
@@ -370,7 +370,7 @@ function loadUnattachedIncidentReports(success) {
 
 
 //
-// Load attached incident reports
+// Load attached field reports
 //
 
 var attachedIncidentReports = null;
@@ -389,7 +389,7 @@ function loadAttachedIncidentReports(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load attached incident reports";
+        var message = "Failed to load attached field reports";
         console.error(message + ": " + error);
         setErrorMessage(message);
     }
@@ -806,7 +806,7 @@ function drawIncidentReportsToAttach() {
 
         select.append($("<optgroup label=\"Unattached to any incident\">"));
         for (const report of unattachedIncidentReports) {
-            // Skip incident reports that *are* attached to an incident
+            // Skip field reports that *are* attached to an incident
             if (report.incident != null) {
                 continue;
             }
@@ -820,7 +820,7 @@ function drawIncidentReportsToAttach() {
 
         select.append($("<optgroup label=\"Attached to another incident\">"));
         for (const report of unattachedIncidentReports) {
-            // Skip incident reports that *are not* attached to an incident
+            // Skip field reports that *are not* attached to an incident
             if (report.incident == null) {
                 continue;
             }
@@ -1139,7 +1139,7 @@ function detachIncidentReport(sender) {
         // FIXME
         // controlHasError(sender);
 
-        var message = "Failed to detach incident report";
+        var message = "Failed to detach field report";
         console.log(message + ": " + requestError);
         loadAndDisplayIncidentReports();
         setErrorMessage(message);
@@ -1169,7 +1169,7 @@ function attachIncidentReport() {
     }
 
     function fail(requestError, status, xhr) {
-        var message = "Failed to attach incident report";
+        var message = "Failed to attach field report";
         console.log(message + ": " + requestError);
         loadAndDisplayIncidentReports();
         setErrorMessage(message);

@@ -131,9 +131,9 @@ class URLs:
     viewIncidentTemplate: ClassVar[URL] = app.child("incident.html")
     viewIncidentJS: ClassVar[URL] = static.child("incident.js")
 
-    viewIncidentReports: ClassVar[URL] = viewEvent.child(
-        "incident_reports"
-    ).child("")
+    viewIncidentReports: ClassVar[URL] = viewEvent.child("field_reports").child(
+        ""
+    )
     viewIncidentReportsTemplate: ClassVar[URL] = app.child(
         "incident_reports.html"
     )

@@ -60,11 +60,11 @@ function initIncidentsPage() {
 
 
 //
-// Load event incident reports
+// Load event field reports
 //
 // Note that nothing from these data is displayed in the incidents table.
 // We do this fetch in order to make incidents searchable by text in their
-// attached incident reports.
+// attached field reports.
 
 var eventIncidentReports = null;
 
@@ -85,14 +85,14 @@ function loadEventIncidentReports(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load event incident reports";
+        var message = "Failed to load event field reports";
         console.error(message + ": " + error);
         setErrorMessage(message);
     }
 
     jsonRequest(urlReplace(url_incidentReports + "?exclude_system_entries=true"), null, ok, fail);
 
-    console.log("Loaded event incident reports");
+    console.log("Loaded event field reports");
     if (incidentsTable != null) {
         incidentsTable.ajax.reload(clearErrorMessage);
     }
