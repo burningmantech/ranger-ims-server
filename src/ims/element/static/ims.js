@@ -430,7 +430,7 @@ function summarizeIncident(incident) {
 }
 
 
-// Return a summary for a given incident report.
+// Return a summary for a given field report.
 function summarizeIncidentReport(report) {
     return summarizeIncident(report);
 }
@@ -449,7 +449,7 @@ function incidentAuthor(incident) {
 }
 
 
-// Get author for incident report
+// Get author for field report
 function incidentReportAuthor(report) {
     return incidentAuthor(report);
 }
@@ -461,20 +461,20 @@ function incidentAsString(incident) {
         document.title = "New Incident";
     } else {
         return (
-            incident.event + " incident #" + incident.number + ": " +
+            incident.event + " IMS #" + incident.number + ": " +
             summarizeIncident(incident)
         );
     }
 }
 
 
-// Render incident report as a string
+// Render field report as a string
 function incidentReportAsString(report) {
     if (report.number == null) {
-        document.title = "New Incident Report";
+        document.title = "New Field Report";
     } else {
         return (
-            "Report #" + report.number +
+            "FR #" + report.number +
             " (" + incidentReportAuthor(report) + "): " +
             summarizeIncidentReport(report)
         );
@@ -507,7 +507,7 @@ function reportTextFromIncident(incident) {
         }
     }
 
-    // Incidents page loads all incident reports for the event
+    // Incidents page loads all field reports for the event
     if (typeof eventIncidentReports !== "undefined") {
         for (var i in incident.incident_reports) {
             var reportNumber = incident.incident_reports[i];
@@ -707,7 +707,7 @@ function reportEntryElement(entry) {
         metaDataContainer.append(" ");
 
         var link = $("<a />");
-        link.text("incident report #" + entry.merged);
+        link.text("field report #" + entry.merged);
         link.attr("href", urlReplace(url_viewIncidentReports) + entry.merged)
 
         var reportNumberContainer = $("<span />");

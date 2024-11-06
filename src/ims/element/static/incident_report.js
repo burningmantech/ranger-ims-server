@@ -110,7 +110,7 @@ function loadIncidentReport(success) {
 
     function fail(error, status, xhr) {
         disableEditing();
-        var message = "Failed to load incident report";
+        var message = "Failed to load field report";
         console.error(message + ": " + error);
         setErrorMessage(message);
     }
@@ -130,7 +130,7 @@ function loadIncidentReport(success) {
 function loadAndDisplayIncidentReport(success) {
     function loaded() {
         if (incidentReport == null) {
-            var message = "Incident report failed to load";
+            var message = "Field report failed to load";
             console.log(message);
             setErrorMessage(message);
             return;
@@ -167,7 +167,7 @@ function drawTitle() {
 
 
 //
-// Populate incident report number
+// Populate field report number
 //
 
 function drawNumber() {
@@ -180,7 +180,7 @@ function drawNumber() {
 
 
 //
-// Populate incident report summary
+// Populate field report summary
 //
 
 function drawSummary() {
@@ -207,7 +207,7 @@ function sendEdits(edits, success, error) {
     var url = urlReplace(url_incidentReports);
 
     if (number == null) {
-        // We're creating a new incident report.
+        // We're creating a new field report.
         var required = [];
         for (var i in required) {
             var key = required[i];
@@ -216,15 +216,15 @@ function sendEdits(edits, success, error) {
             }
         }
     } else {
-        // We're editing an existing incident report.
+        // We're editing an existing field report.
         edits.number = number;
         url += number;
     }
 
     function ok(data, status, xhr) {
         if (number == null) {
-            // We created a new incident report.
-            // We need to find out the create incident report number so that
+            // We created a new field report.
+            // We need to find out the created field report number so that
             // future edits don't keep creating new resources.
 
             newNumber = xhr.getResponseHeader("X-IMS-Incident-Report-Number")

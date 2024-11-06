@@ -26,7 +26,7 @@ from ...page import Page
 __all__ = ()
 
 
-title = "Incident Report Details"
+title = "Field Report Details"
 
 
 @mutable(kw_only=True)
