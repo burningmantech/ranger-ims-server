@@ -93,7 +93,13 @@ class UtilityTests(TestCase):
     """
 
     @staticmethod
-    def factory(a: int, b: str, c: bytes) -> bool:
+    def factory(
+        a: int,
+        b: str,
+        c: bytes,
+        q: object | None = None,
+        password: str | None = None,
+    ) -> bool:
         raise NotImplementedError()
 
     def test_describeFactory_partial(self) -> None:
