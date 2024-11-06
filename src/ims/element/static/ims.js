@@ -234,7 +234,10 @@ function controlHasError(element) {
 function controlHasSuccess(element, clearTimeout) {
     element.parent().addClass("has-success");
     if (clearTimeout != undefined) {
-        element.delay("1000").queue(function() {controlClear(element)});
+        element.delay("1000").queue(function(next) {
+            controlClear(element);
+            next();
+        });
     }
 }
 
