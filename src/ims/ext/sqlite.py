@@ -193,7 +193,7 @@ def connect(path: Path | None) -> Connection:
     else:
         endpoint = str(path)
 
-    db = cast(Connection, sqliteConnect(endpoint, factory=Connection))
+    db = sqliteConnect(endpoint, factory=Connection)
     db.row_factory = Row
     db.execute("pragma foreign_keys = true")
 
