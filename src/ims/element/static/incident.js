@@ -1021,6 +1021,9 @@ function removeIncidentType(sender) {
     );
 }
 
+function normalize(str) {
+    return str.toLowerCase().trim();
+}
 
 function addRanger() {
     var select = $("#ranger_add");
@@ -1033,14 +1036,25 @@ function addRanger() {
         handles = handles.slice();  // copy
     }
 
-    if (handles.indexOf(handle) != -1) {
-        // Already in the list, so… move along.
+    // fuzzy-match on handle, to allow case insensitivity and
+    // leading/trailing whitespace.
+    if (!(handle in personnel)) {
+        const normalized = normalize(handle);
+        for (const validHandle in personnel) {
+            if (normalized == normalize(validHandle)) {
+                handle = validHandle;
+                break;
+            }
+        }
+    }
+    if (!(handle in personnel)) {
+        // Not a valid handle
         select.val("");
         return;
     }
 
-    if (!(handle in personnel)) {
-        // Not a valid handle
+    if (handles.indexOf(handle) != -1) {
+        // Already in the list, so… move along.
         select.val("");
         return;
     }
@@ -1072,14 +1086,25 @@ function addIncidentType() {
         currentIncidentTypes = currentIncidentTypes.slice();  // copy
     }
 
-    if (currentIncidentTypes.indexOf(incidentType) != -1) {
-        // Already in the list, so… move along.
+    // fuzzy-match on incidentType, to allow case insensitivity and
+    // leading/trailing whitespace.
+    if (incidentTypes.indexOf(incidentType) == -1) {
+        const normalized = normalize(incidentType);
+        for (const validType of incidentTypes) {
+            if (normalized == normalize(validType)) {
+                incidentType = validType;
+                break;
+            }
+        }
+    }
+    if (incidentTypes.indexOf(incidentType) == -1) {
+        // Not a valid incident type
         select.val("");
         return;
     }
 
-    if (incidentTypes.indexOf(incidentType) == -1) {
-        // Not a valid incident type
+    if (currentIncidentTypes.indexOf(incidentType) != -1) {
+        // Already in the list, so… move along.
         select.val("");
         return;
     }
