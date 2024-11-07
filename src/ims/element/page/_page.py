@@ -127,13 +127,11 @@ class Page(Element):
             tags.link(
                 type="text/css",
                 rel="stylesheet",
-                media="screen",
                 href=urls.bootstrapCSS.asText(),
             ),
             tags.link(
                 type="text/css",
                 rel="stylesheet",
-                media="screen",
                 href=urls.styleSheet.asText(),
             ),
             self.title(request, tags.title.clone()),
