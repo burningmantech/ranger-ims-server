@@ -29,6 +29,7 @@ Each month below should look like the following, using the same ordering for the
 
 ### Fixed
 
+- Made incident printouts look much better ([#1382](https://github.com/burningmantech/ranger-ims-server/pull/1382))
 - Fixed bug that caused the incident page to reload data multiple times for each incident update ([#1369](https://github.com/burningmantech/ranger-ims-server/issues/1369))
 
 ## 2024-10
