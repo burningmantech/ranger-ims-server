@@ -36,3 +36,4 @@ class IncidentTemplatePage(Page):
     """
 
     name: str = title
+    hideH1: bool = True
