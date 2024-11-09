@@ -46,6 +46,7 @@ class Page(Element):
 
     config: Configuration
     name: str
+    hideH1: bool = False
 
     def urlsFromImportSpec(self, spec: str) -> Iterable[URL]:
         """
@@ -156,10 +157,14 @@ class Page(Element):
         """
         Top elements.
         """
+        if self.hideH1:
+            h1 = tags.h1.clone()(id="doc-title", hidden="true")
+        else:
+            h1 = tags.h1.clone()(id="doc-title")
         return (  # type: ignore[return-value]
             self.nav(request),
             self.header(request),
-            self.title(request, tags.h1.clone()(id="doc-title")),
+            self.title(request, h1),
         )
 
     @renderer

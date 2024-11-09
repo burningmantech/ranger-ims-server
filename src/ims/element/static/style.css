@@ -62,7 +62,7 @@ a.navbar-brand>img {
 }
 
 .list-group-small > .list-group-item {
-  padding: 6px 8px;
+  padding: 3px 5px;
   font-size: 10pt;
 }
 
@@ -92,6 +92,29 @@ a.navbar-brand>img {
 /* We want good readability even for disabled controls. */
 .form-control {
   color: black;
+}
+
+/* Tighten up the page a bit */
+.form-group {
+  /* default was 15px */
+  margin-bottom: 6px;
+}
+.well {
+  /* default was 20px */
+  margin-bottom: 12px;
+}
+.well-sm {
+  /* default was 9px */
+  padding: 6px;
+}
+.navbar {
+  /* default was 20px */
+  margin-bottom: 10px;
+}
+h1 {
+  /* default was 20px */
+  margin-top: 10px;
+  font-size: 24px;
 }
 
 /*
