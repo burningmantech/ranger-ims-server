@@ -80,8 +80,9 @@ To set up a configuration for development, start by copying the example configur
 
 To build and run the server (for development only)::
 
-    uv run ims server
-
+    uv run ims --log-file=- --config=./conf/imsd.conf server
+    # or, with debug log-level:
+    uv run ims --log-file=- --config=./conf/imsd.conf --log-level=debug server
 
 ---------------------
 Settings Permissions
