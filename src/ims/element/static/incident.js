@@ -35,7 +35,6 @@ function initIncidentPage() {
         window.addEventListener('beforeunload', function (e) {
             if (document.getElementById("incident_report_add").value !== '') {
                 e.preventDefault();
-                e.returnValue = '';
             }
         });
     }
