@@ -261,7 +261,9 @@ jobs:
           path: .tox/${TOX_ENV}/log/trial.log
 
       - name: Add comment if optional job failed; delete otherwise
-        if: ${{ matrix.optional }}
+        # this step fails on post-merge runs on master, since there's no
+        # PR to comment against.
+        if: ${{ matrix.optional && github.ref != 'refs/heads/master' }}
         uses: thollander/actions-comment-pull-request@v3
         with:
           # Note: tag must be unique to each matrix case
