@@ -399,6 +399,10 @@ class Configuration:
             )
         )
 
+        deployment = parser.valueFromConfig(
+            "DEPLOYMENT", "Core", "Deployment", "Dev"
+        )
+
         #
         # Persist some objects
         #
@@ -408,6 +412,7 @@ class Configuration:
             configFile=configFile,
             configRoot=configRoot,
             dataRoot=dataRoot,
+            deployment=deployment,
             directory=directory,
             hostName=hostName,
             imsAdmins=imsAdmins,
@@ -427,6 +432,7 @@ class Configuration:
     configFile: Path | None
     configRoot: Path
     dataRoot: Path
+    deployment: str
     directory: IMSDirectory
     hostName: str
     imsAdmins: frozenset[str]
@@ -482,6 +488,7 @@ class Configuration:
             f"Core.ConfigRoot: {self.configRoot}\n"
             f"Core.DataRoot: {self.dataRoot}\n"
             f"Core.CachedResources: {self.cachedResourcesRoot}\n"
+            f"Core.Deployment: {self.deployment}\n"
             f"Core.LogLevel: {self.logLevelName}\n"
             f"Core.LogFile: {self.logFilePath}\n"
             f"Core.LogFormat: {self.logFormat}\n"

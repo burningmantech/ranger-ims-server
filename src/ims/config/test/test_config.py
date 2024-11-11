@@ -780,6 +780,7 @@ class ConfigurationTests(TestCase):
             f"Core.ConfigRoot: {config.configRoot}\n"
             f"Core.DataRoot: {config.dataRoot}\n"
             f"Core.CachedResources: {config.cachedResourcesRoot}\n"
+            f"Core.Deployment: {config.deployment}\n"
             f"Core.LogLevel: {config.logLevelName}\n"
             f"Core.LogFile: {config.logFilePath}\n"
             f"Core.LogFormat: {config.logFormat}\n"
