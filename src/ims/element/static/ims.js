@@ -838,20 +838,26 @@ function editFromElement(element, jsonKey, transform) {
 
 const incidentChannelName = "incident_update";
 const incidentReportChannelName= "incident_report_update";
+const reattemptMinTimeMillis = 10000;
 
 // Call this from each browsing context, so that it can queue up to become a leader
 // to manage the EventSource.
-function requestEventSourceLock() {
-    // Acquire the lock, set up the event source, and start
-    // broadcasting events to other browsing contexts.
-    navigator.locks.request("ims_eventsource_lock", () => {
-        let resolve;
-        const p = new Promise((res) => {
-            resolve = res;
+async function requestEventSourceLock() {
+    // Infinitely attempt to reconnect to the EventSource.
+    // This addresses the following issue for when IMS lives on AWS:
+    // https://github.com/burningmantech/ranger-ims-server/issues/1364
+    while (true) {
+        const start = Date.now();
+        // Acquire the lock, set up the EventSource, and start
+        // broadcasting events to other browsing contexts.
+        await navigator.locks.request("ims_eventsource_lock", () => {
+            const {promise, resolve} = Promise.withResolvers();
+            subscribeToUpdates(resolve);
+            return promise;
         });
-        subscribeToUpdates(resolve);
-        return p;
-    });
+        const millisSinceStart = Date.now() - start;
+        await new Promise(r => setTimeout(r, Math.max(0, reattemptMinTimeMillis-millisSinceStart)));
+    }
 }
 
 // This starts the EventSource call and configures event listeners to propagate
