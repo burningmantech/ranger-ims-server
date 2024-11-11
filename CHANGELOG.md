@@ -26,6 +26,7 @@ Each month below should look like the following, using the same ordering for the
 ### Added
 
 - Added full Unicode support to IMS. All text fields now accept previously unsupported characters, like those from Cyrillic, Chinese, emoji, and much more ([#1353](https://github.com/burningmantech/ranger-ims-server/issues/1353))
+- Started doing client-side retries on any EventSource connection failures. This should mean that an IMS web session will be better kept in sync with incident updates, in particular in the off-season, when IMS is running on AWS ([#1389](https://github.com/burningmantech/ranger-ims-server/pull/1389))
 
 ### Fixed
 
