@@ -45,6 +45,12 @@ a.navbar-brand>img {
   color: black;
 }
 
+.nonprod-warning {
+  background-color: #dc3545;
+  color: #ffffff;
+  font-size: 14pt;
+}
+
 .flex-input-container {
   display: flex;
 }
