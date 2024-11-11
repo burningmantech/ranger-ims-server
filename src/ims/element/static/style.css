@@ -31,9 +31,12 @@ footer {
   float: left;
 }
 
-a.navbar-brand>img {
-  width: 20px;
-  height: 20px;
+.navbar-default .navbar-brand {
+  color: #555555;
+}
+
+.navbar-default .navbar-nav>li>a {
+  color: #555555;
 }
 
 .nav-event-id {
@@ -41,7 +44,6 @@ a.navbar-brand>img {
 }
 
 .active-event {
-  font-weight: bold;
   color: black;
 }
 
@@ -79,7 +81,6 @@ a.navbar-brand>img {
 
 .report_entry_system {
   font-size: 8pt;
-  text-align: center;
   filter: opacity(75%);
 }
 
