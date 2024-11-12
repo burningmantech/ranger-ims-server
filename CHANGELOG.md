@@ -22,11 +22,14 @@ Each month below should look like the following, using the same ordering for the
 - Switched to text-fields with datalists for "Add Ranger" and "Add Incident Types" on the incident page. Previously we used select fields, which were long and cumbersome ([#1292](https://github.com/burningmantech/ranger-ims-server/pull/1292), [#1365](https://github.com/burningmantech/ranger-ims-server/pull/1365))
 - Stopped showing empty locations in the UI as "(?:?)@?", but rather as just an empty string ([#1362](https://github.com/burningmantech/ranger-ims-server/pull/1362))
 - Tightened security on the personnel endpoint, by restricting it to those with at least readIncident permission, and by removing Ranger email addresses from the response ([#1355](https://github.com/burningmantech/ranger-ims-server/pull/1355), [#1317](https://github.com/burningmantech/ranger-ims-server/pull/1317))
+- Made the incidents table load another 2x faster, by not retrieving system-generated report entries as part of that call. This should make the table more responsive too ([#1396](https://github.com/burningmantech/ranger-ims-server/pull/1396))
+- Tweaked the navbar's formatting to align better with Clubhouse ([#1394](https://github.com/burningmantech/ranger-ims-server/pull/1394))
 
 ### Added
 
 - Added full Unicode support to IMS. All text fields now accept previously unsupported characters, like those from Cyrillic, Chinese, emoji, and much more ([#1353](https://github.com/burningmantech/ranger-ims-server/issues/1353))
 - Started doing client-side retries on any EventSource connection failures. This should mean that an IMS web session will be better kept in sync with incident updates, in particular in the off-season, when IMS is running on AWS ([#1389](https://github.com/burningmantech/ranger-ims-server/pull/1389))
+- Added a warning banner to non-production instances of the web UI, to make sure people don't accidentally put prod data into non-production IMS instances. [(#1366](https://github.com/burningmantech/ranger-ims-server/issues/1366))
 
 ### Fixed
 
