@@ -10,11 +10,11 @@
       </p>
 
       <p t:render="if_not_logged_in">
-        <div class="btn-group btn-group-justified" role="group">
+        <div class="btn-group" role="group">
           <a t:render="url"
             url="login"
             role="button"
-            class="btn btn-sm btn-default btn-primary"
+            class="btn btn-md btn-default btn-primary"
           >
             Log In
           </a>
@@ -22,11 +22,11 @@
       </p>
 
       <p t:render="if_logged_in">
-        <div class="btn-group btn-group-justified" role="group">
+        <div class="btn-group" role="group">
           <a t:render="url"
             url="logout"
             role="button"
-            class="btn btn-sm btn-default btn-danger"
+            class="btn btn-md btn-default btn-danger"
           >
             Log Out
           </a>
