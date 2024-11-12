@@ -571,6 +571,11 @@ function shortDescribeLocation(location) {
 // DataTables rendering
 //
 
+function renderSorted(strings) {
+    const copy = strings.toSorted((a, b) => a.localeCompare(b));
+    return copy.join(", ")
+}
+
 function renderIncidentNumber(incidentNumber, type, incident) {
     switch (type) {
         case "display":
