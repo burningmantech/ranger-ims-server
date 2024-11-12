@@ -158,10 +158,7 @@ class Element(BaseElement):
         if deployment == "prod":
             return ""
         return tag(
-            tags.p(
-                f"☢️ This is not production. "
-                f"You are on a {deployment} IMS server. ☢️"
-            )
+            f"This is not production. You are on a {deployment} IMS server."
         )
 
     ##

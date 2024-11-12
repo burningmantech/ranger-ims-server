@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <nav xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root" class="navbar navbar-default">
 
+  <div class="nonprod-warning text-center" t:render="deployment_warning"></div>
+
   <div class="navbar-header">
     <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar" aria-expanded="false">
       <span class="sr-only">Toggle navigation</span>
@@ -46,9 +48,6 @@
       </li>
     </ul>
 
-  </div>
-
-  <div class="nonprod-warning text-center" t:render="deployment_warning">
   </div>
 
 </nav>
