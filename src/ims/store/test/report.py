@@ -118,7 +118,9 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 )
 
             found: set[int] = set()
-            for retrieved in await store.incidentReports(anIncident1.eventID):
+            for retrieved in await store.incidentReports(
+                anIncident1.eventID, False
+            ):
                 self.assertIn(retrieved.number, incidentReportsByNumber)
                 self.assertIncidentReportsEqual(
                     store,
@@ -140,7 +142,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         store.bringThePain()
 
         try:
-            await store.incidentReports(anEvent.id)
+            await store.incidentReports(anEvent.id, False)
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
@@ -248,7 +250,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 nextNumber += 1
 
             storedIncidentReports = sorted(
-                await store.incidentReports(anEvent.id)
+                await store.incidentReports(anEvent.id, False)
             )
 
             self.assertEqual(

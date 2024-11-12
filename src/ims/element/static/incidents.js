@@ -90,7 +90,7 @@ function loadEventIncidentReports(success) {
         setErrorMessage(message);
     }
 
-    jsonRequest(urlReplace(url_incidentReports), null, ok, fail);
+    jsonRequest(urlReplace(url_incidentReports + "?exclude_system_entries=true"), null, ok, fail);
 
     console.log("Loaded event incident reports");
     if (incidentsTable != null) {

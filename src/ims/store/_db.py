@@ -588,9 +588,13 @@ class DatabaseStore(IMSDataStore):
     ###
 
     def _fetchIncidents(
-        self, eventID: str, txn: Transaction
+        self, eventID: str, excludeSystemEntries: bool, txn: Transaction
     ) -> Iterable[Incident]:
-        parameters: Parameters = dict(eventID=eventID)
+        parameters: Parameters = dict(
+            eventID=eventID,
+            # generated value less than or equal to
+            generatedLTE=0 if excludeSystemEntries else 1,
+        )
 
         reportEntries = defaultdict[int, list[ReportEntry]](list)
         txn.execute(self.query.incidents_reportEntries.text, parameters)
@@ -754,13 +758,15 @@ class DatabaseStore(IMSDataStore):
         txn.execute(self.query.incidentNumbers.text, dict(eventID=eventID))
         return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
-    async def incidents(self, eventID: str) -> Iterable[Incident]:
+    async def incidents(
+        self, eventID: str, excludeSystemEntries: bool
+    ) -> Iterable[Incident]:
         """
         See :meth:`IMSDataStore.incidents`.
         """
 
         def incidents(txn: Transaction) -> Iterable[Incident]:
-            return self._fetchIncidents(eventID, txn)
+            return self._fetchIncidents(eventID, excludeSystemEntries, txn)
 
         try:
             return await self.runInteraction(incidents)
@@ -1464,9 +1470,13 @@ class DatabaseStore(IMSDataStore):
     ###
 
     def _fetchIncidentReports(
-        self, eventID: str, txn: Transaction
+        self, eventID: str, excludeSystemEntries: bool, txn: Transaction
     ) -> Iterable[IncidentReport]:
-        parameters: Parameters = dict(eventID=eventID)
+        parameters: Parameters = dict(
+            eventID=eventID,
+            # generated value less than or equal to
+            generatedLTE=0 if excludeSystemEntries else 1,
+        )
 
         txn.execute(self.query.incidentReports_reportEntries.text, parameters)
 
@@ -1553,21 +1563,17 @@ class DatabaseStore(IMSDataStore):
         )
         return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
-    async def incidentReports(self, eventID: str) -> Iterable[IncidentReport]:
+    async def incidentReports(
+        self, eventID: str, excludeSystemEntries: bool
+    ) -> Iterable[IncidentReport]:
         """
         See :meth:`IMSDataStore.incidentReports`.
         """
 
         def incidentReports(txn: Transaction) -> Iterable[IncidentReport]:
-            return self._fetchIncidentReports(eventID, txn)
-            # TODO: see if the above way is faster in staging before
-            #  removing this
-            # return tuple(
-            #     self._fetchIncidentReport(eventID, number, txn)
-            #     for number in tuple(
-            #         self._fetchIncidentReportNumbers(eventID, txn)
-            #     )
-            # )
+            return self._fetchIncidentReports(
+                eventID, excludeSystemEntries, txn
+            )
 
         try:
             return await self.runInteraction(incidentReports)

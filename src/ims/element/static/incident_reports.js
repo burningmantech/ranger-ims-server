@@ -115,7 +115,7 @@ function initDataTables() {
         "processing": true,
         "scrollX": false, "scrollY": false,
         "ajax": {
-            "url": urlReplace(url_incidentReports, eventID),
+            "url": urlReplace(url_incidentReports + "?exclude_system_entries=true", eventID),
             "dataSrc": dataHandler,
             "error": function (request, status, error) {
                 // The "abort" case is a special snowflake.
