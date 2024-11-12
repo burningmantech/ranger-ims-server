@@ -265,6 +265,7 @@ queries = Queries(
                 on re.ID = ire.REPORT_ENTRY
         where
             ire.EVENT = ({query_eventID})
+            and re.GENERATED <= :generatedLTE
         ;
         """,
     ),
@@ -443,6 +444,7 @@ queries = Queries(
                 on irre.REPORT_ENTRY = re.ID
         where
             irre.EVENT = ({query_eventID})
+            and re.GENERATED <= :generatedLTE
         """,
     ),
     createIncidentReport=Query(

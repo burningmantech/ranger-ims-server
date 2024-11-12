@@ -162,7 +162,9 @@ class IMSDataStore(ABC):
     ###
 
     @abstractmethod
-    async def incidents(self, eventID: str) -> Iterable[Incident]:
+    async def incidents(
+        self, eventID: str, excludeSystemEntries: bool
+    ) -> Iterable[Incident]:
         """
         Look up all incidents for the given event.
         """
@@ -321,7 +323,9 @@ class IMSDataStore(ABC):
     ###
 
     @abstractmethod
-    async def incidentReports(self, eventID: str) -> Iterable[IncidentReport]:
+    async def incidentReports(
+        self, eventID: str, excludeSystemEntries: bool
+    ) -> Iterable[IncidentReport]:
         """
         Look up all incident reports in the given event.
         """

@@ -395,11 +395,17 @@ class APIApplication:
             request, event_id, Authorization.readIncidents
         )
 
+        excludeSystemEntries = (
+            queryValue(request, "exclude_system_entries") == "true"
+        )
+
         stream = buildJSONArray(
             jsonTextFromObject(jsonObjectFromModelObject(incident)).encode(
                 "utf-8"
             )
-            for incident in await self.config.store.incidents(event_id)
+            for incident in await self.config.store.incidents(
+                event_id, excludeSystemEntries
+            )
         )
 
         writeJSONStream(request, stream, None)
@@ -733,6 +739,9 @@ class APIApplication:
             limitedAccess = True
 
         incidentNumberText = queryValue(request, "incident")
+        excludeSystemEntries = (
+            queryValue(request, "exclude_system_entries") == "true"
+        )
 
         store = self.config.store
 
@@ -741,12 +750,16 @@ class APIApplication:
             user: IMSUser = request.user  # type: ignore[attr-defined]
             incidentReports = (
                 incidentReport
-                for incidentReport in await store.incidentReports(event_id)
+                for incidentReport in await store.incidentReports(
+                    event_id, excludeSystemEntries
+                )
                 if user.shortNames[0]
                 in (entry.author for entry in incidentReport.reportEntries)
             )
         elif incidentNumberText is None:
-            incidentReports = await store.incidentReports(event_id)
+            incidentReports = await store.incidentReports(
+                event_id, excludeSystemEntries
+            )
         else:
             try:
                 incidentNumber = int(incidentNumberText)

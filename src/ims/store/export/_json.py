@@ -112,8 +112,8 @@ class JSONExporter:
         )
 
         concentricStreets = await self.store.concentricStreets(event.id)
-        incidents = await self.store.incidents(event.id)
-        incidentReports = await self.store.incidentReports(event.id)
+        incidents = await self.store.incidents(event.id, False)
+        incidentReports = await self.store.incidentReports(event.id, False)
 
         return EventData(
             event=event,
@@ -222,7 +222,7 @@ class JSONImporter:
 
         existingIncidentNumbers = frozenset(
             incident.number
-            for incident in await store.incidents(eventData.event.id)
+            for incident in await store.incidents(eventData.event.id, False)
         )
 
         for incident in eventData.incidents:
@@ -244,7 +244,7 @@ class JSONImporter:
         existingIncidentReportNumbers = frozenset(
             incidentReport.number
             for incidentReport in await store.incidentReports(
-                eventData.event.id
+                eventData.event.id, False
             )
         )
 
