@@ -267,11 +267,24 @@ function initTableButtons() {
         .children(".col-sm-6:first")
         .replaceWith($("#button_container"));
 
+    const $typeFilter = $("#ul_show_type");
+    for (const i in allIncidentTypes) {
+        const type = allIncidentTypes[i];
+        const $sp = $("<span>", {class: "checkmark"});
+        const $a = $("<a>", {class: "name", href:"#"});
+        $a.text(type.toString());
+        const $li = $("<li>", {id: "show_type_" + i, onclick: "showType(" + i + ")"});
+        $li.append($sp, $a);
+        $typeFilter.append($li);
+    }
+
+
     // Set button defaults
 
     showState("open");
     showDays(null);
     showRows(25);
+    showType("all");
 }
 
 
@@ -343,6 +356,21 @@ function initSearch() {
                 return false
             }
 
+            switch (_showType) {
+                case null:
+                    // fallthrough
+                case "all":
+                    break;
+                default:
+                    if (_showType >= 0 && _showType < allIncidentTypes.length) {
+                        const st = allIncidentTypes[_showType];
+                        if (!(incident.incident_types??[]).includes(st)) {
+                            return false;
+                        }
+                    }
+                    break;
+            }
+
             return true;
         }
     );
@@ -401,6 +429,32 @@ function showDays(daysBackToShow) {
     incidentsTable.draw();
 }
 
+//
+// Show type button handling
+//
+
+// _showType will be one of:
+//  "all" or null (meaning show everything)
+//  a numeric index into allIncidentTypes
+let _showType = null;
+
+function showType(typeToShow) {
+    // see _showType above for values of "typeToShow"
+    const id = typeToShow??"all";
+
+    const $menu = $("#show_type");
+    const $item = $("#show_type_" + id);
+
+    // Get title from selected item
+    const selection = $item.children(".name").html();
+
+    // Update menu title to reflect selected item
+    $menu.children(".selection").html(selection);
+
+    _showType = typeToShow;
+
+    incidentsTable.draw();
+}
 
 //
 // Show rows button handling
