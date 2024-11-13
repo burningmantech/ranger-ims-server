@@ -227,4 +227,9 @@ h1 {
   .col-sm-1 {
     width: 8.33%;
   }
+
+  /* don't print the full name under the abbreviation */
+  abbr[title]:after {
+    content: "";
+  }
 }
