@@ -211,7 +211,7 @@ function initDataTables() {
                 "className": "incident_ranger_handles",
                 "data": "ranger_handles",
                 "defaultContent": "",
-                "render": renderSorted,
+                "render": renderSafeSorted,
                 "width": "6em",
             },
             {   // 5
@@ -226,7 +226,7 @@ function initDataTables() {
                 "className": "incident_types",
                 "data": "incident_types",
                 "defaultContent": "",
-                "render": renderSorted,
+                "render": renderSafeSorted,
                 "width": "5em",
             },
             {   // 7
