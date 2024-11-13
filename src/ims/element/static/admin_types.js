@@ -108,8 +108,9 @@ function updateIncidentTypes() {
             entryItem.addClass("item-visible")
         }
 
-        entryItem.append(incidentType);
-        entryItem.attr("value", incidentType);
+        const safeIncidentType = textAsHTML(incidentType);
+        entryItem.append(safeIncidentType);
+        entryItem.attr("value", safeIncidentType);
 
         entryContainer.append(entryItem);
     }
