@@ -72,3 +72,12 @@ class IncidentsPage(Page):
         """
         namesByID = await self.config.store.concentricStreets(self.event.id)
         return jsonTextFromObject(namesByID)
+
+    @renderer
+    async def incident_types(
+        self, request: IRequest, tag: Tag
+    ) -> KleinRenderable:
+        types = await self.config.store.incidentTypes()
+        types = sorted(t for t in types)
+        types = tuple(t for t in types)
+        return jsonTextFromObject(types)

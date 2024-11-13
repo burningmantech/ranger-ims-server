@@ -11,7 +11,7 @@
     </a>
   </p>
 
-  <div id="button_container" class="btn-group col-sm-5" role="group">
+  <div id="button_container" class="btn-group col-sm-7" role="group">
     <div class="btn-group new_incident" role="group">
       <a href="./new" target="_blank">
         <button
@@ -31,16 +31,16 @@
         class="btn btn-sm btn-default"
         data-toggle="dropdown"
       >
-        Show
+
         <span class="selection">All</span>
         <span class="caret" />
       </button>
       <ul class="dropdown-menu">
         <li id="show_state_all" onclick="showState('all');">
-          <span class="checkmark" /><a href="#" class="name">All   </a>
+          <span class="checkmark" /><a href="#" class="name">All States</a>
         </li>
         <li id="show_state_open" onclick="showState('open');">
-          <span class="checkmark" /><a href="#" class="name">Open  </a>
+          <span class="checkmark" /><a href="#" class="name">Open</a>
         </li>
         <li id="show_state_active" onclick="showState('active');">
           <span class="checkmark" /><a href="#" class="name">Active</a>
@@ -55,7 +55,7 @@
         class="btn btn-sm btn-default"
         data-toggle="dropdown"
       >
-        Show
+
         <span class="selection">All Days</span>
         <span class="caret" />
       </button>
@@ -80,12 +80,31 @@
 
     <div class="btn-group" role="group">
       <button
+              id="show_type"
+              type="button"
+              class="btn btn-sm btn-default"
+              data-toggle="dropdown"
+      >
+
+        <span class="selection">All Types</span>
+        <span class="caret" />
+      </button>
+      <ul id="ul_show_type" class="dropdown-menu">
+        <li id="show_type_all" onclick="showType(null);">
+          <span class="checkmark" /><a href="#" class="name">All Types</a>
+        </li>
+        <!-- Additional li will be inserted here by JQuery -->
+      </ul>
+    </div>
+
+    <div class="btn-group" role="group">
+      <button
         id="show_rows"
         type="button"
         class="btn btn-sm btn-default"
         data-toggle="dropdown"
       >
-        Show
+
         <span class="selection">All Rows</span>
         <span class="caret" />
       </button>
@@ -106,7 +125,7 @@
      </div>
   </div>
 
-  <div id="search_container" class="form-group form-group-sm col-sm-7">
+  <div id="search_container" class="form-group form-group-sm col-sm-5">
     <div class="flex-input-container">
       <label class="control-label" for="search_input">
         <span class="glyphicon glyphicon-search" />
