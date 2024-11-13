@@ -14,3 +14,4 @@ __pycache__/
 /htmldocs/
 /src/*.egg-info/
 /wheels/
+.idea/
