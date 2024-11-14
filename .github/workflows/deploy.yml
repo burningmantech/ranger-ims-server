@@ -20,14 +20,13 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            *.github.com:443
+            *.githubusercontent.com:443
             ecs.us-west-2.amazonaws.com:443
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
-            raw.githubusercontent.com:443
             sts.us-west-2.amazonaws.com:443
-            api.github.com:443
-            objects.githubusercontent.com:443
 
       - name: Check user
         if: ${{ ! contains('["wsanchez", "mikeburg", "plapsley"]', github.actor) }}
@@ -85,11 +84,12 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            *.github.com:443
+            *.githubusercontent.com:443
             ecs.us-west-2.amazonaws.com:443
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
-            raw.githubusercontent.com:443
             sts.us-west-2.amazonaws.com:443
 
       - name: Check user
