@@ -683,13 +683,11 @@ class ExternalApplication:
     bootstrapVersionNumber = "3.3.7"
     jqueryVersionNumber = "3.1.0"
     dataTablesVersionNumber = "1.10.12"
-    momentVersionNumber = "2.22.2"
     lscacheVersionNumber = "1.0.5"
 
     bootstrapVersion = f"bootstrap-{bootstrapVersionNumber}-dist"
     jqueryVersion = f"jquery-{jqueryVersionNumber}"
     dataTablesVersion = f"DataTables-{dataTablesVersionNumber}"
-    momentVersion = f"moment-{momentVersionNumber}"
     lscacheVersion = f"lscache-{lscacheVersionNumber}"
 
     bootstrapSourceURL = URL.fromText(
@@ -710,11 +708,6 @@ class ExternalApplication:
     dataTablesSourceURL = URL.fromText(
         f"https://datatables.net/releases/"
         f"DataTables-{dataTablesVersionNumber}.zip"
-    )
-
-    momentJSSourceURL = URL.fromText(
-        f"https://cdnjs.cloudflare.com/ajax/libs/moment.js/"
-        f"{momentVersionNumber}/moment.min.js"
     )
 
     lscacheJSSourceURL = URL.fromText(
@@ -800,19 +793,6 @@ class ExternalApplication:
             ),
             self.dataTablesVersion,
             *names,
-        )
-
-    @router.route(_unprefix(URLs.momentJS), methods=("HEAD", "GET"))
-    @static
-    async def momentJSResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for moment.js.
-        """
-        request.setHeader(
-            HeaderName.contentType.value, ContentType.javascript.value
-        )
-        return await self.cachedResource(
-            request, self.momentJSSourceURL, f"{self.momentVersion}.min.js"
         )
 
     @router.route(_unprefix(URLs.lscacheJS), methods=("HEAD", "GET"))

@@ -250,6 +250,8 @@ function initDataTables() {
                     url, "Incident:" + eventID + "#" + incident.number
                 );
             });
+            $(row).find(".incident_created")
+                .attr("title", fullDateTime.format(Date.parse(incident.created)));
         },
     });
 }
@@ -315,12 +317,12 @@ function initSearchField() {
 
 function initSearch() {
     function modifiedAfter(incident, timestamp) {
-        if (timestamp.isBefore(incident.created)) {
+        if (timestamp < Date.parse(incident.created)) {
             return true;
         }
 
         for (var i in incident.report_entries) {
-            if (timestamp.isBefore(incident.report_entries[i].created)) {
+            if (timestamp < Date.parse(incident.report_entries[i].created)) {
                 return true;
             }
         }
@@ -420,10 +422,12 @@ function showDays(daysBackToShow) {
     if (daysBackToShow == null) {
         _showModifiedAfter = null;
     } else {
-        _showModifiedAfter = moment()
-            .startOf("day")
-            .subtract(daysBackToShow, "days")
-            ;
+        const after = new Date();
+        after.setHours(0);
+        after.setMinutes(0);
+        after.setSeconds(0);
+        after.setDate(after.getDate()-daysBackToShow);
+        _showModifiedAfter = after;
     }
 
     incidentsTable.draw();

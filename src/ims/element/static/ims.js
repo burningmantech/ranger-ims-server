@@ -188,11 +188,10 @@ function parseInt(stringInt) {
 
 // Create a <time> element from a date.
 function timeElement(date) {
-    date = moment(date);
     var timeStampContainer = jQuery(
         "<time />", {"datetime": date.toISOString()}
     );
-    timeStampContainer.text(date.format("MMMM Do YYYY HH:mm:ss"));
+    timeStampContainer.text(fullDateTime.format(date));
     return timeStampContainer;
 }
 
@@ -603,15 +602,45 @@ function renderPriority(priorityNumber, type, incident) {
     return undefined;
 }
 
+// e.g. "Wed, 8/28"
+const shortDate = new Intl.DateTimeFormat(undefined, {
+    weekday: "short",
+    month: "numeric",
+    day: "2-digit",
+    // timeZone not specified; will use user's timezone
+});
+
+// e.g. "19:21"
+const shortTime = new Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    hour12: false,
+    minute: "numeric",
+    // timeZone not specified; will use user's timezone
+});
+
+// e.g. "Oct 8, 2023, 19:11:04 EDT"
+const fullDateTime = new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    hour12: false,
+    minute: "numeric",
+    second: "numeric",
+    timeZoneName: "short",
+    // timeZone not specified; will use user's timezone
+});
+
 function renderDate(date, type, incident) {
+    const d = Date.parse(date);
     switch (type) {
         case "display":
-            return moment(date).format("dd M/D[<wbr />]@HH:mm");
+            return shortDate.format(d) + "<wbr />@" + shortTime.format(d);
         case "filter":
-            return moment(date).format("dd M/D HH:mm");
+            return shortDate.format(d) + " " + shortTime.format(d);
         case "type":
         case "sort":
-            return moment(date);
+            return d;
     }
     return undefined;
 }

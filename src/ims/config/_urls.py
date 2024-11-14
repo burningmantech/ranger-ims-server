@@ -97,8 +97,6 @@ class URLs:
         "media", "js", "dataTables.bootstrap.min.js"
     )
 
-    momentJS: ClassVar[URL] = external.child("moment.min.js")
-
     lscacheJS: ClassVar[URL] = external.child("lscache.min.js")
 
     # Web application
