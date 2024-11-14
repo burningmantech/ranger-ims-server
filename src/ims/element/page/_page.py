@@ -66,7 +66,6 @@ class Page(Element):
 
             if name == "ims":
                 add("jquery")
-                add("moment")
 
             try:
                 result[name] = getattr(urls, f"{name}JS")

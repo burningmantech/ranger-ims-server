@@ -31,6 +31,11 @@ Each month below should look like the following, using the same ordering for the
 - Added full Unicode support to IMS. All text fields now accept previously unsupported characters, like those from Cyrillic, Chinese, emoji, and much more ([#1353](https://github.com/burningmantech/ranger-ims-server/issues/1353))
 - Started doing client-side retries on any EventSource connection failures. This should mean that an IMS web session will be better kept in sync with incident updates, in particular in the off-season, when IMS is running on AWS ([#1389](https://github.com/burningmantech/ranger-ims-server/pull/1389))
 - Added a warning banner to non-production instances of the web UI, to make sure people don't accidentally put prod data into non-production IMS instances. [(#1366](https://github.com/burningmantech/ranger-ims-server/issues/1366))
+- Started showing full datetimes, including time zone, when a user hovers over a time on the incidents page. All times have always been in the user's locale, but this wasn't indicated anywhere ([#1412](https://github.com/burningmantech/ranger-ims-server/pull/1412)
+
+### Removed
+
+- Got rid of Moment.js dependency, as it's deprecated and we're able to use the newer Intl JavaScript browser construct instead ([#1412](https://github.com/burningmantech/ranger-ims-server/pull/1412)
 
 ### Fixed
 
