@@ -12,6 +12,82 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//
+// Apply the HTML theme, light or dark or default.
+//
+// Adapted from https://getbootstrap.com/docs/5.3/customize/color-modes/#javascript
+// Under Creative Commons Attribution 3.0 Unported License
+function applyTheme() {
+    "use strict";
+
+    const getStoredTheme = () => localStorage.getItem("theme");
+    const setStoredTheme = theme => localStorage.setItem("theme", theme);
+
+    const getPreferredTheme = () => {
+        const storedTheme = getStoredTheme();
+        if (storedTheme) {
+            return storedTheme;
+        }
+
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    };
+
+    const setTheme = theme => {
+        if (theme === "auto") {
+            document.documentElement.setAttribute("data-bs-theme", (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+        } else {
+            document.documentElement.setAttribute("data-bs-theme", theme);
+        }
+    };
+
+    setTheme(getPreferredTheme());
+
+    const showActiveTheme = (theme, focus = false) => {
+        const themeSwitcher = document.querySelector("#bd-theme");
+
+        if (!themeSwitcher) {
+            return;
+        }
+
+        const themeSwitcherText = document.querySelector("#bd-theme-text");
+        const activeThemeIcon = document.querySelector(".theme-icon-active");
+        const btnToActive = document.querySelector(`[data-bs-theme-value="${theme}"]`);
+        const svgOfActiveBtn = btnToActive.querySelector('span').textContent;
+
+        document.querySelectorAll("[data-bs-theme-value]").forEach(element => {
+            element.classList.remove("active");
+            element.setAttribute("aria-pressed", "false");
+        })
+
+        btnToActive.classList.add("active");
+        btnToActive.setAttribute("aria-pressed", "true");
+        activeThemeIcon.textContent = svgOfActiveBtn;
+        const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`;
+        themeSwitcher.setAttribute("aria-label", themeSwitcherLabel);
+
+        if (focus) {
+            themeSwitcher.focus();
+        }
+    };
+
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+        const storedTheme = getStoredTheme();
+        if (storedTheme !== "light" && storedTheme !== "dark") {
+            setTheme(getPreferredTheme());
+        }
+    });
+
+    showActiveTheme(getPreferredTheme());
+
+    document.querySelectorAll("[data-bs-theme-value]").forEach(toggle => {
+        toggle.addEventListener("click", () => {
+            const theme = toggle.getAttribute("data-bs-theme-value");
+            setStoredTheme(theme);
+            setTheme(theme);
+            showActiveTheme(theme, true);
+        });
+    });
+}
 
 
 //
@@ -255,6 +331,8 @@ function controlClear(element) {
 
 function loadBody(success) {
     function complete() {
+        applyTheme();
+
         if (typeof eventID !== "undefined") {
             $(".event-id").text(eventID);
             $(".event-id").addClass("active-event");
@@ -325,11 +403,11 @@ function priorityNameFromNumber(number) {
 // Look up the glyph for a priority given its number (1-5).
 function priorityIconFromNumber(number) {
     switch (number) {
-        case 1: return '<span class="glyphicon glyphicon-arrow-up">';
-        case 2: return '<span class="glyphicon glyphicon-arrow-up">';
-        case 3: return '<span class="glyphicon glyphicon-minus">';
-        case 4: return '<span class="glyphicon glyphicon-arrow-down">';
-        case 5: return '<span class="glyphicon glyphicon-arrow-down">';
+        case 1: return '↑';
+        case 2: return '↑';
+        case 3: return '';
+        case 4: return '↓';
+        case 5: return '↓';
         default:
             console.warn("Unknown incident priority number: " + number);
             return undefined;
@@ -760,6 +838,9 @@ function reportEntryElement(entry) {
 
         entryContainer.append(textContainer);
     }
+
+    // Add a horizontal line after each entry
+    entryContainer.append( $("<hr />", {"class": "m-1"}) );
 
     // Return container
 

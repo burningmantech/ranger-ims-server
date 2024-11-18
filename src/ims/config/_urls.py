@@ -80,17 +80,15 @@ class URLs:
 
     bootstrapBase: ClassVar[URL] = external.child("bootstrap").child("")
     bootstrapCSS: ClassVar[URL] = bootstrapBase.child("css", "bootstrap.min.css")
-    bootstrapJS: ClassVar[URL] = bootstrapBase.child("js", "bootstrap.min.js")
+    bootstrapJS: ClassVar[URL] = bootstrapBase.child("js", "bootstrap.bundle.min.js")
 
     dataTablesBase: ClassVar[URL] = external.child("datatables").child("")
-    dataTablesJS: ClassVar[URL] = dataTablesBase.child(
-        "media", "js", "jquery.dataTables.min.js"
-    )
+    dataTablesJS: ClassVar[URL] = dataTablesBase.child("js", "dataTables.min.js")
     dataTablesBootstrapCSS: ClassVar[URL] = dataTablesBase.child(
-        "media", "css", "dataTables.bootstrap.min.css"
+        "css", "dataTables.bootstrap5.min.css"
     )
     dataTablesBootstrapJS: ClassVar[URL] = dataTablesBase.child(
-        "media", "js", "dataTables.bootstrap.min.js"
+        "js", "dataTables.bootstrap5.min.js"
     )
 
     lscacheJS: ClassVar[URL] = external.child("lscache.min.js")

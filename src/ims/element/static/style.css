@@ -1,22 +1,79 @@
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Lucida Grande", "Helvetica", sans-serif;
+/*body {*/
+/*  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Lucida Grande", "Helvetica", sans-serif;*/
+/*}*/
+
+:root {
+  --bs-nav-link-font-size: 1rem;
+  --bs-list-group-item-padding-x: 0.8rem;
+  --bs-list-group-item-padding-y: 0.1rem;
+
+  --dt-row-stripe: 160, 160, 160;
+
+  --font-size-smaller: 0.8rem;
+  --font-size-smallest: 0.65rem;
+}
+
+.navbar {
+  --bs-navbar-padding-y: 0;
+}
+
+.dropdown-menu {
+  --bs-dropdown-item-padding-x: 0.5rem;
+  --bs-dropdown-item-padding-y: 0.1rem;
+}
+
+.accordion {
+  --bs-accordion-btn-padding-y: 0.5rem;
+}
+
+.card {
+  --bs-card-spacer-x: 0.5rem;
+  --bs-card-spacer-y: 0;
+  --bs-card-cap-padding-x: 0.7rem;
+  --bs-card-cap-padding-y: 0.2rem;
+  --bs-card-cap-bg: rgba(var(--bs-body-color-rgb), 0.09);
+  --bs-card-border-color: var(--bs-border-color);
+}
+
+.card-footer {
+  --bs-card-cap-bg: rgba(var(--bs-body-color-rgb), 0.01);
+}
+
+.input-group-text {
+  background-color: rgba(var(--bs-body-color-rgb), 0.09);
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 400;
 }
 
-code {
-  font-family: "Courier New", "Courier", monospace;
-}
-
 .table {
-  font-size: 10pt;
+  font-size: var(--font-size-smaller);
 }
 
-.table-hover > tbody > tr:hover {
-  background-color: #FFFF00;
+.btn-close {
+  font-size: var(--font-size-smallest);
 }
+
+.btn-sm {
+  font-size: var(--font-size-smaller);
+}
+
+.text-smaller {
+  font-size: var(--font-size-smaller);
+}
+
+.text-size-normal {
+  font-size: 1rem !important;
+}
+
+.form-control-static {
+  --bs-border-width: 0;
+}
+
+/*.table-hover > tbody > tr:hover {*/
+/*  background-color: #FFFF00;*/
+/*}*/
 
 .table > tbody > tr > td,
 .table > tbody > tr > th,
@@ -24,33 +81,39 @@ code {
 .table > tfoot > tr > th,
 .table > thead > tr > td,
 .table > thead > tr > th {
-  padding: 6px;
+  padding: 0.3rem;
 }
 
-footer {
+.footer-hr {
+  margin: 0;
+}
+
+.footer-text {
   float: left;
+  font-size: var(--font-size-smaller);
 }
 
-.navbar-default .navbar-brand {
-  color: #555555;
-}
+/*.navbar-default .navbar-brand {*/
+/*  color: #555555;*/
+/*}*/
 
-.navbar-default .navbar-nav>li>a {
-  color: #555555;
-}
+/*.navbar-default .navbar-nav>li>a {*/
+/*  color: #555555;*/
+/*}*/
 
-.nav-event-id {
-  font-size: 12pt;
-}
 
-.active-event {
-  color: black;
-}
+/*.nav-event-id {*/
+/*  font-size: 12pt;*/
+/*}*/
+
+/*.active-event {*/
+/*  color: black;*/
+/*}*/
 
 .nonprod-warning {
   background-color: #dc3545;
   color: #ffffff;
-  font-size: 14pt;
+  font-size: 1rem;
 }
 
 .flex-input-container {
@@ -58,20 +121,16 @@ footer {
 }
 
 .flex-input-container > label {
-  margin: 5px;
+  margin: 0.3rem;
 }
 
 .flex-input-container > input {
   flex: 2;
 }
 
-.list-group {
-  margin-bottom: 8px;
-}
-
 .list-group-small > .list-group-item {
-  padding: 3px 5px;
-  font-size: 10pt;
+  padding: 0.2rem 0.3rem;
+  font-size: var(--font-size-smaller);
 }
 
 .auto-width {
@@ -80,48 +139,50 @@ footer {
 }
 
 .report_entry_system {
-  font-size: 8pt;
+  font-size: var(--font-size-smaller);
   filter: opacity(75%);
 }
 
 .report_entry_system > .report_entry_text {
-  margin: 0;
+  margin: 0 0 0 0.5rem;
+}
+
+.report_entry_text {
+  font-size: var(--font-size-smaller);
 }
 
 .report_entry_metadata {
-  font-size: 8pt;
+  font-size: var(--font-size-smallest);
   font-weight: bold;
   text-decoration: underline;
   filter: opacity(75%);
-  margin: 10px 0 0 0;
+  margin: 0.9rem 0 0 0;
 }
 
-/* We want good readability even for disabled controls. */
 .form-control {
-  color: black;
+  font-size: var(--font-size-smaller);
 }
 
-/* Tighten up the page a bit */
-.form-group {
-  /* default was 15px */
-  margin-bottom: 6px;
+.control-label {
+  font-weight: 700;
+  font-size: var(--font-size-smaller);
 }
-.well {
-  /* default was 20px */
-  margin-bottom: 12px;
+
+.search-box {
+  font-size: var(--font-size-smaller);
 }
-.well-sm {
-  /* default was 9px */
-  padding: 6px;
+
+.dt-info {
+  font-size: var(--font-size-smaller);
 }
-.navbar {
-  /* default was 20px */
-  margin-bottom: 10px;
+
+a {
+  text-decoration: none;
 }
+
 h1 {
-  /* default was 20px */
-  margin-top: 10px;
-  font-size: 24px;
+  margin-top: 0.8rem;
+  font-size: 1.8rem;
 }
 
 /*
@@ -155,7 +216,7 @@ h1 {
 }
 
 #incident_report_well > .panel {
-  margin-bottom: 5px;
+  margin-bottom: 0.5rem;
 }
 
 #incident_report_add {
@@ -171,11 +232,11 @@ h1 {
 }
 
 .badge-visible {
-  float: left !important;
+  float: right !important;
 }
 
 .badge-hidden {
-  float: left !important;
+  float: right !important;
 }
 
 .hide-history .report_entry_system {
@@ -187,49 +248,53 @@ h1 {
     display: none;
   }
 
-  /* The below tweaks make the print version have multiple columns, like the desktop >768 px version. */
-  .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {
-    float: left;
-  }
-  .col-sm-12 {
-    width: 100%;
-  }
-  .col-sm-11 {
-    width: 91.67%;
-  }
-  .col-sm-10 {
-    width: 83.33%;
-  }
-  .col-sm-9 {
-    width: 75%;
-  }
-  .col-sm-8 {
-    width: 66.67%;
-  }
-  .col-sm-7 {
-    width: 58.33%;
-  }
-  .col-sm-6 {
-    width: 50%;
-  }
-  .col-sm-5 {
-    width: 41.67%;
-  }
-  .col-sm-4 {
-    width: 33.33%;
-  }
-  .col-sm-3 {
-    width: 25%;
-  }
-  .col-sm-2 {
-    width: 16.67%;
-  }
-  .col-sm-1 {
-    width: 8.33%;
-  }
+  /*!* The below tweaks make the print version have multiple columns, like the desktop >768 px version. *!*/
+  /*.col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {*/
+  /*  float: left;*/
+  /*}*/
+  /*.col-sm-12 {*/
+  /*  width: 100%;*/
+  /*}*/
+  /*.col-sm-11 {*/
+  /*  width: 91.67%;*/
+  /*}*/
+  /*.col-sm-10 {*/
+  /*  width: 83.33%;*/
+  /*}*/
+  /*.col-sm-9 {*/
+  /*  width: 75%;*/
+  /*}*/
+  /*.col-sm-8 {*/
+  /*  width: 66.67%;*/
+  /*}*/
+  /*.col-sm-7 {*/
+  /*  width: 58.33%;*/
+  /*}*/
+  /*.col-sm-6 {*/
+  /*  width: 50%;*/
+  /*}*/
+  /*.col-sm-5 {*/
+  /*  width: 41.67%;*/
+  /*}*/
+  /*.col-sm-4 {*/
+  /*  width: 33.33%;*/
+  /*}*/
+  /*.col-sm-3 {*/
+  /*  width: 25%;*/
+  /*}*/
+  /*.col-sm-2 {*/
+  /*  width: 16.67%;*/
+  /*}*/
+  /*.col-sm-1 {*/
+  /*  width: 8.33%;*/
+  /*}*/
 
   /* don't print the full name under the abbreviation */
   abbr[title]:after {
     content: "";
   }
+}
+
+.hidden {
+  display: none !important;
 }

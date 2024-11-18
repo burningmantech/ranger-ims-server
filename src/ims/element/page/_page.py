@@ -128,6 +128,11 @@ class Page(Element):
             tags.link(
                 type="text/css",
                 rel="stylesheet",
+                href=urls.dataTablesBootstrapCSS.asText(),
+            ),
+            tags.link(
+                type="text/css",
+                rel="stylesheet",
                 href=urls.styleSheet.asText(),
             ),
             self.title(request, tags.title.clone()),
@@ -143,9 +148,7 @@ class Page(Element):
         App container.
         """
         tag.children.insert(0, self.top(request))
-        return tag(  # type: ignore[return-value]
-            self.bottom(request), Class="container-fluid"
-        )
+        return tag(self.bottom(request), Class="container-fluid")  # type: ignore[return-value]
 
     @renderer
     def top(self, request: IRequest, tag: Tag | None = None) -> IRenderable:
@@ -157,8 +160,8 @@ class Page(Element):
         else:
             h1 = tags.h1.clone()(id="doc-title")
         return (  # type: ignore[return-value]
-            self.nav(request),
             self.header(request),
+            self.nav(request),
             self.title(request, h1),
         )
 

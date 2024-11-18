@@ -1,41 +1,43 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
-  <head t:render="head" />
+<head t:render="head" imports="ims"/>
 
-  <body>
-    <div t:render="container">
+<body>
+<div t:render="container">
 
-      <form method="POST" id="login_form" class="form-horizontal">
+  <form method="POST" id="login_form" class="form-horizontal">
 
-        <button t:render="if_authn_failed" type="button" class="btn btn-block btn-danger">Authentication Failed</button>
-        <button t:render="if_authz_failed" type="button" class="btn btn-block btn-danger">Authorization Failed for <code t:render="logged_in_user" /></button>
+    <button t:render="if_authn_failed" type="button" class="btn btn-block btn-danger">Authentication Failed</button>
+    <button t:render="if_authz_failed" type="button" class="btn btn-block btn-danger">Authorization Failed for <code
+            t:render="logged_in_user"/></button>
 
-        <p>
-          Please log in with your Ranger Secret Clubhouse credentials.
-        </p>
+    <p>
+      Please log in with your Ranger Secret Clubhouse credentials.
+    </p>
 
-        <div class="form-group">
-          <label for="username_input" class="col-sm-2 control-label" title="Log in with either your Clubhouse email address or your case-sensitive Ranger handle">Email:</label>
-          <div class="col-sm-4">
-            <input id="username_input" type="text" name="username" inputmode="latin-name" class="form-control" autocomplete="username" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="password_input" class="col-sm-2 control-label">Password:</label>
-          <div class="col-sm-4">
-            <input id="password_input" type="password" name="password" inputmode="latin-prose" class="form-control" autocomplete="current-password" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div class="col-sm-offset-2 col-sm-2">
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </div>
-        </div>
-
-      </form>
-
+    <div class="form-floating mb-3">
+      <input id="username_input" type="text" name="username" inputmode="latin-name"
+             class="form-control text-size-normal"
+             autocomplete="username" placeholder="name@example.com"/>
+      <label for="username_input">Email address</label>
     </div>
-  </body>
+
+    <div class="form-floating mb-3">
+      <input id="password_input" type="password" name="password" inputmode="latin-prose"
+             class="form-control text-size-normal"
+             autocomplete="current-password" placeholder="Password"/>
+      <label for="password_input">Password</label>
+    </div>
+
+    <div class="mb-3">
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+
+  </form>
+
+</div>
+</body>
+<script>
+    applyTheme();
+</script>
 </html>
