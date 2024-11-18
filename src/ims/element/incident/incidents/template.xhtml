@@ -1,24 +1,22 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
-  <head t:render="head" imports="dataTables,ims,viewIncidents">
-    <link type="text/css" rel="stylesheet" t:render="url" url="dataTablesBootstrapCSS" />
-  </head>
+<head t:render="head" imports="dataTables,ims,viewIncidents"/>
 
-  <body />
+<body/>
 
-  <script>
-    <!-- FIXME: figure out how to move this to / include from incident.js -->
-    var editingAllowed = <json t:render="editing_allowed" />;
-    var eventID        = <json t:render="event_id"        />;
+<script>
+  <!-- FIXME: figure out how to move this to / include from incident.js -->
+  var editingAllowed            = <json t:render="editing_allowed"/>;
+  var eventID                   = <json t:render="event_id"/>;
 
-    var pageTemplateURL        = url_viewIncidentsTemplate;
-    var dataURL                = urlReplace(url_incidents + "?exclude_system_entries=true");
-    var viewIncidentsURL       = urlReplace(url_viewIncidents);
-    var viewIncidentReportsURL = urlReplace(url_viewIncidentReports);
+  var pageTemplateURL           = url_viewIncidentsTemplate;
+  var dataURL                   = urlReplace(url_incidents + "?exclude_system_entries=true");
+  var viewIncidentsURL          = urlReplace(url_viewIncidents);
+  var viewIncidentReportsURL    = urlReplace(url_viewIncidentReports);
 
-    var concentricStreetNameByID = <json t:render="concentric_street_name_by_id" />;
-    const allIncidentTypes = <json t:render="incident_types" />;
+  var concentricStreetNameByID  = <json t:render="concentric_street_name_by_id"/>;
+  const allIncidentTypes        = <json t:render="incident_types"/>;
 
-    initIncidentsPage();
-  </script>
+  initIncidentsPage();
+</script>
 </html>

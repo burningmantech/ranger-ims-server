@@ -7,110 +7,108 @@
 
   <!-- Incident number, state, priority -->
 
-  <div class="row">
-      <div class="col-sm-4 text-left">
-        <div class="form-group">
-          <label class="control-label">IMS #:</label>
-          <span id="incident_number" class="form-control-static" />
-        </div>
+  <div class="row py-1">
+    <div class="col-sm-4 py-1">
+      <div class="input-group">
+        <label class="control-label input-group-text">IMS #</label>
+        <span id="incident_number" class="form-control form-control-static"/>
       </div>
-      <div class="col-sm-4 text-center">
-        <div class="form-group">
-          <label class="control-label">State:</label>
-          <select
-            id="incident_state"
-            class="form-control input-sm auto-width"
-            onchange="editState()"
-          >
-            <option value="new"       >New       </option>
-            <option value="on_hold"   >On Hold   </option>
-            <option value="dispatched">Dispatched</option>
-            <option value="on_scene"  >On Scene  </option>
-            <option value="closed"    >Closed    </option>
-          </select>
-        </div>
+    </div>
+    <div class="col-sm-4 py-1">
+      <div class="input-group">
+        <label for="incident_state" class="control-label input-group-text">State</label>
+        <select
+                id="incident_state"
+                class="form-control form-select form-select-sm auto-width"
+                onchange="editState()"
+        >
+          <option value="new">New</option>
+          <option value="on_hold">On Hold</option>
+          <option value="dispatched">Dispatched</option>
+          <option value="on_scene">On Scene</option>
+          <option value="closed">Closed</option>
+        </select>
       </div>
-      <div class="col-sm-4 text-right">
-        <div class="form-group">
-          <label class="control-label">Priority:</label>
-          <select
-            id="incident_priority"
-            class="form-control input-sm auto-width"
-            onchange="editPriority()"
-          >
-            <option value="1">High  </option>
-            <option value="3">Normal</option>
-            <option value="5">Low   </option>
-          </select>
-        </div>
+    </div>
+    <div class="col-sm-4 py-1">
+      <div class="input-group">
+        <label for="incident_priority" class="control-label input-group-text">Priority</label>
+        <select
+                id="incident_priority"
+                class="form-control form-select form-select-sm auto-width"
+                onchange="editPriority()"
+        >
+          <option value="1">High</option>
+          <option value="3">Normal</option>
+          <option value="5">Low</option>
+        </select>
       </div>
+    </div>
   </div>
 
   <!-- Summary -->
 
   <div class="row">
-    <div class="col-sm-12">
-      <div class="well well-sm flex-input-container">
-        <label class="control-label">Summary:</label>
-        <input
-          id="incident_summary" class="form-control input-sm"
-          type="text" inputmode="latin-prose"
-          placeholder="One-line summary of incident…"
-          onchange="editSummary()"
-        />
-      </div>
+    <div class="input-group">
+      <label for="incident_summary" class="input-group-text control-label">Summary</label>
+      <input
+              id="incident_summary" class="form-control form-control-sm"
+              type="text" inputmode="latin-prose"
+              placeholder="One-line summary of incident…"
+              onchange="editSummary()"
+      />
     </div>
   </div>
 
   <!-- Attached Rangers, incident types -->
 
   <div class="row">
-    <div class="col-sm-6">
-      <label class="control-label">Rangers:</label>
-      <div class="well well-sm">
-        <ul id="incident_rangers_list" class="list-group list-group-small">
-          <li class="list-group-item">
-            <span class="badge remove-badge" onclick="removeRanger(this)">
-              <span class="glyphicon glyphicon-remove" />
-            </span>
+    <div class="col-sm-6 py-2">
+      <div class="card">
+        <label class="control-label card-header">Rangers</label>
+        <ul id="incident_rangers_list" class="list-group list-group-flush list-group-small card-body">
+          <li class="list-group-item ps-3">
+            <button class="badge btn btn-danger remove-badge float-end" onclick="removeRanger(this)">
+              X
+            </button>
           </li>
         </ul>
-        <div class="flex-input-container no-print">
-          <label class="control-label">Add:</label>
+        <div class="flex-input-container card-footer no-print">
+          <label for="ranger_add" class="control-label">Add:</label>
           <input
-            type="text"
-            id="ranger_add"
-            list="ranger_handles"
-            class="form-control input-sm auto-width"
-            onchange="addRanger()"
+                  type="text"
+                  id="ranger_add"
+                  list="ranger_handles"
+                  class="form-control form-control-sm auto-width"
+                  onchange="addRanger()"
           />
           <datalist id="ranger_handles">
-            <option value="" />
+            <option value=""/>
           </datalist>
         </div>
       </div>
     </div>
-    <div class="col-sm-6">
-      <label class="control-label">Incident Types</label>
-      <div class="well well-sm">
-        <ul id="incident_types_list" class="list-group list-group-small">
-          <li class="list-group-item">
-            <span class="badge remove-badge" onclick="removeIncidentType(this)">
-              <span class="glyphicon glyphicon-remove" />
-            </span>
+    <div class="col-sm-6 py-2">
+      <div class="card">
+        <label class="control-label card-header">Incident Types</label>
+        <ul id="incident_types_list" class="list-group list-group-flush list-group-small card-body">
+          <li class="list-group-item ps-3">
+            <button class="badge btn btn-danger remove-badge float-end" onclick="removeIncidentType(this)">
+              X
+            </button>
           </li>
         </ul>
-        <div class="flex-input-container no-print">
+        <div class="card-footer flex-input-container no-print">
           <label class="control-label">Add:</label>
           <input
-            type="text"
-            id="incident_type_add"
-            list="incident_types"
-            class="form-control input-sm auto-width"
-            onchange="addIncidentType()"
+                  type="text"
+                  id="incident_type_add"
+                  list="incident_types"
+                  class="form-control form-control-sm auto-width"
+                  onchange="addIncidentType()"
           />
           <datalist id="incident_types">
-            <option value="" />
+            <option value=""/>
           </datalist>
         </div>
       </div>
@@ -119,90 +117,94 @@
 
   <!-- Location -->
 
-  <div class="row">
+  <div class="row py-1">
     <div class="col-sm-12">
-      <label class="control-label">Location</label>
-      <div class="well well-sm">
-        <form class="form-horizontal">
-          <div class="form-group">
-            <label class="col-sm-1 control-label">Name:</label>
-            <div class="col-sm-11">
-              <input
-                id="incident_location_name" class="form-control input-sm"
-                type="text" inputmode="latin-prose"
-                placeholder="Name of location"
-                onchange="editLocationName()"
-              />
+      <div class="card">
+        <label class="control-label card-header">Location</label>
+        <div class="card-body">
+          <form class="form-horizontal">
+            <div class="input-group row align-items-center">
+              <label for="incident_location_name"
+                     class="col-sm-2 col-form-label control-label">Name:</label>
+              <div class="col-sm-10">
+                <input
+                        id="incident_location_name" class="form-control form-control-sm"
+                        type="text" inputmode="latin-prose"
+                        placeholder="Name of location"
+                        onchange="editLocationName()"
+                />
+              </div>
             </div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-1 control-label">Address:</label>
-            <div class="col-sm-11">
-              <select
-                id="incident_location_address_radial_hour"
-                class="form-control input-sm auto-width"
-                onchange="editLocationAddressRadialHour()"
-              >
-                <option value="" />
-              </select>
-              :
-              <select
-                id="incident_location_address_radial_minute"
-                class="form-control input-sm auto-width"
-                onchange="editLocationAddressRadialMinute()"
-              >
-                <option value="" />
-              </select>
-              @
-              <select
-                id="incident_location_address_concentric"
-                class="form-control input-sm auto-width"
-                onchange="editLocationAddressConcentric()"
-              >
-                <option value="" />
-              </select>
+            <div class="input-group row align-items-center">
+              <span class="col-sm-2 col-form-label control-label">Address:</span>
+              <div id="incident_address" class="col-sm-10">
+                <select
+                        id="incident_location_address_radial_hour"
+                        class="form-control form-select auto-width"
+                        aria-label="Incident location address radial hour"
+                        onchange="editLocationAddressRadialHour()"
+                >
+                  <option value=""/>
+                </select>
+                :
+                <select
+                        id="incident_location_address_radial_minute"
+                        class="form-control form-control-sm form-select form-select-sm  auto-width"
+                        aria-label="Incident location address radial minute"
+                        onchange="editLocationAddressRadialMinute()"
+                >
+                  <option value=""/>
+                </select>
+                @
+                <select
+                        id="incident_location_address_concentric"
+                        class="form-control form-select form-select-sm auto-width"
+                        aria-label="Incident location address concentric street"
+                        onchange="editLocationAddressConcentric()"
+                >
+                  <option value=""/>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="form-group">
-            <label class="col-sm-1 control-label">Details:</label>
-            <div class="col-sm-11">
-              <input
-                id="incident_location_description" class="form-control input-sm"
-                type="text" inputmode="latin-prose"
-                placeholder="Other identifying info"
-                onchange="editLocationDescription()"
-              />
+            <div class="input-group row align-items-center">
+              <label for="incident_location_description" class="col-sm-2 col-form-label control-label">Details:</label>
+              <div class="col-sm-10">
+                <input
+                        id="incident_location_description" class="form-control form-control-sm"
+                        type="text" inputmode="latin-prose"
+                        placeholder="Other identifying info"
+                        onchange="editLocationDescription()"
+                />
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Attached field reports -->
 
-  <div class="row">
+  <div class="row py-2">
     <div class="col-sm-12">
-      <label class="control-label">Attached Field Reports</label>
-      <div class="well well-sm">
-        <ul id="attached_incident_reports" class="list-group list-group-small">
-          <li class="list-group-item">
-            <span
-              class="badge remove-badge"
-              onclick="detachIncidentReport(this)"
-            >
-              <span class="glyphicon glyphicon-remove" />
-            </span>
+      <div class="card">
+        <label class="control-label card-header">Attached Field Reports</label>
+        <ul id="attached_incident_reports" class="list-group list-group-small card-body list-group-flush">
+          <li class="list-group-item ps-3">
+            <button class="badge btn btn-danger remove-badge float-end"
+                    onclick="detachIncidentReport(this)">
+              X
+            </button>
           </li>
         </ul>
-        <div id="attached_incident_report_add_container" class="flex-input-container no-print">
+        <div id="attached_incident_report_add_container" class="flex-input-container card-footer no-print">
           <label class="control-label">Add:</label>
           <select
-            id="attached_incident_report_add"
-            class="form-control input-sm"
-            onchange="attachIncidentReport()"
+                  id="attached_incident_report_add"
+                  class="form-control form-control-sm"
+                  onchange="attachIncidentReport()"
           >
-            <option value="" />
+            <option value=""/>
           </select>
         </div>
       </div>
@@ -213,37 +215,38 @@
 
   <div class="row">
     <div class="col-sm-12">
-      <label class="control-label">Incident Details</label>
-      <div id="incident_report_well" class="well well-sm">
-        <label class="control-label">
-          <input id="history_checkbox" type="checkbox" onchange="toggleShowHistory()" />
-          Show history
-        </label>
-        <label class="control-label">
-          <input id="merge_reports_checkbox" type="checkbox" checked="" onchange="drawMergedReportEntries()" />
-          Show attached entries
-        </label>
-        <div class="panel panel-default">
-          <div class="panel-body">
-            <div id="incident_report" />
-          </div>
+      <div class="card">
+        <label class="control-label card-header">Incident Details</label>
+        <div id="incident_report_well" class="card-body">
+          <label class="control-label">
+            <input id="history_checkbox" type="checkbox" onchange="toggleShowHistory()"/>
+            Show history
+          </label>
+          <label class="control-label">
+            <input id="merge_reports_checkbox" type="checkbox" checked=""
+                   onchange="drawMergedReportEntries()"/>
+            Show attached entries
+          </label>
+          <div id="incident_report"/>
         </div>
-        <textarea
-          id="incident_report_add"
-          class="form-control input-sm no-print"
-          rows="3"
-          placeholder="Additional report text..."
-          autofocus=""
-          onchange="reportEntryEdited()"
-        />
-        <button
-          id="report_entry_submit"
-          type="submit"
-          class="btn btn-default btn-sm btn-block disabled no-print"
-          onclick="submitReportEntry()"
-        >
-          Add Entry (Control ⏎)
-        </button>
+        <div class="card-footer">
+          <textarea
+                  id="incident_report_add"
+                  class="form-control no-print"
+                  rows="3"
+                  placeholder="Additional report text..."
+                  autofocus=""
+                  onchange="reportEntryEdited()"
+          />
+          <button
+                  id="report_entry_submit"
+                  type="submit"
+                  class="btn btn-default btn-sm btn-block my-1 disabled no-print"
+                  onclick="submitReportEntry()"
+          >
+            Add Entry (Control ⏎)
+          </button>
+        </div>
       </div>
     </div>
   </div>

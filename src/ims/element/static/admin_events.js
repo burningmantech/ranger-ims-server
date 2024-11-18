@@ -179,9 +179,14 @@ function removeAccess(sender) {
     var container = $(sender).parents(".event_access:first");
     var event = container.find(".event_name:first").text();
     var mode = container.find(".access_mode:first").text();
-    var expression = $(sender).parent().text().trim();
+    var expression = $(sender).parent().attr("value").trim();
 
     var acl = accessControlList[event][mode].slice();
+
+    if (acl.indexOf(expression) < 0) {
+        console.error("no such ACL: " + expression);
+        return;
+    }
 
     acl.splice(acl.indexOf(expression), 1);
 

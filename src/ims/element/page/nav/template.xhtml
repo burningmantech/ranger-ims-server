@@ -1,53 +1,84 @@
 <!DOCTYPE html>
-<nav xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root" class="navbar navbar-default">
+<nav xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root"
+     class="navbar border rounded navbar-expand-sm bg-body-tertiary">
 
-  <div class="nonprod-warning text-center" t:render="deployment_warning"></div>
-
-  <div class="navbar-header">
-    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar" aria-expanded="false">
-      <span class="sr-only">Toggle navigation</span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-    </button>
+  <div class="container-fluid">
     <a class="navbar-brand" t:render="url" url="app">
-        IMS
+      IMS
     </a>
-  </div>
-
-  <div class="collapse navbar-collapse" id="main-navbar">
-
-     <!-- Event menu -->
-     <ul class="nav navbar-nav navbar-left" t:render="if_logged_in">
-      <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"/>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <!-- Event menu -->
+      <ul class="navbar-nav" t:render="if_logged_in">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+             aria-expanded="false">
             <span class="event-id nav-event-id">Event</span>
-            <span class="caret"></span>
           </a>
           <ul class="dropdown-menu">
-            <li t:render="events_reversed" />
+            <li t:render="events_reversed"/>
           </ul>
-      </li>
-    </ul>
+        </li>
+      </ul>
+      <!-- this keeps the nav_login thing on the right when the events dropdown is hidden -->
+      <ul class="navbar-nav me-auto"/>
 
-    <!-- Not logged in: offer to log in -->
-    <ul class="nav navbar-nav navbar-right" t:render="if_not_logged_in">
-      <li id="nav_login"><a t:render="url" url="login">Log In</a></li>
-    </ul>
+      <!-- Theme dropdown -->
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+          <button class="btn btn-link nav-link py-2 px-0 px-lg-2 dropdown-toggle d-flex align-items-center"
+                  id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown"
+                  data-bs-display="static" aria-label="Toggle theme (auto)">
+            <span class="bi my-1 theme-icon-active">◑</span>
+            <span class="d-none ms-2" id="bd-theme-text">Toggle theme</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme-text">
+            <li>
+              <button type="button" class="dropdown-item d-flex align-items-center"
+                      data-bs-theme-value="light" aria-pressed="false">
+                <span class="bi me-2 opacity-50">☀️</span>
+                Light
+              </button>
+            </li>
+            <li>
+              <button type="button" class="dropdown-item d-flex align-items-center"
+                      data-bs-theme-value="dark" aria-pressed="false">
+                <span class="bi me-2 opacity-50">🌙</span>
+                Dark
+              </button>
+            </li>
+            <li>
+              <button type="button" class="dropdown-item d-flex align-items-center active"
+                      data-bs-theme-value="auto" aria-pressed="true">
+                <span class="bi me-2 opacity-50">◑</span>
+                Auto
+              </button>
+            </li>
+          </ul>
+        </li>
+      </ul>
 
-    <!-- Logged in: show user menu -->
-    <ul class="nav navbar-nav navbar-right" t:render="if_logged_in">
-      <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-            <span t:render="logged_in_user" /><span class="caret"></span>
+      <!-- Not logged in: offer to log in -->
+      <ul class="navbar-nav" t:render="if_not_logged_in">
+        <li id="nav_login"><a t:render="url" url="login" class="nav-link">Log In</a></li>
+      </ul>
+
+      <!-- Logged in: show user menu -->
+      <ul class="navbar-nav" t:render="if_logged_in">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+             aria-expanded="false">
+            <span t:render="logged_in_user"/>
           </a>
           <ul class="dropdown-menu">
-            <li t:render="if_admin"><a t:render="url" url="admin">Admin</a></li>
-            <li><a t:render="url" url="logout">Log out</a></li>
+            <li t:render="if_admin"><a t:render="url" url="admin" class="dropdown-item">Admin</a></li>
+            <li><a t:render="url" url="logout" class="dropdown-item">Log out</a></li>
           </ul>
-      </li>
-    </ul>
-
+        </li>
+      </ul>
+    </div>
   </div>
-
 </nav>
