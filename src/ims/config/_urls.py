@@ -137,7 +137,7 @@ class URLs:
     )
     viewIncidentReportsJS: ClassVar[URL] = static.child("incident_reports.js")
     viewIncidentReportsRelative: ClassVar[URL] = URL.fromText(
-        "incident_reports"
+        "field_reports"
     ).child("")
 
     viewIncidentReportNew: ClassVar[URL] = viewIncidentReports.child("new")
