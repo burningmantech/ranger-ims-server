@@ -1093,6 +1093,19 @@ class DatabaseStore(IMSDataStore):
             )
             raise
 
+        # Attach incident number to any incident reports
+        for irn in incident.incidentReportNumbers:
+            if not author:
+                continue
+            await self._setIncidentReportAttribute(
+                self.query.attachIncidentReportToIncident.text,
+                incident.eventID,
+                irn,
+                "incident_number",
+                incident.number,
+                author,
+            )
+
         self._log.info(
             "Created incident {incident}",
             incident=incident,

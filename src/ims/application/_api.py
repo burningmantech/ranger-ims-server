@@ -522,11 +522,13 @@ class APIApplication:
             "New incident: {json}", json=jsonObjectFromModelObject(incident)
         )
 
-        request.setHeader("X-IMS-Incident-Number", str(incident.number))
-        request.setHeader(
-            HeaderName.location.value,
-            URLs.incidents.child(str(incident.number)).asText(),
+        location = (
+            URLs.incidents.child(str(incident.number))
+            .asText()
+            .replace("<event_id>", event_id)
         )
+        request.setHeader(HeaderName.location.value, location)
+        request.setHeader("X-IMS-Incident-Number", str(incident.number))
         return noContentResponse(request)
 
     @router.route(_unprefix(URLs.incidentNumber), methods=("HEAD", "GET"))
