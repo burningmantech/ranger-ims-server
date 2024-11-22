@@ -11,6 +11,18 @@
           <label class="control-label">FR #:</label>
           <span id="incident_report_number" class="form-control-static" />
         </div>
+        <div class="form-group">
+          <label class="control-label">IMS #:</label>
+          <span id="incident_number" class="form-control-static" />
+          <button
+                  id="create_incident"
+                  class="btn btn-sm btn-warning hidden"
+                  title="Only click this if there's no preexisting incident for this FR"
+                  onclick="makeIncident()"
+          >
+            Create new incident from FR
+          </button>
+        </div>
       </div>
   </div>
 

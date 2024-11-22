@@ -447,25 +447,37 @@ class AuthProvider:
     ) -> None:
         """
         Determine whether the user attached to a request has the required
-        authorizations to read the incident report with the given number.
+        authorizations to access the incident report with the given number.
         """
-        # The author of the incident report should be allowed to read and write
-        # to it.
-
+        # An author of the incident report should be allowed to read and write
+        # to it, provided they have writeIncidentReports on the event.
+        userIsAuthor = False
         user: IMSUser = request.user  # type: ignore[attr-defined]
-
         if user is not None and incidentReport.reportEntries:
             rangerHandle = user.shortNames[0]
             for reportEntry in incidentReport.reportEntries:
                 if reportEntry.author == rangerHandle:
-                    request.authorizations = (  # type: ignore[attr-defined]
-                        Authorization.writeIncidentReports
-                    )
-                    return
+                    userIsAuthor = True
+                    break
 
-        # Otherwise, use the ACL for the event associated with the incident
-        # report.
+        # If the user is an author, they're authorized so long as they have
+        # writeIncidentReports.
+        if userIsAuthor:
+            try:
+                await self.authorizeRequest(
+                    request,
+                    incidentReport.eventID,
+                    Authorization.writeIncidentReports,
+                )
+            except NotAuthorizedError:
+                # No writeIncidentReports, so we'll fall back to checking if
+                # they have readIncidents permission below
+                pass
+            else:
+                # writeIncidentReports authorization succeeded
+                return
 
+        # Authorize the user if they have readIncidents permission
         await self.authorizeRequest(
             request, incidentReport.eventID, Authorization.readIncidents
         )

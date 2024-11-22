@@ -138,6 +138,7 @@ function loadAndDisplayIncidentReport(success) {
 
         drawTitle();
         drawNumber();
+        drawIncident();
         drawSummary();
         drawReportEntries(incidentReport.report_entries);
         clearErrorMessage();
@@ -176,6 +177,33 @@ function drawNumber() {
         number = "(new)";
     }
     $("#incident_report_number").text(number);
+}
+
+//
+// Populate incident number or show "create incident" button
+//
+
+function drawIncident() {
+    // New Incident Report. There can be no Incident
+    if (incidentReport.number === null) {
+        return;
+    }
+    // If there's an attached Incident, then show a link to it
+    if (incidentReport.incident !== null) {
+        const incidentURL = urlReplace(url_viewIncidentNumber).replace("<number>", incidentReport.incident);
+        const $a = $("<a>", {href: incidentURL});
+        $a.text(incidentReport.incident);
+        $("#incident_number").text("").append($a);
+    } else {
+        $("#incident_number").text("(none)");
+    }
+    // If there's no attached Incident, show a button for making
+    // a new Incident
+    if (incidentReport.incident === null && canWriteIncidents) {
+        $("#create_incident").removeClass("hidden");
+    } else {
+        $("#create_incident").addClass("hidden");
+    }
 }
 
 
@@ -277,4 +305,54 @@ function sendEdits(edits, success, error) {
 
 function editSummary() {
     editFromElement($("#incident_report_summary"), "summary");
+}
+
+//
+// Make a new incident and attach this incident report to it
+//
+
+function makeIncident() {
+    const incidentsURL = urlReplace(url_incidents);
+
+    function createOk(data, status, xhr) {
+        const newIncident = xhr.getResponseHeader("X-IMS-Incident-Number");
+        incidentReport.incident = parseInt(newIncident);
+
+        const url = (
+            urlReplace(url_incidentReports) + incidentReport.number +
+            "?action=attach;incident=" + newIncident
+        );
+
+        function attachOk(data, status, xhr) {
+            console.log("Created and attached to new incident " + newIncident);
+            loadAndDisplayIncidentReport();
+        }
+
+        function attachFail(error, status, xhr) {
+            disableEditing();
+            const message = "Failed to attach incident report";
+            console.error(message + ": " + error);
+            setErrorMessage(message);
+        }
+
+        jsonRequest(url, {}, attachOk, attachFail);
+    }
+
+    function createFail(error, status, xhr) {
+        disableEditing();
+        const message = "Failed to create incident";
+        console.error(message + ": " + error);
+        setErrorMessage(message);
+    }
+
+    const authors = [];
+    if (incidentReport.report_entries?.length > 0) {
+        authors.push(incidentReport.report_entries[0].author);
+    }
+
+    jsonRequest(incidentsURL, {
+        "summary": incidentReport.summary,
+        "ranger_handles": authors,
+        }, createOk, createFail,
+    );
 }
