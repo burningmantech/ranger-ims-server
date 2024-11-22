@@ -27,9 +27,14 @@ function initIncidentPage() {
         loadIncidentTypesAndCache(drawIncidentTypesToAdd);
         loadAndDisplayIncidentReports();
 
-        // Scroll to incident_report_add field
-        $("html, body").animate({ scrollTop: $("#incident_report_add").offset().top }, 500);
-        $("#incident_report_add").focus();
+        // for a new incident
+        if (incident.number === null) {
+            $("#incident_summary").focus();
+        } else {
+            // Scroll to incident_report_add field
+            $("html, body").animate({scrollTop: $("#incident_report_add").offset().top}, 500);
+            $("#incident_report_add").focus();
+        }
 
         // Warn the user if they're about to navigate away with unsaved text.
         window.addEventListener('beforeunload', function (e) {
