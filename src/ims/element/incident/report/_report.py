@@ -69,3 +69,14 @@ class IncidentReportPage(Page):
         JSON integer: incident report number.
         """
         return jsonTextFromObject(self.number)
+
+    @renderer
+    def can_write_incidents(self, request: IRequest, tag: Tag) -> KleinRenderable:
+        return (
+            jsonTrue
+            if (
+                request.authorizations  # type: ignore[attr-defined]
+                & Authorization.writeIncidents
+            )
+            else jsonFalse
+        )
