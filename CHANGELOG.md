@@ -24,6 +24,8 @@ Each month below should look like the following, using the same ordering for the
 - Tightened security on the personnel endpoint, by restricting it to those with at least readIncident permission, and by removing Ranger email addresses from the response ([#1355](https://github.com/burningmantech/ranger-ims-server/pull/1355), [#1317](https://github.com/burningmantech/ranger-ims-server/pull/1317))
 - Made the incidents table load another 2x faster, by not retrieving system-generated report entries as part of that call. This should make the table more responsive too ([#1396](https://github.com/burningmantech/ranger-ims-server/pull/1396))
 - Tweaked the navbar's formatting to align better with Clubhouse ([#1394](https://github.com/burningmantech/ranger-ims-server/pull/1394))
+- On incident page, for a brand-new incident, stopped scrolling down to focus on the "add entry" box. Instead the page will focus on the summary field in that case. ([#1419](https://github.com/burningmantech/ranger-ims-server/pull/1419))
+- Started hiding system-generated incident history by default on the incident page. This can still be toggled by the "show history" checkbox, but the default is now that this is unchecked ([#1421](https://github.com/burningmantech/ranger-ims-server/pull/1421))
 
 ### Added
 
