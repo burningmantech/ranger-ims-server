@@ -344,10 +344,10 @@ function loadUnattachedIncidentReports(success) {
         for (const d of data) {
             _unattachedIncidentReports.push(d);
         }
-        // apply an ascending sort based on the field report number,
+        // apply a descending sort based on the field report number,
         // being cautious about field report number being null
         _unattachedIncidentReports.sort(function (a, b) {
-            return (a.number ?? -1) - (b.number ?? -1);
+            return (b.number ?? -1) - (a.number ?? -1);
         })
         unattachedIncidentReports = _unattachedIncidentReports;
 
