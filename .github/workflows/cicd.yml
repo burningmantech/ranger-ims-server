@@ -194,6 +194,7 @@ jobs:
             codecov.io:443
             files.pythonhosted.org:443
             github.com:443
+            keybase.io:443
             pypi.org:443
             storage.googleapis.com:443
 
