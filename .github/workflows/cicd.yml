@@ -45,12 +45,10 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Set up Tox environment
-        run: |
-          uv tool install tox --with tox-uv
-          tox run -e lint --notest
+        run: uvx --with=tox-uv tox run -e lint --notest
 
       - name: Run Linters
-        run: tox run -e lint
+        run: uvx --with=tox-uv tox run -e lint
         env:
           # no-commit-to-branch always fails in CI, because this pre-commit
           # is only designed for running locally (i.e. when committing to a
@@ -92,12 +90,10 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Set up Tox environment
-        run: |
-          uv tool install tox --with tox-uv
-          tox run -e lint --notest
+        run: uvx --with=tox-uv tox run -e lint --notest
 
       - name: Run Mypy
-        run: tox run -e mypy
+        run: uvx --with=tox-uv tox run -e mypy
 
 
   packaging:
@@ -133,12 +129,10 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Set up Tox environment
-        run: |
-          uv tool install tox --with tox-uv
-          tox run -e lint --notest
+        run: uvx --with=tox-uv tox run -e lint --notest
 
       - name: Check packaging
-        run: tox run -e packaging
+        run: uvx --with=tox-uv tox run -e packaging
 
 
   unit:
@@ -229,15 +223,13 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Set up Tox environment
-        run: |
-          uv tool install tox --with tox-uv
-          tox run -e lint --notest
+        run: uvx --with=tox-uv tox run -e lint --notest
 
       - name: Run unit tests
         id: test
         run: |
           status=0
-          tox run -e "${TOX_ENV}" || status=$?
+          uvx --with=tox-uv tox run -e "${TOX_ENV}" || status=$?
           if [ ${status} -ne 0 ] && [ "${{ matrix.optional }}" == "true" ]; then
             echo "::warning::Optional matrix job failed."
             echo "optional_fail=true" >> "${GITHUB_OUTPUT}"
@@ -309,14 +301,13 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            *.docker.io:443
             *.github.com:443
-            auth.docker.io:443
             dl-cdn.alpinelinux.org:443
             files.pythonhosted.org:443
             github.com:443
             production.cloudflare.docker.com:443
             pypi.org:443
-            registry-1.docker.io:443
 
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -352,10 +343,9 @@ jobs:
           egress-policy: block
           allowed-endpoints: >
             *.github.com:443
-            auth.docker.io:443
+            *.docker.io:443
             github.com:443
             production.cloudflare.docker.com:443
-            registry-1.docker.io:443
 
       - name: Checkout source code
         uses: actions/checkout@v4
