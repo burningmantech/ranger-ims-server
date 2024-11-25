@@ -37,9 +37,7 @@ class IncidentReportTests(TestCase):
     """
 
     @given(incidentReports(), text(min_size=1))
-    def test_str_summary(
-        self, incidentReport: IncidentReport, summary: str
-    ) -> None:
+    def test_str_summary(self, incidentReport: IncidentReport, summary: str) -> None:
         """
         :meth:`IncidentReport.__str__` renders an incident report with a
         non-empty summary as a string consisting of the incident number and
@@ -53,9 +51,7 @@ class IncidentReportTests(TestCase):
         )
 
     @given(incidentReports(), sampled_from((None, "")))
-    def test_str_noSummary(
-        self, incidentReport: IncidentReport, summary: str
-    ) -> None:
+    def test_str_noSummary(self, incidentReport: IncidentReport, summary: str) -> None:
         """
         :meth:`IncidentReport.__str__` renders an incident report without a
         summary as a string.

@@ -62,9 +62,7 @@ class DummyConnectionPool:
         self.connkw = connkw
         self.queries: MutableSequence[DummyQuery] = []
 
-    def runQuery(
-        self, *args: tuple[Any, ...], **kw: dict[str, Any]
-    ) -> Deferred[Rows]:
+    def runQuery(self, *args: tuple[Any, ...], **kw: dict[str, Any]) -> Deferred[Rows]:
         query = DummyQuery(args, kw)
 
         self.queries.append(query)
@@ -72,7 +70,7 @@ class DummyConnectionPool:
         sql = query.sql()
 
         def fixPassword(
-            person: tuple[int, str, str, str, str, str, str, bool, str]
+            person: tuple[int, str, str, str, str, str, str, bool, str],
         ) -> tuple[int, str, str, str, str, str, str, bool, str]:
             return (
                 person[0],

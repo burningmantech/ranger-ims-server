@@ -36,9 +36,7 @@ class IncidentTypeTests(TestCase):
     """
 
     @given(incidentTypes(), booleans())
-    def test_known_unknown(
-        self, incidentType: IncidentType, hidden: bool
-    ) -> None:
+    def test_known_unknown(self, incidentType: IncidentType, hidden: bool) -> None:
         """
         The Unknown Knowns are known.
         """
@@ -47,9 +45,7 @@ class IncidentTypeTests(TestCase):
         self.assertFalse(incidentType.known())
 
     @given(sampled_from(KnownIncidentType), booleans())
-    def test_known_known(
-        self, knownType: KnownIncidentType, hidden: bool
-    ) -> None:
+    def test_known_known(self, knownType: KnownIncidentType, hidden: bool) -> None:
         """
         The Known Knowns are known.
         """

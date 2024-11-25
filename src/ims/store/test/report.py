@@ -118,9 +118,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 )
 
             found: set[int] = set()
-            for retrieved in await store.incidentReports(
-                anIncident1.eventID, False
-            ):
+            for retrieved in await store.incidentReports(anIncident1.eventID, False):
                 self.assertIn(retrieved.number, incidentReportsByNumber)
                 self.assertIncidentReportsEqual(
                     store,
@@ -320,9 +318,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
             getattr(store, methodName),
         )
 
-        await setter(
-            incidentReport.eventID, incidentReport.number, value, "Hubcap"
-        )
+        await setter(incidentReport.eventID, incidentReport.number, value, "Hubcap")
 
         retrieved = await store.incidentReportWithNumber(
             incidentReport.eventID, incidentReport.number
@@ -585,15 +581,11 @@ class DataStoreIncidentReportTests(DataStoreTests):
                     else:
                         messages.append(f"{name} delta: {valueA - valueB}")
                 elif name == "reportEntries":
-                    if store.reportEntriesEqual(
-                        valueA, valueB, ignoreAutomatic
-                    ):
+                    if store.reportEntriesEqual(valueA, valueB, ignoreAutomatic):
                         continue
 
                 if valueA != valueB:
                     messages.append(f"{name} {valueA!r} != {valueB!r}")
 
             if messages:
-                self.fail(
-                    "incident reports do not match:\n" + "\n".join(messages)
-                )
+                self.fail("incident reports do not match:\n" + "\n".join(messages))

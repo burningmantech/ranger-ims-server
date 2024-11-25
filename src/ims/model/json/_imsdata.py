@@ -57,8 +57,7 @@ class IMSDataJSONType(Enum):
 def serializeIMSData(imsData: IMSData) -> dict[str, Any]:
     # Map event data attribute names to JSON dict key names
     return {
-        key.value: jsonSerialize(getattr(imsData, key.name))
-        for key in IMSDataJSONKey
+        key.value: jsonSerialize(getattr(imsData, key.name)) for key in IMSDataJSONKey
     }
 
 

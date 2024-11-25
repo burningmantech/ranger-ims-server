@@ -62,7 +62,7 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
 
     line = (
         '"{ip}" {user} - {timestamp} "{method} {uri} {protocol}" '
-        '{code} {length} "{referrer}" "{agent}"'.format(
+        '{code} {length} "{referrer}{agent}"'.format(
             ip=_escape(ip or "-"),
             timestamp=timestamp,
             method=_escape(request.method),

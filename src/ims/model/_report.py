@@ -45,9 +45,7 @@ class IncidentReport(ReplaceMixIn):
     created: DateTime = field(converter=normalizeDateTime)
     summary: str | None
     incidentNumber: int | None
-    reportEntries: Sequence[ReportEntry] = field(
-        converter=sortAndFreezeReportEntries
-    )
+    reportEntries: Sequence[ReportEntry] = field(converter=sortAndFreezeReportEntries)
 
     def __str__(self) -> str:
         return f"{self.eventID}#{self.number}: {self.summaryFromReport()}"

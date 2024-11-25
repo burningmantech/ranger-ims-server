@@ -67,9 +67,7 @@ class IMSDataStore(ABC):
         """
 
     @abstractmethod
-    async def createIncidentType(
-        self, incidentType: str, hidden: bool = False
-    ) -> None:
+    async def createIncidentType(self, incidentType: str, hidden: bool = False) -> None:
         """
         Create the given incident type.
         """
@@ -150,9 +148,7 @@ class IMSDataStore(ABC):
         """
 
     @abstractmethod
-    async def createConcentricStreet(
-        self, eventID: str, id: str, name: str
-    ) -> None:
+    async def createConcentricStreet(self, eventID: str, id: str, name: str) -> None:
         """
         Create a new concentric street and associated it with the given event.
         """
@@ -354,9 +350,7 @@ class IMSDataStore(ABC):
         """
 
     @abstractmethod
-    async def importIncidentReport(
-        self, incidentReport: IncidentReport
-    ) -> None:
+    async def importIncidentReport(self, incidentReport: IncidentReport) -> None:
         """
         Import an incident and add it into the given event.
 

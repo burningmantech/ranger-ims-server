@@ -18,7 +18,6 @@
 Incident report page.
 """
 
-
 from attrs import mutable
 from klein import KleinRenderable
 from twisted.web.iweb import IRequest
@@ -66,9 +65,7 @@ class IncidentReportPage(Page):
         return jsonTextFromObject(self.event.id)
 
     @renderer
-    def incident_report_number(
-        self, request: IRequest, tag: Tag
-    ) -> KleinRenderable:
+    def incident_report_number(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         JSON integer: incident report number.
         """

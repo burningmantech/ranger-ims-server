@@ -202,9 +202,7 @@ class HTTPPageGetter(http.HTTPClient):
         else:
             self.handleStatusDefault()
             self.factory.noPage(
-                Failure(
-                    error.PageRedirect(self.status, self.message, location=url)
-                )
+                Failure(error.PageRedirect(self.status, self.message, location=url))
             )
         self.quietLoss = True
         self.transport.loseConnection()
@@ -246,9 +244,7 @@ class HTTPPageGetter(http.HTTPClient):
             self.factory.page(b"")
         elif self.length != None and self.length != 0:  # noqa: E711
             self.factory.noPage(
-                Failure(
-                    PartialDownloadError(self.status, self.message, response)
-                )
+                Failure(PartialDownloadError(self.status, self.message, response))
             )
         else:
             self.factory.page(response)
@@ -291,9 +287,7 @@ class HTTPPageDownloader(HTTPPageGetter):
             self.factory.pageEnd()
             self.transmittingPage = 0
         if self.failed:
-            self.factory.noPage(
-                Failure(error.Error(self.status, self.message, None))
-            )
+            self.factory.noPage(Failure(error.Error(self.status, self.message, None)))
             self.transport.loseConnection()
 
 
@@ -567,8 +561,7 @@ class HTTPDownloader(HTTPClientFactory):
         """
         if partialContent and not self.requestedPartial:
             raise ValueError(
-                "we shouldn't get partial content response if we didn't "
-                "want it!"
+                "we shouldn't get partial content response if we didn't want it!"
             )
         if self.waiting:
             try:
@@ -614,9 +607,7 @@ class HTTPDownloader(HTTPClientFactory):
         self.deferred.callback(self.value)
 
 
-def _makeGetterFactory(
-    url, factoryFactory, contextFactory=None, *args, **kwargs
-):
+def _makeGetterFactory(url, factoryFactory, contextFactory=None, *args, **kwargs):
     """
     Create and connect an HTTP page getting factory.
 
@@ -640,9 +631,7 @@ def _makeGetterFactory(
 
         if contextFactory is None:
             contextFactory = ssl.ClientContextFactory()
-        reactor.connectSSL(
-            nativeString(uri.host), uri.port, factory, contextFactory
-        )
+        reactor.connectSSL(nativeString(uri.host), uri.port, factory, contextFactory)
     else:
         reactor.connectTCP(nativeString(uri.host), uri.port, factory)
     return factory
@@ -706,8 +695,7 @@ class ExternalApplication:
     )
 
     dataTablesSourceURL = URL.fromText(
-        f"https://datatables.net/releases/"
-        f"DataTables-{dataTablesVersionNumber}.zip"
+        f"https://datatables.net/releases/" f"DataTables-{dataTablesVersionNumber}.zip"
     )
 
     lscacheJSSourceURL = URL.fromText(
@@ -715,9 +703,7 @@ class ExternalApplication:
         f"{lscacheVersionNumber}/lscache.min.js"
     )
 
-    @router.route(
-        _unprefix(URLs.bootstrapBase), methods=("HEAD", "GET"), branch=True
-    )
+    @router.route(_unprefix(URLs.bootstrapBase), methods=("HEAD", "GET"), branch=True)
     @static
     async def bootstrapResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -743,9 +729,7 @@ class ExternalApplication:
         """
         Endpoint for jQuery.
         """
-        request.setHeader(
-            HeaderName.contentType.value, ContentType.javascript.value
-        )
+        request.setHeader(HeaderName.contentType.value, ContentType.javascript.value)
         return await self.cachedResource(
             request, self.jqueryJSSourceURL, f"{self.jqueryVersion}.min.js"
         )
@@ -761,9 +745,7 @@ class ExternalApplication:
             request, self.jqueryMapSourceURL, f"{self.jqueryVersion}.min.map"
         )
 
-    @router.route(
-        _unprefix(URLs.dataTablesBase), methods=("HEAD", "GET"), branch=True
-    )
+    @router.route(_unprefix(URLs.dataTablesBase), methods=("HEAD", "GET"), branch=True)
     @static
     async def dataTablesResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -801,9 +783,7 @@ class ExternalApplication:
         """
         Endpoint for lscache.
         """
-        request.setHeader(
-            HeaderName.contentType.value, ContentType.javascript.value
-        )
+        request.setHeader(HeaderName.contentType.value, ContentType.javascript.value)
         return await self.cachedResource(
             request, self.lscacheJSSourceURL, f"{self.lscacheVersion}.min.js"
         )
@@ -851,9 +831,7 @@ class ExternalApplication:
         try:
             return path.read_bytes()
         except OSError as e:
-            self._log.error(
-                "Unable to open file {path}: {error}", path=path, error=e
-            )
+            self._log.error("Unable to open file {path}: {error}", path=path, error=e)
             return notFoundResponse(request)
 
     async def cachedZippedResource(
@@ -869,9 +847,7 @@ class ExternalApplication:
         """
 
         archivePath = await self.cacheFromURL(url, f"{archiveName}.zip")
-        return self.cachedZippedResourceFromPath(
-            request, archivePath, name, *names
-        )
+        return self.cachedZippedResourceFromPath(request, archivePath, name, *names)
 
     def cachedZippedResourceFromPath(
         self,

@@ -93,8 +93,7 @@ class DirectoryTests(TestCase):
         handles and raises DirectoryError.
         """
         duplicateRangers = [
-            evolve(ranger, handle=duplicateHandle)
-            for ranger in duplicateRangers
+            evolve(ranger, handle=duplicateHandle) for ranger in duplicateRangers
         ]
         rangers = tuple(rangers) + tuple(duplicateRangers)
 

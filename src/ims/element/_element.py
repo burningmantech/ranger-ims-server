@@ -151,15 +151,11 @@ class Element(BaseElement):
             return tag(username)
 
     @renderer
-    def deployment_warning(
-        self, request: IRequest, tag: Tag
-    ) -> KleinRenderable:
+    def deployment_warning(self, request: IRequest, tag: Tag) -> KleinRenderable:
         deployment = self.config.deployment.lower()
         if deployment == "prod":
             return ""
-        return tag(
-            f"This is not production. You are on a {deployment} IMS server."
-        )
+        return tag(f"This is not production. You are on a {deployment} IMS server.")
 
     ##
     # Data
@@ -234,8 +230,7 @@ class Element(BaseElement):
             [
                 event.id
                 for event in await self.config.store.events()
-                if relevantAuthorizations
-                & await authorizationsForUser(event.id)
+                if relevantAuthorizations & await authorizationsForUser(event.id)
             ]
         )
 
@@ -243,9 +238,7 @@ class Element(BaseElement):
             eventPage = self.config.urls.viewEvent.asText()
             return (
                 tag.clone()(
-                    tags.a(
-                        eventID, href=eventPage.replace("<event_id>", eventID)
-                    )
+                    tags.a(eventID, href=eventPage.replace("<event_id>", eventID))
                 )
                 for eventID in eventIDs
             )
@@ -265,15 +258,11 @@ class Element(BaseElement):
         Repeat an element once for each event in reverse order, embedding the
         event ID.
         """
-        return cast(
-            KleinRenderable, self._events(request, tag, reverse_order=True)
-        )
+        return cast(KleinRenderable, self._events(request, tag, reverse_order=True))
 
     @renderer
     async def events_list(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
         JSON list of strings: events IDs.
         """
-        return jsonTextFromObject(
-            e.id for e in await self.config.store.events()
-        )
+        return jsonTextFromObject(e.id for e in await self.config.store.events())

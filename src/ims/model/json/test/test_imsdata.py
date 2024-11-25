@@ -54,6 +54,4 @@ class IMSDataDeserializationTests(TestCase):
         """
         :func:`jsonDeserialize` returns an imsData with the correct data.
         """
-        self.assertEqual(
-            jsonDeserialize(jsonFromIMSData(imsData), IMSData), imsData
-        )
+        self.assertEqual(jsonDeserialize(jsonFromIMSData(imsData), IMSData), imsData)

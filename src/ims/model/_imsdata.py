@@ -51,6 +51,4 @@ class IMSData(ReplaceMixIn):
     """
 
     events: frozenset[EventData] = field(converter=freezeEventDatas)
-    incidentTypes: frozenset[IncidentType] = field(
-        converter=freezeIncidentTypes
-    )
+    incidentTypes: frozenset[IncidentType] = field(converter=freezeIncidentTypes)

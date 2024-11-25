@@ -139,8 +139,7 @@ queries = Queries(
         """,
     ),
     createConcentricStreetOrIgnore=Query(
-        "create concentric street if no matching concentric street already "
-        "exists",
+        "create concentric street if no matching concentric street already exists",
         f"""
         insert into CONCENTRIC_STREET (EVENT, ID, NAME)
         values (({query_eventID}), %(streetID)s, %(streetName)s)

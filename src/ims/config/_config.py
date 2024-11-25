@@ -195,9 +195,7 @@ class Configuration:
         else:
             defaultRoot = configFile.parent.parent
 
-        hostName = parser.valueFromConfig(
-            "HOSTNAME", "Core", "Host", "localhost"
-        )
+        hostName = parser.valueFromConfig("HOSTNAME", "Core", "Host", "localhost")
         cls._log.info("hostName: {hostName}", hostName=hostName)
 
         port = int(parser.valueFromConfig("PORT", "Core", "Port", "80"))
@@ -230,16 +228,12 @@ class Configuration:
         cachedResourcesRoot.mkdir(exist_ok=True)
         cls._log.info("CachedResources: {path}", path=cachedResourcesRoot)
 
-        logLevelName = parser.valueFromConfig(
-            "LOG_LEVEL", "Core", "LogLevel", "info"
-        )
+        logLevelName = parser.valueFromConfig("LOG_LEVEL", "Core", "LogLevel", "info")
         cls._log.info("LogLevel: {logLevel}", logLevel=logLevelName)
 
         logFormat = cast(
             LogFormat,
-            parser.enumFromConfig(
-                "LOG_FORMAT", "Core", "LogFormat", LogFormat.text
-            ),
+            parser.enumFromConfig("LOG_FORMAT", "Core", "LogFormat", LogFormat.text),
         )
         cls._log.info("LogFormat: {logFormat}", logFormat=logFormat)
 
@@ -272,9 +266,7 @@ class Configuration:
             cls._log.info("Generating JWT key from configured secret")
             jsonWebKey = JSONWebKey.fromSecret(jwtSecret)
 
-        storeType = parser.valueFromConfig(
-            "DATA_STORE", "Core", "DataStore", "SQLite"
-        )
+        storeType = parser.valueFromConfig("DATA_STORE", "Core", "DataStore", "SQLite")
         cls._log.info("DataStore: {storeType}", storeType=storeType)
 
         storeFactory: Callable[[], IMSDataStore]
@@ -325,9 +317,7 @@ class Configuration:
         else:
             raise ConfigurationError(f"Unknown data store: {storeType!r}")
 
-        directoryType = parser.valueFromConfig(
-            "DIRECTORY", "Core", "Directory", "File"
-        )
+        directoryType = parser.valueFromConfig("DIRECTORY", "Core", "Directory", "File")
         cls._log.info("DataStore: {storeType}", storeType=storeType)
 
         directory: IMSDirectory
@@ -399,9 +389,7 @@ class Configuration:
             )
         )
 
-        deployment = parser.valueFromConfig(
-            "DEPLOYMENT", "Core", "Deployment", "Dev"
-        )
+        deployment = parser.valueFromConfig("DEPLOYMENT", "Core", "Deployment", "Dev")
 
         #
         # Persist some objects

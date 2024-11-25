@@ -191,9 +191,7 @@ class DataStore(DatabaseStore):
         **kwargs: Any,
     ) -> T:
         try:
-            return cast(
-                T, await self._db.runInteraction(interaction, *args, **kwargs)
-            )
+            return cast(T, await self._db.runInteraction(interaction, *args, **kwargs))
         except MySQLError as e:
             self._log.critical(
                 "Interaction {interaction} failed: {error}",
@@ -261,9 +259,7 @@ class DataStore(DatabaseStore):
             columnNullable = cast(str, row["IS_NULLABLE"])
             columnDefault = cast(Optional[str], row["COLUMN_DEFAULT"])
             columnPosition = cast(int, row["ORDINAL_POSITION"])
-            columnMaxChars = cast(
-                Optional[int], row["CHARACTER_MAXIMUM_LENGTH"]
-            )
+            columnMaxChars = cast(Optional[int], row["CHARACTER_MAXIMUM_LENGTH"])
 
             if tableName != lastTableName:
                 print(f"{tableName}:", file=out)
@@ -302,7 +298,5 @@ class DataStore(DatabaseStore):
         try:
             await self.runInteraction(applySchema)
         except StorageError as e:
-            self._log.critical(
-                "Unable to apply schema: {error}", sql=sql, error=e
-            )
+            self._log.critical("Unable to apply schema: {error}", sql=sql, error=e)
             raise StorageError(f"Unable to apply schema: {e}") from e

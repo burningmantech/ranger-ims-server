@@ -63,9 +63,7 @@ class TextOnlyAddressSerializationTests(TestCase):
         """
         :func:`jsonSerialize` serializes the given address.
         """
-        self.assertEqual(
-            jsonSerialize(address), jsonFromTextOnlyAddress(address)
-        )
+        self.assertEqual(jsonSerialize(address), jsonFromTextOnlyAddress(address))
 
 
 class RodGarettAddressSerializationTests(TestCase):
@@ -78,9 +76,7 @@ class RodGarettAddressSerializationTests(TestCase):
         """
         :func:`jsonSerialize` serializes the given address.
         """
-        self.assertEqual(
-            jsonSerialize(address), jsonFromRodGarettAddress(address)
-        )
+        self.assertEqual(jsonSerialize(address), jsonFromRodGarettAddress(address))
 
 
 class TextOnlyAddressDeserializationTests(TestCase):
@@ -110,8 +106,6 @@ class RodGarettAddressDeserializationTests(TestCase):
         :func:`jsonDeserialize` returns a address with the correct data.
         """
         self.assertEqual(
-            jsonDeserialize(
-                jsonFromRodGarettAddress(address), RodGarettAddress
-            ),
+            jsonDeserialize(jsonFromRodGarettAddress(address), RodGarettAddress),
             address,
         )

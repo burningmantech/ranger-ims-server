@@ -20,7 +20,6 @@
 Ranger
 """
 
-
 from attrs import field, frozen
 
 from ims.ext.enum import Names, auto, unique
@@ -73,9 +72,7 @@ class Ranger(ReplaceMixIn):
     handle: str
     name: str
     status: RangerStatus
-    email: frozenset[str] = field(
-        converter=freezeStrings, default=frozenset[str]()
-    )
+    email: frozenset[str] = field(converter=freezeStrings, default=frozenset[str]())
     enabled: bool
     directoryID: str | None
     password: str | None = field(

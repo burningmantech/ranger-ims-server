@@ -135,9 +135,7 @@ class RangerDirectory(IMSDirectory):
 
         for ranger in self._rangers:
             if ranger.handle in usersByHandle:
-                raise DirectoryError(
-                    f"Duplicate Ranger handle: {ranger.handle}"
-                )
+                raise DirectoryError(f"Duplicate Ranger handle: {ranger.handle}")
             groups = tuple(
                 IMSGroupID(position.name)
                 for position in self._positionsByHandle.get(ranger.handle, ())

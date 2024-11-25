@@ -84,9 +84,7 @@ rangerNine = Ranger(
     password=None,
 )
 
-testRangers = frozenset(
-    (rangerBeepBoop, rangerSlumber, rangerYouRine, rangerNine)
-)
+testRangers = frozenset((rangerBeepBoop, rangerSlumber, rangerYouRine, rangerNine))
 
 testPositions: frozenset[tuple[str, Sequence[str]]] = frozenset(
     (
@@ -131,11 +129,7 @@ class UtilityTests(TestCase):
         ):
             self.assertIdentical(statusFromID(name), status)
 
-    @given(
-        text().filter(
-            lambda name: name not in ("active", "inactive", "vintage")
-        )
-    )
+    @given(text().filter(lambda name: name not in ("active", "inactive", "vintage")))
     @settings(max_examples=10)
     def test_statusFromID_unknown(self, name: str) -> None:
         self.assertIdentical(statusFromID(name), RangerStatus.other)
@@ -168,9 +162,7 @@ class UtilityTests(TestCase):
             raise RuntimeError("poof")
 
         with patch("ims.directory.file._directory.rangerFromMapping", poof):
-            e = self.assertRaises(
-                DirectoryError, list, rangersFromMappings([{}])
-            )
+            e = self.assertRaises(DirectoryError, list, rangersFromMappings([{}]))
             self.assertEqual(str(e), "Unable to parse Ranger records: poof")
 
     @given(rangers(), randoms())
@@ -187,9 +179,7 @@ class UtilityTests(TestCase):
 
     @given(rangers(), randoms())
     @settings(max_examples=10)
-    def test_rangerFromMapping_noHandle(
-        self, ranger: Ranger, random: Random
-    ) -> None:
+    def test_rangerFromMapping_noHandle(self, ranger: Ranger, random: Random) -> None:
         ranger = ranger.replace(directoryID=None)
         rangerDict = rangerAsDict(ranger, random)
         del rangerDict["handle"]
@@ -323,9 +313,7 @@ class UtilityTests(TestCase):
             raise RuntimeError("poof")
 
         with patch("ims.directory.file._directory.positionFromMapping", poof):
-            e = self.assertRaises(
-                DirectoryError, list, positionsFromMappings([{}])
-            )
+            e = self.assertRaises(DirectoryError, list, positionsFromMappings([{}]))
             self.assertEqual(str(e), "Unable to parse position records: poof")
 
     @given(positions())
@@ -407,9 +395,7 @@ class FileDirectoryTests(TestCase):
             self.openCount += 1
             return superOpen(directorySelf)
 
-        return patch(
-            "ims.directory.file._directory.FileDirectory._open", openAndCount
-        )
+        return patch("ims.directory.file._directory.FileDirectory._open", openAndCount)
 
     def patchDirectoryMTime(
         self,

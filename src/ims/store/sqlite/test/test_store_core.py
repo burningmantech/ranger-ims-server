@@ -139,9 +139,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   5: STRICKEN(numeric) not null
                 SCHEMA_INFO:
                   0: VERSION(integer) not null
-                """[
-                    1:
-                ]
+                """[1:]
             ).lower(),
         )
 
@@ -270,9 +268,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         store = TestDataStore(dbPath=dbPath)
 
         f = self.failureResultOf(store.upgradeSchema(), StorageError)
-        self.assertStartsWith(
-            f.getErrorMessage(), "Unable to upgrade schema from "
-        )
+        self.assertStartsWith(f.getErrorMessage(), "Unable to upgrade schema from ")
 
     def test_upgradeSchema_noSchemaVersion(self) -> None:
         """
@@ -312,11 +308,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
             f"No upgrade path from schema version {version}",
         )
 
-    @given(
-        integers(
-            min_value=DataStore.schemaVersion + 1, max_value=SQLITE_MAX_INT
-        )
-    )
+    @given(integers(min_value=DataStore.schemaVersion + 1, max_value=SQLITE_MAX_INT))
     @settings(max_examples=10)
     def test_upgradeSchema_fromVersionTooHigh(self, version: int) -> None:
         """
@@ -371,13 +363,9 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         self.successResultOf(store.validate())
 
-        with patch(
-            "ims.ext.sqlite.Connection.validateConstraints", errorValidate
-        ):
+        with patch("ims.ext.sqlite.Connection.validateConstraints", errorValidate):
             f = self.failureResultOf(store.validate(), StorageError)
-            self.assertEqual(
-                f.getErrorMessage(), "Data store validation failed"
-            )
+            self.assertEqual(f.getErrorMessage(), "Data store validation failed")
 
 
 class DataStoreHelperTests(TestCase):

@@ -18,7 +18,6 @@
 Incident Management System Klein application.
 """
 
-
 from collections.abc import Callable, Iterable, Sequence
 from functools import wraps
 from typing import Any, Optional, TypeVar, cast
@@ -220,16 +219,12 @@ def invalidQueryResponse(
     Respond with a BAD REQUEST status due to an invalid query.
     """
     if value is None:
-        return badRequestResponse(
-            request, f"Invalid query: missing parameter {arg}"
-        )
+        return badRequestResponse(request, f"Invalid query: missing parameter {arg}")
     else:
         return badRequestResponse(request, f"Invalid query: {arg}={value}")
 
 
-def badGatewayResponse(
-    request: IRequest, message: str
-) -> KleinSynchronousRenderable:
+def badGatewayResponse(request: IRequest, message: str) -> KleinSynchronousRenderable:
     """
     Respond with a BAD GATEWAY status.
     """
@@ -264,9 +259,7 @@ def internalErrorResponse(
 #
 
 
-def queryValue(
-    request: IRequest, name: str, default: str | None = None
-) -> str | None:
+def queryValue(request: IRequest, name: str, default: str | None = None) -> str | None:
     """
     Look up the value of a query parameter with the given name in the
     given request.
@@ -282,9 +275,7 @@ def queryValue(
         C{default} if there no such query parameter.
         If more than one value is found, return the last value found.
     """
-    values = cast(
-        Optional[Sequence[bytes]], request.args.get(name.encode("utf-8"))
-    )
+    values = cast(Optional[Sequence[bytes]], request.args.get(name.encode("utf-8")))
 
     if values is None:
         return default
@@ -444,7 +435,8 @@ class Router(Klein):
 
             element = redirect(request, URLs.login, origin="o")
             return renderElement(  # type: ignore[return-value]
-                request, element  # type: ignore[arg-type]
+                request,
+                element,  # type: ignore[arg-type]
             )
 
         @self.handle_errors(DirectoryError)

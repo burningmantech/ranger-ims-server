@@ -165,9 +165,7 @@ class MySQLService(ABC):
 
         def sleep(interval: float) -> Deferred[None]:
             d: Deferred[None] = Deferred()
-            cast(IReactorTime, reactor).callLater(
-                interval, lambda: d.callback(None)
-            )
+            cast(IReactorTime, reactor).callLater(interval, lambda: d.callback(None))
             return d
 
         error = None
@@ -246,9 +244,7 @@ class DockerizedMySQLService(MySQLService):
     # https://github.com/burningmantech/ranger-ims-server/blob/master/docker-compose.yml
     imageTag: str = "10.5.24"
 
-    _dockerClient: DockerClient = field(
-        factory=DockerClient.from_env, init=False
-    )
+    _dockerClient: DockerClient = field(factory=DockerClient.from_env, init=False)
     _state: _State = field(factory=_State, init=False, repr=False)
 
     @property
@@ -309,8 +305,7 @@ class DockerizedMySQLService(MySQLService):
                 if elapsed > timeout:
                     d.errback(
                         RuntimeError(
-                            f"Timed out while starting container "
-                            f"{containerName}"
+                            f"Timed out while starting container " f"{containerName}"
                         )
                     )
                     return
@@ -391,9 +386,7 @@ class DockerizedMySQLService(MySQLService):
         containerName = self._containerName
 
         self._log.info("Creating MySQL container {name}", name=containerName)
-        self._log.info(
-            "Container environment: {env}", env=self._containerEnvironment
-        )
+        self._log.info("Container environment: {env}", env=self._containerEnvironment)
 
         container = client.containers.create(
             name=containerName,

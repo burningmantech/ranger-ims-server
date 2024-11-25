@@ -25,9 +25,7 @@ class FrozenDict(MappingABC[_Key, _Value]):
     """
 
     @classmethod
-    def fromMapping(
-        cls, mapping: Mapping[_Key, _Value]
-    ) -> "FrozenDict[_Key, _Value]":
+    def fromMapping(cls, mapping: Mapping[_Key, _Value]) -> "FrozenDict[_Key, _Value]":
         """
         Create a FrozenDict from a Mapping.
         """

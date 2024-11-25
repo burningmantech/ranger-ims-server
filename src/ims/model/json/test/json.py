@@ -131,9 +131,7 @@ def jsonFromIncident(incident: Incident) -> dict[str, Any]:
         location=jsonSerialize(incident.location),
         ranger_handles=[jsonSerialize(r) for r in incident.rangerHandles],
         incident_types=[jsonSerialize(t) for t in incident.incidentTypes],
-        report_entries=[
-            jsonSerialize(e) for e in sorted(incident.reportEntries)
-        ],
+        report_entries=[jsonSerialize(e) for e in sorted(incident.reportEntries)],
         incident_reports=[
             jsonSerialize(n) for n in sorted(incident.incidentReportNumbers)
         ],

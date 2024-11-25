@@ -249,9 +249,7 @@ class IMSOptions(Options):
         if "overrides" not in self:
             self["overrides"] = []
 
-        self["overrides"].append(
-            Override(section=section, name=name, value=value)
-        )
+        self["overrides"].append(Override(section=section, name=name, value=value))
 
     def initConfig(self) -> None:
         try:
@@ -279,9 +277,7 @@ class IMSOptions(Options):
             self.opt_log_file(str(configuration.logFilePath))
 
             if "logFormat" in options:
-                configuration = configuration.replace(
-                    logFormat=options["logFormat"]
-                )
+                configuration = configuration.replace(logFormat=options["logFormat"])
             elif configuration.logFormat is not None:
                 self.opt_log_format(configuration.logFormat.name)
 

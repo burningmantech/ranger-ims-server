@@ -91,8 +91,6 @@ class KnownIncidentTypeDeserializationTests(TestCase):
         :func:`jsonDeserialize` returns the incident type with the given value.
         """
         self.assertIdentical(
-            jsonDeserialize(
-                jsonFromKnownIncidentType(incidentType), KnownIncidentType
-            ),
+            jsonDeserialize(jsonFromKnownIncidentType(incidentType), KnownIncidentType),
             incidentType,
         )

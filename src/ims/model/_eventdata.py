@@ -46,9 +46,7 @@ def sortAndFreezeIncidentReports(
     return sorted_tuple(incidentReports)
 
 
-def freezeConcentricStreets(
-    concentricStreets: Mapping[str, str]
-) -> Mapping[str, str]:
+def freezeConcentricStreets(concentricStreets: Mapping[str, str]) -> Mapping[str, str]:
     return FrozenDict.fromMapping(concentricStreets)
 
 

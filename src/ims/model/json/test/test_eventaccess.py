@@ -41,9 +41,7 @@ class EventAccessSerializationTests(TestCase):
         """
         :func:`jsonSerialize` serializes the given event data.
         """
-        self.assertEqual(
-            jsonSerialize(eventAccess), jsonFromEventAccess(eventAccess)
-        )
+        self.assertEqual(jsonSerialize(eventAccess), jsonFromEventAccess(eventAccess))
 
 
 class EventAccessDeserializationTests(TestCase):

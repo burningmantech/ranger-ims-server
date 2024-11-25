@@ -98,16 +98,15 @@ class Connection(BaseConnection):
     _log: ClassVar[Logger] = Logger()
 
     def cursor(  # type: ignore[override]
-        self, factory: CursorFactory = cast(CursorFactory, Cursor)  # noqa: M511
+        self,
+        factory: CursorFactory = cast(CursorFactory, Cursor),  # noqa: M511
     ) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.cursor`.
         """
         return super().cursor(factory=factory)
 
-    def executeAndPrint(
-        self, sql: str, parameters: Parameters | None = None
-    ) -> None:
+    def executeAndPrint(self, sql: str, parameters: Parameters | None = None) -> None:
         """
         Execute the given SQL and print the results in a table format.
         """
@@ -117,9 +116,7 @@ class Connection(BaseConnection):
 
         printHeader = True
 
-        for row in cast(
-            Iterable[Row], self.execute(sql, cast(Any, parameters))
-        ):
+        for row in cast(Iterable[Row], self.execute(sql, cast(Any, parameters))):
             if printHeader:
                 emit(row.keys())
                 printHeader = False

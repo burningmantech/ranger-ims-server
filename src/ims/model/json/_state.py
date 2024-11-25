@@ -52,14 +52,10 @@ def serializeIncidentState(incidentState: IncidentState) -> str:
 registerSerializer(IncidentState, serializeIncidentState)
 
 
-def deserializeIncidentState(
-    obj: str, cl: type[IncidentState]
-) -> IncidentState:
+def deserializeIncidentState(obj: str, cl: type[IncidentState]) -> IncidentState:
     assert cl is IncidentState, (cl, obj)
 
-    return cast(
-        IncidentState, getattr(IncidentState, IncidentStateJSONValue(obj).name)
-    )
+    return cast(IncidentState, getattr(IncidentState, IncidentStateJSONValue(obj).name))
 
 
 registerDeserializer(IncidentState, deserializeIncidentState)

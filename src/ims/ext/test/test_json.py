@@ -77,9 +77,7 @@ class JSONEncodingTests(TestCase):
         """
         obj = dict(x="Hello", y=["one", "two", "three"])
 
-        self.assertEqual(
-            objectFromJSONText(jsonTextFromObject(obj, pretty=False)), obj
-        )
+        self.assertEqual(objectFromJSONText(jsonTextFromObject(obj, pretty=False)), obj)
 
     def test_jsonTextFromObject_pretty(self) -> None:
         """
@@ -153,9 +151,7 @@ class JSONDecodingTests(TestCase):
                         "three"
                       ]
                     }
-                    """.encode(
-                        "ascii"
-                    )
+                    """.encode("ascii")
                 )
             ),
             dict(x="Hello", y=["one", "two", "three"]),

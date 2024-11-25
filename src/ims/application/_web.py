@@ -115,9 +115,7 @@ class WebApplication:
         return AdminRootPage(config=self.config)
 
     @router.route(_unprefix(URLs.adminEvents), methods=("HEAD", "GET"))
-    async def adminEventsPage(
-        self, request: IRequest
-    ) -> KleinSynchronousRenderable:
+    async def adminEventsPage(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Endpoint for access control page.
         """
@@ -145,9 +143,7 @@ class WebApplication:
         return AdminIncidentTypesPage(config=self.config)
 
     @router.route(_unprefix(URLs.adminStreets), methods=("HEAD", "GET"))
-    async def adminStreetsPage(
-        self, request: IRequest
-    ) -> KleinSynchronousRenderable:
+    async def adminStreetsPage(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Endpoint for streets admin page.
         """
@@ -175,9 +171,7 @@ class WebApplication:
         event = Event(id=event_id)
         return IncidentsPage(config=self.config, event=event)
 
-    @router.route(
-        _unprefix(URLs.viewIncidentsTemplate), methods=("HEAD", "GET")
-    )
+    @router.route(_unprefix(URLs.viewIncidentsTemplate), methods=("HEAD", "GET"))
     @static
     def viewIncidentsTemplatePage(self, request: IRequest) -> KleinRenderable:
         """
@@ -203,9 +197,7 @@ class WebApplication:
             except ValueError:
                 return notFoundResponse(request)
 
-        await self.config.authProvider.authorizeRequest(
-            request, event_id, authz
-        )
+        await self.config.authProvider.authorizeRequest(request, event_id, authz)
 
         event = Event(id=event_id)
         return IncidentPage(config=self.config, event=event, number=numberValue)
@@ -236,21 +228,15 @@ class WebApplication:
         event = Event(id=event_id)
         return IncidentReportsPage(config=self.config, event=event)
 
-    @router.route(
-        _unprefix(URLs.viewIncidentReportsTemplate), methods=("HEAD", "GET")
-    )
+    @router.route(_unprefix(URLs.viewIncidentReportsTemplate), methods=("HEAD", "GET"))
     @static
-    def viewIncidentReportsTemplatePage(
-        self, request: IRequest
-    ) -> KleinRenderable:
+    def viewIncidentReportsTemplatePage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for the incident reports page template.
         """
         return IncidentReportsTemplatePage(config=self.config)
 
-    @router.route(
-        _unprefix(URLs.viewIncidentReportNumber), methods=("HEAD", "GET")
-    )
+    @router.route(_unprefix(URLs.viewIncidentReportNumber), methods=("HEAD", "GET"))
     async def viewIncidentReportPage(
         self, request: IRequest, event_id: str, number: str
     ) -> KleinSynchronousRenderable:
@@ -291,13 +277,9 @@ class WebApplication:
             config=config, event=event, number=incidentReportNumber
         )
 
-    @router.route(
-        _unprefix(URLs.viewIncidentReportTemplate), methods=("HEAD", "GET")
-    )
+    @router.route(_unprefix(URLs.viewIncidentReportTemplate), methods=("HEAD", "GET"))
     @static
-    def viewIncidentReportTemplatePage(
-        self, request: IRequest
-    ) -> KleinRenderable:
+    def viewIncidentReportTemplatePage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for the incident report page template.
         """

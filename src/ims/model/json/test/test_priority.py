@@ -49,9 +49,7 @@ class IncidentPrioritySerializationTests(TestCase):
         :func:`jsonSerialize` serializes the given incident priority as the
         expected value.
         """
-        self.assertEqual(
-            jsonSerialize(priority), jsonFromIncidentPriority(priority)
-        )
+        self.assertEqual(jsonSerialize(priority), jsonFromIncidentPriority(priority))
 
 
 class IncidentPriorityDeserializationTests(TestCase):
@@ -66,8 +64,6 @@ class IncidentPriorityDeserializationTests(TestCase):
         given value.
         """
         self.assertIdentical(
-            jsonDeserialize(
-                jsonFromIncidentPriority(priority), IncidentPriority
-            ),
+            jsonDeserialize(jsonFromIncidentPriority(priority), IncidentPriority),
             priority,
         )

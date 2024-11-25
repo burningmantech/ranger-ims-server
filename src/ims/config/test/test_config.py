@@ -117,9 +117,7 @@ class UtilityTests(TestCase):
         describeFactory() redacts passwords from partial objects.
         """
         p = partial(self.factory, 1, password="super secret")  # nosec
-        self.assertEqual(
-            describeFactory(p), "factory(1, password='(REDACTED)')"
-        )
+        self.assertEqual(describeFactory(p), "factory(1, password='(REDACTED)')")
 
     def test_describeFactory_function(self) -> None:
         """
@@ -273,9 +271,7 @@ class ConfigFileParserTests(TestCase):
         parser = ConfigFileParser(path=configFilePath)
         with testingEnvironment({}):
             self.assertEqual(
-                parser.valueFromConfig(
-                    variable, otherSection, otherOption, default
-                ),
+                parser.valueFromConfig(variable, otherSection, otherOption, default),
                 default,
             )
 
@@ -302,9 +298,7 @@ class ConfigFileParserTests(TestCase):
         parser = ConfigFileParser(path=configFilePath)
         with testingEnvironment({}):
             self.assertEqual(
-                parser.pathFromConfig(
-                    variable, section, option, rootPath, segments
-                ),
+                parser.pathFromConfig(variable, section, option, rootPath, segments),
                 valuePath.resolve(),
             )
 
@@ -331,9 +325,7 @@ class ConfigFileParserTests(TestCase):
         parser = ConfigFileParser(path=configFilePath)
         with testingEnvironment({}):
             self.assertEqual(
-                parser.pathFromConfig(
-                    variable, section, option, rootPath, segments
-                ),
+                parser.pathFromConfig(variable, section, option, rootPath, segments),
                 valuePath,
             )
 
@@ -442,9 +434,7 @@ class ConfigFileParserTests(TestCase):
         parser = ConfigFileParser(path=configFilePath)
         with testingEnvironment({}):
             self.assertEqual(
-                parser.enumFromConfig(
-                    variable, otherSection, otherOption, default
-                ),
+                parser.enumFromConfig(variable, otherSection, otherOption, default),
                 default,
             )
 
@@ -659,9 +649,7 @@ class ConfigurationTests(TestCase):
     def test_store_sqlite(self) -> None:
         path = Path(self.mktemp()).resolve() / "ims.sqlite"
 
-        with testingEnvironment(
-            dict(IMS_DATA_STORE="SQLite", IMS_DB_PATH=str(path))
-        ):
+        with testingEnvironment(dict(IMS_DATA_STORE="SQLite", IMS_DB_PATH=str(path))):
             config = Configuration.fromConfigFile(None)
 
         self.assertIsInstance(config.store, SQLiteDataStore)

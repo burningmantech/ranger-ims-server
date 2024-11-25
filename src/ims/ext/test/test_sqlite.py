@@ -115,9 +115,7 @@ class ConnectionTests(TestCase):
                 PERSON:
                   0: ID(integer) not null *1
                   1: NAME(text) not null
-                """[
-                    1:
-                ]
+                """[1:]
             ).lower(),
         )
 
@@ -197,9 +195,7 @@ class DebugToolsTests(TestCase):
             name="foo",
             query="select * from FOO",
             lines=(
-                QueryPlanExplanation.Line(
-                    nestingOrder=0, selectFrom=0, details="X"
-                ),
+                QueryPlanExplanation.Line(nestingOrder=0, selectFrom=0, details="X"),
             ),
         )
         self.assertEqual(
@@ -223,7 +219,7 @@ class DebugToolsTests(TestCase):
         )
         self.assertEqual(
             str(explanation),
-            ("foo:\n\n" "  -- query --\n\n" "    select * from FOO"),
+            ("foo:\n\n  -- query --\n\n    select * from FOO"),
         )
 
     def test_explainQueryPlans_error(self) -> None:

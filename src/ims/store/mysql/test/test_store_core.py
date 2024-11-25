@@ -100,9 +100,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                 self._log.info("Creating database: {name}", name=databaseName)
                 await service.createDatabase(name=databaseName)
             except DatabaseExistsError:
-                self._log.warn(
-                    "Database {name} already exists.", name=databaseName
-                )
+                self._log.warn("Database {name} already exists.", name=databaseName)
             else:
                 break
         else:
@@ -205,9 +203,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   6: STRICKEN(tinyint) not null
                 SCHEMA_INFO:
                   1: VERSION(smallint) not null
-                """[
-                    1:
-                ]
+                """[1:]
             ),
             schemaInfo,
         )
@@ -260,9 +256,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         await store.upgradeSchema()
         latestSchemaInfo = await getSchemaInfo(store)
 
-        for fromVersion in range(
-            TestDataStore.firstSchemaVersion, latestVersion
-        ):
+        for fromVersion in range(TestDataStore.firstSchemaVersion, latestVersion):
             store = await self.store()
 
             # Confirm we're starting with a blank database
@@ -343,9 +337,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         try:
             await store.upgradeSchema()
         except StorageError as e:
-            self.assertEqual(
-                str(e), f"No upgrade path from schema version {version}"
-            )
+            self.assertEqual(str(e), f"No upgrade path from schema version {version}")
         else:
             self.fail("StorageError not raised.")
 

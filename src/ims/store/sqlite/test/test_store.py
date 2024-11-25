@@ -67,9 +67,7 @@ class DataStoreIncidentTests(DataStoreTests, SuperDataStoreIncidentTests):
     """
 
 
-class DataStoreIncidentReportTests(
-    DataStoreTests, SuperDataStoreIncidentReportTests
-):
+class DataStoreIncidentReportTests(DataStoreTests, SuperDataStoreIncidentReportTests):
     """
     Tests for :class:`DataStore` incident report access.
     """
@@ -83,9 +81,7 @@ class DataStoreConcentricStreetTests(
     """
 
 
-class DataStoreIncidentTypeTests(
-    DataStoreTests, SuperDataStoreIncidentTypeTests
-):
+class DataStoreIncidentTypeTests(DataStoreTests, SuperDataStoreIncidentTypeTests):
     """
     Tests for :class:`DataStore` incident type access.
     """

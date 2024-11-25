@@ -55,9 +55,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         store = cast(DatabaseStore, self)
 
         try:
-            await store.runOperation(
-                store.query.createEvent, dict(eventID=event.id)
-            )
+            await store.runOperation(store.query.createEvent, dict(eventID=event.id))
         except StorageError as e:
             self._log.critical(
                 "Unable to store event {event}: {error}", event=event, error=e
@@ -192,9 +190,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
             dict(
                 eventID=incidentReport.eventID,
                 incidentReportNumber=incidentReport.number,
-                incidentReportCreated=store.asDateTimeValue(
-                    incidentReport.created
-                ),
+                incidentReportCreated=store.asDateTimeValue(incidentReport.created),
                 incidentReportSummary=incidentReport.summary,
                 incidentNumber=incidentReport.incidentNumber,
             ),

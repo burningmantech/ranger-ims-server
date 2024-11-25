@@ -75,11 +75,7 @@ class Authorization(Flag):
     writeIncidentReports = auto()
 
     all = (
-        imsAdmin
-        | readPersonnel
-        | readIncidents
-        | writeIncidents
-        | writeIncidentReports
+        imsAdmin | readPersonnel | readIncidents | writeIncidents | writeIncidentReports
     )
 
 
@@ -167,9 +163,7 @@ class JSONWebTokenClaims:
         if self.exp < now:
             raise InvalidCredentialsError("JWT token is expired")
 
-    def validate(
-        self, *, issuer: str | None = None, now: float | None = None
-    ) -> None:
+    def validate(self, *, issuer: str | None = None, now: float | None = None) -> None:
         """
         Validate claim.
 
@@ -280,9 +274,7 @@ class AuthProvider:
         """
         return dict(token=self._tokenForUser(user, duration).asText())
 
-    def _userFromBearerAuthorization(
-        self, authorization: str | None
-    ) -> IMSUser | None:
+    def _userFromBearerAuthorization(self, authorization: str | None) -> IMSUser | None:
         """
         Given an Authorization header value with a bearer token, create an
         IMSUser.
@@ -300,25 +292,19 @@ class AuthProvider:
         try:
             jwt = JSONWebToken.fromText(tokenText, key=self._jsonWebKey)
         except InvalidJWSSignature as e:
-            self._log.info(
-                "Invalid JWT signature in authorization header", error=e
-            )
+            self._log.info("Invalid JWT signature in authorization header", error=e)
             raise
 
         claims = jwt.claims
         claims.validate(issuer=self._jwtIssuer)
 
-        self._log.debug(
-            "Valid JWT token for subject {subject}", subject=claims.sub
-        )
+        self._log.debug("Valid JWT token for subject {subject}", subject=claims.sub)
 
         return DirectoryUser(
             uid=IMSUserID(claims.sub),
             shortNames=(claims.preferred_username,),
             active=claims.ranger_on_site,
-            groups=tuple(
-                IMSGroupID(gid) for gid in claims.ranger_positions.split(",")
-            ),
+            groups=tuple(IMSGroupID(gid) for gid in claims.ranger_positions.split(",")),
         )
 
     def checkAuthentication(self, request: IRequest) -> None:
@@ -402,18 +388,14 @@ class AuthProvider:
                     authorizations |= Authorization.imsAdmin
 
         if eventID is not None:
-            if self._matchACL(
-                user, frozenset(await self.store.writers(eventID))
-            ):
+            if self._matchACL(user, frozenset(await self.store.writers(eventID))):
                 authorizations |= Authorization.writeIncidents
                 authorizations |= Authorization.readIncidents
                 authorizations |= Authorization.writeIncidentReports
                 authorizations |= Authorization.readPersonnel
 
             else:
-                if self._matchACL(
-                    user, frozenset(await self.store.readers(eventID))
-                ):
+                if self._matchACL(user, frozenset(await self.store.readers(eventID))):
                     authorizations |= Authorization.readIncidents
                     authorizations |= Authorization.readPersonnel
 
@@ -445,7 +427,8 @@ class AuthProvider:
         self.authenticateRequest(request)
 
         userAuthorizations = await self.authorizationsForUser(
-            request.user, eventID  # type: ignore[attr-defined]
+            request.user,
+            eventID,  # type: ignore[attr-defined]
         )
         request.authorizations = (  # type: ignore[attr-defined]
             userAuthorizations

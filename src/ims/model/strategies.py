@@ -145,9 +145,7 @@ def dateTimes(
 
 
 @composite
-def textOnlyAddresses(
-    draw: Callable[..., Any]
-) -> SearchStrategy:  # TextOnlyAddress
+def textOnlyAddresses(draw: Callable[..., Any]) -> SearchStrategy:  # TextOnlyAddress
     """
     Strategy that generates :class:`TextOnlyAddress` values.
     """
@@ -267,9 +265,7 @@ def eventAccesses(draw: Callable[..., Any]) -> EventAccess:
         a for a in draw(lists(accessTexts())) if a not in readers
     )
     reporters: frozenset[str] = frozenset(
-        a
-        for a in draw(lists(accessTexts()))
-        if a not in readers and a not in writers
+        a for a in draw(lists(accessTexts())) if a not in readers and a not in writers
     )
     return EventAccess(readers=readers, writers=writers, reporters=reporters)
 
@@ -295,9 +291,7 @@ def eventDatas(draw: Callable[..., Any]) -> EventData:
             and address.concentric is not None
             and address.concentric not in concentricStreets
         ):
-            concentricStreets[address.concentric] = draw(
-                concentricStreetNames()
-            )
+            concentricStreets[address.concentric] = draw(concentricStreetNames())
 
     return EventData(
         event=event,
@@ -315,15 +309,11 @@ def imsDatas(draw: Callable[..., Any]) -> IMSData:
     """
     Strategy that generates :class:`IMSData` values.
     """
-    events: list[EventData] = draw(
-        lists(eventDatas(), unique_by=lambda d: d.event.id)
-    )
+    events: list[EventData] = draw(lists(eventDatas(), unique_by=lambda d: d.event.id))
 
     types: dict[str, IncidentType] = {
         incidentType.name: incidentType
-        for incidentType in draw(
-            lists(incidentTypes(), unique_by=lambda t: t.name)
-        )
+        for incidentType in draw(lists(incidentTypes(), unique_by=lambda t: t.name))
     }
 
     # Add all incident types referred to by incidents so the data is valid
@@ -399,9 +389,7 @@ def incidents(
         incidentTypes=types,
         reportEntries=draw(
             lists(
-                reportEntries(
-                    automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
-                )
+                reportEntries(automatic=automatic, beforeNow=beforeNow, fromNow=fromNow)
             )
         ),
         incidentReportNumbers=frozenset(),
@@ -561,9 +549,7 @@ def incidentReports(
         incidentNumber=None,  # FIXME: May allow some to be passed in?
         reportEntries=draw(
             lists(
-                reportEntries(
-                    automatic=automatic, beforeNow=beforeNow, fromNow=fromNow
-                )
+                reportEntries(automatic=automatic, beforeNow=beforeNow, fromNow=fromNow)
             )
         ),
     )

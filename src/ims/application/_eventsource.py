@@ -82,9 +82,7 @@ class DataStoreEventSourceLogObserver:
     _start: float = field(init=False, factory=time)
     _counter: list[int] = field(init=False, factory=lambda: [0])
 
-    def addListener(
-        self, listener: IRequest, lastEventID: str | None = None
-    ) -> None:
+    def addListener(self, listener: IRequest, lastEventID: str | None = None) -> None:
         """
         Add a listener.
         """
@@ -124,8 +122,7 @@ class DataStoreEventSourceLogObserver:
 
             if incidentNumber is None:
                 self._log.critical(
-                    "Unable to determine incident number from store event: "
-                    "{event}",
+                    "Unable to determine incident number from store event: {event}",
                     event=loggerEvent,
                 )
                 return None
@@ -134,8 +131,7 @@ class DataStoreEventSourceLogObserver:
 
         else:
             self._log.critical(
-                "Unknown data store event class {eventClass} "
-                "sent event: {event}",
+                "Unknown data store event class {eventClass} sent event: {event}",
                 eventClass=eventClass,
                 event=loggerEvent,
             )
@@ -172,8 +168,7 @@ class DataStoreEventSourceLogObserver:
                 listener.write(eventText)
             except Exception as e:
                 self._log.error(
-                    "Unable to publish to EventSource listener {listener}: "
-                    "{error}",
+                    "Unable to publish to EventSource listener {listener}: {error}",
                     listener=listener,
                     error=e,
                 )

@@ -69,9 +69,7 @@ class JSONExporter:
         Export data store as JSON.
         """
         self._log.info("Exporting data store as JSON objects...")
-        return cast(
-            Mapping[str, Any], jsonObjectFromModelObject(await self.imsData())
-        )
+        return cast(Mapping[str, Any], jsonObjectFromModelObject(await self.imsData()))
 
     async def imsData(self) -> IMSData:
         """
@@ -80,8 +78,7 @@ class JSONExporter:
         return IMSData(
             incidentTypes=(await self._incidentTypes()),
             events=[
-                await self._eventData(event)
-                for event in await self.store.events()
+                await self._eventData(event) for event in await self.store.events()
             ],
         )
 
@@ -90,9 +87,7 @@ class JSONExporter:
         Export incident types.
         """
         allTypes = frozenset(await self.store.incidentTypes(includeHidden=True))
-        visibleTypes = frozenset(
-            await self.store.incidentTypes(includeHidden=False)
-        )
+        visibleTypes = frozenset(await self.store.incidentTypes(includeHidden=False))
 
         return (
             IncidentType(name=name, hidden=(name not in visibleTypes))
@@ -151,9 +146,7 @@ class JSONImporter:
         return cls.fromJSON(store, objectFromJSONText(jsonText))
 
     @classmethod
-    def fromJSON(
-        cls, store: IMSDataStore, json: Mapping[str, Any]
-    ) -> "JSONImporter":
+    def fromJSON(cls, store: IMSDataStore, json: Mapping[str, Any]) -> "JSONImporter":
         """
         Import JSON.
         """
@@ -166,9 +159,7 @@ class JSONImporter:
 
         assert store is not None
 
-        existingIncidentTypes = frozenset(
-            await store.incidentTypes(includeHidden=True)
-        )
+        existingIncidentTypes = frozenset(await store.incidentTypes(includeHidden=True))
 
         for incidentType in self.imsData.incidentTypes:
             if incidentType.name in existingIncidentTypes:
@@ -177,9 +168,7 @@ class JSONImporter:
                     incidentType=incidentType,
                 )
             else:
-                await store.createIncidentType(
-                    incidentType.name, incidentType.hidden
-                )
+                await store.createIncidentType(incidentType.name, incidentType.hidden)
 
     async def _storeEventAccess(self, eventData: EventData) -> None:
         store = self.store
@@ -198,22 +187,17 @@ class JSONImporter:
 
         assert store is not None
 
-        existingStreetIDs = frozenset(
-            (await store.concentricStreets(event.id)).keys()
-        )
+        existingStreetIDs = frozenset((await store.concentricStreets(event.id)).keys())
 
         for streetID, streetName in eventData.concentricStreets.items():
             if streetID in existingStreetIDs:
                 self._log.info(
-                    "Not importing existing street {streetID} "
-                    "into event {event}",
+                    "Not importing existing street {streetID} into event {event}",
                     event=eventData.event,
                     streetID=streetID,
                 )
             else:
-                await store.createConcentricStreet(
-                    event.id, streetID, streetName
-                )
+                await store.createConcentricStreet(event.id, streetID, streetName)
 
     async def _storeIncidents(self, eventData: EventData) -> None:
         store = self.store
@@ -228,8 +212,7 @@ class JSONImporter:
         for incident in eventData.incidents:
             if incident.number in existingIncidentNumbers:
                 self._log.info(
-                    "Not importing existing incident #{number} "
-                    "into event {event}",
+                    "Not importing existing incident #{number} into event {event}",
                     event=eventData.event,
                     number=incident.number,
                 )
@@ -243,9 +226,7 @@ class JSONImporter:
 
         existingIncidentReportNumbers = frozenset(
             incidentReport.number
-            for incidentReport in await store.incidentReports(
-                eventData.event.id, False
-            )
+            for incidentReport in await store.incidentReports(eventData.event.id, False)
         )
 
         for incidentReport in eventData.incidentReports:

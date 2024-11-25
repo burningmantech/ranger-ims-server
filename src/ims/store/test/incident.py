@@ -239,9 +239,7 @@ class DataStoreIncidentTests(DataStoreTests):
         await store.createEvent(anEvent)
 
         try:
-            await store.incidentWithNumber(
-                anEvent.id, store.maxIncidentNumber + 1
-            )
+            await store.incidentWithNumber(anEvent.id, store.maxIncidentNumber + 1)
         except NoSuchIncidentError:
             pass
         else:
@@ -312,9 +310,7 @@ class DataStoreIncidentTests(DataStoreTests):
                         )
                         createdConcentricStreets[event].add(concentric)
 
-                retrieved = await store.createIncident(
-                    incident=incident, author=author
-                )
+                retrieved = await store.createIncident(incident=incident, author=author)
 
                 # The returned incident should be the same, except for modified
                 # number
@@ -415,16 +411,12 @@ class DataStoreIncidentTests(DataStoreTests):
 
         # For incident types, we need to make sure they exist first.
         if attributeName == "incidentTypes":
-            for incidentType in frozenset(value) - frozenset(
-                incident.incidentTypes
-            ):
+            for incidentType in frozenset(value) - frozenset(incident.incidentTypes):
                 await store.createIncidentType(incidentType)
 
         await setter(incident.eventID, incident.number, value, "Hubcap")
 
-        retrieved = await store.incidentWithNumber(
-            incident.eventID, incident.number
-        )
+        retrieved = await store.incidentWithNumber(incident.eventID, incident.number)
 
         # Normalize location if we're updating the address.
         # Don't normalize before calling the setter; we want to test that
@@ -444,9 +436,7 @@ class DataStoreIncidentTests(DataStoreTests):
             values[-1] = values[-1].replace(**{a: v})
         incident = values[0]
 
-        self.assertIncidentsEqual(
-            store, retrieved, incident, ignoreAutomatic=True
-        )
+        self.assertIncidentsEqual(store, retrieved, incident, ignoreAutomatic=True)
 
     @asyncAsDeferred
     async def test_setIncident_priority(self) -> None:
@@ -700,9 +690,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
                 # New entries should be the same as the ones we added
                 self.assertTrue(
-                    store.reportEntriesEqual(
-                        updatedNewEntries, sorted(reportEntries)
-                    ),
+                    store.reportEntriesEqual(updatedNewEntries, sorted(reportEntries)),
                     f"{updatedNewEntries} != {reportEntries}",
                 )
 
@@ -796,9 +784,7 @@ class DataStoreIncidentTests(DataStoreTests):
                     else:
                         messages.append(f"{name} delta: {valueA - valueB}")
                 elif name == "reportEntries":
-                    if store.reportEntriesEqual(
-                        valueA, valueB, ignoreAutomatic
-                    ):
+                    if store.reportEntriesEqual(valueA, valueB, ignoreAutomatic):
                         continue
 
                 if valueA != valueB:

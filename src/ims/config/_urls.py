@@ -55,9 +55,7 @@ class URLs:
     incidents: ClassVar[URL] = event.child("incidents").child("")
     incidentNumber: ClassVar[URL] = incidents.child("<incident_number>")
     incidentReports: ClassVar[URL] = event.child("incident_reports").child("")
-    incidentReport: ClassVar[URL] = incidentReports.child(
-        "<incident_report_number>"
-    )
+    incidentReport: ClassVar[URL] = incidentReports.child("<incident_report_number>")
 
     eventSource: ClassVar[URL] = api.child("eventsource")
 
@@ -81,9 +79,7 @@ class URLs:
     jqueryMap: ClassVar[URL] = jqueryBase.child("jquery.min.map")
 
     bootstrapBase: ClassVar[URL] = external.child("bootstrap").child("")
-    bootstrapCSS: ClassVar[URL] = bootstrapBase.child(
-        "css", "bootstrap.min.css"
-    )
+    bootstrapCSS: ClassVar[URL] = bootstrapBase.child("css", "bootstrap.min.css")
     bootstrapJS: ClassVar[URL] = bootstrapBase.child("js", "bootstrap.min.js")
 
     dataTablesBase: ClassVar[URL] = external.child("datatables").child("")
@@ -129,22 +125,12 @@ class URLs:
     viewIncidentTemplate: ClassVar[URL] = app.child("incident.html")
     viewIncidentJS: ClassVar[URL] = static.child("incident.js")
 
-    viewIncidentReports: ClassVar[URL] = viewEvent.child("field_reports").child(
-        ""
-    )
-    viewIncidentReportsTemplate: ClassVar[URL] = app.child(
-        "incident_reports.html"
-    )
+    viewIncidentReports: ClassVar[URL] = viewEvent.child("field_reports").child("")
+    viewIncidentReportsTemplate: ClassVar[URL] = app.child("incident_reports.html")
     viewIncidentReportsJS: ClassVar[URL] = static.child("incident_reports.js")
-    viewIncidentReportsRelative: ClassVar[URL] = URL.fromText(
-        "field_reports"
-    ).child("")
+    viewIncidentReportsRelative: ClassVar[URL] = URL.fromText("field_reports").child("")
 
     viewIncidentReportNew: ClassVar[URL] = viewIncidentReports.child("new")
-    viewIncidentReportNumber: ClassVar[URL] = viewIncidentReports.child(
-        "<number>"
-    )
-    viewIncidentReportTemplate: ClassVar[URL] = app.child(
-        "incident_report.html"
-    )
+    viewIncidentReportNumber: ClassVar[URL] = viewIncidentReports.child("<number>")
+    viewIncidentReportTemplate: ClassVar[URL] = app.child("incident_report.html")
     viewIncidentReportJS: ClassVar[URL] = static.child("incident_report.js")

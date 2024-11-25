@@ -55,9 +55,7 @@ class AssertionTests(TestCase):
         request = MockRequest(b"/")
         request.code = 500
 
-        self.assertRaises(
-            self.failureException, self.assertResponseCode, request, 201
-        )
+        self.assertRaises(self.failureException, self.assertResponseCode, request, 201)
 
     def test_assertResponseContentType_match(self) -> None:
         """
