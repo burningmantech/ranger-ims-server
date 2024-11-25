@@ -82,6 +82,11 @@ build-backend = "setuptools.build_meta"
 
 select = ["ALL"]
 ignore = [
+    "A001",     # Variable `min` is shadowing a Python builtin
+    "A002",     # Function argument is shadowing a Python builtin
+    "A004",     # Import is shadowing a Python builtin
+    "ANN401",   # Dynamically typed expressions (typing.Any) are disallowed
+    "ARG002",   # Unused method argument
     "B008",     # Do not perform function call in argument defaults
     "COM812",   # Trailing comma missing
     "D105",     # Missing docstring in magic method
@@ -106,20 +111,6 @@ ignore = [
     "TID252",   # Prefer absolute imports over relative imports from parent modules
 
     # TODO
-    "A001",     # Variable `min` is shadowing a Python builtin
-    "A002",     # Function argument is shadowing a Python builtin
-    "A004",     # Import is shadowing a Python builtin
-    "ANN001",   # Missing type annotation for function argument
-    "ANN002",   # Missing type annotation for `*args`
-    "ANN003",   # Missing type annotation for `**kwargs`
-    "ANN202",   # Missing return type annotation for private function
-    "ANN204",   # Missing return type annotation for special method
-    "ANN401",   # Dynamically typed expressions (typing.Any) are disallowed
-    "ARG001",   # Unused function argument
-    "ARG002",   # Unused method argument
-    "ARG003",   # Unused class method argument
-    "ARG004",   # Unused static method argument
-    "ARG005",   # Unused lambda argument
     "B024",     # `Address` is an abstract base class, but it has no abstract methods or properties
     "BLE001",   # Do not catch blind exception
     "C408",     # Unnecessary `dict` call (rewrite as a literal)

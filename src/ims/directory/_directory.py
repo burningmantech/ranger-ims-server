@@ -68,7 +68,7 @@ class DirectoryUser(IMSUser):
     active: bool
     groups: Sequence[IMSGroupID]
     hashedPassword: str | None = field(
-        default=None, repr=lambda p: "\N{ZIPPER-MOUTH FACE}"
+        default=None, repr=lambda _p: "\N{ZIPPER-MOUTH FACE}"
     )
 
 

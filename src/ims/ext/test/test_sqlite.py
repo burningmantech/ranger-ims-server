@@ -33,7 +33,7 @@ class ConnectionTests(TestCase):
     """
 
     def patchConnectionCallable(self, name: str) -> None:
-        def _connect(database: Any, *args: Any, **kwargs: Any) -> Connection:
+        def _connect(database: Any, *args: Any, **kwargs: Any) -> Connection:  # noqa: ARG001
             self.connections.append(database)
             return Connection(":memory:")
 

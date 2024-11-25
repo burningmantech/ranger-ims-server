@@ -92,6 +92,9 @@ class Names(Enum):
 
     @staticmethod
     def _generate_next_value_(
-        name: str, start: int, count: int, last_values: list[object]
+        name: str,
+        start: int,  # noqa: ARG004
+        count: int,  # noqa: ARG004
+        last_values: list[object],  # noqa: ARG004
     ) -> str:
         return name

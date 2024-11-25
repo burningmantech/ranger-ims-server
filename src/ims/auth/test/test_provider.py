@@ -65,7 +65,7 @@ from .._provider import (
 __all__ = ()
 
 
-def oops(*args: Any, **kwargs: Any) -> None:
+def oops(*args: Any, **kwargs: Any) -> None:  # noqa: ARG001
     raise AssertionError()
 
 

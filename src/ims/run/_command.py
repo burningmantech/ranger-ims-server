@@ -89,7 +89,7 @@ class Command:
         await store.validate()
 
     @classmethod
-    def runServer(cls, config: Configuration, options: ServerOptions) -> None:
+    def runServer(cls, config: Configuration, options: ServerOptions) -> None:  # noqa: ARG003
         host = config.hostName
         port = config.port
 
@@ -234,7 +234,9 @@ class Command:
 
     @classmethod
     def runHashPassword(
-        cls, config: Configuration, options: HashPasswordOptions
+        cls,
+        config: Configuration,  # noqa: ARG003
+        options: HashPasswordOptions,  # noqa: ARG003
     ) -> None:
         password = options["password"]
         hashedPassword = hashPassword(password)
@@ -243,7 +245,9 @@ class Command:
 
     @classmethod
     def runVerifyPassword(
-        cls, config: Configuration, options: VerifyPasswordOptions
+        cls,
+        config: Configuration,  # noqa: ARG003
+        options: VerifyPasswordOptions,  # noqa: ARG003
     ) -> None:
         password = options["password"]
         hashedPassword = options["hashedPassword"]

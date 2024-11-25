@@ -213,7 +213,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         """
         message = "Nyargh"
 
-        def oops(path: Path, schema: str | None = None) -> Connection:
+        def oops(path: Path, schema: str | None = None) -> Connection:  # noqa: ARG001
             raise SQLiteError(message)
 
         self.patch(_store, "createDB", oops)
@@ -343,7 +343,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         message = "FE06D0BE-A491-4B5D-ABAF-444E49220178"
 
-        def errorValidate(self: "DataStoreCoreTests") -> None:
+        def errorValidate(self: "DataStoreCoreTests") -> None:  # noqa: ARG001
             raise StorageError(message)
 
         with patch("ims.store._db.DatabaseStore.validate", errorValidate):
@@ -358,7 +358,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         store = TestDataStore(dbPath=Path(self.mktemp()))
         self.successResultOf(store.upgradeSchema())
 
-        def errorValidate(self: "DataStoreCoreTests") -> None:
+        def errorValidate(self: "DataStoreCoreTests") -> None:  # noqa: ARG001
             raise IntegrityError("680304E2-C77C-478D-8BA0-F0AD0A15509D")
 
         self.successResultOf(store.validate())

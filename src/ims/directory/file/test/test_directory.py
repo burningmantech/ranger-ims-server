@@ -158,7 +158,7 @@ class UtilityTests(TestCase):
         self.assertEqual(str(e), "Ranger must be mapping: None")
 
     def test_rangersFromMappings_error(self) -> None:
-        def poof(mapping: Mapping[str, Any]) -> Ranger:
+        def poof(mapping: Mapping[str, Any]) -> Ranger:  # noqa: ARG001
             raise RuntimeError("poof")
 
         with patch("ims.directory.file._directory.rangerFromMapping", poof):
@@ -309,7 +309,7 @@ class UtilityTests(TestCase):
         self.assertEqual(str(e), "Position must be mapping: None")
 
     def test_positionsFromMappings_error(self) -> None:
-        def poof(mapping: Mapping[str, Any]) -> Position:
+        def poof(mapping: Mapping[str, Any]) -> Position:  # noqa: ARG001
             raise RuntimeError("poof")
 
         with patch("ims.directory.file._directory.positionFromMapping", poof):

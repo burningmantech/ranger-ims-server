@@ -1,4 +1,5 @@
 # type: ignore
+# ruff: noqa: ANN001, ANN002, ANN003, ANN202, ANN204
 
 ##
 # See the file COPYRIGHT for copyright information.
@@ -394,7 +395,7 @@ class HTTPClientFactory(protocol.ClientFactory):
         the result is only available after the associated connection has been
         closed.
         """
-        self._disconnectedDeferred.addCallback(lambda ignored: passthrough)
+        self._disconnectedDeferred.addCallback(lambda _: passthrough)
         return self._disconnectedDeferred
 
     def __repr__(self) -> str:

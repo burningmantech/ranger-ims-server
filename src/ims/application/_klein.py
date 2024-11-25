@@ -362,7 +362,9 @@ class Router(Klein):
         @self.handle_errors(RequestRedirect)
         @renderResponse
         def requestRedirectError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,  # noqa: ARG001
+            request: IRequest,
+            failure: Failure,
         ) -> KleinRenderable:
             """
             Redirect.
@@ -375,7 +377,9 @@ class Router(Klein):
         @self.handle_errors(NotFound)
         @renderResponse
         def notFoundError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,
+            request: IRequest,
+            failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             Not found.
@@ -389,7 +393,9 @@ class Router(Klein):
         @self.handle_errors(MethodNotAllowed)
         @renderResponse
         def methodNotAllowedError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,
+            request: IRequest,
+            failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             HTTP method not allowed.
@@ -403,7 +409,9 @@ class Router(Klein):
         @self.handle_errors(NotAuthorizedError)
         @renderResponse
         def notAuthorizedError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,  # noqa: ARG001
+            request: IRequest,
+            failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             Not authorized.
@@ -413,7 +421,9 @@ class Router(Klein):
         @self.handle_errors(InvalidCredentialsError)
         @renderResponse
         def invalidCredentialsError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,  # noqa: ARG001
+            request: IRequest,
+            failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             Invalid credentials.
@@ -423,7 +433,9 @@ class Router(Klein):
         @self.handle_errors(NotAuthenticatedError)
         @renderResponse
         def notAuthenticatedError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,  # noqa: ARG001
+            request: IRequest,
+            failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             Not authenticated.
@@ -442,7 +454,9 @@ class Router(Klein):
         @self.handle_errors(DirectoryError)
         @renderResponse
         def directoryError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,  # noqa: ARG001
+            request: IRequest,
+            failure: Failure,
         ) -> KleinRenderable:
             """
             Directory service error.
@@ -453,7 +467,9 @@ class Router(Klein):
         @self.handle_errors
         @renderResponse
         def unknownError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,  # noqa: ARG001
+            request: IRequest,
+            failure: Failure,
         ) -> KleinRenderable:
             """
             Deal with a request error caught by Klein.
