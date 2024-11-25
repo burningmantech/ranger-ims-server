@@ -297,7 +297,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute(
                 "update SCHEMA_INFO set VERSION = :version",
-                dict(version=version),
+                {"version": version},
             )
 
         store = TestDataStore(dbPath=dbPath)
@@ -321,7 +321,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute(
                 "update SCHEMA_INFO set VERSION = :version",
-                dict(version=version),
+                {"version": version},
             )
 
         store = TestDataStore(dbPath=dbPath)

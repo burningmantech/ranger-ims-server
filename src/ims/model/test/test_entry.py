@@ -93,7 +93,7 @@ class ReportEntryTests(TestCase):
 
         self.assertEqual(
             [r.automatic for r in sorted((a, b))],
-            list(reversed(sorted((autoA, autoB)))),
+            sorted((autoA, autoB), reverse=True),
             (a, b),
         )
 

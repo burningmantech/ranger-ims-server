@@ -148,7 +148,7 @@ class Connection(BaseConnection):
         ):
             row = self.execute(
                 f"select * from {referent} where ROWID=:rowid",
-                dict(rowid=rowid),
+                {"rowid": rowid},
             ).fetchone()
             self._log.critical(
                 "Foreign key constraint {constraint} violated by "

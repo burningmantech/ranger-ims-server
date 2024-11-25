@@ -331,7 +331,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         # Override schema version
         await store._db.runOperation(
             "update SCHEMA_INFO set VERSION = %(version)s",
-            dict(version=version),
+            {"version": version},
         )
 
         try:
@@ -357,7 +357,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         # Override schema version
         await store._db.runOperation(
             "update SCHEMA_INFO set VERSION = %(version)s",
-            dict(version=version),
+            {"version": version},
         )
 
         try:

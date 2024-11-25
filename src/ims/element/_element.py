@@ -80,7 +80,7 @@ class Element(BaseElement):
             except IndexError:
                 username = "* NO USER NAME *"
 
-        slots = dict(user=username)
+        slots = {"user": username}
 
         tag.fillSlots(**slots)
 
@@ -210,7 +210,7 @@ class Element(BaseElement):
         if reverse_order:
 
             def order(i: Iterable[str]) -> Iterable[str]:
-                return reversed(sorted(i))
+                return sorted(i, reverse=True)
 
         else:
 

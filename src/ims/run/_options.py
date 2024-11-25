@@ -290,7 +290,7 @@ class IMSOptions(Options):
 
             options["configuration"] = configuration
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             exit(ExitStatus.EX_CONFIG, str(e))
 
     def initLogFile(self) -> None:

@@ -200,11 +200,11 @@ class MySQLService(ABC):
                 cursor.execute(
                     f"grant all privileges on {name}.* "
                     f"to %(user)s@%(host)s identified by %(password)s",
-                    dict(
-                        user=self.user,
-                        host=self.clientHost,
-                        password=self.password,
-                    ),
+                    {
+                        "user": self.user,
+                        "host": self.clientHost,
+                        "password": self.password,
+                    },
                 )
 
             connection.commit()
@@ -278,14 +278,14 @@ class DockerizedMySQLService(MySQLService):
 
     @property
     def _containerEnvironment(self) -> Mapping[str, str]:
-        return dict(
+        return {
             # Set root password so that we can connect as root from the Docker
             # host for debugging
-            MARIADB_ROOT_PASSWORD=self.rootPassword,
-            MARIADB_ROOT_HOST=self._dockerHost,
-            MARIADB_USER=self.user,
-            MARIADB_PASSWORD=self.password,
-        )
+            "MARIADB_ROOT_PASSWORD": self.rootPassword,
+            "MARIADB_ROOT_HOST": self._dockerHost,
+            "MARIADB_USER": self.user,
+            "MARIADB_PASSWORD": self.password,
+        }
 
     def _waitOnContainerLog(
         self,
@@ -337,7 +337,7 @@ class DockerizedMySQLService(MySQLService):
                 cast(IReactorTime, reactor).callLater(
                     interval, waitOnDBStartup, elapsed=(elapsed + interval)
                 )
-            except Exception:
+            except Exception:  # noqa: BLE001
                 self._log.error(
                     "MySQL container {name} failed to start: {logs}",
                     name=containerName,

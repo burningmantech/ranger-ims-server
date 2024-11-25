@@ -22,6 +22,7 @@ from collections.abc import Callable, Hashable
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
+from datetime import UTC
 from typing import Any, cast
 
 from hypothesis.strategies import SearchStrategy, booleans, composite
@@ -127,14 +128,14 @@ def dateTimes(
     fuzz = TimeDelta(days=1)
 
     if beforeNow:
-        max = DateTime.now() - fuzz
+        max = DateTime.now(tz=UTC) - fuzz
     else:
-        max = DateTime(9999, 12, 31, 23, 59, 59, 999999)
+        max = DateTime(9999, 12, 31, 23, 59, 59, 999999, tzinfo=UTC)
 
     if fromNow:
-        min = DateTime.now() + fuzz
+        min = DateTime.now(tz=UTC) + fuzz
     else:
-        min = DateTime(1970, 1, 1) + fuzz
+        min = DateTime(1970, 1, 1, tzinfo=UTC) + fuzz
 
     return _datetimes(min_value=min, max_value=max, timezones=timeZones())
 

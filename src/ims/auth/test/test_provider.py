@@ -21,6 +21,7 @@ Tests for L{ims.auth._provider}.
 from collections.abc import Callable, Sequence
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
+from datetime import UTC
 from pathlib import Path
 from string import ascii_letters, digits
 from typing import Any
@@ -195,15 +196,15 @@ class JSONWebTokenClaimsTests(TestCase):
             self.assertEqual(JSONWebTokenClaims._now(None), self.now)
 
     def token(self, **kwargs: Any) -> JSONWebTokenClaims:
-        defaults: dict[str, Any] = dict(
-            iss="my-issuer",
-            iat=self.now - 100,
-            exp=self.now + 100,
-            sub="some-uid",
-            preferred_username="some-user",
-            ranger_on_site=True,
-            ranger_positions="some-position,another-position",
-        )
+        defaults: dict[str, Any] = {
+            "iss": "my-issuer",
+            "iat": self.now - 100,
+            "exp": self.now + 100,
+            "sub": "some-uid",
+            "preferred_username": "some-user",
+            "ranger_on_site": True,
+            "ranger_positions": "some-position,another-position",
+        }
         defaults.update(kwargs)
         return JSONWebTokenClaims(**defaults)
 
@@ -436,7 +437,7 @@ class AuthProviderTests(TestCase):
             jsonWebKey=jsonWebKey,
         )
 
-        now = DateTime.now()
+        now = DateTime.now(tz=UTC)
 
         def approximateTimestamps(a: float, b: float) -> bool:
             fuzz = 1.5

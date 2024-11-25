@@ -293,7 +293,7 @@ class Command:
                     cls.runVerifyPassword(config, subOptions)
                 else:
                     raise AssertionError(f"Unknown subcommand: {subCommand}")
-            except BaseException as e:  # noqa: B036
+            except BaseException as e:  # noqa: B036, BLE001
                 cls.log.critical(
                     "Unable to run {subCommand}: ({errorClass}) {error}",
                     subCommand=subCommand,
@@ -324,7 +324,7 @@ class Command:
             logFile=options.get("logFile", stdout),
             fileLogObserverFactory=options["fileLogObserverFactory"],
             whenRunning=cls.whenRunning,  # type: ignore[arg-type]
-            whenRunningArguments=dict(options=options),
+            whenRunningArguments={"options": options},
         )
         runner.run()
 

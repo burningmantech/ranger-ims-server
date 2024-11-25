@@ -111,24 +111,24 @@ class APIApplication:
     router: ClassVar[Router] = Router()
 
     _bag: ClassVar[bytes] = jsonTextFromObject(
-        dict(
-            urls=dict(
-                ping=_urlToTextForBag(URLs.ping),
-                bag=_urlToTextForBag(URLs.bag),
-                auth=_urlToTextForBag(URLs.auth),
-                access=_urlToTextForBag(URLs.acl),
-                streets=_urlToTextForBag(URLs.streets),
-                personnel=_urlToTextForBag(URLs.personnel),
-                incident_types=_urlToTextForBag(URLs.incidentTypes),
-                events=_urlToTextForBag(URLs.events),
-                event=_urlToTextForBag(URLs.event),
-                incidents=_urlToTextForBag(URLs.incidents),
-                incident=_urlToTextForBag(URLs.incidentNumber),
-                incident_reports=_urlToTextForBag(URLs.incidentReports),
-                incident_report=_urlToTextForBag(URLs.incidentReport),
-                event_source=_urlToTextForBag(URLs.eventSource),
-            ),
-        )
+        {
+            "urls": {
+                "ping": _urlToTextForBag(URLs.ping),
+                "bag": _urlToTextForBag(URLs.bag),
+                "auth": _urlToTextForBag(URLs.auth),
+                "access": _urlToTextForBag(URLs.acl),
+                "streets": _urlToTextForBag(URLs.streets),
+                "personnel": _urlToTextForBag(URLs.personnel),
+                "incident_types": _urlToTextForBag(URLs.incidentTypes),
+                "events": _urlToTextForBag(URLs.events),
+                "event": _urlToTextForBag(URLs.event),
+                "incidents": _urlToTextForBag(URLs.incidents),
+                "incident": _urlToTextForBag(URLs.incidentNumber),
+                "incident_reports": _urlToTextForBag(URLs.incidentReports),
+                "incident_report": _urlToTextForBag(URLs.incidentReport),
+                "event_source": _urlToTextForBag(URLs.eventSource),
+            },
+        }
     ).encode("utf-8")
 
     config: Configuration
@@ -207,7 +207,7 @@ class APIApplication:
         request.setResponseCode(http.UNAUTHORIZED)
         return jsonBytes(
             request,
-            jsonTextFromObject(dict(status="invalid-credentials")).encode("utf-8"),
+            jsonTextFromObject({"status": "invalid-credentials"}).encode("utf-8"),
         )
 
     @router.route(_unprefix(URLs.personnel), methods=("HEAD", "GET"))
@@ -1015,11 +1015,11 @@ class APIApplication:
         acl = {}
         for event in await store.events():
             eventID = event.id
-            acl[eventID] = dict(
-                readers=(await store.readers(eventID)),
-                writers=(await store.writers(eventID)),
-                reporters=(await store.reporters(eventID)),
-            )
+            acl[eventID] = {
+                "readers": (await store.readers(eventID)),
+                "writers": (await store.writers(eventID)),
+                "reporters": (await store.reporters(eventID)),
+            }
         return jsonTextFromObject(acl)
 
     @router.route(_unprefix(URLs.acl), methods=("POST",))

@@ -548,7 +548,7 @@ class ConfigurationTests(TestCase):
         """
         hostName = "xyzzy"
 
-        with testingEnvironment(dict(IMS_HOSTNAME=hostName)):
+        with testingEnvironment({"IMS_HOSTNAME": hostName}):
             config = Configuration.fromConfigFile(None)
 
         self.assertEqual(config.hostName, hostName)
@@ -559,7 +559,7 @@ class ConfigurationTests(TestCase):
         """
         path = Path(self.mktemp()).resolve()
 
-        with testingEnvironment(dict(IMS_SERVER_ROOT=str(path))):
+        with testingEnvironment({"IMS_SERVER_ROOT": str(path)}):
             config = Configuration.fromConfigFile(None)
 
         self.assertEqual(config.serverRoot, path)
@@ -573,7 +573,7 @@ class ConfigurationTests(TestCase):
 
         tmp.mkdir()
 
-        with testingEnvironment(dict(IMS_SERVER_ROOT=str(path))):
+        with testingEnvironment({"IMS_SERVER_ROOT": str(path)}):
             config = Configuration.fromConfigFile(None)
 
         self.assertTrue(config.serverRoot.is_dir())
@@ -594,7 +594,7 @@ class ConfigurationTests(TestCase):
         )
 
         for value, result in data:
-            with testingEnvironment(dict(IMS_ADMINS=value)):
+            with testingEnvironment({"IMS_ADMINS": value}):
                 config = Configuration.fromConfigFile(None)
 
             self.assertEqual(config.imsAdmins, result)
@@ -605,7 +605,7 @@ class ConfigurationTests(TestCase):
         """
 
         def test(value: str) -> bool:
-            with testingEnvironment(dict(IMS_REQUIRE_ACTIVE=value)):
+            with testingEnvironment({"IMS_REQUIRE_ACTIVE": value}):
                 config = Configuration.fromConfigFile(None)
             return config.requireActive
 
@@ -622,7 +622,7 @@ class ConfigurationTests(TestCase):
         """
 
         def test(secret: str) -> JSONWebKey:
-            with testingEnvironment(dict(IMS_JWT_SECRET=secret)):
+            with testingEnvironment({"IMS_JWT_SECRET": secret}):
                 config = Configuration.fromConfigFile(None)
             return config.jsonWebKey
 
@@ -649,7 +649,7 @@ class ConfigurationTests(TestCase):
     def test_store_sqlite(self) -> None:
         path = Path(self.mktemp()).resolve() / "ims.sqlite"
 
-        with testingEnvironment(dict(IMS_DATA_STORE="SQLite", IMS_DB_PATH=str(path))):
+        with testingEnvironment({"IMS_DATA_STORE": "SQLite", "IMS_DB_PATH": str(path)}):
             config = Configuration.fromConfigFile(None)
 
         self.assertIsInstance(config.store, SQLiteDataStore)
@@ -663,14 +663,14 @@ class ConfigurationTests(TestCase):
         password = "hoorj"  # nosec
 
         with testingEnvironment(
-            dict(
-                IMS_DATA_STORE="MySQL",
-                IMS_DB_HOST_NAME=hostName,
-                IMS_DB_HOST_PORT=str(hostPort),
-                IMS_DB_DATABASE=database,
-                IMS_DB_USER_NAME=userName,
-                IMS_DB_PASSWORD=password,
-            )
+            {
+                "IMS_DATA_STORE": "MySQL",
+                "IMS_DB_HOST_NAME": hostName,
+                "IMS_DB_HOST_PORT": str(hostPort),
+                "IMS_DB_DATABASE": database,
+                "IMS_DB_USER_NAME": userName,
+                "IMS_DB_PASSWORD": password,
+            }
         ):
             config = Configuration.fromConfigFile(None)
 
@@ -685,7 +685,7 @@ class ConfigurationTests(TestCase):
 
     def test_store_unknown(self) -> None:
         storeName = "XYZZY"
-        with testingEnvironment(dict(IMS_DATA_STORE=storeName)):
+        with testingEnvironment({"IMS_DATA_STORE": storeName}):
             e = self.assertRaises(
                 ConfigurationError, Configuration.fromConfigFile, None
             )
@@ -701,7 +701,7 @@ class ConfigurationTests(TestCase):
         path = Path(self.mktemp()).resolve() / "directory.yaml"
 
         with testingEnvironment(
-            dict(IMS_DIRECTORY="File", IMS_DIRECTORY_FILE=str(path))
+            {"IMS_DIRECTORY": "File", "IMS_DIRECTORY_FILE": str(path)}
         ):
             config = Configuration.fromConfigFile(None)
 
@@ -717,13 +717,13 @@ class ConfigurationTests(TestCase):
         password = "hoorj"  # nosec
 
         with testingEnvironment(
-            dict(
-                IMS_DIRECTORY="ClubhouseDB",
-                IMS_DMS_HOSTNAME=hostName,
-                IMS_DMS_DATABASE=database,
-                IMS_DMS_USERNAME=userName,
-                IMS_DMS_PASSWORD=password,
-            ),
+            {
+                "IMS_DIRECTORY": "ClubhouseDB",
+                "IMS_DMS_HOSTNAME": hostName,
+                "IMS_DMS_DATABASE": database,
+                "IMS_DMS_USERNAME": userName,
+                "IMS_DMS_PASSWORD": password,
+            },
         ):
             config = Configuration.fromConfigFile(None)
 
@@ -737,7 +737,7 @@ class ConfigurationTests(TestCase):
 
     def test_directory_unknown(self) -> None:
         storeName = "XYZZY"
-        with testingEnvironment(dict(IMS_DIRECTORY=storeName)):
+        with testingEnvironment({"IMS_DIRECTORY": storeName}):
             e = self.assertRaises(
                 ConfigurationError, Configuration.fromConfigFile, None
             )

@@ -21,6 +21,7 @@ Incident Management System web application authentication provider.
 from collections.abc import Container, Mapping
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
+from datetime import UTC
 from enum import Flag, auto
 from time import time
 from typing import Any, ClassVar, cast
@@ -206,7 +207,7 @@ class JSONWebToken:
         """
         Create a token from text.
         """
-        jwt = JWT(header=dict(typ="JWT", alg="HS256"), claims=claims.asJSON())
+        jwt = JWT(header={"typ": "JWT", "alg": "HS256"}, claims=claims.asJSON())
         jwt.make_signed_token(key._jwk)
 
         return cls(jwt=jwt)
@@ -251,7 +252,7 @@ class AuthProvider:
         return authenticated
 
     def _tokenForUser(self, user: IMSUser, duration: TimeDelta) -> JSONWebToken:
-        now = DateTime.now()
+        now = DateTime.now(tz=UTC)
         expiration = now + duration
         return JSONWebToken.fromClaims(
             JSONWebTokenClaims(
@@ -272,7 +273,7 @@ class AuthProvider:
         """
         Generate a JWT token for the given user.
         """
-        return dict(token=self._tokenForUser(user, duration).asText())
+        return {"token": self._tokenForUser(user, duration).asText()}
 
     def _userFromBearerAuthorization(self, authorization: str | None) -> IMSUser | None:
         """

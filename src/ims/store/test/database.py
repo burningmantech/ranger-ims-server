@@ -55,7 +55,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         store = cast(DatabaseStore, self)
 
         try:
-            await store.runOperation(store.query.createEvent, dict(eventID=event.id))
+            await store.runOperation(store.query.createEvent, {"eventID": event.id})
         except StorageError as e:
             self._log.critical(
                 "Unable to store event {event}: {error}", event=event, error=e
@@ -74,7 +74,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         txn.execute(
             store.query.createEventOrIgnore.text,
-            dict(eventID=incident.eventID),
+            {"eventID": incident.eventID},
         )
 
         if address is None:
@@ -99,62 +99,62 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         txn.execute(
             store.query.createIncident.text,
-            dict(
-                eventID=incident.eventID,
-                incidentCreated=store.asDateTimeValue(incident.created),
-                incidentNumber=incident.number,
-                incidentSummary=incident.summary,
-                incidentPriority=store.asPriorityValue(incident.priority),
-                incidentState=store.asIncidentStateValue(incident.state),
-                locationName=location.name,
-                locationConcentric=locationConcentric,
-                locationRadialHour=locationRadialHour,
-                locationRadialMinute=locationRadialMinute,
-                locationDescription=locationDescription,
-            ),
+            {
+                "eventID": incident.eventID,
+                "incidentCreated": store.asDateTimeValue(incident.created),
+                "incidentNumber": incident.number,
+                "incidentSummary": incident.summary,
+                "incidentPriority": store.asPriorityValue(incident.priority),
+                "incidentState": store.asIncidentStateValue(incident.state),
+                "locationName": location.name,
+                "locationConcentric": locationConcentric,
+                "locationRadialHour": locationRadialHour,
+                "locationRadialMinute": locationRadialMinute,
+                "locationDescription": locationDescription,
+            },
         )
 
         for rangerHandle in incident.rangerHandles:
             txn.execute(
                 store.query.attachRangeHandleToIncident.text,
-                dict(
-                    eventID=incident.eventID,
-                    incidentNumber=incident.number,
-                    rangerHandle=rangerHandle,
-                ),
+                {
+                    "eventID": incident.eventID,
+                    "incidentNumber": incident.number,
+                    "rangerHandle": rangerHandle,
+                },
             )
 
         for incidentType in incident.incidentTypes:
             txn.execute(
                 store.query.createIncidentTypeOrIgnore.text,
-                dict(incidentType=incidentType),
+                {"incidentType": incidentType},
             )
             txn.execute(
                 store.query.attachIncidentTypeToIncident.text,
-                dict(
-                    eventID=incident.eventID,
-                    incidentNumber=incident.number,
-                    incidentType=incidentType,
-                ),
+                {
+                    "eventID": incident.eventID,
+                    "incidentNumber": incident.number,
+                    "incidentType": incidentType,
+                },
             )
 
         for reportEntry in incident.reportEntries:
             txn.execute(
                 store.query.createReportEntry.text,
-                dict(
-                    created=store.asDateTimeValue(reportEntry.created),
-                    author=reportEntry.author,
-                    automatic=reportEntry.automatic,
-                    text=reportEntry.text,
-                ),
+                {
+                    "created": store.asDateTimeValue(reportEntry.created),
+                    "author": reportEntry.author,
+                    "automatic": reportEntry.automatic,
+                    "text": reportEntry.text,
+                },
             )
             txn.execute(
                 store.query.attachReportEntryToIncident.text,
-                dict(
-                    eventID=incident.eventID,
-                    incidentNumber=incident.number,
-                    reportEntryID=txn.lastrowid,
-                ),
+                {
+                    "eventID": incident.eventID,
+                    "incidentNumber": incident.number,
+                    "reportEntryID": txn.lastrowid,
+                },
             )
 
     async def storeIncident(self, incident: Incident) -> None:
@@ -182,36 +182,36 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         txn.execute(
             store.query.createEventOrIgnore.text,
-            dict(eventID=incidentReport.eventID),
+            {"eventID": incidentReport.eventID},
         )
 
         txn.execute(
             store.query.createIncidentReport.text,
-            dict(
-                eventID=incidentReport.eventID,
-                incidentReportNumber=incidentReport.number,
-                incidentReportCreated=store.asDateTimeValue(incidentReport.created),
-                incidentReportSummary=incidentReport.summary,
-                incidentNumber=incidentReport.incidentNumber,
-            ),
+            {
+                "eventID": incidentReport.eventID,
+                "incidentReportNumber": incidentReport.number,
+                "incidentReportCreated": store.asDateTimeValue(incidentReport.created),
+                "incidentReportSummary": incidentReport.summary,
+                "incidentNumber": incidentReport.incidentNumber,
+            },
         )
 
         for reportEntry in incidentReport.reportEntries:
             txn.execute(
                 store.query.createReportEntry.text,
-                dict(
-                    created=store.asDateTimeValue(reportEntry.created),
-                    author=reportEntry.author,
-                    automatic=reportEntry.automatic,
-                    text=reportEntry.text,
-                ),
+                {
+                    "created": store.asDateTimeValue(reportEntry.created),
+                    "author": reportEntry.author,
+                    "automatic": reportEntry.automatic,
+                    "text": reportEntry.text,
+                },
             )
             txn.execute(
                 store.query.attachReportEntryToIncidentReport.text,
-                dict(
-                    incidentReportNumber=incidentReport.number,
-                    reportEntryID=txn.lastrowid,
-                ),
+                {
+                    "incidentReportNumber": incidentReport.number,
+                    "reportEntryID": txn.lastrowid,
+                },
             )
 
     async def storeIncidentReport(self, incidentReport: IncidentReport) -> None:
@@ -254,7 +254,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         txn.execute(
             query.text,
-            dict(eventID=eventID, streetID=streetID, streetName=streetName),
+            {"eventID": eventID, "streetID": streetID, "streetName": streetName},
         )
 
     async def storeConcentricStreet(
@@ -307,7 +307,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         txn.execute(
             store.query.createIncidentType.text,
-            dict(incidentType=incidentType, hidden=hidden),
+            {"incidentType": incidentType, "hidden": hidden},
         )
 
     async def storeIncidentType(self, incidentType: str, hidden: bool) -> None:

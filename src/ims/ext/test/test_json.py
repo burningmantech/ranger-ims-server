@@ -75,7 +75,7 @@ class JSONEncodingTests(TestCase):
         :func:`jsonTextFromObject` encodes JSON without pretty-ness if
         :obj:`pretty` is false.
         """
-        obj = dict(x="Hello", y=["one", "two", "three"])
+        obj = {"x": "Hello", "y": ["one", "two", "three"]}
 
         self.assertEqual(objectFromJSONText(jsonTextFromObject(obj, pretty=False)), obj)
 
@@ -84,7 +84,7 @@ class JSONEncodingTests(TestCase):
         :func:`jsonTextFromObject` encodes JSON with pretty-ness if
         :obj:`pretty` is true.
         """
-        obj = dict(x="Hello", y=["one", "two", "three"])
+        obj = {"x": "Hello", "y": ["one", "two", "three"]}
 
         self.assertEqual(
             jsonTextFromObject(obj, pretty=True),
@@ -125,7 +125,7 @@ class JSONDecodingTests(TestCase):
                 }
                 """
             ),
-            dict(x="Hello", y=["one", "two", "three"]),
+            {"x": "Hello", "y": ["one", "two", "three"]},
         )
 
     def test_objectFromJSONText_badInput(self) -> None:
@@ -154,7 +154,7 @@ class JSONDecodingTests(TestCase):
                     """.encode("ascii")
                 )
             ),
-            dict(x="Hello", y=["one", "two", "three"]),
+            {"x": "Hello", "y": ["one", "two", "three"]},
         )
 
     def test_objectFromJSONBytesIO_badInput(self) -> None:

@@ -101,19 +101,19 @@ def rangerAsDict(ranger: Ranger, random: Random) -> dict[str, Any]:
         # email address, so this creates both.
         email = random.choice((email[0], email))  # nosec
 
-    return dict(
-        handle=ranger.handle,
-        name=ranger.name,
-        status=ranger.status.name,
-        email=email,
-        enabled=ranger.enabled,
+    return {
+        "handle": ranger.handle,
+        "name": ranger.name,
+        "status": ranger.status.name,
+        "email": email,
+        "enabled": ranger.enabled,
         # directoryID is not used
-        password=ranger.password,
-    )
+        "password": ranger.password,
+    }
 
 
 def positionAsDict(position: Position) -> dict[str, Any]:
-    return dict(name=position.name, members=list(position.members))
+    return {"name": position.name, "members": list(position.members)}
 
 
 class UtilityTests(TestCase):

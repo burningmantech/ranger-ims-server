@@ -127,7 +127,7 @@ class DataStoreEventSourceLogObserver:
                 )
                 return None
 
-            message = dict(incident_number=incidentNumber)
+            message = {"incident_number": incidentNumber}
 
         else:
             self._log.critical(
@@ -166,7 +166,7 @@ class DataStoreEventSourceLogObserver:
         for listener in tuple(self._listeners):
             try:
                 listener.write(eventText)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 self._log.error(
                     "Unable to publish to EventSource listener {listener}: {error}",
                     listener=listener,

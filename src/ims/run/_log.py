@@ -55,7 +55,7 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
         username = request.user.shortNames[0]
         try:
             username = _escape(username)
-        except Exception:
+        except Exception:  # noqa: BLE001
             username = _escape(repr(username))
     else:
         username = "-"

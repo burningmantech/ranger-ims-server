@@ -31,12 +31,12 @@ from ._replace import ReplaceMixIn
 __all__ = ()
 
 
-statusDescriptions = dict(
-    active="Active Ranger",
-    inactive="Inactive Ranger",
-    vintage="Vintage Ranger",
-    other="(Unknown Person Type)",
-)
+statusDescriptions = {
+    "active": "Active Ranger",
+    "inactive": "Inactive Ranger",
+    "vintage": "Vintage Ranger",
+    "other": "(Unknown Person Type)",
+}
 
 
 @unique

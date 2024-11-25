@@ -592,7 +592,7 @@ class HTTPDownloader(HTTPClientFactory):
             if self.file:
                 try:
                     self.file.close()
-                except BaseException:  # noqa: B036
+                except Exception:  # noqa: BLE001
                     self._log.failure("Error closing HTTPDownloader file")
             self.deferred.errback(reason)
 
@@ -804,7 +804,7 @@ class ExternalApplication:
                 path = Path(tmp.name)
                 try:
                     await downloadPage(url.asText().encode("utf-8"), tmp)
-                except BaseException as e:  # noqa: B036
+                except Exception as e:  # noqa: BLE001
                     self._log.critical(
                         "Download failed for {url}: {error}", url=url, error=e
                     )
