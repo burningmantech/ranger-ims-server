@@ -21,7 +21,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.1
+        uses: step-security/harden-runner@v2.10.2
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -42,7 +42,7 @@ jobs:
           python-version: "3.13"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
 
       - name: Set up Tox environment
         run: uvx --with=tox-uv tox run -e lint --notest
@@ -66,7 +66,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.1
+        uses: step-security/harden-runner@v2.10.2
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -87,7 +87,7 @@ jobs:
           python-version: "3.13"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
 
       - name: Set up Tox environment
         run: uvx --with=tox-uv tox run -e lint --notest
@@ -105,7 +105,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.1
+        uses: step-security/harden-runner@v2.10.2
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -126,7 +126,7 @@ jobs:
           python-version: "3.13"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
 
       - name: Set up Tox environment
         run: uvx --with=tox-uv tox run -e lint --notest
@@ -176,7 +176,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.1
+        uses: step-security/harden-runner@v2.10.2
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -220,7 +220,7 @@ jobs:
           f.write(f"TOX_ENV={env}\n")
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
 
       - name: Set up Tox environment
         run: uvx --with=tox-uv tox run -e lint --notest
@@ -296,7 +296,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.1
+        uses: step-security/harden-runner@v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -337,7 +337,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.1
+        uses: step-security/harden-runner@v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -377,7 +377,7 @@ jobs:
 
   #   steps:
 
-  #     - uses: step-security/harden-runner@v2.10.1
+  #     - uses: step-security/harden-runner@v2.10.2
   #       with:
   #         egress-policy: audit
 
@@ -407,7 +407,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.1
+        uses: step-security/harden-runner@v2.10.2
         with:
           disable-sudo: true
           egress-policy: block
