@@ -427,8 +427,8 @@ class AuthProvider:
         self.authenticateRequest(request)
 
         userAuthorizations = await self.authorizationsForUser(
-            request.user,
-            eventID,  # type: ignore[attr-defined]
+            request.user,  # type: ignore[attr-defined]
+            eventID,
         )
         request.authorizations = (  # type: ignore[attr-defined]
             userAuthorizations
