@@ -127,7 +127,6 @@ ignore = [
     "FBT001",   # Boolean-typed positional argument in function definition
     "FBT002",   # Boolean default positional argument in function definition
     "FBT003",   # Boolean positional value in function call
-    "I001",     # Import block is un-sorted or un-formatted
     "PLR1711",  # Useless `return` statement at end of function
     "PLR1714",  # Consider merging multiple comparisons
     "PLR2004",  # Magic value used in comparison, consider replacing with a constant variable
@@ -184,6 +183,11 @@ ignore = [
     "UP035",    # `typing.Deque` is deprecated, use `collections.deque` instead
     "UP038",    # Use `X | Y` in `isinstance` call instead of `(X, Y)`
 ]
+
+[tool.ruff.lint.isort]
+
+lines-after-imports = 2
+
 
 ##
 # Setuptools

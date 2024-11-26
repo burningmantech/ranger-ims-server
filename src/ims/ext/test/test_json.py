@@ -13,9 +13,8 @@ from textwrap import dedent
 from typing import Any, cast
 
 from hypothesis import given
-from hypothesis.strategies import composite, dates
+from hypothesis.strategies import composite, dates, integers
 from hypothesis.strategies import datetimes as _datetimes
-from hypothesis.strategies import integers
 
 from ..json import (
     dateAsRFC3339Text,

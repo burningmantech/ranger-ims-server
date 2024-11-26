@@ -19,9 +19,9 @@ Tests for L{ims.auth._provider}.
 """
 
 from collections.abc import Callable, Sequence
+from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
-from datetime import UTC
 from pathlib import Path
 from string import ascii_letters, digits
 from typing import Any

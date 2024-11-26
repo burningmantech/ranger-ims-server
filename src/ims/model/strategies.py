@@ -24,9 +24,10 @@ from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
 from typing import Any, cast
 
-from hypothesis.strategies import SearchStrategy, booleans, composite
-from hypothesis.strategies import datetimes as _datetimes
 from hypothesis.strategies import (
+    SearchStrategy,
+    booleans,
+    composite,
     dictionaries,
     emails,
     integers,
@@ -36,6 +37,7 @@ from hypothesis.strategies import (
     sampled_from,
     text,
 )
+from hypothesis.strategies import datetimes as _datetimes
 
 from ims.directory import hashPassword
 from ims.ext.sqlite import SQLITE_MAX_INT
