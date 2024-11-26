@@ -59,7 +59,7 @@ Each month below should look like the following, using the same ordering for the
 
 ### Fixed
 
-- Stopped using hardcoded 1-hour limit on IMS sessions; used timeout from JWT instead ([#1301](https://github.com/burningmantech/ranger-ims-server/pull/1301))
+- Stopped using hardcoded 1-hour duration limit on IMS sessions, allowing us to make sessions that will last for a whole shift on playa. ([#1301](https://github.com/burningmantech/ranger-ims-server/pull/1301))
 - Got rid of the browser popup alerts that occurred frequently on JavaScript errors. Instead, error messages will now be written to a text field near the top of each page ([#1335](https://github.com/burningmantech/ranger-ims-server/pull/1335))
 
 ## 2024-01
