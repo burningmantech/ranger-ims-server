@@ -112,7 +112,7 @@ class Connection(BaseConnection):
         """
 
         def emit(row: Iterable[object]) -> None:
-            print(" | ".join(str(i) for i in row))
+            print(" | ".join(str(i) for i in row))  # noqa: T201
 
         printHeader = True
 
