@@ -11,6 +11,7 @@ from sqlite3 import Error as SQLiteError
 from sqlite3 import IntegrityError
 from sqlite3 import Row as BaseRow
 from sqlite3 import connect as sqliteConnect
+from types import TracebackType
 from typing import Any, ClassVar, Optional, TextIO, Union, cast
 
 from attrs import frozen
@@ -173,9 +174,9 @@ class Connection(BaseConnection):
 
     def __exit__(  # type: ignore[override]
         self,
-        exc_type: type[BaseException],
-        exc_val: BaseException,
-        exc_tb: Any,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> bool:
         self._log.debug("---------- EXIT ----------")
         return cast(bool, super().__exit__(exc_type, exc_val, exc_tb))
