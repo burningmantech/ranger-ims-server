@@ -47,32 +47,32 @@ from .._directory import (
 __all__ = ()
 
 
-rangerBeepBoop = Ranger(  # nosec
+rangerBeepBoop = Ranger(
     handle="Beep Boop",
     name="Ann Droid",
     status=RangerStatus.active,
     email=("ad@example.com",),
     enabled=True,
     directoryID=None,
-    password="73415783-F274-4505-9F3B-42F07E219A56",
+    password="73415783-F274-4505-9F3B-42F07E219A56",  # noqa: S106
 )
-rangerSlumber = Ranger(  # nosec
+rangerSlumber = Ranger(
     handle="Slumber",
     name="Sleepy T. Dwarf",
     status=RangerStatus.inactive,
     email=("slumber@example.com", "sleepy@example.com"),
     enabled=True,
     directoryID=None,
-    password="5A23692C-B751-4567-8848-F4F177C9EF69",
+    password="5A23692C-B751-4567-8848-F4F177C9EF69",  # noqa: S106
 )
-rangerYouRine = Ranger(  # nosec
+rangerYouRine = Ranger(
     handle="YouRine",
     name="I. P. Freely",
     status=RangerStatus.active,
     email=("yourine@example.com",),
     enabled=False,
     directoryID=None,
-    password="43272914-C2DB-460A-B1AB-E3A4743DC5B9",
+    password="43272914-C2DB-460A-B1AB-E3A4743DC5B9",  # noqa: S106
 )
 rangerNine = Ranger(
     handle="Nine",
@@ -99,7 +99,7 @@ def rangerAsDict(ranger: Ranger, random: Random) -> dict[str, Any]:
     if len(ranger.email) == 1:
         # We allow either a string or a list in the YAML when you have a single
         # email address, so this creates both.
-        email = random.choice((email[0], email))  # nosec
+        email = random.choice((email[0], email))
 
     return {
         "handle": ranger.handle,
@@ -242,7 +242,7 @@ class UtilityTests(TestCase):
         if type(rangerDict["email"]) is str:
             rangerDict["email"] = [rangerDict["email"]]
 
-        index = random.choice(range(len(ranger.email)))  # nosec
+        index = random.choice(range(len(ranger.email)))
         email = rangerDict["email"][index].encode("utf-8")
         rangerDict["email"][index] = email
 
@@ -342,7 +342,7 @@ class UtilityTests(TestCase):
     ) -> None:
         positionDict = positionAsDict(position)
 
-        index = random.choice(range(len(position.members)))  # nosec
+        index = random.choice(range(len(position.members)))
         members = positionDict["members"][index].encode("utf-8")
         positionDict["members"][index] = members
 

@@ -116,7 +116,7 @@ class UtilityTests(TestCase):
         """
         describeFactory() redacts passwords from partial objects.
         """
-        p = partial(self.factory, 1, password="super secret")  # nosec
+        p = partial(self.factory, 1, password="super secret")  # noqa: S106
         self.assertEqual(describeFactory(p), "factory(1, password='(REDACTED)')")
 
     def test_describeFactory_function(self) -> None:
@@ -660,7 +660,7 @@ class ConfigurationTests(TestCase):
         hostPort = 72984
         database = "ranger_ims"
         userName = "ims_user"
-        password = "hoorj"  # nosec
+        password = "hoorj"  # noqa: S105
 
         with testingEnvironment(
             {
@@ -714,7 +714,7 @@ class ConfigurationTests(TestCase):
         hostName = "clubhouse_host"
         database = "rangers"
         userName = "rangers"
-        password = "hoorj"  # nosec
+        password = "hoorj"  # noqa: S105
 
         with testingEnvironment(
             {

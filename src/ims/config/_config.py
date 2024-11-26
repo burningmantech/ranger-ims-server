@@ -49,7 +49,7 @@ def describeFactory(f: Callable[..., Any]) -> str:
     if isinstance(f, partial):
         if "password" in f.keywords:
             keywords = dict(f.keywords)
-            keywords["password"] = "(REDACTED)"  # nosec
+            keywords["password"] = "(REDACTED)"  # noqa: S105
         else:
             keywords = f.keywords
 

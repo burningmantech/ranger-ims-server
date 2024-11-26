@@ -120,6 +120,8 @@ ignore = [
     "PLR0915",  # Too many statements
     "PT",       # We don't use pytest
     "RSE102",   # Unnecessary parentheses on raised exception
+    "S101",     # Use of `assert` detected
+    "S608",     # Possible SQL injection vector through string-based query construction
 
     # Reconsider
     "TID252",   # Prefer absolute imports over relative imports from parent modules
@@ -128,11 +130,6 @@ ignore = [
     "FBT001",   # Boolean-typed positional argument in function definition
     "FBT002",   # Boolean default positional argument in function definition
     "FBT003",   # Boolean positional value in function call
-    "S101",     # Use of `assert` detected
-    "S105",     # Possible hardcoded password assigned to
-    "S106",     # Possible hardcoded password assigned to argument
-    "S324",     # Probable use of insecure hash functions in `hashlib`
-    "S608",     # Possible SQL injection vector through string-based query construction
     "SIM102",   # Use a single `if` statement instead of nested `if` statements
     "SIM105",   # Use `contextlib.suppress(NoSectionError, NoOptionError)` instead of `try`-`except`-`pass`
     "SIM108",   # Use ternary operator
