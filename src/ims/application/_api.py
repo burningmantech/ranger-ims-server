@@ -386,7 +386,6 @@ class APIApplication:
         )
 
         writeJSONStream(request, stream, None)
-        return None
 
     @router.route(_unprefix(URLs.incidents), methods=("POST",))
     async def newIncidentResource(

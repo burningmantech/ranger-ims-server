@@ -662,7 +662,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 await store.storeIncident(incident)
 
                 # Fetch incident back so we have the same data as the DB
-                incident = await store.incidentWithNumber(
+                incident = await store.incidentWithNumber(  # noqa: PLW2901
                     incident.eventID, incident.number
                 )
 

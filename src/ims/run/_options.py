@@ -64,11 +64,10 @@ def openFile(fileName: str, mode: str) -> IO[Any]:
             file = stderr
         else:
             file = openNamedFile()
+    elif fileName == "-":
+        file = stdin
     else:
-        if fileName == "-":
-            file = stdin
-        else:
-            file = openNamedFile()
+        file = openNamedFile()
 
     return file
 

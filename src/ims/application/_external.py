@@ -85,9 +85,9 @@ class HTTPPageGetter(http.HTTPClient):
     def connectionMade(self):
         method = _ensureValidMethod(getattr(self.factory, "method", b"GET"))
         self.sendCommand(method, _ensureValidURI(self.factory.path))
-        if self.factory.scheme == b"http" and self.factory.port != 80:
+        if self.factory.scheme == b"http" and self.factory.port != 80:  # noqa: PLR2004
             host = b"%b:%d" % (self.factory.host, self.factory.port)
-        elif self.factory.scheme == b"https" and self.factory.port != 443:
+        elif self.factory.scheme == b"https" and self.factory.port != 443:  # noqa: PLR2004
             host = b"%b:%d" % (self.factory.host, self.factory.port)
         else:
             host = self.factory.host
@@ -243,7 +243,7 @@ class HTTPPageGetter(http.HTTPClient):
             # Callback with empty string, since there is never a response
             # body for HEAD requests.
             self.factory.page(b"")
-        elif self.length != None and self.length != 0:  # noqa: E711
+        elif self.length != None and self.length != 0:  # noqa: E711, PLR1714
             self.factory.noPage(
                 Failure(PartialDownloadError(self.status, self.message, response))
             )

@@ -107,8 +107,7 @@ class DataStore(DatabaseStore):
         try:
             for row in db.execute(cls.query.schemaVersion.text):
                 return cast(int, row["VERSION"])
-            else:
-                raise StorageError("Invalid schema: no version")
+            raise StorageError("Invalid schema: no version")
 
         except SQLiteError as e:
             if e.args[0] == "no such table: SCHEMA_INFO":

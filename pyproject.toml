@@ -118,7 +118,7 @@ ignore = [
     "PLR0912",  # Too many branches
     "PLR0913",  # Too many arguments in function definition
     "PLR0915",  # Too many statements
-    "PT009",    # Use a regular `assert` instead of unittest-style
+    "PT",       # We don't use pytest
 
     # Reconsider
     "TID252",   # Prefer absolute imports over relative imports from parent modules
@@ -127,14 +127,6 @@ ignore = [
     "FBT001",   # Boolean-typed positional argument in function definition
     "FBT002",   # Boolean default positional argument in function definition
     "FBT003",   # Boolean positional value in function call
-    "PLR1711",  # Useless `return` statement at end of function
-    "PLR1714",  # Consider merging multiple comparisons
-    "PLR2004",  # Magic value used in comparison, consider replacing with a constant variable
-    "PLR5501",  # Use `elif` instead of `else` then `if`, to reduce indentation
-    "PLW0120",  # `else` clause on loop without a `break` statement; remove the `else` and dedent its contents
-    "PLW2901",  # `for` loop variable overwritten by assignment target
-    "PT019",    # Fixture without value is injected as parameter, use `@pytest.mark.usefixtures` instead
-    "PT027",    # Use `pytest.raises` instead of unittest-style
     "PTH100",   # `os.path.abspath()` should be replaced by `Path.resolve()`
     "PTH109",   # `os.getcwd()` should be replaced by `Path.cwd()`
     "PTH110",   # `os.path.exists()` should be replaced by `Path.exists()`

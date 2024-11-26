@@ -85,7 +85,7 @@ class Cursor(DictCursor):
 
         # FIXME: OMG this is gross but works for now
         for statement in sql_script.split(";"):
-            statement = statement.strip()
+            statement = statement.strip()  # noqa: PLW2901
             if statement and not statement.startswith("--"):
                 count += self.execute(statement)
 
@@ -207,8 +207,7 @@ class DataStore(DatabaseStore):
         try:
             for row in await self._db.runQuery(self.query.schemaVersion.text):
                 return cast(int, row["VERSION"])
-            else:
-                raise StorageError("Invalid schema: no version")
+            raise StorageError("Invalid schema: no version")
 
         except MySQLError as e:
             message = e.args[1].lower()

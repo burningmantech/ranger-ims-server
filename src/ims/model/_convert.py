@@ -42,6 +42,6 @@ def normalizeDateTime(dateTime: DateTime) -> DateTime:
     precision.
     """
     microsecond = int(round(dateTime.microsecond, -4))
-    if microsecond == 1000000:  # Rounded up a wee bit too far
+    if microsecond == 1000000:  # Rounded up a wee bit too far  # noqa: PLR2004
         microsecond = 990000
     return dateTime.replace(microsecond=microsecond)
