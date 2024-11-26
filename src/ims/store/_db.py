@@ -21,8 +21,8 @@ Incident Management System database tooling.
 from abc import abstractmethod
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
+from datetime import UTC
 from datetime import datetime as DateTime
-from datetime import timezone as TimeZone
 from json import loads
 from pathlib import Path
 from textwrap import dedent
@@ -64,7 +64,7 @@ T = TypeVar("T")
 
 
 def now() -> DateTime:
-    return DateTime.now(TimeZone.utc)
+    return DateTime.now(UTC)
 
 
 @frozen
@@ -237,7 +237,7 @@ class DatabaseStore(IMSDataStore):
         if not isinstance(value, float):
             raise TypeError("Time stamp in SQLite store must be a float")
 
-        return DateTime.fromtimestamp(value, tz=TimeZone.utc)
+        return DateTime.fromtimestamp(value, tz=UTC)
 
     @classmethod
     def loadSchema(cls, version: int | str | None = None) -> str:

@@ -124,6 +124,12 @@ ignore = [
     "S608",     # Possible SQL injection vector through string-based query construction
     "SIM108",   # Use ternary operator
     "SIM118",   # Use `key in dict` instead of `key in dict.keys()`
+    "TD001",    # Invalid TODO tag: `FIXME`
+    "TD002",    # Missing author in TODO
+    "TD003",    # Missing issue link on the line following this TODO
+    "TRY003",   # Avoid specifying long messages outside the exception class
+    "TRY301",   # Abstract `raise` to an inner function
+    "TRY400",   # Use `logging.exception` instead of `logging.error`
 
     # Reconsider
     "TID252",   # Prefer absolute imports over relative imports from parent modules
@@ -133,16 +139,7 @@ ignore = [
     "FBT002",   # Boolean default positional argument in function definition
     "FBT003",   # Boolean positional value in function call
     "SLF001",   # Private member accessed
-    "TD001",    # Invalid TODO tag: `FIXME`
-    "TD002",    # Missing author in TODO
-    "TD003",    # Missing issue link on the line following this TODO
-    "TRY003",   # Avoid specifying long messages outside the exception class
-    "TRY301",   # Abstract `raise` to an inner function
-    "TRY400",   # Use `logging.exception` instead of `logging.error`
-    "UP006",    # Use `collections.deque` instead of `Deque` for type annotation
     "UP007",    # Use `X | Y` for type annotations
-    "UP017",    # Use `datetime.UTC` alias
-    "UP031",    # Use format specifiers instead of percent format
     "UP032",    # Use f-string instead of `format` call
     "UP035",    # `typing.Deque` is deprecated, use `collections.deque` instead
     "UP038",    # Use `X | Y` in `isinstance` call instead of `(X, Y)`
