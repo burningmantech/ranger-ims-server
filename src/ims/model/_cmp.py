@@ -42,7 +42,7 @@ class ComparisonMixIn(ABC):
     def _cmp(self, other: Any, methodName: str) -> bool:
         if other.__class__ is self.__class__:
             selfValue = self._cmpValue()
-            otherValue = other._cmpValue()
+            otherValue = other._cmpValue()  # noqa: SLF001
             selfValueCmp = cast(Callable[[Any], bool], getattr(selfValue, methodName))
             return selfValueCmp(otherValue)
 

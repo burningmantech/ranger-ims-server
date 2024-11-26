@@ -80,12 +80,12 @@ class DutyManagementSystem:
         Internal mutable state for :class:`Configuration`.
         """
 
-        _personnel: Iterable[Ranger] = field(default=(), init=False)
-        _positions: Iterable[Position] = field(default=(), init=False)
-        _personnelLastUpdated: float = field(default=0.0, init=False)
-        _dbpool: adbapi.ConnectionPool | None = field(default=None, init=False)
-        _busy: bool = field(default=False, init=False)
-        _dbErrorCount: int = field(default=0, init=False)
+        personnel: Iterable[Ranger] = field(default=(), init=False)
+        positions: Iterable[Position] = field(default=(), init=False)
+        personnelLastUpdated: float = field(default=0.0, init=False)
+        dbpool: adbapi.ConnectionPool | None = field(default=None, init=False)
+        busy: bool = field(default=False, init=False)
+        dbErrorCount: int = field(default=0, init=False)
 
     host: str
     database: str
@@ -100,7 +100,7 @@ class DutyManagementSystem:
         """
         Set up a database pool if needed and return it.
         """
-        if self._state._dbpool is None:
+        if self._state.dbpool is None:
             if (
                 not self.host
                 and not self.database
@@ -123,9 +123,9 @@ class DutyManagementSystem:
             if dbpool is None:
                 raise DatabaseError("Unable to set up database pool.")
 
-            self._state._dbpool = dbpool
+            self._state.dbpool = dbpool
 
-        return self._state._dbpool
+        return self._state.dbpool
 
     async def _queryPositionsByID(self) -> Mapping[str, Position]:
         self._log.info("Retrieving positions from Duty Management System...")
@@ -194,19 +194,19 @@ class DutyManagementSystem:
         Look up all positions.
         """
         # Call self.personnel() to make sure we have current data, then return
-        # self._state._positions, which will have been set.
+        # self._state.positions, which will have been set.
         await self.personnel()
-        return self._state._positions
+        return self._state.positions
 
     async def personnel(self) -> Iterable[Ranger]:
         """
         Look up all personnel.
         """
         now = time()
-        elapsed = now - self._state._personnelLastUpdated
+        elapsed = now - self._state.personnelLastUpdated
 
-        if not self._state._busy and elapsed > self.cacheInterval:
-            self._state._busy = True
+        if not self._state.busy and elapsed > self.cacheInterval:
+            self._state.busy = True
             try:
                 try:
                     rangersByID = await self._queryRangersByID()
@@ -222,18 +222,18 @@ class DutyManagementSystem:
                             continue
                         position.members.add(ranger)
 
-                    self._state._personnel = tuple(rangersByID.values())
-                    self._state._positions = tuple(positionsByID.values())
-                    self._state._personnelLastUpdated = time()
-                    self._state._dbErrorCount = 0
+                    self._state.personnel = tuple(rangersByID.values())
+                    self._state.positions = tuple(positionsByID.values())
+                    self._state.personnelLastUpdated = time()
+                    self._state.dbErrorCount = 0
 
                 except Exception as e:
-                    self._state._personnelLastUpdated = 0
-                    self._state._dbpool = None
-                    self._state._dbErrorCount += 1
+                    self._state.personnelLastUpdated = 0
+                    self._state.dbpool = None
+                    self._state.dbErrorCount += 1
 
                     if isinstance(e, (SQLDatabaseError, SQLOperationalError)):
-                        if self._state._dbErrorCount < 2:  # noqa: PLR2004
+                        if self._state.dbErrorCount < 2:  # noqa: PLR2004
                             self._log.info(
                                 "Retrying loading personnel from DMS "
                                 "after error: {error}",
@@ -257,10 +257,10 @@ class DutyManagementSystem:
                         ) from e
 
             finally:
-                self._state._busy = False
+                self._state.busy = False
 
         try:
-            return self._state._personnel
+            return self._state.personnel
         except AttributeError:
             raise DMSError("No personnel data loaded.") from None
 

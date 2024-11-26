@@ -192,7 +192,7 @@ class JSONWebToken:
         Create a token from text.
         """
         try:
-            jwt = JWT(jwt=tokenText, key=key._jwk)
+            jwt = JWT(jwt=tokenText, key=key._jwk)  # noqa: SLF001
         except InvalidJWSSignature as e:
             raise InvalidCredentialsError("Invalid JWT token") from e
 
@@ -206,7 +206,7 @@ class JSONWebToken:
         Create a token from text.
         """
         jwt = JWT(header={"typ": "JWT", "alg": "HS256"}, claims=claims.asJSON())
-        jwt.make_signed_token(key._jwk)
+        jwt.make_signed_token(key._jwk)  # noqa: SLF001
 
         return cls(jwt=jwt)
 

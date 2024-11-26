@@ -14,6 +14,8 @@
 # limitations under the License.
 ##
 
+# ruff: noqa: SLF001
+
 """
 Tests for L{ims.directory.file._directory}.
 """
