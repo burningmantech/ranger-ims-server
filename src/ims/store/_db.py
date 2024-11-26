@@ -445,7 +445,7 @@ class DatabaseStore(IMSDataStore):
     # Incident Types
     ###
 
-    async def incidentTypes(self, includeHidden: bool = False) -> Iterable[str]:
+    async def incidentTypes(self, *, includeHidden: bool = False) -> Iterable[str]:
         """
         See :meth:`IMSDataStore.incidentTypes`.
         """
@@ -456,7 +456,9 @@ class DatabaseStore(IMSDataStore):
 
         return (cast(str, row["NAME"]) for row in await self.runQuery(query))
 
-    async def createIncidentType(self, incidentType: str, hidden: bool = False) -> None:
+    async def createIncidentType(
+        self, incidentType: str, *, hidden: bool = False
+    ) -> None:
         """
         See :meth:`IMSDataStore.createIncidentType`.
         """
@@ -584,7 +586,7 @@ class DatabaseStore(IMSDataStore):
     ###
 
     def _fetchIncidents(
-        self, eventID: str, excludeSystemEntries: bool, txn: Transaction
+        self, txn: Transaction, eventID: str, *, excludeSystemEntries: bool = False
     ) -> Iterable[Incident]:
         parameters: Parameters = {
             "eventID": eventID,
@@ -659,7 +661,7 @@ class DatabaseStore(IMSDataStore):
         return results
 
     def _fetchIncident(
-        self, eventID: str, incidentNumber: int, txn: Transaction
+        self, txn: Transaction, eventID: str, incidentNumber: int
     ) -> Incident:
         parameters: Parameters = {"eventID": eventID, "incidentNumber": incidentNumber}
 
@@ -703,7 +705,7 @@ class DatabaseStore(IMSDataStore):
             concentric = str(row["LOCATION_CONCENTRIC"])
 
         incidentReportNumbers = self._fetchAttachedIncidentReportNumbers(
-            eventID, incidentNumber, txn
+            txn, eventID, incidentNumber
         )
 
         return Incident(
@@ -728,7 +730,7 @@ class DatabaseStore(IMSDataStore):
             incidentReportNumbers=incidentReportNumbers,
         )
 
-    def _fetchIncidentNumbers(self, eventID: str, txn: Transaction) -> Iterable[int]:
+    def _fetchIncidentNumbers(self, txn: Transaction, eventID: str) -> Iterable[int]:
         """
         Look up all incident numbers for the given event.
         """
@@ -736,14 +738,16 @@ class DatabaseStore(IMSDataStore):
         return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
     async def incidents(
-        self, eventID: str, *, excludeSystemEntries: bool
+        self, eventID: str, *, excludeSystemEntries: bool = False
     ) -> Iterable[Incident]:
         """
         See :meth:`IMSDataStore.incidents`.
         """
 
         def incidents(txn: Transaction) -> Iterable[Incident]:
-            return self._fetchIncidents(eventID, excludeSystemEntries, txn)
+            return self._fetchIncidents(
+                txn, eventID, excludeSystemEntries=excludeSystemEntries
+            )
 
         try:
             return await self.runInteraction(incidents)
@@ -763,7 +767,7 @@ class DatabaseStore(IMSDataStore):
         """
 
         def incidentWithNumber(txn: Transaction) -> Incident:
-            return self._fetchIncident(eventID, number, txn)
+            return self._fetchIncident(txn, eventID, number)
 
         try:
             return await self.runInteraction(incidentWithNumber)
@@ -1440,7 +1444,7 @@ class DatabaseStore(IMSDataStore):
     ###
 
     def _fetchIncidentReports(
-        self, eventID: str, excludeSystemEntries: bool, txn: Transaction
+        self, txn: Transaction, eventID: str, excludeSystemEntries: bool
     ) -> Iterable[IncidentReport]:
         parameters: Parameters = {
             "eventID": eventID,
@@ -1483,7 +1487,7 @@ class DatabaseStore(IMSDataStore):
         return tuple[IncidentReport, ...](r for r in results)
 
     def _fetchIncidentReport(
-        self, eventID: str, incidentReportNumber: int, txn: Transaction
+        self, txn: Transaction, eventID: str, incidentReportNumber: int
     ) -> IncidentReport:
         parameters: Parameters = {
             "eventID": eventID,
@@ -1526,20 +1530,22 @@ class DatabaseStore(IMSDataStore):
         )
 
     def _fetchIncidentReportNumbers(
-        self, eventID: str, txn: Transaction
+        self, txn: Transaction, eventID: str
     ) -> Iterable[int]:
         txn.execute(self.query.incidentReportNumbers.text, {"eventID": eventID})
         return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
     async def incidentReports(
-        self, eventID: str, excludeSystemEntries: bool
+        self, eventID: str, excludeSystemEntries: bool = False
     ) -> Iterable[IncidentReport]:
         """
         See :meth:`IMSDataStore.incidentReports`.
         """
 
         def incidentReports(txn: Transaction) -> Iterable[IncidentReport]:
-            return self._fetchIncidentReports(eventID, excludeSystemEntries, txn)
+            return self._fetchIncidentReports(
+                txn, eventID, excludeSystemEntries=excludeSystemEntries
+            )
 
         try:
             return await self.runInteraction(incidentReports)
@@ -1560,7 +1566,7 @@ class DatabaseStore(IMSDataStore):
         """
 
         def incidentReportWithNumber(txn: Transaction) -> IncidentReport:
-            return self._fetchIncidentReport(eventID, number, txn)
+            return self._fetchIncidentReport(txn, eventID, number)
 
         try:
             return await self.runInteraction(incidentReportWithNumber)
@@ -1832,7 +1838,7 @@ class DatabaseStore(IMSDataStore):
     ###
 
     def _fetchDetachedIncidentReportNumbers(
-        self, eventID: str, txn: Transaction
+        self, txn: Transaction, eventID: str
     ) -> Iterable[int]:
         txn.execute(
             self.query.detachedIncidentReportNumbers.text,
@@ -1841,7 +1847,7 @@ class DatabaseStore(IMSDataStore):
         return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
     def _fetchAttachedIncidentReportNumbers(
-        self, eventID: str, incidentNumber: int, txn: Transaction
+        self, txn: Transaction, eventID: str, incidentNumber: int
     ) -> Iterable[int]:
         txn.execute(
             self.query.attachedIncidentReportNumbers.text,
@@ -1860,10 +1866,10 @@ class DatabaseStore(IMSDataStore):
             txn: Transaction,
         ) -> Iterable[IncidentReport]:
             return tuple(
-                self._fetchIncidentReport(eventID, number, txn)
+                self._fetchIncidentReport(txn, eventID, number)
                 for number in tuple(
                     self._fetchAttachedIncidentReportNumbers(
-                        eventID, incidentNumber, txn
+                        txn, eventID, incidentNumber
                     )
                 )
             )

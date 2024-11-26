@@ -381,7 +381,7 @@ class APIApplication:
         stream = buildJSONArray(
             jsonTextFromObject(jsonObjectFromModelObject(incident)).encode("utf-8")
             for incident in await self.config.store.incidents(
-                event_id, excludeSystemEntries
+                event_id, excludeSystemEntries=excludeSystemEntries
             )
         )
 
@@ -710,14 +710,14 @@ class APIApplication:
             incidentReports = (
                 incidentReport
                 for incidentReport in await store.incidentReports(
-                    event_id, excludeSystemEntries
+                    event_id, excludeSystemEntries=excludeSystemEntries
                 )
                 if user.shortNames[0]
                 in (entry.author for entry in incidentReport.reportEntries)
             )
         elif incidentNumberText is None:
             incidentReports = await store.incidentReports(
-                event_id, excludeSystemEntries
+                event_id, excludeSystemEntries=excludeSystemEntries
             )
         else:
             try:

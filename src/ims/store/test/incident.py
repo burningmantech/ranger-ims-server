@@ -144,7 +144,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
             found: set[tuple[str, int]] = set()
             for eventID in events:
-                for retrieved in await store.incidents(eventID, False):
+                for retrieved in await store.incidents(eventID):
                     self.assertIncidentsEqual(
                         store, retrieved, events[eventID][retrieved.number]
                     )
@@ -174,7 +174,7 @@ class DataStoreIncidentTests(DataStoreTests):
 
             assert eventID is not None
 
-            retrieved = await store.incidents(eventID, False)
+            retrieved = await store.incidents(eventID)
 
             for r, i in zip(sorted(retrieved), sorted(incidents), strict=True):
                 self.assertIncidentsEqual(store, r, i)
@@ -190,7 +190,7 @@ class DataStoreIncidentTests(DataStoreTests):
         store.bringThePain()
 
         try:
-            await store.incidents(anEvent.id, False)
+            await store.incidents(anEvent.id)
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
@@ -333,7 +333,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 expectedIncidents = sorted(
                     i for i in expectedStoredIncidents if i.eventID == event.id
                 )
-                storedIncidents = sorted(await store.incidents(event.id, False))
+                storedIncidents = sorted(await store.incidents(event.id))
 
                 self.assertEqual(
                     len(storedIncidents),
