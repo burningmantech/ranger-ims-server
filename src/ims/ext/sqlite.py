@@ -12,7 +12,7 @@ from sqlite3 import IntegrityError
 from sqlite3 import Row as BaseRow
 from sqlite3 import connect as sqliteConnect
 from types import TracebackType
-from typing import Any, ClassVar, Optional, TextIO, Union, cast
+from typing import Any, ClassVar, TextIO, cast
 
 from attrs import frozen
 from twisted.logger import Logger
@@ -35,7 +35,7 @@ __all__ = (
 
 CursorFactory = Callable[..., "Cursor"]
 
-ParameterValue = Optional[Union[bytes, str, int, float]]
+ParameterValue = bytes | str | int | float | None
 Parameters = Mapping[str, ParameterValue]
 
 SQLITE_MIN_INT = -(2**63)  # 64 bits
