@@ -1,4 +1,4 @@
-# type: ignore
+# type: ignore  # noqa: PGH003
 # ruff: noqa: ANN001, ANN002, ANN003, ANN202, ANN204
 
 ##
@@ -696,7 +696,7 @@ class ExternalApplication:
     )
 
     dataTablesSourceURL = URL.fromText(
-        f"https://datatables.net/releases/" f"DataTables-{dataTablesVersionNumber}.zip"
+        f"https://datatables.net/releases/DataTables-{dataTablesVersionNumber}.zip"
     )
 
     lscacheJSSourceURL = URL.fromText(
@@ -886,8 +886,8 @@ class ExternalApplication:
             return notFoundResponse(request)
 
         filePath = filePath.child(name)
-        for name in names:
-            filePath = filePath.child(name)
+        for _name in names:  # noqa: PLR1704
+            filePath = filePath.child(_name)
 
         try:
             return filePath.getContent()

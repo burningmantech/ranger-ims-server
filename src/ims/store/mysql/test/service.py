@@ -305,7 +305,7 @@ class DockerizedMySQLService(MySQLService):
                 if elapsed > timeout:
                     d.errback(
                         RuntimeError(
-                            f"Timed out while starting container " f"{containerName}"
+                            f"Timed out while starting container {containerName}"
                         )
                     )
                     return

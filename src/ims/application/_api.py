@@ -462,7 +462,7 @@ class APIApplication:
                 if reportEntryKey.value in entryJSON:
                     return badRequestResponse(
                         request,
-                        f"New report entry may not specify " f"{reportEntryKey.value}",
+                        f"New report entry may not specify {reportEntryKey.value}",
                     )
 
             entryJSON[ReportEntryJSONKey.created.value] = jsonNow
@@ -810,7 +810,7 @@ class APIApplication:
                 if reportEntryKey.value in entryJSON:
                     return badRequestResponse(
                         request,
-                        f"New report entry may not specify " f"{reportEntryKey.value}",
+                        f"New report entry may not specify {reportEntryKey.value}",
                     )
 
             entryJSON[ReportEntryJSONKey.created.value] = jsonNow
@@ -1098,7 +1098,7 @@ class APIApplication:
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
 
-        for eventID, _streets in edits.items():
+        for eventID in edits.keys():
             existing = await store.concentricStreets(eventID)
 
             for _streetID, _streetName in existing.items():

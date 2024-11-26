@@ -48,7 +48,7 @@ class ReportEntryTests(TestCase):
         star = "*" if reportEntry.automatic else ""
         self.assertEqual(
             str(reportEntry),
-            f"{reportEntry.created} {reportEntry.author}" f"{star}: {reportEntry.text}",
+            f"{reportEntry.created} {reportEntry.author}{star}: {reportEntry.text}",
         )
 
     @given(reportEntries(), dateTimes(), dateTimes())

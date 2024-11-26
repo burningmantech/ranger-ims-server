@@ -126,9 +126,7 @@ def deserialize(
             cls = getattr(typeEnum, key.name).value
         except AttributeError as e:
             raise AttributeError(
-                "No attribute {attribute!r} in type enum {enum!r}".format(
-                    attribute=key.name, enum=typeEnum
-                )
+                f"No attribute {key.name!r} in type enum {typeEnum!r}"
             ) from e
         try:
             return jsonDeserialize(obj.get(key.value, None), cls)

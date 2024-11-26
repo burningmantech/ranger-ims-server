@@ -124,12 +124,7 @@ class CompareOptions(Options):
         """
         Input files. ("-" for stdin)
         """
-        files = []
-
-        for fileName in fileNames:
-            files.append(openFile(fileName, "rb"))
-
-        self["inFiles"] = files
+        self["inFiles"] = [openFile(fileName, "rb") for fileName in fileNames]
 
 
 class HashPasswordOptions(Options):

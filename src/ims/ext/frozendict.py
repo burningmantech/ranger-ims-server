@@ -11,7 +11,7 @@ from typing import Any, TypeVar
 from attrs import field, frozen
 
 
-__all__ = "FrozenDict"
+__all__ = ["FrozenDict"]
 
 
 _Key = TypeVar("_Key")

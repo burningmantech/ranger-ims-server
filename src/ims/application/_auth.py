@@ -54,7 +54,7 @@ class AuthApplication:
 
     @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
     def login(
-        self, request: IRequest, failed: bool = False
+        self, request: IRequest, *, failed: bool = False
     ) -> KleinSynchronousRenderable:
         """
         Endpoint for the login page.

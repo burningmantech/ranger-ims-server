@@ -472,7 +472,7 @@ class DatabaseStore(IMSDataStore):
         )
 
     async def _hideShowIncidentTypes(
-        self, incidentTypes: Iterable[str], hidden: bool
+        self, incidentTypes: Iterable[str], *, hidden: bool
     ) -> None:
         incidentTypes = tuple(incidentTypes)
 
@@ -504,13 +504,13 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.showIncidentTypes`.
         """
-        await self._hideShowIncidentTypes(incidentTypes, False)
+        await self._hideShowIncidentTypes(incidentTypes, hidden=False)
 
     async def hideIncidentTypes(self, incidentTypes: Iterable[str]) -> None:
         """
         See :meth:`IMSDataStore.hideIncidentTypes`.
         """
-        await self._hideShowIncidentTypes(incidentTypes, True)
+        await self._hideShowIncidentTypes(incidentTypes, hidden=True)
 
     ###
     # Concentric Streets
@@ -736,7 +736,7 @@ class DatabaseStore(IMSDataStore):
         return (cast(int, row["NUMBER"]) for row in txn.fetchall())
 
     async def incidents(
-        self, eventID: str, excludeSystemEntries: bool
+        self, eventID: str, *, excludeSystemEntries: bool
     ) -> Iterable[Incident]:
         """
         See :meth:`IMSDataStore.incidents`.
@@ -963,6 +963,7 @@ class DatabaseStore(IMSDataStore):
     async def _createIncident(
         self,
         incident: Incident,
+        *,
         author: str | None,
         directImport: bool,
     ) -> Incident:
@@ -1077,13 +1078,13 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.createIncident`.
         """
-        return await self._createIncident(incident, author, False)
+        return await self._createIncident(incident, author=author, directImport=False)
 
     async def importIncident(self, incident: Incident) -> None:
         """
         See :meth:`IMSDataStore.importIncident`.
         """
-        await self._createIncident(incident, None, True)
+        await self._createIncident(incident, author=None, directImport=True)
 
     async def _setIncidentAttribute(
         self,
@@ -1697,13 +1698,15 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.createIncidentReport`.
         """
-        return await self._createIncidentReport(incidentReport, author, False)
+        return await self._createIncidentReport(
+            incidentReport, author=author, directImport=False
+        )
 
     async def importIncidentReport(self, incidentReport: IncidentReport) -> None:
         """
         See :meth:`IMSDataStore.importIncidentReport`.
         """
-        await self._createIncidentReport(incidentReport, None, True)
+        await self._createIncidentReport(incidentReport, author=None, directImport=True)
 
     async def _setIncidentReportAttribute(
         self,

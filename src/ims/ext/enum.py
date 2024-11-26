@@ -36,7 +36,7 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
     def notEqual(self: Enum, other: Any) -> bool:
         return self is not other
 
-    def compare(self: Enum, other: Any, lessThan: bool) -> bool:
+    def compare(self: Enum, other: Any, *, lessThan: bool) -> bool:
         members: tuple[Enum, ...] = tuple(enumClass)  # type: ignore[arg-type]
         if other in members:
             for member in members:
@@ -51,25 +51,25 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
         if self is other:
             return False
 
-        return compare(self, other, True)
+        return compare(self, other, lessThan=True)
 
     def lessThanOrEqual(self: Enum, other: Any) -> bool:
         if self is other:
             return True
 
-        return compare(self, other, True)
+        return compare(self, other, lessThan=True)
 
     def greaterThan(self: Enum, other: Any) -> bool:
         if self is other:
             return False
 
-        return compare(self, other, False)
+        return compare(self, other, lessThan=False)
 
     def greaterThanOrEqual(self: Enum, other: Any) -> bool:
         if self is other:
             return True
 
-        return compare(self, other, False)
+        return compare(self, other, lessThan=False)
 
     enumClass.__eq__ = cast(Comparator, equal)  # type: ignore[assignment]
     enumClass.__ne__ = cast(Comparator, notEqual)  # type: ignore[assignment]
