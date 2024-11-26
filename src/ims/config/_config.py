@@ -22,8 +22,7 @@ from collections.abc import Callable, Sequence
 from configparser import ConfigParser, NoOptionError, NoSectionError
 from datetime import timedelta as TimeDelta
 from functools import partial
-from os import environ, getcwd
-from os.path import basename
+from os import environ
 from pathlib import Path
 from sys import argv
 from typing import Any, ClassVar, cast
@@ -186,12 +185,12 @@ class Configuration:
         """
         Load the configuration.
         """
-        command = basename(argv[0])
+        command = Path(argv[0]).name
 
         parser = ConfigFileParser(path=configFile)
 
         if configFile is None:
-            defaultRoot = Path(getcwd())
+            defaultRoot = Path.cwd()
         else:
             defaultRoot = configFile.parent.parent
 

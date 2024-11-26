@@ -2,7 +2,7 @@
 Configuration file for the Sphinx documentation builder.
 """
 
-# ruff: noqa: INP001
+# ruff: noqa: INP001, PTH100, PTH118
 
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:

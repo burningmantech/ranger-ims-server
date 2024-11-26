@@ -1,5 +1,5 @@
 # type: ignore  # noqa: PGH003
-# ruff: noqa: ANN001, ANN002, ANN003, ANN202, ANN204
+# ruff: noqa: ANN001, ANN002, ANN003, ANN202, ANN204, PTH110, PTH123, PTH202
 
 ##
 # See the file COPYRIGHT for copyright information.

@@ -21,7 +21,7 @@ Tests for L{ims.config._config}.
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from functools import partial
-from os import environ, getcwd
+from os import environ
 from pathlib import Path
 from string import ascii_letters, printable
 from typing import cast
@@ -508,7 +508,7 @@ class ConfigurationTests(TestCase):
         """
         No config file provided.
         """
-        self._test_fromConfigFile_defaults(None, Path(getcwd()))
+        self._test_fromConfigFile_defaults(None, Path.cwd())
 
     def test_fromConfigFile_empty(self) -> None:
         """

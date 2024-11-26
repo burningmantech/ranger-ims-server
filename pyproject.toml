@@ -127,13 +127,7 @@ ignore = [
     "FBT001",   # Boolean-typed positional argument in function definition
     "FBT002",   # Boolean default positional argument in function definition
     "FBT003",   # Boolean positional value in function call
-    "PTH100",   # `os.path.abspath()` should be replaced by `Path.resolve()`
-    "PTH109",   # `os.getcwd()` should be replaced by `Path.cwd()`
-    "PTH110",   # `os.path.exists()` should be replaced by `Path.exists()`
-    "PTH118",   # `os.path.join()` should be replaced by `Path` with `/` operator
-    "PTH119",   # `os.path.basename()` should be replaced by `Path.name`
-    "PTH123",   # `open()` should be replaced by `Path.open()`
-    "PTH202",   # `os.path.getsize` should be replaced by `Path.stat().st_size`
+    #"PTH202",   # `os.path.getsize` should be replaced by `Path.stat().st_size`
     "PYI032",   # Prefer `object` to `Any` for the second parameter to `__ne__`
     "PYI036",   # The second argument in `__exit__` should be annotated with `object` or `BaseException | None`
     "RET501",   # Do not explicitly `return None` in function if it is the only possible return value
