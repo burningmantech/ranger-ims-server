@@ -1,5 +1,3 @@
-# ruff: noqa: SLF001
-
 """
 Tests for :mod:`ranger-ims-server.ext.sqlite`
 """

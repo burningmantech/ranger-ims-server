@@ -20,7 +20,6 @@ IMS configuration
 
 from collections.abc import Callable, Sequence
 from configparser import ConfigParser, NoOptionError, NoSectionError
-from contextlib import suppress
 from datetime import timedelta as TimeDelta
 from functools import partial
 from os import environ
@@ -111,8 +110,10 @@ class ConfigFileParser:
         value = environ.get(f"IMS_{variable}")
 
         if not value:
-            with suppress(NoSectionError, NoOptionError):
+            try:
                 value = self._configParser.get(section, option)
+            except (NoSectionError, NoOptionError):
+                pass
 
         if value:
             return value

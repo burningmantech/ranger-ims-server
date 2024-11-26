@@ -439,8 +439,9 @@ class Router(Klein):
             Not authenticated.
             """
             requestedWith = request.getHeader("X-Requested-With")
-            if requestedWith == "XMLHttpRequest":
-                return forbiddenResponse(request)
+            if requestedWith is not None:
+                if requestedWith == "XMLHttpRequest":
+                    return forbiddenResponse(request)
 
             element = redirect(request, URLs.login, origin="o")
             return renderElement(  # type: ignore[return-value]

@@ -112,7 +112,7 @@ class Connection(BaseConnection):
         """
 
         def emit(row: Iterable[object]) -> None:
-            print(" | ".join(str(i) for i in row))  # noqa: T201
+            print(" | ".join(str(i) for i in row))
 
         printHeader = True
 
@@ -158,7 +158,7 @@ class Connection(BaseConnection):
                 rowid=rowid,
                 referred=referred,
                 constraint=constraint,
-                row={k: row[k] for k in row.keys()},  # noqa: SIM118
+                row={k: row[k] for k in row.keys()},
             )
 
             valid = False

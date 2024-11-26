@@ -21,7 +21,7 @@ Run the IMS server.
 import sys
 from collections.abc import Sequence
 from sys import stdout
-from typing import Any, Awaitable, Callable, ClassVar, cast
+from typing import ClassVar, cast
 
 from attrs import frozen
 from twisted.application.runner._exit import ExitStatus, exit
@@ -277,25 +277,22 @@ class Command:
             subCommand = options.subCommand
             subOptions = options.subOptions
 
-            assert subCommand is not None, "No subcommand"
-
-            action = cast(
-                Callable[[Configuration, dict[str, Any]], Awaitable[None]],
-                {
-                    "server": cls.runServer,
-                    "export": cls.runExport,
-                    "import": cls.runImport,
-                    "compare": cls.runCompare,
-                    "hash_password": cls.runHashPassword,
-                    "verify_password": cls.runVerifyPassword,
-                }.get(subCommand),
-            )
-
-            if action is None:
-                raise AssertionError(f"Unknown subcommand: {subCommand}")
-
             try:
-                await action(config, subOptions)
+                assert subCommand is not None, "No subcommand"
+                if subCommand == "server":
+                    cls.runServer(config, subOptions)
+                elif subCommand == "export":
+                    await cls.runExport(config, subOptions)
+                elif subCommand == "import":
+                    await cls.runImport(config, subOptions)
+                elif subCommand == "compare":
+                    cls.runCompare(config, subOptions)
+                elif subCommand == "hash_password":
+                    cls.runHashPassword(config, subOptions)
+                elif subCommand == "verify_password":
+                    cls.runVerifyPassword(config, subOptions)
+                else:
+                    raise AssertionError(f"Unknown subcommand: {subCommand}")
             except BaseException as e:  # noqa: BLE001
                 cls.log.critical(
                     "Unable to run {subCommand}: ({errorClass}) {error}",

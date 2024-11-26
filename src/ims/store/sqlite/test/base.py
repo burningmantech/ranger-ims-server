@@ -14,8 +14,6 @@
 # limitations under the License.
 ##
 
-# ruff: noqa: SLF001
-
 """
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """

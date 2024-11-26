@@ -1097,7 +1097,7 @@ class APIApplication:
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
 
-        for eventID in edits.keys():  # noqa: SIM118
+        for eventID in edits.keys():
             existing = await store.concentricStreets(eventID)
 
             for _streetID, _streetName in existing.items():

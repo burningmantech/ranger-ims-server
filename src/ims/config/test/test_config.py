@@ -14,8 +14,6 @@
 # limitations under the License.
 ##
 
-# ruff: noqa: SLF001
-
 """
 Tests for L{ims.config._config}.
 """

@@ -62,7 +62,7 @@ class TextOnlyAddress(Address, ComparisonMixIn):
         if other is None:
             return self.description is None
 
-        return ComparisonMixIn._cmp(self, other, methodName)  # noqa: SLF001
+        return ComparisonMixIn._cmp(self, other, methodName)
 
 
 @frozen(kw_only=True, eq=False)
@@ -98,11 +98,14 @@ class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
         if other is None:
             return self._allNone()
 
-        if other.__class__ is TextOnlyAddress and self._allNone():
-            method = cast(Callable[[str], bool], getattr(self.description, methodName))
-            return method(other.description)
+        if other.__class__ is TextOnlyAddress:
+            if self._allNone():
+                method = cast(
+                    Callable[[str], bool], getattr(self.description, methodName)
+                )
+                return method(other.description)
 
-        return ComparisonMixIn._cmp(self, other, methodName)  # noqa: SLF001
+        return ComparisonMixIn._cmp(self, other, methodName)
 
     def __hash__(self) -> int:
         if self._allNone():
