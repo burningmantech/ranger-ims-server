@@ -261,9 +261,8 @@ class HTTPPageGetter(http.HTTPClient):
         self.transport.abortConnection()
         self.factory.noPage(
             defer.TimeoutError(
-                "Getting {url} took longer than {timeout} seconds.".format(
-                    url=self.factory.url, timeout=self.factory.timeout
-                )
+                f"Getting {self.factory.url} took longer than "
+                f"{self.factory.timeout} seconds."
             )
         )
 

@@ -140,7 +140,6 @@ ignore = [
     "FBT003",   # Boolean positional value in function call
     "SLF001",   # Private member accessed
     "UP007",    # Use `X | Y` for type annotations
-    "UP032",    # Use f-string instead of `format` call
     "UP035",    # `typing.Deque` is deprecated, use `collections.deque` instead
     "UP038",    # Use `X | Y` in `isinstance` call instead of `(X, Y)`
 ]
