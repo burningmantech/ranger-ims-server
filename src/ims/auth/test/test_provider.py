@@ -86,8 +86,7 @@ class TestUser(IMSUser):
     def hashedPassword(self) -> str | None:  # type: ignore[override]
         if self.plainTextPassword is None:
             return None
-        else:
-            return hashPassword(self.plainTextPassword)
+        return hashPassword(self.plainTextPassword)
 
 
 @composite

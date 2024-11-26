@@ -23,8 +23,8 @@ from ._dms import DatabaseError, DMSError, DutyManagementSystem
 
 
 __all__ = (
-    "DatabaseError",
     "DMSDirectory",
     "DMSError",
+    "DatabaseError",
     "DutyManagementSystem",
 )

@@ -45,8 +45,8 @@ class ComparisonMixIn(ABC):
             otherValue = other._cmpValue()
             selfValueCmp = cast(Callable[[Any], bool], getattr(selfValue, methodName))
             return selfValueCmp(otherValue)
-        else:
-            return NotImplemented
+
+        return NotImplemented
 
     def __hash__(self) -> int:
         return hash(self._cmpValue())

@@ -140,5 +140,5 @@ def rfc3339TextAsDateTime(rfc3339: str) -> DateTime:
     return DateTimeParser().parse_iso(rfc3339)
 
 
-jsonTrue = jsonTextFromObject(True)  # noqa: FBT003
-jsonFalse = jsonTextFromObject(False)  # noqa: FBT003
+jsonTrue = jsonTextFromObject(True)
+jsonFalse = jsonTextFromObject(False)

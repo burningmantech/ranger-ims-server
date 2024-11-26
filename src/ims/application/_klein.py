@@ -220,8 +220,7 @@ def invalidQueryResponse(
     """
     if value is None:
         return badRequestResponse(request, f"Invalid query: missing parameter {arg}")
-    else:
-        return badRequestResponse(request, f"Invalid query: {arg}={value}")
+    return badRequestResponse(request, f"Invalid query: {arg}={value}")
 
 
 def badGatewayResponse(request: IRequest, message: str) -> KleinSynchronousRenderable:
@@ -282,8 +281,7 @@ def queryValue(request: IRequest, name: str, default: str | None = None) -> str 
 
     if len(values) > 0:
         return values[-1].decode("utf-8")
-    else:
-        return default
+    return default
 
 
 def queryValues(

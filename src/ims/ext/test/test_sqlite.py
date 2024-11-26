@@ -305,7 +305,6 @@ def patchConnect_errors(testCase: TestCase) -> None:
     def connect(database: str | None) -> Connection:
         if database is None:
             database = ":memory:"
-        db = ErrneousSQLiteConnection(database)
-        return db
+        return ErrneousSQLiteConnection(database)
 
     testCase.patch(sqlite, "connect", connect)

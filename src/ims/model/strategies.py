@@ -63,9 +63,9 @@ __all__ = (
     "concentricStreetIDs",
     "concentricStreetNames",
     "dateTimes",
-    "events",
     "eventAccesses",
     "eventDatas",
+    "events",
     "imsDatas",
     "incidentLists",
     "incidentNumbers",
@@ -104,8 +104,7 @@ def timeZones(draw: Callable[..., Any]) -> TimeZone:
     """
     offset = draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
     timeDelta = TimeDelta(minutes=offset)
-    timeZone = TimeZone(offset=timeDelta, name=f"{offset}s")
-    return timeZone
+    return TimeZone(offset=timeDelta, name=f"{offset}s")
 
 
 def dateTimes(

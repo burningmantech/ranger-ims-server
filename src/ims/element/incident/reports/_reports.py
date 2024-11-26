@@ -53,8 +53,7 @@ class IncidentReportsPage(Page):
             & Authorization.writeIncidentReports
         ):
             return jsonTrue
-        else:
-            return jsonFalse
+        return jsonFalse
 
     @renderer
     def event_id(self, request: IRequest, tag: Tag) -> KleinRenderable:

@@ -790,8 +790,7 @@ class DatabaseStore(IMSDataStore):
         number = cast(Optional[int], row["max(NUMBER)"])
         if number is None:
             return 1
-        else:
-            return number + 1
+        return number + 1
 
     def _attachRangeHandlesToIncident(
         self,
@@ -1588,8 +1587,7 @@ class DatabaseStore(IMSDataStore):
         number = cast(Optional[int], row["max(NUMBER)"])
         if number is None:
             return 1
-        else:
-            return number + 1
+        return number + 1
 
     def _createAndAttachReportEntriesToIncidentReport(
         self,

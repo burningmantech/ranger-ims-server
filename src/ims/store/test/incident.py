@@ -781,8 +781,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 if name == "created":
                     if store.dateTimesEqual(valueA, valueB):
                         continue
-                    else:
-                        messages.append(f"{name} delta: {valueA - valueB}")
+                    messages.append(f"{name} delta: {valueA - valueB}")
                 elif name == "reportEntries":
                     if store.reportEntriesEqual(valueA, valueB, ignoreAutomatic):
                         continue

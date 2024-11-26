@@ -37,8 +37,7 @@ def timezones(draw: Callable[..., Any]) -> TimeZone:
         int, draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
     )
     timeDelta = TimeDelta(minutes=offset)
-    timeZone = TimeZone(offset=timeDelta, name=f"{offset}s")
-    return timeZone
+    return TimeZone(offset=timeDelta, name=f"{offset}s")
 
 
 @composite

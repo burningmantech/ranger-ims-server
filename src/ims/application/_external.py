@@ -1,5 +1,5 @@
 # type: ignore  # noqa: PGH003
-# ruff: noqa: ANN001, ANN002, ANN003, ANN202, ANN204, PTH110, PTH123, PTH202
+# ruff: noqa: ANN001, ANN002, ANN003, ANN202, ANN204, PTH110, PTH123, PTH202, RUF012
 
 ##
 # See the file COPYRIGHT for copyright information.
@@ -259,7 +259,7 @@ class HTTPPageGetter(http.HTTPClient):
         self.transport.abortConnection()
         self.factory.noPage(
             defer.TimeoutError(
-                "Getting %s took longer than %s seconds."  # noqa: S001
+                "Getting %s took longer than %s seconds."
                 % (self.factory.url, self.factory.timeout)
             )
         )
@@ -886,7 +886,7 @@ class ExternalApplication:
             return notFoundResponse(request)
 
         filePath = filePath.child(name)
-        for _name in names:  # noqa: PLR1704
+        for _name in names:
             filePath = filePath.child(_name)
 
         try:

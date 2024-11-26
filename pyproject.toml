@@ -119,6 +119,7 @@ ignore = [
     "PLR0913",  # Too many arguments in function definition
     "PLR0915",  # Too many statements
     "PT",       # We don't use pytest
+    "RSE102",   # Unnecessary parentheses on raised exception
 
     # Reconsider
     "TID252",   # Prefer absolute imports over relative imports from parent modules
@@ -127,15 +128,6 @@ ignore = [
     "FBT001",   # Boolean-typed positional argument in function definition
     "FBT002",   # Boolean default positional argument in function definition
     "FBT003",   # Boolean positional value in function call
-    "RET501",   # Do not explicitly `return None` in function if it is the only possible return value
-    "RET504",   # Unnecessary assignment before `return` statement
-    "RET505",   # Unnecessary `else` after `return` statement
-    "RET506",   # Unnecessary `else` after `raise` statement
-    "RET507",   # Unnecessary `else` after `continue` statement
-    "RSE102",   # Unnecessary parentheses on raised exception
-    "RUF012",   # Mutable class attributes should be annotated with `typing.ClassVar`
-    "RUF022",   # `__all__` is not sorted
-    "RUF100",   # Unused `noqa` directive
     "S101",     # Use of `assert` detected
     "S105",     # Possible hardcoded password assigned to
     "S106",     # Possible hardcoded password assigned to argument

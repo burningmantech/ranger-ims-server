@@ -195,8 +195,7 @@ class MySQLService(ABC):
                 except ProgrammingError as e:
                     if e.args[1].endswith("; database exists"):
                         raise DatabaseExistsError(name) from None
-                    else:
-                        raise
+                    raise
                 cursor.execute(
                     f"grant all privileges on {name}.* "
                     f"to %(user)s@%(host)s identified by %(password)s",

@@ -128,8 +128,7 @@ class Element(BaseElement):
         """
         if self.isAdmin(request):
             return tag
-        else:
-            return ""
+        return ""
 
     @renderer
     def logged_in_user(self, request: IRequest, tag: Tag) -> KleinRenderable:
@@ -147,8 +146,7 @@ class Element(BaseElement):
 
         if tag.tagName == "text":
             return username
-        else:
-            return tag(username)
+        return tag(username)
 
     @renderer
     def deployment_warning(self, request: IRequest, tag: Tag) -> KleinRenderable:
@@ -199,9 +197,9 @@ class Element(BaseElement):
 
         if attributeName == "":
             return text
-        else:
-            tag.attributes[attributeName] = text
-            return tag
+
+        tag.attributes[attributeName] = text
+        return tag
 
     @renderer
     async def _events(
@@ -242,8 +240,8 @@ class Element(BaseElement):
                 )
                 for eventID in eventIDs
             )
-        else:
-            return tag("No events found.")
+
+        return tag("No events found.")
 
     @renderer
     def events(self, request: IRequest, tag: Tag) -> KleinRenderable:

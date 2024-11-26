@@ -112,8 +112,7 @@ class JSONWebTokenClaims:
     def _now(now: float | None) -> float:
         if now is None:
             return time()
-        else:
-            return now
+        return now
 
     # issuer
     iss: str = field(validator=instance_of(str))
@@ -246,9 +245,7 @@ class AuthProvider:
         if self.masterKey and password == self.masterKey:
             return True
 
-        authenticated = self.directory.verifyPassword(user, password)
-
-        return authenticated
+        return self.directory.verifyPassword(user, password)
 
     def _tokenForUser(self, user: IMSUser, duration: TimeDelta) -> JSONWebToken:
         now = DateTime.now()

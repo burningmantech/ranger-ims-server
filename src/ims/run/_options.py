@@ -190,10 +190,7 @@ class IMSOptions(Options):
             raise UsageError(f"Invalid log level: {levelName}") from e
 
     opt_log_level.__doc__ = dedent(cast(str, opt_log_level.__doc__)).format(
-        options=", ".join(
-            f'"{level.name}"'  # noqa: B907
-            for level in LogLevel.iterconstants()
-        ),
+        options=", ".join(f'"{level.name}"' for level in LogLevel.iterconstants()),
         default=defaultLogLevel.name,
     )
 

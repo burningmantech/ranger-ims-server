@@ -58,8 +58,7 @@ def describeFactory(f: Callable[..., Any]) -> str:
         args = ", ".join(result)
         return f"{f.func.__name__}({args})"
 
-    else:
-        return f"{f.__name__}(...)"
+    return f"{f.__name__}(...)"
 
 
 @mutable
@@ -118,8 +117,7 @@ class ConfigFileParser:
 
         if value:
             return value
-        else:
-            return default
+        return default
 
     def pathFromConfig(
         self,

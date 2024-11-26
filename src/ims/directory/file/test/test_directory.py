@@ -407,8 +407,7 @@ class FileDirectoryTests(TestCase):
         def overridableMTime(directorySelf: FileDirectory) -> float:
             if self.mtime is None:
                 return superMTime(directorySelf)
-            else:
-                return self.mtime
+            return self.mtime
 
         return patch(
             "ims.directory.file._directory.FileDirectory._mtime",

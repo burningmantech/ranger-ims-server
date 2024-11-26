@@ -47,10 +47,11 @@ __all__ = ()
 def jsonFromAddress(address: Address) -> dict[str, Any]:
     if isinstance(address, TextOnlyAddress):
         return jsonFromTextOnlyAddress(address)
-    elif isinstance(address, RodGarettAddress):
+
+    if isinstance(address, RodGarettAddress):
         return jsonFromRodGarettAddress(address)
-    else:
-        raise TypeError(f"Unknown address type {address!r}")
+
+    raise TypeError(f"Unknown address type {address!r}")
 
 
 def jsonFromTextOnlyAddress(address: TextOnlyAddress) -> dict[str, Any]:

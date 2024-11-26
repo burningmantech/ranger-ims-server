@@ -105,8 +105,7 @@ class IMSDirectory(ABC):
     def verifyPassword(self, user: IMSUser, password: str) -> bool:
         if user.hashedPassword is None:
             return False
-        else:
-            return verifyPassword(password, user.hashedPassword)
+        return verifyPassword(password, user.hashedPassword)
 
 
 @frozen(kw_only=True)

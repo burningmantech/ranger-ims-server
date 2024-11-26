@@ -271,8 +271,7 @@ def fullName(first: str, middle: str, last: str) -> str:
     """
     if middle:
         return f"{first} {middle}. {last}"
-    else:
-        return f"{first} {last}"
+    return f"{first} {last}"
 
 
 def statusFromID(strValue: str) -> RangerStatus:

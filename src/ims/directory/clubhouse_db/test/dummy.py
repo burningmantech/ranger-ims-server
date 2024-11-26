@@ -47,9 +47,7 @@ class DummyQuery:
         sql = cast(str, self.args[0])
 
         # Collapse spaces
-        sql = " ".join(sql.split())
-
-        return sql
+        return " ".join(sql.split())
 
 
 class DummyConnectionPool:

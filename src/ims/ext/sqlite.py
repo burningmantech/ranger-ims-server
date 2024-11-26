@@ -57,8 +57,7 @@ class Row(BaseRow):
         """
         if key in self.keys():
             return cast(ParameterValue, self[key])
-        else:
-            return default
+        return default
 
 
 class Cursor(BaseCursor):
@@ -100,7 +99,7 @@ class Connection(BaseConnection):
 
     def cursor(  # type: ignore[override]
         self,
-        factory: CursorFactory = cast(CursorFactory, Cursor),  # noqa: M511
+        factory: CursorFactory = cast(CursorFactory, Cursor),
     ) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.cursor`.

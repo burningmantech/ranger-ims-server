@@ -60,7 +60,7 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
     else:
         username = "-"
 
-    line = (
+    return (
         '"{ip}" {user} - {timestamp} "{method} {uri} {protocol}" '
         '{code} {length} "{referrer}{agent}"'.format(
             ip=_escape(ip or "-"),
@@ -75,7 +75,6 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
             user=username,
         )
     )
-    return line
 
 
 def patchCombinedLogFormatter() -> None:

@@ -112,7 +112,7 @@ class DataStoreEventSourceLogObserver:
             # Not a data store event
             return None
 
-        elif eventClass is Incident:
+        if eventClass is Incident:
             incident = loggerEvent.get("incident", None)
 
             if incident is None:
@@ -137,12 +137,11 @@ class DataStoreEventSourceLogObserver:
             )
             return None
 
-        eventSourceEvent = Event(
+        return Event(
             eventID=eventID,
             eventClass=eventClass.__name__,
             message=jsonTextFromObject(message),
         )
-        return eventSourceEvent
 
     def _playback(self, listener: IRequest, lastEventID: str | None) -> None:
         if lastEventID is None:

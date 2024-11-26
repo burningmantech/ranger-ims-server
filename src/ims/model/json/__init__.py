@@ -44,6 +44,7 @@ del _ranger
 
 
 __all__ = (
+    "JSON",
     "EventAccessJSONKey",
     "EventDataJSONKey",
     "IMSDataJSONKey",
@@ -52,7 +53,6 @@ __all__ = (
     "IncidentReportJSONKey",
     "IncidentStateJSONValue",
     "IncidentTypeJSONKey",
-    "JSON",
     "JSONCodecError",
     "LocationJSONKey",
     "ReportEntryJSONKey",

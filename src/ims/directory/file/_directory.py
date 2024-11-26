@@ -63,7 +63,7 @@ def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
     handle = mapping.get("handle", None)
     if handle is None:
         raise DirectoryError(f"Ranger must have handle: {mapping!r}")
-    elif type(handle) is not str:
+    if type(handle) is not str:
         raise DirectoryError(f"Ranger handle must be text: {handle!r}")
 
     name = mapping.get("name", "")
@@ -128,7 +128,7 @@ def positionFromMapping(mapping: Mapping[str, Any]) -> Position:
     name: str | None = mapping.get("name", None)
     if name is None:
         raise DirectoryError(f"Position must have name: {mapping!r}")
-    elif type(name) is not str:
+    if type(name) is not str:
         raise DirectoryError(f"Position name must be text: {name!r}")
 
     members: Sequence[str] = mapping.get("members", [])

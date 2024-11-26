@@ -236,7 +236,7 @@ class Command:
     def runHashPassword(
         cls,
         config: Configuration,  # noqa: ARG003
-        options: HashPasswordOptions,  # noqa: ARG003
+        options: HashPasswordOptions,
     ) -> None:
         password = options["password"]
         hashedPassword = hashPassword(password)
@@ -247,7 +247,7 @@ class Command:
     def runVerifyPassword(
         cls,
         config: Configuration,  # noqa: ARG003
-        options: VerifyPasswordOptions,  # noqa: ARG003
+        options: VerifyPasswordOptions,
     ) -> None:
         password = options["password"]
         hashedPassword = options["hashedPassword"]
@@ -293,7 +293,7 @@ class Command:
                     cls.runVerifyPassword(config, subOptions)
                 else:
                     raise AssertionError(f"Unknown subcommand: {subCommand}")
-            except BaseException as e:  # noqa: B036, BLE001
+            except BaseException as e:  # noqa: BLE001
                 cls.log.critical(
                     "Unable to run {subCommand}: ({errorClass}) {error}",
                     subCommand=subCommand,

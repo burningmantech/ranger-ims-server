@@ -99,11 +99,11 @@ class AuthApplication:
                     location = URL.fromText(url)
 
                 return redirect(request, location)
-            else:
-                self._log.debug(
-                    "Login failed: incorrect credentials for user: {user}",
-                    user=user,
-                )
+
+            self._log.debug(
+                "Login failed: incorrect credentials for user: {user}",
+                user=user,
+            )
 
         return self.login(request, failed=True)
 

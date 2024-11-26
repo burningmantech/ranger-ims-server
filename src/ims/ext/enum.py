@@ -42,7 +42,7 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
             for member in members:
                 if member is self:
                     return lessThan
-                elif member is other:
+                if member is other:
                     return not lessThan
 
         return NotImplemented
