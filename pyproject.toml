@@ -122,6 +122,8 @@ ignore = [
     "RSE102",   # Unnecessary parentheses on raised exception
     "S101",     # Use of `assert` detected
     "S608",     # Possible SQL injection vector through string-based query construction
+    "SIM108",   # Use ternary operator
+    "SIM118",   # Use `key in dict` instead of `key in dict.keys()`
 
     # Reconsider
     "TID252",   # Prefer absolute imports over relative imports from parent modules
@@ -130,12 +132,6 @@ ignore = [
     "FBT001",   # Boolean-typed positional argument in function definition
     "FBT002",   # Boolean default positional argument in function definition
     "FBT003",   # Boolean positional value in function call
-    "SIM102",   # Use a single `if` statement instead of nested `if` statements
-    "SIM105",   # Use `contextlib.suppress(NoSectionError, NoOptionError)` instead of `try`-`except`-`pass`
-    "SIM108",   # Use ternary operator
-    "SIM114",   # Combine `if` branches using logical `or` operator
-    "SIM115",   # Use a context manager for opening files
-    "SIM118",   # Use `key in dict` instead of `key in dict.keys()`
     "SLF001",   # Private member accessed
     "TD001",    # Invalid TODO tag: `FIXME`
     "TD002",    # Missing author in TODO

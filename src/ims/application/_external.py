@@ -85,9 +85,11 @@ class HTTPPageGetter(http.HTTPClient):
     def connectionMade(self):
         method = _ensureValidMethod(getattr(self.factory, "method", b"GET"))
         self.sendCommand(method, _ensureValidURI(self.factory.path))
-        if self.factory.scheme == b"http" and self.factory.port != 80:  # noqa: PLR2004
-            host = b"%b:%d" % (self.factory.host, self.factory.port)
-        elif self.factory.scheme == b"https" and self.factory.port != 443:  # noqa: PLR2004
+        if (
+            self.factory.scheme == b"http" and self.factory.port != 80  # noqa: PLR2004
+        ) or (
+            self.factory.scheme == b"https" and self.factory.port != 443  # noqa: PLR2004
+        ):
             host = b"%b:%d" % (self.factory.host, self.factory.port)
         else:
             host = self.factory.host
@@ -548,10 +550,10 @@ class HTTPDownloader(HTTPClientFactory):
 
     def openFile(self, partialContent):
         if partialContent:
-            file = open(self.fileName, "rb+")
+            file = open(self.fileName, "rb+")  # noqa: SIM115
             file.seek(0, 2)
         else:
-            file = open(self.fileName, "wb")
+            file = open(self.fileName, "wb")  # noqa: SIM115
         return file
 
     def pageStart(self, partialContent):

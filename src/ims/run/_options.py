@@ -52,7 +52,7 @@ def openFile(fileName: str, mode: str) -> IO[Any]:
 
     def openNamedFile() -> IO[Any]:
         try:
-            file = Path(fileName).open(mode)
+            file = Path(fileName).open(mode)  # noqa: SIM115
         except OSError as e:
             exit(ExitStatus.EX_IOERR, f"Unable to open file {fileName!r}: {e}")
         return file
