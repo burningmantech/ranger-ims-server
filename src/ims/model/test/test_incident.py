@@ -109,9 +109,7 @@ class IncidentTests(TestCase):
         self._test_replace(incident, "number", number)
 
     @given(incidents(), dateTimes())
-    def test_replace_created(
-        self, incident: Incident, created: DateTime
-    ) -> None:
+    def test_replace_created(self, incident: Incident, created: DateTime) -> None:
         """
         :meth:`Incident.replace` with a created argument replaces the created
         time.
@@ -119,9 +117,7 @@ class IncidentTests(TestCase):
         self._test_replace(incident, "created", normalizeDateTime(created))
 
     @given(incidents(), incidentStates())
-    def test_replace_state(
-        self, incident: Incident, state: IncidentState
-    ) -> None:
+    def test_replace_state(self, incident: Incident, state: IncidentState) -> None:
         """
         :meth:`Incident.replace` with a state argument replaces the incident
         state.
@@ -147,9 +143,7 @@ class IncidentTests(TestCase):
         self._test_replace(incident, "summary", summary)
 
     @given(incidents(), locations())
-    def test_replace_location(
-        self, incident: Incident, location: Location
-    ) -> None:
+    def test_replace_location(self, incident: Incident, location: Location) -> None:
         """
         :meth:`Incident.replace` with a location argument replaces the
         location.
@@ -184,9 +178,7 @@ class IncidentTests(TestCase):
         :meth:`Incident.replace` with a reportEntries argument replaces the
         report entries.
         """
-        self._test_replace(
-            incident, "reportEntries", tuple(sorted(reportEntries))
-        )
+        self._test_replace(incident, "reportEntries", tuple(sorted(reportEntries)))
 
 
 class SummaryFromReportTests(TestCase):
@@ -219,9 +211,7 @@ class SummaryFromReportTests(TestCase):
         )
 
     @given(lists(reportEntries(), min_size=1))
-    def test_entryNotAutomatic(
-        self, reportEntries: Iterable[ReportEntry]
-    ) -> None:
+    def test_entryNotAutomatic(self, reportEntries: Iterable[ReportEntry]) -> None:
         """
         :func:`summaryFromReport` uses the first line of text from the first
         non-automatic entry.

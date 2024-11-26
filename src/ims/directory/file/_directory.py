@@ -43,9 +43,7 @@ def statusFromID(strValue: str) -> RangerStatus:
     }.get(strValue, RangerStatus.other)
 
 
-def rangersFromMappings(
-    sequence: Iterable[Mapping[str, Any]]
-) -> Iterable[Ranger]:
+def rangersFromMappings(sequence: Iterable[Mapping[str, Any]]) -> Iterable[Ranger]:
     if type(sequence) is not list:
         raise DirectoryError(f"Rangers must be sequence: {sequence!r}")
 
@@ -65,7 +63,7 @@ def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
     handle = mapping.get("handle", None)
     if handle is None:
         raise DirectoryError(f"Ranger must have handle: {mapping!r}")
-    elif type(handle) is not str:
+    if type(handle) is not str:
         raise DirectoryError(f"Ranger handle must be text: {handle!r}")
 
     name = mapping.get("name", "")
@@ -110,9 +108,7 @@ def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
     )
 
 
-def positionsFromMappings(
-    sequence: Iterable[Mapping[str, Any]]
-) -> Iterable[Position]:
+def positionsFromMappings(sequence: Iterable[Mapping[str, Any]]) -> Iterable[Position]:
     if type(sequence) is not list:
         raise DirectoryError(f"Positions must be sequence: {sequence!r}")
 
@@ -122,9 +118,7 @@ def positionsFromMappings(
         except DirectoryError:
             raise
         except Exception as e:
-            raise DirectoryError(
-                f"Unable to parse position records: {e}"
-            ) from e
+            raise DirectoryError(f"Unable to parse position records: {e}") from e
 
 
 def positionFromMapping(mapping: Mapping[str, Any]) -> Position:
@@ -134,14 +128,12 @@ def positionFromMapping(mapping: Mapping[str, Any]) -> Position:
     name: str | None = mapping.get("name", None)
     if name is None:
         raise DirectoryError(f"Position must have name: {mapping!r}")
-    elif type(name) is not str:
+    if type(name) is not str:
         raise DirectoryError(f"Position name must be text: {name!r}")
 
     members: Sequence[str] = mapping.get("members", [])
     if type(members) is not list:
-        raise DirectoryError(
-            f"Position members must be sequence of text: {members!r}"
-        )
+        raise DirectoryError(f"Position members must be sequence of text: {members!r}")
     for m in members:
         if type(m) is not str:
             raise DirectoryError(f"Position members must be text: {m!r}")
@@ -183,10 +175,7 @@ class FileDirectory(IMSDirectory):
         now = time()
         elapsed = now - self._state.lastLoadTime
 
-        if (
-            elapsed >= self.checkInterval
-            and self._mtime() >= self._state.lastLoadTime
-        ):
+        if elapsed >= self.checkInterval and self._mtime() >= self._state.lastLoadTime:
             self._log.info("Reloading directory file...")
             with self._open() as fh:
                 yaml = parseYAML(fh)
@@ -198,9 +187,7 @@ class FileDirectory(IMSDirectory):
                     raise DirectoryError("Unknown schema version in YAML file")
 
                 rangers = tuple(rangersFromMappings(yaml.get("rangers", ())))
-                positions = tuple(
-                    positionsFromMappings(yaml.get("positions", ()))
-                )
+                positions = tuple(positionsFromMappings(yaml.get("positions", ())))
 
                 self._state.directory = RangerDirectory(
                     rangers=rangers, positions=positions

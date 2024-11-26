@@ -68,7 +68,7 @@ class DirectoryUser(IMSUser):
     active: bool
     groups: Sequence[IMSGroupID]
     hashedPassword: str | None = field(
-        default=None, repr=lambda p: "\N{ZIPPER-MOUTH FACE}"
+        default=None, repr=lambda _p: "\N{ZIPPER-MOUTH FACE}"
     )
 
 
@@ -105,8 +105,7 @@ class IMSDirectory(ABC):
     def verifyPassword(self, user: IMSUser, password: str) -> bool:
         if user.hashedPassword is None:
             return False
-        else:
-            return verifyPassword(password, user.hashedPassword)
+        return verifyPassword(password, user.hashedPassword)
 
 
 @frozen(kw_only=True)
@@ -135,9 +134,7 @@ class RangerDirectory(IMSDirectory):
 
         for ranger in self._rangers:
             if ranger.handle in usersByHandle:
-                raise DirectoryError(
-                    f"Duplicate Ranger handle: {ranger.handle}"
-                )
+                raise DirectoryError(f"Duplicate Ranger handle: {ranger.handle}")
             groups = tuple(
                 IMSGroupID(position.name)
                 for position in self._positionsByHandle.get(ranger.handle, ())
@@ -172,8 +169,8 @@ class RangerDirectory(IMSDirectory):
 
 
 def _hash(password: str, salt: str) -> str:
-    # SHA1 is vulnerable; need to fix in Clubhouse
-    return sha1((salt + password).encode("utf-8")).hexdigest()  # nosec
+    # FIXME: SHA1 is vulnerable; need to fix in Clubhouse
+    return sha1((salt + password).encode("utf-8")).hexdigest()  # noqa: S324
 
 
 def hashPassword(password: str, salt: str | None = None) -> str:

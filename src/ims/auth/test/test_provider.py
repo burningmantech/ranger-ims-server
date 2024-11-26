@@ -19,6 +19,7 @@ Tests for L{ims.auth._provider}.
 """
 
 from collections.abc import Callable, Sequence
+from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from pathlib import Path
@@ -65,7 +66,7 @@ from .._provider import (
 __all__ = ()
 
 
-def oops(*args: Any, **kwargs: Any) -> None:
+def oops(*args: Any, **kwargs: Any) -> None:  # noqa: ARG001
     raise AssertionError()
 
 
@@ -85,8 +86,7 @@ class TestUser(IMSUser):
     def hashedPassword(self) -> str | None:  # type: ignore[override]
         if self.plainTextPassword is None:
             return None
-        else:
-            return hashPassword(self.plainTextPassword)
+        return hashPassword(self.plainTextPassword)
 
 
 @composite
@@ -97,9 +97,7 @@ def testUsers(draw: Callable[..., Any]) -> TestUser:
         active=draw(booleans()),
         groups=tuple(
             IMSGroupID(g)
-            for g in draw(
-                text(min_size=1, alphabet=ascii_letters + digits + "_")
-            )
+            for g in draw(text(min_size=1, alphabet=ascii_letters + digits + "_"))
         ),
         plainTextPassword=draw(one_of(none(), text())),
     )
@@ -111,9 +109,7 @@ def authorizations(draw: Callable[..., Any]) -> Authorization:
     Strategy that generates :class:`Authorization` values.
     """
     authorization = Authorization.none
-    for subAuthorization in draw(
-        sets(Authorization, max_size=len(Authorization))
-    ):
+    for subAuthorization in draw(sets(Authorization, max_size=len(Authorization))):
         authorization |= subAuthorization
     return authorization
 
@@ -161,9 +157,7 @@ class TestTests(TestCase):
         if user.plainTextPassword is not None:
             self.assertIsNotNone(user.hashedPassword)
             assert user.hashedPassword is not None
-            self.assertTrue(
-                verifyPassword(user.plainTextPassword, user.hashedPassword)
-            )
+            self.assertTrue(verifyPassword(user.plainTextPassword, user.hashedPassword))
 
 
 class AuthorizationTests(TestCase):
@@ -201,15 +195,15 @@ class JSONWebTokenClaimsTests(TestCase):
             self.assertEqual(JSONWebTokenClaims._now(None), self.now)
 
     def token(self, **kwargs: Any) -> JSONWebTokenClaims:
-        defaults: dict[str, Any] = dict(
-            iss="my-issuer",
-            iat=self.now - 100,
-            exp=self.now + 100,
-            sub="some-uid",
-            preferred_username="some-user",
-            ranger_on_site=True,
-            ranger_positions="some-position,another-position",
-        )
+        defaults: dict[str, Any] = {
+            "iss": "my-issuer",
+            "iat": self.now - 100,
+            "exp": self.now + 100,
+            "sub": "some-uid",
+            "preferred_username": "some-user",
+            "ranger_on_site": True,
+            "ranger_positions": "some-position,another-position",
+        }
         defaults.update(kwargs)
         return JSONWebTokenClaims(**defaults)
 
@@ -230,9 +224,7 @@ class JSONWebTokenClaimsTests(TestCase):
         JSONWebTokenClaims.validateIssued catches future issue time.
         """
         token = self.token(iat=self.now + 1)
-        self.assertRaises(
-            InvalidCredentialsError, token.validateIssued, now=self.now
-        )
+        self.assertRaises(InvalidCredentialsError, token.validateIssued, now=self.now)
         self.assertRaises(InvalidCredentialsError, token.validate, now=self.now)
 
     def test_validateExpiration(self) -> None:
@@ -290,9 +282,7 @@ class JSONWebTokenTests(TestCase):
         self.assertEqual(claims.sub, "some-uid")
         self.assertEqual(claims.preferred_username, "some-user")
         self.assertEqual(claims.ranger_on_site, True)
-        self.assertEqual(
-            claims.ranger_positions, "some-position,another-position"
-        )
+        self.assertEqual(claims.ranger_positions, "some-position,another-position")
 
     def test_fromClaims(self) -> None:
         """
@@ -319,9 +309,7 @@ class JSONWebTokenTests(TestCase):
         self.assertEqual(claims.sub, "some-uid")
         self.assertEqual(claims.preferred_username, "some-user")
         self.assertEqual(claims.ranger_on_site, True)
-        self.assertEqual(
-            claims.ranger_positions, "some-position,another-position"
-        )
+        self.assertEqual(claims.ranger_positions, "some-position,another-position")
 
     def test_fromText_wrongKey(self) -> None:
         """
@@ -365,18 +353,11 @@ class AuthProviderTests(TestCase):
         return SQLiteDataStore(dbPath=None)
 
     def directory(self) -> IMSDirectory:
-        path = (
-            Path(__file__).parent.parent.parent
-            / "file"
-            / "test"
-            / "directory.yaml"
-        )
+        path = Path(__file__).parent.parent.parent / "file" / "test" / "directory.yaml"
         return FileDirectory(path=path)
 
     @given(testUsers(), text(min_size=1))
-    def test_verifyPassword_masterKey(
-        self, user: IMSUser, masterKey: str
-    ) -> None:
+    def test_verifyPassword_masterKey(self, user: IMSUser, masterKey: str) -> None:
         provider = AuthProvider(
             store=self.store(),
             directory=self.directory(),
@@ -384,9 +365,7 @@ class AuthProviderTests(TestCase):
             masterKey=masterKey,
         )
 
-        authenticated = self.successResultOf(
-            provider.verifyPassword(user, masterKey)
-        )
+        authenticated = self.successResultOf(provider.verifyPassword(user, masterKey))
         self.assertTrue(authenticated)
 
     @given(testUsers())
@@ -410,9 +389,7 @@ class AuthProviderTests(TestCase):
         self.assertTrue(authenticated)
 
     @given(testUsers(), text())
-    def test_verifyPassword_mismatch(
-        self, user: TestUser, notPassword: str
-    ) -> None:
+    def test_verifyPassword_mismatch(self, user: TestUser, notPassword: str) -> None:
         """
         AuthProvider.verifyPassword() returns False when the user's password is
         not a match.
@@ -425,9 +402,7 @@ class AuthProviderTests(TestCase):
             jsonWebKey=JSONWebKey.generate(),
         )
 
-        authenticated = self.successResultOf(
-            provider.verifyPassword(user, notPassword)
-        )
+        authenticated = self.successResultOf(provider.verifyPassword(user, notPassword))
         self.assertFalse(authenticated)
 
     @given(testUsers(), text())
@@ -443,20 +418,14 @@ class AuthProviderTests(TestCase):
             jsonWebKey=JSONWebKey.generate(),
         )
 
-        authenticated = self.successResultOf(
-            provider.verifyPassword(user, password)
-        )
+        authenticated = self.successResultOf(provider.verifyPassword(user, password))
         self.assertFalse(authenticated)
 
     @given(
         testUsers(),
-        timedeltas(
-            min_value=TimeDelta(seconds=0), max_value=TimeDelta(days=1000)
-        ),
+        timedeltas(min_value=TimeDelta(seconds=0), max_value=TimeDelta(days=1000)),
     )
-    def test_credentialsForUser(
-        self, user: IMSUser, duration: TimeDelta
-    ) -> None:
+    def test_credentialsForUser(self, user: IMSUser, duration: TimeDelta) -> None:
         """
         AuthProvider.credentialsForUser generates a valid token for the user.
         """
@@ -467,24 +436,20 @@ class AuthProviderTests(TestCase):
             jsonWebKey=jsonWebKey,
         )
 
-        now = DateTime.now()
+        now = DateTime.now(tz=UTC)
 
         def approximateTimestamps(a: float, b: float) -> bool:
             fuzz = 1.5
             return b < a + fuzz and b > a - fuzz
 
-        credentials = self.successResultOf(
-            provider.credentialsForUser(user, duration)
-        )
+        credentials = self.successResultOf(provider.credentialsForUser(user, duration))
         tokenText = credentials.get("token")
         token = JSONWebToken.fromText(tokenText, key=jsonWebKey)
         claims = token.claims
 
         self.assertEqual(claims.iss, AuthProvider._jwtIssuer)
         self.assertTrue(approximateTimestamps(claims.iat, now.timestamp()))
-        self.assertTrue(
-            approximateTimestamps(claims.exp, (now + duration).timestamp())
-        )
+        self.assertTrue(approximateTimestamps(claims.exp, (now + duration).timestamp()))
         self.assertEqual(claims.sub, user.uid)
         self.assertEqual(claims.preferred_username, user.shortNames[0])
         self.assertEqual(claims.ranger_on_site, user.active)
@@ -492,9 +457,7 @@ class AuthProviderTests(TestCase):
 
     @given(
         testUsers(),
-        timedeltas(
-            min_value=TimeDelta(seconds=1), max_value=TimeDelta(days=1000)
-        ),
+        timedeltas(min_value=TimeDelta(seconds=1), max_value=TimeDelta(days=1000)),
     )
     def test_userFromBearerAuthorization(
         self, user: IMSUser, duration: TimeDelta

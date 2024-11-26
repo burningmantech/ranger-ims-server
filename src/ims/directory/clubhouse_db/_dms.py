@@ -109,9 +109,7 @@ class DutyManagementSystem:
             ):
                 from .test.dummy import DummyConnectionPool
 
-                dbpool = cast(
-                    adbapi.ConnectionPool, DummyConnectionPool("Dummy")
-                )
+                dbpool = cast(adbapi.ConnectionPool, DummyConnectionPool("Dummy"))
 
             else:
                 dbpool = adbapi.ConnectionPool(
@@ -179,8 +177,7 @@ class DutyManagementSystem:
 
     async def _queryPositionRangerJoin(self) -> Iterable[tuple[str, str]]:
         self._log.info(
-            "Retrieving position-personnel relations from "
-            "Duty Management System..."
+            "Retrieving position-personnel relations from Duty Management System..."
         )
 
         return cast(
@@ -236,7 +233,7 @@ class DutyManagementSystem:
                     self._state._dbErrorCount += 1
 
                     if isinstance(e, (SQLDatabaseError, SQLOperationalError)):
-                        if self._state._dbErrorCount < 2:
+                        if self._state._dbErrorCount < 2:  # noqa: PLR2004
                             self._log.info(
                                 "Retrying loading personnel from DMS "
                                 "after error: {error}",
@@ -251,15 +248,12 @@ class DutyManagementSystem:
                     elif isinstance(e, CancelledError):
                         pass
                     else:
-                        self._log.failure(
-                            "Unable to load personnel data from DMS"
-                        )
+                        self._log.failure("Unable to load personnel data from DMS")
 
                     # Try 2 times before raising an error
                     if elapsed > self.cacheInterval * 2:
                         raise DatabaseError(
-                            f"Unable to load expired personnel data "
-                            f"from DMS: {e}"
+                            f"Unable to load expired personnel data from DMS: {e}"
                         ) from e
 
             finally:
@@ -277,8 +271,7 @@ def fullName(first: str, middle: str, last: str) -> str:
     """
     if middle:
         return f"{first} {middle}. {last}"
-    else:
-        return f"{first} {last}"
+    return f"{first} {last}"
 
 
 def statusFromID(strValue: str) -> RangerStatus:

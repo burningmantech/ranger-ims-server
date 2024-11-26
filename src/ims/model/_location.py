@@ -18,7 +18,6 @@
 Location
 """
 
-
 from attrs import field, frozen
 
 from ._address import Address, TextOnlyAddress

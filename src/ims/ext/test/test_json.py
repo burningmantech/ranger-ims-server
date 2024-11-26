@@ -13,9 +13,8 @@ from textwrap import dedent
 from typing import Any, cast
 
 from hypothesis import given
-from hypothesis.strategies import composite, dates
+from hypothesis.strategies import composite, dates, integers
 from hypothesis.strategies import datetimes as _datetimes
-from hypothesis.strategies import integers
 
 from ..json import (
     dateAsRFC3339Text,
@@ -38,8 +37,7 @@ def timezones(draw: Callable[..., Any]) -> TimeZone:
         int, draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
     )
     timeDelta = TimeDelta(minutes=offset)
-    timeZone = TimeZone(offset=timeDelta, name=f"{offset}s")
-    return timeZone
+    return TimeZone(offset=timeDelta, name=f"{offset}s")
 
 
 @composite
@@ -75,18 +73,16 @@ class JSONEncodingTests(TestCase):
         :func:`jsonTextFromObject` encodes JSON without pretty-ness if
         :obj:`pretty` is false.
         """
-        obj = dict(x="Hello", y=["one", "two", "three"])
+        obj = {"x": "Hello", "y": ["one", "two", "three"]}
 
-        self.assertEqual(
-            objectFromJSONText(jsonTextFromObject(obj, pretty=False)), obj
-        )
+        self.assertEqual(objectFromJSONText(jsonTextFromObject(obj, pretty=False)), obj)
 
     def test_jsonTextFromObject_pretty(self) -> None:
         """
         :func:`jsonTextFromObject` encodes JSON with pretty-ness if
         :obj:`pretty` is true.
         """
-        obj = dict(x="Hello", y=["one", "two", "three"])
+        obj = {"x": "Hello", "y": ["one", "two", "three"]}
 
         self.assertEqual(
             jsonTextFromObject(obj, pretty=True),
@@ -127,7 +123,7 @@ class JSONDecodingTests(TestCase):
                 }
                 """
             ),
-            dict(x="Hello", y=["one", "two", "three"]),
+            {"x": "Hello", "y": ["one", "two", "three"]},
         )
 
     def test_objectFromJSONText_badInput(self) -> None:
@@ -153,12 +149,10 @@ class JSONDecodingTests(TestCase):
                         "three"
                       ]
                     }
-                    """.encode(
-                        "ascii"
-                    )
+                    """.encode("ascii")
                 )
             ),
-            dict(x="Hello", y=["one", "two", "three"]),
+            {"x": "Hello", "y": ["one", "two", "three"]},
         )
 
     def test_objectFromJSONBytesIO_badInput(self) -> None:

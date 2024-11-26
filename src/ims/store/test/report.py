@@ -118,9 +118,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 )
 
             found: set[int] = set()
-            for retrieved in await store.incidentReports(
-                anIncident1.eventID, False
-            ):
+            for retrieved in await store.incidentReports(anIncident1.eventID):
                 self.assertIn(retrieved.number, incidentReportsByNumber)
                 self.assertIncidentReportsEqual(
                     store,
@@ -142,7 +140,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         store.bringThePain()
 
         try:
-            await store.incidentReports(anEvent.id, False)
+            await store.incidentReports(anEvent.id)
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
@@ -249,9 +247,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 expectedStoredIncidentReports.add(expected)
                 nextNumber += 1
 
-            storedIncidentReports = sorted(
-                await store.incidentReports(anEvent.id, False)
-            )
+            storedIncidentReports = sorted(await store.incidentReports(anEvent.id))
 
             self.assertEqual(
                 len(storedIncidentReports), len(expectedStoredIncidentReports)
@@ -320,9 +316,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
             getattr(store, methodName),
         )
 
-        await setter(
-            incidentReport.eventID, incidentReport.number, value, "Hubcap"
-        )
+        await setter(incidentReport.eventID, incidentReport.number, value, "Hubcap")
 
         retrieved = await store.incidentReportWithNumber(
             incidentReport.eventID, incidentReport.number
@@ -372,9 +366,9 @@ class DataStoreIncidentReportTests(DataStoreTests):
             frozenset((aReportEntry1,)),
             frozenset((aReportEntry1, aReportEntry2)),
         ):
-            # Change author in report entries to match the author so we will
-            # use to add them
-            reportEntries = frozenset(
+            # Change author in report entries to match the author we will use to
+            # add them
+            reportEntries = frozenset(  # noqa: PLW2901
                 r.replace(author=author)
                 for r in cast(Iterable[ReportEntry], reportEntries)
             )
@@ -582,18 +576,13 @@ class DataStoreIncidentReportTests(DataStoreTests):
                 if name == "created":
                     if store.dateTimesEqual(valueA, valueB):
                         continue
-                    else:
-                        messages.append(f"{name} delta: {valueA - valueB}")
+                    messages.append(f"{name} delta: {valueA - valueB}")
                 elif name == "reportEntries":
-                    if store.reportEntriesEqual(
-                        valueA, valueB, ignoreAutomatic
-                    ):
+                    if store.reportEntriesEqual(valueA, valueB, ignoreAutomatic):
                         continue
 
                 if valueA != valueB:
                     messages.append(f"{name} {valueA!r} != {valueB!r}")
 
             if messages:
-                self.fail(
-                    "incident reports do not match:\n" + "\n".join(messages)
-                )
+                self.fail("incident reports do not match:\n" + "\n".join(messages))

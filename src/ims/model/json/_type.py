@@ -18,7 +18,6 @@
 JSON serialization/deserialization for incident type
 """
 
-
 from enum import Enum, unique
 from typing import Any, cast
 
@@ -71,9 +70,7 @@ def deserializeIncidentType(
 
     return cast(
         IncidentType,
-        deserialize(
-            obj, IncidentType, IncidentTypeJSONType, IncidentTypeJSONKey
-        ),
+        deserialize(obj, IncidentType, IncidentTypeJSONType, IncidentTypeJSONKey),
     )
 
 

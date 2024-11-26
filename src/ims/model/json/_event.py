@@ -30,7 +30,7 @@ __all__ = ()
 def serializeEvent(event: Event) -> dict[str, Any]:
     # Add name for future use.
     # Reverse ID to make use of ID where name was intended more visible.
-    return dict(id=event.id, name=event.id)
+    return {"id": event.id, "name": event.id}
 
 
 registerSerializer(Event, serializeEvent)

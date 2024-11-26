@@ -37,7 +37,7 @@ TRodGarettAddress = TypeVar("TRodGarettAddress", bound="RodGarettAddress")
 
 
 @frozen(kw_only=True, eq=False)
-class Address(ABC):
+class Address(ABC):  # noqa: B024
     """
     Location address
     """

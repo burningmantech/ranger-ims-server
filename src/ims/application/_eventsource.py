@@ -82,9 +82,7 @@ class DataStoreEventSourceLogObserver:
     _start: float = field(init=False, factory=time)
     _counter: list[int] = field(init=False, factory=lambda: [0])
 
-    def addListener(
-        self, listener: IRequest, lastEventID: str | None = None
-    ) -> None:
+    def addListener(self, listener: IRequest, lastEventID: str | None = None) -> None:
         """
         Add a listener.
         """
@@ -114,7 +112,7 @@ class DataStoreEventSourceLogObserver:
             # Not a data store event
             return None
 
-        elif eventClass is Incident:
+        if eventClass is Incident:
             incident = loggerEvent.get("incident", None)
 
             if incident is None:
@@ -124,29 +122,26 @@ class DataStoreEventSourceLogObserver:
 
             if incidentNumber is None:
                 self._log.critical(
-                    "Unable to determine incident number from store event: "
-                    "{event}",
+                    "Unable to determine incident number from store event: {event}",
                     event=loggerEvent,
                 )
                 return None
 
-            message = dict(incident_number=incidentNumber)
+            message = {"incident_number": incidentNumber}
 
         else:
             self._log.critical(
-                "Unknown data store event class {eventClass} "
-                "sent event: {event}",
+                "Unknown data store event class {eventClass} sent event: {event}",
                 eventClass=eventClass,
                 event=loggerEvent,
             )
             return None
 
-        eventSourceEvent = Event(
+        return Event(
             eventID=eventID,
             eventClass=eventClass.__name__,
             message=jsonTextFromObject(message),
         )
-        return eventSourceEvent
 
     def _playback(self, listener: IRequest, lastEventID: str | None) -> None:
         if lastEventID is None:
@@ -170,10 +165,9 @@ class DataStoreEventSourceLogObserver:
         for listener in tuple(self._listeners):
             try:
                 listener.write(eventText)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 self._log.error(
-                    "Unable to publish to EventSource listener {listener}: "
-                    "{error}",
+                    "Unable to publish to EventSource listener {listener}: {error}",
                     listener=listener,
                     error=e,
                 )

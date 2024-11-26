@@ -65,8 +65,7 @@ class RangerJSONType(Enum):
 def serializeRanger(ranger: Ranger) -> dict[str, Any]:
     # Map Ranger attribute names to JSON dict key names
     return {
-        key.value: jsonSerialize(getattr(ranger, key.name))
-        for key in RangerJSONKey
+        key.value: jsonSerialize(getattr(ranger, key.name)) for key in RangerJSONKey
     }
 
 
@@ -103,9 +102,7 @@ registerSerializer(RangerStatus, serializeRangerStatus)
 def deserializeRangerStatus(obj: int, cl: type[RangerStatus]) -> RangerStatus:
     assert cl is RangerStatus, (cl, obj)
 
-    return cast(
-        RangerStatus, getattr(RangerStatus, RangerStatusJSONValue(obj).name)
-    )
+    return cast(RangerStatus, getattr(RangerStatus, RangerStatusJSONValue(obj).name))
 
 
 registerDeserializer(RangerStatus, deserializeRangerStatus)

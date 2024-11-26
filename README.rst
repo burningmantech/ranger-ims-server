@@ -110,10 +110,8 @@ Pull requests in GitHub will run all tests on Travis CI, and all are required to
 
 .. ------------------------------------------------------------------------- ..
 
-.. _Flake8: http://flake8.pycqa.org/
 .. _Klein: https://klein.readthedocs.io/
 .. _Mypy: http://mypy.readthedocs.io/
-.. _pipx: https://pipx.pypa.io/stable/
 .. _pre-commit: https://pre-commit.com/
 .. _tox-uv: https://github.com/tox-dev/tox-uv
 .. _Tox: http://tox.readthedocs.io/

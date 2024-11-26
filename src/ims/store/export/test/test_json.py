@@ -173,9 +173,7 @@ class JSONImporterTests(TestCase):
         json = jsonObjectFromModelObject(imsDataIn)
         jsonText = jsonTextFromObject(json)
         jsonBytes = jsonText.encode("utf-8")
-        importer = JSONImporter.fromBytes(
-            store=self.store(), jsonBytes=jsonBytes
-        )
+        importer = JSONImporter.fromBytes(store=self.store(), jsonBytes=jsonBytes)
 
         self.assertIMSDataEqual(importer.imsData, imsDataIn)
 
@@ -206,12 +204,8 @@ class JSONImporterTests(TestCase):
         resultOf(importer.storeData())
 
         # Create a new IMSData with the imported data in it
-        allTypesOut = frozenset(
-            resultOf(store.incidentTypes(includeHidden=True))
-        )
-        visibleTypesOut = frozenset(
-            resultOf(store.incidentTypes(includeHidden=False))
-        )
+        allTypesOut = frozenset(resultOf(store.incidentTypes(includeHidden=True)))
+        visibleTypesOut = frozenset(resultOf(store.incidentTypes(includeHidden=False)))
         imsDataOut = IMSData(
             events=(
                 EventData(
@@ -221,13 +215,9 @@ class JSONImporterTests(TestCase):
                         writers=resultOf(store.writers(event.id)),
                         reporters=resultOf(store.reporters(event.id)),
                     ),
-                    concentricStreets=resultOf(
-                        store.concentricStreets(event.id)
-                    ),
-                    incidents=resultOf(store.incidents(event.id, False)),
-                    incidentReports=resultOf(
-                        store.incidentReports(event.id, False)
-                    ),
+                    concentricStreets=resultOf(store.concentricStreets(event.id)),
+                    incidents=resultOf(store.incidents(event.id)),
+                    incidentReports=resultOf(store.incidentReports(event.id)),
                 )
                 for event in resultOf(store.events())
             ),

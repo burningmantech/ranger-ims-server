@@ -70,13 +70,95 @@ build-backend = "setuptools.build_meta"
 
 
 ##
-# Black
+# Ruff
 ##
 
-[tool.black]
+[tool.ruff.format]
 
-line-length = 80
-target-version = ["py313"]
+# skip-magic-trailing-comma = true
+
+
+[tool.ruff.lint]
+
+select = ["ALL"]
+ignore = [
+    "A001",     # Variable `min` is shadowing a Python builtin
+    "A002",     # Function argument is shadowing a Python builtin
+    "A004",     # Import is shadowing a Python builtin
+    "ANN401",   # Dynamically typed expressions (typing.Any) are disallowed
+    "ARG002",   # Unused method argument
+    "B008",     # Do not perform function call in argument defaults
+    "C901",     # is too complex
+    "COM812",   # Trailing comma missing
+    "D105",     # Missing docstring in magic method
+    "D200",     # One-line docstring should fit on one line
+    "D202",     # No blank lines allowed after function docstring
+    "D203",     # Use a blank line to separate the docstring from the class definition
+    "D205",     # 1 blank line required between summary line and description
+    "D212",     # Multi-line docstring summary should start at the first line
+    "D213",     # Multi-line docstring summary should start at the second line
+    "D400",     # First line should end with a period
+    "D401",     # First line of docstring should be in imperative mood
+    "D415",     # First line should end with a period, question mark, or exclamation point
+    "DTZ001",   # `datetime.datetime()` called without a `tzinfo` argument
+    "DTZ005",   # `datetime.datetime.now()` called without a `tz` argument
+    "EM101",    # Exception must not use a string literal, assign to variable first
+    "EM102",    # Exception must not use an f-string literal, assign to variable first
+    "ERA001",   # Found commented-out code
+    "FIX001",   # Line contains FIXME, consider resolving the issue
+    "ISC001",   # Implicitly concatenated strings on a single line  # Disabled for formatter compatibility
+    "N802",     # Function name should be lowercase
+    "N803",     # Argument name should be lowercase
+    "N806",     # Variable in function should be lowercase
+    "N812",     # Lowercase imported as non-lowercase
+    "N815",     # Variable in class scope should not be mixedCase
+    "N816",     # Variable in global scope should not be mixedCase
+    "PIE796",   # Enum contains duplicate value: `str`
+    "PLR0911",  # Too many return statements
+    "PLR0912",  # Too many branches
+    "PLR0913",  # Too many arguments in function definition
+    "PLR0915",  # Too many statements
+    "PT",       # We don't use pytest
+    "RSE102",   # Unnecessary parentheses on raised exception
+    "S101",     # Use of `assert` detected
+    "S608",     # Possible SQL injection vector through string-based query construction
+
+    # Reconsider
+    "TID252",   # Prefer absolute imports over relative imports from parent modules
+
+    # TODO
+    "FBT001",   # Boolean-typed positional argument in function definition
+    "FBT002",   # Boolean default positional argument in function definition
+    "FBT003",   # Boolean positional value in function call
+    "SIM102",   # Use a single `if` statement instead of nested `if` statements
+    "SIM105",   # Use `contextlib.suppress(NoSectionError, NoOptionError)` instead of `try`-`except`-`pass`
+    "SIM108",   # Use ternary operator
+    "SIM114",   # Combine `if` branches using logical `or` operator
+    "SIM115",   # Use a context manager for opening files
+    "SIM118",   # Use `key in dict` instead of `key in dict.keys()`
+    "SLF001",   # Private member accessed
+    "T201",     # `print` found
+    "T203",     # `pprint` found
+    "TC001",    # Move application import into a type-checking block
+    "TC003",    # Move standard library import into a type-checking block
+    "TD001",    # Invalid TODO tag: `FIXME`
+    "TD002",    # Missing author in TODO
+    "TD003",    # Missing issue link on the line following this TODO
+    "TRY003",   # Avoid specifying long messages outside the exception class
+    "TRY301",   # Abstract `raise` to an inner function
+    "TRY400",   # Use `logging.exception` instead of `logging.error`
+    "UP006",    # Use `collections.deque` instead of `Deque` for type annotation
+    "UP007",    # Use `X | Y` for type annotations
+    "UP017",    # Use `datetime.UTC` alias
+    "UP031",    # Use format specifiers instead of percent format
+    "UP032",    # Use f-string instead of `format` call
+    "UP035",    # `typing.Deque` is deprecated, use `collections.deque` instead
+    "UP038",    # Use `X | Y` in `isinstance` call instead of `(X, Y)`
+]
+
+[tool.ruff.lint.isort]
+
+lines-after-imports = 2
 
 
 ##

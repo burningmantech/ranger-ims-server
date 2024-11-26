@@ -48,8 +48,7 @@ class ReportEntryTests(TestCase):
         star = "*" if reportEntry.automatic else ""
         self.assertEqual(
             str(reportEntry),
-            f"{reportEntry.created} {reportEntry.author}"
-            f"{star}: {reportEntry.text}",
+            f"{reportEntry.created} {reportEntry.author}{star}: {reportEntry.text}",
         )
 
     @given(reportEntries(), dateTimes(), dateTimes())
@@ -79,9 +78,7 @@ class ReportEntryTests(TestCase):
         a = reportEntry.replace(author=authorA)
         b = reportEntry.replace(author=authorB)
 
-        self.assertEqual(
-            [r.author for r in sorted((a, b))], sorted((authorA, authorB))
-        )
+        self.assertEqual([r.author for r in sorted((a, b))], sorted((authorA, authorB)))
 
     @given(reportEntries(), booleans(), booleans())
     def test_ordering_automatic(
@@ -96,7 +93,7 @@ class ReportEntryTests(TestCase):
 
         self.assertEqual(
             [r.automatic for r in sorted((a, b))],
-            list(reversed(sorted((autoA, autoB)))),
+            sorted((autoA, autoB), reverse=True),
             (a, b),
         )
 

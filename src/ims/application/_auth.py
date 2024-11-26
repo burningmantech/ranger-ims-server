@@ -54,7 +54,7 @@ class AuthApplication:
 
     @router.route(_unprefix(URLs.login), methods=("HEAD", "GET"))
     def login(
-        self, request: IRequest, failed: bool = False
+        self, request: IRequest, *, failed: bool = False
     ) -> KleinSynchronousRenderable:
         """
         Endpoint for the login page.
@@ -66,9 +66,7 @@ class AuthApplication:
         return LoginPage(config=self.config, failed=failed)
 
     @router.route(_unprefix(URLs.login), methods=("POST",))
-    async def loginSubmit(
-        self, request: IRequest
-    ) -> KleinSynchronousRenderable:
+    async def loginSubmit(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Endpoint for a login form submission.
         """
@@ -81,9 +79,7 @@ class AuthApplication:
             user = await self.config.directory.lookupUser(username)
 
         if user is None:
-            self._log.debug(
-                "Login failed: no such user: {username}", username=username
-            )
+            self._log.debug("Login failed: no such user: {username}", username=username)
         else:
             if password is None:
                 return invalidQueryResponse(request, "password")
@@ -103,11 +99,11 @@ class AuthApplication:
                     location = URL.fromText(url)
 
                 return redirect(request, location)
-            else:
-                self._log.debug(
-                    "Login failed: incorrect credentials for user: {user}",
-                    user=user,
-                )
+
+            self._log.debug(
+                "Login failed: incorrect credentials for user: {user}",
+                user=user,
+            )
 
         return self.login(request, failed=True)
 

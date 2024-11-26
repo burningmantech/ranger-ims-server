@@ -90,7 +90,7 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Set up Tox environment
-        run: uvx --with=tox-uv tox run -e lint --notest
+        run: uvx --with=tox-uv tox run -e mypy --notest
 
       - name: Run Mypy
         run: uvx --with=tox-uv tox run -e mypy
@@ -129,7 +129,7 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Set up Tox environment
-        run: uvx --with=tox-uv tox run -e lint --notest
+        run: uvx --with=tox-uv tox run -e packaging --notest
 
       - name: Check packaging
         run: uvx --with=tox-uv tox run -e packaging
@@ -223,7 +223,7 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Set up Tox environment
-        run: uvx --with=tox-uv tox run -e lint --notest
+        run: uvx --with=tox-uv tox run -e "${TOX_ENV}" --notest
 
       - name: Run unit tests
         id: test

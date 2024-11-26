@@ -59,9 +59,7 @@ class Incident(ReplaceMixIn):
     location: Location
     rangerHandles: frozenset[str] = field(converter=freezeStrings)
     incidentTypes: frozenset[str] = field(converter=freezeStrings)
-    reportEntries: Sequence[ReportEntry] = field(
-        converter=sortAndFreezeReportEntries
-    )
+    reportEntries: Sequence[ReportEntry] = field(converter=sortAndFreezeReportEntries)
     incidentReportNumbers: frozenset[int] = field(converter=freezeIntegers)
 
     def __str__(self) -> str:
@@ -75,9 +73,7 @@ class Incident(ReplaceMixIn):
         return summaryFromReport(self.summary, self.reportEntries)
 
 
-def summaryFromReport(
-    summary: str | None, reportEntries: Iterable[ReportEntry]
-) -> str:
+def summaryFromReport(summary: str | None, reportEntries: Iterable[ReportEntry]) -> str:
     """
     Generate a summary by either using ``self.summary`` if it is not
     :obj:`None` or empty, or the first line of the first report entry.

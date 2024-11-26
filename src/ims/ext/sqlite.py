@@ -11,6 +11,7 @@ from sqlite3 import Error as SQLiteError
 from sqlite3 import IntegrityError
 from sqlite3 import Row as BaseRow
 from sqlite3 import connect as sqliteConnect
+from types import TracebackType
 from typing import Any, ClassVar, Optional, TextIO, Union, cast
 
 from attrs import frozen
@@ -56,8 +57,7 @@ class Row(BaseRow):
         """
         if key in self.keys():
             return cast(ParameterValue, self[key])
-        else:
-            return default
+        return default
 
 
 class Cursor(BaseCursor):
@@ -98,16 +98,15 @@ class Connection(BaseConnection):
     _log: ClassVar[Logger] = Logger()
 
     def cursor(  # type: ignore[override]
-        self, factory: CursorFactory = cast(CursorFactory, Cursor)  # noqa: M511
+        self,
+        factory: CursorFactory = cast(CursorFactory, Cursor),
     ) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.cursor`.
         """
         return super().cursor(factory=factory)
 
-    def executeAndPrint(
-        self, sql: str, parameters: Parameters | None = None
-    ) -> None:
+    def executeAndPrint(self, sql: str, parameters: Parameters | None = None) -> None:
         """
         Execute the given SQL and print the results in a table format.
         """
@@ -117,9 +116,7 @@ class Connection(BaseConnection):
 
         printHeader = True
 
-        for row in cast(
-            Iterable[Row], self.execute(sql, cast(Any, parameters))
-        ):
+        for row in cast(Iterable[Row], self.execute(sql, cast(Any, parameters))):
             if printHeader:
                 emit(row.keys())
                 printHeader = False
@@ -151,7 +148,7 @@ class Connection(BaseConnection):
         ):
             row = self.execute(
                 f"select * from {referent} where ROWID=:rowid",
-                dict(rowid=rowid),
+                {"rowid": rowid},
             ).fetchone()
             self._log.critical(
                 "Foreign key constraint {constraint} violated by "
@@ -176,9 +173,9 @@ class Connection(BaseConnection):
 
     def __exit__(  # type: ignore[override]
         self,
-        exc_type: type[BaseException],
-        exc_val: BaseException,
-        exc_tb: Any,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> bool:
         self._log.debug("---------- EXIT ----------")
         return cast(bool, super().__exit__(exc_type, exc_val, exc_tb))

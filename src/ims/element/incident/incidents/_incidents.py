@@ -53,8 +53,7 @@ class IncidentsPage(Page):
             & Authorization.writeIncidents
         ):
             return jsonTrue
-        else:
-            return jsonFalse
+        return jsonFalse
 
     @renderer
     def event_id(self, request: IRequest, tag: Tag) -> KleinRenderable:
@@ -74,9 +73,7 @@ class IncidentsPage(Page):
         return jsonTextFromObject(namesByID)
 
     @renderer
-    async def incident_types(
-        self, request: IRequest, tag: Tag
-    ) -> KleinRenderable:
+    async def incident_types(self, request: IRequest, tag: Tag) -> KleinRenderable:
         types = await self.config.store.incidentTypes()
         types = sorted(t for t in types)
         return jsonTextFromObject(types)

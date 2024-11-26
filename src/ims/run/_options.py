@@ -52,7 +52,7 @@ def openFile(fileName: str, mode: str) -> IO[Any]:
 
     def openNamedFile() -> IO[Any]:
         try:
-            file = open(fileName, mode)
+            file = Path(fileName).open(mode)
         except OSError as e:
             exit(ExitStatus.EX_IOERR, f"Unable to open file {fileName!r}: {e}")
         return file
@@ -64,11 +64,10 @@ def openFile(fileName: str, mode: str) -> IO[Any]:
             file = stderr
         else:
             file = openNamedFile()
+    elif fileName == "-":
+        file = stdin
     else:
-        if fileName == "-":
-            file = stdin
-        else:
-            file = openNamedFile()
+        file = openNamedFile()
 
     return file
 
@@ -124,12 +123,7 @@ class CompareOptions(Options):
         """
         Input files. ("-" for stdin)
         """
-        files = []
-
-        for fileName in fileNames:
-            files.append(openFile(fileName, "rb"))
-
-        self["inFiles"] = files
+        self["inFiles"] = [openFile(fileName, "rb") for fileName in fileNames]
 
 
 class HashPasswordOptions(Options):
@@ -196,10 +190,7 @@ class IMSOptions(Options):
             raise UsageError(f"Invalid log level: {levelName}") from e
 
     opt_log_level.__doc__ = dedent(cast(str, opt_log_level.__doc__)).format(
-        options=", ".join(
-            f'"{level.name}"'  # noqa: B907
-            for level in LogLevel.iterconstants()
-        ),
+        options=", ".join(f'"{level.name}"' for level in LogLevel.iterconstants()),
         default=defaultLogLevel.name,
     )
 
@@ -249,9 +240,7 @@ class IMSOptions(Options):
         if "overrides" not in self:
             self["overrides"] = []
 
-        self["overrides"].append(
-            Override(section=section, name=name, value=value)
-        )
+        self["overrides"].append(Override(section=section, name=name, value=value))
 
     def initConfig(self) -> None:
         try:
@@ -279,9 +268,7 @@ class IMSOptions(Options):
             self.opt_log_file(str(configuration.logFilePath))
 
             if "logFormat" in options:
-                configuration = configuration.replace(
-                    logFormat=options["logFormat"]
-                )
+                configuration = configuration.replace(logFormat=options["logFormat"])
             elif configuration.logFormat is not None:
                 self.opt_log_format(configuration.logFormat.name)
 
@@ -294,7 +281,7 @@ class IMSOptions(Options):
 
             options["configuration"] = configuration
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             exit(ExitStatus.EX_CONFIG, str(e))
 
     def initLogFile(self) -> None:

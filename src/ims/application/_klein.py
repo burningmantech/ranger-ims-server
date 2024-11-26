@@ -18,7 +18,6 @@
 Incident Management System Klein application.
 """
 
-
 from collections.abc import Callable, Iterable, Sequence
 from functools import wraps
 from typing import Any, Optional, TypeVar, cast
@@ -220,16 +219,11 @@ def invalidQueryResponse(
     Respond with a BAD REQUEST status due to an invalid query.
     """
     if value is None:
-        return badRequestResponse(
-            request, f"Invalid query: missing parameter {arg}"
-        )
-    else:
-        return badRequestResponse(request, f"Invalid query: {arg}={value}")
+        return badRequestResponse(request, f"Invalid query: missing parameter {arg}")
+    return badRequestResponse(request, f"Invalid query: {arg}={value}")
 
 
-def badGatewayResponse(
-    request: IRequest, message: str
-) -> KleinSynchronousRenderable:
+def badGatewayResponse(request: IRequest, message: str) -> KleinSynchronousRenderable:
     """
     Respond with a BAD GATEWAY status.
     """
@@ -264,9 +258,7 @@ def internalErrorResponse(
 #
 
 
-def queryValue(
-    request: IRequest, name: str, default: str | None = None
-) -> str | None:
+def queryValue(request: IRequest, name: str, default: str | None = None) -> str | None:
     """
     Look up the value of a query parameter with the given name in the
     given request.
@@ -282,17 +274,14 @@ def queryValue(
         C{default} if there no such query parameter.
         If more than one value is found, return the last value found.
     """
-    values = cast(
-        Optional[Sequence[bytes]], request.args.get(name.encode("utf-8"))
-    )
+    values = cast(Optional[Sequence[bytes]], request.args.get(name.encode("utf-8")))
 
     if values is None:
         return default
 
     if len(values) > 0:
         return values[-1].decode("utf-8")
-    else:
-        return default
+    return default
 
 
 def queryValues(
@@ -371,7 +360,9 @@ class Router(Klein):
         @self.handle_errors(RequestRedirect)
         @renderResponse
         def requestRedirectError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,  # noqa: ARG001
+            request: IRequest,
+            failure: Failure,
         ) -> KleinRenderable:
             """
             Redirect.
@@ -384,7 +375,9 @@ class Router(Klein):
         @self.handle_errors(NotFound)
         @renderResponse
         def notFoundError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,
+            request: IRequest,
+            failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             Not found.
@@ -398,7 +391,9 @@ class Router(Klein):
         @self.handle_errors(MethodNotAllowed)
         @renderResponse
         def methodNotAllowedError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,
+            request: IRequest,
+            failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             HTTP method not allowed.
@@ -412,7 +407,9 @@ class Router(Klein):
         @self.handle_errors(NotAuthorizedError)
         @renderResponse
         def notAuthorizedError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,  # noqa: ARG001
+            request: IRequest,
+            failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             Not authorized.
@@ -422,7 +419,9 @@ class Router(Klein):
         @self.handle_errors(InvalidCredentialsError)
         @renderResponse
         def invalidCredentialsError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,  # noqa: ARG001
+            request: IRequest,
+            failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             Invalid credentials.
@@ -432,7 +431,9 @@ class Router(Klein):
         @self.handle_errors(NotAuthenticatedError)
         @renderResponse
         def notAuthenticatedError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,  # noqa: ARG001
+            request: IRequest,
+            failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             Not authenticated.
@@ -444,13 +445,16 @@ class Router(Klein):
 
             element = redirect(request, URLs.login, origin="o")
             return renderElement(  # type: ignore[return-value]
-                request, element  # type: ignore[arg-type]
+                request,
+                element,  # type: ignore[arg-type]
             )
 
         @self.handle_errors(DirectoryError)
         @renderResponse
         def directoryError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,  # noqa: ARG001
+            request: IRequest,
+            failure: Failure,
         ) -> KleinRenderable:
             """
             Directory service error.
@@ -461,7 +465,9 @@ class Router(Klein):
         @self.handle_errors
         @renderResponse
         def unknownError(
-            app: Any, request: IRequest, failure: Failure
+            app: Any,  # noqa: ARG001
+            request: IRequest,
+            failure: Failure,
         ) -> KleinRenderable:
             """
             Deal with a request error caught by Klein.

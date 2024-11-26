@@ -68,9 +68,7 @@ def serializeReportEntry(reportEntry: ReportEntry) -> dict[str, Any]:
 registerSerializer(ReportEntry, serializeReportEntry)
 
 
-def deserializeReportEntry(
-    obj: dict[str, Any], cl: type[ReportEntry]
-) -> ReportEntry:
+def deserializeReportEntry(obj: dict[str, Any], cl: type[ReportEntry]) -> ReportEntry:
     assert cl is ReportEntry, (cl, obj)
 
     return cast(

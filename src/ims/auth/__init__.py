@@ -27,8 +27,8 @@ from ._provider import Authorization, AuthProvider, JSONWebKey
 
 
 __all__ = (
-    "Authorization",
     "AuthProvider",
+    "Authorization",
     "InvalidCredentialsError",
     "JSONWebKey",
     "NotAuthenticatedError",

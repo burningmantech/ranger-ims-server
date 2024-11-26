@@ -88,7 +88,7 @@ def objectFromJSONText(text: str) -> Any:
         ) from e
 
 
-def objectFromJSONBytesIO(io: BinaryIO, encoding: str = "utf-8") -> Any:
+def objectFromJSONBytesIO(io: BinaryIO) -> Any:
     """
     Covert JSON text from a byte stream into an object.
     """

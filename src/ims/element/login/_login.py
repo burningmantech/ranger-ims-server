@@ -45,8 +45,7 @@ class LoginPage(Page):
         """
         if self.failed:
             return tag
-        else:
-            return ""
+        return ""
 
     @renderer
     def if_authz_failed(self, request: IRequest, tag: Tag) -> KleinRenderable:

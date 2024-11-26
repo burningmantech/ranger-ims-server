@@ -36,9 +36,7 @@ class IncidentStateTests(TestCase):
         Incident state renders as a string.
         """
         for state in IncidentState:
-            self.assertEqual(
-                repr(state), f"{IncidentState.__name__}[{state.name!r}]"
-            )
+            self.assertEqual(repr(state), f"{IncidentState.__name__}[{state.name!r}]")
 
     def test_str(self) -> None:
         """

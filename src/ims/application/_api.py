@@ -111,24 +111,24 @@ class APIApplication:
     router: ClassVar[Router] = Router()
 
     _bag: ClassVar[bytes] = jsonTextFromObject(
-        dict(
-            urls=dict(
-                ping=_urlToTextForBag(URLs.ping),
-                bag=_urlToTextForBag(URLs.bag),
-                auth=_urlToTextForBag(URLs.auth),
-                access=_urlToTextForBag(URLs.acl),
-                streets=_urlToTextForBag(URLs.streets),
-                personnel=_urlToTextForBag(URLs.personnel),
-                incident_types=_urlToTextForBag(URLs.incidentTypes),
-                events=_urlToTextForBag(URLs.events),
-                event=_urlToTextForBag(URLs.event),
-                incidents=_urlToTextForBag(URLs.incidents),
-                incident=_urlToTextForBag(URLs.incidentNumber),
-                incident_reports=_urlToTextForBag(URLs.incidentReports),
-                incident_report=_urlToTextForBag(URLs.incidentReport),
-                event_source=_urlToTextForBag(URLs.eventSource),
-            ),
-        )
+        {
+            "urls": {
+                "ping": _urlToTextForBag(URLs.ping),
+                "bag": _urlToTextForBag(URLs.bag),
+                "auth": _urlToTextForBag(URLs.auth),
+                "access": _urlToTextForBag(URLs.acl),
+                "streets": _urlToTextForBag(URLs.streets),
+                "personnel": _urlToTextForBag(URLs.personnel),
+                "incident_types": _urlToTextForBag(URLs.incidentTypes),
+                "events": _urlToTextForBag(URLs.events),
+                "event": _urlToTextForBag(URLs.event),
+                "incidents": _urlToTextForBag(URLs.incidents),
+                "incident": _urlToTextForBag(URLs.incidentNumber),
+                "incident_reports": _urlToTextForBag(URLs.incidentReports),
+                "incident_report": _urlToTextForBag(URLs.incidentReport),
+                "event_source": _urlToTextForBag(URLs.eventSource),
+            },
+        }
     ).encode("utf-8")
 
     config: Configuration
@@ -152,9 +152,7 @@ class APIApplication:
         return jsonBytes(request, self._bag, str(hash(self._bag)))
 
     @router.route(_unprefix(URLs.auth), methods=("POST",))
-    async def authResource(
-        self, request: IRequest
-    ) -> KleinSynchronousRenderable:
+    async def authResource(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Authentication endpoint.
         """
@@ -184,14 +182,10 @@ class APIApplication:
             user = await self.config.directory.lookupUser(username)
         except DirectoryError as e:
             self._log.error("Directory error: {error}", error=e)
-            return badGatewayResponse(
-                request, "Unable to contact directory service"
-            )
+            return badGatewayResponse(request, "Unable to contact directory service")
 
         if user is None:
-            self._log.debug(
-                "Login failed: no such user: {username}", username=username
-            )
+            self._log.debug("Login failed: no such user: {username}", username=username)
         else:
             authProvider = self.config.authProvider
             authenticated = await authProvider.verifyPassword(user, password)
@@ -213,15 +207,11 @@ class APIApplication:
         request.setResponseCode(http.UNAUTHORIZED)
         return jsonBytes(
             request,
-            jsonTextFromObject(dict(status="invalid-credentials")).encode(
-                "utf-8"
-            ),
+            jsonTextFromObject({"status": "invalid-credentials"}).encode("utf-8"),
         )
 
     @router.route(_unprefix(URLs.personnel), methods=("HEAD", "GET"))
-    async def personnelResource(
-        self, request: IRequest
-    ) -> KleinSynchronousRenderable:
+    async def personnelResource(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Personnel endpoint.
         """
@@ -246,9 +236,7 @@ class APIApplication:
 
         return (
             buildJSONArray(
-                jsonTextFromObject(jsonObjectFromModelObject(ranger)).encode(
-                    "utf-8"
-                )
+                jsonTextFromObject(jsonObjectFromModelObject(ranger)).encode("utf-8")
                 for ranger in personnel
             ),
             str(hash(personnel)),
@@ -321,9 +309,7 @@ class APIApplication:
         return noContentResponse(request)
 
     @router.route(_unprefix(URLs.events), methods=("HEAD", "GET"))
-    async def eventsResource(
-        self, request: IRequest
-    ) -> KleinSynchronousRenderable:
+    async def eventsResource(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Events endpoint.
         """
@@ -337,8 +323,7 @@ class APIApplication:
         jsonEvents = [
             jsonObjectFromModelObject(event)
             for event in await self.config.store.events()
-            if Authorization.readIncidents
-            & await authorizationsForUser(event.id)
+            if Authorization.readIncidents & await authorizationsForUser(event.id)
         ]
 
         data = jsonTextFromObject(jsonEvents).encode("utf-8")
@@ -346,9 +331,7 @@ class APIApplication:
         return jsonBytes(request, data, str(hash(data)))
 
     @router.route(_unprefix(URLs.events), methods=("POST",))
-    async def editEventsResource(
-        self, request: IRequest
-    ) -> KleinSynchronousRenderable:
+    async def editEventsResource(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Events editing endpoint.
         """
@@ -385,9 +368,7 @@ class APIApplication:
         return noContentResponse(request)
 
     @router.route(_unprefix(URLs.incidents), methods=("HEAD", "GET"))
-    async def listIncidentsResource(
-        self, request: IRequest, event_id: str
-    ) -> None:
+    async def listIncidentsResource(self, request: IRequest, event_id: str) -> None:
         """
         Incident list endpoint.
         """
@@ -395,21 +376,16 @@ class APIApplication:
             request, event_id, Authorization.readIncidents
         )
 
-        excludeSystemEntries = (
-            queryValue(request, "exclude_system_entries") == "true"
-        )
+        excludeSystemEntries = queryValue(request, "exclude_system_entries") == "true"
 
         stream = buildJSONArray(
-            jsonTextFromObject(jsonObjectFromModelObject(incident)).encode(
-                "utf-8"
-            )
+            jsonTextFromObject(jsonObjectFromModelObject(incident)).encode("utf-8")
             for incident in await self.config.store.incidents(
-                event_id, excludeSystemEntries
+                event_id, excludeSystemEntries=excludeSystemEntries
             )
         )
 
         writeJSONStream(request, stream, None)
-        return None
 
     @router.route(_unprefix(URLs.incidents), methods=("POST",))
     async def newIncidentResource(
@@ -485,8 +461,7 @@ class APIApplication:
                 if reportEntryKey.value in entryJSON:
                     return badRequestResponse(
                         request,
-                        f"New report entry may not specify "
-                        f"{reportEntryKey.value}",
+                        f"New report entry may not specify {reportEntryKey.value}",
                     )
 
             entryJSON[ReportEntryJSONKey.created.value] = jsonNow
@@ -553,9 +528,7 @@ class APIApplication:
         except NoSuchIncidentError:
             return notFoundResponse(request)
 
-        data = jsonTextFromObject(jsonObjectFromModelObject(incident)).encode(
-            "utf-8"
-        )
+        data = jsonTextFromObject(jsonObjectFromModelObject(incident)).encode("utf-8")
 
         return jsonBytes(request, data)
 
@@ -588,17 +561,10 @@ class APIApplication:
             return invalidJSONResponse(request, e)
 
         if not isinstance(edits, dict):
-            return badRequestResponse(
-                request, "JSON incident must be a dictionary"
-            )
+            return badRequestResponse(request, "JSON incident must be a dictionary")
 
-        if (
-            edits.get(IncidentJSONKey.number.value, incidentNumber)
-            != incidentNumber
-        ):
-            return badRequestResponse(
-                request, "Incident number may not be modified"
-            )
+        if edits.get(IncidentJSONKey.number.value, incidentNumber) != incidentNumber:
+            return badRequestResponse(request, "Incident number may not be modified")
 
         UNSET = object()
 
@@ -608,9 +574,7 @@ class APIApplication:
                 request, "Incident created time may not be modified"
             )
 
-        IncidentAttributeSetter = Callable[
-            [str, int, Any, str], Awaitable[None]
-        ]
+        IncidentAttributeSetter = Callable[[str, int, Any, str], Awaitable[None]]
 
         async def applyEdit(
             json: Mapping[str, Any],
@@ -648,12 +612,8 @@ class APIApplication:
         except JSONCodecError as e:
             return badRequestResponse(request, str(e))
 
-        await applyEdit(
-            edits, IncidentJSONKey.summary, store.setIncident_summary
-        )
-        await applyEdit(
-            edits, IncidentJSONKey.rangerHandles, store.setIncident_rangers
-        )
+        await applyEdit(edits, IncidentJSONKey.summary, store.setIncident_summary)
+        await applyEdit(edits, IncidentJSONKey.rangerHandles, store.setIncident_rangers)
         await applyEdit(
             edits,
             IncidentJSONKey.incidentTypes,
@@ -739,9 +699,7 @@ class APIApplication:
             limitedAccess = True
 
         incidentNumberText = queryValue(request, "incident")
-        excludeSystemEntries = (
-            queryValue(request, "exclude_system_entries") == "true"
-        )
+        excludeSystemEntries = queryValue(request, "exclude_system_entries") == "true"
 
         store = self.config.store
 
@@ -751,31 +709,29 @@ class APIApplication:
             incidentReports = (
                 incidentReport
                 for incidentReport in await store.incidentReports(
-                    event_id, excludeSystemEntries
+                    event_id, excludeSystemEntries=excludeSystemEntries
                 )
                 if user.shortNames[0]
                 in (entry.author for entry in incidentReport.reportEntries)
             )
         elif incidentNumberText is None:
             incidentReports = await store.incidentReports(
-                event_id, excludeSystemEntries
+                event_id, excludeSystemEntries=excludeSystemEntries
             )
         else:
             try:
                 incidentNumber = int(incidentNumberText)
             except ValueError:
-                return invalidQueryResponse(
-                    request, "incident", incidentNumberText
-                )
+                return invalidQueryResponse(request, "incident", incidentNumberText)
 
             incidentReports = await store.incidentReportsAttachedToIncident(
                 eventID=event_id, incidentNumber=incidentNumber
             )
 
         stream = buildJSONArray(
-            jsonTextFromObject(
-                jsonObjectFromModelObject(incidentReport)
-            ).encode("utf-8")
+            jsonTextFromObject(jsonObjectFromModelObject(incidentReport)).encode(
+                "utf-8"
+            )
             for incidentReport in incidentReports
         )
 
@@ -853,8 +809,7 @@ class APIApplication:
                 if reportEntryKey.value in entryJSON:
                     return badRequestResponse(
                         request,
-                        f"New report entry may not specify "
-                        f"{reportEntryKey.value}",
+                        f"New report entry may not specify {reportEntryKey.value}",
                     )
 
             entryJSON[ReportEntryJSONKey.created.value] = jsonNow
@@ -957,9 +912,7 @@ class APIApplication:
             try:
                 incidentNumber = int(incidentNumberText)
             except ValueError:
-                return invalidQueryResponse(
-                    request, "incident", incidentNumberText
-                )
+                return invalidQueryResponse(request, "incident", incidentNumberText)
 
             if action == "attach":
                 await store.attachIncidentReportToIncident(
@@ -1017,9 +970,7 @@ class APIApplication:
                 _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                await setter(
-                    event_id, incidentReportNumber, _cast(value), author
-                )
+                await setter(event_id, incidentReportNumber, _cast(value), author)
 
         await applyEdit(
             edits,
@@ -1027,9 +978,7 @@ class APIApplication:
             store.setIncidentReport_summary,
         )
 
-        jsonEntries = edits.get(
-            IncidentReportJSONKey.reportEntries.value, UNSET
-        )
+        jsonEntries = edits.get(IncidentReportJSONKey.reportEntries.value, UNSET)
         if jsonEntries is not UNSET:
             now = DateTime.now(TimeZone.utc)
 
@@ -1065,11 +1014,11 @@ class APIApplication:
         acl = {}
         for event in await store.events():
             eventID = event.id
-            acl[eventID] = dict(
-                readers=(await store.readers(eventID)),
-                writers=(await store.writers(eventID)),
-                reporters=(await store.reporters(eventID)),
-            )
+            acl[eventID] = {
+                "readers": (await store.readers(eventID)),
+                "writers": (await store.writers(eventID)),
+                "reporters": (await store.reporters(eventID)),
+            }
         return jsonTextFromObject(acl)
 
     @router.route(_unprefix(URLs.acl), methods=("POST",))
@@ -1148,7 +1097,7 @@ class APIApplication:
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
 
-        for eventID, _streets in edits.items():
+        for eventID in edits.keys():
             existing = await store.concentricStreets(eventID)
 
             for _streetID, _streetName in existing.items():
@@ -1159,9 +1108,7 @@ class APIApplication:
 
             for streetID, streetName in streets.items():
                 if streetID not in existing:
-                    await store.createConcentricStreet(
-                        eventID, streetID, streetName
-                    )
+                    await store.createConcentricStreet(eventID, streetID, streetName)
 
         return noContentResponse(request)
 
@@ -1172,9 +1119,7 @@ class APIApplication:
         """
         self._log.debug("Event source connected: {id}", id=id(request))
 
-        request.setHeader(
-            HeaderName.contentType.value, ContentType.eventStream.value
-        )
+        request.setHeader(HeaderName.contentType.value, ContentType.eventStream.value)
 
         self.storeObserver.addListener(request)
 

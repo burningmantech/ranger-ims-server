@@ -109,9 +109,7 @@ def modelObjectFromJSONObject(json: JSON, modelClass: type) -> Any:
     try:
         return jsonDeserialize(json, modelClass)
     except KeyError as e:
-        raise JSONCodecError(
-            f"Invalid JSON for {modelClass.__name__}: {json}"
-        ) from e
+        raise JSONCodecError(f"Invalid JSON for {modelClass.__name__}: {json}") from e
 
 
 # Utilities
@@ -128,9 +126,7 @@ def deserialize(
             cls = getattr(typeEnum, key.name).value
         except AttributeError as e:
             raise AttributeError(
-                "No attribute {attribute!r} in type enum {enum!r}".format(
-                    attribute=key.name, enum=typeEnum
-                )
+                f"No attribute {key.name!r} in type enum {typeEnum!r}"
             ) from e
         try:
             return jsonDeserialize(obj.get(key.value, None), cls)
@@ -144,8 +140,5 @@ def deserialize(
             raise
 
     return cls(
-        **{
-            key.name: deserializeKey(key)
-            for key in cast(Iterable[Enum], keyEnum)
-        }
+        **{key.name: deserializeKey(key) for key in cast(Iterable[Enum], keyEnum)}
     )

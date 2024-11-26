@@ -139,9 +139,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   5: STRICKEN(numeric) not null
                 SCHEMA_INFO:
                   0: VERSION(integer) not null
-                """[
-                    1:
-                ]
+                """[1:]
             ).lower(),
         )
 
@@ -215,7 +213,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         """
         message = "Nyargh"
 
-        def oops(path: Path, schema: str | None = None) -> Connection:
+        def oops(path: Path, schema: str | None = None) -> Connection:  # noqa: ARG001
             raise SQLiteError(message)
 
         self.patch(_store, "createDB", oops)
@@ -270,9 +268,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         store = TestDataStore(dbPath=dbPath)
 
         f = self.failureResultOf(store.upgradeSchema(), StorageError)
-        self.assertStartsWith(
-            f.getErrorMessage(), "Unable to upgrade schema from "
-        )
+        self.assertStartsWith(f.getErrorMessage(), "Unable to upgrade schema from ")
 
     def test_upgradeSchema_noSchemaVersion(self) -> None:
         """
@@ -301,7 +297,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute(
                 "update SCHEMA_INFO set VERSION = :version",
-                dict(version=version),
+                {"version": version},
             )
 
         store = TestDataStore(dbPath=dbPath)
@@ -312,11 +308,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
             f"No upgrade path from schema version {version}",
         )
 
-    @given(
-        integers(
-            min_value=DataStore.schemaVersion + 1, max_value=SQLITE_MAX_INT
-        )
-    )
+    @given(integers(min_value=DataStore.schemaVersion + 1, max_value=SQLITE_MAX_INT))
     @settings(max_examples=10)
     def test_upgradeSchema_fromVersionTooHigh(self, version: int) -> None:
         """
@@ -329,7 +321,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         with createDB(dbPath, DataStore.loadSchema()) as db:
             db.execute(
                 "update SCHEMA_INFO set VERSION = :version",
-                dict(version=version),
+                {"version": version},
             )
 
         store = TestDataStore(dbPath=dbPath)
@@ -351,7 +343,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
 
         message = "FE06D0BE-A491-4B5D-ABAF-444E49220178"
 
-        def errorValidate(self: "DataStoreCoreTests") -> None:
+        def errorValidate(self: "DataStoreCoreTests") -> None:  # noqa: ARG001
             raise StorageError(message)
 
         with patch("ims.store._db.DatabaseStore.validate", errorValidate):
@@ -366,18 +358,14 @@ class DataStoreCoreTests(AsynchronousTestCase):
         store = TestDataStore(dbPath=Path(self.mktemp()))
         self.successResultOf(store.upgradeSchema())
 
-        def errorValidate(self: "DataStoreCoreTests") -> None:
+        def errorValidate(self: "DataStoreCoreTests") -> None:  # noqa: ARG001
             raise IntegrityError("680304E2-C77C-478D-8BA0-F0AD0A15509D")
 
         self.successResultOf(store.validate())
 
-        with patch(
-            "ims.ext.sqlite.Connection.validateConstraints", errorValidate
-        ):
+        with patch("ims.ext.sqlite.Connection.validateConstraints", errorValidate):
             f = self.failureResultOf(store.validate(), StorageError)
-            self.assertEqual(
-                f.getErrorMessage(), "Data store validation failed"
-            )
+            self.assertEqual(f.getErrorMessage(), "Data store validation failed")
 
 
 class DataStoreHelperTests(TestCase):

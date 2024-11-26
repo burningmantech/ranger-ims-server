@@ -165,9 +165,7 @@ class MySQLService(ABC):
 
         def sleep(interval: float) -> Deferred[None]:
             d: Deferred[None] = Deferred()
-            cast(IReactorTime, reactor).callLater(
-                interval, lambda: d.callback(None)
-            )
+            cast(IReactorTime, reactor).callLater(interval, lambda: d.callback(None))
             return d
 
         error = None
@@ -197,16 +195,15 @@ class MySQLService(ABC):
                 except ProgrammingError as e:
                     if e.args[1].endswith("; database exists"):
                         raise DatabaseExistsError(name) from None
-                    else:
-                        raise
+                    raise
                 cursor.execute(
                     f"grant all privileges on {name}.* "
                     f"to %(user)s@%(host)s identified by %(password)s",
-                    dict(
-                        user=self.user,
-                        host=self.clientHost,
-                        password=self.password,
-                    ),
+                    {
+                        "user": self.user,
+                        "host": self.clientHost,
+                        "password": self.password,
+                    },
                 )
 
             connection.commit()
@@ -246,9 +243,7 @@ class DockerizedMySQLService(MySQLService):
     # https://github.com/burningmantech/ranger-ims-server/blob/master/docker-compose.yml
     imageTag: str = "10.5.24"
 
-    _dockerClient: DockerClient = field(
-        factory=DockerClient.from_env, init=False
-    )
+    _dockerClient: DockerClient = field(factory=DockerClient.from_env, init=False)
     _state: _State = field(factory=_State, init=False, repr=False)
 
     @property
@@ -282,14 +277,14 @@ class DockerizedMySQLService(MySQLService):
 
     @property
     def _containerEnvironment(self) -> Mapping[str, str]:
-        return dict(
+        return {
             # Set root password so that we can connect as root from the Docker
             # host for debugging
-            MARIADB_ROOT_PASSWORD=self.rootPassword,
-            MARIADB_ROOT_HOST=self._dockerHost,
-            MARIADB_USER=self.user,
-            MARIADB_PASSWORD=self.password,
-        )
+            "MARIADB_ROOT_PASSWORD": self.rootPassword,
+            "MARIADB_ROOT_HOST": self._dockerHost,
+            "MARIADB_USER": self.user,
+            "MARIADB_PASSWORD": self.password,
+        }
 
     def _waitOnContainerLog(
         self,
@@ -309,8 +304,7 @@ class DockerizedMySQLService(MySQLService):
                 if elapsed > timeout:
                     d.errback(
                         RuntimeError(
-                            f"Timed out while starting container "
-                            f"{containerName}"
+                            f"Timed out while starting container {containerName}"
                         )
                     )
                     return
@@ -342,7 +336,7 @@ class DockerizedMySQLService(MySQLService):
                 cast(IReactorTime, reactor).callLater(
                     interval, waitOnDBStartup, elapsed=(elapsed + interval)
                 )
-            except Exception:
+            except Exception:  # noqa: BLE001
                 self._log.error(
                     "MySQL container {name} failed to start: {logs}",
                     name=containerName,
@@ -391,9 +385,7 @@ class DockerizedMySQLService(MySQLService):
         containerName = self._containerName
 
         self._log.info("Creating MySQL container {name}", name=containerName)
-        self._log.info(
-            "Container environment: {env}", env=self._containerEnvironment
-        )
+        self._log.info("Container environment: {env}", env=self._containerEnvironment)
 
         container = client.containers.create(
             name=containerName,

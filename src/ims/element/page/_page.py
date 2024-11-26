@@ -70,9 +70,7 @@ class Page(Element):
             try:
                 result[name] = getattr(urls, f"{name}JS")
             except AttributeError:
-                raise ValueError(
-                    f"Invalid import {name!r} in spec {spec!r}"
-                ) from None
+                raise ValueError(f"Invalid import {name!r} in spec {spec!r}") from None
 
             if name == "dataTables":
                 add("dataTablesBootstrap")
@@ -116,9 +114,7 @@ class Page(Element):
         return tag(  # type: ignore[return-value]
             # Resource metadata
             tags.meta(charset="utf-8"),
-            tags.meta(
-                name="viewport", content="width=device-width, initial-scale=1"
-            ),
+            tags.meta(name="viewport", content="width=device-width, initial-scale=1"),
             tags.link(
                 type="image/png",
                 rel="icon",

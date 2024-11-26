@@ -3,15 +3,14 @@
 Frozen dictionary
 """
 
-from collections.abc import Iterator
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from collections.abc import Mapping as MappingABC
 from typing import Any, TypeVar
 
 from attrs import field, frozen
 
 
-__all__ = "FrozenDict"
+__all__ = ["FrozenDict"]
 
 
 _Key = TypeVar("_Key")
@@ -25,9 +24,7 @@ class FrozenDict(MappingABC[_Key, _Value]):
     """
 
     @classmethod
-    def fromMapping(
-        cls, mapping: Mapping[_Key, _Value]
-    ) -> "FrozenDict[_Key, _Value]":
+    def fromMapping(cls, mapping: Mapping[_Key, _Value]) -> "FrozenDict[_Key, _Value]":
         """
         Create a FrozenDict from a Mapping.
         """

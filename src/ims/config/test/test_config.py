@@ -21,7 +21,7 @@ Tests for L{ims.config._config}.
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from functools import partial
-from os import environ, getcwd
+from os import environ
 from pathlib import Path
 from string import ascii_letters, printable
 from typing import cast
@@ -116,10 +116,8 @@ class UtilityTests(TestCase):
         """
         describeFactory() redacts passwords from partial objects.
         """
-        p = partial(self.factory, 1, password="super secret")  # nosec
-        self.assertEqual(
-            describeFactory(p), "factory(1, password='(REDACTED)')"
-        )
+        p = partial(self.factory, 1, password="super secret")  # noqa: S106
+        self.assertEqual(describeFactory(p), "factory(1, password='(REDACTED)')")
 
     def test_describeFactory_function(self) -> None:
         """
@@ -273,9 +271,7 @@ class ConfigFileParserTests(TestCase):
         parser = ConfigFileParser(path=configFilePath)
         with testingEnvironment({}):
             self.assertEqual(
-                parser.valueFromConfig(
-                    variable, otherSection, otherOption, default
-                ),
+                parser.valueFromConfig(variable, otherSection, otherOption, default),
                 default,
             )
 
@@ -302,9 +298,7 @@ class ConfigFileParserTests(TestCase):
         parser = ConfigFileParser(path=configFilePath)
         with testingEnvironment({}):
             self.assertEqual(
-                parser.pathFromConfig(
-                    variable, section, option, rootPath, segments
-                ),
+                parser.pathFromConfig(variable, section, option, rootPath, segments),
                 valuePath.resolve(),
             )
 
@@ -331,9 +325,7 @@ class ConfigFileParserTests(TestCase):
         parser = ConfigFileParser(path=configFilePath)
         with testingEnvironment({}):
             self.assertEqual(
-                parser.pathFromConfig(
-                    variable, section, option, rootPath, segments
-                ),
+                parser.pathFromConfig(variable, section, option, rootPath, segments),
                 valuePath,
             )
 
@@ -442,9 +434,7 @@ class ConfigFileParserTests(TestCase):
         parser = ConfigFileParser(path=configFilePath)
         with testingEnvironment({}):
             self.assertEqual(
-                parser.enumFromConfig(
-                    variable, otherSection, otherOption, default
-                ),
+                parser.enumFromConfig(variable, otherSection, otherOption, default),
                 default,
             )
 
@@ -518,7 +508,7 @@ class ConfigurationTests(TestCase):
         """
         No config file provided.
         """
-        self._test_fromConfigFile_defaults(None, Path(getcwd()))
+        self._test_fromConfigFile_defaults(None, Path.cwd())
 
     def test_fromConfigFile_empty(self) -> None:
         """
@@ -558,7 +548,7 @@ class ConfigurationTests(TestCase):
         """
         hostName = "xyzzy"
 
-        with testingEnvironment(dict(IMS_HOSTNAME=hostName)):
+        with testingEnvironment({"IMS_HOSTNAME": hostName}):
             config = Configuration.fromConfigFile(None)
 
         self.assertEqual(config.hostName, hostName)
@@ -569,7 +559,7 @@ class ConfigurationTests(TestCase):
         """
         path = Path(self.mktemp()).resolve()
 
-        with testingEnvironment(dict(IMS_SERVER_ROOT=str(path))):
+        with testingEnvironment({"IMS_SERVER_ROOT": str(path)}):
             config = Configuration.fromConfigFile(None)
 
         self.assertEqual(config.serverRoot, path)
@@ -583,7 +573,7 @@ class ConfigurationTests(TestCase):
 
         tmp.mkdir()
 
-        with testingEnvironment(dict(IMS_SERVER_ROOT=str(path))):
+        with testingEnvironment({"IMS_SERVER_ROOT": str(path)}):
             config = Configuration.fromConfigFile(None)
 
         self.assertTrue(config.serverRoot.is_dir())
@@ -604,7 +594,7 @@ class ConfigurationTests(TestCase):
         )
 
         for value, result in data:
-            with testingEnvironment(dict(IMS_ADMINS=value)):
+            with testingEnvironment({"IMS_ADMINS": value}):
                 config = Configuration.fromConfigFile(None)
 
             self.assertEqual(config.imsAdmins, result)
@@ -615,7 +605,7 @@ class ConfigurationTests(TestCase):
         """
 
         def test(value: str) -> bool:
-            with testingEnvironment(dict(IMS_REQUIRE_ACTIVE=value)):
+            with testingEnvironment({"IMS_REQUIRE_ACTIVE": value}):
                 config = Configuration.fromConfigFile(None)
             return config.requireActive
 
@@ -632,7 +622,7 @@ class ConfigurationTests(TestCase):
         """
 
         def test(secret: str) -> JSONWebKey:
-            with testingEnvironment(dict(IMS_JWT_SECRET=secret)):
+            with testingEnvironment({"IMS_JWT_SECRET": secret}):
                 config = Configuration.fromConfigFile(None)
             return config.jsonWebKey
 
@@ -659,9 +649,7 @@ class ConfigurationTests(TestCase):
     def test_store_sqlite(self) -> None:
         path = Path(self.mktemp()).resolve() / "ims.sqlite"
 
-        with testingEnvironment(
-            dict(IMS_DATA_STORE="SQLite", IMS_DB_PATH=str(path))
-        ):
+        with testingEnvironment({"IMS_DATA_STORE": "SQLite", "IMS_DB_PATH": str(path)}):
             config = Configuration.fromConfigFile(None)
 
         self.assertIsInstance(config.store, SQLiteDataStore)
@@ -672,17 +660,17 @@ class ConfigurationTests(TestCase):
         hostPort = 72984
         database = "ranger_ims"
         userName = "ims_user"
-        password = "hoorj"  # nosec
+        password = "hoorj"  # noqa: S105
 
         with testingEnvironment(
-            dict(
-                IMS_DATA_STORE="MySQL",
-                IMS_DB_HOST_NAME=hostName,
-                IMS_DB_HOST_PORT=str(hostPort),
-                IMS_DB_DATABASE=database,
-                IMS_DB_USER_NAME=userName,
-                IMS_DB_PASSWORD=password,
-            )
+            {
+                "IMS_DATA_STORE": "MySQL",
+                "IMS_DB_HOST_NAME": hostName,
+                "IMS_DB_HOST_PORT": str(hostPort),
+                "IMS_DB_DATABASE": database,
+                "IMS_DB_USER_NAME": userName,
+                "IMS_DB_PASSWORD": password,
+            }
         ):
             config = Configuration.fromConfigFile(None)
 
@@ -697,7 +685,7 @@ class ConfigurationTests(TestCase):
 
     def test_store_unknown(self) -> None:
         storeName = "XYZZY"
-        with testingEnvironment(dict(IMS_DATA_STORE=storeName)):
+        with testingEnvironment({"IMS_DATA_STORE": storeName}):
             e = self.assertRaises(
                 ConfigurationError, Configuration.fromConfigFile, None
             )
@@ -713,7 +701,7 @@ class ConfigurationTests(TestCase):
         path = Path(self.mktemp()).resolve() / "directory.yaml"
 
         with testingEnvironment(
-            dict(IMS_DIRECTORY="File", IMS_DIRECTORY_FILE=str(path))
+            {"IMS_DIRECTORY": "File", "IMS_DIRECTORY_FILE": str(path)}
         ):
             config = Configuration.fromConfigFile(None)
 
@@ -726,16 +714,16 @@ class ConfigurationTests(TestCase):
         hostName = "clubhouse_host"
         database = "rangers"
         userName = "rangers"
-        password = "hoorj"  # nosec
+        password = "hoorj"  # noqa: S105
 
         with testingEnvironment(
-            dict(
-                IMS_DIRECTORY="ClubhouseDB",
-                IMS_DMS_HOSTNAME=hostName,
-                IMS_DMS_DATABASE=database,
-                IMS_DMS_USERNAME=userName,
-                IMS_DMS_PASSWORD=password,
-            ),
+            {
+                "IMS_DIRECTORY": "ClubhouseDB",
+                "IMS_DMS_HOSTNAME": hostName,
+                "IMS_DMS_DATABASE": database,
+                "IMS_DMS_USERNAME": userName,
+                "IMS_DMS_PASSWORD": password,
+            },
         ):
             config = Configuration.fromConfigFile(None)
 
@@ -749,7 +737,7 @@ class ConfigurationTests(TestCase):
 
     def test_directory_unknown(self) -> None:
         storeName = "XYZZY"
-        with testingEnvironment(dict(IMS_DIRECTORY=storeName)):
+        with testingEnvironment({"IMS_DIRECTORY": storeName}):
             e = self.assertRaises(
                 ConfigurationError, Configuration.fromConfigFile, None
             )

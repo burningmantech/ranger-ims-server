@@ -48,9 +48,7 @@ class ComparisonMixInTests(TestCase):
         Hash.
         """
         self.assertEqual(hash(Comparable(value=1)), hash(Comparable(value=1)))
-        self.assertNotEqual(
-            hash(Comparable(value=1)), hash(Comparable(value=2))
-        )
+        self.assertNotEqual(hash(Comparable(value=1)), hash(Comparable(value=2)))
 
     def test_eq(self) -> None:
         """
@@ -59,9 +57,7 @@ class ComparisonMixInTests(TestCase):
         self.assertTrue(Comparable(value=1).__eq__(Comparable(value=1)))
         self.assertFalse(Comparable(value=1).__eq__(Comparable(value=2)))
 
-        self.assertIdentical(
-            Comparable(value=1).__eq__(object()), NotImplemented
-        )
+        self.assertIdentical(Comparable(value=1).__eq__(object()), NotImplemented)
 
     def test_ne(self) -> None:
         """
@@ -70,9 +66,7 @@ class ComparisonMixInTests(TestCase):
         self.assertFalse(Comparable(value=1).__ne__(Comparable(value=1)))
         self.assertTrue(Comparable(value=1).__ne__(Comparable(value=2)))
 
-        self.assertIdentical(
-            Comparable(value=1).__ne__(object()), NotImplemented
-        )
+        self.assertIdentical(Comparable(value=1).__ne__(object()), NotImplemented)
 
     def test_lt(self) -> None:
         """
@@ -82,9 +76,7 @@ class ComparisonMixInTests(TestCase):
         self.assertTrue(Comparable(value=1).__lt__(Comparable(value=2)))
         self.assertFalse(Comparable(value=2).__lt__(Comparable(value=1)))
 
-        self.assertIdentical(
-            Comparable(value=1).__lt__(object()), NotImplemented
-        )
+        self.assertIdentical(Comparable(value=1).__lt__(object()), NotImplemented)
 
     def test_le(self) -> None:
         """
@@ -94,9 +86,7 @@ class ComparisonMixInTests(TestCase):
         self.assertTrue(Comparable(value=1).__le__(Comparable(value=2)))
         self.assertFalse(Comparable(value=2).__le__(Comparable(value=1)))
 
-        self.assertIdentical(
-            Comparable(value=1).__le__(object()), NotImplemented
-        )
+        self.assertIdentical(Comparable(value=1).__le__(object()), NotImplemented)
 
     def test_gt(self) -> None:
         """
@@ -106,9 +96,7 @@ class ComparisonMixInTests(TestCase):
         self.assertFalse(Comparable(value=1).__gt__(Comparable(value=2)))
         self.assertTrue(Comparable(value=2).__gt__(Comparable(value=1)))
 
-        self.assertIdentical(
-            Comparable(value=1).__gt__(object()), NotImplemented
-        )
+        self.assertIdentical(Comparable(value=1).__gt__(object()), NotImplemented)
 
     def test_ge(self) -> None:
         """
@@ -118,6 +106,4 @@ class ComparisonMixInTests(TestCase):
         self.assertFalse(Comparable(value=1).__ge__(Comparable(value=2)))
         self.assertTrue(Comparable(value=2).__ge__(Comparable(value=1)))
 
-        self.assertIdentical(
-            Comparable(value=1).__le__(object()), NotImplemented
-        )
+        self.assertIdentical(Comparable(value=1).__le__(object()), NotImplemented)

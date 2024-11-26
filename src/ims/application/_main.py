@@ -146,14 +146,10 @@ class MainApplication:
         JavaScript variables for service URLs.
         """
         urls = {
-            k: getattr(URLs, k).asText()
-            for k in URLs.__dict__
-            if not k.startswith("_")
+            k: getattr(URLs, k).asText() for k in URLs.__dict__ if not k.startswith("_")
         }
 
-        request.setHeader(
-            HeaderName.contentType.value, ContentType.javascript.value
-        )
+        request.setHeader(HeaderName.contentType.value, ContentType.javascript.value)
 
         return "\n".join(
             (f"var url_{k} = {jsonTextFromObject(v)};" for k, v in urls.items())

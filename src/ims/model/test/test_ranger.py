@@ -39,9 +39,7 @@ class RangerStatusTests(TestCase):
         Ranger status renders as a string.
         """
         for status in RangerStatus:
-            self.assertEqual(
-                repr(status), f"{RangerStatus.__name__}[{status.name!r}]"
-            )
+            self.assertEqual(repr(status), f"{RangerStatus.__name__}[{status.name!r}]")
 
     def test_str(self) -> None:
         """

@@ -87,9 +87,7 @@ class DataStoreTests(SuperDataStoreTests):
                 self._log.info("Creating database: {name}", name=databaseName)
                 await service.createDatabase(name=databaseName)
             except DatabaseExistsError:
-                self._log.warn(
-                    "Database {name} already exists.", name=databaseName
-                )
+                self._log.warn("Database {name} already exists.", name=databaseName)
             else:
                 break
         else:
@@ -121,9 +119,7 @@ class DataStoreIncidentTests(DataStoreTests, SuperDataStoreIncidentTests):
     """
 
 
-class DataStoreIncidentReportTests(
-    DataStoreTests, SuperDataStoreIncidentReportTests
-):
+class DataStoreIncidentReportTests(DataStoreTests, SuperDataStoreIncidentReportTests):
     """
     Tests for :class:`DataStore` incident report access.
     """
@@ -137,9 +133,7 @@ class DataStoreConcentricStreetTests(
     """
 
 
-class DataStoreIncidentTypeTests(
-    DataStoreTests, SuperDataStoreIncidentTypeTests
-):
+class DataStoreIncidentTypeTests(DataStoreTests, SuperDataStoreIncidentTypeTests):
     """
     Tests for :class:`DataStore` incident type access.
     """

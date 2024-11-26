@@ -1,4 +1,5 @@
-# type: ignore
+# type: ignore  # noqa: PGH003
+# ruff: noqa: ANN001, ANN002, ANN003, ANN202, ANN204, PTH110, PTH123, PTH202, RUF012
 
 ##
 # See the file COPYRIGHT for copyright information.
@@ -84,9 +85,9 @@ class HTTPPageGetter(http.HTTPClient):
     def connectionMade(self):
         method = _ensureValidMethod(getattr(self.factory, "method", b"GET"))
         self.sendCommand(method, _ensureValidURI(self.factory.path))
-        if self.factory.scheme == b"http" and self.factory.port != 80:
+        if self.factory.scheme == b"http" and self.factory.port != 80:  # noqa: PLR2004
             host = b"%b:%d" % (self.factory.host, self.factory.port)
-        elif self.factory.scheme == b"https" and self.factory.port != 443:
+        elif self.factory.scheme == b"https" and self.factory.port != 443:  # noqa: PLR2004
             host = b"%b:%d" % (self.factory.host, self.factory.port)
         else:
             host = self.factory.host
@@ -202,9 +203,7 @@ class HTTPPageGetter(http.HTTPClient):
         else:
             self.handleStatusDefault()
             self.factory.noPage(
-                Failure(
-                    error.PageRedirect(self.status, self.message, location=url)
-                )
+                Failure(error.PageRedirect(self.status, self.message, location=url))
             )
         self.quietLoss = True
         self.transport.loseConnection()
@@ -244,11 +243,9 @@ class HTTPPageGetter(http.HTTPClient):
             # Callback with empty string, since there is never a response
             # body for HEAD requests.
             self.factory.page(b"")
-        elif self.length != None and self.length != 0:  # noqa: E711
+        elif self.length != None and self.length != 0:  # noqa: E711, PLR1714
             self.factory.noPage(
-                Failure(
-                    PartialDownloadError(self.status, self.message, response)
-                )
+                Failure(PartialDownloadError(self.status, self.message, response))
             )
         else:
             self.factory.page(response)
@@ -262,7 +259,7 @@ class HTTPPageGetter(http.HTTPClient):
         self.transport.abortConnection()
         self.factory.noPage(
             defer.TimeoutError(
-                "Getting %s took longer than %s seconds."  # noqa: S001
+                "Getting %s took longer than %s seconds."
                 % (self.factory.url, self.factory.timeout)
             )
         )
@@ -291,9 +288,7 @@ class HTTPPageDownloader(HTTPPageGetter):
             self.factory.pageEnd()
             self.transmittingPage = 0
         if self.failed:
-            self.factory.noPage(
-                Failure(error.Error(self.status, self.message, None))
-            )
+            self.factory.noPage(Failure(error.Error(self.status, self.message, None)))
             self.transport.loseConnection()
 
 
@@ -400,7 +395,7 @@ class HTTPClientFactory(protocol.ClientFactory):
         the result is only available after the associated connection has been
         closed.
         """
-        self._disconnectedDeferred.addCallback(lambda ignored: passthrough)
+        self._disconnectedDeferred.addCallback(lambda _: passthrough)
         return self._disconnectedDeferred
 
     def __repr__(self) -> str:
@@ -567,8 +562,7 @@ class HTTPDownloader(HTTPClientFactory):
         """
         if partialContent and not self.requestedPartial:
             raise ValueError(
-                "we shouldn't get partial content response if we didn't "
-                "want it!"
+                "we shouldn't get partial content response if we didn't want it!"
             )
         if self.waiting:
             try:
@@ -598,7 +592,7 @@ class HTTPDownloader(HTTPClientFactory):
             if self.file:
                 try:
                     self.file.close()
-                except BaseException:  # noqa: B036
+                except Exception:  # noqa: BLE001
                     self._log.failure("Error closing HTTPDownloader file")
             self.deferred.errback(reason)
 
@@ -614,9 +608,7 @@ class HTTPDownloader(HTTPClientFactory):
         self.deferred.callback(self.value)
 
 
-def _makeGetterFactory(
-    url, factoryFactory, contextFactory=None, *args, **kwargs
-):
+def _makeGetterFactory(url, factoryFactory, contextFactory=None, *args, **kwargs):
     """
     Create and connect an HTTP page getting factory.
 
@@ -640,9 +632,7 @@ def _makeGetterFactory(
 
         if contextFactory is None:
             contextFactory = ssl.ClientContextFactory()
-        reactor.connectSSL(
-            nativeString(uri.host), uri.port, factory, contextFactory
-        )
+        reactor.connectSSL(nativeString(uri.host), uri.port, factory, contextFactory)
     else:
         reactor.connectTCP(nativeString(uri.host), uri.port, factory)
     return factory
@@ -706,8 +696,7 @@ class ExternalApplication:
     )
 
     dataTablesSourceURL = URL.fromText(
-        f"https://datatables.net/releases/"
-        f"DataTables-{dataTablesVersionNumber}.zip"
+        f"https://datatables.net/releases/DataTables-{dataTablesVersionNumber}.zip"
     )
 
     lscacheJSSourceURL = URL.fromText(
@@ -715,9 +704,7 @@ class ExternalApplication:
         f"{lscacheVersionNumber}/lscache.min.js"
     )
 
-    @router.route(
-        _unprefix(URLs.bootstrapBase), methods=("HEAD", "GET"), branch=True
-    )
+    @router.route(_unprefix(URLs.bootstrapBase), methods=("HEAD", "GET"), branch=True)
     @static
     async def bootstrapResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -743,9 +730,7 @@ class ExternalApplication:
         """
         Endpoint for jQuery.
         """
-        request.setHeader(
-            HeaderName.contentType.value, ContentType.javascript.value
-        )
+        request.setHeader(HeaderName.contentType.value, ContentType.javascript.value)
         return await self.cachedResource(
             request, self.jqueryJSSourceURL, f"{self.jqueryVersion}.min.js"
         )
@@ -761,9 +746,7 @@ class ExternalApplication:
             request, self.jqueryMapSourceURL, f"{self.jqueryVersion}.min.map"
         )
 
-    @router.route(
-        _unprefix(URLs.dataTablesBase), methods=("HEAD", "GET"), branch=True
-    )
+    @router.route(_unprefix(URLs.dataTablesBase), methods=("HEAD", "GET"), branch=True)
     @static
     async def dataTablesResource(self, request: IRequest) -> KleinRenderable:
         """
@@ -801,9 +784,7 @@ class ExternalApplication:
         """
         Endpoint for lscache.
         """
-        request.setHeader(
-            HeaderName.contentType.value, ContentType.javascript.value
-        )
+        request.setHeader(HeaderName.contentType.value, ContentType.javascript.value)
         return await self.cachedResource(
             request, self.lscacheJSSourceURL, f"{self.lscacheVersion}.min.js"
         )
@@ -823,7 +804,7 @@ class ExternalApplication:
                 path = Path(tmp.name)
                 try:
                     await downloadPage(url.asText().encode("utf-8"), tmp)
-                except BaseException as e:  # noqa: B036
+                except Exception as e:  # noqa: BLE001
                     self._log.critical(
                         "Download failed for {url}: {error}", url=url, error=e
                     )
@@ -851,9 +832,7 @@ class ExternalApplication:
         try:
             return path.read_bytes()
         except OSError as e:
-            self._log.error(
-                "Unable to open file {path}: {error}", path=path, error=e
-            )
+            self._log.error("Unable to open file {path}: {error}", path=path, error=e)
             return notFoundResponse(request)
 
     async def cachedZippedResource(
@@ -869,9 +848,7 @@ class ExternalApplication:
         """
 
         archivePath = await self.cacheFromURL(url, f"{archiveName}.zip")
-        return self.cachedZippedResourceFromPath(
-            request, archivePath, name, *names
-        )
+        return self.cachedZippedResourceFromPath(request, archivePath, name, *names)
 
     def cachedZippedResourceFromPath(
         self,
@@ -909,8 +886,8 @@ class ExternalApplication:
             return notFoundResponse(request)
 
         filePath = filePath.child(name)
-        for name in names:
-            filePath = filePath.child(name)
+        for _name in names:
+            filePath = filePath.child(_name)
 
         try:
             return filePath.getContent()

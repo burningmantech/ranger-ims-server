@@ -4,6 +4,7 @@ __pycache__/
 /.docker_environment
 /.docker/*
 /.hypothesis/
+/.ruff_cache
 /.tox/
 /.venv/
 /build/

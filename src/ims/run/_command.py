@@ -89,7 +89,7 @@ class Command:
         await store.validate()
 
     @classmethod
-    def runServer(cls, config: Configuration, options: ServerOptions) -> None:
+    def runServer(cls, config: Configuration, options: ServerOptions) -> None:  # noqa: ARG003
         host = config.hostName
         port = config.port
 
@@ -116,9 +116,7 @@ class Command:
         )
 
     @classmethod
-    async def runExport(
-        cls, config: Configuration, options: ExportOptions
-    ) -> None:
+    async def runExport(cls, config: Configuration, options: ExportOptions) -> None:
         with options["outFile"] as outFile:
             exporter = JSONExporter(store=config.store)
             data = await exporter.asBytes()
@@ -126,9 +124,7 @@ class Command:
         cls.stop()
 
     @classmethod
-    async def runImport(
-        cls, config: Configuration, options: ImportOptions
-    ) -> None:
+    async def runImport(cls, config: Configuration, options: ImportOptions) -> None:
         with options["inFile"] as inFile:
             importer = JSONImporter.fromIO(store=config.store, io=inFile)
             await importer.storeData()
@@ -141,9 +137,7 @@ class Command:
         for inFile in options["inFiles"]:
             with inFile:
                 cls.log.info("Reading export file...")
-                importers.append(
-                    JSONImporter.fromIO(store=config.store, io=inFile)
-                )
+                importers.append(JSONImporter.fromIO(store=config.store, io=inFile))
 
         first: JSONImporter | None = None
 
@@ -189,10 +183,7 @@ class Command:
                                 aclB=eventDataB.access,
                             )
 
-                        if (
-                            eventDataA.concentricStreets
-                            != eventDataB.concentricStreets
-                        ):
+                        if eventDataA.concentricStreets != eventDataB.concentricStreets:
                             cls.log.error(
                                 "Events concentric streets do not match: "
                                 "{streetsA} != {streetsB}",
@@ -206,12 +197,8 @@ class Command:
                                 event=eventDataA.event,
                             )
 
-                            numbersA = frozenset(
-                                i.number for i in eventDataA.incidents
-                            )
-                            numbersB = frozenset(
-                                i.number for i in eventDataB.incidents
-                            )
+                            numbersA = frozenset(i.number for i in eventDataA.incidents)
+                            numbersB = frozenset(i.number for i in eventDataB.incidents)
                             if numbersA != numbersB:
                                 cls.log.error(
                                     "Incident numbers do not match for event "
@@ -229,21 +216,13 @@ class Command:
                                         "Incidents do not match for event "
                                         "{event}: {incidentA} != {incidentB}",
                                         event=eventDataA.event,
-                                        incidentA=jsonObjectFromModelObject(
-                                            incidentA
-                                        ),
-                                        incidentB=jsonObjectFromModelObject(
-                                            incidentB
-                                        ),
+                                        incidentA=jsonObjectFromModelObject(incidentA),
+                                        incidentB=jsonObjectFromModelObject(incidentB),
                                     )
 
-                        if (
-                            eventDataA.incidentReports
-                            != eventDataB.incidentReports
-                        ):
+                        if eventDataA.incidentReports != eventDataB.incidentReports:
                             cls.log.error(
-                                "Events incident reports do not match: "
-                                "{event}",
+                                "Events incident reports do not match: {event}",
                                 event=eventDataA.event,
                             )
 
@@ -255,7 +234,9 @@ class Command:
 
     @classmethod
     def runHashPassword(
-        cls, config: Configuration, options: HashPasswordOptions
+        cls,
+        config: Configuration,  # noqa: ARG003
+        options: HashPasswordOptions,
     ) -> None:
         password = options["password"]
         hashedPassword = hashPassword(password)
@@ -264,7 +245,9 @@ class Command:
 
     @classmethod
     def runVerifyPassword(
-        cls, config: Configuration, options: VerifyPasswordOptions
+        cls,
+        config: Configuration,  # noqa: ARG003
+        options: VerifyPasswordOptions,
     ) -> None:
         password = options["password"]
         hashedPassword = options["hashedPassword"]
@@ -287,9 +270,7 @@ class Command:
             try:
                 await cls.initStore(config.store)
             except StorageError as e:
-                cls.log.critical(
-                    "Unable to initialize data store: {error}", error=e
-                )
+                cls.log.critical("Unable to initialize data store: {error}", error=e)
                 cls.stop()
                 return
 
@@ -312,7 +293,7 @@ class Command:
                     cls.runVerifyPassword(config, subOptions)
                 else:
                     raise AssertionError(f"Unknown subcommand: {subCommand}")
-            except BaseException as e:  # noqa: B036
+            except BaseException as e:  # noqa: BLE001
                 cls.log.critical(
                     "Unable to run {subCommand}: ({errorClass}) {error}",
                     subCommand=subCommand,
@@ -343,7 +324,7 @@ class Command:
             logFile=options.get("logFile", stdout),
             fileLogObserverFactory=options["fileLogObserverFactory"],
             whenRunning=cls.whenRunning,  # type: ignore[arg-type]
-            whenRunningArguments=dict(options=options),
+            whenRunningArguments={"options": options},
         )
         runner.run()
 

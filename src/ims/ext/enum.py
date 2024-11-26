@@ -36,13 +36,13 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
     def notEqual(self: Enum, other: Any) -> bool:
         return self is not other
 
-    def compare(self: Enum, other: Any, lessThan: bool) -> bool:
+    def compare(self: Enum, other: Any, *, lessThan: bool) -> bool:
         members: tuple[Enum, ...] = tuple(enumClass)  # type: ignore[arg-type]
         if other in members:
             for member in members:
                 if member is self:
                     return lessThan
-                elif member is other:
+                if member is other:
                     return not lessThan
 
         return NotImplemented
@@ -51,25 +51,25 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
         if self is other:
             return False
 
-        return compare(self, other, True)
+        return compare(self, other, lessThan=True)
 
     def lessThanOrEqual(self: Enum, other: Any) -> bool:
         if self is other:
             return True
 
-        return compare(self, other, True)
+        return compare(self, other, lessThan=True)
 
     def greaterThan(self: Enum, other: Any) -> bool:
         if self is other:
             return False
 
-        return compare(self, other, False)
+        return compare(self, other, lessThan=False)
 
     def greaterThanOrEqual(self: Enum, other: Any) -> bool:
         if self is other:
             return True
 
-        return compare(self, other, False)
+        return compare(self, other, lessThan=False)
 
     enumClass.__eq__ = cast(Comparator, equal)  # type: ignore[assignment]
     enumClass.__ne__ = cast(Comparator, notEqual)  # type: ignore[assignment]
@@ -92,6 +92,9 @@ class Names(Enum):
 
     @staticmethod
     def _generate_next_value_(
-        name: str, start: int, count: int, last_values: list[object]
+        name: str,
+        start: int,  # noqa: ARG004
+        count: int,  # noqa: ARG004
+        last_values: list[object],  # noqa: ARG004
     ) -> str:
         return name

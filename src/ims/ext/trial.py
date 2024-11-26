@@ -88,9 +88,7 @@ class TestCase(SuperTestCase):
         """
         self.assertEqual(request.code, code)  # type: ignore[attr-defined]
 
-    def assertResponseContentType(
-        self, request: IRequest, contentType: str
-    ) -> None:
+    def assertResponseContentType(self, request: IRequest, contentType: str) -> None:
         """
         Assert that the response content-type on a request matches the given
         value.
@@ -110,9 +108,7 @@ class TestCase(SuperTestCase):
         data = request.getWrittenData()  # type: ignore[attr-defined]
         return cast(bytes, data).decode()
 
-    def assertJSONResponse(
-        self, request: IRequest, status: int = http.OK
-    ) -> str:
+    def assertJSONResponse(self, request: IRequest, status: int = http.OK) -> str:
         """
         Assert that the response is JSON and return the JSON text.
         """
@@ -141,9 +137,7 @@ class TestCase(SuperTestCase):
             self.fail(f"EventData.access: {e}")
 
         try:
-            self.assertEqual(
-                eventDataA.concentricStreets, eventDataB.concentricStreets
-            )
+            self.assertEqual(eventDataA.concentricStreets, eventDataB.concentricStreets)
         except self.failureException as e:
             self.fail(f"EventData.concentricStreets: {e}")
 
@@ -153,9 +147,7 @@ class TestCase(SuperTestCase):
             self.fail(f"EventData.incidents: {e}")
 
         try:
-            self.assertEqual(
-                eventDataA.incidentReports, eventDataB.incidentReports
-            )
+            self.assertEqual(eventDataA.incidentReports, eventDataB.incidentReports)
         except self.failureException as e:
             self.fail(f"EventData.incidentReports: {e}")
 

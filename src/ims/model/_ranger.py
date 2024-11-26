@@ -20,7 +20,6 @@
 Ranger
 """
 
-
 from attrs import field, frozen
 
 from ims.ext.enum import Names, auto, unique
@@ -32,12 +31,12 @@ from ._replace import ReplaceMixIn
 __all__ = ()
 
 
-statusDescriptions = dict(
-    active="Active Ranger",
-    inactive="Inactive Ranger",
-    vintage="Vintage Ranger",
-    other="(Unknown Person Type)",
-)
+statusDescriptions = {
+    "active": "Active Ranger",
+    "inactive": "Inactive Ranger",
+    "vintage": "Vintage Ranger",
+    "other": "(Unknown Person Type)",
+}
 
 
 @unique
@@ -73,13 +72,11 @@ class Ranger(ReplaceMixIn):
     handle: str
     name: str
     status: RangerStatus
-    email: frozenset[str] = field(
-        converter=freezeStrings, default=frozenset[str]()
-    )
+    email: frozenset[str] = field(converter=freezeStrings, default=frozenset[str]())
     enabled: bool
     directoryID: str | None
     password: str | None = field(
-        order=False, repr=lambda p: "\N{ZIPPER-MOUTH FACE}", default=None
+        order=False, repr=lambda _p: "\N{ZIPPER-MOUTH FACE}", default=None
     )
 
     def __str__(self) -> str:

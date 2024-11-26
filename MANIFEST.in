@@ -1,8 +1,6 @@
 include .coveragerc
 include .docker/sample.env
 include .dockerignore
-include .flake8
-include .isort.cfg
 include .pre-commit-config.yaml
 include .python-version
 include bin/.common.sh

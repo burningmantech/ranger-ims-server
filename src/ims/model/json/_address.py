@@ -109,10 +109,11 @@ class RodGarettAddressJSONType(Enum):
 def serializeAddress(address: Address) -> dict[str, Any]:
     if isinstance(address, TextOnlyAddress):
         return serializeTextOnlyAddress(address)
-    elif isinstance(address, RodGarettAddress):
+
+    if isinstance(address, RodGarettAddress):
         return serializeRodGarettAddress(address)
-    else:
-        raise TypeError(f"Unknown address type: {address!r}")
+
+    raise TypeError(f"Unknown address type: {address!r}")
 
 
 registerSerializer(Address, serializeAddress)

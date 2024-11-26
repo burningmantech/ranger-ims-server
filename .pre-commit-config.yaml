@@ -4,62 +4,12 @@ ci:
 
 repos:
 
-  - repo: https://github.com/asottile/pyupgrade
-    rev: "v3.19.0"
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.8.0
     hooks:
-      - id: pyupgrade
-        args: ["--py313-plus"]
-
-  - repo: https://github.com/psf/black
-    rev: "24.10.0"
-    hooks:
-      - id: black
-        args: ["--target-version", "py313"]
-
-  - repo: https://github.com/PyCQA/autoflake
-    rev: "v2.3.1"
-    hooks:
-      - id: autoflake
-        args:
-          - --in-place
-          - --remove-all-unused-imports
-          - --expand-star-imports
-          - --remove-duplicate-keys
-          - --remove-unused-variables
-
-  - repo: https://github.com/PyCQA/flake8
-    rev: "7.1.1"
-    hooks:
-      - id: flake8
-        additional_dependencies:
-          - flake8-bugbear==24.8.19
-          - flake8-docstrings==1.7.0
-          - flake8-mutable==1.2.0
-          - flake8-pep3101==2.1.0
-          - pep8-naming==0.14.1
-          - pycodestyle==2.12.1
-          - pydocstyle==6.3.0
-          - pyflakes==3.2.0
-
-  - repo: https://github.com/asottile/yesqa
-    rev: "v1.5.0"
-    hooks:
-      - id: yesqa
-        additional_dependencies:
-          - flake8-bugbear==24.8.19
-          - flake8-docstrings==1.7.0
-          - flake8-mutable==1.2.0
-          - flake8-pep3101==2.1.0
-          - pep8-naming==0.14.1
-          - pycodestyle==2.12.1
-          - pydocstyle==6.3.0
-          - pyflakes==3.2.0
-
-  - repo: https://github.com/PyCQA/isort
-    rev: "5.13.2"
-    hooks:
-    - id: isort
-      args: ["--filter-files"]
+      - id: ruff
+      - id: ruff-format
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v5.0.0"
@@ -91,18 +41,6 @@ repos:
       - id: no-commit-to-branch
         args: ["--branch", "master"]
       - id: trailing-whitespace
-
-  - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: "v1.10.0"
-    hooks:
-      - id: python-check-blanket-noqa
-      # - id: python-check-blanket-type-ignore
-      - id: python-no-eval
-      - id: python-use-type-annotations
-      - id: rst-backticks
-      - id: rst-directive-colons
-      - id: rst-inline-touching-normal
-      - id: text-unicode-replacement-char
 
   - repo: https://github.com/mgedmin/check-manifest
     rev: "0.50"

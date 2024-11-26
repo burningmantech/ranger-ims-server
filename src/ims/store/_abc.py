@@ -61,14 +61,14 @@ class IMSDataStore(ABC):
     ###
 
     @abstractmethod
-    async def incidentTypes(self, includeHidden: bool = False) -> Iterable[str]:
+    async def incidentTypes(self, *, includeHidden: bool = False) -> Iterable[str]:
         """
         Look up the incident types used in this store.
         """
 
     @abstractmethod
     async def createIncidentType(
-        self, incidentType: str, hidden: bool = False
+        self, incidentType: str, *, hidden: bool = False
     ) -> None:
         """
         Create the given incident type.
@@ -150,9 +150,7 @@ class IMSDataStore(ABC):
         """
 
     @abstractmethod
-    async def createConcentricStreet(
-        self, eventID: str, id: str, name: str
-    ) -> None:
+    async def createConcentricStreet(self, eventID: str, id: str, name: str) -> None:
         """
         Create a new concentric street and associated it with the given event.
         """
@@ -163,7 +161,7 @@ class IMSDataStore(ABC):
 
     @abstractmethod
     async def incidents(
-        self, eventID: str, excludeSystemEntries: bool
+        self, eventID: str, *, excludeSystemEntries: bool = False
     ) -> Iterable[Incident]:
         """
         Look up all incidents for the given event.
@@ -324,7 +322,7 @@ class IMSDataStore(ABC):
 
     @abstractmethod
     async def incidentReports(
-        self, eventID: str, excludeSystemEntries: bool
+        self, eventID: str, *, excludeSystemEntries: bool = False
     ) -> Iterable[IncidentReport]:
         """
         Look up all incident reports in the given event.
@@ -354,9 +352,7 @@ class IMSDataStore(ABC):
         """
 
     @abstractmethod
-    async def importIncidentReport(
-        self, incidentReport: IncidentReport
-    ) -> None:
+    async def importIncidentReport(self, incidentReport: IncidentReport) -> None:
         """
         Import an incident and add it into the given event.
 

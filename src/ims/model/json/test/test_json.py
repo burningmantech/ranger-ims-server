@@ -183,9 +183,7 @@ class ModelSerializationTests(TestCase):
         :func:`jsonObjectFromModelObject` serializes an incident as JSON
         objects.
         """
-        self.assertEqual(
-            jsonObjectFromModelObject(incident), jsonSerialize(incident)
-        )
+        self.assertEqual(jsonObjectFromModelObject(incident), jsonSerialize(incident))
 
 
 class ModelDeserializationTests(TestCase):

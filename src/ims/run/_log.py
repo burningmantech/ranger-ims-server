@@ -55,14 +55,14 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
         username = request.user.shortNames[0]
         try:
             username = _escape(username)
-        except Exception:
+        except Exception:  # noqa: BLE001
             username = _escape(repr(username))
     else:
         username = "-"
 
-    line = (
+    return (
         '"{ip}" {user} - {timestamp} "{method} {uri} {protocol}" '
-        '{code} {length} "{referrer}" "{agent}"'.format(
+        '{code} {length} "{referrer}{agent}"'.format(
             ip=_escape(ip or "-"),
             timestamp=timestamp,
             method=_escape(request.method),
@@ -75,7 +75,6 @@ def combinedLogFormatter(timestamp: str, request: IRequest) -> str:
             user=username,
         )
     )
-    return line
 
 
 def patchCombinedLogFormatter() -> None:
