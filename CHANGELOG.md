@@ -16,6 +16,13 @@ Each month below should look like the following, using the same ordering for the
 ### Fixed
 -->
 
+## 2024-12
+
+### Added
+
+- Started showing the (currently read-only) IMS number on the Field Report page ([#1429](https://github.com/burningmantech/ranger-ims-server/pull/1429))
+- Added a button on the Field Report page that allows instant creation of a new Incident based on that Field Report. This button will only appear for users with writeIncident permission (e.g. Operators and Shift Command) ([#1429](https://github.com/burningmantech/ranger-ims-server/pull/1429))
+
 ## 2024-11
 
 ### Changed
