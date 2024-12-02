@@ -19,6 +19,7 @@ Test strategies for model data.
 """
 
 from collections.abc import Callable, Hashable
+from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
@@ -128,12 +129,12 @@ def dateTimes(
     fuzz = TimeDelta(days=1)
 
     if beforeNow:
-        max = DateTime.now() - fuzz
+        max = DateTime.now(tz=UTC) - fuzz
     else:
         max = DateTime(9999, 12, 31, 23, 59, 59, 999999)
 
     if fromNow:
-        min = DateTime.now() + fuzz
+        min = DateTime.now(tz=UTC) + fuzz
     else:
         min = DateTime(1970, 1, 1) + fuzz
 
