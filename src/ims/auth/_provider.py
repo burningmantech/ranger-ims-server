@@ -19,6 +19,7 @@ Incident Management System web application authentication provider.
 """
 
 from collections.abc import Container, Mapping
+from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from enum import Flag, auto
@@ -248,7 +249,7 @@ class AuthProvider:
         return self.directory.verifyPassword(user, password)
 
     def _tokenForUser(self, user: IMSUser, duration: TimeDelta) -> JSONWebToken:
-        now = DateTime.now()
+        now = DateTime.now(tz=UTC)
         expiration = now + duration
         return JSONWebToken.fromClaims(
             JSONWebTokenClaims(
