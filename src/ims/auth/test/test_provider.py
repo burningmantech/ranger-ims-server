@@ -18,13 +18,13 @@
 Tests for L{ims.auth._provider}.
 """
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from pathlib import Path
 from string import ascii_letters, digits
-from typing import Any
+from typing import Any, AnyStr, Optional
 from unittest.mock import patch
 
 from attrs import evolve, frozen
@@ -39,9 +39,12 @@ from hypothesis.strategies import (
     text,
     timedeltas,
 )
+from twisted.web.server import Request
+from twisted.web.test.test_web import DummyChannel
 
 from ims.directory import IMSDirectory
 from ims.directory.file import FileDirectory
+from ims.ext.klein import HeaderName
 from ims.ext.trial import TestCase
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
@@ -53,6 +56,7 @@ from ...directory import (
     hashPassword,
     verifyPassword,
 )
+from .. import NotAuthorizedError
 from .._exceptions import InvalidCredentialsError
 from .._provider import (
     Authorization,
@@ -64,6 +68,8 @@ from .._provider import (
 
 
 __all__ = ()
+
+from ...model import Event
 
 
 def oops(*args: Any, **kwargs: Any) -> None:  # noqa: ARG001
@@ -350,7 +356,7 @@ class AuthProviderTests(TestCase):
     """
 
     def store(self) -> IMSDataStore:
-        return SQLiteDataStore(dbPath=None)
+        return SQLiteDataStore(dbPath=Path(self.mktemp()))
 
     def directory(self) -> IMSDirectory:
         path = Path(__file__).parent.parent.parent / "file" / "test" / "directory.yaml"
@@ -633,9 +639,102 @@ class AuthProviderTests(TestCase):
     )
 
     def test_authorizeRequest(self) -> None:
-        raise NotImplementedError()
+        # Set up DB and AuthProvider with a single user
+        store = self.store()
+        provider = AuthProvider(
+            store=store,
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+            requireActive=False,
+        )
+        self.successResultOf(store.upgradeSchema())
+        event = "2024"
+        self.successResultOf(store.createEvent(Event(id=event)))
+        user = TestUser(
+            uid=IMSUserID("my-id"),
+            shortNames=("Slumber",),
+            active=True,
+            groups=(),
+            plainTextPassword="some-password",
+        )
+        personUser = f"person:{user.shortNames[0]}"
+        token = provider._tokenForUser(user, TimeDelta(days=1)).asText()
+        request = MockReq({HeaderName.authorization.value: f"Bearer {token}"})
 
-    test_authorizeRequest.todo = "unimplemented"  # type: ignore[attr-defined]
+        # Stage 1: the user and the user's group have no permissions
+        self.failureResultOf(
+            provider.authorizeRequest(
+                request=request,
+                eventID=event,
+                requiredAuthorizations=Authorization.readIncidents,
+            ),
+            NotAuthorizedError,
+        )
+        self.assertEqual(request.authorizations, Authorization.none)
+
+        # Stage 2: the user is now a reporter
+        self.successResultOf(store.setReporters(event, (personUser,)))
+        # Now the user is able to writeIncidentReports, but that's it
+        self.successResultOf(
+            provider.authorizeRequest(
+                request=request,
+                eventID=event,
+                requiredAuthorizations=Authorization.writeIncidentReports,
+            )
+        )
+        self.assertEqual(request.authorizations, Authorization.writeIncidentReports)
+        self.failureResultOf(
+            provider.authorizeRequest(
+                request=request,
+                eventID=event,
+                requiredAuthorizations=Authorization.readIncidents,
+            ),
+            NotAuthorizedError,
+        )
+
+        # Stage 3: the user can read incidents
+        self.successResultOf(store.setReporters(event, ()))
+        self.successResultOf(store.setReaders(event, (personUser,)))
+        self.successResultOf(
+            provider.authorizeRequest(
+                request=request,
+                eventID=event,
+                requiredAuthorizations=Authorization.readIncidents,
+            ),
+        )
+        self.assertEqual(
+            request.authorizations,
+            Authorization.readPersonnel | Authorization.readIncidents,
+        )
+
+        # Stage 4: the user can write incidents
+        self.successResultOf(store.setReaders(event, ()))
+        self.successResultOf(store.setWriters(event, (personUser,)))
+        self.successResultOf(
+            provider.authorizeRequest(
+                request=request,
+                eventID=event,
+                requiredAuthorizations=Authorization.writeIncidents,
+            ),
+        )
+        self.assertEqual(
+            request.authorizations,
+            Authorization.readPersonnel
+            | Authorization.readIncidents
+            | Authorization.writeIncidents
+            | Authorization.writeIncidentReports,
+        )
+
+        # Stage 5: no event is provided in the request
+        self.failureResultOf(
+            provider.authorizeRequest(
+                request=request,
+                eventID=None,
+                requiredAuthorizations=Authorization.writeIncidents,
+            ),
+            NotAuthorizedError,
+        )
+        self.assertEqual(request.authorizations, Authorization.none)
 
     def test_authorizeReqForIncidentReport(self) -> None:
         raise NotImplementedError()
@@ -643,3 +742,13 @@ class AuthProviderTests(TestCase):
     test_authorizeReqForIncidentReport.todo = (  # type: ignore[attr-defined]
         "unimplemented"
     )
+
+
+class MockReq(Request):
+    def __init__(self, headers: Mapping[str, str]) -> None:
+        super().__init__(DummyChannel(), False)
+        self.headers = headers
+        self.authorizations = Authorization.none
+
+    def getHeader(self, key: AnyStr) -> Optional[AnyStr]:
+        return self.headers.get(str(key))  # type: ignore[return-value]
