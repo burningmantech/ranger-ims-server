@@ -19,7 +19,7 @@ JSON serialization/deserialization for Rangers
 """
 
 from enum import Enum, unique
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from .._ranger import Ranger, RangerStatus
 from ._json import (
@@ -58,7 +58,7 @@ class RangerJSONType(Enum):
     status = RangerStatus
     # email is intentionally not serialized, since no web client needs it
     enabled = bool
-    directoryID = Optional[str]
+    directoryID = str | None
     # password is intentionally not serialized, since no web client needs it
 
 

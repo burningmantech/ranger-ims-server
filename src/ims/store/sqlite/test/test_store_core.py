@@ -18,9 +18,9 @@
 Tests for :mod:`ranger-ims-server.store.sqlite._store`
 """
 
+from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
-from datetime import timezone as TimeZone
 from io import StringIO
 from pathlib import Path
 from sqlite3 import IntegrityError
@@ -378,9 +378,7 @@ class DataStoreHelperTests(TestCase):
         :meth:`DataStore.asDateTimeValue` raises :exc:`StorageError` when given
         a time stamp before the UTC Epoch.
         """
-        epoch = DateTime(
-            year=1970, month=1, day=1, hour=0, minute=0, tzinfo=TimeZone.utc
-        )
+        epoch = DateTime(year=1970, month=1, day=1, hour=0, minute=0, tzinfo=UTC)
         preEpoch = epoch - TimeDelta(seconds=1)
 
         e = self.assertRaises(StorageError, DataStore.asDateTimeValue, preEpoch)
