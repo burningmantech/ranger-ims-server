@@ -69,7 +69,7 @@ from .._provider import (
 
 __all__ = ()
 
-from ...model import Event
+from ...model import Event, IncidentReport, ReportEntry
 
 
 def oops(*args: Any, **kwargs: Any) -> None:  # noqa: ARG001
@@ -659,7 +659,10 @@ class AuthProviderTests(TestCase):
         )
         personUser = f"person:{user.shortNames[0]}"
         token = provider._tokenForUser(user, TimeDelta(days=1)).asText()
-        request = MockReq({HeaderName.authorization.value: f"Bearer {token}"})
+        request = MockReq(
+            user,
+            {HeaderName.authorization.value: f"Bearer {token}"},
+        )
 
         # Stage 1: the user and the user's group have no permissions
         self.failureResultOf(
@@ -737,16 +740,134 @@ class AuthProviderTests(TestCase):
         self.assertEqual(request.authorizations, Authorization.none)
 
     def test_authorizeReqForIncidentReport(self) -> None:
-        raise NotImplementedError()
+        # Set up DB and AuthProvider with a single user
+        store = self.store()
+        provider = AuthProvider(
+            store=store,
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+            requireActive=False,
+        )
+        self.successResultOf(store.upgradeSchema())
+        event = "2024"
+        self.successResultOf(store.createEvent(Event(id=event)))
+        user = TestUser(
+            uid=IMSUserID("my-id"),
+            shortNames=("Slumber",),
+            active=True,
+            groups=(),
+            plainTextPassword="some-password",
+        )
+        personUser = f"person:{user.shortNames[0]}"
+        token = provider._tokenForUser(user, TimeDelta(days=1)).asText()
+        request = MockReq(
+            user,
+            {HeaderName.authorization.value: f"Bearer {token}"},
+        )
 
-    test_authorizeReqForIncidentReport.todo = (  # type: ignore[attr-defined]
-        "unimplemented"
-    )
+        # This IncidentReport includes an entry by the user in session
+        reportByUser = IncidentReport(
+            eventID=event,
+            number=0,
+            created=DateTime.now(tz=UTC),
+            summary=None,
+            incidentNumber=0,
+            reportEntries=(
+                ReportEntry(
+                    created=DateTime.now(tz=UTC),
+                    author="SomeoneElse",
+                    automatic=False,
+                    text="abc",
+                ),
+                ReportEntry(
+                    created=DateTime.now(tz=UTC),
+                    author="Slumber",
+                    automatic=False,
+                    text="abcde",
+                ),
+            ),
+        )
+        # This report doesn't include an entry by the user in session
+        reportNotByUser = IncidentReport(
+            eventID=event,
+            number=1,
+            created=DateTime.now(tz=UTC),
+            summary=None,
+            incidentNumber=1,
+            reportEntries=(),
+        )
+
+        # Stage 1: user doesn't have writeIncidentReports, so no incident
+        # report can be read.
+        self.failureResultOf(
+            provider.authorizeRequestForIncidentReport(
+                request=request,
+                incidentReport=reportByUser,
+            ),
+            NotAuthorizedError,
+        )
+        self.assertEqual(request.authorizations, Authorization.none)
+
+        # Stage 2: user is a reporter
+        self.successResultOf(store.setReporters(event, (personUser,)))
+        self.successResultOf(
+            provider.authorizeRequestForIncidentReport(
+                request=request,
+                incidentReport=reportByUser,
+            ),
+        )
+        self.assertEqual(request.authorizations, Authorization.writeIncidentReports)
+        self.failureResultOf(
+            provider.authorizeRequestForIncidentReport(
+                request=request,
+                incidentReport=reportNotByUser,
+            ),
+            NotAuthorizedError,
+        )
+        self.assertEqual(request.authorizations, Authorization.writeIncidentReports)
+
+        # Stage 3: user is a reader
+        self.successResultOf(store.setReporters(event, ()))
+        self.successResultOf(store.setReaders(event, (personUser,)))
+        self.successResultOf(
+            provider.authorizeRequestForIncidentReport(
+                request=request,
+                incidentReport=reportByUser,
+            ),
+        )
+        self.successResultOf(
+            provider.authorizeRequestForIncidentReport(
+                request=request,
+                incidentReport=reportNotByUser,
+            ),
+        )
+        self.assertEqual(
+            request.authorizations,
+            Authorization.readPersonnel | Authorization.readIncidents,
+        )
+
+        # Stage 4: user is a writer
+        self.successResultOf(store.setReaders(event, ()))
+        self.successResultOf(store.setWriters(event, (personUser,)))
+        self.successResultOf(
+            provider.authorizeRequestForIncidentReport(
+                request=request,
+                incidentReport=reportNotByUser,
+            ),
+        )
+        self.assertEqual(
+            request.authorizations,
+            Authorization.readPersonnel
+            | Authorization.readIncidents
+            | Authorization.writeIncidents
+            | Authorization.writeIncidentReports,
+        )
 
 
 class MockReq(Request):
-    def __init__(self, headers: Mapping[str, str]) -> None:
+    def __init__(self, user: Optional[TestUser], headers: Mapping[str, str]) -> None:
         super().__init__(DummyChannel(), False)
+        self.user = user  # type: ignore[assignment]
         self.headers = headers
         self.authorizations = Authorization.none
 
