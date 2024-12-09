@@ -19,7 +19,7 @@ JSON serialization/deserialization for addresses
 """
 
 from enum import Enum, unique
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from .._address import Address, RodGarettAddress, TextOnlyAddress
 from ._json import (
@@ -63,7 +63,7 @@ class AddressJSONType(Enum):
     """
 
     addressType = str
-    description = cast(type[Any], Optional[str])
+    description = cast(type[Any], str | None)
 
 
 @unique
@@ -100,9 +100,9 @@ class RodGarettAddressJSONType(Enum):
     Rod Garett address JSON keys
     """
 
-    concentric = Optional[str]
-    radialHour = Optional[int]
-    radialMinute = Optional[int]
+    concentric = str | None
+    radialHour = int | None
+    radialMinute = int | None
     description = AddressJSONType.description.value
 
 

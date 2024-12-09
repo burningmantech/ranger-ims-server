@@ -232,7 +232,7 @@ class DutyManagementSystem:
                     self._state._dbpool = None
                     self._state._dbErrorCount += 1
 
-                    if isinstance(e, (SQLDatabaseError, SQLOperationalError)):
+                    if isinstance(e, SQLDatabaseError | SQLOperationalError):
                         if self._state._dbErrorCount < 2:  # noqa: PLR2004
                             self._log.info(
                                 "Retrying loading personnel from DMS "

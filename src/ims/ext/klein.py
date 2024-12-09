@@ -11,7 +11,7 @@ from twisted.web.iweb import IRequest
 
 from ims.ext.enum import Enum, Names, auto
 
-from .. import __version__ as version
+from .. import __version__ as version  # noqa: TC001
 
 
 __all__ = (
