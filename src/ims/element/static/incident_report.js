@@ -212,16 +212,17 @@ function drawIncident() {
 //
 
 function drawSummary() {
-    var summary = incidentReport.summary;
-
-    if (summary == undefined || summary == "") {
-        $("#incident_report_summary")[0].removeAttribute("value");
-        $("#incident_report_summary").attr(
-            "placeholder", summarizeIncident(incidentReport)
-        );
-    } else {
-        $("#incident_report_summary").val(summary);
+    if (incidentReport.summary) {
+        $("#incident_report_summary").val(incidentReport.summary);
         $("#incident_report_summary").attr("placeholder", "");
+        return;
+    }
+
+    $("#incident_report_summary")[0].removeAttribute("value");
+    const summarized = summarizeIncident(incidentReport);
+    if (summarized) {
+        // only replace the placeholder if it would be nonempty
+        $("#incident_report_summary").attr("placeholder", summarized);
     }
 }
 
