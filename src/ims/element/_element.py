@@ -236,7 +236,11 @@ class Element(BaseElement):
             eventPage = self.config.urls.viewEvent.asText()
             return (
                 tag.clone()(
-                    tags.a(eventID, href=eventPage.replace("<event_id>", eventID))
+                    tags.a(
+                        eventID,
+                        href=eventPage.replace("<event_id>", eventID),
+                        Class="dropdown-item",
+                    )
                 )
                 for eventID in eventIDs
             )

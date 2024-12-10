@@ -20,9 +20,14 @@
 
 function initIncidentReportPage() {
     function loadedIncidentReport() {
-        // Scroll to incident_report_add field
-        $("html, body").animate({ scrollTop: $("#incident_report_add").offset().top }, 500);
-        $("#incident_report_add").focus();
+        // for a new incident report
+        if (incidentReport.number === null) {
+            $("#incident_report_summary").focus();
+        } else {
+            // Scroll to incident_report_add field
+            $("html, body").animate({scrollTop: $("#incident_report_add").offset().top}, 500);
+            $("#incident_report_add").focus();
+        }
 
         // Warn the user if they're about to navigate away with unsaved text.
         window.addEventListener('beforeunload', function (e) {

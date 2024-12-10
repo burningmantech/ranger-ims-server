@@ -154,6 +154,12 @@ function initDataTables() {
         "searching": true,
         "processing": true,
         "scrollX": false, "scrollY": false,
+        "layout": {
+            "topStart": null,
+            "topEnd": null,
+            "bottomStart": "info",
+            "bottomEnd": "paging",
+        },
         "ajax": {
             "url": dataURL,
             "dataSrc": dataHandler,
@@ -272,11 +278,10 @@ function initTableButtons() {
     const $typeFilter = $("#ul_show_type");
     for (const i in allIncidentTypes) {
         const type = allIncidentTypes[i];
-        const $sp = $("<span>", {class: "checkmark"});
-        const $a = $("<a>", {class: "name", href:"#"});
+        const $a = $("<a>", {class: "name dropdown-item", href:"#"});
         $a.text(type.toString());
         const $li = $("<li>", {id: "show_type_" + i, onclick: "showType(" + i + ")"});
-        $li.append($sp, $a);
+        $li.append($a);
         $typeFilter.append($li);
     }
 

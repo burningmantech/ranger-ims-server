@@ -670,9 +670,9 @@ class ExternalApplication:
 
     config: Configuration
 
-    bootstrapVersionNumber = "3.3.7"
+    bootstrapVersionNumber = "5.3.3"
     jqueryVersionNumber = "3.1.0"
-    dataTablesVersionNumber = "1.10.12"
+    dataTablesVersionNumber = "2.1.8"
     lscacheVersionNumber = "1.0.5"
 
     bootstrapVersion = f"bootstrap-{bootstrapVersionNumber}-dist"

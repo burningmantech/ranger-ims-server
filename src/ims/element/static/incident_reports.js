@@ -114,6 +114,12 @@ function initDataTables() {
         "searching": true,
         "processing": true,
         "scrollX": false, "scrollY": false,
+        "layout": {
+            "topStart": null,
+            "topEnd": null,
+            "bottomStart": "info",
+            "bottomEnd": "paging",
+        },
         "ajax": {
             // don't use exclude_system_entries here, since the incident reports
             // per-user authorization can exclude incident reports entirely from

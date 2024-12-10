@@ -631,6 +631,7 @@ function drawIncidentTypes() {
 
     for (var i in incidentTypes) {
         var item = _typesItem.clone();
+        item.attr("value", textAsHTML(incidentTypes[i]));
         item.append(textAsHTML(incidentTypes[i]));
         items.push(item);
     }
@@ -1004,7 +1005,7 @@ function removeRanger(sender) {
 function removeIncidentType(sender) {
     sender = $(sender);
 
-    var incidentType = sender.parent().text().trim();
+    const incidentType = sender.parent().attr("value");
 
     function ok() {
         // FIXME
