@@ -510,16 +510,17 @@ function drawPriority() {
 //
 
 function drawSummary() {
-    var summary = incident.summary;
-
-    if (summary == undefined || summary == "") {
-        $("#incident_summary")[0].removeAttribute("value");
-        $("#incident_summary").attr(
-            "placeholder", summarizeIncident(incident)
-        );
-    } else {
-        $("#incident_summary").val(summary);
+    if (incident.summary) {
+        $("#incident_summary").val(incident.summary);
         $("#incident_summary").attr("placeholder", "");
+        return;
+    }
+
+    $("#incident_summary")[0].removeAttribute("value");
+    const summarized = summarizeIncident(incident);
+    if (summarized) {
+        // only replace the placeholder if it would be nonempty
+        $("#incident_summary").attr("placeholder", summarized);
     }
 }
 
