@@ -111,9 +111,7 @@ class Command:
 
         from twisted.internet import reactor
 
-        cast(IReactorTCP, reactor).listenTCP(  # type: ignore[call-arg]
-            port, factory, interface=host
-        )
+        cast(IReactorTCP, reactor).listenTCP(port, factory, interface=host)
 
     @classmethod
     async def runExport(cls, config: Configuration, options: ExportOptions) -> None:
