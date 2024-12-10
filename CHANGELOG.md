@@ -20,12 +20,17 @@ Each month below should look like the following, using the same ordering for the
 
 ### Added
 
-- Started showing the (currently read-only) IMS number on the Field Report page ([#1429](https://github.com/burningmantech/ranger-ims-server/pull/1429))
-- Added a button on the Field Report page that allows instant creation of a new Incident based on that Field Report. This button will only appear for users with writeIncident permission (e.g. Operators and Shift Command) ([#1429](https://github.com/burningmantech/ranger-ims-server/pull/1429))
+- Started showing the (currently read-only) IMS number on the Field Report page https://github.com/burningmantech/ranger-ims-server/pull/1429
+- Added a button on the Field Report page that allows instant creation of a new Incident based on that Field Report. This button will only appear for users with writeIncident permission (e.g. Operators and Shift Command) https://github.com/burningmantech/ranger-ims-server/pull/1429
+
+### Fixed
+
+- Fixed a glitch in which the placeholder text for the "Summary" field was never showing up on the Incident and Field Report pages. We simultaneously altered the Field Report summary placeholder to suggest the user include an IMS number in that field. https://github.com/burningmantech/ranger-ims-server/pull/1443
 
 ## 2024-11
 
 ### Changed
+
 - Switched to text-fields with datalists for "Add Ranger" and "Add Incident Types" on the incident page. Previously we used select dropdowns, which were long and cumbersome ([#1292](https://github.com/burningmantech/ranger-ims-server/pull/1292), [#1365](https://github.com/burningmantech/ranger-ims-server/pull/1365))
 - Stopped showing empty locations in the UI as "(?:?)@?", but rather as just an empty string ([#1362](https://github.com/burningmantech/ranger-ims-server/pull/1362))
 - Tightened security on the personnel endpoint, by restricting it to those with at least readIncident permission, and by removing Ranger email addresses from the response ([#1355](https://github.com/burningmantech/ranger-ims-server/pull/1355), [#1317](https://github.com/burningmantech/ranger-ims-server/pull/1317))
