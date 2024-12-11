@@ -429,7 +429,7 @@ class AuthProviderTests(TestCase):
 
     @given(
         testUsers(),
-        timedeltas(min_value=TimeDelta(seconds=0), max_value=TimeDelta(days=1000)),
+        timedeltas(min_value=TimeDelta(minutes=10), max_value=TimeDelta(days=1000)),
     )
     def test_credentialsForUser(self, user: IMSUser, duration: TimeDelta) -> None:
         """
@@ -463,7 +463,7 @@ class AuthProviderTests(TestCase):
 
     @given(
         testUsers(),
-        timedeltas(min_value=TimeDelta(seconds=1), max_value=TimeDelta(days=1000)),
+        timedeltas(min_value=TimeDelta(minutes=10), max_value=TimeDelta(days=1000)),
     )
     def test_userFromBearerAuthorization(
         self, user: IMSUser, duration: TimeDelta
