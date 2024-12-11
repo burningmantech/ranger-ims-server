@@ -5,27 +5,27 @@
     <p id="error_text"></p>
   </div>
 
+  <!-- Identifiers -->
+
   <div class="row">
-    <div class="col-sm-12 text-left">
+    <div class="col-sm-4">
       <div class="py-1 input-group">
-        <label for="incident_report_number" class="control-label input-group-text">FR #:</label>
+        <label for="incident_report_number" class="control-label input-group-text">FR #</label>
         <span id="incident_report_number" class="form-control form-control-static"/>
       </div>
     </div>
-  </div>
-  <div class="row">
-    <div class="col-sm-12 text-left">
+    <div class="col-sm-8">
       <div class="py-1 input-group">
         <label
                 for="incident_number"
                 class="control-label input-group-text"
-                title="This is the IMS incident to which this Field Report is attached"
-        >IMS #:</label>
+                title="This is the IMS Incident to which this Field Report is attached. An Operator will need to make this association."
+        >IMS #</label>
         <span id="incident_number" class="form-control form-control-static"/>
         <button
                 id="create_incident"
                 class="py-1 btn btn-sm btn-warning hidden"
-                title="Only click this if there's no preexisting incident for this FR"
+                title="Only click this if you're sure there is no preexisting incident for this FR. This only shows up because you have writeIncidents permission."
                 onclick="makeIncident()"
         >
           Create new incident from FR

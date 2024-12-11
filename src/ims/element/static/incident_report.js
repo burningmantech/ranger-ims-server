@@ -189,6 +189,7 @@ function drawNumber() {
 //
 
 function drawIncident() {
+    $("#incident_number").text("Please include in Summary");
     // New Incident Report. There can be no Incident
     if (incidentReport.number === null) {
         return;
@@ -199,8 +200,6 @@ function drawIncident() {
         const $a = $("<a>", {href: incidentURL});
         $a.text(incidentReport.incident);
         $("#incident_number").text("").append($a);
-    } else {
-        $("#incident_number").text("(none)");
     }
     // If there's no attached Incident, show a button for making
     // a new Incident
