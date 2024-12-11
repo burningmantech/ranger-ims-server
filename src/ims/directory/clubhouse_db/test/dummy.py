@@ -18,14 +18,17 @@
 Mock objects for Clubhouse directory.
 """
 
-from collections.abc import MutableSequence
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from twisted.internet.defer import Deferred, fail, succeed
 
 from ims.store._db import Rows
 
 from ..._directory import hashPassword
+
+
+if TYPE_CHECKING:
+    from collections.abc import MutableSequence
 
 
 __all__ = ()

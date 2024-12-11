@@ -21,7 +21,7 @@ Incident Management System SQL data store.
 from collections.abc import Callable
 from pathlib import Path
 from sys import stdout
-from typing import Any, ClassVar, Optional, TextIO, TypeVar, cast
+from typing import Any, ClassVar, TextIO, TypeVar, cast
 
 from attrs import field, frozen, mutable
 from pymysql.cursors import DictCursor
@@ -256,9 +256,9 @@ class DataStore(DatabaseStore):
             columnName = cast(str, row["COLUMN_NAME"])
             columnType = cast(str, row["DATA_TYPE"])
             columnNullable = cast(str, row["IS_NULLABLE"])
-            columnDefault = cast(Optional[str], row["COLUMN_DEFAULT"])
+            columnDefault = cast(str | None, row["COLUMN_DEFAULT"])
             columnPosition = cast(int, row["ORDINAL_POSITION"])
-            columnMaxChars = cast(Optional[int], row["CHARACTER_MAXIMUM_LENGTH"])
+            columnMaxChars = cast(int | None, row["CHARACTER_MAXIMUM_LENGTH"])
 
             if tableName != lastTableName:
                 print(f"{tableName}:", file=out)
