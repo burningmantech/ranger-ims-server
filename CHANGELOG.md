@@ -18,8 +18,15 @@ Each month below should look like the following, using the same ordering for the
 
 ## 2024-12
 
+### Changed
+
+- Upgraded to Bootstrap 5 (from 3). This unlocks a bunch of neat new features. It required many minor UI changes https://github.com/burningmantech/ranger-ims-server/pull/1445
+- Started collapsing the Instructions on the Field Report page by default https://github.com/burningmantech/ranger-ims-server/pull/1445
+- Modernized the login screen a bit, by using form-floating input fields https://github.com/burningmantech/ranger-ims-server/pull/1445
+
 ### Added
 
+- Added dark mode and a light/dark mode toggler https://github.com/burningmantech/ranger-ims-server/pull/1445 https://github.com/burningmantech/ranger-ims-server/issues/290
 - Started showing the (currently read-only) IMS number on the Field Report page https://github.com/burningmantech/ranger-ims-server/pull/1429
 - Added a button on the Field Report page that allows instant creation of a new Incident based on that Field Report. This button will only appear for users with writeIncident permission (e.g. Operators and Shift Command) https://github.com/burningmantech/ranger-ims-server/pull/1429
 
