@@ -17,28 +17,24 @@
 //
 // Adapted from https://getbootstrap.com/docs/5.3/customize/color-modes/#javascript
 // Under Creative Commons Attribution 3.0 Unported License
+const getStoredTheme = () => localStorage.getItem("theme");
+const setStoredTheme = theme => localStorage.setItem("theme", theme);
+const getPreferredTheme = () => {
+    const storedTheme = getStoredTheme();
+    if (storedTheme) {
+        return storedTheme;
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+};
+const setTheme = theme => {
+    if (theme === "auto") {
+        document.documentElement.setAttribute("data-bs-theme", (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+    } else {
+        document.documentElement.setAttribute("data-bs-theme", theme);
+    }
+};
 function applyTheme() {
     "use strict";
-
-    const getStoredTheme = () => localStorage.getItem("theme");
-    const setStoredTheme = theme => localStorage.setItem("theme", theme);
-
-    const getPreferredTheme = () => {
-        const storedTheme = getStoredTheme();
-        if (storedTheme) {
-            return storedTheme;
-        }
-
-        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    };
-
-    const setTheme = theme => {
-        if (theme === "auto") {
-            document.documentElement.setAttribute("data-bs-theme", (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
-        } else {
-            document.documentElement.setAttribute("data-bs-theme", theme);
-        }
-    };
 
     setTheme(getPreferredTheme());
 
@@ -88,6 +84,10 @@ function applyTheme() {
         });
     });
 }
+// Set the theme immediately, before the rest of the page loads. We need to come back later
+// to invoke applyTheme(), as that will only work once the navbar has been drawn (with its
+// dropdown theme selector.
+setTheme(getPreferredTheme());
 
 
 //
