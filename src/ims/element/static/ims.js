@@ -696,8 +696,9 @@ const shortTime = new Intl.DateTimeFormat(undefined, {
     // timeZone not specified; will use user's timezone
 });
 
-// e.g. "Oct 8, 2023, 19:11:04 EDT"
+// e.g. "Thu, Aug 29, 2024, 19:11:04 EDT"
 const fullDateTime = new Intl.DateTimeFormat(undefined, {
+    weekday: "short",
     year: "numeric",
     month: "short",
     day: "numeric",
