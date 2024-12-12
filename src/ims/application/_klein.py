@@ -169,6 +169,41 @@ def forbiddenResponse(request: IRequest) -> KleinSynchronousRenderable:
     return textResponse(request, "Permission denied")
 
 
+def friendlyNotAuthorizedResponse(request: IRequest) -> KleinSynchronousRenderable:
+    """
+    Respond with a FORBIDDEN status, informing the user what went wrong.
+    """
+    user = getattr(request, "user", None)
+    log.debug(
+        "Forbidden resource for user {user}: {request.uri}",
+        request=request,
+        user=user,
+    )
+
+    request.setResponseCode(http.FORBIDDEN)
+    if user is not None:
+        message = (
+            f"Hey Ranger, you don't have permission to access this URI:\n"
+            f"    {request.uri.decode('utf-8')}\n"
+            f"\n"
+            f"Permissions are granted via positions. These are your positions:\n"
+            f"    {user.groups}\n"
+            f"\n"
+            f"All Rangers are allowed (and encouraged!) to write Field Reports while\n"
+            f"on playa. Only some positions (think Operator) need access to read and\n"
+            f"write Incidents. We do this to help protect participants' PII.\n"
+            f"\n"
+            f"If your position is erroneously not granting you a permission you need\n"
+            f"to do your work as a Ranger, then please get in touch with an Operator\n"
+            f"or the Ranger Tech Oncall.\n"
+            f"\n"
+            f"<3 from the Ranger Tech Team\n"
+        )
+    else:
+        message = "Permission denied"
+    return textResponse(request, message)
+
+
 def notAuthenticatedResponse(request: IRequest) -> KleinSynchronousRenderable:
     """
     Respond with a UNAUTHORIZED status.
@@ -414,7 +449,7 @@ class Router(Klein):
             """
             Not authorized.
             """
-            return forbiddenResponse(request)
+            return friendlyNotAuthorizedResponse(request)
 
         @self.handle_errors(InvalidCredentialsError)
         @renderResponse
