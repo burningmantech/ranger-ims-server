@@ -151,7 +151,7 @@ class Element(BaseElement):
     @renderer
     def deployment_warning(self, request: IRequest, tag: Tag) -> KleinRenderable:
         deployment = self.config.deployment.lower()
-        if deployment == "prod":
+        if deployment == "production":
             return ""
         return tag(f"This is not production. You are on a {deployment} IMS server.")
 
