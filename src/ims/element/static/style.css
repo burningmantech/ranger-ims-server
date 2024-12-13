@@ -243,6 +243,13 @@ h1 {
   display: none;
 }
 
+.bi {
+  width: 1em;
+  height: 1em;
+  vertical-align: -.125em;
+  fill: currentcolor
+}
+
 @media print {
   .no-print {
     display: none;
