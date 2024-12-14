@@ -1119,6 +1119,11 @@ class APIApplication:
         """
         self._log.debug("Event source connected: {id}", id=id(request))
 
+        # Clear the cookies on the response. Without this here, the eventsource
+        # call will often return Set-Cookie values that lead clients to stomp
+        # over authenticated session cookies with unauthenticated ones.
+        request.cookies = []  # type: ignore[attr-defined]
+
         request.setHeader(HeaderName.contentType.value, ContentType.eventStream.value)
 
         self.storeObserver.addListener(request)
