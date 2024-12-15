@@ -32,6 +32,7 @@ Each month below should look like the following, using the same ordering for the
 
 ### Fixed
 
+- Resolved a longstanding bug in which a user would be forced to log in twice in a short period of time. https://github.com/burningmantech/ranger-ims-server/pull/1456 
 - Fixed a glitch in which the placeholder text for the "Summary" field was never showing up on the Incident and Field Report pages. We simultaneously altered the Field Report summary placeholder to suggest the user include an IMS number in that field. https://github.com/burningmantech/ranger-ims-server/pull/1443
 
 ## 2024-11
