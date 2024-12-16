@@ -301,14 +301,14 @@ function enableEditing() {
 
 // Add an error indication to a control
 function controlHasError(element) {
-    element.parent().addClass("has-error");
+    element.parent().addClass("is-invalid");
 }
 
 
 // Add a success indication to a control
 function controlHasSuccess(element, clearTimeout) {
-    element.parent().addClass("has-success");
-    if (clearTimeout != undefined) {
+    element.addClass("is-valid");
+    if (clearTimeout !== undefined) {
         element.delay("1000").queue(function(next) {
             controlClear(element);
             next();
@@ -319,9 +319,8 @@ function controlHasSuccess(element, clearTimeout) {
 
 // Clear error/success indication from a control
 function controlClear(element) {
-    var parent = element.parent();
-    parent.removeClass("has-error");
-    parent.removeClass("has-success");
+    element.removeClass("is-invalid");
+    element.removeClass("is-valid");
 }
 
 
@@ -890,8 +889,10 @@ function submitReportEntry() {
     console.log("New report entry:\n" + text);
 
     function ok() {
+        const $textArea = $("#incident_report_add");
         // Clear the report entry
-        $("#incident_report_add").val("");
+        $textArea.val("");
+        controlHasSuccess($textArea, 1000);
         // Reset the submit button
         reportEntryEdited();
     }
@@ -901,6 +902,7 @@ function submitReportEntry() {
         submitButton.removeClass("btn-default");
         submitButton.removeClass("btn-warning");
         submitButton.addClass("btn-danger");
+        controlHasError($("#incident_report_add"), 1000);
     }
 
     sendEdits({"report_entries": [{"text": text}]}, ok, fail);
@@ -910,7 +912,7 @@ function submitReportEntry() {
 function editFromElement(element, jsonKey, transform) {
     var value = element.val();
 
-    if (transform != undefined) {
+    if (transform !== undefined) {
         value = transform(value);
     }
 
@@ -931,7 +933,7 @@ function editFromElement(element, jsonKey, transform) {
 
     // Location must include type
 
-    if (edits.location != undefined) {
+    if (edits.location !== undefined) {
         edits.location.type = "garett";  // UI only supports one type
     }
 

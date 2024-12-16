@@ -1173,6 +1173,7 @@ function attachIncidentReport() {
 
     function ok(data, status, xhr) {
         loadAndDisplayIncidentReports();
+        controlHasSuccess(select, 1000);
     }
 
     function fail(requestError, status, xhr) {
@@ -1180,6 +1181,7 @@ function attachIncidentReport() {
         console.log(message + ": " + requestError);
         loadAndDisplayIncidentReports();
         setErrorMessage(message);
+        controlHasError(select);
     }
 
     var url = (
