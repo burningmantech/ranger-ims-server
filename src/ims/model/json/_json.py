@@ -21,7 +21,7 @@ Incident Management System data model JSON serialization/deserialization
 from collections.abc import Callable, Iterable, Mapping
 from datetime import datetime as DateTime
 from enum import Enum
-from typing import Any, Union, cast
+from typing import Any, cast
 
 from cattr import Converter
 from twisted.logger import Logger
@@ -36,7 +36,7 @@ __all__ = ()
 log = Logger()
 
 
-JSON = Union[Mapping[str, Any], Iterable[Any], int, str, float, bool, None]
+JSON = Mapping[str, Any] | Iterable[Any] | int | str | float | bool | None
 
 
 class JSONCodecError(Exception):
