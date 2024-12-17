@@ -15,6 +15,7 @@
   <div class="btn-group" role="group">
     <a t:render="url"
        url="login"
+       id="login-button"
        role="button"
        class="btn btn-md btn-default btn-primary"
     >
@@ -39,5 +40,6 @@
 
 <script>
   applyTheme();
+  document.getElementById("login-button").focus();
 </script>
 </html>

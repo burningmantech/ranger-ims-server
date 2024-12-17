@@ -153,7 +153,7 @@ class Element(BaseElement):
         deployment = self.config.deployment.lower()
         if deployment == "production":
             return ""
-        return tag(f"This is not production. You are on a {deployment} IMS server.")
+        return tag(f"This is not production. This is a {deployment} IMS server.")
 
     ##
     # Data
