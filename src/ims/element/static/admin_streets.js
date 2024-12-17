@@ -28,21 +28,21 @@ function initPage() {
 }
 
 
-var streets = null;
+let streets = null;
 
 function loadStreets(success) {
-    var url = url_streets;
+    const url = url_streets;
 
     function ok(data, status, xhr) {
         streets = data;
 
-        if (success != undefined) {
+        if (success) {
             success();
         }
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load streets:\n" + error
+        const message = "Failed to load streets:\n" + error;
         console.error(message);
         window.alert(message);
     }
@@ -51,11 +51,11 @@ function loadStreets(success) {
 }
 
 
-var _streetsTemplate = null;
-var _entryTemplate = null;
+let _streetsTemplate = null;
+let _entryTemplate = null;
 
 function drawStreets() {
-    var container = $("#event_streets_container");
+    const container = $("#event_streets_container");
 
     if (_streetsTemplate == null) {
         _streetsTemplate = container.children(".event_streets:first");
@@ -68,10 +68,8 @@ function drawStreets() {
 
     container.empty();
 
-    for (var i in events) {
-        var event = events[i];
-
-        var eventStreets = $(_streetsTemplate).clone();
+    for (const event of events) {
+        const eventStreets = $(_streetsTemplate).clone();
 
         // Add an id to the element for future reference
         eventStreets.attr("id", "event_streets_" + event);
@@ -85,24 +83,24 @@ function drawStreets() {
 
 
 function updateEventStreets(event) {
-    var eventStreets = streets[event];
+    const eventStreets = streets[event];
 
-    if (eventStreets == undefined) {
+    if (eventStreets == null) {
         return;
     }
 
-    var eventStreetsElement = $("#event_streets_" + event);
+    const eventStreetsElement = $("#event_streets_" + event);
 
     // Set displayed event name
     eventStreetsElement.find(".event_name").text(event);
 
-    var entryContainer = eventStreetsElement.find(".list-group:first");
+    const entryContainer = eventStreetsElement.find(".list-group:first");
 
     entryContainer.empty();
 
-    for (var streetID in eventStreets) {
-        var streetName = eventStreets[streetID];
-        var entryItem = _entryTemplate.clone();
+    for (const streetID in eventStreets) {
+        const streetName = eventStreets[streetID];
+        const entryItem = _entryTemplate.clone();
 
         entryItem.append(streetID + ": " + streetName);
         entryItem.attr("value", streetID);
@@ -128,7 +126,7 @@ function sendStreets(edits, success, error) {
     }
 
     function fail(requestError, status, xhr) {
-        var message = "Failed to edit streets:\n" + requestError
+        const message = "Failed to edit streets:\n" + requestError;
         console.log(message);
         error();
         window.alert(message);

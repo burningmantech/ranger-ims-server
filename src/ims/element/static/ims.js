@@ -99,7 +99,7 @@ setTheme(getPreferredTheme());
 // browser will implement this correctly, and any solution using .replace()
 // will be buggy.  And this will be fast.  But still, this is weak.
 
-var _domTextAreaForHaxxors = document.createElement("textarea")
+let _domTextAreaForHaxxors = document.createElement("textarea")
 
 // Convert text to HTML.
 function textAsHTML(text) {
@@ -144,9 +144,9 @@ ValueError.prototype.constructor = ValueError;
 
 // Build an array from a range.
 function range(start, end, step) {
-    if (step == undefined) {
+    if (step == null) {
         step = 1;
-    } else if (step == 0) {
+    } else if (step === 0) {
         throw new ValueError("step = 0");
     }
 
@@ -178,7 +178,7 @@ function compareReportEntries(a, b) {
 
 function jsonRequest(url, jsonOut, success, error) {
     function ok(data, status, xhr) {
-        if (success != undefined) {
+        if (success) {
             success(data, status, xhr);
         }
     }
@@ -186,29 +186,29 @@ function jsonRequest(url, jsonOut, success, error) {
     function fail(xhr, status, requestError) {
         // Intentionally empty response is not an error.
         if (
-            status == "parsererror" &&
-            xhr.status == 201 &&
-            xhr.responseText == ""
+            status === "parsererror" &&
+            xhr.status === 201 &&
+            xhr.responseText === ""
         ) {
             ok("", "", xhr);
             return;
         }
 
-        if (error != undefined) {
+        if (error) {
             error(requestError, status, xhr);
         }
     }
 
-    var args = {
+    const args = {
         "url": url,
         "method": "GET",
         "dataType": "json",
         "success": ok,
         "error": fail,
-    }
+    };
 
     if (jsonOut) {
-        var jsonText = JSON.stringify(jsonOut);
+        const jsonText = JSON.stringify(jsonOut);
 
         args["method"] = "POST";
         args["contentType"] = "application/json";
@@ -226,13 +226,13 @@ function jsonRequest(url, jsonOut, success, error) {
 
 // Pad a string representing an integer to two digits.
 function padTwo(value) {
-    if (value == undefined) {
+    if (value == null) {
         return "?";
     }
 
     value = value.toString();
 
-    if (value.length == 1) {
+    if (value.length === 1) {
         return "0" + value;
     }
 
@@ -264,7 +264,7 @@ function parseInt(stringInt) {
 
 // Create a <time> element from a date.
 function timeElement(date) {
-    var timeStampContainer = jQuery(
+    const timeStampContainer = jQuery(
         "<time />", {"datetime": date.toISOString()}
     );
     timeStampContainer.text(fullDateTime.format(date));
@@ -308,7 +308,7 @@ function controlHasError(element) {
 // Add a success indication to a control
 function controlHasSuccess(element, clearTimeout) {
     element.addClass("is-valid");
-    if (clearTimeout !== undefined) {
+    if (clearTimeout != null) {
         element.delay("1000").queue(function(next) {
             controlClear(element);
             next();
@@ -337,7 +337,7 @@ function loadBody(success) {
             $(".event-id").addClass("active-event");
         }
 
-        if (success != undefined) {
+        if (success) {
             success();
         }
     }
@@ -446,14 +446,14 @@ function stateSortKeyFromID(stateID) {
 
 // Look up a concentric street's name given its ID.
 function concentricStreetFromID(streetID) {
-    if (streetID == undefined) {
+    if (streetID == null) {
         return undefined;
     }
 
-    var name = concentricStreetNameByID[streetID];
-    if (name == undefined) {
+    const name = concentricStreetNameByID[streetID];
+    if (name == null) {
         console.warn("Unknown street ID: " + streetID);
-        name = undefined;
+        return undefined;
     }
     return name;
 }
@@ -462,7 +462,7 @@ function concentricStreetFromID(streetID) {
 // Return the state ID for a given incident.
 function stateForIncident(incident) {
     // Data from 2014+ should have incident.state set.
-    if (incident.state != undefined) {
+    if (incident.state !== undefined) {
         return incident.state;
     }
 
@@ -473,29 +473,24 @@ function stateForIncident(incident) {
 
 // Return a summary for a given incident.
 function summarizeIncident(incident) {
-    var summary = incident.summary;
-    var reportEntries = incident.report_entries;
+    const summary = incident.summary;
+    const reportEntries = incident.report_entries;
 
-    if (summary == undefined || summary == "") {
-        if (reportEntries == undefined) {
+    if (!summary) {
+        if (!reportEntries) {
             return "";
         }
-        else {
-            // Get the first line of the first report entry.
-            for (var i in reportEntries) {
-                var reportEntry = reportEntries[i];
+        // Get the first line of the first report entry.
+        for (const reportEntry of reportEntries) {
+            if (reportEntry.system_entry) {
+                // Don't use a system-generated entry in the summary
+                continue;
+            }
 
-                if (reportEntry.system_entry) {
-                    continue;
-                }
-
-                var lines = reportEntry.text.split("\n");
-
-                for (var j in lines) {
-                    var line = lines[j];
-                    if (line != undefined && line != "") {
-                        return line;
-                    }
+            const lines = reportEntry.text.split("\n");
+            for (const line of lines) {
+                if (line) {
+                    return line;
                 }
             }
         }
@@ -514,9 +509,8 @@ function summarizeIncidentReport(report) {
 
 // Get author for incident
 function incidentAuthor(incident) {
-    for (var i in incident.report_entries) {
-        entry = incident.report_entries[i];
-        if (entry.author != undefined) {
+    for (const entry of incident.report_entries??[]) {
+        if (entry.author) {
             return entry.author;
         }
     }
@@ -534,81 +528,73 @@ function incidentReportAuthor(report) {
 // Render incident as a string
 function incidentAsString(incident) {
     if (incident.number == null) {
-        document.title = "New Incident";
-    } else {
-        return (
-            incident.event + " IMS #" + incident.number + ": " +
-            summarizeIncident(incident)
-        );
+        return "New Incident";
     }
+    return (
+        "IMS #" + incident.number + ": " +
+        summarizeIncident(incident)
+    );
 }
 
 
 // Render field report as a string
 function incidentReportAsString(report) {
     if (report.number == null) {
-        document.title = "New Field Report";
-    } else {
-        return (
-            "FR #" + report.number +
-            " (" + incidentReportAuthor(report) + "): " +
-            summarizeIncidentReport(report)
-        );
+        return "New Field Report";
     }
+    return (
+        "FR #" + report.number +
+        " (" + incidentReportAuthor(report) + "): " +
+        summarizeIncidentReport(report)
+    );
 }
 
 
 // Return all user-entered report text for a given incident.
 function reportTextFromIncident(incident) {
-    var texts = [];
+    const texts = [];
 
-    if (incident.summary != undefined) {
+    if (incident.summary != null) {
         texts.push(incident.summary);
     }
 
-    var reportEntries = incident.report_entries;
-
-    for (var i in reportEntries) {
-        var reportEntry = reportEntries[i];
+    for (const reportEntry of incident.report_entries??[]) {
 
         // Skip system entries
         if (reportEntry.system_entry) {
             continue;
         }
 
-        var text = reportEntry.text;
+        const text = reportEntry.text;
 
-        if (text != undefined) {
+        if (text != null) {
             texts.push(text);
         }
     }
 
     // Incidents page loads all field reports for the event
-    if (typeof eventIncidentReports !== "undefined") {
-        for (var i in incident.incident_reports) {
-            var reportNumber = incident.incident_reports[i];
-            var report = eventIncidentReports[reportNumber];
-            var reportText = reportTextFromIncident(report);
+    if (typeof eventIncidentReports !== "undefined" && incident.incident_reports) {
+        for (const reportNumber of incident.incident_reports) {
+            const report = eventIncidentReports[reportNumber];
+            const reportText = reportTextFromIncident(report);
 
             texts.push(reportText);
         }
     }
 
-    var text = texts.join("");
-
-    return text;
+    return texts.join("");
 }
 
 
 // Return a short description for a given location.
 function shortDescribeLocation(location) {
-    if (location == undefined) {
+    if (location == null) {
         return undefined;
     }
 
-    var locationBits = [];
+    const locationBits = [];
 
-    if (location.name != undefined) {
+    if (location.name != null) {
         locationBits.push(location.name);
     }
 
@@ -616,7 +602,7 @@ function shortDescribeLocation(location) {
         case undefined:
             // Fall through to "text" case
         case "text":
-            if (location.description != undefined) {
+            if (location.description != null) {
                 locationBits.push(" ");
                 locationBits.push(location.description);
             }
@@ -724,7 +710,7 @@ function renderDate(date, type, incident) {
 }
 
 function renderState(state, type, incident) {
-    if (state == undefined) {
+    if (state == null) {
         state = stateForIncident(incident);
     }
 
@@ -742,7 +728,7 @@ function renderState(state, type, incident) {
 }
 
 function renderLocation(data, type, incident) {
-    if (data == undefined) {
+    if (data == null) {
         data = "";
     }
     switch (type) {
@@ -779,7 +765,7 @@ function renderSummary(data, type, incident) {
 function reportEntryElement(entry) {
     // Build a container for the entry
 
-    var entryContainer = $("<div />", {"class": "report_entry"});
+    const entryContainer = $("<div />", {"class": "report_entry"});
 
     if (entry.system_entry) {
         entryContainer.addClass("report_entry_system");
@@ -793,18 +779,18 @@ function reportEntryElement(entry) {
 
     // Add the timestamp and author
 
-    metaDataContainer = $("<p />", {"class": "report_entry_metadata"})
+    const metaDataContainer = $("<p />", {"class": "report_entry_metadata"})
 
-    var timeStampContainer = timeElement(new Date(entry.created));
+    const timeStampContainer = timeElement(new Date(entry.created));
     timeStampContainer.addClass("report_entry_timestamp");
 
     metaDataContainer.append([timeStampContainer, ", "]);
 
-    var author = entry.author;
-    if (author == undefined) {
+    let author = entry.author;
+    if (author == null) {
         author = "(unknown)";
     }
-    var authorContainer = $("<span />");
+    const authorContainer = $("<span />");
     authorContainer.text(entry.author);
     authorContainer.addClass("report_entry_author");
 
@@ -813,11 +799,10 @@ function reportEntryElement(entry) {
     if (entry.merged) {
         metaDataContainer.append(" ");
 
-        var link = $("<a />");
+        const link = $("<a />");
         link.text("field report #" + entry.merged);
         link.attr("href", urlReplace(url_viewIncidentReports) + entry.merged)
 
-        var reportNumberContainer = $("<span />");
         metaDataContainer.append("(via ");
         metaDataContainer.append(link);
         metaDataContainer.append(")");
@@ -831,10 +816,10 @@ function reportEntryElement(entry) {
 
     // Add report text
 
-    var lines = entry.text.split("\n");
-    for (var i in lines) {
-        var textContainer = $("<p />", {"class": "report_entry_text"});
-        textContainer.text(lines[i]);
+    const lines = entry.text.split("\n");
+    for (const line of lines) {
+        const textContainer = $("<p />", {"class": "report_entry_text"});
+        textContainer.text(line);
 
         entryContainer.append(textContainer);
     }
@@ -848,12 +833,12 @@ function reportEntryElement(entry) {
 }
 
 function drawReportEntries(entries) {
-    var container = $("#incident_report");
+    const container = $("#incident_report");
     container.empty();
 
-    if (entries != undefined && entries.length > 0) {
-        for (var i in entries) {
-            container.append(reportEntryElement(entries[i]));
+    if (entries) {
+        for (const entry of entries) {
+            container.append(reportEntryElement(entry));
         }
         container.parent().parent().removeClass("hidden");
     } else {
@@ -862,14 +847,14 @@ function drawReportEntries(entries) {
 }
 
 function reportEntryEdited() {
-    var text = $("#incident_report_add").val().trim();
-    var submitButton = $("#report_entry_submit");
+    const text = $("#incident_report_add").val().trim();
+    const submitButton = $("#report_entry_submit");
 
     submitButton.removeClass("btn-default");
     submitButton.removeClass("btn-warning");
     submitButton.removeClass("btn-danger");
 
-    if (text == "") {
+    if (!text) {
         submitButton.addClass("disabled");
         submitButton.addClass("btn-default");
     } else {
@@ -880,9 +865,9 @@ function reportEntryEdited() {
 
 
 function submitReportEntry() {
-    var text = $("#incident_report_add").val().trim();
+    const text = $("#incident_report_add").val().trim();
 
-    if (text == "") {
+    if (!text) {
         return;
     }
 
@@ -898,7 +883,7 @@ function submitReportEntry() {
     }
 
     function fail() {
-        var submitButton = $("#report_entry_submit");
+        const submitButton = $("#report_entry_submit");
         submitButton.removeClass("btn-default");
         submitButton.removeClass("btn-warning");
         submitButton.addClass("btn-danger");
@@ -910,30 +895,30 @@ function submitReportEntry() {
 
 
 function editFromElement(element, jsonKey, transform) {
-    var value = element.val();
+    let value = element.val();
 
-    if (transform !== undefined) {
+    if (transform != null) {
         value = transform(value);
     }
 
     // Build a JSON object representing the requested edits
 
-    var edits = {};
+    const edits = {};
 
-    var keyPath = jsonKey.split(".");
-    var lastKey = keyPath.pop();
+    const keyPath = jsonKey.split(".");
+    const lastKey = keyPath.pop();
 
-    var current = edits;
-    for (var i in keyPath) {
-        var next = {};
-        current[keyPath[i]] = next;
+    let current = edits;
+    for (const path of keyPath) {
+        const next = {};
+        current[path] = next;
         current = next;
     }
     current[lastKey] = value;
 
     // Location must include type
 
-    if (edits.location !== undefined) {
+    if (edits.location != null) {
         edits.location.type = "garett";  // UI only supports one type
     }
 

@@ -33,16 +33,16 @@ function loadAndDrawIncidentTypes() {
 }
 
 
-var incidentTypes = null;
-var incidentTypesVisible = null;
+let incidentTypes = null;
+let incidentTypesVisible = null;
 
 function loadIncidentTypes(success) {
-    var gotAll = false;
-    var gotVisible = false;
+    let gotAll = false;
+    let gotVisible = false;
 
     function ok() {
         if (gotAll && gotVisible) {
-            if (success != undefined) {
+            if (success) {
                 success();
             }
         }
@@ -62,7 +62,7 @@ function loadIncidentTypes(success) {
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load incident types:\n" + error
+        const message = "Failed to load incident types:\n" + error;
         console.error(message);
         window.alert(message);
     }
@@ -72,11 +72,11 @@ function loadIncidentTypes(success) {
 }
 
 
-var _incidentTypesTemplate = null;
-var _entryTemplate = null;
+let _incidentTypesTemplate = null;
+let _entryTemplate = null;
 
 function drawIncidentTypes() {
-    var container = $("#incident_types_container");
+    const container = $("#incident_types_container");
 
     if (_incidentTypesTemplate == null) {
         _incidentTypesTemplate = container.children(".incident_types:first");
@@ -92,17 +92,16 @@ function drawIncidentTypes() {
 
 
 function updateIncidentTypes() {
-    var incidentTypesElement = $("#incident_types");
+    const incidentTypesElement = $("#incident_types");
 
-    var entryContainer = incidentTypesElement.find(".list-group:first");
+    const entryContainer = incidentTypesElement.find(".list-group:first");
 
     entryContainer.empty();
 
-    for (var i in incidentTypes) {
-        var incidentType = incidentTypes[i];
-        var entryItem = _entryTemplate.clone();
+    for (const incidentType of incidentTypes) {
+        const entryItem = _entryTemplate.clone();
 
-        if (incidentTypesVisible.indexOf(incidentType) == -1) {
+        if (incidentTypesVisible.indexOf(incidentType) === -1) {
             entryItem.addClass("item-hidden")
         } else {
             entryItem.addClass("item-visible")
@@ -157,7 +156,7 @@ function sendIncidentTypes(edits, success, error) {
     }
 
     function fail(requestError, status, xhr) {
-        var message = "Failed to edit incident types:\n" + requestError
+        const message = "Failed to edit incident types:\n" + requestError;
         console.log(message);
         error();
         window.alert(message);

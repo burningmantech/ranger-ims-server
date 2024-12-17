@@ -28,19 +28,19 @@ function initPage() {
 }
 
 
-var accessControlList = null
+let accessControlList = null
 
 function loadAccessControlList(success) {
     function ok(data, status, xhr) {
         accessControlList = data;
 
-        if (success != undefined) {
+        if (success) {
             success();
         }
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load access control list:\n" + error
+        const message = "Failed to load access control list:\n" + error
         console.error(message);
         window.alert(message);
     }
@@ -49,13 +49,13 @@ function loadAccessControlList(success) {
 }
 
 
-var _accessTemplate = null;
-var _entryTemplate = null;
+let _accessTemplate = null;
+let _entryTemplate = null;
 
-var accessModes = ["readers", "writers", "reporters"];
+let accessModes = ["readers", "writers", "reporters"];
 
 function drawAccess() {
-    var container = $("#event_access_container");
+    const container = $("#event_access_container");
 
     if (_accessTemplate == null) {
         _accessTemplate = container.children(".event_access:first");
@@ -68,13 +68,9 @@ function drawAccess() {
 
     container.empty();
 
-    for (var i in events) {
-        var event = events[i];
-
-        for (var i in accessModes) {
-            var mode = accessModes[i];
-
-            var eventAccess = $(_accessTemplate).clone();
+    for (const event of events) {
+        for (const mode of accessModes) {
+            const eventAccess = $(_accessTemplate).clone();
 
             // Add an id to the element for future reference
             eventAccess.attr("id", "event_access_" + event + "_" + mode);
@@ -89,25 +85,24 @@ function drawAccess() {
 
 
 function updateEventAccess(event, mode) {
-    var eventACL = accessControlList[event];
+    const eventACL = accessControlList[event];
 
-    if (eventACL == undefined) {
+    if (eventACL == null) {
         return;
     }
 
-    var eventAccess = $("#event_access_" + event + "_" + mode);
+    const eventAccess = $("#event_access_" + event + "_" + mode);
 
     // Set displayed event name and mode
     eventAccess.find(".event_name").text(event);
     eventAccess.find(".access_mode").text(mode);
 
-    var entryContainer = eventAccess.find(".list-group:first");
+    const entryContainer = eventAccess.find(".list-group:first");
 
     entryContainer.empty();
 
-    for (var i in eventACL[mode]) {
-        var expression = eventACL[mode][i];
-        var entryItem = _entryTemplate.clone();
+    for (const expression of eventACL[mode]) {
+        const entryItem = _entryTemplate.clone();
 
         entryItem.append(expression);
         entryItem.attr("value", expression);
@@ -118,7 +113,7 @@ function updateEventAccess(event, mode) {
 
 
 function addEvent(sender) {
-    var event = sender.value.trim();
+    const event = sender.value.trim();
 
     function refresh() {
         loadAccessControlList(drawAccess);
@@ -130,7 +125,7 @@ function addEvent(sender) {
     }
 
     function fail(requestError, status, xhr) {
-        var message = "Failed to add event:\n" + requestError
+        const message = "Failed to add event:\n" + requestError
         console.log(message);
         refresh();
         controlHasError($(sender));
@@ -142,22 +137,22 @@ function addEvent(sender) {
 
 
 function addAccess(sender) {
-    var container = $(sender).parents(".event_access:first");
-    var event = container.find(".event_name:first").text();
-    var mode = container.find(".access_mode:first").text();
-    var newExpression = sender.value.trim();
+    const container = $(sender).parents(".event_access:first");
+    const event = container.find(".event_name:first").text();
+    const mode = container.find(".access_mode:first").text();
+    const newExpression = sender.value.trim();
 
-    var acl = accessControlList[event][mode].slice();
+    const acl = accessControlList[event][mode].slice();
 
     acl.push(newExpression);
 
-    edits = {};
+    const edits = {};
     edits[event] = {};
     edits[event][mode] = acl;
 
     function refresh() {
-        for (var i in accessModes) {
-            updateEventAccess(event, accessModes[i]);
+        for (const mode of accessModes) {
+            updateEventAccess(event, mode);
         }
     }
 
@@ -176,12 +171,12 @@ function addAccess(sender) {
 
 
 function removeAccess(sender) {
-    var container = $(sender).parents(".event_access:first");
-    var event = container.find(".event_name:first").text();
-    var mode = container.find(".access_mode:first").text();
-    var expression = $(sender).parent().attr("value").trim();
+    const container = $(sender).parents(".event_access:first");
+    const event = container.find(".event_name:first").text();
+    const mode = container.find(".access_mode:first").text();
+    const expression = $(sender).parent().attr("value").trim();
 
-    var acl = accessControlList[event][mode].slice();
+    const acl = accessControlList[event][mode].slice();
 
     if (acl.indexOf(expression) < 0) {
         console.error("no such ACL: " + expression);
@@ -190,7 +185,7 @@ function removeAccess(sender) {
 
     acl.splice(acl.indexOf(expression), 1);
 
-    edits = {};
+    const edits = {};
     edits[event] = {};
     edits[event][mode] = acl;
 
@@ -218,7 +213,7 @@ function sendACL(edits, success, error) {
     }
 
     function fail(requestError, status, xhr) {
-        var message = "Failed to edit ACL:\n" + requestError
+        const message = "Failed to edit ACL:\n" + requestError;
         console.log(message);
         error();
         window.alert(message);
