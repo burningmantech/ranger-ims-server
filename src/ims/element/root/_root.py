@@ -32,4 +32,4 @@ class RootPage(Page):
     Server root page.
     """
 
-    name: str = "Ranger Incident Management System"
+    name: str = "Incident Management System"
