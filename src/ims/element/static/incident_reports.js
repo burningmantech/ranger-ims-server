@@ -22,13 +22,13 @@ function initIncidentReportsPage() {
         disableEditing();
         initIncidentReportsTable();
 
-        var command = false;
+        let command = false;
 
         function addFieldKeyDown() {
-            var keyCode = event.keyCode;
+            const keyCode = event.keyCode;
 
             // 17 = control, 18 = option
-            if (keyCode == 17 || keyCode == 18) {
+            if (keyCode === 17 || keyCode === 18) {
                 command = true;
             }
 
@@ -36,15 +36,15 @@ function initIncidentReportsPage() {
         }
 
         function addFieldKeyUp() {
-            var keyCode = event.keyCode;
+            const keyCode = event.keyCode;
 
             // 17 = control, 18 = option
-            if (keyCode == 17 || keyCode == 18) {
+            if (keyCode === 17 || keyCode === 18) {
                 command = false;
                 return;
             }
 
-            if (command && keyCode == 78) {
+            if (command && keyCode === 78) {
                 $("#new_incident_report").click();
             }
 
@@ -63,7 +63,7 @@ function initIncidentReportsPage() {
 // Dispatch queue table
 //
 
-var incidentReportsTable = null;
+let incidentReportsTable = null;
 
 function initIncidentReportsTable() {
     initDataTables();
@@ -76,6 +76,7 @@ function initIncidentReportsTable() {
         enableEditing();
     }
 
+    // it's ok to ignore the returned promise
     requestEventSourceLock();
     const incidentReportChannel = new BroadcastChannel(incidentReportChannelName);
     incidentReportChannel.onmessage = function (e) {
@@ -132,7 +133,7 @@ function initDataTables() {
                 // There are times we do two table refreshes in quick succession, and in
                 // those cases, the first call gets aborted. We don't want to set an error
                 // messages in those cases.
-                if (error == "abort") {
+                if (error === "abort") {
                     return;
                 }
                 let errMsg = "";
@@ -181,7 +182,7 @@ function initDataTables() {
         ],
         "createdRow": function (row, incidentReport, index) {
             $(row).click(function () {
-                var url = (
+                const url = (
                     urlReplace(url_viewIncidentReports) + incidentReport.number
                 );
 
@@ -246,8 +247,8 @@ function initSearch() {
         }
 
         // needs to use native comparison
-      for (var i in incidentReport.report_entries) {
-          if (timestamp < Date.parse(incidentReport.report_entries[i].created)) {
+      for (const entry of incidentReport.report_entries??[]) {
+          if (timestamp < Date.parse(entry.created)) {
               return true;
           }
       }
@@ -257,7 +258,7 @@ function initSearch() {
 
     $.fn.dataTable.ext.search.push(
         function(settings, rowData, rowIndex) {
-            var incidentReport = incidentReportsTable.data()[rowIndex];
+            const incidentReport = incidentReportsTable.data()[rowIndex];
 
             if (
                 _showModifiedAfter != null &&
@@ -276,16 +277,16 @@ function initSearch() {
 // Show days button handling
 //
 
-var _showModifiedAfter = null;
+let _showModifiedAfter = null;
 
 function showDays(daysBackToShow) {
-    var id = (daysBackToShow == null) ? "all": daysBackToShow.toString();
+    const id = (daysBackToShow == null) ? "all" : daysBackToShow.toString();
 
-    var menu = $("#show_days");
-    var item = $("#show_days_" + id);
+    const menu = $("#show_days");
+    const item = $("#show_days_" + id);
 
     // Get title from selected item
-    var selection = item.children(".name").html();
+    const selection = item.children(".name").html();
 
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);
@@ -310,13 +311,13 @@ function showDays(daysBackToShow) {
 //
 
 function showRows(rowsToShow) {
-    var id = (rowsToShow == null) ? "all": rowsToShow.toString();
+    const id = (rowsToShow == null) ? "all" : rowsToShow.toString();
 
-    var menu = $("#show_rows");
-    var item = $("#show_rows_" + id);
+    const menu = $("#show_rows");
+    const item = $("#show_rows_" + id);
 
     // Get title from selected item
-    var selection = item.children(".name").html();
+    const selection = item.children(".name").html();
 
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);

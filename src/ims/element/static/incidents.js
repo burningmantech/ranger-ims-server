@@ -22,13 +22,13 @@ function initIncidentsPage() {
         disableEditing();
         loadEventIncidentReports(initIncidentsTable);
 
-        var command = false;
+        let command = false;
 
         function addFieldKeyDown() {
-            var keyCode = event.keyCode;
+            const keyCode = event.keyCode;
 
             // 17 = control, 18 = option
-            if (keyCode == 17 || keyCode == 18) {
+            if (keyCode === 17 || keyCode === 18) {
                 command = true;
             }
 
@@ -36,15 +36,15 @@ function initIncidentsPage() {
         }
 
         function addFieldKeyUp() {
-            var keyCode = event.keyCode;
+            const keyCode = event.keyCode;
 
             // 17 = control, 18 = option
-            if (keyCode == 17 || keyCode == 18) {
+            if (keyCode === 17 || keyCode === 18) {
                 command = false;
                 return;
             }
 
-            if (command && keyCode == 78) {
+            if (command && keyCode === 78) {
                 $("#new_incident").click();
             }
 
@@ -66,26 +66,25 @@ function initIncidentsPage() {
 // We do this fetch in order to make incidents searchable by text in their
 // attached field reports.
 
-var eventIncidentReports = null;
+let eventIncidentReports = null;
 
 function loadEventIncidentReports(success) {
     function ok(data, status, xhr) {
-        var reports = {};
+        const reports = {};
 
-        for (var i in data) {
-            var report = data[i];
+        for (const report of data) {
             reports[report.number] = report;
         }
 
         eventIncidentReports = reports;
 
-        if (success != undefined) {
+        if (success) {
             success();
         }
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load event field reports";
+        const message = "Failed to load event field reports";
         console.error(message + ": " + error);
         setErrorMessage(message);
     }
@@ -114,7 +113,7 @@ function clearErrorMessage() {
 // Dispatch queue table
 //
 
-var incidentsTable = null;
+let incidentsTable = null;
 
 function initIncidentsTable() {
     initDataTables();
@@ -127,6 +126,7 @@ function initIncidentsTable() {
         enableEditing();
     }
 
+    // ok to ignore returned Promise...have the tab wait for the lock
     requestEventSourceLock();
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = function (e) {
@@ -168,7 +168,7 @@ function initDataTables() {
                 // There are times we do two table refreshes in quick succession, and in
                 // those cases, the first call gets aborted. We don't want to set an error
                 // messages in those cases.
-                if (error == "abort") {
+                if (error === "abort") {
                     return;
                 }
                 let errMsg = "";
@@ -249,7 +249,7 @@ function initDataTables() {
         ],
         "createdRow": function (row, incident, index) {
             $(row).click(function () {
-                var url = viewIncidentsURL + incident.number;
+                const url = viewIncidentsURL + incident.number;
 
                 // Open new context with link
                 window.open(
@@ -326,8 +326,8 @@ function initSearch() {
             return true;
         }
 
-        for (var i in incident.report_entries) {
-            if (timestamp < Date.parse(incident.report_entries[i].created)) {
+        for (const entry of incident.report_entries??[]) {
+            if (timestamp < Date.parse(entry.created)) {
                 return true;
             }
         }
@@ -337,20 +337,20 @@ function initSearch() {
 
     $.fn.dataTable.ext.search.push(
         function(settings, rowData, rowIndex) {
-            var incident = incidentsTable.data()[rowIndex];
-
+            const incident = incidentsTable.data()[rowIndex];
+            let state;
             switch (_showState) {
                 case "all":
                     break;
                 case "active":
                     state = stateForIncident(incident);
-                    if (state == "on_hold" || state == "closed") {
+                    if (state === "on_hold" || state === "closed") {
                         return false;
                     }
                     break;
                 case "open":
                     state = stateForIncident(incident);
-                    if (state == "closed") {
+                    if (state === "closed") {
                         return false;
                     }
                     break;
@@ -388,14 +388,14 @@ function initSearch() {
 // Show state button handling
 //
 
-var _showState = null;
+let _showState = null;
 
 function showState(stateToShow) {
-    var menu = $("#show_state");
-    var item = $("#show_state_" + stateToShow);
+    const menu = $("#show_state");
+    const item = $("#show_state_" + stateToShow);
 
     // Get title from selected item
-    var selection = item.children(".name").html();
+    const selection = item.children(".name").html();
 
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);
@@ -410,16 +410,16 @@ function showState(stateToShow) {
 // Show days button handling
 //
 
-var _showModifiedAfter = null;
+let _showModifiedAfter = null;
 
 function showDays(daysBackToShow) {
-    var id = (daysBackToShow == null) ? "all": daysBackToShow.toString();
+    const id = (daysBackToShow == null) ? "all" : daysBackToShow.toString();
 
-    var menu = $("#show_days");
-    var item = $("#show_days_" + id);
+    const menu = $("#show_days");
+    const item = $("#show_days_" + id);
 
     // Get title from selected item
-    var selection = item.children(".name").html();
+    const selection = item.children(".name").html();
 
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);
@@ -470,13 +470,13 @@ function showType(typeToShow) {
 //
 
 function showRows(rowsToShow) {
-    var id = (rowsToShow == null) ? "all": rowsToShow.toString();
+    const id = (rowsToShow == null) ? "all" : rowsToShow.toString();
 
-    var menu = $("#show_rows");
-    var item = $("#show_rows_" + id);
+    const menu = $("#show_rows");
+    const item = $("#show_rows_" + id);
 
     // Get title from selected item
-    var selection = item.children(".name").html();
+    const selection = item.children(".name").html();
 
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);

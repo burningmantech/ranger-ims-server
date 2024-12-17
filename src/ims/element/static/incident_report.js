@@ -16,12 +16,12 @@
 
 //
 // Initialize UI
-//
+let incidentReport = null;
 
 function initIncidentReportPage() {
     function loadedIncidentReport() {
         // for a new incident report
-        if (incidentReport.number === null) {
+        if (incidentReport.number == null) {
             $("#incident_report_summary").focus();
         } else {
             // Scroll to incident_report_add field
@@ -41,13 +41,13 @@ function initIncidentReportPage() {
         disableEditing();
         loadAndDisplayIncidentReport(loadedIncidentReport);
 
-        var command = false;
+        let command = false;
 
         function addFieldKeyDown() {
-            var keyCode = event.keyCode;
+            const keyCode = event.keyCode;
 
             // 17 = control, 18 = option
-            if (keyCode == 17 || keyCode == 18) {
+            if (keyCode === 17 || keyCode === 18) {
                 command = true;
             }
 
@@ -55,16 +55,16 @@ function initIncidentReportPage() {
         }
 
         function addFieldKeyUp() {
-            var keyCode = event.keyCode;
+            const keyCode = event.keyCode;
 
             // 17 = control, 18 = option
-            if (keyCode == 17 || keyCode == 18) {
+            if (keyCode === 17 || keyCode === 18) {
                 command = false;
                 return;
             }
 
             // 13 = return
-            if (command && keyCode == 13) {
+            if (command && keyCode === 13) {
                 submitReportEntry();
             }
         }
@@ -93,10 +93,8 @@ function clearErrorMessage() {
 // Load incident report
 //
 
-var incidentReport = null;
-
 function loadIncidentReport(success) {
-    var number = null;
+    let number = null;
     if (incidentReport == null) {
         // First time here.  Use page JavaScript initial value.
         number = incidentReportNumber;
@@ -108,14 +106,14 @@ function loadIncidentReport(success) {
     function ok(data, status, xhr) {
         incidentReport = data;
 
-        if (success != undefined) {
+        if (success) {
             success();
         }
     }
 
     function fail(error, status, xhr) {
         disableEditing();
-        var message = "Failed to load field report";
+        const message = "Failed to load field report";
         console.error(message + ": " + error);
         setErrorMessage(message);
     }
@@ -126,7 +124,7 @@ function loadIncidentReport(success) {
             "created": null,
         });
     } else {
-        var url = urlReplace(url_incidentReports) + number;
+        const url = urlReplace(url_incidentReports) + number;
         jsonRequest(url, null, ok, fail);
     }
 }
@@ -135,7 +133,7 @@ function loadIncidentReport(success) {
 function loadAndDisplayIncidentReport(success) {
     function loaded() {
         if (incidentReport == null) {
-            var message = "Field report failed to load";
+            const message = "Field report failed to load";
             console.log(message);
             setErrorMessage(message);
             return;
@@ -154,7 +152,7 @@ function loadAndDisplayIncidentReport(success) {
             enableEditing();
         }
 
-        if (success != undefined) {
+        if (success) {
             success();
         }
     }
@@ -177,7 +175,7 @@ function drawTitle() {
 //
 
 function drawNumber() {
-    var number = incidentReport.number;
+    let number = incidentReport.number;
     if (number == null) {
         number = "(new)";
     }
@@ -203,7 +201,7 @@ function drawIncident() {
     }
     // If there's no attached Incident, show a button for making
     // a new Incident
-    if (incidentReport.incident === null && canWriteIncidents) {
+    if (incidentReport.incident == null && canWriteIncidents) {
         $("#create_incident").removeClass("hidden");
     } else {
         $("#create_incident").addClass("hidden");
@@ -236,15 +234,14 @@ function drawSummary() {
 //
 
 function sendEdits(edits, success, error) {
-    var number = incidentReport.number
-    var url = urlReplace(url_incidentReports);
+    const number = incidentReport.number;
+    let url = urlReplace(url_incidentReports);
 
     if (number == null) {
         // We're creating a new field report.
-        var required = [];
-        for (var i in required) {
-            var key = required[i];
-            if (edits[key] == undefined) {
+        const required = [];
+        for (const key of required) {
+            if (edits[key] == null) {
                 edits[key] = incidentReport[key];
             }
         }
@@ -260,7 +257,7 @@ function sendEdits(edits, success, error) {
             // We need to find out the created field report number so that
             // future edits don't keep creating new resources.
 
-            newNumber = xhr.getResponseHeader("X-IMS-Incident-Report-Number")
+            let newNumber = xhr.getResponseHeader("X-IMS-Incident-Report-Number")
             // Check that we got a value back
             if (newNumber == null) {
                 fail(
@@ -297,7 +294,7 @@ function sendEdits(edits, success, error) {
     }
 
     function fail(requestError, status, xhr) {
-        var message = "Failed to apply edit";
+        const message = "Failed to apply edit";
         console.log(message + ": " + requestError);
         error();
         loadAndDisplayIncidentReport();

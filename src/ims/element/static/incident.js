@@ -28,7 +28,7 @@ function initIncidentPage() {
         loadAndDisplayIncidentReports();
 
         // for a new incident
-        if (incident.number === null) {
+        if (incident.number == null) {
             $("#incident_summary").focus();
         } else {
             // Scroll to incident_report_add field
@@ -49,13 +49,13 @@ function initIncidentPage() {
         disableEditing();
         loadAndDisplayIncident(loadedIncident);
 
-        // Updates
+        // Updates...it's fine to ignore the returned promise here
         requestEventSourceLock();
 
         const incidentChannel = new BroadcastChannel(incidentChannelName);
         incidentChannel.onmessage = function (e) {
             const number = e.data;
-            if (number == incidentNumber) {
+            if (number === incidentNumber) {
                 console.log("Got incident update: " + number);
                 loadAndDisplayIncident();
                 loadAndDisplayIncidentReports();
@@ -64,13 +64,13 @@ function initIncidentPage() {
 
         // Keyboard shortcuts
 
-        var command = false;
+        let command = false;
 
         function addFieldKeyDown() {
-            var keyCode = event.keyCode;
+            const keyCode = event.keyCode;
 
             // 17 = control, 18 = option
-            if (keyCode == 17 || keyCode == 18) {
+            if (keyCode === 17 || keyCode === 18) {
                 command = true;
             }
 
@@ -78,16 +78,16 @@ function initIncidentPage() {
         }
 
         function addFieldKeyUp() {
-            var keyCode = event.keyCode;
+            const keyCode = event.keyCode;
 
             // 17 = control, 18 = option
-            if (keyCode == 17 || keyCode == 18) {
+            if (keyCode === 17 || keyCode === 18) {
                 command = false;
                 return;
             }
 
             // 13 = return
-            if (command && keyCode == 13) {
+            if (command && keyCode === 13) {
                 submitReportEntry();
             }
         }
@@ -104,10 +104,10 @@ function initIncidentPage() {
 // Load incident
 //
 
-var incident = null;
+let incident = null;
 
 function loadIncident(success) {
-    var number = null;
+    let number = null;
     if (incident == null) {
         // First time here.  Use page JavaScript initial value.
         number = incidentNumber;
@@ -119,14 +119,14 @@ function loadIncident(success) {
     function ok(data, status, xhr) {
         incident = data;
 
-        if (success != undefined) {
+        if (success) {
             success();
         }
     }
 
     function fail(error, status, xhr) {
         disableEditing();
-        var message = "Failed to load incident";
+        const message = "Failed to load incident";
         console.error(message + ": " + error);
         setErrorMessage(message);
     }
@@ -139,7 +139,7 @@ function loadIncident(success) {
             "summary": "",
         });
     } else {
-        var url = incidentsURL + number;
+        const url = incidentsURL + number;
         jsonRequest(url, null, ok, fail);
     }
 }
@@ -159,7 +159,7 @@ function clearErrorMessage() {
 function loadAndDisplayIncident(success) {
     function loaded() {
         if (incident == null) {
-            var message = "Incident failed to load";
+            const message = "Incident failed to load";
             console.log(message);
             setErrorMessage(message);
             return;
@@ -172,7 +172,7 @@ function loadAndDisplayIncident(success) {
             enableEditing();
         }
 
-        if (success != undefined) {
+        if (success) {
             success();
         }
     }
@@ -197,18 +197,17 @@ function loadAndDisplayIncidentReports() {
 // Load personnel
 //
 
-var personnel = null;
-
+let personnel = null;
 
 function loadPersonnelAndCache(success) {
-    var cached = localLoadPersonnel();
+    const cached = localLoadPersonnel();
 
     function loadedPersonnel() {
         localCachePersonnel(personnel);
         success();
     }
 
-    if (cached == undefined) {
+    if (cached == null) {
         loadPersonnel(loadedPersonnel);
     } else {
         personnel = cached;
@@ -219,10 +218,8 @@ function loadPersonnelAndCache(success) {
 
 function loadPersonnel(success) {
     function ok(data, status, xhr) {
-        var _personnel = {};
-        for (var i in data) {
-            var record = data[i];
-
+        const _personnel = {};
+        for (const record of data) {
             // Filter inactive Rangers out
             // FIXME: better yet: filter based on on-playa state
             switch (record.status) {
@@ -237,13 +234,13 @@ function loadPersonnel(success) {
         }
         personnel = _personnel
 
-        if (success != undefined) {
+        if (success) {
             success();
         }
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load personnel";
+        const message = "Failed to load personnel";
         console.error(message + ": " + error);
         setErrorMessage(message);
     }
@@ -253,7 +250,7 @@ function loadPersonnel(success) {
 
 
 function localCachePersonnel(personnel) {
-    if (personnel == undefined) {
+    if (personnel == null) {
         alert("Attempt to cache undefined personnel")
         return;
     }
@@ -274,14 +271,14 @@ var incidentTypes = null;
 
 
 function loadIncidentTypesAndCache(success) {
-    var cached = localLoadIncidentTypes();
+    const cached = localLoadIncidentTypes();
 
     function loadedIncidentTypes() {
         localCacheIncidentTypes(incidentTypes);
         success();
     }
 
-    if (cached == undefined) {
+    if (cached == null) {
         loadIncidentTypes(loadedIncidentTypes);
     } else {
         incidentTypes = cached;
@@ -292,20 +289,20 @@ function loadIncidentTypesAndCache(success) {
 
 function loadIncidentTypes(success) {
     function ok(data, status, xhr) {
-        var _incidentTypes = [];
-        for (var i in data) {
-            _incidentTypes.push(data[i])
+        const _incidentTypes = [];
+        for (const record of data) {
+            _incidentTypes.push(record)
         }
         _incidentTypes.sort()
         incidentTypes = _incidentTypes
 
-        if (success != undefined) {
+        if (success) {
             success();
         }
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load incident types";
+        const message = "Failed to load incident types";
         console.error(message + ": " + error);
         setErrorMessage(message);
     }
@@ -315,7 +312,7 @@ function loadIncidentTypes(success) {
 
 
 function localCacheIncidentTypes(incidentTypes) {
-    if (incidentTypes == undefined) {
+    if (incidentTypes == null) {
         alert("Attempt to cache undefined incident types")
         return;
     }
@@ -332,7 +329,7 @@ function localLoadIncidentTypes() {
 // Load unattached field reports
 //
 
-var unattachedIncidentReports = null;
+let unattachedIncidentReports = null;
 
 function loadUnattachedIncidentReports(success) {
     if (unattachedIncidentReports === undefined) {
@@ -351,17 +348,17 @@ function loadUnattachedIncidentReports(success) {
         })
         unattachedIncidentReports = _unattachedIncidentReports;
 
-        if (success != undefined) {
+        if (success) {
             success();
         }
     }
 
     function fail(error, status, xhr) {
-        if (xhr.status == 403) {
+        if (xhr.status === 403) {
             // We're not allowed to look these up.
             unattachedIncidentReports = undefined;
         } else {
-            var message = "Failed to load unattached field reports";
+            const message = "Failed to load unattached field reports";
             console.error(message + ": " + error);
             setErrorMessage(message);
         }
@@ -378,7 +375,7 @@ function loadUnattachedIncidentReports(success) {
 // Load attached field reports
 //
 
-var attachedIncidentReports = null;
+let attachedIncidentReports = null;
 
 function loadAttachedIncidentReports(success) {
     if (incidentNumber == null) {
@@ -388,18 +385,18 @@ function loadAttachedIncidentReports(success) {
     function ok(data, status, xhr) {
         attachedIncidentReports = data;
 
-        if (success != undefined) {
+        if (success) {
             success();
         }
     }
 
     function fail(error, status, xhr) {
-        var message = "Failed to load attached field reports";
+        const message = "Failed to load attached field reports";
         console.error(message + ": " + error);
         setErrorMessage(message);
     }
 
-    var url = (
+    const url = (
         urlReplace(url_incidentReports) + "?incident=" + incidentNumber
     );
 
@@ -436,24 +433,24 @@ function drawIncidentFields() {
 //
 
 function addLocationAddressOptions() {
-    var hours = range(1, 13);
-    for (var i in hours) {
-        var hour = padTwo(hours[i]);
+    const hours = range(1, 13);
+    for (let hour of hours) {
+        hour = padTwo(hour);
         $("#incident_location_address_radial_hour")
             .append($("<option />", { "value": hour, "text": hour }))
             ;
     }
 
-    var minutes = range(0, 12, 5);
-    for (var i in minutes) {
-        var minute = padTwo(minutes[i]);
+    const minutes = range(0, 12, 5);
+    for (let minute of minutes) {
+        minute = padTwo(minute);
         $("#incident_location_address_radial_minute")
             .append($("<option />", { "value": minute, "text": minute }))
             ;
     }
 
-    for (var id in concentricStreetNameByID) {
-        var name = concentricStreetNameByID[id];
+    for (const id in concentricStreetNameByID) {
+        const name = concentricStreetNameByID[id];
         $("#incident_location_address_concentric")
             .append($("<option />", { "value": id, "text": name }))
             ;
@@ -475,7 +472,7 @@ function drawTitle() {
 //
 
 function drawNumber() {
-    var number = incident.number;
+    let number = incident.number;
     if (number == null) {
         number = "(new)";
     }
@@ -529,7 +526,7 @@ function drawSummary() {
 // Populate Rangers list
 //
 
-var _rangerItem = null;
+let _rangerItem = null;
 
 function drawRangers() {
     if (_rangerItem == null) {
@@ -538,40 +535,35 @@ function drawRangers() {
             ;
     }
 
-    var items = [];
+    const items = [];
 
-    var handles = incident.ranger_handles;
-    if (handles == undefined) {
-        handles = [];
-    } else {
-        handles.sort((a, b) => a.localeCompare(b));
-    }
+    const handles = incident.ranger_handles??[];
+    handles.sort((a, b) => a.localeCompare(b));
 
-    for (var i in handles) {
-        var handle = handles[i]
-        var ranger = null;
-        if (personnel == null || personnel[handle] == undefined) {
+    for (const handle of handles) {
+        let ranger = null;
+        if (personnel?.[handle] == null) {
             ranger = handle;
         } else {
             ranger = rangerAsString(personnel[handle]);
         }
-        var item = _rangerItem.clone();
+        const item = _rangerItem.clone();
         item.append(textAsHTML(ranger));
         item.attr("value", textAsHTML(handle));
         items.push(item);
     }
 
-    var container = $("#incident_rangers_list");
+    const container = $("#incident_rangers_list");
     container.empty();
     container.append(items);
 }
 
 
 function drawRangersToAdd() {
-    var datalist = $("#ranger_handles");
+    const datalist = $("#ranger_handles");
 
-    var handles = [];
-    for (var handle in personnel) {
+    const handles = [];
+    for (const handle in personnel) {
         handles.push(handle);
     }
     handles.sort((a, b) => a.localeCompare(b));
@@ -579,11 +571,10 @@ function drawRangersToAdd() {
     datalist.empty();
     datalist.append($("<option />"));
 
-    for (var i in handles) {
-        var handle = handles[i];
-        var ranger = personnel[handle];
+    for (const handle of handles) {
+        const ranger = personnel[handle];
 
-        var option = $("<option />");
+        const option = $("<option />");
         option.val(handle);
         option.text(rangerAsString(ranger));
 
@@ -593,13 +584,13 @@ function drawRangersToAdd() {
 
 
 function rangerAsString(ranger) {
-    var result = ranger.handle;
+    let result = ranger.handle;
 
-    if (ranger.name != undefined && ranger.name != null && ranger.name != "") {
+    if (ranger.name) {
         result += " (" + ranger.name + ")";
     }
 
-    if (ranger.status == "vintage") {
+    if (ranger.status === "vintage") {
         result += "*";
     }
 
@@ -611,7 +602,7 @@ function rangerAsString(ranger) {
 // Populate incident types list
 //
 
-var _typesItem = null;
+let _typesItem = null;
 
 function drawIncidentTypes() {
     if (_typesItem == null) {
@@ -620,38 +611,32 @@ function drawIncidentTypes() {
             ;
     }
 
-    var items = [];
+    const items = [];
 
-    var incidentTypes = incident.incident_types;
-    if (incidentTypes == undefined) {
-        incidentTypes = [];
-    } else {
-        incidentTypes.sort();
-    }
+    const incidentTypes = incident.incident_types??[];
+    incidentTypes.sort();
 
-    for (var i in incidentTypes) {
-        var item = _typesItem.clone();
-        item.attr("value", textAsHTML(incidentTypes[i]));
-        item.append(textAsHTML(incidentTypes[i]));
+    for (const incidentType of incidentTypes) {
+        const item = _typesItem.clone();
+        item.attr("value", textAsHTML(incidentType));
+        item.append(textAsHTML(incidentType));
         items.push(item);
     }
 
-    var container = $("#incident_types_list");
+    const container = $("#incident_types_list");
     container.empty();
     container.append(items);
 }
 
 
 function drawIncidentTypesToAdd() {
-    var datalist = $("#incident_types");
+    const datalist = $("#incident_types");
 
     datalist.empty();
     datalist.append($("<option />"));
 
-    for (var i in incidentTypes) {
-        var incidentType = incidentTypes[i];
-
-        var option = $("<option />");
+    for (const incidentType of incidentTypes) {
+        const option = $("<option />");
         option.val(incidentType);
 
         datalist.append(option);
@@ -664,20 +649,16 @@ function drawIncidentTypesToAdd() {
 //
 
 function drawLocationName() {
-    if (incident.location != undefined) {
-        if (incident.location.name != undefined) {
-            $("#incident_location_name").val(incident.location.name);
-        }
+    if (incident.location?.name) {
+        $("#incident_location_name").val(incident.location.name);
     }
 }
 
 
 function drawLocationAddressRadialHour() {
-    var hour = null;
-    if (incident.location != undefined) {
-        if (incident.location.radial_hour != undefined) {
-            hour = padTwo(incident.location.radial_hour);
-        }
+    let hour = null;
+    if (incident.location?.radial_hour != null) {
+        hour = padTwo(incident.location.radial_hour);
     }
     selectOptionWithValue(
         $("#incident_location_address_radial_hour"), hour
@@ -686,11 +667,9 @@ function drawLocationAddressRadialHour() {
 
 
 function drawLocationAddressRadialMinute() {
-    var minute = null;
-    if (incident.location != undefined) {
-        if (incident.location.radial_minute != undefined) {
-            minute = normalizeMinute(incident.location.radial_minute);
-        }
+    let minute = null;
+    if (incident.location?.radial_minute != null) {
+        minute = normalizeMinute(incident.location.radial_minute);
     }
     selectOptionWithValue(
         $("#incident_location_address_radial_minute"), minute
@@ -699,11 +678,9 @@ function drawLocationAddressRadialMinute() {
 
 
 function drawLocationAddressConcentric() {
-    var concentric = null;
-    if (incident.location != undefined) {
-        if (incident.location.concentric != undefined) {
-            concentric = incident.location.concentric;
-        }
+    let concentric = null;
+    if (incident.location?.concentric) {
+        concentric = incident.location.concentric;
     }
     selectOptionWithValue(
         $("#incident_location_address_concentric"), concentric
@@ -712,12 +689,10 @@ function drawLocationAddressConcentric() {
 
 
 function drawLocationDescription() {
-    if (incident.location != undefined) {
-        if (incident.location.description != undefined) {
-            $("#incident_location_description")
-                .val(incident.location.description)
-                ;
-        }
+    if (incident.location?.description) {
+        $("#incident_location_description")
+            .val(incident.location.description)
+            ;
     }
 }
 
@@ -740,18 +715,16 @@ function toggleShowHistory() {
 //
 
 function drawMergedReportEntries() {
-    var entries = [];
+    const entries = [];
 
     if (incident.report_entries) {
         $.merge(entries, incident.report_entries);
     }
 
-    if (attachedIncidentReports != null) {
+    if (attachedIncidentReports) {
         if ($("#merge_reports_checkbox").is(":checked")) {
-            for (var i in attachedIncidentReports) {
-                var report = attachedIncidentReports[i];
-                for (var j in report.report_entries) {
-                    var entry = report.report_entries[j];
+            for (const report of attachedIncidentReports) {
+                for (const entry of report.report_entries??[]) {
                     entry.merged = report.number;
                     entries.push(entry);
                 }
@@ -765,7 +738,7 @@ function drawMergedReportEntries() {
 }
 
 
-var _reportsItem = null;
+let _reportsItem = null;
 
 function drawAttachedIncidentReports() {
     if (_reportsItem == null) {
@@ -774,19 +747,14 @@ function drawAttachedIncidentReports() {
             ;
     }
 
-    var items = [];
+    const items = [];
 
-    var reports = attachedIncidentReports;
-    if (reports == undefined) {
-        reports = [];
-    } else {
-        reports.sort();
-    }
+    const reports = attachedIncidentReports??[];
+    reports.sort();
 
-    for (var i in reports) {
-        var report = reports[i];
-        var item = _reportsItem.clone();
-        var link = $("<a />");
+    for (const report of reports) {
+        const item = _reportsItem.clone();
+        const link = $("<a />");
         link.attr("href", urlReplace(url_viewIncidentReports) + report.number);
         link.text(incidentReportAsString(report));
         item.append(link);
@@ -794,20 +762,20 @@ function drawAttachedIncidentReports() {
         items.push(item);
     }
 
-    var container = $("#attached_incident_reports");
+    const container = $("#attached_incident_reports");
     container.empty();
     container.append(items);
 }
 
 
 function drawIncidentReportsToAttach() {
-    var container = $("#attached_incident_report_add_container");
-    var select = $("#attached_incident_report_add");
+    const container = $("#attached_incident_report_add_container");
+    const select = $("#attached_incident_report_add");
 
     select.empty();
     select.append($("<option />"));
 
-    if (unattachedIncidentReports.length == 0) {
+    if (!unattachedIncidentReports) {
         container.addClass("hidden");
     } else {
 
@@ -849,15 +817,14 @@ function drawIncidentReportsToAttach() {
 //
 
 function sendEdits(edits, success, error) {
-    var number = incident.number
-    var url = incidentsURL;
+    const number = incident.number;
+    let url = incidentsURL;
 
     if (number == null) {
         // We're creating a new incident.
-        var required = ["state", "priority"];
-        for (var i in required) {
-            var key = required[i];
-            if (edits[key] == undefined) {
+        const required = ["state", "priority"];
+        for (const key of required) {
+            if (edits[key] == null) {
                 edits[key] = incident[key];
             }
         }
@@ -873,7 +840,7 @@ function sendEdits(edits, success, error) {
             // We need to find out the create incident number so that future
             // edits don't keep creating new resources.
 
-            newNumber = xhr.getResponseHeader("X-IMS-Incident-Number")
+            let newNumber = xhr.getResponseHeader("X-IMS-Incident-Number")
             // Check that we got a value back
             if (newNumber == null) {
                 fail("No X-IMS-Incident-Number header provided.", status, xhr);
@@ -905,7 +872,7 @@ function sendEdits(edits, success, error) {
     }
 
     function fail(requestError, status, xhr) {
-        var message = "Failed to apply edit";
+        const message = "Failed to apply edit";
         console.log(message + ": " + requestError);
         error();
         loadAndDisplayIncident();
@@ -937,7 +904,7 @@ function editLocationName() {
 
 
 function transformAddressInteger(value) {
-    if (value == "") {
+    if (!value) {
         return null;
     }
     return parseInt(value);
@@ -979,7 +946,7 @@ function editLocationDescription() {
 function removeRanger(sender) {
     sender = $(sender);
 
-    var rangerHandle = sender.parent().attr("value");
+    const rangerHandle = sender.parent().attr("value");
 
     function ok() {
         // FIXME
@@ -994,7 +961,7 @@ function removeRanger(sender) {
     sendEdits(
         {
             "ranger_handles": incident.ranger_handles.filter(
-                function(h) { return h != rangerHandle }
+                function(h) { return h !== rangerHandle }
             ),
         },
         ok, fail
@@ -1020,7 +987,7 @@ function removeIncidentType(sender) {
     sendEdits(
         {
             "incident_types": incident.incident_types.filter(
-                function(t) { return t != incidentType }
+                function(t) { return t !== incidentType }
             ),
         },
         ok, fail
@@ -1032,22 +999,18 @@ function normalize(str) {
 }
 
 function addRanger() {
-    var select = $("#ranger_add");
-    var handle = $(select).val();
-    var handles = incident.ranger_handles;
+    const select = $("#ranger_add");
+    let handle = $(select).val();
 
-    if (handles == undefined) {
-        handles = [];
-    } else {
-        handles = handles.slice();  // copy
-    }
+    // make a copy of the handles
+    const handles = (incident.ranger_handles??[]).slice();
 
     // fuzzy-match on handle, to allow case insensitivity and
     // leading/trailing whitespace.
     if (!(handle in personnel)) {
         const normalized = normalize(handle);
         for (const validHandle in personnel) {
-            if (normalized == normalize(validHandle)) {
+            if (normalized === normalize(validHandle)) {
                 handle = validHandle;
                 break;
             }
@@ -1059,7 +1022,7 @@ function addRanger() {
         return;
     }
 
-    if (handles.indexOf(handle) != -1) {
+    if (handles.indexOf(handle) !== -1) {
         // Already in the list, so… move along.
         select.val("");
         return;
@@ -1082,34 +1045,30 @@ function addRanger() {
 
 
 function addIncidentType() {
-    var select = $("#incident_type_add");
-    var incidentType = $(select).val();
-    var currentIncidentTypes = incident.incident_types
+    const select = $("#incident_type_add");
+    let incidentType = $(select).val();
 
-    if (currentIncidentTypes == undefined) {
-        currentIncidentTypes = [];
-    } else {
-        currentIncidentTypes = currentIncidentTypes.slice();  // copy
-    }
+    // make a copy of the incident types
+    const currentIncidentTypes = (incident.incident_types??[]).slice();
 
     // fuzzy-match on incidentType, to allow case insensitivity and
     // leading/trailing whitespace.
-    if (incidentTypes.indexOf(incidentType) == -1) {
+    if (incidentTypes.indexOf(incidentType) === -1) {
         const normalized = normalize(incidentType);
         for (const validType of incidentTypes) {
-            if (normalized == normalize(validType)) {
+            if (normalized === normalize(validType)) {
                 incidentType = validType;
                 break;
             }
         }
     }
-    if (incidentTypes.indexOf(incidentType) == -1) {
+    if (incidentTypes.indexOf(incidentType) === -1) {
         // Not a valid incident type
         select.val("");
         return;
     }
 
-    if (currentIncidentTypes.indexOf(incidentType) != -1) {
+    if (currentIncidentTypes.indexOf(incidentType) !== -1) {
         // Already in the list, so… move along.
         select.val("");
         return;
@@ -1134,7 +1093,7 @@ function addIncidentType() {
 function detachIncidentReport(sender) {
     sender = $(sender);
 
-    var incidentReport = sender.parent().data();
+    const incidentReport = sender.parent().data();
 
     function ok(data, status, xhr) {
         // FIXME
@@ -1146,13 +1105,13 @@ function detachIncidentReport(sender) {
         // FIXME
         // controlHasError(sender);
 
-        var message = "Failed to detach field report";
+        const message = "Failed to detach field report";
         console.log(message + ": " + requestError);
         loadAndDisplayIncidentReports();
         setErrorMessage(message);
     }
 
-    var url = (
+    const url = (
         urlReplace(url_incidentReports) + incidentReport.number +
         "?action=detach;incident=" + incidentNumber
     );
@@ -1168,8 +1127,8 @@ function attachIncidentReport() {
         return;
     }
 
-    var select = $("#attached_incident_report_add");
-    var incidentReportNumber = $(select).val();
+    const select = $("#attached_incident_report_add");
+    const incidentReportNumber = $(select).val();
 
     function ok(data, status, xhr) {
         loadAndDisplayIncidentReports();
@@ -1177,14 +1136,14 @@ function attachIncidentReport() {
     }
 
     function fail(requestError, status, xhr) {
-        var message = "Failed to attach field report";
+        const message = "Failed to attach field report";
         console.log(message + ": " + requestError);
         loadAndDisplayIncidentReports();
         setErrorMessage(message);
         controlHasError(select);
     }
 
-    var url = (
+    const url = (
         urlReplace(url_incidentReports) + incidentReportNumber +
         "?action=attach;incident=" + incidentNumber
     );
