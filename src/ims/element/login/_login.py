@@ -35,7 +35,7 @@ class LoginPage(Page):
     Login page.
     """
 
-    name: str = "Ranger Incident Management System"
+    name: str = "Incident Management System"
     failed: bool = False
 
     @renderer
