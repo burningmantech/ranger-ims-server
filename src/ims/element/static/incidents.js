@@ -20,7 +20,7 @@
 function initIncidentsPage() {
     function loadedBody() {
         disableEditing();
-        loadEventIncidentReports(initIncidentsTable);
+        loadEventFieldReports(initIncidentsTable);
 
         let command = false;
 
@@ -66,9 +66,9 @@ function initIncidentsPage() {
 // We do this fetch in order to make incidents searchable by text in their
 // attached field reports.
 
-let eventIncidentReports = null;
+let eventFieldReports = null;
 
-function loadEventIncidentReports(success) {
+function loadEventFieldReports(success) {
     function ok(data, status, xhr) {
         const reports = {};
 
@@ -76,7 +76,7 @@ function loadEventIncidentReports(success) {
             reports[report.number] = report;
         }
 
-        eventIncidentReports = reports;
+        eventFieldReports = reports;
 
         if (success) {
             success();

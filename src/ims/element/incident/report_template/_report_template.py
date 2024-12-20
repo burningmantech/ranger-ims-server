@@ -15,7 +15,7 @@
 ##
 
 """
-Incident report template page.
+Field report template page.
 """
 
 from attrs import mutable
@@ -30,7 +30,7 @@ title = "Field Report Details"
 
 
 @mutable(kw_only=True)
-class IncidentReportTemplatePage(Page):
+class FieldReportTemplatePage(Page):
     """
     Incident report template page.
     """

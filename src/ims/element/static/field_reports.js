@@ -17,10 +17,10 @@
 // Initialize UI
 //
 
-function initIncidentReportsPage() {
+function initFieldReportsPage() {
     function loadedBody() {
         disableEditing();
-        initIncidentReportsTable();
+        initFieldReportsTable();
 
         let command = false;
 
@@ -63,9 +63,9 @@ function initIncidentReportsPage() {
 // Dispatch queue table
 //
 
-let incidentReportsTable = null;
+let fieldReportsTable = null;
 
-function initIncidentReportsTable() {
+function initFieldReportsTable() {
     initDataTables();
     initTableButtons();
     initSearchField();
@@ -78,11 +78,11 @@ function initIncidentReportsTable() {
 
     // it's ok to ignore the returned promise
     requestEventSourceLock();
-    const incidentReportChannel = new BroadcastChannel(incidentReportChannelName);
-    incidentReportChannel.onmessage = function (e) {
+    const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
+    fieldReportChannel.onmessage = function (e) {
         const number = e.data;
         console.log("Got field report update: " + number);
-        incidentReportsTable.ajax.reload(clearErrorMessage);
+        fieldReportsTable.ajax.reload(clearErrorMessage);
     }
 }
 
@@ -103,12 +103,12 @@ function clearErrorMessage() {
 //
 
 function initDataTables() {
-    function dataHandler(incidentReports) {
-        return incidentReports;
+    function dataHandler(fieldReports) {
+        return fieldReports;
     }
 
     $.fn.dataTable.ext.errMode = "none";
-    incidentReportsTable = $("#incident_reports_table").DataTable({
+    fieldReportsTable = $("#incident_reports_table").DataTable({
         "deferRender": true,
         "paging": true,
         "lengthChange": false,
@@ -122,9 +122,9 @@ function initDataTables() {
             "bottomEnd": "paging",
         },
         "ajax": {
-            // don't use exclude_system_entries here, since the incident reports
-            // per-user authorization can exclude incident reports entirely from
-            // someone who created an incident report but then didn't add an
+            // don't use exclude_system_entries here, since the field reports
+            // per-user authorization can exclude field reports entirely from
+            // someone who created an field report but then didn't add an
             // entry to it.
             "url": urlReplace(url_incidentReports, eventID),
             "dataSrc": dataHandler,
@@ -180,17 +180,17 @@ function initDataTables() {
         "order": [
             [1, "asc"],
         ],
-        "createdRow": function (row, incidentReport, index) {
+        "createdRow": function (row, fieldReport, index) {
             $(row).click(function () {
                 const url = (
-                    urlReplace(url_viewIncidentReports) + incidentReport.number
+                    urlReplace(url_viewFieldReports) + fieldReport.number
                 );
 
                 // Open new context with link
-                window.open(url, "Incident_Report:" + incidentReport.number);
+                window.open(url, "Field_Report:" + fieldReport.number);
             });
             $(row).find(".incident_report_created")
-                .attr("title", fullDateTime.format(Date.parse(incidentReport.created)));
+                .attr("title", fullDateTime.format(Date.parse(fieldReport.created)));
         },
     });
 }
@@ -230,8 +230,8 @@ function initSearchField() {
     // Search field handling
 
     $("#search_input").on("keyup", function () {
-        incidentReportsTable.search(this.value);
-        incidentReportsTable.draw();
+        fieldReportsTable.search(this.value);
+        fieldReportsTable.draw();
     });
 }
 
@@ -241,13 +241,13 @@ function initSearchField() {
 //
 
 function initSearch() {
-    function modifiedAfter(incidentReport, timestamp) {
-        if (timestamp < Date.parse(incidentReport.created)) {
+    function modifiedAfter(fieldReport, timestamp) {
+        if (timestamp < Date.parse(fieldReport.created)) {
             return true;
         }
 
         // needs to use native comparison
-      for (const entry of incidentReport.report_entries??[]) {
+      for (const entry of fieldReport.report_entries??[]) {
           if (timestamp < Date.parse(entry.created)) {
               return true;
           }
@@ -258,11 +258,11 @@ function initSearch() {
 
     $.fn.dataTable.ext.search.push(
         function(settings, rowData, rowIndex) {
-            const incidentReport = incidentReportsTable.data()[rowIndex];
+            const fieldReport = fieldReportsTable.data()[rowIndex];
 
             if (
                 _showModifiedAfter != null &&
-                ! modifiedAfter(incidentReport, _showModifiedAfter)
+                ! modifiedAfter(fieldReport, _showModifiedAfter)
             ) {
                 return false
             }
@@ -302,7 +302,7 @@ function showDays(daysBackToShow) {
         _showModifiedAfter = after;
     }
 
-    incidentReportsTable.draw();
+    fieldReportsTable.draw();
 }
 
 
@@ -326,6 +326,6 @@ function showRows(rowsToShow) {
         rowsToShow = -1;
     }
 
-    incidentReportsTable.page.len(rowsToShow);
-    incidentReportsTable.draw()
+    fieldReportsTable.page.len(rowsToShow);
+    fieldReportsTable.draw()
 }

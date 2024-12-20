@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
-<head t:render="head" imports="dataTables,ims,viewIncidentReports"/>
+<head t:render="head" imports="dataTables,ims,viewFieldReports"/>
 
 <body/>
 
 <script>
-  var pageTemplateURL   = url_viewIncidentReportsTemplate;
+  var pageTemplateURL   = url_viewFieldReportsTemplate;
   var editingAllowed    = <json t:render="editing_allowed"/>;
   var eventID           = <json t:render="event_id"/>;
   var viewIncidentsURL  = urlReplace(url_viewIncidents);
 
-  initIncidentReportsPage();
+  initFieldReportsPage();
 </script>
 </html>

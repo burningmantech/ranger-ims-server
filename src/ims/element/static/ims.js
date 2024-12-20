@@ -502,7 +502,7 @@ function summarizeIncident(incident) {
 
 
 // Return a summary for a given field report.
-function summarizeIncidentReport(report) {
+function summarizeFieldReport(report) {
     return summarizeIncident(report);
 }
 
@@ -520,7 +520,7 @@ function incidentAuthor(incident) {
 
 
 // Get author for field report
-function incidentReportAuthor(report) {
+function fieldReportAuthor(report) {
     return incidentAuthor(report);
 }
 
@@ -538,14 +538,14 @@ function incidentAsString(incident) {
 
 
 // Render field report as a string
-function incidentReportAsString(report) {
+function fieldReportAsString(report) {
     if (report.number == null) {
         return "New Field Report";
     }
     return (
         "FR #" + report.number +
-        " (" + incidentReportAuthor(report) + "): " +
-        summarizeIncidentReport(report)
+        " (" + fieldReportAuthor(report) + "): " +
+        summarizeFieldReport(report)
     );
 }
 
@@ -573,9 +573,9 @@ function reportTextFromIncident(incident) {
     }
 
     // Incidents page loads all field reports for the event
-    if (typeof eventIncidentReports !== "undefined" && incident.incident_reports) {
+    if (typeof eventFieldReports !== "undefined" && incident.incident_reports) {
         for (const reportNumber of incident.incident_reports) {
-            const report = eventIncidentReports[reportNumber];
+            const report = eventFieldReports[reportNumber];
             const reportText = reportTextFromIncident(report);
 
             texts.push(reportText);
@@ -801,7 +801,7 @@ function reportEntryElement(entry) {
 
         const link = $("<a />");
         link.text("field report #" + entry.merged);
-        link.attr("href", urlReplace(url_viewIncidentReports) + entry.merged)
+        link.attr("href", urlReplace(url_viewFieldReports) + entry.merged)
 
         metaDataContainer.append("(via ");
         metaDataContainer.append(link);
@@ -833,7 +833,7 @@ function reportEntryElement(entry) {
 }
 
 function drawReportEntries(entries) {
-    const container = $("#incident_report");
+    const container = $("#report_entries");
     container.empty();
 
     if (entries) {
@@ -941,7 +941,7 @@ function editFromElement(element, jsonKey, transform) {
 //
 
 const incidentChannelName = "incident_update";
-const incidentReportChannelName= "incident_report_update";
+const fieldReportChannelName= "field_report_update";
 const reattemptMinTimeMillis = 10000;
 
 // Call this from each browsing context, so that it can queue up to become a leader
@@ -1008,7 +1008,7 @@ function subscribeToUpdates(closed) {
         const json = JSON.parse(jsonText);
         const number = json["incident_report_number"];
 
-        const send = new BroadcastChannel(incidentReportChannelName);
+        const send = new BroadcastChannel(fieldReportChannelName);
         send.postMessage(number);
     }, true);
 }
