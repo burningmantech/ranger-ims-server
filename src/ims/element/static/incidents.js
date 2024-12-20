@@ -90,7 +90,7 @@ function loadEventFieldReports(success) {
         setErrorMessage(message);
     }
 
-    jsonRequest(urlReplace(url_incidentReports + "?exclude_system_entries=true"), null, ok, fail);
+    jsonRequest(urlReplace(url_fieldReports + "?exclude_system_entries=true"), null, ok, fail);
 
     console.log("Loaded event field reports");
     if (incidentsTable != null) {

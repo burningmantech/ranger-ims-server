@@ -127,7 +127,7 @@ function initDataTables() {
             // per-user authorization can exclude field reports entirely from
             // someone who created an field report but then didn't add an
             // entry to it.
-            "url": urlReplace(url_incidentReports, eventID),
+            "url": urlReplace(url_fieldReports, eventID),
             "dataSrc": dataHandler,
             "error": function (request, status, error) {
                 // The "abort" case is a special snowflake.

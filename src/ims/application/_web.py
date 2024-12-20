@@ -94,7 +94,7 @@ class WebApplication:
             url = URLs.viewIncidentsRelative
         except NotAuthorizedError:
             await self.config.authProvider.authorizeRequest(
-                request, event_id, Authorization.writeIncidentReports
+                request, event_id, Authorization.writeFieldReports
             )
             url = URLs.viewFieldReportsRelative
 
@@ -223,7 +223,7 @@ class WebApplication:
             )
         except NotAuthorizedError:
             await self.config.authProvider.authorizeRequest(
-                request, event_id, Authorization.writeIncidentReports
+                request, event_id, Authorization.writeFieldReports
             )
         event = Event(id=event_id)
         return FieldReportsPage(config=self.config, event=event)
@@ -247,7 +247,7 @@ class WebApplication:
         config = self.config
         if number == "new":
             await config.authProvider.authorizeRequest(
-                request, event_id, Authorization.writeIncidentReports
+                request, event_id, Authorization.writeFieldReports
             )
             incidentReportNumber = None
             del number

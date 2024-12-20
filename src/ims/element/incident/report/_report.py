@@ -51,7 +51,7 @@ class FieldReportPage(Page):
         """
         if (
             request.authorizations  # type: ignore[attr-defined]
-            & Authorization.writeIncidentReports
+            & Authorization.writeFieldReports
         ):
             return jsonTrue
         return jsonFalse
