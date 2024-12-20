@@ -150,29 +150,29 @@ function initDataTables() {
         },
         "columns": [
             {   // 0
-                "name": "incident_report_number",
-                "className": "incident_report_number text-right",
+                "name": "field_report_number",
+                "className": "field_report_number text-right",
                 "data": "number",
                 "defaultContent": null,
                 "cellType": "th",
             },
             {   // 1
                 "name": "incident_report_created",
-                "className": "incident_report_created text-center",
+                "className": "field_report_created text-center",
                 "data": "created",
                 "defaultContent": null,
                 "render": renderDate,
             },
             {   // 2
                 "name": "incident_report_incident",
-                "className": "incident_report_incident text-center",
+                "className": "field_report_incident text-center",
                 "data": "incident",
                 "defaultContent": "-",
                 "render": renderIncidentNumber,
             },
             {   // 3
                 "name": "incident_report_summary",
-                "className": "incident_report_summary",
+                "className": "field_report_summary",
                 "data": "summary",
                 "defaultContent": "",
                 "render": renderSummary,
@@ -190,7 +190,7 @@ function initDataTables() {
                 // Open new context with link
                 window.open(url, "Field_Report:" + fieldReport.number);
             });
-            $(row).find(".incident_report_created")
+            $(row).find(".field_report_created")
                 .attr("title", fullDateTime.format(Date.parse(fieldReport.created)));
         },
     });

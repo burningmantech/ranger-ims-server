@@ -20,11 +20,11 @@ let fieldReport = null;
 
 function initFieldReportPage() {
     function loadedFieldReport() {
-        // for a new incident report
+        // for a new field report
         if (fieldReport.number == null) {
             $("#field_report_summary").focus();
         } else {
-            // Scroll to incident_report_add field
+            // Scroll to report_entry_add field
             $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
             $("#report_entry_add").focus();
         }
@@ -90,7 +90,7 @@ function clearErrorMessage() {
 
 
 //
-// Load incident report
+// Load field report
 //
 
 function loadFieldReport(success) {
@@ -188,7 +188,7 @@ function drawNumber() {
 
 function drawIncident() {
     $("#incident_number").text("Please include in Summary");
-    // New Incident Report. There can be no Incident
+    // New Field Report. There can be no Incident
     if (fieldReport.number == null) {
         return;
     }
@@ -310,7 +310,7 @@ function editSummary() {
 }
 
 //
-// Make a new incident and attach this incident report to it
+// Make a new incident and attach this Field Report to it
 //
 
 function makeIncident() {
@@ -332,7 +332,7 @@ function makeIncident() {
 
         function attachFail(error, status, xhr) {
             disableEditing();
-            const message = "Failed to attach incident report";
+            const message = "Failed to attach field report";
             console.error(message + ": " + error);
             setErrorMessage(message);
         }

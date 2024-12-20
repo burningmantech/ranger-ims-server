@@ -189,20 +189,20 @@
     <div class="col-sm-12">
       <div class="card">
         <label class="control-label card-header">Attached Field Reports</label>
-        <ul id="attached_incident_reports" class="list-group list-group-small card-body list-group-flush">
+        <ul id="attached_field_reports" class="list-group list-group-small card-body list-group-flush">
           <li class="list-group-item ps-3">
             <button class="badge btn btn-danger remove-badge float-end"
-                    onclick="detachIncidentReport(this)">
+                    onclick="detachFieldReport(this)">
               X
             </button>
           </li>
         </ul>
-        <div id="attached_incident_report_add_container" class="flex-input-container card-footer no-print">
+        <div id="attached_field_report_add_container" class="flex-input-container card-footer no-print">
           <label class="control-label">Add:</label>
           <select
-                  id="attached_incident_report_add"
+                  id="attached_field_report_add"
                   class="form-control form-control-sm"
-                  onchange="attachIncidentReport()"
+                  onchange="attachFieldReport()"
           >
             <option value=""/>
           </select>
@@ -217,7 +217,7 @@
     <div class="col-sm-12">
       <div class="card">
         <label class="control-label card-header">Incident Details</label>
-        <div id="incident_report_well" class="card-body">
+        <div id="report_entry_well" class="card-body">
           <label class="control-label">
             <input id="history_checkbox" type="checkbox" onchange="toggleShowHistory()"/>
             Show history
