@@ -44,8 +44,9 @@ function initFieldReportsPage() {
                 return;
             }
 
+            // 78 = n
             if (command && keyCode === 78) {
-                $("#new_incident_report").click();
+                $("#new_field_report").click();
             }
 
             // if (command) { console.warn(keyCode); }
@@ -108,7 +109,7 @@ function initDataTables() {
     }
 
     $.fn.dataTable.ext.errMode = "none";
-    fieldReportsTable = $("#incident_reports_table").DataTable({
+    fieldReportsTable = $("#field_reports_table").DataTable({
         "deferRender": true,
         "paging": true,
         "lengthChange": false,
@@ -203,7 +204,7 @@ function initDataTables() {
 function initTableButtons() {
     // Relocate button container
 
-    $("#incident_reports_table_wrapper")
+    $("#field_reports_table_wrapper")
         .children(".row")
         .children(".col-sm-6:first")
         .replaceWith($("#button_container"));
@@ -222,7 +223,7 @@ function initTableButtons() {
 function initSearchField() {
     // Relocate search container
 
-    $("#incident_reports_table_wrapper")
+    $("#field_reports_table_wrapper")
         .children(".row")
         .children(".col-sm-6:last")
         .replaceWith($("#search_container"));
