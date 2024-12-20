@@ -73,11 +73,9 @@ class Authorization(Flag):
     readIncidents = auto()
     writeIncidents = auto()
 
-    writeIncidentReports = auto()
+    writeFieldReports = auto()
 
-    all = (
-        imsAdmin | readPersonnel | readIncidents | writeIncidents | writeIncidentReports
-    )
+    all = imsAdmin | readPersonnel | readIncidents | writeIncidents | writeFieldReports
 
 
 @frozen(kw_only=True)
@@ -389,7 +387,7 @@ class AuthProvider:
             if self._matchACL(user, frozenset(await self.store.writers(eventID))):
                 authorizations |= Authorization.writeIncidents
                 authorizations |= Authorization.readIncidents
-                authorizations |= Authorization.writeIncidentReports
+                authorizations |= Authorization.writeFieldReports
                 authorizations |= Authorization.readPersonnel
 
             else:
@@ -401,7 +399,7 @@ class AuthProvider:
                     user,
                     frozenset(await self.store.reporters(eventID)),
                 ):
-                    authorizations |= Authorization.writeIncidentReports
+                    authorizations |= Authorization.writeFieldReports
 
         self._log.debug(
             "Authz for {user} in event {event}: {authorizations}",
@@ -451,7 +449,7 @@ class AuthProvider:
         authorizations to access the incident report with the given number.
         """
         # An author of the incident report should be allowed to read and write
-        # to it, provided they have writeIncidentReports on the event.
+        # to it, provided they have writeFieldReports on the event.
         userIsAuthor = False
         user: IMSUser = request.user  # type: ignore[attr-defined]
         if user is not None and incidentReport.reportEntries:
@@ -462,20 +460,20 @@ class AuthProvider:
                     break
 
         # If the user is an author, they're authorized so long as they have
-        # writeIncidentReports.
+        # writeFieldReports.
         if userIsAuthor:
             try:
                 await self.authorizeRequest(
                     request,
                     incidentReport.eventID,
-                    Authorization.writeIncidentReports,
+                    Authorization.writeFieldReports,
                 )
             except NotAuthorizedError:
-                # No writeIncidentReports, so we'll fall back to checking if
+                # No writeFieldReports, so we'll fall back to checking if
                 # they have readIncidents permission below
                 pass
             else:
-                # writeIncidentReports authorization succeeded
+                # writeFieldReports authorization succeeded
                 return
 
         # Authorize the user if they have readIncidents permission

@@ -124,8 +124,8 @@ class APIApplication:
                 "event": _urlToTextForBag(URLs.event),
                 "incidents": _urlToTextForBag(URLs.incidents),
                 "incident": _urlToTextForBag(URLs.incidentNumber),
-                "incident_reports": _urlToTextForBag(URLs.incidentReports),
-                "incident_report": _urlToTextForBag(URLs.incidentReport),
+                "field_reports": _urlToTextForBag(URLs.fieldReports),
+                "field_report": _urlToTextForBag(URLs.fieldReport),
                 "event_source": _urlToTextForBag(URLs.eventSource),
             },
         }
@@ -437,7 +437,7 @@ class APIApplication:
             )
 
         # If not provided, set JSON handles, types, entries,
-        # incident report numbers to an empty list
+        # field report numbers to an empty list
 
         for incidentKey in (
             IncidentJSONKey.rangerHandles,
@@ -680,12 +680,12 @@ class APIApplication:
 
         return noContentResponse(request)
 
-    @router.route(_unprefix(URLs.incidentReports), methods=("HEAD", "GET"))
-    async def listIncidentReportsResource(
+    @router.route(_unprefix(URLs.fieldReports), methods=("HEAD", "GET"))
+    async def listFieldReportsResource(
         self, request: IRequest, event_id: str
     ) -> KleinSynchronousRenderable:
         """
-        Incident reports endpoint.
+        Field reports endpoint.
         """
         try:
             await self.config.authProvider.authorizeRequest(
@@ -694,7 +694,7 @@ class APIApplication:
             limitedAccess = False
         except NotAuthorizedError:
             await self.config.authProvider.authorizeRequest(
-                request, event_id, Authorization.writeIncidentReports
+                request, event_id, Authorization.writeFieldReports
             )
             limitedAccess = True
 
@@ -703,19 +703,19 @@ class APIApplication:
 
         store = self.config.store
 
-        incidentReports: Iterable[IncidentReport]
+        fieldReports: Iterable[IncidentReport]
         if limitedAccess:
             user: IMSUser = request.user  # type: ignore[attr-defined]
-            incidentReports = (
-                incidentReport
-                for incidentReport in await store.incidentReports(
+            fieldReports = (
+                fieldReport
+                for fieldReport in await store.incidentReports(
                     event_id, excludeSystemEntries=excludeSystemEntries
                 )
                 if user.shortNames[0]
-                in (entry.author for entry in incidentReport.reportEntries)
+                in (entry.author for entry in fieldReport.reportEntries)
             )
         elif incidentNumberText is None:
-            incidentReports = await store.incidentReports(
+            fieldReports = await store.incidentReports(
                 event_id, excludeSystemEntries=excludeSystemEntries
             )
         else:
@@ -724,29 +724,27 @@ class APIApplication:
             except ValueError:
                 return invalidQueryResponse(request, "incident", incidentNumberText)
 
-            incidentReports = await store.incidentReportsAttachedToIncident(
+            fieldReports = await store.incidentReportsAttachedToIncident(
                 eventID=event_id, incidentNumber=incidentNumber
             )
 
         stream = buildJSONArray(
-            jsonTextFromObject(jsonObjectFromModelObject(incidentReport)).encode(
-                "utf-8"
-            )
-            for incidentReport in incidentReports
+            jsonTextFromObject(jsonObjectFromModelObject(fieldReport)).encode("utf-8")
+            for fieldReport in fieldReports
         )
 
         writeJSONStream(request, stream, None)
         return None
 
-    @router.route(_unprefix(URLs.incidentReports), methods=("POST",))
-    async def newIncidentReportResource(
+    @router.route(_unprefix(URLs.fieldReports), methods=("POST",))
+    async def newFieldReportResource(
         self, request: IRequest, event_id: str
     ) -> KleinSynchronousRenderable:
         """
-        New incident report endpoint.
+        New field report endpoint.
         """
         await self.config.authProvider.authorizeRequest(
-            request, event_id, Authorization.writeIncidentReports
+            request, event_id, Authorization.writeFieldReports
         )
 
         try:
@@ -763,7 +761,7 @@ class APIApplication:
         if json.get(IncidentReportJSONKey.incidentNumber.value):
             return badRequestResponse(
                 request,
-                "New incident report may not be attached to an incident: "
+                "New field report may not be attached to an incident: "
                 f"{json[IncidentReportJSONKey.incidentNumber.value]}",
             )
 
@@ -773,18 +771,17 @@ class APIApplication:
         jsonNow = jsonObjectFromModelObject(now)
 
         # Set JSON event id
-        # Set JSON incident report number to 0
-        # Set JSON incident report created time to now
+        # Set JSON field report number to 0
+        # Set JSON field report created time to now
 
-        for incidentReportKey in (
+        for fieldReportKey in (
             IncidentReportJSONKey.number,
             IncidentReportJSONKey.created,
         ):
-            if incidentReportKey.value in json:
+            if fieldReportKey.value in json:
                 return badRequestResponse(
                     request,
-                    f"New incident report may not specify "
-                    f"{incidentReportKey.value}",
+                    f"New field report may not specify {fieldReportKey.value}",
                 )
 
         json[IncidentReportJSONKey.eventID.value] = event_id
@@ -816,85 +813,82 @@ class APIApplication:
             entryJSON[ReportEntryJSONKey.author.value] = author
             entryJSON[ReportEntryJSONKey.automatic.value] = False
 
-        # Deserialize JSON incident report
+        # Deserialize JSON field report
 
         try:
-            incidentReport = modelObjectFromJSONObject(json, IncidentReport)
+            fieldReport = modelObjectFromJSONObject(json, IncidentReport)
         except JSONCodecError as e:
             return badRequestResponse(request, str(e))
 
-        # Store the incident report
+        # Store the field report
 
-        incidentReport = await self.config.store.createIncidentReport(
-            incidentReport, author
-        )
+        fieldReport = await self.config.store.createIncidentReport(fieldReport, author)
 
         self._log.info(
-            "User {author} created new incident report "
-            "#{incidentReport.number} via JSON",
+            "User {author} created new field report #{fieldReport.number} via JSON",
             author=author,
-            incidentReport=incidentReport,
+            fieldReport=fieldReport,
         )
         self._log.debug(
-            "New incident report: {json}",
-            json=jsonObjectFromModelObject(incidentReport),
+            "New field report: {json}",
+            json=jsonObjectFromModelObject(fieldReport),
         )
 
         request.setHeader(
             "X-IMS-Field-Report-Number",
-            str(incidentReport.number),
+            str(fieldReport.number),
         )
         request.setHeader(
             HeaderName.location.value,
-            URLs.incidentReports.child(str(incidentReport.number)).asText(),
+            URLs.fieldReports.child(str(fieldReport.number)).asText(),
         )
         return noContentResponse(request)
 
-    @router.route(_unprefix(URLs.incidentReport), methods=("HEAD", "GET"))
-    async def readIncidentReportResource(
-        self, request: IRequest, event_id: str, incident_report_number: str
+    @router.route(_unprefix(URLs.fieldReport), methods=("HEAD", "GET"))
+    async def readFieldReportResource(
+        self, request: IRequest, event_id: str, field_report_number: str
     ) -> KleinSynchronousRenderable:
         """
-        Incident report endpoint.
+        Field report endpoint.
         """
         try:
-            incidentReportNumber = int(incident_report_number)
+            fieldReportNumber = int(field_report_number)
         except ValueError:
             self.config.authProvider.authenticateRequest(request)
             return notFoundResponse(request)
-        del incident_report_number
+        del field_report_number
 
-        incidentReport = await self.config.store.incidentReportWithNumber(
-            event_id, incidentReportNumber
+        fieldReport = await self.config.store.incidentReportWithNumber(
+            event_id, fieldReportNumber
         )
 
         await self.config.authProvider.authorizeRequestForIncidentReport(
-            request, incidentReport
+            request, fieldReport
         )
 
-        text = jsonTextFromObject(jsonObjectFromModelObject(incidentReport))
+        text = jsonTextFromObject(jsonObjectFromModelObject(fieldReport))
 
         return jsonBytes(request, text.encode("utf-8"))
 
-    @router.route(_unprefix(URLs.incidentReport), methods=("POST",))
-    async def editIncidentReportResource(
-        self, request: IRequest, event_id: str, incident_report_number: str
+    @router.route(_unprefix(URLs.fieldReport), methods=("POST",))
+    async def editFieldReportResource(
+        self, request: IRequest, event_id: str, field_report_number: str
     ) -> KleinSynchronousRenderable:
         """
-        Incident report edit endpoint.
+        Field report edit endpoint.
         """
         await self.config.authProvider.authorizeRequest(
-            request, event_id, Authorization.writeIncidentReports
+            request, event_id, Authorization.writeFieldReports
         )
 
         user: IMSUser = request.user  # type: ignore[attr-defined]
         author = user.shortNames[0]
 
         try:
-            incidentReportNumber = int(incident_report_number)
+            fieldReportNumber = int(field_report_number)
         except ValueError:
             return notFoundResponse(request)
-        del incident_report_number
+        del field_report_number
 
         store = self.config.store
 
@@ -916,11 +910,11 @@ class APIApplication:
 
             if action == "attach":
                 await store.attachIncidentReportToIncident(
-                    incidentReportNumber, event_id, incidentNumber, author
+                    fieldReportNumber, event_id, incidentNumber, author
                 )
             elif action == "detach":
                 await store.detachIncidentReportFromIncident(
-                    incidentReportNumber, event_id, incidentNumber, author
+                    fieldReportNumber, event_id, incidentNumber, author
                 )
             else:
                 return invalidQueryResponse(request, "action", action)
@@ -934,16 +928,14 @@ class APIApplication:
             return invalidJSONResponse(request, e)
 
         if not isinstance(edits, dict):
-            return badRequestResponse(
-                request, "JSON incident report must be a dictionary"
-            )
+            return badRequestResponse(request, "JSON field report must be a dictionary")
 
         if (
-            edits.get(IncidentReportJSONKey.number.value, incidentReportNumber)
-            != incidentReportNumber
+            edits.get(IncidentReportJSONKey.number.value, fieldReportNumber)
+            != fieldReportNumber
         ):
             return badRequestResponse(
-                request, "Incident report number may not be modified"
+                request, "Field report number may not be modified"
             )
 
         UNSET = object()
@@ -951,7 +943,7 @@ class APIApplication:
         created = edits.get(IncidentReportJSONKey.created.value, UNSET)
         if created is not UNSET:
             return badRequestResponse(
-                request, "Incident report created time may not be modified"
+                request, "Field report created time may not be modified"
             )
 
         async def applyEdit(
@@ -970,7 +962,7 @@ class APIApplication:
                 _cast = cast
             value = json.get(key.value, UNSET)
             if value is not UNSET:
-                await setter(event_id, incidentReportNumber, _cast(value), author)
+                await setter(event_id, fieldReportNumber, _cast(value), author)
 
         await applyEdit(
             edits,
@@ -993,7 +985,7 @@ class APIApplication:
             )
 
             await store.addReportEntriesToIncidentReport(
-                event_id, incidentReportNumber, entries, author
+                event_id, fieldReportNumber, entries, author
             )
 
         return noContentResponse(request)

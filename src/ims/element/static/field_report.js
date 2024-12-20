@@ -124,7 +124,7 @@ function loadFieldReport(success) {
             "created": null,
         });
     } else {
-        const url = urlReplace(url_incidentReports) + number;
+        const url = urlReplace(url_fieldReports) + number;
         jsonRequest(url, null, ok, fail);
     }
 }
@@ -235,7 +235,7 @@ function drawSummary() {
 
 function sendEdits(edits, success, error) {
     const number = fieldReport.number;
-    let url = urlReplace(url_incidentReports);
+    let url = urlReplace(url_fieldReports);
 
     if (number == null) {
         // We're creating a new field report.
@@ -321,7 +321,7 @@ function makeIncident() {
         fieldReport.incident = parseInt(newIncident);
 
         const url = (
-            urlReplace(url_incidentReports) + fieldReport.number +
+            urlReplace(url_fieldReports) + fieldReport.number +
             "?action=attach;incident=" + newIncident
         );
 

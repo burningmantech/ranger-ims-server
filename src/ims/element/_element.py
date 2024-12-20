@@ -221,7 +221,7 @@ class Element(BaseElement):
         )
 
         relevantAuthorizations = (
-            Authorization.readIncidents | Authorization.writeIncidentReports
+            Authorization.readIncidents | Authorization.writeFieldReports
         )
 
         eventIDs = order(

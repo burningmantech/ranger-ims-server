@@ -365,7 +365,7 @@ function loadUnattachedFieldReports(success) {
     }
 
     jsonRequest(
-        urlReplace(url_incidentReports),
+        urlReplace(url_fieldReports),
         null, ok, fail,
     );
 }
@@ -397,7 +397,7 @@ function loadAttachedFieldReports(success) {
     }
 
     const url = (
-        urlReplace(url_incidentReports) + "?incident=" + incidentNumber
+        urlReplace(url_fieldReports) + "?incident=" + incidentNumber
     );
 
     jsonRequest(url, null, ok, fail);
@@ -1112,7 +1112,7 @@ function detachFieldReport(sender) {
     }
 
     const url = (
-        urlReplace(url_incidentReports) + fieldReport.number +
+        urlReplace(url_fieldReports) + fieldReport.number +
         "?action=detach;incident=" + incidentNumber
     );
 
@@ -1144,7 +1144,7 @@ function attachFieldReport() {
     }
 
     const url = (
-        urlReplace(url_incidentReports) + fieldReportNumber +
+        urlReplace(url_fieldReports) + fieldReportNumber +
         "?action=attach;incident=" + incidentNumber
     );
 
