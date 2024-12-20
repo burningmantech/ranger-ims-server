@@ -841,7 +841,7 @@ class APIApplication:
         )
 
         request.setHeader(
-            "X-IMS-Incident-Report-Number",
+            "X-IMS-Field-Report-Number",
             str(incidentReport.number),
         )
         request.setHeader(
