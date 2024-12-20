@@ -847,7 +847,7 @@ function drawReportEntries(entries) {
 }
 
 function reportEntryEdited() {
-    const text = $("#incident_report_add").val().trim();
+    const text = $("#report_entry_add").val().trim();
     const submitButton = $("#report_entry_submit");
 
     submitButton.removeClass("btn-default");
@@ -865,7 +865,7 @@ function reportEntryEdited() {
 
 
 function submitReportEntry() {
-    const text = $("#incident_report_add").val().trim();
+    const text = $("#report_entry_add").val().trim();
 
     if (!text) {
         return;
@@ -874,7 +874,7 @@ function submitReportEntry() {
     console.log("New report entry:\n" + text);
 
     function ok() {
-        const $textArea = $("#incident_report_add");
+        const $textArea = $("#report_entry_add");
         // Clear the report entry
         $textArea.val("");
         controlHasSuccess($textArea, 1000);
@@ -887,7 +887,7 @@ function submitReportEntry() {
         submitButton.removeClass("btn-default");
         submitButton.removeClass("btn-warning");
         submitButton.addClass("btn-danger");
-        controlHasError($("#incident_report_add"), 1000);
+        controlHasError($("#report_entry_add"), 1000);
     }
 
     sendEdits({"report_entries": [{"text": text}]}, ok, fail);

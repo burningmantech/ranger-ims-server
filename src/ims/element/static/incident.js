@@ -32,13 +32,13 @@ function initIncidentPage() {
             $("#incident_summary").focus();
         } else {
             // Scroll to incident_report_add field
-            $("html, body").animate({scrollTop: $("#incident_report_add").offset().top}, 500);
-            $("#incident_report_add").focus();
+            $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
+            $("#report_entry_add").focus();
         }
 
         // Warn the user if they're about to navigate away with unsaved text.
         window.addEventListener('beforeunload', function (e) {
-            if (document.getElementById("incident_report_add").value !== '') {
+            if (document.getElementById("report_entry_add").value !== '') {
                 e.preventDefault();
             }
         });
@@ -92,8 +92,8 @@ function initIncidentPage() {
             }
         }
 
-        $("#incident_report_add")[0].onkeydown = addFieldKeyDown;
-        $("#incident_report_add")[0].onkeyup   = addFieldKeyUp;
+        $("#report_entry_add")[0].onkeydown = addFieldKeyDown;
+        $("#report_entry_add")[0].onkeyup   = addFieldKeyUp;
     }
 
     loadBody(loadedBody);
@@ -424,7 +424,7 @@ function drawIncidentFields() {
     toggleShowHistory();
     drawMergedReportEntries();
 
-    $("#incident_report_add").on("input", reportEntryEdited);
+    $("#report_entry_add").on("input", reportEntryEdited);
 }
 
 

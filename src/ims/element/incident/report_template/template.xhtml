@@ -10,8 +10,8 @@
   <div class="row">
     <div class="col-sm-4">
       <div class="py-1 input-group">
-        <label for="incident_report_number" class="control-label input-group-text">FR #</label>
-        <span id="incident_report_number" class="form-control form-control-static"/>
+        <label for="field_report_number" class="control-label input-group-text">FR #</label>
+        <span id="field_report_number" class="form-control form-control-static"/>
       </div>
     </div>
     <div class="col-sm-8">
@@ -39,9 +39,9 @@
   <div class="row">
     <div class="col-sm-12">
       <div class="py-1 input-group">
-        <label for="incident_report_summary" class="control-label input-group-text">Summary</label>
+        <label for="field_report_summary" class="control-label input-group-text">Summary</label>
         <input
-                id="incident_report_summary" class="form-control input-sm"
+                id="field_report_summary" class="form-control input-sm"
                 type="text" inputmode="latin-prose"
                 placeholder="e.g. Someone did a thing at Camp ABC. IMS#123"
                 onchange="editSummary()"
@@ -121,7 +121,7 @@
           <div id="report_entries"/>
           <div class="card-footer">
             <textarea
-                    id="incident_report_add"
+                    id="report_entry_add"
                     class="form-control no-print input-sm"
                     rows="12"
                     placeholder="Additional report text..."

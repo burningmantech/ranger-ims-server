@@ -16,22 +16,22 @@
 
 //
 // Initialize UI
-let incidentReport = null;
+let fieldReport = null;
 
-function initIncidentReportPage() {
-    function loadedIncidentReport() {
+function initFieldReportPage() {
+    function loadedFieldReport() {
         // for a new incident report
-        if (incidentReport.number == null) {
-            $("#incident_report_summary").focus();
+        if (fieldReport.number == null) {
+            $("#field_report_summary").focus();
         } else {
             // Scroll to incident_report_add field
-            $("html, body").animate({scrollTop: $("#incident_report_add").offset().top}, 500);
-            $("#incident_report_add").focus();
+            $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
+            $("#report_entry_add").focus();
         }
 
         // Warn the user if they're about to navigate away with unsaved text.
         window.addEventListener('beforeunload', function (e) {
-            if (document.getElementById("incident_report_add").value !== '') {
+            if (document.getElementById("report_entry_add").value !== '') {
                 e.preventDefault();
             }
         });
@@ -39,7 +39,7 @@ function initIncidentReportPage() {
 
     function loadedBody() {
         disableEditing();
-        loadAndDisplayIncidentReport(loadedIncidentReport);
+        loadAndDisplayFieldReport(loadedFieldReport);
 
         let command = false;
 
@@ -69,8 +69,8 @@ function initIncidentReportPage() {
             }
         }
 
-        $("#incident_report_add")[0].onkeydown = addFieldKeyDown;
-        $("#incident_report_add")[0].onkeyup   = addFieldKeyUp;
+        $("#report_entry_add")[0].onkeydown = addFieldKeyDown;
+        $("#report_entry_add")[0].onkeyup   = addFieldKeyUp;
     }
 
     loadBody(loadedBody);
@@ -93,18 +93,18 @@ function clearErrorMessage() {
 // Load incident report
 //
 
-function loadIncidentReport(success) {
+function loadFieldReport(success) {
     let number = null;
-    if (incidentReport == null) {
+    if (fieldReport == null) {
         // First time here.  Use page JavaScript initial value.
-        number = incidentReportNumber;
+        number = fieldReportNumber;
     } else {
         // We have an incident already.  Use that number.
-        number = incidentReport.number;
+        number = fieldReport.number;
     }
 
     function ok(data, status, xhr) {
-        incidentReport = data;
+        fieldReport = data;
 
         if (success) {
             success();
@@ -130,9 +130,9 @@ function loadIncidentReport(success) {
 }
 
 
-function loadAndDisplayIncidentReport(success) {
+function loadAndDisplayFieldReport(success) {
     function loaded() {
-        if (incidentReport == null) {
+        if (fieldReport == null) {
             const message = "Field report failed to load";
             console.log(message);
             setErrorMessage(message);
@@ -143,10 +143,10 @@ function loadAndDisplayIncidentReport(success) {
         drawNumber();
         drawIncident();
         drawSummary();
-        drawReportEntries(incidentReport.report_entries);
+        drawReportEntries(fieldReport.report_entries);
         clearErrorMessage();
 
-        $("#incident_report_add").on("input", reportEntryEdited);
+        $("#report_entry_add").on("input", reportEntryEdited);
 
         if (editingAllowed) {
             enableEditing();
@@ -157,7 +157,7 @@ function loadAndDisplayIncidentReport(success) {
         }
     }
 
-    loadIncidentReport(loaded);
+    loadFieldReport(loaded);
 }
 
 
@@ -166,7 +166,7 @@ function loadAndDisplayIncidentReport(success) {
 //
 
 function drawTitle() {
-    document.title = fieldReportAsString(incidentReport);
+    document.title = fieldReportAsString(fieldReport);
 }
 
 
@@ -175,11 +175,11 @@ function drawTitle() {
 //
 
 function drawNumber() {
-    let number = incidentReport.number;
+    let number = fieldReport.number;
     if (number == null) {
         number = "(new)";
     }
-    $("#incident_report_number").text(number);
+    $("#field_report_number").text(number);
 }
 
 //
@@ -189,19 +189,19 @@ function drawNumber() {
 function drawIncident() {
     $("#incident_number").text("Please include in Summary");
     // New Incident Report. There can be no Incident
-    if (incidentReport.number === null) {
+    if (fieldReport.number == null) {
         return;
     }
     // If there's an attached Incident, then show a link to it
-    if (incidentReport.incident !== null) {
-        const incidentURL = urlReplace(url_viewIncidentNumber).replace("<number>", incidentReport.incident);
+    if (fieldReport.incident != null) {
+        const incidentURL = urlReplace(url_viewIncidentNumber).replace("<number>", fieldReport.incident);
         const $a = $("<a>", {href: incidentURL});
-        $a.text(incidentReport.incident);
+        $a.text(fieldReport.incident);
         $("#incident_number").text("").append($a);
     }
     // If there's no attached Incident, show a button for making
     // a new Incident
-    if (incidentReport.incident == null && canWriteIncidents) {
+    if (fieldReport.incident == null && canWriteIncidents) {
         $("#create_incident").removeClass("hidden");
     } else {
         $("#create_incident").addClass("hidden");
@@ -214,17 +214,17 @@ function drawIncident() {
 //
 
 function drawSummary() {
-    if (incidentReport.summary) {
-        $("#incident_report_summary").val(incidentReport.summary);
-        $("#incident_report_summary").attr("placeholder", "");
+    if (fieldReport.summary) {
+        $("#field_report_summary").val(fieldReport.summary);
+        $("#field_report_summary").attr("placeholder", "");
         return;
     }
 
-    $("#incident_report_summary")[0].removeAttribute("value");
-    const summarized = summarizeIncident(incidentReport);
+    $("#field_report_summary")[0].removeAttribute("value");
+    const summarized = summarizeIncident(fieldReport);
     if (summarized) {
         // only replace the placeholder if it would be nonempty
-        $("#incident_report_summary").attr("placeholder", summarized);
+        $("#field_report_summary").attr("placeholder", summarized);
     }
 }
 
@@ -234,7 +234,7 @@ function drawSummary() {
 //
 
 function sendEdits(edits, success, error) {
-    const number = incidentReport.number;
+    const number = fieldReport.number;
     let url = urlReplace(url_incidentReports);
 
     if (number == null) {
@@ -242,7 +242,7 @@ function sendEdits(edits, success, error) {
         const required = [];
         for (const key of required) {
             if (edits[key] == null) {
-                edits[key] = incidentReport[key];
+                edits[key] = fieldReport[key];
             }
         }
     } else {
@@ -279,7 +279,7 @@ function sendEdits(edits, success, error) {
             }
 
             // Store the new number in our incident object
-            incidentReport.number = newNumber;
+            fieldReport.number = newNumber;
 
             // Update browser history to update URL
             drawTitle();
@@ -290,14 +290,14 @@ function sendEdits(edits, success, error) {
         }
 
         success();
-        loadAndDisplayIncidentReport();
+        loadAndDisplayFieldReport();
     }
 
     function fail(requestError, status, xhr) {
         const message = "Failed to apply edit";
         console.log(message + ": " + requestError);
         error();
-        loadAndDisplayIncidentReport();
+        loadAndDisplayFieldReport();
         setErrorMessage(message);
     }
 
@@ -306,7 +306,7 @@ function sendEdits(edits, success, error) {
 
 
 function editSummary() {
-    editFromElement($("#incident_report_summary"), "summary");
+    editFromElement($("#field_report_summary"), "summary");
 }
 
 //
@@ -318,16 +318,16 @@ function makeIncident() {
 
     function createOk(data, status, xhr) {
         const newIncident = xhr.getResponseHeader("X-IMS-Incident-Number");
-        incidentReport.incident = parseInt(newIncident);
+        fieldReport.incident = parseInt(newIncident);
 
         const url = (
-            urlReplace(url_incidentReports) + incidentReport.number +
+            urlReplace(url_incidentReports) + fieldReport.number +
             "?action=attach;incident=" + newIncident
         );
 
         function attachOk(data, status, xhr) {
             console.log("Created and attached to new incident " + newIncident);
-            loadAndDisplayIncidentReport();
+            loadAndDisplayFieldReport();
         }
 
         function attachFail(error, status, xhr) {
@@ -348,12 +348,12 @@ function makeIncident() {
     }
 
     const authors = [];
-    if (incidentReport.report_entries?.length > 0) {
-        authors.push(incidentReport.report_entries[0].author);
+    if (fieldReport.report_entries?.length > 0) {
+        authors.push(fieldReport.report_entries[0].author);
     }
 
     jsonRequest(incidentsURL, {
-        "summary": incidentReport.summary,
+        "summary": fieldReport.summary,
         "ranger_handles": authors,
         }, createOk, createFail,
     );

@@ -64,9 +64,9 @@ class FieldReportPage(Page):
         return jsonTextFromObject(self.event.id)
 
     @renderer
-    def incident_report_number(self, request: IRequest, tag: Tag) -> KleinRenderable:
+    def field_report_number(self, request: IRequest, tag: Tag) -> KleinRenderable:
         """
-        JSON integer: incident report number.
+        JSON integer: field report number.
         """
         return jsonTextFromObject(self.number)
 

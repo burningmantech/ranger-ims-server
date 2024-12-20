@@ -198,7 +198,7 @@ h1 {
 .no-edit .new_incident {
   display: none;
 }
-.no-edit .new_incident_report {
+.no-edit .new_field_report {
   display: none;
 }
 
@@ -206,7 +206,7 @@ h1 {
   margin-bottom: 0.5rem;
 }
 
-#incident_report_add {
+#report_entry_add {
   resize: vertical;
 }
 

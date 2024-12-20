@@ -44,6 +44,7 @@ function initIncidentsPage() {
                 return;
             }
 
+            // 78 = n
             if (command && keyCode === 78) {
                 $("#new_incident").click();
             }
