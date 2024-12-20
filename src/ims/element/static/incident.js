@@ -25,13 +25,13 @@ function initIncidentPage() {
             drawRangersToAdd();
         });
         loadIncidentTypesAndCache(drawIncidentTypesToAdd);
-        loadAndDisplayIncidentReports();
+        loadAndDisplayFieldReports();
 
         // for a new incident
         if (incident.number == null) {
             $("#incident_summary").focus();
         } else {
-            // Scroll to incident_report_add field
+            // Scroll to report_entry_add field
             $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
             $("#report_entry_add").focus();
         }
@@ -58,7 +58,7 @@ function initIncidentPage() {
             if (number === incidentNumber) {
                 console.log("Got incident update: " + number);
                 loadAndDisplayIncident();
-                loadAndDisplayIncidentReports();
+                loadAndDisplayFieldReports();
             }
         }
 
@@ -181,7 +181,7 @@ function loadAndDisplayIncident(success) {
 }
 
 
-function loadAndDisplayIncidentReports() {
+function loadAndDisplayFieldReports() {
     loadUnattachedFieldReports(function () {
         drawMergedReportEntries();
         drawIncidentReportsToAttach();
@@ -698,7 +698,7 @@ function drawLocationDescription() {
 
 
 //
-// Incident report display
+// Incident generated history display
 //
 
 function toggleShowHistory() {
@@ -742,7 +742,7 @@ let _reportsItem = null;
 
 function drawAttachedFieldReports() {
     if (_reportsItem == null) {
-        _reportsItem = $("#attached_incident_reports")
+        _reportsItem = $("#attached_field_reports")
             .children(".list-group-item:first")
             ;
     }
@@ -762,15 +762,15 @@ function drawAttachedFieldReports() {
         items.push(item);
     }
 
-    const container = $("#attached_incident_reports");
+    const container = $("#attached_field_reports");
     container.empty();
     container.append(items);
 }
 
 
 function drawIncidentReportsToAttach() {
-    const container = $("#attached_incident_report_add_container");
-    const select = $("#attached_incident_report_add");
+    const container = $("#attached_field_report_add_container");
+    const select = $("#attached_field_report_add");
 
     select.empty();
     select.append($("<option />"));
@@ -1090,7 +1090,7 @@ function addIncidentType() {
 }
 
 
-function detachIncidentReport(sender) {
+function detachFieldReport(sender) {
     sender = $(sender);
 
     const incidentReport = sender.parent().data();
@@ -1098,7 +1098,7 @@ function detachIncidentReport(sender) {
     function ok(data, status, xhr) {
         // FIXME
         // controlHasSuccess(sender);
-        loadAndDisplayIncidentReports();
+        loadAndDisplayFieldReports();
     }
 
     function fail(requestError, status, xhr) {
@@ -1107,7 +1107,7 @@ function detachIncidentReport(sender) {
 
         const message = "Failed to detach field report";
         console.log(message + ": " + requestError);
-        loadAndDisplayIncidentReports();
+        loadAndDisplayFieldReports();
         setErrorMessage(message);
     }
 
@@ -1120,25 +1120,25 @@ function detachIncidentReport(sender) {
 }
 
 
-function attachIncidentReport() {
+function attachFieldReport() {
     if (incidentNumber == null) {
         // Incident doesn't exist yet.  Create it and then retry.
-        sendEdits({}, attachIncidentReport);
+        sendEdits({}, attachFieldReport);
         return;
     }
 
-    const select = $("#attached_incident_report_add");
+    const select = $("#attached_field_report_add");
     const incidentReportNumber = $(select).val();
 
     function ok(data, status, xhr) {
-        loadAndDisplayIncidentReports();
+        loadAndDisplayFieldReports();
         controlHasSuccess(select, 1000);
     }
 
     function fail(requestError, status, xhr) {
         const message = "Failed to attach field report";
         console.log(message + ": " + requestError);
-        loadAndDisplayIncidentReports();
+        loadAndDisplayFieldReports();
         setErrorMessage(message);
         controlHasError(select);
     }
