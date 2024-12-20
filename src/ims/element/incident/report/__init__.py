@@ -15,10 +15,10 @@
 ##
 
 """
-Admin page element.
+Field report page.
 """
 
-from ._report import IncidentReportPage
+from ._report import FieldReportPage
 
 
-__all__ = ("IncidentReportPage",)
+__all__ = ("FieldReportPage",)

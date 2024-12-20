@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
 
-<head t:render="head" imports="ims,viewIncidentReport"/>
+<head t:render="head" imports="ims,viewFieldReport"/>
 
 <body/>
 
@@ -11,7 +11,7 @@
   var eventID               = <json t:render="event_id"/>;
   var incidentReportNumber  = <json t:render="incident_report_number"/>;
   var canWriteIncidents     = <json t:render="can_write_incidents"/>;
-  var pageTemplateURL       = url_viewIncidentReportTemplate;
+  var pageTemplateURL       = url_viewFieldReportTemplate;
 
   initIncidentReportPage();
 </script>

@@ -36,10 +36,10 @@ from ims.element.incident.incident import IncidentPage
 from ims.element.incident.incident_template import IncidentTemplatePage
 from ims.element.incident.incidents import IncidentsPage
 from ims.element.incident.incidents_template import IncidentsTemplatePage
-from ims.element.incident.report import IncidentReportPage
-from ims.element.incident.report_template import IncidentReportTemplatePage
-from ims.element.incident.reports import IncidentReportsPage
-from ims.element.incident.reports_template import IncidentReportsTemplatePage
+from ims.element.incident.report import FieldReportPage
+from ims.element.incident.report_template import FieldReportTemplatePage
+from ims.element.incident.reports import FieldReportsPage
+from ims.element.incident.reports_template import FieldReportsTemplatePage
 from ims.element.root import RootPage
 from ims.ext.klein import static
 from ims.model import Event
@@ -96,7 +96,7 @@ class WebApplication:
             await self.config.authProvider.authorizeRequest(
                 request, event_id, Authorization.writeIncidentReports
             )
-            url = URLs.viewIncidentReportsRelative
+            url = URLs.viewFieldReportsRelative
 
         return redirect(request, url)
 
@@ -210,12 +210,12 @@ class WebApplication:
         """
         return IncidentTemplatePage(config=self.config)
 
-    @router.route(_unprefix(URLs.viewIncidentReports), methods=("HEAD", "GET"))
-    async def viewIncidentReportsPage(
+    @router.route(_unprefix(URLs.viewFieldReports), methods=("HEAD", "GET"))
+    async def viewFieldReportsPage(
         self, request: IRequest, event_id: str
     ) -> KleinSynchronousRenderable:
         """
-        Endpoint for the incident reports page.
+        Endpoint for the field reports page.
         """
         try:
             await self.config.authProvider.authorizeRequest(
@@ -226,22 +226,22 @@ class WebApplication:
                 request, event_id, Authorization.writeIncidentReports
             )
         event = Event(id=event_id)
-        return IncidentReportsPage(config=self.config, event=event)
+        return FieldReportsPage(config=self.config, event=event)
 
-    @router.route(_unprefix(URLs.viewIncidentReportsTemplate), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.viewFieldReportsTemplate), methods=("HEAD", "GET"))
     @static
-    def viewIncidentReportsTemplatePage(self, request: IRequest) -> KleinRenderable:
+    def viewFieldReportsTemplatePage(self, request: IRequest) -> KleinRenderable:
         """
-        Endpoint for the incident reports page template.
+        Endpoint for the field reports page template.
         """
-        return IncidentReportsTemplatePage(config=self.config)
+        return FieldReportsTemplatePage(config=self.config)
 
-    @router.route(_unprefix(URLs.viewIncidentReportNumber), methods=("HEAD", "GET"))
-    async def viewIncidentReportPage(
+    @router.route(_unprefix(URLs.viewFieldReportNumber), methods=("HEAD", "GET"))
+    async def viewFieldReportPage(
         self, request: IRequest, event_id: str, number: str
     ) -> KleinSynchronousRenderable:
         """
-        Endpoint for the incident report page.
+        Endpoint for the field report page.
         """
         incidentReportNumber: int | None
         config = self.config
@@ -273,14 +273,12 @@ class WebApplication:
             )
 
         event = Event(id=event_id)
-        return IncidentReportPage(
-            config=config, event=event, number=incidentReportNumber
-        )
+        return FieldReportPage(config=config, event=event, number=incidentReportNumber)
 
-    @router.route(_unprefix(URLs.viewIncidentReportTemplate), methods=("HEAD", "GET"))
+    @router.route(_unprefix(URLs.viewFieldReportTemplate), methods=("HEAD", "GET"))
     @static
-    def viewIncidentReportTemplatePage(self, request: IRequest) -> KleinRenderable:
+    def viewFieldReportTemplatePage(self, request: IRequest) -> KleinRenderable:
         """
-        Endpoint for the incident report page template.
+        Endpoint for the field report page template.
         """
-        return IncidentReportTemplatePage(config=self.config)
+        return FieldReportTemplatePage(config=self.config)

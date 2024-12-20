@@ -166,7 +166,7 @@ function loadAndDisplayIncidentReport(success) {
 //
 
 function drawTitle() {
-    document.title = incidentReportAsString(incidentReport);
+    document.title = fieldReportAsString(incidentReport);
 }
 
 
@@ -285,7 +285,7 @@ function sendEdits(edits, success, error) {
             drawTitle();
             window.history.pushState(
                 null, document.title,
-                urlReplace(url_viewIncidentReports) + newNumber
+                urlReplace(url_viewFieldReports) + newNumber
             );
         }
 

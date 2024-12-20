@@ -15,10 +15,10 @@
 ##
 
 """
-Incident reports page element.
+Field reports page element.
 """
 
-from ._reports import IncidentReportsPage
+from ._reports import FieldReportsPage
 
 
-__all__ = ("IncidentReportsPage",)
+__all__ = ("FieldReportsPage",)

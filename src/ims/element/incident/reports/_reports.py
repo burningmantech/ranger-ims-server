@@ -15,7 +15,7 @@
 ##
 
 """
-Incident reports page element.
+Field reports page element.
 """
 
 from attrs import mutable
@@ -35,9 +35,9 @@ __all__ = ()
 
 
 @mutable(kw_only=True)
-class IncidentReportsPage(Page):
+class FieldReportsPage(Page):
     """
-    Incident reports page element.
+    Field reports page element.
     """
 
     name: str = title

@@ -15,10 +15,10 @@
 ##
 
 """
-Incident template page element.
+Field report template page element.
 """
 
-from ._report_template import IncidentReportTemplatePage
+from ._report_template import FieldReportTemplatePage
 
 
-__all__ = ("IncidentReportTemplatePage",)
+__all__ = ("FieldReportTemplatePage",)
