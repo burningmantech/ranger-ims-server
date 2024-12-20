@@ -184,7 +184,7 @@ function loadAndDisplayIncident(success) {
 function loadAndDisplayFieldReports() {
     loadUnattachedFieldReports(function () {
         drawMergedReportEntries();
-        drawIncidentReportsToAttach();
+        drawFieldReportsToAttach();
     });
     loadAttachedFieldReports(function () {
         drawMergedReportEntries();
@@ -768,7 +768,7 @@ function drawAttachedFieldReports() {
 }
 
 
-function drawIncidentReportsToAttach() {
+function drawFieldReportsToAttach() {
     const container = $("#attached_field_report_add_container");
     const select = $("#attached_field_report_add");
 
@@ -1093,7 +1093,7 @@ function addIncidentType() {
 function detachFieldReport(sender) {
     sender = $(sender);
 
-    const incidentReport = sender.parent().data();
+    const fieldReport = sender.parent().data();
 
     function ok(data, status, xhr) {
         // FIXME
@@ -1112,7 +1112,7 @@ function detachFieldReport(sender) {
     }
 
     const url = (
-        urlReplace(url_incidentReports) + incidentReport.number +
+        urlReplace(url_incidentReports) + fieldReport.number +
         "?action=detach;incident=" + incidentNumber
     );
 
@@ -1128,7 +1128,7 @@ function attachFieldReport() {
     }
 
     const select = $("#attached_field_report_add");
-    const incidentReportNumber = $(select).val();
+    const fieldReportNumber = $(select).val();
 
     function ok(data, status, xhr) {
         loadAndDisplayFieldReports();
@@ -1144,7 +1144,7 @@ function attachFieldReport() {
     }
 
     const url = (
-        urlReplace(url_incidentReports) + incidentReportNumber +
+        urlReplace(url_incidentReports) + fieldReportNumber +
         "?action=attach;incident=" + incidentNumber
     );
 
