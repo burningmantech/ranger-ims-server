@@ -27,7 +27,7 @@ from typing import Any, cast
 from attrs import fields as attrsFields
 
 from ims.ext.trial import asyncAsDeferred
-from ims.model import Event, IncidentReport, ReportEntry
+from ims.model import Event, FieldReport, ReportEntry
 
 from .._exceptions import NoSuchFieldReportError, StorageError
 from .base import DataStoreTests, TestDataStoreABC
@@ -41,7 +41,7 @@ __all__ = ()
 # don't have timestamps that are within the time resolution of some back-end
 # data stores.
 
-aNewFieldReport = IncidentReport(
+aNewFieldReport = FieldReport(
     eventID=anEvent.id,
     number=0,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=1),
@@ -50,7 +50,7 @@ aNewFieldReport = IncidentReport(
     reportEntries=(),
 )
 
-aFieldReport1 = IncidentReport(
+aFieldReport1 = FieldReport(
     eventID=anEvent.id,
     number=1,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=2),
@@ -59,7 +59,7 @@ aFieldReport1 = IncidentReport(
     reportEntries=(),
 )
 
-aFieldReport2 = IncidentReport(
+aFieldReport2 = FieldReport(
     eventID=anEvent.id,
     number=2,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=3),
@@ -99,7 +99,7 @@ class DataStoreFieldReportTests(DataStoreTests):
             (aFieldReport1,),
             (aFieldReport1, aFieldReport2),
         ):
-            fieldReports = cast(Iterable[IncidentReport], _fieldReports)
+            fieldReports = cast(Iterable[FieldReport], _fieldReports)
             fieldReportsByNumber = {
                 r.number: r.replace(incidentNumber=anIncident1.number)
                 for r in fieldReports
@@ -224,12 +224,12 @@ class DataStoreFieldReportTests(DataStoreTests):
                 (aFieldReport2.replace(number=0), "Bucket"),
             ),
         ):
-            data = cast(Iterable[tuple[IncidentReport, str]], _data)
+            data = cast(Iterable[tuple[FieldReport, str]], _data)
 
             store = await self.store()
             await store.createEvent(anEvent)
 
-            expectedStoredFieldReports: set[IncidentReport] = set()
+            expectedStoredFieldReports: set[FieldReport] = set()
             nextNumber = 1
 
             for fieldReport, author in data:
@@ -299,7 +299,7 @@ class DataStoreFieldReportTests(DataStoreTests):
 
     async def _test_setFieldReportAttribute(
         self,
-        fieldReport: IncidentReport,
+        fieldReport: FieldReport,
         methodName: str,
         attributeName: str,
         value: Any,
@@ -540,8 +540,8 @@ class DataStoreFieldReportTests(DataStoreTests):
     def assertMultipleFieldReportsEqual(
         self,
         store: TestDataStoreABC,
-        groupA: Sequence[IncidentReport],
-        groupB: Sequence[IncidentReport],
+        groupA: Sequence[FieldReport],
+        groupB: Sequence[FieldReport],
         ignoreAutomatic: bool = False,
     ) -> None:
         self.assertEqual(len(groupA), len(groupB))
@@ -555,14 +555,14 @@ class DataStoreFieldReportTests(DataStoreTests):
     def assertFieldReportsEqual(
         self,
         store: TestDataStoreABC,
-        fieldReportA: IncidentReport,
-        fieldReportB: IncidentReport,
+        fieldReportA: FieldReport,
+        fieldReportB: FieldReport,
         ignoreAutomatic: bool = False,
     ) -> None:
         if fieldReportA != fieldReportB:
             messages = []
 
-            for attribute in attrsFields(IncidentReport):
+            for attribute in attrsFields(FieldReport):
                 name = attribute.name
                 valueA = getattr(fieldReportA, name)
                 valueB = getattr(fieldReportB, name)

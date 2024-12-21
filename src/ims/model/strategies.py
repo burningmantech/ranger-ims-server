@@ -54,7 +54,7 @@ from ._location import Location
 from ._position import Position
 from ._priority import IncidentPriority
 from ._ranger import Ranger, RangerStatus
-from ._report import IncidentReport
+from ._report import FieldReport
 from ._state import IncidentState
 from ._type import IncidentType, KnownIncidentType
 
@@ -67,14 +67,14 @@ __all__ = (
     "eventAccesses",
     "eventDatas",
     "events",
+    "fieldReportLists",
+    "fieldReportNumbers",
+    "fieldReportSummaries",
+    "fieldReports",
     "imsDatas",
     "incidentLists",
     "incidentNumbers",
     "incidentPriorities",
-    "incidentReportLists",
-    "incidentReportNumbers",
-    "incidentReportSummaries",
-    "incidentReports",
     "incidentStates",
     "incidentSummaries",
     "incidentTypes",
@@ -300,8 +300,8 @@ def eventDatas(draw: Callable[..., Any]) -> EventData:
         access=draw(eventAccesses()),
         concentricStreets=concentricStreets,
         incidents=situations,
-        incidentReports=draw(
-            lists(incidentReports(event=event), unique_by=lambda i: i.number)
+        fieldReports=draw(
+            lists(fieldReports(event=event), unique_by=lambda i: i.number)
         ),
     )
 
@@ -393,7 +393,7 @@ def incidents(
                 reportEntries(automatic=automatic, beforeNow=beforeNow, fromNow=fromNow)
             )
         ),
-        incidentReportNumbers=frozenset(),
+        fieldReportNumbers=frozenset(),
     )
 
 
@@ -515,37 +515,37 @@ def positions(draw: Callable[..., Any]) -> Position:
 # Report
 ##
 
-incidentReportNumbers = incidentNumbers
-incidentReportSummaries = incidentSummaries
+fieldReportNumbers = incidentNumbers
+fieldReportSummaries = incidentSummaries
 
 
 @composite
-def incidentReports(
+def fieldReports(
     draw: Callable[..., Any],
     new: bool = False,
     event: Event | None = None,
     beforeNow: bool = False,
     fromNow: bool = False,
-) -> IncidentReport:
+) -> FieldReport:
     """
-    Strategy that generates :class:`IncidentReport` values.
+    Strategy that generates :class:`FieldReport` values.
     """
     automatic: bool | None
     if new:
         number = 0
         automatic = False
     else:
-        number = draw(incidentNumbers())
+        number = draw(fieldReportNumbers())
         automatic = None
 
     if event is None:
         event = draw(events())
 
-    return IncidentReport(
+    return FieldReport(
         eventID=event.id,
         number=number,
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
-        summary=draw(incidentReportSummaries()),
+        summary=draw(fieldReportSummaries()),
         incidentNumber=None,  # FIXME: May allow some to be passed in?
         reportEntries=draw(
             lists(
@@ -555,22 +555,22 @@ def incidentReports(
     )
 
 
-def incidentReportLists(
+def fieldReportLists(
     maxNumber: int | None = None,
     minSize: int | None = None,
     maxSize: int | None = None,
     averageSize: int | None = None,
-) -> SearchStrategy[list[IncidentReport]]:
+) -> SearchStrategy[list[FieldReport]]:
     """
-    Strategy that generates :class:`List`s containing :class:`IncidentReport`
+    Strategy that generates :class:`List`s containing :class:`FieldReport`
     values.
     """
 
-    def uniqueBy(incidentReport: IncidentReport) -> Hashable:
-        return cast(Hashable, incidentReport.number)
+    def uniqueBy(fieldReport: FieldReport) -> Hashable:
+        return cast(Hashable, fieldReport.number)
 
     return lists(
-        incidentReports(maxNumber=maxNumber),
+        fieldReports(maxNumber=maxNumber),
         min_size=minSize,
         max_size=maxSize,
         average_size=averageSize,

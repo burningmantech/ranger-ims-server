@@ -63,7 +63,7 @@ aNewIncident = Incident(
     rangerHandles=(),
     incidentTypes=(),
     reportEntries=(),
-    incidentReportNumbers=(),
+    fieldReportNumbers=(),
 )
 
 anIncident1 = Incident(
@@ -77,7 +77,7 @@ anIncident1 = Incident(
     rangerHandles=(),
     incidentTypes=(),
     reportEntries=(),
-    incidentReportNumbers=(),
+    fieldReportNumbers=(),
 )
 
 anIncident2 = Incident(
@@ -91,7 +91,7 @@ anIncident2 = Incident(
     rangerHandles=(),
     incidentTypes=(),
     reportEntries=(),
-    incidentReportNumbers=(),
+    fieldReportNumbers=(),
 )
 
 aReportEntry = ReportEntry(

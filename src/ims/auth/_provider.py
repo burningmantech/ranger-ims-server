@@ -43,7 +43,7 @@ from ims.directory import (
     IMSUserID,
 )
 from ims.ext.klein import HeaderName
-from ims.model import IncidentReport
+from ims.model import FieldReport
 from ims.store import IMSDataStore
 
 from ._exceptions import (
@@ -442,7 +442,7 @@ class AuthProvider:
             raise NotAuthorizedError("User not authorized")
 
     async def authorizeRequestForFieldReport(
-        self, request: IRequest, fieldReport: IncidentReport
+        self, request: IRequest, fieldReport: FieldReport
     ) -> None:
         """
         Determine whether the user attached to a request has the required

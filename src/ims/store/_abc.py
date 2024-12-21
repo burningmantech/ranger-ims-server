@@ -23,9 +23,9 @@ from collections.abc import Iterable, Mapping
 
 from ims.model import (
     Event,
+    FieldReport,
     Incident,
     IncidentPriority,
-    IncidentReport,
     IncidentState,
     ReportEntry,
 )
@@ -323,21 +323,21 @@ class IMSDataStore(ABC):
     @abstractmethod
     async def fieldReports(
         self, eventID: str, *, excludeSystemEntries: bool = False
-    ) -> Iterable[IncidentReport]:
+    ) -> Iterable[FieldReport]:
         """
         Look up all field reports in the given event.
         """
 
     @abstractmethod
-    async def fieldReportWithNumber(self, eventID: str, number: int) -> IncidentReport:
+    async def fieldReportWithNumber(self, eventID: str, number: int) -> FieldReport:
         """
         Look up the field report with the given number.
         """
 
     @abstractmethod
     async def createFieldReport(
-        self, fieldReport: IncidentReport, author: str
-    ) -> IncidentReport:
+        self, fieldReport: FieldReport, author: str
+    ) -> FieldReport:
         """
         Create a new field report.
 
@@ -350,7 +350,7 @@ class IMSDataStore(ABC):
         """
 
     @abstractmethod
-    async def importFieldReport(self, fieldReport: IncidentReport) -> None:
+    async def importFieldReport(self, fieldReport: FieldReport) -> None:
         """
         Import a field report and add it into the given event.
 
@@ -391,7 +391,7 @@ class IMSDataStore(ABC):
     @abstractmethod
     async def fieldReportsAttachedToIncident(
         self, eventID: str, incidentNumber: int
-    ) -> Iterable[IncidentReport]:
+    ) -> Iterable[FieldReport]:
         """
         Look up all field reports attached to the incident with the given
         number in the given event.

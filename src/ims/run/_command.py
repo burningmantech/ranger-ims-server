@@ -218,7 +218,7 @@ class Command:
                                         incidentB=jsonObjectFromModelObject(incidentB),
                                     )
 
-                        if eventDataA.incidentReports != eventDataB.incidentReports:
+                        if eventDataA.fieldReports != eventDataB.fieldReports:
                             cls.log.error(
                                 "Events incident reports do not match: {event}",
                                 event=eventDataA.event,

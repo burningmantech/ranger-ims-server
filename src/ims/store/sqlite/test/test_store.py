@@ -28,7 +28,7 @@ from ...test.incident import (
     DataStoreIncidentTests as SuperDataStoreIncidentTests,
 )
 from ...test.report import (
-    DataStoreFieldReportTests as SuperDataStoreIncidentReportTests,
+    DataStoreFieldReportTests as SuperDataStoreFieldReportTests,
 )
 from ...test.street import (
     DataStoreConcentricStreetTests as SuperDataStoreConcentricStreetTests,
@@ -67,9 +67,9 @@ class DataStoreIncidentTests(DataStoreTests, SuperDataStoreIncidentTests):
     """
 
 
-class DataStoreIncidentReportTests(DataStoreTests, SuperDataStoreIncidentReportTests):
+class DataStoreFieldReportTests(DataStoreTests, SuperDataStoreFieldReportTests):
     """
-    Tests for :class:`DataStore` incident report access.
+    Tests for :class:`DataStore` field report access.
     """
 
 

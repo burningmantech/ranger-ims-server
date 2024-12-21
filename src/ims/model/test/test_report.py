@@ -24,42 +24,42 @@ from hypothesis.strategies import sampled_from, text
 from ims.ext.trial import TestCase
 
 from .._incident import summaryFromReport
-from .._report import IncidentReport
-from ..strategies import incidentReports
+from .._report import FieldReport
+from ..strategies import fieldReports
 
 
 __all__ = ()
 
 
-class IncidentReportTests(TestCase):
+class FieldReportTests(TestCase):
     """
-    Tests for :class:`IncidentReport`
+    Tests for :class:`FieldReport`
     """
 
-    @given(incidentReports(), text(min_size=1))
-    def test_str_summary(self, incidentReport: IncidentReport, summary: str) -> None:
+    @given(fieldReports(), text(min_size=1))
+    def test_str_summary(self, fieldReport: FieldReport, summary: str) -> None:
         """
-        :meth:`IncidentReport.__str__` renders an incident report with a
+        :meth:`FieldReport.__str__` renders a field report with a
         non-empty summary as a string consisting of the incident number and
         summary.
         """
-        incidentReport = incidentReport.replace(summary=summary)
+        fieldReport = fieldReport.replace(summary=summary)
 
         self.assertEqual(
-            str(incidentReport),
-            f"{incidentReport.eventID}#{incidentReport.number}: {summary}",
+            str(fieldReport),
+            f"{fieldReport.eventID}#{fieldReport.number}: {summary}",
         )
 
-    @given(incidentReports(), sampled_from((None, "")))
-    def test_str_noSummary(self, incidentReport: IncidentReport, summary: str) -> None:
+    @given(fieldReports(), sampled_from((None, "")))
+    def test_str_noSummary(self, fieldReport: FieldReport, summary: str) -> None:
         """
-        :meth:`IncidentReport.__str__` renders an incident report without a
+        :meth:`FieldReport.__str__` renders a field report without a
         summary as a string.
         """
-        incidentReport = incidentReport.replace(summary=summary)
+        fieldReport = fieldReport.replace(summary=summary)
 
         self.assertEqual(
-            str(incidentReport),
-            f"{incidentReport.eventID}#{incidentReport.number}: "
-            f"{summaryFromReport(None, incidentReport.reportEntries)}",
+            str(fieldReport),
+            f"{fieldReport.eventID}#{fieldReport.number}: "
+            f"{summaryFromReport(None, fieldReport.reportEntries)}",
         )

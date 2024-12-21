@@ -31,9 +31,9 @@ template_setIncidentAttribute = f"""
     where EVENT = ({query_eventID}) and NUMBER = :incidentNumber
     """
 
-template_setIncidentReportAttribute = f"""
+template_setFieldReportAttribute = f"""
     update INCIDENT_REPORT set {{column}} = :value
-    where EVENT = ({query_eventID}) and NUMBER = :incidentReportNumber
+    where EVENT = ({query_eventID}) and NUMBER = :fieldReportNumber
     """
 
 queries = Queries(
@@ -382,39 +382,39 @@ queries = Queries(
         """,
     ),
     fieldReport=Query(
-        "look up incident report",
+        "look up field report",
         f"""
         select CREATED, SUMMARY, INCIDENT_NUMBER from INCIDENT_REPORT
-        where EVENT = ({query_eventID}) and NUMBER = :incidentReportNumber
+        where EVENT = ({query_eventID}) and NUMBER = :fieldReportNumber
         """,
     ),
     fieldReport_reportEntries=Query(
-        "look up report entries for incident report",
+        "look up report entries for field report",
         f"""
         select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
         where ID in (
             select REPORT_ENTRY from INCIDENT_REPORT__REPORT_ENTRY
             where
                 EVENT = ({query_eventID}) and
-                INCIDENT_REPORT_NUMBER = :incidentReportNumber
+                INCIDENT_REPORT_NUMBER = :fieldReportNumber
         )
         """,
     ),
     fieldReportNumbers=Query(
-        "look up incident report numbers for event",
+        "look up field report numbers for event",
         f"""
         select NUMBER from INCIDENT_REPORT
         where EVENT = ({query_eventID})
         """,
     ),
     maxFieldReportNumber=Query(
-        "look up maximum incident report number",
+        "look up maximum field report number",
         """
         select max(NUMBER) from INCIDENT_REPORT
         """,
     ),
     fieldReports=Query(
-        "look up all incident reports for an event",
+        "look up all field reports for an event",
         f"""
         select
             NUMBER,
@@ -428,7 +428,7 @@ queries = Queries(
         """,
     ),
     fieldReports_reportEntries=Query(
-        "look up all incident report report entries for an event",
+        "look up all field report report entries for an event",
         f"""
         select
             irre.INCIDENT_REPORT_NUMBER,
@@ -447,46 +447,46 @@ queries = Queries(
         """,
     ),
     createFieldReport=Query(
-        "create incident report",
+        "create field report",
         f"""
         insert into INCIDENT_REPORT (
             EVENT, NUMBER, CREATED, SUMMARY, INCIDENT_NUMBER
         )
         values (
             ({query_eventID}),
-            :incidentReportNumber,
-            :incidentReportCreated,
-            :incidentReportSummary,
+            :fieldReportNumber,
+            :fieldReportCreated,
+            :fieldReportSummary,
             :incidentNumber
         )
         """,
     ),
     attachReportEntryToFieldReport=Query(
-        "add report entry to incident report",
+        "add report entry to field report",
         f"""
         insert into INCIDENT_REPORT__REPORT_ENTRY (
             EVENT, INCIDENT_REPORT_NUMBER, REPORT_ENTRY
         )
-        values (({query_eventID}), :incidentReportNumber, :reportEntryID)
+        values (({query_eventID}), :fieldReportNumber, :reportEntryID)
         """,
     ),
     setFieldReport_summary=Query(
-        "set incident report summary",
-        template_setIncidentReportAttribute.format(column="SUMMARY"),
+        "set field report summary",
+        template_setFieldReportAttribute.format(column="SUMMARY"),
     ),
     attachFieldReportToIncident=Query(
-        "attach incident report to incident",
-        template_setIncidentReportAttribute.format(column="INCIDENT_NUMBER"),
+        "attach field report to incident",
+        template_setFieldReportAttribute.format(column="INCIDENT_NUMBER"),
     ),
     detachedFieldReportNumbers=Query(
-        "look up detached incident report numbers",
+        "look up detached field report numbers",
         f"""
         select NUMBER from INCIDENT_REPORT
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER is null
         """,
     ),
     attachedFieldReportNumbers=Query(
-        "look up attached incident report numbers",
+        "look up attached field report numbers",
         f"""
         select NUMBER from INCIDENT_REPORT
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber

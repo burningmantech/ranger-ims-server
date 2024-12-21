@@ -35,9 +35,9 @@ __all__ = ()
 
 
 @frozen(kw_only=True, order=True)
-class IncidentReport(ReplaceMixIn):
+class FieldReport(ReplaceMixIn):
     """
-    Incident
+    Field Report
     """
 
     eventID: str

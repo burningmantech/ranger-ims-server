@@ -25,7 +25,7 @@ from .._event import Event
 from .._eventaccess import EventAccess
 from .._eventdata import EventData
 from .._incident import Incident
-from .._report import IncidentReport
+from .._report import FieldReport
 from ._json import (
     deserialize,
     jsonSerialize,
@@ -47,7 +47,7 @@ class EventDataJSONKey(Enum):
     access = "access"
     concentricStreets = "concentric_streets"
     incidents = "incidents"
-    incidentReports = "incident_reports"
+    fieldReports = "field_reports"
 
 
 class EventDataJSONType(Enum):
@@ -59,7 +59,7 @@ class EventDataJSONType(Enum):
     access = EventAccess
     concentricStreets = dict[str, str]
     incidents = list[Incident]
-    incidentReports = list[IncidentReport]
+    fieldReports = list[FieldReport]
 
 
 def serializeEventData(eventData: EventData) -> dict[str, Any]:

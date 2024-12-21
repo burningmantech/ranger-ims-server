@@ -54,7 +54,7 @@ class IncidentJSONKey(Enum):
     rangerHandles = "ranger_handles"
     incidentTypes = "incident_types"
     reportEntries = "report_entries"
-    incidentReportNumbers = "incident_reports"
+    fieldReportNumbers = "field_reports"
 
 
 class IncidentJSONType(Enum):
@@ -72,7 +72,7 @@ class IncidentJSONType(Enum):
     rangerHandles = set[str]
     incidentTypes = set[str]
     reportEntries = list[ReportEntry]
-    incidentReportNumbers = set[int]
+    fieldReportNumbers = set[int]
 
 
 def serializeIncident(incident: Incident) -> dict[str, Any]:

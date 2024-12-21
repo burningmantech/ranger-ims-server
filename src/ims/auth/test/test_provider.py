@@ -69,7 +69,7 @@ from .._provider import (
 
 __all__ = ()
 
-from ...model import Event, IncidentReport, ReportEntry
+from ...model import Event, FieldReport, ReportEntry
 
 
 def oops(*args: Any, **kwargs: Any) -> None:  # noqa: ARG001
@@ -739,7 +739,7 @@ class AuthProviderTests(TestCase):
         )
         self.assertEqual(request.authorizations, Authorization.none)
 
-    def test_authorizeReqForIncidentReport(self) -> None:
+    def test_authorizeReqForFieldReport(self) -> None:
         # Set up DB and AuthProvider with a single user
         store = self.store()
         provider = AuthProvider(
@@ -765,8 +765,8 @@ class AuthProviderTests(TestCase):
             {HeaderName.authorization.value: f"Bearer {token}"},
         )
 
-        # This IncidentReport includes an entry by the user in session
-        reportByUser = IncidentReport(
+        # This FieldReport includes an entry by the user in session
+        reportByUser = FieldReport(
             eventID=event,
             number=0,
             created=DateTime.now(tz=UTC),
@@ -788,7 +788,7 @@ class AuthProviderTests(TestCase):
             ),
         )
         # This report doesn't include an entry by the user in session
-        reportNotByUser = IncidentReport(
+        reportNotByUser = FieldReport(
             eventID=event,
             number=1,
             created=DateTime.now(tz=UTC),

@@ -25,8 +25,8 @@ from twisted.logger import Logger
 
 from ims.model import (
     Event,
+    FieldReport,
     Incident,
-    IncidentReport,
     Location,
     RodGarettAddress,
     TextOnlyAddress,
@@ -175,28 +175,26 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         self._log.info("Stored incident {incident}.", incident=incident)
 
-    def _storeIncidentReport(
-        self, txn: Transaction, incidentReport: IncidentReport
-    ) -> None:
+    def _storeFieldReport(self, txn: Transaction, fieldReport: FieldReport) -> None:
         store = cast(DatabaseStore, self)
 
         txn.execute(
             store.query.createEventOrIgnore.text,
-            {"eventID": incidentReport.eventID},
+            {"eventID": fieldReport.eventID},
         )
 
         txn.execute(
             store.query.createFieldReport.text,
             {
-                "eventID": incidentReport.eventID,
-                "incidentReportNumber": incidentReport.number,
-                "incidentReportCreated": store.asDateTimeValue(incidentReport.created),
-                "incidentReportSummary": incidentReport.summary,
-                "incidentNumber": incidentReport.incidentNumber,
+                "eventID": fieldReport.eventID,
+                "fieldReportNumber": fieldReport.number,
+                "fieldReportCreated": store.asDateTimeValue(fieldReport.created),
+                "fieldReportSummary": fieldReport.summary,
+                "incidentNumber": fieldReport.incidentNumber,
             },
         )
 
-        for reportEntry in incidentReport.reportEntries:
+        for reportEntry in fieldReport.reportEntries:
             txn.execute(
                 store.query.createReportEntry.text,
                 {
@@ -209,32 +207,30 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
             txn.execute(
                 store.query.attachReportEntryToFieldReport.text,
                 {
-                    "incidentReportNumber": incidentReport.number,
+                    "fieldReportNumber": fieldReport.number,
                     "reportEntryID": txn.lastrowid,
                 },
             )
 
-    async def storeFieldReport(self, incidentReport: IncidentReport) -> None:
+    async def storeFieldReport(self, fieldReport: FieldReport) -> None:
         """
-        Store the given incident report in the test store.
+        Store the given field report in the test store.
         """
         store = cast(DatabaseStore, self)
 
         try:
-            await store.runInteraction(
-                self._storeIncidentReport, incidentReport=incidentReport
-            )
+            await store.runInteraction(self._storeFieldReport, fieldReport=fieldReport)
         except StorageError as e:
             self._log.critical(
-                "Unable to store incident report {incidentReport}: {error}",
-                incidentReport=incidentReport,
+                "Unable to store field report {fieldReport}: {error}",
+                fieldReport=fieldReport,
                 error=e,
             )
             raise
 
         self._log.info(
-            "Stored incident report {incidentReport}.",
-            incidentReport=incidentReport,
+            "Stored field report {fieldReport}.",
+            fieldReport=fieldReport,
         )
 
     def _storeConcentricStreet(
