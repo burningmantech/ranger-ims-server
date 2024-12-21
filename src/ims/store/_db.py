@@ -34,9 +34,9 @@ from twisted.logger import Logger
 
 from ims.model import (
     Event,
+    FieldReport,
     Incident,
     IncidentPriority,
-    IncidentReport,
     IncidentState,
     Location,
     ReportEntry,
@@ -655,7 +655,7 @@ class DatabaseStore(IMSDataStore):
                     reportEntries=cast(
                         Iterable[ReportEntry], reportEntries[incidentNumber]
                     ),
-                    incidentReportNumbers=cast(Iterable[int], fieldReportNumbers),
+                    fieldReportNumbers=cast(Iterable[int], fieldReportNumbers),
                 )
             )
         return results
@@ -727,7 +727,7 @@ class DatabaseStore(IMSDataStore):
             rangerHandles=cast(Iterable[str], rangerHandles),
             incidentTypes=cast(Iterable[str], incidentTypes),
             reportEntries=cast(Iterable[ReportEntry], reportEntries),
-            incidentReportNumbers=fieldReportNumbers,
+            fieldReportNumbers=fieldReportNumbers,
         )
 
     def _fetchIncidentNumbers(self, txn: Transaction, eventID: str) -> Iterable[int]:
@@ -917,7 +917,7 @@ class DatabaseStore(IMSDataStore):
         )
 
     def _initialReportEntries(
-        self, incident: Incident | IncidentReport, author: str
+        self, incident: Incident | FieldReport, author: str
     ) -> Iterable[ReportEntry]:
         created = now()
 
@@ -1444,7 +1444,7 @@ class DatabaseStore(IMSDataStore):
 
     def _fetchFieldReports(
         self, txn: Transaction, eventID: str, excludeSystemEntries: bool
-    ) -> Iterable[IncidentReport]:
+    ) -> Iterable[FieldReport]:
         parameters: Parameters = {
             "eventID": eventID,
             # generated value less than or equal to
@@ -1466,12 +1466,12 @@ class DatabaseStore(IMSDataStore):
                 ),
             )
 
-        results = list[IncidentReport]()
+        results = list[FieldReport]()
         txn.execute(self.query.fieldReports.text, parameters)
         for row in txn.fetchall():
             fieldReportNumber = cast(int, row["NUMBER"])
             results.append(
-                IncidentReport(
+                FieldReport(
                     eventID=eventID,
                     number=fieldReportNumber,
                     created=self.fromDateTimeValue(row["CREATED"]),
@@ -1483,14 +1483,14 @@ class DatabaseStore(IMSDataStore):
                 )
             )
 
-        return tuple[IncidentReport, ...](r for r in results)
+        return tuple[FieldReport, ...](r for r in results)
 
     def _fetchFieldReport(
         self, txn: Transaction, eventID: str, fieldReportNumber: int
-    ) -> IncidentReport:
+    ) -> FieldReport:
         parameters: Parameters = {
             "eventID": eventID,
-            "incidentReportNumber": fieldReportNumber,
+            "fieldReportNumber": fieldReportNumber,
         }
 
         def notFound() -> NoReturn:
@@ -1517,7 +1517,7 @@ class DatabaseStore(IMSDataStore):
             for row in txn.fetchall()
         )
 
-        return IncidentReport(
+        return FieldReport(
             eventID=eventID,
             number=fieldReportNumber,
             created=self.fromDateTimeValue(row["CREATED"]),
@@ -1532,12 +1532,12 @@ class DatabaseStore(IMSDataStore):
 
     async def fieldReports(
         self, eventID: str, excludeSystemEntries: bool = False
-    ) -> Iterable[IncidentReport]:
+    ) -> Iterable[FieldReport]:
         """
         See :meth:`IMSDataStore.fieldReports`.
         """
 
-        def fieldReports(txn: Transaction) -> Iterable[IncidentReport]:
+        def fieldReports(txn: Transaction) -> Iterable[FieldReport]:
             return self._fetchFieldReports(
                 txn, eventID, excludeSystemEntries=excludeSystemEntries
             )
@@ -1553,12 +1553,12 @@ class DatabaseStore(IMSDataStore):
             )
             raise
 
-    async def fieldReportWithNumber(self, eventID: str, number: int) -> IncidentReport:
+    async def fieldReportWithNumber(self, eventID: str, number: int) -> FieldReport:
         """
         See :meth:`IMSDataStore.fieldReportWithNumber`.
         """
 
-        def fieldReportWithNumber(txn: Transaction) -> IncidentReport:
+        def fieldReportWithNumber(txn: Transaction) -> FieldReport:
             return self._fetchFieldReport(txn, eventID, number)
 
         try:
@@ -1600,7 +1600,7 @@ class DatabaseStore(IMSDataStore):
                 self.query.attachReportEntryToFieldReport.text,
                 {
                     "eventID": eventID,
-                    "incidentReportNumber": fieldReportNumber,
+                    "fieldReportNumber": fieldReportNumber,
                     "reportEntryID": txn.lastrowid,
                 },
             )
@@ -1608,7 +1608,7 @@ class DatabaseStore(IMSDataStore):
         self._log.info(
             "Attached report entries to field report "
             "{eventID}#{fieldReportNumber}: {reportEntries}",
-            storeWriteClass=IncidentReport,
+            storeWriteClass=FieldReport,
             eventID=eventID,
             fieldReportNumber=fieldReportNumber,
             reportEntries=reportEntries,
@@ -1616,10 +1616,10 @@ class DatabaseStore(IMSDataStore):
 
     async def _createFieldReport(
         self,
-        fieldReport: IncidentReport,
+        fieldReport: FieldReport,
         author: str | None,
         directImport: bool,
-    ) -> IncidentReport:
+    ) -> FieldReport:
         if directImport:
             if author is not None:
                 raise ValueError("Field report author may not be specified.")
@@ -1641,8 +1641,8 @@ class DatabaseStore(IMSDataStore):
             )
 
         def createFieldReport(
-            txn: Transaction, fieldReport: IncidentReport = fieldReport
-        ) -> IncidentReport:
+            txn: Transaction, fieldReport: FieldReport = fieldReport
+        ) -> FieldReport:
             if not directImport:
                 # Assign the incident number a number
                 number = self._nextFieldReportNumber(txn)
@@ -1654,9 +1654,9 @@ class DatabaseStore(IMSDataStore):
                 self.query.createFieldReport.text,
                 {
                     "eventID": fieldReport.eventID,
-                    "incidentReportNumber": fieldReport.number,
-                    "incidentReportCreated": created,
-                    "incidentReportSummary": fieldReport.summary,
+                    "fieldReportNumber": fieldReport.number,
+                    "fieldReportCreated": created,
+                    "fieldReportSummary": fieldReport.summary,
                     "incidentNumber": fieldReport.incidentNumber,
                 },
             )
@@ -1684,15 +1684,15 @@ class DatabaseStore(IMSDataStore):
 
         self._log.info(
             "Created field report: {fieldReport}",
-            storeWriteClass=IncidentReport,
+            storeWriteClass=FieldReport,
             fieldReport=fieldReport,
         )
 
         return fieldReport
 
     async def createFieldReport(
-        self, fieldReport: IncidentReport, author: str
-    ) -> IncidentReport:
+        self, fieldReport: FieldReport, author: str
+    ) -> FieldReport:
         """
         See :meth:`IMSDataStore.createFieldReport`.
         """
@@ -1700,7 +1700,7 @@ class DatabaseStore(IMSDataStore):
             fieldReport, author=author, directImport=False
         )
 
-    async def importFieldReport(self, fieldReport: IncidentReport) -> None:
+    async def importFieldReport(self, fieldReport: FieldReport) -> None:
         """
         See :meth:`IMSDataStore.importFieldReport`.
         """
@@ -1722,7 +1722,7 @@ class DatabaseStore(IMSDataStore):
                 query,
                 {
                     "eventID": eventID,
-                    "incidentReportNumber": fieldReportNumber,
+                    "fieldReportNumber": fieldReportNumber,
                     "value": value,
                 },
             )
@@ -1755,7 +1755,7 @@ class DatabaseStore(IMSDataStore):
         self._log.info(
             "{author} updated field report #{fieldReportNumber}: "
             "{attribute}={value}",
-            storeWriteClass=IncidentReport,
+            storeWriteClass=FieldReport,
             query=query,
             eventID=eventID,
             fieldReportNumber=fieldReportNumber,
@@ -1849,14 +1849,14 @@ class DatabaseStore(IMSDataStore):
 
     async def fieldReportsAttachedToIncident(
         self, eventID: str, incidentNumber: int
-    ) -> Iterable[IncidentReport]:
+    ) -> Iterable[FieldReport]:
         """
         See :meth:`IMSDataStore.attachedFieldReports`.
         """
 
         def fieldReportsAttachedToIncident(
             txn: Transaction,
-        ) -> Iterable[IncidentReport]:
+        ) -> Iterable[FieldReport]:
             return tuple(
                 self._fetchFieldReport(txn, eventID, number)
                 for number in tuple(

@@ -22,39 +22,39 @@ from hypothesis import given
 
 from ims.ext.trial import TestCase
 
-from ..._report import IncidentReport
-from ...strategies import incidentReports
+from ..._report import FieldReport
+from ...strategies import fieldReports
 from .._json import jsonDeserialize, jsonSerialize
-from .json import jsonFromIncidentReport
+from .json import jsonFromFieldReport
 
 
 __all__ = ()
 
 
-class IncidentReportSerializationTests(TestCase):
+class FieldReportSerializationTests(TestCase):
     """
-    Tests for serialization of :class:`IncidentReport`
+    Tests for serialization of :class:`FieldReport`
     """
 
-    @given(incidentReports())
-    def test_serialize(self, report: IncidentReport) -> None:
+    @given(fieldReports())
+    def test_serialize(self, report: FieldReport) -> None:
         """
         :func:`jsonSerialize` serializes the given report.
         """
-        self.assertEqual(jsonSerialize(report), jsonFromIncidentReport(report))
+        self.assertEqual(jsonSerialize(report), jsonFromFieldReport(report))
 
 
-class IncidentReportDeserializationTests(TestCase):
+class FieldReportDeserializationTests(TestCase):
     """
-    Tests for deserialization of :class:`IncidentReport`
+    Tests for deserialization of :class:`FieldReport`
     """
 
-    @given(incidentReports())
-    def test_deserialize(self, report: IncidentReport) -> None:
+    @given(fieldReports())
+    def test_deserialize(self, report: FieldReport) -> None:
         """
         :func:`jsonDeserialize` returns a report with the correct data.
         """
         self.assertEqual(
-            jsonDeserialize(jsonFromIncidentReport(report), IncidentReport),
+            jsonDeserialize(jsonFromFieldReport(report), FieldReport),
             report,
         )

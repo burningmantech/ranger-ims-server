@@ -23,7 +23,7 @@ from enum import Enum, unique
 from typing import Any, Optional, cast
 
 from .._entry import ReportEntry
-from .._report import IncidentReport
+from .._report import FieldReport
 from ._json import (
     deserialize,
     jsonSerialize,
@@ -36,9 +36,9 @@ __all__ = ()
 
 
 @unique
-class IncidentReportJSONKey(Enum):
+class FieldReportJSONKey(Enum):
     """
-    Incident report JSON keys
+    Field report JSON keys
     """
 
     eventID = "event"
@@ -49,9 +49,9 @@ class IncidentReportJSONKey(Enum):
     reportEntries = "report_entries"
 
 
-class IncidentReportJSONType(Enum):
+class FieldReportJSONType(Enum):
     """
-    Incident report attribute types
+    Field report attribute types
     """
 
     eventID = str
@@ -62,31 +62,29 @@ class IncidentReportJSONType(Enum):
     reportEntries = list[ReportEntry]
 
 
-def serializeIncidentReport(incidentReport: IncidentReport) -> dict[str, Any]:
-    # Map IncidentReport attribute names to JSON dict key names
+def serializeFieldReport(fieldReport: FieldReport) -> dict[str, Any]:
+    # Map FieldReport attribute names to JSON dict key names
     return {
-        key.value: jsonSerialize(getattr(incidentReport, key.name))
-        for key in IncidentReportJSONKey
+        key.value: jsonSerialize(getattr(fieldReport, key.name))
+        for key in FieldReportJSONKey
     }
 
 
-registerSerializer(IncidentReport, serializeIncidentReport)
+registerSerializer(FieldReport, serializeFieldReport)
 
 
-def deserializeIncidentReport(
-    obj: dict[str, Any], cl: type[IncidentReport]
-) -> IncidentReport:
-    assert cl is IncidentReport, (cl, obj)
+def deserializeFieldReport(obj: dict[str, Any], cl: type[FieldReport]) -> FieldReport:
+    assert cl is FieldReport, (cl, obj)
 
     return cast(
-        IncidentReport,
+        FieldReport,
         deserialize(
             obj,
-            IncidentReport,
-            IncidentReportJSONType,
-            IncidentReportJSONKey,
+            FieldReport,
+            FieldReportJSONType,
+            FieldReportJSONKey,
         ),
     )
 
 
-registerDeserializer(IncidentReport, deserializeIncidentReport)
+registerDeserializer(FieldReport, deserializeFieldReport)

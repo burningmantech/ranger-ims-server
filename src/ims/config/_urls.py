@@ -54,7 +54,7 @@ class URLs:
     event: ClassVar[URL] = events.child("<event_id>").child("")
     incidents: ClassVar[URL] = event.child("incidents").child("")
     incidentNumber: ClassVar[URL] = incidents.child("<incident_number>")
-    fieldReports: ClassVar[URL] = event.child("incident_reports").child("")
+    fieldReports: ClassVar[URL] = event.child("field_reports").child("")
     fieldReport: ClassVar[URL] = fieldReports.child("<field_report_number>")
 
     eventSource: ClassVar[URL] = api.child("eventsource")

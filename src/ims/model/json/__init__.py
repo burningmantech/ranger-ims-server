@@ -33,7 +33,7 @@ from ._json import (
 )
 from ._location import LocationJSONKey
 from ._priority import IncidentPriorityJSONValue
-from ._report import IncidentReportJSONKey
+from ._report import FieldReportJSONKey
 from ._state import IncidentStateJSONValue
 from ._type import IncidentTypeJSONKey
 
@@ -47,10 +47,10 @@ __all__ = (
     "JSON",
     "EventAccessJSONKey",
     "EventDataJSONKey",
+    "FieldReportJSONKey",
     "IMSDataJSONKey",
     "IncidentJSONKey",
     "IncidentPriorityJSONValue",
-    "IncidentReportJSONKey",
     "IncidentStateJSONValue",
     "IncidentTypeJSONKey",
     "JSONCodecError",

@@ -108,14 +108,14 @@ class JSONExporter:
 
         concentricStreets = await self.store.concentricStreets(event.id)
         incidents = await self.store.incidents(event.id)
-        incidentReports = await self.store.fieldReports(event.id)
+        fieldReports = await self.store.fieldReports(event.id)
 
         return EventData(
             event=event,
             access=eventAccess,
             concentricStreets=concentricStreets,
             incidents=incidents,
-            incidentReports=incidentReports,
+            fieldReports=fieldReports,
         )
 
 
@@ -220,26 +220,26 @@ class JSONImporter:
             else:
                 await store.importIncident(incident)
 
-    async def _storeIncidentReports(self, eventData: EventData) -> None:
+    async def _storeFieldReports(self, eventData: EventData) -> None:
         store = self.store
 
         assert store is not None
 
-        existingIncidentReportNumbers = frozenset(
-            incidentReport.number
-            for incidentReport in await store.fieldReports(eventData.event.id)
+        existingFieldReportNumbers = frozenset(
+            fieldReport.number
+            for fieldReport in await store.fieldReports(eventData.event.id)
         )
 
-        for incidentReport in eventData.incidentReports:
-            if incidentReport.number in existingIncidentReportNumbers:
+        for fieldReport in eventData.fieldReports:
+            if fieldReport.number in existingFieldReportNumbers:
                 self._log.info(
-                    "Not importing existing incident report #{number} "
+                    "Not importing existing field report #{number} "
                     "into event {event}",
                     event=eventData.event,
-                    number=incidentReport.number,
+                    number=fieldReport.number,
                 )
             else:
-                await store.importFieldReport(incidentReport)
+                await store.importFieldReport(fieldReport)
 
     async def storeData(self) -> None:
         store = self.store
@@ -267,4 +267,4 @@ class JSONImporter:
             await self._storeEventAccess(eventData)
             await self._storeConcentricStreets(eventData)
             await self._storeIncidents(eventData)
-            await self._storeIncidentReports(eventData)
+            await self._storeFieldReports(eventData)

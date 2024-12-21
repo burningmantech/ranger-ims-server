@@ -30,7 +30,7 @@ from ..._incident import Incident
 from ..._location import Location
 from ..._priority import IncidentPriority
 from ..._ranger import Ranger, RangerStatus
-from ..._report import IncidentReport
+from ..._report import FieldReport
 from ..._state import IncidentState
 from ..._type import IncidentType, KnownIncidentType
 from .._json import jsonSerialize
@@ -105,7 +105,7 @@ def jsonFromEventData(eventData: EventData) -> dict[str, Any]:
         "access": jsonSerialize(eventData.access),
         "concentric_streets": jsonSerialize(eventData.concentricStreets),
         "incidents": [jsonSerialize(i) for i in eventData.incidents],
-        "incident_reports": [jsonSerialize(r) for r in eventData.incidentReports],
+        "field_reports": [jsonSerialize(r) for r in eventData.fieldReports],
     }
 
 
@@ -133,8 +133,8 @@ def jsonFromIncident(incident: Incident) -> dict[str, Any]:
         "ranger_handles": [jsonSerialize(r) for r in incident.rangerHandles],
         "incident_types": [jsonSerialize(t) for t in incident.incidentTypes],
         "report_entries": [jsonSerialize(e) for e in sorted(incident.reportEntries)],
-        "incident_reports": [
-            jsonSerialize(n) for n in sorted(incident.incidentReportNumbers)
+        "field_reports": [
+            jsonSerialize(n) for n in sorted(incident.fieldReportNumbers)
         ],
     }
 
@@ -197,7 +197,7 @@ def jsonFromRanger(ranger: Ranger) -> dict[str, Any]:
 ##
 
 
-def jsonFromIncidentReport(report: IncidentReport) -> dict[str, Any]:
+def jsonFromFieldReport(report: FieldReport) -> dict[str, Any]:
     return {
         "event": jsonSerialize(report.eventID),
         "number": jsonSerialize(report.number),

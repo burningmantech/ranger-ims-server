@@ -60,7 +60,7 @@ class Incident(ReplaceMixIn):
     rangerHandles: frozenset[str] = field(converter=freezeStrings)
     incidentTypes: frozenset[str] = field(converter=freezeStrings)
     reportEntries: Sequence[ReportEntry] = field(converter=sortAndFreezeReportEntries)
-    incidentReportNumbers: frozenset[int] = field(converter=freezeIntegers)
+    fieldReportNumbers: frozenset[int] = field(converter=freezeIntegers)
 
     def __str__(self) -> str:
         return f"{self.eventID}#{self.number}: {self.summaryFromReport()}"

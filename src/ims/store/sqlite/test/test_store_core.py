@@ -174,7 +174,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
             r"    update INCIDENT_REPORT set INCIDENT_NUMBER = :value",
             r"    where EVENT = "
             r"\(select ID from EVENT where NAME = :eventID\) "
-            r"and NUMBER = :incidentReportNumber",
+            r"and NUMBER = :fieldReportNumber",
             r"",
             r"  -- query plan --",
             r"",

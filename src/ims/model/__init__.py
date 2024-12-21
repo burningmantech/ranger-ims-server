@@ -30,7 +30,7 @@ from ._location import Location
 from ._position import Position
 from ._priority import IncidentPriority
 from ._ranger import Ranger, RangerStatus
-from ._report import IncidentReport
+from ._report import FieldReport
 from ._state import IncidentState
 from ._type import IncidentType, KnownIncidentType
 
@@ -40,10 +40,10 @@ __all__ = (
     "Event",
     "EventAccess",
     "EventData",
+    "FieldReport",
     "IMSData",
     "Incident",
     "IncidentPriority",
-    "IncidentReport",
     "IncidentState",
     "IncidentType",
     "KnownIncidentType",

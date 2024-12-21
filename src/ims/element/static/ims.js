@@ -573,8 +573,8 @@ function reportTextFromIncident(incident) {
     }
 
     // Incidents page loads all field reports for the event
-    if (typeof eventFieldReports !== "undefined" && incident.incident_reports) {
-        for (const reportNumber of incident.incident_reports) {
+    if (typeof eventFieldReports !== "undefined" && incident.field_reports) {
+        for (const reportNumber of incident.field_reports) {
             const report = eventFieldReports[reportNumber];
             const reportText = reportTextFromIncident(report);
 
@@ -1001,12 +1001,12 @@ function subscribeToUpdates(closed) {
     }, true);
 
     // TODO: this will never receive any events currently, since the server isn't configured to
-    //  fire events for IncidentReports. See
+    //  fire events for FieldReports. See
     //  https://github.com/burningmantech/ranger-ims-server/blob/954498eb125bb9a83d2b922361abef4935f228ba/src/ims/application/_eventsource.py#L113-L135
-    eventSource.addEventListener("IncidentReport", function(e) {
+    eventSource.addEventListener("FieldReport", function(e) {
         const jsonText = e.data;
         const json = JSON.parse(jsonText);
-        const number = json["incident_report_number"];
+        const number = json["field_report_number"];
 
         const send = new BroadcastChannel(fieldReportChannelName);
         send.postMessage(number);

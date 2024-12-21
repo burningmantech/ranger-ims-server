@@ -147,9 +147,9 @@ class TestCase(SuperTestCase):
             self.fail(f"EventData.incidents: {e}")
 
         try:
-            self.assertEqual(eventDataA.incidentReports, eventDataB.incidentReports)
+            self.assertEqual(eventDataA.fieldReports, eventDataB.fieldReports)
         except self.failureException as e:
-            self.fail(f"EventData.incidentReports: {e}")
+            self.fail(f"EventData.fieldReports: {e}")
 
     def assertIMSDataEqual(self, imsDataA: IMSData, imsDataB: IMSData) -> None:
         """

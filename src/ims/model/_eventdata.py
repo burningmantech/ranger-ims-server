@@ -30,7 +30,7 @@ from ims.ext.frozendict import FrozenDict
 from ._event import Event
 from ._eventaccess import EventAccess
 from ._incident import Incident
-from ._report import IncidentReport
+from ._report import FieldReport
 
 
 __all__ = ()
@@ -40,10 +40,10 @@ def sortAndFreezeIncidents(incidents: Iterable[Incident]) -> Iterable[Incident]:
     return sorted_tuple(incidents)
 
 
-def sortAndFreezeIncidentReports(
-    incidentReports: Iterable[IncidentReport],
-) -> Iterable[IncidentReport]:
-    return sorted_tuple(incidentReports)
+def sortAndFreezeFieldReports(
+    fieldReports: Iterable[FieldReport],
+) -> Iterable[FieldReport]:
+    return sorted_tuple(fieldReports)
 
 
 def freezeConcentricStreets(concentricStreets: Mapping[str, str]) -> Mapping[str, str]:
@@ -68,7 +68,7 @@ class EventData:
         order=False,
         converter=sortAndFreezeIncidents,
     )
-    incidentReports: Iterable[IncidentReport] = field(
+    fieldReports: Iterable[FieldReport] = field(
         order=False,
-        converter=sortAndFreezeIncidentReports,
+        converter=sortAndFreezeFieldReports,
     )

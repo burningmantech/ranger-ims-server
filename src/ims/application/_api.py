@@ -54,16 +54,16 @@ from ims.ext.json import (
 from ims.ext.klein import ContentType, HeaderName, static
 from ims.model import (
     Event,
+    FieldReport,
     Incident,
     IncidentPriority,
-    IncidentReport,
     IncidentState,
     ReportEntry,
 )
 from ims.model.json import (
+    FieldReportJSONKey,
     IncidentJSONKey,
     IncidentPriorityJSONValue,
-    IncidentReportJSONKey,
     IncidentStateJSONValue,
     JSONCodecError,
     LocationJSONKey,
@@ -443,7 +443,7 @@ class APIApplication:
             IncidentJSONKey.rangerHandles,
             IncidentJSONKey.incidentTypes,
             IncidentJSONKey.reportEntries,
-            IncidentJSONKey.incidentReportNumbers,
+            IncidentJSONKey.fieldReportNumbers,
         ):
             if incidentKey.value not in json:
                 json[incidentKey.value] = []
@@ -703,7 +703,7 @@ class APIApplication:
 
         store = self.config.store
 
-        fieldReports: Iterable[IncidentReport]
+        fieldReports: Iterable[FieldReport]
         if limitedAccess:
             user: IMSUser = request.user  # type: ignore[attr-defined]
             fieldReports = (
@@ -752,17 +752,17 @@ class APIApplication:
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
 
-        if json.get(IncidentReportJSONKey.eventID.value, event_id) != event_id:
+        if json.get(FieldReportJSONKey.eventID.value, event_id) != event_id:
             return badRequestResponse(
                 request,
                 "Event ID mismatch: "
-                f"{json[IncidentReportJSONKey.eventID.value]} != {event_id}",
+                f"{json[FieldReportJSONKey.eventID.value]} != {event_id}",
             )
-        if json.get(IncidentReportJSONKey.incidentNumber.value):
+        if json.get(FieldReportJSONKey.incidentNumber.value):
             return badRequestResponse(
                 request,
                 "New field report may not be attached to an incident: "
-                f"{json[IncidentReportJSONKey.incidentNumber.value]}",
+                f"{json[FieldReportJSONKey.incidentNumber.value]}",
             )
 
         user: IMSUser = request.user  # type: ignore[attr-defined]
@@ -775,8 +775,8 @@ class APIApplication:
         # Set JSON field report created time to now
 
         for fieldReportKey in (
-            IncidentReportJSONKey.number,
-            IncidentReportJSONKey.created,
+            FieldReportJSONKey.number,
+            FieldReportJSONKey.created,
         ):
             if fieldReportKey.value in json:
                 return badRequestResponse(
@@ -784,20 +784,20 @@ class APIApplication:
                     f"New field report may not specify {fieldReportKey.value}",
                 )
 
-        json[IncidentReportJSONKey.eventID.value] = event_id
-        json[IncidentReportJSONKey.number.value] = 0
-        json[IncidentReportJSONKey.created.value] = jsonNow
+        json[FieldReportJSONKey.eventID.value] = event_id
+        json[FieldReportJSONKey.number.value] = 0
+        json[FieldReportJSONKey.created.value] = jsonNow
 
         # If not provided, set JSON report entries to an empty list
 
-        if IncidentReportJSONKey.reportEntries.value not in json:
-            json[IncidentReportJSONKey.reportEntries.value] = []
+        if FieldReportJSONKey.reportEntries.value not in json:
+            json[FieldReportJSONKey.reportEntries.value] = []
 
         # Set JSON report entry created time to now
         # Set JSON report entry author
         # Set JSON report entry automatic=False
 
-        for entryJSON in json[IncidentReportJSONKey.reportEntries.value]:
+        for entryJSON in json[FieldReportJSONKey.reportEntries.value]:
             for reportEntryKey in (
                 ReportEntryJSONKey.created,
                 ReportEntryJSONKey.author,
@@ -816,7 +816,7 @@ class APIApplication:
         # Deserialize JSON field report
 
         try:
-            fieldReport = modelObjectFromJSONObject(json, IncidentReport)
+            fieldReport = modelObjectFromJSONObject(json, FieldReport)
         except JSONCodecError as e:
             return badRequestResponse(request, str(e))
 
@@ -931,7 +931,7 @@ class APIApplication:
             return badRequestResponse(request, "JSON field report must be a dictionary")
 
         if (
-            edits.get(IncidentReportJSONKey.number.value, fieldReportNumber)
+            edits.get(FieldReportJSONKey.number.value, fieldReportNumber)
             != fieldReportNumber
         ):
             return badRequestResponse(
@@ -940,7 +940,7 @@ class APIApplication:
 
         UNSET = object()
 
-        created = edits.get(IncidentReportJSONKey.created.value, UNSET)
+        created = edits.get(FieldReportJSONKey.created.value, UNSET)
         if created is not UNSET:
             return badRequestResponse(
                 request, "Field report created time may not be modified"
@@ -966,11 +966,11 @@ class APIApplication:
 
         await applyEdit(
             edits,
-            IncidentReportJSONKey.summary,
+            FieldReportJSONKey.summary,
             store.setFieldReport_summary,
         )
 
-        jsonEntries = edits.get(IncidentReportJSONKey.reportEntries.value, UNSET)
+        jsonEntries = edits.get(FieldReportJSONKey.reportEntries.value, UNSET)
         if jsonEntries is not UNSET:
             now = DateTime.now(TimeZone.utc)
 

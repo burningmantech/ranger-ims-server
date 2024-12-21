@@ -27,7 +27,7 @@ from typing import ClassVar
 from attrs import frozen
 
 from ims.ext.trial import AsynchronousTestCase
-from ims.model import Event, Incident, IncidentReport, ReportEntry
+from ims.model import Event, FieldReport, Incident, ReportEntry
 
 from .._abc import IMSDataStore
 
@@ -70,7 +70,7 @@ class TestDataStoreMixIn(ABC):
         """
 
     @abstractmethod
-    async def storeFieldReport(self, fieldReport: IncidentReport) -> None:
+    async def storeFieldReport(self, fieldReport: FieldReport) -> None:
         """
         Store the given field report in the test store.
         """
