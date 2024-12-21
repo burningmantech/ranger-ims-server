@@ -43,7 +43,7 @@ from ims.element.incident.reports_template import FieldReportsTemplatePage
 from ims.element.root import RootPage
 from ims.ext.klein import static
 from ims.model import Event
-from ims.store import NoSuchIncidentReportError
+from ims.store import NoSuchFieldReportError
 
 from ._klein import Router, notFoundResponse, redirect
 
@@ -243,37 +243,37 @@ class WebApplication:
         """
         Endpoint for the field report page.
         """
-        incidentReportNumber: int | None
+        fieldReportNumber: int | None
         config = self.config
         if number == "new":
             await config.authProvider.authorizeRequest(
                 request, event_id, Authorization.writeFieldReports
             )
-            incidentReportNumber = None
+            fieldReportNumber = None
             del number
         else:
             try:
-                incidentReportNumber = int(number)
+                fieldReportNumber = int(number)
             except ValueError:
                 return notFoundResponse(request)
             del number
 
             try:
-                incidentReport = await config.store.incidentReportWithNumber(
-                    event_id, incidentReportNumber
+                fieldReport = await config.store.fieldReportWithNumber(
+                    event_id, fieldReportNumber
                 )
-            except NoSuchIncidentReportError:
+            except NoSuchFieldReportError:
                 await config.authProvider.authorizeRequest(
                     request, event_id, Authorization.readIncidents
                 )
                 return notFoundResponse(request)
 
-            await config.authProvider.authorizeRequestForIncidentReport(
-                request, incidentReport
+            await config.authProvider.authorizeRequestForFieldReport(
+                request, fieldReport
             )
 
         event = Event(id=event_id)
-        return FieldReportPage(config=config, event=event, number=incidentReportNumber)
+        return FieldReportPage(config=config, event=event, number=fieldReportNumber)
 
     @router.route(_unprefix(URLs.viewFieldReportTemplate), methods=("HEAD", "GET"))
     @static

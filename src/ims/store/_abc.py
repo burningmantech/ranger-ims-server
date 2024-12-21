@@ -321,69 +321,67 @@ class IMSDataStore(ABC):
     ###
 
     @abstractmethod
-    async def incidentReports(
+    async def fieldReports(
         self, eventID: str, *, excludeSystemEntries: bool = False
     ) -> Iterable[IncidentReport]:
         """
-        Look up all incident reports in the given event.
+        Look up all field reports in the given event.
         """
 
     @abstractmethod
-    async def incidentReportWithNumber(
-        self, eventID: str, number: int
-    ) -> IncidentReport:
+    async def fieldReportWithNumber(self, eventID: str, number: int) -> IncidentReport:
         """
-        Look up the incident report with the given number.
+        Look up the field report with the given number.
         """
 
     @abstractmethod
-    async def createIncidentReport(
-        self, incidentReport: IncidentReport, author: str
+    async def createFieldReport(
+        self, fieldReport: IncidentReport, author: str
     ) -> IncidentReport:
         """
-        Create a new incident report.
+        Create a new field report.
 
-        The incident report number is determined by the database and must be
-        specified as zero in the given incident report.
+        The field report number is determined by the database and must be
+        specified as zero in the given field report.
 
-        The stored incident report is returned with the incident report number
+        The stored field report is returned with the field report number
         assigned to it by the data store, and with initial (automatic) report
         entries added.
         """
 
     @abstractmethod
-    async def importIncidentReport(self, incidentReport: IncidentReport) -> None:
+    async def importFieldReport(self, fieldReport: IncidentReport) -> None:
         """
-        Import an incident and add it into the given event.
+        Import a field report and add it into the given event.
 
-        This differs from :meth:`IMSDataStore.createIncidentReport` in that the
-        incident report is added exactly as is; the incident report's number is
+        This differs from :meth:`IMSDataStore.createFieldReport` in that the
+        field report is added exactly as is; the field report's number is
         not modified (and must be greater than zero), and no automatic entries
         are added to it.
         """
 
     @abstractmethod
-    async def setIncidentReport_summary(
+    async def setFieldReport_summary(
         self,
         eventID: str,
-        incidentReportNumber: int,
+        fieldReportNumber: int,
         summary: str,
         author: str,
     ) -> None:
         """
-        Set the summary for the incident report with the given number.
+        Set the summary for the field report with the given number.
         """
 
     @abstractmethod
-    async def addReportEntriesToIncidentReport(
+    async def addReportEntriesToFieldReport(
         self,
         eventID: str,
-        incidentReportNumber: int,
+        fieldReportNumber: int,
         reportEntries: Iterable[ReportEntry],
         author: str,
     ) -> None:
         """
-        Add the given report entries to incident report with the given number.
+        Add the given report entries to field report with the given number.
         """
 
     ###
@@ -391,36 +389,36 @@ class IMSDataStore(ABC):
     ###
 
     @abstractmethod
-    async def incidentReportsAttachedToIncident(
+    async def fieldReportsAttachedToIncident(
         self, eventID: str, incidentNumber: int
     ) -> Iterable[IncidentReport]:
         """
-        Look up all incident reports attached to the incident with the given
+        Look up all field reports attached to the incident with the given
         number in the given event.
         """
 
     @abstractmethod
-    async def attachIncidentReportToIncident(
+    async def attachFieldReportToIncident(
         self,
-        incidentReportNumber: int,
+        fieldReportNumber: int,
         eventID: str,
         incidentNumber: int,
         author: str,
     ) -> None:
         """
-        Attach the incident report with the given number to the incident with
+        Attach the field report with the given number to the incident with
         the given number in the given event.
         """
 
     @abstractmethod
-    async def detachIncidentReportFromIncident(
+    async def detachFieldReportFromIncident(
         self,
-        incidentReportNumber: int,
+        fieldReportNumber: int,
         eventID: str,
         incidentNumber: int,
         author: str,
     ) -> None:
         """
-        Detach the incident report with the given number from the incident with
+        Detach the field report with the given number from the incident with
         the given number in the given event.
         """

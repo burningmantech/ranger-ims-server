@@ -441,20 +441,20 @@ class AuthProvider:
             )
             raise NotAuthorizedError("User not authorized")
 
-    async def authorizeRequestForIncidentReport(
-        self, request: IRequest, incidentReport: IncidentReport
+    async def authorizeRequestForFieldReport(
+        self, request: IRequest, fieldReport: IncidentReport
     ) -> None:
         """
         Determine whether the user attached to a request has the required
-        authorizations to access the incident report with the given number.
+        authorizations to access the field report with the given number.
         """
         # An author of the incident report should be allowed to read and write
         # to it, provided they have writeFieldReports on the event.
         userIsAuthor = False
         user: IMSUser = request.user  # type: ignore[attr-defined]
-        if user is not None and incidentReport.reportEntries:
+        if user is not None and fieldReport.reportEntries:
             rangerHandle = user.shortNames[0]
-            for reportEntry in incidentReport.reportEntries:
+            for reportEntry in fieldReport.reportEntries:
                 if reportEntry.author == rangerHandle:
                     userIsAuthor = True
                     break
@@ -465,7 +465,7 @@ class AuthProvider:
             try:
                 await self.authorizeRequest(
                     request,
-                    incidentReport.eventID,
+                    fieldReport.eventID,
                     Authorization.writeFieldReports,
                 )
             except NotAuthorizedError:
@@ -478,5 +478,5 @@ class AuthProvider:
 
         # Authorize the user if they have readIncidents permission
         await self.authorizeRequest(
-            request, incidentReport.eventID, Authorization.readIncidents
+            request, fieldReport.eventID, Authorization.readIncidents
         )

@@ -186,7 +186,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         )
 
         txn.execute(
-            store.query.createIncidentReport.text,
+            store.query.createFieldReport.text,
             {
                 "eventID": incidentReport.eventID,
                 "incidentReportNumber": incidentReport.number,
@@ -207,14 +207,14 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
                 },
             )
             txn.execute(
-                store.query.attachReportEntryToIncidentReport.text,
+                store.query.attachReportEntryToFieldReport.text,
                 {
                     "incidentReportNumber": incidentReport.number,
                     "reportEntryID": txn.lastrowid,
                 },
             )
 
-    async def storeIncidentReport(self, incidentReport: IncidentReport) -> None:
+    async def storeFieldReport(self, incidentReport: IncidentReport) -> None:
         """
         Store the given incident report in the test store.
         """

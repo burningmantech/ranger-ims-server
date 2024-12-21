@@ -217,7 +217,7 @@ class JSONImporterTests(TestCase):
                     ),
                     concentricStreets=resultOf(store.concentricStreets(event.id)),
                     incidents=resultOf(store.incidents(event.id)),
-                    incidentReports=resultOf(store.incidentReports(event.id)),
+                    incidentReports=resultOf(store.fieldReports(event.id)),
                 )
                 for event in resultOf(store.events())
             ),

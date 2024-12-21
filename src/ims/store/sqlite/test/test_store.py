@@ -28,7 +28,7 @@ from ...test.incident import (
     DataStoreIncidentTests as SuperDataStoreIncidentTests,
 )
 from ...test.report import (
-    DataStoreIncidentReportTests as SuperDataStoreIncidentReportTests,
+    DataStoreFieldReportTests as SuperDataStoreIncidentReportTests,
 )
 from ...test.street import (
     DataStoreConcentricStreetTests as SuperDataStoreConcentricStreetTests,

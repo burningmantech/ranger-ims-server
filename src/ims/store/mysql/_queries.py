@@ -389,14 +389,14 @@ queries = Queries(
             EVENT = ({query_eventID}) and INCIDENT_NUMBER = %(incidentNumber)s
         """,
     ),
-    incidentReport=Query(
+    fieldReport=Query(
         "look up incident report",
         f"""
         select CREATED, SUMMARY, INCIDENT_NUMBER from INCIDENT_REPORT
         where EVENT = ({query_eventID}) and NUMBER = %(incidentReportNumber)s
         """,
     ),
-    incidentReport_reportEntries=Query(
+    fieldReport_reportEntries=Query(
         "look up report entries for incident report",
         f"""
         select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
@@ -408,20 +408,20 @@ queries = Queries(
         )
         """,
     ),
-    incidentReportNumbers=Query(
+    fieldReportNumbers=Query(
         "look up incident report numbers for event",
         f"""
         select NUMBER from INCIDENT_REPORT
         where EVENT = ({query_eventID})
         """,
     ),
-    maxIncidentReportNumber=Query(
+    maxFieldReportNumber=Query(
         "look up maximum incident report number",
         """
         select max(NUMBER) from INCIDENT_REPORT
         """,
     ),
-    incidentReports=Query(
+    fieldReports=Query(
         "look up all incident reports for an event",
         f"""
         select
@@ -435,7 +435,7 @@ queries = Queries(
             EVENT = ({query_eventID})
         """,
     ),
-    incidentReports_reportEntries=Query(
+    fieldReports_reportEntries=Query(
         "look up all incident report report entries for an event",
         f"""
         select
@@ -454,7 +454,7 @@ queries = Queries(
             and re.GENERATED <= %(generatedLTE)s
         """,
     ),
-    createIncidentReport=Query(
+    createFieldReport=Query(
         "create incident report",
         f"""
         insert into INCIDENT_REPORT (
@@ -469,7 +469,7 @@ queries = Queries(
         )
         """,
     ),
-    attachReportEntryToIncidentReport=Query(
+    attachReportEntryToFieldReport=Query(
         "add report entry to incident report",
         f"""
         insert into INCIDENT_REPORT__REPORT_ENTRY (
@@ -478,22 +478,22 @@ queries = Queries(
         values (({query_eventID}), %(incidentReportNumber)s, %(reportEntryID)s)
         """,
     ),
-    setIncidentReport_summary=Query(
+    setFieldReport_summary=Query(
         "set incident report summary",
         template_setIncidentReportAttribute.format(column="SUMMARY"),
     ),
-    attachIncidentReportToIncident=Query(
+    attachFieldReportToIncident=Query(
         "attach incident report to incident",
         template_setIncidentReportAttribute.format(column="INCIDENT_NUMBER"),
     ),
-    detachedIncidentReportNumbers=Query(
+    detachedFieldReportNumbers=Query(
         "look up detached incident report numbers",
         f"""
         select NUMBER from INCIDENT_REPORT
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER is null
         """,
     ),
-    attachedIncidentReportNumbers=Query(
+    attachedFieldReportNumbers=Query(
         "look up attached incident report numbers",
         f"""
         select NUMBER from INCIDENT_REPORT

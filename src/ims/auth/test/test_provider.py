@@ -800,9 +800,9 @@ class AuthProviderTests(TestCase):
         # Stage 1: user doesn't have writeFieldReports, so no incident
         # report can be read.
         self.failureResultOf(
-            provider.authorizeRequestForIncidentReport(
+            provider.authorizeRequestForFieldReport(
                 request=request,
-                incidentReport=reportByUser,
+                fieldReport=reportByUser,
             ),
             NotAuthorizedError,
         )
@@ -811,16 +811,16 @@ class AuthProviderTests(TestCase):
         # Stage 2: user is a reporter
         self.successResultOf(store.setReporters(event, (personUser,)))
         self.successResultOf(
-            provider.authorizeRequestForIncidentReport(
+            provider.authorizeRequestForFieldReport(
                 request=request,
-                incidentReport=reportByUser,
+                fieldReport=reportByUser,
             ),
         )
         self.assertEqual(request.authorizations, Authorization.writeFieldReports)
         self.failureResultOf(
-            provider.authorizeRequestForIncidentReport(
+            provider.authorizeRequestForFieldReport(
                 request=request,
-                incidentReport=reportNotByUser,
+                fieldReport=reportNotByUser,
             ),
             NotAuthorizedError,
         )
@@ -830,15 +830,15 @@ class AuthProviderTests(TestCase):
         self.successResultOf(store.setReporters(event, ()))
         self.successResultOf(store.setReaders(event, (personUser,)))
         self.successResultOf(
-            provider.authorizeRequestForIncidentReport(
+            provider.authorizeRequestForFieldReport(
                 request=request,
-                incidentReport=reportByUser,
+                fieldReport=reportByUser,
             ),
         )
         self.successResultOf(
-            provider.authorizeRequestForIncidentReport(
+            provider.authorizeRequestForFieldReport(
                 request=request,
-                incidentReport=reportNotByUser,
+                fieldReport=reportNotByUser,
             ),
         )
         self.assertEqual(
@@ -850,9 +850,9 @@ class AuthProviderTests(TestCase):
         self.successResultOf(store.setReaders(event, ()))
         self.successResultOf(store.setWriters(event, (personUser,)))
         self.successResultOf(
-            provider.authorizeRequestForIncidentReport(
+            provider.authorizeRequestForFieldReport(
                 request=request,
-                incidentReport=reportNotByUser,
+                fieldReport=reportNotByUser,
             ),
         )
         self.assertEqual(
