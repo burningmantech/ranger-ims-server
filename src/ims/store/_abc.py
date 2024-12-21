@@ -317,7 +317,7 @@ class IMSDataStore(ABC):
         """
 
     ###
-    # Incident Reports
+    # Field Reports
     ###
 
     @abstractmethod
@@ -385,7 +385,7 @@ class IMSDataStore(ABC):
         """
 
     ###
-    # Incident to Incident Report Relationships
+    # Incident to Field Report Relationships
     ###
 
     @abstractmethod
