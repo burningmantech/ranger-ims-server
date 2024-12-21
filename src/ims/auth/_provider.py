@@ -448,7 +448,7 @@ class AuthProvider:
         Determine whether the user attached to a request has the required
         authorizations to access the field report with the given number.
         """
-        # An author of the incident report should be allowed to read and write
+        # An author of the field report should be allowed to read and write
         # to it, provided they have writeFieldReports on the event.
         userIsAuthor = False
         user: IMSUser = request.user  # type: ignore[attr-defined]

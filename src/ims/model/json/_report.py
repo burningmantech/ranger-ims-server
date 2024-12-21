@@ -15,7 +15,7 @@
 ##
 
 """
-JSON serialization/deserialization for incident reports
+JSON serialization/deserialization for field reports
 """
 
 from datetime import datetime as DateTime

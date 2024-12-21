@@ -220,7 +220,7 @@ class Command:
 
                         if eventDataA.fieldReports != eventDataB.fieldReports:
                             cls.log.error(
-                                "Events incident reports do not match: {event}",
+                                "Events field reports do not match: {event}",
                                 event=eventDataA.event,
                             )
 
