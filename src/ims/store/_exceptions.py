@@ -41,7 +41,7 @@ class NoSuchIncidentError(StorageError):
 
 
 @mutable
-class NoSuchIncidentReportError(StorageError):
+class NoSuchFieldReportError(StorageError):
     """
-    No such incident.
+    No such field report.
     """

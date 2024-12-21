@@ -708,14 +708,14 @@ class APIApplication:
             user: IMSUser = request.user  # type: ignore[attr-defined]
             fieldReports = (
                 fieldReport
-                for fieldReport in await store.incidentReports(
+                for fieldReport in await store.fieldReports(
                     event_id, excludeSystemEntries=excludeSystemEntries
                 )
                 if user.shortNames[0]
                 in (entry.author for entry in fieldReport.reportEntries)
             )
         elif incidentNumberText is None:
-            fieldReports = await store.incidentReports(
+            fieldReports = await store.fieldReports(
                 event_id, excludeSystemEntries=excludeSystemEntries
             )
         else:
@@ -724,7 +724,7 @@ class APIApplication:
             except ValueError:
                 return invalidQueryResponse(request, "incident", incidentNumberText)
 
-            fieldReports = await store.incidentReportsAttachedToIncident(
+            fieldReports = await store.fieldReportsAttachedToIncident(
                 eventID=event_id, incidentNumber=incidentNumber
             )
 
@@ -822,7 +822,7 @@ class APIApplication:
 
         # Store the field report
 
-        fieldReport = await self.config.store.createIncidentReport(fieldReport, author)
+        fieldReport = await self.config.store.createFieldReport(fieldReport, author)
 
         self._log.info(
             "User {author} created new field report #{fieldReport.number} via JSON",
@@ -858,11 +858,11 @@ class APIApplication:
             return notFoundResponse(request)
         del field_report_number
 
-        fieldReport = await self.config.store.incidentReportWithNumber(
+        fieldReport = await self.config.store.fieldReportWithNumber(
             event_id, fieldReportNumber
         )
 
-        await self.config.authProvider.authorizeRequestForIncidentReport(
+        await self.config.authProvider.authorizeRequestForFieldReport(
             request, fieldReport
         )
 
@@ -909,11 +909,11 @@ class APIApplication:
                 return invalidQueryResponse(request, "incident", incidentNumberText)
 
             if action == "attach":
-                await store.attachIncidentReportToIncident(
+                await store.attachFieldReportToIncident(
                     fieldReportNumber, event_id, incidentNumber, author
                 )
             elif action == "detach":
-                await store.detachIncidentReportFromIncident(
+                await store.detachFieldReportFromIncident(
                     fieldReportNumber, event_id, incidentNumber, author
                 )
             else:
@@ -967,7 +967,7 @@ class APIApplication:
         await applyEdit(
             edits,
             IncidentReportJSONKey.summary,
-            store.setIncidentReport_summary,
+            store.setFieldReport_summary,
         )
 
         jsonEntries = edits.get(IncidentReportJSONKey.reportEntries.value, UNSET)
@@ -984,7 +984,7 @@ class APIApplication:
                 for jsonEntry in jsonEntries
             )
 
-            await store.addReportEntriesToIncidentReport(
+            await store.addReportEntriesToFieldReport(
                 event_id, fieldReportNumber, entries, author
             )
 

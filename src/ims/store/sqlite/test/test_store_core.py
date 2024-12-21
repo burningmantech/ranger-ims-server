@@ -167,7 +167,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
             r"    \[None,None\] You did not supply a value for binding"
             r".*\.",  # * because Py <3.10: "1"; Py 3.10: "parameter :eventID"
             r"",
-            r"attachIncidentReportToIncident:",
+            r"attachFieldReportToIncident:",
             r"",
             r"  -- query --",
             r"",

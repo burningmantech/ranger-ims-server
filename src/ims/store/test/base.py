@@ -70,9 +70,9 @@ class TestDataStoreMixIn(ABC):
         """
 
     @abstractmethod
-    async def storeIncidentReport(self, incidentReport: IncidentReport) -> None:
+    async def storeFieldReport(self, fieldReport: IncidentReport) -> None:
         """
-        Store the given incident report in the test store.
+        Store the given field report in the test store.
         """
 
     @abstractmethod

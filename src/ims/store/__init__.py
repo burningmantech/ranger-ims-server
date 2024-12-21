@@ -20,15 +20,15 @@ Incident Management System data store.
 
 from ._abc import IMSDataStore
 from ._exceptions import (
+    NoSuchFieldReportError,
     NoSuchIncidentError,
-    NoSuchIncidentReportError,
     StorageError,
 )
 
 
 __all__ = (
     "IMSDataStore",
+    "NoSuchFieldReportError",
     "NoSuchIncidentError",
-    "NoSuchIncidentReportError",
     "StorageError",
 )

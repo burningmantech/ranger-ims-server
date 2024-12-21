@@ -29,7 +29,7 @@ from attrs import fields as attrsFields
 from ims.ext.trial import asyncAsDeferred
 from ims.model import Event, IncidentReport, ReportEntry
 
-from .._exceptions import NoSuchIncidentReportError, StorageError
+from .._exceptions import NoSuchFieldReportError, StorageError
 from .base import DataStoreTests, TestDataStoreABC
 from .incident import anEvent, anIncident1, aReportEntry
 
@@ -41,7 +41,7 @@ __all__ = ()
 # don't have timestamps that are within the time resolution of some back-end
 # data stores.
 
-aNewIncidentReport = IncidentReport(
+aNewFieldReport = IncidentReport(
     eventID=anEvent.id,
     number=0,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=1),
@@ -50,7 +50,7 @@ aNewIncidentReport = IncidentReport(
     reportEntries=(),
 )
 
-anIncidentReport1 = IncidentReport(
+aFieldReport1 = IncidentReport(
     eventID=anEvent.id,
     number=1,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=2),
@@ -59,7 +59,7 @@ anIncidentReport1 = IncidentReport(
     reportEntries=(),
 )
 
-anIncidentReport2 = IncidentReport(
+aFieldReport2 = IncidentReport(
     eventID=anEvent.id,
     number=2,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=3),
@@ -83,147 +83,145 @@ aReportEntry2 = ReportEntry(
 )
 
 
-class DataStoreIncidentReportTests(DataStoreTests):
+class DataStoreFieldReportTests(DataStoreTests):
     """
-    Tests for :class:`DataStore` incident report access.
+    Tests for :class:`DataStore` field report access.
     """
 
     @asyncAsDeferred
-    async def test_incidentReports(self) -> None:
+    async def test_fieldReports(self) -> None:
         """
-        :meth:`DataStore.incidentReports` returns all incident reports attached
+        :meth:`DataStore.fieldReports` returns all field reports attached
         to an incident in an event.
         """
-        for _incidentReports in (
+        for _fieldReports in (
             (),
-            (anIncidentReport1,),
-            (anIncidentReport1, anIncidentReport2),
+            (aFieldReport1,),
+            (aFieldReport1, aFieldReport2),
         ):
-            incidentReports = cast(Iterable[IncidentReport], _incidentReports)
-            incidentReportsByNumber = {
+            fieldReports = cast(Iterable[IncidentReport], _fieldReports)
+            fieldReportsByNumber = {
                 r.number: r.replace(incidentNumber=anIncident1.number)
-                for r in incidentReports
+                for r in fieldReports
             }
 
             store = await self.store()
             await store.storeIncident(anIncident1)
 
-            for incidentReport in incidentReports:
-                await store.storeIncidentReport(incidentReport)
-                await store.attachIncidentReportToIncident(
-                    incidentReport.number,
+            for fieldReport in fieldReports:
+                await store.storeFieldReport(fieldReport)
+                await store.attachFieldReportToIncident(
+                    fieldReport.number,
                     anIncident1.eventID,
                     anIncident1.number,
                     "HubCap",
                 )
 
             found: set[int] = set()
-            for retrieved in await store.incidentReports(anIncident1.eventID):
-                self.assertIn(retrieved.number, incidentReportsByNumber)
-                self.assertIncidentReportsEqual(
+            for retrieved in await store.fieldReports(anIncident1.eventID):
+                self.assertIn(retrieved.number, fieldReportsByNumber)
+                self.assertFieldReportsEqual(
                     store,
                     retrieved,
-                    incidentReportsByNumber[retrieved.number],
+                    fieldReportsByNumber[retrieved.number],
                     ignoreAutomatic=True,
                 )
                 found.add(retrieved.number)
 
-            self.assertEqual(found, {r.number for r in incidentReports})
+            self.assertEqual(found, {r.number for r in fieldReports})
 
     @asyncAsDeferred
-    async def test_incidentReports_error(self) -> None:
+    async def test_fieldReports_error(self) -> None:
         """
-        :meth:`DataStore.incidentReports` raises :exc:`StorageError` when
+        :meth:`DataStore.fieldReports` raises :exc:`StorageError` when
         the database raises an exception.
         """
         store = await self.store()
         store.bringThePain()
 
         try:
-            await store.incidentReports(anEvent.id)
+            await store.fieldReports(anEvent.id)
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 
     @asyncAsDeferred
-    async def test_incidentReportWithNumber(self) -> None:
+    async def test_fieldReportWithNumber(self) -> None:
         """
-        :meth:`DataStore.incidentReportWithNumber` returns the specified
-        incident report.
+        :meth:`DataStore.fieldReportWithNumber` returns the specified
+        field report.
         """
-        for incidentReport in (anIncidentReport1, anIncidentReport2):
+        for fieldReport in (aFieldReport1, aFieldReport2):
             store = await self.store()
-            await store.storeIncidentReport(incidentReport)
+            await store.storeFieldReport(fieldReport)
 
-            retrieved = await store.incidentReportWithNumber(
-                anEvent.id, incidentReport.number
+            retrieved = await store.fieldReportWithNumber(
+                anEvent.id, fieldReport.number
             )
 
-            self.assertIncidentReportsEqual(store, retrieved, incidentReport)
+            self.assertFieldReportsEqual(store, retrieved, fieldReport)
 
     @asyncAsDeferred
-    async def test_incidentReportWithNumber_notFound(self) -> None:
+    async def test_fieldReportWithNumber_notFound(self) -> None:
         """
-        :meth:`DataStore.incidentReportWithNumber` raises
-        :exc:`NoSuchIncidentReportError` when the given incident report number
+        :meth:`DataStore.fieldReportWithNumber` raises
+        :exc:`NoSuchFieldReportError` when the given field report number
         is not found.
         """
         store = await self.store()
 
         try:
-            await store.incidentReportWithNumber(anEvent.id, 1)
-        except NoSuchIncidentReportError:
+            await store.fieldReportWithNumber(anEvent.id, 1)
+        except NoSuchFieldReportError:
             pass
         else:
-            self.fail("NoSuchIncidentReportError not raised")
+            self.fail("NoSuchFieldReportError not raised")
 
     @asyncAsDeferred
-    async def test_incidentReportWithNumber_tooBig(self) -> None:
+    async def test_fieldReportWithNumber_tooBig(self) -> None:
         """
-        :meth:`DataStore.incidentReportWithNumber` raises
-        :exc:`NoSuchIncidentReportError` when the given incident report number
+        :meth:`DataStore.fieldReportWithNumber` raises
+        :exc:`NoSuchFieldReportError` when the given field report number
         is too large for the database.
         """
         store = await self.store()
 
         try:
-            await store.incidentReportWithNumber(
-                anEvent.id, store.maxIncidentNumber + 1
-            )
-        except NoSuchIncidentReportError:
+            await store.fieldReportWithNumber(anEvent.id, store.maxIncidentNumber + 1)
+        except NoSuchFieldReportError:
             pass
         else:
-            self.fail("NoSuchIncidentReportError not raised")
+            self.fail("NoSuchFieldReportError not raised")
 
     @asyncAsDeferred
-    async def test_incidentReportWithNumber_error(self) -> None:
+    async def test_fieldReportWithNumber_error(self) -> None:
         """
-        :meth:`DataStore.incidentReportWithNumber` raises :exc:`StorageError`
-        when the given incident report number is too large for the database.
+        :meth:`DataStore.fieldReportWithNumber` raises :exc:`StorageError`
+        when the given field report number is too large for the database.
         """
         store = await self.store()
         store.bringThePain()
 
         try:
-            await store.incidentReportWithNumber(anEvent.id, 1)
+            await store.fieldReportWithNumber(anEvent.id, 1)
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 
     @asyncAsDeferred
-    async def test_createIncidentReport(self) -> None:
+    async def test_createFieldReport(self) -> None:
         """
-        :meth:`DataStore.createIncidentReport` creates the given incident
+        :meth:`DataStore.createFieldReport` creates the given field
         report.
         """
         for _data in (
             (),
-            ((anIncidentReport1.replace(number=0), "Hubcap"),),
+            ((aFieldReport1.replace(number=0), "Hubcap"),),
             (
-                (anIncidentReport1.replace(number=0), "Hubcap"),
-                (anIncidentReport2.replace(number=0), "Bucket"),
+                (aFieldReport1.replace(number=0), "Hubcap"),
+                (aFieldReport2.replace(number=0), "Bucket"),
             ),
         ):
             data = cast(Iterable[tuple[IncidentReport, str]], _data)
@@ -231,68 +229,66 @@ class DataStoreIncidentReportTests(DataStoreTests):
             store = await self.store()
             await store.createEvent(anEvent)
 
-            expectedStoredIncidentReports: set[IncidentReport] = set()
+            expectedStoredFieldReports: set[IncidentReport] = set()
             nextNumber = 1
 
-            for incidentReport, author in data:
-                retrieved = await store.createIncidentReport(
-                    incidentReport=incidentReport, author=author
+            for fieldReport, author in data:
+                retrieved = await store.createFieldReport(
+                    fieldReport=fieldReport, author=author
                 )
-                expected = incidentReport.replace(number=nextNumber)
+                expected = fieldReport.replace(number=nextNumber)
 
-                self.assertIncidentReportsEqual(
+                self.assertFieldReportsEqual(
                     store, retrieved, expected, ignoreAutomatic=True
                 )
 
-                expectedStoredIncidentReports.add(expected)
+                expectedStoredFieldReports.add(expected)
                 nextNumber += 1
 
-            storedIncidentReports = sorted(await store.incidentReports(anEvent.id))
+            storedFieldReports = sorted(await store.fieldReports(anEvent.id))
 
-            self.assertEqual(
-                len(storedIncidentReports), len(expectedStoredIncidentReports)
-            )
+            self.assertEqual(len(storedFieldReports), len(expectedStoredFieldReports))
 
             for stored, expected in zip(
-                storedIncidentReports,
-                sorted(expectedStoredIncidentReports),
+                storedFieldReports,
+                sorted(expectedStoredFieldReports),
                 strict=True,
             ):
-                self.assertIncidentReportsEqual(
+                self.assertFieldReportsEqual(
                     store, stored, expected, ignoreAutomatic=True
                 )
 
     @asyncAsDeferred
-    async def test_createIncidentReport_error(self) -> None:
+    async def test_createFieldReport_error(self) -> None:
         """
-        :meth:`DataStore.createIncidentReport` raises :exc:`StorageError` when
+        :meth:`DataStore.createFieldReport` raises :exc:`StorageError` when
         the database raises an exception.
         """
         store = await self.store()
-        await store.createEvent(Event(id=aNewIncidentReport.eventID))
+        await store.createEvent(Event(id=aNewFieldReport.eventID))
         store.bringThePain()
 
         try:
-            await store.createIncidentReport(aNewIncidentReport, "Hubcap")
+            await store.createFieldReport(aNewFieldReport, "Hubcap")
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
         else:
             self.fail("StorageError not raised")
 
     @asyncAsDeferred
-    async def test_setIncidentReport_summary_error(self) -> None:
+    async def test_setFieldReport_summary_error(self) -> None:
         """
-        :meth:`DataStore.setIncident_summary` raises :exc:`StorageError` when
+        :meth:`DataStore.setFieldReport_summary` raises :exc:`StorageError` when
         the database raises an exception.
         """
         store = await self.store()
-        await store.storeIncidentReport(anIncidentReport1)
+        await store.storeFieldReport(aFieldReport1)
         store.bringThePain()
 
         try:
-            await store.setIncidentReport_summary(
-                anIncidentReport1.eventID,
-                anIncidentReport1.number,
+            await store.setFieldReport_summary(
+                aFieldReport1.eventID,
+                aFieldReport1.number,
                 "Never mind",
                 "Bucket",
             )
@@ -301,64 +297,64 @@ class DataStoreIncidentReportTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
-    async def _test_setIncidentReportAttribute(
+    async def _test_setFieldReportAttribute(
         self,
-        incidentReport: IncidentReport,
+        fieldReport: IncidentReport,
         methodName: str,
         attributeName: str,
         value: Any,
     ) -> None:
         store = await self.store()
-        await store.storeIncidentReport(incidentReport)
+        await store.storeFieldReport(fieldReport)
 
         setter = cast(
             Callable[[str, int, str, str], Awaitable[None]],
             getattr(store, methodName),
         )
 
-        await setter(incidentReport.eventID, incidentReport.number, value, "Hubcap")
+        await setter(fieldReport.eventID, fieldReport.number, value, "Hubcap")
 
-        retrieved = await store.incidentReportWithNumber(
-            incidentReport.eventID, incidentReport.number
+        retrieved = await store.fieldReportWithNumber(
+            fieldReport.eventID, fieldReport.number
         )
 
-        # Replace the specified incident attribute with the given value.
+        # Replace the specified field report attribute with the given value.
         # This is a bit complex because we're recursing into sub-attributes.
         attrPath = attributeName.split(".")
-        values = [incidentReport]
+        values = [fieldReport]
         for a in attrPath[:-1]:
             values.append(getattr(values[-1], a))
         values.append(value)
         for a in reversed(attrPath):
             v = values.pop()
             values[-1] = values[-1].replace(**{a: v})
-        incidentReport = values[0]
+        fieldReport = values[0]
 
-        self.assertIncidentReportsEqual(
-            store, retrieved, incidentReport, ignoreAutomatic=True
+        self.assertFieldReportsEqual(
+            store, retrieved, fieldReport, ignoreAutomatic=True
         )
 
     @asyncAsDeferred
-    async def test_setIncidentReport_summary(self) -> None:
+    async def test_setFieldReport_summary(self) -> None:
         """
-        :meth:`DataStore.setIncidentReport_summary` updates the summary for the
-        given incident report in the data store.
+        :meth:`DataStore.setFieldReport_summary` updates the summary for the
+        given field report in the data store.
         """
-        for incidentReport, summary in (
-            (anIncidentReport1, "foo bar"),
-            (anIncidentReport2, ""),
+        for fieldReport, summary in (
+            (aFieldReport1, "foo bar"),
+            (aFieldReport2, ""),
         ):
-            await self._test_setIncidentReportAttribute(
-                incidentReport, "setIncidentReport_summary", "summary", summary
+            await self._test_setFieldReportAttribute(
+                fieldReport, "setFieldReport_summary", "summary", summary
             )
 
     @asyncAsDeferred
-    async def test_addReportEntriesToIncidentReport(self) -> None:
+    async def test_addReportEntriesToFieldReport(self) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncidentReport` adds the given
-        report entries to the given incident report in the data store.
+        :meth:`DataStore.addReportEntriesToFieldReport` adds the given
+        report entries to the given field report in the data store.
         """
-        incidentReport = anIncidentReport1
+        fieldReport = aFieldReport1
         author = "Bucket"
 
         for reportEntries in (
@@ -375,23 +371,21 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
             # Store test data
             store = await self.store()
-            await store.storeIncidentReport(incidentReport)
+            await store.storeFieldReport(fieldReport)
 
-            # Fetch incident report back so we have the version from the DB
-            incidentReport = await store.incidentReportWithNumber(
-                anEvent.id, incidentReport.number
+            # Fetch field report back so we have the version from the DB
+            fieldReport = await store.fieldReportWithNumber(
+                anEvent.id, fieldReport.number
             )
-            originalEntries = frozenset(incidentReport.reportEntries)
+            originalEntries = frozenset(fieldReport.reportEntries)
 
             # Add report entries
-            await store.addReportEntriesToIncidentReport(
-                anEvent.id, incidentReport.number, reportEntries, author
+            await store.addReportEntriesToFieldReport(
+                anEvent.id, fieldReport.number, reportEntries, author
             )
 
-            # Get the updated incident report with the new report entries
-            updated = await store.incidentReportWithNumber(
-                anEvent.id, incidentReport.number
-            )
+            # Get the updated field report with the new report entries
+            updated = await store.fieldReportWithNumber(anEvent.id, fieldReport.number)
             updatedEntries = frozenset(updated.reportEntries)
 
             # Updated entries minus the original entries == the added entries
@@ -403,20 +397,20 @@ class DataStoreIncidentReportTests(DataStoreTests):
             )
 
     @asyncAsDeferred
-    async def test_addReportEntriesToIncidentReport_automatic(self) -> None:
+    async def test_addReportEntriesToFieldReport_automatic(self) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncidentReport` raises
+        :meth:`DataStore.addReportEntriesToFieldReport` raises
         :exc:`ValueError` when given automatic report entries.
         """
         store = await self.store()
-        await store.storeIncidentReport(anIncidentReport1)
+        await store.storeFieldReport(aFieldReport1)
 
         reportEntry = aReportEntry.replace(automatic=True)
 
         try:
-            await store.addReportEntriesToIncidentReport(
-                anIncidentReport1.eventID,
-                anIncidentReport1.number,
+            await store.addReportEntriesToFieldReport(
+                aFieldReport1.eventID,
+                aFieldReport1.number,
                 (reportEntry,),
                 reportEntry.author,
             )
@@ -426,21 +420,21 @@ class DataStoreIncidentReportTests(DataStoreTests):
             self.fail("ValueError not raised")
 
     @asyncAsDeferred
-    async def test_addReportEntriesToIncidentReport_wrongAuthor(self) -> None:
+    async def test_addReportEntriesToFieldReport_wrongAuthor(self) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncidentReport` raises
+        :meth:`DataStore.addReportEntriesToFieldReport` raises
         :exc:`ValueError` when given report entries with an author that does
         not match the author that is adding the entries.
         """
         store = await self.store()
-        await store.storeIncidentReport(anIncidentReport1)
+        await store.storeFieldReport(aFieldReport1)
 
         otherAuthor = f"not{aReportEntry.author}"
 
         try:
-            await store.addReportEntriesToIncidentReport(
-                anIncidentReport1.eventID,
-                anIncidentReport1.number,
+            await store.addReportEntriesToFieldReport(
+                aFieldReport1.eventID,
+                aFieldReport1.number,
                 (aReportEntry,),
                 otherAuthor,
             )
@@ -450,19 +444,19 @@ class DataStoreIncidentReportTests(DataStoreTests):
             self.fail("ValueError not raised")
 
     @asyncAsDeferred
-    async def test_addReportEntriesToIncidentReport_error(self) -> None:
+    async def test_addReportEntriesToFieldReport_error(self) -> None:
         """
-        :meth:`DataStore.addReportEntriesToIncidentReport` raises
+        :meth:`DataStore.addReportEntriesToFieldReport` raises
         :exc:`StorageError` when the database raises an exception.
         """
         store = await self.store()
-        await store.storeIncidentReport(anIncidentReport1)
+        await store.storeFieldReport(aFieldReport1)
         store.bringThePain()
 
         try:
-            await store.addReportEntriesToIncidentReport(
-                anIncidentReport1.eventID,
-                anIncidentReport1.number,
+            await store.addReportEntriesToFieldReport(
+                aFieldReport1.eventID,
+                aFieldReport1.number,
                 (aReportEntry,),
                 aReportEntry.author,
             )
@@ -472,18 +466,18 @@ class DataStoreIncidentReportTests(DataStoreTests):
             self.fail("StorageError not raised")
 
     @asyncAsDeferred
-    async def test_incidentReportsAttachedToIncident_error(self) -> None:
+    async def test_fieldReportsAttachedToIncident_error(self) -> None:
         """
-        :meth:`DataStore.incidentReportsAttachedToIncident` raises
+        :meth:`DataStore.fieldReportsAttachedToIncident` raises
         :exc:`StorageError` when the database raises an exception.
         """
         store = await self.store()
-        await store.storeIncidentReport(anIncidentReport1)
+        await store.storeFieldReport(aFieldReport1)
         store.bringThePain()
 
         try:
-            await store.incidentReportsAttachedToIncident(
-                anIncidentReport1.eventID, anIncidentReport1.number
+            await store.fieldReportsAttachedToIncident(
+                aFieldReport1.eventID, aFieldReport1.number
             )
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
@@ -491,19 +485,19 @@ class DataStoreIncidentReportTests(DataStoreTests):
             self.fail("StorageError not raised")
 
     @asyncAsDeferred
-    async def test_attachIncidentReportToIncident_error(self) -> None:
+    async def test_attachFieldReportToIncident_error(self) -> None:
         """
-        :meth:`DataStore.attachIncidentReportToIncident` raises
+        :meth:`DataStore.attachFieldReportToIncident` raises
         :exc:`StorageError` when the database raises an exception.
         """
         store = await self.store()
         await store.storeIncident(anIncident1)
-        await store.storeIncidentReport(anIncidentReport1)
+        await store.storeFieldReport(aFieldReport1)
         store.bringThePain()
 
         try:
-            await store.attachIncidentReportToIncident(
-                anIncidentReport1.number,
+            await store.attachFieldReportToIncident(
+                aFieldReport1.number,
                 anIncident1.eventID,
                 anIncident1.number,
                 "Hubcap",
@@ -514,17 +508,17 @@ class DataStoreIncidentReportTests(DataStoreTests):
             self.fail("StorageError not raised")
 
     @asyncAsDeferred
-    async def test_detachIncidentReportFromIncident_error(self) -> None:
+    async def test_detachFieldReportFromIncident_error(self) -> None:
         """
-        :meth:`DataStore.detachIncidentReportFromIncident` raises
+        :meth:`DataStore.detachFieldReportFromIncident` raises
         :exc:`StorageError` when the database raises an exception.
         """
         store = await self.store()
         await store.storeIncident(anIncident1)
-        await store.storeIncidentReport(anIncidentReport1)
+        await store.storeFieldReport(aFieldReport1)
 
-        await store.attachIncidentReportToIncident(
-            anIncidentReport1.number,
+        await store.attachFieldReportToIncident(
+            aFieldReport1.number,
             anIncident1.eventID,
             anIncident1.number,
             "Hubcap",
@@ -532,8 +526,8 @@ class DataStoreIncidentReportTests(DataStoreTests):
         store.bringThePain()
 
         try:
-            await store.detachIncidentReportFromIncident(
-                anIncidentReport1.number,
+            await store.detachFieldReportFromIncident(
+                aFieldReport1.number,
                 anIncident1.eventID,
                 anIncident1.number,
                 "Hubcap",
@@ -543,7 +537,7 @@ class DataStoreIncidentReportTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
-    def assertMultipleIncidentReportsEqual(
+    def assertMultipleFieldReportsEqual(
         self,
         store: TestDataStoreABC,
         groupA: Sequence[IncidentReport],
@@ -556,22 +550,22 @@ class DataStoreIncidentReportTests(DataStoreTests):
 
         for a in groupA:
             self.assertIn(a.number, bByNumber)
-            self.assertIncidentReportsEqual(store, a, bByNumber[a.number])
+            self.assertFieldReportsEqual(store, a, bByNumber[a.number])
 
-    def assertIncidentReportsEqual(
+    def assertFieldReportsEqual(
         self,
         store: TestDataStoreABC,
-        incidentReportA: IncidentReport,
-        incidentReportB: IncidentReport,
+        fieldReportA: IncidentReport,
+        fieldReportB: IncidentReport,
         ignoreAutomatic: bool = False,
     ) -> None:
-        if incidentReportA != incidentReportB:
+        if fieldReportA != fieldReportB:
             messages = []
 
             for attribute in attrsFields(IncidentReport):
                 name = attribute.name
-                valueA = getattr(incidentReportA, name)
-                valueB = getattr(incidentReportB, name)
+                valueA = getattr(fieldReportA, name)
+                valueB = getattr(fieldReportB, name)
 
                 if name == "created":
                     if store.dateTimesEqual(valueA, valueB):
@@ -585,4 +579,4 @@ class DataStoreIncidentReportTests(DataStoreTests):
                     messages.append(f"{name} {valueA!r} != {valueB!r}")
 
             if messages:
-                self.fail("incident reports do not match:\n" + "\n".join(messages))
+                self.fail("field reports do not match:\n" + "\n".join(messages))

@@ -32,7 +32,7 @@ title = "Field Report Details"
 @mutable(kw_only=True)
 class FieldReportTemplatePage(Page):
     """
-    Incident report template page.
+    Field report template page.
     """
 
     name: str = title
