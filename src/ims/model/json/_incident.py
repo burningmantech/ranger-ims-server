@@ -20,7 +20,7 @@ JSON serialization/deserialization for incidents
 
 from datetime import datetime as DateTime
 from enum import Enum, unique
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from .._entry import ReportEntry
 from .._incident import Incident
@@ -67,7 +67,7 @@ class IncidentJSONType(Enum):
     created = DateTime
     state = IncidentState
     priority = IncidentPriority
-    summary = Optional[str]
+    summary = str | None
     location = Location
     rangerHandles = set[str]
     incidentTypes = set[str]

@@ -18,7 +18,7 @@
 Tests for :mod:`ranger-ims-server.store` database stores
 """
 
-from typing import ClassVar, Optional, cast
+from typing import ClassVar, cast
 
 from attrs import frozen
 from twisted.logger import Logger
@@ -70,7 +70,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         incident = self.normalizeIncidentAddress(incident)
 
         location = incident.location
-        address = cast(Optional[RodGarettAddress], location.address)
+        address = cast(RodGarettAddress | None, location.address)
 
         txn.execute(
             store.query.createEventOrIgnore.text,

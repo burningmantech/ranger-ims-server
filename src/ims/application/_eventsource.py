@@ -21,7 +21,7 @@ HTML5 EventSource support.
 from collections import deque
 from collections.abc import Mapping
 from time import time
-from typing import Any, ClassVar, Deque
+from typing import Any, ClassVar
 
 from attrs import field, frozen
 from twisted.logger import ILogObserver, Logger
@@ -76,7 +76,7 @@ class DataStoreEventSourceLogObserver:
     _log: ClassVar[Logger] = Logger()
 
     _listeners: list[IRequest] = field(init=False, factory=list)
-    _events: Deque[tuple[int, Event]] = field(
+    _events: deque[tuple[int, Event]] = field(
         init=False, factory=lambda: deque(maxlen=1000)
     )
     _start: float = field(init=False, factory=time)

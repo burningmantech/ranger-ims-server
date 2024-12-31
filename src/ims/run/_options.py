@@ -22,7 +22,7 @@ from collections.abc import Mapping, MutableMapping, Sequence
 from pathlib import Path
 from sys import stderr, stdin, stdout
 from textwrap import dedent
-from typing import IO, Any, ClassVar, Optional, cast
+from typing import IO, Any, ClassVar, cast
 
 from attrs import frozen
 from twisted.application.runner._exit import ExitStatus, exit
@@ -52,7 +52,7 @@ def openFile(fileName: str, mode: str) -> IO[Any]:
 
     def openNamedFile() -> IO[Any]:
         try:
-            file = Path(fileName).open(mode)
+            file = Path(fileName).open(mode)  # noqa: SIM115
         except OSError as e:
             exit(ExitStatus.EX_IOERR, f"Unable to open file {fileName!r}: {e}")
         return file
@@ -245,7 +245,7 @@ class IMSOptions(Options):
     def initConfig(self) -> None:
         try:
             configFile = cast(
-                Optional[Path], cast(Mapping[str, Any], self).get("configFile")
+                Path | None, cast(Mapping[str, Any], self).get("configFile")
             )
 
             if configFile and not configFile.is_file():
