@@ -22,37 +22,16 @@ function initFieldReportsPage() {
         disableEditing();
         initFieldReportsTable();
 
-        let command = false;
-
-        function addFieldKeyDown() {
-            const keyCode = event.keyCode;
-
-            // 17 = control, 18 = option
-            if (keyCode === 17 || keyCode === 18) {
-                command = true;
+        function addFieldKeyUp(e) {
+            // holding alt/option or ctrl
+            if (e.altKey || e.ctrlKey) {
+                // 78 = n
+                if (e.keyCode === 78) {
+                    $("#new_field_report").click();
+                }
             }
-
-            // console.warn(keyCode);
         }
 
-        function addFieldKeyUp() {
-            const keyCode = event.keyCode;
-
-            // 17 = control, 18 = option
-            if (keyCode === 17 || keyCode === 18) {
-                command = false;
-                return;
-            }
-
-            // 78 = n
-            if (command && keyCode === 78) {
-                $("#new_field_report").click();
-            }
-
-            // if (command) { console.warn(keyCode); }
-        }
-
-        document.onkeydown = addFieldKeyDown;
         document.onkeyup   = addFieldKeyUp;
     }
 

@@ -64,35 +64,16 @@ function initIncidentPage() {
 
         // Keyboard shortcuts
 
-        let command = false;
-
-        function addFieldKeyDown() {
-            const keyCode = event.keyCode;
-
-            // 17 = control, 18 = option
-            if (keyCode === 17 || keyCode === 18) {
-                command = true;
-            }
-
-            // console.warn(keyCode);
-        }
-
-        function addFieldKeyUp() {
-            const keyCode = event.keyCode;
-
-            // 17 = control, 18 = option
-            if (keyCode === 17 || keyCode === 18) {
-                command = false;
-                return;
-            }
-
-            // 13 = return
-            if (command && keyCode === 13) {
-                submitReportEntry();
+        function addFieldKeyUp(e) {
+            // holding alt/option or ctrl
+            if (e.altKey || e.ctrlKey) {
+                // 13 = return
+                if (e.keyCode === 13) {
+                    submitReportEntry();
+                }
             }
         }
 
-        $("#report_entry_add")[0].onkeydown = addFieldKeyDown;
         $("#report_entry_add")[0].onkeyup   = addFieldKeyUp;
     }
 
