@@ -24,15 +24,23 @@ function initIncidentsPage() {
 
         // Keyboard shortcuts
         document.addEventListener("keydown", function(e) {
+            // No shortcuts when an input field is active
             if (document.activeElement !== document.body) {
                 return;
             }
+            // No shortcuts when ctrl, alt, or meta is being held down
             if (e.altKey || e.ctrlKey || e.metaKey) {
                 return;
             }
+            // / --> jump to search box
+            if (e.key === "/") {
+                // don't immediately input a "/" into the search box
+                e.preventDefault();
+                document.getElementById("search_input").focus();
+            }
             // n --> new incident
             if (e.key.toLowerCase() === "n") {
-                $("#new_incident").click();
+                document.getElementById("new_incident").click();
             }
             // a --> show all for this event
             if (e.key.toLowerCase() === "a") {

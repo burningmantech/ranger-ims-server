@@ -64,15 +64,17 @@ function initIncidentPage() {
 
         // Keyboard shortcuts
         document.addEventListener("keydown", function(e) {
+            // No shortcuts when an input field is active
             if (document.activeElement !== document.body) {
                 return;
             }
+            // No shortcuts when ctrl, alt, or meta is being held down
             if (e.altKey || e.ctrlKey || e.metaKey) {
                 return;
             }
             // h --> toggle showing system entries
             if (e.key.toLowerCase() === "h") {
-                $("#history_checkbox").click();
+                document.getElementById("history_checkbox").click();
             }
         });
         $("#report_entry_add")[0].addEventListener("keydown", function (e) {
