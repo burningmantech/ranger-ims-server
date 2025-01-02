@@ -76,7 +76,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
             schemaInfo.lower(),
             dedent(
                 """
-                Version: 4
+                Version: 5
                 ACCESS_MODE:
                   0: ID(text) not null *1
                 CONCENTRIC_STREET:
@@ -90,6 +90,16 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   0: EVENT(integer) not null *1
                   1: EXPRESSION(text) not null *2
                   2: MODE(text) not null
+                FIELD_REPORT:
+                  0: EVENT(integer) not null *1
+                  1: NUMBER(integer) not null *2
+                  2: CREATED(real) not null
+                  3: SUMMARY(text)
+                  4: INCIDENT_NUMBER(integer)
+                FIELD_REPORT__REPORT_ENTRY:
+                  0: EVENT(integer) not null *1
+                  1: FIELD_REPORT_NUMBER(integer) not null *2
+                  2: REPORT_ENTRY(integer) not null *3
                 INCIDENT:
                   0: EVENT(integer) not null *1
                   1: NUMBER(integer) not null *2
@@ -102,16 +112,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   8: LOCATION_RADIAL_HOUR(integer)
                   9: LOCATION_RADIAL_MINUTE(integer)
                   10: LOCATION_DESCRIPTION(text)
-                INCIDENT_REPORT:
-                  0: EVENT(integer) not null *1
-                  1: NUMBER(integer) not null *2
-                  2: CREATED(real) not null
-                  3: SUMMARY(text)
-                  4: INCIDENT_NUMBER(integer)
-                INCIDENT_REPORT__REPORT_ENTRY:
-                  0: EVENT(integer) not null *1
-                  1: INCIDENT_REPORT_NUMBER(integer) not null *2
-                  2: REPORT_ENTRY(integer) not null *3
                 INCIDENT_STATE:
                   0: ID(text) not null *1
                 INCIDENT_TYPE:
@@ -171,7 +171,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
             r"",
             r"  -- query --",
             r"",
-            r"    update INCIDENT_REPORT set INCIDENT_NUMBER = :value",
+            r"    update FIELD_REPORT set INCIDENT_NUMBER = :value",
             r"    where EVENT = "
             r"\(select ID from EVENT where NAME = :eventID\) "
             r"and NUMBER = :fieldReportNumber",

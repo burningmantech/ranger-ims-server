@@ -624,9 +624,9 @@ class DatabaseStore(IMSDataStore):
                 loads(str(row["INCIDENT_TYPES"])) if row["INCIDENT_TYPES"] else []
             )
             fieldReportNumbers = []
-            if row["INCIDENT_REPORT_NUMBERS"]:
+            if row["FIELD_REPORT_NUMBERS"]:
                 fieldReportNumbers = [
-                    int(val) for val in loads(str(row["INCIDENT_REPORT_NUMBERS"]))
+                    int(val) for val in loads(str(row["FIELD_REPORT_NUMBERS"]))
                 ]
             incidentNumber = cast(int, row["NUMBER"])
             results.append(
@@ -1456,7 +1456,7 @@ class DatabaseStore(IMSDataStore):
         # field report number -> report entry
         reports = defaultdict[int, list[ReportEntry]](list)
         for row in txn.fetchall():
-            fieldReportNumber = cast(int, row["INCIDENT_REPORT_NUMBER"])
+            fieldReportNumber = cast(int, row["FIELD_REPORT_NUMBER"])
             reports[fieldReportNumber].append(
                 ReportEntry(
                     created=self.fromDateTimeValue(row["CREATED"]),
