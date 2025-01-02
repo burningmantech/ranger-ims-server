@@ -22,17 +22,13 @@ function initIncidentsPage() {
         disableEditing();
         loadEventFieldReports(initIncidentsTable);
 
-        function addFieldKeyUp(e) {
-            // holding alt/option or ctrl
-            if (e.altKey || e.ctrlKey) {
-                // 78 = n
-                if (e.keyCode === 78) {
-                    $("#new_incident").click();
-                }
+        function addFieldKeyDown(e) {
+            if (e.ctrlKey && e.key === "n") {
+                $("#new_incident").click();
             }
         }
 
-        document.onkeyup   = addFieldKeyUp;
+        document.onkeydown = addFieldKeyDown;
     }
 
     loadBody(loadedBody);
