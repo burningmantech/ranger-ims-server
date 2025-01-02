@@ -32,7 +32,7 @@ template_setIncidentAttribute = f"""
     """
 
 template_setFieldReportAttribute = f"""
-    update INCIDENT_REPORT set {{column}} = %(value)s
+    update FIELD_REPORT set {{column}} = %(value)s
     where EVENT = ({query_eventID}) and NUMBER = %(fieldReportNumber)s
     """
 
@@ -152,7 +152,7 @@ queries = Queries(
         select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
         where
             ID not in (select REPORT_ENTRY from INCIDENT__REPORT_ENTRY) and
-            ID not in (select REPORT_ENTRY from INCIDENT_REPORT__REPORT_ENTRY)
+            ID not in (select REPORT_ENTRY from FIELD_REPORT__REPORT_ENTRY)
         """,
     ),
     incident=Query(
@@ -237,10 +237,10 @@ queries = Queries(
             ) as INCIDENT_TYPES,
             (
                 select json_arrayagg(irep.NUMBER)
-                from INCIDENT_REPORT irep
+                from FIELD_REPORT irep
                 where i.EVENT = irep.EVENT
                     and i.NUMBER = irep.INCIDENT_NUMBER
-            ) as INCIDENT_REPORT_NUMBERS,
+            ) as FIELD_REPORT_NUMBERS,
             (
                 select json_arrayagg(ir.RANGER_HANDLE)
                 from INCIDENT__RANGER ir
@@ -392,7 +392,7 @@ queries = Queries(
     fieldReport=Query(
         "look up field report",
         f"""
-        select CREATED, SUMMARY, INCIDENT_NUMBER from INCIDENT_REPORT
+        select CREATED, SUMMARY, INCIDENT_NUMBER from FIELD_REPORT
         where EVENT = ({query_eventID}) and NUMBER = %(fieldReportNumber)s
         """,
     ),
@@ -401,24 +401,24 @@ queries = Queries(
         f"""
         select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
         where ID in (
-            select REPORT_ENTRY from INCIDENT_REPORT__REPORT_ENTRY
+            select REPORT_ENTRY from FIELD_REPORT__REPORT_ENTRY
             where
                 EVENT = ({query_eventID}) and
-                INCIDENT_REPORT_NUMBER = %(fieldReportNumber)s
+                FIELD_REPORT_NUMBER = %(fieldReportNumber)s
         )
         """,
     ),
     fieldReportNumbers=Query(
         "look up field report numbers for event",
         f"""
-        select NUMBER from INCIDENT_REPORT
+        select NUMBER from FIELD_REPORT
         where EVENT = ({query_eventID})
         """,
     ),
     maxFieldReportNumber=Query(
         "look up maximum field report number",
         """
-        select max(NUMBER) from INCIDENT_REPORT
+        select max(NUMBER) from FIELD_REPORT
         """,
     ),
     fieldReports=Query(
@@ -430,7 +430,7 @@ queries = Queries(
             SUMMARY,
             INCIDENT_NUMBER
         from
-            INCIDENT_REPORT
+            FIELD_REPORT
         where
             EVENT = ({query_eventID})
         """,
@@ -439,14 +439,14 @@ queries = Queries(
         "look up all field report report entries for an event",
         f"""
         select
-            irre.INCIDENT_REPORT_NUMBER,
+            irre.FIELD_REPORT_NUMBER,
             re.AUTHOR,
             re.CREATED,
             re.GENERATED,
             re.ID,
             re.TEXT
         from
-            INCIDENT_REPORT__REPORT_ENTRY irre
+            FIELD_REPORT__REPORT_ENTRY irre
             join REPORT_ENTRY re
                 on irre.REPORT_ENTRY = re.ID
         where
@@ -457,7 +457,7 @@ queries = Queries(
     createFieldReport=Query(
         "create field report",
         f"""
-        insert into INCIDENT_REPORT (
+        insert into FIELD_REPORT (
             EVENT, NUMBER, CREATED, SUMMARY, INCIDENT_NUMBER
         )
         values (
@@ -472,8 +472,8 @@ queries = Queries(
     attachReportEntryToFieldReport=Query(
         "add report entry to field report",
         f"""
-        insert into INCIDENT_REPORT__REPORT_ENTRY (
-            EVENT, INCIDENT_REPORT_NUMBER, REPORT_ENTRY
+        insert into FIELD_REPORT__REPORT_ENTRY (
+            EVENT, FIELD_REPORT_NUMBER, REPORT_ENTRY
         )
         values (({query_eventID}), %(fieldReportNumber)s, %(reportEntryID)s)
         """,
@@ -489,14 +489,14 @@ queries = Queries(
     detachedFieldReportNumbers=Query(
         "look up detached field report numbers",
         f"""
-        select NUMBER from INCIDENT_REPORT
+        select NUMBER from FIELD_REPORT
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER is null
         """,
     ),
     attachedFieldReportNumbers=Query(
         "look up attached field report numbers",
         f"""
-        select NUMBER from INCIDENT_REPORT
+        select NUMBER from FIELD_REPORT
         where
             EVENT = ({query_eventID}) and
             INCIDENT_NUMBER = %(incidentNumber)s

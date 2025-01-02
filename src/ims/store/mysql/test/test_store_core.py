@@ -144,7 +144,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         self.assertEqual(
             dedent(
                 """
-                Version: 7
+                Version: 8
                 CONCENTRIC_STREET:
                   1: EVENT(int) not null
                   2: ID(varchar(16)) not null
@@ -156,6 +156,16 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   1: EVENT(int) not null
                   2: EXPRESSION(varchar(128)) not null
                   3: MODE(enum(6)) not null
+                FIELD_REPORT:
+                  1: EVENT(int) not null
+                  2: NUMBER(int) not null
+                  3: CREATED(double) not null
+                  4: SUMMARY(varchar(1024)) := NULL
+                  5: INCIDENT_NUMBER(int) := NULL
+                FIELD_REPORT__REPORT_ENTRY:
+                  1: EVENT(int) not null
+                  2: FIELD_REPORT_NUMBER(int) not null
+                  3: REPORT_ENTRY(int) not null
                 INCIDENT:
                   1: EVENT(int) not null
                   2: NUMBER(int) not null
@@ -168,16 +178,6 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   9: LOCATION_RADIAL_HOUR(tinyint) := NULL
                   10: LOCATION_RADIAL_MINUTE(tinyint) := NULL
                   11: LOCATION_DESCRIPTION(varchar(1024)) := NULL
-                INCIDENT_REPORT:
-                  1: EVENT(int) not null
-                  2: NUMBER(int) not null
-                  3: CREATED(double) not null
-                  4: SUMMARY(varchar(1024)) := NULL
-                  5: INCIDENT_NUMBER(int) := NULL
-                INCIDENT_REPORT__REPORT_ENTRY:
-                  1: EVENT(int) not null
-                  2: INCIDENT_REPORT_NUMBER(int) not null
-                  3: REPORT_ENTRY(int) not null
                 INCIDENT_TYPE:
                   1: ID(int) not null
                   2: NAME(varchar(128)) not null
