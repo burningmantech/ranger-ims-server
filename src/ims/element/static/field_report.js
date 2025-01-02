@@ -30,8 +30,8 @@ function initFieldReportPage() {
         }
 
         // Warn the user if they're about to navigate away with unsaved text.
-        window.addEventListener('beforeunload', function (e) {
-            if (document.getElementById("report_entry_add").value !== '') {
+        window.addEventListener("beforeunload", function (e) {
+            if (document.getElementById("report_entry_add").value !== "") {
                 e.preventDefault();
             }
         });
@@ -41,13 +41,11 @@ function initFieldReportPage() {
         disableEditing();
         loadAndDisplayFieldReport(loadedFieldReport);
 
-        function addFieldKeyDown(e) {
+        $("#report_entry_add")[0].addEventListener("keydown", function (e) {
             if (e.ctrlKey && e.key === "Enter") {
                 submitReportEntry();
             }
-        }
-
-        $("#report_entry_add")[0].onkeydown = addFieldKeyDown;
+        });
     }
 
     loadBody(loadedBody);

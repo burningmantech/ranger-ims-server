@@ -22,13 +22,26 @@ function initFieldReportsPage() {
         disableEditing();
         initFieldReportsTable();
 
-        function addFieldKeyDown(e) {
-            if (e.ctrlKey && e.key === "n") {
+        // Keyboard shortcuts
+        document.addEventListener("keydown", function(e) {
+            // don't trigger if the user has an input field selected
+            if (document.activeElement !== document.body) {
+                return;
+            }
+            if (e.altKey || e.ctrlKey || e.metaKey) {
+                return;
+            }
+            // n --> new incident
+            if (e.key.toLowerCase() === "n") {
                 $("#new_field_report").click();
             }
-        }
-
-        document.onkeydown = addFieldKeyDown;
+            // a --> show all for this event
+            if (e.key.toLowerCase() === "a") {
+                showDays(null);
+                showRows(null);
+            }
+            // TODO: should there also be a shortcut to show the default filters?
+        });
     }
 
     loadBody(loadedBody);
@@ -195,6 +208,9 @@ function initTableButtons() {
 // Initialize search field
 //
 
+const _searchDelayMs = 250;
+let _searchDelayTimer = null;
+
 function initSearchField() {
     // Relocate search container
 
@@ -204,11 +220,21 @@ function initSearchField() {
         .replaceWith($("#search_container"));
 
     // Search field handling
-
-    $("#search_input").on("keyup", function () {
-        fieldReportsTable.search(this.value);
-        fieldReportsTable.draw();
-    });
+    document.getElementById("search_input")
+        .addEventListener("keyup",
+            function () {
+                // Delay the search in case the user is still typing.
+                // This reduces perceived lag, since searching can be
+                // very slow, and it's super annoying for a user when
+                // the page fully locks up before they're done typing.
+                clearTimeout(_searchDelayTimer);
+                const val = this.value;
+                _searchDelayTimer = setTimeout(function () {
+                    fieldReportsTable.search(val);
+                    fieldReportsTable.draw();
+                }, _searchDelayMs);
+            }
+        );
 }
 
 
