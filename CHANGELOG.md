@@ -16,6 +16,14 @@ Each month below should look like the following, using the same ordering for the
 ### Fixed
 -->
 
+## 2025-01
+
+<!-- TODO: document keyboard shortcut updates, once they've settled down a bit -->
+
+### Added
+
+- Created a slight pause after search field input prior to actually running the search. This will reduce perceived latency in typing/deleting in the search field. https://github.com/burningmantech/ranger-ims-server/issues/1481 https://github.com/burningmantech/ranger-ims-server/pull/1483
+
 ## 2024-12
 
 ### Changed
