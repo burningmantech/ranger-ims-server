@@ -64,17 +64,13 @@ function initIncidentPage() {
 
         // Keyboard shortcuts
 
-        function addFieldKeyUp(e) {
-            // holding alt/option or ctrl
-            if (e.altKey || e.ctrlKey) {
-                // 13 = return
-                if (e.keyCode === 13) {
-                    submitReportEntry();
-                }
+        function addFieldKeyDown(e) {
+            if (e.ctrlKey && e.key === "Enter") {
+                submitReportEntry();
             }
         }
 
-        $("#report_entry_add")[0].onkeyup   = addFieldKeyUp;
+        $("#report_entry_add")[0].onkeydown = addFieldKeyDown;
     }
 
     loadBody(loadedBody);

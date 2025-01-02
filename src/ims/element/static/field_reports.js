@@ -22,17 +22,13 @@ function initFieldReportsPage() {
         disableEditing();
         initFieldReportsTable();
 
-        function addFieldKeyUp(e) {
-            // holding alt/option or ctrl
-            if (e.altKey || e.ctrlKey) {
-                // 78 = n
-                if (e.keyCode === 78) {
-                    $("#new_field_report").click();
-                }
+        function addFieldKeyDown(e) {
+            if (e.ctrlKey && e.key === "n") {
+                $("#new_field_report").click();
             }
         }
 
-        document.onkeyup   = addFieldKeyUp;
+        document.onkeydown = addFieldKeyDown;
     }
 
     loadBody(loadedBody);
