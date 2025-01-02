@@ -37,8 +37,8 @@ function initIncidentPage() {
         }
 
         // Warn the user if they're about to navigate away with unsaved text.
-        window.addEventListener('beforeunload', function (e) {
-            if (document.getElementById("report_entry_add").value !== '') {
+        window.addEventListener("beforeunload", function (e) {
+            if (document.getElementById("report_entry_add").value !== "") {
                 e.preventDefault();
             }
         });
@@ -63,14 +63,23 @@ function initIncidentPage() {
         }
 
         // Keyboard shortcuts
-
-        function addFieldKeyDown(e) {
+        document.addEventListener("keydown", function(e) {
+            if (document.activeElement !== document.body) {
+                return;
+            }
+            if (e.altKey || e.ctrlKey || e.metaKey) {
+                return;
+            }
+            // h --> toggle showing system entries
+            if (e.key.toLowerCase() === "h") {
+                $("#history_checkbox").click();
+            }
+        });
+        $("#report_entry_add")[0].addEventListener("keydown", function (e) {
             if (e.ctrlKey && e.key === "Enter") {
                 submitReportEntry();
             }
-        }
-
-        $("#report_entry_add")[0].onkeydown = addFieldKeyDown;
+        });
     }
 
     loadBody(loadedBody);
