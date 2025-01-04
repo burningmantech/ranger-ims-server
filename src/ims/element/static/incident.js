@@ -72,9 +72,18 @@ function initIncidentPage() {
             if (e.altKey || e.ctrlKey || e.metaKey) {
                 return;
             }
+            // ? --> show help modal
+            if (e.key === "?") {
+                $("#helpModal").modal("toggle");
+            }
             // h --> toggle showing system entries
             if (e.key.toLowerCase() === "h") {
                 document.getElementById("history_checkbox").click();
+            }
+        });
+        document.getElementById("helpModal").addEventListener("keydown", function(e) {
+            if (e.key === "?") {
+                $("#helpModal").modal("toggle");
             }
         });
         $("#report_entry_add")[0].addEventListener("keydown", function (e) {

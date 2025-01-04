@@ -41,6 +41,26 @@ function initFieldReportPage() {
         disableEditing();
         loadAndDisplayFieldReport(loadedFieldReport);
 
+        // Keyboard shortcuts
+        document.addEventListener("keydown", function(e) {
+            // No shortcuts when an input field is active
+            if (document.activeElement !== document.body) {
+                return;
+            }
+            // No shortcuts when ctrl, alt, or meta is being held down
+            if (e.altKey || e.ctrlKey || e.metaKey) {
+                return;
+            }
+            // ? --> show help modal
+            if (e.key === "?") {
+                $("#helpModal").modal("toggle");
+            }
+        });
+        document.getElementById("helpModal").addEventListener("keydown", function(e) {
+            if (e.key === "?") {
+                $("#helpModal").modal("toggle");
+            }
+        });
         $("#report_entry_add")[0].addEventListener("keydown", function (e) {
             if (e.ctrlKey && e.key === "Enter") {
                 submitReportEntry();

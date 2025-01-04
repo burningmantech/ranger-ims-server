@@ -32,6 +32,10 @@ function initFieldReportsPage() {
             if (e.altKey || e.ctrlKey || e.metaKey) {
                 return;
             }
+            // ? --> show help modal
+            if (e.key === "?") {
+                $("#helpModal").modal("toggle");
+            }
             // / --> jump to search box
             if (e.key === "/") {
                 // don't immediately input a "/" into the search box
@@ -48,6 +52,11 @@ function initFieldReportsPage() {
                 showRows(null);
             }
             // TODO: should there also be a shortcut to show the default filters?
+        });
+        document.getElementById("helpModal").addEventListener("keydown", function(e) {
+            if (e.key === "?") {
+                $("#helpModal").modal("toggle");
+            }
         });
     }
 
