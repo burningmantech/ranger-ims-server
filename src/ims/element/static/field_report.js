@@ -73,7 +73,7 @@ function initFieldReportPage() {
 
 // Set the user-visible error information on the page to the provided string.
 function setErrorMessage(msg) {
-    msg = "Error: Please reload this page. (Cause: " + msg + ")"
+    msg = "Error: (Cause: " + msg + ")"
     $("#error_info").removeClass("hidden");
     $("#error_text").text(msg);
 }
@@ -108,8 +108,8 @@ function loadFieldReport(success) {
 
     function fail(error, status, xhr) {
         disableEditing();
-        const message = "Failed to load field report";
-        console.error(message + ": " + error);
+        const message = "Failed to load field report: " + error;
+        console.error(message);
         setErrorMessage(message);
     }
 

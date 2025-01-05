@@ -123,8 +123,8 @@ function loadIncident(success) {
 
     function fail(error, status, xhr) {
         disableEditing();
-        const message = "Failed to load incident";
-        console.error(message + ": " + error);
+        const message = "Failed to load Incident " + number + ": " + error;
+        console.error(message);
         setErrorMessage(message);
     }
 
@@ -143,7 +143,7 @@ function loadIncident(success) {
 
 // Set the user-visible error information on the page to the provided string.
 function setErrorMessage(msg) {
-    msg = "Error: Please reload this page. (Cause: " + msg + ")"
+    msg = "Error: (Cause: " + msg + ")"
     $("#error_info").removeClass("hidden");
     $("#error_text").text(msg);
 }
