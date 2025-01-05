@@ -20,9 +20,13 @@ Each month below should look like the following, using the same ordering for the
 
 <!-- TODO: document keyboard shortcut updates, once they've settled down a bit -->
 
-### Added
+### Changed
 
 - Created a slight pause after search field input prior to actually running the search. This will reduce perceived latency in typing/deleting in the search field. https://github.com/burningmantech/ranger-ims-server/issues/1481 https://github.com/burningmantech/ranger-ims-server/pull/1483
+
+### Added
+
+- Added help modals, toggled by pressing "?", which show keyboard shortcuts for the current page. https://github.com/burningmantech/ranger-ims-server/issues/1482
 
 ## 2024-12
 
