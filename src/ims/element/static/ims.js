@@ -113,6 +113,8 @@ function htmlAsText(html) {
     return _domTextAreaForHaxxors.textContent;
 }
 
+const integerRegExp = /^\d+$/;
+
 
 //
 // URL substitution

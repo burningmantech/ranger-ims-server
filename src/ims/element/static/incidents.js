@@ -108,7 +108,7 @@ function loadEventFieldReports(success) {
 
 // Set the user-visible error information on the page to the provided string.
 function setErrorMessage(msg) {
-    msg = "Error: Please reload this page. (Cause: " + msg + ")"
+    msg = "Error: (Cause: " + msg + ")"
     $("#error_info").removeClass("hidden");
     $("#error_text").text(msg);
 }
@@ -320,21 +320,46 @@ function initSearchField() {
         .replaceWith($("#search_container"));
 
     // Search field handling
-    document.getElementById("search_input")
-        .addEventListener("keyup",
-            function () {
-                // Delay the search in case the user is still typing.
-                // This reduces perceived lag, since searching can be
-                // very slow, and it's super annoying for a user when
-                // the page fully locks up before they're done typing.
-                clearTimeout(_searchDelayTimer);
-                const val = this.value;
-                _searchDelayTimer = setTimeout(function () {
-                    incidentsTable.search(val);
-                    incidentsTable.draw();
-                }, _searchDelayMs);
+    const searchInput = document.getElementById("search_input");
+    searchInput.addEventListener("keyup",
+        function () {
+            // Delay the search in case the user is still typing.
+            // This reduces perceived lag, since searching can be
+            // very slow, and it's super annoying for a user when
+            // the page fully locks up before they're done typing.
+            clearTimeout(_searchDelayTimer);
+            const val = this.value;
+            _searchDelayTimer = setTimeout(function () {
+                incidentsTable.search(val);
+                incidentsTable.draw();
+            }, _searchDelayMs);
+        }
+    );
+    searchInput.addEventListener("keydown",
+        function (e) {
+            // No shortcuts when ctrl, alt, or meta is being held down
+            if (e.altKey || e.ctrlKey || e.metaKey) {
+                return;
             }
-        );
+            // "Jump to Incident" functionality, triggered on hitting Enter
+            if (e.key === "Enter") {
+                // If the value in the search box is an integer, assume it's an IMS number and go to it.
+                // This will work regardless of whether that incident is visible with the current filters.
+                const val = searchInput.value;
+                if (integerRegExp.test(val)) {
+                    window.location = urlReplace(url_viewIncidentNumber).replace("<number>", val);
+                }
+                // TODO(srabraham): this works, but I'm not sure yet if it's useful enough to include.
+                //
+                // // If there's exactly one visible Incident given the current search filters, then go to it.
+                // const rowsVisible = incidentsTable.rows({search:'applied'});
+                // if (rowsVisible.count() === 1) {
+                //     const targetIncident = rowsVisible.data()[0].number;
+                //     window.location = urlReplace(url_viewIncidentNumber).replace("<number>", targetIncident);
+                // }
+            }
+        }
+    );
 }
 
 
