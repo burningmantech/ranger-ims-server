@@ -152,13 +152,13 @@ function initIncidentsTable() {
             incidentsTable.rows().every( function () {
                 const existingIncident = this.data();
                 if (existingIncident.number === number) {
-                    console.log("Updating incident " + number);
+                    console.log("Updating Incident " + number);
                     this.data(updatedIncident);
                     done = true;
                 }
             });
             if (!done) {
-                console.log("Adding new incident " + number);
+                console.log("Loading new Incident " + number);
                 incidentsTable.row.add(updatedIncident);
             }
             clearErrorMessage();
@@ -166,7 +166,7 @@ function initIncidentsTable() {
         }
 
         function updateError(error) {
-            const message = "Failed to update incident " + number + ": " + error;
+            const message = "Failed to update Incident " + number + ": " + error;
             console.error(message);
             setErrorMessage(message);
         }

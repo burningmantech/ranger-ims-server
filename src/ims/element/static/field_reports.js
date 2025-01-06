@@ -187,7 +187,8 @@ function initDataTables() {
             },
         ],
         "order": [
-            [1, "asc"],
+            // creation time descending
+            [1, "dsc"],
         ],
         "createdRow": function (row, fieldReport, index) {
             $(row).click(function () {
