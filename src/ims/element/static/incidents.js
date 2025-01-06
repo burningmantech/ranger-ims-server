@@ -140,8 +140,39 @@ function initIncidentsTable() {
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = function (e) {
         const number = e.data;
-        console.log("Got incident update: " + number);
-        incidentsTable.ajax.reload(clearErrorMessage);
+
+        // Now update/create the relevant row. This is a change from pre-2025, in that
+        // we no longer reload all incidents here on any single incident update.
+        function updateSuccess(updatedIncident) {
+            let done = false;
+            incidentsTable.rows().every( function () {
+                const existingIncident = this.data();
+                if (existingIncident.number === number) {
+                    console.log("Updating incident " + number);
+                    this.data(updatedIncident);
+                    done = true;
+                }
+            });
+            if (!done) {
+                console.log("Adding new incident " + number);
+                incidentsTable.row.add(updatedIncident);
+            }
+            clearErrorMessage();
+            incidentsTable.draw();
+        }
+
+        function updateError(error) {
+            const message = "Failed to update incident " + number + ": " + error;
+            console.error(message);
+            setErrorMessage(message);
+        }
+
+        jsonRequest(
+            urlReplace(url_incidentNumber).replace("<incident_number>", number),
+            null,
+            updateSuccess,
+            updateError,
+        );
     }
 }
 
@@ -176,7 +207,7 @@ function initDataTables() {
                 // The "abort" case is a special snowflake.
                 // There are times we do two table refreshes in quick succession, and in
                 // those cases, the first call gets aborted. We don't want to set an error
-                // messages in those cases.
+                // message in those cases.
                 if (error === "abort") {
                     return;
                 }
