@@ -22,6 +22,7 @@ Each month below should look like the following, using the same ordering for the
 
 ### Changed
 
+- Sped up the incidents page background refresh by only refreshing the incident that changed. Previously we reloaded all the data from the server for the whole table on any update to any incident. https://github.com/burningmantech/ranger-ims-server/pull/1493
 - Created a slight pause after search field input prior to actually running the search. This will reduce perceived latency in typing/deleting in the search field. https://github.com/burningmantech/ranger-ims-server/issues/1481 https://github.com/burningmantech/ranger-ims-server/pull/1483
 
 ### Added
