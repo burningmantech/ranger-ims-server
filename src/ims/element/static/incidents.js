@@ -139,7 +139,11 @@ function initIncidentsTable() {
     requestEventSourceLock();
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = function (e) {
-        const number = e.data;
+        const number = e.data["incident_number"];
+        const event = e.data["event_id"]
+        if (event !== eventID) {
+            return;
+        }
 
         // Now update/create the relevant row. This is a change from pre-2025, in that
         // we no longer reload all incidents here on any single incident update.

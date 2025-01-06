@@ -85,7 +85,11 @@ function initFieldReportsTable() {
     requestEventSourceLock();
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = function (e) {
-        const number = e.data;
+        const number = e.data["field_report_number"];
+        const event = e.data["event_id"]
+        if (event !== eventID) {
+            return;
+        }
         console.log("Got field report update: " + number);
         fieldReportsTable.ajax.reload(clearErrorMessage);
     }
