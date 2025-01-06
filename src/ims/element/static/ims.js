@@ -994,23 +994,15 @@ function subscribeToUpdates(closed) {
     }, true);
 
     eventSource.addEventListener("Incident", function(e) {
-        const jsonText = e.data;
-        const json = JSON.parse(jsonText);
-        const number = json["incident_number"];
-
         const send = new BroadcastChannel(incidentChannelName);
-        send.postMessage(number);
+        send.postMessage(JSON.parse(e.data));
     }, true);
 
     // TODO: this will never receive any events currently, since the server isn't configured to
     //  fire events for FieldReports. See
     //  https://github.com/burningmantech/ranger-ims-server/blob/954498eb125bb9a83d2b922361abef4935f228ba/src/ims/application/_eventsource.py#L113-L135
     eventSource.addEventListener("FieldReport", function(e) {
-        const jsonText = e.data;
-        const json = JSON.parse(jsonText);
-        const number = json["field_report_number"];
-
         const send = new BroadcastChannel(fieldReportChannelName);
-        send.postMessage(number);
+        send.postMessage(JSON.parse(e.data));
     }, true);
 }

@@ -117,8 +117,10 @@ class DataStoreEventSourceLogObserver:
 
             if incident is None:
                 incidentNumber = loggerEvent.get("incidentNumber", None)
+                eventName = loggerEvent.get("eventID", "")
             else:
                 incidentNumber = incident.number
+                eventName = incident.eventID
 
             if incidentNumber is None:
                 self._log.critical(
@@ -127,7 +129,10 @@ class DataStoreEventSourceLogObserver:
                 )
                 return None
 
-            message = {"incident_number": incidentNumber}
+            message = {
+                "event_id": eventName,
+                "incident_number": incidentNumber,
+            }
 
         else:
             self._log.critical(
