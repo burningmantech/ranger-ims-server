@@ -84,6 +84,10 @@ function initIncidentPage() {
             if (e.key.toLowerCase() === "h") {
                 document.getElementById("history_checkbox").click();
             }
+            // n --> new incident
+            if (e.key.toLowerCase() === "n") {
+                window.open("./new", '_blank').focus();
+            }
         });
         document.getElementById("helpModal").addEventListener("keydown", function(e) {
             if (e.key === "?") {

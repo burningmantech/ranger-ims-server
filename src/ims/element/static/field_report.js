@@ -55,6 +55,10 @@ function initFieldReportPage() {
             if (e.key === "?") {
                 $("#helpModal").modal("toggle");
             }
+            // n --> new field report
+            if (e.key.toLowerCase() === "n") {
+                window.open("./new", '_blank').focus();
+            }
         });
         document.getElementById("helpModal").addEventListener("keydown", function(e) {
             if (e.key === "?") {
