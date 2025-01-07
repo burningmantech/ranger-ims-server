@@ -56,9 +56,9 @@ function initIncidentPage() {
         incidentChannel.onmessage = function (e) {
             const number = e.data["incident_number"];
             const event = e.data["event_id"]
-            const missedUpdate = e.data["missed_update"];
+            const updateAll = e.data["update_all"];
 
-            if (missedUpdate || (event === eventID && number === incidentNumber)) {
+            if (updateAll || (event === eventID && number === incidentNumber)) {
                 console.log("Got incident update: " + number);
                 loadAndDisplayIncident();
                 loadAndDisplayFieldReports();

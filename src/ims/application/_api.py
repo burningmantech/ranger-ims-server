@@ -1111,6 +1111,9 @@ class APIApplication:
         """
         self._log.debug("Event source connected: {id}", id=id(request))
 
+        # Note that we don't read the Last-Event-Id header, which browsers provide
+        # on automated reconnection. We don't need it.
+
         # Clear the cookies on the response. Without this here, the eventsource
         # call will often return Set-Cookie values that lead clients to stomp
         # over authenticated session cookies with unauthenticated ones.
