@@ -1571,11 +1571,11 @@ class DatabaseStore(IMSDataStore):
             )
             raise
 
-    def _nextFieldReportNumber(self, txn: Transaction) -> int:
+    def _nextFieldReportNumber(self, eventID: str, txn: Transaction) -> int:
         """
         Look up the next available field report number.
         """
-        txn.execute(self.query.maxFieldReportNumber.text)
+        txn.execute(self.query.maxFieldReportNumber.text, {"eventID": eventID})
         row = txn.fetchone()
         assert row is not None
         number = cast(Optional[int], row["max(NUMBER)"])
@@ -1645,7 +1645,7 @@ class DatabaseStore(IMSDataStore):
         ) -> FieldReport:
             if not directImport:
                 # Assign the incident number a number
-                number = self._nextFieldReportNumber(txn)
+                number = self._nextFieldReportNumber(fieldReport.eventID, txn)
                 fieldReport = fieldReport.replace(number=number)
 
             # Write incident row
