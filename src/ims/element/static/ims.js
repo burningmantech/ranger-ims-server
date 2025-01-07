@@ -945,6 +945,7 @@ function editFromElement(element, jsonKey, transform) {
 const incidentChannelName = "incident_update";
 const fieldReportChannelName= "field_report_update";
 const reattemptMinTimeMillis = 10000;
+const lastSseIDKey = "last_sse_id";
 
 // Call this from each browsing context, so that it can queue up to become a leader
 // to manage the EventSource.
@@ -993,26 +994,24 @@ function subscribeToUpdates(closed) {
         }
     }, true);
 
-    let previousId = 0;
-    function handleMissedEvent(newId) {
-        const previousIdTemp = previousId;
-        previousId = newId;
-
-        if (previousIdTemp !== 0 && newId - previousIdTemp !== 1) {
-            console.log("Might've missed an event off the EventSource! got newId = " + newId + ", previousId = " + previousIdTemp);
-            const allChannels = [
-                new BroadcastChannel(incidentChannelName),
-                new BroadcastChannel(fieldReportChannelName),
-            ];
-            for (const ch of allChannels) {
-                ch.postMessage({missed_update: true});
-            }
+    eventSource.addEventListener("InitialEvent", function(e) {
+        const previousId = localStorage.getItem(lastSseIDKey);
+        if (e.lastEventId === previousId) {
+            return;
         }
-    }
+        localStorage.setItem(lastSseIDKey, e.lastEventId);
+        const allChannels = [
+            new BroadcastChannel(incidentChannelName),
+            new BroadcastChannel(fieldReportChannelName),
+        ];
+        for (const ch of allChannels) {
+            ch.postMessage({update_all: true});
+        }
+    })
 
     eventSource.addEventListener("Incident", function(e) {
         const send = new BroadcastChannel(incidentChannelName);
-        handleMissedEvent(e.lastEventId);
+        localStorage.setItem(lastSseIDKey, e.lastEventId);
         send.postMessage(JSON.parse(e.data));
     }, true);
 
@@ -1021,7 +1020,7 @@ function subscribeToUpdates(closed) {
     //  https://github.com/burningmantech/ranger-ims-server/blob/954498eb125bb9a83d2b922361abef4935f228ba/src/ims/application/_eventsource.py#L113-L135
     eventSource.addEventListener("FieldReport", function(e) {
         const send = new BroadcastChannel(fieldReportChannelName);
-        handleMissedEvent(e.lastEventId);
+        localStorage.setItem(lastSseIDKey, e.lastEventId);
         send.postMessage(JSON.parse(e.data));
     }, true);
 }

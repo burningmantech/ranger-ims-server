@@ -139,7 +139,7 @@ function initIncidentsTable() {
     requestEventSourceLock();
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = function (e) {
-        if (e.data["missed_update"]) {
+        if (e.data["update_all"]) {
             console.log("Reloading the whole table to be cautious, as an SSE was missed")
             incidentsTable.ajax.reload(clearErrorMessage);
             return;
@@ -168,6 +168,7 @@ function initIncidentsTable() {
                 incidentsTable.row.add(updatedIncident);
             }
             clearErrorMessage();
+            incidentsTable.processing(false);
             incidentsTable.draw();
         }
 

@@ -18,10 +18,9 @@
 HTML5 EventSource support.
 """
 
-from collections import deque
 from collections.abc import Mapping
 from time import time
-from typing import Any, ClassVar, Deque
+from typing import Any, ClassVar
 
 from attrs import field, frozen
 from twisted.logger import ILogObserver, Logger
@@ -76,19 +75,25 @@ class DataStoreEventSourceLogObserver:
     _log: ClassVar[Logger] = Logger()
 
     _listeners: list[IRequest] = field(init=False, factory=list)
-    _events: Deque[tuple[int, Event]] = field(
-        init=False, factory=lambda: deque(maxlen=1000)
-    )
     _start: float = field(init=False, factory=time)
     _counter: list[int] = field(init=False, factory=lambda: [0])
 
-    def addListener(self, listener: IRequest, lastEventID: str | None = None) -> None:
+    def addListener(self, listener: IRequest) -> None:
         """
         Add a listener.
         """
         self._log.debug("Adding listener: {listener}", listener=listener)
 
-        self._playback(listener, lastEventID)
+        # Notify the client of the most recent event ID (which will be 0 if none)
+        listener.write(
+            Event(
+                eventID=self._counter[0],
+                eventClass="InitialEvent",
+                message="The most recent SSE ID is provided in this message",
+            )
+            .render()
+            .encode("utf-8")
+        )
 
         self._listeners.append(listener)
 
@@ -100,9 +105,7 @@ class DataStoreEventSourceLogObserver:
 
         self._listeners.remove(listener)
 
-    def _transmogrify(
-        self, loggerEvent: Mapping[str, Any], eventID: int
-    ) -> Event | None:
+    def _transmogrify(self, loggerEvent: Mapping[str, Any]) -> Event | None:
         """
         Convert a logger event into an EventSource event.
         """
@@ -141,30 +144,14 @@ class DataStoreEventSourceLogObserver:
                 event=loggerEvent,
             )
             return None
-
+        self._counter[0] += 1
         return Event(
-            eventID=eventID,
+            eventID=self._counter[0],
             eventClass=eventClass.__name__,
             message=jsonTextFromObject(message),
         )
 
-    def _playback(self, listener: IRequest, lastEventID: str | None) -> None:
-        if lastEventID is None:
-            return
-
-        observerID, counterString = lastEventID.split(":")
-
-        if observerID == str(id(self)):
-            counter = int(counterString)
-        else:
-            # lastEventID came from a different observer
-            counter = 0
-
-        for eventCounter, event in self._events:
-            if eventCounter >= counter:
-                listener.write(event.render().encode("utf-8"))
-
-    def _publish(self, eventSourceEvent: Event, eventID: int) -> None:
+    def _publish(self, eventSourceEvent: Event) -> None:
         eventText = eventSourceEvent.render().encode("utf-8")
 
         for listener in tuple(self._listeners):
@@ -178,20 +165,13 @@ class DataStoreEventSourceLogObserver:
                 )
                 self.removeListener(listener)
 
-        self._events.append((self._counter[0], eventSourceEvent))
-
     def __call__(self, event: Mapping[str, Any]) -> None:
         """
         See L{ILogObserver.__call__}.
         """
 
-        eventSourceEvent = self._transmogrify(event, self._counter[0])
+        eventSourceEvent = self._transmogrify(event)
         if eventSourceEvent is None:
             return
 
-        # The counter is used for the IDs for EventSource events. Consumers of the
-        # EventSource can rely on the counter increasing each time, without gaps,
-        # through the natural numbers. This lets them detect if they've missed an
-        # event along the way.
-        self._counter[0] += 1
-        self._publish(eventSourceEvent, self._counter[0])
+        self._publish(eventSourceEvent)
