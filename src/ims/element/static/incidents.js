@@ -139,6 +139,12 @@ function initIncidentsTable() {
     requestEventSourceLock();
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = function (e) {
+        if (e.data["missed_update"]) {
+            console.log("Reloading the whole table to be cautious, as an SSE was missed")
+            incidentsTable.ajax.reload(clearErrorMessage);
+            return;
+        }
+
         const number = e.data["incident_number"];
         const event = e.data["event_id"]
         if (event !== eventID) {

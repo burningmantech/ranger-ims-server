@@ -184,10 +184,14 @@ class DataStoreEventSourceLogObserver:
         """
         See L{ILogObserver.__call__}.
         """
-        self._counter[0] += 1
 
         eventSourceEvent = self._transmogrify(event, self._counter[0])
         if eventSourceEvent is None:
             return
 
+        # The counter is used for the IDs for EventSource events. Consumers of the
+        # EventSource can rely on the counter increasing each time, without gaps,
+        # through the natural numbers. This lets them detect if they've missed an
+        # event along the way.
+        self._counter[0] += 1
         self._publish(eventSourceEvent, self._counter[0])

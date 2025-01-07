@@ -993,8 +993,26 @@ function subscribeToUpdates(closed) {
         }
     }, true);
 
+    let previousId = 0;
+    function handleMissedEvent(newId) {
+        const previousIdTemp = previousId;
+        previousId = newId;
+
+        if (previousIdTemp !== 0 && newId - previousIdTemp !== 1) {
+            console.log("Might've missed an event off the EventSource! got newId = " + newId + ", previousId = " + previousIdTemp);
+            const allChannels = [
+                new BroadcastChannel(incidentChannelName),
+                new BroadcastChannel(fieldReportChannelName),
+            ];
+            for (const ch of allChannels) {
+                ch.postMessage({missed_update: true});
+            }
+        }
+    }
+
     eventSource.addEventListener("Incident", function(e) {
         const send = new BroadcastChannel(incidentChannelName);
+        handleMissedEvent(e.lastEventId);
         send.postMessage(JSON.parse(e.data));
     }, true);
 
@@ -1003,6 +1021,7 @@ function subscribeToUpdates(closed) {
     //  https://github.com/burningmantech/ranger-ims-server/blob/954498eb125bb9a83d2b922361abef4935f228ba/src/ims/application/_eventsource.py#L113-L135
     eventSource.addEventListener("FieldReport", function(e) {
         const send = new BroadcastChannel(fieldReportChannelName);
+        handleMissedEvent(e.lastEventId);
         send.postMessage(JSON.parse(e.data));
     }, true);
 }
