@@ -804,6 +804,10 @@ function drawFieldReportsToAttach() {
             if (report.incident == null) {
                 continue;
             }
+            // Skip field reports that are already attached this incident
+            if (report.incident === incidentNumber) {
+                continue;
+            }
             const option = $("<option />");
             option.val(report.number);
             option.text(fieldReportAsString(report));
