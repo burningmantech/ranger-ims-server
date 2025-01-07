@@ -417,8 +417,9 @@ queries = Queries(
     ),
     maxFieldReportNumber=Query(
         "look up maximum field report number",
-        """
+        f"""
         select max(NUMBER) from FIELD_REPORT
+        where EVENT = ({query_eventID})
         """,
     ),
     fieldReports=Query(
