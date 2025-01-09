@@ -95,24 +95,30 @@ anIncident2 = Incident(
 )
 
 aReportEntry = ReportEntry(
+    id=123,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=4),
     author="Hubcap",
     automatic=False,
     text="Hello",
+    stricken=False,
 )
 
 aReportEntry1 = ReportEntry(
+    id=124,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=5),
     author="Bucket",
     automatic=False,
     text="This happened",
+    stricken=False,
 )
 
 aReportEntry2 = ReportEntry(
+    id=125,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=6),
     author="Bucket",
     automatic=False,
     text="That happened",
+    stricken=False,
 )
 
 
@@ -760,6 +766,102 @@ class DataStoreIncidentTests(DataStoreTests):
             )
         except StorageError as e:
             self.assertEqual(str(e), store.exceptionMessage)
+        else:
+            self.fail("StorageError not raised")
+
+    @asyncAsDeferred
+    async def test_setReportEntry_stricken(self) -> None:
+        incident = anIncident1
+        reportEntries = (aReportEntry,)
+
+        # Store test data
+        store = await self.store()
+        await store.createEvent(Event(id=incident.eventID))
+        await store.storeIncident(incident)
+
+        # Fetch incident back so we have the same data as the DB
+        incident = await store.incidentWithNumber(incident.eventID, incident.number)
+
+        # Add report entries
+        await store.addReportEntriesToIncident(
+            incident.eventID, incident.number, reportEntries, aReportEntry.author
+        )
+
+        # Get the updated incident with the new report entry.
+        # It'll initially not be stricken.
+        updatedIncident = await store.incidentWithNumber(
+            incident.eventID, incident.number
+        )
+        updatedEntry = updatedIncident.reportEntries[0]
+        entryToStrike = updatedEntry.id
+        self.assertFalse(updatedEntry.stricken)
+
+        # Strike the report entry, then check that it's stricken
+        await store.setReportEntry_stricken(
+            incident.eventID, incident.number, entryToStrike, True, "Mr. Striker"
+        )
+        updatedIncident = await store.incidentWithNumber(
+            incident.eventID, incident.number
+        )
+        updatedEntry = next(
+            re for re in updatedIncident.reportEntries if re.id == entryToStrike
+        )
+        self.assertTrue(updatedEntry.stricken)
+
+        # Unstrike the report entry, then check it's not stricken
+        await store.setReportEntry_stricken(
+            incident.eventID, incident.number, entryToStrike, False, "Mr. Striker"
+        )
+        updatedIncident = await store.incidentWithNumber(
+            incident.eventID, incident.number
+        )
+        updatedEntry = next(
+            re for re in updatedIncident.reportEntries if re.id == entryToStrike
+        )
+        self.assertFalse(updatedEntry.stricken)
+
+    @asyncAsDeferred
+    async def test_setReportEntry_stricken_error(self) -> None:
+        """
+        :meth:`IMSDataStore.setReportEntry_stricken` raises
+        :exc:`StorageError` when the store raises an exception.
+        """
+        incident = anIncident1
+        reportEntries = (aReportEntry,)
+
+        # Store test data
+        store = await self.store()
+        await store.createEvent(Event(id=incident.eventID))
+        await store.storeIncident(incident)
+
+        # Fetch incident back so we have the same data as the DB
+        incident = await store.incidentWithNumber(incident.eventID, incident.number)
+
+        # Add report entries
+        await store.addReportEntriesToIncident(
+            incident.eventID, incident.number, reportEntries, aReportEntry.author
+        )
+
+        # Get the updated incident with the new report entry.
+        # It'll initially not be stricken.
+        updatedIncident = await store.incidentWithNumber(
+            incident.eventID, incident.number
+        )
+        updatedEntry = updatedIncident.reportEntries[0]
+        entryToStrike = updatedEntry.id
+        # Do a strike on the wrong incident (note the "+1"). This should fail.
+        # Conveniently, this test enforces that the incident number must be
+        # correctly specified by the caller.
+        try:
+            await store.setReportEntry_stricken(
+                incident.eventID,
+                incident.number + 1,
+                entryToStrike,
+                True,
+                "Mr. Striker",
+            )
+        except StorageError:
+            pass
         else:
             self.fail("StorageError not raised")
 

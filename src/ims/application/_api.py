@@ -666,10 +666,12 @@ class APIApplication:
 
             entries = (
                 ReportEntry(
+                    id=-1,  # will be assigned a valid ID on write to DB
                     author=author,
                     text=jsonEntry[ReportEntryJSONKey.text.value],
                     created=now,
                     automatic=False,
+                    stricken=False,
                 )
                 for jsonEntry in jsonEntries
             )
@@ -679,6 +681,50 @@ class APIApplication:
             )
 
         return noContentResponse(request)
+
+    @router.route(_unprefix(URLs.incident_reportEntry), methods=("POST",))
+    async def editIncidentReportEntryResource(
+        self,
+        request: IRequest,
+        event_id: str,
+        incident_number: str,
+        report_entry_id: str,
+    ) -> KleinSynchronousRenderable:
+        eventId = event_id
+        incidentNumber = int(incident_number)
+        reportEntryId = int(report_entry_id)
+        del event_id
+        del incident_number
+        del report_entry_id
+        await self.config.authProvider.authorizeRequest(
+            request, eventId, Authorization.writeIncidents
+        )
+
+        store = self.config.store
+
+        user: IMSUser = request.user  # type: ignore[attr-defined]
+        author = user.shortNames[0]
+
+        #
+        # Get the edits requested by the client
+        #
+        try:
+            edits = objectFromJSONBytesIO(request.content)
+        except JSONDecodeError as e:
+            return invalidJSONResponse(request, e)
+
+        if not isinstance(edits, dict):
+            return badRequestResponse(request, "JSON incident must be a dictionary")
+
+        if ReportEntryJSONKey.stricken.value in edits:
+            newVal = bool(edits.get(ReportEntryJSONKey.stricken.value))
+            await store.setReportEntry_stricken(
+                eventId, incidentNumber, reportEntryId, newVal, author
+            )
+        else:
+            self._log.info("no key in request")
+
+        return None
 
     @router.route(_unprefix(URLs.fieldReports), methods=("HEAD", "GET"))
     async def listFieldReportsResource(
@@ -976,10 +1022,12 @@ class APIApplication:
 
             entries = (
                 ReportEntry(
+                    id=-1,
                     author=author,
                     text=jsonEntry[ReportEntryJSONKey.text.value],
                     created=now,
                     automatic=False,
+                    stricken=False,
                 )
                 for jsonEntry in jsonEntries
             )

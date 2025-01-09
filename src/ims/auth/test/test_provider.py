@@ -774,16 +774,20 @@ class AuthProviderTests(TestCase):
             incidentNumber=0,
             reportEntries=(
                 ReportEntry(
+                    id=0,
                     created=DateTime.now(tz=UTC),
                     author="SomeoneElse",
                     automatic=False,
                     text="abc",
+                    stricken=False,
                 ),
                 ReportEntry(
+                    id=1,
                     created=DateTime.now(tz=UTC),
                     author="Slumber",
                     automatic=False,
                     text="abcde",
+                    stricken=False,
                 ),
             ),
         )

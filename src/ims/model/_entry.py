@@ -41,10 +41,12 @@ class ReportEntry(ComparisonMixIn, ReplaceMixIn):
     A report entry is text with an associated author and time stamp.
     """
 
+    id: int
     created: DateTime = field(converter=normalizeDateTime)
     author: str
     automatic: bool
     text: str
+    stricken: bool
 
     def __str__(self) -> str:
         if self.automatic:
@@ -55,4 +57,10 @@ class ReportEntry(ComparisonMixIn, ReplaceMixIn):
         return f"{self.created} {self.author}{automatic}: {self.text}"
 
     def _cmpValue(self) -> Any:
-        return (self.created, self.author, not self.automatic, self.text)
+        return (
+            self.created,
+            self.author,
+            not self.automatic,
+            self.text,
+            self.stricken,
+        )

@@ -316,6 +316,19 @@ class IMSDataStore(ABC):
         given event.
         """
 
+    @abstractmethod
+    async def setReportEntry_stricken(
+        self,
+        eventID: str,
+        incidentNumber: int,
+        reportEntryID: int,
+        stricken: bool,
+        author: str,
+    ) -> None:
+        """
+        Set the stricken value for the given report entry ID.
+        """
+
     ###
     # Field Reports
     ###

@@ -75,10 +75,12 @@ def jsonFromRodGarettAddress(address: RodGarettAddress) -> dict[str, Any]:
 
 def jsonFromReportEntry(entry: ReportEntry) -> dict[str, Any]:
     return {
+        "id": jsonSerialize(entry.id),
         "created": jsonSerialize(entry.created),
         "author": jsonSerialize(entry.author),
         "system_entry": jsonSerialize(entry.automatic),
         "text": jsonSerialize(entry.text),
+        "stricken": jsonSerialize(entry.stricken),
     }
 
 

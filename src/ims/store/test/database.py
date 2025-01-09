@@ -116,7 +116,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
 
         for rangerHandle in incident.rangerHandles:
             txn.execute(
-                store.query.attachRangeHandleToIncident.text,
+                store.query.attachRangerHandleToIncident.text,
                 {
                     "eventID": incident.eventID,
                     "incidentNumber": incident.number,

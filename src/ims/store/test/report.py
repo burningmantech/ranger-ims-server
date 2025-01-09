@@ -69,17 +69,21 @@ aFieldReport2 = FieldReport(
 )
 
 aReportEntry1 = ReportEntry(
+    id=0,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=4),
     author="Hubcap",
     automatic=False,
     text="Well there was thing thing",
+    stricken=False,
 )
 
 aReportEntry2 = ReportEntry(
+    id=1,
     created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=5),
     author="Bucket",
     automatic=False,
     text="Well there was that thing",
+    stricken=False,
 )
 
 

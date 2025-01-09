@@ -45,3 +45,10 @@ class NoSuchFieldReportError(StorageError):
     """
     No such field report.
     """
+
+
+@mutable
+class NoSuchReportEntryError(StorageError):
+    """
+    No such report entry.
+    """

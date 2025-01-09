@@ -769,8 +769,12 @@ function reportEntryElement(entry) {
 
     const entryContainer = $("<div />", {"class": "report_entry"});
 
+    const strikable = !entry.system_entry && !entry.merged && typeof incidentNumber !== "undefined";
+
     if (entry.system_entry) {
         entryContainer.addClass("report_entry_system");
+    } else if (entry.stricken) {
+        entryContainer.addClass("report_entry_stricken");
     } else {
         entryContainer.addClass("report_entry_user");
     }
@@ -779,9 +783,23 @@ function reportEntryElement(entry) {
         entryContainer.addClass("report_entry_merged");
     }
 
-    // Add the timestamp and author
+    // Add the timestamp and author, with a Strike/Unstrike button
 
     const metaDataContainer = $("<p />", {"class": "report_entry_metadata"})
+
+    if (strikable) {
+        const strikeContainer = $("<button />", {"onclick": "setEntryStrike(" + entry.id + ", " + !entry.stricken + ");"});
+        strikeContainer.addClass("badge btn btn-danger remove-badge float-end");
+        strikeContainer.text(entry.stricken ? "Unstrike" : "Strike");
+        // TODO: it'd be nice to have a strikethrough icon rather than the word "Strike".
+        //  The code below should almost do it, but I can't get the button to just show
+        //  the icon by itself.
+        // const iconContainer = $("<svg />", {"class": "bi"});
+        // iconContainer.append($("<use />", {"href": "#strikethrough"}));
+        // strikeContainer.append($("<span class='d-none'>Strike</span>", {"class": "d-none"}));
+        // strikeContainer.append(iconContainer);
+        metaDataContainer.append(strikeContainer);
+    }
 
     const timeStampContainer = timeElement(new Date(entry.created));
     timeStampContainer.addClass("report_entry_timestamp");
@@ -827,9 +845,8 @@ function reportEntryElement(entry) {
     }
 
     // Add a horizontal line after each entry
-    entryContainer.append( $("<hr />", {"class": "m-1"}) );
 
-    // Return container
+    entryContainer.append( $("<hr />", {"class": "m-1"}) );
 
     return entryContainer;
 }
@@ -865,6 +882,12 @@ function reportEntryEdited() {
     }
 }
 
+function setEntryStrike(reportEntryId, strike) {
+    const url = urlReplace(url_incident_reportEntry)
+        .replace("<incident_number>", incidentNumber)
+        .replace("<report_entry_id>", reportEntryId);
+    jsonRequest(url, {"stricken": strike});
+}
 
 function submitReportEntry() {
     const text = $("#report_entry_add").val().trim();
