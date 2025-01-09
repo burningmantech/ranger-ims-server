@@ -100,7 +100,7 @@ class Queries:
     maxIncidentNumber: Query
     incidents: Query
     incidents_reportEntries: Query
-    attachRangeHandleToIncident: Query
+    attachRangerHandleToIncident: Query
     attachIncidentTypeToIncident: Query
     createReportEntry: Query
     attachReportEntryToIncident: Query
@@ -127,6 +127,7 @@ class Queries:
     attachFieldReportToIncident: Query
     detachedFieldReportNumbers: Query
     attachedFieldReportNumbers: Query
+    setReportEntry_stricken: Query
 
 
 @frozen(kw_only=True)
@@ -563,10 +564,12 @@ class DatabaseStore(IMSDataStore):
             txn.execute(self.query.detachedReportEntries.text)
             return tuple(
                 ReportEntry(
+                    id=cast(int, row["ID"]),
                     created=self.fromDateTimeValue(row["CREATED"]),
                     author=cast(str, row["AUTHOR"]),
                     automatic=bool(row["GENERATED"]),
                     text=cast(str, row["TEXT"]),
+                    stricken=bool(row["STRICKEN"]),
                 )
                 for row in txn.fetchall()
                 if row["TEXT"]
@@ -601,10 +604,12 @@ class DatabaseStore(IMSDataStore):
                 incidentNumber = cast(int, row["INCIDENT_NUMBER"])
                 reportEntries[incidentNumber].append(
                     ReportEntry(
+                        id=cast(int, row["ID"]),
                         created=self.fromDateTimeValue(row["CREATED"]),
                         author=cast(str, row["AUTHOR"]),
                         automatic=bool(row["GENERATED"]),
                         text=cast(str, row["TEXT"]),
+                        stricken=bool(row["STRICKEN"]),
                     )
                 )
 
@@ -689,10 +694,12 @@ class DatabaseStore(IMSDataStore):
 
         reportEntries = (
             ReportEntry(
+                id=cast(int, row["ID"]),
                 created=self.fromDateTimeValue(row["CREATED"]),
                 author=cast(str, row["AUTHOR"]),
                 automatic=bool(row["GENERATED"]),
                 text=cast(str, row["TEXT"]),
+                stricken=bool(row["STRICKEN"]),
             )
             for row in txn.fetchall()
             if row["TEXT"]
@@ -792,7 +799,7 @@ class DatabaseStore(IMSDataStore):
             return 1
         return number + 1
 
-    def _attachRangeHandlesToIncident(
+    def _attachRangerHandlesToIncident(
         self,
         eventID: str,
         incidentNumber: int,
@@ -803,7 +810,7 @@ class DatabaseStore(IMSDataStore):
 
         for rangerHandle in rangerHandles:
             txn.execute(
-                self.query.attachRangeHandleToIncident.text,
+                self.query.attachRangerHandleToIncident.text,
                 {
                     "eventID": eventID,
                     "incidentNumber": incidentNumber,
@@ -854,6 +861,7 @@ class DatabaseStore(IMSDataStore):
                 "generated": reportEntry.automatic,
                 "author": reportEntry.author,
                 "text": reportEntry.text,
+                "stricken": reportEntry.stricken,
             },
         )
 
@@ -910,10 +918,12 @@ class DatabaseStore(IMSDataStore):
         self, author: str, created: DateTime, attribute: str, value: Any
     ) -> ReportEntry:
         return ReportEntry(
+            id=-1,  # will be assigned a valid ID on write to DB
             text=f"Changed {attribute} to: {value}",
             author=author,
             created=created,
             automatic=True,
+            stricken=False,
         )
 
     def _initialReportEntries(
@@ -1032,7 +1042,7 @@ class DatabaseStore(IMSDataStore):
             )
 
             # Join with Ranger handles
-            self._attachRangeHandlesToIncident(
+            self._attachRangerHandlesToIncident(
                 incident.eventID,
                 incident.number,
                 incident.rangerHandles,
@@ -1297,7 +1307,7 @@ class DatabaseStore(IMSDataStore):
                 {"eventID": eventID, "incidentNumber": incidentNumber},
             )
 
-            self._attachRangeHandlesToIncident(
+            self._attachRangerHandlesToIncident(
                 eventID, incidentNumber, rangerHandles, txn
             )
 
@@ -1438,6 +1448,58 @@ class DatabaseStore(IMSDataStore):
 
         self._notifyIncidentUpdate(eventID, incidentNumber)
 
+    async def setReportEntry_stricken(
+        self,
+        eventID: str,
+        incidentNumber: int,
+        reportEntryID: int,
+        stricken: bool,
+        author: str,
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setReportEntry_stricken`.
+        """
+
+        def setStricken(txn: Transaction) -> None:
+            autoEntry = self._automaticReportEntry(
+                author,
+                now(),
+                f"stricken on reportEntry with ID {reportEntryID}",
+                stricken,
+            )
+
+            txn.execute(
+                self.query.setReportEntry_stricken.text,
+                {
+                    "eventID": eventID,
+                    "incidentNumber": incidentNumber,
+                    "reportEntryID": reportEntryID,
+                    "stricken": stricken,
+                },
+            )
+
+            # Add automatic report entry
+            self._createAndAttachReportEntriesToIncident(
+                eventID,
+                incidentNumber,
+                (autoEntry,),
+                txn,
+            )
+
+        try:
+            await self.runInteraction(setStricken)
+        except StorageError as e:
+            self._log.critical(
+                "Author {author} unable to set stricken value to {stricken} on "
+                "reportEntry with ID {reportEntryID}: {error}",
+                author=author,
+                stricken=stricken,
+                reportEntryID=reportEntryID,
+                error=e,
+            )
+            raise
+        self._notifyIncidentUpdate(eventID, incidentNumber)
+
     ###
     # Field Reports
     ###
@@ -1459,10 +1521,12 @@ class DatabaseStore(IMSDataStore):
             fieldReportNumber = cast(int, row["FIELD_REPORT_NUMBER"])
             reports[fieldReportNumber].append(
                 ReportEntry(
+                    id=cast(int, row["ID"]),
                     created=self.fromDateTimeValue(row["CREATED"]),
                     author=cast(str, row["AUTHOR"]),
                     automatic=bool(row["GENERATED"]),
                     text=cast(str, row["TEXT"]),
+                    stricken=bool(row["STRICKEN"]),
                 ),
             )
 
@@ -1509,10 +1573,12 @@ class DatabaseStore(IMSDataStore):
 
         reportEntries = tuple(
             ReportEntry(
+                id=cast(int, row["ID"]),
                 created=self.fromDateTimeValue(row["CREATED"]),
                 author=cast(str, row["AUTHOR"]),
                 automatic=bool(row["GENERATED"]),
                 text=cast(str, row["TEXT"]),
+                stricken=bool(row["STRICKEN"]),
             )
             for row in txn.fetchall()
         )

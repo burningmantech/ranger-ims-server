@@ -225,10 +225,12 @@ def reportEntries(
         automatic = draw(booleans())
 
     return ReportEntry(
+        id=draw(integers(min_value=1, max_value=SQLITE_MAX_INT)),
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
         author=cast(str, author),
         automatic=cast(bool, automatic),
         text=draw(text(min_size=1)),
+        stricken=False,
     )
 
 

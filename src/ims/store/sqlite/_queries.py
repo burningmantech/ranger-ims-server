@@ -146,7 +146,7 @@ queries = Queries(
     detachedReportEntries=Query(
         "look up detached report entries",
         """
-        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
+        select ID, AUTHOR, TEXT, CREATED, GENERATED, STRICKEN from REPORT_ENTRY
         where
             ID not in (select REPORT_ENTRY from INCIDENT__REPORT_ENTRY) and
             ID not in (select REPORT_ENTRY from FIELD_REPORT__REPORT_ENTRY)
@@ -186,7 +186,7 @@ queries = Queries(
     incident_reportEntries=Query(
         "look up report entries for incident",
         f"""
-        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
+        select ID, AUTHOR, TEXT, CREATED, GENERATED, STRICKEN from REPORT_ENTRY
         where ID in (
             select REPORT_ENTRY from INCIDENT__REPORT_ENTRY
             where
@@ -253,11 +253,13 @@ queries = Queries(
         "look up report entries for all incidents in an event",
         f"""
         select
+            re.ID,
             ire.INCIDENT_NUMBER,
             re.AUTHOR,
             re.TEXT,
             re.CREATED,
-            re.GENERATED
+            re.GENERATED,
+            re.STRICKEN
         from
             INCIDENT__REPORT_ENTRY ire
             join REPORT_ENTRY re
@@ -268,7 +270,7 @@ queries = Queries(
         ;
         """,
     ),
-    attachRangeHandleToIncident=Query(
+    attachRangerHandleToIncident=Query(
         "add Ranger to incident",
         f"""
         insert into INCIDENT__RANGER (EVENT, INCIDENT_NUMBER, RANGER_HANDLE)
@@ -292,7 +294,7 @@ queries = Queries(
         "create report entry",
         """
         insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED, STRICKEN)
-        values (:author, :text, :created, :generated, 0)
+        values (:author, :text, :created, :generated, :stricken)
         """,
     ),
     attachReportEntryToIncident=Query(
@@ -391,7 +393,7 @@ queries = Queries(
     fieldReport_reportEntries=Query(
         "look up report entries for field report",
         f"""
-        select AUTHOR, TEXT, CREATED, GENERATED from REPORT_ENTRY
+        select ID, AUTHOR, TEXT, CREATED, GENERATED, STRICKEN from REPORT_ENTRY
         where ID in (
             select REPORT_ENTRY from FIELD_REPORT__REPORT_ENTRY
             where
@@ -432,12 +434,13 @@ queries = Queries(
         "look up all field report report entries for an event",
         f"""
         select
+            re.ID,
             irre.FIELD_REPORT_NUMBER,
             re.AUTHOR,
             re.CREATED,
             re.GENERATED,
-            re.ID,
-            re.TEXT
+            re.TEXT,
+            re.STRICKEN
         from
             FIELD_REPORT__REPORT_ENTRY irre
             join REPORT_ENTRY re
@@ -491,6 +494,25 @@ queries = Queries(
         f"""
         select NUMBER from FIELD_REPORT
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber
+        """,
+    ),
+    setReportEntry_stricken=Query(
+        "set the stricken value on a report entry",
+        # This query seems bloated on first blush, because the whole "where ID in (..."
+        # could just be "where ID =". What it's doing though is ensuring that the
+        # provided eventID and incidentNumber actually align with the reportEntryID
+        # in question, and that's important for authorization purposes.
+        f"""
+        update REPORT_ENTRY
+        set STRICKEN = :stricken
+        where ID IN (
+            select REPORT_ENTRY
+            from INCIDENT__REPORT_ENTRY
+            where
+                EVENT = ({query_eventID}) and
+                INCIDENT_NUMBER = :incidentNumber and
+                REPORT_ENTRY = :reportEntryID
+        )
         """,
     ),
 )

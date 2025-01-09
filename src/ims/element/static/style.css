@@ -134,6 +134,12 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0 0 0 0.5rem;
 }
 
+.report_entry_stricken {
+  font-size: var(--font-size-smaller);
+  filter: opacity(75%);
+  text-decoration: line-through;
+}
+
 .report_entry_text {
   font-size: var(--font-size-smaller);
 }
@@ -184,6 +190,9 @@ h1 {
 .no-touch .list-group-item:hover .remove-badge {
   display: inline-block;
 }
+.no-touch .report_entry:hover .remove-badge {
+  display: inline-block;
+}
 
 /* Disable on touch devices if editing is disabled. */
 .no-edit .remove-badge {
@@ -194,10 +203,14 @@ h1 {
 .no-edit .list-group-item:hover .remove-badge {
   display: none;
 }
+.no-edit .report_entry:hover .remove-badge {
+  display: none;
+}
 
 .no-edit .new_incident {
   display: none;
 }
+
 .no-edit .new_field_report {
   display: none;
 }
@@ -227,6 +240,10 @@ h1 {
 }
 
 .hide-history .report_entry_system {
+  display: none;
+}
+
+.hide-history .report_entry_stricken {
   display: none;
 }
 

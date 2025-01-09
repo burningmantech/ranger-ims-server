@@ -40,10 +40,12 @@ class ReportEntryJSONKey(Enum):
     Incident state JSON keys
     """
 
+    id = "id"
     created = "created"
     author = "author"
     automatic = "system_entry"
     text = "text"
+    stricken = "stricken"
 
 
 class ReportEntryJSONType(Enum):
@@ -51,10 +53,12 @@ class ReportEntryJSONType(Enum):
     Incident state JSON keys
     """
 
+    id = int
     created = DateTime
     author = str
     automatic = bool
     text = str
+    stricken = bool
 
 
 def serializeReportEntry(reportEntry: ReportEntry) -> dict[str, Any]:
