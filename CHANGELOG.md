@@ -29,7 +29,12 @@ Each month below should look like the following, using the same ordering for the
 
 ### Added
 
+- Introduced "striking" of report entries. This allows a user to hide an outdated/inaccurate entry, such that it doesn't appear by default on the Incident or Field Report page. https://github.com/burningmantech/ranger-ims-server/issues/249
 - Added help modals, toggled by pressing "?", which show keyboard shortcuts for the current page. https://github.com/burningmantech/ranger-ims-server/issues/1482
+
+### Fixed
+
+- Removed confusing messaging from login screen when a user was already logged in. https://github.com/burningmantech/ranger-ims-server/pull/1511 https://github.com/burningmantech/ranger-ims-server/issues/1508
 
 ## 2024-12
 

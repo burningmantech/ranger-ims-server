@@ -46,21 +46,3 @@ class LoginPage(Page):
         if self.failed:
             return tag
         return ""
-
-    @renderer
-    def if_authz_failed(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        Render conditionally if the user failed to authorize.
-        """
-        if self.failed:
-            # authn failed, not authz
-            return ""
-
-        session = request.getSession()
-        user = getattr(session, "user", None)
-
-        if user is None:
-            return ""
-
-        # We have a user but still got sent to login page
-        return tag
