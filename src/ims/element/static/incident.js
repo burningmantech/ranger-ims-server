@@ -94,7 +94,7 @@ function initIncidentPage() {
             }
         });
         $("#report_entry_add")[0].addEventListener("keydown", function (e) {
-            if (e.ctrlKey && e.key === "Enter") {
+            if ((e.ctrlKey || e.altKey) && e.key === "Enter") {
                 submitReportEntry();
             }
         });
@@ -697,19 +697,6 @@ function drawLocationDescription() {
         $("#incident_location_description")
             .val(incident.location.description)
             ;
-    }
-}
-
-
-//
-// Incident generated history display
-//
-
-function toggleShowHistory() {
-    if ($("#history_checkbox").is(":checked")) {
-        $("#report_entries").removeClass("hide-history");
-    } else {
-        $("#report_entries").addClass("hide-history");
     }
 }
 

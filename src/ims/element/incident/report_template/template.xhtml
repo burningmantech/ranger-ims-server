@@ -15,6 +15,7 @@
         </div>
         <div class="modal-body">
           <code>n</code>: create new Field Report <br/>
+          <code>h</code>: toggle showing system-generated history <br/>
         </div>
       </div>
     </div>
@@ -133,6 +134,10 @@
       <div class="card">
         <label class="control-label card-header">Details</label>
         <div id="report_entry_well" class="card-body">
+          <label class="control-label">
+            <input id="history_checkbox" type="checkbox" onchange="toggleShowHistory()"/>
+            Show history and stricken
+          </label>
           <div id="report_entries"/>
           <div class="card-footer">
             <textarea

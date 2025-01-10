@@ -496,8 +496,8 @@ queries = Queries(
         where EVENT = ({query_eventID}) and INCIDENT_NUMBER = :incidentNumber
         """,
     ),
-    setReportEntry_stricken=Query(
-        "set the stricken value on a report entry",
+    setIncidentReportEntry_stricken=Query(
+        "set the stricken value on an incident's report entry",
         # This query seems bloated on first blush, because the whole "where ID in (..."
         # could just be "where ID =". What it's doing though is ensuring that the
         # provided eventID and incidentNumber actually align with the reportEntryID
@@ -511,6 +511,25 @@ queries = Queries(
             where
                 EVENT = ({query_eventID}) and
                 INCIDENT_NUMBER = :incidentNumber and
+                REPORT_ENTRY = :reportEntryID
+        )
+        """,
+    ),
+    setFieldReportReportEntry_stricken=Query(
+        "set the stricken value on a field report's report entry",
+        # This query seems bloated on first blush, because the whole "where ID in (..."
+        # could just be "where ID =". What it's doing though is ensuring that the
+        # provided eventID and fieldReportNumber actually align with the reportEntryID
+        # in question, and that's important for authorization purposes.
+        f"""
+        update REPORT_ENTRY
+        set STRICKEN = :stricken
+        where ID IN (
+            select REPORT_ENTRY
+            from FIELD_REPORT__REPORT_ENTRY
+            where
+                EVENT = ({query_eventID}) and
+                FIELD_REPORT_NUMBER = :fieldReportNumber and
                 REPORT_ENTRY = :reportEntryID
         )
         """,

@@ -127,7 +127,8 @@ class Queries:
     attachFieldReportToIncident: Query
     detachedFieldReportNumbers: Query
     attachedFieldReportNumbers: Query
-    setReportEntry_stricken: Query
+    setIncidentReportEntry_stricken: Query
+    setFieldReportReportEntry_stricken: Query
 
 
 @frozen(kw_only=True)
@@ -1448,7 +1449,7 @@ class DatabaseStore(IMSDataStore):
 
         self._notifyIncidentUpdate(eventID, incidentNumber)
 
-    async def setReportEntry_stricken(
+    async def setIncidentReportEntry_stricken(
         self,
         eventID: str,
         incidentNumber: int,
@@ -1461,15 +1462,18 @@ class DatabaseStore(IMSDataStore):
         """
 
         def setStricken(txn: Transaction) -> None:
-            autoEntry = self._automaticReportEntry(
-                author,
-                now(),
-                f"stricken on reportEntry with ID {reportEntryID}",
-                stricken,
+            autoEntry = ReportEntry(
+                id=-1,  # will be assigned a valid ID on write to DB
+                text=f"{'Struck' if stricken else 'Unstruck'} "
+                f"reportEntry {reportEntryID}",
+                author=author,
+                created=now(),
+                automatic=True,
+                stricken=False,
             )
 
             txn.execute(
-                self.query.setReportEntry_stricken.text,
+                self.query.setIncidentReportEntry_stricken.text,
                 {
                     "eventID": eventID,
                     "incidentNumber": incidentNumber,
@@ -1979,6 +1983,63 @@ class DatabaseStore(IMSDataStore):
             None,
             author,
         )
+
+    async def setFieldReportReportEntry_stricken(
+        self,
+        eventID: str,
+        fieldReportNumber: int,
+        reportEntryID: int,
+        stricken: bool,
+        author: str,
+    ) -> None:
+        """
+        See :meth:`IMSDataStore.setFieldReportReportEntry_stricken`.
+        """
+
+        def setStricken(txn: Transaction) -> None:
+            autoEntry = ReportEntry(
+                id=-1,  # will be assigned a valid ID on write to DB
+                text=f"{'Struck' if stricken else 'Unstruck'} "
+                f"reportEntry {reportEntryID}",
+                author=author,
+                created=now(),
+                automatic=True,
+                stricken=False,
+            )
+
+            txn.execute(
+                self.query.setFieldReportReportEntry_stricken.text,
+                {
+                    "eventID": eventID,
+                    "fieldReportNumber": fieldReportNumber,
+                    "reportEntryID": reportEntryID,
+                    "stricken": stricken,
+                },
+            )
+
+            # Add automatic report entry
+            self._createAndAttachReportEntriesToFieldReport(
+                eventID,
+                fieldReportNumber,
+                (autoEntry,),
+                txn,
+            )
+
+        try:
+            await self.runInteraction(setStricken)
+        except StorageError as e:
+            self._log.critical(
+                "Author {author} unable to set stricken value to {stricken} on "
+                "reportEntry with ID {reportEntryID}: {error}",
+                author=author,
+                stricken=stricken,
+                reportEntryID=reportEntryID,
+                error=e,
+            )
+            raise
+        # We still need a notify function like this
+        # We should also notify the linked incident, if any
+        # self._notifyFieldReportUpdate(eventID, fieldReportNumber)
 
 
 @frozen(kw_only=True)
