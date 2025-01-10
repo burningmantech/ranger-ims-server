@@ -770,7 +770,7 @@ class DataStoreIncidentTests(DataStoreTests):
             self.fail("StorageError not raised")
 
     @asyncAsDeferred
-    async def test_setReportEntry_stricken(self) -> None:
+    async def test_setIncidentReportEntry_stricken(self) -> None:
         incident = anIncident1
         reportEntries = (aReportEntry,)
 
@@ -797,7 +797,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self.assertFalse(updatedEntry.stricken)
 
         # Strike the report entry, then check that it's stricken
-        await store.setReportEntry_stricken(
+        await store.setIncidentReportEntry_stricken(
             incident.eventID, incident.number, entryToStrike, True, "Mr. Striker"
         )
         updatedIncident = await store.incidentWithNumber(
@@ -809,7 +809,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self.assertTrue(updatedEntry.stricken)
 
         # Unstrike the report entry, then check it's not stricken
-        await store.setReportEntry_stricken(
+        await store.setIncidentReportEntry_stricken(
             incident.eventID, incident.number, entryToStrike, False, "Mr. Striker"
         )
         updatedIncident = await store.incidentWithNumber(
@@ -821,7 +821,7 @@ class DataStoreIncidentTests(DataStoreTests):
         self.assertFalse(updatedEntry.stricken)
 
     @asyncAsDeferred
-    async def test_setReportEntry_stricken_error(self) -> None:
+    async def test_setIncidentReportEntry_stricken_error(self) -> None:
         """
         :meth:`IMSDataStore.setReportEntry_stricken` raises
         :exc:`StorageError` when the store raises an exception.
@@ -853,7 +853,7 @@ class DataStoreIncidentTests(DataStoreTests):
         # Conveniently, this test enforces that the incident number must be
         # correctly specified by the caller.
         try:
-            await store.setReportEntry_stricken(
+            await store.setIncidentReportEntry_stricken(
                 incident.eventID,
                 incident.number + 1,
                 entryToStrike,

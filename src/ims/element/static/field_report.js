@@ -23,10 +23,6 @@ function initFieldReportPage() {
         // for a new field report
         if (fieldReport.number == null) {
             $("#field_report_summary").focus();
-        } else {
-            // Scroll to report_entry_add field
-            $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
-            $("#report_entry_add").focus();
         }
 
         // Warn the user if they're about to navigate away with unsaved text.
@@ -55,6 +51,10 @@ function initFieldReportPage() {
             if (e.key === "?") {
                 $("#helpModal").modal("toggle");
             }
+            // h --> toggle showing system entries
+            if (e.key.toLowerCase() === "h") {
+                document.getElementById("history_checkbox").click();
+            }
             // n --> new field report
             if (e.key.toLowerCase() === "n") {
                 window.open("./new", '_blank').focus();
@@ -66,7 +66,7 @@ function initFieldReportPage() {
             }
         });
         $("#report_entry_add")[0].addEventListener("keydown", function (e) {
-            if (e.ctrlKey && e.key === "Enter") {
+            if ((e.ctrlKey || e.altKey) && e.key === "Enter") {
                 submitReportEntry();
             }
         });
@@ -142,6 +142,7 @@ function loadAndDisplayFieldReport(success) {
         drawNumber();
         drawIncident();
         drawSummary();
+        toggleShowHistory();
         drawReportEntries(fieldReport.report_entries);
         clearErrorMessage();
 

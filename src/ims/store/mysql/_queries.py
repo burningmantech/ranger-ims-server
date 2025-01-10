@@ -506,7 +506,7 @@ queries = Queries(
             INCIDENT_NUMBER = %(incidentNumber)s
         """,
     ),
-    setReportEntry_stricken=Query(
+    setIncidentReportEntry_stricken=Query(
         "set the stricken value on a report entry",
         # This query seems bloated on first blush, because the whole "where ID in (..."
         # could just be "where ID =". What it's doing though is ensuring that the
@@ -521,6 +521,25 @@ queries = Queries(
             where
                 EVENT = ({query_eventID}) and
                 INCIDENT_NUMBER = %(incidentNumber)s and
+                REPORT_ENTRY = %(reportEntryID)s
+        )
+        """,
+    ),
+    setFieldReportReportEntry_stricken=Query(
+        "set the stricken value on a field report's report entry",
+        # This query seems bloated on first blush, because the whole "where ID in (..."
+        # could just be "where ID =". What it's doing though is ensuring that the
+        # provided eventID and fieldReportNumber actually align with the reportEntryID
+        # in question, and that's important for authorization purposes.
+        f"""
+        update REPORT_ENTRY
+        set STRICKEN = %(stricken)s
+        where ID IN (
+            select REPORT_ENTRY
+            from FIELD_REPORT__REPORT_ENTRY
+            where
+                EVENT = ({query_eventID}) and
+                FIELD_REPORT_NUMBER = %(fieldReportNumber)s and
                 REPORT_ENTRY = %(reportEntryID)s
         )
         """,

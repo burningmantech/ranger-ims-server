@@ -317,7 +317,7 @@ class IMSDataStore(ABC):
         """
 
     @abstractmethod
-    async def setReportEntry_stricken(
+    async def setIncidentReportEntry_stricken(
         self,
         eventID: str,
         incidentNumber: int,
@@ -326,7 +326,7 @@ class IMSDataStore(ABC):
         author: str,
     ) -> None:
         """
-        Set the stricken value for the given report entry ID.
+        Set the stricken value for the given report entry ID on an incident.
         """
 
     ###
@@ -434,4 +434,17 @@ class IMSDataStore(ABC):
         """
         Detach the field report with the given number from the incident with
         the given number in the given event.
+        """
+
+    @abstractmethod
+    async def setFieldReportReportEntry_stricken(
+        self,
+        eventID: str,
+        fieldReportNumber: int,
+        reportEntryID: int,
+        stricken: bool,
+        author: str,
+    ) -> None:
+        """
+        Set the stricken value for the given report entry ID on a field report.
         """

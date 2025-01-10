@@ -769,7 +769,7 @@ function reportEntryElement(entry) {
 
     const entryContainer = $("<div />", {"class": "report_entry"});
 
-    const strikable = !entry.system_entry && !entry.merged && typeof incidentNumber !== "undefined";
+    const strikable = !entry.system_entry;
 
     if (entry.system_entry) {
         entryContainer.addClass("report_entry_system");
@@ -788,7 +788,22 @@ function reportEntryElement(entry) {
     const metaDataContainer = $("<p />", {"class": "report_entry_metadata"})
 
     if (strikable) {
-        const strikeContainer = $("<button />", {"onclick": "setEntryStrike(" + entry.id + ", " + !entry.stricken + ");"});
+        let onclick = "";
+
+        if (typeof incidentNumber !== "undefined") {
+            // we're on the incident page
+            if (entry.merged) {
+                // this is an entry from a field report, as shown on the incident page
+                onclick = "setStrikeFieldReportEntry(" + entry.merged + ", " + entry.id + ", " + !entry.stricken + ");"
+            } else {
+                // this is an incident entry on the incident page
+                onclick = "setStrikeIncidentEntry(" + incidentNumber + ", " + entry.id + ", " + !entry.stricken + ");"
+            }
+        } else if (typeof fieldReportNumber !== "undefined") {
+            // we're on the field report page
+            onclick = "setStrikeFieldReportEntry(" + fieldReportNumber + ", " + entry.id + ", " + !entry.stricken + ");"
+        }
+        const strikeContainer = $("<button />", {"onclick": onclick});
         strikeContainer.addClass("badge btn btn-danger remove-badge float-end");
         strikeContainer.text(entry.stricken ? "Unstrike" : "Strike");
         // TODO: it'd be nice to have a strikethrough icon rather than the word "Strike".
@@ -882,11 +897,43 @@ function reportEntryEdited() {
     }
 }
 
-function setEntryStrike(reportEntryId, strike) {
+// The success callback for a report entry strike call.
+// This function is designed to work from either the incident
+// or the field report page.
+function onStrikeSuccess() {
+    if (typeof loadAndDisplayFieldReport !== "undefined") {
+        loadAndDisplayFieldReport();
+    }
+    if (typeof loadAndDisplayIncident !== "undefined") {
+        loadAndDisplayIncident();
+    }
+    if (typeof loadAndDisplayFieldReports !== "undefined") {
+        loadAndDisplayFieldReports();
+    }
+    clearErrorMessage();
+}
+
+// The error callback for a report entry strike call.
+// This function is designed to work from either the incident
+// or the field report page.
+function onStrikeError(xhr, status, requestError) {
+    const message = "Failed to set report entry strike status";
+    console.log(message + ": " + JSON.stringify(requestError));
+    setErrorMessage(message);
+}
+
+function setStrikeIncidentEntry(incidentNumber, reportEntryId, strike) {
     const url = urlReplace(url_incident_reportEntry)
         .replace("<incident_number>", incidentNumber)
         .replace("<report_entry_id>", reportEntryId);
-    jsonRequest(url, {"stricken": strike});
+    jsonRequest(url, {"stricken": strike}, onStrikeSuccess, onStrikeError);
+}
+
+function setStrikeFieldReportEntry(fieldReportNumber, reportEntryId, strike) {
+    const url = urlReplace(url_fieldReport_reportEntry)
+        .replace("<field_report_number>", fieldReportNumber)
+        .replace("<report_entry_id>", reportEntryId);
+    jsonRequest(url, {"stricken": strike}, onStrikeSuccess, onStrikeError);
 }
 
 function submitReportEntry() {
@@ -918,6 +965,17 @@ function submitReportEntry() {
     sendEdits({"report_entries": [{"text": text}]}, ok, fail);
 }
 
+//
+// Generated history display
+//
+
+function toggleShowHistory() {
+    if ($("#history_checkbox").is(":checked")) {
+        $("#report_entries").removeClass("hide-history");
+    } else {
+        $("#report_entries").addClass("hide-history");
+    }
+}
 
 function editFromElement(element, jsonKey, transform) {
     let value = element.val();

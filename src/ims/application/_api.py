@@ -718,13 +718,13 @@ class APIApplication:
 
         if ReportEntryJSONKey.stricken.value in edits:
             newVal = bool(edits.get(ReportEntryJSONKey.stricken.value))
-            await store.setReportEntry_stricken(
+            await store.setIncidentReportEntry_stricken(
                 eventId, incidentNumber, reportEntryId, newVal, author
             )
         else:
             self._log.info("no key in request")
 
-        return None
+        return noContentResponse(request)
 
     @router.route(_unprefix(URLs.fieldReports), methods=("HEAD", "GET"))
     async def listFieldReportsResource(
@@ -1035,6 +1035,54 @@ class APIApplication:
             await store.addReportEntriesToFieldReport(
                 event_id, fieldReportNumber, entries, author
             )
+
+        return noContentResponse(request)
+
+    @router.route(_unprefix(URLs.fieldReport_reportEntry), methods=("POST",))
+    async def editFieldReportReportEntryResource(
+        self,
+        request: IRequest,
+        event_id: str,
+        field_report_number: str,
+        report_entry_id: str,
+    ) -> KleinSynchronousRenderable:
+        eventId = event_id
+        fieldReportNumber = int(field_report_number)
+        reportEntryId = int(report_entry_id)
+        del event_id
+        del field_report_number
+        del report_entry_id
+
+        fieldReport = await self.config.store.fieldReportWithNumber(
+            eventId, fieldReportNumber
+        )
+        await self.config.authProvider.authorizeRequestForFieldReport(
+            request, fieldReport
+        )
+
+        store = self.config.store
+
+        user: IMSUser = request.user  # type: ignore[attr-defined]
+        author = user.shortNames[0]
+
+        #
+        # Get the edits requested by the client
+        #
+        try:
+            edits = objectFromJSONBytesIO(request.content)
+        except JSONDecodeError as e:
+            return invalidJSONResponse(request, e)
+
+        if not isinstance(edits, dict):
+            return badRequestResponse(request, "JSON incident must be a dictionary")
+
+        if ReportEntryJSONKey.stricken.value in edits:
+            newVal = bool(edits.get(ReportEntryJSONKey.stricken.value))
+            await store.setFieldReportReportEntry_stricken(
+                eventId, fieldReportNumber, reportEntryId, newVal, author
+            )
+        else:
+            self._log.info("no key in request")
 
         return noContentResponse(request)
 

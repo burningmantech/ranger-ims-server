@@ -541,6 +541,98 @@ class DataStoreFieldReportTests(DataStoreTests):
         else:
             self.fail("StorageError not raised")
 
+    @asyncAsDeferred
+    async def test_setFieldReportReportEntry_stricken(self) -> None:
+        fieldReport = aFieldReport1
+
+        reportEntry = aReportEntry1
+        author = aReportEntry1.author
+
+        # Store test data
+        store = await self.store()
+        await store.storeFieldReport(fieldReport)
+
+        # Fetch field report back so we have the version from the DB
+        fieldReport = await store.fieldReportWithNumber(anEvent.id, fieldReport.number)
+
+        # Add report entries
+        await store.addReportEntriesToFieldReport(
+            anEvent.id, fieldReport.number, (reportEntry,), author
+        )
+
+        # Get the updated field report with the new report entry.
+        # The entry will initially not be stricken.
+        updatedFR = await store.fieldReportWithNumber(anEvent.id, fieldReport.number)
+        updatedEntry = updatedFR.reportEntries[0]
+        entryToStrike = updatedEntry.id
+        self.assertFalse(updatedEntry.stricken)
+
+        # Strike the report entry, then check that it's stricken
+        await store.setFieldReportReportEntry_stricken(
+            anEvent.id, fieldReport.number, entryToStrike, True, "Mr. Striker"
+        )
+        updatedFR = await store.fieldReportWithNumber(anEvent.id, fieldReport.number)
+        updatedEntry = next(
+            re for re in updatedFR.reportEntries if re.id == entryToStrike
+        )
+        self.assertTrue(updatedEntry.stricken)
+
+        # Unstrike the report entry, then check it's not stricken
+        await store.setFieldReportReportEntry_stricken(
+            anEvent.id, fieldReport.number, entryToStrike, False, "Mr. Striker"
+        )
+        updatedFR = await store.fieldReportWithNumber(anEvent.id, fieldReport.number)
+        updatedEntry = next(
+            re for re in updatedFR.reportEntries if re.id == entryToStrike
+        )
+        self.assertFalse(updatedEntry.stricken)
+
+    @asyncAsDeferred
+    async def test_setFieldReportReportEntry_stricken_error(self) -> None:
+        """
+        :meth:`IMSDataStore.setReportEntry_stricken` raises
+        :exc:`StorageError` when the store raises an exception.
+        """
+        fieldReport = aFieldReport1
+
+        reportEntry = aReportEntry1
+        author = aReportEntry1.author
+
+        # Store test data
+        store = await self.store()
+        await store.storeFieldReport(fieldReport)
+
+        # Fetch field report back so we have the version from the DB
+        fieldReport = await store.fieldReportWithNumber(anEvent.id, fieldReport.number)
+
+        # Add report entries
+        await store.addReportEntriesToFieldReport(
+            anEvent.id, fieldReport.number, (reportEntry,), author
+        )
+
+        # Get the updated field report with the new report entry.
+        # The entry will initially not be stricken.
+        updatedFR = await store.fieldReportWithNumber(anEvent.id, fieldReport.number)
+        updatedEntry = updatedFR.reportEntries[0]
+        entryToStrike = updatedEntry.id
+        self.assertFalse(updatedEntry.stricken)
+
+        # Do a strike on the wrong field report (note the "+1"). This should fail.
+        # Conveniently, this test enforces that the field report number must be
+        # correctly specified by the caller.
+        try:
+            await store.setFieldReportReportEntry_stricken(
+                anEvent.id,
+                fieldReport.number + 1,
+                entryToStrike,
+                True,
+                "Mr. Striker",
+            )
+        except StorageError:
+            pass
+        else:
+            self.fail("StorageError not raised")
+
     def assertMultipleFieldReportsEqual(
         self,
         store: TestDataStoreABC,
