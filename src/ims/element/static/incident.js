@@ -186,8 +186,7 @@ function loadAndDisplayIncident(success) {
 
 
 function loadAndDisplayFieldReports() {
-    loadUnattachedFieldReports(function () {
-        drawMergedReportEntries();
+    loadAllFieldReports(function () {
         drawFieldReportsToAttach();
     });
     loadAttachedFieldReports(function () {
@@ -330,27 +329,27 @@ function localLoadIncidentTypes() {
 
 
 //
-// Load unattached field reports
+// Load all field reports
 //
 
-let unattachedFieldReports = null;
+let allFieldReports = null;
 
-function loadUnattachedFieldReports(success) {
-    if (unattachedFieldReports === undefined) {
+function loadAllFieldReports(success) {
+    if (allFieldReports === undefined) {
         return;
     }
 
     function ok(data, status, xhr) {
-        const _unattachedFieldReports = [];
+        const _allFieldReports = [];
         for (const d of data) {
-            _unattachedFieldReports.push(d);
+            _allFieldReports.push(d);
         }
         // apply a descending sort based on the field report number,
         // being cautious about field report number being null
-        _unattachedFieldReports.sort(function (a, b) {
+        _allFieldReports.sort(function (a, b) {
             return (b.number ?? -1) - (a.number ?? -1);
         })
-        unattachedFieldReports = _unattachedFieldReports;
+        allFieldReports = _allFieldReports;
 
         if (success) {
             success();
@@ -360,9 +359,9 @@ function loadUnattachedFieldReports(success) {
     function fail(error, status, xhr) {
         if (xhr.status === 403) {
             // We're not allowed to look these up.
-            unattachedFieldReports = undefined;
+            allFieldReports = undefined;
         } else {
-            const message = "Failed to load unattached field reports";
+            const message = "Failed to load field reports";
             console.error(message + ": " + error);
             setErrorMessage(message);
         }
@@ -766,12 +765,12 @@ function drawFieldReportsToAttach() {
     select.empty();
     select.append($("<option />"));
 
-    if (!unattachedFieldReports) {
+    if (!allFieldReports) {
         container.addClass("hidden");
     } else {
 
         select.append($("<optgroup label=\"Unattached to any incident\">"));
-        for (const report of unattachedFieldReports) {
+        for (const report of allFieldReports) {
             // Skip field reports that *are* attached to an incident
             if (report.incident != null) {
                 continue;
@@ -785,7 +784,7 @@ function drawFieldReportsToAttach() {
         select.append($("</optgroup>"));
 
         select.append($("<optgroup label=\"Attached to another incident\">"));
-        for (const report of unattachedFieldReports) {
+        for (const report of allFieldReports) {
             // Skip field reports that *are not* attached to an incident
             if (report.incident == null) {
                 continue;
@@ -1144,4 +1143,12 @@ function attachFieldReport() {
     );
 
     jsonRequest(url, {}, ok, fail);
+}
+
+
+// The success callback for a report entry strike call.
+function onStrikeSuccess() {
+    loadAndDisplayIncident();
+    loadAndDisplayFieldReports();
+    clearErrorMessage();
 }

@@ -6,16 +6,16 @@
 
 <script>
   <!-- FIXME: figure out how to move this to / include from incident.js -->
-  var editingAllowed            = <json t:render="editing_allowed"/>;
-  var eventID                   = <json t:render="event_id"/>;
+  const editingAllowed            = <json t:render="editing_allowed"/>;
+  const eventID                   = <json t:render="event_id"/>;
 
-  var pageTemplateURL           = url_viewIncidentsTemplate;
-  var dataURL                   = urlReplace(url_incidents + "?exclude_system_entries=true");
-  var viewIncidentsURL          = urlReplace(url_viewIncidents);
-  var viewFieldReportsURL       = urlReplace(url_viewFieldReports);
+  const pageTemplateURL           = url_viewIncidentsTemplate;
+  const dataURL                   = urlReplace(url_incidents + "?exclude_system_entries=true");
+  const viewIncidentsURL          = urlReplace(url_viewIncidents);
+  const viewFieldReportsURL       = urlReplace(url_viewFieldReports);
 
-  var concentricStreetNameByID  = <json t:render="concentric_street_name_by_id"/>;
-  const allIncidentTypes        = <json t:render="incident_types"/>;
+  const concentricStreetNameByID  = <json t:render="concentric_street_name_by_id"/>;
+  const allIncidentTypes          = <json t:render="incident_types"/>;
 
   initIncidentsPage();
 </script>
