@@ -7,11 +7,11 @@
 
 <script>
   <!-- FIXME: figure out how to move this to / include from report.js -->
-  var editingAllowed        = <json t:render="editing_allowed"/>;
-  var eventID               = <json t:render="event_id"/>;
-  var fieldReportNumber     = <json t:render="field_report_number"/>;
-  var canWriteIncidents     = <json t:render="can_write_incidents"/>;
-  var pageTemplateURL       = url_viewFieldReportTemplate;
+  const editingAllowed      = <json t:render="editing_allowed"/>;
+  const eventID             = <json t:render="event_id"/>;
+  const canWriteIncidents   = <json t:render="can_write_incidents"/>;
+  const pageTemplateURL     = url_viewFieldReportTemplate;
+  let fieldReportNumber     = <json t:render="field_report_number"/>;
 
   initFieldReportPage();
 </script>

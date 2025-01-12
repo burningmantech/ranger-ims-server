@@ -897,22 +897,6 @@ function reportEntryEdited() {
     }
 }
 
-// The success callback for a report entry strike call.
-// This function is designed to work from either the incident
-// or the field report page.
-function onStrikeSuccess() {
-    if (typeof loadAndDisplayFieldReport !== "undefined") {
-        loadAndDisplayFieldReport();
-    }
-    if (typeof loadAndDisplayIncident !== "undefined") {
-        loadAndDisplayIncident();
-    }
-    if (typeof loadAndDisplayFieldReports !== "undefined") {
-        loadAndDisplayFieldReports();
-    }
-    clearErrorMessage();
-}
-
 // The error callback for a report entry strike call.
 // This function is designed to work from either the incident
 // or the field report page.

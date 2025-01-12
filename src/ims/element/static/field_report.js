@@ -278,8 +278,8 @@ function sendEdits(edits, success, error) {
                 return;
             }
 
-            // Store the new number in our incident object
-            fieldReport.number = newNumber;
+            // Store the new number in our field report object
+            fieldReportNumber = fieldReport.number = newNumber;
 
             // Update browser history to update URL
             drawTitle();
@@ -357,4 +357,11 @@ function makeIncident() {
         "ranger_handles": authors,
         }, createOk, createFail,
     );
+}
+
+
+// The success callback for a report entry strike call.
+function onStrikeSuccess() {
+    loadAndDisplayFieldReport();
+    clearErrorMessage();
 }

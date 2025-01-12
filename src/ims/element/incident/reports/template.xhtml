@@ -5,10 +5,10 @@
 <body/>
 
 <script>
-  var pageTemplateURL   = url_viewFieldReportsTemplate;
-  var editingAllowed    = <json t:render="editing_allowed"/>;
-  var eventID           = <json t:render="event_id"/>;
-  var viewIncidentsURL  = urlReplace(url_viewIncidents);
+  const pageTemplateURL   = url_viewFieldReportsTemplate;
+  const editingAllowed    = <json t:render="editing_allowed"/>;
+  const eventID           = <json t:render="event_id"/>;
+  const viewIncidentsURL  = urlReplace(url_viewIncidents);
 
   initFieldReportsPage();
 </script>
