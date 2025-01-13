@@ -199,8 +199,7 @@ class Command:
                             numbersB = frozenset(i.number for i in eventDataB.incidents)
                             if numbersA != numbersB:
                                 cls.log.error(
-                                    "Incident numbers do not match for event "
-                                    "{event}",
+                                    "Incident numbers do not match for event {event}",
                                     event=eventDataA.event,
                                 )
 

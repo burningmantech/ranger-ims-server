@@ -491,8 +491,7 @@ class DatabaseStore(IMSDataStore):
             await self.runInteraction(hideShowIncidentTypes)
         except StorageError as e:
             self._log.critical(
-                "Unable to set hidden to {hidden} for incident types: "
-                "{incidentTypes}",
+                "Unable to set hidden to {hidden} for incident types: {incidentTypes}",
                 incidentTypes=incidentTypes,
                 hidden=hidden,
             )
@@ -820,8 +819,7 @@ class DatabaseStore(IMSDataStore):
             )
 
         self._log.info(
-            "Attached Rangers {rangerHandles} to incident "
-            "{eventID}#{incidentNumber}",
+            "Attached Rangers {rangerHandles} to incident {eventID}#{incidentNumber}",
             eventID=eventID,
             incidentNumber=incidentNumber,
             rangerHandles=rangerHandles,
@@ -1146,8 +1144,7 @@ class DatabaseStore(IMSDataStore):
             raise
 
         self._log.info(
-            "{author} updated incident {eventID}#{incidentNumber}: "
-            "{attribute}={value}",
+            "{author} updated incident {eventID}#{incidentNumber}: {attribute}={value}",
             query=query,
             eventID=eventID,
             incidentNumber=incidentNumber,
@@ -1823,8 +1820,7 @@ class DatabaseStore(IMSDataStore):
             raise
 
         self._log.info(
-            "{author} updated field report #{fieldReportNumber}: "
-            "{attribute}={value}",
+            "{author} updated field report #{fieldReportNumber}: {attribute}={value}",
             storeWriteClass=FieldReport,
             query=query,
             eventID=eventID,
@@ -2109,8 +2105,7 @@ class DatabaseManager:
                 await self.store.applySchema(sql)
             except StorageError as e:
                 raise StorageError(
-                    f"Unable to upgrade schema from "
-                    f"{fromVersion} to {toVersion}: {e}"
+                    f"Unable to upgrade schema from {fromVersion} to {toVersion}: {e}"
                 ) from e
 
         fromVersion = currentVersion
