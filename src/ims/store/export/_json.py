@@ -233,8 +233,7 @@ class JSONImporter:
         for fieldReport in eventData.fieldReports:
             if fieldReport.number in existingFieldReportNumbers:
                 self._log.info(
-                    "Not importing existing field report #{number} "
-                    "into event {event}",
+                    "Not importing existing field report #{number} into event {event}",
                     event=eventData.event,
                     number=fieldReport.number,
                 )

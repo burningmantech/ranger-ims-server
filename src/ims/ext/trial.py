@@ -162,8 +162,7 @@ class TestCase(SuperTestCase):
 
         if len(imsDataA.events) != len(imsDataB.events):
             self.fail(
-                f"len(IMSData.events): "
-                f"{len(imsDataA.events)} != {len(imsDataB.events)}"
+                f"len(IMSData.events): {len(imsDataA.events)} != {len(imsDataB.events)}"
             )
 
         for eventDataA, eventDataB in zip(
