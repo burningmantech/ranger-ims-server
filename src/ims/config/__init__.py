@@ -19,12 +19,14 @@ Incident Management System configuration.
 """
 
 from ._config import Configuration, ConfigurationError, LogFormat
+from ._external_deps import ExternalDeps
 from ._urls import URLs
 
 
 __all__ = (
     "Configuration",
     "ConfigurationError",
+    "ExternalDeps",
     "LogFormat",
     "URLs",
 )

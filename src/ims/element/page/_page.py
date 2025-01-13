@@ -19,7 +19,7 @@ Element base classes.
 """
 
 from collections import OrderedDict
-from collections.abc import Iterable, MutableMapping
+from collections.abc import MutableMapping
 from typing import cast
 
 from attrs import mutable
@@ -48,7 +48,7 @@ class Page(Element):
     name: str
     hideH1: bool = False
 
-    def urlsFromImportSpec(self, spec: str) -> Iterable[URL]:
+    def urlsFromImportSpec(self, spec: str) -> MutableMapping[str, URL]:
         """
         Given a string specifying desired imports, return the corresponding
         URLs.
@@ -82,7 +82,20 @@ class Page(Element):
         for name in spec.split(","):
             add(name.strip())
 
-        return result.values()
+        return result
+
+    def integrityValue(self, depName: str) -> str | None:
+        if depName == "bootstrap":
+            return cast(str, self.config.externalDeps.bootstrapJsIntegrity)
+        if depName == "dataTables":
+            return cast(str, self.config.externalDeps.dataTablesJsIntegrity)
+        if depName == "dataTablesBootstrap":
+            return cast(str, self.config.externalDeps.dataTablesBootstrap5JsIntegrity)
+        if depName == "jquery":
+            return cast(str, self.config.externalDeps.jqueryJsIntegrity)
+        if depName == "lscache":
+            return cast(str, self.config.externalDeps.lscacheJsIntegrity)
+        return None
 
     @renderer
     def title(self, request: IRequest, tag: Tag) -> IRenderable:
@@ -101,12 +114,15 @@ class Page(Element):
         children = tag.children
         tag.children = []
 
-        imports = (
-            tags.script(src=url.asText())
-            for url in self.urlsFromImportSpec(
-                cast(str, tag.attributes.get("imports", ""))
-            )
-        )
+        imports = []
+        for name, url in self.urlsFromImportSpec(
+            cast(str, tag.attributes.get("imports", ""))
+        ).items():
+            kw = {"src": url.asText()}
+            integrity = self.integrityValue(name)
+            if integrity is not None:
+                kw["integrity"] = integrity
+            imports.append(tags.script(**kw))
 
         if "imports" in tag.attributes:
             del tag.attributes["imports"]

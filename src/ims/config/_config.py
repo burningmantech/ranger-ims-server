@@ -39,6 +39,7 @@ from ims.store import IMSDataStore
 from ims.store.mysql import DataStore as MySQLDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
+from ._external_deps import ExternalDeps
 from ._urls import URLs
 
 
@@ -167,6 +168,7 @@ class Configuration:
 
     _log: ClassVar[Logger] = Logger()
     urls: ClassVar = URLs
+    externalDeps: ClassVar = ExternalDeps
 
     @mutable(kw_only=True, eq=False)
     class _State:
