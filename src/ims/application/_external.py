@@ -670,40 +670,6 @@ class ExternalApplication:
 
     config: Configuration
 
-    bootstrapVersionNumber = "5.3.3"
-    jqueryVersionNumber = "3.1.0"
-    dataTablesVersionNumber = "2.1.8"
-    lscacheVersionNumber = "1.0.5"
-
-    bootstrapVersion = f"bootstrap-{bootstrapVersionNumber}-dist"
-    jqueryVersion = f"jquery-{jqueryVersionNumber}"
-    dataTablesVersion = f"DataTables-{dataTablesVersionNumber}"
-    lscacheVersion = f"lscache-{lscacheVersionNumber}"
-
-    bootstrapSourceURL = URL.fromText(
-        f"https://github.com/twbs/bootstrap/releases/download/"
-        f"v{bootstrapVersionNumber}/{bootstrapVersion}.zip"
-    )
-
-    jqueryJSSourceURL = URL.fromText(
-        f"https://cdnjs.cloudflare.com/ajax/libs/jquery/"
-        f"{jqueryVersionNumber}/jquery.min.js"
-    )
-
-    jqueryMapSourceURL = URL.fromText(
-        f"https://cdnjs.cloudflare.com/ajax/libs/jquery/"
-        f"{jqueryVersionNumber}/jquery.min.map"
-    )
-
-    dataTablesSourceURL = URL.fromText(
-        f"https://datatables.net/releases/DataTables-{dataTablesVersionNumber}.zip"
-    )
-
-    lscacheJSSourceURL = URL.fromText(
-        f"https://raw.githubusercontent.com/pamelafox/lscache/"
-        f"{lscacheVersionNumber}/lscache.min.js"
-    )
-
     @router.route(_unprefix(URLs.bootstrapBase), methods=("HEAD", "GET"), branch=True)
     @static
     async def bootstrapResource(self, request: IRequest) -> KleinRenderable:
@@ -718,9 +684,9 @@ class ExternalApplication:
         request.setHeader(HeaderName.contentType.value, ContentType.css.value)
         return await self.cachedZippedResource(
             request,
-            self.bootstrapSourceURL,
-            self.bootstrapVersion,
-            self.bootstrapVersion,
+            self.config.externalDeps.bootstrapSourceURL,
+            self.config.externalDeps.bootstrapVersion,
+            self.config.externalDeps.bootstrapVersion,
             *names,
         )
 
@@ -732,7 +698,9 @@ class ExternalApplication:
         """
         request.setHeader(HeaderName.contentType.value, ContentType.javascript.value)
         return await self.cachedResource(
-            request, self.jqueryJSSourceURL, f"{self.jqueryVersion}.min.js"
+            request,
+            self.config.externalDeps.jqueryJSSourceURL,
+            f"{self.config.externalDeps.jqueryVersion}.min.js",
         )
 
     @router.route(_unprefix(URLs.jqueryMap), methods=("HEAD", "GET"))
@@ -743,7 +711,9 @@ class ExternalApplication:
         """
         request.setHeader(HeaderName.contentType.value, ContentType.json.value)
         return await self.cachedResource(
-            request, self.jqueryMapSourceURL, f"{self.jqueryVersion}.min.map"
+            request,
+            self.config.externalDeps.jqueryMapSourceURL,
+            f"{self.config.externalDeps.jqueryVersion}.min.map",
         )
 
     @router.route(_unprefix(URLs.dataTablesBase), methods=("HEAD", "GET"), branch=True)
@@ -772,9 +742,9 @@ class ExternalApplication:
                 Path(__file__).parent.parent
                 / "element"
                 / "static"
-                / f"DataTables-{self.dataTablesVersionNumber}.zip"
+                / f"DataTables-{self.config.externalDeps.dataTablesVersionNumber}.zip"
             ),
-            self.dataTablesVersion,
+            self.config.externalDeps.dataTablesVersion,
             *names,
         )
 
@@ -786,7 +756,9 @@ class ExternalApplication:
         """
         request.setHeader(HeaderName.contentType.value, ContentType.javascript.value)
         return await self.cachedResource(
-            request, self.lscacheJSSourceURL, f"{self.lscacheVersion}.min.js"
+            request,
+            self.config.externalDeps.lscacheJSSourceURL,
+            f"{self.config.externalDeps.lscacheVersion}.min.js",
         )
 
     async def cacheFromURL(self, url: URL, name: str) -> Path:
