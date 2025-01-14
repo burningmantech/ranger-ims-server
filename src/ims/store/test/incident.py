@@ -20,9 +20,9 @@ Incident tests for :mod:`ranger-ims-server.store`
 
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
+from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
-from datetime import timezone as TimeZone
 from typing import Any, cast
 
 from attrs import fields as attrsFields
@@ -55,7 +55,7 @@ anEvent2 = Event(id="bar")
 aNewIncident = Incident(
     eventID=anEvent.id,
     number=0,
-    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=1),
+    created=DateTime.now(UTC) + TimeDelta(seconds=1),
     state=IncidentState.new,
     priority=IncidentPriority.normal,
     summary="A thing happened",
@@ -69,7 +69,7 @@ aNewIncident = Incident(
 anIncident1 = Incident(
     eventID=anEvent.id,
     number=1,
-    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=2),
+    created=DateTime.now(UTC) + TimeDelta(seconds=2),
     state=IncidentState.new,
     priority=IncidentPriority.normal,
     summary="A thing happened",
@@ -83,7 +83,7 @@ anIncident1 = Incident(
 anIncident2 = Incident(
     eventID=anEvent2.id,
     number=325,
-    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=3),
+    created=DateTime.now(UTC) + TimeDelta(seconds=3),
     state=IncidentState.new,
     priority=IncidentPriority.normal,
     summary="Another thing happened 🙂",
@@ -96,7 +96,7 @@ anIncident2 = Incident(
 
 aReportEntry = ReportEntry(
     id=123,
-    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=4),
+    created=DateTime.now(UTC) + TimeDelta(seconds=4),
     author="Hubcap",
     automatic=False,
     text="Hello",
@@ -105,7 +105,7 @@ aReportEntry = ReportEntry(
 
 aReportEntry1 = ReportEntry(
     id=124,
-    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=5),
+    created=DateTime.now(UTC) + TimeDelta(seconds=5),
     author="Bucket",
     automatic=False,
     text="This happened",
@@ -114,7 +114,7 @@ aReportEntry1 = ReportEntry(
 
 aReportEntry2 = ReportEntry(
     id=125,
-    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=6),
+    created=DateTime.now(UTC) + TimeDelta(seconds=6),
     author="Bucket",
     automatic=False,
     text="That happened",

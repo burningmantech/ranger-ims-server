@@ -24,7 +24,7 @@ from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from pathlib import Path
 from string import ascii_letters, digits
-from typing import Any, AnyStr, Optional
+from typing import Any, AnyStr
 from unittest.mock import patch
 
 from attrs import evolve, frozen
@@ -869,11 +869,11 @@ class AuthProviderTests(TestCase):
 
 
 class MockReq(Request):
-    def __init__(self, user: Optional[TestUser], headers: Mapping[str, str]) -> None:
+    def __init__(self, user: TestUser | None, headers: Mapping[str, str]) -> None:
         super().__init__(DummyChannel(), False)
         self.user = user  # type: ignore[assignment]
         self.headers = headers
         self.authorizations = Authorization.none
 
-    def getHeader(self, key: AnyStr) -> Optional[AnyStr]:
+    def getHeader(self, key: AnyStr) -> AnyStr | None:
         return self.headers.get(str(key))  # type: ignore[return-value]

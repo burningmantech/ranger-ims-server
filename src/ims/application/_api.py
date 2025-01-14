@@ -25,8 +25,8 @@ from collections.abc import (
     Iterable,
     Mapping,
 )
+from datetime import UTC
 from datetime import datetime as DateTime
-from datetime import timezone as TimeZone
 from enum import Enum
 from functools import partial
 from json import JSONDecodeError
@@ -405,7 +405,7 @@ class APIApplication:
 
         user: IMSUser = request.user  # type: ignore[attr-defined]
         author = user.shortNames[0]
-        now = DateTime.now(TimeZone.utc)
+        now = DateTime.now(UTC)
         jsonNow = jsonObjectFromModelObject(now)
 
         # Set JSON incident number to 0
@@ -662,7 +662,7 @@ class APIApplication:
 
         jsonEntries = edits.get(IncidentJSONKey.reportEntries.value, UNSET)
         if jsonEntries is not UNSET:
-            now = DateTime.now(TimeZone.utc)
+            now = DateTime.now(UTC)
 
             entries = (
                 ReportEntry(
@@ -813,7 +813,7 @@ class APIApplication:
 
         user: IMSUser = request.user  # type: ignore[attr-defined]
         author = user.shortNames[0]
-        now = DateTime.now(TimeZone.utc)
+        now = DateTime.now(UTC)
         jsonNow = jsonObjectFromModelObject(now)
 
         # Set JSON event id
@@ -1018,7 +1018,7 @@ class APIApplication:
 
         jsonEntries = edits.get(FieldReportJSONKey.reportEntries.value, UNSET)
         if jsonEntries is not UNSET:
-            now = DateTime.now(TimeZone.utc)
+            now = DateTime.now(UTC)
 
             entries = (
                 ReportEntry(

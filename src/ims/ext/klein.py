@@ -80,8 +80,9 @@ class HeaderName(Enum):
     server = "Server"
 
 
-if False:
-    _staticETag = version  # type: ignore[unreachable]
+staticETagForTest = False
+if staticETagForTest:
+    _staticETag = version
     _maxAge = 60 * 5  # 5 minutes
 else:
     # For debugging, change the ETag on app launch

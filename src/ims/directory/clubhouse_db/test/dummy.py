@@ -18,8 +18,11 @@
 Mock objects for Clubhouse directory.
 """
 
-from collections.abc import MutableSequence
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
+
+
+if TYPE_CHECKING:
+    from collections.abc import MutableSequence
 
 from twisted.internet.defer import Deferred, fail, succeed
 

@@ -21,13 +21,13 @@ Incident Management System database tooling.
 from abc import abstractmethod
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
+from datetime import UTC
 from datetime import datetime as DateTime
-from datetime import timezone as TimeZone
 from json import loads
 from pathlib import Path
 from textwrap import dedent
 from types import MappingProxyType
-from typing import Any, ClassVar, NoReturn, Optional, TypeVar, Union, cast
+from typing import Any, ClassVar, NoReturn, TypeVar, cast
 
 from attrs import field, frozen
 from twisted.logger import Logger
@@ -54,7 +54,7 @@ from ._exceptions import (
 __all__ = ()
 
 
-ParameterValue = Optional[Union[bytes, str, int, float]]
+ParameterValue = bytes | str | int | float | None
 Parameters = Mapping[str, ParameterValue]
 
 Row = Parameters
@@ -64,7 +64,7 @@ T = TypeVar("T")
 
 
 def now() -> DateTime:
-    return DateTime.now(TimeZone.utc)
+    return DateTime.now(UTC)
 
 
 @frozen
@@ -239,7 +239,7 @@ class DatabaseStore(IMSDataStore):
         if not isinstance(value, float):
             raise TypeError("Time stamp in SQLite store must be a float")
 
-        return DateTime.fromtimestamp(value, tz=TimeZone.utc)
+        return DateTime.fromtimestamp(value, tz=UTC)
 
     @classmethod
     def loadSchema(cls, version: int | str | None = None) -> str:
@@ -641,18 +641,16 @@ class DatabaseStore(IMSDataStore):
                     created=self.fromDateTimeValue(row["CREATED"]),
                     state=self.fromIncidentStateValue(row["STATE"]),
                     priority=self.fromPriorityValue(row["PRIORITY"]),
-                    summary=cast(Optional[str], row["SUMMARY"]),
+                    summary=cast(str | None, row["SUMMARY"]),
                     location=Location(
                         name=cast(str, row["LOCATION_NAME"]),
                         address=RodGarettAddress(
                             concentric=concentric,
-                            radialHour=cast(Optional[int], row["LOCATION_RADIAL_HOUR"]),
+                            radialHour=cast(int | None, row["LOCATION_RADIAL_HOUR"]),
                             radialMinute=cast(
-                                Optional[int], row["LOCATION_RADIAL_MINUTE"]
+                                int | None, row["LOCATION_RADIAL_MINUTE"]
                             ),
-                            description=cast(
-                                Optional[str], row["LOCATION_DESCRIPTION"]
-                            ),
+                            description=cast(str | None, row["LOCATION_DESCRIPTION"]),
                         ),
                     ),
                     rangerHandles=cast(Iterable[str], rangerHandles),
@@ -721,14 +719,14 @@ class DatabaseStore(IMSDataStore):
             created=self.fromDateTimeValue(row["CREATED"]),
             state=self.fromIncidentStateValue(row["STATE"]),
             priority=self.fromPriorityValue(row["PRIORITY"]),
-            summary=cast(Optional[str], row["SUMMARY"]),
+            summary=cast(str | None, row["SUMMARY"]),
             location=Location(
                 name=cast(str, row["LOCATION_NAME"]),
                 address=RodGarettAddress(
                     concentric=concentric,
-                    radialHour=cast(Optional[int], row["LOCATION_RADIAL_HOUR"]),
-                    radialMinute=cast(Optional[int], row["LOCATION_RADIAL_MINUTE"]),
-                    description=cast(Optional[str], row["LOCATION_DESCRIPTION"]),
+                    radialHour=cast(int | None, row["LOCATION_RADIAL_HOUR"]),
+                    radialMinute=cast(int | None, row["LOCATION_RADIAL_MINUTE"]),
+                    description=cast(str | None, row["LOCATION_DESCRIPTION"]),
                 ),
             ),
             rangerHandles=cast(Iterable[str], rangerHandles),
@@ -794,7 +792,7 @@ class DatabaseStore(IMSDataStore):
         txn.execute(self.query.maxIncidentNumber.text, {"eventID": eventID})
         row = txn.fetchone()
         assert row is not None
-        number = cast(Optional[int], row["max(NUMBER)"])
+        number = cast(int | None, row["max(NUMBER)"])
         if number is None:
             return 1
         return number + 1
@@ -1540,8 +1538,8 @@ class DatabaseStore(IMSDataStore):
                     eventID=eventID,
                     number=fieldReportNumber,
                     created=self.fromDateTimeValue(row["CREATED"]),
-                    summary=cast(Optional[str], row["SUMMARY"]),
-                    incidentNumber=cast(Optional[int], row["INCIDENT_NUMBER"]),
+                    summary=cast(str | None, row["SUMMARY"]),
+                    incidentNumber=cast(int | None, row["INCIDENT_NUMBER"]),
                     reportEntries=cast(
                         Iterable[ReportEntry], reports[fieldReportNumber]
                     ),
@@ -1588,8 +1586,8 @@ class DatabaseStore(IMSDataStore):
             eventID=eventID,
             number=fieldReportNumber,
             created=self.fromDateTimeValue(row["CREATED"]),
-            summary=cast(Optional[str], row["SUMMARY"]),
-            incidentNumber=cast(Optional[int], row["INCIDENT_NUMBER"]),
+            summary=cast(str | None, row["SUMMARY"]),
+            incidentNumber=cast(int | None, row["INCIDENT_NUMBER"]),
             reportEntries=cast(Iterable[ReportEntry], reportEntries),
         )
 
@@ -1645,7 +1643,7 @@ class DatabaseStore(IMSDataStore):
         txn.execute(self.query.maxFieldReportNumber.text, {"eventID": eventID})
         row = txn.fetchone()
         assert row is not None
-        number = cast(Optional[int], row["max(NUMBER)"])
+        number = cast(int | None, row["max(NUMBER)"])
         if number is None:
             return 1
         return number + 1

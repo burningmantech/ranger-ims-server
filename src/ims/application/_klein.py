@@ -20,7 +20,7 @@ Incident Management System Klein application.
 
 from collections.abc import Callable, Iterable, Sequence
 from functools import wraps
-from typing import Any, Optional, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from hyperlink import URL
 from klein import Klein, KleinRenderable, KleinRouteHandler
@@ -309,7 +309,7 @@ def queryValue(request: IRequest, name: str, default: str | None = None) -> str 
         C{default} if there no such query parameter.
         If more than one value is found, return the last value found.
     """
-    values = cast(Optional[Sequence[bytes]], request.args.get(name.encode("utf-8")))
+    values = cast(Sequence[bytes] | None, request.args.get(name.encode("utf-8")))
 
     if values is None:
         return default
@@ -336,7 +336,7 @@ def queryValues(
     @return: The values of the query parameter specified by C{name}, or
         C{default} if there no such query parameter.
     """
-    values = cast(Optional[Sequence[bytes]], request.args.get(name))
+    values = cast(Sequence[bytes] | None, request.args.get(name))
 
     if values is None:
         return default
@@ -474,9 +474,8 @@ class Router(Klein):
             Not authenticated.
             """
             requestedWith = request.getHeader("X-Requested-With")
-            if requestedWith is not None:
-                if requestedWith == "XMLHttpRequest":
-                    return forbiddenResponse(request)
+            if requestedWith == "XMLHttpRequest":
+                return forbiddenResponse(request)
 
             element = redirect(request, URLs.login, origin="o")
             return renderElement(  # type: ignore[return-value]
