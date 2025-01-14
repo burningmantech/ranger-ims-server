@@ -19,9 +19,9 @@ Report tests for :mod:`ranger-ims-server.store`
 """
 
 from collections.abc import Awaitable, Callable, Iterable, Sequence
+from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
-from datetime import timezone as TimeZone
 from typing import Any, cast
 
 from attrs import fields as attrsFields
@@ -44,7 +44,7 @@ __all__ = ()
 aNewFieldReport = FieldReport(
     eventID=anEvent.id,
     number=0,
-    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=1),
+    created=DateTime.now(UTC) + TimeDelta(seconds=1),
     summary="A funny thing happened",
     incidentNumber=None,
     reportEntries=(),
@@ -53,7 +53,7 @@ aNewFieldReport = FieldReport(
 aFieldReport1 = FieldReport(
     eventID=anEvent.id,
     number=1,
-    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=2),
+    created=DateTime.now(UTC) + TimeDelta(seconds=2),
     summary="A scary thing happened",
     incidentNumber=None,
     reportEntries=(),
@@ -62,7 +62,7 @@ aFieldReport1 = FieldReport(
 aFieldReport2 = FieldReport(
     eventID=anEvent.id,
     number=2,
-    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=3),
+    created=DateTime.now(UTC) + TimeDelta(seconds=3),
     summary="A sad thing happened",
     incidentNumber=None,
     reportEntries=(),
@@ -70,7 +70,7 @@ aFieldReport2 = FieldReport(
 
 aReportEntry1 = ReportEntry(
     id=0,
-    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=4),
+    created=DateTime.now(UTC) + TimeDelta(seconds=4),
     author="Hubcap",
     automatic=False,
     text="Well there was thing thing",
@@ -79,7 +79,7 @@ aReportEntry1 = ReportEntry(
 
 aReportEntry2 = ReportEntry(
     id=1,
-    created=DateTime.now(TimeZone.utc) + TimeDelta(seconds=5),
+    created=DateTime.now(UTC) + TimeDelta(seconds=5),
     author="Bucket",
     automatic=False,
     text="Well there was that thing",

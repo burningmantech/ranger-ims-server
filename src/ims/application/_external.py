@@ -85,9 +85,9 @@ class HTTPPageGetter(http.HTTPClient):
     def connectionMade(self):
         method = _ensureValidMethod(getattr(self.factory, "method", b"GET"))
         self.sendCommand(method, _ensureValidURI(self.factory.path))
-        if self.factory.scheme == b"http" and self.factory.port != 80:  # noqa: PLR2004
-            host = b"%b:%d" % (self.factory.host, self.factory.port)
-        elif self.factory.scheme == b"https" and self.factory.port != 443:  # noqa: PLR2004
+        if (self.factory.scheme == b"http" and self.factory.port != 80) or (  # noqa: PLR2004
+            self.factory.scheme == b"https" and self.factory.port != 443  # noqa: PLR2004
+        ):
             host = b"%b:%d" % (self.factory.host, self.factory.port)
         else:
             host = self.factory.host
@@ -259,8 +259,8 @@ class HTTPPageGetter(http.HTTPClient):
         self.transport.abortConnection()
         self.factory.noPage(
             defer.TimeoutError(
-                "Getting %s took longer than %s seconds."
-                % (self.factory.url, self.factory.timeout)
+                f"Getting {self.factory.url} took "
+                f"longer than {self.factory.timeout} seconds."
             )
         )
 
