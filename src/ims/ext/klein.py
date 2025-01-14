@@ -9,7 +9,7 @@ from typing import Any
 from klein import KleinRenderable, KleinRouteHandler
 from twisted.web.iweb import IRequest
 
-from ims.ext.enum import Enum, Names, auto
+from ims.ext.enum_ext import Enum, Names, auto
 
 from .. import __version__ as version
 

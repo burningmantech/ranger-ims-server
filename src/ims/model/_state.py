@@ -20,7 +20,7 @@
 Incident state
 """
 
-from ims.ext.enum import Names, auto, enumOrdering
+from ims.ext.enum_ext import Names, auto, enumOrdering
 
 
 __all__ = ()

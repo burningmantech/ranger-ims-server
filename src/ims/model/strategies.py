@@ -147,7 +147,7 @@ def dateTimes(
 
 
 @composite
-def textOnlyAddresses(draw: Callable[..., Any]) -> SearchStrategy[TextOnlyAddress]:
+def textOnlyAddresses(draw: Callable[..., Any]) -> TextOnlyAddress:
     """
     Strategy that generates :class:`TextOnlyAddress` values.
     """

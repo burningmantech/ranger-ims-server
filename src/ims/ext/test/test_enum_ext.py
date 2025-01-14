@@ -1,8 +1,8 @@
 """
-Tests for :mod:`ranger-ims-server.ext.enum`
+Tests for :mod:`ranger-ims-server.ext.enum_ext`
 """
 
-from ..enum import Enum, enumOrdering
+from ..enum_ext import Enum, enumOrdering
 from ..trial import TestCase
 
 

@@ -24,7 +24,7 @@ from typing import Any, BinaryIO, ClassVar, cast
 from attrs import frozen
 from twisted.logger import Logger
 
-from ims.ext.json import (
+from ims.ext.json_ext import (
     jsonTextFromObject,
     objectFromJSONBytesIO,
     objectFromJSONText,

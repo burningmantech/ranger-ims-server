@@ -46,7 +46,7 @@ from twisted.web.iweb import IRequest
 from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
 from ims.directory import DirectoryError, IMSUser
-from ims.ext.json import (
+from ims.ext.json_ext import (
     jsonTextFromObject,
     objectFromJSONBytesIO,
     objectFromJSONText,

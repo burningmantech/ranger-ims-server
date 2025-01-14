@@ -34,7 +34,7 @@ from ims.auth import AuthProvider, JSONWebKey
 from ims.directory import IMSDirectory
 from ims.directory.clubhouse_db import DMSDirectory, DutyManagementSystem
 from ims.directory.file import FileDirectory
-from ims.ext.enum import Enum, Names, auto
+from ims.ext.enum_ext import Enum, Names, auto
 from ims.store import IMSDataStore
 from ims.store.mysql import DataStore as MySQLDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore

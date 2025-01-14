@@ -25,7 +25,7 @@ from typing import Any, cast
 
 from hypothesis import given, settings
 
-from ims.ext.json import jsonTextFromObject, objectFromJSONText
+from ims.ext.json_ext import jsonTextFromObject, objectFromJSONText
 from ims.ext.trial import TestCase
 from ims.model import (
     EventAccess,

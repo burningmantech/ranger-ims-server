@@ -25,7 +25,7 @@ from ims.ext.trial import TestCase
 from ..._imsdata import IMSData
 from ...strategies import imsDatas
 from .._json import jsonDeserialize, jsonSerialize
-from .json import jsonFromIMSData
+from .json_helpers import jsonFromIMSData
 
 
 __all__ = ()

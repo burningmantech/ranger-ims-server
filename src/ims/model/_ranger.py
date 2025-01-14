@@ -22,7 +22,7 @@ Ranger
 
 from attrs import field, frozen
 
-from ims.ext.enum import Names, auto, unique
+from ims.ext.enum_ext import Names, auto, unique
 
 from ._convert import freezeStrings
 from ._replace import ReplaceMixIn

@@ -33,7 +33,7 @@ from twisted.web.template import Tag, XMLFile, renderer, tags
 
 from ims.auth import Authorization
 from ims.config import Configuration
-from ims.ext.json import jsonTextFromObject
+from ims.ext.json_ext import jsonTextFromObject
 
 
 __all__ = ()

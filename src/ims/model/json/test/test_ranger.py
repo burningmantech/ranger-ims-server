@@ -25,7 +25,7 @@ from ims.ext.trial import TestCase
 from ..._ranger import Ranger
 from ...strategies import rangers
 from .._json import jsonDeserialize, jsonSerialize
-from .json import jsonFromRanger
+from .json_helpers import jsonFromRanger
 
 
 __all__ = ()

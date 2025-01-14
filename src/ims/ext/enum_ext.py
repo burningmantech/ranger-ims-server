@@ -1,4 +1,4 @@
-# -*- test-case-name: ranger-ims-server.ext.test.test_enum -*-
+# -*- test-case-name: ranger-ims-server.ext.test.test_enum_ext -*-
 """
 Extensions to :mod:`enum`
 """

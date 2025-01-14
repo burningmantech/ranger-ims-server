@@ -27,7 +27,7 @@ from cattr import Converter
 from twisted.logger import Logger
 
 from ims.ext.frozendict import FrozenDict
-from ims.ext.json import dateTimeAsRFC3339Text, rfc3339TextAsDateTime
+from ims.ext.json_ext import dateTimeAsRFC3339Text, rfc3339TextAsDateTime
 
 
 __all__ = ()
