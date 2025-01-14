@@ -27,7 +27,7 @@ from twisted.logger import ILogObserver, Logger
 from twisted.web.iweb import IRequest
 from zope.interface import implementer
 
-from ims.ext.json import jsonTextFromObject
+from ims.ext.json_ext import jsonTextFromObject
 from ims.model import Incident
 
 

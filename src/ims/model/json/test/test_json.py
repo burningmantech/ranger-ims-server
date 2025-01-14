@@ -24,7 +24,7 @@ from typing import Any
 from hypothesis import given
 from hypothesis.strategies import datetimes, floats, integers, text
 
-from ims.ext.json import dateTimeAsRFC3339Text
+from ims.ext.json_ext import dateTimeAsRFC3339Text
 from ims.ext.trial import TestCase
 
 from ..._incident import Incident

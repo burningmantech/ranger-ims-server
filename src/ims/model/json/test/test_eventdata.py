@@ -25,7 +25,7 @@ from ims.ext.trial import TestCase
 from ..._eventdata import EventData
 from ...strategies import eventDatas
 from .._json import jsonDeserialize, jsonSerialize
-from .json import jsonFromEventData
+from .json_helpers import jsonFromEventData
 
 
 __all__ = ()

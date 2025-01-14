@@ -16,7 +16,7 @@ from hypothesis import given
 from hypothesis.strategies import composite, dates, integers
 from hypothesis.strategies import datetimes as _datetimes
 
-from ..json import (
+from ..json_ext import (
     dateAsRFC3339Text,
     dateTimeAsRFC3339Text,
     jsonTextFromObject,

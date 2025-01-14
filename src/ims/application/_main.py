@@ -30,7 +30,7 @@ from twisted.web.static import File
 
 import ims.element
 from ims.config import Configuration, URLs
-from ims.ext.json import jsonTextFromObject
+from ims.ext.json_ext import jsonTextFromObject
 from ims.ext.klein import ContentType, HeaderName, static
 
 from ._api import APIApplication

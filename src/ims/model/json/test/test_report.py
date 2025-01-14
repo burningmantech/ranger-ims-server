@@ -25,7 +25,7 @@ from ims.ext.trial import TestCase
 from ..._report import FieldReport
 from ...strategies import fieldReports
 from .._json import jsonDeserialize, jsonSerialize
-from .json import jsonFromFieldReport
+from .json_helpers import jsonFromFieldReport
 
 
 __all__ = ()

@@ -24,7 +24,7 @@ from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 
 from ims.auth import Authorization
-from ims.ext.json import jsonFalse, jsonTextFromObject, jsonTrue
+from ims.ext.json_ext import jsonFalse, jsonTextFromObject, jsonTrue
 from ims.model import Event
 
 from ...page import Page

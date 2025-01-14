@@ -25,7 +25,7 @@ from ims.ext.trial import TestCase
 from ..._priority import IncidentPriority
 from ...strategies import incidentPriorities
 from .._json import jsonDeserialize, jsonSerialize
-from .json import jsonFromIncidentPriority
+from .json_helpers import jsonFromIncidentPriority
 
 
 __all__ = ()

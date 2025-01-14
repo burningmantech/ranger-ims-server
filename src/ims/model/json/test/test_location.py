@@ -26,7 +26,7 @@ from ..._address import TextOnlyAddress
 from ..._location import Location
 from ...strategies import locations
 from .._json import jsonDeserialize, jsonSerialize
-from .json import jsonFromLocation
+from .json_helpers import jsonFromLocation
 
 
 __all__ = ()

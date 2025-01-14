@@ -25,7 +25,7 @@ from ims.ext.trial import TestCase
 from ..._type import IncidentType, KnownIncidentType
 from ...strategies import incidentTypes, knownIncidentTypes
 from .._json import jsonDeserialize, jsonSerialize
-from .json import jsonFromIncidentType, jsonFromKnownIncidentType
+from .json_helpers import jsonFromIncidentType, jsonFromKnownIncidentType
 
 
 __all__ = ()

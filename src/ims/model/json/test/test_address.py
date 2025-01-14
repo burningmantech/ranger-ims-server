@@ -25,7 +25,7 @@ from ims.ext.trial import TestCase
 from ..._address import Address, RodGarettAddress, TextOnlyAddress
 from ...strategies import rodGarettAddresses, textOnlyAddresses
 from .._json import jsonDeserialize, jsonSerialize
-from .json import jsonFromRodGarettAddress, jsonFromTextOnlyAddress
+from .json_helpers import jsonFromRodGarettAddress, jsonFromTextOnlyAddress
 
 
 __all__ = ()
