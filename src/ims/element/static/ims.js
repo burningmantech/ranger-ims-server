@@ -1080,9 +1080,10 @@ function subscribeToUpdates(closed) {
         send.postMessage(JSON.parse(e.data));
     }, true);
 
-    // TODO: this will never receive any events currently, since the server isn't configured to
-    //  fire events for FieldReports. See
-    //  https://github.com/burningmantech/ranger-ims-server/blob/954498eb125bb9a83d2b922361abef4935f228ba/src/ims/application/_eventsource.py#L113-L135
+    // TODO(issue/1498): SSEs are now firing for Field Report updates, but we need
+    //  to find an appropriate way for the various pages to handle these updates
+    //  (i.e. without excessive volume of API calls or "unauthorized" errors from
+    //  users with limited access).
     eventSource.addEventListener("FieldReport", function(e) {
         const send = new BroadcastChannel(fieldReportChannelName);
         localStorage.setItem(lastSseIDKey, e.lastEventId);

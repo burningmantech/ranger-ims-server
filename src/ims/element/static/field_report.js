@@ -37,6 +37,21 @@ function initFieldReportPage() {
         disableEditing();
         loadAndDisplayFieldReport(loadedFieldReport);
 
+        // Updates...it's fine to ignore the returned promise here
+        requestEventSourceLock();
+
+        const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
+        fieldReportChannel.onmessage = function (e) {
+            const number = e.data["field_report_number"];
+            const event = e.data["event_id"]
+            const updateAll = e.data["update_all"];
+
+            if (updateAll || (event === eventID && number === fieldReportNumber)) {
+                console.log("Got field report update: " + number);
+                loadAndDisplayFieldReport();
+            }
+        }
+
         // Keyboard shortcuts
         document.addEventListener("keydown", function(e) {
             // No shortcuts when an input field is active

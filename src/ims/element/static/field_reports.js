@@ -85,12 +85,25 @@ function initFieldReportsTable() {
     requestEventSourceLock();
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = function (e) {
+        if (e.data["update_all"]) {
+            console.log("Reloading the whole table to be cautious, as an SSE was missed")
+            fieldReportsTable.ajax.reload(clearErrorMessage);
+            return;
+        }
+
         const number = e.data["field_report_number"];
         const event = e.data["event_id"]
         if (event !== eventID) {
             return;
         }
         console.log("Got field report update: " + number);
+        // TODO(issue/1498): this reloads the entire Field Report table on any
+        //  update to any Field Report. That's not ideal. The thing of which
+        //  to be mindful when GETting a particular single Field Report is that
+        //  limited access users will receive errors when they try to access
+        //  Field Reports for which they're not authorized, and those errors
+        //  show up in the browser console. I'd like to find a way to avoid
+        //  bringing those errors into the console constantly.
         fieldReportsTable.ajax.reload(clearErrorMessage);
     }
 }

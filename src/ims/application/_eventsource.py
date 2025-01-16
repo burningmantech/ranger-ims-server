@@ -28,7 +28,7 @@ from twisted.web.iweb import IRequest
 from zope.interface import implementer
 
 from ims.ext.json_ext import jsonTextFromObject
-from ims.model import Incident
+from ims.model import FieldReport, Incident
 
 
 __all__ = ("DataStoreEventSourceLogObserver",)
@@ -136,7 +136,27 @@ class DataStoreEventSourceLogObserver:
                 "event_id": eventName,
                 "incident_number": incidentNumber,
             }
+        elif eventClass is FieldReport:
+            fieldReport = loggerEvent.get("fieldReport", None)
 
+            if fieldReport is None:
+                fieldReportNumber = loggerEvent.get("fieldReportNumber", None)
+                eventName = loggerEvent.get("eventID", "")
+            else:
+                fieldReportNumber = fieldReport.number
+                eventName = fieldReport.eventID
+
+            if fieldReportNumber is None:
+                self._log.critical(
+                    "Unable to determine field report number from store event: {event}",
+                    event=loggerEvent,
+                )
+                return None
+
+            message = {
+                "event_id": eventName,
+                "field_report_number": fieldReportNumber,
+            }
         else:
             self._log.critical(
                 "Unknown data store event class {eventClass} sent event: {event}",

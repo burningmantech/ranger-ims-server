@@ -881,6 +881,19 @@ class DatabaseStore(IMSDataStore):
             incidentNumber=incidentNumber,
         )
 
+    def _notifyFieldReportUpdate(
+        self,
+        eventID: str,
+        fieldReportNumber: int,
+    ) -> None:
+        # This will trigger the DataStoreEventSourceLogObserver
+        self._log.info(
+            "Firing field report update event for {eventID}#{fieldReportNumber}",
+            storeWriteClass=FieldReport,
+            eventID=eventID,
+            fieldReportNumber=fieldReportNumber,
+        )
+
     def _createAndAttachReportEntriesToIncident(
         self,
         eventID: str,
@@ -1673,7 +1686,6 @@ class DatabaseStore(IMSDataStore):
         self._log.info(
             "Attached report entries to field report "
             "{eventID}#{fieldReportNumber}: {reportEntries}",
-            storeWriteClass=FieldReport,
             eventID=eventID,
             fieldReportNumber=fieldReportNumber,
             reportEntries=reportEntries,
@@ -1749,8 +1761,11 @@ class DatabaseStore(IMSDataStore):
 
         self._log.info(
             "Created field report: {fieldReport}",
-            storeWriteClass=FieldReport,
             fieldReport=fieldReport,
+        )
+
+        self._notifyFieldReportUpdate(
+            eventID=fieldReport.eventID, fieldReportNumber=fieldReport.number
         )
 
         return fieldReport
@@ -1828,6 +1843,10 @@ class DatabaseStore(IMSDataStore):
             author=author,
         )
 
+        self._notifyFieldReportUpdate(
+            eventID=eventID, fieldReportNumber=fieldReportNumber
+        )
+
     async def setFieldReport_summary(
         self,
         eventID: str,
@@ -1888,6 +1907,9 @@ class DatabaseStore(IMSDataStore):
                 error=e,
             )
             raise
+        self._notifyFieldReportUpdate(
+            eventID=eventID, fieldReportNumber=fieldReportNumber
+        )
 
     ###
     # Incident to Field Report Relationships
@@ -2031,9 +2053,7 @@ class DatabaseStore(IMSDataStore):
                 error=e,
             )
             raise
-        # We still need a notify function like this
-        # We should also notify the linked incident, if any
-        # self._notifyFieldReportUpdate(eventID, fieldReportNumber)
+        self._notifyFieldReportUpdate(eventID, fieldReportNumber)
 
 
 @frozen(kw_only=True)

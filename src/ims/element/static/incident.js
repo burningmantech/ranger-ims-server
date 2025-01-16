@@ -64,6 +64,11 @@ function initIncidentPage() {
                 loadAndDisplayFieldReports();
             }
         }
+        // TODO(issue/1498): this page doesn't currently listen for Field Report
+        //  updates, but it probably should. Those updates could be used to add
+        //  to the merged report entries or to the list of Field Reports available
+        //  to be attached. We just want to be careful not to reload all the Field
+        //  Reports on any update, lest we introduce heightened latency.
 
         // Keyboard shortcuts
         document.addEventListener("keydown", function(e) {
@@ -270,7 +275,7 @@ function localLoadPersonnel() {
 // Load incident types
 //
 
-var incidentTypes = null;
+let incidentTypes = null;
 
 
 function loadIncidentTypesAndCache(success) {
@@ -722,7 +727,7 @@ function drawMergedReportEntries() {
         }
     }
 
-    entries.sort(compareReportEntries)
+    entries.sort(compareReportEntries);
 
     drawReportEntries(entries);
 }
