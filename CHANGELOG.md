@@ -1,5 +1,6 @@
 # Changelog
 
+
 This is the changelog for ranger-ims-server. This is intended to summarize changes over time,
 for example to inform the Operator team each event of any differences to expect.
 
