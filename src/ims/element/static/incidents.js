@@ -300,11 +300,10 @@ function initDataTables() {
         ],
         "createdRow": function (row, incident, index) {
             $(row).click(function () {
-                const url = viewIncidentsURL + incident.number;
-
                 // Open new context with link
                 window.open(
-                    url, "Incident:" + eventID + "#" + incident.number
+                    viewIncidentsURL + incident.number,
+                    "Incident:" + eventID + "#" + incident.number,
                 );
             });
             $(row).find(".incident_created")
@@ -389,7 +388,11 @@ function initSearchField() {
                 // This will work regardless of whether that incident is visible with the current filters.
                 const val = searchInput.value;
                 if (integerRegExp.test(val)) {
-                    window.location = urlReplace(url_viewIncidentNumber).replace("<number>", val);
+                    // Open new context with link
+                    window.open(
+                        viewIncidentsURL + val,
+                        "Incident:" + eventID + "#" + val,
+                    );
                 }
                 // TODO(srabraham): this works, but I'm not sure yet if it's useful enough to include.
                 //

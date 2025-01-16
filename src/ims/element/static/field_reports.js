@@ -205,12 +205,11 @@ function initDataTables() {
         ],
         "createdRow": function (row, fieldReport, index) {
             $(row).click(function () {
-                const url = (
-                    urlReplace(url_viewFieldReports) + fieldReport.number
-                );
-
                 // Open new context with link
-                window.open(url, "Field_Report:" + fieldReport.number);
+                window.open(
+                    urlReplace(url_viewFieldReports) + fieldReport.number,
+                    "Field_Report:" + fieldReport.number,
+                );
             });
             $(row).find(".field_report_created")
                 .attr("title", fullDateTime.format(Date.parse(fieldReport.created)));
@@ -281,7 +280,11 @@ function initSearchField() {
                 // This will work regardless of whether that FR is visible with the current filters.
                 const val = searchInput.value;
                 if (integerRegExp.test(val)) {
-                    window.location = urlReplace(url_viewFieldReportNumber).replace("<number>", val);
+                    // Open new context with link
+                    window.open(
+                        urlReplace(url_viewFieldReports) + val,
+                        "Field_Report:" + val,
+                    );
                 }
             }
         }
