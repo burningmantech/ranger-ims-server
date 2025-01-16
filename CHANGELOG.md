@@ -31,6 +31,7 @@ Each month below should look like the following, using the same ordering for the
 
 - Introduced "striking" of report entries. This allows a user to hide an outdated/inaccurate entry, such that it doesn't appear by default on the Incident or Field Report page. https://github.com/burningmantech/ranger-ims-server/issues/249
 - Added help modals, toggled by pressing "?", which show keyboard shortcuts for the current page. https://github.com/burningmantech/ranger-ims-server/issues/1482
+- Started publishing Field Report entity updates to the web clients (via server-sent events), and started automatically background-updating the Field Reports (table) and Field Report pages on updates. https://github.com/burningmantech/ranger-ims-server/issues/1498
 
 ### Fixed
 
