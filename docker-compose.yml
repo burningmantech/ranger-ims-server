@@ -37,6 +37,8 @@ services:
       MARIADB_PASSWORD: "${IMS_DB_PASSWORD:-ims}"
       MARIADB_ROOT_HOST: "${IMS_DB_ROOT_HOST:-%}"
       MARIADB_ROOT_PASSWORD: "${IMS_DB_ROOT_PASSWORD:-ims-root}"
+    ports:
+      - ${IMS_DB_PORT:-3306}:3306
     volumes:
       - ./.docker/mysql/data/:/var/lib/mysql
     healthcheck:
