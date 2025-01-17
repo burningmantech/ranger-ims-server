@@ -156,13 +156,13 @@ function loadIncident(success) {
 // Set the user-visible error information on the page to the provided string.
 function setErrorMessage(msg) {
     msg = "Error: (Cause: " + msg + ")"
-    $("#error_info").removeClass("hidden");
-    $("#error_text").text(msg);
+    document.getElementById("error_info").classList.remove("hidden");
+    document.getElementById("error_text").textContent = msg;
 }
 
 function clearErrorMessage() {
-    $("#error_info").addClass("hidden");
-    $("#error_text").text("");
+    document.getElementById("error_info").classList.add("hidden");
+    document.getElementById("error_text").textContent = "";
 }
 
 function loadAndDisplayIncident(success) {
