@@ -169,7 +169,9 @@ def forbiddenResponse(request: IRequest) -> KleinSynchronousRenderable:
     return textResponse(request, "Permission denied")
 
 
-def friendlyNotAuthorizedResponse(request: IRequest) -> KleinSynchronousRenderable:
+def friendlyNotAuthorizedResponse(
+    request: IRequest, requireActive: bool
+) -> KleinSynchronousRenderable:
     """
     Respond with a FORBIDDEN status, informing the user what went wrong.
     """
@@ -183,21 +185,29 @@ def friendlyNotAuthorizedResponse(request: IRequest) -> KleinSynchronousRenderab
     request.setResponseCode(http.FORBIDDEN)
     if user is not None:
         message = (
-            f"Hey Ranger, you don't have permission to access this URI:\n"
+            f"Hey Ranger {user.shortNames[0]}, you don't have permission to access this URI:\n"  # noqa:E501
             f"    {request.uri.decode('utf-8')}\n"
             f"\n"
-            f"Permissions are granted via positions. These are your positions:\n"
+            f"Permissions are granted per-event via positions. These are your positions:\n"  # noqa:E501
             f"    {user.groups}\n"
             f"\n"
-            f"All Rangers are allowed (and encouraged!) to write Field Reports while\n"
-            f"on playa. Only some positions (think Operator) need access to read and\n"
-            f"write Incidents. We do this to help protect participants' PII.\n"
-            f"\n"
-            f"If your position is erroneously not granting you a permission you need\n"
-            f"to do your work as a Ranger, then please get in touch with an Operator\n"
-            f"or the Ranger Tech Oncall.\n"
-            f"\n"
-            f"<3 from the Ranger Tech Team\n"
+        )
+        if requireActive:
+            message += (
+                f"IMS is currently configured to only permit access to on-site Rangers.\n"  # noqa:E501
+                f"Your current on-site status is '{user.active}', according to Clubhouse.\n"  # noqa:E501
+            )
+        message += (
+            "\n"
+            "All Rangers are allowed (and encouraged!) to write Field Reports while\n"
+            "on playa. Only some positions need access to read and write Incidents.\n"
+            "We do this to help protect participants' PII.\n"
+            "\n"
+            "If your position is erroneously not granting you a permission you need\n"
+            "to do your work as a Ranger, then please get in touch with an Operator\n"
+            "or the Ranger Tech Oncall.\n"
+            "\n"
+            "<3 from the Ranger Tech Team\n"
         )
     else:
         message = "Permission denied"
@@ -442,14 +452,14 @@ class Router(Klein):
         @self.handle_errors(NotAuthorizedError)
         @renderResponse
         def notAuthorizedError(
-            app: Any,  # noqa: ARG001
+            app: Any,
             request: IRequest,
             failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             Not authorized.
             """
-            return friendlyNotAuthorizedResponse(request)
+            return friendlyNotAuthorizedResponse(request, app.config.requireActive)
 
         @self.handle_errors(InvalidCredentialsError)
         @renderResponse
