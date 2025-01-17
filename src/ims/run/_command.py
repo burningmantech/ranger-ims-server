@@ -96,7 +96,7 @@ class Command:
         application = Application(config=config)
 
         cls.log.info(
-            "Setting up web service at http://{host}:{port}/",
+            "Setting up web service at http://{host}:{port}/ims/app",
             host=host,
             port=port,
         )
