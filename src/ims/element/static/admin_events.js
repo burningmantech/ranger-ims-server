@@ -142,6 +142,36 @@ function addAccess(sender) {
     const mode = container.find(".access_mode:first").text();
     const newExpression = sender.value.trim();
 
+    if (newExpression === "**") {
+        const confirmed = confirm(
+            "DANGER: double-wildcard '**' ACLs can permit access to any requestor, even " +
+            "those who aren't logged in! You probably don't want this, except maybe for " +
+            "local testing.\n\n" +
+            "By comparison, a single-wildcard '*' ACL grants access to any " +
+            "authenticated user. You might be looking for that instead.\n\n" +
+            "Proceed with firing footgun?"
+        );
+        if (!confirmed) {
+            sender.value = "";
+            return;
+        }
+    }
+
+    const validExpression = newExpression === "**" || newExpression === "*" ||
+        newExpression.startsWith("person:") || newExpression.startsWith("position:");
+    if (!validExpression) {
+        const confirmed = confirm(
+            "WARNING: '" + newExpression + "' does not look like a valid ACL " +
+            "expression. Example expressions include 'person:Hubcap' for an individual " +
+            "or 'position:007' for a role. Wildcards are valid too, e.g. '*'\n\n" +
+            "Proceed with firing footgun?"
+        );
+        if (!confirmed) {
+            sender.value = "";
+            return;
+        }
+    }
+
     const acl = accessControlList[event][mode].slice();
 
     acl.push(newExpression);
@@ -190,8 +220,8 @@ function removeAccess(sender) {
     edits[event][mode] = acl;
 
     function refresh() {
-        for (var i in accessModes) {
-            updateEventAccess(event, accessModes[i]);
+        for (const mode of accessModes) {
+            updateEventAccess(event, mode);
         }
     }
 
