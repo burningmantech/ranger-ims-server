@@ -76,8 +76,10 @@ class DataStoreCoreTests(AsynchronousTestCase):
             schemaInfo.lower(),
             dedent(
                 """
-                Version: 5
+                Version: 6
                 ACCESS_MODE:
+                  0: ID(text) not null *1
+                ACCESS_VALIDITY:
                   0: ID(text) not null *1
                 CONCENTRIC_STREET:
                   0: EVENT(integer) not null *1
@@ -90,6 +92,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   0: EVENT(integer) not null *1
                   1: EXPRESSION(text) not null *2
                   2: MODE(text) not null
+                  3: VALIDITY(text) not null ['always']
                 FIELD_REPORT:
                   0: EVENT(integer) not null *1
                   1: NUMBER(integer) not null *2
@@ -156,10 +159,10 @@ class DataStoreCoreTests(AsynchronousTestCase):
             r"",
             r"  -- query --",
             r"",
-            r"    insert into EVENT_ACCESS \(EVENT, EXPRESSION, MODE\)",
+            r"    insert into EVENT_ACCESS \(EVENT, EXPRESSION, MODE, VALIDITY\)",
             r"    values \("
             r"\(select ID from EVENT where NAME = :eventID\), "
-            r":expression, :mode"
+            r":expression, :mode, :validity"
             r"\)",
             r"",
             r"  -- query plan --",

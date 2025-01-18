@@ -364,7 +364,11 @@ class DatabaseStore(IMSDataStore):
         )
 
     async def _setEventAccess(
-        self, eventID: str, mode: str, expressions: Iterable[str]
+        self,
+        eventID: str,
+        mode: str,
+        expressions: Iterable[str],
+        validity: str = "always",
     ) -> None:
         expressions = tuple(expressions)
 
@@ -384,6 +388,7 @@ class DatabaseStore(IMSDataStore):
                         "eventID": eventID,
                         "expression": expression,
                         "mode": mode,
+                        "validity": validity,
                     },
                 )
 

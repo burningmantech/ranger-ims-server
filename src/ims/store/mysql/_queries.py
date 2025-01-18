@@ -65,7 +65,7 @@ queries = Queries(
     eventAccess=Query(
         "look up access for event",
         f"""
-        select EXPRESSION from EVENT_ACCESS
+        select EXPRESSION, VALIDITY from EVENT_ACCESS
         where EVENT = ({query_eventID}) and MODE = %(mode)s
         """,
     ),
@@ -86,8 +86,8 @@ queries = Queries(
     addEventAccess=Query(
         "add event access",
         f"""
-        insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)
-        values (({query_eventID}), %(expression)s, %(mode)s)
+        insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE, VALIDITY)
+        values (({query_eventID}), %(expression)s, %(mode)s, %(validity)s)
         """,
     ),
     incidentTypes=Query(
