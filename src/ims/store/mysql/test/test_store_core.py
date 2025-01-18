@@ -144,7 +144,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         self.assertEqual(
             dedent(
                 """
-                Version: 8
+                Version: 9
                 CONCENTRIC_STREET:
                   1: EVENT(int) not null
                   2: ID(varchar(16)) not null
@@ -156,6 +156,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   1: EVENT(int) not null
                   2: EXPRESSION(varchar(128)) not null
                   3: MODE(enum(6)) not null
+                  4: VALIDITY(enum(6)) not null := 'always'
                 FIELD_REPORT:
                   1: EVENT(int) not null
                   2: NUMBER(int) not null
