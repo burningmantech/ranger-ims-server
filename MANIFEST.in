@@ -3,6 +3,7 @@ include .docker/sample.env
 include .dockerignore
 include .pre-commit-config.yaml
 include .python-version
+include API.md
 include bin/.common.sh
 include bin/build
 include bin/deploy
