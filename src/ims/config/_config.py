@@ -246,15 +246,14 @@ class Configuration:
         )
         cls._log.info("Admins: {admins}", admins=tuple(imsAdmins))
 
+        # This setting is no longer in use! The on-site requirement is now
+        # configured per-access entry. See
+        # https://github.com/burningmantech/ranger-ims-server/issues/1540
         active = parser.valueFromConfig(
             "REQUIRE_ACTIVE", "Core", "RequireActive", "true"
         )
         active = active.lower()
-        if active in ("false", "no", "0"):
-            requireActive = False
-        else:
-            requireActive = True
-        cls._log.info("RequireActive: {active}", active=requireActive)
+        cls._log.info("RequireActive (NO LONGER IN USE!): {active}", active=active)
 
         jwtSecret = parser.valueFromConfig("JWT_SECRET", "Core", "JWTSecret")
         if not jwtSecret:
@@ -408,7 +407,6 @@ class Configuration:
             logLevelName=logLevelName,
             masterKey=masterKey,
             port=port,
-            requireActive=requireActive,
             serverRoot=serverRoot,
             storeFactory=storeFactory,
             tokenLifetime=tokenLifetime,
@@ -428,7 +426,6 @@ class Configuration:
     logLevelName: str
     masterKey: str
     port: int
-    requireActive: bool
     serverRoot: Path
     tokenLifetime: TimeDelta
 
@@ -456,7 +453,6 @@ class Configuration:
                 store=self.store,
                 directory=self.directory,
                 jsonWebKey=self.jsonWebKey,
-                requireActive=self.requireActive,
                 adminUsers=self.imsAdmins,
                 masterKey=self.masterKey,
             )

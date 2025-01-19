@@ -590,7 +590,6 @@ class AuthProviderTests(TestCase):
             store=self.store(),
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
 
         self.assertFalse(
@@ -608,7 +607,6 @@ class AuthProviderTests(TestCase):
             store=self.store(),
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
 
         self.assertTrue(
@@ -626,7 +624,6 @@ class AuthProviderTests(TestCase):
             store=self.store(),
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
 
         for shortName in user.shortNames:
@@ -651,7 +648,6 @@ class AuthProviderTests(TestCase):
             store=self.store(),
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
 
         for groupID in user.groups:
@@ -675,7 +671,6 @@ class AuthProviderTests(TestCase):
             store=self.store(),
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
 
         user = TestUser(
@@ -713,7 +708,6 @@ class AuthProviderTests(TestCase):
             store=store,
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
         self.successResultOf(store.upgradeSchema())
         event = "2024"
@@ -829,7 +823,6 @@ class AuthProviderTests(TestCase):
             store=store,
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
         self.successResultOf(store.upgradeSchema())
         event = "2024"

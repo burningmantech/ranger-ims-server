@@ -169,9 +169,7 @@ def forbiddenResponse(request: IRequest) -> KleinSynchronousRenderable:
     return textResponse(request, "Permission denied")
 
 
-def friendlyNotAuthorizedResponse(
-    request: IRequest, requireActive: bool
-) -> KleinSynchronousRenderable:
+def friendlyNotAuthorizedResponse(request: IRequest) -> KleinSynchronousRenderable:
     """
     Respond with a FORBIDDEN status, informing the user what went wrong.
     """
@@ -191,13 +189,8 @@ def friendlyNotAuthorizedResponse(
             f"Permissions are granted per-event via positions. These are your positions:\n"  # noqa:E501
             f"    {user.groups}\n"
             f"\n"
-        )
-        if requireActive:
-            message += (
-                f"IMS is currently configured to only permit access to on-site Rangers.\n"  # noqa:E501
-                f"Your current on-site status is '{user.active}', according to Clubhouse.\n"  # noqa:E501
-            )
-        message += (
+            f"Be aware that many permissions are only granted to on-site Rangers.\n"
+            f"Your current on-site status is '{user.active}'.\n"
             "\n"
             "All Rangers are allowed (and encouraged!) to write Field Reports while\n"
             "on playa. Only some positions need access to read and write Incidents.\n"
@@ -452,14 +445,14 @@ class Router(Klein):
         @self.handle_errors(NotAuthorizedError)
         @renderResponse
         def notAuthorizedError(
-            app: Any,
+            app: Any,  # noqa: ARG001
             request: IRequest,
             failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             Not authorized.
             """
-            return friendlyNotAuthorizedResponse(request, app.config.requireActive)
+            return friendlyNotAuthorizedResponse(request)
 
         @self.handle_errors(InvalidCredentialsError)
         @renderResponse

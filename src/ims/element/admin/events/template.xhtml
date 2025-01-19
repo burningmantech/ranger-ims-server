@@ -5,12 +5,19 @@
 
 <body>
 <div t:render="container">
+  For each event, you can configure access for individuals and for positions.
+  You can also choose when each permission applies, whether it be only
+  when a Ranger is marked on-site in Clubhouse, or all year long (always).
   <div class="row" id="event_access_container">
     <div class="col-sm-12 py-1 event_access">
       <div class="card">
         <label class="card-header">Access for <span class="event_name"/> (<span class="access_mode"/>):</label>
         <ul class="list-group list-group-small list-group-flush card-body">
           <li class="list-group-item ps-3">
+            <select class="access_validity" onchange="setValidity(this)">
+              <option value="always">Always</option>
+              <option value="onsite">On-Site</option>
+            </select>
             <button class="badge btn btn-danger remove-badge float-end" onclick="removeAccess(this)">
               X
             </button>
