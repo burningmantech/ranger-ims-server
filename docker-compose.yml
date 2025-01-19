@@ -16,7 +16,7 @@ x-shared-config:
         condition: service_healthy
 
   app_dev: &app_dev
-    build: 
+    build:
       context: ./
       dockerfile: ./Dockerfile.dev
     <<: *app_common
