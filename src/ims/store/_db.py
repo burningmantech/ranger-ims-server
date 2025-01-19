@@ -33,6 +33,8 @@ from attrs import field, frozen
 from twisted.logger import Logger
 
 from ims.model import (
+    AccessEntry,
+    AccessValidity,
     Event,
     FieldReport,
     Incident,
@@ -219,6 +221,23 @@ class DatabaseStore(IMSDataStore):
         }[value]
 
     @staticmethod
+    def asAccessValidityValue(accessValidity: AccessValidity) -> ParameterValue:
+        return {
+            AccessValidity.always: "always",
+            AccessValidity.onsite: "onsite",
+        }[accessValidity]
+
+    @staticmethod
+    def fromAccessValidityValue(value: ParameterValue) -> AccessValidity:
+        if not isinstance(value, str):
+            raise TypeError("Access Validity in SQLite store must be a str")
+
+        return {
+            "always": AccessValidity.always,
+            "onsite": AccessValidity.onsite,
+        }[value]
+
+    @staticmethod
     def asDateTimeValue(dateTime: DateTime) -> ParameterValue:
         """
         Convert a :class:`DateTime` to a date-time value for the database.
@@ -355,9 +374,12 @@ class DatabaseStore(IMSDataStore):
             event=event,
         )
 
-    async def _eventAccess(self, eventID: str, mode: str) -> Iterable[str]:
+    async def _eventAccess(self, eventID: str, mode: str) -> Iterable[AccessEntry]:
         return (
-            cast(str, row["EXPRESSION"])
+            AccessEntry(
+                expression=cast(str, row["EXPRESSION"]),
+                validity=self.fromAccessValidityValue(row["VALIDITY"]),
+            )
             for row in await self.runQuery(
                 self.query.eventAccess, {"eventID": eventID, "mode": mode}
             )
@@ -367,28 +389,25 @@ class DatabaseStore(IMSDataStore):
         self,
         eventID: str,
         mode: str,
-        expressions: Iterable[str],
-        validity: str = "always",
+        accessEntries: Iterable[AccessEntry],
     ) -> None:
-        expressions = tuple(expressions)
-
         def setEventAccess(txn: Transaction) -> None:
             txn.execute(
                 self.query.clearEventAccessForMode.text,
                 {"eventID": eventID, "mode": mode},
             )
-            for expression in expressions:
+            for entry in accessEntries:
                 txn.execute(
                     self.query.clearEventAccessForExpression.text,
-                    {"eventID": eventID, "expression": expression},
+                    {"eventID": eventID, "expression": entry.expression},
                 )
                 txn.execute(
                     self.query.addEventAccess.text,
                     {
                         "eventID": eventID,
-                        "expression": expression,
+                        "expression": entry.expression,
                         "mode": mode,
-                        "validity": validity,
+                        "validity": self.asAccessValidityValue(entry.validity),
                     },
                 )
 
@@ -399,54 +418,55 @@ class DatabaseStore(IMSDataStore):
                 "Unable to set {mode} access for {eventID}: {error}",
                 eventID=eventID,
                 mode=mode,
-                expressions=expressions,
                 error=e,
             )
             raise
 
         self._log.info(
-            "Set {mode} access for {eventID}: {expressions}",
+            "Set {mode} access for {eventID}: {accessEntries}",
             storeWriteClass=Event,
             eventID=eventID,
             mode=mode,
-            expressions=expressions,
+            accessEntries=accessEntries,
         )
 
-    async def readers(self, eventID: str) -> Iterable[str]:
+    async def readers(self, eventID: str) -> Iterable[AccessEntry]:
         """
         See :meth:`IMSDataStore.readers`.
         """
         return await self._eventAccess(eventID, "read")
 
-    async def setReaders(self, eventID: str, readers: Iterable[str]) -> None:
+    async def setReaders(self, eventID: str, readers: Iterable[AccessEntry]) -> None:
         """
         See :meth:`IMSDataStore.setReaders`.
         """
         await self._setEventAccess(eventID, "read", readers)
 
-    async def writers(self, eventID: str) -> Iterable[str]:
+    async def writers(self, eventID: str) -> Iterable[AccessEntry]:
         """
         See :meth:`IMSDataStore.writers`.
         """
         return await self._eventAccess(eventID, "write")
 
-    async def setWriters(self, eventID: str, writers: Iterable[str]) -> None:
+    async def setWriters(self, eventID: str, writers: Iterable[AccessEntry]) -> None:
         """
         See :meth:`IMSDataStore.setWriters`.
         """
         await self._setEventAccess(eventID, "write", writers)
 
-    async def reporters(self, eventID: str) -> Iterable[str]:
+    async def reporters(self, eventID: str) -> Iterable[AccessEntry]:
         """
         See :meth:`IMSDataStore.reporters`.
         """
         return await self._eventAccess(eventID, "report")
 
-    async def setReporters(self, eventID: str, writers: Iterable[str]) -> None:
+    async def setReporters(
+        self, eventID: str, reporters: Iterable[AccessEntry]
+    ) -> None:
         """
         See :meth:`IMSDataStore.setReporters`.
         """
-        await self._setEventAccess(eventID, "report", writers)
+        await self._setEventAccess(eventID, "report", reporters)
 
     ###
     # Incident Types
