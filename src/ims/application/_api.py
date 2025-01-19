@@ -53,6 +53,7 @@ from ims.ext.json_ext import (
 )
 from ims.ext.klein import ContentType, HeaderName, static
 from ims.model import (
+    AccessEntry,
     Event,
     FieldReport,
     Incident,
@@ -1102,10 +1103,13 @@ class APIApplication:
         acl = {}
         for event in await store.events():
             eventID = event.id
+            readers: Iterable[AccessEntry] = await store.readers(eventID)
+            writers: Iterable[AccessEntry] = await store.writers(eventID)
+            reporters: Iterable[AccessEntry] = await store.reporters(eventID)
             acl[eventID] = {
-                "readers": (await store.readers(eventID)),
-                "writers": (await store.writers(eventID)),
-                "reporters": (await store.reporters(eventID)),
+                "readers": [jsonObjectFromModelObject(ae) for ae in readers],
+                "writers": [jsonObjectFromModelObject(ae) for ae in writers],
+                "reporters": [jsonObjectFromModelObject(ae) for ae in reporters],
             }
         return jsonTextFromObject(acl)
 
@@ -1129,11 +1133,21 @@ class APIApplication:
 
         for eventID, acl in edits.items():
             if "readers" in acl:
-                await store.setReaders(eventID, acl["readers"])
+                readers = tuple(
+                    modelObjectFromJSONObject(ae, AccessEntry) for ae in acl["readers"]
+                )
+                await store.setReaders(eventID, readers)
             if "writers" in acl:
-                await store.setWriters(eventID, acl["writers"])
+                writers = tuple(
+                    modelObjectFromJSONObject(ae, AccessEntry) for ae in acl["writers"]
+                )
+                await store.setWriters(eventID, writers)
             if "reporters" in acl:
-                await store.setReporters(eventID, acl["reporters"])
+                reporters = tuple(
+                    modelObjectFromJSONObject(ae, AccessEntry)
+                    for ae in acl["reporters"]
+                )
+                await store.setReporters(eventID, reporters)
 
         return noContentResponse(request)
 

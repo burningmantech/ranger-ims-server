@@ -18,7 +18,7 @@
 Test strategies for model data.
 """
 
-from collections.abc import Callable, Hashable
+from collections.abc import Callable, Hashable, Sequence
 from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
@@ -43,6 +43,8 @@ from hypothesis.strategies import datetimes as _datetimes
 from ims.directory import hashPassword
 from ims.ext.sqlite import SQLITE_MAX_INT
 
+from ._accessentry import AccessEntry
+from ._accessvalidity import AccessValidity
 from ._address import Address, RodGarettAddress, TextOnlyAddress
 from ._entry import ReportEntry
 from ._event import Event
@@ -260,16 +262,24 @@ def accessTexts(draw: Callable[..., Any]) -> str:
 
 
 @composite
+def accessEntries(draw: Callable[..., Any]) -> AccessEntry:
+    return AccessEntry(
+        expression=draw(accessTexts()),
+        validity=AccessValidity.always,
+    )
+
+
+@composite
 def eventAccesses(draw: Callable[..., Any]) -> EventAccess:
     """
     Strategy that generates :class:`EventAccess` values.
     """
-    readers: frozenset[str] = frozenset(draw(lists(accessTexts())))
-    writers: frozenset[str] = frozenset(
-        a for a in draw(lists(accessTexts())) if a not in readers
+    readers: Sequence[AccessEntry] = tuple(draw(lists(accessEntries())))
+    writers: Sequence[AccessEntry] = tuple(
+        a for a in draw(lists(accessEntries())) if a not in readers
     )
-    reporters: frozenset[str] = frozenset(
-        a for a in draw(lists(accessTexts())) if a not in readers and a not in writers
+    reporters: Sequence[AccessEntry] = tuple(
+        a for a in draw(lists(accessEntries())) if a not in readers and a not in writers
     )
     return EventAccess(readers=readers, writers=writers, reporters=reporters)
 

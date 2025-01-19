@@ -18,6 +18,8 @@
 Incident Management System data model
 """
 
+from ._accessentry import AccessEntry
+from ._accessvalidity import AccessValidity
 from ._address import Address, RodGarettAddress, TextOnlyAddress
 from ._convert import normalizeDateTime
 from ._entry import ReportEntry
@@ -36,6 +38,8 @@ from ._type import IncidentType, KnownIncidentType
 
 
 __all__ = (
+    "AccessEntry",
+    "AccessValidity",
     "Address",
     "Event",
     "EventAccess",

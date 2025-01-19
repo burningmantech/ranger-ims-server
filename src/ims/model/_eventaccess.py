@@ -20,12 +20,22 @@
 Event Access
 """
 
+from collections import OrderedDict
+from collections.abc import Iterable, Sequence
+
 from attrs import field, frozen
 
-from ._convert import freezeStrings
+from ..ext.attr import sorted_tuple
+from ._accessentry import AccessEntry
 
 
 __all__ = ()
+
+
+def sortAndFreezeAccessEntries(
+    accessEntries: Iterable[AccessEntry],
+) -> Sequence[AccessEntry]:
+    return sorted_tuple(OrderedDict.fromkeys(accessEntries))
 
 
 @frozen(kw_only=True)
@@ -36,6 +46,6 @@ class EventAccess:
     Contains access control configuration for an event.
     """
 
-    readers: frozenset[str] = field(converter=freezeStrings)
-    writers: frozenset[str] = field(converter=freezeStrings)
-    reporters: frozenset[str] = field(converter=freezeStrings)
+    readers: Sequence[AccessEntry] = field(converter=sortAndFreezeAccessEntries)
+    writers: Sequence[AccessEntry] = field(converter=sortAndFreezeAccessEntries)
+    reporters: Sequence[AccessEntry] = field(converter=sortAndFreezeAccessEntries)

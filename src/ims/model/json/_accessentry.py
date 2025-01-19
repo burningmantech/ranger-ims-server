@@ -15,14 +15,14 @@
 ##
 
 """
-JSON serialization/deserialization for event access
+JSON serialization/deserialization for access entry
 """
 
 from enum import Enum, unique
 from typing import Any, cast
 
 from .._accessentry import AccessEntry
-from .._eventaccess import EventAccess
+from .._accessvalidity import AccessValidity
 from ._json import (
     deserialize,
     jsonSerialize,
@@ -35,49 +35,47 @@ __all__ = ()
 
 
 @unique
-class EventAccessJSONKey(Enum):
+class AccessEntryJSONKey(Enum):
     """
-    Event access JSON keys
-    """
-
-    readers = "readers"
-    writers = "writers"
-    reporters = "reporters"
-
-
-class EventAccessJSONType(Enum):
-    """
-    Event access attribute types
+    Access entry JSON keys
     """
 
-    readers = list[AccessEntry]
-    writers = list[AccessEntry]
-    reporters = list[AccessEntry]
+    expression = "expression"
+    validity = "validity"
 
 
-def serializeEventAccess(eventAccess: EventAccess) -> dict[str, Any]:
-    # Map EventAccess attribute names to JSON dict key names
+class AccessEntryJSONType(Enum):
+    """
+    Access entry attribute types
+    """
+
+    expression = str
+    validity = AccessValidity
+
+
+def serializeAccessEntry(accessEntry: AccessEntry) -> dict[str, Any]:
+    # Map AccessEntry attribute names to JSON dict key names
     return {
-        key.value: jsonSerialize(getattr(eventAccess, key.name))
-        for key in EventAccessJSONKey
+        key.value: jsonSerialize(getattr(accessEntry, key.name))
+        for key in AccessEntryJSONKey
     }
 
 
-registerSerializer(EventAccess, serializeEventAccess)
+registerSerializer(AccessEntry, serializeAccessEntry)
 
 
-def deserializeEventAccess(obj: dict[str, Any], cl: type[EventAccess]) -> EventAccess:
-    assert cl is EventAccess, (cl, obj)
+def deserializeAccessEntry(obj: dict[str, Any], cl: type[AccessEntry]) -> AccessEntry:
+    assert cl is AccessEntry, (cl, obj)
 
     return cast(
-        EventAccess,
+        AccessEntry,
         deserialize(
             obj,
-            EventAccess,
-            EventAccessJSONType,
-            EventAccessJSONKey,
+            AccessEntry,
+            AccessEntryJSONType,
+            AccessEntryJSONKey,
         ),
     )
 
 
-registerDeserializer(EventAccess, deserializeEventAccess)
+registerDeserializer(AccessEntry, deserializeAccessEntry)

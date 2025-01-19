@@ -18,7 +18,7 @@
 Incident Management System web application authentication provider.
 """
 
-from collections.abc import Container, Mapping
+from collections.abc import Iterable, Mapping
 from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
@@ -43,7 +43,7 @@ from ims.directory import (
     IMSUserID,
 )
 from ims.ext.klein import HeaderName
-from ims.model import FieldReport
+from ims.model import AccessEntry, AccessValidity, FieldReport
 from ims.store import IMSDataStore
 
 from ._exceptions import (
@@ -332,7 +332,7 @@ class AuthProvider:
             self._log.debug("Authentication failed")
             raise NotAuthenticatedError("No user logged in")
 
-    def _matchACL(self, user: IMSUser | None, acl: Container[str]) -> bool:
+    def _matchACL(self, user: IMSUser | None, acl: Iterable[AccessEntry]) -> bool:
         """
         Match a user against a set of ACLs associated with an event's readers,
         writers and reporters.
@@ -350,22 +350,33 @@ class AuthProvider:
         An ACL of the form "position:{group}" will match a user if the ID of
         one of the groups that the user is a member of equals {group}.
         """
-        if "**" in acl:
+
+        if "**" in [a.expression for a in acl]:
             return True
 
-        if user is not None:
-            if self.requireActive and not user.active:
-                return False
+        if user is None:
+            return False
 
-            if "*" in acl:
+        # issue/1540: kill off the global requireActive setting
+        # if self.requireActive and not user.active:
+        #     return False
+
+        for a in acl:
+            if a.validity == AccessValidity.onsite and not user.active:
+                # this ACL is irrelevant, because the user is offsite
+                continue
+
+            assert a.validity == AccessValidity.always
+
+            if "*" in a.expression:
                 return True
 
             for shortName in user.shortNames:
-                if ("person:" + shortName) in acl:
+                if a.expression == "person:" + shortName:
                     return True
 
             for group in user.groups:
-                if ("position:" + group) in acl:
+                if a.expression == "position:" + group:
                     return True
 
         return False
@@ -384,20 +395,20 @@ class AuthProvider:
                     authorizations |= Authorization.imsAdmin
 
         if eventID is not None:
-            if self._matchACL(user, frozenset(await self.store.writers(eventID))):
+            if self._matchACL(user, tuple(await self.store.writers(eventID))):
                 authorizations |= Authorization.writeIncidents
                 authorizations |= Authorization.readIncidents
                 authorizations |= Authorization.writeFieldReports
                 authorizations |= Authorization.readPersonnel
 
             else:
-                if self._matchACL(user, frozenset(await self.store.readers(eventID))):
+                if self._matchACL(user, tuple(await self.store.readers(eventID))):
                     authorizations |= Authorization.readIncidents
                     authorizations |= Authorization.readPersonnel
 
                 if self._matchACL(
                     user,
-                    frozenset(await self.store.reporters(eventID)),
+                    tuple(await self.store.reporters(eventID)),
                 ):
                     authorizations |= Authorization.writeFieldReports
 

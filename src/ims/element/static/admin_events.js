@@ -101,11 +101,11 @@ function updateEventAccess(event, mode) {
 
     entryContainer.empty();
 
-    for (const expression of eventACL[mode]) {
+    for (const accessEntry of eventACL[mode]) {
         const entryItem = _entryTemplate.clone();
 
-        entryItem.append(expression);
-        entryItem.attr("value", expression);
+        entryItem.append(accessEntry.expression);
+        entryItem.attr("value", accessEntry.expression);
 
         entryContainer.append(entryItem);
     }
@@ -174,7 +174,13 @@ function addAccess(sender) {
 
     const acl = accessControlList[event][mode].slice();
 
-    acl.push(newExpression);
+    newVal = {
+        "expression": newExpression,
+        // issue/1540: allow setting this value from the UI
+        "validity": "always",
+    };
+
+    acl.push(newVal);
 
     const edits = {};
     edits[event] = {};
@@ -208,12 +214,19 @@ function removeAccess(sender) {
 
     const acl = accessControlList[event][mode].slice();
 
-    if (acl.indexOf(expression) < 0) {
+    let foundIndex = -1;
+    for (const i in acl) {
+        if (acl[i].expression === expression) {
+            foundIndex = i;
+            break;
+        }
+    }
+    if (foundIndex < 0) {
         console.error("no such ACL: " + expression);
         return;
     }
 
-    acl.splice(acl.indexOf(expression), 1);
+    acl.splice(foundIndex, 1);
 
     const edits = {};
     edits[event] = {};

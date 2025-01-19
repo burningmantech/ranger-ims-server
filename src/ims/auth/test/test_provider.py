@@ -69,7 +69,7 @@ from .._provider import (
 
 __all__ = ()
 
-from ...model import Event, FieldReport, ReportEntry
+from ...model import AccessEntry, AccessValidity, Event, FieldReport, ReportEntry
 
 
 def oops(*args: Any, **kwargs: Any) -> None:  # noqa: ARG001
@@ -559,7 +559,11 @@ class AuthProviderTests(TestCase):
             jsonWebKey=JSONWebKey.generate(),
         )
 
-        self.assertTrue(provider._matchACL(None, ["**"]))
+        self.assertTrue(
+            provider._matchACL(
+                None, (AccessEntry(expression="**", validity=AccessValidity.always),)
+            )
+        )
 
     @given(testUsers())
     def test_matchACL_public_user(self, user: IMSUser) -> None:
@@ -572,7 +576,11 @@ class AuthProviderTests(TestCase):
             jsonWebKey=JSONWebKey.generate(),
         )
 
-        self.assertTrue(provider._matchACL(user, ["**"]))
+        self.assertTrue(
+            provider._matchACL(
+                user, (AccessEntry(expression="**", validity=AccessValidity.always),)
+            )
+        )
 
     def test_matchACL_any_noUser(self) -> None:
         """
@@ -585,7 +593,11 @@ class AuthProviderTests(TestCase):
             requireActive=False,
         )
 
-        self.assertFalse(provider._matchACL(None, ["*"]))
+        self.assertFalse(
+            provider._matchACL(
+                None, (AccessEntry(expression="*", validity=AccessValidity.always),)
+            )
+        )
 
     @given(testUsers())
     def test_matchACL_any_user(self, user: IMSUser) -> None:
@@ -599,7 +611,11 @@ class AuthProviderTests(TestCase):
             requireActive=False,
         )
 
-        self.assertTrue(provider._matchACL(user, ["*"]))
+        self.assertTrue(
+            provider._matchACL(
+                user, (AccessEntry(expression="*", validity=AccessValidity.always),)
+            )
+        )
 
     @given(testUsers())
     def test_matchACL_person(self, user: IMSUser) -> None:
@@ -614,7 +630,17 @@ class AuthProviderTests(TestCase):
         )
 
         for shortName in user.shortNames:
-            self.assertTrue(provider._matchACL(user, [f"person:{shortName}"]))
+            self.assertTrue(
+                provider._matchACL(
+                    user,
+                    (
+                        AccessEntry(
+                            expression=f"person:{shortName}",
+                            validity=AccessValidity.always,
+                        ),
+                    ),
+                )
+            )
 
     @given(testUsers())
     def test_matchACL_position(self, user: IMSUser) -> None:
@@ -629,7 +655,49 @@ class AuthProviderTests(TestCase):
         )
 
         for groupID in user.groups:
-            self.assertTrue(provider._matchACL(user, [f"position:{groupID}"]))
+            self.assertTrue(
+                provider._matchACL(
+                    user,
+                    (
+                        AccessEntry(
+                            expression=f"position:{groupID}",
+                            validity=AccessValidity.always,
+                        ),
+                    ),
+                )
+            )
+
+    def test_matchACL_person_notOnsite(self) -> None:
+        """
+        AuthProvider._matchACL won't match for off-site user if on-site required.
+        """
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+            requireActive=False,
+        )
+
+        user = TestUser(
+            uid=IMSUserID("my-id"),
+            shortNames=("Slumber",),
+            active=False,
+            groups=(),
+            plainTextPassword="some-password",
+        )
+
+        for shortName in user.shortNames:
+            self.assertFalse(
+                provider._matchACL(
+                    user,
+                    (
+                        AccessEntry(
+                            expression=f"person:{shortName}",
+                            validity=AccessValidity.onsite,
+                        ),
+                    ),
+                )
+            )
 
     def test_authorizationsForUser(self) -> None:
         raise NotImplementedError()
@@ -676,7 +744,12 @@ class AuthProviderTests(TestCase):
         self.assertEqual(request.authorizations, Authorization.none)
 
         # Stage 2: the user is now a reporter
-        self.successResultOf(store.setReporters(event, (personUser,)))
+        self.successResultOf(
+            store.setReporters(
+                event,
+                (AccessEntry(expression=personUser, validity=AccessValidity.always),),
+            )
+        )
         # Now the user is able to writeFieldReports, but that's it
         self.successResultOf(
             provider.authorizeRequest(
@@ -697,7 +770,12 @@ class AuthProviderTests(TestCase):
 
         # Stage 3: the user can read incidents
         self.successResultOf(store.setReporters(event, ()))
-        self.successResultOf(store.setReaders(event, (personUser,)))
+        self.successResultOf(
+            store.setReaders(
+                event,
+                (AccessEntry(expression=personUser, validity=AccessValidity.always),),
+            )
+        )
         self.successResultOf(
             provider.authorizeRequest(
                 request=request,
@@ -712,7 +790,12 @@ class AuthProviderTests(TestCase):
 
         # Stage 4: the user can write incidents
         self.successResultOf(store.setReaders(event, ()))
-        self.successResultOf(store.setWriters(event, (personUser,)))
+        self.successResultOf(
+            store.setWriters(
+                event,
+                (AccessEntry(expression=personUser, validity=AccessValidity.always),),
+            )
+        )
         self.successResultOf(
             provider.authorizeRequest(
                 request=request,
@@ -813,7 +896,12 @@ class AuthProviderTests(TestCase):
         self.assertEqual(request.authorizations, Authorization.none)
 
         # Stage 2: user is a reporter
-        self.successResultOf(store.setReporters(event, (personUser,)))
+        self.successResultOf(
+            store.setReporters(
+                event,
+                (AccessEntry(expression=personUser, validity=AccessValidity.always),),
+            )
+        )
         self.successResultOf(
             provider.authorizeRequestForFieldReport(
                 request=request,
@@ -832,7 +920,12 @@ class AuthProviderTests(TestCase):
 
         # Stage 3: user is a reader
         self.successResultOf(store.setReporters(event, ()))
-        self.successResultOf(store.setReaders(event, (personUser,)))
+        self.successResultOf(
+            store.setReaders(
+                event,
+                (AccessEntry(expression=personUser, validity=AccessValidity.always),),
+            )
+        )
         self.successResultOf(
             provider.authorizeRequestForFieldReport(
                 request=request,
@@ -852,7 +945,12 @@ class AuthProviderTests(TestCase):
 
         # Stage 4: user is a writer
         self.successResultOf(store.setReaders(event, ()))
-        self.successResultOf(store.setWriters(event, (personUser,)))
+        self.successResultOf(
+            store.setWriters(
+                event,
+                (AccessEntry(expression=personUser, validity=AccessValidity.always),),
+            )
+        )
         self.successResultOf(
             provider.authorizeRequestForFieldReport(
                 request=request,

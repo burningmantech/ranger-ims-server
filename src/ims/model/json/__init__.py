@@ -19,6 +19,8 @@ Incident Management System data model JSON serialization/deserialization
 """
 
 from . import _event, _ranger
+from ._accessentry import AccessEntryJSONKey
+from ._accessvalidity import AccessValidityJSONValue
 from ._address import RodGarettAddressJSONKey, TextOnlyAddressJSONKey
 from ._entry import ReportEntryJSONKey
 from ._eventaccess import EventAccessJSONKey
@@ -45,6 +47,8 @@ del _ranger
 
 __all__ = (
     "JSON",
+    "AccessEntryJSONKey",
+    "AccessValidityJSONValue",
     "EventAccessJSONKey",
     "EventDataJSONKey",
     "FieldReportJSONKey",
