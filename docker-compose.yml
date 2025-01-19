@@ -9,8 +9,6 @@ x-shared-config:
       IMS_DB_DATABASE: "${IMS_DB_DATABASE:-ims}"
       IMS_DB_USER_NAME: "${IMS_DB_USER_NAME:-ims}"
       IMS_DB_PASSWORD: "${IMS_DB_PASSWORD:-ims}"
-    volumes:
-      - ./conf:/opt/ims/conf
     ports:
      - ${IMS_SERVER_PORT:-8080}:8080
     depends_on:
@@ -34,27 +32,21 @@ services:
       - ./conf:/opt/ims/conf
       - ./:/srv/ims
     working_dir: /srv/ims
+    develop:
+      watch:
+        - action: rebuild
+          path: ./
+          target: /src/ims
+          ignore:
+            - .venv/
     command: >
       sh -c "/opt/ims/bin/ims
       --log-level=${IMS_SERVER_LOG_LEVEL:-info}
       --log-file
       -
       --config
-      /opt/ims/conf/imsd.conf
+      /opt/ims/conf/${IMS_SERVER_DEV_CONF_FILENAME:-imsd-docker-compose-sample.conf}
       server"
-
-  dev:
-    <<: *app_dev
-    working_dir: /app
-    develop:
-      watch:
-        - action: sync
-          path: ./
-          target: /app
-          ignore:
-            - .venv/
-        - action: rebuild
-          path: ./pyproject.toml
 
   database:
     # this should match the value in:
