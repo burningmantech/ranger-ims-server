@@ -21,7 +21,6 @@ include conf/imsd-sample.conf
 include COPYRIGHT.txt
 include docker-compose.yml
 include Dockerfile
-include Dockerfile.dev
 include docs/*.py
 include docs/*.rst
 include LICENSE.txt
