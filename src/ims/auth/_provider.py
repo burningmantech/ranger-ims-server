@@ -233,7 +233,6 @@ class AuthProvider:
 
     _jsonWebKey: JSONWebKey
 
-    requireActive: bool = True
     adminUsers: frozenset[str] = frozenset()
     masterKey: str = ""
 
@@ -339,9 +338,6 @@ class AuthProvider:
 
         An ACL of "**" will always match, even for the None user.
 
-        If the requireActive of this instance is True, all other ACLs will never
-        match a user if the user is not active.
-
         An ACL of "*" matches all users other than the None user.
 
         An ACL of the form "person:{user}" will match a user of one of the
@@ -356,10 +352,6 @@ class AuthProvider:
 
         if user is None:
             return False
-
-        # issue/1540: kill off the global requireActive setting
-        # if self.requireActive and not user.active:
-        #     return False
 
         for a in acl:
             if a.validity == AccessValidity.onsite and not user.active:

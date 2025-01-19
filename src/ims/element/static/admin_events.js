@@ -106,6 +106,7 @@ function updateEventAccess(event, mode) {
 
         entryItem.append(accessEntry.expression);
         entryItem.attr("value", accessEntry.expression);
+        entryItem.find(".access_validity").val(accessEntry.validity);
 
         entryContainer.append(entryItem);
     }
@@ -244,6 +245,44 @@ function removeAccess(sender) {
 
     function fail() {
         loadAccessControlList(refresh);
+    }
+
+    sendACL(edits, ok, fail);
+}
+
+function setValidity(sender) {
+    const container = $(sender).parents(".event_access:first");
+    const event = container.find(".event_name:first").text();
+    const mode = container.find(".access_mode:first").text();
+    const expression = $(sender).parent().attr("value").trim();
+
+    const acl = accessControlList[event][mode].slice();
+
+    newVal = {
+        "expression": expression,
+        "validity": sender.value,
+    };
+
+    acl.push(newVal);
+
+    const edits = {};
+    edits[event] = {};
+    edits[event][mode] = acl;
+
+    function refresh() {
+        for (const mode of accessModes) {
+            updateEventAccess(event, mode);
+        }
+    }
+
+    function ok() {
+        loadAccessControlList(refresh);
+        sender.value = "";  // Clear input field
+    }
+
+    function fail() {
+        loadAccessControlList(refresh);
+        controlHasError($(sender));
     }
 
     sendACL(edits, ok, fail);

@@ -599,22 +599,6 @@ class ConfigurationTests(TestCase):
 
             self.assertEqual(config.imsAdmins, result)
 
-    def test_fromConfigFile_requireActive(self) -> None:
-        """
-        RequireActive boolean values.
-        """
-
-        def test(value: str) -> bool:
-            with testingEnvironment({"IMS_REQUIRE_ACTIVE": value}):
-                config = Configuration.fromConfigFile(None)
-            return config.requireActive
-
-        for value in ("false", "False", "FALSE", "no", "No", "NO", "0"):
-            self.assertFalse(test(value))
-
-        for value in ("true", "True", "TRUE", "yes", "Yes", "YES", "1"):
-            self.assertTrue(test(value))
-
     @given(text(alphabet=printable, min_size=1))
     def test_fromConfigFile_jwtSecret(self, secret: str) -> None:
         """
