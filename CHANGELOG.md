@@ -26,6 +26,7 @@ Each month below should look like the following, using the same ordering for the
 - Improved background refresh resiliency by having clients track their last received server-side event. https://github.com/burningmantech/ranger-ims-server/pull/1504
 - Created a slight pause after search field input prior to actually running the search. This will reduce perceived latency in typing/deleting in the search field. https://github.com/burningmantech/ranger-ims-server/issues/1481 https://github.com/burningmantech/ranger-ims-server/pull/1483
 - Started Field Report numbering from 1 each event, as we already did for Incidents. https://github.com/burningmantech/ranger-ims-server/pull/1506
+- Enhanced the "permission denied" error page, to make it more descriptive for when we block access for an authenticated Ranger. https://github.com/burningmantech/ranger-ims-server/pull/1530
 
 ### Added
 
@@ -34,6 +35,7 @@ Each month below should look like the following, using the same ordering for the
 - Started publishing Field Report entity updates to the web clients (via server-sent events), and started automatically background-updating the Field Reports (table) and Field Report pages on updates. https://github.com/burningmantech/ranger-ims-server/issues/1498
 - Added a help link from the Incident page to documentation about the meaning of the many Incident Types. https://github.com/burningmantech/ranger-ims-server/pull/1512
 - Added Subresource Integrity checks to our JavaScript dependencies, improving our security against supply chain attacks. https://github.com/burningmantech/ranger-ims-server/issues/1517
+- Got rid of the "requireActive" global setting, and changed it into a "validity" property of each event permission instead. This allows us to specify which permissions should be granted all year, and which should only be available to Rangers while they are on-playa. https://github.com/burningmantech/ranger-ims-server/issues/1540
 
 ### Fixed
 

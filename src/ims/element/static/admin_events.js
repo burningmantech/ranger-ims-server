@@ -177,7 +177,6 @@ function addAccess(sender) {
 
     newVal = {
         "expression": newExpression,
-        // issue/1540: allow setting this value from the UI
         "validity": "always",
     };
 
