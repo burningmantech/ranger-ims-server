@@ -41,7 +41,6 @@ from ims.element.incident.report_template import FieldReportTemplatePage
 from ims.element.incident.reports import FieldReportsPage
 from ims.element.incident.reports_template import FieldReportsTemplatePage
 from ims.element.root import RootPage
-from ims.ext.klein import static
 from ims.model import Event
 from ims.store import NoSuchFieldReportError
 
@@ -101,7 +100,6 @@ class WebApplication:
         return redirect(request, url)
 
     @router.route(_unprefix(URLs.admin), methods=("HEAD", "GET"))
-    @static
     async def adminPage(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Endpoint for admin page.
@@ -172,7 +170,6 @@ class WebApplication:
         return IncidentsPage(config=self.config, event=event)
 
     @router.route(_unprefix(URLs.viewIncidentsTemplate), methods=("HEAD", "GET"))
-    @static
     def viewIncidentsTemplatePage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for the incidents page template.
@@ -203,7 +200,6 @@ class WebApplication:
         return IncidentPage(config=self.config, event=event, number=numberValue)
 
     @router.route(_unprefix(URLs.viewIncidentTemplate), methods=("HEAD", "GET"))
-    @static
     def viewIncidentTemplatePage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for the incident page template.
@@ -229,7 +225,6 @@ class WebApplication:
         return FieldReportsPage(config=self.config, event=event)
 
     @router.route(_unprefix(URLs.viewFieldReportsTemplate), methods=("HEAD", "GET"))
-    @static
     def viewFieldReportsTemplatePage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for the field reports page template.
@@ -276,7 +271,6 @@ class WebApplication:
         return FieldReportPage(config=config, event=event, number=fieldReportNumber)
 
     @router.route(_unprefix(URLs.viewFieldReportTemplate), methods=("HEAD", "GET"))
-    @static
     def viewFieldReportTemplatePage(self, request: IRequest) -> KleinRenderable:
         """
         Endpoint for the field report page template.

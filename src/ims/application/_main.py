@@ -31,7 +31,7 @@ from twisted.web.static import File
 import ims.element
 from ims.config import Configuration, URLs
 from ims.ext.json_ext import jsonTextFromObject
-from ims.ext.klein import ContentType, HeaderName, static
+from ims.ext.klein import ContentType, HeaderName
 
 from ._api import APIApplication
 from ._auth import AuthApplication
@@ -110,7 +110,6 @@ class MainApplication:
     #
 
     @router.route(URLs.root, methods=("HEAD", "GET"))
-    @static
     def rootEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Server root page.
@@ -118,7 +117,6 @@ class MainApplication:
         return "IMS"
 
     @router.route(URLs.prefix, methods=("HEAD", "GET"))
-    @static
     def prefixEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         IMS root page.
@@ -128,7 +126,6 @@ class MainApplication:
         return redirect(request, URLs.app)
 
     @router.route(URLs.static, branch=True)
-    @static
     def staticEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Return endpoint for static resources collection.
@@ -140,7 +137,6 @@ class MainApplication:
     #
 
     @router.route(URLs.urlsJS, methods=("HEAD", "GET"))
-    @static
     def urlsEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         JavaScript variables for service URLs.
@@ -160,7 +156,6 @@ class MainApplication:
     #
 
     @router.route(URLs.api, branch=True)
-    @static
     def apiApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         API application resource.
@@ -168,7 +163,6 @@ class MainApplication:
         return self.apiApplication.router.resource()
 
     @router.route(URLs.authApp, branch=True)
-    @static
     def authApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Auth application resource.
@@ -176,7 +170,6 @@ class MainApplication:
         return self.authApplication.router.resource()
 
     @router.route(URLs.external, branch=True)
-    @static
     def externalApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         External application resource.
@@ -184,7 +177,6 @@ class MainApplication:
         return cast(IResource, self.externalApplication.router.resource())
 
     @router.route(URLs.app, branch=True)
-    @static
     def webApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Web application resource.
