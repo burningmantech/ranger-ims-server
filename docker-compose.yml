@@ -2,6 +2,8 @@ x-shared-config:
   app_common: &app_common
     container_name: ranger_ims_server
     # user: 1000:${DAEMON_GROUP_ID:-1420}
+    volumes:
+      - ./conf:/opt/ims/conf
     environment:
       IMS_DIRECTORY: "${IMS_DIRECTORY:-File}"
       IMS_DIRECTORY_FILE: "${IMS_DIRECTORY_FILE:-/opt/ims/conf/directory.yaml}"
@@ -15,37 +17,41 @@ x-shared-config:
       database:
         condition: service_healthy
 
-  app_dev: &app_dev
-    build: 
-      context: ./
-      dockerfile: ./Dockerfile.dev
-    <<: *app_common
-
-  app_prod: &app_prod
-    build: .
-    <<: *app_common
-
 services:
   app:
-    <<: *app_prod
-    volumes:
-      - ./conf:/opt/ims/conf
-      - ./:/srv/ims
-    working_dir: /srv/ims
-    develop:
-      watch:
-        - action: rebuild
-          path: ./
-          target: /src/ims
-          ignore:
-            - .venv/
+    <<: *app_common
+    build: 
+      context: .
     command: >
       sh -c "/opt/ims/bin/ims
       --log-level=${IMS_SERVER_LOG_LEVEL:-info}
       --log-file
       -
       --config
-      /opt/ims/conf/${IMS_SERVER_DEV_CONF_FILENAME:-imsd-docker-compose-sample.conf}
+      /opt/ims/conf/${IMS_SERVER_CONF_FILENAME:-imsd-docker-compose-sample.conf}
+      server"
+
+  dev:
+    <<: *app_common
+    build: 
+      context: .
+      target: build
+    working_dir: /src/ims
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./
+          target: /src/ims/
+          ignore:
+            - .venv/
+
+    command: >
+      sh -c "uv run ims
+      --log-level=${IMS_SERVER_LOG_LEVEL:-info}
+      --log-file
+      -
+      --config
+      /opt/ims/conf/${IMS_SERVER_CONF_FILENAME:-imsd-docker-compose-sample.conf}
       server"
 
   database:
