@@ -136,7 +136,6 @@ class APIApplication:
     storeObserver: DataStoreEventSourceLogObserver
 
     @router.route(_unprefix(URLs.ping), methods=("HEAD", "GET"))
-    @static
     def pingResource(self, request: IRequest) -> KleinRenderable:
         """
         Ping (health check) endpoint.

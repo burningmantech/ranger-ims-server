@@ -89,7 +89,7 @@ else:
     from uuid import uuid4
 
     _staticETag = uuid4().hex
-    _maxAge = 0
+    _maxAge = 60 * 60  # 60 minutes
 
 _cacheControl = f"max-age={_maxAge}"
 
