@@ -20,7 +20,7 @@ x-shared-config:
 services:
   app:
     <<: *app_common
-    build: 
+    build:
       context: .
     command: >
       sh -c "/opt/ims/bin/ims
@@ -33,7 +33,7 @@ services:
 
   dev:
     <<: *app_common
-    build: 
+    build:
       context: .
       target: build
     working_dir: /src/ims

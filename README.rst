@@ -63,10 +63,10 @@ Start the server::
 
     Development
         ``docker compose up --watch``
-            In watch mode saving files in the application directory will restart the server. You will 
-            still need to refresh the browser, but this will be faster than manually restarting & rebuilding 
+            In watch mode saving files in the application directory will restart the server. You will
+            still need to refresh the browser, but this will be faster than manually restarting & rebuilding
             the server when changes are made.
-        
+
         ``docker compose down; docker compose build dev; docker compose up --watch`` will force a full rebuild of the app.
 
 
