@@ -50,16 +50,27 @@ With docker-compose
 First, get the configuration set up::
 
     # These files are mounted into the container
-    cp conf/imsd-docker-compose-sample.conf conf/imsd.conf
-    cp conf/directory-sample.yaml conf/directory.yaml
+    ``cp conf/imsd-docker-compose-sample.conf conf/imsd.conf``
+    ``cp conf/directory-sample.yaml conf/directory.yaml``
+    ``cp .docker/sampe.env ./.env``
 
-If you need to override any of the environment variables set in
-``docker-compose.yml``, copy ``.docker/sample.env`` to ``/.env`` and
-uncomment and edit the neccessary variables.
+Set appropriate overrides in `.env` or `conf/imsd.conf` where appropriate.
 
 Start the server::
 
-    docker compose up
+    Production
+        ``docker compose up`` or ``docker compose up -d`` to run in daemon mode (no console output)
+
+    Development
+        ``docker compose up --watch``
+            In watch mode saving files in the application directory will restart the server. You will 
+            still need to refresh the browser, but this will be faster than manually restarting & rebuilding 
+            the server when changes are made.
+        
+        ``docker compose down; docker compose build dev; docker compose up --watch`` will force a full rebuild of the app.
+
+
+
 
 ------------------
 Outside docker
