@@ -551,12 +551,16 @@ function drawRangers() {
     for (const handle of handles) {
         let ranger = null;
         if (personnel?.[handle] == null) {
-            ranger = handle;
+            ranger = textAsHTML(handle);
         } else {
-            ranger = rangerAsString(personnel[handle]);
+            const person = personnel[handle];
+            ranger = $("<a>", {
+                text: textAsHTML(rangerAsString(person)),
+                href: `${clubhousePersonURL}/${person.directory_id}`,
+            });
         }
         const item = _rangerItem.clone();
-        item.append(textAsHTML(ranger));
+        item.append(ranger);
         item.attr("value", textAsHTML(handle));
         items.push(item);
     }
@@ -593,10 +597,6 @@ function drawRangersToAdd() {
 
 function rangerAsString(ranger) {
     let result = ranger.handle;
-
-    if (ranger.name) {
-        result += " (" + ranger.name + ")";
-    }
 
     if (ranger.status === "vintage") {
         result += "*";
