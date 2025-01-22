@@ -65,13 +65,14 @@ class Ranger(ReplaceMixIn):
     """
     Ranger
 
-    An Ranger contains information about a Black Rock Ranger; a person record
+    A Ranger contains information about a Black Rock Ranger; a person record
     specific to a Black Rock Ranger.
     """
 
     handle: str
-    name: str
     status: RangerStatus
+    # email is not fed out via the personnel endpoint, but we need it in the server
+    # in order to permit authentication using email address rather than handle.
     email: frozenset[str] = field(converter=freezeStrings, default=frozenset[str]())
     enabled: bool
     directoryID: str | None
@@ -80,4 +81,4 @@ class Ranger(ReplaceMixIn):
     )
 
     def __str__(self) -> str:
-        return f"{self.status} {self.handle} ({self.name})"
+        return f"{self.status} {self.handle}"

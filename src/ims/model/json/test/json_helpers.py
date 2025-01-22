@@ -185,7 +185,6 @@ def jsonFromRangerStatus(status: RangerStatus) -> str:
 def jsonFromRanger(ranger: Ranger) -> dict[str, Any]:
     return {
         "handle": ranger.handle,
-        "name": ranger.name,
         "status": jsonFromRangerStatus(ranger.status),
         # email is intentionally not serialized
         "enabled": ranger.enabled,

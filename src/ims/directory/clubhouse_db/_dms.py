@@ -145,7 +145,7 @@ class DutyManagementSystem:
             """
             select
                 id,
-                callsign, first_name, mi, last_name, email,
+                callsign, email,
                 status, on_site, password
             from person
             where status in ('active', 'inactive', 'vintage', 'auditor')
@@ -155,7 +155,6 @@ class DutyManagementSystem:
         return {
             directoryID: Ranger(
                 handle=handle,
-                name=fullName(first, middle, last),
                 status=statusFromID(status),
                 email=(email,),
                 enabled=bool(enabled),
@@ -165,9 +164,6 @@ class DutyManagementSystem:
             for (
                 directoryID,
                 handle,
-                first,
-                middle,
-                last,
                 email,
                 status,
                 enabled,
@@ -263,15 +259,6 @@ class DutyManagementSystem:
             return self._state._personnel
         except AttributeError:
             raise DMSError("No personnel data loaded.") from None
-
-
-def fullName(first: str, middle: str, last: str) -> str:
-    """
-    Compose parts of a name into a full name.
-    """
-    if middle:
-        return f"{first} {middle}. {last}"
-    return f"{first} {last}"
 
 
 def statusFromID(strValue: str) -> RangerStatus:

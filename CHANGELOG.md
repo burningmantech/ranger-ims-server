@@ -27,6 +27,7 @@ Each month below should look like the following, using the same ordering for the
 - Created a slight pause after search field input prior to actually running the search. This will reduce perceived latency in typing/deleting in the search field. https://github.com/burningmantech/ranger-ims-server/issues/1481 https://github.com/burningmantech/ranger-ims-server/pull/1483
 - Started Field Report numbering from 1 each event, as we already did for Incidents. https://github.com/burningmantech/ranger-ims-server/pull/1506
 - Enhanced the "permission denied" error page, to make it more descriptive for when we block access for an authenticated Ranger. https://github.com/burningmantech/ranger-ims-server/pull/1530
+- Stopped showing Ranger legal names in IMS; started linking from Ranger handles into Clubhouse person pages instead. https://github.com/burningmantech/ranger-ims-server/issues/1536
 
 ### Added
 

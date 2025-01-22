@@ -66,10 +66,6 @@ def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
     if type(handle) is not str:
         raise DirectoryError(f"Ranger handle must be text: {handle!r}")
 
-    name = mapping.get("name", "")
-    if type(name) is not str:
-        raise DirectoryError(f"Ranger name must be text: {name!r}")
-
     _status = mapping.get("status", "")
     if type(_status) is not str:
         raise DirectoryError(f"Ranger status must be text: {_status!r}")
@@ -99,7 +95,6 @@ def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
 
     return Ranger(
         handle=handle,
-        name=name,
         status=status,
         email=email,
         enabled=enabled,

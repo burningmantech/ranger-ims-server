@@ -498,7 +498,6 @@ def rangers(draw: Callable[..., Any]) -> Ranger:
     """
     return Ranger(
         handle=draw(rangerHandles()),
-        name=draw(text(min_size=1)),
         status=draw(sampled_from(RangerStatus)),
         email=draw(lists(emails())),
         enabled=draw(booleans()),

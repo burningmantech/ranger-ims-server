@@ -40,7 +40,6 @@ class RangerJSONKey(Enum):
     """
 
     handle = "handle"
-    name = "name"
     status = "status"
     # email is intentionally not serialized, since no web client needs it
     enabled = "enabled"
@@ -54,7 +53,6 @@ class RangerJSONType(Enum):
     """
 
     handle = str
-    name = str  # type: ignore[assignment]
     status = RangerStatus
     # email is intentionally not serialized, since no web client needs it
     enabled = bool
