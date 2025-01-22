@@ -551,7 +551,8 @@ class AuthProviderTests(TestCase):
 
     def test_matchACL_public_noUser(self) -> None:
         """
-        AuthProvider._matchACL matches public ("**") access with None user.
+        AuthProvider._matchACL does not match public ("**") access with None user,
+        because that sort of access isn't permitted in IMS anymore.
         """
         provider = AuthProvider(
             store=self.store(),
@@ -559,26 +560,9 @@ class AuthProviderTests(TestCase):
             jsonWebKey=JSONWebKey.generate(),
         )
 
-        self.assertTrue(
+        self.assertFalse(
             provider._matchACL(
                 None, (AccessEntry(expression="**", validity=AccessValidity.always),)
-            )
-        )
-
-    @given(testUsers())
-    def test_matchACL_public_user(self, user: IMSUser) -> None:
-        """
-        AuthProvider._matchACL matches public ("**") access with a user.
-        """
-        provider = AuthProvider(
-            store=self.store(),
-            directory=self.directory(),
-            jsonWebKey=JSONWebKey.generate(),
-        )
-
-        self.assertTrue(
-            provider._matchACL(
-                user, (AccessEntry(expression="**", validity=AccessValidity.always),)
             )
         )
 
