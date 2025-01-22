@@ -126,7 +126,6 @@ class DirectoryTests(TestCase):
         [
             Ranger(
                 handle="A",
-                name="A",
                 status=RangerStatus.active,
                 email="same@example.com",
                 enabled=True,
@@ -135,7 +134,6 @@ class DirectoryTests(TestCase):
             ),
             Ranger(
                 handle="B",
-                name="B",
                 status=RangerStatus.active,
                 email="same@example.com",
                 enabled=True,
@@ -144,7 +142,6 @@ class DirectoryTests(TestCase):
             ),
             Ranger(
                 handle="C",
-                name="C",
                 status=RangerStatus.active,
                 email="same@example.com",
                 enabled=True,

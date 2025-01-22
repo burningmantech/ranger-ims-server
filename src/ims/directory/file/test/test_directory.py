@@ -49,7 +49,6 @@ __all__ = ()
 
 rangerBeepBoop = Ranger(
     handle="Beep Boop",
-    name="Ann Droid",
     status=RangerStatus.active,
     email=("ad@example.com",),
     enabled=True,
@@ -58,7 +57,6 @@ rangerBeepBoop = Ranger(
 )
 rangerSlumber = Ranger(
     handle="Slumber",
-    name="Sleepy T. Dwarf",
     status=RangerStatus.inactive,
     email=("slumber@example.com", "sleepy@example.com"),
     enabled=True,
@@ -67,7 +65,6 @@ rangerSlumber = Ranger(
 )
 rangerYouRine = Ranger(
     handle="YouRine",
-    name="I. P. Freely",
     status=RangerStatus.active,
     email=("yourine@example.com",),
     enabled=False,
@@ -76,7 +73,6 @@ rangerYouRine = Ranger(
 )
 rangerNine = Ranger(
     handle="Nine",
-    name="Nein Statushaven",
     status=RangerStatus.other,
     email=(),
     enabled=True,
@@ -103,7 +99,6 @@ def rangerAsDict(ranger: Ranger, random: Random) -> dict[str, Any]:
 
     return {
         "handle": ranger.handle,
-        "name": ranger.name,
         "status": ranger.status.name,
         "email": email,
         "enabled": ranger.enabled,
@@ -199,19 +194,6 @@ class UtilityTests(TestCase):
 
         e = self.assertRaises(DirectoryError, rangerFromMapping, rangerDict)
         self.assertEqual(str(e), f"Ranger handle must be text: {handle!r}")
-
-    @given(rangers(), randoms())
-    @settings(max_examples=10)
-    def test_rangerFromMapping_nameNotText(
-        self, ranger: Ranger, random: Random
-    ) -> None:
-        ranger = ranger.replace(directoryID=None)
-        rangerDict = rangerAsDict(ranger, random)
-        name = rangerDict["name"].encode("utf-8")
-        rangerDict["name"] = name
-
-        e = self.assertRaises(DirectoryError, rangerFromMapping, rangerDict)
-        self.assertEqual(str(e), f"Ranger name must be text: {name!r}")
 
     @given(rangers(), randoms())
     @settings(max_examples=10)

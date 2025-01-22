@@ -59,6 +59,4 @@ class RangerTests(TestCase):
         """
         Ranger status renders as a string.
         """
-        self.assertEqual(
-            str(ranger), f"{ranger.status} {ranger.handle} ({ranger.name})"
-        )
+        self.assertEqual(str(ranger), f"{ranger.status} {ranger.handle}")
