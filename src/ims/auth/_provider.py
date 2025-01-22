@@ -336,9 +336,7 @@ class AuthProvider:
         Match a user against a set of ACLs associated with an event's readers,
         writers and reporters.
 
-        An ACL of "**" will always match, even for the None user.
-
-        An ACL of "*" matches all users other than the None user.
+        An ACL of "*" matches any authenticated user.
 
         An ACL of the form "person:{user}" will match a user of one of the
         user's short names equals {user}.
@@ -346,9 +344,13 @@ class AuthProvider:
         An ACL of the form "position:{group}" will match a user if the ID of
         one of the groups that the user is a member of equals {group}.
         """
-
-        if "**" in [a.expression for a in acl]:
-            return True
+        # This form of wildcarding was previously intended to allow access to anyone,
+        # including the None user. This permitted non-Rangers (i.e. unauthenticated
+        # users) to create Field Reports at kiosks on-site. This feature hadn't been
+        # used for years, as of 2025, and it no longer actually works anyway, due to
+        # the authorization model that developed in recent years in IMS.
+        # if "**" in [a.expression for a in acl]:
+        #     return True
 
         if user is None:
             return False
@@ -360,7 +362,7 @@ class AuthProvider:
 
             assert a.validity == AccessValidity.always
 
-            if "*" in a.expression:
+            if a.expression == "*":
                 return True
 
             for shortName in user.shortNames:

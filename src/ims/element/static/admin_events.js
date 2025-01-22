@@ -145,12 +145,9 @@ function addAccess(sender) {
 
     if (newExpression === "**") {
         const confirmed = confirm(
-            "DANGER: double-wildcard '**' ACLs can permit access to any requestor, even " +
-            "those who aren't logged in! You probably don't want this, except maybe for " +
-            "local testing.\n\n" +
-            "By comparison, a single-wildcard '*' ACL grants access to any " +
-            "authenticated user. You might be looking for that instead.\n\n" +
-            "Proceed with firing footgun?"
+            "Double-wildcard '**' ACLs are no longer supported, so this ACL will have " +
+            "no effect.\n\n" +
+            "Proceed with doing something pointless?"
         );
         if (!confirmed) {
             sender.value = "";
