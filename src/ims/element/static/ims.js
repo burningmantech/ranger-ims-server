@@ -1080,10 +1080,6 @@ function subscribeToUpdates(closed) {
         send.postMessage(JSON.parse(e.data));
     }, true);
 
-    // TODO(issue/1498): SSEs are now firing for Field Report updates, but we need
-    //  to find an appropriate way for the various pages to handle these updates
-    //  (i.e. without excessive volume of API calls or "unauthorized" errors from
-    //  users with limited access).
     eventSource.addEventListener("FieldReport", function(e) {
         const send = new BroadcastChannel(fieldReportChannelName);
         localStorage.setItem(lastSseIDKey, e.lastEventId);

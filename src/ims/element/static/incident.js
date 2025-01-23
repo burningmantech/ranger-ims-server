@@ -25,7 +25,7 @@ function initIncidentPage() {
             drawRangersToAdd();
         });
         loadIncidentTypesAndCache(drawIncidentTypesToAdd);
-        loadAndDisplayFieldReports();
+        loadAllFieldReports(renderFieldReportData);
 
         // for a new incident
         if (incident.number == null) {
@@ -61,14 +61,26 @@ function initIncidentPage() {
             if (updateAll || (event === eventID && number === incidentNumber)) {
                 console.log("Got incident update: " + number);
                 loadAndDisplayIncident();
-                loadAndDisplayFieldReports();
+                loadAllFieldReports(renderFieldReportData);
             }
         }
-        // TODO(issue/1498): this page doesn't currently listen for Field Report
-        //  updates, but it probably should. Those updates could be used to add
-        //  to the merged report entries or to the list of Field Reports available
-        //  to be attached. We just want to be careful not to reload all the Field
-        //  Reports on any update, lest we introduce heightened latency.
+
+        const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
+        fieldReportChannel.onmessage = function (e) {
+            const updateAll = e.data["update_all"];
+            if (updateAll) {
+                console.log("Updating all field reports");
+                loadAllFieldReports(renderFieldReportData);
+                return;
+            }
+
+            const number = e.data["field_report_number"];
+            const event = e.data["event_id"]
+            if (event === eventID) {
+                console.log("Got field report update: " + number);
+                loadFieldReport(number, renderFieldReportData);
+            }
+        }
 
         // Keyboard shortcuts
         document.addEventListener("keydown", function(e) {
@@ -189,15 +201,12 @@ function loadAndDisplayIncident(success) {
     loadIncident(loaded);
 }
 
-
-function loadAndDisplayFieldReports() {
-    loadAllFieldReports(function () {
-        drawFieldReportsToAttach();
-    });
-    loadAttachedFieldReports(function () {
-        drawMergedReportEntries();
-        drawAttachedFieldReports();
-    });
+// Do all the client-side rendering based on the state of allFieldReports.
+function renderFieldReportData() {
+    loadAttachedFieldReports();
+    drawFieldReportsToAttach();
+    drawMergedReportEntries();
+    drawAttachedFieldReports();
 }
 
 
@@ -365,6 +374,7 @@ function loadAllFieldReports(success) {
         if (xhr.status === 403) {
             // We're not allowed to look these up.
             allFieldReports = undefined;
+            console.error("Got a 403 looking up field reports");
         } else {
             const message = "Failed to load field reports";
             console.error(message + ": " + error);
@@ -378,20 +388,27 @@ function loadAllFieldReports(success) {
     );
 }
 
-
-//
-// Load attached field reports
-//
-
-let attachedFieldReports = null;
-
-function loadAttachedFieldReports(success) {
-    if (incidentNumber == null) {
+function loadFieldReport(fieldReportNumber, success) {
+    if (allFieldReports === undefined) {
         return;
     }
 
     function ok(data, status, xhr) {
-        attachedFieldReports = data;
+        let found = false;
+        for (const i in allFieldReports) {
+            if (allFieldReports[i].number === data.number) {
+                allFieldReports[i] = data;
+                found = true;
+            }
+        }
+        if (!found) {
+            allFieldReports.push(data);
+            // apply a descending sort based on the field report number,
+            // being cautious about field report number being null
+            allFieldReports.sort(function (a, b) {
+                return (b.number ?? -1) - (a.number ?? -1);
+            })
+        }
 
         if (success) {
             success();
@@ -399,16 +416,34 @@ function loadAttachedFieldReports(success) {
     }
 
     function fail(error, status, xhr) {
-        const message = "Failed to load attached field reports";
-        console.error(message + ": " + error);
-        setErrorMessage(message);
+        if (xhr.status !== 403) {
+            const message = "Failed to load field report " + fieldReportNumber;
+            console.error(message + ": " + error);
+            setErrorMessage(message);
+        }
     }
 
-    const url = (
-        urlReplace(url_fieldReports) + "?incident=" + incidentNumber
+    jsonRequest(
+        urlReplace(url_fieldReport).replace("<field_report_number>", fieldReportNumber),
+        null, ok, fail,
     );
+}
 
-    jsonRequest(url, null, ok, fail);
+
+//
+// Load attached field reports
+//
+
+let attachedFieldReports = null;
+
+function loadAttachedFieldReports() {
+    _attachedFieldReports = [];
+    for (const fr of allFieldReports) {
+        if (fr.incident === incidentNumber) {
+            _attachedFieldReports.push(fr);
+        }
+    }
+    attachedFieldReports = _attachedFieldReports;
 }
 
 
@@ -1097,7 +1132,7 @@ function detachFieldReport(sender) {
     function ok(data, status, xhr) {
         // FIXME
         // controlHasSuccess(sender);
-        loadAndDisplayFieldReports();
+        loadAllFieldReports(renderFieldReportData);
     }
 
     function fail(requestError, status, xhr) {
@@ -1106,7 +1141,7 @@ function detachFieldReport(sender) {
 
         const message = "Failed to detach field report";
         console.log(message + ": " + requestError);
-        loadAndDisplayFieldReports();
+        loadAllFieldReports(renderFieldReportData);
         setErrorMessage(message);
     }
 
@@ -1130,14 +1165,14 @@ function attachFieldReport() {
     const fieldReportNumber = $(select).val();
 
     function ok(data, status, xhr) {
-        loadAndDisplayFieldReports();
+        loadAllFieldReports(renderFieldReportData);
         controlHasSuccess(select, 1000);
     }
 
     function fail(requestError, status, xhr) {
         const message = "Failed to attach field report";
         console.log(message + ": " + requestError);
-        loadAndDisplayFieldReports();
+        loadAllFieldReports(renderFieldReportData);
         setErrorMessage(message);
         controlHasError(select);
     }
@@ -1154,6 +1189,6 @@ function attachFieldReport() {
 // The success callback for a report entry strike call.
 function onStrikeSuccess() {
     loadAndDisplayIncident();
-    loadAndDisplayFieldReports();
+    loadAllFieldReports(renderFieldReportData);
     clearErrorMessage();
 }
