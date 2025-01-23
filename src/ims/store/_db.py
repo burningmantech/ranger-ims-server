@@ -1859,7 +1859,6 @@ class DatabaseStore(IMSDataStore):
 
         self._log.info(
             "{author} updated field report #{fieldReportNumber}: {attribute}={value}",
-            storeWriteClass=FieldReport,
             query=query,
             eventID=eventID,
             fieldReportNumber=fieldReportNumber,
