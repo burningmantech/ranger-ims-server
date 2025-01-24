@@ -344,13 +344,12 @@ class AuthProvider:
         An ACL of the form "position:{group}" will match a user if the ID of
         one of the groups that the user is a member of equals {group}.
         """
-        # This form of wildcarding was previously intended to allow access to anyone,
+        # Temporary explainer for removed feature:
+        # '**' wildcarding was previously intended to allow access to anyone,
         # including the None user. This permitted non-Rangers (i.e. unauthenticated
         # users) to create Field Reports at kiosks on-site. This feature hadn't been
         # used for years, as of 2025, and it no longer actually works anyway, due to
         # the authorization model that developed in recent years in IMS.
-        # if "**" in [a.expression for a in acl]:
-        #     return True
 
         if user is None:
             return False

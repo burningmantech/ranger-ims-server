@@ -1,7 +1,8 @@
 # Changelog
 
-This is the changelog for ranger-ims-server. This is intended to summarize changes over time,
-for example to inform the Operator team each event of any differences to expect.
+This is the changelog for ranger-ims-server. This is intended to summarize changes over time. It's
+probably too verbose for consumption by general users of IMS, but it might be useful for anyone
+trying to follow along with IMS's progression as a system.
 
 This file must use the [Common Changelog format](https://common-changelog.org/), with the variation
 that we use months rather than version numbers. We don't include dependency version upgrades in the
@@ -34,9 +35,14 @@ Each month below should look like the following, using the same ordering for the
 - Introduced "striking" of report entries. This allows a user to hide an outdated/inaccurate entry, such that it doesn't appear by default on the Incident or Field Report page. https://github.com/burningmantech/ranger-ims-server/issues/249
 - Added help modals, toggled by pressing "?", which show keyboard shortcuts for the current page. https://github.com/burningmantech/ranger-ims-server/issues/1482
 - Started publishing Field Report entity updates to the web clients (via server-sent events), and started automatically background-updating the Field Reports (table) and Field Report pages on updates. https://github.com/burningmantech/ranger-ims-server/issues/1498
+- Also started background-updating the Incident page based on Field Report updates, so that the user shouldn't ever need to reload an Incident page to pick up updates from the server. https://github.com/burningmantech/ranger-ims-server/pull/1555
 - Added a help link from the Incident page to documentation about the meaning of the many Incident Types. https://github.com/burningmantech/ranger-ims-server/pull/1512
 - Added Subresource Integrity checks to our JavaScript dependencies, improving our security against supply chain attacks. https://github.com/burningmantech/ranger-ims-server/issues/1517
 - Got rid of the "requireActive" global setting, and changed it into a "validity" property of each event permission instead. This allows us to specify which permissions should be granted all year, and which should only be available to Rangers while they are on-playa. https://github.com/burningmantech/ranger-ims-server/issues/1540
+
+### Removed
+
+- Dropped "\*\*"-style ACLs, which we didn't use and didn't actually work at all. https://github.com/burningmantech/ranger-ims-server/pull/1553
 
 ### Fixed
 
