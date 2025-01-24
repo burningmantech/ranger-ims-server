@@ -271,12 +271,12 @@ function localCachePersonnel(personnel) {
         alert("Attempt to cache undefined personnel")
         return;
     }
-    lscache.set("ims.personnel", personnel, 10);
+    cacheSet("personnel", personnel, 20 /* minutes */);
 }
 
 
 function localLoadPersonnel() {
-    return lscache.get("ims.personnel");
+    return cacheGet("personnel");
 }
 
 
@@ -333,12 +333,12 @@ function localCacheIncidentTypes(incidentTypes) {
         alert("Attempt to cache undefined incident types")
         return;
     }
-    lscache.set("ims.incident_types", incidentTypes, 10);
+    cacheSet("incident_types", incidentTypes, 20 /* minutes */);
 }
 
 
 function localLoadIncidentTypes() {
-    return lscache.get("ims.incident_types");
+    return cacheGet("incident_types");
 }
 
 
