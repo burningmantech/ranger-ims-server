@@ -1086,3 +1086,20 @@ function subscribeToUpdates(closed) {
         send.postMessage(JSON.parse(e.data));
     }, true);
 }
+
+function cacheSet(key, value, ttlMinutes) {
+    localStorage.setItem(`ims.${key}`, JSON.stringify(value));
+    localStorage.setItem(`ims.${key}.deadline`, `${Date.now()+ttlMinutes*60*1000}`);
+}
+
+function cacheGet(key) {
+    const val = localStorage.getItem(`ims.${key}`);
+    const deadline = localStorage.getItem(`ims.${key}.deadline`);
+    if (val == null || !deadline) {
+        return null;
+    }
+    if (Date.now() > new Date(Number.parseInt(deadline))) {
+        return null;
+    }
+    return JSON.parse(val);
+}

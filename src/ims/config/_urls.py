@@ -99,8 +99,6 @@ class URLs:
         "js", "dataTables.bootstrap5.min.js"
     )
 
-    lscacheJS: ClassVar[URL] = external.child("lscache.min.js")
-
     # Web application
 
     app: ClassVar[URL] = prefix.child("app").child("")

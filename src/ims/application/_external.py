@@ -748,19 +748,6 @@ class ExternalApplication:
             *names,
         )
 
-    @router.route(_unprefix(URLs.lscacheJS), methods=("HEAD", "GET"))
-    @static
-    async def lscacheJSResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for lscache.
-        """
-        request.setHeader(HeaderName.contentType.value, ContentType.javascript.value)
-        return await self.cachedResource(
-            request,
-            self.config.externalDeps.lscacheJSSourceURL,
-            f"{self.config.externalDeps.lscacheVersion}.min.js",
-        )
-
     async def cacheFromURL(self, url: URL, name: str) -> Path:
         """
         Download a resource and cache it.

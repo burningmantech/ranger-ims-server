@@ -93,8 +93,6 @@ class Page(Element):
             return cast(str, self.config.externalDeps.dataTablesBootstrap5JsIntegrity)
         if depName == "jquery":
             return cast(str, self.config.externalDeps.jqueryJsIntegrity)
-        if depName == "lscache":
-            return cast(str, self.config.externalDeps.lscacheJsIntegrity)
         return None
 
     @renderer
