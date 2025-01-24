@@ -437,6 +437,9 @@ function loadFieldReport(fieldReportNumber, success) {
 let attachedFieldReports = null;
 
 function loadAttachedFieldReports() {
+    if (incidentNumber == null) {
+        return;
+    }
     _attachedFieldReports = [];
     for (const fr of allFieldReports) {
         if (fr.incident === incidentNumber) {
