@@ -43,6 +43,7 @@ Each month below should look like the following, using the same ordering for the
 ### Removed
 
 - Dropped "\*\*"-style ACLs, which we didn't use and didn't actually work at all. https://github.com/burningmantech/ranger-ims-server/pull/1553
+- Removed JavaScript dependency on lscache; replaced it with simple in-house caching. https://github.com/burningmantech/ranger-ims-server/pull/1558
 
 ### Fixed
 
