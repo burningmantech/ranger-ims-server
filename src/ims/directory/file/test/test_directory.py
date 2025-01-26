@@ -51,7 +51,7 @@ rangerBeepBoop = Ranger(
     handle="Beep Boop",
     status=RangerStatus.active,
     email=("ad@example.com",),
-    enabled=True,
+    onsite=True,
     directoryID=None,
     password="73415783-F274-4505-9F3B-42F07E219A56",  # noqa: S106
 )
@@ -59,7 +59,7 @@ rangerSlumber = Ranger(
     handle="Slumber",
     status=RangerStatus.inactive,
     email=("slumber@example.com", "sleepy@example.com"),
-    enabled=True,
+    onsite=True,
     directoryID=None,
     password="5A23692C-B751-4567-8848-F4F177C9EF69",  # noqa: S106
 )
@@ -67,7 +67,7 @@ rangerYouRine = Ranger(
     handle="YouRine",
     status=RangerStatus.active,
     email=("yourine@example.com",),
-    enabled=False,
+    onsite=False,
     directoryID=None,
     password="43272914-C2DB-460A-B1AB-E3A4743DC5B9",  # noqa: S106
 )
@@ -75,7 +75,7 @@ rangerNine = Ranger(
     handle="Nine",
     status=RangerStatus.other,
     email=(),
-    enabled=True,
+    onsite=True,
     directoryID=None,
     password=None,
 )
@@ -101,7 +101,7 @@ def rangerAsDict(ranger: Ranger, random: Random) -> dict[str, Any]:
         "handle": ranger.handle,
         "status": ranger.status.name,
         "email": email,
-        "enabled": ranger.enabled,
+        "onsite": ranger.onsite,
         # directoryID is not used
         "password": ranger.password,
     }
@@ -248,15 +248,15 @@ class UtilityTests(TestCase):
 
     @given(rangers(), randoms())
     @settings(max_examples=10)
-    def test_rangerFromMapping_enabledNotBool(
+    def test_rangerFromMapping_onsiteNotBool(
         self, ranger: Ranger, random: Random
     ) -> None:
         ranger = ranger.replace(directoryID=None)
         rangerDict = rangerAsDict(ranger, random)
-        rangerDict["enabled"] = None
+        rangerDict["onsite"] = None
 
         e = self.assertRaises(DirectoryError, rangerFromMapping, rangerDict)
-        self.assertEqual(str(e), "Ranger enabled must be boolean: None")
+        self.assertEqual(str(e), "Ranger onsite must be boolean: None")
 
     @given(rangers(), randoms())
     @settings(max_examples=10)

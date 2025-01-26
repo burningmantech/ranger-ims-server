@@ -255,7 +255,7 @@ class AuthProvider:
                 exp=int(expiration.timestamp()),
                 sub=user.uid,
                 preferred_username=user.shortNames[0],
-                ranger_on_site=user.active,
+                ranger_on_site=user.onsite,
                 ranger_positions=",".join(user.groups),
             ),
             key=self._jsonWebKey,
@@ -298,7 +298,7 @@ class AuthProvider:
         return DirectoryUser(
             uid=IMSUserID(claims.sub),
             shortNames=(claims.preferred_username,),
-            active=claims.ranger_on_site,
+            onsite=claims.ranger_on_site,
             groups=tuple(IMSGroupID(gid) for gid in claims.ranger_positions.split(",")),
         )
 
@@ -355,7 +355,7 @@ class AuthProvider:
             return False
 
         for a in acl:
-            if a.validity == AccessValidity.onsite and not user.active:
+            if a.validity == AccessValidity.onsite and not user.onsite:
                 # this ACL is irrelevant, because the user is offsite
                 continue
 

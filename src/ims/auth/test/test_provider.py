@@ -84,7 +84,7 @@ class TestUser(IMSUser):
 
     uid: IMSUserID
     shortNames: Sequence[str]
-    active: bool
+    onsite: bool
     groups: Sequence[IMSGroupID]
     plainTextPassword: str | None
 
@@ -100,7 +100,7 @@ def testUsers(draw: Callable[..., Any]) -> TestUser:
     return TestUser(
         uid=IMSUserID(draw(text(min_size=1))),
         shortNames=tuple(draw(lists(text(min_size=1), min_size=1))),
-        active=draw(booleans()),
+        onsite=draw(booleans()),
         groups=tuple(
             IMSGroupID(g)
             for g in draw(text(min_size=1, alphabet=ascii_letters + digits + "_"))
@@ -149,14 +149,14 @@ class TestTests(TestCase):
         user = TestUser(
             uid=uid,
             shortNames=shortNames,
-            active=active,
+            onsite=active,
             groups=groups,
             plainTextPassword=password,
         )
 
         self.assertEqual(user.uid, uid)
         self.assertEqual(tuple(user.shortNames), tuple(shortNames))
-        self.assertEqual(user.active, active)
+        self.assertEqual(user.onsite, active)
         self.assertEqual(tuple(user.groups), tuple(groups))
         self.assertEqual(user.plainTextPassword, password)
 
@@ -458,7 +458,7 @@ class AuthProviderTests(TestCase):
         self.assertTrue(approximateTimestamps(claims.exp, (now + duration).timestamp()))
         self.assertEqual(claims.sub, user.uid)
         self.assertEqual(claims.preferred_username, user.shortNames[0])
-        self.assertEqual(claims.ranger_on_site, user.active)
+        self.assertEqual(claims.ranger_on_site, user.onsite)
         self.assertEqual(claims.ranger_positions, ",".join(user.groups))
 
     @given(
@@ -489,7 +489,7 @@ class AuthProviderTests(TestCase):
         self.assertEqual(userFromToken.uid, user.uid)
         # Only the first shortName is kept
         self.assertEqual(userFromToken.shortNames, (user.shortNames[0],))
-        self.assertEqual(userFromToken.active, user.active)
+        self.assertEqual(userFromToken.onsite, user.onsite)
         self.assertEqual(userFromToken.groups, user.groups)
         self.assertEqual(userFromToken.hashedPassword, None)
 
@@ -660,7 +660,7 @@ class AuthProviderTests(TestCase):
         user = TestUser(
             uid=IMSUserID("my-id"),
             shortNames=("Slumber",),
-            active=False,
+            onsite=False,
             groups=(),
             plainTextPassword="some-password",
         )
@@ -699,7 +699,7 @@ class AuthProviderTests(TestCase):
         user = TestUser(
             uid=IMSUserID("my-id"),
             shortNames=("Slumber",),
-            active=True,
+            onsite=True,
             groups=(),
             plainTextPassword="some-password",
         )
@@ -814,7 +814,7 @@ class AuthProviderTests(TestCase):
         user = TestUser(
             uid=IMSUserID("my-id"),
             shortNames=("Slumber",),
-            active=True,
+            onsite=True,
             groups=(),
             plainTextPassword="some-password",
         )

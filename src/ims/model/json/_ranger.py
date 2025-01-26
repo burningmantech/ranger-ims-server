@@ -42,7 +42,7 @@ class RangerJSONKey(Enum):
     handle = "handle"
     status = "status"
     # email is intentionally not serialized, since no web client needs it
-    enabled = "enabled"
+    onsite = "onsite"
     directoryID = "directory_id"
     # password is intentionally not serialized, since no web client needs it
 
@@ -55,7 +55,7 @@ class RangerJSONType(Enum):
     handle = str
     status = RangerStatus
     # email is intentionally not serialized, since no web client needs it
-    enabled = bool
+    onsite = bool
     directoryID = str | None
     # password is intentionally not serialized, since no web client needs it
 

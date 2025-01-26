@@ -52,7 +52,7 @@ class IMSUser(Protocol):
 
     uid: IMSUserID
     shortNames: Sequence[str]
-    active: bool
+    onsite: bool
     groups: Sequence[IMSGroupID]
     hashedPassword: str | None
 
@@ -65,7 +65,7 @@ class DirectoryUser(IMSUser):
 
     uid: IMSUserID
     shortNames: Sequence[str]
-    active: bool
+    onsite: bool
     groups: Sequence[IMSGroupID]
     hashedPassword: str | None = field(
         default=None, repr=lambda _p: "\N{ZIPPER-MOUTH FACE}"
@@ -79,7 +79,7 @@ def userFromRanger(*, ranger: Ranger, groups: Sequence[IMSGroupID]) -> IMSUser:
     return DirectoryUser(
         uid=IMSUserID(ranger.handle),
         shortNames=(ranger.handle,),
-        active=ranger.enabled,
+        onsite=ranger.onsite,
         groups=tuple(groups),
         hashedPassword=ranger.password,
     )

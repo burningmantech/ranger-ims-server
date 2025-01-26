@@ -85,9 +85,9 @@ def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
             f"Ranger email must be text or sequence of text: {_email!r}"
         )
 
-    enabled = mapping.get("enabled", None)
-    if type(enabled) is not bool:
-        raise DirectoryError(f"Ranger enabled must be boolean: {enabled!r}")
+    onsite = mapping.get("onsite", None)
+    if type(onsite) is not bool:
+        raise DirectoryError(f"Ranger onsite must be boolean: {onsite!r}")
 
     password = mapping.get("password", None)
     if password is not None and type(password) is not str:
@@ -97,7 +97,7 @@ def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
         handle=handle,
         status=status,
         email=email,
-        enabled=enabled,
+        onsite=onsite,
         directoryID=None,
         password=mapping.get("password", None),
     )
