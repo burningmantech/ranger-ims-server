@@ -1087,19 +1087,18 @@ function subscribeToUpdates(closed) {
     }, true);
 }
 
-function cacheSet(key, value, ttlMinutes) {
-    localStorage.setItem(`ims.${key}`, JSON.stringify(value));
-    localStorage.setItem(`ims.${key}.deadline`, `${Date.now()+ttlMinutes*60*1000}`);
+// Remove the old LocalStorage caches that IMS no longer uses, so that
+// they can't act against the ~5 MB per-domain limit of HTML5 LocalStorage.
+// This can probably be removed after the 2025 event, when all the relevant
+// computers have their caches purged.
+function cleanupOldCaches() {
+    localStorage.removeItem("lscache-ims.incident_types");
+    localStorage.removeItem("lscache-ims.incident_types-cacheexpiration");
+    localStorage.removeItem("lscache-ims.personnel");
+    localStorage.removeItem("lscache-ims.personnel-cacheexpiration");
+    localStorage.removeItem("ims.incident_types");
+    localStorage.removeItem("ims.incident_types.deadline")
+    localStorage.removeItem("ims.personnel");
+    localStorage.removeItem("ims.personnel.deadline");
 }
-
-function cacheGet(key) {
-    const val = localStorage.getItem(`ims.${key}`);
-    const deadline = localStorage.getItem(`ims.${key}.deadline`);
-    if (val == null || !deadline) {
-        return null;
-    }
-    if (Date.now() > new Date(Number.parseInt(deadline))) {
-        return null;
-    }
-    return JSON.parse(val);
-}
+cleanupOldCaches();
