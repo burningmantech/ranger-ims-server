@@ -20,11 +20,11 @@
 
 function initIncidentPage() {
     function loadedIncident() {
-        loadPersonnelAndCache(function() {
+        loadPersonnel(function() {
             drawRangers();
             drawRangersToAdd();
         });
-        loadIncidentTypesAndCache(drawIncidentTypesToAdd);
+        loadIncidentTypes(drawIncidentTypesToAdd);
         loadAllFieldReports(renderFieldReportData);
 
         // for a new incident
@@ -216,23 +216,6 @@ function renderFieldReportData() {
 
 let personnel = null;
 
-function loadPersonnelAndCache(success) {
-    const cached = localLoadPersonnel();
-
-    function loadedPersonnel() {
-        localCachePersonnel(personnel);
-        success();
-    }
-
-    if (cached == null) {
-        loadPersonnel(loadedPersonnel);
-    } else {
-        personnel = cached;
-        success();
-    }
-}
-
-
 function loadPersonnel(success) {
     function ok(data, status, xhr) {
         const _personnel = {};
@@ -275,33 +258,11 @@ function localCachePersonnel(personnel) {
 }
 
 
-function localLoadPersonnel() {
-    return cacheGet("personnel");
-}
-
-
 //
 // Load incident types
 //
 
 let incidentTypes = null;
-
-
-function loadIncidentTypesAndCache(success) {
-    const cached = localLoadIncidentTypes();
-
-    function loadedIncidentTypes() {
-        localCacheIncidentTypes(incidentTypes);
-        success();
-    }
-
-    if (cached == null) {
-        loadIncidentTypes(loadedIncidentTypes);
-    } else {
-        incidentTypes = cached;
-        success();
-    }
-}
 
 
 function loadIncidentTypes(success) {
@@ -334,11 +295,6 @@ function localCacheIncidentTypes(incidentTypes) {
         return;
     }
     cacheSet("incident_types", incidentTypes, 20 /* minutes */);
-}
-
-
-function localLoadIncidentTypes() {
-    return cacheGet("incident_types");
 }
 
 

@@ -211,6 +211,7 @@ class APIApplication:
         )
 
     @router.route(_unprefix(URLs.personnel), methods=("HEAD", "GET"))
+    @static
     async def personnelResource(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Personnel endpoint.
@@ -243,6 +244,7 @@ class APIApplication:
         )
 
     @router.route(_unprefix(URLs.incidentTypes), methods=("HEAD", "GET"))
+    @static
     async def incidentTypesResource(
         self, request: IRequest
     ) -> KleinSynchronousRenderable:

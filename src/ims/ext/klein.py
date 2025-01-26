@@ -89,9 +89,13 @@ else:
     from uuid import uuid4
 
     _staticETag = uuid4().hex
-    _maxAge = 60 * 60  # 60 minutes
+    _maxAge = 60 * 20  # 20 minutes
 
-_cacheControl = f"max-age={_maxAge}"
+# Technically only some of our resources should be private, such
+# as the personnel and incident_types endpoints, but there's
+# minimal downside  (and less code complexity) in just making them
+# all private.
+_cacheControl = f"max-age={_maxAge}, private"
 
 
 def static(f: KleinRouteHandler) -> KleinRouteHandler:
