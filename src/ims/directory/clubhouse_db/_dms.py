@@ -130,34 +130,37 @@ class DutyManagementSystem:
     async def _queryPositionsByID(self) -> Mapping[str, Position]:
         self._log.info("Retrieving positions from Duty Management System...")
 
-        rows = await self.dbpool.runQuery(
-            """
-            select id, title from position where all_rangers = 0
-            """
-        )
+        sql = """
+        select id, title from position where all_rangers = 0
+        """
+        self._log.debug("EXECUTE DMS: {sql}", sql=sql)
+        rows = await self.dbpool.runQuery(sql)
 
         return {id: Position(positionID=id, name=title) for (id, title) in rows}
 
     async def _queryRangersByID(self) -> Mapping[str, Ranger]:
         self._log.info("Retrieving personnel from Duty Management System...")
 
-        rows = await self.dbpool.runQuery(
-            """
-            select
-                id,
-                callsign, email,
-                status, on_site, password
-            from person
-            where status in ('active', 'inactive', 'vintage', 'auditor')
-            """
-        )
+        sql = """
+        select
+            id,
+            callsign,
+            email,
+            status,
+            on_site,
+            password
+        from person
+        where status in ('active', 'inactive', 'vintage', 'auditor')
+        """
+        self._log.debug("EXECUTE DMS: {sql}", sql=sql)
+        rows = await self.dbpool.runQuery(sql)
 
         return {
             directoryID: Ranger(
                 handle=handle,
                 status=statusFromID(status),
                 email=(email,),
-                enabled=bool(enabled),
+                onsite=bool(onsite),
                 directoryID=directoryID,
                 password=password,
             )
@@ -166,7 +169,7 @@ class DutyManagementSystem:
                 handle,
                 email,
                 status,
-                enabled,
+                onsite,
                 password,
             ) in rows
         }

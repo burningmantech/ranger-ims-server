@@ -500,7 +500,7 @@ def rangers(draw: Callable[..., Any]) -> Ranger:
         handle=draw(rangerHandles()),
         status=draw(sampled_from(RangerStatus)),
         email=draw(lists(emails())),
-        enabled=draw(booleans()),
+        onsite=draw(booleans()),
         directoryID=draw(one_of(none(), text())),
         password=draw(one_of(none(), text())),
     )

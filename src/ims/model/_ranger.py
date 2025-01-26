@@ -74,7 +74,7 @@ class Ranger(ReplaceMixIn):
     # email is not fed out via the personnel endpoint, but we need it in the server
     # in order to permit authentication using email address rather than handle.
     email: frozenset[str] = field(converter=freezeStrings, default=frozenset[str]())
-    enabled: bool
+    onsite: bool
     directoryID: str | None
     password: str | None = field(
         order=False, repr=lambda _p: "\N{ZIPPER-MOUTH FACE}", default=None
