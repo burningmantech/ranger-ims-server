@@ -359,8 +359,6 @@ class AuthProvider:
                 # this ACL is irrelevant, because the user is offsite
                 continue
 
-            assert a.validity == AccessValidity.always
-
             if a.expression == "*":
                 return True
 
