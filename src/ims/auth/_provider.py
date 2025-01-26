@@ -315,6 +315,18 @@ class AuthProvider:
                 session = request.getSession()
                 user = getattr(session, "user", None)
 
+            # Twisted doesn't use modern security features on its session cookie, but
+            # it really should. That cookie authenticates the user in all requests
+            # after login, so it should be treated with sensitivity.
+            cookies = getattr(request, "cookies", [])
+            for i in range(len(cookies)):
+                if b"TWISTED_SESSION" not in cookies[i]:
+                    continue
+                if b"SameSite" not in cookies[i]:
+                    cookies[i] += b"; SameSite=lax"
+                if b"HttpOnly" not in cookies[i]:
+                    cookies[i] += b"; HttpOnly"
+
             request.user = user  # type: ignore[attr-defined]
 
     def authenticateRequest(self, request: IRequest) -> None:
