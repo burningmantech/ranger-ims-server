@@ -500,6 +500,58 @@ class AuthProviderTests(TestCase):
         "unimplemented"
     )
 
+    def test_enhanceSessionCookie_normal(self) -> None:
+        """
+        Test _enhanceSessionCookie case where the function does alter
+        the TWISTED_SESSION cookie.
+        """
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
+        request = MockReq(
+            None,
+            {},
+            cookies=[
+                b"TWISTED_SESSION=abc",
+            ],
+        )
+        provider._enhanceSessionCookie(request)
+        self.assertEqual(
+            request.cookies,
+            [
+                b"TWISTED_SESSION=abc; SameSite=lax; HttpOnly",
+            ],
+        )
+
+    def test_enhanceSessionCookie_unchanged(self) -> None:
+        """
+        Test _enhanceSessionCookie cases where the function will
+        leave the cookies unchanged.
+        """
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
+        request = MockReq(
+            None,
+            {},
+            cookies=[
+                b"SOME_OTHER_COOKIE=blah",
+                b"TWISTED_SESSION=abc; SameSite=none; HttpOnly=Nope",
+            ],
+        )
+        provider._enhanceSessionCookie(request)
+        self.assertEqual(
+            request.cookies,
+            [
+                b"SOME_OTHER_COOKIE=blah",
+                b"TWISTED_SESSION=abc; SameSite=none; HttpOnly=Nope",
+            ],
+        )
+
     def test_jsonWebKey(self) -> None:
         """
         AuthProvider._jsonWebKey generates a JWT secret.
@@ -944,11 +996,17 @@ class AuthProviderTests(TestCase):
 
 
 class MockReq(Request):
-    def __init__(self, user: TestUser | None, headers: Mapping[str, str]) -> None:
+    def __init__(
+        self,
+        user: TestUser | None,
+        headers: Mapping[str, str],
+        cookies: list[bytes] | None = None,
+    ) -> None:
         super().__init__(DummyChannel(), False)
         self.user = user  # type: ignore[assignment]
         self.headers = headers
         self.authorizations = Authorization.none
+        self.cookies = cookies  # type: ignore[assignment]
 
     def getHeader(self, key: AnyStr) -> AnyStr | None:
         return self.headers.get(str(key))  # type: ignore[return-value]
