@@ -302,6 +302,22 @@ class AuthProvider:
             groups=tuple(IMSGroupID(gid) for gid in claims.ranger_positions.split(",")),
         )
 
+    def _enhanceSessionCookie(self, request: IRequest) -> None:
+        """
+        Set some additional features on the Twisted Session cookie.
+
+        That cookie is used to authenticate the user on all requests after login, so
+        it's important to protect it as best as we can from XSRF or XSS.
+        """
+        cookies = getattr(request, "cookies", [])
+        for i in range(len(cookies)):
+            if b"TWISTED_SESSION" not in cookies[i]:
+                continue
+            if b"SameSite" not in cookies[i]:
+                cookies[i] += b"; SameSite=lax"
+            if b"HttpOnly" not in cookies[i]:
+                cookies[i] += b"; HttpOnly"
+
     def checkAuthentication(self, request: IRequest) -> None:
         """
         Check whether the request has previously been authenticated, and if so,
@@ -314,6 +330,8 @@ class AuthProvider:
             if user is None:
                 session = request.getSession()
                 user = getattr(session, "user", None)
+
+            self._enhanceSessionCookie(request)
 
             request.user = user  # type: ignore[attr-defined]
 
