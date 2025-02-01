@@ -257,6 +257,25 @@ function initSearchField() {
 
     // Search field handling
     const searchInput = document.getElementById("search_input");
+
+    const searchAndDraw = function () {
+        let q = searchInput.value;
+        let isRegex = false;
+        if (q.startsWith("/") && q.endsWith("/")) {
+            isRegex = true;
+            q = q.slice(1, q.length-1);
+        }
+        fieldReportsTable.search(q, isRegex);
+        fieldReportsTable.draw();
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryString = urlParams.get("q");
+    if (queryString) {
+        searchInput.value = queryString;
+        searchAndDraw();
+    }
+
     searchInput.addEventListener("keyup",
         function () {
             // Delay the search in case the user is still typing.
@@ -264,11 +283,7 @@ function initSearchField() {
             // very slow, and it's super annoying for a user when
             // the page fully locks up before they're done typing.
             clearTimeout(_searchDelayTimer);
-            const val = this.value;
-            _searchDelayTimer = setTimeout(function () {
-                fieldReportsTable.search(val);
-                fieldReportsTable.draw();
-            }, _searchDelayMs);
+            _searchDelayTimer = setTimeout(searchAndDraw, _searchDelayMs);
         }
     );
     searchInput.addEventListener("keydown",
@@ -288,6 +303,12 @@ function initSearchField() {
                         urlReplace(url_viewFieldReports) + val,
                         "Field_Report:" + val,
                     );
+                }
+                // Redirect to a bookmarkable URL that shows the results for the search query.
+                if (val !== "") {
+                    window.location.replace(
+                        `${urlReplace(url_viewFieldReports)}?q=${encodeURIComponent(val)}`,
+                    )
                 }
             }
         }
