@@ -365,6 +365,25 @@ function initSearchField() {
 
     // Search field handling
     const searchInput = document.getElementById("search_input");
+
+    const searchAndDraw = function () {
+        let q = searchInput.value;
+        let isRegex = false;
+        if (q.startsWith("/") && q.endsWith("/")) {
+            isRegex = true;
+            q = q.slice(1, q.length-1);
+        }
+        incidentsTable.search(q, isRegex);
+        incidentsTable.draw();
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryString = urlParams.get("q");
+    if (queryString) {
+        searchInput.value = queryString;
+        searchAndDraw();
+    }
+
     searchInput.addEventListener("keyup",
         function () {
             // Delay the search in case the user is still typing.
@@ -372,11 +391,7 @@ function initSearchField() {
             // very slow, and it's super annoying for a user when
             // the page fully locks up before they're done typing.
             clearTimeout(_searchDelayTimer);
-            const val = this.value;
-            _searchDelayTimer = setTimeout(function () {
-                incidentsTable.search(val);
-                incidentsTable.draw();
-            }, _searchDelayMs);
+            _searchDelayTimer = setTimeout(searchAndDraw, _searchDelayMs);
         }
     );
     searchInput.addEventListener("keydown",
@@ -397,14 +412,12 @@ function initSearchField() {
                         "Incident:" + eventID + "#" + val,
                     );
                 }
-                // TODO(srabraham): this works, but I'm not sure yet if it's useful enough to include.
-                //
-                // // If there's exactly one visible Incident given the current search filters, then go to it.
-                // const rowsVisible = incidentsTable.rows({search:'applied'});
-                // if (rowsVisible.count() === 1) {
-                //     const targetIncident = rowsVisible.data()[0].number;
-                //     window.location = urlReplace(url_viewIncidentNumber).replace("<number>", targetIncident);
-                // }
+                // Redirect to a bookmarkable URL that shows the results for the search query.
+                if (val !== "") {
+                    window.location.replace(
+                        `${viewIncidentsURL}?q=${encodeURIComponent(val)}`,
+                    )
+                }
             }
         }
     );

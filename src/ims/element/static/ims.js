@@ -552,7 +552,7 @@ function fieldReportAsString(report) {
 }
 
 
-// Return all user-entered report text for a given incident.
+// Return all user-entered report text for a given incident as a single string.
 function reportTextFromIncident(incident) {
     const texts = [];
 
@@ -584,7 +584,7 @@ function reportTextFromIncident(incident) {
         }
     }
 
-    return texts.join("");
+    return texts.join(" ");
 }
 
 
