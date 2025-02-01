@@ -17,6 +17,13 @@ Each month below should look like the following, using the same ordering for the
 ### Fixed
 -->
 
+## 2025-02
+
+### Added
+
+- Started allowing searches using regular expressions on the Incidents and Field Reports pages, mostly to support "OR"-based queries. https://github.com/burningmantech/ranger-ims-server/issues/1570
+- Created the ability to save a search query as part of an Incidents or Field Reports page URL so that it can be bookmarked. https://github.com/burningmantech/ranger-ims-server/issues/1570
+
 ## 2025-01
 
 <!-- TODO: document keyboard shortcut updates, once they've settled down a bit -->
@@ -29,6 +36,7 @@ Each month below should look like the following, using the same ordering for the
 - Started Field Report numbering from 1 each event, as we already did for Incidents. https://github.com/burningmantech/ranger-ims-server/pull/1506
 - Enhanced the "permission denied" error page, to make it more descriptive for when we block access for an authenticated Ranger. https://github.com/burningmantech/ranger-ims-server/pull/1530
 - Stopped showing Ranger legal names in IMS; started linking from Ranger handles into Clubhouse person pages instead. https://github.com/burningmantech/ranger-ims-server/issues/1536
+- Switched from LocalStorage caching of Incident Types and Personnel to HTTP caching. https://github.com/burningmantech/ranger-ims-server/pull/1561
 
 ### Added
 
@@ -43,11 +51,12 @@ Each month below should look like the following, using the same ordering for the
 ### Removed
 
 - Dropped "\*\*"-style ACLs, which we didn't use and didn't actually work at all. https://github.com/burningmantech/ranger-ims-server/pull/1553
-- Removed JavaScript dependency on lscache; replaced it with simple in-house caching. https://github.com/burningmantech/ranger-ims-server/pull/1558
+- Dropped lscache frontend dependency. https://github.com/burningmantech/ranger-ims-server/pull/1558 https://github.com/burningmantech/ranger-ims-server/pull/1561
 
 ### Fixed
 
 - Removed confusing messaging from login screen when a user was already logged in. https://github.com/burningmantech/ranger-ims-server/pull/1511 https://github.com/burningmantech/ranger-ims-server/issues/1508
+- Made the session cookie use more secure by adding a SameSite value and setting HttpOnly. https://github.com/burningmantech/ranger-ims-server/pull/1563
 
 ## 2024-12
 
