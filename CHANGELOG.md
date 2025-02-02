@@ -19,14 +19,18 @@ Each month below should look like the following, using the same ordering for the
 
 ## 2025-02
 
+<!-- TODO: document keyboard shortcut updates, once they've settled down a bit -->
+
 ### Added
 
 - Started allowing searches using regular expressions on the Incidents and Field Reports pages, mostly to support "OR"-based queries. https://github.com/burningmantech/ranger-ims-server/issues/1570
-- Created the ability to save a search query as part of an Incidents or Field Reports page URL so that it can be bookmarked. https://github.com/burningmantech/ranger-ims-server/issues/1570
+- Created the ability to have a search query as part of an Incidents or Field Reports page URL. This allows bookmarking. https://github.com/burningmantech/ranger-ims-server/issues/1570
+
+### Removed
+
+- Dropped Incident "priority" from the UI, since almost no one was using it. https://github.com/burningmantech/ranger-ims-server/issues/1574
 
 ## 2025-01
-
-<!-- TODO: document keyboard shortcut updates, once they've settled down a bit -->
 
 ### Changed
 
