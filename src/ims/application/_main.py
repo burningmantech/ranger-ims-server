@@ -31,7 +31,7 @@ from twisted.web.static import File
 import ims.element
 from ims.config import Configuration, URLs
 from ims.ext.json_ext import jsonTextFromObject
-from ims.ext.klein import ContentType, HeaderName
+from ims.ext.klein import ContentType, HeaderName, static
 
 from ._api import APIApplication
 from ._auth import AuthApplication
@@ -126,6 +126,7 @@ class MainApplication:
         return redirect(request, URLs.app)
 
     @router.route(URLs.static, branch=True)
+    @static
     def staticEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Return endpoint for static resources collection.
