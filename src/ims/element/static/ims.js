@@ -386,35 +386,6 @@ function selectOptionWithValue(select, value) {
 // Incident data
 //
 
-// Look up the name of a priority given its number (1-5).
-function priorityNameFromNumber(number) {
-    switch (number) {
-        case 1: return "High";
-        case 2: return "High";
-        case 3: return "Normal";
-        case 4: return "Low";
-        case 5: return "Low︎";
-        default:
-            console.warn("Unknown incident priority number: " + number);
-            return undefined;
-    }
-}
-
-
-// Look up the glyph for a priority given its number (1-5).
-function priorityIconFromNumber(number) {
-    switch (number) {
-        case 1: return '↑';
-        case 2: return '↑';
-        case 3: return '';
-        case 4: return '↓';
-        case 5: return '↓';
-        default:
-            console.warn("Unknown incident priority number: " + number);
-            return undefined;
-  }
-}
-
 
 // Look up a state's name given its ID.
 function stateNameFromID(stateID) {
@@ -650,19 +621,6 @@ function renderIncidentNumber(incidentNumber, type, incident) {
         case "type":
         case "sort":
             return incidentNumber;
-    }
-    return undefined;
-}
-
-function renderPriority(priorityNumber, type, incident) {
-    switch (type) {
-        case "display":
-            return priorityIconFromNumber(priorityNumber);
-        case "filter":
-            return priorityNameFromNumber(priorityNumber);
-        case "type":
-        case "sort":
-            return priorityNumber;
     }
     return undefined;
 }

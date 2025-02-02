@@ -21,16 +21,16 @@
     </div>
   </div>
 
-  <!-- Incident number, state, priority -->
+  <!-- Incident number, state -->
 
   <div class="row py-1">
-    <div class="col-sm-4 py-1">
+    <div class="col-sm-6 py-1">
       <div class="input-group">
         <label class="control-label input-group-text">IMS #</label>
         <span id="incident_number" class="form-control form-control-static"/>
       </div>
     </div>
-    <div class="col-sm-4 py-1">
+    <div class="col-sm-6 py-1">
       <div class="input-group">
         <label for="incident_state" class="control-label input-group-text">State</label>
         <select
@@ -43,20 +43,6 @@
           <option value="dispatched">Dispatched</option>
           <option value="on_scene">On Scene</option>
           <option value="closed">Closed</option>
-        </select>
-      </div>
-    </div>
-    <div class="col-sm-4 py-1">
-      <div class="input-group">
-        <label for="incident_priority" class="control-label input-group-text">Priority</label>
-        <select
-                id="incident_priority"
-                class="form-control form-select form-select-sm auto-width"
-                onchange="editPriority()"
-        >
-          <option value="1">High</option>
-          <option value="3">Normal</option>
-          <option value="5">Low</option>
         </select>
       </div>
     </div>

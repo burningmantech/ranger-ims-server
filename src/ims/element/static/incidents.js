@@ -242,28 +242,20 @@ function initDataTables() {
                 "cellType": "th",
             },
             {   // 1
-                "name": "incident_priority",
-                "className": "incident_priority text-center",
-                "data": "priority",
-                "defaultContent": null,
-                "searchable": false,
-                "render": renderPriority,
-            },
-            {   // 2
                 "name": "incident_created",
                 "className": "incident_created text-center",
                 "data": "created",
                 "defaultContent": null,
                 "render": renderDate,
             },
-            {   // 3
+            {   // 2
                 "name": "incident_state",
                 "className": "incident_state text-center",
                 "data": "state",
                 "defaultContent": null,
                 "render": renderState,
             },
-            {   // 4
+            {   // 3
                 "name": "incident_ranger_handles",
                 "className": "incident_ranger_handles",
                 "data": "ranger_handles",
@@ -271,14 +263,14 @@ function initDataTables() {
                 "render": renderSafeSorted,
                 "width": "6em",
             },
-            {   // 5
+            {   // 4
                 "name": "incident_location",
                 "className": "incident_location",
                 "data": "location",
                 "defaultContent": "",
                 "render": renderLocation,
             },
-            {   // 6
+            {   // 5
                 "name": "incident_types",
                 "className": "incident_types",
                 "data": "incident_types",
@@ -286,7 +278,7 @@ function initDataTables() {
                 "render": renderSafeSorted,
                 "width": "5em",
             },
-            {   // 7
+            {   // 6
                 "name": "incident_summary",
                 "className": "incident_summary",
                 "data": "summary",
@@ -295,8 +287,7 @@ function initDataTables() {
             },
         ],
         "order": [
-            [1, "asc"],
-            [2, "dsc"],
+            [1, "dsc"],
         ],
         "createdRow": function (row, incident, index) {
             row.addEventListener("click", function (e) {
