@@ -259,6 +259,7 @@ function initSearchField() {
     const searchInput = document.getElementById("search_input");
 
     const searchAndDraw = function () {
+        pushWindowState();
         let q = searchInput.value;
         let isRegex = false;
         if (q.startsWith("/") && q.endsWith("/")) {
@@ -303,12 +304,6 @@ function initSearchField() {
                         urlReplace(url_viewFieldReports) + val,
                         "Field_Report:" + val,
                     );
-                }
-                // Redirect to a bookmarkable URL that shows the results for the search query.
-                if (val !== "") {
-                    window.location.replace(
-                        `${urlReplace(url_viewFieldReports)}?q=${encodeURIComponent(val)}`,
-                    )
                 }
             }
         }
@@ -408,4 +403,23 @@ function showRows(rowsToShow) {
 
     fieldReportsTable.page.len(rowsToShow);
     fieldReportsTable.draw()
+}
+
+
+//
+// Update the page URL based on the search input and other filters.
+//
+
+function pushWindowState() {
+    const newParams = [];
+
+    const searchVal = document.getElementById("search_input").value;
+    if (searchVal) {
+        newParams.push(["q", searchVal]);
+    }
+
+    // Next step is to create search params for the other filters too
+
+    const newURL = `${urlReplace(url_viewFieldReports)}?${new URLSearchParams(newParams).toString()}`;
+    window.history.replaceState(null, null, newURL);
 }
