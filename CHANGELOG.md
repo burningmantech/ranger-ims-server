@@ -25,10 +25,12 @@ Each month below should look like the following, using the same ordering for the
 
 - Started allowing searches using regular expressions on the Incidents and Field Reports pages, mostly to support "OR"-based queries. https://github.com/burningmantech/ranger-ims-server/issues/1570
 - Created the ability to have a search query as part of an Incidents or Field Reports page URL. This allows bookmarking. https://github.com/burningmantech/ranger-ims-server/issues/1570
+- Put all the table filters (state, type, rows, days-ago) into the URLs, making all of those bookmarkable, in addition to search. https://github.com/burningmantech/ranger-ims-server/issues/1570
 
 ### Removed
 
 - Dropped Incident "priority" from the UI, since almost no one was using it. https://github.com/burningmantech/ranger-ims-server/issues/1574
+- Removed the "show all" keyboard shortcut for Incidents and Field Reports pages, since the new bookmarkable filtered views make such a shortcut unnecessary. https://github.com/burningmantech/ranger-ims-server/issues/1570
 
 ## 2025-01
 

@@ -17,7 +17,6 @@
           <p class="mt-2 mb-0">Keyboard shortcuts</p>
           <ul>
             <li><code>n</code>: create new Incident <br/></li>
-            <li><code>a</code>: show all Incidents <br/></li>
             <li><code>/</code>: jump to search field <br/></li>
           </ul>
           <p class="mt-2 mb-0">In the search field</p>
@@ -61,13 +60,13 @@
         <span class="selection">All</span>
       </button>
       <ul class="dropdown-menu">
-        <li id="show_state_all" onclick="showState('all');">
+        <li id="show_state_all" onclick="showState('all', true);">
           <a href="#" class="name dropdown-item">All States</a>
         </li>
-        <li id="show_state_open" onclick="showState('open');">
+        <li id="show_state_open" onclick="showState('open', true);">
           <a href="#" class="name dropdown-item">Open</a>
         </li>
-        <li id="show_state_active" onclick="showState('active');">
+        <li id="show_state_active" onclick="showState('active', true);">
           <a href="#" class="name dropdown-item">Active</a>
         </li>
       </ul>
@@ -83,19 +82,19 @@
         <span class="selection">All Days</span>
       </button>
       <ul class="dropdown-menu">
-        <li id="show_days_all" onclick="showDays(null);">
+        <li id="show_days_all" onclick="showDays('all', true);">
           <a href="#" class="name dropdown-item">All Days</a>
         </li>
-        <li id="show_days_0" onclick="showDays(0);">
+        <li id="show_days_0" onclick="showDays(0, true);">
           <a href="#" class="name dropdown-item">Today</a>
         </li>
-        <li id="show_days_1" onclick="showDays(1);">
+        <li id="show_days_1" onclick="showDays(1, true);">
           <a href="#" class="name dropdown-item">Last 2 Days</a>
         </li>
-        <li id="show_days_2" onclick="showDays(2);">
+        <li id="show_days_2" onclick="showDays(2, true);">
           <a href="#" class="name dropdown-item">Last 3 Days</a>
         </li>
-        <li id="show_days_3" onclick="showDays(3);">
+        <li id="show_days_3" onclick="showDays(3, true);">
           <a href="#" class="name dropdown-item">Last 4 Days</a>
         </li>
       </ul>
@@ -110,7 +109,7 @@
         <span class="selection">All Types</span>
       </button>
       <ul id="ul_show_type" class="dropdown-menu">
-        <li id="show_type_all" onclick="showType(null);">
+        <li id="show_type_all" onclick="showType('all', true);">
           <a href="#" class="name dropdown-item">All Types</a>
         </li>
         <!-- Additional li will be inserted here by JQuery -->
@@ -126,16 +125,16 @@
         <span class="selection">All Rows</span>
       </button>
       <ul class="dropdown-menu">
-        <li id="show_rows_all" onclick="showRows(null);">
+        <li id="show_rows_all" onclick="showRows('all', true);">
           <a href="#" class="name dropdown-item">All Rows</a>
         </li>
-        <li id="show_rows_25" onclick="showRows(  25);">
+        <li id="show_rows_25" onclick="showRows(  25, true);">
           <a href="#" class="name dropdown-item">25 Rows</a>
         </li>
-        <li id="show_rows_50" onclick="showRows(  50);">
+        <li id="show_rows_50" onclick="showRows(  50, true);">
           <a href="#" class="name dropdown-item">50 Rows</a>
         </li>
-        <li id="show_rows_100" onclick="showRows( 100);">
+        <li id="show_rows_100" onclick="showRows( 100, true);">
           <a href="#" class="name dropdown-item">100 Rows</a>
         </li>
       </ul>
