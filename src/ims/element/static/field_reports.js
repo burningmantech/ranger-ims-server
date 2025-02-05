@@ -46,11 +46,6 @@ function initFieldReportsPage() {
             if (e.key.toLowerCase() === "n") {
                 document.getElementById("new_field_report").click();
             }
-            // a --> show all for this event
-            if (e.key.toLowerCase() === "a") {
-                showDays(null);
-                showRows(null);
-            }
             // TODO: should there also be a shortcut to show the default filters?
         });
         document.getElementById("helpModal").addEventListener("keydown", function(e) {
@@ -233,10 +228,12 @@ function initTableButtons() {
         .children(".col-sm-6:first")
         .replaceWith($("#button_container"));
 
+    const urlParams = new URLSearchParams(window.location.search);
+
     // Set button defaults
 
-    showDays(null);
-    showRows(25);
+    showDays(urlParams.get("days")??defaultDaysBack, false);
+    showRows(urlParams.get("rows")??defaultRows, false);
 }
 
 
@@ -353,9 +350,12 @@ function initSearch() {
 //
 
 let _showModifiedAfter = null;
+let _showDaysBack = null;
+const defaultDaysBack = "all";
 
-function showDays(daysBackToShow) {
-    const id = (daysBackToShow == null) ? "all" : daysBackToShow.toString();
+function showDays(daysBackToShow, replaceState) {
+    const id = daysBackToShow.toString();
+    _showDaysBack = daysBackToShow;
 
     const menu = $("#show_days");
     const item = $("#show_days_" + id);
@@ -366,7 +366,7 @@ function showDays(daysBackToShow) {
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);
 
-    if (daysBackToShow == null) {
+    if (daysBackToShow === "all") {
         _showModifiedAfter = null;
     } else {
         const after = new Date();
@@ -377,6 +377,10 @@ function showDays(daysBackToShow) {
         _showModifiedAfter = after;
     }
 
+    if (replaceState) {
+        replaceWindowState();
+    }
+
     fieldReportsTable.draw();
 }
 
@@ -385,8 +389,12 @@ function showDays(daysBackToShow) {
 // Show rows button handling
 //
 
-function showRows(rowsToShow) {
-    const id = (rowsToShow == null) ? "all" : rowsToShow.toString();
+let _showRows = null;
+const defaultRows = 25;
+
+function showRows(rowsToShow, replaceState) {
+    const id = rowsToShow.toString();
+    _showRows = rowsToShow;
 
     const menu = $("#show_rows");
     const item = $("#show_rows_" + id);
@@ -397,8 +405,12 @@ function showRows(rowsToShow) {
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);
 
-    if (rowsToShow == null) {
+    if (rowsToShow === "all") {
         rowsToShow = -1;
+    }
+
+    if (replaceState) {
+        replaceWindowState();
     }
 
     fieldReportsTable.page.len(rowsToShow);
@@ -410,12 +422,18 @@ function showRows(rowsToShow) {
 // Update the page URL based on the search input and other filters.
 //
 
-function pushWindowState() {
+function replaceWindowState() {
     const newParams = [];
 
     const searchVal = document.getElementById("search_input").value;
     if (searchVal) {
         newParams.push(["q", searchVal]);
+    }
+    if (_showDaysBack != null && _showDaysBack !== defaultDaysBack) {
+        newParams.push(["days", _showDaysBack]);
+    }
+    if (_showRows != null && _showRows !== defaultRows) {
+        newParams.push(["rows", _showRows]);
     }
 
     // Next step is to create search params for the other filters too

@@ -46,13 +46,6 @@ function initIncidentsPage() {
             if (e.key.toLowerCase() === "n") {
                 document.getElementById("new_incident").click();
             }
-            // a --> show all for this event
-            if (e.key.toLowerCase() === "a") {
-                showState("all");
-                showDays(null);
-                showRows(null);
-                showType("all");
-            }
             // TODO: should there also be a shortcut to show the default filters?
         });
 
@@ -324,18 +317,24 @@ function initTableButtons() {
         const type = allIncidentTypes[i];
         const $a = $("<a>", {class: "name dropdown-item", href:"#"});
         $a.text(type.toString());
-        const $li = $("<li>", {id: "show_type_" + i, onclick: "showType(" + i + ")"});
+        const $li = $("<li>", {id: "show_type_" + i, onclick: "showType(" + i + ", true)"});
         $li.append($a);
         $typeFilter.append($li);
     }
 
+    const urlParams = new URLSearchParams(window.location.search);
 
     // Set button defaults
 
-    showState("open");
-    showDays(null);
-    showRows(25);
-    showType("all");
+    const type = urlParams.get("type");
+    if (type && allIncidentTypes.indexOf(type) !== -1) {
+        showType(allIncidentTypes.indexOf(type), false);
+    } else {
+        showType(defaultType, false);
+    }
+    showState(urlParams.get("state")??defaultState, false);
+    showDays(urlParams.get("days")??defaultDaysBack, false);
+    showRows(urlParams.get("rows")??defaultRows, false);
 }
 
 
@@ -358,7 +357,7 @@ function initSearchField() {
     const searchInput = document.getElementById("search_input");
 
     const searchAndDraw = function () {
-        pushWindowState();
+        replaceWindowState();
         let q = searchInput.value;
         let isRegex = false;
         if (q.startsWith("/") && q.endsWith("/")) {
@@ -483,8 +482,9 @@ function initSearch() {
 //
 
 let _showState = null;
+const defaultState = "open";
 
-function showState(stateToShow) {
+function showState(stateToShow, replaceState) {
     const menu = $("#show_state");
     const item = $("#show_state_" + stateToShow);
 
@@ -496,6 +496,10 @@ function showState(stateToShow) {
 
     _showState = stateToShow;
 
+    if (replaceState) {
+        replaceWindowState();
+    }
+
     incidentsTable.draw();
 }
 
@@ -505,9 +509,12 @@ function showState(stateToShow) {
 //
 
 let _showModifiedAfter = null;
+let _showDaysBack = null;
+const defaultDaysBack = "all";
 
-function showDays(daysBackToShow) {
-    const id = (daysBackToShow == null) ? "all" : daysBackToShow.toString();
+function showDays(daysBackToShow, replaceState) {
+    const id = daysBackToShow.toString();
+    _showDaysBack = daysBackToShow;
 
     const menu = $("#show_days");
     const item = $("#show_days_" + id);
@@ -518,7 +525,7 @@ function showDays(daysBackToShow) {
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);
 
-    if (daysBackToShow == null) {
+    if (daysBackToShow === "all") {
         _showModifiedAfter = null;
     } else {
         const after = new Date();
@@ -527,6 +534,10 @@ function showDays(daysBackToShow) {
         after.setSeconds(0);
         after.setDate(after.getDate()-daysBackToShow);
         _showModifiedAfter = after;
+    }
+
+    if (replaceState) {
+        replaceWindowState();
     }
 
     incidentsTable.draw();
@@ -540,10 +551,11 @@ function showDays(daysBackToShow) {
 //  "all" or null (meaning show everything)
 //  a numeric index into allIncidentTypes
 let _showType = null;
+const defaultType = "all";
 
-function showType(typeToShow) {
+function showType(typeToShow, replaceState) {
     // see _showType above for values of "typeToShow"
-    const id = typeToShow??"all";
+    const id = typeToShow??defaultType;
 
     const $menu = $("#show_type");
     const $item = $("#show_type_" + id);
@@ -556,6 +568,10 @@ function showType(typeToShow) {
 
     _showType = typeToShow;
 
+    if (replaceState) {
+        replaceWindowState();
+    }
+
     incidentsTable.draw();
 }
 
@@ -563,8 +579,12 @@ function showType(typeToShow) {
 // Show rows button handling
 //
 
-function showRows(rowsToShow) {
-    const id = (rowsToShow == null) ? "all" : rowsToShow.toString();
+let _showRows = null;
+const defaultRows = 25;
+
+function showRows(rowsToShow, replaceState) {
+    const id = rowsToShow.toString();
+    _showRows = rowsToShow;
 
     const menu = $("#show_rows");
     const item = $("#show_rows_" + id);
@@ -575,8 +595,12 @@ function showRows(rowsToShow) {
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);
 
-    if (rowsToShow == null) {
+    if (rowsToShow === "all") {
         rowsToShow = -1;
+    }
+
+    if (replaceState) {
+        replaceWindowState();
     }
 
     incidentsTable.page.len(rowsToShow);
@@ -587,12 +611,24 @@ function showRows(rowsToShow) {
 // Update the page URL based on the search input and other filters.
 //
 
-function pushWindowState() {
+function replaceWindowState() {
     const newParams = [];
 
     const searchVal = document.getElementById("search_input").value;
     if (searchVal) {
         newParams.push(["q", searchVal]);
+    }
+    if (_showType != null && _showType !== defaultType) {
+        newParams.push(["type", allIncidentTypes[_showType]]);
+    }
+    if (_showState != null && _showState !== defaultState) {
+        newParams.push(["state", _showState]);
+    }
+    if (_showDaysBack != null && _showDaysBack !== defaultDaysBack) {
+        newParams.push(["days", _showDaysBack]);
+    }
+    if (_showRows != null && _showRows !== defaultRows) {
+        newParams.push(["rows", _showRows]);
     }
 
     // Next step is to create search params for the other filters too
