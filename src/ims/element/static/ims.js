@@ -337,6 +337,14 @@ function loadBody(success) {
         if (typeof eventID !== "undefined") {
             $(".event-id").text(eventID);
             $(".event-id").addClass("active-event");
+
+            const eventIncidents = document.getElementById("active-event-incidents");
+            eventIncidents.setAttribute("href", urlReplace(url_viewIncidents));
+            eventIncidents.classList.remove("hidden");
+
+            const eventFieldReports = document.getElementById("active-event-field-reports");
+            eventFieldReports.setAttribute("href", urlReplace(url_viewFieldReports));
+            eventFieldReports.classList.remove("hidden");
         }
 
         if (success) {
