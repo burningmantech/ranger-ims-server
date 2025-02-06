@@ -15,6 +15,7 @@
 
 .navbar-brand {
   --bs-navbar-brand-font-size: 1rem;
+  --bs-navbar-brand-margin-end: 0.5rem;
   padding-bottom: 0;
 }
 
