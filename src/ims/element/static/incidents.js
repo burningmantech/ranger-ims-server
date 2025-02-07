@@ -337,12 +337,13 @@ function initTableButtons() {
     const types = fragmentParams.getAll("type");
     const validTypes = [];
     for (const t of types) {
-        console.log(`reading type ${t} checking`);
         if (t && allIncidentTypes.indexOf(t) !== -1) {
             validTypes.push(t);
         }
     }
-    setCheckedTypes(validTypes);
+    if (validTypes.length > 0) {
+        setCheckedTypes(validTypes);
+    }
     showCheckedTypes(false);
     showState(fragmentParams.get("state")??defaultState, false);
     showDays(fragmentParams.get("days")??defaultDaysBack, false);
@@ -469,7 +470,9 @@ function initSearch() {
                 return false
             }
 
-            if (_showTypes && _showTypes.length > 0) {
+            // don't bother with filtering, which may be computationally expensive,
+            // if all types seem to be selected
+            if (_showTypes.length !== allIncidentTypes.length) {
                 const intersect = Object.values(incident.incident_types).filter(t => _showTypes.includes(t)).length > 0;
                 if (!intersect) {
                     return false;
@@ -557,12 +560,21 @@ let _showTypes = [];
 
 function setCheckedTypes(types) {
     for (const $type of $('#ul_show_type > a')) {
-        if (types.length === 0 || types.includes($type.innerHTML)) {
+        if (types.includes($type.innerHTML)) {
             $type.classList.add("dropdown-item-checked")
         } else {
             $type.classList.remove("dropdown-item-checked")
         }
     }
+}
+
+function toggleCheckAllTypes() {
+    if (_showTypes.length === 0 || _showTypes.length < allIncidentTypes.length) {
+        setCheckedTypes(allIncidentTypes);
+    } else {
+        setCheckedTypes([]);
+    }
+    showCheckedTypes(true);
 }
 
 function readCheckedTypes() {
@@ -578,8 +590,10 @@ function readCheckedTypes() {
 function showCheckedTypes(replaceState) {
     _showTypes = readCheckedTypes();
 
-    const numTypes = _showTypes.length === allIncidentTypes.length ? "All" : _showTypes.length;
-    document.getElementById("show_type").textContent = `${numTypes} Types`;
+    const showTypeText = _showTypes.length === allIncidentTypes.length
+        ? "All Types"
+        : `Types (${_showTypes.length})`;
+    document.getElementById("show_type").textContent = showTypeText;
 
     if (replaceState) {
         replaceWindowState();
