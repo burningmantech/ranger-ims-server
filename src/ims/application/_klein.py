@@ -189,7 +189,7 @@ def friendlyNotAuthorizedResponse(request: IRequest) -> KleinSynchronousRenderab
             f"    {request.uri.decode('utf-8')}\n"
             f"\n"
         )
-        if not user.active:
+        if not user.onsite:
             message += (
                 "Please note that most IMS permissions are granted to Rangers only "
                 "while they are actively working on the playa. You are currently "
