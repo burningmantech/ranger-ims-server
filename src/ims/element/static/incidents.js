@@ -312,29 +312,41 @@ function initTableButtons() {
         .children(".col-sm-6:first")
         .replaceWith($("#button_container"));
 
+    $(document).on('click', '.dropdown-item-checkable', function(event) {
+        event.preventDefault();
+        $(this).toggleClass('dropdown-item-checked');
+        showCheckedTypes(true);
+    });
+
     const $typeFilter = $("#ul_show_type");
     for (const i in allIncidentTypes) {
         const type = allIncidentTypes[i];
-        const $a = $("<a>", {class: "name dropdown-item", href:"#"});
+        const $a = $("<a>", {
+            class: "dropdown-item dropdown-item-checkable dropdown-item-checked",
+            href:"#",
+        });
         $a.text(type.toString());
-        const $li = $("<li>", {id: "show_type_" + i, onclick: "showType(" + i + ", true)"});
-        $li.append($a);
-        $typeFilter.append($li);
+        $typeFilter.append($a);
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
+    const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
+    const fragmentParams = new URLSearchParams(fragment);
 
     // Set button defaults
 
-    const type = urlParams.get("type");
-    if (type && allIncidentTypes.indexOf(type) !== -1) {
-        showType(allIncidentTypes.indexOf(type), false);
-    } else {
-        showType(defaultType, false);
+    const types = fragmentParams.getAll("type");
+    const validTypes = [];
+    for (const t of types) {
+        console.log(`reading type ${t} checking`);
+        if (t && allIncidentTypes.indexOf(t) !== -1) {
+            validTypes.push(t);
+        }
     }
-    showState(urlParams.get("state")??defaultState, false);
-    showDays(urlParams.get("days")??defaultDaysBack, false);
-    showRows(urlParams.get("rows")??defaultRows, false);
+    setCheckedTypes(validTypes);
+    showCheckedTypes(false);
+    showState(fragmentParams.get("state")??defaultState, false);
+    showDays(fragmentParams.get("days")??defaultDaysBack, false);
+    showRows(fragmentParams.get("rows")??defaultRows, false);
 }
 
 
@@ -368,8 +380,9 @@ function initSearchField() {
         incidentsTable.draw();
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const queryString = urlParams.get("q");
+    const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
+    const fragmentParams = new URLSearchParams(fragment);
+    const queryString = fragmentParams.get("q");
     if (queryString) {
         searchInput.value = queryString;
         searchAndDraw();
@@ -456,19 +469,11 @@ function initSearch() {
                 return false
             }
 
-            switch (_showType) {
-                case null:
-                    // fallthrough
-                case "all":
-                    break;
-                default:
-                    if (_showType >= 0 && _showType < allIncidentTypes.length) {
-                        const st = allIncidentTypes[_showType];
-                        if (!(incident.incident_types??[]).includes(st)) {
-                            return false;
-                        }
-                    }
-                    break;
+            if (_showTypes && _showTypes.length > 0) {
+                const intersect = Object.values(incident.incident_types).filter(t => _showTypes.includes(t)).length > 0;
+                if (!intersect) {
+                    return false;
+                }
             }
 
             return true;
@@ -547,26 +552,34 @@ function showDays(daysBackToShow, replaceState) {
 // Show type button handling
 //
 
-// _showType will be one of:
-//  "all" or null (meaning show everything)
-//  a numeric index into allIncidentTypes
-let _showType = null;
-const defaultType = "all";
+// list of Incident Types to show, in text form
+let _showTypes = [];
 
-function showType(typeToShow, replaceState) {
-    // see _showType above for values of "typeToShow"
-    const id = typeToShow??defaultType;
+function setCheckedTypes(types) {
+    for (const $type of $('#ul_show_type > a')) {
+        if (types.length === 0 || types.includes($type.innerHTML)) {
+            $type.classList.add("dropdown-item-checked")
+        } else {
+            $type.classList.remove("dropdown-item-checked")
+        }
+    }
+}
 
-    const $menu = $("#show_type");
-    const $item = $("#show_type_" + id);
+function readCheckedTypes() {
+    const checkedTypes = [];
+    for (const $type of $('#ul_show_type > a')) {
+        if ($type.classList.contains("dropdown-item-checked")) {
+            checkedTypes.push($type.innerHTML);
+        }
+    }
+    return checkedTypes;
+}
 
-    // Get title from selected item
-    const selection = $item.children(".name").html();
+function showCheckedTypes(replaceState) {
+    _showTypes = readCheckedTypes();
 
-    // Update menu title to reflect selected item
-    $menu.children(".selection").html(selection);
-
-    _showType = typeToShow;
+    const numTypes = _showTypes.length === allIncidentTypes.length ? "All" : _showTypes.length;
+    document.getElementById("show_type").textContent = `${numTypes} Types`;
 
     if (replaceState) {
         replaceWindowState();
@@ -618,8 +631,10 @@ function replaceWindowState() {
     if (searchVal) {
         newParams.push(["q", searchVal]);
     }
-    if (_showType != null && _showType !== defaultType) {
-        newParams.push(["type", allIncidentTypes[_showType]]);
+    if (_showTypes != null && _showTypes.length !== allIncidentTypes.length) {
+        for (const t of _showTypes) {
+            newParams.push(["type", t]);
+        }
     }
     if (_showState != null && _showState !== defaultState) {
         newParams.push(["state", _showState]);
@@ -631,8 +646,6 @@ function replaceWindowState() {
         newParams.push(["rows", _showRows]);
     }
 
-    // Next step is to create search params for the other filters too
-
-    const newURL = `${viewIncidentsURL}?${new URLSearchParams(newParams).toString()}`;
+    const newURL = `${viewIncidentsURL}#${new URLSearchParams(newParams).toString()}`;
     window.history.replaceState(null, null, newURL);
 }

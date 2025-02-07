@@ -316,3 +316,14 @@ h1 {
 .hidden {
   display: none !important;
 }
+
+.dropdown-item-checkable {
+  padding: var(--bs-dropdown-item-padding-y) 1.5rem;
+}
+
+.dropdown-item-checked::before {
+  position: absolute;
+  left: .4rem;
+  content: '✓';
+  font-weight: 600;
+}

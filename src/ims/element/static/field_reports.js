@@ -228,12 +228,13 @@ function initTableButtons() {
         .children(".col-sm-6:first")
         .replaceWith($("#button_container"));
 
-    const urlParams = new URLSearchParams(window.location.search);
+    const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
+    const fragmentParams = new URLSearchParams(fragment);
 
     // Set button defaults
 
-    showDays(urlParams.get("days")??defaultDaysBack, false);
-    showRows(urlParams.get("rows")??defaultRows, false);
+    showDays(fragmentParams.get("days")??defaultDaysBack, false);
+    showRows(fragmentParams.get("rows")??defaultRows, false);
 }
 
 
@@ -256,7 +257,7 @@ function initSearchField() {
     const searchInput = document.getElementById("search_input");
 
     const searchAndDraw = function () {
-        pushWindowState();
+        replaceWindowState();
         let q = searchInput.value;
         let isRegex = false;
         if (q.startsWith("/") && q.endsWith("/")) {
@@ -267,8 +268,9 @@ function initSearchField() {
         fieldReportsTable.draw();
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const queryString = urlParams.get("q");
+    const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
+    const fragmentParams = new URLSearchParams(fragment);
+    const queryString = fragmentParams.get("q");
     if (queryString) {
         searchInput.value = queryString;
         searchAndDraw();
@@ -438,6 +440,6 @@ function replaceWindowState() {
 
     // Next step is to create search params for the other filters too
 
-    const newURL = `${urlReplace(url_viewFieldReports)}?${new URLSearchParams(newParams).toString()}`;
+    const newURL = `${urlReplace(url_viewFieldReports)}#${new URLSearchParams(newParams).toString()}`;
     window.history.replaceState(null, null, newURL);
 }
