@@ -39,6 +39,7 @@ from ims.directory import (
     DirectoryUser,
     IMSDirectory,
     IMSGroupID,
+    IMSTeamID,
     IMSUser,
     IMSUserID,
 )
@@ -127,6 +128,8 @@ class JSONWebTokenClaims:
     ranger_on_site: bool = field(validator=instance_of(bool))
     # positions
     ranger_positions: str = field(validator=instance_of(str))
+    # teams
+    ranger_teams: str = field(validator=instance_of(str))
 
     def validateIssuer(self, issuer: str) -> None:
         """
@@ -257,6 +260,7 @@ class AuthProvider:
                 preferred_username=user.shortNames[0],
                 ranger_on_site=user.onsite,
                 ranger_positions=",".join(user.groups),
+                ranger_teams=",".join(user.teams),
             ),
             key=self._jsonWebKey,
         )
@@ -300,6 +304,7 @@ class AuthProvider:
             shortNames=(claims.preferred_username,),
             onsite=claims.ranger_on_site,
             groups=tuple(IMSGroupID(gid) for gid in claims.ranger_positions.split(",")),
+            teams=tuple(IMSTeamID(tid) for tid in claims.ranger_teams.split(",")),
         )
 
     def _enhanceSessionCookie(self, request: IRequest) -> None:
@@ -386,6 +391,10 @@ class AuthProvider:
 
             for group in user.groups:
                 if a.expression == "position:" + group:
+                    return True
+
+            for team in user.teams:
+                if a.expression == "team:" + team:
                     return True
 
         return False

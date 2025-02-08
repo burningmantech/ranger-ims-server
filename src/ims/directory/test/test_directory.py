@@ -32,6 +32,7 @@ from ims.model.strategies import rangerHandles, rangers
 from .._directory import (
     DirectoryError,
     IMSGroupID,
+    IMSTeamID,
     IMSUser,
     RangerDirectory,
     _hash,
@@ -53,6 +54,14 @@ def groupIDs(draw: Callable[..., Any]) -> Iterable[IMSGroupID]:
 
 
 @composite
+def teamIDs(draw: Callable[..., Any]) -> Iterable[IMSTeamID]:
+    return cast(
+        Iterable[IMSTeamID],
+        iterables(IMSTeamID(draw(text(min_size=1)))),
+    )
+
+
+@composite
 def uniqueRangerLists(draw: Callable[..., Any]) -> RangerDirectory:
     return cast(
         RangerDirectory,
@@ -65,6 +74,7 @@ def imsUsers(draw: Callable[..., Any]) -> IMSUser:
     return userFromRanger(
         ranger=draw(rangers()),
         groups=draw(groupIDs()),
+        teams=draw(teamIDs()),
     )
 
 

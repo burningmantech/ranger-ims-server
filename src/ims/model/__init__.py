@@ -34,6 +34,7 @@ from ._priority import IncidentPriority
 from ._ranger import Ranger, RangerStatus
 from ._report import FieldReport
 from ._state import IncidentState
+from ._team import Team
 from ._type import IncidentType, KnownIncidentType
 
 
@@ -57,6 +58,7 @@ __all__ = (
     "RangerStatus",
     "ReportEntry",
     "RodGarettAddress",
+    "Team",
     "TextOnlyAddress",
     "normalizeDateTime",
 )

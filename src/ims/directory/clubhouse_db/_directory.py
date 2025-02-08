@@ -24,7 +24,7 @@ from typing import ClassVar
 from attrs import frozen
 from twisted.logger import Logger
 
-from ims.directory import IMSDirectory, IMSGroupID, IMSUser, userFromRanger
+from ims.directory import IMSDirectory, IMSGroupID, IMSTeamID, IMSUser, userFromRanger
 from ims.model import Ranger
 
 from ._dms import DutyManagementSystem
@@ -63,6 +63,7 @@ class DMSDirectory(IMSDirectory):
                 return None
 
         positions = tuple(await dms.positions())
+        teams = tuple(await dms.teams())
 
         groups = tuple(
             IMSGroupID(position.name)
@@ -70,4 +71,8 @@ class DMSDirectory(IMSDirectory):
             if ranger in position.members
         )
 
-        return userFromRanger(ranger=ranger, groups=groups)
+        imsTeams = tuple(
+            IMSTeamID(team.name) for team in teams if ranger in team.members
+        )
+
+        return userFromRanger(ranger=ranger, groups=groups, teams=imsTeams)

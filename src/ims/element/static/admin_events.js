@@ -156,7 +156,7 @@ function addAccess(sender) {
     }
 
     const validExpression = newExpression === "**" || newExpression === "*" ||
-        newExpression.startsWith("person:") || newExpression.startsWith("position:");
+        newExpression.startsWith("person:") || newExpression.startsWith("position:") || newExpression.startsWith("team:");
     if (!validExpression) {
         const confirmed = confirm(
             "WARNING: '" + newExpression + "' does not look like a valid ACL " +

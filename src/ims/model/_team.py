@@ -1,3 +1,5 @@
+# -*- test-case-name: ranger-ims-server.model.test.test_ranger -*-
+
 ##
 # See the file COPYRIGHT for copyright information.
 #
@@ -15,32 +17,27 @@
 ##
 
 """
-Incident Management System directory service integration.
+Team
 """
 
-from ._directory import (
-    DirectoryError,
-    DirectoryUser,
-    IMSDirectory,
-    IMSGroupID,
-    IMSTeamID,
-    IMSUser,
-    IMSUserID,
-    hashPassword,
-    userFromRanger,
-    verifyPassword,
-)
+from attrs import field, frozen
+
+from ._replace import ReplaceMixIn
 
 
-__all__ = (
-    "DirectoryError",
-    "DirectoryUser",
-    "IMSDirectory",
-    "IMSGroupID",
-    "IMSTeamID",
-    "IMSUser",
-    "IMSUserID",
-    "hashPassword",
-    "userFromRanger",
-    "verifyPassword",
-)
+__all__ = ()
+
+
+@frozen(kw_only=True, order=True)
+class Team(ReplaceMixIn):
+    """
+    Team
+
+    A team is a collection of Rangers.
+    """
+
+    name: str
+    members: frozenset[str] = field(order=False)
+
+    def __str__(self) -> str:
+        return self.name

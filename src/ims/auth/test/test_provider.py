@@ -51,6 +51,7 @@ from ims.store.sqlite import DataStore as SQLiteDataStore
 
 from ...directory import (
     IMSGroupID,
+    IMSTeamID,
     IMSUser,
     IMSUserID,
     hashPassword,
@@ -86,6 +87,7 @@ class TestUser(IMSUser):
     shortNames: Sequence[str]
     onsite: bool
     groups: Sequence[IMSGroupID]
+    teams: Sequence[IMSTeamID]
     plainTextPassword: str | None
 
     @property
@@ -104,6 +106,10 @@ def testUsers(draw: Callable[..., Any]) -> TestUser:
         groups=tuple(
             IMSGroupID(g)
             for g in draw(text(min_size=1, alphabet=ascii_letters + digits + "_"))
+        ),
+        teams=tuple(
+            IMSTeamID(t)
+            for t in draw(text(min_size=1, alphabet=ascii_letters + digits + "_"))
         ),
         plainTextPassword=draw(one_of(none(), text())),
     )
@@ -133,6 +139,7 @@ class TestTests(TestCase):
         lists(text(min_size=1), min_size=1),
         booleans(),
         lists(text(min_size=1)),
+        lists(text(min_size=1)),
         text(),
     )
     def test_testUser(
@@ -141,16 +148,19 @@ class TestTests(TestCase):
         shortNames: Sequence[str],
         active: bool,
         _groups: Sequence[str],
+        _teams: Sequence[str],
         password: str,
     ) -> None:
         uid = IMSUserID(_uid)
         groups = tuple(IMSGroupID(g) for g in _groups)
+        teams = tuple(IMSTeamID(t) for t in _teams)
 
         user = TestUser(
             uid=uid,
             shortNames=shortNames,
             onsite=active,
             groups=groups,
+            teams=teams,
             plainTextPassword=password,
         )
 
@@ -158,6 +168,7 @@ class TestTests(TestCase):
         self.assertEqual(tuple(user.shortNames), tuple(shortNames))
         self.assertEqual(user.onsite, active)
         self.assertEqual(tuple(user.groups), tuple(groups))
+        self.assertEqual(tuple(user.teams), tuple(teams))
         self.assertEqual(user.plainTextPassword, password)
 
         if user.plainTextPassword is not None:
@@ -209,6 +220,7 @@ class JSONWebTokenClaimsTests(TestCase):
             "preferred_username": "some-user",
             "ranger_on_site": True,
             "ranger_positions": "some-position,another-position",
+            "ranger_teams": "some-team,another-team",
         }
         defaults.update(kwargs)
         return JSONWebTokenClaims(**defaults)
@@ -263,13 +275,15 @@ class JSONWebTokenTests(TestCase):
     #     "preferred_username": "some-user",
     #     "ranger_on_site": true,
     #     "ranger_positions": "some-position,another-position"
+    #     "ranger_teams: "some-team,another-team"
     # }
     tokenText = (
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1pc3N1ZXIiLC"
-        "JpYXQiOjEwMDAwMDAwMDAsImV4cCI6NTAwMDAwMDAwMCwic3ViIjoic29tZS11a"
-        "WQiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzb21lLXVzZXIiLCJyYW5nZXJfb25f"
-        "c2l0ZSI6dHJ1ZSwicmFuZ2VyX3Bvc2l0aW9ucyI6InNvbWUtcG9zaXRpb24sYW5"
-        "vdGhlci1wb3NpdGlvbiJ9.xFkqa5ZSejA0RGmwuPtiYwjsPyjubXwKwdqhuwOiS8w"
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjUwMDAwMDAwMDAsIml"
+        "hdCI6MTAwMDAwMDAwMCwiaXNzIjoibXktaXNzdWVyIiwicHJlZmVycmVkX3VzZXJ"
+        "uYW1lIjoic29tZS11c2VyIiwicmFuZ2VyX29uX3NpdGUiOnRydWUsInJhbmdlcl9"
+        "wb3NpdGlvbnMiOiJzb21lLXBvc2l0aW9uLGFub3RoZXItcG9zaXRpb24iLCJyYW5"
+        "nZXJfdGVhbXMiOiJzb21lLXRlYW0sYW5vdGhlci10ZWFtIiwic3ViIjoic29tZS1"
+        "1aWQifQ.ScII96a00V8Xal_JZGDTKeM6ky_1GkUfY69IL7DXOdU"
     )
     tokenSecret = "sekret"
 
@@ -289,6 +303,7 @@ class JSONWebTokenTests(TestCase):
         self.assertEqual(claims.preferred_username, "some-user")
         self.assertEqual(claims.ranger_on_site, True)
         self.assertEqual(claims.ranger_positions, "some-position,another-position")
+        self.assertEqual(claims.ranger_teams, "some-team,another-team")
 
     def test_fromClaims(self) -> None:
         """
@@ -304,8 +319,9 @@ class JSONWebTokenTests(TestCase):
                 preferred_username="some-user",
                 ranger_on_site=True,
                 ranger_positions="some-position,another-position",
+                ranger_teams="some-team,another-team",
             ),
-            key=JSONWebKey.fromSecret("blah"),
+            key=JSONWebKey.fromSecret("sekret"),
         )
         claims = jwt.claims
 
@@ -316,6 +332,7 @@ class JSONWebTokenTests(TestCase):
         self.assertEqual(claims.preferred_username, "some-user")
         self.assertEqual(claims.ranger_on_site, True)
         self.assertEqual(claims.ranger_positions, "some-position,another-position")
+        self.assertEqual(claims.ranger_teams, "some-team,another-team")
 
     def test_fromText_wrongKey(self) -> None:
         """
@@ -340,6 +357,7 @@ class JSONWebTokenTests(TestCase):
             preferred_username="some-user",
             ranger_on_site=True,
             ranger_positions="some-position,another-position",
+            ranger_teams="some-team,another-team",
         )
         key = JSONWebKey.fromSecret(self.tokenSecret)
         jwt = JSONWebToken.fromClaims(claims, key=key)
@@ -460,6 +478,7 @@ class AuthProviderTests(TestCase):
         self.assertEqual(claims.preferred_username, user.shortNames[0])
         self.assertEqual(claims.ranger_on_site, user.onsite)
         self.assertEqual(claims.ranger_positions, ",".join(user.groups))
+        self.assertEqual(claims.ranger_teams, ",".join(user.teams))
 
     @given(
         testUsers(),
@@ -699,6 +718,30 @@ class AuthProviderTests(TestCase):
                 )
             )
 
+    @given(testUsers())
+    def test_matchACL_team(self, user: IMSUser) -> None:
+        """
+        AuthProvider._matchACL matches team access with a matching user.
+        """
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
+
+        for teamID in user.teams:
+            self.assertTrue(
+                provider._matchACL(
+                    user,
+                    (
+                        AccessEntry(
+                            expression=f"team:{teamID}",
+                            validity=AccessValidity.always,
+                        ),
+                    ),
+                )
+            )
+
     def test_matchACL_person_notOnsite(self) -> None:
         """
         AuthProvider._matchACL won't match for off-site user if on-site required.
@@ -714,6 +757,7 @@ class AuthProviderTests(TestCase):
             shortNames=("Slumber",),
             onsite=False,
             groups=(),
+            teams=(),
             plainTextPassword="some-password",
         )
 
@@ -753,6 +797,7 @@ class AuthProviderTests(TestCase):
             shortNames=("Slumber",),
             onsite=True,
             groups=(),
+            teams=(),
             plainTextPassword="some-password",
         )
         personUser = f"person:{user.shortNames[0]}"
@@ -868,6 +913,7 @@ class AuthProviderTests(TestCase):
             shortNames=("Slumber",),
             onsite=True,
             groups=(),
+            teams=(),
             plainTextPassword="some-password",
         )
         personUser = f"person:{user.shortNames[0]}"
