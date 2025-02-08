@@ -335,14 +335,20 @@ function initTableButtons() {
     // Set button defaults
 
     const types = fragmentParams.getAll("type");
-    const validTypes = [];
-    for (const t of types) {
-        if (t && allIncidentTypes.indexOf(t) !== -1) {
-            validTypes.push(t);
+    if (types.length > 0) {
+        const validTypes = [];
+        let includeBlanks = false;
+        let includeOthers = false;
+        for (const t of types) {
+            if (t && allIncidentTypes.indexOf(t) !== -1) {
+                validTypes.push(t);
+            } else if (t === _blankPlaceholder) {
+                includeBlanks = true;
+            } else if (t === _otherPlaceholder) {
+                includeOthers = true;
+            }
         }
-    }
-    if (validTypes.length > 0) {
-        setCheckedTypes(validTypes);
+        setCheckedTypes(validTypes, includeBlanks, includeOthers);
     }
     showCheckedTypes(false);
     showState(fragmentParams.get("state")??defaultState, false);
@@ -472,9 +478,12 @@ function initSearch() {
 
             // don't bother with filtering, which may be computationally expensive,
             // if all types seem to be selected
-            if (_showTypes.length !== allIncidentTypes.length) {
-                const intersect = Object.values(incident.incident_types).filter(t => _showTypes.includes(t)).length > 0;
-                if (!intersect) {
+            if (!allTypesChecked()) {
+                const rowTypes = Object.values(incident.incident_types);
+                const intersect = rowTypes.filter(t => _showTypes.includes(t)).length > 0;
+                const blankShow = _showBlankType && rowTypes.length === 0;
+                const otherShow = _showOtherType && rowTypes.filter(t => !(allIncidentTypes.includes(t))).length > 0;
+                if (!intersect && !blankShow && !otherShow) {
                     return false;
                 }
             }
@@ -557,10 +566,17 @@ function showDays(daysBackToShow, replaceState) {
 
 // list of Incident Types to show, in text form
 let _showTypes = [];
+let _showBlankType = true;
+let _showOtherType = true;
+// these must match values in incidents_template/template.xhtml
+const _blankPlaceholder = "(blank)";
+const _otherPlaceholder = "(other)";
 
-function setCheckedTypes(types) {
+function setCheckedTypes(types, includeBlanks, includeOthers) {
     for (const $type of $('#ul_show_type > a')) {
-        if (types.includes($type.innerHTML)) {
+        if (types.includes($type.innerHTML)
+            || (includeBlanks && $type.id === "show_blank_type")
+            || (includeOthers && $type.id === "show_other_type")) {
             $type.classList.add("dropdown-item-checked")
         } else {
             $type.classList.remove("dropdown-item-checked")
@@ -570,29 +586,37 @@ function setCheckedTypes(types) {
 
 function toggleCheckAllTypes() {
     if (_showTypes.length === 0 || _showTypes.length < allIncidentTypes.length) {
-        setCheckedTypes(allIncidentTypes);
+        setCheckedTypes(allIncidentTypes, true, true);
     } else {
-        setCheckedTypes([]);
+        setCheckedTypes([], false, false);
     }
     showCheckedTypes(true);
 }
 
 function readCheckedTypes() {
-    const checkedTypes = [];
+    _showTypes = [];
     for (const $type of $('#ul_show_type > a')) {
-        if ($type.classList.contains("dropdown-item-checked")) {
-            checkedTypes.push($type.innerHTML);
+        if ($type.id === "show_blank_type") {
+            _showBlankType = $type.classList.contains("dropdown-item-checked");
+        } else if ($type.id === "show_other_type") {
+            _showOtherType = $type.classList.contains("dropdown-item-checked");
+        } else if ($type.classList.contains("dropdown-item-checked")) {
+            _showTypes.push($type.innerHTML);
         }
     }
-    return checkedTypes;
+}
+
+function allTypesChecked() {
+    return _showTypes.length === allIncidentTypes.length && _showBlankType && _showOtherType;
 }
 
 function showCheckedTypes(replaceState) {
-    _showTypes = readCheckedTypes();
+    readCheckedTypes();
 
-    const showTypeText = _showTypes.length === allIncidentTypes.length
+    const numTypesShown = _showTypes.length + (_showBlankType ? 1 : 0) + (_showOtherType ? 1 : 0);
+    const showTypeText = allTypesChecked()
         ? "All Types"
-        : `Types (${_showTypes.length})`;
+        : `Types (${numTypesShown})`;
     document.getElementById("show_type").textContent = showTypeText;
 
     if (replaceState) {
@@ -645,9 +669,15 @@ function replaceWindowState() {
     if (searchVal) {
         newParams.push(["q", searchVal]);
     }
-    if (_showTypes != null && _showTypes.length !== allIncidentTypes.length) {
+    if (!allTypesChecked()) {
         for (const t of _showTypes) {
             newParams.push(["type", t]);
+        }
+        if (_showBlankType) {
+            newParams.push(["type", _blankPlaceholder]);
+        }
+        if (_showOtherType) {
+            newParams.push(["type", _otherPlaceholder]);
         }
     }
     if (_showState != null && _showState !== defaultState) {
