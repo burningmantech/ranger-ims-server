@@ -58,6 +58,7 @@ from ._priority import IncidentPriority
 from ._ranger import Ranger, RangerStatus
 from ._report import FieldReport
 from ._state import IncidentState
+from ._team import Team
 from ._type import IncidentType, KnownIncidentType
 
 
@@ -90,6 +91,7 @@ __all__ = (
     "rangers",
     "reportEntries",
     "rodGarettAddresses",
+    "teams",
     "textOnlyAddresses",
     "timeZones",
 )
@@ -517,6 +519,20 @@ def positions(draw: Callable[..., Any]) -> Position:
     Strategy that generates :class:`Position` values.
     """
     return Position(
+        name=draw(text(min_size=1)),
+        members=frozenset(draw(lists(rangerHandles()))),
+    )
+
+
+##
+# Team
+##
+@composite
+def teams(draw: Callable[..., Any]) -> Team:
+    """
+    Strategy that generates :class:`Team` values.
+    """
+    return Team(
         name=draw(text(min_size=1)),
         members=frozenset(draw(lists(rangerHandles()))),
     )

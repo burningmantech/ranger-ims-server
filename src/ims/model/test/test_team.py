@@ -15,32 +15,28 @@
 ##
 
 """
-Incident Management System directory service integration.
+Tests for :mod:`ranger-ims-server.model._team`
 """
 
-from ._directory import (
-    DirectoryError,
-    DirectoryUser,
-    IMSDirectory,
-    IMSGroupID,
-    IMSTeamID,
-    IMSUser,
-    IMSUserID,
-    hashPassword,
-    userFromRanger,
-    verifyPassword,
-)
+from hypothesis import given
+
+from ims.ext.trial import TestCase
+
+from .._team import Team
+from ..strategies import teams
 
 
-__all__ = (
-    "DirectoryError",
-    "DirectoryUser",
-    "IMSDirectory",
-    "IMSGroupID",
-    "IMSTeamID",
-    "IMSUser",
-    "IMSUserID",
-    "hashPassword",
-    "userFromRanger",
-    "verifyPassword",
-)
+__all__ = ()
+
+
+class RangerTests(TestCase):
+    """
+    Tests for :class:`Ranger`
+    """
+
+    @given(teams())
+    def test_str(self, team: Team) -> None:
+        """
+        Team renders as a string.
+        """
+        self.assertEqual(str(team), team.name)

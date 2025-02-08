@@ -26,7 +26,7 @@ from typing import NewType, Protocol, cast
 from attrs import field, frozen, mutable
 from bcrypt import gensalt
 
-from ims.model import Position, Ranger
+from ims.model import Position, Ranger, Team
 
 
 __all__ = ()
@@ -34,6 +34,7 @@ __all__ = ()
 
 IMSUserID = NewType("IMSUserID", str)
 IMSGroupID = NewType("IMSGroupID", str)
+IMSTeamID = NewType("IMSTeamID", str)
 
 
 @mutable
@@ -54,6 +55,7 @@ class IMSUser(Protocol):
     shortNames: Sequence[str]
     onsite: bool
     groups: Sequence[IMSGroupID]
+    teams: Sequence[IMSTeamID]
     hashedPassword: str | None
 
 
@@ -67,12 +69,15 @@ class DirectoryUser(IMSUser):
     shortNames: Sequence[str]
     onsite: bool
     groups: Sequence[IMSGroupID]
+    teams: Sequence[IMSTeamID]
     hashedPassword: str | None = field(
         default=None, repr=lambda _p: "\N{ZIPPER-MOUTH FACE}"
     )
 
 
-def userFromRanger(*, ranger: Ranger, groups: Sequence[IMSGroupID]) -> IMSUser:
+def userFromRanger(
+    *, ranger: Ranger, groups: Sequence[IMSGroupID], teams: Sequence[IMSTeamID]
+) -> IMSUser:
     """
     Create an IMS user from a Ranger.
     """
@@ -81,6 +86,7 @@ def userFromRanger(*, ranger: Ranger, groups: Sequence[IMSGroupID]) -> IMSUser:
         shortNames=(ranger.handle,),
         onsite=ranger.onsite,
         groups=tuple(groups),
+        teams=tuple(teams),
         hashedPassword=ranger.password,
     )
 
@@ -119,6 +125,7 @@ class RangerDirectory(IMSDirectory):
     _usersByHandle: dict[str, IMSUser] = field(factory=dict)
     _usersByEmail: dict[str, IMSUser] = field(factory=dict)
     _positionsByHandle: dict[str, Sequence[Position]] = field(factory=dict)
+    _teamsByHandle: dict[str, Sequence[Team]] = field(factory=dict)
 
     def __attrs_post_init__(self) -> None:
         usersByHandle = self._usersByHandle
@@ -139,7 +146,11 @@ class RangerDirectory(IMSDirectory):
                 IMSGroupID(position.name)
                 for position in self._positionsByHandle.get(ranger.handle, ())
             )
-            user = userFromRanger(ranger=ranger, groups=groups)
+            teams = tuple(
+                IMSTeamID(team.name)
+                for team in self._teamsByHandle.get(ranger.handle, ())
+            )
+            user = userFromRanger(ranger=ranger, groups=groups, teams=teams)
 
             usersByHandle[ranger.handle] = user
 
