@@ -23,7 +23,7 @@ Incident
 from collections.abc import Iterable, Sequence
 from datetime import datetime as DateTime
 
-from attrs import field, frozen
+from attrs import converters, field, frozen
 
 from ims.ext.attr import sorted_tuple
 
@@ -53,6 +53,9 @@ class Incident(ReplaceMixIn):
     eventID: str
     number: int
     created: DateTime = field(converter=normalizeDateTime)
+    lastModified: DateTime | None = field(
+        converter=converters.optional(normalizeDateTime)
+    )
     state: IncidentState
     priority: IncidentPriority
     summary: str | None

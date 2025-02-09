@@ -47,6 +47,7 @@ class IncidentJSONKey(Enum):
     eventID = "event"
     number = "number"
     created = "created"
+    lastModified = "last_modified"
     state = "state"
     priority = "priority"
     summary = "summary"
@@ -65,6 +66,7 @@ class IncidentJSONType(Enum):
     eventID = str
     number = int
     created = DateTime
+    lastModified = DateTime | None
     state = IncidentState
     priority = IncidentPriority
     summary = str | None

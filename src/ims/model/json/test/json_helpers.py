@@ -128,6 +128,7 @@ def jsonFromIncident(incident: Incident) -> dict[str, Any]:
         "event": jsonSerialize(incident.eventID),
         "number": jsonSerialize(incident.number),
         "created": jsonSerialize(incident.created),
+        "last_modified": jsonSerialize(incident.lastModified),
         "state": jsonSerialize(incident.state),
         "priority": jsonSerialize(incident.priority),
         "summary": jsonSerialize(incident.summary),

@@ -659,11 +659,17 @@ class DatabaseStore(IMSDataStore):
                     int(val) for val in loads(str(row["FIELD_REPORT_NUMBERS"]))
                 ]
             incidentNumber = cast(int, row["NUMBER"])
+
+            lastModified = self.fromDateTimeValue(row["CREATED"])
+            if reportEntries[incidentNumber]:
+                lastModified = max(re.created for re in reportEntries[incidentNumber])
+
             results.append(
                 Incident(
                     eventID=eventID,
                     number=incidentNumber,
                     created=self.fromDateTimeValue(row["CREATED"]),
+                    lastModified=lastModified,
                     state=self.fromIncidentStateValue(row["STATE"]),
                     priority=self.fromPriorityValue(row["PRIORITY"]),
                     summary=cast(str | None, row["SUMMARY"]),
@@ -715,7 +721,7 @@ class DatabaseStore(IMSDataStore):
 
         txn.execute(self.query.incident_reportEntries.text, parameters)
 
-        reportEntries = (
+        reportEntries = tuple(
             ReportEntry(
                 id=cast(int, row["ID"]),
                 created=self.fromDateTimeValue(row["CREATED"]),
@@ -727,6 +733,10 @@ class DatabaseStore(IMSDataStore):
             for row in txn.fetchall()
             if row["TEXT"]
         )
+
+        lastModified = self.fromDateTimeValue(row["CREATED"])
+        if reportEntries:
+            lastModified = max(re.created for re in reportEntries)
 
         # FIXME: This is because schema thinks concentric is an int
         if row["LOCATION_CONCENTRIC"] is None:
@@ -742,6 +752,7 @@ class DatabaseStore(IMSDataStore):
             eventID=eventID,
             number=incidentNumber,
             created=self.fromDateTimeValue(row["CREATED"]),
+            lastModified=lastModified,
             state=self.fromIncidentStateValue(row["STATE"]),
             priority=self.fromPriorityValue(row["PRIORITY"]),
             summary=cast(str | None, row["SUMMARY"]),

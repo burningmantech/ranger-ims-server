@@ -56,6 +56,7 @@ aNewIncident = Incident(
     eventID=anEvent.id,
     number=0,
     created=DateTime.now(UTC) + TimeDelta(seconds=1),
+    lastModified=DateTime.now(UTC) + TimeDelta(seconds=2),
     state=IncidentState.new,
     priority=IncidentPriority.normal,
     summary="A thing happened",
@@ -70,6 +71,7 @@ anIncident1 = Incident(
     eventID=anEvent.id,
     number=1,
     created=DateTime.now(UTC) + TimeDelta(seconds=2),
+    lastModified=DateTime.now(UTC) + TimeDelta(seconds=3),
     state=IncidentState.new,
     priority=IncidentPriority.normal,
     summary="A thing happened",
@@ -84,6 +86,7 @@ anIncident2 = Incident(
     eventID=anEvent2.id,
     number=325,
     created=DateTime.now(UTC) + TimeDelta(seconds=3),
+    lastModified=DateTime.now(UTC) + TimeDelta(seconds=4),
     state=IncidentState.new,
     priority=IncidentPriority.normal,
     summary="Another thing happened 🙂",
@@ -884,6 +887,10 @@ class DataStoreIncidentTests(DataStoreTests):
                     if store.dateTimesEqual(valueA, valueB):
                         continue
                     messages.append(f"{name} delta: {valueA - valueB}")
+                elif name == "lastModified":
+                    # this field is calculated on read, and shouldn't be equal
+                    # to what was written
+                    continue
                 elif name == "reportEntries":
                     if store.reportEntriesEqual(valueA, valueB, ignoreAutomatic):
                         continue

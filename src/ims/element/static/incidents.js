@@ -242,13 +242,20 @@ function initDataTables() {
                 "render": renderDate,
             },
             {   // 2
+                "name": "incident_last_modified",
+                "className": "incident_last_modified text-center",
+                "data": "last_modified",
+                "defaultContent": null,
+                "render": renderDate,
+            },
+            {   // 3
                 "name": "incident_state",
                 "className": "incident_state text-center",
                 "data": "state",
                 "defaultContent": null,
                 "render": renderState,
             },
-            {   // 3
+            {   // 4
                 "name": "incident_ranger_handles",
                 "className": "incident_ranger_handles",
                 "data": "ranger_handles",
@@ -256,14 +263,14 @@ function initDataTables() {
                 "render": renderSafeSorted,
                 "width": "6em",
             },
-            {   // 4
+            {   // 5
                 "name": "incident_location",
                 "className": "incident_location",
                 "data": "location",
                 "defaultContent": "",
                 "render": renderLocation,
             },
-            {   // 5
+            {   // 6
                 "name": "incident_types",
                 "className": "incident_types",
                 "data": "incident_types",
@@ -271,7 +278,7 @@ function initDataTables() {
                 "render": renderSafeSorted,
                 "width": "5em",
             },
-            {   // 6
+            {   // 7
                 "name": "incident_summary",
                 "className": "incident_summary",
                 "data": "summary",
@@ -294,6 +301,11 @@ function initDataTables() {
                 .setAttribute(
                     "title",
                     fullDateTime.format(Date.parse(incident.created)),
+                );
+            row.getElementsByClassName("incident_last_modified")[0]
+                .setAttribute(
+                    "title",
+                    fullDateTime.format(Date.parse(incident.last_modified)),
                 );
         },
     });
@@ -435,19 +447,6 @@ function initSearchField() {
 //
 
 function initSearch() {
-    function modifiedAfter(incident, timestamp) {
-        if (timestamp < Date.parse(incident.created)) {
-            return true;
-        }
-
-        for (const entry of incident.report_entries??[]) {
-            if (timestamp < Date.parse(entry.created)) {
-                return true;
-            }
-        }
-
-      return false;
-    }
 
     $.fn.dataTable.ext.search.push(
         function(settings, rowData, rowIndex) {
@@ -472,7 +471,7 @@ function initSearch() {
 
             if (
                 _showModifiedAfter != null &&
-                ! modifiedAfter(incident, _showModifiedAfter)
+                Date.parse(incident.last_modified) < _showModifiedAfter
             ) {
                 return false
             }
