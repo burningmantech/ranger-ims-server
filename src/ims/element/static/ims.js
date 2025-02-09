@@ -505,10 +505,7 @@ function incidentAsString(incident) {
     if (incident.number == null) {
         return "New Incident";
     }
-    return (
-        "IMS #" + incident.number + ": " +
-        summarizeIncident(incident)
-    );
+    return `#${incident.number}: ${summarizeIncident(incident)} (${incident.event})`;
 }
 
 
@@ -517,11 +514,8 @@ function fieldReportAsString(report) {
     if (report.number == null) {
         return "New Field Report";
     }
-    return (
-        "FR #" + report.number +
-        " (" + fieldReportAuthor(report) + "): " +
-        summarizeFieldReport(report)
-    );
+    return `FR #${report.number} (${fieldReportAuthor(report)}): ` +
+        `${summarizeFieldReport(report)} (${report.event})`;
 }
 
 

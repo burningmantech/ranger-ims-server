@@ -392,21 +392,23 @@ def incidents(
 
     types = [t.name for t in draw(lists(incidentTypes()))]
 
+    created = draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow))
+    entries = draw(
+        lists(reportEntries(automatic=automatic, beforeNow=beforeNow, fromNow=fromNow))
+    )
+    lastModified = max(re.created for re in entries) if entries else created
     return Incident(
         eventID=event.id,
         number=number,
-        created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
+        created=created,
+        lastModified=lastModified,
         state=draw(incidentStates()),
         priority=draw(incidentPriorities()),
         summary=draw(incidentSummaries()),
         location=draw(locations()),
         rangerHandles=draw(lists(rangerHandles())),
         incidentTypes=types,
-        reportEntries=draw(
-            lists(
-                reportEntries(automatic=automatic, beforeNow=beforeNow, fromNow=fromNow)
-            )
-        ),
+        reportEntries=entries,
         fieldReportNumbers=frozenset(),
     )
 
