@@ -249,15 +249,6 @@ function loadPersonnel(success) {
 }
 
 
-function localCachePersonnel(personnel) {
-    if (personnel == null) {
-        alert("Attempt to cache undefined personnel")
-        return;
-    }
-    cacheSet("personnel", personnel, 20 /* minutes */);
-}
-
-
 //
 // Load incident types
 //
@@ -287,16 +278,6 @@ function loadIncidentTypes(success) {
 
     jsonRequest(url_incidentTypes, null, ok, fail);
 }
-
-
-function localCacheIncidentTypes(incidentTypes) {
-    if (incidentTypes == null) {
-        alert("Attempt to cache undefined incident types")
-        return;
-    }
-    cacheSet("incident_types", incidentTypes, 20 /* minutes */);
-}
-
 
 //
 // Load all field reports

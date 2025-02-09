@@ -5,9 +5,19 @@
 
 <body>
 <div t:render="container">
-  For each event, you can configure access for individuals and for positions.
-  You can also choose when each permission applies, whether it be only
-  when a Ranger is marked on-site in Clubhouse, or all year long (always).
+  <p>For each event, you can configure permissions for individuals, positions, or teams. For example:</p>
+  <ul>
+    <li>person:Tool</li>
+    <li>position:007</li>
+    <li>team:Council</li>
+  </ul>
+  <p>You can also choose when each permission is valid:</p>
+  <ul>
+    <li>Always: valid all year long</li>
+    <li>On-Site: valid only when a matching Ranger is marked "on-site" in Clubhouse</li>
+  </ul>
+  <p><strong>The REQUIRE_ACTIVE flag is unused</strong>, replaced by "on-site" validity.</p>
+
   <div class="row" id="event_access_container">
     <div class="col-sm-12 py-1 event_access">
       <div class="card">
@@ -38,7 +48,7 @@
   </div>
   <div class="row" id="event_new_container">
     <div class="col-sm-12 event_access">
-      <label>Create New Event:</label>
+      <label for="event_add">Create New Event:</label>
       <input
               id="event_add"
               class="form-control input-sm auto-width"

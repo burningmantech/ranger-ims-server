@@ -160,8 +160,9 @@ function addAccess(sender) {
     if (!validExpression) {
         const confirmed = confirm(
             "WARNING: '" + newExpression + "' does not look like a valid ACL " +
-            "expression. Example expressions include 'person:Hubcap' for an individual " +
-            "or 'position:007' for a role. Wildcards are valid too, e.g. '*'\n\n" +
+            "expression. Example expressions include 'person:Hubcap' for an individual, " +
+            "'position:007' for a role, and 'team:Council' for a team. Wildcards are " +
+            "supported as well, e.g. '*'\n\n" +
             "Proceed with firing footgun?"
         );
         if (!confirmed) {
