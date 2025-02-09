@@ -422,6 +422,7 @@ function initSearchField() {
                         viewIncidentsURL + val,
                         "Incident:" + eventID + "#" + val,
                     );
+                    searchInput.value = "";
                 }
             }
         }

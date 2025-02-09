@@ -303,6 +303,7 @@ function initSearchField() {
                         urlReplace(url_viewFieldReports) + val,
                         "Field_Report:" + val,
                     );
+                    searchInput.value = "";
                 }
             }
         }

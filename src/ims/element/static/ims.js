@@ -454,31 +454,25 @@ function stateForIncident(incident) {
 
 // Return a summary for a given incident.
 function summarizeIncident(incident) {
-    const summary = incident.summary;
-    const reportEntries = incident.report_entries;
-
-    if (!summary) {
-        if (!reportEntries) {
-            return "";
-        }
-        // Get the first line of the first report entry.
-        for (const reportEntry of reportEntries) {
-            if (reportEntry.system_entry) {
-                // Don't use a system-generated entry in the summary
-                continue;
-            }
-
-            const lines = reportEntry.text.split("\n");
-            for (const line of lines) {
-                if (line) {
-                    return line;
-                }
-            }
-        }
-        return "";
+    if (incident.summary) {
+        return incident.summary;
     }
 
-    return summary;
+    // Get the first line of the first report entry.
+    for (const reportEntry of incident.report_entries??[]) {
+        if (reportEntry.system_entry) {
+            // Don't use a system-generated entry in the summary
+            continue;
+        }
+
+        const lines = reportEntry.text.split("\n");
+        for (const line of lines) {
+            if (line) {
+                return line;
+            }
+        }
+    }
+    return "";
 }
 
 
@@ -912,7 +906,8 @@ function submitReportEntry() {
         controlHasError($("#report_entry_add"), 1000);
     }
 
-    sendEdits({"report_entries": [{"text": text}]}, ok, fail);
+    // send a dummy ID to appease the JSON parser in the server
+    sendEdits({"report_entries": [{"text": text, "id": -1}]}, ok, fail);
 }
 
 //
