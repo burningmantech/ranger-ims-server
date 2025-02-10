@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # This stage builds the build container.
 # -----------------------------------------------------------------------------
-FROM python:3.13.1-alpine3.20 AS build
+FROM python:3.13.2-alpine3.20 AS build
 
 # Install compiler toolchain and libraries.
 RUN apk add --no-cache build-base libffi-dev libressl-dev
@@ -38,7 +38,7 @@ RUN uv pip --no-progress install \
 # -----------------------------------------------------------------------------
 # This stage builds the application container.
 # -----------------------------------------------------------------------------
-FROM python:3.13.1-alpine3.20 AS application
+FROM python:3.13.2-alpine3.20 AS application
 
 # Paths
 ARG IMS_INSTALL_DIR="/opt/ims"
