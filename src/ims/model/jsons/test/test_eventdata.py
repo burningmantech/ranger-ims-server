@@ -15,46 +15,45 @@
 ##
 
 """
-Tests for :mod:`ranger-ims-server.model.json._report`
+Tests for :mod:`ranger-ims-server.model.jsons._eventdata`
 """
 
 from hypothesis import given
 
 from ims.ext.trial import TestCase
 
-from ..._report import FieldReport
-from ...strategies import fieldReports
+from ..._eventdata import EventData
+from ...strategies import eventDatas
 from .._json import jsonDeserialize, jsonSerialize
-from .json_helpers import jsonFromFieldReport
+from .json_helpers import jsonFromEventData
 
 
 __all__ = ()
 
 
-class FieldReportSerializationTests(TestCase):
+class EventDataSerializationTests(TestCase):
     """
-    Tests for serialization of :class:`FieldReport`
+    Tests for serialization of :class:`EventData`
     """
 
-    @given(fieldReports())
-    def test_serialize(self, report: FieldReport) -> None:
+    @given(eventDatas())
+    def test_serialize(self, eventData: EventData) -> None:
         """
-        :func:`jsonSerialize` serializes the given report.
+        :func:`jsonSerialize` serializes the given event data.
         """
-        self.assertEqual(jsonSerialize(report), jsonFromFieldReport(report))
+        self.assertEqual(jsonSerialize(eventData), jsonFromEventData(eventData))
 
 
-class FieldReportDeserializationTests(TestCase):
+class EventDataDeserializationTests(TestCase):
     """
-    Tests for deserialization of :class:`FieldReport`
+    Tests for deserialization of :class:`EventData`
     """
 
-    @given(fieldReports())
-    def test_deserialize(self, report: FieldReport) -> None:
+    @given(eventDatas())
+    def test_deserialize(self, eventData: EventData) -> None:
         """
-        :func:`jsonDeserialize` returns a report with the correct data.
+        :func:`jsonDeserialize` returns an eventData with the correct data.
         """
         self.assertEqual(
-            jsonDeserialize(jsonFromFieldReport(report), FieldReport),
-            report,
+            jsonDeserialize(jsonFromEventData(eventData), EventData), eventData
         )

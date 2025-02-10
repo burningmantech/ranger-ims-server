@@ -29,9 +29,9 @@ from twisted.web.iweb import IRequest
 from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
 from ims.element.admin.events import AdminEventsPage
+from ims.element.admin.itypes import AdminIncidentTypesPage
 from ims.element.admin.root import AdminRootPage
 from ims.element.admin.streets import AdminStreetsPage
-from ims.element.admin.types import AdminIncidentTypesPage
 from ims.element.incident.incident import IncidentPage
 from ims.element.incident.incident_template import IncidentTemplatePage
 from ims.element.incident.incidents import IncidentsPage

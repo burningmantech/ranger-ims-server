@@ -61,7 +61,7 @@ from ims.model import (
     IncidentState,
     ReportEntry,
 )
-from ims.model.json import (
+from ims.model.jsons import (
     FieldReportJSONKey,
     IncidentJSONKey,
     IncidentPriorityJSONValue,
