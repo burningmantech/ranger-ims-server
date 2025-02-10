@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for :mod:`ranger-ims-server.model.json._json`
+Tests for :mod:`ranger-ims-server.model.jsons._json`
 """
 
 from datetime import datetime as DateTime

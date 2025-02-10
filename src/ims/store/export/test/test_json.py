@@ -35,7 +35,7 @@ from ims.model import (
     KnownIncidentType,
 )
 from ims.model._type import admin, junk
-from ims.model.json import jsonObjectFromModelObject, modelObjectFromJSONObject
+from ims.model.jsons import jsonObjectFromModelObject, modelObjectFromJSONObject
 from ims.model.strategies import imsDatas
 from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore

@@ -36,7 +36,7 @@ from twisted.web.server import Session, Site
 from ims.application import Application
 from ims.config import Configuration
 from ims.directory import hashPassword, verifyPassword
-from ims.model.json import jsonObjectFromModelObject
+from ims.model.jsons import jsonObjectFromModelObject
 from ims.store import IMSDataStore, StorageError
 from ims.store.export import JSONExporter, JSONImporter
 

@@ -1,4 +1,4 @@
-# -*- test-case-name: ranger-ims-server.model.json.test -*-
+# -*- test-case-name: ranger-ims-server.model.jsons.test -*-
 
 ##
 # See the file COPYRIGHT for copyright information.

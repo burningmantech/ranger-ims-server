@@ -30,7 +30,7 @@ from ims.ext.json_ext import (
     objectFromJSONText,
 )
 from ims.model import Event, EventAccess, EventData, IMSData, IncidentType
-from ims.model.json import jsonObjectFromModelObject, modelObjectFromJSONObject
+from ims.model.jsons import jsonObjectFromModelObject, modelObjectFromJSONObject
 
 from .._abc import IMSDataStore
 

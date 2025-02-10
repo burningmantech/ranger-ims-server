@@ -15,7 +15,7 @@
 ##
 
 """
-Tests for :mod:`ranger-ims-server.model.json._event`
+Tests for :mod:`ranger-ims-server.model.jsons._event`
 """
 
 from hypothesis import given
