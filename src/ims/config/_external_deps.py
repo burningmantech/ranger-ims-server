@@ -33,8 +33,8 @@ class ExternalDeps:
     jqueryVersionNumber = "3.1.0"
     jqueryJsIntegrity = "sha512-qzrZqY/kMVCEYeu/gCm8U2800Wz++LTGK4pitW/iswpCbjwxhsmUwleL1YXaHImptCHG0vJwU7Ly7ROw3ZQoww=="  # noqa: E501
 
-    dataTablesVersionNumber = "2.1.8"
-    dataTablesJsIntegrity = "sha512-aB+KD1UH6xhwz0ZLqIGK+if/B83XzgnFzDJtf195axOEqurA7ahWCpl8wgXWVfcMslhnmYigAjYXShrJSlxgWg=="  # noqa: E501
+    dataTablesVersionNumber = "2.2.2"
+    dataTablesJsIntegrity = "sha512-iwuEh+XTZQNzwdjYrqsxyWJXyReKVclGX4D2uGYBGNIR6o0VBwIfeYQv+lQjxmye87K6C6mc7qrqJlCcaeZJhA=="  # noqa: E501
     dataTablesBootstrap5JsIntegrity = "sha512-Cwi0jz7fz7mrX990DlJ1+rmiH/D9/rjfOoEex8C9qrPRDDqwMPdWV7pJFKzhM10gAAPlufZcWhfMuPN699Ej0w=="  # noqa: E501
 
     bootstrapVersion = f"bootstrap-{bootstrapVersionNumber}-dist"
