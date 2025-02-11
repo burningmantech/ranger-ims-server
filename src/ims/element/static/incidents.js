@@ -204,9 +204,11 @@ function initDataTables() {
             "bottomStart": "info",
             "bottomEnd": "paging",
         },
-        "responsive": {
-            "details": false,
-        },
+        // Responsive is too slow to resize when all Incidents are shown.
+        // Decide on this another day.
+        // "responsive": {
+        //     "details": false,
+        // },
         "ajax": {
             "url": dataURL,
             "dataSrc": dataHandler,
@@ -236,14 +238,16 @@ function initDataTables() {
                 "data": "number",
                 "defaultContent": null,
                 "cellType": "th",
+                // "all" class --> very high responsivePriority
             },
-            // {   // 1
-            //     "name": "incident_created",
-            //     "className": "incident_created text-center",
-            //     "data": "created",
-            //     "defaultContent": null,
-            //     "render": renderDate,
-            // },
+            {   // 1
+                "name": "incident_created",
+                "className": "incident_created text-center",
+                "data": "created",
+                "defaultContent": null,
+                "render": renderDate,
+                "responsivePriority": 7,
+            },
             {   // 2
                 "name": "incident_state",
                 "className": "incident_state text-center",
@@ -258,23 +262,9 @@ function initDataTables() {
                 "data": "summary",
                 "defaultContent": "",
                 "render": renderSummary,
+                // "all" class --> very high responsivePriority
             },
             {   // 4
-                "name": "incident_ranger_handles",
-                "className": "incident_ranger_handles",
-                "data": "ranger_handles",
-                "defaultContent": "",
-                "render": renderSafeSorted,
-                "width": "6em",
-            },
-            {   // 5
-                "name": "incident_location",
-                "className": "incident_location",
-                "data": "location",
-                "defaultContent": "",
-                "render": renderLocation,
-            },
-            {   // 6
                 "name": "incident_types",
                 "className": "incident_types",
                 "data": "incident_types",
@@ -283,12 +273,30 @@ function initDataTables() {
                 "width": "5em",
                 "responsivePriority": 4,
             },
+            {   // 5
+                "name": "incident_location",
+                "className": "incident_location",
+                "data": "location",
+                "defaultContent": "",
+                "render": renderLocation,
+                "responsivePriority": 5,
+            },
+            {   // 6
+                "name": "incident_ranger_handles",
+                "className": "incident_ranger_handles",
+                "data": "ranger_handles",
+                "defaultContent": "",
+                "render": renderSafeSorted,
+                "width": "6em",
+                "responsivePriority": 6,
+            },
             {   // 7
                 "name": "incident_last_modified",
                 "className": "incident_last_modified text-center",
                 "data": "last_modified",
                 "defaultContent": null,
                 "render": renderDate,
+                "responsivePriority": 8,
             },
         ],
         "order": [
@@ -302,11 +310,11 @@ function initDataTables() {
                     "Incident:" + eventID + "#" + incident.number,
                 );
             })
-            // row.getElementsByClassName("incident_created")[0]
-            //     .setAttribute(
-            //         "title",
-            //         fullDateTime.format(Date.parse(incident.created)),
-            //     );
+            row.getElementsByClassName("incident_created")[0]
+                .setAttribute(
+                    "title",
+                    fullDateTime.format(Date.parse(incident.created)),
+                );
             row.getElementsByClassName("incident_last_modified")[0]
                 .setAttribute(
                     "title",

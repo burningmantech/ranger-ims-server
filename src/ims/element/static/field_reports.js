@@ -138,9 +138,11 @@ function initDataTables() {
             "bottomStart": "info",
             "bottomEnd": "paging",
         },
-        "responsive": {
-            "details": false,
-        },
+        // Responsive is too slow to resize when all FRs are shown.
+        // Decide on this another day.
+        // "responsive": {
+        //     "details": false,
+        // },
         "ajax": {
             // don't use exclude_system_entries here, since the field reports
             // per-user authorization can exclude field reports entirely from
