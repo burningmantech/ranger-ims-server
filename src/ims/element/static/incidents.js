@@ -204,6 +204,9 @@ function initDataTables() {
             "bottomStart": "info",
             "bottomEnd": "paging",
         },
+        "responsive": {
+            "details": false,
+        },
         "ajax": {
             "url": dataURL,
             "dataSrc": dataHandler,
@@ -229,31 +232,32 @@ function initDataTables() {
         "columns": [
             {   // 0
                 "name": "incident_number",
-                "className": "incident_number text-right",
+                "className": "incident_number text-right all",
                 "data": "number",
                 "defaultContent": null,
                 "cellType": "th",
             },
-            {   // 1
-                "name": "incident_created",
-                "className": "incident_created text-center",
-                "data": "created",
-                "defaultContent": null,
-                "render": renderDate,
-            },
+            // {   // 1
+            //     "name": "incident_created",
+            //     "className": "incident_created text-center",
+            //     "data": "created",
+            //     "defaultContent": null,
+            //     "render": renderDate,
+            // },
             {   // 2
-                "name": "incident_last_modified",
-                "className": "incident_last_modified text-center",
-                "data": "last_modified",
-                "defaultContent": null,
-                "render": renderDate,
-            },
-            {   // 3
                 "name": "incident_state",
                 "className": "incident_state text-center",
                 "data": "state",
                 "defaultContent": null,
                 "render": renderState,
+                "responsivePriority": 3,
+            },
+            {   // 3
+                "name": "incident_summary",
+                "className": "incident_summary all",
+                "data": "summary",
+                "defaultContent": "",
+                "render": renderSummary,
             },
             {   // 4
                 "name": "incident_ranger_handles",
@@ -277,17 +281,18 @@ function initDataTables() {
                 "defaultContent": "",
                 "render": renderSafeSorted,
                 "width": "5em",
+                "responsivePriority": 4,
             },
             {   // 7
-                "name": "incident_summary",
-                "className": "incident_summary",
-                "data": "summary",
-                "defaultContent": "",
-                "render": renderSummary,
+                "name": "incident_last_modified",
+                "className": "incident_last_modified text-center",
+                "data": "last_modified",
+                "defaultContent": null,
+                "render": renderDate,
             },
         ],
         "order": [
-            [1, "dsc"],
+            [0, "dsc"],
         ],
         "createdRow": function (row, incident, index) {
             row.addEventListener("click", function (e) {
@@ -297,11 +302,11 @@ function initDataTables() {
                     "Incident:" + eventID + "#" + incident.number,
                 );
             })
-            row.getElementsByClassName("incident_created")[0]
-                .setAttribute(
-                    "title",
-                    fullDateTime.format(Date.parse(incident.created)),
-                );
+            // row.getElementsByClassName("incident_created")[0]
+            //     .setAttribute(
+            //         "title",
+            //         fullDateTime.format(Date.parse(incident.created)),
+            //     );
             row.getElementsByClassName("incident_last_modified")[0]
                 .setAttribute(
                     "title",

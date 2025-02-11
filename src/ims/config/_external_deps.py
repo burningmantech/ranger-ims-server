@@ -36,6 +36,7 @@ class ExternalDeps:
     dataTablesVersionNumber = "2.2.2"
     dataTablesJsIntegrity = "sha512-iwuEh+XTZQNzwdjYrqsxyWJXyReKVclGX4D2uGYBGNIR6o0VBwIfeYQv+lQjxmye87K6C6mc7qrqJlCcaeZJhA=="  # noqa: E501
     dataTablesBootstrap5JsIntegrity = "sha512-Cwi0jz7fz7mrX990DlJ1+rmiH/D9/rjfOoEex8C9qrPRDDqwMPdWV7pJFKzhM10gAAPlufZcWhfMuPN699Ej0w=="  # noqa: E501
+    dataTablesResponsiveJsIntegrity = "sha512-tdEccTFmVlxHn4PmHcvCyztrY3X8o6UFpe7UH4UgkBD4J+WUecFGwZlDBq8xH8B6mtP5S08W+Kaz1+C7tmCVOA=="  # noqa: E501
 
     bootstrapVersion = f"bootstrap-{bootstrapVersionNumber}-dist"
     jqueryVersion = f"jquery-{jqueryVersionNumber}"

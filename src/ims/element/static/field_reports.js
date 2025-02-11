@@ -138,6 +138,9 @@ function initDataTables() {
             "bottomStart": "info",
             "bottomEnd": "paging",
         },
+        "responsive": {
+            "details": false,
+        },
         "ajax": {
             // don't use exclude_system_entries here, since the field reports
             // per-user authorization can exclude field reports entirely from
@@ -167,7 +170,7 @@ function initDataTables() {
         "columns": [
             {   // 0
                 "name": "field_report_number",
-                "className": "field_report_number text-right",
+                "className": "field_report_number text-right all",
                 "data": "number",
                 "defaultContent": null,
                 "cellType": "th",
@@ -178,6 +181,7 @@ function initDataTables() {
                 "data": "created",
                 "defaultContent": null,
                 "render": renderDate,
+                "responsivePriority": 4,
             },
             {   // 2
                 "name": "field_report_incident",
@@ -185,10 +189,11 @@ function initDataTables() {
                 "data": "incident",
                 "defaultContent": "-",
                 "render": renderIncidentNumber,
+                "responsivePriority": 3,
             },
             {   // 3
                 "name": "field_report_summary",
-                "className": "field_report_summary",
+                "className": "field_report_summary all",
                 "data": "summary",
                 "defaultContent": "",
                 "render": renderSummary,

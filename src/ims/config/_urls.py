@@ -98,6 +98,12 @@ class URLs:
     dataTablesBootstrapJS: ClassVar[URL] = dataTablesBase.child(
         "js", "dataTables.bootstrap5.min.js"
     )
+    dataTablesResponsiveCSS: ClassVar[URL] = dataTablesBase.child(
+        "css", "responsive.dataTables.min.css"
+    )
+    dataTablesResponsiveJS: ClassVar[URL] = dataTablesBase.child(
+        "js", "dataTables.responsive.min.js"
+    )
 
     # Web application
 
