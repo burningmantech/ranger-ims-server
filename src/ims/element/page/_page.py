@@ -74,6 +74,7 @@ class Page(Element):
 
             if name == "dataTables":
                 add("dataTablesBootstrap")
+                add("dataTablesResponsive")
 
         # All pages use Bootstrap
         add("bootstrap")
@@ -91,6 +92,8 @@ class Page(Element):
             return cast(str, self.config.externalDeps.dataTablesJsIntegrity)
         if depName == "dataTablesBootstrap":
             return cast(str, self.config.externalDeps.dataTablesBootstrap5JsIntegrity)
+        if depName == "dataTablesResponsive":
+            return cast(str, self.config.externalDeps.dataTablesResponsiveJsIntegrity)
         if depName == "jquery":
             return cast(str, self.config.externalDeps.jqueryJsIntegrity)
         return None
@@ -143,6 +146,11 @@ class Page(Element):
                 type="text/css",
                 rel="stylesheet",
                 href=urls.dataTablesBootstrapCSS.asText(),
+            ),
+            tags.link(
+                type="text/css",
+                rel="stylesheet",
+                href=urls.dataTablesResponsiveCSS.asText(),
             ),
             tags.link(
                 type="text/css",
