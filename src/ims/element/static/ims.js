@@ -888,12 +888,13 @@ function submitReportEntry() {
         // Clear the report entry
         $textArea.val("");
         controlHasSuccess($textArea, 1000);
-        // Reset the submit button
+        // Reset the submit button and its "disabled" status
         reportEntryEdited();
     }
 
     function fail() {
         const submitButton = $("#report_entry_submit");
+        submitButton.removeClass("disabled");
         submitButton.removeClass("btn-default");
         submitButton.removeClass("btn-warning");
         submitButton.addClass("btn-danger");
@@ -902,6 +903,9 @@ function submitReportEntry() {
 
     // send a dummy ID to appease the JSON parser in the server
     sendEdits({"report_entries": [{"text": text, "id": -1}]}, ok, fail);
+
+    // Disable the submit button to prevent repeat submissions
+    $("#report_entry_submit").addClass("disabled");
 }
 
 //
