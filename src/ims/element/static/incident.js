@@ -111,7 +111,8 @@ function initIncidentPage() {
             }
         });
         $("#report_entry_add")[0].addEventListener("keydown", function (e) {
-            if ((e.ctrlKey || e.altKey) && e.key === "Enter") {
+            const submitEnabled = !$("#report_entry_submit").hasClass("disabled");
+            if (submitEnabled && (e.ctrlKey || e.altKey) && e.key === "Enter") {
                 submitReportEntry();
             }
         });
