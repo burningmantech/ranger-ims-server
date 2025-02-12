@@ -34,6 +34,7 @@ Each month below should look like the following, using the same ordering for the
 - Added "created" timestamp to Incident page, where "priority" used to be. https://github.com/burningmantech/ranger-ims-server/pull/1599
 - Added team-based access control, e.g. to allow all members of Council to have year-round access. https://github.com/burningmantech/ranger-ims-server/pull/1587
 - Created links in the navbar to the current event's Incidents and Field Reports pages. https://github.com/burningmantech/ranger-ims-server/pull/1580
+- Added popup alert when user tries to close an incident that doesn't have any incident type. https://github.com/burningmantech/ranger-ims-server/pull/1600
 
 ### Removed
 

@@ -67,8 +67,10 @@ function loadIncidentTypes(success) {
         window.alert(message);
     }
 
-    jsonRequest(url_incidentTypes, null, okVisible, fail);
-    jsonRequest(url_incidentTypes + "?hidden=true", null, okAll, fail);
+    const headers = {"Cache-Control": "no-cache"};
+
+    jsonRequest(url_incidentTypes, null, okVisible, fail, headers);
+    jsonRequest(url_incidentTypes + "?hidden=true", null, okAll, fail, headers);
 }
 
 
