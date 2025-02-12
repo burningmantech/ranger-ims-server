@@ -867,7 +867,20 @@ function sendEdits(edits, success, error) {
 
 
 function editState() {
-    editFromElement($("#incident_state"), "state");
+    const $state = $("#incident_state");
+
+    if ($state.val() === "closed" && (incident.incident_types??[]).length === 0) {
+        window.alert(
+            "Closing out this incident?\n"+
+            "Please add an incident type!\n\n" +
+            "Special cases:\n" +
+            "    Junk: for erroneously-created Incidents\n" +
+            "    Admin: for administrative information, i.e. not Incidents at all\n\n" +
+            "See the Incident Types help link for more details.\n"
+        );
+    }
+
+    editFromElement($state, "state");
 }
 
 

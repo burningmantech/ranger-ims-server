@@ -178,7 +178,7 @@ function compareReportEntries(a, b) {
 // Request making
 //
 
-function jsonRequest(url, jsonOut, success, error) {
+function jsonRequest(url, jsonOut, success, error, headers) {
     function ok(data, status, xhr) {
         if (success) {
             success(data, status, xhr);
@@ -208,6 +208,9 @@ function jsonRequest(url, jsonOut, success, error) {
         "success": ok,
         "error": fail,
     };
+    if (headers) {
+        args["headers"] = headers;
+    }
 
     if (jsonOut) {
         const jsonText = JSON.stringify(jsonOut);
