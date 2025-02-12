@@ -21,16 +21,16 @@
     </div>
   </div>
 
-  <!-- Incident number, state -->
+  <!-- Incident number, state, created -->
 
   <div class="row py-1">
-    <div class="col-sm-6 py-1">
+    <div class="col-sm-4 py-1">
       <div class="input-group">
         <label class="control-label input-group-text">IMS #</label>
         <span id="incident_number" class="form-control form-control-static"/>
       </div>
     </div>
-    <div class="col-sm-6 py-1">
+    <div class="col-sm-4 py-1">
       <div class="input-group">
         <label for="incident_state" class="control-label input-group-text">State</label>
         <select
@@ -44,6 +44,12 @@
           <option value="on_scene">On Scene</option>
           <option value="closed">Closed</option>
         </select>
+      </div>
+    </div>
+    <div class="col-sm-4 py-1">
+      <div class="input-group">
+        <label class="control-label input-group-text">Created</label>
+        <span id="created_datetime" class="form-control form-control-static"/>
       </div>
     </div>
   </div>

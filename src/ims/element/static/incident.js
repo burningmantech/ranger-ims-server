@@ -395,6 +395,7 @@ function drawIncidentFields() {
     drawTitle();
     drawNumber();
     drawState();
+    drawCreated();
     drawPriority();
     drawSummary();
     drawRangers();
@@ -473,6 +474,20 @@ function drawState() {
     );
 }
 
+
+//
+// Populate created datetime
+//
+
+function drawCreated() {
+    const date = incident.created;
+    if (date == null) {
+        return;
+    }
+    const d = Date.parse(date);
+    $("#created_datetime").text(`${shortDate.format(d)} ${shortTimeSec.format(d)}`);
+    $("#created_datetime").attr("title", fullDateTime.format(d));
+}
 
 //
 // Populate incident priority

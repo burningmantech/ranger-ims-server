@@ -21,17 +21,28 @@ Each month below should look like the following, using the same ordering for the
 
 <!-- TODO: document keyboard shortcut updates, once they've settled down a bit -->
 
+### Changed
+
+- Reordered columns on Incidents page for improved readability and mobile experience. The summary field is now much farther left. We also added a "last modified" column, which may or may not prove useful for people. https://github.com/burningmantech/ranger-ims-server/pull/1589 https://github.com/burningmantech/ranger-ims-server/pull/1595
+
 ### Added
 
 - Started allowing searches using regular expressions on the Incidents and Field Reports pages, mostly to support "OR"-based queries. https://github.com/burningmantech/ranger-ims-server/issues/1570
 - Created the ability to have a search query as part of an Incidents or Field Reports page URL. This allows bookmarking. https://github.com/burningmantech/ranger-ims-server/issues/1570
 - Put all the table filters (state, type, rows, days-ago) into the URLs, making all of those bookmarkable, in addition to search. https://github.com/burningmantech/ranger-ims-server/issues/1570
 - Converted the "show incident type" dropdown into a multiselect, allowing filtering the Incidents page to any number of Incident Types. https://github.com/burningmantech/ranger-ims-server/issues/1581
+- Added "created" timestamp to Incident page, where "priority" used to be. https://github.com/burningmantech/ranger-ims-server/pull/1599
+- Added team-based access control, e.g. to allow all members of Council to have year-round access. https://github.com/burningmantech/ranger-ims-server/pull/1587
+- Created links in the navbar to the current event's Incidents and Field Reports pages. https://github.com/burningmantech/ranger-ims-server/pull/1580
 
 ### Removed
 
 - Dropped Incident "priority" from the UI, since almost no one was using it. https://github.com/burningmantech/ranger-ims-server/issues/1574
 - Removed the "show all" keyboard shortcut for Incidents and Field Reports pages, since the new bookmarkable filtered views make such a shortcut unnecessary. https://github.com/burningmantech/ranger-ims-server/issues/1570
+
+### Fixed
+
+- Prevented duplicate report entries from getting saved during periods of network latency. https://github.com/burningmantech/ranger-ims-server/pull/1593
 
 ## 2025-01
 
