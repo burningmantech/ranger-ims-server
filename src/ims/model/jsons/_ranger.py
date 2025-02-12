@@ -86,7 +86,6 @@ class RangerStatusJSONValue(Enum):
 
     active = "active"
     inactive = "inactive"
-    vintage = "vintage"
     other = "(unknown)"
 
 

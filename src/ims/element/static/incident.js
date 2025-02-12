@@ -225,7 +225,6 @@ function loadPersonnel(success) {
             // FIXME: better yet: filter based on on-playa state
             switch (record.status) {
                 case "active":
-                case "vintage":
                     break;
                 default:
                     continue;
@@ -572,13 +571,7 @@ function drawRangersToAdd() {
 
 
 function rangerAsString(ranger) {
-    let result = ranger.handle;
-
-    if (ranger.status === "vintage") {
-        result += "*";
-    }
-
-    return result;
+    return ranger.handle;
 }
 
 

@@ -39,7 +39,6 @@ def statusFromID(strValue: str) -> RangerStatus:
     return {
         "active": RangerStatus.active,
         "inactive": RangerStatus.inactive,
-        "vintage": RangerStatus.vintage,
     }.get(strValue, RangerStatus.other)
 
 

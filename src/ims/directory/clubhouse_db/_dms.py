@@ -173,7 +173,7 @@ class DutyManagementSystem:
             on_site,
             password
         from person
-        where status in ('active', 'inactive', 'vintage', 'auditor')
+        where status in ('active', 'inactive', 'auditor')
         """
         self._log.debug("EXECUTE DMS: {sql}", sql=sql)
         rows = await self.dbpool.runQuery(sql)
@@ -324,5 +324,4 @@ def statusFromID(strValue: str) -> RangerStatus:
     return {
         "active": RangerStatus.active,
         "inactive": RangerStatus.inactive,
-        "vintage": RangerStatus.vintage,
     }.get(strValue, RangerStatus.other)
