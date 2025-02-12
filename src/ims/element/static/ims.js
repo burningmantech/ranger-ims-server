@@ -637,6 +637,15 @@ const shortTime = new Intl.DateTimeFormat(undefined, {
     // timeZone not specified; will use user's timezone
 });
 
+// e.g. "19:21"
+const shortTimeSec = new Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    hour12: false,
+    minute: "numeric",
+    second: "numeric",
+    // timeZone not specified; will use user's timezone
+});
+
 // e.g. "Thu, Aug 29, 2024, 19:11:04 EDT"
 const fullDateTime = new Intl.DateTimeFormat(undefined, {
     weekday: "short",
