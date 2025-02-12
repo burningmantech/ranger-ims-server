@@ -34,7 +34,6 @@ __all__ = ()
 statusDescriptions = {
     "active": "Active Ranger",
     "inactive": "Inactive Ranger",
-    "vintage": "Vintage Ranger",
     "other": "(Unknown Person Type)",
 }
 
@@ -49,7 +48,6 @@ class RangerStatus(Names):
 
     active = auto()
     inactive = auto()
-    vintage = auto()
 
     other = auto()
 

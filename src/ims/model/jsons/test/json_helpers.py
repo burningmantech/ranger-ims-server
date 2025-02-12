@@ -178,7 +178,6 @@ def jsonFromRangerStatus(status: RangerStatus) -> str:
     return {
         RangerStatus.active: "active",
         RangerStatus.inactive: "inactive",
-        RangerStatus.vintage: "vintage",
         RangerStatus.other: "(unknown)",
     }[status]
 
