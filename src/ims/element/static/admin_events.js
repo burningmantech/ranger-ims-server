@@ -68,6 +68,7 @@ function drawAccess() {
 
     container.empty();
 
+    const events = Object.keys(accessControlList);
     for (const event of events) {
         for (const mode of accessModes) {
             const eventAccess = $(_accessTemplate).clone();

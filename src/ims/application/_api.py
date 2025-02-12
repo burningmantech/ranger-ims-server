@@ -1112,7 +1112,7 @@ class APIApplication:
                 "writers": [jsonObjectFromModelObject(ae) for ae in writers],
                 "reporters": [jsonObjectFromModelObject(ae) for ae in reporters],
             }
-        return jsonTextFromObject(acl)
+        return jsonBytes(request, jsonTextFromObject(acl).encode("utf-8"))
 
     @router.route(_unprefix(URLs.acl), methods=("POST",))
     async def editAdminAccessResource(
