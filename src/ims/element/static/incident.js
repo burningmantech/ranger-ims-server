@@ -27,13 +27,9 @@ function initIncidentPage() {
         loadIncidentTypes(drawIncidentTypesToAdd);
         loadAllFieldReports(renderFieldReportData);
 
-        // for a new incident
+        // for a new incident, jump to summary field
         if (incident.number == null) {
             $("#incident_summary").focus();
-        } else {
-            // Scroll to report_entry_add field
-            $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
-            $("#report_entry_add").focus();
         }
 
         // Warn the user if they're about to navigate away with unsaved text.
@@ -95,6 +91,13 @@ function initIncidentPage() {
             // ? --> show help modal
             if (e.key === "?") {
                 $("#helpModal").modal("toggle");
+            }
+            // a --> jump to add a new report entry
+            if (e.key === "a") {
+                e.preventDefault();
+                // Scroll to report_entry_add field
+                $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
+                $("#report_entry_add").focus();
             }
             // h --> toggle showing system entries
             if (e.key.toLowerCase() === "h") {
