@@ -74,7 +74,8 @@ class Page(Element):
 
             if name == "dataTables":
                 add("dataTablesBootstrap")
-                add("dataTablesResponsive")
+                # Responsive is currently unused. See incidents.js as well.
+                # add("dataTablesResponsive")
 
         # All pages use Bootstrap
         add("bootstrap")

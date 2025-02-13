@@ -66,6 +66,13 @@ function initFieldReportPage() {
             if (e.key === "?") {
                 $("#helpModal").modal("toggle");
             }
+            // a --> jump to add a new report entry
+            if (e.key === "a") {
+                e.preventDefault();
+                // Scroll to report_entry_add field
+                $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
+                $("#report_entry_add").focus();
+            }
             // h --> toggle showing system entries
             if (e.key.toLowerCase() === "h") {
                 document.getElementById("history_checkbox").click();
