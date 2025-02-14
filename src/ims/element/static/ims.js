@@ -223,6 +223,40 @@ function jsonRequest(url, jsonOut, success, error, headers) {
     $.ajax(args);
 }
 
+async function jsonRequestAsync(url, jsonOut, headers) {
+    const args = {
+        "url": url,
+        "method": "GET",
+        "dataType": "json",
+    };
+    if (headers) {
+        args["headers"] = headers;
+    }
+
+    if (jsonOut) {
+        const jsonText = JSON.stringify(jsonOut);
+
+        args["method"] = "POST";
+        args["contentType"] = "application/json";
+        args["data"] = jsonText;
+    }
+
+    try {
+        return await $.ajax(args);
+    } catch (err) {
+        // Intentionally empty response is not an error.
+        if (
+            err.statusText === "parsererror" &&
+            err.status === 201 &&
+            err.responseText === ""
+        ) {
+            return Promise.resolve(err);
+        }
+        console.error(`Got ajax error:\n\n${JSON.stringify(err)}`);
+        return Promise.reject(err);
+    }
+}
+
 
 
 //
