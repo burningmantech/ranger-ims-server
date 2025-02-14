@@ -18,34 +18,23 @@
 // Initialize UI
 //
 
-function initPage() {
-    function loadedAccessControlList() {
-        drawAccess();
-    }
-
+async function initPage() {
     detectTouchDevice();
-    loadAccessControlList(loadedAccessControlList);
+    await loadAccessControlList();
+    drawAccess();
 }
 
 
 let accessControlList = null
 
-function loadAccessControlList(success) {
-    function ok(data, status, xhr) {
-        accessControlList = data;
-
-        if (success) {
-            success();
-        }
-    }
-
-    function fail(error, status, xhr) {
-        const message = "Failed to load access control list:\n" + error
+async function loadAccessControlList() {
+    try {
+        accessControlList = await jsonRequestAsync(url_acl, null);
+    } catch (err) {
+        const message = `Failed to load access control list:\n${JSON.stringify(err)}`;
         console.error(message);
         window.alert(message);
     }
-
-    jsonRequest(url_acl, null, ok, fail);
 }
 
 
@@ -114,31 +103,27 @@ function updateEventAccess(event, mode) {
 }
 
 
-function addEvent(sender) {
+async function addEvent(sender) {
     const event = sender.value.trim();
 
-    function refresh() {
-        loadAccessControlList(drawAccess);
-    }
-
-    function ok(data, status, xhr) {
-        refresh();
-        sender.value = "";  // Clear input field
-    }
-
-    function fail(requestError, status, xhr) {
-        const message = "Failed to add event:\n" + requestError
+    try {
+        await jsonRequestAsync(url_events, {"add": [event]});
+    } catch (err) {
+        const message = `Failed to add event: ${JSON.stringify(err)}`;
         console.log(message);
-        refresh();
+        await loadAccessControlList();
+        drawAccess();
         controlHasError($(sender));
         window.alert(message);
+        return;
     }
-
-    jsonRequest(url_events, {"add": [event]}, ok, fail);
+    await loadAccessControlList();
+    drawAccess();
+    sender.value = "";  // Clear input field
 }
 
 
-function addAccess(sender) {
+async function addAccess(sender) {
     const container = $(sender).parents(".event_access:first");
     const event = container.find(".event_name:first").text();
     const mode = container.find(".access_mode:first").text();
@@ -191,21 +176,21 @@ function addAccess(sender) {
         }
     }
 
-    function ok() {
-        loadAccessControlList(refresh);
-        sender.value = "";  // Clear input field
-    }
-
-    function fail() {
-        loadAccessControlList(refresh);
+    try {
+        await sendACL(edits);
+    } catch (err) {
+        await loadAccessControlList();
+        refresh();
         controlHasError($(sender));
+        return;
     }
-
-    sendACL(edits, ok, fail);
+    await loadAccessControlList();
+    refresh();
+    sender.value = "";  // Clear input field
 }
 
 
-function removeAccess(sender) {
+async function removeAccess(sender) {
     const container = $(sender).parents(".event_access:first");
     const event = container.find(".event_name:first").text();
     const mode = container.find(".access_mode:first").text();
@@ -237,18 +222,18 @@ function removeAccess(sender) {
         }
     }
 
-    function ok() {
-        loadAccessControlList(refresh);
+    try {
+        await sendACL(edits);
+    } catch (err) {
+        await loadAccessControlList();
+        refresh();
+        return;
     }
-
-    function fail() {
-        loadAccessControlList(refresh);
-    }
-
-    sendACL(edits, ok, fail);
+    await loadAccessControlList(refresh);
+    refresh();
 }
 
-function setValidity(sender) {
+async function setValidity(sender) {
     const container = $(sender).parents(".event_access:first");
     const event = container.find(".event_name:first").text();
     const mode = container.find(".access_mode:first").text();
@@ -273,31 +258,26 @@ function setValidity(sender) {
         }
     }
 
-    function ok() {
-        loadAccessControlList(refresh);
-        sender.value = "";  // Clear input field
-    }
-
-    function fail() {
-        loadAccessControlList(refresh);
+    try {
+        await sendACL(edits);
+    } catch (err) {
+        await loadAccessControlList();
+        refresh();
         controlHasError($(sender));
+        return;
     }
-
-    sendACL(edits, ok, fail);
+    await loadAccessControlList(refresh);
+    refresh();
+    sender.value = "";  // Clear input field
 }
 
 
-function sendACL(edits, success, error) {
-    function ok(data, status, xhr) {
-        success();
-    }
-
-    function fail(requestError, status, xhr) {
-        const message = "Failed to edit ACL:\n" + requestError;
+async function sendACL(edits) {
+    try {
+        return await jsonRequestAsync(url_acl, edits);
+    } catch (err) {
+        const message = `Failed to edit ACL:\n${JSON.stringify(err)}`;
         console.log(message);
-        error();
         window.alert(message);
     }
-
-    jsonRequest(url_acl, edits, ok, fail);
 }

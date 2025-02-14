@@ -18,59 +18,38 @@
 // Initialize UI
 //
 
-function initPage() {
+async function initPage() {
     detectTouchDevice();
-    loadAndDrawIncidentTypes();
+    await loadAndDrawIncidentTypes();
 }
 
 
-function loadAndDrawIncidentTypes() {
-    function loadedIncidentTypes() {
+async function loadAndDrawIncidentTypes() {
+    try {
+        await loadIncidentTypes();
         drawIncidentTypes();
+    } catch (err) {
+        // do nothing
     }
-
-    loadIncidentTypes(loadedIncidentTypes);
 }
 
 
 let incidentTypes = null;
 let incidentTypesVisible = null;
 
-function loadIncidentTypes(success) {
-    let gotAll = false;
-    let gotVisible = false;
-
-    function ok() {
-        if (gotAll && gotVisible) {
-            if (success) {
-                success();
-            }
-        }
-    }
-
-    function okVisible(data, status, xhr) {
-        incidentTypesVisible = data;
-        gotVisible = true;
-        ok();
-    }
-
-
-    function okAll(data, status, xhr) {
-        incidentTypes = data;
-        gotAll = true;
-        ok();
-    }
-
-    function fail(error, status, xhr) {
+async function loadIncidentTypes() {
+    const headers = {"Cache-Control": "no-cache"};
+    try {
+        [incidentTypesVisible, incidentTypes] = await Promise.all([
+            jsonRequestAsync(url_incidentTypes, null, headers),
+            jsonRequestAsync(url_incidentTypes + "?hidden=true", null, headers),
+        ]);
+    } catch (error) {
         const message = "Failed to load incident types:\n" + error;
         console.error(message);
         window.alert(message);
+        throw error;
     }
-
-    const headers = {"Cache-Control": "no-cache"};
-
-    jsonRequest(url_incidentTypes, null, okVisible, fail, headers);
-    jsonRequest(url_incidentTypes + "?hidden=true", null, okAll, fail, headers);
 }
 
 
@@ -118,16 +97,17 @@ function updateIncidentTypes() {
 }
 
 
-function addIncidentType(sender) {
-    function ok () {
-        sender.value = "";
-        loadAndDrawIncidentTypes();
+async function addIncidentType(sender) {
+    try {
+        await sendIncidentTypes(
+            {"add": [sender.value]},
+        );
+    } catch (err) {
+        await loadAndDrawIncidentTypes();
+        return;
     }
-
-    sendIncidentTypes(
-        { "add": [sender.value] },
-        ok, loadAndDrawIncidentTypes
-    );
+    sender.value = "";
+    await loadAndDrawIncidentTypes();
 }
 
 
@@ -136,33 +116,28 @@ function removeIncidentType(sender) {
 }
 
 
-function showIncidentType(sender) {
-    sendIncidentTypes(
+async function showIncidentType(sender) {
+    await sendIncidentTypes(
         { "show": [$(sender).parent().attr("value")] },
-        loadAndDrawIncidentTypes, loadAndDrawIncidentTypes
     );
+    await loadAndDrawIncidentTypes();
 }
 
 
-function hideIncidentType(sender) {
-    sendIncidentTypes(
+async function hideIncidentType(sender) {
+    await sendIncidentTypes(
         { "hide": [$(sender).parent().attr("value")] },
-        loadAndDrawIncidentTypes, loadAndDrawIncidentTypes
     );
+    await loadAndDrawIncidentTypes();
 }
 
 
-function sendIncidentTypes(edits, success, error) {
-    function ok(data, status, xhr) {
-        success();
-    }
-
-    function fail(requestError, status, xhr) {
-        const message = "Failed to edit incident types:\n" + requestError;
+async function sendIncidentTypes(edits) {
+    try {
+        await jsonRequestAsync(url_incidentTypes, edits);
+    } catch (err) {
+        const message = `Failed to edit incident types:\n${JSON.stringify(err)}`;
         console.log(message);
-        error();
         window.alert(message);
     }
-
-    jsonRequest(url_incidentTypes, edits, ok, fail);
 }

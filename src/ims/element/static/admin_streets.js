@@ -18,36 +18,28 @@
 // Initialize UI
 //
 
-function initPage() {
-    function loadedStreets() {
-        drawStreets();
-    }
-
+async function initPage() {
     detectTouchDevice();
-    loadStreets(loadedStreets);
+    try {
+        await loadStreets();
+        drawStreets();
+    } catch (err) {
+        // do nothing
+    }
 }
 
 
 let streets = null;
 
-function loadStreets(success) {
-    const url = url_streets;
-
-    function ok(data, status, xhr) {
-        streets = data;
-
-        if (success) {
-            success();
-        }
-    }
-
-    function fail(error, status, xhr) {
-        const message = "Failed to load streets:\n" + error;
+async function loadStreets() {
+    try {
+        streets = await jsonRequestAsync(url_streets, null);
+    } catch (err) {
+        const message = `Failed to load streets:\n${JSON.stringify(err)}`;
         console.error(message);
         window.alert(message);
+        throw err;
     }
-
-    jsonRequest(url_streets, null, ok, fail);
 }
 
 
@@ -120,17 +112,12 @@ function removeStreet(sender) {
 }
 
 
-function sendStreets(edits, success, error) {
-    function ok(data, status, xhr) {
-        success();
-    }
-
-    function fail(requestError, status, xhr) {
-        const message = "Failed to edit streets:\n" + requestError;
+async function sendStreets(edits, success, error) {
+    try {
+        await jsonRequestAsync(url_streets, edits);
+    } catch (err) {
+        const message = `Failed to edit streets:\n${JSON.stringify(err)}`;
         console.log(message);
-        error();
         window.alert(message);
     }
-
-    jsonRequest(url_streets, edits, ok, fail);
 }
