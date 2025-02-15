@@ -17,45 +17,44 @@
 // Initialize UI
 //
 
-function initFieldReportsPage() {
-    function loadedBody() {
-        disableEditing();
-        initFieldReportsTable();
+async function initFieldReportsPage() {
 
-        // Keyboard shortcuts
-        document.addEventListener("keydown", function(e) {
-            // No shortcuts when an input field is active
-            if (document.activeElement !== document.body) {
-                return;
-            }
-            // No shortcuts when ctrl, alt, or meta is being held down
-            if (e.altKey || e.ctrlKey || e.metaKey) {
-                return;
-            }
-            // ? --> show help modal
-            if (e.key === "?") {
-                $("#helpModal").modal("toggle");
-            }
-            // / --> jump to search box
-            if (e.key === "/") {
-                // don't immediately input a "/" into the search box
-                e.preventDefault();
-                document.getElementById("search_input").focus();
-            }
-            // n --> new incident
-            if (e.key.toLowerCase() === "n") {
-                document.getElementById("new_field_report").click();
-            }
-            // TODO: should there also be a shortcut to show the default filters?
-        });
-        document.getElementById("helpModal").addEventListener("keydown", function(e) {
-            if (e.key === "?") {
-                $("#helpModal").modal("toggle");
-            }
-        });
-    }
+    await loadBody();
 
-    loadBody(loadedBody);
+    disableEditing();
+    initFieldReportsTable();
+
+    // Keyboard shortcuts
+    document.addEventListener("keydown", function(e) {
+        // No shortcuts when an input field is active
+        if (document.activeElement !== document.body) {
+            return;
+        }
+        // No shortcuts when ctrl, alt, or meta is being held down
+        if (e.altKey || e.ctrlKey || e.metaKey) {
+            return;
+        }
+        // ? --> show help modal
+        if (e.key === "?") {
+            $("#helpModal").modal("toggle");
+        }
+        // / --> jump to search box
+        if (e.key === "/") {
+            // don't immediately input a "/" into the search box
+            e.preventDefault();
+            document.getElementById("search_input").focus();
+        }
+        // n --> new incident
+        if (e.key.toLowerCase() === "n") {
+            document.getElementById("new_field_report").click();
+        }
+        // TODO: should there also be a shortcut to show the default filters?
+    });
+    document.getElementById("helpModal").addEventListener("keydown", function(e) {
+        if (e.key === "?") {
+            $("#helpModal").modal("toggle");
+        }
+    });
 }
 
 
@@ -82,7 +81,8 @@ function initFieldReportsTable() {
     fieldReportChannel.onmessage = function (e) {
         if (e.data["update_all"]) {
             console.log("Reloading the whole table to be cautious, as an SSE was missed")
-            fieldReportsTable.ajax.reload(clearErrorMessage);
+            fieldReportsTable.ajax.reload();
+            clearErrorMessage();
             return;
         }
 
@@ -99,7 +99,8 @@ function initFieldReportsTable() {
         //  Field Reports for which they're not authorized, and those errors
         //  show up in the browser console. I'd like to find a way to avoid
         //  bringing those errors into the console constantly.
-        fieldReportsTable.ajax.reload(clearErrorMessage);
+        fieldReportsTable.ajax.reload();
+        clearErrorMessage();
     }
 }
 

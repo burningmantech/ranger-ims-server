@@ -25,12 +25,8 @@ async function initPage() {
 
 
 async function loadAndDrawIncidentTypes() {
-    try {
-        await loadIncidentTypes();
-        drawIncidentTypes();
-    } catch (err) {
-        // do nothing
-    }
+    await loadIncidentTypes();
+    drawIncidentTypes();
 }
 
 
@@ -38,18 +34,23 @@ let incidentTypes = null;
 let incidentTypesVisible = null;
 
 async function loadIncidentTypes() {
-    const headers = {"Cache-Control": "no-cache"};
-    try {
-        [incidentTypesVisible, incidentTypes] = await Promise.all([
-            jsonRequestAsync(url_incidentTypes, null, headers),
-            jsonRequestAsync(url_incidentTypes + "?hidden=true", null, headers),
+    let errOne, errTwo;
+    [{json: incidentTypesVisible, err: errOne}, {json: incidentTypes, err: errTwo}] =
+        await Promise.all([
+            fetchJsonNoThrow(url_incidentTypes, {
+                headers: {"Cache-Control": "no-cache"},
+            }),
+            fetchJsonNoThrow(url_incidentTypes + "?hidden=true", {
+                headers: {"Cache-Control": "no-cache"},
+            }),
         ]);
-    } catch (error) {
-        const message = "Failed to load incident types:\n" + error;
+    if (errOne != null || errTwo != null) {
+        const message = "Failed to load incident types:\n" + errOne + "," + errTwo;
         console.error(message);
         window.alert(message);
-        throw error;
+        return {err: message}
     }
+    return {err: null};
 }
 
 
@@ -98,15 +99,10 @@ function updateIncidentTypes() {
 
 
 async function addIncidentType(sender) {
-    try {
-        await sendIncidentTypes(
-            {"add": [sender.value]},
-        );
-    } catch (err) {
-        await loadAndDrawIncidentTypes();
-        return;
+    const {err} = await sendIncidentTypes({"add": [sender.value]});
+    if (err == null) {
+        sender.value = "";
     }
-    sender.value = "";
     await loadAndDrawIncidentTypes();
 }
 
@@ -117,27 +113,26 @@ function removeIncidentType(sender) {
 
 
 async function showIncidentType(sender) {
-    await sendIncidentTypes(
-        { "show": [$(sender).parent().attr("value")] },
-    );
+    await sendIncidentTypes({"show": [$(sender).parent().attr("value")]});
     await loadAndDrawIncidentTypes();
 }
 
 
 async function hideIncidentType(sender) {
-    await sendIncidentTypes(
-        { "hide": [$(sender).parent().attr("value")] },
-    );
+    await sendIncidentTypes({"hide": [$(sender).parent().attr("value")]});
     await loadAndDrawIncidentTypes();
 }
 
 
 async function sendIncidentTypes(edits) {
-    try {
-        await jsonRequestAsync(url_incidentTypes, edits);
-    } catch (err) {
-        const message = `Failed to edit incident types:\n${JSON.stringify(err)}`;
-        console.log(message);
-        window.alert(message);
+    const {err} = await fetchJsonNoThrow(url_incidentTypes, {
+        body: edits,
+    });
+    if (err == null) {
+        return {err: null};
     }
+    const message = `Failed to edit incident types:\n${JSON.stringify(err)}`;
+    console.log(message);
+    window.alert(message);
+    return {err: err};
 }

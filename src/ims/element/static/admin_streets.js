@@ -20,11 +20,9 @@
 
 async function initPage() {
     detectTouchDevice();
-    try {
-        await loadStreets();
+    const {err} = await loadStreets();
+    if (err == null) {
         drawStreets();
-    } catch (err) {
-        // do nothing
     }
 }
 
@@ -32,14 +30,15 @@ async function initPage() {
 let streets = null;
 
 async function loadStreets() {
-    try {
-        streets = await jsonRequestAsync(url_streets, null);
-    } catch (err) {
-        const message = `Failed to load streets:\n${JSON.stringify(err)}`;
+    let {json, err} = await fetchJsonNoThrow(url_streets);
+    if (err != null) {
+        const message = `Failed to load streets: ${err}`;
         console.error(message);
         window.alert(message);
-        throw err;
+        return {err: message};
     }
+    streets = json;
+    return {err: null};
 }
 
 
@@ -112,11 +111,10 @@ function removeStreet(sender) {
 }
 
 
-async function sendStreets(edits, success, error) {
-    try {
-        await jsonRequestAsync(url_streets, edits);
-    } catch (err) {
-        const message = `Failed to edit streets:\n${JSON.stringify(err)}`;
+async function sendStreets(edits) {
+    let {err} = await fetchJsonNoThrow(url_streets, edits);
+    if (err != null) {
+        const message = `Failed to edit streets:\n${err}`;
         console.log(message);
         window.alert(message);
     }

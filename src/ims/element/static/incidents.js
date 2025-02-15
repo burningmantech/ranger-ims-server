@@ -17,47 +17,45 @@
 // Initialize UI
 //
 
-function initIncidentsPage() {
-    function loadedBody() {
-        disableEditing();
-        loadEventFieldReports(initIncidentsTable);
+async function initIncidentsPage() {
+    await loadBody();
 
-        // Keyboard shortcuts
-        document.addEventListener("keydown", function(e) {
-            // No shortcuts when an input field is active
-            if (document.activeElement !== document.body) {
-                return;
-            }
-            // No shortcuts when ctrl, alt, or meta is being held down
-            if (e.altKey || e.ctrlKey || e.metaKey) {
-                return;
-            }
-            // ? --> show help modal
-            if (e.key === "?") {
-                $("#helpModal").modal("toggle");
-            }
-            // / --> jump to search box
-            if (e.key === "/") {
-                // don't immediately input a "/" into the search box
-                e.preventDefault();
-                document.getElementById("search_input").focus();
-            }
-            // n --> new incident
-            if (e.key.toLowerCase() === "n") {
-                document.getElementById("new_incident").click();
-            }
-            // TODO: should there also be a shortcut to show the default filters?
-        });
+    disableEditing();
+    await loadEventFieldReports();
+    initIncidentsTable();
 
-        document.getElementById("helpModal").addEventListener("keydown", function(e) {
-            if (e.key === "?") {
-                $("#helpModal").modal("toggle");
-            }
-        });
+    // Keyboard shortcuts
+    document.addEventListener("keydown", function(e) {
+        // No shortcuts when an input field is active
+        if (document.activeElement !== document.body) {
+            return;
+        }
+        // No shortcuts when ctrl, alt, or meta is being held down
+        if (e.altKey || e.ctrlKey || e.metaKey) {
+            return;
+        }
+        // ? --> show help modal
+        if (e.key === "?") {
+            $("#helpModal").modal("toggle");
+        }
+        // / --> jump to search box
+        if (e.key === "/") {
+            // don't immediately input a "/" into the search box
+            e.preventDefault();
+            document.getElementById("search_input").focus();
+        }
+        // n --> new incident
+        if (e.key.toLowerCase() === "n") {
+            document.getElementById("new_incident").click();
+        }
+    });
 
-    }
+    document.getElementById("helpModal").addEventListener("keydown", function(e) {
+        if (e.key === "?") {
+            $("#helpModal").modal("toggle");
+        }
+    });
 
-    loadBody(loadedBody);
 }
 
 
@@ -70,33 +68,29 @@ function initIncidentsPage() {
 
 let eventFieldReports = null;
 
-function loadEventFieldReports(success) {
-    function ok(data, status, xhr) {
-        const reports = {};
+async function loadEventFieldReports() {
 
-        for (const report of data) {
-            reports[report.number] = report;
-        }
-
-        eventFieldReports = reports;
-
-        if (success) {
-            success();
-        }
-    }
-
-    function fail(error, status, xhr) {
-        const message = "Failed to load event field reports";
-        console.error(message + ": " + error);
+    const {json, err} = await fetchJsonNoThrow(urlReplace(url_fieldReports + "?exclude_system_entries=true"));
+    if (err != null) {
+        const message = `Failed to load event field reports: ${err}`;
+        console.error(message);
         setErrorMessage(message);
+        return {err: message};
+    }
+    const reports = {};
+
+    for (const report of json) {
+        reports[report.number] = report;
     }
 
-    jsonRequest(urlReplace(url_fieldReports + "?exclude_system_entries=true"), null, ok, fail);
+    eventFieldReports = reports;
 
     console.log("Loaded event field reports");
     if (incidentsTable != null) {
-        incidentsTable.ajax.reload(clearErrorMessage);
+        incidentsTable.ajax.reload();
+        clearErrorMessage();
     }
+    return {err: null};
 }
 
 // Set the user-visible error information on the page to the provided string.
@@ -131,10 +125,11 @@ function initIncidentsTable() {
     // ok to ignore returned Promise...have the tab wait for the lock
     requestEventSourceLock();
     const incidentChannel = new BroadcastChannel(incidentChannelName);
-    incidentChannel.onmessage = function (e) {
+    incidentChannel.onmessage = async function (e) {
         if (e.data["update_all"]) {
             console.log("Reloading the whole table to be cautious, as an SSE was missed")
-            incidentsTable.ajax.reload(clearErrorMessage);
+            incidentsTable.ajax.reload();
+            clearErrorMessage();
             return;
         }
 
@@ -144,39 +139,31 @@ function initIncidentsTable() {
             return;
         }
 
-        // Now update/create the relevant row. This is a change from pre-2025, in that
-        // we no longer reload all incidents here on any single incident update.
-        function updateSuccess(updatedIncident) {
-            let done = false;
-            incidentsTable.rows().every( function () {
-                const existingIncident = this.data();
-                if (existingIncident.number === number) {
-                    console.log("Updating Incident " + number);
-                    this.data(updatedIncident);
-                    done = true;
-                }
-            });
-            if (!done) {
-                console.log("Loading new Incident " + number);
-                incidentsTable.row.add(updatedIncident);
-            }
-            clearErrorMessage();
-            incidentsTable.processing(false);
-            incidentsTable.draw();
-        }
-
-        function updateError(error) {
-            const message = "Failed to update Incident " + number + ": " + error;
+        const {json, err} = await fetchJsonNoThrow(urlReplace(url_incidentNumber).replace("<incident_number>", number));
+        if (err != null) {
+            const message = `Failed to update Incident ${number}: ${err}`;
             console.error(message);
             setErrorMessage(message);
+            return;
         }
-
-        jsonRequest(
-            urlReplace(url_incidentNumber).replace("<incident_number>", number),
-            null,
-            updateSuccess,
-            updateError,
-        );
+        // Now update/create the relevant row. This is a change from pre-2025, in that
+        // we no longer reload all incidents here on any single incident update.
+        let done = false;
+        incidentsTable.rows().every( function () {
+            const existingIncident = this.data();
+            if (existingIncident.number === number) {
+                console.log("Updating Incident " + number);
+                this.data(json);
+                done = true;
+            }
+        });
+        if (!done) {
+            console.log("Loading new Incident " + number);
+            incidentsTable.row.add(json);
+        }
+        clearErrorMessage();
+        incidentsTable.processing(false);
+        incidentsTable.draw();
     }
 }
 

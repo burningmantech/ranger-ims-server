@@ -18,110 +18,109 @@
 // Initialize UI
 //
 
-function initIncidentPage() {
-    function loadedIncident() {
-        loadPersonnel(function() {
-            drawRangers();
-            drawRangersToAdd();
-        });
-        loadIncidentTypes(drawIncidentTypesToAdd);
-        loadAllFieldReports(renderFieldReportData);
+async function initIncidentPage() {
+    await loadBody();
+    addLocationAddressOptions();
+    disableEditing();
+    await loadAndDisplayIncident();
+    await loadPersonnel();
+    drawRangers();
+    drawRangersToAdd();
+    await loadIncidentTypes();
+    drawIncidentTypesToAdd();
+    await loadAllFieldReports();
+    renderFieldReportData();
 
-        // for a new incident, jump to summary field
-        if (incident.number == null) {
-            $("#incident_summary").focus();
-        }
-
-        // Warn the user if they're about to navigate away with unsaved text.
-        window.addEventListener("beforeunload", function (e) {
-            if (document.getElementById("report_entry_add").value !== "") {
-                e.preventDefault();
-            }
-        });
+    // for a new incident, jump to summary field
+    if (incident.number == null) {
+        $("#incident_summary").focus();
     }
 
-    function loadedBody() {
-        addLocationAddressOptions();
-        disableEditing();
-        loadAndDisplayIncident(loadedIncident);
-
-        // Updates...it's fine to ignore the returned promise here
-        requestEventSourceLock();
-
-        const incidentChannel = new BroadcastChannel(incidentChannelName);
-        incidentChannel.onmessage = function (e) {
-            const number = e.data["incident_number"];
-            const event = e.data["event_id"]
-            const updateAll = e.data["update_all"];
-
-            if (updateAll || (event === eventID && number === incidentNumber)) {
-                console.log("Got incident update: " + number);
-                loadAndDisplayIncident();
-                loadAllFieldReports(renderFieldReportData);
-            }
+    // Warn the user if they're about to navigate away with unsaved text.
+    window.addEventListener("beforeunload", function (e) {
+        if (document.getElementById("report_entry_add").value !== "") {
+            e.preventDefault();
         }
+    });
 
-        const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
-        fieldReportChannel.onmessage = function (e) {
-            const updateAll = e.data["update_all"];
-            if (updateAll) {
-                console.log("Updating all field reports");
-                loadAllFieldReports(renderFieldReportData);
-                return;
-            }
+    // Updates...it's good to ignore the returned promise here
+    requestEventSourceLock();
 
-            const number = e.data["field_report_number"];
-            const event = e.data["event_id"]
-            if (event === eventID) {
-                console.log("Got field report update: " + number);
-                loadFieldReport(number, renderFieldReportData);
-            }
+    const incidentChannel = new BroadcastChannel(incidentChannelName);
+    incidentChannel.onmessage = async function (e) {
+        const number = e.data["incident_number"];
+        const event = e.data["event_id"]
+        const updateAll = e.data["update_all"];
+
+        if (updateAll || (event === eventID && number === incidentNumber)) {
+            console.log("Got incident update: " + number);
+            await loadAndDisplayIncident();
+            await loadAllFieldReports();
+            renderFieldReportData();
         }
-
-        // Keyboard shortcuts
-        document.addEventListener("keydown", function(e) {
-            // No shortcuts when an input field is active
-            if (document.activeElement !== document.body) {
-                return;
-            }
-            // No shortcuts when ctrl, alt, or meta is being held down
-            if (e.altKey || e.ctrlKey || e.metaKey) {
-                return;
-            }
-            // ? --> show help modal
-            if (e.key === "?") {
-                $("#helpModal").modal("toggle");
-            }
-            // a --> jump to add a new report entry
-            if (e.key === "a") {
-                e.preventDefault();
-                // Scroll to report_entry_add field
-                $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
-                $("#report_entry_add").focus();
-            }
-            // h --> toggle showing system entries
-            if (e.key.toLowerCase() === "h") {
-                document.getElementById("history_checkbox").click();
-            }
-            // n --> new incident
-            if (e.key.toLowerCase() === "n") {
-                window.open("./new", '_blank').focus();
-            }
-        });
-        document.getElementById("helpModal").addEventListener("keydown", function(e) {
-            if (e.key === "?") {
-                $("#helpModal").modal("toggle");
-            }
-        });
-        $("#report_entry_add")[0].addEventListener("keydown", function (e) {
-            const submitEnabled = !$("#report_entry_submit").hasClass("disabled");
-            if (submitEnabled && (e.ctrlKey || e.altKey) && e.key === "Enter") {
-                submitReportEntry();
-            }
-        });
     }
 
-    loadBody(loadedBody);
+    const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
+    fieldReportChannel.onmessage = async function (e) {
+        const updateAll = e.data["update_all"];
+        if (updateAll) {
+            console.log("Updating all field reports");
+            await loadAllFieldReports();
+            renderFieldReportData();
+            return;
+        }
+
+        const number = e.data["field_report_number"];
+        const event = e.data["event_id"]
+        if (event === eventID) {
+            console.log("Got field report update: " + number);
+            await loadFieldReport(number);
+            renderFieldReportData();
+            return;
+        }
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener("keydown", function(e) {
+        // No shortcuts when an input field is active
+        if (document.activeElement !== document.body) {
+            return;
+        }
+        // No shortcuts when ctrl, alt, or meta is being held down
+        if (e.altKey || e.ctrlKey || e.metaKey) {
+            return;
+        }
+        // ? --> show help modal
+        if (e.key === "?") {
+            $("#helpModal").modal("toggle");
+        }
+        // a --> jump to add a new report entry
+        if (e.key === "a") {
+            e.preventDefault();
+            // Scroll to report_entry_add field
+            $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
+            $("#report_entry_add").focus();
+        }
+        // h --> toggle showing system entries
+        if (e.key.toLowerCase() === "h") {
+            document.getElementById("history_checkbox").click();
+        }
+        // n --> new incident
+        if (e.key.toLowerCase() === "n") {
+            window.open("./new", '_blank').focus();
+        }
+    });
+    document.getElementById("helpModal").addEventListener("keydown", function(e) {
+        if (e.key === "?") {
+            $("#helpModal").modal("toggle");
+        }
+    });
+    $("#report_entry_add")[0].addEventListener("keydown", function (e) {
+        const submitEnabled = !$("#report_entry_submit").hasClass("disabled");
+        if (submitEnabled && (e.ctrlKey || e.altKey) && e.key === "Enter") {
+            submitReportEntry();
+        }
+    });
 }
 
 
@@ -131,7 +130,7 @@ function initIncidentPage() {
 
 let incident = null;
 
-function loadIncident(success) {
+async function loadIncident() {
     let number = null;
     if (incident == null) {
         // First time here.  Use page JavaScript initial value.
@@ -141,32 +140,25 @@ function loadIncident(success) {
         number = incident.number;
     }
 
-    function ok(data, status, xhr) {
-        incident = data;
-
-        if (success) {
-            success();
-        }
-    }
-
-    function fail(error, status, xhr) {
-        disableEditing();
-        const message = "Failed to load Incident " + number + ": " + error;
-        console.error(message);
-        setErrorMessage(message);
-    }
-
     if (number == null) {
-        ok({
+        incident = {
             "number": null,
             "state": "new",
             "priority": 3,
             "summary": "",
-        });
+        };
     } else {
-        const url = incidentsURL + number;
-        jsonRequest(url, null, ok, fail);
+        const {json, err} = await fetchJsonNoThrow(incidentsURL + number);
+        if (err != null) {
+            disableEditing();
+            const message = `Failed to load Incident ${number}: ${err}`;
+            console.error(message);
+            setErrorMessage(message);
+            return {err: message};
+        }
+        incident = json;
     }
+    return {err: null};
 }
 
 // Set the user-visible error information on the page to the provided string.
@@ -181,28 +173,21 @@ function clearErrorMessage() {
     document.getElementById("error_text").textContent = "";
 }
 
-function loadAndDisplayIncident(success) {
-    function loaded() {
-        if (incident == null) {
-            const message = "Incident failed to load";
-            console.log(message);
-            setErrorMessage(message);
-            return;
-        }
-
-        drawIncidentFields();
-        clearErrorMessage();
-
-        if (editingAllowed) {
-            enableEditing();
-        }
-
-        if (success) {
-            success();
-        }
+async function loadAndDisplayIncident() {
+    await loadIncident();
+    if (incident == null) {
+        const message = "Incident failed to load";
+        console.log(message);
+        setErrorMessage(message);
+        return;
     }
 
-    loadIncident(loaded);
+    drawIncidentFields();
+    clearErrorMessage();
+
+    if (editingAllowed) {
+        enableEditing();
+    }
 }
 
 // Do all the client-side rendering based on the state of allFieldReports.
@@ -220,35 +205,28 @@ function renderFieldReportData() {
 
 let personnel = null;
 
-function loadPersonnel(success) {
-    function ok(data, status, xhr) {
-        const _personnel = {};
-        for (const record of data) {
-            // Filter inactive Rangers out
-            // FIXME: better yet: filter based on on-playa state
-            switch (record.status) {
-                case "active":
-                    break;
-                default:
-                    continue;
-            }
-
-            _personnel[record.handle] = record;
-        }
-        personnel = _personnel
-
-        if (success) {
-            success();
-        }
-    }
-
-    function fail(error, status, xhr) {
-        const message = "Failed to load personnel";
-        console.error(message + ": " + error);
+async function loadPersonnel() {
+    const {json, err} = await fetchJsonNoThrow(urlReplace(url_personnel + "?event_id=<event_id>"));
+    if (err != null) {
+        const message = `Failed to load personnel: ${err}`;
+        console.error(message);
         setErrorMessage(message);
+        return {err: message};
     }
+    const _personnel = {};
+    for (const record of json) {
+        // Filter inactive Rangers out
+        // FIXME: better yet: filter based on on-playa state
+        switch (record.status) {
+            case "active":
+                break;
+            default:
+                continue;
+        }
 
-    jsonRequest(urlReplace(url_personnel + "?event_id=<event_id>"), null, ok, fail);
+        _personnel[record.handle] = record;
+    }
+    personnel = _personnel
 }
 
 
@@ -259,27 +237,20 @@ function loadPersonnel(success) {
 let incidentTypes = null;
 
 
-function loadIncidentTypes(success) {
-    function ok(data, status, xhr) {
-        const _incidentTypes = [];
-        for (const record of data) {
-            _incidentTypes.push(record)
-        }
-        _incidentTypes.sort()
-        incidentTypes = _incidentTypes
-
-        if (success) {
-            success();
-        }
-    }
-
-    function fail(error, status, xhr) {
-        const message = "Failed to load incident types";
-        console.error(message + ": " + error);
+async function loadIncidentTypes() {
+    const {json, err} = await fetchJsonNoThrow(url_incidentTypes);
+    if (err != null) {
+        const message = `Failed to load incident types: ${err}`;
+        console.error(message);
         setErrorMessage(message);
+        return {err: message};
     }
-
-    jsonRequest(url_incidentTypes, null, ok, fail);
+    const _incidentTypes = [];
+    for (const record of json) {
+        _incidentTypes.push(record)
+    }
+    _incidentTypes.sort()
+    incidentTypes = _incidentTypes
 }
 
 //
@@ -288,85 +259,70 @@ function loadIncidentTypes(success) {
 
 let allFieldReports = null;
 
-function loadAllFieldReports(success) {
+async function loadAllFieldReports() {
     if (allFieldReports === undefined) {
         return;
     }
 
-    function ok(data, status, xhr) {
-        const _allFieldReports = [];
-        for (const d of data) {
-            _allFieldReports.push(d);
-        }
-        // apply a descending sort based on the field report number,
-        // being cautious about field report number being null
-        _allFieldReports.sort(function (a, b) {
-            return (b.number ?? -1) - (a.number ?? -1);
-        })
-        allFieldReports = _allFieldReports;
-
-        if (success) {
-            success();
-        }
-    }
-
-    function fail(error, status, xhr) {
-        if (xhr.status === 403) {
+    const {resp, json, err} = await fetchJsonNoThrow(urlReplace(url_fieldReports));
+    if (err != null) {
+        if (resp.status === 403) {
             // We're not allowed to look these up.
             allFieldReports = undefined;
             console.error("Got a 403 looking up field reports");
+            return {err: null};
         } else {
-            const message = "Failed to load field reports";
-            console.error(message + ": " + error);
+            const message = `Failed to load field reports: ${err}`;
+            console.error(message);
             setErrorMessage(message);
+            return {err: message};
         }
     }
-
-    jsonRequest(
-        urlReplace(url_fieldReports),
-        null, ok, fail,
-    );
+    const _allFieldReports = [];
+    for (const d of json) {
+        _allFieldReports.push(d);
+    }
+    // apply a descending sort based on the field report number,
+    // being cautious about field report number being null
+    _allFieldReports.sort(function (a, b) {
+        return (b.number ?? -1) - (a.number ?? -1);
+    })
+    allFieldReports = _allFieldReports;
+    return {err: null};
 }
 
-function loadFieldReport(fieldReportNumber, success) {
+async function loadFieldReport(fieldReportNumber, success) {
     if (allFieldReports === undefined) {
         return;
     }
 
-    function ok(data, status, xhr) {
-        let found = false;
-        for (const i in allFieldReports) {
-            if (allFieldReports[i].number === data.number) {
-                allFieldReports[i] = data;
-                found = true;
-            }
-        }
-        if (!found) {
-            allFieldReports.push(data);
-            // apply a descending sort based on the field report number,
-            // being cautious about field report number being null
-            allFieldReports.sort(function (a, b) {
-                return (b.number ?? -1) - (a.number ?? -1);
-            })
-        }
-
-        if (success) {
-            success();
-        }
-    }
-
-    function fail(error, status, xhr) {
-        if (xhr.status !== 403) {
-            const message = "Failed to load field report " + fieldReportNumber;
-            console.error(message + ": " + error);
+    const {resp, json, err} = await fetchJsonNoThrow(urlReplace(url_fieldReport).replace("<field_report_number>", fieldReportNumber))
+    if (err != null) {
+        if (resp.status !== 403) {
+            const message = `Failed to load field report ${fieldReportNumber} ${err}`;
+            console.error(message);
             setErrorMessage(message);
+            return {err: message};
         }
     }
 
-    jsonRequest(
-        urlReplace(url_fieldReport).replace("<field_report_number>", fieldReportNumber),
-        null, ok, fail,
-    );
+    let found = false;
+    for (const i in allFieldReports) {
+        if (allFieldReports[i].number === json.number) {
+            allFieldReports[i] = json;
+            found = true;
+        }
+    }
+    if (!found) {
+        allFieldReports.push(json);
+        // apply a descending sort based on the field report number,
+        // being cautious about field report number being null
+        allFieldReports.sort(function (a, b) {
+            return (b.number ?? -1) - (a.number ?? -1);
+        })
+    }
+
+    return {err: null};
 }
 
 
@@ -802,7 +758,7 @@ function drawFieldReportsToAttach() {
 // Editing
 //
 
-function sendEdits(edits, success, error) {
+async function sendEdits(edits) {
     const number = incident.number;
     let url = incidentsURL;
 
@@ -820,56 +776,55 @@ function sendEdits(edits, success, error) {
         url += number;
     }
 
-    function ok(data, status, xhr) {
-        if (number == null) {
-            // We created a new incident.
-            // We need to find out the create incident number so that future
-            // edits don't keep creating new resources.
+    const {resp, err} = await fetchJsonNoThrow(url, {
+        body: edits,
+    });
 
-            let newNumber = xhr.getResponseHeader("X-IMS-Incident-Number")
-            // Check that we got a value back
-            if (newNumber == null) {
-                fail("No X-IMS-Incident-Number header provided.", status, xhr);
-                return;
-            }
+    if (err != null) {
+        const message = "Failed to apply edit";
+        console.log(message + ": " + err);
+        await loadAndDisplayIncident();
+        setErrorMessage(message);
+        return {err: err}
+    }
 
-            newNumber = parseInt(newNumber);
-            // Check that the value we got back is valid
-            if (isNaN(newNumber)) {
-                fail(
-                    "Non-integer X-IMS-Incident-Number header provided:" + newNumber,
-                    status, xhr
-                );
-                return;
-            }
+    if (number == null) {
+        // We created a new incident.
+        // We need to find out the create incident number so that future
+        // edits don't keep creating new resources.
 
-            // Store the new number in our incident object
-            incidentNumber = incident.number = newNumber;
-
-            // Update browser history to update URL
-            drawTitle();
-            window.history.pushState(
-                null, document.title, viewIncidentsURL + newNumber
-            );
+        let newNumber = resp.headers.get("X-IMS-Incident-Number")
+        // Check that we got a value back
+        if (newNumber == null) {
+            const msg = "No X-IMS-Incident-Number header provided.";
+            setErrorMessage(msg);
+            return {err: msg};
         }
 
-        success();
-        loadAndDisplayIncident();
+        newNumber = parseInt(newNumber);
+        // Check that the value we got back is valid
+        if (isNaN(newNumber)) {
+            const msg = "Non-integer X-IMS-Incident-Number header provided:" + newNumber;
+            setErrorMessage(msg);
+            return {err: msg};
+        }
+
+        // Store the new number in our incident object
+        incidentNumber = incident.number = newNumber;
+
+        // Update browser history to update URL
+        drawTitle();
+        window.history.pushState(
+            null, document.title, viewIncidentsURL + newNumber
+        );
     }
 
-    function fail(requestError, status, xhr) {
-        const message = "Failed to apply edit";
-        console.log(message + ": " + requestError);
-        error();
-        loadAndDisplayIncident();
-        setErrorMessage(message);
-    }
-
-    jsonRequest(url, edits, ok, fail);
+    await loadAndDisplayIncident();
+    return {err: null};
 }
 
 
-function editState() {
+async function editState() {
     const $state = $("#incident_state");
 
     if ($state.val() === "closed" && (incident.incident_types??[]).length === 0) {
@@ -883,22 +838,17 @@ function editState() {
         );
     }
 
-    editFromElement($state, "state");
+    await editFromElement($state, "state");
 }
 
 
-function editPriority() {
-    editFromElement($("#incident_priority"), "priority", parseInt);
+async function editSummary() {
+    await editFromElement($("#incident_summary"), "summary");
 }
 
 
-function editSummary() {
-    editFromElement($("#incident_summary"), "summary");
-}
-
-
-function editLocationName() {
-    editFromElement($("#incident_location_name"), "location.name");
+async function editLocationName() {
+    await editFromElement($("#incident_location_name"), "location.name");
 }
 
 
@@ -910,8 +860,8 @@ function transformAddressInteger(value) {
 }
 
 
-function editLocationAddressRadialHour() {
-    editFromElement(
+async function editLocationAddressRadialHour() {
+    await editFromElement(
         $("#incident_location_address_radial_hour"),
         "location.radial_hour",
         transformAddressInteger
@@ -919,8 +869,8 @@ function editLocationAddressRadialHour() {
 }
 
 
-function editLocationAddressRadialMinute() {
-    editFromElement(
+async function editLocationAddressRadialMinute() {
+    await editFromElement(
         $("#incident_location_address_radial_minute"),
         "location.radial_minute",
         transformAddressInteger
@@ -928,8 +878,8 @@ function editLocationAddressRadialMinute() {
 }
 
 
-function editLocationAddressConcentric() {
-    editFromElement(
+async function editLocationAddressConcentric() {
+    await editFromElement(
         $("#incident_location_address_concentric"),
         "location.concentric",
         transformAddressInteger
@@ -937,67 +887,42 @@ function editLocationAddressConcentric() {
 }
 
 
-function editLocationDescription() {
-    editFromElement($("#incident_location_description"), "location.description");
+async function editLocationDescription() {
+    await editFromElement($("#incident_location_description"), "location.description");
 }
 
 
-function removeRanger(sender) {
+async function removeRanger(sender) {
     sender = $(sender);
 
     const rangerHandle = sender.parent().attr("value");
 
-    function ok() {
-        // FIXME
-        // controlHasSuccess(sender);
-    }
-
-    function fail() {
-        // FIXME
-        // controlHasError(sender);
-    }
-
-    sendEdits(
+    await sendEdits(
         {
             "ranger_handles": incident.ranger_handles.filter(
                 function(h) { return h !== rangerHandle }
             ),
         },
-        ok, fail
     );
 }
 
 
-function removeIncidentType(sender) {
+async function removeIncidentType(sender) {
     sender = $(sender);
 
     const incidentType = sender.parent().attr("value");
-
-    function ok() {
-        // FIXME
-        // controlHasSuccess(sender);
-    }
-
-    function fail() {
-        // FIXME
-        // controlHasError(sender);
-    }
-
-    sendEdits(
-        {
-            "incident_types": incident.incident_types.filter(
-                function(t) { return t !== incidentType }
-            ),
-        },
-        ok, fail
-    );
+    await sendEdits({
+        "incident_types": incident.incident_types.filter(
+            function(t) { return t !== incidentType }
+        ),
+    });
 }
 
 function normalize(str) {
     return str.toLowerCase().trim();
 }
 
-function addRanger() {
+async function addRanger() {
     const select = $("#ranger_add");
     let handle = $(select).val();
 
@@ -1029,21 +954,18 @@ function addRanger() {
 
     handles.push(handle);
 
-    function ok() {
-        select.val("");
-        controlHasSuccess(select, 1000);
-    }
-
-    function fail() {
+    const {err} = await sendEdits({"ranger_handles": handles});
+    if (err !== null) {
         controlHasError(select);
         select.val("");
+        return;
     }
-
-    sendEdits({"ranger_handles": handles}, ok, fail);
+    select.val("");
+    controlHasSuccess(select, 1000);
 }
 
 
-function addIncidentType() {
+async function addIncidentType() {
     const select = $("#incident_type_add");
     let incidentType = $(select).val();
 
@@ -1075,85 +997,82 @@ function addIncidentType() {
 
     currentIncidentTypes.push(incidentType);
 
-    function ok() {
-        select.val("");
-        controlHasSuccess(select, 1000);
-    }
-
-    function fail() {
+    const {err} = await sendEdits({"incident_types": currentIncidentTypes});
+    if (err != null) {
         controlHasError(select);
         select.val("");
+        return;
     }
-
-    sendEdits({"incident_types": currentIncidentTypes}, ok, fail);
+    select.val("");
+    controlHasSuccess(select, 1000);
 }
 
 
-function detachFieldReport(sender) {
+async function detachFieldReport(sender) {
     sender = $(sender);
 
     const fieldReport = sender.parent().data();
-
-    function ok(data, status, xhr) {
-        // FIXME
-        // controlHasSuccess(sender);
-        loadAllFieldReports(renderFieldReportData);
-    }
-
-    function fail(requestError, status, xhr) {
-        // FIXME
-        // controlHasError(sender);
-
-        const message = "Failed to detach field report";
-        console.log(message + ": " + requestError);
-        loadAllFieldReports(renderFieldReportData);
-        setErrorMessage(message);
-    }
 
     const url = (
         urlReplace(url_fieldReports) + fieldReport.number +
         "?action=detach;incident=" + incidentNumber
     );
-
-    jsonRequest(url, {}, ok, fail);
+    let {err} = await fetchJsonNoThrow(url, {
+        body: {},
+    })
+    if (err != null) {
+        const message = `Failed to detach field report ${err}`;
+        console.log(message);
+        await loadAllFieldReports();
+        renderFieldReportData();
+        setErrorMessage(message);
+        return;
+    }
+    await loadAllFieldReports();
+    renderFieldReportData();
 }
 
 
-function attachFieldReport() {
+async function attachFieldReport() {
     if (incidentNumber == null) {
         // Incident doesn't exist yet.  Create it and then retry.
-        sendEdits({}, attachFieldReport);
+        const {err} = await sendEdits({});
+        if (err != null) {
+            return;
+        }
+        await attachFieldReport();
         return;
     }
 
     const select = $("#attached_field_report_add");
     const fieldReportNumber = $(select).val();
 
-    function ok(data, status, xhr) {
-        loadAllFieldReports(renderFieldReportData);
-        controlHasSuccess(select, 1000);
-    }
-
-    function fail(requestError, status, xhr) {
-        const message = "Failed to attach field report";
-        console.log(message + ": " + requestError);
-        loadAllFieldReports(renderFieldReportData);
-        setErrorMessage(message);
-        controlHasError(select);
-    }
-
     const url = (
         urlReplace(url_fieldReports) + fieldReportNumber +
         "?action=attach;incident=" + incidentNumber
     );
-
-    jsonRequest(url, {}, ok, fail);
+    let {err} = await fetchJsonNoThrow(url, {
+        body: {},
+    })
+    if (err != null) {
+        const message = `Failed to attach field report: ${err}`;
+        console.log(message);
+        await loadAllFieldReports();
+        renderFieldReportData();
+        setErrorMessage(message);
+        controlHasError(select);
+        return;
+    }
+    await loadAllFieldReports();
+    renderFieldReportData();
+    controlHasSuccess(select, 1000);
 }
 
 
 // The success callback for a report entry strike call.
-function onStrikeSuccess() {
-    loadAndDisplayIncident();
-    loadAllFieldReports(renderFieldReportData);
+async function onStrikeSuccess() {
+    await loadAndDisplayIncident();
+    await loadAllFieldReports();
+    renderFieldReportData();
     clearErrorMessage();
 }
