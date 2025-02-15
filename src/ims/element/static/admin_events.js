@@ -28,13 +28,15 @@ async function initPage() {
 let accessControlList = null
 
 async function loadAccessControlList() {
-    try {
-        accessControlList = await jsonRequestAsync(url_acl, null);
-    } catch (err) {
-        const message = `Failed to load access control list:\n${JSON.stringify(err)}`;
+    let {json, err} = await fetchJsonNoThrow(url_acl);
+    if (err != null) {
+        const message = `Failed to load access control list: ${err}`;
         console.error(message);
         window.alert(message);
+        return {err: message};
     }
+    accessControlList = json;
+    return {err: null};
 }
 
 
@@ -105,16 +107,18 @@ function updateEventAccess(event, mode) {
 
 async function addEvent(sender) {
     const event = sender.value.trim();
-
-    try {
-        await jsonRequestAsync(url_events, {"add": [event]});
-    } catch (err) {
-        const message = `Failed to add event: ${JSON.stringify(err)}`;
+    const {err} = await fetchJsonNoThrow(url_events, {
+        body: {
+            "add": [event],
+        },
+    });
+    if (err != null) {
+        const message = `Failed to add event: ${err}`;
         console.log(message);
+        window.alert(message);
         await loadAccessControlList();
         drawAccess();
         controlHasError($(sender));
-        window.alert(message);
         return;
     }
     await loadAccessControlList();
@@ -170,22 +174,15 @@ async function addAccess(sender) {
     edits[event] = {};
     edits[event][mode] = acl;
 
-    function refresh() {
-        for (const mode of accessModes) {
-            updateEventAccess(event, mode);
-        }
+    const {err} = await sendACL(edits);
+    await loadAccessControlList();
+    for (const mode of accessModes) {
+        updateEventAccess(event, mode);
     }
-
-    try {
-        await sendACL(edits);
-    } catch (err) {
-        await loadAccessControlList();
-        refresh();
+    if (err != null) {
         controlHasError($(sender));
         return;
     }
-    await loadAccessControlList();
-    refresh();
     sender.value = "";  // Clear input field
 }
 
@@ -216,21 +213,11 @@ async function removeAccess(sender) {
     edits[event] = {};
     edits[event][mode] = acl;
 
-    function refresh() {
-        for (const mode of accessModes) {
-            updateEventAccess(event, mode);
-        }
+    await sendACL(edits);
+    await loadAccessControlList();
+    for (const mode of accessModes) {
+        updateEventAccess(event, mode);
     }
-
-    try {
-        await sendACL(edits);
-    } catch (err) {
-        await loadAccessControlList();
-        refresh();
-        return;
-    }
-    await loadAccessControlList(refresh);
-    refresh();
 }
 
 async function setValidity(sender) {
@@ -252,32 +239,28 @@ async function setValidity(sender) {
     edits[event] = {};
     edits[event][mode] = acl;
 
-    function refresh() {
-        for (const mode of accessModes) {
-            updateEventAccess(event, mode);
-        }
+    const {err} = await sendACL(edits);
+    await loadAccessControlList();
+    for (const mode of accessModes) {
+        updateEventAccess(event, mode);
     }
-
-    try {
-        await sendACL(edits);
-    } catch (err) {
-        await loadAccessControlList();
-        refresh();
+    if (err != null) {
         controlHasError($(sender));
         return;
     }
-    await loadAccessControlList(refresh);
-    refresh();
     sender.value = "";  // Clear input field
 }
 
 
 async function sendACL(edits) {
-    try {
-        return await jsonRequestAsync(url_acl, edits);
-    } catch (err) {
-        const message = `Failed to edit ACL:\n${JSON.stringify(err)}`;
-        console.log(message);
-        window.alert(message);
+    const {err} = await fetchJsonNoThrow(url_acl, {
+        body: edits,
+    });
+    if (err == null) {
+        return {err: null};
     }
+    const message = `Failed to edit ACL:\n${JSON.stringify(err)}`;
+    console.log(message);
+    window.alert(message);
+    return {err: err};
 }

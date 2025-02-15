@@ -18,89 +18,85 @@
 // Initialize UI
 let fieldReport = null;
 
-function initFieldReportPage() {
-    function loadedFieldReport() {
-        // for a new field report
-        if (fieldReport.number == null) {
-            $("#field_report_summary").focus();
-        }
+async function initFieldReportPage() {
+    await loadBody();
+    disableEditing();
+    await loadAndDisplayFieldReport();
 
-        // Warn the user if they're about to navigate away with unsaved text.
-        window.addEventListener("beforeunload", function (e) {
-            if (document.getElementById("report_entry_add").value !== "") {
-                e.preventDefault();
-            }
-        });
+    // for a new field report
+    if (fieldReport.number == null) {
+        $("#field_report_summary").focus();
     }
 
-    function loadedBody() {
-        disableEditing();
-        loadAndDisplayFieldReport(loadedFieldReport);
-
-        // Updates...it's fine to ignore the returned promise here
-        requestEventSourceLock();
-
-        const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
-        fieldReportChannel.onmessage = function (e) {
-            const number = e.data["field_report_number"];
-            const event = e.data["event_id"]
-            const updateAll = e.data["update_all"];
-
-            if (updateAll || (event === eventID && number === fieldReportNumber)) {
-                console.log("Got field report update: " + number);
-                loadAndDisplayFieldReport();
-            }
+    // Warn the user if they're about to navigate away with unsaved text.
+    window.addEventListener("beforeunload", function (e) {
+        if (document.getElementById("report_entry_add").value !== "") {
+            e.preventDefault();
         }
+    });
 
-        // Keyboard shortcuts
-        document.addEventListener("keydown", function(e) {
-            // No shortcuts when an input field is active
-            if (document.activeElement !== document.body) {
-                return;
-            }
-            // No shortcuts when ctrl, alt, or meta is being held down
-            if (e.altKey || e.ctrlKey || e.metaKey) {
-                return;
-            }
-            // ? --> show help modal
-            if (e.key === "?") {
-                $("#helpModal").modal("toggle");
-            }
-            // a --> jump to add a new report entry
-            if (e.key === "a") {
-                e.preventDefault();
-                // Scroll to report_entry_add field
-                $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
-                $("#report_entry_add").focus();
-            }
-            // h --> toggle showing system entries
-            if (e.key.toLowerCase() === "h") {
-                document.getElementById("history_checkbox").click();
-            }
-            // n --> new field report
-            if (e.key.toLowerCase() === "n") {
-                window.open("./new", '_blank').focus();
-            }
-        });
-        document.getElementById("helpModal").addEventListener("keydown", function(e) {
-            if (e.key === "?") {
-                $("#helpModal").modal("toggle");
-            }
-        });
-        $("#report_entry_add")[0].addEventListener("keydown", function (e) {
-            const submitEnabled = !$("#report_entry_submit").hasClass("disabled");
-            if (submitEnabled && (e.ctrlKey || e.altKey) && e.key === "Enter") {
-                submitReportEntry();
-            }
-        });
+    // Updates...it's fine to ignore the returned promise here
+    requestEventSourceLock();
+
+    const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
+    fieldReportChannel.onmessage = async function (e) {
+        const number = e.data["field_report_number"];
+        const event = e.data["event_id"]
+        const updateAll = e.data["update_all"];
+
+        if (updateAll || (event === eventID && number === fieldReportNumber)) {
+            console.log("Got field report update: " + number);
+            await loadAndDisplayFieldReport();
+        }
     }
 
-    loadBody(loadedBody);
+    // Keyboard shortcuts
+    document.addEventListener("keydown", function(e) {
+        // No shortcuts when an input field is active
+        if (document.activeElement !== document.body) {
+            return;
+        }
+        // No shortcuts when ctrl, alt, or meta is being held down
+        if (e.altKey || e.ctrlKey || e.metaKey) {
+            return;
+        }
+        // ? --> show help modal
+        if (e.key === "?") {
+            $("#helpModal").modal("toggle");
+        }
+        // a --> jump to add a new report entry
+        if (e.key === "a") {
+            e.preventDefault();
+            // Scroll to report_entry_add field
+            $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
+            $("#report_entry_add").focus();
+        }
+        // h --> toggle showing system entries
+        if (e.key.toLowerCase() === "h") {
+            document.getElementById("history_checkbox").click();
+        }
+        // n --> new field report
+        if (e.key.toLowerCase() === "n") {
+            window.open("./new", '_blank').focus();
+        }
+    });
+    document.getElementById("helpModal").addEventListener("keydown", function(e) {
+        if (e.key === "?") {
+            $("#helpModal").modal("toggle");
+        }
+    });
+    $("#report_entry_add")[0].addEventListener("keydown", function (e) {
+        const submitEnabled = !$("#report_entry_submit").hasClass("disabled");
+        if (submitEnabled && (e.ctrlKey || e.altKey) && e.key === "Enter") {
+            submitReportEntry();
+        }
+    });
 }
 
 // Set the user-visible error information on the page to the provided string.
 function setErrorMessage(msg) {
-    msg = "Error: (Cause: " + msg + ")"
+    console.error(msg);
+    msg = `Error: (Cause: ${msg})`;
     document.getElementById("error_info").classList.remove("hidden");
     document.getElementById("error_text").textContent = msg;
 }
@@ -114,8 +110,9 @@ function clearErrorMessage() {
 // Load field report
 //
 
-function loadFieldReport(success) {
-    let number = null;
+// returns {err: error|null}
+async function loadFieldReport() {
+    let number;
     if (fieldReport == null) {
         // First time here.  Use page JavaScript initial value.
         number = fieldReportNumber;
@@ -124,62 +121,50 @@ function loadFieldReport(success) {
         number = fieldReport.number;
     }
 
-    function ok(data, status, xhr) {
-        fieldReport = data;
-
-        if (success) {
-            success();
-        }
-    }
-
-    function fail(error, status, xhr) {
-        disableEditing();
-        const message = "Failed to load field report: " + error;
-        console.error(message);
-        setErrorMessage(message);
-    }
-
     if (number == null) {
-        ok({
+        fieldReport = {
             "number": null,
             "created": null,
-        });
+        };
     } else {
-        const url = urlReplace(url_fieldReports) + number;
-        jsonRequest(url, null, ok, fail);
+        const {json, err} = await fetchJsonNoThrow(
+            urlReplace(url_fieldReports) + number)
+        if (err != null) {
+            disableEditing();
+            const message = "Failed to load field report: " + error;
+            console.error(message);
+            setErrorMessage(message);
+            return {err: message};
+        }
+        fieldReport = json;
     }
+    return {err: null};
 }
 
+// returns void
+async function loadAndDisplayFieldReport() {
+    const {err} = await loadFieldReport();
 
-function loadAndDisplayFieldReport(success) {
-    function loaded() {
-        if (fieldReport == null) {
-            const message = "Field report failed to load";
-            console.log(message);
-            setErrorMessage(message);
-            return;
-        }
-
-        drawTitle();
-        drawNumber();
-        drawIncident();
-        drawSummary();
-        toggleShowHistory();
-        drawReportEntries(fieldReport.report_entries);
-        clearErrorMessage();
-
-        $("#report_entry_add").on("input", reportEntryEdited);
-
-        if (editingAllowed) {
-            enableEditing();
-        }
-
-        if (success) {
-            success();
-        }
+    if (fieldReport == null || err != null) {
+        const message = "Field report failed to load";
+        console.log(message);
+        setErrorMessage(message);
+        return;
     }
 
-    loadFieldReport(loaded);
+    drawTitle();
+    drawNumber();
+    drawIncident();
+    drawSummary();
+    toggleShowHistory();
+    drawReportEntries(fieldReport.report_entries);
+    clearErrorMessage();
+
+    $("#report_entry_add").on("input", reportEntryEdited);
+
+    if (editingAllowed) {
+        enableEditing();
+    }
 }
 
 
@@ -255,7 +240,8 @@ function drawSummary() {
 // Editing
 //
 
-function sendEdits(edits, success, error) {
+// returns {err: error|null}
+async function sendEdits(edits) {
     const number = fieldReport.number;
     let url = urlReplace(url_fieldReports);
 
@@ -273,117 +259,101 @@ function sendEdits(edits, success, error) {
         url += number;
     }
 
-    function ok(data, status, xhr) {
-        if (number == null) {
-            // We created a new field report.
-            // We need to find out the created field report number so that
-            // future edits don't keep creating new resources.
+    const {resp, json, err} = await fetchJsonNoThrow(url, {
+        body: edits,
+    })
+    if (err != null) {
+        const message = `Failed to apply edit: ${err}`;
+        console.log(message);
+        await loadAndDisplayFieldReport();
+        setErrorMessage(message);
+        return {err: message}
+    }
+    if (number == null) {
+        // We created a new field report.
+        // We need to find out the created field report number so that
+        // future edits don't keep creating new resources.
 
-            let newNumber = xhr.getResponseHeader("X-IMS-Field-Report-Number")
-            // Check that we got a value back
-            if (newNumber == null) {
-                fail(
-                    "No X-IMS-Field-Report-Number header provided.",
-                    status, xhr
-                );
-                return;
-            }
-
-            newNumber = parseInt(newNumber);
-            // Check that the value we got back is valid
-            if (isNaN(newNumber)) {
-                fail(
-                    "Non-integer X-IMS-Field-Report-Number header provided:" +
-                    newNumber,
-                    status, xhr
-                );
-                return;
-            }
-
-            // Store the new number in our field report object
-            fieldReportNumber = fieldReport.number = newNumber;
-
-            // Update browser history to update URL
-            drawTitle();
-            window.history.pushState(
-                null, document.title,
-                urlReplace(url_viewFieldReports) + newNumber
-            );
+        let newNumber = resp.headers.get("X-IMS-Field-Report-Number")
+        // Check that we got a value back
+        if (newNumber == null) {
+            return {err: "No X-IMS-Field-Report-Number header provided."};
         }
 
-        success();
-        loadAndDisplayFieldReport();
+        newNumber = parseInt(newNumber);
+        // Check that the value we got back is valid
+        if (isNaN(newNumber)) {
+            return {err: "Non-integer X-IMS-Field-Report-Number header provided: " + newNumber};
+        }
+
+        // Store the new number in our field report object
+        fieldReportNumber = fieldReport.number = newNumber;
+
+        // Update browser history to update URL
+        drawTitle();
+        window.history.pushState(
+            null, document.title,
+            urlReplace(url_viewFieldReports) + newNumber
+        );
     }
 
-    function fail(requestError, status, xhr) {
-        const message = "Failed to apply edit";
-        console.log(message + ": " + requestError);
-        error();
-        loadAndDisplayFieldReport();
-        setErrorMessage(message);
-    }
-
-    jsonRequest(url, edits, ok, fail);
+    await loadAndDisplayFieldReport();
+    return {err: null};
 }
 
 
-function editSummary() {
-    editFromElement($("#field_report_summary"), "summary");
+async function editSummary() {
+    await editFromElement($("#field_report_summary"), "summary");
 }
 
 //
 // Make a new incident and attach this Field Report to it
 //
 
-function makeIncident() {
-    const incidentsURL = urlReplace(url_incidents);
+async function makeIncident() {
+    // Create the new incident
+    {
+        const incidentsURL = urlReplace(url_incidents);
 
-    function createOk(data, status, xhr) {
-        const newIncident = xhr.getResponseHeader("X-IMS-Incident-Number");
-        fieldReport.incident = parseInt(newIncident);
-
-        const url = (
-            urlReplace(url_fieldReports) + fieldReport.number +
-            "?action=attach;incident=" + newIncident
-        );
-
-        function attachOk(data, status, xhr) {
-            console.log("Created and attached to new incident " + newIncident);
-            loadAndDisplayFieldReport();
+        const authors = [];
+        if (fieldReport.report_entries?.length > 0) {
+            authors.push(fieldReport.report_entries[0].author);
         }
-
-        function attachFail(error, status, xhr) {
+        let {resp, err} = await fetchJsonNoThrow(incidentsURL, {
+            body:{
+                "summary": fieldReport.summary,
+                "ranger_handles": authors,
+            },
+        })
+        if (err != null) {
             disableEditing();
-            const message = "Failed to attach field report";
-            console.error(message + ": " + error);
-            setErrorMessage(message);
+            setErrorMessage(`Failed to create incident: ${err}`);
+            return;
         }
-
-        jsonRequest(url, {}, attachOk, attachFail);
+        fieldReport.incident = parseInt(resp.headers.get("X-IMS-Incident-Number"));
     }
 
-    function createFail(error, status, xhr) {
-        disableEditing();
-        const message = "Failed to create incident";
-        console.error(message + ": " + error);
-        setErrorMessage(message);
+    // Attach this FR to that new incident
+    {
+        const attachToIncidentUrl =
+            `${urlReplace(url_fieldReports)}${fieldReport.number}` +
+            `?action=attach;incident=${fieldReport.incident}`;
+        let {err} = await fetchJsonNoThrow(attachToIncidentUrl, {
+            body: {},
+        });
+        if (err != null) {
+            disableEditing();
+            setErrorMessage(`Failed to attach field report: ${err}`);
+            return;
+        }
     }
-
-    const authors = [];
-    if (fieldReport.report_entries?.length > 0) {
-        authors.push(fieldReport.report_entries[0].author);
-    }
-
-    jsonRequest(incidentsURL, {
-        "summary": fieldReport.summary,
-        "ranger_handles": authors,
-        }, createOk, createFail,
-    );
+    console.log("Created and attached to new incident " + fieldReport.incident);
+    await loadAndDisplayFieldReport();
 }
 
 
 // The success callback for a report entry strike call.
-function onStrikeSuccess() {
-    loadAndDisplayFieldReport();
+async function onStrikeSuccess() {
+    await loadAndDisplayFieldReport();
     clearErrorMessage();
 }

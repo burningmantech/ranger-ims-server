@@ -178,85 +178,36 @@ function compareReportEntries(a, b) {
 // Request making
 //
 
-function jsonRequest(url, jsonOut, success, error, headers) {
-    function ok(data, status, xhr) {
-        if (success) {
-            success(data, status, xhr);
+async function fetchJsonNoThrow(url, init) {
+    if (init == null) {
+        init = {};
+    }
+    if (!("headers" in init)) {
+        init["headers"] = {};
+    }
+    init["headers"]["Accept"] = "application/json";
+    if ("body" in init) {
+        init["method"] = "POST";
+        init["headers"]["Content-Type"] = "application/json";
+        if (typeof(init["body"]) !== "string") {
+            init["body"] = JSON.stringify(init["body"]);
         }
     }
-
-    function fail(xhr, status, requestError) {
-        // Intentionally empty response is not an error.
-        if (
-            status === "parsererror" &&
-            xhr.status === 201 &&
-            xhr.responseText === ""
-        ) {
-            ok("", "", xhr);
-            return;
-        }
-
-        if (error) {
-            error(requestError, status, xhr);
-        }
-    }
-
-    const args = {
-        "url": url,
-        "method": "GET",
-        "dataType": "json",
-        "success": ok,
-        "error": fail,
-    };
-    if (headers) {
-        args["headers"] = headers;
-    }
-
-    if (jsonOut) {
-        const jsonText = JSON.stringify(jsonOut);
-
-        args["method"] = "POST";
-        args["contentType"] = "application/json";
-        args["data"] = jsonText;
-    }
-
-    $.ajax(args);
-}
-
-async function jsonRequestAsync(url, jsonOut, headers) {
-    const args = {
-        "url": url,
-        "method": "GET",
-        "dataType": "json",
-    };
-    if (headers) {
-        args["headers"] = headers;
-    }
-
-    if (jsonOut) {
-        const jsonText = JSON.stringify(jsonOut);
-
-        args["method"] = "POST";
-        args["contentType"] = "application/json";
-        args["data"] = jsonText;
-    }
-
+    let response = null;
     try {
-        return await $.ajax(args);
-    } catch (err) {
-        // Intentionally empty response is not an error.
-        if (
-            err.statusText === "parsererror" &&
-            err.status === 201 &&
-            err.responseText === ""
-        ) {
-            return Promise.resolve(err);
+        response = await fetch(url, init);
+        if (!response.ok) {
+            return {resp: response, json: null, err: `${response.statusText} (${response.status})`};
         }
-        console.error(`Got ajax error:\n\n${JSON.stringify(err)}`);
-        return Promise.reject(err);
+        let json = null;
+        if (response.headers.get("content-type") === "application/json") {
+            json = await response.json();
+        }
+        return {resp: response, json: json, err: null};
+    } catch (err) {
+        return {resp: response, json: null, err: err.message};
     }
 }
-
 
 
 //
@@ -367,30 +318,27 @@ function controlClear(element) {
 // Load HTML body template.
 //
 
-function loadBody(success) {
-    function complete() {
-        applyTheme();
-
-        if (typeof eventID !== "undefined") {
-            $(".event-id").text(eventID);
-            $(".event-id").addClass("active-event");
-
-            const eventIncidents = document.getElementById("active-event-incidents");
-            eventIncidents.setAttribute("href", urlReplace(url_viewIncidents));
-            eventIncidents.classList.remove("hidden");
-
-            const eventFieldReports = document.getElementById("active-event-field-reports");
-            eventFieldReports.setAttribute("href", urlReplace(url_viewFieldReports));
-            eventFieldReports.classList.remove("hidden");
-        }
-
-        if (success) {
-            success();
-        }
-    }
+async function loadBody() {
 
     detectTouchDevice();
-    $("body").load(pageTemplateURL, complete);
+    const {promise, resolve} = Promise.withResolvers();
+    $("body").load(pageTemplateURL, resolve);
+    await promise;
+
+    applyTheme();
+
+    if (typeof eventID !== "undefined") {
+        $(".event-id").text(eventID);
+        $(".event-id").addClass("active-event");
+
+        const eventIncidents = document.getElementById("active-event-incidents");
+        eventIncidents.setAttribute("href", urlReplace(url_viewIncidents));
+        eventIncidents.classList.remove("hidden");
+
+        const eventFieldReports = document.getElementById("active-event-field-reports");
+        eventFieldReports.setAttribute("href", urlReplace(url_viewFieldReports));
+        eventFieldReports.classList.remove("hidden");
+    }
 }
 
 
@@ -900,27 +848,41 @@ function reportEntryEdited() {
 // The error callback for a report entry strike call.
 // This function is designed to work from either the incident
 // or the field report page.
-function onStrikeError(xhr, status, requestError) {
-    const message = "Failed to set report entry strike status";
-    console.log(message + ": " + JSON.stringify(requestError));
+function onStrikeError(err) {
+    const message = `Failed to set report entry strike status: ${err}`;
+    console.log(message);
     setErrorMessage(message);
 }
 
-function setStrikeIncidentEntry(incidentNumber, reportEntryId, strike) {
+async function setStrikeIncidentEntry(incidentNumber, reportEntryId, strike) {
     const url = urlReplace(url_incident_reportEntry)
         .replace("<incident_number>", incidentNumber)
         .replace("<report_entry_id>", reportEntryId);
-    jsonRequest(url, {"stricken": strike}, onStrikeSuccess, onStrikeError);
+    const {err} = await fetchJsonNoThrow(url, {
+        body: {"stricken": strike},
+    })
+    if (err != null) {
+        onStrikeError(err);
+    } else {
+        await onStrikeSuccess();
+    }
 }
 
-function setStrikeFieldReportEntry(fieldReportNumber, reportEntryId, strike) {
+async function setStrikeFieldReportEntry(fieldReportNumber, reportEntryId, strike) {
     const url = urlReplace(url_fieldReport_reportEntry)
         .replace("<field_report_number>", fieldReportNumber)
         .replace("<report_entry_id>", reportEntryId);
-    jsonRequest(url, {"stricken": strike}, onStrikeSuccess, onStrikeError);
+    const {err} = await fetchJsonNoThrow(url, {
+        body: {"stricken": strike},
+    })
+    if (err != null) {
+        onStrikeError();
+    } else {
+        onStrikeSuccess();
+    }
 }
 
-function submitReportEntry() {
+async function submitReportEntry() {
     const text = $("#report_entry_add").val().trim();
 
     if (!text) {
@@ -929,29 +891,25 @@ function submitReportEntry() {
 
     console.log("New report entry:\n" + text);
 
-    function ok() {
-        const $textArea = $("#report_entry_add");
-        // Clear the report entry
-        $textArea.val("");
-        controlHasSuccess($textArea, 1000);
-        // Reset the submit button and its "disabled" status
-        reportEntryEdited();
-    }
-
-    function fail() {
+    // Disable the submit button to prevent repeat submissions
+    $("#report_entry_submit").addClass("disabled");
+    // send a dummy ID to appease the JSON parser in the server
+    const {err} = await sendEdits({"report_entries": [{"text": text, "id": -1}]});
+    if (err != null) {
         const submitButton = $("#report_entry_submit");
         submitButton.removeClass("disabled");
         submitButton.removeClass("btn-default");
         submitButton.removeClass("btn-warning");
         submitButton.addClass("btn-danger");
         controlHasError($("#report_entry_add"), 1000);
+        return;
     }
-
-    // send a dummy ID to appease the JSON parser in the server
-    sendEdits({"report_entries": [{"text": text, "id": -1}]}, ok, fail);
-
-    // Disable the submit button to prevent repeat submissions
-    $("#report_entry_submit").addClass("disabled");
+    const $textArea = $("#report_entry_add");
+    // Clear the report entry
+    $textArea.val("");
+    controlHasSuccess($textArea, 1000);
+    // Reset the submit button and its "disabled" status
+    reportEntryEdited();
 }
 
 //
@@ -966,7 +924,7 @@ function toggleShowHistory() {
     }
 }
 
-function editFromElement(element, jsonKey, transform) {
+async function editFromElement(element, jsonKey, transform) {
     let value = element.val();
 
     if (transform != null) {
@@ -996,15 +954,12 @@ function editFromElement(element, jsonKey, transform) {
 
     // Send request to server
 
-    function ok() {
+    const {err} = await sendEdits(edits);
+    if (err != null) {
+        controlHasError(element);
+    } else {
         controlHasSuccess(element, 1000);
     }
-
-    function fail() {
-        controlHasError(element);
-    }
-
-    sendEdits(edits, ok, fail);
 }
 
 
