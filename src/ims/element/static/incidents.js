@@ -124,6 +124,7 @@ function initIncidentsTable() {
 
     // Fire-and-forget this promise, since it tries forever to acquire a lock
     let ignoredPromise = requestEventSourceLock();
+
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e) {
         if (e.data["update_all"]) {

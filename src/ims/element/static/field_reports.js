@@ -77,6 +77,7 @@ function initFieldReportsTable() {
 
     // Fire-and-forget this promise, since it tries forever to acquire a lock
     let ignoredPromise = requestEventSourceLock();
+
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = function (e) {
         if (e.data["update_all"]) {
