@@ -35,8 +35,8 @@ async function initFieldReportPage() {
         }
     });
 
-    // Updates...it's fine to ignore the returned promise here
-    requestEventSourceLock();
+    // Fire-and-forget this promise, since it tries forever to acquire a lock
+    let ignoredPromise = requestEventSourceLock();
 
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = async function (e) {
@@ -312,40 +312,36 @@ async function editSummary() {
 
 async function makeIncident() {
     // Create the new incident
-    {
-        const incidentsURL = urlReplace(url_incidents);
+    const incidentsURL = urlReplace(url_incidents);
 
-        const authors = [];
-        if (fieldReport.report_entries?.length > 0) {
-            authors.push(fieldReport.report_entries[0].author);
-        }
-        let {resp, err} = await fetchJsonNoThrow(incidentsURL, {
-            body:{
-                "summary": fieldReport.summary,
-                "ranger_handles": authors,
-            },
-        })
-        if (err != null) {
-            disableEditing();
-            setErrorMessage(`Failed to create incident: ${err}`);
-            return;
-        }
-        fieldReport.incident = parseInt(resp.headers.get("X-IMS-Incident-Number"));
+    const authors = [];
+    if (fieldReport.report_entries?.length > 0) {
+        authors.push(fieldReport.report_entries[0].author);
     }
+    let {resp, err} = await fetchJsonNoThrow(incidentsURL, {
+        body:{
+            "summary": fieldReport.summary,
+            "ranger_handles": authors,
+        },
+    })
+    if (err != null) {
+        disableEditing();
+        setErrorMessage(`Failed to create incident: ${err}`);
+        return;
+    }
+    fieldReport.incident = parseInt(resp.headers.get("X-IMS-Incident-Number"));
 
     // Attach this FR to that new incident
-    {
-        const attachToIncidentUrl =
-            `${urlReplace(url_fieldReports)}${fieldReport.number}` +
-            `?action=attach;incident=${fieldReport.incident}`;
-        let {err} = await fetchJsonNoThrow(attachToIncidentUrl, {
-            body: {},
-        });
-        if (err != null) {
-            disableEditing();
-            setErrorMessage(`Failed to attach field report: ${err}`);
-            return;
-        }
+    const attachToIncidentUrl =
+        `${urlReplace(url_fieldReports)}${fieldReport.number}` +
+        `?action=attach;incident=${fieldReport.incident}`;
+    let {attachErr} = await fetchJsonNoThrow(attachToIncidentUrl, {
+        body: {},
+    });
+    if (attachErr != null) {
+        disableEditing();
+        setErrorMessage(`Failed to attach field report: ${attachErr}`);
+        return;
     }
     console.log("Created and attached to new incident " + fieldReport.incident);
     await loadAndDisplayFieldReport();

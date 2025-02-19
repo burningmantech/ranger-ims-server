@@ -122,8 +122,8 @@ function initIncidentsTable() {
         enableEditing();
     }
 
-    // ok to ignore returned Promise...have the tab wait for the lock
-    requestEventSourceLock();
+    // Fire-and-forget this promise, since it tries forever to acquire a lock
+    let ignoredPromise = requestEventSourceLock();
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e) {
         if (e.data["update_all"]) {

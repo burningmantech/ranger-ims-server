@@ -43,8 +43,8 @@ async function initIncidentPage() {
         }
     });
 
-    // Updates...it's good to ignore the returned promise here
-    requestEventSourceLock();
+    // Fire-and-forget this promise, since it tries forever to acquire a lock
+    let ignoredPromise = requestEventSourceLock();
 
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e) {
@@ -291,12 +291,13 @@ async function loadAllFieldReports() {
     return {err: null};
 }
 
-async function loadFieldReport(fieldReportNumber, success) {
+async function loadFieldReport(fieldReportNumber) {
     if (allFieldReports === undefined) {
         return;
     }
 
-    const {resp, json, err} = await fetchJsonNoThrow(urlReplace(url_fieldReport).replace("<field_report_number>", fieldReportNumber))
+    const {resp, json, err} = await fetchJsonNoThrow(
+        urlReplace(url_fieldReport).replace("<field_report_number>", fieldReportNumber));
     if (err != null) {
         if (resp.status !== 403) {
             const message = `Failed to load field report ${fieldReportNumber} ${err}`;
@@ -781,11 +782,10 @@ async function sendEdits(edits) {
     });
 
     if (err != null) {
-        const message = "Failed to apply edit";
-        console.log(message + ": " + err);
+        const message = `Failed to apply edit: ${err}`;
         await loadAndDisplayIncident();
         setErrorMessage(message);
-        return {err: err}
+        return {err: message}
     }
 
     if (number == null) {
@@ -1035,13 +1035,11 @@ async function detachFieldReport(sender) {
 
 async function attachFieldReport() {
     if (incidentNumber == null) {
-        // Incident doesn't exist yet.  Create it and then retry.
+        // Incident doesn't exist yet. Create it first.
         const {err} = await sendEdits({});
         if (err != null) {
             return;
         }
-        await attachFieldReport();
-        return;
     }
 
     const select = $("#attached_field_report_add");
