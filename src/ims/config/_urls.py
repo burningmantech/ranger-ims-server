@@ -58,6 +58,7 @@ class URLs:
     incident_reportEntry: ClassVar[URL] = incident_reportEntries.child(
         "<report_entry_id>"
     )
+    incidentAttach: ClassVar[URL] = incidentNumber.child("attach")
     fieldReports: ClassVar[URL] = event.child("field_reports").child("")
     fieldReport: ClassVar[URL] = fieldReports.child("<field_report_number>")
     fieldReport_reportEntries: ClassVar[URL] = fieldReport.child("report_entries")

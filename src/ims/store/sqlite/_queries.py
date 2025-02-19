@@ -46,7 +46,7 @@ queries = Queries(
     events=Query(
         "look up events",
         """
-        select NAME from EVENT
+        select NAME, ID from EVENT
         """,
     ),
     createEvent=Query(

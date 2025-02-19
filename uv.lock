@@ -331,6 +331,15 @@ wheels = [
 ]
 
 [[package]]
+name = "multipart"
+version = "1.2.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/df/91/6c93b6a95e6a99ef929a99d019fbf5b5f7fd3368389a0b1ec7ce0a23565b/multipart-1.2.1.tar.gz", hash = "sha256:829b909b67bc1ad1c6d4488fcdc6391c2847842b08323addf5200db88dbe9480", size = 36507 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cc/d1/3598d1e73385baaab427392856f915487db7aa10abadd436f8f2d3e3b0f9/multipart-1.2.1-py3-none-any.whl", hash = "sha256:c03dc203bc2e67f6b46a599467ae0d87cf71d7530504b2c1ff4a9ea21d8b8c8c", size = 13730 },
+]
+
+[[package]]
 name = "mypy"
 version = "1.13.0"
 source = { registry = "https://pypi.org/simple" }
@@ -369,6 +378,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/3d/f6/e93becf00e2cd9e263d813ab05ad422318a9d093fd4c6678febce4387ce4/mypy_zope-1.0.9.tar.gz", hash = "sha256:37d6985dfb05a4c27b35cff47577fd5bad878db4893ddedf54d165f7389a1cdb", size = 34004 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6a/db/ee6e5840d85904c7525afee6d7eaa9cd24bb177ea82d1ad705e19468151a/mypy_zope-1.0.9-py3-none-any.whl", hash = "sha256:6666c1556891a3cb186137519dbd7a58cb30fb72b2504798cad47b35391921ba", size = 32412 },
+]
+
+[[package]]
+name = "puremagic"
+version = "1.28"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/09/2d/40599f25667733e41bbc3d7e4c7c36d5e7860874aa5fe9c584e90b34954d/puremagic-1.28.tar.gz", hash = "sha256:195893fc129657f611b86b959aab337207d6df7f25372209269ed9e303c1a8c0", size = 314945 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c5/53/200a97332d10ed3edd7afcbc5f5543920ac59badfe5762598327999f012e/puremagic-1.28-py3-none-any.whl", hash = "sha256:e16cb9708ee2007142c37931c58f07f7eca956b3472489106a7245e5c3aa1241", size = 43241 },
 ]
 
 [[package]]
@@ -473,6 +491,8 @@ dependencies = [
     { name = "hyperlink" },
     { name = "jwcrypto" },
     { name = "klein" },
+    { name = "multipart" },
+    { name = "puremagic" },
     { name = "pymysql" },
     { name = "pyopenssl" },
     { name = "pyyaml" },
@@ -506,6 +526,8 @@ requires-dist = [
     { name = "hyperlink", specifier = "==21.0.0" },
     { name = "jwcrypto", specifier = "==1.5.6" },
     { name = "klein", specifier = "==24.8.0" },
+    { name = "multipart", specifier = ">=1.2.1" },
+    { name = "puremagic", specifier = ">=1.28" },
     { name = "pymysql", specifier = "==1.1.1" },
     { name = "pyopenssl", specifier = "==25.0.0" },
     { name = "pyyaml", specifier = "==6.0.2" },

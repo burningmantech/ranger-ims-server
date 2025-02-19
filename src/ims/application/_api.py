@@ -30,12 +30,17 @@ from datetime import datetime as DateTime
 from enum import Enum
 from functools import partial
 from json import JSONDecodeError
+from pathlib import Path
 from typing import Any, ClassVar, cast
+from uuid import uuid4
 
+import multipart
+import puremagic
 from attrs import frozen
 from hyperlink import URL
 from klein import KleinRenderable
 from klein._app import KleinSynchronousRenderable
+from puremagic import PureError
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
 from twisted.logger import Logger
@@ -682,6 +687,80 @@ class APIApplication:
                 event_id, incidentNumber, entries, author
             )
 
+        return noContentResponse(request)
+
+    @router.route(_unprefix(URLs.incidentAttach), methods=("POST",))
+    async def attachFileToIncident(
+        self,
+        request: IRequest,
+        event_id: str,
+        incident_number: str,
+    ) -> KleinSynchronousRenderable:
+        eventId = event_id
+        incidentNumber = int(incident_number)
+        del event_id
+        del incident_number
+
+        await self.config.authProvider.authorizeRequest(
+            request, eventId, Authorization.writeIncidents
+        )
+
+        _, options = multipart.parse_options_header(request.getHeader("Content-Type"))
+        p = multipart.MultipartParser(
+            request.content,
+            options.get("boundary", ""),
+            # TODO: move this to config
+            # Arbitrary limit on how many files per attach API call
+            part_limit=50,
+            # TODO: move this to config
+            # Arbitrary 10 MB per file limit
+            partsize_limit=10 * 1024 * 1024,
+        )
+
+        store = self.config.store
+
+        eventNum = 0
+        for event in await store.events():
+            if event.id == eventId:
+                eventNum = event.number
+
+        # TODO: move this to config
+        eventsDir = Path.home() / "ims-attachments" / "events"
+        for part in p.parts():
+            newFilename = uuid4()
+            try:
+                extension = puremagic.from_string(part.raw, filename=part.filename)
+            except PureError:
+                self._log.info(f"failed to determine filetype for {part.filename}")
+                extension = ""
+            else:
+                self._log.info(
+                    f"detected file extension {extension} for {part.filename}"
+                )
+
+            incidentDir = eventsDir / str(eventNum) / "incidents" / str(incidentNumber)
+            incidentDir.mkdir(parents=True)
+            dest = incidentDir / f"{newFilename}{extension}"
+            part.save_as(dest)
+            self._log.info(f"saved {part.filename} as {dest}")
+
+        user: IMSUser = request.user  # type: ignore[attr-defined]
+        author = user.shortNames[0]
+
+        now = DateTime.now(UTC)
+
+        entry = ReportEntry(
+            id=-1,  # will be assigned a valid ID on write to DB
+            author=author,
+            text=f"User uploaded files: {', '.join(p.filename for p in p.parts())}",
+            created=now,
+            automatic=False,
+            stricken=False,
+        )
+
+        await store.addReportEntriesToIncident(
+            eventId, incidentNumber, (entry,), author
+        )
         return noContentResponse(request)
 
     @router.route(_unprefix(URLs.incident_reportEntry), methods=("POST",))
