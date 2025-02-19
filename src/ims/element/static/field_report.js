@@ -335,7 +335,7 @@ async function makeIncident() {
     const attachToIncidentUrl =
         `${urlReplace(url_fieldReports)}${fieldReport.number}` +
         `?action=attach;incident=${fieldReport.incident}`;
-    let {attachErr} = await fetchJsonNoThrow(attachToIncidentUrl, {
+    const {err: attachErr} = await fetchJsonNoThrow(attachToIncidentUrl, {
         body: {},
     });
     if (attachErr != null) {
