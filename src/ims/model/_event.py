@@ -35,6 +35,7 @@ class Event:
     """
 
     id: str
+    number: int | None = None
 
     def __str__(self) -> str:
         return self.id

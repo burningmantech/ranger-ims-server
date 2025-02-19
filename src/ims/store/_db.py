@@ -358,7 +358,11 @@ class DatabaseStore(IMSDataStore):
         See :meth:`IMSDataStore.events`.
         """
         return (
-            Event(id=cast(str, row["NAME"]))
+            Event(
+                # We use DB NAME as id and DB ID as number
+                id=cast(str, row["NAME"]),
+                number=cast(int, row["ID"]),
+            )
             for row in await self.runQuery(self.query.events)
         )
 
