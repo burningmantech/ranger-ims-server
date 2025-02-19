@@ -106,6 +106,7 @@ ignore = [
     "EM102",    # Exception must not use an f-string literal, assign to variable first
     "ERA001",   # Found commented-out code
     "FIX001",   # Line contains FIXME, consider resolving the issue
+    "FIX002",   # Line contains TODO, consider resolving the issue
     "ISC001",   # Implicitly concatenated strings on a single line  # Disabled for formatter compatibility
     "N802",     # Function name should be lowercase
     "N803",     # Argument name should be lowercase
