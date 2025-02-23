@@ -71,7 +71,7 @@ class DMSDirectory(IMSDirectory):
             if r.handle.lower() == searchLower:
                 ranger = r
             for email in r.email:
-                if email.lower() == searchLower:
+                if email and email.lower() == searchLower:
                     ranger = r
             if ranger is not None:
                 break
