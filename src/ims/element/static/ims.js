@@ -975,6 +975,17 @@ const lastSseIDKey = "last_sse_id";
 // Call this from each browsing context, so that it can queue up to become a leader
 // to manage the EventSource.
 async function requestEventSourceLock() {
+
+    // The "navigator.locks" API is only available over secure browsing contexts.
+    // Secure contexts include HTTPS as well as non-HTTPS via localhost, so this is
+    // really only when you try to connect directly to another host without TLS.
+    // https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts
+    if (!window.isSecureContext && typeof setErrorMessage !== "undefined") {
+        setErrorMessage("You're connected through an insecure browsing context. " +
+            "Background SSE updates will not work!");
+        return;
+    }
+
     // Infinitely attempt to reconnect to the EventSource.
     // This addresses the following issue for when IMS lives on AWS:
     // https://github.com/burningmantech/ranger-ims-server/issues/1364
