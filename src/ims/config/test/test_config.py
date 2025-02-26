@@ -749,6 +749,7 @@ class ConfigurationTests(TestCase):
             f"Core.Port: {config.port}\n"
             f"\n"
             f"Core.ServerRoot: {config.serverRoot}\n"
+            f"Core.AttachmentsRoot: {config.attachmentsRoot}\n"
             f"Core.ConfigRoot: {config.configRoot}\n"
             f"Core.DataRoot: {config.dataRoot}\n"
             f"Core.CachedResources: {config.cachedResourcesRoot}\n"

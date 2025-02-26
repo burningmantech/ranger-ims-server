@@ -1,0 +1,9 @@
+-- Add support for file attachments
+
+alter table REPORT_ENTRY
+    add column ATTACHED_FILE text
+;
+
+-- Update schema version
+
+update SCHEMA_INFO set VERSION = 7;

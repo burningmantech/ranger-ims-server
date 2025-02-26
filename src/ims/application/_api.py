@@ -31,17 +31,22 @@ from enum import Enum
 from functools import partial
 from json import JSONDecodeError
 from typing import Any, ClassVar, cast
+from uuid import uuid4
 
 from attrs import frozen
 from hyperlink import URL
 from klein import KleinRenderable
 from klein._app import KleinSynchronousRenderable
+from multipart import MultipartParser, parse_options_header
+from puremagic import PureError
+from puremagic import from_string as puremagic_from_string
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
 from twisted.logger import Logger
 from twisted.python.failure import Failure
 from twisted.web import http
 from twisted.web.iweb import IRequest
+from twisted.web.static import File
 
 from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
@@ -683,6 +688,108 @@ class APIApplication:
             )
 
         return noContentResponse(request)
+
+    @router.route(_unprefix(URLs.incidentAttachments), methods=("POST",))
+    async def attachFileToIncident(
+        self,
+        request: IRequest,
+        event_id: str,
+        incident_number: str,
+    ) -> KleinSynchronousRenderable:
+        eventId = event_id
+        incidentNumber = int(incident_number)
+        del event_id
+        del incident_number
+
+        await self.config.authProvider.authorizeRequest(
+            request, eventId, Authorization.writeIncidents
+        )
+
+        _, options = parse_options_header(request.getHeader("Content-Type"))
+        p = MultipartParser(
+            request.content,
+            options.get("boundary", ""),
+            # Only allow one file per upload. This fits better with
+            # the REPORT_ENTRY model.
+            part_limit=1,
+            # TODO: move this to config
+            # Arbitrary 10 MB per file limit
+            partsize_limit=10 * 1024 * 1024,
+        )
+
+        parts = p.parts()
+        if len(parts) == 0:
+            # no files provided, nothing to do
+            return noContentResponse(request)
+        if len(parts) > 1:
+            return badRequestResponse(request, "Only one file is allowed per request")
+        part = parts[0]
+
+        store = self.config.store
+
+        eventsDir = self.config.attachmentsRoot / "events"
+        secretFilename = uuid4()
+        try:
+            extension = puremagic_from_string(part.raw, filename=part.filename)
+        except PureError:
+            self._log.info(f"failed to determine filetype for {part.filename}")
+            extension = ""
+        else:
+            self._log.info(f"detected file extension {extension} for {part.filename}")
+
+        incidentDir = eventsDir / eventId / "incidents" / str(incidentNumber)
+        incidentDir.mkdir(parents=True, exist_ok=True)
+        dest = incidentDir / f"{secretFilename}{extension}"
+        part.save_as(dest)
+        self._log.info(f"saved {part.filename} as {dest}")
+
+        user: IMSUser = request.user  # type: ignore[attr-defined]
+        author = user.shortNames[0]
+
+        now = DateTime.now(UTC)
+
+        entry = ReportEntry(
+            id=-1,  # will be assigned a valid ID on write to DB
+            author=author,
+            text=f"User uploaded file: {part.filename}",
+            created=now,
+            automatic=False,
+            stricken=False,
+        )
+
+        await store.addReportEntriesToIncident(
+            eventId, incidentNumber, (entry,), author
+        )
+        return noContentResponse(request)
+
+    @router.route(_unprefix(URLs.incidentAttachmentNumber), methods=("HEAD", "GET"))
+    async def retrieveIncidentAttachment(
+        self,
+        request: IRequest,
+        event_id: str,
+        incident_number: str,
+        attachment_number: str,
+    ) -> KleinSynchronousRenderable:
+        eventId = event_id
+        incidentNumber = int(incident_number)
+        del event_id
+        del incident_number
+
+        await self.config.authProvider.authorizeRequest(
+            request, eventId, Authorization.readIncidents
+        )
+
+        # TODO: will need to look through report entries to get the secret file name
+
+        folder = (
+            self.config.attachmentsRoot
+            / "events"
+            / eventId
+            / "incidents"
+            / str(incidentNumber)
+        )
+
+        return File(folder / "b982735c-3165-43b7-8bd4-6724eab141a6.pdf")
 
     @router.route(_unprefix(URLs.incident_reportEntry), methods=("POST",))
     async def editIncidentReportEntryResource(

@@ -76,7 +76,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
             schemaInfo.lower(),
             dedent(
                 """
-                Version: 6
+                Version: 7
                 ACCESS_MODE:
                   0: ID(text) not null *1
                 ACCESS_VALIDITY:
@@ -140,6 +140,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   3: CREATED(real) not null
                   4: GENERATED(numeric) not null
                   5: STRICKEN(numeric) not null
+                  6: ATTACHED_FILE(text)
                 SCHEMA_INFO:
                   0: VERSION(integer) not null
                 """[1:]
