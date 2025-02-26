@@ -18,6 +18,7 @@
 Incident Management System database tooling.
 """
 
+import re
 from abc import abstractmethod
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
@@ -366,6 +367,13 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.createEvent`.
         """
+
+        eventIdPattern = r"^[\w-]+$"
+        if not re.search(eventIdPattern, event.id):
+            raise ValueError(
+                f"wanted EventID to match '{eventIdPattern}', got '{event.id}'"
+            )
+
         await self.runOperation(self.query.createEvent, {"eventID": event.id})
 
         self._log.info(

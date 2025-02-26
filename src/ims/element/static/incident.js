@@ -188,6 +188,10 @@ async function loadAndDisplayIncident() {
     if (editingAllowed) {
         enableEditing();
     }
+
+    if (incident.number == null) {
+        hide($("#attach-file-form :input"));
+    }
 }
 
 // Do all the client-side rendering based on the state of allFieldReports.
@@ -1073,4 +1077,33 @@ async function onStrikeSuccess() {
     await loadAllFieldReports();
     renderFieldReportData();
     clearErrorMessage();
+}
+
+async function attachFile() {
+    if (incidentNumber == null) {
+        // Incident doesn't exist yet.  Create it first.
+        const {err} = await sendEdits({});
+        if (err != null) {
+            return;
+        }
+    }
+    const attachFile = document.getElementById("attach-file");
+    const formData = new FormData();
+
+    for (const f of attachFile.files) {
+        formData.append("files", f);
+    }
+
+    const attachURL = urlReplace(url_incidentAttachments).replace("<incident_number>", incidentNumber);
+    const {err} = await fetchJsonNoThrow(attachURL, {
+        body: formData
+    });
+    if (err != null) {
+        const message = `Failed to attach file: ${err}`;
+        setErrorMessage(message);
+        return;
+    }
+    clearErrorMessage();
+    attachFile.value = "";
+    await loadAndDisplayIncident();
 }

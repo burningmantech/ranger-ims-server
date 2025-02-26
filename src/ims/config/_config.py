@@ -226,6 +226,12 @@ class Configuration:
         cachedResourcesRoot.mkdir(exist_ok=True)
         cls._log.info("CachedResources: {path}", path=cachedResourcesRoot)
 
+        attachmentsRoot = parser.pathFromConfig(
+            "ATTACHMENTS_ROOT", "Core", "AttachmentsRoot", serverRoot, ("attachments",)
+        )
+        attachmentsRoot.mkdir(parents=True, exist_ok=True)
+        cls._log.info("AttachmentsRoot: {path}", path=attachmentsRoot)
+
         logLevelName = parser.valueFromConfig("LOG_LEVEL", "Core", "LogLevel", "info")
         cls._log.info("LogLevel: {logLevel}", logLevel=logLevelName)
 
@@ -393,6 +399,7 @@ class Configuration:
         #
 
         return cls(
+            attachmentsRoot=attachmentsRoot,
             cachedResourcesRoot=cachedResourcesRoot,
             configFile=configFile,
             configRoot=configRoot,
@@ -412,6 +419,7 @@ class Configuration:
             tokenLifetime=tokenLifetime,
         )
 
+    attachmentsRoot: Path
     cachedResourcesRoot: Path
     configFile: Path | None
     configRoot: Path
@@ -467,6 +475,7 @@ class Configuration:
             f"Core.Port: {self.port}\n"
             f"\n"
             f"Core.ServerRoot: {self.serverRoot}\n"
+            f"Core.AttachmentsRoot: {self.attachmentsRoot}\n"
             f"Core.ConfigRoot: {self.configRoot}\n"
             f"Core.DataRoot: {self.dataRoot}\n"
             f"Core.CachedResources: {self.cachedResourcesRoot}\n"
