@@ -23,11 +23,13 @@ from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
+from string import ascii_letters
 from typing import Any, cast
 
 from hypothesis.strategies import (
     SearchStrategy,
     booleans,
+    characters,
     composite,
     dictionaries,
     emails,
@@ -248,7 +250,23 @@ def events(draw: Callable[..., Any]) -> Event:
     """
     Strategy that generates :class:`Event` values.
     """
-    return Event(id=draw(text(min_size=1)))
+    # The Event ID can consist of characters that match
+    # \w_-
+
+    allow_letters = [*list(ascii_letters), "-", "_"]
+    return Event(
+        id=draw(
+            text(
+                min_size=1,
+                alphabet=characters(
+                    # Include the digits 0-9 too
+                    min_codepoint=0x30,
+                    max_codepoint=0x39,
+                    include_characters=allow_letters,
+                ),
+            )
+        )
+    )
 
 
 @composite

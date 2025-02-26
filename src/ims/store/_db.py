@@ -25,6 +25,7 @@ from datetime import UTC
 from datetime import datetime as DateTime
 from json import loads
 from pathlib import Path
+from re import search as reSearch
 from textwrap import dedent
 from types import MappingProxyType
 from typing import Any, ClassVar, NoReturn, TypeVar, cast
@@ -366,6 +367,14 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.createEvent`.
         """
+        # Require basic cleanliness for EventID, since it's used in IMS URLs
+        # and in filesystem directory paths.
+        eventIdPattern = r"^[\w-]+$"
+        if not reSearch(eventIdPattern, event.id):
+            raise ValueError(
+                f"wanted EventID to match '{eventIdPattern}', got '{event.id}'"
+            )
+
         await self.runOperation(self.query.createEvent, {"eventID": event.id})
 
         self._log.info(

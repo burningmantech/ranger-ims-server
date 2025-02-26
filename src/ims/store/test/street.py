@@ -40,7 +40,7 @@ class DataStoreConcentricStreetTests(DataStoreTests):
         """
         for event, streetID, streetName in (
             (Event(id="Foo"), "A", "Alpha"),
-            (Event(id="Foo Bar"), "B", "Bravo"),
+            (Event(id="Foo-Bar"), "B", "Bravo"),
             (Event(id="XYZZY"), "C", "Charlie"),
         ):
             store = await self.store()
@@ -61,7 +61,7 @@ class DataStoreConcentricStreetTests(DataStoreTests):
         """
         for event, streetID, streetName in (
             (Event(id="Foo"), "A", "Alpha"),
-            (Event(id="Foo Bar"), "B", "Bravo"),
+            (Event(id="Foo-Bar"), "B", "Bravo"),
             (Event(id="XYZZY"), "C", "Charlie"),
         ):
             store = await self.store()

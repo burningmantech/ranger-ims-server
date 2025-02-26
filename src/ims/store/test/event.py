@@ -68,7 +68,7 @@ class DataStoreEventTests(DataStoreTests):
         """
         :meth:`IMSDataStore.createEvent` creates the given event.
         """
-        for eventName in ("Foo", "Foo Bar"):
+        for eventName in ("Foo", "Foo-Bar"):
             event = Event(id=eventName)
 
             store = await self.store()
