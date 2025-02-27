@@ -424,6 +424,7 @@ class APIApplication:
 
         json[IncidentJSONKey.number.value] = 0
         json[IncidentJSONKey.created.value] = jsonNow
+        json[IncidentJSONKey.lastModified.value] = jsonNow
 
         # If not provided, set JSON event, state to new, priority to normal
 
