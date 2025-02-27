@@ -87,7 +87,7 @@ class DummyConnectionPool:
             "id, callsign, "
             "email, status, on_site, password "
             "from person where status in "
-            "('active', 'inactive', 'auditor')"
+            "('active', 'inactive', 'inactive extension', 'auditor')"
         ):
             rows = (fixPassword(p) for p in cannedPersonnel)
             return succeed(rows)  # type: ignore[arg-type]

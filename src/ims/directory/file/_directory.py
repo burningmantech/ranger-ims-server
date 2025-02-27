@@ -39,6 +39,7 @@ def statusFromID(strValue: str) -> RangerStatus:
     return {
         "active": RangerStatus.active,
         "inactive": RangerStatus.inactive,
+        "inactiveExtension": RangerStatus.inactiveExtension,
     }.get(strValue, RangerStatus.other)
 
 
