@@ -120,10 +120,15 @@ class UtilityTests(TestCase):
         for name, status in (
             ("active", RangerStatus.active),
             ("inactive", RangerStatus.inactive),
+            ("inactiveExtension", RangerStatus.inactiveExtension),
         ):
             self.assertIdentical(statusFromID(name), status)
 
-    @given(text().filter(lambda name: name not in ("active", "inactive")))
+    @given(
+        text().filter(
+            lambda name: name not in ("active", "inactive", "inactiveExtension")
+        )
+    )
     @settings(max_examples=10)
     def test_statusFromID_unknown(self, name: str) -> None:
         self.assertIdentical(statusFromID(name), RangerStatus.other)
