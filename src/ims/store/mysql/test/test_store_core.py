@@ -144,7 +144,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         self.assertEqual(
             dedent(
                 """
-                Version: 9
+                Version: 10
                 CONCENTRIC_STREET:
                   1: EVENT(int) not null
                   2: ID(varchar(16)) not null
@@ -202,6 +202,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   4: CREATED(double) not null
                   5: GENERATED(tinyint) not null
                   6: STRICKEN(tinyint) not null
+                  7: ATTACHED_FILE(varchar(128)) := NULL
                 SCHEMA_INFO:
                   1: VERSION(smallint) not null
                 """[1:]

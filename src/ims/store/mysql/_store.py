@@ -100,7 +100,7 @@ class DataStore(DatabaseStore):
 
     _log: ClassVar[Logger] = Logger()
 
-    schemaVersion: ClassVar[int] = 9
+    schemaVersion: ClassVar[int] = 10
     schemaBasePath: ClassVar[Path] = Path(__file__).parent / "schema"
     sqlFileExtension: ClassVar[str] = "mysql"
 
