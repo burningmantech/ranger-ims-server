@@ -220,6 +220,7 @@ def reportEntries(
     automatic: bool | None = None,
     beforeNow: bool = False,
     fromNow: bool = False,
+    noAttachedFile: bool = False,
 ) -> ReportEntry:
     """
     Strategy that generates :class:`ReportEntry` values.
@@ -237,6 +238,7 @@ def reportEntries(
         automatic=cast(bool, automatic),
         text=draw(text(min_size=1)),
         stricken=False,
+        attachedFile=None if noAttachedFile else draw(text()),
     )
 
 

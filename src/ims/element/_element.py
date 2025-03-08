@@ -33,7 +33,7 @@ from twisted.web.template import Tag, XMLFile, renderer, tags
 
 from ims.auth import Authorization
 from ims.config import Configuration
-from ims.ext.json_ext import jsonTextFromObject
+from ims.ext.json_ext import jsonFalse, jsonTextFromObject, jsonTrue
 
 
 __all__ = ()
@@ -268,3 +268,14 @@ class Element(BaseElement):
         JSON list of strings: events IDs.
         """
         return jsonTextFromObject(e.id for e in await self.config.store.events())
+
+    @renderer
+    def file_attachments_allowed(self, request: IRequest, tag: Tag) -> KleinRenderable:
+        """
+        Identifies if file attachment uploads are allowed by the server.
+        """
+        return (
+            jsonFalse
+            if self.config.attachmentsStoreType.lower() == "none"
+            else jsonTrue
+        )

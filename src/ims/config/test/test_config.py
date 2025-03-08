@@ -756,6 +756,7 @@ class ConfigurationTests(TestCase):
             f"Core.LogLevel: {config.logLevelName}\n"
             f"Core.LogFile: {config.logFilePath}\n"
             f"Core.LogFormat: {config.logFormat}\n"
+            f"Core.AttachmentsStore: {config.attachmentsStoreType}\n"
             f"\n"
             f"DataStore: {describeFactory(config._storeFactory)}\n"
             f"Directory: {config.directory}\n",

@@ -49,7 +49,7 @@ class ReportEntryDeserializationTests(TestCase):
     Tests for deserialization of :class:`ReportEntry`
     """
 
-    @given(reportEntries())
+    @given(reportEntries(noAttachedFile=True))
     def test_deserialize(self, entry: ReportEntry) -> None:
         """
         :func:`jsonDeserialize` returns a report entry with the correct data.

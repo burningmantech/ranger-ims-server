@@ -166,6 +166,7 @@ function setErrorMessage(msg) {
     msg = "Error: (Cause: " + msg + ")"
     document.getElementById("error_info").classList.remove("hidden");
     document.getElementById("error_text").textContent = msg;
+    document.getElementById("error_info").scrollIntoView();
 }
 
 function clearErrorMessage() {
@@ -187,6 +188,14 @@ async function loadAndDisplayIncident() {
 
     if (editingAllowed) {
         enableEditing();
+    }
+
+    if (attachmentsAllowed) {
+        document.getElementById("attach_file").classList.remove("hidden");
+    }
+
+    if (incident.number == null) {
+        hide($("#attach-file-form :input"));
     }
 }
 
@@ -1073,4 +1082,33 @@ async function onStrikeSuccess() {
     await loadAllFieldReports();
     renderFieldReportData();
     clearErrorMessage();
+}
+
+async function attachFile() {
+    if (incidentNumber == null) {
+        // Incident doesn't exist yet.  Create it first.
+        const {err} = await sendEdits({});
+        if (err != null) {
+            return;
+        }
+    }
+    const attachFile = document.getElementById("attach_file_input");
+    const formData = new FormData();
+
+    for (const f of attachFile.files) {
+        formData.append("files", f);
+    }
+
+    const attachURL = urlReplace(url_incidentAttachments).replace("<incident_number>", incidentNumber);
+    const {err} = await fetchJsonNoThrow(attachURL, {
+        body: formData
+    });
+    if (err != null) {
+        const message = `Failed to attach file: ${err}`;
+        setErrorMessage(message);
+        return;
+    }
+    clearErrorMessage();
+    attachFile.value = "";
+    await loadAndDisplayIncident();
 }

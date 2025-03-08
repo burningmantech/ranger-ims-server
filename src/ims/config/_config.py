@@ -29,6 +29,9 @@ from sys import argv
 from typing import Any, ClassVar, cast
 
 from attrs import evolve, field, frozen, mutable
+from boto3 import client as BotoClient  # type: ignore[import-untyped]
+from botocore.client import BaseClient  # type: ignore[import-untyped]
+from botocore.config import Config as BotoConfig  # type: ignore[import-untyped]
 from twisted.logger import Logger
 
 from ims.auth import AuthProvider, JSONWebKey
@@ -226,6 +229,87 @@ class Configuration:
         cachedResourcesRoot.mkdir(exist_ok=True)
         cls._log.info("CachedResources: {path}", path=cachedResourcesRoot)
 
+        attachmentsStoreType = parser.valueFromConfig(
+            "ATTACHMENTS_STORE", "Core", "AttachmentsStore", "None"
+        )
+        cls._log.info(
+            "AttachmentsStore: {attachmentsStoreType}",
+            attachmentsStoreType=attachmentsStoreType,
+        )
+
+        deployment = parser.valueFromConfig("DEPLOYMENT", "Core", "Deployment", "Dev")
+        cls._log.info("Deployment: {deployment}", deployment=deployment)
+
+        localAttachmentsRoot: Path | None = None
+        botoClient: BaseClient | None = None
+        s3Bucket: str = ""
+        s3BucketSubPath: str = ""
+        match attachmentsStoreType.lower():
+            case "none":
+                cls._log.info(
+                    "AttachmentsStore is None, file attachments are disallowed"
+                )
+            case "local":
+                localAttachmentsRoot = parser.pathFromConfig(
+                    "LOCAL_ATTACHMENTS_ROOT",
+                    "AttachmentsStore:Local",
+                    "LocalAttachmentsRoot",
+                    serverRoot,
+                    ("attachments",),
+                )
+                localAttachmentsRoot.mkdir(parents=True, exist_ok=True)
+                cls._log.info("LocalAttachmentsRoot: {path}", path=localAttachmentsRoot)
+            case "s3":
+                s3AccessKeyId = parser.valueFromConfig(
+                    "S3_ACCESS_KEY_ID", "AttachmentsStore:S3", "S3AccessKeyId"
+                )
+                cls._log.info(
+                    "S3AccessKeyId: {s3AccessKeyId}", s3AccessKeyId=s3AccessKeyId
+                )
+                s3SecretAccessKey = parser.valueFromConfig(
+                    "S3_SECRET_ACCESS_KEY", "AttachmentsStore:S3", "S3SecretAccessKey"
+                )
+                cls._log.info(
+                    "S3SecretAccessKey is set: {s3SecretAccessKeyIsSet}",
+                    s3SecretAccessKeyIsSet=bool(s3SecretAccessKey),
+                )
+                s3DefaultRegion = parser.valueFromConfig(
+                    "S3_DEFAULT_REGION",
+                    "AttachmentsStore:S3",
+                    "S3DefaultRegion",
+                    "us-west-2",
+                )
+                cls._log.info(
+                    "S3DefaultRegion: {s3DefaultRegion}",
+                    s3DefaultRegion=s3DefaultRegion,
+                )
+                s3Bucket = parser.valueFromConfig(
+                    "S3_BUCKET", "AttachmentsStore:S3", "S3Bucket"
+                )
+                cls._log.info("S3Bucket: {s3Bucket}", s3Bucket=s3Bucket)
+                s3BucketSubPath = parser.valueFromConfig(
+                    "S3_BUCKET_SUBPATH",
+                    "AttachmentsStore:S3",
+                    "S3BucketSubPath",
+                    f"ims-attachments-{deployment.lower()}",
+                )
+                cls._log.info(
+                    "S3BucketSubPath: {s3BucketSubPath}",
+                    s3BucketSubPath=s3BucketSubPath,
+                )
+                botoClient = BotoClient(
+                    "s3",
+                    aws_access_key_id=s3AccessKeyId,
+                    aws_secret_access_key=s3SecretAccessKey,
+                    config=BotoConfig(
+                        region_name=s3DefaultRegion,
+                    ),
+                )
+            case _:
+                raise ConfigurationError(
+                    f"Unknown attachments store: {attachmentsStoreType!r}"
+                )
+
         logLevelName = parser.valueFromConfig("LOG_LEVEL", "Core", "LogLevel", "info")
         cls._log.info("LogLevel: {logLevel}", logLevel=logLevelName)
 
@@ -386,8 +470,6 @@ class Configuration:
             )
         )
 
-        deployment = parser.valueFromConfig("DEPLOYMENT", "Core", "Deployment", "Dev")
-
         #
         # Persist some objects
         #
@@ -410,6 +492,11 @@ class Configuration:
             serverRoot=serverRoot,
             storeFactory=storeFactory,
             tokenLifetime=tokenLifetime,
+            attachmentsStoreType=attachmentsStoreType,
+            localAttachmentsRoot=localAttachmentsRoot,
+            botoClient=botoClient,
+            s3Bucket=s3Bucket,
+            s3BucketSubPath=s3BucketSubPath,
         )
 
     cachedResourcesRoot: Path
@@ -428,6 +515,11 @@ class Configuration:
     port: int
     serverRoot: Path
     tokenLifetime: TimeDelta
+    attachmentsStoreType: str
+    localAttachmentsRoot: Path | None
+    botoClient: BaseClient | None
+    s3Bucket: str
+    s3BucketSubPath: str
 
     _storeFactory: Callable[[], IMSDataStore]
 
@@ -474,6 +566,7 @@ class Configuration:
             f"Core.LogLevel: {self.logLevelName}\n"
             f"Core.LogFile: {self.logFilePath}\n"
             f"Core.LogFormat: {self.logFormat}\n"
+            f"Core.AttachmentsStore: {self.attachmentsStoreType}\n"
             f"\n"
             f"DataStore: {describeFactory(self._storeFactory)}\n"
             f"Directory: {self.directory}\n"

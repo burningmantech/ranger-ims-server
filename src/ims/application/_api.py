@@ -29,19 +29,31 @@ from datetime import UTC
 from datetime import datetime as DateTime
 from enum import Enum
 from functools import partial
+from io import BytesIO
 from json import JSONDecodeError
 from typing import Any, ClassVar, cast
+from uuid import uuid4
 
 from attrs import frozen
 from hyperlink import URL
 from klein import KleinRenderable
 from klein._app import KleinSynchronousRenderable
+from multipart import (  # type: ignore[import-untyped]
+    MultipartError,
+    MultipartParser,
+    parse_options_header,
+)
+from puremagic import PureError
+from puremagic import from_stream as puremagic_from_stream
+from puremagic import from_string as puremagic_from_string
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
+from twisted.internet.threads import deferToThread
 from twisted.logger import Logger
 from twisted.python.failure import Failure
 from twisted.web import http
 from twisted.web.iweb import IRequest
+from twisted.web.static import Data, File
 
 from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
@@ -85,6 +97,7 @@ from ._klein import (
     noContentResponse,
     notFoundResponse,
     queryValue,
+    textResponse,
 )
 from ._static import buildJSONArray, jsonBytes, writeJSONStream
 
@@ -684,6 +697,178 @@ class APIApplication:
             )
 
         return noContentResponse(request)
+
+    @router.route(_unprefix(URLs.incidentAttachments), methods=("POST",))
+    async def attachFileToIncident(
+        self,
+        request: IRequest,
+        event_id: str,
+        incident_number: str,
+    ) -> KleinSynchronousRenderable:
+        eventId = event_id
+        incidentNumber = int(incident_number)
+        del event_id
+        del incident_number
+
+        await self.config.authProvider.authorizeRequest(
+            request, eventId, Authorization.writeIncidents
+        )
+
+        _, options = parse_options_header(request.getHeader("Content-Type"))
+        p = MultipartParser(
+            request.content,
+            options.get("boundary", ""),
+            # Allow no more than one file
+            part_limit=1,
+            # Maybe move this to config
+            # Arbitrary limit of 10 MB per file
+            partsize_limit=10 * 1024 * 1024,
+        )
+
+        try:
+            parts = p.parts()
+        except MultipartError as me:
+            self._log.error("error decoding attachment: {me}", me=me)
+            request.setResponseCode(me.http_status)
+            return textResponse(request, str(me))
+        if len(parts) == 0:
+            # No files provided in request. Nothing to do
+            return noContentResponse(request)
+        if len(parts) > 1:
+            return badRequestResponse(request, "Only one file is allowed per request")
+        part = parts[0]
+
+        try:
+            extension = puremagic_from_string(part.raw, filename=part.filename)
+        except PureError:
+            self._log.info(f"failed to determine filetype for {part.filename}")
+            extension = ""
+        else:
+            self._log.info(f"detected file extension {extension} for {part.filename}")
+
+        newFilename = (
+            f"event_{eventId}_incident_{incidentNumber:05}_{uuid4()}{extension}"
+        )
+        # Safety check, since this could make for bad behavior
+        assert "/" not in newFilename
+
+        match self.config.attachmentsStoreType:
+            case "Local":
+                localDestDir = self.config.localAttachmentsRoot
+                if not localDestDir:
+                    return badRequestResponse(
+                        request, "Attachments upload is not enabled"
+                    )
+                localDestDir.mkdir(parents=True, exist_ok=True)
+                dest = localDestDir / newFilename
+                part.save_as(dest)
+            case "S3":
+                if not self.config.botoClient:
+                    return badRequestResponse(
+                        request, "Attachments upload is not enabled"
+                    )
+                await deferToThread(
+                    self.config.botoClient.upload_fileobj,
+                    Fileobj=part.file,
+                    Bucket=self.config.s3Bucket,
+                    Key=self.config.s3BucketSubPath + "/" + newFilename,
+                )
+            case _:
+                self._log.info("no attachmentsStoreType configured")
+                return badRequestResponse(request, "Attachments upload is not enabled")
+
+        user: IMSUser = request.user  # type: ignore[attr-defined]
+        author = user.shortNames[0]
+
+        entry = ReportEntry(
+            id=-1,
+            author=author,
+            text=f"{author} uploaded a file: {part.filename}",
+            created=DateTime.now(UTC),
+            automatic=False,
+            stricken=False,
+            attachedFile=newFilename,
+        )
+
+        await self.config.store.addReportEntriesToIncident(
+            eventId, incidentNumber, (entry,), author
+        )
+        return noContentResponse(request)
+
+    @router.route(_unprefix(URLs.incidentAttachmentNumber), methods=("HEAD", "GET"))
+    async def retrieveIncidentAttachment(
+        self,
+        request: IRequest,
+        event_id: str,
+        incident_number: str,
+        attachment_number: str,
+    ) -> KleinSynchronousRenderable:
+        eventId = event_id
+        incidentNumber = int(incident_number)
+        attachmentNumber = int(attachment_number)
+        del event_id
+        del incident_number
+        del attachment_number
+
+        await self.config.authProvider.authorizeRequest(
+            request, eventId, Authorization.readIncidents
+        )
+
+        incident = await self.config.store.incidentWithNumber(eventId, incidentNumber)
+
+        attachedFile: str | None = None
+        for reportEntry in incident.reportEntries:
+            if reportEntry.id == attachmentNumber:
+                attachedFile = reportEntry.attachedFile
+                break
+
+        if not attachedFile:
+            raise NotAuthorizedError("Not authorized for file")
+
+        match self.config.attachmentsStoreType:
+            case "Local":
+                if not self.config.localAttachmentsRoot:
+                    return badRequestResponse(
+                        request, "Attachments download is not enabled"
+                    )
+                self._log.info(
+                    "reading file {f}",
+                    f=str(self.config.localAttachmentsRoot / attachedFile),
+                )
+                return File(str(self.config.localAttachmentsRoot / attachedFile))
+            case "S3":
+                with BytesIO() as buffer:
+                    if not self.config.botoClient:
+                        return badRequestResponse(
+                            request, "Attachments download is not enabled"
+                        )
+                    key = self.config.s3BucketSubPath + "/" + attachedFile
+                    self._log.info(
+                        "fetching s3://{bucket}/{key}",
+                        bucket=self.config.s3Bucket,
+                        key=key,
+                    )
+                    await deferToThread(
+                        self.config.botoClient.download_fileobj,
+                        Bucket=self.config.s3Bucket,
+                        Key=key,
+                        Fileobj=buffer,
+                    )
+                    buffer.seek(0)
+                    contentType = ""
+                    try:
+                        contentType = puremagic_from_stream(
+                            buffer, mime=True, filename=attachedFile
+                        )
+                    except PureError:
+                        self._log.info(
+                            f"failed to determine MIME type for {attachedFile}"
+                        )
+                    buffer.seek(0)
+                    return Data(buffer.read(), contentType)
+            case _:
+                self._log.info("no attachmentsStoreType configured")
+                return badRequestResponse(request, "Attachments upload is not enabled")
 
     @router.route(_unprefix(URLs.incident_reportEntry), methods=("POST",))
     async def editIncidentReportEntryResource(

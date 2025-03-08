@@ -191,7 +191,8 @@ queries = Queries(
     incident_reportEntries=Query(
         "look up report entries for incident",
         f"""
-        select ID, AUTHOR, TEXT, CREATED, GENERATED, STRICKEN from REPORT_ENTRY
+        select ID, AUTHOR, TEXT, CREATED, GENERATED, STRICKEN, ATTACHED_FILE
+            from REPORT_ENTRY
         where ID in (
             select REPORT_ENTRY from INCIDENT__REPORT_ENTRY
             where
@@ -265,7 +266,8 @@ queries = Queries(
             re.TEXT,
             re.CREATED,
             re.GENERATED,
-            re.STRICKEN
+            re.STRICKEN,
+            re.ATTACHED_FILE
         from
             INCIDENT__REPORT_ENTRY ire
             join REPORT_ENTRY re
@@ -299,8 +301,13 @@ queries = Queries(
     createReportEntry=Query(
         "create report entry",
         """
-        insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED, STRICKEN)
-        values (%(author)s, %(text)s, %(created)s, %(generated)s, %(stricken)s)
+        insert into REPORT_ENTRY (
+            AUTHOR, TEXT, CREATED, GENERATED, STRICKEN, ATTACHED_FILE
+        )
+        values (
+            %(author)s, %(text)s, %(created)s, %(generated)s, %(stricken)s,
+            %(attachedFile)s
+        )
         """,
     ),
     attachReportEntryToIncident=Query(
