@@ -99,6 +99,7 @@ function setErrorMessage(msg) {
     msg = `Error: (Cause: ${msg})`;
     document.getElementById("error_info").classList.remove("hidden");
     document.getElementById("error_text").textContent = msg;
+    document.getElementById("error_info").scrollIntoView();
 }
 
 function clearErrorMessage() {

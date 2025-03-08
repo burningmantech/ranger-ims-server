@@ -46,6 +46,8 @@ class ReportEntryJSONKey(Enum):
     automatic = "system_entry"
     text = "text"
     stricken = "stricken"
+    # this field is added separately below
+    # has_attachment = "has_attachment"
 
 
 class ReportEntryJSONType(Enum):
@@ -59,14 +61,18 @@ class ReportEntryJSONType(Enum):
     automatic = bool
     text = str
     stricken = bool
+    # has_attachment = bool
 
 
 def serializeReportEntry(reportEntry: ReportEntry) -> dict[str, Any]:
     # Map ReportEntry attribute names to JSON dict key names
-    return {
+    jsonified = {
         key.value: jsonSerialize(getattr(reportEntry, key.name))
         for key in ReportEntryJSONKey
     }
+    # don't add the name of the file itself, as that's secret
+    jsonified["has_attachment"] = bool(reportEntry.attachedFile)
+    return jsonified
 
 
 registerSerializer(ReportEntry, serializeReportEntry)

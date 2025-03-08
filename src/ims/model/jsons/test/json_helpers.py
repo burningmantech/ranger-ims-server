@@ -81,6 +81,7 @@ def jsonFromReportEntry(entry: ReportEntry) -> dict[str, Any]:
         "system_entry": jsonSerialize(entry.automatic),
         "text": jsonSerialize(entry.text),
         "stricken": jsonSerialize(entry.stricken),
+        "has_attachment": bool(entry.attachedFile),
     }
 
 

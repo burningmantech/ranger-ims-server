@@ -644,6 +644,7 @@ class DatabaseStore(IMSDataStore):
                         automatic=bool(row["GENERATED"]),
                         text=cast(str, row["TEXT"]),
                         stricken=bool(row["STRICKEN"]),
+                        attachedFile=cast(str, row["ATTACHED_FILE"]),
                     )
                 )
 
@@ -738,6 +739,7 @@ class DatabaseStore(IMSDataStore):
                 automatic=bool(row["GENERATED"]),
                 text=cast(str, row["TEXT"]),
                 stricken=bool(row["STRICKEN"]),
+                attachedFile=cast(str, row["ATTACHED_FILE"]),
             )
             for row in txn.fetchall()
             if row["TEXT"]
@@ -904,6 +906,7 @@ class DatabaseStore(IMSDataStore):
                 "author": reportEntry.author,
                 "text": reportEntry.text,
                 "stricken": reportEntry.stricken,
+                "attachedFile": reportEntry.attachedFile,
             },
         )
 

@@ -188,9 +188,33 @@ async function fetchJsonNoThrow(url, init) {
     init["headers"]["Accept"] = "application/json";
     if ("body" in init) {
         init["method"] = "POST";
-        init["headers"]["Content-Type"] = "application/json";
-        if (typeof(init["body"]) !== "string") {
-            init["body"] = JSON.stringify(init["body"]);
+
+        if (init["body"].constructor.name === "FormData") {
+            let size = 0;
+            for(const [k,v] of init["body"].entries()) {
+                size += k.length;
+                if (v instanceof Blob) {
+                    size += v.size;
+                } else {
+                    size += v.length;
+                }
+            }
+            // Large file uploads are a problem, since the server locks up the Reactor thread
+            // until the file is done uploading. Also, a large enough upload (multi-gig) can
+            // cause the server to consume all the memory on the system and require a manual
+            // restart. Yuck.
+            if (size > 20 * 1024 * 1024) {
+                return {resp: null, json: null, err: "Please keep data uploads small, " +
+                        "ideally under 10 MB"};
+            }
+
+            // don't JSONify, don't set a Content-Type (fetch does it automatically for FormData)
+        } else {
+            // otherwise assume body is supposed to be json
+            init["headers"]["Content-Type"] = "application/json";
+            if (typeof init["body"] !== "string") {
+                init["body"] = JSON.stringify(init["body"]);
+            }
         }
     }
     let response = null;
@@ -277,6 +301,8 @@ function enable(element) {
 // Disable editing for an element
 function disableEditing() {
     disable($(".form-control"));
+    disable($("#entries-form :input"));
+    disable($("#attach-file-form :input"));
     enable($(":input[type=search]"));  // Don't disable search fields
     $(document.documentElement).addClass("no-edit");
 }
@@ -285,9 +311,18 @@ function disableEditing() {
 // Enable editing for an element
 function enableEditing() {
     enable($(".form-control"));
+    enable($("#entries-form :input"));
+    enable($("#attach-file-form :input"));
     $(document.documentElement).removeClass("no-edit");
 }
 
+function hide(element) {
+    element.addClass("hidden");
+}
+
+function unhide(element) {
+    element.removeClass("hidden");
+}
 
 // Add an error indication to a control
 function controlHasError(element) {
@@ -805,6 +840,17 @@ function reportEntryElement(entry) {
         textContainer.text(line);
 
         entryContainer.append(textContainer);
+    }
+    if (entry.has_attachment) {
+        const url = urlReplace(url_incidentAttachmentNumber)
+            .replace("<incident_number>", incidentNumber)
+            .replace("<attachment_number>", entry.id);
+
+        const attachmentLink = $("<a />", {"href": url});
+        attachmentLink.text("Attached file");
+
+        entryContainer.append(attachmentLink);
+
     }
 
     // Add a horizontal line after each entry

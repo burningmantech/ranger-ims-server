@@ -253,14 +253,26 @@
                   autofocus=""
                   onchange="reportEntryEdited()"
           />
-          <button
-                  id="report_entry_submit"
-                  type="submit"
-                  class="btn btn-default btn-sm btn-block my-1 disabled no-print"
-                  onclick="submitReportEntry()"
-          >
-            Add Entry (Control ⏎)
-          </button>
+          <div class="d-flex justify-content-between">
+            <button
+                    id="report_entry_submit"
+                    type="submit"
+                    class="btn btn-default btn-sm btn-block my-1 disabled no-print float-start"
+                    onclick="submitReportEntry()"
+            >
+              Add Entry (Control ⏎)
+            </button>
+            <!-- File attachment -->
+            <label class="input-group-text hidden" for="attach_file_input">Attach file</label>
+            <input type="file" class="form-control hidden" id="attach_file_input" name="filename" onchange="attachFile();" />
+            <input
+                    id="attach_file"
+                    type="button"
+                    class="btn btn-default btn-sm btn-block btn-secondary my-1 no-print hidden"
+                    value="Attach file"
+                    onclick="document.getElementById('attach_file_input').click();"
+            />
+          </div>
         </div>
       </div>
     </div>
