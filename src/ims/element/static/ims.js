@@ -373,6 +373,12 @@ async function loadBody() {
         const eventFieldReports = document.getElementById("active-event-field-reports");
         eventFieldReports.setAttribute("href", urlReplace(url_viewFieldReports));
         eventFieldReports.classList.remove("hidden");
+
+        if (window.location.pathname.startsWith(urlReplace(url_viewIncidents))) {
+            eventIncidents.classList.add("active");
+        } else if (window.location.pathname.startsWith(urlReplace(url_viewFieldReports))) {
+            eventFieldReports.classList.add("active");
+        }
     }
 }
 
