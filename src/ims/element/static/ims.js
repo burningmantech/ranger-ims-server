@@ -53,7 +53,7 @@ function applyTheme() {
         document.querySelectorAll("[data-bs-theme-value]").forEach(element => {
             element.classList.remove("active");
             element.setAttribute("aria-pressed", "false");
-        })
+        });
 
         btnToActive.classList.add("active");
         btnToActive.setAttribute("aria-pressed", "true");
@@ -99,7 +99,7 @@ setTheme(getPreferredTheme());
 // browser will implement this correctly, and any solution using .replace()
 // will be buggy.  And this will be fast.  But still, this is weak.
 
-let _domTextAreaForHaxxors = document.createElement("textarea")
+let _domTextAreaForHaxxors = document.createElement("textarea");
 
 // Convert text to HTML.
 function textAsHTML(text) {
@@ -155,7 +155,7 @@ function range(start, end, step) {
     return Array(end - start)
         .join(0)
         .split(0)
-        .map(function(val, i) { return (i * step) + start} )
+        .map(function(val, i) { return (i * step) + start;} )
         ;
 }
 
@@ -183,15 +183,15 @@ async function fetchJsonNoThrow(url, init) {
         init = {};
     }
     if (!("headers" in init)) {
-        init["headers"] = {};
+        init.headers = {};
     }
-    init["headers"]["Accept"] = "application/json";
+    init.headers.Accept = "application/json";
     if ("body" in init) {
-        init["method"] = "POST";
+        init.method = "POST";
 
-        if (init["body"].constructor.name === "FormData") {
+        if (init.body.constructor.name === "FormData") {
             let size = 0;
-            for(const [k,v] of init["body"].entries()) {
+            for(const [k,v] of init.body.entries()) {
                 size += k.length;
                 if (v instanceof Blob) {
                     size += v.size;
@@ -211,9 +211,9 @@ async function fetchJsonNoThrow(url, init) {
             // don't JSONify, don't set a Content-Type (fetch does it automatically for FormData)
         } else {
             // otherwise assume body is supposed to be json
-            init["headers"]["Content-Type"] = "application/json";
-            if (typeof init["body"] !== "string") {
-                init["body"] = JSON.stringify(init["body"]);
+            init.headers["Content-Type"] = "application/json";
+            if (typeof init.body !== "string") {
+                init.body = JSON.stringify(init.body);
             }
         }
     }
@@ -631,7 +631,7 @@ function shortDescribeLocation(location) {
 function renderSafeSorted(strings) {
     const safe = strings.map(s => textAsHTML(s));
     const copy = safe.toSorted((a, b) => a.localeCompare(b));
-    return copy.join(", ")
+    return copy.join(", ");
 }
 
 function renderIncidentNumber(incidentNumber, type, incident) {
@@ -774,7 +774,7 @@ function reportEntryElement(entry) {
 
     // Add the timestamp and author, with a Strike/Unstrike button
 
-    const metaDataContainer = $("<p />", {"class": "report_entry_metadata"})
+    const metaDataContainer = $("<p />", {"class": "report_entry_metadata"});
 
     if (strikable) {
         let onclick = "";
@@ -783,14 +783,14 @@ function reportEntryElement(entry) {
             // we're on the incident page
             if (entry.merged) {
                 // this is an entry from a field report, as shown on the incident page
-                onclick = "setStrikeFieldReportEntry(" + entry.merged + ", " + entry.id + ", " + !entry.stricken + ");"
+                onclick = "setStrikeFieldReportEntry(" + entry.merged + ", " + entry.id + ", " + !entry.stricken + ");";
             } else {
                 // this is an incident entry on the incident page
-                onclick = "setStrikeIncidentEntry(" + incidentNumber + ", " + entry.id + ", " + !entry.stricken + ");"
+                onclick = "setStrikeIncidentEntry(" + incidentNumber + ", " + entry.id + ", " + !entry.stricken + ");";
             }
         } else if (typeof fieldReportNumber !== "undefined") {
             // we're on the field report page
-            onclick = "setStrikeFieldReportEntry(" + fieldReportNumber + ", " + entry.id + ", " + !entry.stricken + ");"
+            onclick = "setStrikeFieldReportEntry(" + fieldReportNumber + ", " + entry.id + ", " + !entry.stricken + ");";
         }
         const strikeContainer = $("<button />", {"onclick": onclick});
         strikeContainer.addClass("badge btn btn-danger remove-badge float-end");
@@ -825,7 +825,7 @@ function reportEntryElement(entry) {
 
         const link = $("<a />");
         link.text("field report #" + entry.merged);
-        link.attr("href", urlReplace(url_viewFieldReports) + entry.merged)
+        link.attr("href", urlReplace(url_viewFieldReports) + entry.merged);
 
         metaDataContainer.append("(via ");
         metaDataContainer.append(link);
@@ -912,7 +912,7 @@ async function setStrikeIncidentEntry(incidentNumber, reportEntryId, strike) {
         .replace("<report_entry_id>", reportEntryId);
     const {err} = await fetchJsonNoThrow(url, {
         body: {"stricken": strike},
-    })
+    });
     if (err != null) {
         onStrikeError(err);
     } else {
@@ -926,7 +926,7 @@ async function setStrikeFieldReportEntry(fieldReportNumber, reportEntryId, strik
         .replace("<report_entry_id>", reportEntryId);
     const {err} = await fetchJsonNoThrow(url, {
         body: {"stricken": strike},
-    })
+    });
     if (err != null) {
         onStrikeError();
     } else {
@@ -1038,6 +1038,14 @@ async function requestEventSourceLock() {
         return;
     }
 
+    function tryAcquireLock() {
+        const {promise, resolve} = Promise.withResolvers();
+        subscribeToUpdates(resolve);
+        return promise;
+    }
+    function waitBeforeRetry(timeMillis) {
+        return new Promise(r => setTimeout(r, Math.max(0, timeMillis)));
+    }
     // Infinitely attempt to reconnect to the EventSource.
     // This addresses the following issue for when IMS lives on AWS:
     // https://github.com/burningmantech/ranger-ims-server/issues/1364
@@ -1045,13 +1053,9 @@ async function requestEventSourceLock() {
         const start = Date.now();
         // Acquire the lock, set up the EventSource, and start
         // broadcasting events to other browsing contexts.
-        await navigator.locks.request("ims_eventsource_lock", () => {
-            const {promise, resolve} = Promise.withResolvers();
-            subscribeToUpdates(resolve);
-            return promise;
-        });
+        await navigator.locks.request("ims_eventsource_lock", tryAcquireLock);
         const millisSinceStart = Date.now() - start;
-        await new Promise(r => setTimeout(r, Math.max(0, reattemptMinTimeMillis-millisSinceStart)));
+        await waitBeforeRetry(reattemptMinTimeMillis-millisSinceStart);
     }
 }
 
@@ -1095,7 +1099,7 @@ function subscribeToUpdates(closed) {
         for (const ch of allChannels) {
             ch.postMessage({update_all: true});
         }
-    })
+    });
 
     eventSource.addEventListener("Incident", function(e) {
         const send = new BroadcastChannel(incidentChannelName);
@@ -1120,7 +1124,7 @@ function cleanupOldCaches() {
     localStorage.removeItem("lscache-ims.personnel");
     localStorage.removeItem("lscache-ims.personnel-cacheexpiration");
     localStorage.removeItem("ims.incident_types");
-    localStorage.removeItem("ims.incident_types.deadline")
+    localStorage.removeItem("ims.incident_types.deadline");
     localStorage.removeItem("ims.personnel");
     localStorage.removeItem("ims.personnel.deadline");
 }

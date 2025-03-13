@@ -48,7 +48,7 @@ async function loadIncidentTypes() {
         const message = "Failed to load incident types:\n" + errOne + "," + errTwo;
         console.error(message);
         window.alert(message);
-        return {err: message}
+        return {err: message};
     }
     return {err: null};
 }
@@ -84,9 +84,9 @@ function updateIncidentTypes() {
         const entryItem = _entryTemplate.clone();
 
         if (incidentTypesVisible.indexOf(incidentType) === -1) {
-            entryItem.addClass("item-hidden")
+            entryItem.addClass("item-hidden");
         } else {
-            entryItem.addClass("item-visible")
+            entryItem.addClass("item-visible");
         }
 
         const safeIncidentType = textAsHTML(incidentType);

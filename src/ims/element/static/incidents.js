@@ -95,7 +95,7 @@ async function loadEventFieldReports() {
 
 // Set the user-visible error information on the page to the provided string.
 function setErrorMessage(msg) {
-    msg = "Error: (Cause: " + msg + ")"
+    msg = "Error: (Cause: " + msg + ")";
     document.getElementById("error_info").classList.remove("hidden");
     document.getElementById("error_text").textContent = msg;
     document.getElementById("error_info").scrollIntoView();
@@ -128,15 +128,15 @@ function initIncidentsTable() {
 
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e) {
-        if (e.data["update_all"]) {
-            console.log("Reloading the whole table to be cautious, as an SSE was missed")
+        if (e.data.update_all) {
+            console.log("Reloading the whole table to be cautious, as an SSE was missed");
             incidentsTable.ajax.reload();
             clearErrorMessage();
             return;
         }
 
-        const number = e.data["incident_number"];
-        const event = e.data["event_id"]
+        const number = e.data.incident_number;
+        const event = e.data.event_id;
         if (event !== eventID) {
             return;
         }
@@ -166,7 +166,7 @@ function initIncidentsTable() {
         clearErrorMessage();
         incidentsTable.processing(false);
         incidentsTable.draw();
-    }
+    };
 }
 
 
@@ -298,7 +298,7 @@ function initDataTables() {
                     viewIncidentsURL + incident.number,
                     "Incident:" + eventID + "#" + incident.number,
                 );
-            })
+            });
             row.getElementsByClassName("incident_created")[0]
                 .setAttribute(
                     "title",
@@ -399,7 +399,7 @@ function initSearchField() {
         }
         incidentsTable.search(q, isRegex);
         incidentsTable.draw();
-    }
+    };
 
     const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
     const fragmentParams = new URLSearchParams(fragment);
@@ -475,7 +475,7 @@ function initSearch() {
                 _showModifiedAfter != null &&
                 Date.parse(incident.last_modified) < _showModifiedAfter
             ) {
-                return false
+                return false;
             }
 
             // don't bother with filtering, which may be computationally expensive,
@@ -576,12 +576,13 @@ const _otherPlaceholder = "(other)";
 
 function setCheckedTypes(types, includeBlanks, includeOthers) {
     for (const $type of $('#ul_show_type > a')) {
-        if (types.includes($type.innerHTML)
-            || (includeBlanks && $type.id === "show_blank_type")
-            || (includeOthers && $type.id === "show_other_type")) {
-            $type.classList.add("dropdown-item-checked")
+        if (types.includes($type.innerHTML) ||
+            (includeBlanks && $type.id === "show_blank_type") ||
+            (includeOthers && $type.id === "show_other_type")
+        ) {
+            $type.classList.add("dropdown-item-checked");
         } else {
-            $type.classList.remove("dropdown-item-checked")
+            $type.classList.remove("dropdown-item-checked");
         }
     }
 }
@@ -616,9 +617,7 @@ function showCheckedTypes(replaceState) {
     readCheckedTypes();
 
     const numTypesShown = _showTypes.length + (_showBlankType ? 1 : 0) + (_showOtherType ? 1 : 0);
-    const showTypeText = allTypesChecked()
-        ? "All Types"
-        : `Types (${numTypesShown})`;
+    const showTypeText = allTypesChecked() ? "All Types" : `Types (${numTypesShown})`;
     document.getElementById("show_type").textContent = showTypeText;
 
     if (replaceState) {
@@ -657,7 +656,7 @@ function showRows(rowsToShow, replaceState) {
     }
 
     incidentsTable.page.len(rowsToShow);
-    incidentsTable.draw()
+    incidentsTable.draw();
 }
 
 //
