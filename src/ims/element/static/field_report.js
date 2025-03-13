@@ -40,15 +40,15 @@ async function initFieldReportPage() {
 
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = async function (e) {
-        const number = e.data["field_report_number"];
-        const event = e.data["event_id"]
-        const updateAll = e.data["update_all"];
+        const number = e.data.field_report_number;
+        const event = e.data.event_id;
+        const updateAll = e.data.update_all;
 
         if (updateAll || (event === eventID && number === fieldReportNumber)) {
             console.log("Got field report update: " + number);
             await loadAndDisplayFieldReport();
         }
-    }
+    };
 
     // Keyboard shortcuts
     document.addEventListener("keydown", function(e) {
@@ -129,7 +129,7 @@ async function loadFieldReport() {
         };
     } else {
         const {json, err} = await fetchJsonNoThrow(
-            urlReplace(url_fieldReports) + number)
+            urlReplace(url_fieldReports) + number);
         if (err != null) {
             disableEditing();
             const message = "Failed to load field report: " + error;
@@ -262,20 +262,20 @@ async function sendEdits(edits) {
 
     const {resp, json, err} = await fetchJsonNoThrow(url, {
         body: edits,
-    })
+    });
     if (err != null) {
         const message = `Failed to apply edit: ${err}`;
         console.log(message);
         await loadAndDisplayFieldReport();
         setErrorMessage(message);
-        return {err: message}
+        return {err: message};
     }
     if (number == null) {
         // We created a new field report.
         // We need to find out the created field report number so that
         // future edits don't keep creating new resources.
 
-        let newNumber = resp.headers.get("X-IMS-Field-Report-Number")
+        let newNumber = resp.headers.get("X-IMS-Field-Report-Number");
         // Check that we got a value back
         if (newNumber == null) {
             return {err: "No X-IMS-Field-Report-Number header provided."};
@@ -324,7 +324,7 @@ async function makeIncident() {
             "summary": fieldReport.summary,
             "ranger_handles": authors,
         },
-    })
+    });
     if (err != null) {
         disableEditing();
         setErrorMessage(`Failed to create incident: ${err}`);

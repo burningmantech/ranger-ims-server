@@ -80,15 +80,15 @@ function initFieldReportsTable() {
 
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = function (e) {
-        if (e.data["update_all"]) {
-            console.log("Reloading the whole table to be cautious, as an SSE was missed")
+        if (e.data.update_all) {
+            console.log("Reloading the whole table to be cautious, as an SSE was missed");
             fieldReportsTable.ajax.reload();
             clearErrorMessage();
             return;
         }
 
-        const number = e.data["field_report_number"];
-        const event = e.data["event_id"]
+        const number = e.data.field_report_number;
+        const event = e.data.event_id;
         if (event !== eventID) {
             return;
         }
@@ -102,12 +102,12 @@ function initFieldReportsTable() {
         //  bringing those errors into the console constantly.
         fieldReportsTable.ajax.reload();
         clearErrorMessage();
-    }
+    };
 }
 
 // Set the user-visible error information on the page to the provided string.
 function setErrorMessage(msg) {
-    msg = "Error: (Cause: " + msg + ")"
+    msg = "Error: (Cause: " + msg + ")";
     document.getElementById("error_info").classList.remove("hidden");
     document.getElementById("error_text").textContent = msg;
     document.getElementById("error_info").scrollIntoView();
@@ -215,7 +215,7 @@ function initDataTables() {
                     urlReplace(url_viewFieldReports) + fieldReport.number,
                     "Field_Report:" + fieldReport.number,
                 );
-            })
+            });
             row.getElementsByClassName("field_report_created")[0]
                 .setAttribute(
                     "title",
@@ -276,7 +276,7 @@ function initSearchField() {
         }
         fieldReportsTable.search(q, isRegex);
         fieldReportsTable.draw();
-    }
+    };
 
     const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
     const fragmentParams = new URLSearchParams(fragment);
@@ -349,7 +349,7 @@ function initSearch() {
                 _showModifiedAfter != null &&
                 ! modifiedAfter(fieldReport, _showModifiedAfter)
             ) {
-                return false
+                return false;
             }
 
             return true;
@@ -427,7 +427,7 @@ function showRows(rowsToShow, replaceState) {
     }
 
     fieldReportsTable.page.len(rowsToShow);
-    fieldReportsTable.draw()
+    fieldReportsTable.draw();
 }
 
 

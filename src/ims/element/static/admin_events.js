@@ -25,7 +25,7 @@ async function initPage() {
 }
 
 
-let accessControlList = null
+let accessControlList = null;
 
 async function loadAccessControlList() {
     let {json, err} = await fetchJsonNoThrow(url_acl);

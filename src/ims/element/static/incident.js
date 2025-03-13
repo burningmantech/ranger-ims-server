@@ -48,9 +48,9 @@ async function initIncidentPage() {
 
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e) {
-        const number = e.data["incident_number"];
-        const event = e.data["event_id"]
-        const updateAll = e.data["update_all"];
+        const number = e.data.incident_number;
+        const event = e.data.event_id;
+        const updateAll = e.data.update_all;
 
         if (updateAll || (event === eventID && number === incidentNumber)) {
             console.log("Got incident update: " + number);
@@ -58,11 +58,11 @@ async function initIncidentPage() {
             await loadAllFieldReports();
             renderFieldReportData();
         }
-    }
+    };
 
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = async function (e) {
-        const updateAll = e.data["update_all"];
+        const updateAll = e.data.update_all;
         if (updateAll) {
             console.log("Updating all field reports");
             await loadAllFieldReports();
@@ -70,15 +70,15 @@ async function initIncidentPage() {
             return;
         }
 
-        const number = e.data["field_report_number"];
-        const event = e.data["event_id"]
+        const number = e.data.field_report_number;
+        const event = e.data.event_id;
         if (event === eventID) {
             console.log("Got field report update: " + number);
             await loadFieldReport(number);
             renderFieldReportData();
             return;
         }
-    }
+    };
 
     // Keyboard shortcuts
     document.addEventListener("keydown", function(e) {
@@ -163,7 +163,7 @@ async function loadIncident() {
 
 // Set the user-visible error information on the page to the provided string.
 function setErrorMessage(msg) {
-    msg = "Error: (Cause: " + msg + ")"
+    msg = "Error: (Cause: " + msg + ")";
     document.getElementById("error_info").classList.remove("hidden");
     document.getElementById("error_text").textContent = msg;
     document.getElementById("error_info").scrollIntoView();
@@ -235,7 +235,7 @@ async function loadPersonnel() {
 
         _personnel[record.handle] = record;
     }
-    personnel = _personnel
+    personnel = _personnel;
 }
 
 
@@ -256,10 +256,10 @@ async function loadIncidentTypes() {
     }
     const _incidentTypes = [];
     for (const record of json) {
-        _incidentTypes.push(record)
+        _incidentTypes.push(record);
     }
-    _incidentTypes.sort()
-    incidentTypes = _incidentTypes
+    _incidentTypes.sort();
+    incidentTypes = _incidentTypes;
 }
 
 //
@@ -295,7 +295,7 @@ async function loadAllFieldReports() {
     // being cautious about field report number being null
     _allFieldReports.sort(function (a, b) {
         return (b.number ?? -1) - (a.number ?? -1);
-    })
+    });
     allFieldReports = _allFieldReports;
     return {err: null};
 }
@@ -329,7 +329,7 @@ async function loadFieldReport(fieldReportNumber) {
         // being cautious about field report number being null
         allFieldReports.sort(function (a, b) {
             return (b.number ?? -1) - (a.number ?? -1);
-        })
+        });
     }
 
     return {err: null};
@@ -794,15 +794,15 @@ async function sendEdits(edits) {
         const message = `Failed to apply edit: ${err}`;
         await loadAndDisplayIncident();
         setErrorMessage(message);
-        return {err: message}
+        return {err: message};
     }
 
     if (number == null) {
         // We created a new incident.
-        // We need to find out the create incident number so that future
+        // We need to find out the created incident number so that future
         // edits don't keep creating new resources.
 
-        let newNumber = resp.headers.get("X-IMS-Incident-Number")
+        let newNumber = resp.headers.get("X-IMS-Incident-Number");
         // Check that we got a value back
         if (newNumber == null) {
             const msg = "No X-IMS-Incident-Number header provided.";
@@ -909,7 +909,7 @@ async function removeRanger(sender) {
     await sendEdits(
         {
             "ranger_handles": incident.ranger_handles.filter(
-                function(h) { return h !== rangerHandle }
+                function(h) { return h !== rangerHandle; }
             ),
         },
     );
@@ -922,7 +922,7 @@ async function removeIncidentType(sender) {
     const incidentType = sender.parent().attr("value");
     await sendEdits({
         "incident_types": incident.incident_types.filter(
-            function(t) { return t !== incidentType }
+            function(t) { return t !== incidentType; }
         ),
     });
 }
@@ -1028,7 +1028,7 @@ async function detachFieldReport(sender) {
     );
     let {err} = await fetchJsonNoThrow(url, {
         body: {},
-    })
+    });
     if (err != null) {
         const message = `Failed to detach field report ${err}`;
         console.log(message);
@@ -1060,7 +1060,7 @@ async function attachFieldReport() {
     );
     let {err} = await fetchJsonNoThrow(url, {
         body: {},
-    })
+    });
     if (err != null) {
         const message = `Failed to attach field report: ${err}`;
         console.log(message);

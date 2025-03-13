@@ -1,6 +1,7 @@
 include .coveragerc
 include .docker/sample.env
 include .dockerignore
+include .jshintrc
 include .pre-commit-config.yaml
 include .python-version
 include bin/.common.sh
