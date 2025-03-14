@@ -28,7 +28,7 @@
                   class="form-control input-sm auto-width"
                   type="text" inputmode="verbatim"
                   placeholder="Chooch"
-                  onchange="addIncidentType(this)"
+                  onchange="createIncidentType(this)"
           />
         </div>
       </div>
@@ -40,7 +40,7 @@
 <script>
     var events = <json t:render="events_list"/>;
 
-    initPage();
+    initAdminTypesPage();
     applyTheme();
 </script>
 

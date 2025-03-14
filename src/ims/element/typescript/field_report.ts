@@ -12,38 +12,48 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+
+
 //
 // Initialize UI
-let fieldReport = null;
+let fieldReport: FieldReport|null = null;
+
 async function initFieldReportPage() {
     await loadBody();
     disableEditing();
     await loadAndDisplayFieldReport();
+
     // for a new field report
-    if (fieldReport.number == null) {
+    if (fieldReport!.number == null) {
         // @ts-ignore JQuery
         $("#field_report_summary").focus();
     }
+
     // Warn the user if they're about to navigate away with unsaved text.
     window.addEventListener("beforeunload", function (e) {
-        if (document.getElementById("report_entry_add").value !== "") {
+        if ((document.getElementById("report_entry_add") as HTMLTextAreaElement).value !== "") {
             e.preventDefault();
         }
     });
+
     // Fire-and-forget this promise, since it tries forever to acquire a lock
     let ignoredPromise = requestEventSourceLock();
+
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = async function (e) {
         const number = e.data.field_report_number;
         const event = e.data.event_id;
         const updateAll = e.data.update_all;
+
         if (updateAll || (event === eventID && number === fieldReportNumber)) {
             console.log("Got field report update: " + number);
             await loadAndDisplayFieldReport();
         }
     };
+
     // Keyboard shortcuts
-    document.addEventListener("keydown", function (e) {
+    document.addEventListener("keydown", function(e) {
         // No shortcuts when an input field is active
         if (document.activeElement !== document.body) {
             return;
@@ -62,20 +72,20 @@ async function initFieldReportPage() {
             e.preventDefault();
             // Scroll to report_entry_add field
             // @ts-ignore JQuery
-            $("html, body").animate({ scrollTop: $("#report_entry_add").offset().top }, 500);
+            $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
             // @ts-ignore JQuery
             $("#report_entry_add").focus();
         }
         // h --> toggle showing system entries
         if (e.key.toLowerCase() === "h") {
-            document.getElementById("history_checkbox").click();
+            (document.getElementById("history_checkbox") as HTMLInputElement).click();
         }
         // n --> new field report
         if (e.key.toLowerCase() === "n") {
-            window.open("./new", '_blank').focus();
+            (window.open("./new", '_blank') as Window).focus();
         }
     });
-    document.getElementById("helpModal").addEventListener("keydown", function (e) {
+    (document.getElementById("helpModal") as HTMLDivElement).addEventListener("keydown", function(e) {
         if (e.key === "?") {
             // @ts-ignore JQuery
             $("#helpModal").modal("toggle");
@@ -90,47 +100,52 @@ async function initFieldReportPage() {
         }
     });
 }
+
 //
 // Load field report
 //
-async function loadFieldReport() {
-    let number;
+
+async function loadFieldReport(): Promise<{err: string|null}> {
+    let number: number|null|undefined;
     if (fieldReport == null) {
         // First time here.  Use page JavaScript initial value.
         number = fieldReportNumber;
-    }
-    else {
+    } else {
         // We have an incident already.  Use that number.
         number = fieldReport.number;
     }
+
     if (number == null) {
         fieldReport = {
             "number": null,
             "created": null,
         };
-    }
-    else {
-        const { json, err } = await fetchJsonNoThrow(urlReplace(url_fieldReports) + number, null);
+    } else {
+        const {json, err} = await fetchJsonNoThrow(
+            urlReplace(url_fieldReports) + number, null);
         if (err != null) {
             disableEditing();
             const message = "Failed to load field report: " + err;
             console.error(message);
             setErrorMessage(message);
-            return { err: message };
+            return {err: message};
         }
         fieldReport = json;
     }
-    return { err: null };
+    return {err: null};
 }
+
 // returns void
 async function loadAndDisplayFieldReport() {
-    const { err } = await loadFieldReport();
+    const {err} = await loadFieldReport();
+
     if (fieldReport == null || err != null) {
         const message = "Field report failed to load";
         console.log(message);
         setErrorMessage(message);
         return;
     }
+
     drawTitle();
     drawNumber();
     drawIncident();
@@ -138,45 +153,55 @@ async function loadAndDisplayFieldReport() {
     toggleShowHistory();
     drawReportEntries(fieldReport.report_entries);
     clearErrorMessage();
+
     // @ts-ignore JQuery
     $("#report_entry_add").on("input", reportEntryEdited);
+
     if (editingAllowed) {
         enableEditing();
     }
 }
+
+
 //
 // Populate page title
 //
+
 function drawTitle() {
     document.title = fieldReportAsString(fieldReport);
 }
+
+
 //
 // Populate field report number
 //
+
 function drawNumber() {
-    let number = fieldReport.number;
+    let number: number|string|null|undefined = fieldReport!.number;
     if (number == null) {
         number = "(new)";
     }
     // @ts-ignore JQuery
     $("#field_report_number").text(number);
 }
+
 //
 // Populate incident number or show "create incident" button
 //
+
 function drawIncident() {
     // @ts-ignore JQuery
     $("#incident_number").text("Please include in Summary");
     // New Field Report. There can be no Incident
-    if (fieldReport.number == null) {
+    if (fieldReport!.number == null) {
         return;
     }
     // If there's an attached Incident, then show a link to it
-    const incident = fieldReport.incident;
+    const incident = fieldReport!.incident;
     if (incident != null) {
         const incidentURL = urlReplace(url_viewIncidentNumber).replace("<number>", incident.toString());
         // @ts-ignore JQuery
-        const $a = $("<a>", { href: incidentURL });
+        const $a = $("<a>", {href: incidentURL});
         $a.text(incident);
         // @ts-ignore JQuery
         $("#incident_number").text("").append($a);
@@ -186,23 +211,26 @@ function drawIncident() {
     if (incident == null && canWriteIncidents) {
         // @ts-ignore JQuery
         $("#create_incident").removeClass("hidden");
-    }
-    else {
+    } else {
         // @ts-ignore JQuery
         $("#create_incident").addClass("hidden");
     }
 }
+
+
 //
 // Populate field report summary
 //
+
 function drawSummary() {
-    if (fieldReport.summary) {
+    if (fieldReport!.summary) {
         // @ts-ignore JQuery
-        $("#field_report_summary").val(fieldReport.summary);
+        $("#field_report_summary").val(fieldReport!.summary);
         // @ts-ignore JQuery
         $("#field_report_summary").attr("placeholder", "");
         return;
     }
+
     // @ts-ignore JQuery
     $("#field_report_summary")[0].removeAttribute("value");
     const summarized = summarizeIncident(fieldReport);
@@ -212,15 +240,19 @@ function drawSummary() {
         $("#field_report_summary").attr("placeholder", summarized);
     }
 }
+
+
 //
 // Editing
 //
-async function frSendEdits(edits) {
+
+async function frSendEdits(edits: any): Promise<{err:string|null}> {
     if (fieldReport == null) {
-        return { err: "fieldReport is null!" };
+        return {err: "fieldReport is null!"};
     }
     const number = fieldReport.number;
     let url = urlReplace(url_fieldReports);
+
     if (number == null) {
         // We're creating a new field report.
         const required = [];
@@ -229,13 +261,13 @@ async function frSendEdits(edits) {
                 edits[key] = fieldReport[key];
             }
         }
-    }
-    else {
+    } else {
         // We're editing an existing field report.
         edits.number = number;
         url += number;
     }
-    const { resp, json, err } = await fetchJsonNoThrow(url, {
+
+    const {resp, json, err} = await fetchJsonNoThrow(url, {
         body: edits,
     });
     if (err != null) {
@@ -243,52 +275,65 @@ async function frSendEdits(edits) {
         console.log(message);
         await loadAndDisplayFieldReport();
         setErrorMessage(message);
-        return { err: message };
+        return {err: message};
     }
     if (number == null) {
         // We created a new field report.
         // We need to find out the created field report number so that
         // future edits don't keep creating new resources.
+
         let newNumber = resp?.headers.get("X-IMS-Field-Report-Number");
         // Check that we got a value back
         if (newNumber == null) {
-            return { err: "No X-IMS-Field-Report-Number header provided." };
+            return {err: "No X-IMS-Field-Report-Number header provided."};
         }
+
         const newAsNumber = parseInt(newNumber);
         // Check that the value we got back is valid
         if (isNaN(newAsNumber)) {
-            return { err: "Non-integer X-IMS-Field-Report-Number header provided: " + newAsNumber };
+            return {err: "Non-integer X-IMS-Field-Report-Number header provided: " + newAsNumber};
         }
+
         // Store the new number in our field report object
         fieldReportNumber = fieldReport.number = newAsNumber;
+
         // Update browser history to update URL
         drawTitle();
-        window.history.pushState(null, document.title, urlReplace(url_viewFieldReports) + newNumber);
+        window.history.pushState(
+            null, document.title,
+            urlReplace(url_viewFieldReports) + newNumber
+        );
     }
+
     await loadAndDisplayFieldReport();
-    return { err: null };
+    return {err: null};
 }
 registerSendEdits = frSendEdits;
+
 async function editSummary() {
     // @ts-ignore JQuery
     await editFromElement($("#field_report_summary"), "summary");
 }
+
 //
 // Make a new incident and attach this Field Report to it
 //
-async function makeIncident() {
+
+async function makeIncident(): Promise<void> {
     // Create the new incident
     const incidentsURL = urlReplace(url_incidents);
+
     if (fieldReport == null) {
         setErrorMessage("fieldReport is null!");
         return;
     }
-    const authors = [];
+
+    const authors: string[] = [];
     if (fieldReport.report_entries) {
-        authors.push(fieldReport.report_entries[0].author ?? "null");
+        authors.push(fieldReport.report_entries[0].author??"null");
     }
-    let { resp, err } = await fetchJsonNoThrow(incidentsURL, {
-        body: JSON.stringify({
+    let {resp, err} = await fetchJsonNoThrow(incidentsURL, {
+        body:JSON.stringify({
             "summary": fieldReport.summary,
             "ranger_handles": authors,
         }),
@@ -305,10 +350,12 @@ async function makeIncident() {
         return;
     }
     fieldReport.incident = parseInt(newNum);
+
     // Attach this FR to that new incident
-    const attachToIncidentUrl = `${urlReplace(url_fieldReports)}${fieldReport.number}` +
+    const attachToIncidentUrl =
+        `${urlReplace(url_fieldReports)}${fieldReport.number}` +
         `?action=attach;incident=${fieldReport.incident}`;
-    const { err: attachErr } = await fetchJsonNoThrow(attachToIncidentUrl, {
+    const {err: attachErr} = await fetchJsonNoThrow(attachToIncidentUrl, {
         body: JSON.stringify({}),
     });
     if (attachErr != null) {
@@ -319,8 +366,10 @@ async function makeIncident() {
     console.log("Created and attached to new incident " + fieldReport.incident);
     await loadAndDisplayFieldReport();
 }
+
+
 // The success callback for a report entry strike call.
-async function frOnStrikeSuccess() {
+async function frOnStrikeSuccess(): Promise<void> {
     await loadAndDisplayFieldReport();
     clearErrorMessage();
 }

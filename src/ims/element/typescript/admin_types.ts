@@ -12,100 +12,133 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+
+
 //
 // Initialize UI
 //
+
 async function initAdminTypesPage() {
     detectTouchDevice();
     await loadAndDrawIncidentTypes();
 }
+
+
 async function loadAndDrawIncidentTypes() {
     await loadAllIncidentTypes();
     drawAllIncidentTypes();
 }
-let adminIncidentTypes = [];
-let incidentTypesVisible = [];
-async function loadAllIncidentTypes() {
-    let errOne, errTwo;
-    [{ json: incidentTypesVisible, err: errOne }, { json: adminIncidentTypes, err: errTwo }] =
+
+
+let adminIncidentTypes: string[] = [];
+let incidentTypesVisible: string[] = [];
+
+async function loadAllIncidentTypes(): Promise<{err:string|null}> {
+    let errOne: string|null, errTwo: string|null;
+    [{json: incidentTypesVisible, err: errOne}, {json: adminIncidentTypes, err: errTwo}] =
         await Promise.all([
             fetchJsonNoThrow(url_incidentTypes, {
-                headers: { "Cache-Control": "no-cache" },
+                headers: {"Cache-Control": "no-cache"},
             }),
             fetchJsonNoThrow(url_incidentTypes + "?hidden=true", {
-                headers: { "Cache-Control": "no-cache" },
+                headers: {"Cache-Control": "no-cache"},
             }),
         ]);
     if (errOne != null || errTwo != null) {
         const message = "Failed to load incident types:\n" + errOne + "," + errTwo;
         console.error(message);
         window.alert(message);
-        return { err: message };
+        return {err: message};
     }
-    return { err: null };
+    return {err: null};
 }
+
+
 let _incidentTypesTemplate = null;
-let _entryTemplate = null;
-function drawAllIncidentTypes() {
+let _entryTemplate: any = null;
+
+function drawAllIncidentTypes(): void {
     // @ts-ignore JQuery
     const container = $("#incident_types_container");
+
     if (_incidentTypesTemplate == null) {
         _incidentTypesTemplate = container.children(".incident_types:first");
-        _entryTemplate = _incidentTypesTemplate
+
+        _entryTemplate = _incidentTypesTemplate!
             // @ts-ignore JQuery
             .find(".list-group:first")
-            .children(".list-group-item:first");
+            .children(".list-group-item:first")
+            ;
     }
+
     updateIncidentTypes();
 }
-function updateIncidentTypes() {
+
+
+function updateIncidentTypes(): void {
     // @ts-ignore JQuery
     const incidentTypesElement = $("#incident_types");
+
     const entryContainer = incidentTypesElement.find(".list-group:first");
+
     entryContainer.empty();
-    for (const incidentType of adminIncidentTypes ?? []) {
+
+    for (const incidentType of adminIncidentTypes??[]) {
         const entryItem = _entryTemplate.clone();
+
         if (incidentTypesVisible.indexOf(incidentType) === -1) {
             entryItem.addClass("item-hidden");
-        }
-        else {
+        } else {
             entryItem.addClass("item-visible");
         }
+
         const safeIncidentType = textAsHTML(incidentType);
         entryItem.append(safeIncidentType);
         entryItem.attr("value", safeIncidentType);
+
         entryContainer.append(entryItem);
     }
 }
-async function createIncidentType(sender) {
-    const { err } = await sendIncidentTypes({ "add": [sender.value] });
+
+
+async function createIncidentType(sender): Promise<void> {
+    const {err} = await sendIncidentTypes({"add": [sender.value]});
     if (err == null) {
         sender.value = "";
     }
     await loadAndDrawIncidentTypes();
 }
+
+
 function deleteIncidentType(sender) {
     alert("Remove unimplemented");
 }
-async function showIncidentType(sender) {
+
+
+async function showIncidentType(sender): Promise<void> {
     // @ts-ignore JQuery
-    await sendIncidentTypes({ "show": [$(sender).parent().attr("value")] });
+    await sendIncidentTypes({"show": [$(sender).parent().attr("value")]});
     await loadAndDrawIncidentTypes();
 }
-async function hideIncidentType(sender) {
+
+
+async function hideIncidentType(sender): Promise<void> {
     // @ts-ignore JQuery
-    await sendIncidentTypes({ "hide": [$(sender).parent().attr("value")] });
+    await sendIncidentTypes({"hide": [$(sender).parent().attr("value")]});
     await loadAndDrawIncidentTypes();
 }
-async function sendIncidentTypes(edits) {
-    const { err } = await fetchJsonNoThrow(url_incidentTypes, {
+
+
+async function sendIncidentTypes(edits): Promise<{err:string|null}> {
+    const {err} = await fetchJsonNoThrow(url_incidentTypes, {
         body: edits,
     });
     if (err == null) {
-        return { err: null };
+        return {err: null};
     }
     const message = `Failed to edit incident types:\n${JSON.stringify(err)}`;
     console.log(message);
     window.alert(message);
-    return { err: err };
+    return {err: err};
 }

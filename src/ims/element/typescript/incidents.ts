@@ -12,16 +12,22 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+declare var allIncidentTypes: string[];
+
 //
 // Initialize UI
 //
-async function initIncidentsPage() {
+
+async function initIncidentsPage(): Promise<void> {
     await loadBody();
+
     disableEditing();
     await loadEventFieldReports();
     initIncidentsTable();
+
     // Keyboard shortcuts
-    document.addEventListener("keydown", function (e) {
+    document.addEventListener("keydown", function(e) {
         // No shortcuts when an input field is active
         if (document.activeElement !== document.body) {
             return;
@@ -39,62 +45,77 @@ async function initIncidentsPage() {
         if (e.key === "/") {
             // don't immediately input a "/" into the search box
             e.preventDefault();
-            document.getElementById("search_input").focus();
+            document.getElementById("search_input")!.focus();
         }
         // n --> new incident
         if (e.key.toLowerCase() === "n") {
-            document.getElementById("new_incident").click();
+            document.getElementById("new_incident")!.click();
         }
     });
-    document.getElementById("helpModal").addEventListener("keydown", function (e) {
+
+    document.getElementById("helpModal")!.addEventListener("keydown", function(e) {
         if (e.key === "?") {
             // @ts-ignore JQuery
             $("#helpModal").modal("toggle");
         }
     });
+
 }
+
+
 //
 // Load event field reports
 //
 // Note that nothing from these data is displayed in the incidents table.
 // We do this fetch in order to make incidents searchable by text in their
 // attached field reports.
-async function loadEventFieldReports() {
-    const { json, err } = await fetchJsonNoThrow(urlReplace(url_fieldReports + "?exclude_system_entries=true"), null);
+
+async function loadEventFieldReports(): Promise<{err: string|null}> {
+
+    const {json, err} = await fetchJsonNoThrow(urlReplace(url_fieldReports + "?exclude_system_entries=true"), null);
     if (err != null) {
         const message = `Failed to load event field reports: ${err}`;
         console.error(message);
         setErrorMessage(message);
-        return { err: message };
+        return {err: message};
     }
     const reports = {};
+
     for (const report of json) {
         reports[report.number] = report;
     }
+
     eventFieldReports = reports;
+
     console.log("Loaded event field reports");
     if (incidentsTable != null) {
         incidentsTable.ajax.reload();
         clearErrorMessage();
     }
-    return { err: null };
+    return {err: null};
 }
+
 //
 // Dispatch queue table
 //
+
 // The DataTables object
-let incidentsTable = null;
+let incidentsTable: any = null;
+
 function initIncidentsTable() {
     initDataTables();
     initTableButtons();
     initSearchField();
     initSearch();
     clearErrorMessage();
+
     if (editingAllowed) {
         enableEditing();
     }
+
     // Fire-and-forget this promise, since it tries forever to acquire a lock
     let ignoredPromise = requestEventSourceLock();
+
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e) {
         if (e.data.update_all) {
@@ -103,12 +124,14 @@ function initIncidentsTable() {
             clearErrorMessage();
             return;
         }
+
         const number = e.data.incident_number;
         const event = e.data.event_id;
         if (event !== eventID) {
             return;
         }
-        const { json, err } = await fetchJsonNoThrow(urlReplace(url_incidentNumber).replace("<incident_number>", number), null);
+
+        const {json, err} = await fetchJsonNoThrow(urlReplace(url_incidentNumber).replace("<incident_number>", number), null);
         if (err != null) {
             const message = `Failed to update Incident ${number}: ${err}`;
             console.error(message);
@@ -118,7 +141,7 @@ function initIncidentsTable() {
         // Now update/create the relevant row. This is a change from pre-2025, in that
         // we no longer reload all incidents here on any single incident update.
         let done = false;
-        incidentsTable.rows().every(function () {
+        incidentsTable.rows().every( function () {
             const existingIncident = this.data();
             if (existingIncident.number === number) {
                 console.log("Updating Incident " + number);
@@ -135,13 +158,17 @@ function initIncidentsTable() {
         incidentsTable.draw();
     };
 }
+
+
 //
 // Initialize DataTables
 //
+
 function initDataTables() {
     function dataHandler(incidents) {
         return incidents;
     }
+
     // @ts-ignore JQuery
     $.fn.dataTable.ext.errMode = "none";
     // @ts-ignore JQuery
@@ -177,18 +204,16 @@ function initDataTables() {
                 let errMsg = "";
                 if (error) {
                     errMsg = error;
-                }
-                else if (request.responseText) {
+                } else if (request.responseText) {
                     errMsg = request.responseText;
-                }
-                else {
+                } else {
                     errMsg = "DataTables error";
                 }
                 setErrorMessage(errMsg);
             },
         },
         "columns": [
-            {
+            {   // 0
                 "name": "incident_number",
                 "className": "incident_number text-right all",
                 "data": "number",
@@ -196,7 +221,7 @@ function initDataTables() {
                 "cellType": "th",
                 // "all" class --> very high responsivePriority
             },
-            {
+            {   // 1
                 "name": "incident_created",
                 "className": "incident_created text-center",
                 "data": "created",
@@ -204,7 +229,7 @@ function initDataTables() {
                 "render": renderDate,
                 "responsivePriority": 7,
             },
-            {
+            {   // 2
                 "name": "incident_state",
                 "className": "incident_state text-center",
                 "data": "state",
@@ -212,7 +237,7 @@ function initDataTables() {
                 "render": renderState,
                 "responsivePriority": 3,
             },
-            {
+            {   // 3
                 "name": "incident_summary",
                 "className": "incident_summary all",
                 "data": "summary",
@@ -220,7 +245,7 @@ function initDataTables() {
                 "render": renderSummary,
                 // "all" class --> very high responsivePriority
             },
-            {
+            {   // 4
                 "name": "incident_types",
                 "className": "incident_types",
                 "data": "incident_types",
@@ -229,7 +254,7 @@ function initDataTables() {
                 "width": "5em",
                 "responsivePriority": 4,
             },
-            {
+            {   // 5
                 "name": "incident_location",
                 "className": "incident_location",
                 "data": "location",
@@ -237,7 +262,7 @@ function initDataTables() {
                 "render": renderLocation,
                 "responsivePriority": 5,
             },
-            {
+            {   // 6
                 "name": "incident_ranger_handles",
                 "className": "incident_ranger_handles",
                 "data": "ranger_handles",
@@ -246,7 +271,7 @@ function initDataTables() {
                 "width": "6em",
                 "responsivePriority": 6,
             },
-            {
+            {   // 7
                 "name": "incident_last_modified",
                 "className": "incident_last_modified text-center",
                 "data": "last_modified",
@@ -261,33 +286,48 @@ function initDataTables() {
         "createdRow": function (row, incident, index) {
             row.addEventListener("click", function (e) {
                 // Open new context with link
-                window.open(viewIncidentsURL + incident.number, "Incident:" + eventID + "#" + incident.number);
+                window.open(
+                    viewIncidentsURL + incident.number,
+                    "Incident:" + eventID + "#" + incident.number,
+                );
             });
             row.getElementsByClassName("incident_created")[0]
-                .setAttribute("title", fullDateTime.format(Date.parse(incident.created)));
+                .setAttribute(
+                    "title",
+                    fullDateTime.format(Date.parse(incident.created)),
+                );
             row.getElementsByClassName("incident_last_modified")[0]
-                .setAttribute("title", fullDateTime.format(Date.parse(incident.last_modified)));
+                .setAttribute(
+                    "title",
+                    fullDateTime.format(Date.parse(incident.last_modified)),
+                );
         },
     });
 }
+
+
 //
 // Initialize table buttons
 //
+
 function initTableButtons() {
     // Relocate button container
+
     // @ts-ignore JQuery
     $("#queue_table_wrapper")
         .children(".row")
         .children(".col-sm-6:first")
         // @ts-ignore JQuery
         .replaceWith($("#button_container"));
+
     // @ts-ignore JQuery
-    $(document).on('click', '.dropdown-item-checkable', function (event) {
+    $(document).on('click', '.dropdown-item-checkable', function(event) {
         event.preventDefault();
         // @ts-ignore JQuery
         $(this).toggleClass('dropdown-item-checked');
         showCheckedTypes(true);
     });
+
     // @ts-ignore JQuery
     const $typeFilter = $("#ul_show_type");
     for (const i in allIncidentTypes) {
@@ -295,63 +335,72 @@ function initTableButtons() {
         // @ts-ignore JQuery
         const $a = $("<a>", {
             class: "dropdown-item dropdown-item-checkable dropdown-item-checked",
-            href: "#",
+            href:"#",
         });
         $a.text(type.toString());
         $typeFilter.append($a);
     }
+
     const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
     const fragmentParams = new URLSearchParams(fragment);
+
     // Set button defaults
-    const types = fragmentParams.getAll("type");
+
+    const types: string[] = fragmentParams.getAll("type");
     if (types.length > 0) {
-        const validTypes = [];
+        const validTypes: string[] = [];
         let includeBlanks = false;
         let includeOthers = false;
         for (const t of types) {
             if (t && allIncidentTypes.indexOf(t) !== -1) {
                 validTypes.push(t);
-            }
-            else if (t === _blankPlaceholder) {
+            } else if (t === _blankPlaceholder) {
                 includeBlanks = true;
-            }
-            else if (t === _otherPlaceholder) {
+            } else if (t === _otherPlaceholder) {
                 includeOthers = true;
             }
         }
         setCheckedTypes(validTypes, includeBlanks, includeOthers);
     }
     showCheckedTypes(false);
-    showState(fragmentParams.get("state") ?? defaultState, false);
-    showDays(fragmentParams.get("days") ?? defaultDaysBack, false);
-    showRows(fragmentParams.get("rows") ?? defaultRows, false);
+    showState(fragmentParams.get("state")??defaultState, false);
+    showDays(fragmentParams.get("days")??defaultDaysBack, false);
+    showRows(fragmentParams.get("rows")??defaultRows, false);
 }
+
+
 //
 // Initialize search field
 //
+
 const _searchDelayMs = 250;
-let _searchDelayTimer = undefined;
+let _searchDelayTimer: number|undefined = undefined;
+
 function initSearchField() {
     // Relocate search container
+
     // @ts-ignore JQuery
     $("#queue_table_wrapper")
         .children(".row")
         .children(".col-sm-6:last")
         // @ts-ignore JQuery
         .replaceWith($("#search_container"));
+
     // Search field handling
-    const searchInput = document.getElementById("search_input");
+    const searchInput = document.getElementById("search_input") as HTMLInputElement;
+
     const searchAndDraw = function () {
         replaceWindowState();
         let q = searchInput.value;
         let isRegex = false;
         if (q.startsWith("/") && q.endsWith("/")) {
             isRegex = true;
-            q = q.slice(1, q.length - 1);
+            q = q.slice(1, q.length-1);
         }
         incidentsTable.search(q, isRegex);
         incidentsTable.draw();
     };
+
     const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
     const fragmentParams = new URLSearchParams(fragment);
     const queryString = fragmentParams.get("q");
@@ -359,220 +408,276 @@ function initSearchField() {
         searchInput.value = queryString;
         searchAndDraw();
     }
-    searchInput.addEventListener("keyup", function () {
-        // Delay the search in case the user is still typing.
-        // This reduces perceived lag, since searching can be
-        // very slow, and it's super annoying for a user when
-        // the page fully locks up before they're done typing.
-        clearTimeout(_searchDelayTimer);
-        _searchDelayTimer = setTimeout(searchAndDraw, _searchDelayMs);
-    });
-    searchInput.addEventListener("keydown", function (e) {
-        // No shortcuts when ctrl, alt, or meta is being held down
-        if (e.altKey || e.ctrlKey || e.metaKey) {
-            return;
+
+    searchInput.addEventListener("keyup",
+        function () {
+            // Delay the search in case the user is still typing.
+            // This reduces perceived lag, since searching can be
+            // very slow, and it's super annoying for a user when
+            // the page fully locks up before they're done typing.
+            clearTimeout(_searchDelayTimer);
+            _searchDelayTimer = setTimeout(searchAndDraw, _searchDelayMs);
         }
-        // "Jump to Incident" functionality, triggered on hitting Enter
-        if (e.key === "Enter") {
-            // If the value in the search box is an integer, assume it's an IMS number and go to it.
-            // This will work regardless of whether that incident is visible with the current filters.
-            const val = searchInput.value;
-            if (integerRegExp.test(val)) {
-                // Open new context with link
-                window.open(viewIncidentsURL + val, "Incident:" + eventID + "#" + val);
-                searchInput.value = "";
+    );
+    searchInput.addEventListener("keydown",
+        function (e) {
+            // No shortcuts when ctrl, alt, or meta is being held down
+            if (e.altKey || e.ctrlKey || e.metaKey) {
+                return;
+            }
+            // "Jump to Incident" functionality, triggered on hitting Enter
+            if (e.key === "Enter") {
+                // If the value in the search box is an integer, assume it's an IMS number and go to it.
+                // This will work regardless of whether that incident is visible with the current filters.
+                const val = searchInput.value;
+                if (integerRegExp.test(val)) {
+                    // Open new context with link
+                    window.open(
+                        viewIncidentsURL + val,
+                        "Incident:" + eventID + "#" + val,
+                    );
+                    searchInput.value = "";
+                }
             }
         }
-    });
+    );
 }
+
+
 //
 // Initialize search plug-in
 //
+
 function initSearch() {
+
     // @ts-ignore JQuery
-    $.fn.dataTable.ext.search.push(function (settings, rowData, rowIndex) {
-        const incident = incidentsTable.data()[rowIndex];
-        let state;
-        if (_showState != null) {
-            switch (_showState) {
-                case "all":
-                    break;
-                case "active":
-                    state = stateForIncident(incident);
-                    if (state === "on_hold" || state === "closed") {
-                        return false;
-                    }
-                    break;
-                case "open":
-                    state = stateForIncident(incident);
-                    if (state === "closed") {
-                        return false;
-                    }
-                    break;
+    $.fn.dataTable.ext.search.push(
+        function(settings, rowData, rowIndex) {
+            const incident = incidentsTable.data()[rowIndex];
+            let state;
+            if (_showState != null) {
+                switch (_showState) {
+                    case "all":
+                        break;
+                    case "active":
+                        state = stateForIncident(incident);
+                        if (state === "on_hold" || state === "closed") {
+                            return false;
+                        }
+                        break;
+                    case "open":
+                        state = stateForIncident(incident);
+                        if (state === "closed") {
+                            return false;
+                        }
+                        break;
+                }
             }
-        }
-        if (_showModifiedAfter != null &&
-            new Date(Date.parse(incident.last_modified)) < _showModifiedAfter) {
-            return false;
-        }
-        // don't bother with filtering, which may be computationally expensive,
-        // if all types seem to be selected
-        if (!allTypesChecked()) {
-            const rowTypes = Object.values(incident.incident_types);
-            const intersect = rowTypes.filter(t => _showTypes.includes(t)).length > 0;
-            const blankShow = _showBlankType && rowTypes.length === 0;
-            const otherShow = _showOtherType && rowTypes.filter(t => !(allIncidentTypes.includes(t))).length > 0;
-            if (!intersect && !blankShow && !otherShow) {
+
+            if (
+                _showModifiedAfter != null &&
+                new Date(Date.parse(incident.last_modified)) < _showModifiedAfter
+            ) {
                 return false;
             }
+
+            // don't bother with filtering, which may be computationally expensive,
+            // if all types seem to be selected
+            if (!allTypesChecked()) {
+                const rowTypes = Object.values(incident.incident_types) as string[];
+                const intersect = rowTypes.filter(t => _showTypes.includes(t)).length > 0;
+                const blankShow = _showBlankType && rowTypes.length === 0;
+                const otherShow = _showOtherType && rowTypes.filter(t => !(allIncidentTypes.includes(t))).length > 0;
+                if (!intersect && !blankShow && !otherShow) {
+                    return false;
+                }
+            }
+
+            return true;
         }
-        return true;
-    });
+    );
 }
+
+
 //
 // Show state button handling
 //
+
 let _showState = null;
 const defaultState = "open";
+
 function showState(stateToShow, replaceState) {
     // @ts-ignore JQuery
     const menu = $("#show_state");
     // @ts-ignore JQuery
     const item = $("#show_state_" + stateToShow);
+
     // Get title from selected item
     const selection = item.children(".name").html();
+
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);
+
     _showState = stateToShow;
+
     if (replaceState) {
         replaceWindowState();
     }
+
     incidentsTable.draw();
 }
+
+
 //
 // Show days button handling
 //
-let _showModifiedAfter = null;
+
+let _showModifiedAfter: Date|null = null;
 let _showDaysBack = null;
 const defaultDaysBack = "all";
+
 function showDays(daysBackToShow, replaceState) {
     const id = daysBackToShow.toString();
     _showDaysBack = daysBackToShow;
+
     // @ts-ignore JQuery
     const menu = $("#show_days");
     // @ts-ignore JQuery
     const item = $("#show_days_" + id);
+
     // Get title from selected item
     const selection = item.children(".name").html();
+
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);
+
     if (daysBackToShow === "all") {
         _showModifiedAfter = null;
-    }
-    else {
+    } else {
         const after = new Date();
         after.setHours(0);
         after.setMinutes(0);
         after.setSeconds(0);
-        after.setDate(after.getDate() - daysBackToShow);
+        after.setDate(after.getDate()-daysBackToShow);
         _showModifiedAfter = after;
     }
+
     if (replaceState) {
         replaceWindowState();
     }
+
     incidentsTable.draw();
 }
+
 //
 // Show type button handling
 //
+
 // list of Incident Types to show, in text form
-let _showTypes = [];
+let _showTypes: string[] = [];
 let _showBlankType = true;
 let _showOtherType = true;
 // these must match values in incidents_template/template.xhtml
 const _blankPlaceholder = "(blank)";
 const _otherPlaceholder = "(other)";
+
 function setCheckedTypes(types, includeBlanks, includeOthers) {
     // @ts-ignore JQuery
     for (const $type of $('#ul_show_type > a')) {
         if (types.includes($type.innerHTML) ||
             (includeBlanks && $type.id === "show_blank_type") ||
-            (includeOthers && $type.id === "show_other_type")) {
+            (includeOthers && $type.id === "show_other_type")
+        ) {
             $type.classList.add("dropdown-item-checked");
-        }
-        else {
+        } else {
             $type.classList.remove("dropdown-item-checked");
         }
     }
 }
+
 function toggleCheckAllTypes() {
     if (_showTypes.length === 0 || _showTypes.length < allIncidentTypes.length) {
         setCheckedTypes(allIncidentTypes, true, true);
-    }
-    else {
+    } else {
         setCheckedTypes([], false, false);
     }
     showCheckedTypes(true);
 }
+
 function readCheckedTypes() {
     _showTypes = [];
     // @ts-ignore JQuery
     for (const $type of $('#ul_show_type > a')) {
         if ($type.id === "show_blank_type") {
             _showBlankType = $type.classList.contains("dropdown-item-checked");
-        }
-        else if ($type.id === "show_other_type") {
+        } else if ($type.id === "show_other_type") {
             _showOtherType = $type.classList.contains("dropdown-item-checked");
-        }
-        else if ($type.classList.contains("dropdown-item-checked")) {
+        } else if ($type.classList.contains("dropdown-item-checked")) {
             _showTypes.push($type.innerHTML);
         }
     }
 }
+
 function allTypesChecked() {
     return _showTypes.length === allIncidentTypes.length && _showBlankType && _showOtherType;
 }
+
 function showCheckedTypes(replaceState) {
     readCheckedTypes();
+
     const numTypesShown = _showTypes.length + (_showBlankType ? 1 : 0) + (_showOtherType ? 1 : 0);
     const showTypeText = allTypesChecked() ? "All Types" : `Types (${numTypesShown})`;
-    document.getElementById("show_type").textContent = showTypeText;
+    document.getElementById("show_type")!.textContent = showTypeText;
+
     if (replaceState) {
         replaceWindowState();
     }
+
     incidentsTable.draw();
 }
+
 //
 // Show rows button handling
 //
+
 let _showRows = null;
 const defaultRows = 25;
+
 function showRows(rowsToShow, replaceState) {
     const id = rowsToShow.toString();
     _showRows = rowsToShow;
+
     // @ts-ignore JQuery
     const menu = $("#show_rows");
     // @ts-ignore JQuery
     const item = $("#show_rows_" + id);
+
     // Get title from selected item
     const selection = item.children(".name").html();
+
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);
+
     if (rowsToShow === "all") {
         rowsToShow = -1;
     }
+
     if (replaceState) {
         replaceWindowState();
     }
+
     incidentsTable.page.len(rowsToShow);
     incidentsTable.draw();
 }
+
 //
 // Update the page URL based on the search input and other filters.
 //
+
 function replaceWindowState() {
-    const newParams = [];
-    const searchVal = document.getElementById("search_input").value;
+    const newParams: [string, string][] = [];
+
+    const searchVal = (document.getElementById("search_input") as HTMLInputElement).value;
     if (searchVal) {
         newParams.push(["q", searchVal]);
     }
@@ -596,6 +701,7 @@ function replaceWindowState() {
     if (_showRows != null && _showRows !== defaultRows) {
         newParams.push(["rows", _showRows]);
     }
+
     const newURL = `${viewIncidentsURL}#${new URLSearchParams(newParams).toString()}`;
     window.history.replaceState(null, "", newURL);
 }
