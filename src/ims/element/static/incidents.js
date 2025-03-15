@@ -1,3 +1,4 @@
+"use strict";
 ///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
@@ -119,9 +120,11 @@ function initIncidentsTable() {
         // we no longer reload all incidents here on any single incident update.
         let done = false;
         incidentsTable.rows().every(function () {
+            // @ts-ignore use of "this" for DataTables
             const existingIncident = this.data();
             if (existingIncident.number === number) {
                 console.log("Updating Incident " + number);
+                // @ts-ignore use of "this" for DataTables
                 this.data(json);
                 done = true;
             }
@@ -418,7 +421,7 @@ function initSearch() {
         // don't bother with filtering, which may be computationally expensive,
         // if all types seem to be selected
         if (!allTypesChecked()) {
-            const rowTypes = Object.values(incident.incident_types);
+            const rowTypes = Object.values(incident.incident_types ?? []);
             const intersect = rowTypes.filter(t => _showTypes.includes(t)).length > 0;
             const blankShow = _showBlankType && rowTypes.length === 0;
             const otherShow = _showOtherType && rowTypes.filter(t => !(allIncidentTypes.includes(t))).length > 0;
@@ -474,7 +477,7 @@ function showDays(daysBackToShow, replaceState) {
         after.setHours(0);
         after.setMinutes(0);
         after.setSeconds(0);
-        after.setDate(after.getDate() - daysBackToShow);
+        after.setDate(after.getDate() - Number(daysBackToShow));
         _showModifiedAfter = after;
     }
     if (replaceState) {
@@ -591,10 +594,10 @@ function replaceWindowState() {
         newParams.push(["state", _showState]);
     }
     if (_showDaysBack != null && _showDaysBack !== defaultDaysBack) {
-        newParams.push(["days", _showDaysBack]);
+        newParams.push(["days", _showDaysBack.toString()]);
     }
     if (_showRows != null && _showRows !== defaultRows) {
-        newParams.push(["rows", _showRows]);
+        newParams.push(["rows", _showRows.toString()]);
     }
     const newURL = `${viewIncidentsURL}#${new URLSearchParams(newParams).toString()}`;
     window.history.replaceState(null, "", newURL);

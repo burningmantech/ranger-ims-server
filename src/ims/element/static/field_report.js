@@ -1,3 +1,4 @@
+"use strict";
 ///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
@@ -122,7 +123,6 @@ async function loadFieldReport() {
     }
     return { err: null };
 }
-// returns void
 async function loadAndDisplayFieldReport() {
     const { err } = await loadFieldReport();
     if (fieldReport == null || err != null) {
@@ -222,13 +222,7 @@ async function frSendEdits(edits) {
     const number = fieldReport.number;
     let url = urlReplace(url_fieldReports);
     if (number == null) {
-        // We're creating a new field report.
-        const required = [];
-        for (const key of required) {
-            if (edits[key] == null) {
-                edits[key] = fieldReport[key];
-            }
-        }
+        // No fields are required for a new FR, nothing to do here
     }
     else {
         // We're editing an existing field report.
@@ -236,7 +230,7 @@ async function frSendEdits(edits) {
         url += number;
     }
     const { resp, json, err } = await fetchJsonNoThrow(url, {
-        body: edits,
+        body: JSON.stringify(edits),
     });
     if (err != null) {
         const message = `Failed to apply edit: ${err}`;

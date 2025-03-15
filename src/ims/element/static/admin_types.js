@@ -1,3 +1,4 @@
+"use strict";
 ///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
@@ -88,18 +89,22 @@ function deleteIncidentType(sender) {
     alert("Remove unimplemented");
 }
 async function showIncidentType(sender) {
-    // @ts-ignore JQuery
-    await sendIncidentTypes({ "show": [$(sender).parent().attr("value")] });
+    await sendIncidentTypes({ "show": [
+            // @ts-ignore
+            $(sender).parent().attr("value")
+        ] });
     await loadAndDrawIncidentTypes();
 }
 async function hideIncidentType(sender) {
-    // @ts-ignore JQuery
-    await sendIncidentTypes({ "hide": [$(sender).parent().attr("value")] });
+    await sendIncidentTypes({ "hide": [
+            // @ts-ignore
+            $(sender).parent().attr("value")
+        ] });
     await loadAndDrawIncidentTypes();
 }
 async function sendIncidentTypes(edits) {
     const { err } = await fetchJsonNoThrow(url_incidentTypes, {
-        body: edits,
+        body: JSON.stringify(edits),
     });
     if (err == null) {
         return { err: null };

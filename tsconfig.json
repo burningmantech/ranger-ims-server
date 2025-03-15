@@ -6,6 +6,7 @@
     "allowJs": true,
     "checkJs": true,
     "allowUnreachableCode": false,
+    "strict": true,
     "strictNullChecks": true
   },
   "include": ["src/ims/element/typescript/*.ts"]

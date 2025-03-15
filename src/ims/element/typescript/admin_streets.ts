@@ -25,15 +25,6 @@ async function initAdminStreetsPage() {
     }
 }
 
-interface Streets {
-    [index: number]: string,
-}
-
-interface EventStreets {
-    [index: string]: Streets,
-}
-
-
 let streets: EventStreets = {};
 
 async function loadStreets(): Promise<{err:string|null}> {
@@ -82,7 +73,7 @@ function drawStreets() {
 }
 
 
-function updateEventStreets(event) {
+function updateEventStreets(event: string) {
     const eventStreets = streets[event];
 
     if (eventStreets == null) {
@@ -111,17 +102,17 @@ function updateEventStreets(event) {
 }
 
 
-function addStreet(sender) {
+function addStreet(sender: HTMLElement): void {
     alert("Add unimplemented");
 }
 
 
-function removeStreet(sender) {
+function removeStreet(sender: HTMLElement): void {
     alert("Remove unimplemented");
 }
 
 
-async function sendStreets(edits) {
+async function sendStreets(edits: object): Promise<void> {
     let {err} = await fetchJsonNoThrow(url_streets, edits);
     if (err != null) {
         const message = `Failed to edit streets:\n${err}`;

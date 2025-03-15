@@ -1,3 +1,4 @@
+"use strict";
 ///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
@@ -20,6 +21,11 @@ async function initAdminEventsPage() {
     await loadAccessControlList();
     drawAccess();
 }
+var Validity;
+(function (Validity) {
+    Validity["always"] = "always";
+    Validity["onsite"] = "onsite";
+})(Validity || (Validity = {}));
 let accessControlList = null;
 async function loadAccessControlList() {
     let { json, err } = await fetchJsonNoThrow(url_acl, null);
@@ -138,7 +144,7 @@ async function addAccess(sender) {
     const acl = accessControlList[event][mode].slice();
     const newVal = {
         "expression": newExpression,
-        "validity": "always",
+        "validity": Validity.always,
     };
     acl.push(newVal);
     const edits = {};
@@ -195,7 +201,7 @@ async function setValidity(sender) {
     const acl = accessControlList[event][mode].slice();
     const newVal = {
         "expression": expression,
-        "validity": sender.value,
+        "validity": sender.value === "onsite" ? Validity.onsite : Validity.always,
     };
     acl.push(newVal);
     const edits = {};
