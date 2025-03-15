@@ -154,7 +154,7 @@ class DutyManagementSystem:
         self._log.info("Retrieving teams from Duty Management System...")
 
         sql = """
-        select id, title from team
+        select id, title from team where active
         """
         self._log.debug("EXECUTE DMS: {sql}", sql=sql)
         rows = await self.dbpool.runQuery(sql)
