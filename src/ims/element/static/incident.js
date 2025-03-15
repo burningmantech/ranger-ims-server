@@ -1,3 +1,4 @@
+"use strict";
 ///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
@@ -369,7 +370,7 @@ function drawIncidentTitle() {
 // Populate incident number
 //
 function drawIncidentNumber() {
-    let number = incident.number;
+    let number = incident.number ?? null;
     if (number == null) {
         number = "(new)";
     }
@@ -502,6 +503,7 @@ function drawIncidentTypes() {
     const incidentTypes = incident.incident_types ?? [];
     incidentTypes.sort();
     for (const incidentType of incidentTypes) {
+        // @ts-ignore JQuery
         const item = _typesItem.clone();
         item.attr("value", textAsHTML(incidentType));
         item.append(textAsHTML(incidentType));
@@ -678,11 +680,12 @@ async function sendEdits(edits) {
     let url = urlReplace(url_incidents);
     if (number == null) {
         // We're creating a new incident.
-        const required = ["state", "priority"];
-        for (const key of required) {
-            if (edits[key] == null) {
-                edits[key] = incident[key];
-            }
+        // required fields are ["state", "priority"];
+        if (edits.state == null) {
+            edits.state = incident.state;
+        }
+        if (edits.priority == null) {
+            edits.priority = incident.priority;
         }
     }
     else {
@@ -691,7 +694,7 @@ async function sendEdits(edits) {
         url += number;
     }
     const { resp, err } = await fetchJsonNoThrow(url, {
-        body: edits,
+        body: JSON.stringify(edits),
     });
     if (err != null) {
         const message = `Failed to apply edit: ${err}`;
@@ -776,17 +779,19 @@ async function editLocationDescription() {
 async function removeRanger(sender) {
     // @ts-ignore JQuery
     sender = $(sender);
+    // @ts-ignore JQuery
     const rangerHandle = sender.parent().attr("value");
     await sendEdits({
-        "ranger_handles": incident.ranger_handles.filter(function (h) { return h !== rangerHandle; }),
+        "ranger_handles": (incident.ranger_handles ?? []).filter(function (h) { return h !== rangerHandle; }),
     });
 }
 async function removeIncidentType(sender) {
     // @ts-ignore JQuery
     sender = $(sender);
+    // @ts-ignore JQuery
     const incidentType = sender.parent().attr("value");
     await sendEdits({
-        "incident_types": incident.incident_types.filter(function (t) { return t !== incidentType; }),
+        "incident_types": (incident.incident_types ?? []).filter(function (t) { return t !== incidentType; }),
     });
 }
 function normalize(str) {
@@ -871,6 +876,7 @@ async function addIncidentType() {
 async function detachFieldReport(sender) {
     // @ts-ignore JQuery
     sender = $(sender);
+    // @ts-ignore JQuery
     const fieldReport = sender.parent().data();
     const url = (urlReplace(url_fieldReports) + fieldReport.number +
         "?action=detach;incident=" + incidentNumber);

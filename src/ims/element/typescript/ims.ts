@@ -16,7 +16,7 @@
 // Globals
 //
 declare var eventID: string|null|undefined;
-declare var concentricStreetNameByID: object|undefined;
+declare var concentricStreetNameByID: Streets|undefined;
 declare var incidentNumber: number|null|undefined;
 declare var fieldReportNumber: number|null|undefined;
 declare var editingAllowed: boolean|null|undefined;
@@ -44,6 +44,37 @@ declare var url_viewIncidentNumber: string;
 declare var url_incidentNumber: string;
 declare var viewIncidentsURL: string;
 
+interface Streets {
+    [index: number]: string,
+}
+
+interface EventStreets {
+    [index: string]: Streets,
+}
+
+interface Location {
+    name?: string|null;
+    radial_hour?: number|null;
+    radial_minute?: number|null;
+    concentric?: string|null;
+    description?: string|null;
+}
+
+interface Incident {
+    number?: number|null;
+    event?: string|null;
+    state?: string|null;
+    priority?: number|null;
+    summary?: string|null;
+    created?: string|null;
+    last_modified?: string|null;
+    ranger_handles?: string[]|null;
+    incident_types?: string[]|null;
+    location?: Location|null;
+    report_entries?: ReportEntry[]|null;
+    field_reports?: number[]|null;
+}
+
 interface FieldReport {
     event?: string|null;
     number?: number|null;
@@ -58,8 +89,33 @@ interface FieldReportsByNumber {
 }
 
 interface ReportEntry {
+    id?: string|null;
+    created?: string|null;
     author?: string|null;
     merged?: number|null,
+    text?: string|null;
+    system_entry?: boolean|null;
+    stricken?: boolean|null;
+    has_attachment?: boolean|null;
+}
+
+interface DTAjax {
+    reload(): void;
+}
+
+interface DTData {
+    [index: number]: object;
+}
+
+interface DataTablesTable {
+    row: any;
+    rows: any;
+    data(): DTData;
+    search(q: string, isRegex: boolean): unknown;
+    page: any;
+    draw(): unknown;
+    ajax: DTAjax;
+    processing(b: boolean): unknown;
 }
 
 //
@@ -87,10 +143,10 @@ function setTheme(theme: string): void {
         document.documentElement.setAttribute("data-bs-theme", theme);
     }
 }
-function applyTheme() {
+function applyTheme(): void {
     setTheme(getPreferredTheme());
 
-    function showActiveTheme(theme: string, focus: boolean = false) {
+    function showActiveTheme(theme: string, focus: boolean = false): void {
         const themeSwitcher: HTMLButtonElement|null = document.querySelector("#bd-theme");
 
         if (!themeSwitcher) {
@@ -123,7 +179,7 @@ function applyTheme() {
     };
 
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-        const storedTheme = getStoredTheme();
+        const storedTheme: string|null = getStoredTheme();
         if (storedTheme !== "light" && storedTheme !== "dark") {
             setTheme(getPreferredTheme());
         }
@@ -186,19 +242,6 @@ function urlReplace(url: string): string {
 
 
 //
-// Errors
-///
-
-function ValueError(message: string|null): void {
-    this.name = "ValueError";
-    this.message = message || "Invalid Value";
-    this.stack = (new Error()).stack;
-}
-ValueError.prototype = Object.create(Error.prototype);
-ValueError.prototype.constructor = ValueError;
-
-
-//
 // Arrays
 //
 
@@ -207,7 +250,7 @@ function range(start: number, end: number, step?: number|null): number[] {
     if (step == null) {
         step = 1;
     } else if (step === 0) {
-        throw new ValueError("step = 0");
+        throw new RangeError("step = 0");
     }
 
     return Array(end - start)
@@ -240,10 +283,8 @@ async function fetchJsonNoThrow(url: string, init: RequestInit|null): Promise<{r
     if (init == null) {
         init = {};
     }
-    if (init.headers == null) {
-        init.headers = {};
-    }
-    init.headers["Accept"] = "application/json";
+    init.headers = new Headers(init.headers);
+    init.headers.set("Accept", "application/json");
     if (init.body != null) {
         init.method = "POST";
 
@@ -270,7 +311,7 @@ async function fetchJsonNoThrow(url: string, init: RequestInit|null): Promise<{r
             // don't JSONify, don't set a Content-Type (fetch does it automatically for FormData)
         } else {
             // otherwise assume body is supposed to be json
-            init.headers["Content-Type"] = "application/json";
+            init.headers.set("Content-Type", "application/json");
             if (typeof init.body !== "string") {
                 init.body = JSON.stringify(init.body);
             }
@@ -287,7 +328,7 @@ async function fetchJsonNoThrow(url: string, init: RequestInit|null): Promise<{r
             json = await response.json();
         }
         return {resp: response, json: json, err: null};
-    } catch (err) {
+    } catch (err: any) {
         return {resp: response, json: null, err: err.message};
     }
 }
@@ -381,15 +422,17 @@ function enableEditing() {
 }
 
 // Add an error indication to a control
-function controlHasError(element) {
+function controlHasError(element: any) {
+    // @ts-ignore JQuery
     element.parent().addClass("is-invalid");
 }
 
 
 // Add a success indication to a control
-function controlHasSuccess(element, clearTimeout) {
+function controlHasSuccess(element: any, clearTimeout: number) {
     element.addClass("is-valid");
     if (clearTimeout != null) {
+        // @ts-ignore JQuery
         element.delay("1000").queue(function(next) {
             controlClear(element);
             next();
@@ -399,7 +442,7 @@ function controlHasSuccess(element, clearTimeout) {
 
 
 // Clear error/success indication from a control
-function controlClear(element) {
+function controlClear(element: any) {
     element.removeClass("is-invalid");
     element.removeClass("is-valid");
 }
@@ -409,7 +452,7 @@ function controlClear(element) {
 // Load HTML body template.
 //
 
-async function loadBody() {
+async function loadBody(): Promise<void> {
 
     detectTouchDevice();
     // @ts-ignore since this requires es2024, which I can't get to work with IntelliJ...
@@ -469,7 +512,7 @@ function detectTouchDevice() {
 //
 
 // Select an option element with a given value from a given select element.
-function selectOptionWithValue(select, value) {
+function selectOptionWithValue(select: any, value: string) {
     select
         .children("option")
         .prop("selected", false)
@@ -533,10 +576,10 @@ function concentricStreetFromID(streetID: any): string {
 
 
 // Return the state ID for a given incident.
-function stateForIncident(incident): string {
+function stateForIncident(incident: Incident): string {
     // Data from 2014+ should have incident.state set.
     if (incident.state !== undefined) {
-        return incident.state;
+        return incident.state!;
     }
 
     console.warn("Unknown state for incident: " + incident);
@@ -545,7 +588,7 @@ function stateForIncident(incident): string {
 
 
 // Return a summary for a given incident.
-function summarizeIncident(incident): string {
+function summarizeIncident(incident: Incident): string {
     if (incident.summary) {
         return incident.summary;
     }
@@ -557,7 +600,7 @@ function summarizeIncident(incident): string {
             continue;
         }
 
-        const lines = reportEntry.text.split("\n");
+        const lines = reportEntry.text!.split("\n");
         for (const line of lines) {
             if (line) {
                 return line;
@@ -569,13 +612,13 @@ function summarizeIncident(incident): string {
 
 
 // Return a summary for a given field report.
-function summarizeFieldReport(report): string {
+function summarizeFieldReport(report: FieldReport): string {
     return summarizeIncident(report);
 }
 
 
 // Get author for incident
-function incidentAuthor(incident): string {
+function incidentAuthor(incident: Incident): string {
     for (const entry of incident.report_entries??[]) {
         if (entry.author) {
             return entry.author;
@@ -587,13 +630,13 @@ function incidentAuthor(incident): string {
 
 
 // Get author for field report
-function fieldReportAuthor(report): string {
+function fieldReportAuthor(report: FieldReport): string {
     return incidentAuthor(report);
 }
 
 
 // Render incident as a string
-function incidentAsString(incident): string {
+function incidentAsString(incident: Incident): string {
     if (incident.number == null) {
         return "New Incident";
     }
@@ -602,7 +645,7 @@ function incidentAsString(incident): string {
 
 
 // Render field report as a string
-function fieldReportAsString(report): string {
+function fieldReportAsString(report: FieldReport): string {
     if (report.number == null) {
         return "New Field Report";
     }
@@ -613,7 +656,7 @@ function fieldReportAsString(report): string {
 let eventFieldReports: FieldReportsByNumber|null = null;
 
 // Return all user-entered report text for a given incident as a single string.
-function reportTextFromIncident(incidentOrFR): string {
+function reportTextFromIncident(incidentOrFR: Incident|FieldReport): string {
     const texts: string[] = [];
 
     if (incidentOrFR.summary != null) {
@@ -635,8 +678,8 @@ function reportTextFromIncident(incidentOrFR): string {
     }
 
     // Incidents page loads all field reports for the event
-    if (eventFieldReports != null && incidentOrFR.field_reports) {
-        for (const reportNumber of incidentOrFR.field_reports) {
+    if (eventFieldReports != null && "field_reports" in incidentOrFR) {
+        for (const reportNumber of incidentOrFR.field_reports??[]) {
             const report = eventFieldReports[reportNumber];
             const reportText = reportTextFromIncident(report);
 
@@ -767,7 +810,7 @@ function renderDate(date: string, type: string, incident: any): string|number|un
     return undefined;
 }
 
-function renderState(state, type, incident) {
+function renderState(state: string, type: string, incident: Incident): string|number|undefined {
     if (state == null) {
         state = stateForIncident(incident);
     }
@@ -785,7 +828,7 @@ function renderState(state, type, incident) {
     return undefined;
 }
 
-function renderLocation(data, type, incident) {
+function renderLocation(data: Location|string|null, type: string, incident: Incident): string|undefined {
     if (data == null) {
         data = "";
     }
@@ -801,7 +844,7 @@ function renderLocation(data, type, incident) {
     return undefined;
 }
 
-function renderSummary(data, type, incident) {
+function renderSummary(data: string|null, type: string, incident: Incident): string|undefined {
     switch (type) {
         case "display":
             return textAsHTML(summarizeIncident(incident));
@@ -820,7 +863,7 @@ function renderSummary(data, type, incident) {
 // Populate report entry text
 //
 
-function reportEntryElement(entry) {
+function reportEntryElement(entry: ReportEntry): object {
     // Build a container for the entry
 
     // @ts-ignore JQuery
@@ -875,7 +918,7 @@ function reportEntryElement(entry) {
         metaDataContainer.append(strikeContainer);
     }
 
-    const timeStampContainer = timeElement(new Date(entry.created));
+    const timeStampContainer = timeElement(new Date(entry.created!));
     timeStampContainer.classList.add("report_entry_timestamp");
 
     metaDataContainer.append([timeStampContainer, ", "]);
@@ -912,7 +955,7 @@ function reportEntryElement(entry) {
 
     // Add report text
 
-    const lines = entry.text.split("\n");
+    const lines = entry.text!.split("\n");
     for (const line of lines) {
         // @ts-ignore JQuery
         const textContainer = $("<p />", {"class": "report_entry_text"});
@@ -923,7 +966,7 @@ function reportEntryElement(entry) {
     if (entry.has_attachment && incidentNumber != null) {
         const url = urlReplace(url_incidentAttachmentNumber)
             .replace("<incident_number>", incidentNumber.toString())
-            .replace("<attachment_number>", entry.id);
+            .replace("<attachment_number>", entry.id!.toString());
 
         // @ts-ignore JQuery
         const attachmentLink = $("<a />", {"href": url});
@@ -941,7 +984,7 @@ function reportEntryElement(entry) {
     return entryContainer;
 }
 
-function drawReportEntries(entries) {
+function drawReportEntries(entries: ReportEntry[]): void {
     // @ts-ignore JQuery
     const container = $("#report_entries");
     container.empty();
@@ -956,7 +999,7 @@ function drawReportEntries(entries) {
     }
 }
 
-function reportEntryEdited() {
+function reportEntryEdited(): void {
     // @ts-ignore JQuery
     const text = $("#report_entry_add").val().trim();
     // @ts-ignore JQuery
@@ -978,7 +1021,7 @@ function reportEntryEdited() {
 // The error callback for a report entry strike call.
 // This function is designed to work from either the incident
 // or the field report page.
-function onStrikeError(err: string) {
+function onStrikeError(err: string): void {
     const message = `Failed to set report entry strike status: ${err}`;
     console.log(message);
     setErrorMessage(message);
@@ -986,7 +1029,7 @@ function onStrikeError(err: string) {
 
 let registerOnStrikeSuccess: (() => Promise<void>)|null = null;
 
-async function setStrikeIncidentEntry(incidentNumber: number, reportEntryId: number, strike: boolean) {
+async function setStrikeIncidentEntry(incidentNumber: number, reportEntryId: number, strike: boolean): Promise<void> {
     const url = urlReplace(url_incident_reportEntry)
         .replace("<incident_number>", incidentNumber.toString())
         .replace("<report_entry_id>", reportEntryId.toString());
@@ -1000,7 +1043,7 @@ async function setStrikeIncidentEntry(incidentNumber: number, reportEntryId: num
     }
 }
 
-async function setStrikeFieldReportEntry(fieldReportNumber: number, reportEntryId: number, strike: boolean) {
+async function setStrikeFieldReportEntry(fieldReportNumber: number, reportEntryId: number, strike: boolean): Promise<void> {
     const url = urlReplace(url_fieldReport_reportEntry)
         .replace("<field_report_number>", fieldReportNumber.toString())
         .replace("<report_entry_id>", reportEntryId.toString());
@@ -1054,7 +1097,7 @@ async function submitReportEntry(): Promise<void> {
 // Generated history display
 //
 
-function toggleShowHistory() {
+function toggleShowHistory(): void {
     // @ts-ignore JQuery
     if ($("#history_checkbox").is(":checked")) {
         // @ts-ignore JQuery
@@ -1065,7 +1108,11 @@ function toggleShowHistory() {
     }
 }
 
-async function editFromElement(element, jsonKey: string, transform?) {
+interface EditMap {
+    [index: string]: EditMap|string;
+}
+
+async function editFromElement(element: any, jsonKey: string, transform?: (v: any)=>any): Promise<void> {
     let value = element.val();
 
     if (transform != null) {
@@ -1074,14 +1121,14 @@ async function editFromElement(element, jsonKey: string, transform?) {
 
     // Build a JSON object representing the requested edits
 
-    const edits = {};
+    const edits: EditMap = {};
 
-    const keyPath = jsonKey.split(".");
-    const lastKey = keyPath.pop()!;
+    const keyPath: string[] = jsonKey.split(".");
+    const lastKey: string = keyPath.pop()!;
 
-    let current = edits;
+    let current: EditMap = edits;
     for (const path of keyPath) {
-        const next = {};
+        const next: EditMap = {};
         current[path] = next;
         current = next;
     }
@@ -1117,7 +1164,7 @@ const lastSseIDKey = "last_sse_id";
 
 // Call this from each browsing context, so that it can queue up to become a leader
 // to manage the EventSource.
-async function requestEventSourceLock() {
+async function requestEventSourceLock(): Promise<void>  {
 
     // The "navigator.locks" API is only available over secure browsing contexts.
     // Secure contexts include HTTPS as well as non-HTTPS via localhost, so this is
@@ -1129,13 +1176,13 @@ async function requestEventSourceLock() {
         return;
     }
 
-    function tryAcquireLock() {
+    function tryAcquireLock(): Promise<void> {
         // @ts-ignore withResolves needs es2024
         const {promise, resolve} = Promise.withResolvers();
         subscribeToUpdates(resolve);
         return promise;
     }
-    function waitBeforeRetry(timeMillis: number) {
+    function waitBeforeRetry(timeMillis: number): Promise<void> {
         return new Promise(r => setTimeout(r, Math.max(0, timeMillis)));
     }
     // Infinitely attempt to reconnect to the EventSource.
@@ -1157,16 +1204,16 @@ async function requestEventSourceLock() {
 //
 // The "closed" param is a callback to notify the caller that the EventSource has
 // been closed.
-function subscribeToUpdates(closed: Function) {
+function subscribeToUpdates(closed: ()=>{}): void {
     const eventSource = new EventSource(
         url_eventSource, { withCredentials: true }
     );
 
-    eventSource.addEventListener("open", function() {
+    eventSource.addEventListener("open", function(): void {
         console.log("Event listener opened");
     }, true);
 
-    eventSource.addEventListener("error", function() {
+    eventSource.addEventListener("error", function(): void {
         if (eventSource.readyState === EventSource.CLOSED) {
             console.log("Event listener closed");
             eventSource.close();
@@ -1178,13 +1225,13 @@ function subscribeToUpdates(closed: Function) {
         }
     }, true);
 
-    eventSource.addEventListener("InitialEvent", function(e) {
+    eventSource.addEventListener("InitialEvent", function(e: MessageEvent) {
         const previousId = localStorage.getItem(lastSseIDKey);
         if (e.lastEventId === previousId) {
             return;
         }
         localStorage.setItem(lastSseIDKey, e.lastEventId);
-        const allChannels = [
+        const allChannels: BroadcastChannel[] = [
             new BroadcastChannel(incidentChannelName),
             new BroadcastChannel(fieldReportChannelName),
         ];
@@ -1193,13 +1240,13 @@ function subscribeToUpdates(closed: Function) {
         }
     });
 
-    eventSource.addEventListener("Incident", function(e) {
+    eventSource.addEventListener("Incident", function(e: MessageEvent) {
         const send = new BroadcastChannel(incidentChannelName);
         localStorage.setItem(lastSseIDKey, e.lastEventId);
         send.postMessage(JSON.parse(e.data));
     }, true);
 
-    eventSource.addEventListener("FieldReport", function(e) {
+    eventSource.addEventListener("FieldReport", function(e: MessageEvent) {
         const send = new BroadcastChannel(fieldReportChannelName);
         localStorage.setItem(lastSseIDKey, e.lastEventId);
         send.postMessage(JSON.parse(e.data));
@@ -1207,7 +1254,7 @@ function subscribeToUpdates(closed: Function) {
 }
 
 // Set the user-visible error information on the page to the provided string.
-function setErrorMessage(msg: string) {
+function setErrorMessage(msg: string): void {
     msg = "Error: (Cause: " + msg + ")";
     const errText: HTMLElement|null = document.getElementById("error_text");
     if (errText) {
@@ -1220,7 +1267,7 @@ function setErrorMessage(msg: string) {
     }
 }
 
-function clearErrorMessage() {
+function clearErrorMessage(): void {
     const errText: HTMLElement|null = document.getElementById("error_text");
     if (errText) {
         errText.textContent = "";
@@ -1235,7 +1282,7 @@ function clearErrorMessage() {
 // they can't act against the ~5 MB per-domain limit of HTML5 LocalStorage.
 // This can probably be removed after the 2025 event, when all the relevant
 // computers have their caches purged.
-function cleanupOldCaches() {
+function cleanupOldCaches(): void {
     localStorage.removeItem("lscache-ims.incident_types");
     localStorage.removeItem("lscache-ims.incident_types-cacheexpiration");
     localStorage.removeItem("lscache-ims.personnel");

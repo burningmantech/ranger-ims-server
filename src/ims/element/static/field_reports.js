@@ -1,3 +1,4 @@
+"use strict";
 ///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
@@ -56,6 +57,7 @@ async function initFieldReportsPage() {
 //
 // Dispatch queue table
 //
+// DataTables item
 let fieldReportsTable = null;
 function initFieldReportsTable() {
     frInitDataTables();
@@ -72,7 +74,6 @@ function initFieldReportsTable() {
     fieldReportChannel.onmessage = function (e) {
         if (e.data.update_all) {
             console.log("Reloading the whole table to be cautious, as an SSE was missed");
-            // @ts-ignore DataTables
             fieldReportsTable.ajax.reload();
             clearErrorMessage();
             return;
@@ -90,7 +91,6 @@ function initFieldReportsTable() {
         //  Field Reports for which they're not authorized, and those errors
         //  show up in the browser console. I'd like to find a way to avoid
         //  bringing those errors into the console constantly.
-        // @ts-ignore DataTables
         fieldReportsTable.ajax.reload();
         clearErrorMessage();
     };
@@ -237,9 +237,7 @@ function frInitSearchField() {
             isRegex = true;
             q = q.slice(1, q.length - 1);
         }
-        // @ts-ignore DataTables
         fieldReportsTable.search(q, isRegex);
-        // @ts-ignore DataTables
         fieldReportsTable.draw();
     };
     const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
@@ -280,12 +278,12 @@ function frInitSearchField() {
 //
 function frInitSearch() {
     function modifiedAfter(fieldReport, timestamp) {
-        if (timestamp < Date.parse(fieldReport.created)) {
+        if (timestamp < new Date(Date.parse(fieldReport.created))) {
             return true;
         }
         // needs to use native comparison
         for (const entry of fieldReport.report_entries ?? []) {
-            if (timestamp < Date.parse(entry.created)) {
+            if (timestamp < new Date(Date.parse(entry.created))) {
                 return true;
             }
         }
@@ -293,7 +291,6 @@ function frInitSearch() {
     }
     // @ts-ignore JQuery
     $.fn.dataTable.ext.search.push(function (settings, rowData, rowIndex) {
-        // @ts-ignore DataTables
         const fieldReport = fieldReportsTable.data()[rowIndex];
         if (_frShowModifiedAfter != null &&
             !modifiedAfter(fieldReport, _frShowModifiedAfter)) {
@@ -327,13 +324,12 @@ function frShowDays(daysBackToShow, replaceState) {
         after.setHours(0);
         after.setMinutes(0);
         after.setSeconds(0);
-        after.setDate(after.getDate() - daysBackToShow);
+        after.setDate(after.getDate() - Number(daysBackToShow));
         _frShowModifiedAfter = after;
     }
     if (replaceState) {
         frReplaceWindowState();
     }
-    // @ts-ignore DataTables
     fieldReportsTable.draw();
 }
 //
@@ -358,9 +354,7 @@ function frShowRows(rowsToShow, replaceState) {
     if (replaceState) {
         frReplaceWindowState();
     }
-    // @ts-ignore DataTables
     fieldReportsTable.page.len(rowsToShow);
-    // @ts-ignore DataTables
     fieldReportsTable.draw();
 }
 //
@@ -373,10 +367,10 @@ function frReplaceWindowState() {
         newParams.push(["q", searchVal]);
     }
     if (_frShowDaysBack != null && _frShowDaysBack !== frDefaultDaysBack) {
-        newParams.push(["days", _frShowDaysBack]);
+        newParams.push(["days", _frShowDaysBack.toString()]);
     }
     if (_frShowRows != null && _frShowRows !== frDefaultRows) {
-        newParams.push(["rows", _frShowRows]);
+        newParams.push(["rows", _frShowRows.toString()]);
     }
     // Next step is to create search params for the other filters too
     const newURL = `${urlReplace(url_viewFieldReports)}#${new URLSearchParams(newParams).toString()}`;

@@ -27,7 +27,7 @@ async function initIncidentsPage(): Promise<void> {
     initIncidentsTable();
 
     // Keyboard shortcuts
-    document.addEventListener("keydown", function(e) {
+    document.addEventListener("keydown", function(e: KeyboardEvent): void {
         // No shortcuts when an input field is active
         if (document.activeElement !== document.body) {
             return;
@@ -53,7 +53,7 @@ async function initIncidentsPage(): Promise<void> {
         }
     });
 
-    document.getElementById("helpModal")!.addEventListener("keydown", function(e) {
+    document.getElementById("helpModal")!.addEventListener("keydown", function(e: KeyboardEvent): void {
         if (e.key === "?") {
             // @ts-ignore JQuery
             $("#helpModal").modal("toggle");
@@ -79,7 +79,7 @@ async function loadEventFieldReports(): Promise<{err: string|null}> {
         setErrorMessage(message);
         return {err: message};
     }
-    const reports = {};
+    const reports: FieldReportsByNumber = {};
 
     for (const report of json) {
         reports[report.number] = report;
@@ -100,7 +100,7 @@ async function loadEventFieldReports(): Promise<{err: string|null}> {
 //
 
 // The DataTables object
-let incidentsTable: any = null;
+let incidentsTable: DataTablesTable|null = null;
 
 function initIncidentsTable() {
     initDataTables();
@@ -117,10 +117,10 @@ function initIncidentsTable() {
     let ignoredPromise = requestEventSourceLock();
 
     const incidentChannel = new BroadcastChannel(incidentChannelName);
-    incidentChannel.onmessage = async function (e) {
+    incidentChannel.onmessage = async function (e: MessageEvent): Promise<void> {
         if (e.data.update_all) {
             console.log("Reloading the whole table to be cautious, as an SSE was missed");
-            incidentsTable.ajax.reload();
+            incidentsTable!.ajax.reload();
             clearErrorMessage();
             return;
         }
@@ -141,21 +141,23 @@ function initIncidentsTable() {
         // Now update/create the relevant row. This is a change from pre-2025, in that
         // we no longer reload all incidents here on any single incident update.
         let done = false;
-        incidentsTable.rows().every( function () {
+        incidentsTable!.rows().every( function () {
+            // @ts-ignore use of "this" for DataTables
             const existingIncident = this.data();
             if (existingIncident.number === number) {
                 console.log("Updating Incident " + number);
+                // @ts-ignore use of "this" for DataTables
                 this.data(json);
                 done = true;
             }
         });
         if (!done) {
             console.log("Loading new Incident " + number);
-            incidentsTable.row.add(json);
+            incidentsTable!.row.add(json);
         }
         clearErrorMessage();
-        incidentsTable.processing(false);
-        incidentsTable.draw();
+        incidentsTable!.processing(false);
+        incidentsTable!.draw();
     };
 }
 
@@ -164,8 +166,8 @@ function initIncidentsTable() {
 // Initialize DataTables
 //
 
-function initDataTables() {
-    function dataHandler(incidents) {
+function initDataTables(): void {
+    function dataHandler(incidents: object) {
         return incidents;
     }
 
@@ -193,7 +195,7 @@ function initDataTables() {
         "ajax": {
             "url": urlReplace(url_incidents + "?exclude_system_entries=true"),
             "dataSrc": dataHandler,
-            "error": function (request, status, error) {
+            "error": function (request: XMLHttpRequest, status: object, error: string|null) {
                 // The "abort" case is a special snowflake.
                 // There are times we do two table refreshes in quick succession, and in
                 // those cases, the first call gets aborted. We don't want to set an error
@@ -283,8 +285,8 @@ function initDataTables() {
         "order": [
             [0, "dsc"],
         ],
-        "createdRow": function (row, incident, index) {
-            row.addEventListener("click", function (e) {
+        "createdRow": function (row: HTMLElement, incident: Incident, index: number) {
+            row.addEventListener("click", function (e: MouseEvent): void {
                 // Open new context with link
                 window.open(
                     viewIncidentsURL + incident.number,
@@ -294,12 +296,12 @@ function initDataTables() {
             row.getElementsByClassName("incident_created")[0]
                 .setAttribute(
                     "title",
-                    fullDateTime.format(Date.parse(incident.created)),
+                    fullDateTime.format(Date.parse(incident.created!)),
                 );
             row.getElementsByClassName("incident_last_modified")[0]
                 .setAttribute(
                     "title",
-                    fullDateTime.format(Date.parse(incident.last_modified)),
+                    fullDateTime.format(Date.parse(incident.last_modified!)),
                 );
         },
     });
@@ -310,7 +312,7 @@ function initDataTables() {
 // Initialize table buttons
 //
 
-function initTableButtons() {
+function initTableButtons(): void {
     // Relocate button container
 
     // @ts-ignore JQuery
@@ -397,8 +399,8 @@ function initSearchField() {
             isRegex = true;
             q = q.slice(1, q.length-1);
         }
-        incidentsTable.search(q, isRegex);
-        incidentsTable.draw();
+        incidentsTable!.search(q, isRegex);
+        incidentsTable!.draw();
     };
 
     const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
@@ -410,7 +412,7 @@ function initSearchField() {
     }
 
     searchInput.addEventListener("keyup",
-        function () {
+        function (): void {
             // Delay the search in case the user is still typing.
             // This reduces perceived lag, since searching can be
             // very slow, and it's super annoying for a user when
@@ -420,7 +422,7 @@ function initSearchField() {
         }
     );
     searchInput.addEventListener("keydown",
-        function (e) {
+        function (e: KeyboardEvent): void {
             // No shortcuts when ctrl, alt, or meta is being held down
             if (e.altKey || e.ctrlKey || e.metaKey) {
                 return;
@@ -448,12 +450,12 @@ function initSearchField() {
 // Initialize search plug-in
 //
 
-function initSearch() {
+function initSearch(): void {
 
     // @ts-ignore JQuery
     $.fn.dataTable.ext.search.push(
-        function(settings, rowData, rowIndex) {
-            const incident = incidentsTable.data()[rowIndex];
+        function(settings: any, rowData: any, rowIndex: number) {
+            const incident: Incident = incidentsTable!.data()[rowIndex];
             let state;
             if (_showState != null) {
                 switch (_showState) {
@@ -476,7 +478,7 @@ function initSearch() {
 
             if (
                 _showModifiedAfter != null &&
-                new Date(Date.parse(incident.last_modified)) < _showModifiedAfter
+                new Date(Date.parse(incident.last_modified!)) < _showModifiedAfter
             ) {
                 return false;
             }
@@ -484,7 +486,7 @@ function initSearch() {
             // don't bother with filtering, which may be computationally expensive,
             // if all types seem to be selected
             if (!allTypesChecked()) {
-                const rowTypes = Object.values(incident.incident_types) as string[];
+                const rowTypes = Object.values(incident.incident_types??[]) as string[];
                 const intersect = rowTypes.filter(t => _showTypes.includes(t)).length > 0;
                 const blankShow = _showBlankType && rowTypes.length === 0;
                 const otherShow = _showOtherType && rowTypes.filter(t => !(allIncidentTypes.includes(t))).length > 0;
@@ -503,10 +505,10 @@ function initSearch() {
 // Show state button handling
 //
 
-let _showState = null;
+let _showState: string|null = null;
 const defaultState = "open";
 
-function showState(stateToShow, replaceState) {
+function showState(stateToShow: string, replaceState: boolean) {
     // @ts-ignore JQuery
     const menu = $("#show_state");
     // @ts-ignore JQuery
@@ -524,7 +526,7 @@ function showState(stateToShow, replaceState) {
         replaceWindowState();
     }
 
-    incidentsTable.draw();
+    incidentsTable!.draw();
 }
 
 
@@ -533,10 +535,10 @@ function showState(stateToShow, replaceState) {
 //
 
 let _showModifiedAfter: Date|null = null;
-let _showDaysBack = null;
+let _showDaysBack: number|string|null = null;
 const defaultDaysBack = "all";
 
-function showDays(daysBackToShow, replaceState) {
+function showDays(daysBackToShow: number|string, replaceState: boolean): void {
     const id = daysBackToShow.toString();
     _showDaysBack = daysBackToShow;
 
@@ -558,7 +560,7 @@ function showDays(daysBackToShow, replaceState) {
         after.setHours(0);
         after.setMinutes(0);
         after.setSeconds(0);
-        after.setDate(after.getDate()-daysBackToShow);
+        after.setDate(after.getDate()-Number(daysBackToShow));
         _showModifiedAfter = after;
     }
 
@@ -566,7 +568,7 @@ function showDays(daysBackToShow, replaceState) {
         replaceWindowState();
     }
 
-    incidentsTable.draw();
+    incidentsTable!.draw();
 }
 
 //
@@ -581,7 +583,7 @@ let _showOtherType = true;
 const _blankPlaceholder = "(blank)";
 const _otherPlaceholder = "(other)";
 
-function setCheckedTypes(types, includeBlanks, includeOthers) {
+function setCheckedTypes(types: string[], includeBlanks: boolean, includeOthers: boolean): void {
     // @ts-ignore JQuery
     for (const $type of $('#ul_show_type > a')) {
         if (types.includes($type.innerHTML) ||
@@ -595,7 +597,7 @@ function setCheckedTypes(types, includeBlanks, includeOthers) {
     }
 }
 
-function toggleCheckAllTypes() {
+function toggleCheckAllTypes(): void {
     if (_showTypes.length === 0 || _showTypes.length < allIncidentTypes.length) {
         setCheckedTypes(allIncidentTypes, true, true);
     } else {
@@ -604,7 +606,7 @@ function toggleCheckAllTypes() {
     showCheckedTypes(true);
 }
 
-function readCheckedTypes() {
+function readCheckedTypes(): void {
     _showTypes = [];
     // @ts-ignore JQuery
     for (const $type of $('#ul_show_type > a')) {
@@ -618,11 +620,11 @@ function readCheckedTypes() {
     }
 }
 
-function allTypesChecked() {
+function allTypesChecked(): boolean {
     return _showTypes.length === allIncidentTypes.length && _showBlankType && _showOtherType;
 }
 
-function showCheckedTypes(replaceState) {
+function showCheckedTypes(replaceState: boolean): void {
     readCheckedTypes();
 
     const numTypesShown = _showTypes.length + (_showBlankType ? 1 : 0) + (_showOtherType ? 1 : 0);
@@ -633,17 +635,17 @@ function showCheckedTypes(replaceState) {
         replaceWindowState();
     }
 
-    incidentsTable.draw();
+    incidentsTable!.draw();
 }
 
 //
 // Show rows button handling
 //
 
-let _showRows = null;
+let _showRows: number|string|null = null;
 const defaultRows = 25;
 
-function showRows(rowsToShow, replaceState) {
+function showRows(rowsToShow: number|string, replaceState: boolean): void {
     const id = rowsToShow.toString();
     _showRows = rowsToShow;
 
@@ -666,15 +668,15 @@ function showRows(rowsToShow, replaceState) {
         replaceWindowState();
     }
 
-    incidentsTable.page.len(rowsToShow);
-    incidentsTable.draw();
+    incidentsTable!.page.len(rowsToShow);
+    incidentsTable!.draw();
 }
 
 //
 // Update the page URL based on the search input and other filters.
 //
 
-function replaceWindowState() {
+function replaceWindowState(): void {
     const newParams: [string, string][] = [];
 
     const searchVal = (document.getElementById("search_input") as HTMLInputElement).value;
@@ -696,10 +698,10 @@ function replaceWindowState() {
         newParams.push(["state", _showState]);
     }
     if (_showDaysBack != null && _showDaysBack !== defaultDaysBack) {
-        newParams.push(["days", _showDaysBack]);
+        newParams.push(["days", _showDaysBack.toString()]);
     }
     if (_showRows != null && _showRows !== defaultRows) {
-        newParams.push(["rows", _showRows]);
+        newParams.push(["rows", _showRows.toString()]);
     }
 
     const newURL = `${viewIncidentsURL}#${new URLSearchParams(newParams).toString()}`;

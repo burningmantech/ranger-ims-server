@@ -1,3 +1,4 @@
+"use strict";
 ///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //

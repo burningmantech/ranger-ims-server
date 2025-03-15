@@ -19,13 +19,13 @@
 // Initialize UI
 //
 
-async function initAdminTypesPage() {
+async function initAdminTypesPage(): Promise<void> {
     detectTouchDevice();
     await loadAndDrawIncidentTypes();
 }
 
 
-async function loadAndDrawIncidentTypes() {
+async function loadAndDrawIncidentTypes(): Promise<void> {
     await loadAllIncidentTypes();
     drawAllIncidentTypes();
 }
@@ -55,7 +55,7 @@ async function loadAllIncidentTypes(): Promise<{err:string|null}> {
 }
 
 
-let _incidentTypesTemplate = null;
+let _incidentTypesTemplate: object|null = null;
 let _entryTemplate: any = null;
 
 function drawAllIncidentTypes(): void {
@@ -102,7 +102,7 @@ function updateIncidentTypes(): void {
 }
 
 
-async function createIncidentType(sender): Promise<void> {
+async function createIncidentType(sender: HTMLInputElement): Promise<void> {
     const {err} = await sendIncidentTypes({"add": [sender.value]});
     if (err == null) {
         sender.value = "";
@@ -111,28 +111,35 @@ async function createIncidentType(sender): Promise<void> {
 }
 
 
-function deleteIncidentType(sender) {
+function deleteIncidentType(sender: HTMLElement) {
     alert("Remove unimplemented");
 }
 
 
-async function showIncidentType(sender): Promise<void> {
-    // @ts-ignore JQuery
-    await sendIncidentTypes({"show": [$(sender).parent().attr("value")]});
+async function showIncidentType(sender: HTMLElement): Promise<void> {
+    await sendIncidentTypes({"show": [
+        // @ts-ignore
+        $(sender).parent().attr("value")]});
     await loadAndDrawIncidentTypes();
 }
 
 
-async function hideIncidentType(sender): Promise<void> {
-    // @ts-ignore JQuery
-    await sendIncidentTypes({"hide": [$(sender).parent().attr("value")]});
+async function hideIncidentType(sender: HTMLElement): Promise<void> {
+    await sendIncidentTypes({"hide": [
+        // @ts-ignore
+        $(sender).parent().attr("value")]});
     await loadAndDrawIncidentTypes();
 }
 
+interface Edits {
+    add?: string[];
+    show?: string[];
+    hide?: string[];
+}
 
-async function sendIncidentTypes(edits): Promise<{err:string|null}> {
+async function sendIncidentTypes(edits: Edits): Promise<{err:string|null}> {
     const {err} = await fetchJsonNoThrow(url_incidentTypes, {
-        body: edits,
+        body: JSON.stringify(edits),
     });
     if (err == null) {
         return {err: null};

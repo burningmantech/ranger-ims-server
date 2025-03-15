@@ -18,7 +18,7 @@
 // Initialize UI
 //
 
-async function initFieldReportsPage() {
+async function initFieldReportsPage(): Promise<void> {
 
     await loadBody();
 
@@ -26,7 +26,7 @@ async function initFieldReportsPage() {
     initFieldReportsTable();
 
     // Keyboard shortcuts
-    document.addEventListener("keydown", function(e) {
+    document.addEventListener("keydown", function(e: KeyboardEvent): void {
         // No shortcuts when an input field is active
         if (document.activeElement !== document.body) {
             return;
@@ -52,7 +52,7 @@ async function initFieldReportsPage() {
         }
         // TODO: should there also be a shortcut to show the default filters?
     });
-    document.getElementById("helpModal")!.addEventListener("keydown", function(e) {
+    document.getElementById("helpModal")!.addEventListener("keydown", function(e: KeyboardEvent): void {
         if (e.key === "?") {
             // @ts-ignore JQuery
             $("#helpModal").modal("toggle");
@@ -65,7 +65,9 @@ async function initFieldReportsPage() {
 // Dispatch queue table
 //
 
-let fieldReportsTable = null;
+
+// DataTables item
+let fieldReportsTable: DataTablesTable|null = null;
 
 function initFieldReportsTable() {
     frInitDataTables();
@@ -82,10 +84,9 @@ function initFieldReportsTable() {
     let ignoredPromise = requestEventSourceLock();
 
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
-    fieldReportChannel.onmessage = function (e) {
+    fieldReportChannel.onmessage = function (e: MessageEvent): void {
         if (e.data.update_all) {
             console.log("Reloading the whole table to be cautious, as an SSE was missed");
-            // @ts-ignore DataTables
             fieldReportsTable!.ajax.reload();
             clearErrorMessage();
             return;
@@ -104,7 +105,6 @@ function initFieldReportsTable() {
         //  Field Reports for which they're not authorized, and those errors
         //  show up in the browser console. I'd like to find a way to avoid
         //  bringing those errors into the console constantly.
-        // @ts-ignore DataTables
         fieldReportsTable!.ajax.reload();
         clearErrorMessage();
     };
@@ -115,7 +115,7 @@ function initFieldReportsTable() {
 //
 
 function frInitDataTables() {
-    function dataHandler(fieldReports) {
+    function dataHandler(fieldReports: object) {
         return fieldReports;
     }
 
@@ -147,7 +147,7 @@ function frInitDataTables() {
             // entry to it.
             "url": urlReplace(url_fieldReports),
             "dataSrc": dataHandler,
-            "error": function (request, status, error) {
+            "error": function (request: XMLHttpRequest, status: object, error: string|null) {
                 // The "abort" case is a special snowflake.
                 // There are times we do two table refreshes in quick succession, and in
                 // those cases, the first call gets aborted. We don't want to set an error
@@ -202,8 +202,8 @@ function frInitDataTables() {
             // creation time descending
             [1, "dsc"],
         ],
-        "createdRow": function (row, fieldReport, index) {
-            row.addEventListener("click", function (e) {
+        "createdRow": function (row: HTMLElement, fieldReport: FieldReport, index: number) {
+            row.addEventListener("click", function (e: MouseEvent): void {
                 // Open new context with link
                 window.open(
                     urlReplace(url_viewFieldReports) + fieldReport.number,
@@ -213,7 +213,7 @@ function frInitDataTables() {
             row.getElementsByClassName("field_report_created")[0]
                 .setAttribute(
                     "title",
-                    fullDateTime.format(Date.parse(fieldReport.created)),
+                    fullDateTime.format(Date.parse(fieldReport.created!)),
                 );
         },
     });
@@ -251,7 +251,7 @@ function frInitTableButtons() {
 const _frSearchDelayMs = 250;
 let _frSearchDelayTimer: number|undefined = undefined;
 
-function frInitSearchField() {
+function frInitSearchField(): void {
     // Relocate search container
 
     // @ts-ignore JQuery
@@ -264,7 +264,7 @@ function frInitSearchField() {
     // Search field handling
     const searchInput = document.getElementById("search_input") as HTMLInputElement;
 
-    const searchAndDraw = function () {
+    const searchAndDraw: () => void = function (): void {
         frReplaceWindowState();
         let q = searchInput.value;
         let isRegex = false;
@@ -272,22 +272,20 @@ function frInitSearchField() {
             isRegex = true;
             q = q.slice(1, q.length-1);
         }
-        // @ts-ignore DataTables
-        fieldReportsTable.search(q, isRegex);
-        // @ts-ignore DataTables
-        fieldReportsTable.draw();
+        fieldReportsTable!.search(q, isRegex);
+        fieldReportsTable!.draw();
     };
 
     const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
     const fragmentParams = new URLSearchParams(fragment);
-    const queryString = fragmentParams.get("q");
+    const queryString: string|null = fragmentParams.get("q");
     if (queryString) {
         searchInput.value = queryString;
         searchAndDraw();
     }
 
     searchInput.addEventListener("keyup",
-        function () {
+        function (): void {
             // Delay the search in case the user is still typing.
             // This reduces perceived lag, since searching can be
             // very slow, and it's super annoying for a user when
@@ -297,7 +295,7 @@ function frInitSearchField() {
         }
     );
     searchInput.addEventListener("keydown",
-        function (e) {
+        function (e: KeyboardEvent): void {
             // No shortcuts when ctrl, alt, or meta is being held down
             if (e.altKey || e.ctrlKey || e.metaKey) {
                 return;
@@ -326,26 +324,23 @@ function frInitSearchField() {
 //
 
 function frInitSearch() {
-    function modifiedAfter(fieldReport, timestamp) {
-        if (timestamp < Date.parse(fieldReport.created)) {
+    function modifiedAfter(fieldReport: FieldReport, timestamp: Date) {
+        if (timestamp < new Date(Date.parse(fieldReport.created!))) {
             return true;
         }
-
         // needs to use native comparison
-      for (const entry of fieldReport.report_entries??[]) {
-          if (timestamp < Date.parse(entry.created)) {
-              return true;
-          }
-      }
-
-      return false;
+        for (const entry of fieldReport.report_entries??[]) {
+            if (timestamp < new Date(Date.parse(entry.created!))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // @ts-ignore JQuery
     $.fn.dataTable.ext.search.push(
-        function(settings, rowData, rowIndex) {
-            // @ts-ignore DataTables
-            const fieldReport = fieldReportsTable.data()[rowIndex];
+        function(settings: any, rowData: any, rowIndex: number) {
+            const fieldReport = fieldReportsTable!.data()[rowIndex];
 
             if (
                 _frShowModifiedAfter != null &&
@@ -365,10 +360,10 @@ function frInitSearch() {
 //
 
 let _frShowModifiedAfter: Date|null = null;
-let _frShowDaysBack = null;
+let _frShowDaysBack: number|string|null = null;
 const frDefaultDaysBack = "all";
 
-function frShowDays(daysBackToShow, replaceState) {
+function frShowDays(daysBackToShow: number|string, replaceState: boolean): void {
     const id = daysBackToShow.toString();
     _frShowDaysBack = daysBackToShow;
 
@@ -383,14 +378,14 @@ function frShowDays(daysBackToShow, replaceState) {
     // Update menu title to reflect selected item
     menu.children(".selection").html(selection);
 
-    if (daysBackToShow === "all") {
+    if (daysBackToShow === "all")  {
         _frShowModifiedAfter = null;
     } else {
         const after = new Date();
         after.setHours(0);
         after.setMinutes(0);
         after.setSeconds(0);
-        after.setDate(after.getDate()-daysBackToShow);
+        after.setDate(after.getDate()-Number(daysBackToShow));
         _frShowModifiedAfter = after;
     }
 
@@ -398,8 +393,7 @@ function frShowDays(daysBackToShow, replaceState) {
         frReplaceWindowState();
     }
 
-    // @ts-ignore DataTables
-    fieldReportsTable.draw();
+    fieldReportsTable!.draw();
 }
 
 
@@ -407,10 +401,10 @@ function frShowDays(daysBackToShow, replaceState) {
 // Show rows button handling
 //
 
-let _frShowRows = null;
+let _frShowRows: number|string|null = null;
 const frDefaultRows = 25;
 
-function frShowRows(rowsToShow, replaceState) {
+function frShowRows(rowsToShow: number|string, replaceState: boolean) {
     const id = rowsToShow.toString();
     _frShowRows = rowsToShow;
 
@@ -433,9 +427,7 @@ function frShowRows(rowsToShow, replaceState) {
         frReplaceWindowState();
     }
 
-    // @ts-ignore DataTables
     fieldReportsTable!.page.len(rowsToShow);
-    // @ts-ignore DataTables
     fieldReportsTable!.draw();
 }
 
@@ -444,7 +436,7 @@ function frShowRows(rowsToShow, replaceState) {
 // Update the page URL based on the search input and other filters.
 //
 
-function frReplaceWindowState() {
+function frReplaceWindowState(): void {
     const newParams: [string, string][] = [];
 
     const searchVal = (document.getElementById("search_input") as HTMLInputElement).value;
@@ -452,10 +444,10 @@ function frReplaceWindowState() {
         newParams.push(["q", searchVal]);
     }
     if (_frShowDaysBack != null && _frShowDaysBack !== frDefaultDaysBack) {
-        newParams.push(["days", _frShowDaysBack]);
+        newParams.push(["days", _frShowDaysBack.toString()]);
     }
     if (_frShowRows != null && _frShowRows !== frDefaultRows) {
-        newParams.push(["rows", _frShowRows]);
+        newParams.push(["rows", _frShowRows.toString()]);
     }
 
     // Next step is to create search params for the other filters too

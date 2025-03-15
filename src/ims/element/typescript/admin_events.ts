@@ -25,8 +25,26 @@ async function initAdminEventsPage(): Promise<void> {
     drawAccess();
 }
 
+enum Validity {
+    always = "always",
+    onsite = "onsite",
+}
 
-let accessControlList: any|null = null;
+interface Access {
+    expression: string;
+    validity: Validity;
+}
+
+interface EventAccess {
+    // key is access mode ("readers", "writers", "reporters")
+    [index: string]: Access[];
+}
+
+interface EventsAccess {
+    [index: string]: EventAccess | null;
+}
+
+let accessControlList: EventsAccess|null = null;
 
 async function loadAccessControlList() : Promise<{err: string|null}> {
     let {json, err} = await fetchJsonNoThrow(url_acl, null);
@@ -87,7 +105,7 @@ function updateEventAccess(event: string, mode: string): void {
     if (accessControlList == null) {
         return;
     }
-    const eventACL = accessControlList[event];
+    const eventACL: EventAccess|null = accessControlList[event];
     if (eventACL == null) {
         return;
     }
@@ -174,16 +192,16 @@ async function addAccess(sender: HTMLInputElement): Promise<void> {
         }
     }
 
-    const acl = accessControlList[event][mode].slice();
+    const acl: Access[] = accessControlList![event]![mode].slice();
 
-    const newVal = {
+    const newVal: Access = {
         "expression": newExpression,
-        "validity": "always",
+        "validity": Validity.always,
     };
 
     acl.push(newVal);
 
-    const edits = {};
+    const edits: EventsAccess = {};
     edits[event] = {};
     edits[event][mode] = acl;
 
@@ -209,7 +227,7 @@ async function removeAccess(sender: HTMLButtonElement): Promise<void> {
     // @ts-ignore JQuery
     const expression = $(sender).parent().attr("value").trim();
 
-    const acl = accessControlList[event][mode].slice();
+    const acl: Access[] = accessControlList![event]![mode].slice();
 
     let foundIndex: number = -1;
     for (const i in acl) {
@@ -225,7 +243,7 @@ async function removeAccess(sender: HTMLButtonElement): Promise<void> {
 
     acl.splice(foundIndex, 1);
 
-    const edits = {};
+    const edits: EventsAccess = {};
     edits[event] = {};
     edits[event][mode] = acl;
 
@@ -244,16 +262,16 @@ async function setValidity(sender: HTMLSelectElement): Promise<void> {
     // @ts-ignore JQuery
     const expression = $(sender).parent().attr("value").trim();
 
-    const acl = accessControlList[event][mode].slice();
+    const acl: Access[] = accessControlList![event]![mode].slice();
 
-    const newVal = {
+    const newVal: Access = {
         "expression": expression,
-        "validity": sender.value,
+        "validity": sender.value === "onsite" ? Validity.onsite : Validity.always,
     };
 
     acl.push(newVal);
 
-    const edits = {};
+    const edits: EventsAccess = {};
     edits[event] = {};
     edits[event][mode] = acl;
 
@@ -271,7 +289,7 @@ async function setValidity(sender: HTMLSelectElement): Promise<void> {
 }
 
 
-async function sendACL(edits: object): Promise<{err:string|null}> {
+async function sendACL(edits: EventsAccess): Promise<{err:string|null}> {
     const {err} = await fetchJsonNoThrow(url_acl, {
         body: JSON.stringify(edits),
     });

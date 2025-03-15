@@ -19,7 +19,7 @@
 // Initialize UI
 let fieldReport: FieldReport|null = null;
 
-async function initFieldReportPage() {
+async function initFieldReportPage(): Promise<void> {
     await loadBody();
     disableEditing();
     await loadAndDisplayFieldReport();
@@ -31,7 +31,7 @@ async function initFieldReportPage() {
     }
 
     // Warn the user if they're about to navigate away with unsaved text.
-    window.addEventListener("beforeunload", function (e) {
+    window.addEventListener("beforeunload", function (e: BeforeUnloadEvent): void {
         if ((document.getElementById("report_entry_add") as HTMLTextAreaElement).value !== "") {
             e.preventDefault();
         }
@@ -41,7 +41,7 @@ async function initFieldReportPage() {
     let ignoredPromise = requestEventSourceLock();
 
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
-    fieldReportChannel.onmessage = async function (e) {
+    fieldReportChannel.onmessage = async function (e: MessageEvent): Promise<void> {
         const number = e.data.field_report_number;
         const event = e.data.event_id;
         const updateAll = e.data.update_all;
@@ -53,7 +53,7 @@ async function initFieldReportPage() {
     };
 
     // Keyboard shortcuts
-    document.addEventListener("keydown", function(e) {
+    document.addEventListener("keydown", function(e: KeyboardEvent): void {
         // No shortcuts when an input field is active
         if (document.activeElement !== document.body) {
             return;
@@ -85,7 +85,7 @@ async function initFieldReportPage() {
             (window.open("./new", '_blank') as Window).focus();
         }
     });
-    (document.getElementById("helpModal") as HTMLDivElement).addEventListener("keydown", function(e) {
+    (document.getElementById("helpModal") as HTMLDivElement).addEventListener("keydown", function(e: KeyboardEvent): void {
         if (e.key === "?") {
             // @ts-ignore JQuery
             $("#helpModal").modal("toggle");
@@ -135,8 +135,7 @@ async function loadFieldReport(): Promise<{err: string|null}> {
     return {err: null};
 }
 
-// returns void
-async function loadAndDisplayFieldReport() {
+async function loadAndDisplayFieldReport(): Promise<void> {
     const {err} = await loadFieldReport();
 
     if (fieldReport == null || err != null) {
@@ -151,7 +150,7 @@ async function loadAndDisplayFieldReport() {
     drawIncident();
     drawSummary();
     toggleShowHistory();
-    drawReportEntries(fieldReport.report_entries);
+    drawReportEntries(fieldReport.report_entries!);
     clearErrorMessage();
 
     // @ts-ignore JQuery
@@ -167,8 +166,8 @@ async function loadAndDisplayFieldReport() {
 // Populate page title
 //
 
-function drawTitle() {
-    document.title = fieldReportAsString(fieldReport);
+function drawTitle(): void {
+    document.title = fieldReportAsString(fieldReport!);
 }
 
 
@@ -176,7 +175,7 @@ function drawTitle() {
 // Populate field report number
 //
 
-function drawNumber() {
+function drawNumber(): void {
     let number: number|string|null|undefined = fieldReport!.number;
     if (number == null) {
         number = "(new)";
@@ -189,7 +188,7 @@ function drawNumber() {
 // Populate incident number or show "create incident" button
 //
 
-function drawIncident() {
+function drawIncident(): void {
     // @ts-ignore JQuery
     $("#incident_number").text("Please include in Summary");
     // New Field Report. There can be no Incident
@@ -222,7 +221,7 @@ function drawIncident() {
 // Populate field report summary
 //
 
-function drawSummary() {
+function drawSummary(): void {
     if (fieldReport!.summary) {
         // @ts-ignore JQuery
         $("#field_report_summary").val(fieldReport!.summary);
@@ -233,7 +232,7 @@ function drawSummary() {
 
     // @ts-ignore JQuery
     $("#field_report_summary")[0].removeAttribute("value");
-    const summarized = summarizeIncident(fieldReport);
+    const summarized = summarizeIncident(fieldReport!);
     if (summarized) {
         // only replace the placeholder if it would be nonempty
         // @ts-ignore JQuery
@@ -246,7 +245,7 @@ function drawSummary() {
 // Editing
 //
 
-async function frSendEdits(edits: any): Promise<{err:string|null}> {
+async function frSendEdits(edits: FieldReport): Promise<{err:string|null}> {
     if (fieldReport == null) {
         return {err: "fieldReport is null!"};
     }
@@ -254,13 +253,7 @@ async function frSendEdits(edits: any): Promise<{err:string|null}> {
     let url = urlReplace(url_fieldReports);
 
     if (number == null) {
-        // We're creating a new field report.
-        const required = [];
-        for (const key of required) {
-            if (edits[key] == null) {
-                edits[key] = fieldReport[key];
-            }
-        }
+        // No fields are required for a new FR, nothing to do here
     } else {
         // We're editing an existing field report.
         edits.number = number;
@@ -268,7 +261,7 @@ async function frSendEdits(edits: any): Promise<{err:string|null}> {
     }
 
     const {resp, json, err} = await fetchJsonNoThrow(url, {
-        body: edits,
+        body: JSON.stringify(edits),
     });
     if (err != null) {
         const message = `Failed to apply edit: ${err}`;

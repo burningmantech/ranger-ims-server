@@ -34,13 +34,13 @@ async function initIncidentPage(): Promise<void> {
     renderFieldReportData();
 
     // for a new incident, jump to summary field
-    if (incident.number == null) {
+    if (incident!.number == null) {
         // @ts-ignore JQuery
         $("#incident_summary").focus();
     }
 
     // Warn the user if they're about to navigate away with unsaved text.
-    window.addEventListener("beforeunload", function (e) {
+    window.addEventListener("beforeunload", function (e: BeforeUnloadEvent): void {
         if ((document.getElementById("report_entry_add") as HTMLTextAreaElement).value !== "") {
             e.preventDefault();
         }
@@ -50,7 +50,7 @@ async function initIncidentPage(): Promise<void> {
     let ignoredPromise = requestEventSourceLock();
 
     const incidentChannel = new BroadcastChannel(incidentChannelName);
-    incidentChannel.onmessage = async function (e) {
+    incidentChannel.onmessage = async function (e: MessageEvent): Promise<void> {
         const number = e.data.incident_number;
         const event = e.data.event_id;
         const updateAll = e.data.update_all;
@@ -84,7 +84,7 @@ async function initIncidentPage(): Promise<void> {
     };
 
     // Keyboard shortcuts
-    document.addEventListener("keydown", function(e) {
+    document.addEventListener("keydown", function(e: KeyboardEvent): void {
         // No shortcuts when an input field is active
         if (document.activeElement !== document.body) {
             return;
@@ -116,14 +116,14 @@ async function initIncidentPage(): Promise<void> {
             (window.open("./new", '_blank') as Window).focus();
         }
     });
-    (document.getElementById("helpModal") as HTMLDivElement).addEventListener("keydown", function(e) {
+    (document.getElementById("helpModal") as HTMLDivElement).addEventListener("keydown", function(e: KeyboardEvent): void {
         if (e.key === "?") {
             // @ts-ignore JQuery
             $("#helpModal").modal("toggle");
         }
     });
     // @ts-ignore JQuery
-    $("#report_entry_add")[0].addEventListener("keydown", function (e) {
+    $("#report_entry_add")[0].addEventListener("keydown", function (e: KeyboardEvent): void {
         // @ts-ignore JQuery
         const submitEnabled = !$("#report_entry_submit").hasClass("disabled");
         if (submitEnabled && (e.ctrlKey || e.altKey) && e.key === "Enter") {
@@ -137,16 +137,16 @@ async function initIncidentPage(): Promise<void> {
 // Load incident
 //
 
-let incident: any|null = null;
+let incident: Incident|null = null;
 
-async function loadIncident() {
+async function loadIncident(): Promise<{err: string|null}> {
     let number: number|null = null;
     if (incident == null) {
         // First time here.  Use page JavaScript initial value.
         number = incidentNumber??null;
     } else {
         // We have an incident already.  Use that number.
-        number = incident.number;
+        number = incident.number!;
     }
 
     if (number == null) {
@@ -170,7 +170,7 @@ async function loadIncident() {
     return {err: null};
 }
 
-async function loadAndDisplayIncident() {
+async function loadAndDisplayIncident(): Promise<void> {
     await loadIncident();
     if (incident == null) {
         const message = "Incident failed to load";
@@ -192,7 +192,7 @@ async function loadAndDisplayIncident() {
 }
 
 // Do all the client-side rendering based on the state of allFieldReports.
-function renderFieldReportData() {
+function renderFieldReportData(): void {
     loadAttachedFieldReports();
     drawFieldReportsToAttach();
     drawMergedReportEntries();
@@ -320,7 +320,7 @@ async function loadOneFieldReport(fieldReportNumber: number): Promise<{err: stri
     }
 
     let found = false;
-    for (const i in allFieldReports) {
+    for (const i in allFieldReports!) {
         if (allFieldReports[i].number === json.number) {
             allFieldReports[i] = json;
             found = true;
@@ -413,7 +413,7 @@ function addLocationAddressOptions(): void {
             ;
     }
 
-    for (const id in concentricStreetNameByID) {
+    for (const id in concentricStreetNameByID!) {
         const name = concentricStreetNameByID[id];
         // @ts-ignore JQuery
         $("#incident_location_address_concentric")
@@ -429,7 +429,7 @@ function addLocationAddressOptions(): void {
 //
 
 function drawIncidentTitle(): void {
-    document.title = incidentAsString(incident);
+    document.title = incidentAsString(incident!);
 }
 
 
@@ -438,7 +438,7 @@ function drawIncidentTitle(): void {
 //
 
 function drawIncidentNumber(): void {
-    let number = incident.number;
+    let number: number|string|null = incident!.number??null;
     if (number == null) {
         number = "(new)";
     }
@@ -464,7 +464,7 @@ function drawState(): void {
 //
 
 function drawCreated(): void {
-    const date = incident.created;
+    const date = incident!.created;
     if (date == null) {
         return;
     }
@@ -492,7 +492,7 @@ function drawPriority(): void {
 //
 
 function drawIncidentSummary(): void {
-    if (incident.summary) {
+    if (incident!.summary) {
         // @ts-ignore JQuery
         $("#incident_summary").val(incident.summary);
         // @ts-ignore JQuery
@@ -502,7 +502,7 @@ function drawIncidentSummary(): void {
 
     // @ts-ignore JQuery
     $("#incident_summary")[0].removeAttribute("value");
-    const summarized = summarizeIncident(incident);
+    const summarized = summarizeIncident(incident!);
     if (summarized) {
         // only replace the placeholder if it would be nonempty
         // @ts-ignore JQuery
@@ -515,7 +515,7 @@ function drawIncidentSummary(): void {
 // Populate Rangers list
 //
 
-let _rangerItem = null;
+let _rangerItem: HTMLCollection|null = null;
 
 function drawRangers() {
     if (_rangerItem == null) {
@@ -527,11 +527,11 @@ function drawRangers() {
 
     const items: any[] = [];
 
-    const handles = incident.ranger_handles??[];
+    const handles = incident!.ranger_handles??[];
     handles.sort((a, b) => a.localeCompare(b));
 
     for (const handle of handles) {
-        let ranger: any = null;
+        let ranger: string|HTMLElement|null = null;
         if (personnel?.[handle] == null) {
             ranger = textAsHTML(handle);
         } else {
@@ -543,7 +543,7 @@ function drawRangers() {
             });
         }
         // @ts-ignore JQuery
-        const item = _rangerItem.clone();
+        const item = _rangerItem!.clone();
         item.append(ranger);
         item.attr("value", textAsHTML(handle));
         items.push(item);
@@ -594,7 +594,7 @@ function rangerAsString(ranger: Personnel): string {
 // Populate incident types list
 //
 
-let _typesItem: any = null;
+let _typesItem: HTMLCollection|null = null;
 
 function drawIncidentTypes() {
     if (_typesItem == null) {
@@ -606,10 +606,11 @@ function drawIncidentTypes() {
 
     const items: any[] = [];
 
-    const incidentTypes = incident.incident_types??[];
+    const incidentTypes = incident!.incident_types??[];
     incidentTypes.sort();
 
     for (const incidentType of incidentTypes) {
+        // @ts-ignore JQuery
         const item = _typesItem.clone();
         item.attr("value", textAsHTML(incidentType));
         item.append(textAsHTML(incidentType));
@@ -646,7 +647,7 @@ function drawIncidentTypesToAdd() {
 //
 
 function drawLocationName() {
-    if (incident.location?.name) {
+    if (incident!.location?.name) {
         // @ts-ignore JQuery
         $("#incident_location_name").val(incident.location.name);
     }
@@ -655,8 +656,8 @@ function drawLocationName() {
 
 function drawLocationAddressRadialHour() {
     let hour: string|null = null;
-    if (incident.location?.radial_hour != null) {
-        hour = padTwo(incident.location.radial_hour);
+    if (incident!.location?.radial_hour != null) {
+        hour = padTwo(incident!.location.radial_hour);
     }
     selectOptionWithValue(
         // @ts-ignore JQuery
@@ -667,8 +668,8 @@ function drawLocationAddressRadialHour() {
 
 function drawLocationAddressRadialMinute() {
     let minute: string|null = null;
-    if (incident.location?.radial_minute != null) {
-        minute = normalizeMinute(incident.location.radial_minute);
+    if (incident!.location?.radial_minute != null) {
+        minute = normalizeMinute(incident!.location.radial_minute);
     }
     selectOptionWithValue(
         // @ts-ignore JQuery
@@ -679,8 +680,8 @@ function drawLocationAddressRadialMinute() {
 
 function drawLocationAddressConcentric() {
     let concentric = null;
-    if (incident.location?.concentric) {
-        concentric = incident.location.concentric;
+    if (incident!.location?.concentric) {
+        concentric = incident!.location.concentric;
     }
     selectOptionWithValue(
         // @ts-ignore JQuery
@@ -690,10 +691,10 @@ function drawLocationAddressConcentric() {
 
 
 function drawLocationDescription() {
-    if (incident.location?.description) {
+    if (incident!.location?.description) {
         // @ts-ignore JQuery
         $("#incident_location_description")
-            .val(incident.location.description)
+            .val(incident!.location.description)
             ;
     }
 }
@@ -706,7 +707,7 @@ function drawLocationDescription() {
 function drawMergedReportEntries() {
     const entries: ReportEntry[] = [];
 
-    if (incident.report_entries) {
+    if (incident!.report_entries) {
         // @ts-ignore JQuery
         $.merge(entries, incident.report_entries);
     }
@@ -729,7 +730,7 @@ function drawMergedReportEntries() {
 }
 
 
-let _reportsItem = null;
+let _reportsItem: HTMLCollection|null = null;
 
 function drawAttachedFieldReports() {
     if (_reportsItem == null) {
@@ -743,7 +744,7 @@ function drawAttachedFieldReports() {
         }
     }
 
-    const items: object[] = [];
+    const items: HTMLElement[] = [];
 
     const reports = attachedFieldReports??[];
     reports.sort();
@@ -826,17 +827,18 @@ function drawFieldReportsToAttach() {
 // Editing
 //
 
-async function sendEdits(edits: any): Promise<{err:string|null}> {
-    const number = incident.number;
+async function sendEdits(edits: Incident): Promise<{err:string|null}> {
+    const number = incident!.number;
     let url = urlReplace(url_incidents);
 
     if (number == null) {
         // We're creating a new incident.
-        const required = ["state", "priority"];
-        for (const key of required) {
-            if (edits[key] == null) {
-                edits[key] = incident[key];
-            }
+        // required fields are ["state", "priority"];
+        if (edits.state == null) {
+            edits.state = incident!.state;
+        }
+        if (edits.priority == null) {
+            edits.priority = incident!.priority;
         }
     } else {
         // We're editing an existing incident.
@@ -845,7 +847,7 @@ async function sendEdits(edits: any): Promise<{err:string|null}> {
     }
 
     const {resp, err} = await fetchJsonNoThrow(url, {
-        body: edits,
+        body: JSON.stringify(edits),
     });
 
     if (err != null) {
@@ -877,7 +879,7 @@ async function sendEdits(edits: any): Promise<{err:string|null}> {
         }
 
         // Store the new number in our incident object
-        incidentNumber = incident.number = newNumber;
+        incidentNumber = incident!.number = newNumber;
 
         // Update browser history to update URL
         drawIncidentTitle();
@@ -895,7 +897,7 @@ async function editState() {
     // @ts-ignore JQuery
     const $state = $("#incident_state");
 
-    if ($state.val() === "closed" && (incident.incident_types??[]).length === 0) {
+    if ($state.val() === "closed" && (incident!.incident_types??[]).length === 0) {
         window.alert(
             "Closing out this incident?\n"+
             "Please add an incident type!\n\n" +
@@ -910,19 +912,19 @@ async function editState() {
 }
 
 
-async function editIncidentSummary() {
+async function editIncidentSummary(): Promise<void> {
     // @ts-ignore JQuery
     await editFromElement($("#incident_summary"), "summary");
 }
 
 
-async function editLocationName() {
+async function editLocationName(): Promise<void> {
     // @ts-ignore JQuery
     await editFromElement($("#incident_location_name"), "location.name");
 }
 
 
-function transformAddressInteger(value): number|null {
+function transformAddressInteger(value: string): number|null {
     if (!value) {
         return null;
     }
@@ -966,15 +968,15 @@ async function editLocationDescription(): Promise<void> {
 }
 
 
-async function removeRanger(sender): Promise<void> {
+async function removeRanger(sender: HTMLElement): Promise<void> {
     // @ts-ignore JQuery
     sender = $(sender);
-
+    // @ts-ignore JQuery
     const rangerHandle = sender.parent().attr("value");
 
     await sendEdits(
         {
-            "ranger_handles": incident.ranger_handles.filter(
+            "ranger_handles": (incident!.ranger_handles??[]).filter(
                 function(h) { return h !== rangerHandle; }
             ),
         },
@@ -982,13 +984,13 @@ async function removeRanger(sender): Promise<void> {
 }
 
 
-async function removeIncidentType(sender): Promise<void> {
+async function removeIncidentType(sender: HTMLElement): Promise<void> {
     // @ts-ignore JQuery
     sender = $(sender);
-
+    // @ts-ignore JQuery
     const incidentType = sender.parent().attr("value");
     await sendEdits({
-        "incident_types": incident.incident_types.filter(
+        "incident_types": (incident!.incident_types??[]).filter(
             function(t) { return t !== incidentType; }
         ),
     });
@@ -1005,7 +1007,7 @@ async function addRanger(): Promise<void> {
     let handle = $(select).val();
 
     // make a copy of the handles
-    const handles = (incident.ranger_handles??[]).slice();
+    const handles = (incident!.ranger_handles??[]).slice();
 
     // fuzzy-match on handle, to allow case insensitivity and
     // leading/trailing whitespace.
@@ -1050,7 +1052,7 @@ async function addIncidentType(): Promise<void> {
     let incidentType = $(select).val();
 
     // make a copy of the incident types
-    const currentIncidentTypes = (incident.incident_types??[]).slice();
+    const currentIncidentTypes = (incident!.incident_types??[]).slice();
 
     // fuzzy-match on incidentType, to allow case insensitivity and
     // leading/trailing whitespace.
@@ -1088,11 +1090,11 @@ async function addIncidentType(): Promise<void> {
 }
 
 
-async function detachFieldReport(sender): Promise<void> {
+async function detachFieldReport(sender: HTMLElement): Promise<void> {
     // @ts-ignore JQuery
     sender = $(sender);
-
-    const fieldReport = sender.parent().data();
+    // @ts-ignore JQuery
+    const fieldReport: FieldReport = sender.parent().data();
 
     const url = (
         urlReplace(url_fieldReports) + fieldReport.number +

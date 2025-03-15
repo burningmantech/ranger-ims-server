@@ -1,3 +1,4 @@
+"use strict";
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -117,16 +118,6 @@ function urlReplace(url) {
     return url;
 }
 //
-// Errors
-///
-function ValueError(message) {
-    this.name = "ValueError";
-    this.message = message || "Invalid Value";
-    this.stack = (new Error()).stack;
-}
-ValueError.prototype = Object.create(Error.prototype);
-ValueError.prototype.constructor = ValueError;
-//
 // Arrays
 //
 // Build an array from a range.
@@ -135,7 +126,7 @@ function range(start, end, step) {
         step = 1;
     }
     else if (step === 0) {
-        throw new ValueError("step = 0");
+        throw new RangeError("step = 0");
     }
     return Array(end - start)
         .join("a")
@@ -170,10 +161,8 @@ async function fetchJsonNoThrow(url, init) {
     if (init == null) {
         init = {};
     }
-    if (init.headers == null) {
-        init.headers = {};
-    }
-    init.headers["Accept"] = "application/json";
+    init.headers = new Headers(init.headers);
+    init.headers.set("Accept", "application/json");
     if (init.body != null) {
         init.method = "POST";
         if (init.body.constructor.name === "FormData") {
@@ -200,7 +189,7 @@ async function fetchJsonNoThrow(url, init) {
         }
         else {
             // otherwise assume body is supposed to be json
-            init.headers["Content-Type"] = "application/json";
+            init.headers.set("Content-Type", "application/json");
             if (typeof init.body !== "string") {
                 init.body = JSON.stringify(init.body);
             }
@@ -291,12 +280,14 @@ function enableEditing() {
 }
 // Add an error indication to a control
 function controlHasError(element) {
+    // @ts-ignore JQuery
     element.parent().addClass("is-invalid");
 }
 // Add a success indication to a control
 function controlHasSuccess(element, clearTimeout) {
     element.addClass("is-valid");
     if (clearTimeout != null) {
+        // @ts-ignore JQuery
         element.delay("1000").queue(function (next) {
             controlClear(element);
             next();
@@ -487,8 +478,8 @@ function reportTextFromIncident(incidentOrFR) {
         }
     }
     // Incidents page loads all field reports for the event
-    if (eventFieldReports != null && incidentOrFR.field_reports) {
-        for (const reportNumber of incidentOrFR.field_reports) {
+    if (eventFieldReports != null && "field_reports" in incidentOrFR) {
+        for (const reportNumber of incidentOrFR.field_reports ?? []) {
             const report = eventFieldReports[reportNumber];
             const reportText = reportTextFromIncident(report);
             texts.push(reportText);
@@ -732,7 +723,7 @@ function reportEntryElement(entry) {
     if (entry.has_attachment && incidentNumber != null) {
         const url = urlReplace(url_incidentAttachmentNumber)
             .replace("<incident_number>", incidentNumber.toString())
-            .replace("<attachment_number>", entry.id);
+            .replace("<attachment_number>", entry.id.toString());
         // @ts-ignore JQuery
         const attachmentLink = $("<a />", { "href": url });
         attachmentLink.text("Attached file");
