@@ -98,7 +98,7 @@ class DummyConnectionPool:
         if sql == ("select person_id, position_id from person_position"):
             return succeed(())  # type: ignore[arg-type]
 
-        if sql == ("select id, title from team"):
+        if sql == ("select id, title from team where active"):
             return succeed(())  # type: ignore[arg-type]
 
         if sql == ("select person_id, team_id from person_team"):
