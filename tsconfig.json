@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2023",
+    "outDir": "src/ims/element/static",
+    "allowJs": true,
+    "checkJs": true,
+    "allowUnreachableCode": false,
+    "strictNullChecks": true
+  },
+  "include": ["src/ims/element/typescript/*.ts"]
+}

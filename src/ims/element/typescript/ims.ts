@@ -11,47 +11,102 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+//
+// Globals
+//
+declare var eventID: string|null|undefined;
+declare var concentricStreetNameByID: object|undefined;
+declare var incidentNumber: number|null|undefined;
+declare var fieldReportNumber: number|null|undefined;
+declare var editingAllowed: boolean|null|undefined;
+declare var attachmentsAllowed: boolean|null|undefined;
+declare var clubhousePersonURL: string|null|undefined;
+declare var events: string[]|null|undefined;
+declare var canWriteIncidents: boolean|null|undefined;
+
+declare var url_acl: string;
+declare var url_eventSource: string;
+declare var url_events: string;
+declare var url_fieldReport_reportEntry: string;
+declare var url_incident_reportEntry: string;
+declare var url_incidentAttachmentNumber: string;
+declare var url_incidents: string;
+declare var url_viewIncidents: string;
+declare var url_viewFieldReports: string;
+declare var url_personnel: string;
+declare var url_incidentTypes: string;
+declare var url_fieldReports: string;
+declare var url_fieldReport: string;
+declare var url_incidentAttachments: string;
+declare var url_streets: string;
+declare var url_viewIncidentNumber: string;
+declare var url_incidentNumber: string;
+declare var viewIncidentsURL: string;
+
+interface FieldReport {
+    event?: string|null;
+    number?: number|null;
+    created?: string|null;
+    summary?: string|null;
+    incident?: number|null;
+    report_entries?: ReportEntry[]|null;
+}
+
+interface FieldReportsByNumber {
+    [index: number]: FieldReport;
+}
+
+interface ReportEntry {
+    author?: string|null;
+    merged?: number|null,
+}
+
 //
 // Apply the HTML theme, light or dark or default.
 //
 // Adapted from https://getbootstrap.com/docs/5.3/customize/color-modes/#javascript
 // Under Creative Commons Attribution 3.0 Unported License
-function getStoredTheme() {
+function getStoredTheme(): string|null {
     return localStorage.getItem("theme");
 }
-function setStoredTheme(theme) {
+function setStoredTheme(theme: string): void {
     localStorage.setItem("theme", theme);
 }
-function getPreferredTheme() {
+function getPreferredTheme(): string {
     const storedTheme = getStoredTheme();
     if (storedTheme) {
         return storedTheme;
     }
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
-function setTheme(theme) {
+function setTheme(theme: string): void {
     if (theme === "auto") {
         document.documentElement.setAttribute("data-bs-theme", (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
-    }
-    else {
+    } else {
         document.documentElement.setAttribute("data-bs-theme", theme);
     }
 }
 function applyTheme() {
     setTheme(getPreferredTheme());
-    function showActiveTheme(theme, focus = false) {
-        const themeSwitcher = document.querySelector("#bd-theme");
+
+    function showActiveTheme(theme: string, focus: boolean = false) {
+        const themeSwitcher: HTMLButtonElement|null = document.querySelector("#bd-theme");
+
         if (!themeSwitcher) {
             return;
         }
+
         const themeSwitcherText = document.querySelector("#bd-theme-text");
         const activeThemeIcon = document.querySelector(".theme-icon-active use");
-        const btnToActive = document.querySelector(`[data-bs-theme-value="${theme}"]`);
-        const svgOfActiveBtn = btnToActive?.querySelector("svg use")?.getAttribute("href") ?? null;
+        const btnToActive: HTMLButtonElement|null = document.querySelector(`[data-bs-theme-value="${theme}"]`)!;
+        const svgOfActiveBtn: string|null = btnToActive?.querySelector("svg use")?.getAttribute("href")??null;
+
         document.querySelectorAll("[data-bs-theme-value]").forEach(element => {
             element.classList.remove("active");
             element.setAttribute("aria-pressed", "false");
         });
+
         btnToActive.classList.add("active");
         btnToActive.setAttribute("aria-pressed", "true");
         if (svgOfActiveBtn) {
@@ -61,18 +116,21 @@ function applyTheme() {
             const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`;
             themeSwitcher.setAttribute("aria-label", themeSwitcherLabel);
         }
+
         if (focus) {
             themeSwitcher.focus();
         }
-    }
-    ;
+    };
+
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
         const storedTheme = getStoredTheme();
         if (storedTheme !== "light" && storedTheme !== "dark") {
             setTheme(getPreferredTheme());
         }
     });
+
     showActiveTheme(getPreferredTheme());
+
     document.querySelectorAll("[data-bs-theme-value]").forEach(toggle => {
         toggle.addEventListener("click", () => {
             const theme = toggle.getAttribute("data-bs-theme-value");
@@ -88,85 +146,97 @@ function applyTheme() {
 // to invoke applyTheme(), as that will only work once the navbar has been drawn (with its
 // dropdown theme selector.
 setTheme(getPreferredTheme());
+
+
 //
 // HTML encoding
 //
+
 // It seems ridiculous that this isn't standard in JavaScript
 // It is certainly ridiculous to involve the DOM, but on the other hand, the
 // browser will implement this correctly, and any solution using .replace()
 // will be buggy.  And this will be fast.  But still, this is weak.
-let _domTextAreaForHaxxors = document.createElement("textarea");
+
+let _domTextAreaForHaxxors: HTMLTextAreaElement = document.createElement("textarea");
+
 // Convert text to HTML.
-function textAsHTML(text) {
+function textAsHTML(text: string): string {
     _domTextAreaForHaxxors.textContent = text;
     return _domTextAreaForHaxxors.innerHTML;
 }
+
 // Convert HTML to text.
-function htmlAsText(html) {
+function htmlAsText(html: string): string {
     _domTextAreaForHaxxors.innerHTML = html;
-    return _domTextAreaForHaxxors.textContent;
+    return _domTextAreaForHaxxors.textContent!;
 }
-const integerRegExp = /^\d+$/;
+
+const integerRegExp: RegExp = /^\d+$/;
+
+
 //
 // URL substitution
 //
-function urlReplace(url) {
+function urlReplace(url: string): string {
     if (eventID) {
         url = url.replace("<event_id>", eventID);
     }
     return url;
 }
+
+
 //
 // Errors
 ///
-function ValueError(message) {
+
+function ValueError(message: string|null): void {
     this.name = "ValueError";
     this.message = message || "Invalid Value";
     this.stack = (new Error()).stack;
 }
 ValueError.prototype = Object.create(Error.prototype);
 ValueError.prototype.constructor = ValueError;
+
+
 //
 // Arrays
 //
+
 // Build an array from a range.
-function range(start, end, step) {
+function range(start: number, end: number, step?: number|null): number[] {
     if (step == null) {
         step = 1;
-    }
-    else if (step === 0) {
+    } else if (step === 0) {
         throw new ValueError("step = 0");
     }
+
     return Array(end - start)
         .join("a")
         .split("a")
-        .map(function (val, i) { return (i * step) + start; });
+        .map(function(val, i) { return (i * step) + start;} )
+        ;
 }
-function compareReportEntries(a, b) {
-    if (a.created < b.created) {
-        return -1;
-    }
-    if (a.created > b.created) {
-        return 1;
-    }
-    if (a.system_entry && !b.system_entry) {
-        return -1;
-    }
-    if (!a.system_entry && b.system_entry) {
-        return 1;
-    }
-    if (a.text < b.text) {
-        return -1;
-    }
-    if (a.text > b.text) {
-        return 1;
-    }
+
+
+function compareReportEntries(a: any, b: any): number {
+    if (a.created < b.created) { return -1; }
+    if (a.created > b.created) { return  1; }
+
+    if (a.system_entry && ! b.system_entry) { return -1; }
+    if (! a.system_entry && b.system_entry) { return  1; }
+
+    if (a.text < b.text) { return -1; }
+    if (a.text > b.text) { return  1; }
+
     return 0;
 }
+
+
 //
 // Request making
 //
-async function fetchJsonNoThrow(url, init) {
+
+async function fetchJsonNoThrow(url: string, init: RequestInit|null): Promise<{resp: Response|null, json: any|null, err: string|null}> {
     if (init == null) {
         init = {};
     }
@@ -176,15 +246,15 @@ async function fetchJsonNoThrow(url, init) {
     init.headers["Accept"] = "application/json";
     if (init.body != null) {
         init.method = "POST";
+
         if (init.body.constructor.name === "FormData") {
             let size = 0;
-            const fd = init.body;
-            for (const [k, v] of fd.entries()) {
+            const fd = init.body as FormData;
+            for(const [k,v] of fd.entries()) {
                 size += k.length;
                 if (v instanceof Blob) {
                     size += v.size;
-                }
-                else {
+                } else {
                     size += v.length;
                 }
             }
@@ -193,12 +263,12 @@ async function fetchJsonNoThrow(url, init) {
             // cause the server to consume all the memory on the system and require a manual
             // restart. Yuck.
             if (size > 20 * 1024 * 1024) {
-                return { resp: null, json: null, err: "Please keep data uploads small, " +
-                        "ideally under 10 MB" };
+                return {resp: null, json: null, err: "Please keep data uploads small, " +
+                        "ideally under 10 MB"};
             }
+
             // don't JSONify, don't set a Content-Type (fetch does it automatically for FormData)
-        }
-        else {
+        } else {
             // otherwise assume body is supposed to be json
             init.headers["Content-Type"] = "application/json";
             if (typeof init.body !== "string") {
@@ -206,81 +276,101 @@ async function fetchJsonNoThrow(url, init) {
             }
         }
     }
-    let response = null;
+    let response: Response|null = null;
     try {
         response = await fetch(url, init);
         if (!response.ok) {
-            return { resp: response, json: null, err: `${response.statusText} (${response.status})` };
+            return {resp: response, json: null, err: `${response.statusText} (${response.status})`};
         }
         let json = null;
         if (response.headers.get("content-type") === "application/json") {
             json = await response.json();
         }
-        return { resp: response, json: json, err: null };
-    }
-    catch (err) {
-        return { resp: response, json: null, err: err.message };
+        return {resp: response, json: json, err: null};
+    } catch (err) {
+        return {resp: response, json: null, err: err.message};
     }
 }
+
+
 //
 // Generic string formatting
 //
+
 // Pad a string representing an integer to two digits.
-function padTwo(value) {
+function padTwo(value: number|null): string {
     if (value == null) {
         return "?";
     }
+
     const val = value.toString();
+
     if (val.length === 1) {
         return "0" + val;
     }
+
     return val;
 }
+
+
 // Convert a minute (0-60) into a value used by IMS form inputs.
 // That is: round to the nearest multiple of 5 and pad to two digits.
-function normalizeMinute(minute) {
+function normalizeMinute(minute: number): string {
     minute = Math.round(minute / 5) * 5;
     while (minute > 60) {
         minute -= 60;
     }
     return padTwo(minute);
 }
+
+
 // Apparently some implementations of Number.parseInt don't reliably use base
 // 10 by default (eg. when encountering leading zeroes).
-function parseInt(stringInt) {
+function parseInt(stringInt: string): number {
     return Number.parseInt(stringInt, 10);
 }
+
+
 //
 // Elements
 //
+
 // Create a <time> element from a date.
-function timeElement(date) {
+function timeElement(date: Date): HTMLTimeElement {
     const timeStampContainer = document.createElement("time");
     timeStampContainer.setAttribute("datetime", date.toISOString());
     timeStampContainer.textContent = fullDateTime.format(date);
     return timeStampContainer;
 }
+
+
 // Disable an element
-function disable(elements) {
+function disable(elements: NodeListOf<Element>) {
     for (const e of elements) {
         e.setAttribute("disabled", "");
     }
 }
+
+
 // Enable an element
-function enable(elements) {
+function enable(elements: NodeListOf<Element>) {
     for (const e of elements) {
         e.removeAttribute("disabled");
     }
 }
+
+
 // Disable editing for an element
 function disableEditing() {
     disable(document.querySelectorAll(".form-control"));
     // these forms don't actually exist
     // disable(document.querySelectorAll("#entries-form input,select,textarea,button"));
     // disable(document.querySelectorAll("#attach-file-form input,select,textarea,button"));
-    enable(document.querySelectorAll("input[type=search]")); // Don't disable search fields
+    enable(document.querySelectorAll("input[type=search]"));  // Don't disable search fields
     document.documentElement.classList.add("no-edit");
 }
+
+
 // Enable editing for an element
 function enableEditing() {
     enable(document.querySelectorAll(".form-control"));
@@ -289,118 +379,150 @@ function enableEditing() {
     // enable(document.querySelectorAll("#attach-file-form :input,select,textarea,button"));
     document.documentElement.classList.remove("no-edit");
 }
+
 // Add an error indication to a control
 function controlHasError(element) {
     element.parent().addClass("is-invalid");
 }
+
+
 // Add a success indication to a control
 function controlHasSuccess(element, clearTimeout) {
     element.addClass("is-valid");
     if (clearTimeout != null) {
-        element.delay("1000").queue(function (next) {
+        element.delay("1000").queue(function(next) {
             controlClear(element);
             next();
         });
     }
 }
+
+
 // Clear error/success indication from a control
 function controlClear(element) {
     element.removeClass("is-invalid");
     element.removeClass("is-valid");
 }
+
+
 //
 // Load HTML body template.
 //
+
 async function loadBody() {
+
     detectTouchDevice();
     // @ts-ignore since this requires es2024, which I can't get to work with IntelliJ...
-    const { promise, resolve } = Promise.withResolvers();
+    const {promise, resolve} = Promise.withResolvers();
     // @ts-ignore some JQuery nonsense
     $("body").load(pageTemplateURL, resolve);
     await promise;
+
     applyTheme();
+
     if (typeof eventID !== "undefined") {
         for (const eventLabel of document.getElementsByClassName("event-id")) {
             eventLabel.textContent = eventID;
             eventLabel.classList.add("active-event");
         }
+
         const activeEventIncidents = document.getElementById("active-event-incidents");
         if (activeEventIncidents != null) {
             activeEventIncidents.setAttribute("href", urlReplace(url_viewIncidents));
             activeEventIncidents.classList.remove("hidden");
+
             if (window.location.pathname.startsWith(urlReplace(url_viewIncidents))) {
                 activeEventIncidents.classList.add("active");
             }
         }
+
         const activeEventFRs = document.getElementById("active-event-field-reports");
         if (activeEventFRs != null) {
             activeEventFRs.setAttribute("href", urlReplace(url_viewFieldReports));
             activeEventFRs.classList.remove("hidden");
+
             if (window.location.pathname.startsWith(urlReplace(url_viewFieldReports))) {
                 activeEventFRs.classList.add("active");
             }
         }
     }
 }
+
+
 //
 // Touch device detection
 //
+
 // Add .touch or .no-touch class to top-level element if the browser is or is
 // not on a touch device, respectively.
 function detectTouchDevice() {
     if ("ontouchstart" in document.documentElement) {
         document.documentElement.classList.add("touch");
-    }
-    else {
+    } else {
         document.documentElement.classList.add("no-touch");
     }
 }
+
+
 //
 // Controls
 //
+
 // Select an option element with a given value from a given select element.
 function selectOptionWithValue(select, value) {
     select
         .children("option")
-        .prop("selected", false);
+        .prop("selected", false)
+        ;
+
     select
         .children("option[value='" + value + "']")
-        .prop("selected", true);
+        .prop("selected", true)
+        ;
 }
+
+
 //
 // Incident data
 //
+
+
 // Look up a state's name given its ID.
-function stateNameFromID(stateID) {
+function stateNameFromID(stateID: string): string {
     switch (stateID) {
-        case "new": return "New";
-        case "on_hold": return "On Hold";
+        case "new"       : return "New";
+        case "on_hold"   : return "On Hold";
         case "dispatched": return "Dispatched";
-        case "on_scene": return "On Scene";
-        case "closed": return "Closed";
+        case "on_scene"  : return "On Scene";
+        case "closed"    : return "Closed";
         default:
             console.warn("Unknown incident state ID: " + stateID);
             return "Unknown";
     }
 }
+
+
 // Look up a state's sort key given its ID.
-function stateSortKeyFromID(stateID) {
+function stateSortKeyFromID(stateID: string): number|undefined {
     switch (stateID) {
-        case "new": return 1;
-        case "on_hold": return 2;
+        case "new"       : return 1;
+        case "on_hold"   : return 2;
         case "dispatched": return 3;
-        case "on_scene": return 4;
-        case "closed": return 5;
+        case "on_scene"  : return 4;
+        case "closed"    : return 5;
         default:
             console.warn("Unknown incident state ID: " + stateID);
             return undefined;
     }
 }
+
+
 // Look up a concentric street's name given its ID.
-function concentricStreetFromID(streetID) {
+function concentricStreetFromID(streetID: any): string {
     if (streetID == null || typeof concentricStreetNameByID === "undefined") {
         return "";
     }
+
     const name = concentricStreetNameByID[streetID];
     if (name == null) {
         console.warn("Unknown street ID: " + streetID);
@@ -408,26 +530,33 @@ function concentricStreetFromID(streetID) {
     }
     return name;
 }
+
+
 // Return the state ID for a given incident.
-function stateForIncident(incident) {
+function stateForIncident(incident): string {
     // Data from 2014+ should have incident.state set.
     if (incident.state !== undefined) {
         return incident.state;
     }
+
     console.warn("Unknown state for incident: " + incident);
     return "Unknown";
 }
+
+
 // Return a summary for a given incident.
-function summarizeIncident(incident) {
+function summarizeIncident(incident): string {
     if (incident.summary) {
         return incident.summary;
     }
+
     // Get the first line of the first report entry.
-    for (const reportEntry of incident.report_entries ?? []) {
+    for (const reportEntry of incident.report_entries??[]) {
         if (reportEntry.system_entry) {
             // Don't use a system-generated entry in the summary
             continue;
         }
+
         const lines = reportEntry.text.split("\n");
         for (const line of lines) {
             if (line) {
@@ -437,77 +566,103 @@ function summarizeIncident(incident) {
     }
     return "";
 }
+
+
 // Return a summary for a given field report.
-function summarizeFieldReport(report) {
+function summarizeFieldReport(report): string {
     return summarizeIncident(report);
 }
+
+
 // Get author for incident
-function incidentAuthor(incident) {
-    for (const entry of incident.report_entries ?? []) {
+function incidentAuthor(incident): string {
+    for (const entry of incident.report_entries??[]) {
         if (entry.author) {
             return entry.author;
         }
     }
+
     return "(none)";
 }
+
+
 // Get author for field report
-function fieldReportAuthor(report) {
+function fieldReportAuthor(report): string {
     return incidentAuthor(report);
 }
+
+
 // Render incident as a string
-function incidentAsString(incident) {
+function incidentAsString(incident): string {
     if (incident.number == null) {
         return "New Incident";
     }
     return `#${incident.number}: ${summarizeIncident(incident)} (${incident.event})`;
 }
+
+
 // Render field report as a string
-function fieldReportAsString(report) {
+function fieldReportAsString(report): string {
     if (report.number == null) {
         return "New Field Report";
     }
     return `FR #${report.number} (${fieldReportAuthor(report)}): ` +
         `${summarizeFieldReport(report)} (${report.event})`;
 }
-let eventFieldReports = null;
+
+let eventFieldReports: FieldReportsByNumber|null = null;
+
 // Return all user-entered report text for a given incident as a single string.
-function reportTextFromIncident(incidentOrFR) {
-    const texts = [];
+function reportTextFromIncident(incidentOrFR): string {
+    const texts: string[] = [];
+
     if (incidentOrFR.summary != null) {
         texts.push(incidentOrFR.summary);
     }
-    for (const reportEntry of incidentOrFR.report_entries ?? []) {
+
+    for (const reportEntry of incidentOrFR.report_entries??[]) {
+
         // Skip system entries
         if (reportEntry.system_entry) {
             continue;
         }
+
         const text = reportEntry.text;
+
         if (text != null) {
             texts.push(text);
         }
     }
+
     // Incidents page loads all field reports for the event
     if (eventFieldReports != null && incidentOrFR.field_reports) {
         for (const reportNumber of incidentOrFR.field_reports) {
             const report = eventFieldReports[reportNumber];
             const reportText = reportTextFromIncident(report);
+
             texts.push(reportText);
         }
     }
+
     return texts.join(" ");
 }
+
+
 // Return a short description for a given location.
-function shortDescribeLocation(location) {
+function shortDescribeLocation(location: any|null): string|undefined {
     if (location == null) {
         return undefined;
     }
-    const locationBits = [];
+
+    const locationBits: string[] = [];
+
     if (location.name != null) {
         locationBits.push(location.name);
     }
+
     switch (location.type) {
         case undefined:
-        // Fall through to "text" case
+            // Fall through to "text" case
         case "text":
             if (location.description != null) {
                 locationBits.push(" ");
@@ -526,20 +681,27 @@ function shortDescribeLocation(location) {
             }
             break;
         default:
-            locationBits.push("Unknown location type:" + location.type);
+            locationBits.push(
+                "Unknown location type:" + location.type
+            );
             break;
     }
+
     return locationBits.join("");
 }
+
+
 //
 // DataTables rendering
 //
-function renderSafeSorted(strings) {
+
+function renderSafeSorted(strings: string[]): string {
     const safe = strings.map(s => textAsHTML(s));
     const copy = safe.toSorted((a, b) => a.localeCompare(b));
     return copy.join(", ");
 }
-function renderIncidentNumber(incidentNumber, type, incident) {
+
+function renderIncidentNumber(incidentNumber: number|null, type: string, incident: any): number|null|undefined {
     switch (type) {
         case "display":
             return incidentNumber;
@@ -551,30 +713,34 @@ function renderIncidentNumber(incidentNumber, type, incident) {
     }
     return undefined;
 }
+
 // e.g. "Wed, 8/28"
-const shortDate = new Intl.DateTimeFormat(undefined, {
+const shortDate: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
     weekday: "short",
     month: "numeric",
     day: "2-digit",
     // timeZone not specified; will use user's timezone
 });
+
 // e.g. "19:21"
-const shortTime = new Intl.DateTimeFormat(undefined, {
+const shortTime: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
     hour12: false,
     minute: "numeric",
     // timeZone not specified; will use user's timezone
 });
+
 // e.g. "19:21"
-const shortTimeSec = new Intl.DateTimeFormat(undefined, {
+const shortTimeSec: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
     hour12: false,
     minute: "numeric",
     second: "numeric",
     // timeZone not specified; will use user's timezone
 });
+
 // e.g. "Thu, Aug 29, 2024, 19:11:04 EDT"
-const fullDateTime = new Intl.DateTimeFormat(undefined, {
+const fullDateTime: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
     weekday: "short",
     year: "numeric",
     month: "short",
@@ -586,7 +752,8 @@ const fullDateTime = new Intl.DateTimeFormat(undefined, {
     timeZoneName: "short",
     // timeZone not specified; will use user's timezone
 });
-function renderDate(date, type, incident) {
+
+function renderDate(date: string, type: string, incident: any): string|number|undefined {
     const d = Date.parse(date);
     switch (type) {
         case "display":
@@ -599,10 +766,12 @@ function renderDate(date, type, incident) {
     }
     return undefined;
 }
+
 function renderState(state, type, incident) {
     if (state == null) {
         state = stateForIncident(incident);
     }
+
     switch (type) {
         case "display":
             return textAsHTML(stateNameFromID(state));
@@ -615,13 +784,14 @@ function renderState(state, type, incident) {
     }
     return undefined;
 }
+
 function renderLocation(data, type, incident) {
     if (data == null) {
         data = "";
     }
     switch (type) {
         case "display":
-            return textAsHTML(shortDescribeLocation(data) ?? "");
+            return textAsHTML(shortDescribeLocation(data)??"");
         case "filter":
         case "sort":
             return shortDescribeLocation(data);
@@ -630,6 +800,7 @@ function renderLocation(data, type, incident) {
     }
     return undefined;
 }
+
 function renderSummary(data, type, incident) {
     switch (type) {
         case "display":
@@ -643,48 +814,55 @@ function renderSummary(data, type, incident) {
     }
     return undefined;
 }
+
+
 //
 // Populate report entry text
 //
+
 function reportEntryElement(entry) {
     // Build a container for the entry
+
     // @ts-ignore JQuery
-    const entryContainer = $("<div />", { "class": "report_entry" });
-    const strikable = !entry.system_entry;
+    const entryContainer = $("<div />", {"class": "report_entry"});
+
+    const strikable: boolean = !entry.system_entry;
+
     if (entry.system_entry) {
         entryContainer.addClass("report_entry_system");
-    }
-    else if (entry.stricken) {
+    } else if (entry.stricken) {
         entryContainer.addClass("report_entry_stricken");
-    }
-    else {
+    } else {
         entryContainer.addClass("report_entry_user");
     }
+
     if (entry.merged) {
         entryContainer.addClass("report_entry_merged");
     }
+
     // Add the timestamp and author, with a Strike/Unstrike button
+
     // @ts-ignore JQuery
-    const metaDataContainer = $("<p />", { "class": "report_entry_metadata" });
+    const metaDataContainer = $("<p />", {"class": "report_entry_metadata"});
+
     if (strikable) {
         let onclick = "";
+
         if (typeof incidentNumber !== "undefined") {
             // we're on the incident page
             if (entry.merged) {
                 // this is an entry from a field report, as shown on the incident page
                 onclick = "setStrikeFieldReportEntry(" + entry.merged + ", " + entry.id + ", " + !entry.stricken + ");";
-            }
-            else {
+            } else {
                 // this is an incident entry on the incident page
                 onclick = "setStrikeIncidentEntry(" + incidentNumber + ", " + entry.id + ", " + !entry.stricken + ");";
             }
-        }
-        else if (typeof fieldReportNumber !== "undefined") {
+        } else if (typeof fieldReportNumber !== "undefined") {
             // we're on the field report page
             onclick = "setStrikeFieldReportEntry(" + fieldReportNumber + ", " + entry.id + ", " + !entry.stricken + ");";
         }
         // @ts-ignore JQuery
-        const strikeContainer = $("<button />", { "onclick": onclick });
+        const strikeContainer = $("<button />", {"onclick": onclick});
         strikeContainer.addClass("badge btn btn-danger remove-badge float-end");
         strikeContainer.text(entry.stricken ? "Unstrike" : "Strike");
         // TODO: it'd be nice to have a strikethrough icon rather than the word "Strike".
@@ -696,9 +874,12 @@ function reportEntryElement(entry) {
         // strikeContainer.append(iconContainer);
         metaDataContainer.append(strikeContainer);
     }
+
     const timeStampContainer = timeElement(new Date(entry.created));
     timeStampContainer.classList.add("report_entry_timestamp");
+
     metaDataContainer.append([timeStampContainer, ", "]);
+
     let author = entry.author;
     if (author == null) {
         author = "(unknown)";
@@ -707,123 +888,148 @@ function reportEntryElement(entry) {
     const authorContainer = $("<span />");
     authorContainer.text(entry.author);
     authorContainer.addClass("report_entry_author");
+
     metaDataContainer.append(author);
+
     if (entry.merged) {
         metaDataContainer.append(" ");
+
         // @ts-ignore JQuery
         const link = $("<a />");
         link.text("field report #" + entry.merged);
         link.attr("href", urlReplace(url_viewFieldReports) + entry.merged);
+
         metaDataContainer.append("(via ");
         metaDataContainer.append(link);
         metaDataContainer.append(")");
+
         metaDataContainer.addClass("report_entry_source");
     }
+
     metaDataContainer.append(":");
+
     entryContainer.append(metaDataContainer);
+
     // Add report text
+
     const lines = entry.text.split("\n");
     for (const line of lines) {
         // @ts-ignore JQuery
-        const textContainer = $("<p />", { "class": "report_entry_text" });
+        const textContainer = $("<p />", {"class": "report_entry_text"});
         textContainer.text(line);
+
         entryContainer.append(textContainer);
     }
     if (entry.has_attachment && incidentNumber != null) {
         const url = urlReplace(url_incidentAttachmentNumber)
             .replace("<incident_number>", incidentNumber.toString())
             .replace("<attachment_number>", entry.id);
+
         // @ts-ignore JQuery
-        const attachmentLink = $("<a />", { "href": url });
+        const attachmentLink = $("<a />", {"href": url});
         attachmentLink.text("Attached file");
+
         entryContainer.append(attachmentLink);
+
     }
+
     // Add a horizontal line after each entry
+
     // @ts-ignore JQuery
-    entryContainer.append($("<hr />", { "class": "m-1" }));
+    entryContainer.append( $("<hr />", {"class": "m-1"}) );
+
     return entryContainer;
 }
+
 function drawReportEntries(entries) {
     // @ts-ignore JQuery
     const container = $("#report_entries");
     container.empty();
+
     if (entries) {
         for (const entry of entries) {
             container.append(reportEntryElement(entry));
         }
         container.parent().parent().removeClass("hidden");
-    }
-    else {
+    } else {
         container.parent().parent().addClass("hidden");
     }
 }
+
 function reportEntryEdited() {
     // @ts-ignore JQuery
     const text = $("#report_entry_add").val().trim();
     // @ts-ignore JQuery
     const submitButton = $("#report_entry_submit");
+
     submitButton.removeClass("btn-default");
     submitButton.removeClass("btn-warning");
     submitButton.removeClass("btn-danger");
+
     if (!text) {
         submitButton.addClass("disabled");
         submitButton.addClass("btn-default");
-    }
-    else {
+    } else {
         submitButton.removeClass("disabled");
         submitButton.addClass("btn-warning");
     }
 }
+
 // The error callback for a report entry strike call.
 // This function is designed to work from either the incident
 // or the field report page.
-function onStrikeError(err) {
+function onStrikeError(err: string) {
     const message = `Failed to set report entry strike status: ${err}`;
     console.log(message);
     setErrorMessage(message);
 }
-let registerOnStrikeSuccess = null;
-async function setStrikeIncidentEntry(incidentNumber, reportEntryId, strike) {
+
+let registerOnStrikeSuccess: (() => Promise<void>)|null = null;
+
+async function setStrikeIncidentEntry(incidentNumber: number, reportEntryId: number, strike: boolean) {
     const url = urlReplace(url_incident_reportEntry)
         .replace("<incident_number>", incidentNumber.toString())
         .replace("<report_entry_id>", reportEntryId.toString());
-    const { err } = await fetchJsonNoThrow(url, {
-        body: JSON.stringify({ "stricken": strike }),
+    const {err} = await fetchJsonNoThrow(url, {
+        body: JSON.stringify({"stricken": strike}),
     });
     if (err != null) {
         onStrikeError(err);
-    }
-    else {
-        registerOnStrikeSuccess();
+    } else {
+        registerOnStrikeSuccess!();
     }
 }
-async function setStrikeFieldReportEntry(fieldReportNumber, reportEntryId, strike) {
+
+async function setStrikeFieldReportEntry(fieldReportNumber: number, reportEntryId: number, strike: boolean) {
     const url = urlReplace(url_fieldReport_reportEntry)
         .replace("<field_report_number>", fieldReportNumber.toString())
         .replace("<report_entry_id>", reportEntryId.toString());
-    const { err } = await fetchJsonNoThrow(url, {
-        body: JSON.stringify({ "stricken": strike }),
+    const {err} = await fetchJsonNoThrow(url, {
+        body: JSON.stringify({"stricken": strike}),
     });
     if (err != null) {
         onStrikeError(err);
-    }
-    else {
-        registerOnStrikeSuccess();
+    } else {
+        registerOnStrikeSuccess!();
     }
 }
-let registerSendEdits = null;
-async function submitReportEntry() {
+
+let registerSendEdits: ((edits: any)=>Promise<{err:string|null}>)|null = null;
+async function submitReportEntry(): Promise<void> {
     // @ts-ignore JQuery
     const text = $("#report_entry_add").val().trim();
+
     if (!text) {
         return;
     }
+
     console.log("New report entry:\n" + text);
+
     // Disable the submit button to prevent repeat submissions
     // @ts-ignore JQuery
     $("#report_entry_submit").addClass("disabled");
     // send a dummy ID to appease the JSON parser in the server
-    const { err } = await registerSendEdits({ "report_entries": [{ "text": text, "id": -1 }] });
+    const {err} = await registerSendEdits!({"report_entries": [{"text": text, "id": -1}]});
     if (err != null) {
         // @ts-ignore JQuery
         const submitButton = $("#report_entry_submit");
@@ -843,29 +1049,36 @@ async function submitReportEntry() {
     // Reset the submit button and its "disabled" status
     reportEntryEdited();
 }
+
 //
 // Generated history display
 //
+
 function toggleShowHistory() {
     // @ts-ignore JQuery
     if ($("#history_checkbox").is(":checked")) {
         // @ts-ignore JQuery
         $("#report_entries").removeClass("hide-history");
-    }
-    else {
+    } else {
         // @ts-ignore JQuery
         $("#report_entries").addClass("hide-history");
     }
 }
-async function editFromElement(element, jsonKey, transform) {
+
+async function editFromElement(element, jsonKey: string, transform?) {
     let value = element.val();
+
     if (transform != null) {
         value = transform(value);
     }
+
     // Build a JSON object representing the requested edits
+
     const edits = {};
+
     const keyPath = jsonKey.split(".");
-    const lastKey = keyPath.pop();
+    const lastKey = keyPath.pop()!;
+
     let current = edits;
     for (const path of keyPath) {
         const next = {};
@@ -873,31 +1086,39 @@ async function editFromElement(element, jsonKey, transform) {
         current = next;
     }
     current[lastKey] = value;
+
     // Location must include type
+
     // @ts-ignore fix this...
     if (edits.location != null) {
         // @ts-ignore fix this...
-        edits.location.type = "garett"; // UI only supports one type
+        edits.location.type = "garett";  // UI only supports one type
     }
+
     // Send request to server
-    const { err } = await registerSendEdits(edits);
+
+    const {err} = await registerSendEdits!(edits);
     if (err != null) {
         controlHasError(element);
-    }
-    else {
+    } else {
         controlHasSuccess(element, 1000);
     }
 }
+
+
 //
 // EventSource
 //
+
 const incidentChannelName = "incident_update";
-const fieldReportChannelName = "field_report_update";
+const fieldReportChannelName= "field_report_update";
 const reattemptMinTimeMillis = 10000;
 const lastSseIDKey = "last_sse_id";
+
 // Call this from each browsing context, so that it can queue up to become a leader
 // to manage the EventSource.
 async function requestEventSourceLock() {
+
     // The "navigator.locks" API is only available over secure browsing contexts.
     // Secure contexts include HTTPS as well as non-HTTPS via localhost, so this is
     // really only when you try to connect directly to another host without TLS.
@@ -907,13 +1128,14 @@ async function requestEventSourceLock() {
             "Background SSE updates will not work!");
         return;
     }
+
     function tryAcquireLock() {
         // @ts-ignore withResolves needs es2024
-        const { promise, resolve } = Promise.withResolvers();
+        const {promise, resolve} = Promise.withResolvers();
         subscribeToUpdates(resolve);
         return promise;
     }
-    function waitBeforeRetry(timeMillis) {
+    function waitBeforeRetry(timeMillis: number) {
         return new Promise(r => setTimeout(r, Math.max(0, timeMillis)));
     }
     // Infinitely attempt to reconnect to the EventSource.
@@ -925,33 +1147,38 @@ async function requestEventSourceLock() {
         // broadcasting events to other browsing contexts.
         await navigator.locks.request("ims_eventsource_lock", tryAcquireLock);
         const millisSinceStart = Date.now() - start;
-        await waitBeforeRetry(reattemptMinTimeMillis - millisSinceStart);
+        await waitBeforeRetry(reattemptMinTimeMillis-millisSinceStart);
     }
 }
+
 // This starts the EventSource call and configures event listeners to propagate
 // updates to BroadcastChannels. The idea is that only one browsing context should
 // have an EventSource connection at any given time.
 //
 // The "closed" param is a callback to notify the caller that the EventSource has
 // been closed.
-function subscribeToUpdates(closed) {
-    const eventSource = new EventSource(url_eventSource, { withCredentials: true });
-    eventSource.addEventListener("open", function () {
+function subscribeToUpdates(closed: Function) {
+    const eventSource = new EventSource(
+        url_eventSource, { withCredentials: true }
+    );
+
+    eventSource.addEventListener("open", function() {
         console.log("Event listener opened");
     }, true);
-    eventSource.addEventListener("error", function () {
+
+    eventSource.addEventListener("error", function() {
         if (eventSource.readyState === EventSource.CLOSED) {
             console.log("Event listener closed");
             eventSource.close();
             closed();
-        }
-        else {
+        } else {
             // This is likely a retriable error, and EventSource will automatically
             // attempt reconnection.
             console.log("Event listener error");
         }
     }, true);
-    eventSource.addEventListener("InitialEvent", function (e) {
+
+    eventSource.addEventListener("InitialEvent", function(e) {
         const previousId = localStorage.getItem(lastSseIDKey);
         if (e.lastEventId === previousId) {
             return;
@@ -962,43 +1189,48 @@ function subscribeToUpdates(closed) {
             new BroadcastChannel(fieldReportChannelName),
         ];
         for (const ch of allChannels) {
-            ch.postMessage({ update_all: true });
+            ch.postMessage({update_all: true});
         }
     });
-    eventSource.addEventListener("Incident", function (e) {
+
+    eventSource.addEventListener("Incident", function(e) {
         const send = new BroadcastChannel(incidentChannelName);
         localStorage.setItem(lastSseIDKey, e.lastEventId);
         send.postMessage(JSON.parse(e.data));
     }, true);
-    eventSource.addEventListener("FieldReport", function (e) {
+
+    eventSource.addEventListener("FieldReport", function(e) {
         const send = new BroadcastChannel(fieldReportChannelName);
         localStorage.setItem(lastSseIDKey, e.lastEventId);
         send.postMessage(JSON.parse(e.data));
     }, true);
 }
+
 // Set the user-visible error information on the page to the provided string.
-function setErrorMessage(msg) {
+function setErrorMessage(msg: string) {
     msg = "Error: (Cause: " + msg + ")";
-    const errText = document.getElementById("error_text");
+    const errText: HTMLElement|null = document.getElementById("error_text");
     if (errText) {
         errText.textContent = msg;
     }
-    const errInfo = document.getElementById("error_info");
+    const errInfo: HTMLElement|null = document.getElementById("error_info");
     if (errInfo) {
         errInfo.classList.remove("hidden");
         errInfo.scrollIntoView();
     }
 }
+
 function clearErrorMessage() {
-    const errText = document.getElementById("error_text");
+    const errText: HTMLElement|null = document.getElementById("error_text");
     if (errText) {
         errText.textContent = "";
     }
-    const errInfo = document.getElementById("error_info");
+    const errInfo: HTMLElement|null = document.getElementById("error_info");
     if (errInfo) {
         errInfo.classList.add("hidden");
     }
 }
+
 // Remove the old LocalStorage caches that IMS no longer uses, so that
 // they can't act against the ~5 MB per-domain limit of HTML5 LocalStorage.
 // This can probably be removed after the 2025 event, when all the relevant
