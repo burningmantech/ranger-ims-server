@@ -26,6 +26,7 @@ var Validity;
     Validity["always"] = "always";
     Validity["onsite"] = "onsite";
 })(Validity || (Validity = {}));
+const allAccessModes = ["readers", "writers", "reporters"];
 let accessControlList = null;
 async function loadAccessControlList() {
     let { json, err } = await fetchJsonNoThrow(url_acl, null);
@@ -40,28 +41,24 @@ async function loadAccessControlList() {
 }
 let _accessTemplate = null;
 let _eventsEntryTemplate = null;
-let accessModes = ["readers", "writers", "reporters"];
 function drawAccess() {
-    // @ts-ignore JQuery
-    const container = $("#event_access_container");
+    const container = document.getElementById("event_access_container");
     if (_accessTemplate == null) {
-        _accessTemplate = container.children(".event_access:first");
+        _accessTemplate = container.getElementsByClassName("event_access")[0];
         _eventsEntryTemplate = _accessTemplate
-            // @ts-ignore JQuery
-            .find(".list-group:first")
-            .children(".list-group-item:first");
+            .getElementsByClassName("list-group")[0]
+            .getElementsByClassName("list-group-item")[0];
     }
-    container.empty();
+    emptyNode(container);
     if (accessControlList == null) {
         return;
     }
     const events = Object.keys(accessControlList);
     for (const event of events) {
-        for (const mode of accessModes) {
-            // @ts-ignore JQuery
-            const eventAccess = $(_accessTemplate).clone();
+        for (const mode of allAccessModes) {
+            const eventAccess = _accessTemplate.cloneNode(true);
             // Add an id to the element for future reference
-            eventAccess.attr("id", "event_access_" + event + "_" + mode);
+            eventAccess.setAttribute("id", "event_access_" + event + "_" + mode);
             // Add to container
             container.append(eventAccess);
             updateEventAccess(event, mode);
@@ -76,19 +73,18 @@ function updateEventAccess(event, mode) {
     if (eventACL == null) {
         return;
     }
-    // @ts-ignore JQuery
-    const eventAccess = $("#event_access_" + event + "_" + mode);
+    const eventAccess = document.getElementById("event_access_" + event + "_" + mode);
     // Set displayed event name and mode
-    eventAccess.find(".event_name").text(event);
-    eventAccess.find(".access_mode").text(mode);
-    const entryContainer = eventAccess.find(".list-group:first");
-    entryContainer.empty();
-    for (const accessEntry of eventACL[mode]) {
-        // @ts-ignore JQuery
-        const entryItem = _eventsEntryTemplate.clone();
+    eventAccess.getElementsByClassName("event_name")[0].textContent = event;
+    eventAccess.getElementsByClassName("access_mode")[0].textContent = mode;
+    const entryContainer = eventAccess.getElementsByClassName("list-group")[0];
+    emptyNode(entryContainer);
+    for (const accessEntry of eventACL[mode] ?? []) {
+        const entryItem = _eventsEntryTemplate.cloneNode(true);
         entryItem.append(accessEntry.expression);
-        entryItem.attr("value", accessEntry.expression);
-        entryItem.find(".access_validity").val(accessEntry.validity);
+        entryItem.setAttribute("value", accessEntry.expression);
+        const validityField = entryItem.getElementsByClassName("access_validity")[0];
+        validityField.value = accessEntry.validity;
         entryContainer.append(entryItem);
     }
 }
@@ -105,8 +101,7 @@ async function addEvent(sender) {
         window.alert(message);
         await loadAccessControlList();
         drawAccess();
-        // @ts-ignore JQuery
-        controlHasError($(sender));
+        controlHasErrorNoJQuery(sender);
         return;
     }
     await loadAccessControlList();
@@ -114,10 +109,10 @@ async function addEvent(sender) {
     sender.value = ""; // Clear input field
 }
 async function addAccess(sender) {
-    // @ts-ignore JQuery
-    const container = $(sender).parents(".event_access:first");
-    const event = container.find(".event_name:first").text();
-    const mode = container.find(".access_mode:first").text();
+    // get the relevant ".event_access"
+    const container = sender.parentElement.parentElement.parentElement;
+    const event = container.getElementsByClassName("event_name")[0].textContent;
+    const mode = container.getElementsByClassName("access_mode")[0].textContent;
     const newExpression = sender.value.trim();
     if (newExpression === "**") {
         const confirmed = confirm("Double-wildcard '**' ACLs are no longer supported, so this ACL will have " +
@@ -152,23 +147,21 @@ async function addAccess(sender) {
     edits[event][mode] = acl;
     const { err } = await sendACL(edits);
     await loadAccessControlList();
-    for (const mode of accessModes) {
+    for (const mode of allAccessModes) {
         updateEventAccess(event, mode);
     }
     if (err != null) {
-        // @ts-ignore JQuery
-        controlHasError($(sender));
+        controlHasErrorNoJQuery(sender);
         return;
     }
     sender.value = ""; // Clear input field
 }
 async function removeAccess(sender) {
-    // @ts-ignore JQuery
-    const container = $(sender).parents(".event_access:first");
-    const event = container.find(".event_name:first").text();
-    const mode = container.find(".access_mode:first").text();
-    // @ts-ignore JQuery
-    const expression = $(sender).parent().attr("value").trim();
+    // get the relevant ".event_access"
+    const container = sender.parentElement.parentElement.parentElement;
+    const event = container.getElementsByClassName("event_name")[0].textContent;
+    const mode = container.getElementsByClassName("access_mode")[0].textContent;
+    const expression = sender.parentElement.getAttribute("value").trim();
     const acl = accessControlList[event][mode].slice();
     let foundIndex = -1;
     for (const i in acl) {
@@ -187,17 +180,16 @@ async function removeAccess(sender) {
     edits[event][mode] = acl;
     await sendACL(edits);
     await loadAccessControlList();
-    for (const mode of accessModes) {
+    for (const mode of allAccessModes) {
         updateEventAccess(event, mode);
     }
 }
 async function setValidity(sender) {
-    // @ts-ignore JQuery
-    const container = $(sender).parents(".event_access:first");
-    const event = container.find(".event_name:first").text();
-    const mode = container.find(".access_mode:first").text();
-    // @ts-ignore JQuery
-    const expression = $(sender).parent().attr("value").trim();
+    // get the relevant ".event_access"
+    const container = sender.parentElement.parentElement.parentElement;
+    const event = container.getElementsByClassName("event_name")[0].textContent;
+    const mode = container.getElementsByClassName("access_mode")[0].textContent;
+    const expression = sender.parentElement.getAttribute("value").trim();
     const acl = accessControlList[event][mode].slice();
     const newVal = {
         "expression": expression,
@@ -209,12 +201,11 @@ async function setValidity(sender) {
     edits[event][mode] = acl;
     const { err } = await sendACL(edits);
     await loadAccessControlList();
-    for (const mode of accessModes) {
+    for (const mode of allAccessModes) {
         updateEventAccess(event, mode);
     }
     if (err != null) {
-        // @ts-ignore JQuery
-        controlHasError($(sender));
+        controlHasErrorNoJQuery(sender);
         return;
     }
     sender.value = ""; // Clear input field

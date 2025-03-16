@@ -26,8 +26,7 @@ async function initFieldReportPage(): Promise<void> {
 
     // for a new field report
     if (fieldReport!.number == null) {
-        // @ts-ignore JQuery
-        $("#field_report_summary").focus();
+        document.getElementById("field_report_summary")!.focus();
     }
 
     // Warn the user if they're about to navigate away with unsaved text.
@@ -71,10 +70,8 @@ async function initFieldReportPage(): Promise<void> {
         if (e.key === "a") {
             e.preventDefault();
             // Scroll to report_entry_add field
-            // @ts-ignore JQuery
-            $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
-            // @ts-ignore JQuery
-            $("#report_entry_add").focus();
+            document.getElementById("report_entry_add")!.focus();
+            document.getElementById("report_entry_add")!.scrollIntoView(true);
         }
         // h --> toggle showing system entries
         if (e.key.toLowerCase() === "h") {
@@ -91,10 +88,8 @@ async function initFieldReportPage(): Promise<void> {
             $("#helpModal").modal("toggle");
         }
     });
-    // @ts-ignore JQuery
-    $("#report_entry_add")[0].addEventListener("keydown", function (e) {
-        // @ts-ignore JQuery
-        const submitEnabled = !$("#report_entry_submit").hasClass("disabled");
+    document.getElementById("report_entry_add")!.addEventListener("keydown", function (e: KeyboardEvent): void {
+        const submitEnabled = !document.getElementById("report_entry_submit")!.classList.contains("disabled");
         if (submitEnabled && (e.ctrlKey || e.altKey) && e.key === "Enter") {
             submitReportEntry();
         }
@@ -153,8 +148,7 @@ async function loadAndDisplayFieldReport(): Promise<void> {
     drawReportEntries(fieldReport.report_entries!);
     clearErrorMessage();
 
-    // @ts-ignore JQuery
-    $("#report_entry_add").on("input", reportEntryEdited);
+    document.getElementById("report_entry_add")!.addEventListener("input", reportEntryEdited)
 
     if (editingAllowed) {
         enableEditing();
@@ -180,8 +174,7 @@ function drawNumber(): void {
     if (number == null) {
         number = "(new)";
     }
-    // @ts-ignore JQuery
-    $("#field_report_number").text(number);
+    document.getElementById("field_report_number")!.textContent = number.toString();
 }
 
 //
@@ -189,8 +182,7 @@ function drawNumber(): void {
 //
 
 function drawIncident(): void {
-    // @ts-ignore JQuery
-    $("#incident_number").text("Please include in Summary");
+    document.getElementById("incident_number")!.textContent = "Please include in Summary";
     // New Field Report. There can be no Incident
     if (fieldReport!.number == null) {
         return;
@@ -199,20 +191,20 @@ function drawIncident(): void {
     const incident = fieldReport!.incident;
     if (incident != null) {
         const incidentURL = urlReplace(url_viewIncidentNumber).replace("<number>", incident.toString());
-        // @ts-ignore JQuery
-        const $a = $("<a>", {href: incidentURL});
-        $a.text(incident);
-        // @ts-ignore JQuery
-        $("#incident_number").text("").append($a);
+        const link: HTMLAnchorElement = document.createElement("a");
+        link.href = incidentURL;
+        link.text = incident.toString();
+
+        const incidentField = document.getElementById("incident_number")!;
+        incidentField.textContent = "";
+        incidentField.append(link);
     }
     // If there's no attached Incident, show a button for making
     // a new Incident
     if (incident == null && canWriteIncidents) {
-        // @ts-ignore JQuery
-        $("#create_incident").removeClass("hidden");
+        document.getElementById("create_incident")!.classList.remove("hidden");
     } else {
-        // @ts-ignore JQuery
-        $("#create_incident").addClass("hidden");
+        document.getElementById("create_incident")!.classList.add("hidden");
     }
 }
 
@@ -222,21 +214,18 @@ function drawIncident(): void {
 //
 
 function drawSummary(): void {
+    const summaryInput = document.getElementById("field_report_summary") as HTMLInputElement;
     if (fieldReport!.summary) {
-        // @ts-ignore JQuery
-        $("#field_report_summary").val(fieldReport!.summary);
-        // @ts-ignore JQuery
-        $("#field_report_summary").attr("placeholder", "");
+        summaryInput.value = fieldReport!.summary;
+        summaryInput.removeAttribute("placeholder");
         return;
     }
 
-    // @ts-ignore JQuery
-    $("#field_report_summary")[0].removeAttribute("value");
+    summaryInput.value = "";
     const summarized = summarizeIncident(fieldReport!);
     if (summarized) {
         // only replace the placeholder if it would be nonempty
-        // @ts-ignore JQuery
-        $("#field_report_summary").attr("placeholder", summarized);
+        summaryInput.setAttribute("placeholder", summarized);
     }
 }
 
@@ -304,8 +293,8 @@ async function frSendEdits(edits: FieldReport): Promise<{err:string|null}> {
 registerSendEdits = frSendEdits;
 
 async function editSummary() {
-    // @ts-ignore JQuery
-    await editFromElement($("#field_report_summary"), "summary");
+    const summaryInput = document.getElementById("field_report_summary") as HTMLInputElement;
+    await editFromElementNoJQuery(summaryInput, "summary");
 }
 
 //

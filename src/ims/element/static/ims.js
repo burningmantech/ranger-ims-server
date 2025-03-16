@@ -294,10 +294,27 @@ function controlHasSuccess(element, clearTimeout) {
         });
     }
 }
+// Add an error indication to a control
+function controlHasErrorNoJQuery(element) {
+    element.classList.add("is-invalid");
+}
+// Add a success indication to a control
+function controlHasSuccessNoJQuery(element, clearTimeout) {
+    element.classList.add("is-valid");
+    if (clearTimeout != null) {
+        setTimeout(() => {
+            controlClearNoJQuery(element);
+        }, clearTimeout);
+    }
+}
 // Clear error/success indication from a control
 function controlClear(element) {
     element.removeClass("is-invalid");
     element.removeClass("is-valid");
+}
+function controlClearNoJQuery(element) {
+    element.classList.remove("is-invalid");
+    element.classList.remove("is-valid");
 }
 //
 // Load HTML body template.
@@ -865,9 +882,7 @@ async function editFromElement(element, jsonKey, transform) {
     }
     current[lastKey] = value;
     // Location must include type
-    // @ts-ignore fix this...
-    if (edits.location != null) {
-        // @ts-ignore fix this...
+    if (edits.location != null && typeof edits.location !== "string") {
         edits.location.type = "garett"; // UI only supports one type
     }
     // Send request to server
@@ -877,6 +892,35 @@ async function editFromElement(element, jsonKey, transform) {
     }
     else {
         controlHasSuccess(element, 1000);
+    }
+}
+async function editFromElementNoJQuery(element, jsonKey, transform) {
+    let value = element.value;
+    if (transform != null) {
+        value = transform(value);
+    }
+    // Build a JSON object representing the requested edits
+    const edits = {};
+    const keyPath = jsonKey.split(".");
+    const lastKey = keyPath.pop();
+    let current = edits;
+    for (const path of keyPath) {
+        const next = {};
+        current[path] = next;
+        current = next;
+    }
+    current[lastKey] = value;
+    // Location must include type
+    if (edits.location != null && typeof edits.location !== "string") {
+        edits.location.type = "garett"; // UI only supports one type
+    }
+    // Send request to server
+    const { err } = await registerSendEdits(edits);
+    if (err != null) {
+        controlHasErrorNoJQuery(element);
+    }
+    else {
+        controlHasSuccessNoJQuery(element, 1000);
     }
 }
 //
@@ -988,6 +1032,13 @@ function clearErrorMessage() {
     const errInfo = document.getElementById("error_info");
     if (errInfo) {
         errInfo.classList.add("hidden");
+    }
+}
+// Delete everything in a DOM Node. This is the pure JS equivalent of
+// JQuery's .empty() function.
+function emptyNode(node) {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild);
     }
 }
 // Remove the old LocalStorage caches that IMS no longer uses, so that

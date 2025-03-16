@@ -48,33 +48,30 @@ async function loadAllIncidentTypes() {
 let _incidentTypesTemplate = null;
 let _entryTemplate = null;
 function drawAllIncidentTypes() {
-    // @ts-ignore JQuery
-    const container = $("#incident_types_container");
+    const container = document.getElementById("incident_types_container");
     if (_incidentTypesTemplate == null) {
-        _incidentTypesTemplate = container.children(".incident_types:first");
+        _incidentTypesTemplate = container.getElementsByClassName("incident_types")[0];
         _entryTemplate = _incidentTypesTemplate
-            // @ts-ignore JQuery
-            .find(".list-group:first")
-            .children(".list-group-item:first");
+            .getElementsByClassName("list-group")[0]
+            .getElementsByClassName("list-group-item")[0];
     }
     updateIncidentTypes();
 }
 function updateIncidentTypes() {
-    // @ts-ignore JQuery
-    const incidentTypesElement = $("#incident_types");
-    const entryContainer = incidentTypesElement.find(".list-group:first");
-    entryContainer.empty();
+    const incidentTypesElement = document.getElementById("incident_types");
+    const entryContainer = incidentTypesElement.getElementsByClassName("list-group")[0];
+    emptyNode(entryContainer);
     for (const incidentType of adminIncidentTypes ?? []) {
-        const entryItem = _entryTemplate.clone();
+        const entryItem = _entryTemplate.cloneNode(true);
         if (incidentTypesVisible.indexOf(incidentType) === -1) {
-            entryItem.addClass("item-hidden");
+            entryItem.classList.add("item-hidden");
         }
         else {
-            entryItem.addClass("item-visible");
+            entryItem.classList.add("item-visible");
         }
         const safeIncidentType = textAsHTML(incidentType);
         entryItem.append(safeIncidentType);
-        entryItem.attr("value", safeIncidentType);
+        entryItem.setAttribute("value", safeIncidentType);
         entryContainer.append(entryItem);
     }
 }
@@ -90,15 +87,13 @@ function deleteIncidentType(sender) {
 }
 async function showIncidentType(sender) {
     await sendIncidentTypes({ "show": [
-            // @ts-ignore
-            $(sender).parent().attr("value")
+            sender.parentElement.getAttribute("value")
         ] });
     await loadAndDrawIncidentTypes();
 }
 async function hideIncidentType(sender) {
     await sendIncidentTypes({ "hide": [
-            // @ts-ignore
-            $(sender).parent().attr("value")
+            sender.parentElement.getAttribute("value")
         ] });
     await loadAndDrawIncidentTypes();
 }

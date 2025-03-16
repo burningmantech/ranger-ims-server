@@ -13,6 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+interface EventStreets {
+    [index: string]: Streets,
+}
+
 //
 // Initialize UI
 //
@@ -40,30 +44,25 @@ async function loadStreets(): Promise<{err:string|null}> {
 }
 
 
-let _streetsTemplate: any = null;
-let _streetsEntryTemplate: any = null;
+let _streetsTemplate: HTMLElement|null = null;
+let _streetsEntryTemplate: HTMLElement|null = null;
 
 function drawStreets() {
-    // @ts-ignore JQuery
-    const container = $("#event_streets_container");
-
+    const container: HTMLElement = document.getElementById("event_streets_container")!;
     if (_streetsTemplate == null) {
-        _streetsTemplate = container.children(".event_streets:first");
-
+        _streetsTemplate = container.getElementsByClassName("event_streets")[0] as HTMLElement;
         _streetsEntryTemplate = _streetsTemplate
-            .find(".list-group:first")
-            .children(".list-group-item:first")
-            ;
+            .getElementsByClassName("list-group")[0]
+            .getElementsByClassName("list-group-item")[0] as HTMLElement;
     }
 
-    container.empty();
+    emptyNode(container);
 
     for (const event of events!) {
-        // @ts-ignore JQuery
-        const eventStreets = $(_streetsTemplate).clone();
+        const eventStreets = _streetsTemplate.cloneNode(true) as HTMLElement;
 
         // Add an id to the element for future reference
-        eventStreets.attr("id", "event_streets_" + event);
+        eventStreets.setAttribute("id", "event_streets_" + event);
 
         // Add to container
         container.append(eventStreets);
@@ -80,22 +79,21 @@ function updateEventStreets(event: string) {
         return;
     }
 
-    // @ts-ignore JQuery
-    const eventStreetsElement = $("#event_streets_" + event);
+    const eventStreetsElement: HTMLElement = document.getElementById("event_streets_" + event)!;
 
     // Set displayed event name
-    eventStreetsElement.find(".event_name").text(event);
+    eventStreetsElement.getElementsByClassName("event_name")[0].textContent = event;
 
-    const entryContainer = eventStreetsElement.find(".list-group:first");
+    const entryContainer: Element = eventStreetsElement.getElementsByClassName("list-group")[0];
 
-    entryContainer.empty();
+    emptyNode(entryContainer);
 
     for (const streetID in eventStreets) {
         const streetName = eventStreets[streetID];
-        const entryItem = _streetsEntryTemplate.clone();
+        const entryItem = _streetsEntryTemplate!.cloneNode(true) as HTMLElement;
 
         entryItem.append(streetID + ": " + streetName);
-        entryItem.attr("value", streetID);
+        entryItem.setAttribute("value", streetID);
 
         entryContainer.append(entryItem);
     }

@@ -48,10 +48,6 @@ interface Streets {
     [index: number]: string,
 }
 
-interface EventStreets {
-    [index: string]: Streets,
-}
-
 interface Location {
     name?: string|null;
     radial_hour?: number|null;
@@ -440,11 +436,32 @@ function controlHasSuccess(element: any, clearTimeout: number) {
     }
 }
 
+// Add an error indication to a control
+function controlHasErrorNoJQuery(element: HTMLElement) {
+    element.classList.add("is-invalid");
+}
+
+
+// Add a success indication to a control
+function controlHasSuccessNoJQuery(element: HTMLElement, clearTimeout: number) {
+    element.classList.add("is-valid");
+    if (clearTimeout != null) {
+        setTimeout(()=>{
+            controlClearNoJQuery(element);
+        }, clearTimeout);
+    }
+}
+
 
 // Clear error/success indication from a control
 function controlClear(element: any) {
     element.removeClass("is-invalid");
     element.removeClass("is-valid");
+}
+
+function controlClearNoJQuery(element: HTMLElement) {
+    element.classList.remove("is-invalid");
+    element.classList.remove("is-valid");
 }
 
 
@@ -1136,9 +1153,7 @@ async function editFromElement(element: any, jsonKey: string, transform?: (v: an
 
     // Location must include type
 
-    // @ts-ignore fix this...
-    if (edits.location != null) {
-        // @ts-ignore fix this...
+    if (edits.location != null && typeof edits.location !== "string") {
         edits.location.type = "garett";  // UI only supports one type
     }
 
@@ -1149,6 +1164,44 @@ async function editFromElement(element: any, jsonKey: string, transform?: (v: an
         controlHasError(element);
     } else {
         controlHasSuccess(element, 1000);
+    }
+}
+
+async function editFromElementNoJQuery(element: HTMLInputElement|HTMLSelectElement, jsonKey: string, transform?: (v: any)=>any): Promise<void> {
+    let value = element.value;
+
+    if (transform != null) {
+        value = transform(value);
+    }
+
+    // Build a JSON object representing the requested edits
+
+    const edits: EditMap = {};
+
+    const keyPath: string[] = jsonKey.split(".");
+    const lastKey: string = keyPath.pop()!;
+
+    let current: EditMap = edits;
+    for (const path of keyPath) {
+        const next: EditMap = {};
+        current[path] = next;
+        current = next;
+    }
+    current[lastKey] = value;
+
+    // Location must include type
+
+    if (edits.location != null && typeof edits.location !== "string") {
+        edits.location.type = "garett";  // UI only supports one type
+    }
+
+    // Send request to server
+
+    const {err} = await registerSendEdits!(edits);
+    if (err != null) {
+        controlHasErrorNoJQuery(element);
+    } else {
+        controlHasSuccessNoJQuery(element, 1000);
     }
 }
 
@@ -1275,6 +1328,14 @@ function clearErrorMessage(): void {
     const errInfo: HTMLElement|null = document.getElementById("error_info");
     if (errInfo) {
         errInfo.classList.add("hidden");
+    }
+}
+
+// Delete everything in a DOM Node. This is the pure JS equivalent of
+// JQuery's .empty() function.
+function emptyNode(node: Node): void {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild);
     }
 }
 
