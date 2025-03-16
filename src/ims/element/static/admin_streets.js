@@ -38,20 +38,18 @@ async function loadStreets() {
 let _streetsTemplate = null;
 let _streetsEntryTemplate = null;
 function drawStreets() {
-    // @ts-ignore JQuery
-    const container = $("#event_streets_container");
+    const container = document.getElementById("event_streets_container");
     if (_streetsTemplate == null) {
-        _streetsTemplate = container.children(".event_streets:first");
+        _streetsTemplate = container.getElementsByClassName("event_streets")[0];
         _streetsEntryTemplate = _streetsTemplate
-            .find(".list-group:first")
-            .children(".list-group-item:first");
+            .getElementsByClassName("list-group")[0]
+            .getElementsByClassName("list-group-item")[0];
     }
-    container.empty();
+    emptyNode(container);
     for (const event of events) {
-        // @ts-ignore JQuery
-        const eventStreets = $(_streetsTemplate).clone();
+        const eventStreets = _streetsTemplate.cloneNode(true);
         // Add an id to the element for future reference
-        eventStreets.attr("id", "event_streets_" + event);
+        eventStreets.setAttribute("id", "event_streets_" + event);
         // Add to container
         container.append(eventStreets);
         updateEventStreets(event);
@@ -62,17 +60,16 @@ function updateEventStreets(event) {
     if (eventStreets == null) {
         return;
     }
-    // @ts-ignore JQuery
-    const eventStreetsElement = $("#event_streets_" + event);
+    const eventStreetsElement = document.getElementById("event_streets_" + event);
     // Set displayed event name
-    eventStreetsElement.find(".event_name").text(event);
-    const entryContainer = eventStreetsElement.find(".list-group:first");
-    entryContainer.empty();
+    eventStreetsElement.getElementsByClassName("event_name")[0].textContent = event;
+    const entryContainer = eventStreetsElement.getElementsByClassName("list-group")[0];
+    emptyNode(entryContainer);
     for (const streetID in eventStreets) {
         const streetName = eventStreets[streetID];
-        const entryItem = _streetsEntryTemplate.clone();
+        const entryItem = _streetsEntryTemplate.cloneNode(true);
         entryItem.append(streetID + ": " + streetName);
-        entryItem.attr("value", streetID);
+        entryItem.setAttribute("value", streetID);
         entryContainer.append(entryItem);
     }
 }

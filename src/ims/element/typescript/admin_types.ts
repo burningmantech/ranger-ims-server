@@ -55,21 +55,18 @@ async function loadAllIncidentTypes(): Promise<{err:string|null}> {
 }
 
 
-let _incidentTypesTemplate: object|null = null;
-let _entryTemplate: any = null;
+let _incidentTypesTemplate: Element|null = null;
+let _entryTemplate: Element|null = null;
 
 function drawAllIncidentTypes(): void {
-    // @ts-ignore JQuery
-    const container = $("#incident_types_container");
+    const container: HTMLElement = document.getElementById("incident_types_container")!;
 
     if (_incidentTypesTemplate == null) {
-        _incidentTypesTemplate = container.children(".incident_types:first");
+        _incidentTypesTemplate = container.getElementsByClassName("incident_types")[0];
 
         _entryTemplate = _incidentTypesTemplate!
-            // @ts-ignore JQuery
-            .find(".list-group:first")
-            .children(".list-group-item:first")
-            ;
+            .getElementsByClassName("list-group")[0]
+            .getElementsByClassName("list-group-item")[0];
     }
 
     updateIncidentTypes();
@@ -77,25 +74,24 @@ function drawAllIncidentTypes(): void {
 
 
 function updateIncidentTypes(): void {
-    // @ts-ignore JQuery
-    const incidentTypesElement = $("#incident_types");
+    const incidentTypesElement: HTMLElement = document.getElementById("incident_types")!;
 
-    const entryContainer = incidentTypesElement.find(".list-group:first");
+    const entryContainer = incidentTypesElement.getElementsByClassName("list-group")[0];
 
-    entryContainer.empty();
+    emptyNode(entryContainer);
 
     for (const incidentType of adminIncidentTypes??[]) {
-        const entryItem = _entryTemplate.clone();
+        const entryItem = _entryTemplate!.cloneNode(true) as HTMLElement;
 
         if (incidentTypesVisible.indexOf(incidentType) === -1) {
-            entryItem.addClass("item-hidden");
+            entryItem.classList.add("item-hidden");
         } else {
-            entryItem.addClass("item-visible");
+            entryItem.classList.add("item-visible");
         }
 
         const safeIncidentType = textAsHTML(incidentType);
         entryItem.append(safeIncidentType);
-        entryItem.attr("value", safeIncidentType);
+        entryItem.setAttribute("value", safeIncidentType);
 
         entryContainer.append(entryItem);
     }
@@ -118,26 +114,24 @@ function deleteIncidentType(sender: HTMLElement) {
 
 async function showIncidentType(sender: HTMLElement): Promise<void> {
     await sendIncidentTypes({"show": [
-        // @ts-ignore
-        $(sender).parent().attr("value")]});
+        sender.parentElement!.getAttribute("value")!]});
     await loadAndDrawIncidentTypes();
 }
 
 
 async function hideIncidentType(sender: HTMLElement): Promise<void> {
     await sendIncidentTypes({"hide": [
-        // @ts-ignore
-        $(sender).parent().attr("value")]});
+        sender.parentElement!.getAttribute("value")!]});
     await loadAndDrawIncidentTypes();
 }
 
-interface Edits {
+interface AdminTypesEdits {
     add?: string[];
     show?: string[];
     hide?: string[];
 }
 
-async function sendIncidentTypes(edits: Edits): Promise<{err:string|null}> {
+async function sendIncidentTypes(edits: AdminTypesEdits): Promise<{err:string|null}> {
     const {err} = await fetchJsonNoThrow(url_incidentTypes, {
         body: JSON.stringify(edits),
     });

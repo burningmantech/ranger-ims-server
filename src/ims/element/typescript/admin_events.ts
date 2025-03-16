@@ -35,12 +35,14 @@ interface Access {
     validity: Validity;
 }
 
-interface EventAccess {
-    // key is access mode ("readers", "writers", "reporters")
-    [index: string]: Access[];
-}
+const allAccessModes = ["readers", "writers", "reporters"] as const;
+type AccessMode = typeof allAccessModes[number];
+type EventAccess = {
+    [K in AccessMode]?: Access[];
+};
 
 interface EventsAccess {
+    // index is event name
     [index: string]: EventAccess | null;
 }
 
@@ -59,38 +61,30 @@ async function loadAccessControlList() : Promise<{err: string|null}> {
 }
 
 
-let _accessTemplate : HTMLCollection|null = null;
-let _eventsEntryTemplate : HTMLCollection|null = null;
-
-let accessModes: string[] = ["readers", "writers", "reporters"];
+let _accessTemplate : Element|null = null;
+let _eventsEntryTemplate : Element|null = null;
 
 function drawAccess(): void {
-    // @ts-ignore JQuery
-    const container = $("#event_access_container");
-
+    const container: HTMLElement = document.getElementById("event_access_container")!;
     if (_accessTemplate == null) {
-        _accessTemplate = container.children(".event_access:first");
-
-        _eventsEntryTemplate = _accessTemplate!
-            // @ts-ignore JQuery
-            .find(".list-group:first")
-            .children(".list-group-item:first")
-            ;
+        _accessTemplate = container.getElementsByClassName("event_access")[0];
+        _eventsEntryTemplate = _accessTemplate
+            .getElementsByClassName("list-group")[0]
+            .getElementsByClassName("list-group-item")[0]
+        ;
     }
 
-    container.empty();
+    emptyNode(container);
 
     if (accessControlList == null) {
         return;
     }
     const events: string[] = Object.keys(accessControlList);
     for (const event of events) {
-        for (const mode of accessModes) {
-            // @ts-ignore JQuery
-            const eventAccess = $(_accessTemplate).clone();
-
+        for (const mode of allAccessModes) {
+            const eventAccess = _accessTemplate.cloneNode(true) as HTMLElement;
             // Add an id to the element for future reference
-            eventAccess.attr("id", "event_access_" + event + "_" + mode);
+            eventAccess.setAttribute("id", "event_access_" + event + "_" + mode);
 
             // Add to container
             container.append(eventAccess);
@@ -101,7 +95,7 @@ function drawAccess(): void {
 }
 
 
-function updateEventAccess(event: string, mode: string): void {
+function updateEventAccess(event: string, mode: AccessMode): void {
     if (accessControlList == null) {
         return;
     }
@@ -110,24 +104,23 @@ function updateEventAccess(event: string, mode: string): void {
         return;
     }
 
-    // @ts-ignore JQuery
-    const eventAccess = $("#event_access_" + event + "_" + mode);
+    const eventAccess: HTMLElement = document.getElementById("event_access_" + event + "_" + mode)!;
 
     // Set displayed event name and mode
-    eventAccess.find(".event_name").text(event);
-    eventAccess.find(".access_mode").text(mode);
+    eventAccess.getElementsByClassName("event_name")[0].textContent = event;
+    eventAccess.getElementsByClassName("access_mode")[0].textContent = mode;
 
-    const entryContainer = eventAccess.find(".list-group:first");
+    const entryContainer = eventAccess.getElementsByClassName("list-group")[0];
 
-    entryContainer.empty();
+    emptyNode(entryContainer);
 
-    for (const accessEntry of eventACL[mode]) {
-        // @ts-ignore JQuery
-        const entryItem = _eventsEntryTemplate.clone();
+    for (const accessEntry of eventACL[mode]??[]) {
+        const entryItem = _eventsEntryTemplate!.cloneNode(true) as HTMLElement;
 
         entryItem.append(accessEntry.expression);
-        entryItem.attr("value", accessEntry.expression);
-        entryItem.find(".access_validity").val(accessEntry.validity);
+        entryItem.setAttribute("value", accessEntry.expression);
+        const validityField = entryItem.getElementsByClassName("access_validity")[0] as HTMLSelectElement;
+        validityField.value = accessEntry.validity;
 
         entryContainer.append(entryItem);
     }
@@ -147,8 +140,7 @@ async function addEvent(sender: HTMLInputElement): Promise<void> {
         window.alert(message);
         await loadAccessControlList();
         drawAccess();
-        // @ts-ignore JQuery
-        controlHasError($(sender));
+        controlHasErrorNoJQuery(sender);
         return;
     }
     await loadAccessControlList();
@@ -158,10 +150,10 @@ async function addEvent(sender: HTMLInputElement): Promise<void> {
 
 
 async function addAccess(sender: HTMLInputElement): Promise<void> {
-    // @ts-ignore JQuery
-    const container = $(sender).parents(".event_access:first");
-    const event = container.find(".event_name:first").text();
-    const mode = container.find(".access_mode:first").text();
+    // get the relevant ".event_access"
+    const container: HTMLElement = sender.parentElement!.parentElement!.parentElement!;
+    const event = container.getElementsByClassName("event_name")[0].textContent!;
+    const mode = container.getElementsByClassName("access_mode")[0].textContent as AccessMode;
     const newExpression = sender.value.trim();
 
     if (newExpression === "**") {
@@ -192,7 +184,7 @@ async function addAccess(sender: HTMLInputElement): Promise<void> {
         }
     }
 
-    const acl: Access[] = accessControlList![event]![mode].slice();
+    const acl: Access[] = accessControlList![event]![mode]!.slice();
 
     const newVal: Access = {
         "expression": newExpression,
@@ -207,12 +199,11 @@ async function addAccess(sender: HTMLInputElement): Promise<void> {
 
     const {err} = await sendACL(edits);
     await loadAccessControlList();
-    for (const mode of accessModes) {
+    for (const mode of allAccessModes) {
         updateEventAccess(event, mode);
     }
     if (err != null) {
-        // @ts-ignore JQuery
-        controlHasError($(sender));
+        controlHasErrorNoJQuery(sender);
         return;
     }
     sender.value = "";  // Clear input field
@@ -220,14 +211,13 @@ async function addAccess(sender: HTMLInputElement): Promise<void> {
 
 
 async function removeAccess(sender: HTMLButtonElement): Promise<void> {
-    // @ts-ignore JQuery
-    const container = $(sender).parents(".event_access:first");
-    const event = container.find(".event_name:first").text();
-    const mode = container.find(".access_mode:first").text();
-    // @ts-ignore JQuery
-    const expression = $(sender).parent().attr("value").trim();
+    // get the relevant ".event_access"
+    const container: HTMLElement = sender.parentElement!.parentElement!.parentElement!;
+    const event = container.getElementsByClassName("event_name")[0].textContent!;
+    const mode = container.getElementsByClassName("access_mode")[0].textContent! as AccessMode;
+    const expression = sender.parentElement!.getAttribute("value")!.trim();
 
-    const acl: Access[] = accessControlList![event]![mode].slice();
+    const acl: Access[] = accessControlList![event]![mode]!.slice();
 
     let foundIndex: number = -1;
     for (const i in acl) {
@@ -249,20 +239,19 @@ async function removeAccess(sender: HTMLButtonElement): Promise<void> {
 
     await sendACL(edits);
     await loadAccessControlList();
-    for (const mode of accessModes) {
+    for (const mode of allAccessModes) {
         updateEventAccess(event, mode);
     }
 }
 
 async function setValidity(sender: HTMLSelectElement): Promise<void> {
-    // @ts-ignore JQuery
-    const container = $(sender).parents(".event_access:first");
-    const event = container.find(".event_name:first").text();
-    const mode = container.find(".access_mode:first").text();
-    // @ts-ignore JQuery
-    const expression = $(sender).parent().attr("value").trim();
+    // get the relevant ".event_access"
+    const container: HTMLElement = sender.parentElement!.parentElement!.parentElement!;
+    const event = container.getElementsByClassName("event_name")[0].textContent!;
+    const mode = container.getElementsByClassName("access_mode")[0].textContent! as AccessMode;
+    const expression = sender.parentElement!.getAttribute("value")!.trim();
 
-    const acl: Access[] = accessControlList![event]![mode].slice();
+    const acl: Access[] = accessControlList![event]![mode]!.slice();
 
     const newVal: Access = {
         "expression": expression,
@@ -277,12 +266,11 @@ async function setValidity(sender: HTMLSelectElement): Promise<void> {
 
     const {err} = await sendACL(edits);
     await loadAccessControlList();
-    for (const mode of accessModes) {
+    for (const mode of allAccessModes) {
         updateEventAccess(event, mode);
     }
     if (err != null) {
-        // @ts-ignore JQuery
-        controlHasError($(sender));
+        controlHasErrorNoJQuery(sender);
         return;
     }
     sender.value = "";  // Clear input field
