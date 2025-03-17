@@ -114,6 +114,16 @@ interface DataTablesTable {
     processing(b: boolean): unknown;
 }
 
+// This is a minimal declaration of pieces of Bootstrap code on which we depend.
+// See this repo for the full declaration:
+// https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bootstrap
+declare namespace bootstrap {
+    class Modal {
+        constructor(element: string | Element, options?: any);
+        toggle(relatedTarget?: HTMLElement): void;
+    }
+}
+
 //
 // Apply the HTML theme, light or dark or default.
 //

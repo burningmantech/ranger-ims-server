@@ -42,6 +42,7 @@ async function initFieldReportPage() {
             await loadAndDisplayFieldReport();
         }
     };
+    const helpModal = new bootstrap.Modal(document.getElementById("helpModal"));
     // Keyboard shortcuts
     document.addEventListener("keydown", function (e) {
         // No shortcuts when an input field is active
@@ -54,8 +55,7 @@ async function initFieldReportPage() {
         }
         // ? --> show help modal
         if (e.key === "?") {
-            // @ts-ignore JQuery
-            $("#helpModal").modal("toggle");
+            helpModal.toggle();
         }
         // a --> jump to add a new report entry
         if (e.key === "a") {
@@ -75,8 +75,7 @@ async function initFieldReportPage() {
     });
     document.getElementById("helpModal").addEventListener("keydown", function (e) {
         if (e.key === "?") {
-            // @ts-ignore JQuery
-            $("#helpModal").modal("toggle");
+            helpModal.toggle();
         }
     });
     document.getElementById("report_entry_add").addEventListener("keydown", function (e) {

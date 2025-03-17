@@ -82,6 +82,8 @@ async function initIncidentPage(): Promise<void> {
         }
     };
 
+    const helpModal = new bootstrap.Modal(document.getElementById("helpModal")!);
+
     // Keyboard shortcuts
     document.addEventListener("keydown", function(e: KeyboardEvent): void {
         // No shortcuts when an input field is active
@@ -94,8 +96,7 @@ async function initIncidentPage(): Promise<void> {
         }
         // ? --> show help modal
         if (e.key === "?") {
-            // @ts-ignore JQuery
-            $("#helpModal").modal("toggle");
+            helpModal.toggle();
         }
         // a --> jump to add a new report entry
         if (e.key === "a") {
@@ -115,8 +116,7 @@ async function initIncidentPage(): Promise<void> {
     });
     (document.getElementById("helpModal") as HTMLDivElement).addEventListener("keydown", function(e: KeyboardEvent): void {
         if (e.key === "?") {
-            // @ts-ignore JQuery
-            $("#helpModal").modal("toggle");
+            helpModal.toggle();
         }
     });
     document.getElementById("report_entry_add")!.addEventListener("keydown", function (e: KeyboardEvent): void {
