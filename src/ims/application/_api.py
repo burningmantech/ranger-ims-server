@@ -1351,7 +1351,9 @@ class APIApplication:
             for event in await store.events():
                 try:
                     await self.config.authProvider.authorizeRequest(
-                        request, event.id, Authorization.readIncidents
+                        request,
+                        event.id,
+                        Authorization.readIncidents | Authorization.imsAdmin,
                     )
                 except NotAuthorizedError:
                     pass
