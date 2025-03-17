@@ -496,7 +496,7 @@ class ConfigurationTests(TestCase):
         self.assertEqual(config.dataRoot, dataRoot)
         self.assertEqual(config.cachedResourcesRoot, cached)
 
-        directory = cast(FileDirectory, config.directory)
+        directory = cast("FileDirectory", config.directory)
 
         self.assertIsInstance(directory, FileDirectory)
         self.assertEqual(
@@ -637,7 +637,7 @@ class ConfigurationTests(TestCase):
             config = Configuration.fromConfigFile(None)
 
         self.assertIsInstance(config.store, SQLiteDataStore)
-        self.assertEqual(cast(SQLiteDataStore, config.store).dbPath, path)
+        self.assertEqual(cast("SQLiteDataStore", config.store).dbPath, path)
 
     def test_store_mysql(self) -> None:
         hostName = "db_host"
@@ -658,7 +658,7 @@ class ConfigurationTests(TestCase):
         ):
             config = Configuration.fromConfigFile(None)
 
-        store = cast(MySQLDataStore, config.store)
+        store = cast("MySQLDataStore", config.store)
 
         self.assertIsInstance(store, MySQLDataStore)
         self.assertEqual(store.hostName, hostName)
@@ -689,7 +689,7 @@ class ConfigurationTests(TestCase):
         ):
             config = Configuration.fromConfigFile(None)
 
-        directory = cast(FileDirectory, config.directory)
+        directory = cast("FileDirectory", config.directory)
 
         self.assertIsInstance(directory, FileDirectory)
         self.assertEqual(directory.path, path)
@@ -711,7 +711,7 @@ class ConfigurationTests(TestCase):
         ):
             config = Configuration.fromConfigFile(None)
 
-        directory = cast(DMSDirectory, config.directory)
+        directory = cast("DMSDirectory", config.directory)
 
         self.assertIsInstance(directory, DMSDirectory)
         self.assertEqual(directory._dms.host, hostName)

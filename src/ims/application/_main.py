@@ -175,7 +175,7 @@ class MainApplication:
         """
         External application resource.
         """
-        return cast(IResource, self.externalApplication.router.resource())
+        return cast("IResource", self.externalApplication.router.resource())
 
     @router.route(URLs.app, branch=True)
     def webApplicationEndpoint(self, request: IRequest) -> KleinRenderable:

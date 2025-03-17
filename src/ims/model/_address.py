@@ -99,7 +99,9 @@ class RodGarettAddress(Address, ComparisonMixIn, ReplaceMixIn):
             return self._allNone()
 
         if other.__class__ is TextOnlyAddress and self._allNone():
-            method = cast(Callable[[str], bool], getattr(self.description, methodName))
+            method = cast(
+                "Callable[[str], bool]", getattr(self.description, methodName)
+            )
             return method(other.description)
 
         return ComparisonMixIn._cmp(self, other, methodName)

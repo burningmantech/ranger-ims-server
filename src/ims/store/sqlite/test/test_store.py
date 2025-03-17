@@ -52,7 +52,7 @@ class DataStoreTests(SuperDataStoreTests):
     async def store(self) -> TestDataStoreABC:
         store = TestDataStore(dbPath=Path(self.mktemp()))
         await store.upgradeSchema()
-        return cast(TestDataStoreABC, store)
+        return cast("TestDataStoreABC", store)
 
 
 class DataStoreEventTests(DataStoreTests, SuperDataStoreEventTests):

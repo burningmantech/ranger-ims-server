@@ -81,7 +81,7 @@ class Command:
     def stop(cls) -> None:
         from twisted.internet import reactor
 
-        cast(IReactorCore, reactor).stop()
+        cast("IReactorCore", reactor).stop()
 
     @classmethod
     async def initStore(cls, store: IMSDataStore) -> None:
@@ -111,7 +111,7 @@ class Command:
 
         from twisted.internet import reactor
 
-        cast(IReactorTCP, reactor).listenTCP(port, factory, interface=host)
+        cast("IReactorTCP", reactor).listenTCP(port, factory, interface=host)
 
     @classmethod
     async def runExport(cls, config: Configuration, options: ExportOptions) -> None:
@@ -316,7 +316,7 @@ class Command:
         from twisted.internet import reactor
 
         runner = Runner(
-            reactor=cast(IReactorCore, reactor),
+            reactor=cast("IReactorCore", reactor),
             defaultLogLevel=options.get("logLevel", options.defaultLogLevel),
             logFile=options.get("logFile", stdout),
             fileLogObserverFactory=options["fileLogObserverFactory"],

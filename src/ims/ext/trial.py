@@ -53,7 +53,7 @@ class TestCase(SuperTestCase):
 
     def _headerValues(self, request: IRequest, name: str) -> Sequence[str]:
         return cast(
-            Sequence[str],
+            "Sequence[str]",
             request.responseHeaders.getRawHeaders(name, default=[]),
         )
 
@@ -106,7 +106,7 @@ class TestCase(SuperTestCase):
         # FIXME: Check encoding, default to UTF-8
 
         data = request.getWrittenData()  # type: ignore[attr-defined]
-        return cast(bytes, data).decode()
+        return cast("bytes", data).decode()
 
     def assertJSONResponse(self, request: IRequest, status: int = http.OK) -> str:
         """
@@ -118,7 +118,7 @@ class TestCase(SuperTestCase):
         # FIXME: Check encoding, default to UTF-8
 
         data = request.getWrittenData()  # type: ignore[attr-defined]
-        return cast(bytes, data).decode()
+        return cast("bytes", data).decode()
 
     def assertEventDataEqual(
         self, eventDataA: EventData, eventDataB: EventData

@@ -71,15 +71,15 @@ def enumOrdering(enumClass: EnumMeta) -> EnumMeta:
 
         return compare(self, other, lessThan=False)
 
-    enumClass.__eq__ = cast(Comparator, equal)  # type: ignore[assignment]
-    enumClass.__ne__ = cast(Comparator, notEqual)  # type: ignore[assignment]
-    enumClass.__lt__ = cast(Comparator, lessThan)  # type: ignore[operator]
+    enumClass.__eq__ = cast("Comparator", equal)  # type: ignore[assignment]
+    enumClass.__ne__ = cast("Comparator", notEqual)  # type: ignore[assignment]
+    enumClass.__lt__ = cast("Comparator", lessThan)  # type: ignore[operator]
     enumClass.__le__ = cast(  # type: ignore[operator]
-        Comparator, lessThanOrEqual
+        "Comparator", lessThanOrEqual
     )
-    enumClass.__gt__ = cast(Comparator, greaterThan)  # type: ignore[operator]
+    enumClass.__gt__ = cast("Comparator", greaterThan)  # type: ignore[operator]
     enumClass.__ge__ = cast(  # type: ignore[operator]
-        Comparator, greaterThanOrEqual
+        "Comparator", greaterThanOrEqual
     )
 
     return enumClass

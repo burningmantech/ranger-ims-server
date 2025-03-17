@@ -77,7 +77,7 @@ def deserializeFieldReport(obj: dict[str, Any], cl: type[FieldReport]) -> FieldR
     assert cl is FieldReport, (cl, obj)
 
     return cast(
-        FieldReport,
+        "FieldReport",
         deserialize(
             obj,
             FieldReport,

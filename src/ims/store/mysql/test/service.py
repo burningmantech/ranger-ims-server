@@ -165,7 +165,7 @@ class MySQLService(ABC):
 
         def sleep(interval: float) -> Deferred[None]:
             d: Deferred[None] = Deferred()
-            cast(IReactorTime, reactor).callLater(interval, lambda: d.callback(None))
+            cast("IReactorTime", reactor).callLater(interval, lambda: d.callback(None))
             return d
 
         error = None
@@ -333,7 +333,7 @@ class DockerizedMySQLService(MySQLService):
                             d.callback(None)
                             return
 
-                cast(IReactorTime, reactor).callLater(
+                cast("IReactorTime", reactor).callLater(
                     interval, waitOnDBStartup, elapsed=(elapsed + interval)
                 )
             except Exception:  # noqa: BLE001

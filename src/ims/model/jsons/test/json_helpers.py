@@ -96,9 +96,9 @@ def jsonFromEvent(event: Event) -> dict[str, str]:
 
 def jsonFromEventAccess(eventAccess: EventAccess) -> dict[str, list[str]]:
     return {
-        "readers": cast(list[str], jsonSerialize(eventAccess.readers)),
-        "writers": cast(list[str], jsonSerialize(eventAccess.writers)),
-        "reporters": cast(list[str], jsonSerialize(eventAccess.reporters)),
+        "readers": cast("list[str]", jsonSerialize(eventAccess.readers)),
+        "writers": cast("list[str]", jsonSerialize(eventAccess.writers)),
+        "reporters": cast("list[str]", jsonSerialize(eventAccess.reporters)),
     }
 
 

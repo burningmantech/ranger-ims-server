@@ -40,7 +40,7 @@ class AccessValidityJSONValue(Enum):
 
 def serializeAccessValidity(accessValidity: AccessValidity) -> str:
     constant = cast(
-        AccessValidityJSONValue,
+        "AccessValidityJSONValue",
         getattr(AccessValidityJSONValue, accessValidity.name),
     )
     return constant.value
@@ -53,7 +53,7 @@ def deserializeAccessValidity(obj: str, cl: type[AccessValidity]) -> AccessValid
     assert cl is AccessValidity, (cl, obj)
 
     return cast(
-        AccessValidity, getattr(AccessValidity, AccessValidityJSONValue(obj).name)
+        "AccessValidity", getattr(AccessValidity, AccessValidityJSONValue(obj).name)
     )
 
 

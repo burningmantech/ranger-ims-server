@@ -77,7 +77,7 @@ class DutyManagementSystemTests(TestCase):
         L{DutyManagementSystem.dbpool} returns a DB pool.
         """
         dms = self.dms()
-        dbpool = cast(DummyConnectionPool, dms.dbpool)
+        dbpool = cast("DummyConnectionPool", dms.dbpool)
 
         self.assertIsInstance(dbpool, DummyConnectionPool)
 

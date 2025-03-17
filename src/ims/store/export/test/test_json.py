@@ -187,7 +187,7 @@ class JSONImporterTests(TestCase):
 
     @given(imsDatas())
     def test_fromJSON(self, imsDataIn: IMSData) -> None:
-        json = cast(Mapping[str, Any], jsonObjectFromModelObject(imsDataIn))
+        json = cast("Mapping[str, Any]", jsonObjectFromModelObject(imsDataIn))
         importer = JSONImporter.fromJSON(store=self.store(), json=json)
 
         self.assertIMSDataEqual(importer.imsData, imsDataIn)

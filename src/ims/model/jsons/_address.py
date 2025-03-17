@@ -63,7 +63,7 @@ class AddressJSONType(Enum):
     """
 
     addressType = str
-    description = cast(type[Any], str | None)
+    description = cast("type[Any]", str | None)
 
 
 @unique
@@ -151,7 +151,7 @@ def deserializeTextOnlyAddress(
     assert cl is TextOnlyAddress, (cl, obj)
 
     return cast(
-        TextOnlyAddress,
+        "TextOnlyAddress",
         deserialize(
             obj,
             TextOnlyAddress,
@@ -170,7 +170,7 @@ def deserializeRodGarettAddress(
     assert cl is RodGarettAddress, (cl, obj)
 
     return cast(
-        RodGarettAddress,
+        "RodGarettAddress",
         deserialize(
             obj,
             RodGarettAddress,

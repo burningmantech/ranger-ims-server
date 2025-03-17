@@ -43,7 +43,7 @@ class ComparisonMixIn(ABC):
         if other.__class__ is self.__class__:
             selfValue = self._cmpValue()
             otherValue = other._cmpValue()
-            selfValueCmp = cast(Callable[[Any], bool], getattr(selfValue, methodName))
+            selfValueCmp = cast("Callable[[Any], bool]", getattr(selfValue, methodName))
             return selfValueCmp(otherValue)
 
         return NotImplemented

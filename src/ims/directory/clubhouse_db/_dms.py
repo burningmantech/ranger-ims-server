@@ -121,7 +121,7 @@ class DutyManagementSystem:
             ):
                 from .test.dummy import DummyConnectionPool
 
-                dbpool = cast(adbapi.ConnectionPool, DummyConnectionPool("Dummy"))
+                dbpool = cast("adbapi.ConnectionPool", DummyConnectionPool("Dummy"))
 
             else:
                 dbpool = adbapi.ConnectionPool(
@@ -203,7 +203,7 @@ class DutyManagementSystem:
         )
 
         return cast(
-            Iterable[tuple[str, str]],
+            "Iterable[tuple[str, str]]",
             await self.dbpool.runQuery(
                 """
                 select person_id, position_id from person_position
@@ -217,7 +217,7 @@ class DutyManagementSystem:
         )
 
         return cast(
-            Iterable[tuple[str, str]],
+            "Iterable[tuple[str, str]]",
             await self.dbpool.runQuery(
                 """
                 select person_id, team_id from person_team

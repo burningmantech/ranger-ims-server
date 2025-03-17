@@ -34,7 +34,7 @@ __all__ = ()
 @composite
 def timezones(draw: Callable[..., Any]) -> TimeZone:
     offset = cast(
-        int, draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
+        "int", draw(integers(min_value=-(60 * 24) + 1, max_value=(60 * 24) - 1))
     )
     timeDelta = TimeDelta(minutes=offset)
     return TimeZone(offset=timeDelta, name=f"{offset}s")
@@ -42,7 +42,7 @@ def timezones(draw: Callable[..., Any]) -> TimeZone:
 
 @composite
 def datetimes(draw: Callable[..., Any]) -> DateTime:
-    return cast(DateTime, draw(_datetimes(timezones=timezones())))
+    return cast("DateTime", draw(_datetimes(timezones=timezones())))
 
 
 class JSONEncodingTests(TestCase):
@@ -195,7 +195,7 @@ class DateTimeTests(TestCase):
         :return: An RFC 3339 formatted date-time string corresponding to
             :obj:`datetime`.
         """
-        timeZone = cast(TimeZone, dateTime.tzinfo)
+        timeZone = cast("TimeZone", dateTime.tzinfo)
         assert timeZone is not None
 
         offset = timeZone.utcoffset(dateTime)

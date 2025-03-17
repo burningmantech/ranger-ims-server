@@ -135,7 +135,7 @@ class RangerDirectory(IMSDirectory):
         for position in self._positions:
             for handle in position.members:
                 cast(
-                    list[Position],
+                    "list[Position]",
                     self._positionsByHandle.setdefault(handle, []),
                 ).append(position)
 

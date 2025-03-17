@@ -177,7 +177,7 @@ class IMSOptions(Options):
         """
         Location of configuration file.
         """
-        cast(MutableMapping[str, Any], self)["configFile"] = Path(path)
+        cast("MutableMapping[str, Any]", self)["configFile"] = Path(path)
 
     def opt_log_level(self, levelName: str) -> None:
         """
@@ -189,7 +189,7 @@ class IMSOptions(Options):
         except InvalidLogLevelError as e:
             raise UsageError(f"Invalid log level: {levelName}") from e
 
-    opt_log_level.__doc__ = dedent(cast(str, opt_log_level.__doc__)).format(
+    opt_log_level.__doc__ = dedent(cast("str", opt_log_level.__doc__)).format(
         options=", ".join(f'"{level.name}"' for level in LogLevel.iterconstants()),
         default=defaultLogLevel.name,
     )
@@ -220,7 +220,7 @@ class IMSOptions(Options):
 
         self["logFormat"] = logFormat
 
-    opt_log_format.__doc__ = dedent(cast(str, opt_log_format.__doc__))
+    opt_log_format.__doc__ = dedent(cast("str", opt_log_format.__doc__))
 
     def opt_option(self, arg: str) -> None:
         """
@@ -245,7 +245,7 @@ class IMSOptions(Options):
     def initConfig(self) -> None:
         try:
             configFile = cast(
-                Path | None, cast(Mapping[str, Any], self).get("configFile")
+                "Path | None", cast("Mapping[str, Any]", self).get("configFile")
             )
 
             if configFile and not configFile.is_file():
@@ -254,7 +254,7 @@ class IMSOptions(Options):
 
             configuration = Configuration.fromConfigFile(configFile)
 
-            options = cast(MutableMapping[str, Any], self)
+            options = cast("MutableMapping[str, Any]", self)
 
             if "overrides" in options:
                 for _override in options["overrides"]:
