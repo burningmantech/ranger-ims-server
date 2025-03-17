@@ -40,7 +40,7 @@ async function initIncidentPage() {
         }
     });
     // Fire-and-forget this promise, since it tries forever to acquire a lock
-    let ignoredPromise = requestEventSourceLock();
+    const ignoredPromise = requestEventSourceLock();
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e) {
         const number = e.data.incident_number;
@@ -678,8 +678,6 @@ async function sendEdits(edits) {
 }
 registerSendEdits = sendEdits;
 async function editState() {
-    // @ts-ignore JQuery
-    // const $state = $("#incident_state");
     const state = document.getElementById("incident_state");
     if (state.value === "closed" && (incident.incident_types ?? []).length === 0) {
         window.alert("Closing out this incident?\n" +
@@ -703,7 +701,7 @@ function transformAddressInteger(value) {
     if (!value) {
         return null;
     }
-    return parseInt(value);
+    return parseInt(value).toString();
 }
 async function editLocationAddressRadialHour() {
     const hourInput = document.getElementById("incident_location_address_radial_hour");
@@ -815,7 +813,7 @@ async function detachFieldReport(sender) {
     const frNumber = parent.getAttribute("fr-number");
     const url = (urlReplace(url_fieldReports) + frNumber +
         "?action=detach;incident=" + incidentNumber);
-    let { err } = await fetchJsonNoThrow(url, {
+    const { err } = await fetchJsonNoThrow(url, {
         body: JSON.stringify({}),
     });
     if (err != null) {
@@ -841,7 +839,7 @@ async function attachFieldReport() {
     const fieldReportNumber = select.value;
     const url = (urlReplace(url_fieldReports) + fieldReportNumber +
         "?action=attach;incident=" + incidentNumber);
-    let { err } = await fetchJsonNoThrow(url, {
+    const { err } = await fetchJsonNoThrow(url, {
         body: JSON.stringify({}),
     });
     if (err != null) {

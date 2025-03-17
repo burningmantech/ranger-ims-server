@@ -37,19 +37,13 @@ interface Access {
 
 const allAccessModes = ["readers", "writers", "reporters"] as const;
 type AccessMode = typeof allAccessModes[number];
-type EventAccess = {
-    [K in AccessMode]?: Access[];
-};
-
-interface EventsAccess {
-    // index is event name
-    [index: string]: EventAccess | null;
-}
+type EventAccess = Partial<Record<AccessMode, Access[]>>;
+type EventsAccess = Record<string, EventAccess|null>;
 
 let accessControlList: EventsAccess|null = null;
 
 async function loadAccessControlList() : Promise<{err: string|null}> {
-    let {json, err} = await fetchJsonNoThrow(url_acl, null);
+    const {json, err} = await fetchJsonNoThrow(url_acl, null);
     if (err != null) {
         const message = `Failed to load access control list: ${err}`;
         console.error(message);

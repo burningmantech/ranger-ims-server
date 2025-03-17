@@ -68,7 +68,7 @@ function initFieldReportsTable() {
         enableEditing();
     }
     // Fire-and-forget this promise, since it tries forever to acquire a lock
-    let ignoredPromise = requestEventSourceLock();
+    const ignoredPromise = requestEventSourceLock();
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = function (e) {
         if (e.data.update_all) {
@@ -101,9 +101,9 @@ function frInitDataTables() {
     function dataHandler(fieldReports) {
         return fieldReports;
     }
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     $.fn.dataTable.ext.errMode = "none";
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     fieldReportsTable = $("#field_reports_table").DataTable({
         "deferRender": true,
         "paging": true,
@@ -201,11 +201,11 @@ function frInitDataTables() {
 //
 function frInitTableButtons() {
     // Relocate button container
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     $("#field_reports_table_wrapper")
         .children(".row")
         .children(".col-sm-6:first")
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         .replaceWith($("#button_container"));
     const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
     const fragmentParams = new URLSearchParams(fragment);
@@ -220,11 +220,11 @@ const _frSearchDelayMs = 250;
 let _frSearchDelayTimer = undefined;
 function frInitSearchField() {
     // Relocate search container
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     $("#field_reports_table_wrapper")
         .children(".row")
         .children(".col-sm-6:last")
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         .replaceWith($("#search_container"));
     // Search field handling
     const searchInput = document.getElementById("search_input");
@@ -288,7 +288,7 @@ function frInitSearch() {
         }
         return false;
     }
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     $.fn.dataTable.ext.search.push(function (settings, rowData, rowIndex) {
         const fieldReport = fieldReportsTable.data()[rowIndex];
         if (_frShowModifiedAfter != null &&
@@ -307,9 +307,9 @@ const frDefaultDaysBack = "all";
 function frShowDays(daysBackToShow, replaceState) {
     const id = daysBackToShow.toString();
     _frShowDaysBack = daysBackToShow;
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const menu = $("#show_days");
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const item = $("#show_days_" + id);
     // Get title from selected item
     const selection = item.children(".name").html();
@@ -339,9 +339,9 @@ const frDefaultRows = 25;
 function frShowRows(rowsToShow, replaceState) {
     const id = rowsToShow.toString();
     _frShowRows = rowsToShow;
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const menu = $("#show_rows");
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const item = $("#show_rows_" + id);
     // Get title from selected item
     const selection = item.children(".name").html();

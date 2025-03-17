@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-declare var allIncidentTypes: string[];
+declare let allIncidentTypes: string[];
 
 //
 // Initialize UI
@@ -114,7 +114,7 @@ function initIncidentsTable() {
     }
 
     // Fire-and-forget this promise, since it tries forever to acquire a lock
-    let ignoredPromise = requestEventSourceLock();
+    const ignoredPromise = requestEventSourceLock();
 
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e: MessageEvent): Promise<void> {
@@ -142,11 +142,11 @@ function initIncidentsTable() {
         // we no longer reload all incidents here on any single incident update.
         let done = false;
         incidentsTable!.rows().every( function () {
-            // @ts-ignore use of "this" for DataTables
+            // @ts-expect-error use of "this" for DataTables
             const existingIncident = this.data();
             if (existingIncident.number === number) {
                 console.log("Updating Incident " + number);
-                // @ts-ignore use of "this" for DataTables
+                // @ts-expect-error use of "this" for DataTables
                 this.data(json);
                 done = true;
             }
@@ -171,9 +171,9 @@ function initDataTables(): void {
         return incidents;
     }
 
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     $.fn.dataTable.ext.errMode = "none";
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     incidentsTable = $("#queue_table").DataTable({
         "deferRender": true,
         "paging": true,
@@ -315,26 +315,26 @@ function initDataTables(): void {
 function initTableButtons(): void {
     // Relocate button container
 
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     $("#queue_table_wrapper")
         .children(".row")
         .children(".col-sm-6:first")
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         .replaceWith($("#button_container"));
 
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     $(document).on('click', '.dropdown-item-checkable', function(event) {
         event.preventDefault();
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         $(this).toggleClass('dropdown-item-checked');
         showCheckedTypes(true);
     });
 
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const $typeFilter = $("#ul_show_type");
     for (const i in allIncidentTypes) {
         const type = allIncidentTypes[i];
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         const $a = $("<a>", {
             class: "dropdown-item dropdown-item-checkable dropdown-item-checked",
             href:"#",
@@ -381,11 +381,11 @@ let _searchDelayTimer: number|undefined = undefined;
 function initSearchField() {
     // Relocate search container
 
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     $("#queue_table_wrapper")
         .children(".row")
         .children(".col-sm-6:last")
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         .replaceWith($("#search_container"));
 
     // Search field handling
@@ -452,7 +452,7 @@ function initSearchField() {
 
 function initSearch(): void {
 
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     $.fn.dataTable.ext.search.push(
         function(settings: any, rowData: any, rowIndex: number) {
             const incident: Incident = incidentsTable!.data()[rowIndex];
@@ -509,9 +509,9 @@ let _showState: string|null = null;
 const defaultState = "open";
 
 function showState(stateToShow: string, replaceState: boolean) {
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const menu = $("#show_state");
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const item = $("#show_state_" + stateToShow);
 
     // Get title from selected item
@@ -542,9 +542,9 @@ function showDays(daysBackToShow: number|string, replaceState: boolean): void {
     const id = daysBackToShow.toString();
     _showDaysBack = daysBackToShow;
 
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const menu = $("#show_days");
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const item = $("#show_days_" + id);
 
     // Get title from selected item
@@ -584,7 +584,7 @@ const _blankPlaceholder = "(blank)";
 const _otherPlaceholder = "(other)";
 
 function setCheckedTypes(types: string[], includeBlanks: boolean, includeOthers: boolean): void {
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     for (const $type of $('#ul_show_type > a')) {
         if (types.includes($type.innerHTML) ||
             (includeBlanks && $type.id === "show_blank_type") ||
@@ -608,7 +608,7 @@ function toggleCheckAllTypes(): void {
 
 function readCheckedTypes(): void {
     _showTypes = [];
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     for (const $type of $('#ul_show_type > a')) {
         if ($type.id === "show_blank_type") {
             _showBlankType = $type.classList.contains("dropdown-item-checked");
@@ -649,9 +649,9 @@ function showRows(rowsToShow: number|string, replaceState: boolean): void {
     const id = rowsToShow.toString();
     _showRows = rowsToShow;
 
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const menu = $("#show_rows");
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const item = $("#show_rows_" + id);
 
     // Get title from selected item

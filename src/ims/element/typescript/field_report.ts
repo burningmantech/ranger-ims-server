@@ -37,7 +37,7 @@ async function initFieldReportPage(): Promise<void> {
     });
 
     // Fire-and-forget this promise, since it tries forever to acquire a lock
-    let ignoredPromise = requestEventSourceLock();
+    const ignoredPromise = requestEventSourceLock();
 
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = async function (e: MessageEvent): Promise<void> {
@@ -264,7 +264,7 @@ async function frSendEdits(edits: FieldReport): Promise<{err:string|null}> {
         // We need to find out the created field report number so that
         // future edits don't keep creating new resources.
 
-        let newNumber: string|null = resp?.headers.get("X-IMS-Field-Report-Number")??null;
+        const newNumber: string|null = resp?.headers.get("X-IMS-Field-Report-Number")??null;
         // Check that we got a value back
         if (newNumber == null) {
             return {err: "No X-IMS-Field-Report-Number header provided."};
@@ -314,7 +314,7 @@ async function makeIncident(): Promise<void> {
     if (fieldReport.report_entries) {
         authors.push(fieldReport.report_entries[0].author??"null");
     }
-    let {resp, err} = await fetchJsonNoThrow(incidentsURL, {
+    const {resp, err} = await fetchJsonNoThrow(incidentsURL, {
         body:JSON.stringify({
             "summary": fieldReport.summary,
             "ranger_handles": authors,

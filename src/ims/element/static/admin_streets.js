@@ -25,7 +25,7 @@ async function initAdminStreetsPage() {
 }
 let streets = {};
 async function loadStreets() {
-    let { json, err } = await fetchJsonNoThrow(url_streets, null);
+    const { json, err } = await fetchJsonNoThrow(url_streets, null);
     if (err != null) {
         const message = `Failed to load streets: ${err}`;
         console.error(message);
@@ -80,7 +80,7 @@ function removeStreet(sender) {
     alert("Remove unimplemented");
 }
 async function sendStreets(edits) {
-    let { err } = await fetchJsonNoThrow(url_streets, edits);
+    const { err } = await fetchJsonNoThrow(url_streets, edits);
     if (err != null) {
         const message = `Failed to edit streets:\n${err}`;
         console.log(message);
