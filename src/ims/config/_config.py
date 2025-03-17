@@ -314,7 +314,7 @@ class Configuration:
         cls._log.info("LogLevel: {logLevel}", logLevel=logLevelName)
 
         logFormat = cast(
-            LogFormat,
+            "LogFormat",
             parser.enumFromConfig("LOG_FORMAT", "Core", "LogFormat", LogFormat.text),
         )
         cls._log.info("LogFormat: {logFormat}", logFormat=logFormat)

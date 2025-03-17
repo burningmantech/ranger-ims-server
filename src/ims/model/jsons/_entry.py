@@ -82,7 +82,7 @@ def deserializeReportEntry(obj: dict[str, Any], cl: type[ReportEntry]) -> Report
     assert cl is ReportEntry, (cl, obj)
 
     return cast(
-        ReportEntry,
+        "ReportEntry",
         deserialize(obj, ReportEntry, ReportEntryJSONType, ReportEntryJSONKey),
     )
 

@@ -359,7 +359,7 @@ class DatabaseStore(IMSDataStore):
         See :meth:`IMSDataStore.events`.
         """
         return (
-            Event(id=cast(str, row["NAME"]))
+            Event(id=cast("str", row["NAME"]))
             for row in await self.runQuery(self.query.events)
         )
 
@@ -386,7 +386,7 @@ class DatabaseStore(IMSDataStore):
     async def _eventAccess(self, eventID: str, mode: str) -> Iterable[AccessEntry]:
         return (
             AccessEntry(
-                expression=cast(str, row["EXPRESSION"]),
+                expression=cast("str", row["EXPRESSION"]),
                 validity=self.fromAccessValidityValue(row["VALIDITY"]),
             )
             for row in await self.runQuery(
@@ -490,7 +490,7 @@ class DatabaseStore(IMSDataStore):
         else:
             query = self.query.incidentTypesNotHidden
 
-        return (cast(str, row["NAME"]) for row in await self.runQuery(query))
+        return (cast("str", row["NAME"]) for row in await self.runQuery(query))
 
     async def createIncidentType(
         self, incidentType: str, *, hidden: bool = False
@@ -559,7 +559,7 @@ class DatabaseStore(IMSDataStore):
         """
         return MappingProxyType(
             {
-                cast(str, row["ID"]): cast(str, row["NAME"])
+                cast("str", row["ID"]): cast("str", row["NAME"])
                 for row in await self.runQuery(
                     self.query.concentricStreets, {"eventID": eventID}
                 )
@@ -598,11 +598,11 @@ class DatabaseStore(IMSDataStore):
             txn.execute(self.query.detachedReportEntries.text)
             return tuple(
                 ReportEntry(
-                    id=cast(int, row["ID"]),
+                    id=cast("int", row["ID"]),
                     created=self.fromDateTimeValue(row["CREATED"]),
-                    author=cast(str, row["AUTHOR"]),
+                    author=cast("str", row["AUTHOR"]),
                     automatic=bool(row["GENERATED"]),
-                    text=cast(str, row["TEXT"]),
+                    text=cast("str", row["TEXT"]),
                     stricken=bool(row["STRICKEN"]),
                 )
                 for row in txn.fetchall()
@@ -635,16 +635,16 @@ class DatabaseStore(IMSDataStore):
         txn.execute(self.query.incidents_reportEntries.text, parameters)
         for row in txn.fetchall():
             if row["TEXT"]:
-                incidentNumber = cast(int, row["INCIDENT_NUMBER"])
+                incidentNumber = cast("int", row["INCIDENT_NUMBER"])
                 reportEntries[incidentNumber].append(
                     ReportEntry(
-                        id=cast(int, row["ID"]),
+                        id=cast("int", row["ID"]),
                         created=self.fromDateTimeValue(row["CREATED"]),
-                        author=cast(str, row["AUTHOR"]),
+                        author=cast("str", row["AUTHOR"]),
                         automatic=bool(row["GENERATED"]),
-                        text=cast(str, row["TEXT"]),
+                        text=cast("str", row["TEXT"]),
                         stricken=bool(row["STRICKEN"]),
-                        attachedFile=cast(str, row["ATTACHED_FILE"]),
+                        attachedFile=cast("str", row["ATTACHED_FILE"]),
                     )
                 )
 
@@ -668,7 +668,7 @@ class DatabaseStore(IMSDataStore):
                 fieldReportNumbers = [
                     int(val) for val in loads(str(row["FIELD_REPORT_NUMBERS"]))
                 ]
-            incidentNumber = cast(int, row["NUMBER"])
+            incidentNumber = cast("int", row["NUMBER"])
 
             lastModified = self.fromDateTimeValue(row["CREATED"])
             if reportEntries[incidentNumber]:
@@ -682,24 +682,24 @@ class DatabaseStore(IMSDataStore):
                     lastModified=lastModified,
                     state=self.fromIncidentStateValue(row["STATE"]),
                     priority=self.fromPriorityValue(row["PRIORITY"]),
-                    summary=cast(str | None, row["SUMMARY"]),
+                    summary=cast("str | None", row["SUMMARY"]),
                     location=Location(
-                        name=cast(str, row["LOCATION_NAME"]),
+                        name=cast("str", row["LOCATION_NAME"]),
                         address=RodGarettAddress(
                             concentric=concentric,
-                            radialHour=cast(int | None, row["LOCATION_RADIAL_HOUR"]),
+                            radialHour=cast("int | None", row["LOCATION_RADIAL_HOUR"]),
                             radialMinute=cast(
-                                int | None, row["LOCATION_RADIAL_MINUTE"]
+                                "int | None", row["LOCATION_RADIAL_MINUTE"]
                             ),
-                            description=cast(str | None, row["LOCATION_DESCRIPTION"]),
+                            description=cast("str | None", row["LOCATION_DESCRIPTION"]),
                         ),
                     ),
-                    rangerHandles=cast(Iterable[str], rangerHandles),
-                    incidentTypes=cast(Iterable[str], incidentTypes),
+                    rangerHandles=cast("Iterable[str]", rangerHandles),
+                    incidentTypes=cast("Iterable[str]", incidentTypes),
                     reportEntries=cast(
-                        Iterable[ReportEntry], reportEntries[incidentNumber]
+                        "Iterable[ReportEntry]", reportEntries[incidentNumber]
                     ),
-                    fieldReportNumbers=cast(Iterable[int], fieldReportNumbers),
+                    fieldReportNumbers=cast("Iterable[int]", fieldReportNumbers),
                 )
             )
         return results
@@ -724,22 +724,22 @@ class DatabaseStore(IMSDataStore):
             notFound()
 
         txn.execute(self.query.incident_rangers.text, parameters)
-        rangerHandles = (cast(str, row["RANGER_HANDLE"]) for row in txn.fetchall())
+        rangerHandles = (cast("str", row["RANGER_HANDLE"]) for row in txn.fetchall())
 
         txn.execute(self.query.incident_incidentTypes.text, parameters)
-        incidentTypes = (cast(str, row["NAME"]) for row in txn.fetchall())
+        incidentTypes = (cast("str", row["NAME"]) for row in txn.fetchall())
 
         txn.execute(self.query.incident_reportEntries.text, parameters)
 
         reportEntries = tuple(
             ReportEntry(
-                id=cast(int, row["ID"]),
+                id=cast("int", row["ID"]),
                 created=self.fromDateTimeValue(row["CREATED"]),
-                author=cast(str, row["AUTHOR"]),
+                author=cast("str", row["AUTHOR"]),
                 automatic=bool(row["GENERATED"]),
-                text=cast(str, row["TEXT"]),
+                text=cast("str", row["TEXT"]),
                 stricken=bool(row["STRICKEN"]),
-                attachedFile=cast(str, row["ATTACHED_FILE"]),
+                attachedFile=cast("str", row["ATTACHED_FILE"]),
             )
             for row in txn.fetchall()
             if row["TEXT"]
@@ -766,19 +766,19 @@ class DatabaseStore(IMSDataStore):
             lastModified=lastModified,
             state=self.fromIncidentStateValue(row["STATE"]),
             priority=self.fromPriorityValue(row["PRIORITY"]),
-            summary=cast(str | None, row["SUMMARY"]),
+            summary=cast("str | None", row["SUMMARY"]),
             location=Location(
-                name=cast(str, row["LOCATION_NAME"]),
+                name=cast("str", row["LOCATION_NAME"]),
                 address=RodGarettAddress(
                     concentric=concentric,
-                    radialHour=cast(int | None, row["LOCATION_RADIAL_HOUR"]),
-                    radialMinute=cast(int | None, row["LOCATION_RADIAL_MINUTE"]),
-                    description=cast(str | None, row["LOCATION_DESCRIPTION"]),
+                    radialHour=cast("int | None", row["LOCATION_RADIAL_HOUR"]),
+                    radialMinute=cast("int | None", row["LOCATION_RADIAL_MINUTE"]),
+                    description=cast("str | None", row["LOCATION_DESCRIPTION"]),
                 ),
             ),
-            rangerHandles=cast(Iterable[str], rangerHandles),
-            incidentTypes=cast(Iterable[str], incidentTypes),
-            reportEntries=cast(Iterable[ReportEntry], reportEntries),
+            rangerHandles=cast("Iterable[str]", rangerHandles),
+            incidentTypes=cast("Iterable[str]", incidentTypes),
+            reportEntries=cast("Iterable[ReportEntry]", reportEntries),
             fieldReportNumbers=fieldReportNumbers,
         )
 
@@ -787,7 +787,7 @@ class DatabaseStore(IMSDataStore):
         Look up all incident numbers for the given event.
         """
         txn.execute(self.query.incidentNumbers.text, {"eventID": eventID})
-        return (cast(int, row["NUMBER"]) for row in txn.fetchall())
+        return (cast("int", row["NUMBER"]) for row in txn.fetchall())
 
     async def incidents(
         self, eventID: str, *, excludeSystemEntries: bool = False
@@ -839,7 +839,7 @@ class DatabaseStore(IMSDataStore):
         txn.execute(self.query.maxIncidentNumber.text, {"eventID": eventID})
         row = txn.fetchone()
         assert row is not None
-        number = cast(int | None, row["max(NUMBER)"])
+        number = cast("int | None", row["max(NUMBER)"])
         if number is None:
             return 1
         return number + 1
@@ -1578,14 +1578,14 @@ class DatabaseStore(IMSDataStore):
         # field report number -> report entry
         reports = defaultdict[int, list[ReportEntry]](list)
         for row in txn.fetchall():
-            fieldReportNumber = cast(int, row["FIELD_REPORT_NUMBER"])
+            fieldReportNumber = cast("int", row["FIELD_REPORT_NUMBER"])
             reports[fieldReportNumber].append(
                 ReportEntry(
-                    id=cast(int, row["ID"]),
+                    id=cast("int", row["ID"]),
                     created=self.fromDateTimeValue(row["CREATED"]),
-                    author=cast(str, row["AUTHOR"]),
+                    author=cast("str", row["AUTHOR"]),
                     automatic=bool(row["GENERATED"]),
-                    text=cast(str, row["TEXT"]),
+                    text=cast("str", row["TEXT"]),
                     stricken=bool(row["STRICKEN"]),
                 ),
             )
@@ -1593,16 +1593,16 @@ class DatabaseStore(IMSDataStore):
         results = list[FieldReport]()
         txn.execute(self.query.fieldReports.text, parameters)
         for row in txn.fetchall():
-            fieldReportNumber = cast(int, row["NUMBER"])
+            fieldReportNumber = cast("int", row["NUMBER"])
             results.append(
                 FieldReport(
                     eventID=eventID,
                     number=fieldReportNumber,
                     created=self.fromDateTimeValue(row["CREATED"]),
-                    summary=cast(str | None, row["SUMMARY"]),
-                    incidentNumber=cast(int | None, row["INCIDENT_NUMBER"]),
+                    summary=cast("str | None", row["SUMMARY"]),
+                    incidentNumber=cast("int | None", row["INCIDENT_NUMBER"]),
                     reportEntries=cast(
-                        Iterable[ReportEntry], reports[fieldReportNumber]
+                        "Iterable[ReportEntry]", reports[fieldReportNumber]
                     ),
                 )
             )
@@ -1633,11 +1633,11 @@ class DatabaseStore(IMSDataStore):
 
         reportEntries = tuple(
             ReportEntry(
-                id=cast(int, row["ID"]),
+                id=cast("int", row["ID"]),
                 created=self.fromDateTimeValue(row["CREATED"]),
-                author=cast(str, row["AUTHOR"]),
+                author=cast("str", row["AUTHOR"]),
                 automatic=bool(row["GENERATED"]),
-                text=cast(str, row["TEXT"]),
+                text=cast("str", row["TEXT"]),
                 stricken=bool(row["STRICKEN"]),
             )
             for row in txn.fetchall()
@@ -1647,14 +1647,14 @@ class DatabaseStore(IMSDataStore):
             eventID=eventID,
             number=fieldReportNumber,
             created=self.fromDateTimeValue(row["CREATED"]),
-            summary=cast(str | None, row["SUMMARY"]),
-            incidentNumber=cast(int | None, row["INCIDENT_NUMBER"]),
-            reportEntries=cast(Iterable[ReportEntry], reportEntries),
+            summary=cast("str | None", row["SUMMARY"]),
+            incidentNumber=cast("int | None", row["INCIDENT_NUMBER"]),
+            reportEntries=cast("Iterable[ReportEntry]", reportEntries),
         )
 
     def _fetchFieldReportNumbers(self, txn: Transaction, eventID: str) -> Iterable[int]:
         txn.execute(self.query.fieldReportNumbers.text, {"eventID": eventID})
-        return (cast(int, row["NUMBER"]) for row in txn.fetchall())
+        return (cast("int", row["NUMBER"]) for row in txn.fetchall())
 
     async def fieldReports(
         self, eventID: str, excludeSystemEntries: bool = False
@@ -1704,7 +1704,7 @@ class DatabaseStore(IMSDataStore):
         txn.execute(self.query.maxFieldReportNumber.text, {"eventID": eventID})
         row = txn.fetchone()
         assert row is not None
-        number = cast(int | None, row["max(NUMBER)"])
+        number = cast("int | None", row["max(NUMBER)"])
         if number is None:
             return 1
         return number + 1
@@ -1969,7 +1969,7 @@ class DatabaseStore(IMSDataStore):
             self.query.detachedFieldReportNumbers.text,
             {"eventID": eventID},
         )
-        return (cast(int, row["NUMBER"]) for row in txn.fetchall())
+        return (cast("int", row["NUMBER"]) for row in txn.fetchall())
 
     def _fetchAttachedFieldReportNumbers(
         self, txn: Transaction, eventID: str, incidentNumber: int
@@ -1978,7 +1978,7 @@ class DatabaseStore(IMSDataStore):
             self.query.attachedFieldReportNumbers.text,
             {"eventID": eventID, "incidentNumber": incidentNumber},
         )
-        return (cast(int, row["NUMBER"]) for row in txn.fetchall())
+        return (cast("int", row["NUMBER"]) for row in txn.fetchall())
 
     async def fieldReportsAttachedToIncident(
         self, eventID: str, incidentNumber: int

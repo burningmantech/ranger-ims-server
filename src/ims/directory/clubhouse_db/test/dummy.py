@@ -47,7 +47,7 @@ class DummyQuery:
         """
         Produce normalized SQL for the query.
         """
-        sql = cast(str, self.args[0])
+        sql = cast("str", self.args[0])
 
         # Collapse spaces
         return " ".join(sql.split())

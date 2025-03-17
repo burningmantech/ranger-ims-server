@@ -18,10 +18,9 @@
 Tests for :mod:`ranger-ims-server.store.export._json`
 """
 
-from collections.abc import Mapping
 from io import BytesIO
 from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from hypothesis import given, settings
 
@@ -41,6 +40,10 @@ from ims.store import IMSDataStore
 from ims.store.sqlite import DataStore as SQLiteDataStore
 
 from .._json import JSONExporter, JSONImporter
+
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 __all__ = ()
@@ -187,7 +190,7 @@ class JSONImporterTests(TestCase):
 
     @given(imsDatas())
     def test_fromJSON(self, imsDataIn: IMSData) -> None:
-        json = cast(Mapping[str, Any], jsonObjectFromModelObject(imsDataIn))
+        json = cast("Mapping[str, Any]", jsonObjectFromModelObject(imsDataIn))
         importer = JSONImporter.fromJSON(store=self.store(), json=json)
 
         self.assertIMSDataEqual(importer.imsData, imsDataIn)

@@ -68,7 +68,7 @@ def deserializeAccessEntry(obj: dict[str, Any], cl: type[AccessEntry]) -> Access
     assert cl is AccessEntry, (cl, obj)
 
     return cast(
-        AccessEntry,
+        "AccessEntry",
         deserialize(
             obj,
             AccessEntry,

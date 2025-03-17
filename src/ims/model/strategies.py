@@ -234,8 +234,8 @@ def reportEntries(
     return ReportEntry(
         id=draw(integers(min_value=1, max_value=SQLITE_MAX_INT)),
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
-        author=cast(str, author),
-        automatic=cast(bool, automatic),
+        author=cast("str", author),
+        automatic=cast("bool", automatic),
         text=draw(text(min_size=1)),
         stricken=False,
         attachedFile=None if noAttachedFile else draw(text()),
@@ -448,7 +448,7 @@ def incidentLists(
     if uniqueIDs:
 
         def uniqueBy(incident: Incident) -> Hashable:
-            return cast(Hashable, (incident.eventID, incident.number))
+            return cast("Hashable", (incident.eventID, incident.number))
 
     else:
         uniqueBy = None
@@ -616,7 +616,7 @@ def fieldReportLists(
     """
 
     def uniqueBy(fieldReport: FieldReport) -> Hashable:
-        return cast(Hashable, fieldReport.number)
+        return cast("Hashable", fieldReport.number)
 
     return lists(
         fieldReports(maxNumber=maxNumber),

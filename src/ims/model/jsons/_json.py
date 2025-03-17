@@ -140,5 +140,5 @@ def deserialize(
             raise
 
     return cls(
-        **{key.name: deserializeKey(key) for key in cast(Iterable[Enum], keyEnum)}
+        **{key.name: deserializeKey(key) for key in cast("Iterable[Enum]", keyEnum)}
     )

@@ -73,7 +73,7 @@ registerSerializer(Ranger, serializeRanger)
 def deserializeRanger(obj: dict[str, Any], cl: type[Ranger]) -> Ranger:
     assert cl is Ranger, (cl, obj)
 
-    return cast(Ranger, deserialize(obj, Ranger, RangerJSONType, RangerJSONKey))
+    return cast("Ranger", deserialize(obj, Ranger, RangerJSONType, RangerJSONKey))
 
 
 registerDeserializer(Ranger, deserializeRanger)
@@ -91,7 +91,7 @@ class RangerStatusJSONValue(Enum):
 
 
 def serializeRangerStatus(rangerStatus: RangerStatus) -> str:
-    return cast(str, getattr(RangerStatusJSONValue, rangerStatus.name).value)
+    return cast("str", getattr(RangerStatusJSONValue, rangerStatus.name).value)
 
 
 registerSerializer(RangerStatus, serializeRangerStatus)
@@ -100,7 +100,7 @@ registerSerializer(RangerStatus, serializeRangerStatus)
 def deserializeRangerStatus(obj: int, cl: type[RangerStatus]) -> RangerStatus:
     assert cl is RangerStatus, (cl, obj)
 
-    return cast(RangerStatus, getattr(RangerStatus, RangerStatusJSONValue(obj).name))
+    return cast("RangerStatus", getattr(RangerStatus, RangerStatusJSONValue(obj).name))
 
 
 registerDeserializer(RangerStatus, deserializeRangerStatus)

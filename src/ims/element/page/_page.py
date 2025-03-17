@@ -88,15 +88,15 @@ class Page(Element):
 
     def integrityValue(self, depName: str) -> str | None:
         if depName == "bootstrap":
-            return cast(str, self.config.externalDeps.bootstrapJsIntegrity)
+            return cast("str", self.config.externalDeps.bootstrapJsIntegrity)
         if depName == "dataTables":
-            return cast(str, self.config.externalDeps.dataTablesJsIntegrity)
+            return cast("str", self.config.externalDeps.dataTablesJsIntegrity)
         if depName == "dataTablesBootstrap":
-            return cast(str, self.config.externalDeps.dataTablesBootstrap5JsIntegrity)
+            return cast("str", self.config.externalDeps.dataTablesBootstrap5JsIntegrity)
         if depName == "dataTablesResponsive":
-            return cast(str, self.config.externalDeps.dataTablesResponsiveJsIntegrity)
+            return cast("str", self.config.externalDeps.dataTablesResponsiveJsIntegrity)
         if depName == "jquery":
-            return cast(str, self.config.externalDeps.jqueryJsIntegrity)
+            return cast("str", self.config.externalDeps.jqueryJsIntegrity)
         return None
 
     @renderer
@@ -118,7 +118,7 @@ class Page(Element):
 
         imports = []
         for name, url in self.urlsFromImportSpec(
-            cast(str, tag.attributes.get("imports", ""))
+            cast("str", tag.attributes.get("imports", ""))
         ).items():
             kw = {"src": url.asText()}
             integrity = self.integrityValue(name)

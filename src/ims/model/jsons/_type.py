@@ -69,7 +69,7 @@ def deserializeIncidentType(
     assert cl is IncidentType, (cl, obj)
 
     return cast(
-        IncidentType,
+        "IncidentType",
         deserialize(obj, IncidentType, IncidentTypeJSONType, IncidentTypeJSONKey),
     )
 

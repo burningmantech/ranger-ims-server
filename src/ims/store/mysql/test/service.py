@@ -21,7 +21,7 @@ This implementation uses Docker containers.
 
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Mapping
-from typing import ClassVar, cast
+from typing import TYPE_CHECKING, ClassVar, cast
 from uuid import uuid4
 
 from attrs import field, frozen, mutable
@@ -33,9 +33,12 @@ from pymysql import OperationalError, ProgrammingError, connect
 from pymysql.cursors import DictCursor as Cursor
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
-from twisted.internet.interfaces import IReactorTime
 from twisted.internet.threads import deferToThread
 from twisted.logger import Logger
+
+
+if TYPE_CHECKING:
+    from twisted.internet.interfaces import IReactorTime
 
 
 __all__ = ()
@@ -165,7 +168,7 @@ class MySQLService(ABC):
 
         def sleep(interval: float) -> Deferred[None]:
             d: Deferred[None] = Deferred()
-            cast(IReactorTime, reactor).callLater(interval, lambda: d.callback(None))
+            cast("IReactorTime", reactor).callLater(interval, lambda: d.callback(None))
             return d
 
         error = None
@@ -333,7 +336,7 @@ class DockerizedMySQLService(MySQLService):
                             d.callback(None)
                             return
 
-                cast(IReactorTime, reactor).callLater(
+                cast("IReactorTime", reactor).callLater(
                     interval, waitOnDBStartup, elapsed=(elapsed + interval)
                 )
             except Exception:  # noqa: BLE001

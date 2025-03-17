@@ -19,11 +19,10 @@ Incident tests for :mod:`ranger-ims-server.store`
 """
 
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
 from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from attrs import fields as attrsFields
 
@@ -40,6 +39,10 @@ from ims.model import (
 
 from .._exceptions import NoSuchIncidentError, StorageError
 from .base import DataStoreTests, TestDataStoreABC
+
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
 
 
 __all__ = ()
@@ -140,7 +143,7 @@ class DataStoreIncidentTests(DataStoreTests):
             [anIncident1],
             [anIncident1, anIncident2],
         ):
-            incidents = tuple(cast(Iterable[Incident], _incidents))
+            incidents = tuple(cast("Iterable[Incident]", _incidents))
 
             events: dict[str, dict[int, Incident]] = defaultdict(defaultdict)
 
@@ -284,7 +287,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 (anIncident2.replace(number=0), "Bucket"),
             ),
         ):
-            data = cast(Iterable[tuple[Incident, str]], _data)
+            data = cast("Iterable[tuple[Incident, str]]", _data)
 
             store = await self.store()
 
@@ -661,7 +664,7 @@ class DataStoreIncidentTests(DataStoreTests):
                 ((aReportEntry1, aReportEntry2), aReportEntry1.author),
             ):
                 reportEntries, author = cast(
-                    tuple[Sequence[ReportEntry], str],
+                    "tuple[Sequence[ReportEntry], str]",
                     entriesBy,
                 )
 

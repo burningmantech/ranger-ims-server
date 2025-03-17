@@ -219,7 +219,7 @@ class JSONWebToken:
         return jsonConverter.loads(self._jwt.claims, JSONWebTokenClaims)
 
     def asText(self) -> str:
-        return cast(str, self._jwt.serialize())
+        return cast("str", self._jwt.serialize())
 
 
 @frozen(kw_only=True)
