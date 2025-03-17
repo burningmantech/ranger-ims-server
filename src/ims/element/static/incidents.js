@@ -21,6 +21,7 @@ async function initIncidentsPage() {
     disableEditing();
     await loadEventFieldReports();
     initIncidentsTable();
+    const helpModal = new bootstrap.Modal(document.getElementById("helpModal"));
     // Keyboard shortcuts
     document.addEventListener("keydown", function (e) {
         // No shortcuts when an input field is active
@@ -33,8 +34,7 @@ async function initIncidentsPage() {
         }
         // ? --> show help modal
         if (e.key === "?") {
-            // @ts-ignore JQuery
-            $("#helpModal").modal("toggle");
+            helpModal.toggle();
         }
         // / --> jump to search box
         if (e.key === "/") {
@@ -49,8 +49,7 @@ async function initIncidentsPage() {
     });
     document.getElementById("helpModal").addEventListener("keydown", function (e) {
         if (e.key === "?") {
-            // @ts-ignore JQuery
-            $("#helpModal").modal("toggle");
+            helpModal.toggle();
         }
     });
 }

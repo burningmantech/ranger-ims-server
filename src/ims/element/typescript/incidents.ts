@@ -26,6 +26,8 @@ async function initIncidentsPage(): Promise<void> {
     await loadEventFieldReports();
     initIncidentsTable();
 
+    const helpModal = new bootstrap.Modal(document.getElementById("helpModal")!);
+
     // Keyboard shortcuts
     document.addEventListener("keydown", function(e: KeyboardEvent): void {
         // No shortcuts when an input field is active
@@ -38,8 +40,7 @@ async function initIncidentsPage(): Promise<void> {
         }
         // ? --> show help modal
         if (e.key === "?") {
-            // @ts-ignore JQuery
-            $("#helpModal").modal("toggle");
+            helpModal.toggle();
         }
         // / --> jump to search box
         if (e.key === "/") {
@@ -55,8 +56,7 @@ async function initIncidentsPage(): Promise<void> {
 
     document.getElementById("helpModal")!.addEventListener("keydown", function(e: KeyboardEvent): void {
         if (e.key === "?") {
-            // @ts-ignore JQuery
-            $("#helpModal").modal("toggle");
+            helpModal.toggle();
         }
     });
 
