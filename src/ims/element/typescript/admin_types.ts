@@ -78,7 +78,7 @@ function updateIncidentTypes(): void {
 
     const entryContainer = incidentTypesElement.getElementsByClassName("list-group")[0];
 
-    emptyNode(entryContainer);
+    entryContainer.replaceChildren();
 
     for (const incidentType of adminIncidentTypes??[]) {
         const entryItem = _entryTemplate!.cloneNode(true) as HTMLElement;

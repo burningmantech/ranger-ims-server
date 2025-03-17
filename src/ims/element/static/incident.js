@@ -31,8 +31,7 @@ async function initIncidentPage() {
     renderFieldReportData();
     // for a new incident, jump to summary field
     if (incident.number == null) {
-        // @ts-ignore JQuery
-        $("#incident_summary").focus();
+        document.getElementById("incident_summary").focus();
     }
     // Warn the user if they're about to navigate away with unsaved text.
     window.addEventListener("beforeunload", function (e) {
@@ -91,10 +90,8 @@ async function initIncidentPage() {
         if (e.key === "a") {
             e.preventDefault();
             // Scroll to report_entry_add field
-            // @ts-ignore JQuery
-            $("html, body").animate({ scrollTop: $("#report_entry_add").offset().top }, 500);
-            // @ts-ignore JQuery
-            $("#report_entry_add").focus();
+            document.getElementById("report_entry_add").focus();
+            document.getElementById("report_entry_add").scrollIntoView(true);
         }
         // h --> toggle showing system entries
         if (e.key.toLowerCase() === "h") {
@@ -111,10 +108,8 @@ async function initIncidentPage() {
             $("#helpModal").modal("toggle");
         }
     });
-    // @ts-ignore JQuery
-    $("#report_entry_add")[0].addEventListener("keydown", function (e) {
-        // @ts-ignore JQuery
-        const submitEnabled = !$("#report_entry_submit").hasClass("disabled");
+    document.getElementById("report_entry_add").addEventListener("keydown", function (e) {
+        const submitEnabled = !document.getElementById("report_entry_submit").classList.contains("disabled");
         if (submitEnabled && (e.ctrlKey || e.altKey) && e.key === "Enter") {
             submitReportEntry();
         }
@@ -194,14 +189,9 @@ async function loadPersonnel() {
     const _personnel = {};
     for (const record of json) {
         // Filter inactive Rangers out
-        // FIXME: better yet: filter based on on-playa state
-        switch (record.status) {
-            case "active":
-                break;
-            default:
-                continue;
+        if (record.status === "active") {
+            _personnel[record.handle] = record;
         }
-        _personnel[record.handle] = record;
     }
     personnel = _personnel;
     return { err: null };
@@ -329,35 +319,36 @@ function drawIncidentFields() {
     drawLocationDescription();
     toggleShowHistory();
     drawMergedReportEntries();
-    // @ts-ignore JQuery
-    $("#report_entry_add").on("input", reportEntryEdited);
+    document.getElementById("report_entry_add").addEventListener("input", reportEntryEdited);
 }
 //
 // Add option elements to location address select elements
 //
 function addLocationAddressOptions() {
     const hours = range(1, 13);
+    const hourElement = document.getElementById("incident_location_address_radial_hour");
     for (const hour of hours) {
         const hourStr = padTwo(hour);
-        // @ts-ignore JQuery
-        $("#incident_location_address_radial_hour")
-            // @ts-ignore JQuery
-            .append($("<option />", { "value": hourStr, "text": hourStr }));
+        const newOption = document.createElement("option");
+        newOption.value = hourStr;
+        newOption.textContent = hourStr;
+        hourElement.append(newOption);
     }
     const minutes = range(0, 12, 5);
+    const minuteElement = document.getElementById("incident_location_address_radial_minute");
     for (const minute of minutes) {
         const minuteStr = padTwo(minute);
-        // @ts-ignore JQuery
-        $("#incident_location_address_radial_minute")
-            // @ts-ignore JQuery
-            .append($("<option />", { "value": minuteStr, "text": minuteStr }));
+        const newOption = document.createElement("option");
+        newOption.value = minuteStr;
+        newOption.textContent = minuteStr;
+        minuteElement.append(newOption);
     }
+    const concentricElement = document.getElementById("incident_location_address_concentric");
     for (const id in concentricStreetNameByID) {
-        const name = concentricStreetNameByID[id];
-        // @ts-ignore JQuery
-        $("#incident_location_address_concentric")
-            // @ts-ignore JQuery
-            .append($("<option />", { "value": id, "text": name }));
+        const newOption = document.createElement("option");
+        newOption.value = id;
+        newOption.textContent = concentricStreetNameByID[id];
+        concentricElement.append(newOption);
     }
 }
 //
@@ -374,57 +365,54 @@ function drawIncidentNumber() {
     if (number == null) {
         number = "(new)";
     }
-    // @ts-ignore JQuery
-    $("#incident_number").text(number);
+    document.getElementById("incident_number").textContent = number.toString();
 }
 //
 // Populate incident state
 //
 function drawState() {
-    selectOptionWithValue(
-    // @ts-ignore JQuery
-    $("#incident_state"), stateForIncident(incident));
+    selectOptionWithValue(document.getElementById("incident_state"), stateForIncident(incident));
 }
 //
 // Populate created datetime
 //
 function drawCreated() {
-    const date = incident.created;
+    const date = incident.created ?? null;
     if (date == null) {
         return;
     }
     const d = Date.parse(date);
-    // @ts-ignore JQuery
-    $("#created_datetime").text(`${shortDate.format(d)} ${shortTimeSec.format(d)}`);
-    // @ts-ignore JQuery
-    $("#created_datetime").attr("title", fullDateTime.format(d));
+    const createdElement = document.getElementById("created_datetime");
+    createdElement.textContent = `${shortDate.format(d)} ${shortTimeSec.format(d)}`;
+    createdElement.setAttribute("title", fullDateTime.format(d));
 }
 //
 // Populate incident priority
 //
 function drawPriority() {
-    selectOptionWithValue(
-    // @ts-ignore JQuery
-    $("#incident_priority"), incident.priority);
+    const priorityElement = document.getElementById("incident_priority");
+    // priority is currently hidden from the incident page, so we should expect this early return
+    if (priorityElement == null) {
+        return;
+    }
+    selectOptionWithValue(priorityElement, (incident.priority ?? "").toString());
 }
 //
 // Populate incident summary
 //
 function drawIncidentSummary() {
+    const summaryElement = document.getElementById("incident_summary");
     if (incident.summary) {
-        // @ts-ignore JQuery
-        $("#incident_summary").val(incident.summary);
-        // @ts-ignore JQuery
-        $("#incident_summary").attr("placeholder", "");
+        summaryElement.value = incident.summary;
+        summaryElement.placeholder = "";
+        summaryElement.setAttribute("placeholder", "");
         return;
     }
-    // @ts-ignore JQuery
-    $("#incident_summary")[0].removeAttribute("value");
+    summaryElement.value = "";
     const summarized = summarizeIncident(incident);
+    // only replace the placeholder if it would be nonempty
     if (summarized) {
-        // only replace the placeholder if it would be nonempty
-        // @ts-ignore JQuery
-        $("#incident_summary").attr("placeholder", summarized);
+        summaryElement.placeholder = summarized;
     }
 }
 //
@@ -433,13 +421,13 @@ function drawIncidentSummary() {
 let _rangerItem = null;
 function drawRangers() {
     if (_rangerItem == null) {
-        // @ts-ignore JQuery
-        _rangerItem = $("#incident_rangers_list")
-            .children(".list-group-item:first");
+        _rangerItem = document.getElementById("incident_rangers_list")
+            .getElementsByClassName("list-group-item")[0];
     }
-    const items = [];
     const handles = incident.ranger_handles ?? [];
     handles.sort((a, b) => a.localeCompare(b));
+    const rangersElement = document.getElementById("incident_rangers_list");
+    rangersElement.replaceChildren();
     for (const handle of handles) {
         let ranger = null;
         if (personnel?.[handle] == null) {
@@ -447,41 +435,31 @@ function drawRangers() {
         }
         else {
             const person = personnel[handle];
-            // @ts-ignore JQuery
-            ranger = $("<a>", {
-                text: textAsHTML(rangerAsString(person)),
-                href: `${clubhousePersonURL}/${person.directory_id}`,
-            });
+            ranger = document.createElement("a");
+            ranger.innerText = textAsHTML(rangerAsString(person));
+            ranger.href = `${clubhousePersonURL}/${person.directory_id}`;
         }
-        // @ts-ignore JQuery
-        const item = _rangerItem.clone();
+        const item = _rangerItem.cloneNode(true);
         item.append(ranger);
-        item.attr("value", textAsHTML(handle));
-        items.push(item);
+        item.setAttribute("value", textAsHTML(handle));
+        rangersElement.append(item);
     }
-    // @ts-ignore JQuery
-    const container = $("#incident_rangers_list");
-    container.empty();
-    container.append(items);
 }
 function drawRangersToAdd() {
-    // @ts-ignore JQuery
-    const datalist = $("#ranger_handles");
+    const datalist = document.getElementById("ranger_handles");
     const handles = [];
     for (const handle in personnel) {
         handles.push(handle);
     }
     handles.sort((a, b) => a.localeCompare(b));
-    datalist.empty();
-    // @ts-ignore JQuery
-    datalist.append($("<option />"));
+    datalist.replaceChildren();
+    datalist.append(document.createElement("option"));
     if (personnel != null) {
         for (const handle of handles) {
             const ranger = personnel[handle];
-            // @ts-ignore JQuery
-            const option = $("<option />");
-            option.val(handle);
-            option.text(rangerAsString(ranger));
+            const option = document.createElement("option");
+            option.value = handle;
+            option.text = rangerAsString(ranger);
             datalist.append(option);
         }
     }
@@ -495,35 +473,27 @@ function rangerAsString(ranger) {
 let _typesItem = null;
 function drawIncidentTypes() {
     if (_typesItem == null) {
-        // @ts-ignore JQuery
-        _typesItem = $("#incident_types_list")
-            .children(".list-group-item:first");
+        _typesItem = document.getElementById("incident_types_list")
+            .getElementsByClassName("list-group-item")[0];
     }
-    const items = [];
     const incidentTypes = incident.incident_types ?? [];
     incidentTypes.sort();
+    const typesElement = document.getElementById("incident_types_list");
+    typesElement.replaceChildren();
     for (const incidentType of incidentTypes) {
-        // @ts-ignore JQuery
-        const item = _typesItem.clone();
-        item.attr("value", textAsHTML(incidentType));
+        const item = _typesItem.cloneNode(true);
         item.append(textAsHTML(incidentType));
-        items.push(item);
+        item.setAttribute("value", textAsHTML(incidentType));
+        typesElement.append(item);
     }
-    // @ts-ignore JQuery
-    const container = $("#incident_types_list");
-    container.empty();
-    container.append(items);
 }
 function drawIncidentTypesToAdd() {
-    // @ts-ignore JQuery
-    const datalist = $("#incident_types");
-    datalist.empty();
-    // @ts-ignore JQuery
-    datalist.append($("<option />"));
+    const datalist = document.getElementById("incident_types");
+    datalist.replaceChildren();
+    datalist.append(document.createElement("option"));
     for (const incidentType of incidentTypes) {
-        // @ts-ignore JQuery
-        const option = $("<option />");
-        option.val(incidentType);
+        const option = document.createElement("option");
+        option.value = incidentType;
         datalist.append(option);
     }
 }
@@ -532,8 +502,8 @@ function drawIncidentTypesToAdd() {
 //
 function drawLocationName() {
     if (incident.location?.name) {
-        // @ts-ignore JQuery
-        $("#incident_location_name").val(incident.location.name);
+        const locName = document.getElementById("incident_location_name");
+        locName.value = incident.location.name;
     }
 }
 function drawLocationAddressRadialHour() {
@@ -541,47 +511,36 @@ function drawLocationAddressRadialHour() {
     if (incident.location?.radial_hour != null) {
         hour = padTwo(incident.location.radial_hour);
     }
-    selectOptionWithValue(
-    // @ts-ignore JQuery
-    $("#incident_location_address_radial_hour"), hour);
+    selectOptionWithValue(document.getElementById("incident_location_address_radial_hour"), hour);
 }
 function drawLocationAddressRadialMinute() {
     let minute = null;
     if (incident.location?.radial_minute != null) {
         minute = normalizeMinute(incident.location.radial_minute);
     }
-    selectOptionWithValue(
-    // @ts-ignore JQuery
-    $("#incident_location_address_radial_minute"), minute);
+    selectOptionWithValue(document.getElementById("incident_location_address_radial_minute"), minute);
 }
 function drawLocationAddressConcentric() {
     let concentric = null;
     if (incident.location?.concentric) {
         concentric = incident.location.concentric;
     }
-    selectOptionWithValue(
-    // @ts-ignore JQuery
-    $("#incident_location_address_concentric"), concentric);
+    selectOptionWithValue(document.getElementById("incident_location_address_concentric"), concentric);
 }
 function drawLocationDescription() {
     if (incident.location?.description) {
-        // @ts-ignore JQuery
-        $("#incident_location_description")
-            .val(incident.location.description);
+        const description = document.getElementById("incident_location_description");
+        description.value = incident.location.description;
     }
 }
 //
 // Draw report entries
 //
 function drawMergedReportEntries() {
-    const entries = [];
-    if (incident.report_entries) {
-        // @ts-ignore JQuery
-        $.merge(entries, incident.report_entries);
-    }
+    const entries = (incident.report_entries ?? []).slice();
     if (attachedFieldReports) {
-        // @ts-ignore JQuery
-        if ($("#merge_reports_checkbox").is(":checked")) {
+        const mergedCheckbox = document.getElementById("merge_reports_checkbox");
+        if (mergedCheckbox.checked) {
             for (const report of attachedFieldReports) {
                 for (const entry of report.report_entries ?? []) {
                     entry.merged = report.number;
@@ -596,62 +555,53 @@ function drawMergedReportEntries() {
 let _reportsItem = null;
 function drawAttachedFieldReports() {
     if (_reportsItem == null) {
-        // @ts-ignore JQuery
-        _reportsItem = $("#attached_field_reports")
-            .children(".list-group-item:first");
-        if (_reportsItem == null) {
+        const elements = document.getElementById("attached_field_reports")
+            .getElementsByClassName("list-group-item");
+        if (elements.length === 0) {
             console.error("found no reportsItem");
             return;
         }
+        _reportsItem = elements[0];
     }
-    const items = [];
     const reports = attachedFieldReports ?? [];
     reports.sort();
+    const container = document.getElementById("attached_field_reports");
+    container.replaceChildren();
     for (const report of reports) {
-        // @ts-ignore JQuery
-        const item = _reportsItem.clone();
-        // @ts-ignore JQuery
-        const link = $("<a />");
-        link.attr("href", urlReplace(url_viewFieldReports) + report.number);
-        link.text(fieldReportAsString(report));
+        const link = document.createElement("a");
+        link.href = urlReplace(url_viewFieldReports) + report.number;
+        link.innerText = fieldReportAsString(report);
+        const item = _reportsItem.cloneNode(true);
         item.append(link);
-        item.data(report);
-        items.push(item);
+        item.setAttribute("fr-number", report.number.toString());
+        container.append(item);
     }
-    // @ts-ignore JQuery
-    const container = $("#attached_field_reports");
-    container.empty();
-    container.append(items);
 }
 function drawFieldReportsToAttach() {
-    // @ts-ignore JQuery
-    const container = $("#attached_field_report_add_container");
-    // @ts-ignore JQuery
-    const select = $("#attached_field_report_add");
-    select.empty();
-    // @ts-ignore JQuery
-    select.append($("<option />"));
+    const container = document.getElementById("attached_field_report_add_container");
+    const select = document.getElementById("attached_field_report_add");
+    select.replaceChildren();
+    select.append(document.createElement("option"));
     if (!allFieldReports) {
-        container.addClass("hidden");
+        container.classList.add("hidden");
     }
     else {
-        // @ts-ignore JQuery
-        select.append($("<optgroup label=\"Unattached to any incident\">"));
+        const unattachedGroup = document.createElement("optgroup");
+        unattachedGroup.label = "Unattached to any incident";
+        select.append(unattachedGroup);
         for (const report of allFieldReports) {
             // Skip field reports that *are* attached to an incident
             if (report.incident != null) {
                 continue;
             }
-            // @ts-ignore JQuery
-            const option = $("<option />");
-            option.val(report.number);
-            option.text(fieldReportAsString(report));
+            const option = document.createElement("option");
+            option.value = report.number.toString();
+            option.text = fieldReportAsString(report);
             select.append(option);
         }
-        // @ts-ignore JQuery
-        select.append($("</optgroup>"));
-        // @ts-ignore JQuery
-        select.append($("<optgroup label=\"Attached to another incident\">"));
+        const attachedGroup = document.createElement("optgroup");
+        attachedGroup.label = "Attached to another incident";
+        select.append(attachedGroup);
         for (const report of allFieldReports) {
             // Skip field reports that *are not* attached to an incident
             if (report.incident == null) {
@@ -661,15 +611,13 @@ function drawFieldReportsToAttach() {
             if (report.incident === incidentNumber) {
                 continue;
             }
-            // @ts-ignore JQuery
-            const option = $("<option />");
-            option.val(report.number);
-            option.text(fieldReportAsString(report));
+            const option = document.createElement("option");
+            option.value = report.number.toString();
+            option.text = fieldReportAsString(report);
             select.append(option);
         }
-        // @ts-ignore JQuery
-        select.append($("</optgroup>"));
-        container.removeClass("hidden");
+        select.append(document.createElement("optgroup"));
+        container.classList.remove("hidden");
     }
 }
 //
@@ -732,8 +680,9 @@ async function sendEdits(edits) {
 registerSendEdits = sendEdits;
 async function editState() {
     // @ts-ignore JQuery
-    const $state = $("#incident_state");
-    if ($state.val() === "closed" && (incident.incident_types ?? []).length === 0) {
+    // const $state = $("#incident_state");
+    const state = document.getElementById("incident_state");
+    if (state.value === "closed" && (incident.incident_types ?? []).length === 0) {
         window.alert("Closing out this incident?\n" +
             "Please add an incident type!\n\n" +
             "Special cases:\n" +
@@ -741,15 +690,15 @@ async function editState() {
             "    Admin: for administrative information, i.e. not Incidents at all\n\n" +
             "See the Incident Types help link for more details.\n");
     }
-    await editFromElement($state, "state");
+    await editFromElement(state, "state");
 }
 async function editIncidentSummary() {
-    // @ts-ignore JQuery
-    await editFromElement($("#incident_summary"), "summary");
+    const summaryInput = document.getElementById("incident_summary");
+    await editFromElement(summaryInput, "summary");
 }
 async function editLocationName() {
-    // @ts-ignore JQuery
-    await editFromElement($("#incident_location_name"), "location.name");
+    const locationInput = document.getElementById("incident_location_name");
+    await editFromElement(locationInput, "location.name");
 }
 function transformAddressInteger(value) {
     if (!value) {
@@ -758,38 +707,31 @@ function transformAddressInteger(value) {
     return parseInt(value);
 }
 async function editLocationAddressRadialHour() {
-    await editFromElement(
-    // @ts-ignore JQuery
-    $("#incident_location_address_radial_hour"), "location.radial_hour", transformAddressInteger);
+    const hourInput = document.getElementById("incident_location_address_radial_hour");
+    await editFromElement(hourInput, "location.radial_hour", transformAddressInteger);
 }
 async function editLocationAddressRadialMinute() {
-    await editFromElement(
-    // @ts-ignore JQuery
-    $("#incident_location_address_radial_minute"), "location.radial_minute", transformAddressInteger);
+    const minuteInput = document.getElementById("incident_location_address_radial_minute");
+    await editFromElement(minuteInput, "location.radial_minute", transformAddressInteger);
 }
 async function editLocationAddressConcentric() {
-    await editFromElement(
-    // @ts-ignore JQuery
-    $("#incident_location_address_concentric"), "location.concentric", transformAddressInteger);
+    const concentricInput = document.getElementById("incident_location_address_concentric");
+    await editFromElement(concentricInput, "location.concentric", transformAddressInteger);
 }
 async function editLocationDescription() {
-    // @ts-ignore JQuery
-    await editFromElement($("#incident_location_description"), "location.description");
+    const descriptionInput = document.getElementById("incident_location_description");
+    await editFromElement(descriptionInput, "location.description");
 }
 async function removeRanger(sender) {
-    // @ts-ignore JQuery
-    sender = $(sender);
-    // @ts-ignore JQuery
-    const rangerHandle = sender.parent().attr("value");
+    const parent = sender.parentElement;
+    const rangerHandle = parent.getAttribute("value");
     await sendEdits({
         "ranger_handles": (incident.ranger_handles ?? []).filter(function (h) { return h !== rangerHandle; }),
     });
 }
 async function removeIncidentType(sender) {
-    // @ts-ignore JQuery
-    sender = $(sender);
-    // @ts-ignore JQuery
-    const incidentType = sender.parent().attr("value");
+    const parent = sender.parentElement;
+    const incidentType = parent.getAttribute("value");
     await sendEdits({
         "incident_types": (incident.incident_types ?? []).filter(function (t) { return t !== incidentType; }),
     });
@@ -798,10 +740,8 @@ function normalize(str) {
     return str.toLowerCase().trim();
 }
 async function addRanger() {
-    // @ts-ignore JQuery
-    const select = $("#ranger_add");
-    // @ts-ignore JQuery
-    let handle = $(select).val();
+    const select = document.getElementById("ranger_add");
+    let handle = select.value;
     // make a copy of the handles
     const handles = (incident.ranger_handles ?? []).slice();
     // fuzzy-match on handle, to allow case insensitivity and
@@ -817,29 +757,27 @@ async function addRanger() {
     }
     if (!(handle in (personnel ?? []))) {
         // Not a valid handle
-        select.val("");
+        select.value = "";
         return;
     }
     if (handles.indexOf(handle) !== -1) {
         // Already in the list, so… move along.
-        select.val("");
+        select.value = "";
         return;
     }
     handles.push(handle);
     const { err } = await sendEdits({ "ranger_handles": handles });
     if (err !== null) {
         controlHasError(select);
-        select.val("");
+        select.value = "";
         return;
     }
-    select.val("");
+    select.value = "";
     controlHasSuccess(select, 1000);
 }
 async function addIncidentType() {
-    // @ts-ignore JQuery
-    const select = $("#incident_type_add");
-    // @ts-ignore JQuery
-    let incidentType = $(select).val();
+    const select = document.getElementById("incident_type_add");
+    let incidentType = select.value;
     // make a copy of the incident types
     const currentIncidentTypes = (incident.incident_types ?? []).slice();
     // fuzzy-match on incidentType, to allow case insensitivity and
@@ -855,30 +793,28 @@ async function addIncidentType() {
     }
     if (incidentTypes.indexOf(incidentType) === -1) {
         // Not a valid incident type
-        select.val("");
+        select.value = "";
         return;
     }
     if (currentIncidentTypes.indexOf(incidentType) !== -1) {
         // Already in the list, so… move along.
-        select.val("");
+        select.value = "";
         return;
     }
     currentIncidentTypes.push(incidentType);
     const { err } = await sendEdits({ "incident_types": currentIncidentTypes });
     if (err != null) {
         controlHasError(select);
-        select.val("");
+        select.value = "";
         return;
     }
-    select.val("");
+    select.value = "";
     controlHasSuccess(select, 1000);
 }
 async function detachFieldReport(sender) {
-    // @ts-ignore JQuery
-    sender = $(sender);
-    // @ts-ignore JQuery
-    const fieldReport = sender.parent().data();
-    const url = (urlReplace(url_fieldReports) + fieldReport.number +
+    const parent = sender.parentElement;
+    const frNumber = parent.getAttribute("fr-number");
+    const url = (urlReplace(url_fieldReports) + frNumber +
         "?action=detach;incident=" + incidentNumber);
     let { err } = await fetchJsonNoThrow(url, {
         body: JSON.stringify({}),
@@ -902,10 +838,8 @@ async function attachFieldReport() {
             return;
         }
     }
-    // @ts-ignore JQuery
-    const select = $("#attached_field_report_add");
-    // @ts-ignore JQuery
-    const fieldReportNumber = $(select).val();
+    const select = document.getElementById("attached_field_report_add");
+    const fieldReportNumber = select.value;
     const url = (urlReplace(url_fieldReports) + fieldReportNumber +
         "?action=attach;incident=" + incidentNumber);
     let { err } = await fetchJsonNoThrow(url, {
@@ -945,7 +879,8 @@ async function attachFile() {
     for (const f of attachFile.files ?? []) {
         formData.append("files", f);
     }
-    const attachURL = urlReplace(url_incidentAttachments).replace("<incident_number>", (incidentNumber ?? "").toString());
+    const attachURL = urlReplace(url_incidentAttachments)
+        .replace("<incident_number>", (incidentNumber ?? "").toString());
     const { err } = await fetchJsonNoThrow(attachURL, {
         body: formData
     });

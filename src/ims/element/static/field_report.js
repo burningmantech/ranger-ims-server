@@ -90,14 +90,14 @@ async function initFieldReportPage() {
 // Load field report
 //
 async function loadFieldReport() {
-    let number;
+    let number = null;
     if (fieldReport == null) {
         // First time here.  Use page JavaScript initial value.
-        number = fieldReportNumber;
+        number = fieldReportNumber ?? null;
     }
     else {
         // We have an incident already.  Use that number.
-        number = fieldReport.number;
+        number = fieldReport.number ?? null;
     }
     if (number == null) {
         fieldReport = {
@@ -217,7 +217,7 @@ async function frSendEdits(edits) {
         edits.number = number;
         url += number;
     }
-    const { resp, json, err } = await fetchJsonNoThrow(url, {
+    const { resp, err } = await fetchJsonNoThrow(url, {
         body: JSON.stringify(edits),
     });
     if (err != null) {
@@ -231,7 +231,7 @@ async function frSendEdits(edits) {
         // We created a new field report.
         // We need to find out the created field report number so that
         // future edits don't keep creating new resources.
-        let newNumber = resp?.headers.get("X-IMS-Field-Report-Number");
+        let newNumber = resp?.headers.get("X-IMS-Field-Report-Number") ?? null;
         // Check that we got a value back
         if (newNumber == null) {
             return { err: "No X-IMS-Field-Report-Number header provided." };
@@ -253,7 +253,7 @@ async function frSendEdits(edits) {
 registerSendEdits = frSendEdits;
 async function editSummary() {
     const summaryInput = document.getElementById("field_report_summary");
-    await editFromElementNoJQuery(summaryInput, "summary");
+    await editFromElement(summaryInput, "summary");
 }
 //
 // Make a new incident and attach this Field Report to it

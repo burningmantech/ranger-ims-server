@@ -74,7 +74,7 @@ function drawAccess(): void {
         ;
     }
 
-    emptyNode(container);
+    container.replaceChildren();
 
     if (accessControlList == null) {
         return;
@@ -112,7 +112,7 @@ function updateEventAccess(event: string, mode: AccessMode): void {
 
     const entryContainer = eventAccess.getElementsByClassName("list-group")[0];
 
-    emptyNode(entryContainer);
+    entryContainer.replaceChildren();
 
     for (const accessEntry of eventACL[mode]??[]) {
         const entryItem = _eventsEntryTemplate!.cloneNode(true) as HTMLElement;
@@ -140,7 +140,7 @@ async function addEvent(sender: HTMLInputElement): Promise<void> {
         window.alert(message);
         await loadAccessControlList();
         drawAccess();
-        controlHasErrorNoJQuery(sender);
+        controlHasError(sender);
         return;
     }
     await loadAccessControlList();
@@ -150,8 +150,7 @@ async function addEvent(sender: HTMLInputElement): Promise<void> {
 
 
 async function addAccess(sender: HTMLInputElement): Promise<void> {
-    // get the relevant ".event_access"
-    const container: HTMLElement = sender.parentElement!.parentElement!.parentElement!;
+    const container: HTMLElement = sender.closest(".event_access")!;
     const event = container.getElementsByClassName("event_name")[0].textContent!;
     const mode = container.getElementsByClassName("access_mode")[0].textContent as AccessMode;
     const newExpression = sender.value.trim();
@@ -203,7 +202,7 @@ async function addAccess(sender: HTMLInputElement): Promise<void> {
         updateEventAccess(event, mode);
     }
     if (err != null) {
-        controlHasErrorNoJQuery(sender);
+        controlHasError(sender);
         return;
     }
     sender.value = "";  // Clear input field
@@ -211,8 +210,7 @@ async function addAccess(sender: HTMLInputElement): Promise<void> {
 
 
 async function removeAccess(sender: HTMLButtonElement): Promise<void> {
-    // get the relevant ".event_access"
-    const container: HTMLElement = sender.parentElement!.parentElement!.parentElement!;
+    const container: HTMLElement = sender.closest(".event_access")!;
     const event = container.getElementsByClassName("event_name")[0].textContent!;
     const mode = container.getElementsByClassName("access_mode")[0].textContent! as AccessMode;
     const expression = sender.parentElement!.getAttribute("value")!.trim();
@@ -245,9 +243,8 @@ async function removeAccess(sender: HTMLButtonElement): Promise<void> {
 }
 
 async function setValidity(sender: HTMLSelectElement): Promise<void> {
-    // get the relevant ".event_access"
-    const container: HTMLElement = sender.parentElement!.parentElement!.parentElement!;
-    const event = container.getElementsByClassName("event_name")[0].textContent!;
+    const container: HTMLElement = sender.closest(".event_access")!;
+    const event: string = container.getElementsByClassName("event_name")[0].textContent!;
     const mode = container.getElementsByClassName("access_mode")[0].textContent! as AccessMode;
     const expression = sender.parentElement!.getAttribute("value")!.trim();
 
@@ -270,7 +267,7 @@ async function setValidity(sender: HTMLSelectElement): Promise<void> {
         updateEventAccess(event, mode);
     }
     if (err != null) {
-        controlHasErrorNoJQuery(sender);
+        controlHasError(sender);
         return;
     }
     sender.value = "";  // Clear input field

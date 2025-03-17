@@ -101,13 +101,13 @@ async function initFieldReportPage(): Promise<void> {
 //
 
 async function loadFieldReport(): Promise<{err: string|null}> {
-    let number: number|null|undefined;
+    let number: number|null = null;
     if (fieldReport == null) {
         // First time here.  Use page JavaScript initial value.
-        number = fieldReportNumber;
+        number = fieldReportNumber??null;
     } else {
         // We have an incident already.  Use that number.
-        number = fieldReport.number;
+        number = fieldReport.number??null;
     }
 
     if (number == null) {
@@ -148,7 +148,7 @@ async function loadAndDisplayFieldReport(): Promise<void> {
     drawReportEntries(fieldReport.report_entries!);
     clearErrorMessage();
 
-    document.getElementById("report_entry_add")!.addEventListener("input", reportEntryEdited)
+    document.getElementById("report_entry_add")!.addEventListener("input", reportEntryEdited);
 
     if (editingAllowed) {
         enableEditing();
@@ -249,7 +249,7 @@ async function frSendEdits(edits: FieldReport): Promise<{err:string|null}> {
         url += number;
     }
 
-    const {resp, json, err} = await fetchJsonNoThrow(url, {
+    const {resp, err} = await fetchJsonNoThrow(url, {
         body: JSON.stringify(edits),
     });
     if (err != null) {
@@ -264,7 +264,7 @@ async function frSendEdits(edits: FieldReport): Promise<{err:string|null}> {
         // We need to find out the created field report number so that
         // future edits don't keep creating new resources.
 
-        let newNumber = resp?.headers.get("X-IMS-Field-Report-Number");
+        let newNumber: string|null = resp?.headers.get("X-IMS-Field-Report-Number")??null;
         // Check that we got a value back
         if (newNumber == null) {
             return {err: "No X-IMS-Field-Report-Number header provided."};
@@ -294,7 +294,7 @@ registerSendEdits = frSendEdits;
 
 async function editSummary() {
     const summaryInput = document.getElementById("field_report_summary") as HTMLInputElement;
-    await editFromElementNoJQuery(summaryInput, "summary");
+    await editFromElement(summaryInput, "summary");
 }
 
 //
@@ -325,7 +325,7 @@ async function makeIncident(): Promise<void> {
         setErrorMessage(`Failed to create incident: ${err}`);
         return;
     }
-    const newNum = resp.headers.get("X-IMS-Incident-Number");
+    const newNum: string|null = resp.headers.get("X-IMS-Incident-Number");
     if (newNum == null) {
         disableEditing();
         setErrorMessage("Failed to create incident: no IMS Incident Number provided");

@@ -60,7 +60,7 @@ function drawAllIncidentTypes() {
 function updateIncidentTypes() {
     const incidentTypesElement = document.getElementById("incident_types");
     const entryContainer = incidentTypesElement.getElementsByClassName("list-group")[0];
-    emptyNode(entryContainer);
+    entryContainer.replaceChildren();
     for (const incidentType of adminIncidentTypes ?? []) {
         const entryItem = _entryTemplate.cloneNode(true);
         if (incidentTypesVisible.indexOf(incidentType) === -1) {

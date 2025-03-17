@@ -45,7 +45,7 @@ function drawStreets() {
             .getElementsByClassName("list-group")[0]
             .getElementsByClassName("list-group-item")[0];
     }
-    emptyNode(container);
+    container.replaceChildren();
     for (const event of events) {
         const eventStreets = _streetsTemplate.cloneNode(true);
         // Add an id to the element for future reference
@@ -64,7 +64,7 @@ function updateEventStreets(event) {
     // Set displayed event name
     eventStreetsElement.getElementsByClassName("event_name")[0].textContent = event;
     const entryContainer = eventStreetsElement.getElementsByClassName("list-group")[0];
-    emptyNode(entryContainer);
+    entryContainer.replaceChildren();
     for (const streetID in eventStreets) {
         const streetName = eventStreets[streetID];
         const entryItem = _streetsEntryTemplate.cloneNode(true);

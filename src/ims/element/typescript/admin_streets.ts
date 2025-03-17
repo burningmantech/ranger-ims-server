@@ -56,7 +56,7 @@ function drawStreets() {
             .getElementsByClassName("list-group-item")[0] as HTMLElement;
     }
 
-    emptyNode(container);
+    container.replaceChildren();
 
     for (const event of events!) {
         const eventStreets = _streetsTemplate.cloneNode(true) as HTMLElement;
@@ -86,7 +86,7 @@ function updateEventStreets(event: string) {
 
     const entryContainer: Element = eventStreetsElement.getElementsByClassName("list-group")[0];
 
-    emptyNode(entryContainer);
+    entryContainer.replaceChildren();
 
     for (const streetID in eventStreets) {
         const streetName = eventStreets[streetID];
