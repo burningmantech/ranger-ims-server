@@ -103,7 +103,7 @@ class DataStoreFieldReportTests(DataStoreTests):
             (aFieldReport1,),
             (aFieldReport1, aFieldReport2),
         ):
-            fieldReports = cast(Iterable[FieldReport], _fieldReports)
+            fieldReports = cast("Iterable[FieldReport]", _fieldReports)
             fieldReportsByNumber = {
                 r.number: r.replace(incidentNumber=anIncident1.number)
                 for r in fieldReports
@@ -228,7 +228,7 @@ class DataStoreFieldReportTests(DataStoreTests):
                 (aFieldReport2.replace(number=0), "Bucket"),
             ),
         ):
-            data = cast(Iterable[tuple[FieldReport, str]], _data)
+            data = cast("Iterable[tuple[FieldReport, str]]", _data)
 
             store = await self.store()
             await store.createEvent(anEvent)
@@ -312,7 +312,7 @@ class DataStoreFieldReportTests(DataStoreTests):
         await store.storeFieldReport(fieldReport)
 
         setter = cast(
-            Callable[[str, int, str, str], Awaitable[None]],
+            "Callable[[str, int, str, str], Awaitable[None]]",
             getattr(store, methodName),
         )
 
@@ -370,7 +370,7 @@ class DataStoreFieldReportTests(DataStoreTests):
             # add them
             reportEntries = frozenset(  # noqa: PLW2901
                 r.replace(author=author)
-                for r in cast(Iterable[ReportEntry], reportEntries)
+                for r in cast("Iterable[ReportEntry]", reportEntries)
             )
 
             # Store test data

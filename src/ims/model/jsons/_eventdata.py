@@ -77,7 +77,7 @@ def deserializeEventData(obj: dict[str, Any], cl: type[EventData]) -> EventData:
     assert cl is EventData, (cl, obj)
 
     return cast(
-        EventData,
+        "EventData",
         deserialize(
             obj,
             EventData,

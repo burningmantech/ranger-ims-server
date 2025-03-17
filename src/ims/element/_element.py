@@ -171,7 +171,7 @@ class Element(BaseElement):
         For C{"img"} tags, C{"attr"} defaults to C{"src"}.
         If the C{"attr"} attribute is defined C{""}, return the URL as text.
         """
-        name = cast(str, tag.attributes.pop("url", sentinel.name))
+        name = cast("str", tag.attributes.pop("url", sentinel.name))
 
         if name is sentinel.name:
             raise ValueError("Rendered URL must have a url attribute")
@@ -181,12 +181,12 @@ class Element(BaseElement):
         except AttributeError:
             raise ValueError(f"Unknown URL name: {name}") from None
 
-        text = cast(str, url.asText())
+        text = cast("str", url.asText())
 
         if tag.tagName == "json":
             return jsonTextFromObject(text)
 
-        attributeName = cast(str, tag.attributes.pop("attr", sentinel.name))
+        attributeName = cast("str", tag.attributes.pop("attr", sentinel.name))
         if attributeName is sentinel.name:
             if tag.tagName in ("a", "link"):
                 attributeName = "href"
@@ -252,7 +252,7 @@ class Element(BaseElement):
         """
         Repeat an element once for each event, embedding the event ID.
         """
-        return cast(KleinRenderable, self._events(request, tag))
+        return cast("KleinRenderable", self._events(request, tag))
 
     @renderer
     def events_reversed(self, request: IRequest, tag: Tag) -> KleinRenderable:
@@ -260,7 +260,7 @@ class Element(BaseElement):
         Repeat an element once for each event in reverse order, embedding the
         event ID.
         """
-        return cast(KleinRenderable, self._events(request, tag, reverse_order=True))
+        return cast("KleinRenderable", self._events(request, tag, reverse_order=True))
 
     @renderer
     async def events_list(self, request: IRequest, tag: Tag) -> KleinRenderable:

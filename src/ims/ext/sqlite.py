@@ -56,7 +56,7 @@ class Row(BaseRow):
         Returns :obj:`None` if there is no such column.
         """
         if key in self.keys():
-            return cast(ParameterValue, self[key])
+            return cast("ParameterValue", self[key])
         return default
 
 
@@ -99,7 +99,7 @@ class Connection(BaseConnection):
 
     def cursor(  # type: ignore[override]
         self,
-        factory: CursorFactory = cast(CursorFactory, Cursor),
+        factory: CursorFactory = cast("CursorFactory", Cursor),
     ) -> "Cursor":
         """
         See :meth:`sqlite3.Cursor.cursor`.
@@ -116,11 +116,11 @@ class Connection(BaseConnection):
 
         printHeader = True
 
-        for row in cast(Iterable[Row], self.execute(sql, cast(Any, parameters))):
+        for row in cast("Iterable[Row]", self.execute(sql, cast("Any", parameters))):
             if printHeader:
                 emit(row.keys())
                 printHeader = False
-            emit(cast(Iterable[object], row))
+            emit(cast("Iterable[object]", row))
 
     def commit(self) -> None:
         """
@@ -178,7 +178,7 @@ class Connection(BaseConnection):
         exc_tb: TracebackType | None,
     ) -> bool:
         self._log.debug("---------- EXIT ----------")
-        return cast(bool, super().__exit__(exc_type, exc_val, exc_tb))
+        return cast("bool", super().__exit__(exc_type, exc_val, exc_tb))
 
 
 def connect(path: Path | None) -> Connection:

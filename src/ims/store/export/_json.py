@@ -69,7 +69,9 @@ class JSONExporter:
         Export data store as JSON.
         """
         self._log.info("Exporting data store as JSON objects...")
-        return cast(Mapping[str, Any], jsonObjectFromModelObject(await self.imsData()))
+        return cast(
+            "Mapping[str, Any]", jsonObjectFromModelObject(await self.imsData())
+        )
 
     async def imsData(self) -> IMSData:
         """

@@ -70,7 +70,7 @@ def deserializeEventAccess(obj: dict[str, Any], cl: type[EventAccess]) -> EventA
     assert cl is EventAccess, (cl, obj)
 
     return cast(
-        EventAccess,
+        "EventAccess",
         deserialize(
             obj,
             EventAccess,

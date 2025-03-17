@@ -646,7 +646,7 @@ class APIApplication:
                     store.setIncident_locationRadialMinute,
                     store.setIncident_locationDescription,
                 ):
-                    cast(IncidentAttributeSetter, setter)(
+                    cast("IncidentAttributeSetter", setter)(
                         event_id, incidentNumber, None, author
                     )
             else:

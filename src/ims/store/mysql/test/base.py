@@ -57,7 +57,7 @@ class TestDataStore(DataStore, TestDatabaseStoreMixIn):
             self.raiseException()
 
         return cast(
-            ConnectionPool,
+            "ConnectionPool",
             DataStore._db.fget(self),  # type: ignore[attr-defined]
         )
 

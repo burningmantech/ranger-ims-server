@@ -43,7 +43,7 @@ class IncidentStateJSONValue(Enum):
 
 def serializeIncidentState(incidentState: IncidentState) -> str:
     constant = cast(
-        IncidentStateJSONValue,
+        "IncidentStateJSONValue",
         getattr(IncidentStateJSONValue, incidentState.name),
     )
     return constant.value
@@ -55,7 +55,9 @@ registerSerializer(IncidentState, serializeIncidentState)
 def deserializeIncidentState(obj: str, cl: type[IncidentState]) -> IncidentState:
     assert cl is IncidentState, (cl, obj)
 
-    return cast(IncidentState, getattr(IncidentState, IncidentStateJSONValue(obj).name))
+    return cast(
+        "IncidentState", getattr(IncidentState, IncidentStateJSONValue(obj).name)
+    )
 
 
 registerDeserializer(IncidentState, deserializeIncidentState)

@@ -242,7 +242,7 @@ class DebugToolsTests(TestCase):
             """
         )
 
-        db = cast(ErrneousSQLiteConnection, createDB(None, schema=schema))
+        db = cast("ErrneousSQLiteConnection", createDB(None, schema=schema))
 
         db._generateErrors = True
 
