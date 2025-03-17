@@ -46,7 +46,7 @@ async function initIncidentPage(): Promise<void> {
     });
 
     // Fire-and-forget this promise, since it tries forever to acquire a lock
-    let ignoredPromise = requestEventSourceLock();
+    const ignoredPromise = requestEventSourceLock();
 
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e: MessageEvent): Promise<void> {
@@ -206,10 +206,8 @@ interface Personnel {
     directory_id: number;
 }
 
-interface PersonnelMap {
-    // key is Ranger handle
-    [index: string]: Personnel,
-}
+// key is Ranger handle
+type PersonnelMap = Record<string, Personnel>;
 
 async function loadPersonnel(): Promise<{err: string|null}> {
     const {json, err} = await fetchJsonNoThrow(urlReplace(url_personnel + "?event_id=<event_id>"), null);
@@ -837,8 +835,6 @@ async function sendEdits(edits: Incident): Promise<{err:string|null}> {
 registerSendEdits = sendEdits;
 
 async function editState(): Promise<void> {
-    // @ts-ignore JQuery
-    // const $state = $("#incident_state");
     const state = document.getElementById("incident_state") as HTMLSelectElement;
 
     if (state.value === "closed" && (incident!.incident_types??[]).length === 0) {
@@ -868,11 +864,11 @@ async function editLocationName(): Promise<void> {
 }
 
 
-function transformAddressInteger(value: string): number|null {
+function transformAddressInteger(value: string): string|null {
     if (!value) {
         return null;
     }
-    return parseInt(value);
+    return parseInt(value).toString();
 }
 
 
@@ -1022,7 +1018,7 @@ async function detachFieldReport(sender: HTMLElement): Promise<void> {
         urlReplace(url_fieldReports) + frNumber +
         "?action=detach;incident=" + incidentNumber
     );
-    let {err} = await fetchJsonNoThrow(url, {
+    const {err} = await fetchJsonNoThrow(url, {
         body: JSON.stringify({}),
     });
     if (err != null) {
@@ -1054,7 +1050,7 @@ async function attachFieldReport(): Promise<void> {
         urlReplace(url_fieldReports) + fieldReportNumber +
         "?action=attach;incident=" + incidentNumber
     );
-    let {err} = await fetchJsonNoThrow(url, {
+    const {err} = await fetchJsonNoThrow(url, {
         body: JSON.stringify({}),
     });
     if (err != null) {

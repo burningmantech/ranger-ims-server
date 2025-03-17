@@ -29,7 +29,7 @@ var Validity;
 const allAccessModes = ["readers", "writers", "reporters"];
 let accessControlList = null;
 async function loadAccessControlList() {
-    let { json, err } = await fetchJsonNoThrow(url_acl, null);
+    const { json, err } = await fetchJsonNoThrow(url_acl, null);
     if (err != null) {
         const message = `Failed to load access control list: ${err}`;
         console.error(message);

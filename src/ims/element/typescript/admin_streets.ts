@@ -32,7 +32,7 @@ async function initAdminStreetsPage() {
 let streets: EventStreets = {};
 
 async function loadStreets(): Promise<{err:string|null}> {
-    let {json, err} = await fetchJsonNoThrow(url_streets, null);
+    const {json, err} = await fetchJsonNoThrow(url_streets, null);
     if (err != null) {
         const message = `Failed to load streets: ${err}`;
         console.error(message);
@@ -111,7 +111,7 @@ function removeStreet(sender: HTMLElement): void {
 
 
 async function sendStreets(edits: object): Promise<void> {
-    let {err} = await fetchJsonNoThrow(url_streets, edits);
+    const {err} = await fetchJsonNoThrow(url_streets, edits);
     if (err != null) {
         const message = `Failed to edit streets:\n${err}`;
         console.log(message);

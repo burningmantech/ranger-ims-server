@@ -96,7 +96,7 @@ setTheme(getPreferredTheme());
 // It is certainly ridiculous to involve the DOM, but on the other hand, the
 // browser will implement this correctly, and any solution using .replace()
 // will be buggy.  And this will be fast.  But still, this is weak.
-let _domTextAreaForHaxxors = document.createElement("textarea");
+const _domTextAreaForHaxxors = document.createElement("textarea");
 // Convert text to HTML.
 function textAsHTML(text) {
     _domTextAreaForHaxxors.textContent = text;
@@ -301,9 +301,8 @@ function controlClear(element) {
 //
 async function loadBody() {
     detectTouchDevice();
-    // @ts-ignore since this requires es2024, which I can't get to work with IntelliJ...
     const { promise, resolve } = Promise.withResolvers();
-    // @ts-ignore some JQuery nonsense
+    // @ts-expect-error some JQuery nonsense
     $("body").load(pageTemplateURL, resolve);
     await promise;
     applyTheme();
@@ -633,7 +632,7 @@ function renderSummary(data, type, incident) {
 //
 function reportEntryElement(entry) {
     // Build a container for the entry
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const entryContainer = $("<div />", { "class": "report_entry" });
     const strikable = !entry.system_entry;
     if (entry.system_entry) {
@@ -649,7 +648,7 @@ function reportEntryElement(entry) {
         entryContainer.addClass("report_entry_merged");
     }
     // Add the timestamp and author, with a Strike/Unstrike button
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const metaDataContainer = $("<p />", { "class": "report_entry_metadata" });
     if (strikable) {
         let onclick = "";
@@ -668,7 +667,7 @@ function reportEntryElement(entry) {
             // we're on the field report page
             onclick = "setStrikeFieldReportEntry(" + fieldReportNumber + ", " + entry.id + ", " + !entry.stricken + ");";
         }
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         const strikeContainer = $("<button />", { "onclick": onclick });
         strikeContainer.addClass("badge btn btn-danger remove-badge float-end");
         strikeContainer.text(entry.stricken ? "Unstrike" : "Strike");
@@ -688,14 +687,14 @@ function reportEntryElement(entry) {
     if (author == null) {
         author = "(unknown)";
     }
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const authorContainer = $("<span />");
     authorContainer.text(entry.author);
     authorContainer.addClass("report_entry_author");
     metaDataContainer.append(author);
     if (entry.merged) {
         metaDataContainer.append(" ");
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         const link = $("<a />");
         link.text("field report #" + entry.merged);
         link.attr("href", urlReplace(url_viewFieldReports) + entry.merged);
@@ -709,7 +708,7 @@ function reportEntryElement(entry) {
     // Add report text
     const lines = entry.text.split("\n");
     for (const line of lines) {
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         const textContainer = $("<p />", { "class": "report_entry_text" });
         textContainer.text(line);
         entryContainer.append(textContainer);
@@ -718,18 +717,18 @@ function reportEntryElement(entry) {
         const url = urlReplace(url_incidentAttachmentNumber)
             .replace("<incident_number>", incidentNumber.toString())
             .replace("<attachment_number>", entry.id.toString());
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         const attachmentLink = $("<a />", { "href": url });
         attachmentLink.text("Attached file");
         entryContainer.append(attachmentLink);
     }
     // Add a horizontal line after each entry
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     entryContainer.append($("<hr />", { "class": "m-1" }));
     return entryContainer;
 }
 function drawReportEntries(entries) {
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const container = $("#report_entries");
     container.empty();
     if (entries) {
@@ -835,13 +834,13 @@ async function submitReportEntry() {
 // Generated history display
 //
 function toggleShowHistory() {
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     if ($("#history_checkbox").is(":checked")) {
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         $("#report_entries").removeClass("hide-history");
     }
     else {
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         $("#report_entries").addClass("hide-history");
     }
 }
@@ -860,7 +859,7 @@ async function editFromElement(element, jsonKey, transform) {
         current[path] = next;
         current = next;
     }
-    current[lastKey] = value;
+    current[lastKey] = value ?? "null";
     // Location must include type
     if (edits.location != null && typeof edits.location !== "string") {
         edits.location.type = "garett"; // UI only supports one type
@@ -894,7 +893,6 @@ async function requestEventSourceLock() {
         return;
     }
     function tryAcquireLock() {
-        // @ts-ignore withResolves needs es2024
         const { promise, resolve } = Promise.withResolvers();
         subscribeToUpdates(resolve);
         return promise;

@@ -15,38 +15,36 @@
 //
 // Globals
 //
-declare var eventID: string|null|undefined;
-declare var concentricStreetNameByID: Streets|undefined;
-declare var incidentNumber: number|null|undefined;
-declare var fieldReportNumber: number|null|undefined;
-declare var editingAllowed: boolean|null|undefined;
-declare var attachmentsAllowed: boolean|null|undefined;
-declare var clubhousePersonURL: string|null|undefined;
-declare var events: string[]|null|undefined;
-declare var canWriteIncidents: boolean|null|undefined;
+declare let eventID: string|null|undefined;
+declare let concentricStreetNameByID: Streets|undefined;
+declare let incidentNumber: number|null|undefined;
+declare let fieldReportNumber: number|null|undefined;
+declare let editingAllowed: boolean|null|undefined;
+declare let attachmentsAllowed: boolean|null|undefined;
+declare let clubhousePersonURL: string|null|undefined;
+declare let events: string[]|null|undefined;
+declare let canWriteIncidents: boolean|null|undefined;
 
-declare var url_acl: string;
-declare var url_eventSource: string;
-declare var url_events: string;
-declare var url_fieldReport_reportEntry: string;
-declare var url_incident_reportEntry: string;
-declare var url_incidentAttachmentNumber: string;
-declare var url_incidents: string;
-declare var url_viewIncidents: string;
-declare var url_viewFieldReports: string;
-declare var url_personnel: string;
-declare var url_incidentTypes: string;
-declare var url_fieldReports: string;
-declare var url_fieldReport: string;
-declare var url_incidentAttachments: string;
-declare var url_streets: string;
-declare var url_viewIncidentNumber: string;
-declare var url_incidentNumber: string;
-declare var viewIncidentsURL: string;
+declare let url_acl: string;
+declare let url_eventSource: string;
+declare let url_events: string;
+declare let url_fieldReport_reportEntry: string;
+declare let url_incident_reportEntry: string;
+declare let url_incidentAttachmentNumber: string;
+declare let url_incidents: string;
+declare let url_viewIncidents: string;
+declare let url_viewFieldReports: string;
+declare let url_personnel: string;
+declare let url_incidentTypes: string;
+declare let url_fieldReports: string;
+declare let url_fieldReport: string;
+declare let url_incidentAttachments: string;
+declare let url_streets: string;
+declare let url_viewIncidentNumber: string;
+declare let url_incidentNumber: string;
+declare let viewIncidentsURL: string;
 
-interface Streets {
-    [index: string]: string;
-}
+type Streets = Record<string, string>;
 
 interface Location {
     name?: string|null;
@@ -80,9 +78,7 @@ interface FieldReport {
     report_entries?: ReportEntry[]|null;
 }
 
-interface FieldReportsByNumber {
-    [index: number]: FieldReport;
-}
+type FieldReportsByNumber = Record<number, FieldReport>;
 
 interface ReportEntry {
     id?: string|null;
@@ -99,9 +95,7 @@ interface DTAjax {
     reload(): void;
 }
 
-interface DTData {
-    [index: number]: object;
-}
+type DTData = Record<number, object>;
 
 interface DataTablesTable {
     row: any;
@@ -219,7 +213,7 @@ setTheme(getPreferredTheme());
 // browser will implement this correctly, and any solution using .replace()
 // will be buggy.  And this will be fast.  But still, this is weak.
 
-let _domTextAreaForHaxxors: HTMLTextAreaElement = document.createElement("textarea");
+const _domTextAreaForHaxxors: HTMLTextAreaElement = document.createElement("textarea");
 
 // Convert text to HTML.
 function textAsHTML(text: string): string {
@@ -460,9 +454,8 @@ function controlClear(element: HTMLElement) {
 async function loadBody(): Promise<void> {
 
     detectTouchDevice();
-    // @ts-ignore since this requires es2024, which I can't get to work with IntelliJ...
-    const {promise, resolve} = Promise.withResolvers();
-    // @ts-ignore some JQuery nonsense
+    const {promise, resolve} = Promise.withResolvers<undefined>();
+    // @ts-expect-error some JQuery nonsense
     $("body").load(pageTemplateURL, resolve);
     await promise;
 
@@ -865,7 +858,7 @@ function renderSummary(data: string|null, type: string, incident: Incident): str
 function reportEntryElement(entry: ReportEntry): object {
     // Build a container for the entry
 
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const entryContainer = $("<div />", {"class": "report_entry"});
 
     const strikable: boolean = !entry.system_entry;
@@ -884,7 +877,7 @@ function reportEntryElement(entry: ReportEntry): object {
 
     // Add the timestamp and author, with a Strike/Unstrike button
 
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const metaDataContainer = $("<p />", {"class": "report_entry_metadata"});
 
     if (strikable) {
@@ -903,7 +896,7 @@ function reportEntryElement(entry: ReportEntry): object {
             // we're on the field report page
             onclick = "setStrikeFieldReportEntry(" + fieldReportNumber + ", " + entry.id + ", " + !entry.stricken + ");";
         }
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         const strikeContainer = $("<button />", {"onclick": onclick});
         strikeContainer.addClass("badge btn btn-danger remove-badge float-end");
         strikeContainer.text(entry.stricken ? "Unstrike" : "Strike");
@@ -926,7 +919,7 @@ function reportEntryElement(entry: ReportEntry): object {
     if (author == null) {
         author = "(unknown)";
     }
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const authorContainer = $("<span />");
     authorContainer.text(entry.author);
     authorContainer.addClass("report_entry_author");
@@ -936,7 +929,7 @@ function reportEntryElement(entry: ReportEntry): object {
     if (entry.merged) {
         metaDataContainer.append(" ");
 
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         const link = $("<a />");
         link.text("field report #" + entry.merged);
         link.attr("href", urlReplace(url_viewFieldReports) + entry.merged);
@@ -956,7 +949,7 @@ function reportEntryElement(entry: ReportEntry): object {
 
     const lines = entry.text!.split("\n");
     for (const line of lines) {
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         const textContainer = $("<p />", {"class": "report_entry_text"});
         textContainer.text(line);
 
@@ -967,7 +960,7 @@ function reportEntryElement(entry: ReportEntry): object {
             .replace("<incident_number>", incidentNumber.toString())
             .replace("<attachment_number>", entry.id!.toString());
 
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         const attachmentLink = $("<a />", {"href": url});
         attachmentLink.text("Attached file");
 
@@ -977,14 +970,14 @@ function reportEntryElement(entry: ReportEntry): object {
 
     // Add a horizontal line after each entry
 
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     entryContainer.append( $("<hr />", {"class": "m-1"}) );
 
     return entryContainer;
 }
 
 function drawReportEntries(entries: ReportEntry[]): void {
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     const container = $("#report_entries");
     container.empty();
 
@@ -1100,12 +1093,12 @@ async function submitReportEntry(): Promise<void> {
 //
 
 function toggleShowHistory(): void {
-    // @ts-ignore JQuery
+    // @ts-expect-error JQuery
     if ($("#history_checkbox").is(":checked")) {
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         $("#report_entries").removeClass("hide-history");
     } else {
-        // @ts-ignore JQuery
+        // @ts-expect-error JQuery
         $("#report_entries").addClass("hide-history");
     }
 }
@@ -1114,8 +1107,8 @@ interface EditMap {
     [index: string]: EditMap|string;
 }
 
-async function editFromElement(element: HTMLInputElement|HTMLSelectElement, jsonKey: string, transform?: (v: any)=>any): Promise<void> {
-    let value: string = element.value;
+async function editFromElement(element: HTMLInputElement|HTMLSelectElement, jsonKey: string, transform?: (v: string)=>string|null): Promise<void> {
+    let value: string|null = element.value;
 
     if (transform != null) {
         value = transform(value);
@@ -1134,7 +1127,7 @@ async function editFromElement(element: HTMLInputElement|HTMLSelectElement, json
         current[path] = next;
         current = next;
     }
-    current[lastKey] = value;
+    current[lastKey] = value??"null";
 
     // Location must include type
 
@@ -1177,8 +1170,7 @@ async function requestEventSourceLock(): Promise<void>  {
     }
 
     function tryAcquireLock(): Promise<void> {
-        // @ts-ignore withResolves needs es2024
-        const {promise, resolve} = Promise.withResolvers();
+        const {promise, resolve} = Promise.withResolvers<undefined>();
         subscribeToUpdates(resolve);
         return promise;
     }
@@ -1204,7 +1196,7 @@ async function requestEventSourceLock(): Promise<void>  {
 //
 // The "closed" param is a callback to notify the caller that the EventSource has
 // been closed.
-function subscribeToUpdates(closed: ()=>{}): void {
+function subscribeToUpdates(closed: (value?: undefined)=>void): void {
     const eventSource = new EventSource(
         url_eventSource, { withCredentials: true }
     );
