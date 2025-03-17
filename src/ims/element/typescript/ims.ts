@@ -45,7 +45,7 @@ declare var url_incidentNumber: string;
 declare var viewIncidentsURL: string;
 
 interface Streets {
-    [index: number]: string,
+    [index: string]: string;
 }
 
 interface Location {
@@ -149,12 +149,12 @@ function applyTheme(): void {
             return;
         }
 
-        const themeSwitcherText = document.querySelector("#bd-theme-text");
-        const activeThemeIcon = document.querySelector(".theme-icon-active use");
-        const btnToActive: HTMLButtonElement|null = document.querySelector(`[data-bs-theme-value="${theme}"]`)!;
-        const svgOfActiveBtn: string|null = btnToActive?.querySelector("svg use")?.getAttribute("href")??null;
+        const themeSwitcherText: Element = document.querySelector("#bd-theme-text")!;
+        const activeThemeIcon: Element = document.querySelector(".theme-icon-active use")!;
+        const btnToActive: HTMLButtonElement = document.querySelector(`[data-bs-theme-value="${theme}"]`)!;
+        const svgOfActiveBtn: string = btnToActive.querySelector("svg use")!.getAttribute("href")!;
 
-        document.querySelectorAll("[data-bs-theme-value]").forEach(element => {
+        document.querySelectorAll("[data-bs-theme-value]").forEach((element: Element): void => {
             element.classList.remove("active");
             element.setAttribute("aria-pressed", "false");
         });
@@ -162,7 +162,7 @@ function applyTheme(): void {
         btnToActive.classList.add("active");
         btnToActive.setAttribute("aria-pressed", "true");
         if (svgOfActiveBtn) {
-            activeThemeIcon?.setAttribute("href", svgOfActiveBtn);
+            activeThemeIcon!.setAttribute("href", svgOfActiveBtn);
         }
         if (themeSwitcherText) {
             const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`;
@@ -174,7 +174,7 @@ function applyTheme(): void {
         }
     };
 
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (): void => {
         const storedTheme: string|null = getStoredTheme();
         if (storedTheme !== "light" && storedTheme !== "dark") {
             setTheme(getPreferredTheme());
@@ -183,8 +183,8 @@ function applyTheme(): void {
 
     showActiveTheme(getPreferredTheme());
 
-    document.querySelectorAll("[data-bs-theme-value]").forEach(toggle => {
-        toggle.addEventListener("click", () => {
+    document.querySelectorAll("[data-bs-theme-value]").forEach((toggle: Element): void => {
+        toggle.addEventListener("click", (): void => {
             const theme = toggle.getAttribute("data-bs-theme-value");
             if (theme) {
                 setStoredTheme(theme);
@@ -275,7 +275,9 @@ function compareReportEntries(a: any, b: any): number {
 // Request making
 //
 
-async function fetchJsonNoThrow(url: string, init: RequestInit|null): Promise<{resp: Response|null, json: any|null, err: string|null}> {
+async function fetchJsonNoThrow(url: string, init: RequestInit|null):
+    Promise<{resp: Response|null, json: any|null, err: string|null}>
+{
     if (init == null) {
         init = {};
     }
@@ -382,7 +384,7 @@ function timeElement(date: Date): HTMLTimeElement {
 
 
 // Disable an element
-function disable(elements: NodeListOf<Element>) {
+function disable(elements: Iterable<Element>) {
     for (const e of elements) {
         e.setAttribute("disabled", "");
     }
@@ -390,7 +392,7 @@ function disable(elements: NodeListOf<Element>) {
 
 
 // Enable an element
-function enable(elements: NodeListOf<Element>) {
+function enable(elements: Iterable<Element>) {
     for (const e of elements) {
         e.removeAttribute("disabled");
     }
@@ -418,48 +420,24 @@ function enableEditing() {
 }
 
 // Add an error indication to a control
-function controlHasError(element: any) {
-    // @ts-ignore JQuery
-    element.parent().addClass("is-invalid");
-}
-
-
-// Add a success indication to a control
-function controlHasSuccess(element: any, clearTimeout: number) {
-    element.addClass("is-valid");
-    if (clearTimeout != null) {
-        // @ts-ignore JQuery
-        element.delay("1000").queue(function(next) {
-            controlClear(element);
-            next();
-        });
-    }
-}
-
-// Add an error indication to a control
-function controlHasErrorNoJQuery(element: HTMLElement) {
+function controlHasError(element: HTMLElement) {
     element.classList.add("is-invalid");
 }
 
 
 // Add a success indication to a control
-function controlHasSuccessNoJQuery(element: HTMLElement, clearTimeout: number) {
+function controlHasSuccess(element: HTMLElement, clearTimeout: number) {
     element.classList.add("is-valid");
     if (clearTimeout != null) {
         setTimeout(()=>{
-            controlClearNoJQuery(element);
+            controlClear(element);
         }, clearTimeout);
     }
 }
 
 
 // Clear error/success indication from a control
-function controlClear(element: any) {
-    element.removeClass("is-invalid");
-    element.removeClass("is-valid");
-}
-
-function controlClearNoJQuery(element: HTMLElement) {
+function controlClear(element: HTMLElement) {
     element.classList.remove("is-invalid");
     element.classList.remove("is-valid");
 }
@@ -486,7 +464,7 @@ async function loadBody(): Promise<void> {
             eventLabel.classList.add("active-event");
         }
 
-        const activeEventIncidents = document.getElementById("active-event-incidents");
+        const activeEventIncidents: HTMLElement|null = document.getElementById("active-event-incidents");
         if (activeEventIncidents != null) {
             activeEventIncidents.setAttribute("href", urlReplace(url_viewIncidents));
             activeEventIncidents.classList.remove("hidden");
@@ -496,7 +474,7 @@ async function loadBody(): Promise<void> {
             }
         }
 
-        const activeEventFRs = document.getElementById("active-event-field-reports");
+        const activeEventFRs: HTMLElement|null = document.getElementById("active-event-field-reports");
         if (activeEventFRs != null) {
             activeEventFRs.setAttribute("href", urlReplace(url_viewFieldReports));
             activeEventFRs.classList.remove("hidden");
@@ -515,7 +493,7 @@ async function loadBody(): Promise<void> {
 
 // Add .touch or .no-touch class to top-level element if the browser is or is
 // not on a touch device, respectively.
-function detectTouchDevice() {
+function detectTouchDevice(): void {
     if ("ontouchstart" in document.documentElement) {
         document.documentElement.classList.add("touch");
     } else {
@@ -529,16 +507,10 @@ function detectTouchDevice() {
 //
 
 // Select an option element with a given value from a given select element.
-function selectOptionWithValue(select: any, value: string) {
-    select
-        .children("option")
-        .prop("selected", false)
-        ;
-
-    select
-        .children("option[value='" + value + "']")
-        .prop("selected", true)
-        ;
+function selectOptionWithValue(select: HTMLSelectElement, value: string|null) {
+    for (const opt of select.options) {
+        opt.selected = (opt.value === value);
+    }
 }
 
 
@@ -578,12 +550,12 @@ function stateSortKeyFromID(stateID: string): number|undefined {
 
 
 // Look up a concentric street's name given its ID.
-function concentricStreetFromID(streetID: any): string {
+function concentricStreetFromID(streetID: string|null): string {
     if (streetID == null || typeof concentricStreetNameByID === "undefined") {
         return "";
     }
 
-    const name = concentricStreetNameByID[streetID];
+    const name: string|undefined = concentricStreetNameByID[streetID];
     if (name == null) {
         console.warn("Unknown street ID: " + streetID);
         return "";
@@ -1017,21 +989,19 @@ function drawReportEntries(entries: ReportEntry[]): void {
 }
 
 function reportEntryEdited(): void {
-    // @ts-ignore JQuery
-    const text = $("#report_entry_add").val().trim();
-    // @ts-ignore JQuery
-    const submitButton = $("#report_entry_submit");
+    const text = (document.getElementById("report_entry_add")! as HTMLTextAreaElement).value.trim();
+    const submitButton = document.getElementById("report_entry_submit")!;
 
-    submitButton.removeClass("btn-default");
-    submitButton.removeClass("btn-warning");
-    submitButton.removeClass("btn-danger");
+    submitButton.classList.remove("btn-default");
+    submitButton.classList.remove("btn-warning");
+    submitButton.classList.remove("btn-danger");
 
     if (!text) {
-        submitButton.addClass("disabled");
-        submitButton.addClass("btn-default");
+        submitButton.classList.add("disabled");
+        submitButton.classList.add("btn-default");
     } else {
-        submitButton.removeClass("disabled");
-        submitButton.addClass("btn-warning");
+        submitButton.classList.remove("disabled");
+        submitButton.classList.add("btn-warning");
     }
 }
 
@@ -1044,6 +1014,11 @@ function onStrikeError(err: string): void {
     setErrorMessage(message);
 }
 
+// This is the function to call when a report entry is successfully stricken.
+// We need to be able to call either the incident.ts version or the field_report.ts
+// version, depending on the current page in scope. The ims.ts TypeScript file should
+// not depend on those files (lest there be a circular dependency), so we let those
+// files register their functions here instead.
 let registerOnStrikeSuccess: (() => Promise<void>)|null = null;
 
 async function setStrikeIncidentEntry(incidentNumber: number, reportEntryId: number, strike: boolean): Promise<void> {
@@ -1074,10 +1049,14 @@ async function setStrikeFieldReportEntry(fieldReportNumber: number, reportEntryI
     }
 }
 
+// This is the function to call when edits are being sent to the server.
+// We need to be able to call either the incident.ts version or the field_report.ts
+// version, depending on the current page in scope. The ims.ts TypeScript file should
+// not depend on those files (lest there be a circular dependency), so we let those
+// files register their functions here instead.
 let registerSendEdits: ((edits: any)=>Promise<{err:string|null}>)|null = null;
 async function submitReportEntry(): Promise<void> {
-    // @ts-ignore JQuery
-    const text = $("#report_entry_add").val().trim();
+    const text = (document.getElementById("report_entry_add") as HTMLTextAreaElement).value.trim();
 
     if (!text) {
         return;
@@ -1086,26 +1065,22 @@ async function submitReportEntry(): Promise<void> {
     console.log("New report entry:\n" + text);
 
     // Disable the submit button to prevent repeat submissions
-    // @ts-ignore JQuery
-    $("#report_entry_submit").addClass("disabled");
+    document.getElementById("report_entry_submit")!.classList.add("disabled");
     // send a dummy ID to appease the JSON parser in the server
     const {err} = await registerSendEdits!({"report_entries": [{"text": text, "id": -1}]});
     if (err != null) {
-        // @ts-ignore JQuery
-        const submitButton = $("#report_entry_submit");
-        submitButton.removeClass("disabled");
-        submitButton.removeClass("btn-default");
-        submitButton.removeClass("btn-warning");
-        submitButton.addClass("btn-danger");
-        // @ts-ignore JQuery
-        controlHasError($("#report_entry_add"));
+        const submitButton = document.getElementById("report_entry_submit")!;
+        submitButton.classList.remove("disabled");
+        submitButton.classList.remove("btn-default");
+        submitButton.classList.remove("btn-warning");
+        submitButton.classList.add("btn-danger");
+        controlHasError(document.getElementById("report_entry_add")!);
         return;
     }
-    // @ts-ignore JQuery
-    const $textArea = $("#report_entry_add");
+    const textArea = document.getElementById("report_entry_add")! as HTMLTextAreaElement;
     // Clear the report entry
-    $textArea.val("");
-    controlHasSuccess($textArea, 1000);
+    textArea.value = "";
+    controlHasSuccess(textArea, 1000);
     // Reset the submit button and its "disabled" status
     reportEntryEdited();
 }
@@ -1129,8 +1104,8 @@ interface EditMap {
     [index: string]: EditMap|string;
 }
 
-async function editFromElement(element: any, jsonKey: string, transform?: (v: any)=>any): Promise<void> {
-    let value = element.val();
+async function editFromElement(element: HTMLInputElement|HTMLSelectElement, jsonKey: string, transform?: (v: any)=>any): Promise<void> {
+    let value: string = element.value;
 
     if (transform != null) {
         value = transform(value);
@@ -1164,44 +1139,6 @@ async function editFromElement(element: any, jsonKey: string, transform?: (v: an
         controlHasError(element);
     } else {
         controlHasSuccess(element, 1000);
-    }
-}
-
-async function editFromElementNoJQuery(element: HTMLInputElement|HTMLSelectElement, jsonKey: string, transform?: (v: any)=>any): Promise<void> {
-    let value = element.value;
-
-    if (transform != null) {
-        value = transform(value);
-    }
-
-    // Build a JSON object representing the requested edits
-
-    const edits: EditMap = {};
-
-    const keyPath: string[] = jsonKey.split(".");
-    const lastKey: string = keyPath.pop()!;
-
-    let current: EditMap = edits;
-    for (const path of keyPath) {
-        const next: EditMap = {};
-        current[path] = next;
-        current = next;
-    }
-    current[lastKey] = value;
-
-    // Location must include type
-
-    if (edits.location != null && typeof edits.location !== "string") {
-        edits.location.type = "garett";  // UI only supports one type
-    }
-
-    // Send request to server
-
-    const {err} = await registerSendEdits!(edits);
-    if (err != null) {
-        controlHasErrorNoJQuery(element);
-    } else {
-        controlHasSuccessNoJQuery(element, 1000);
     }
 }
 
@@ -1328,14 +1265,6 @@ function clearErrorMessage(): void {
     const errInfo: HTMLElement|null = document.getElementById("error_info");
     if (errInfo) {
         errInfo.classList.add("hidden");
-    }
-}
-
-// Delete everything in a DOM Node. This is the pure JS equivalent of
-// JQuery's .empty() function.
-function emptyNode(node: Node): void {
-    while (node.firstChild) {
-        node.removeChild(node.firstChild);
     }
 }
 

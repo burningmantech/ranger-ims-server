@@ -48,15 +48,15 @@ function applyTheme() {
         const themeSwitcherText = document.querySelector("#bd-theme-text");
         const activeThemeIcon = document.querySelector(".theme-icon-active use");
         const btnToActive = document.querySelector(`[data-bs-theme-value="${theme}"]`);
-        const svgOfActiveBtn = btnToActive?.querySelector("svg use")?.getAttribute("href") ?? null;
-        document.querySelectorAll("[data-bs-theme-value]").forEach(element => {
+        const svgOfActiveBtn = btnToActive.querySelector("svg use").getAttribute("href");
+        document.querySelectorAll("[data-bs-theme-value]").forEach((element) => {
             element.classList.remove("active");
             element.setAttribute("aria-pressed", "false");
         });
         btnToActive.classList.add("active");
         btnToActive.setAttribute("aria-pressed", "true");
         if (svgOfActiveBtn) {
-            activeThemeIcon?.setAttribute("href", svgOfActiveBtn);
+            activeThemeIcon.setAttribute("href", svgOfActiveBtn);
         }
         if (themeSwitcherText) {
             const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`;
@@ -74,7 +74,7 @@ function applyTheme() {
         }
     });
     showActiveTheme(getPreferredTheme());
-    document.querySelectorAll("[data-bs-theme-value]").forEach(toggle => {
+    document.querySelectorAll("[data-bs-theme-value]").forEach((toggle) => {
         toggle.addEventListener("click", () => {
             const theme = toggle.getAttribute("data-bs-theme-value");
             if (theme) {
@@ -280,39 +280,19 @@ function enableEditing() {
 }
 // Add an error indication to a control
 function controlHasError(element) {
-    // @ts-ignore JQuery
-    element.parent().addClass("is-invalid");
-}
-// Add a success indication to a control
-function controlHasSuccess(element, clearTimeout) {
-    element.addClass("is-valid");
-    if (clearTimeout != null) {
-        // @ts-ignore JQuery
-        element.delay("1000").queue(function (next) {
-            controlClear(element);
-            next();
-        });
-    }
-}
-// Add an error indication to a control
-function controlHasErrorNoJQuery(element) {
     element.classList.add("is-invalid");
 }
 // Add a success indication to a control
-function controlHasSuccessNoJQuery(element, clearTimeout) {
+function controlHasSuccess(element, clearTimeout) {
     element.classList.add("is-valid");
     if (clearTimeout != null) {
         setTimeout(() => {
-            controlClearNoJQuery(element);
+            controlClear(element);
         }, clearTimeout);
     }
 }
 // Clear error/success indication from a control
 function controlClear(element) {
-    element.removeClass("is-invalid");
-    element.removeClass("is-valid");
-}
-function controlClearNoJQuery(element) {
     element.classList.remove("is-invalid");
     element.classList.remove("is-valid");
 }
@@ -368,12 +348,9 @@ function detectTouchDevice() {
 //
 // Select an option element with a given value from a given select element.
 function selectOptionWithValue(select, value) {
-    select
-        .children("option")
-        .prop("selected", false);
-    select
-        .children("option[value='" + value + "']")
-        .prop("selected", true);
+    for (const opt of select.options) {
+        opt.selected = (opt.value === value);
+    }
 }
 //
 // Incident data
@@ -766,20 +743,18 @@ function drawReportEntries(entries) {
     }
 }
 function reportEntryEdited() {
-    // @ts-ignore JQuery
-    const text = $("#report_entry_add").val().trim();
-    // @ts-ignore JQuery
-    const submitButton = $("#report_entry_submit");
-    submitButton.removeClass("btn-default");
-    submitButton.removeClass("btn-warning");
-    submitButton.removeClass("btn-danger");
+    const text = document.getElementById("report_entry_add").value.trim();
+    const submitButton = document.getElementById("report_entry_submit");
+    submitButton.classList.remove("btn-default");
+    submitButton.classList.remove("btn-warning");
+    submitButton.classList.remove("btn-danger");
     if (!text) {
-        submitButton.addClass("disabled");
-        submitButton.addClass("btn-default");
+        submitButton.classList.add("disabled");
+        submitButton.classList.add("btn-default");
     }
     else {
-        submitButton.removeClass("disabled");
-        submitButton.addClass("btn-warning");
+        submitButton.classList.remove("disabled");
+        submitButton.classList.add("btn-warning");
     }
 }
 // The error callback for a report entry strike call.
@@ -790,6 +765,11 @@ function onStrikeError(err) {
     console.log(message);
     setErrorMessage(message);
 }
+// This is the function to call when a report entry is successfully stricken.
+// We need to be able to call either the incident.ts version or the field_report.ts
+// version, depending on the current page in scope. The ims.ts TypeScript file should
+// not depend on those files (lest there be a circular dependency), so we let those
+// files register their functions here instead.
 let registerOnStrikeSuccess = null;
 async function setStrikeIncidentEntry(incidentNumber, reportEntryId, strike) {
     const url = urlReplace(url_incident_reportEntry)
@@ -819,35 +799,35 @@ async function setStrikeFieldReportEntry(fieldReportNumber, reportEntryId, strik
         registerOnStrikeSuccess();
     }
 }
+// This is the function to call when edits are being sent to the server.
+// We need to be able to call either the incident.ts version or the field_report.ts
+// version, depending on the current page in scope. The ims.ts TypeScript file should
+// not depend on those files (lest there be a circular dependency), so we let those
+// files register their functions here instead.
 let registerSendEdits = null;
 async function submitReportEntry() {
-    // @ts-ignore JQuery
-    const text = $("#report_entry_add").val().trim();
+    const text = document.getElementById("report_entry_add").value.trim();
     if (!text) {
         return;
     }
     console.log("New report entry:\n" + text);
     // Disable the submit button to prevent repeat submissions
-    // @ts-ignore JQuery
-    $("#report_entry_submit").addClass("disabled");
+    document.getElementById("report_entry_submit").classList.add("disabled");
     // send a dummy ID to appease the JSON parser in the server
     const { err } = await registerSendEdits({ "report_entries": [{ "text": text, "id": -1 }] });
     if (err != null) {
-        // @ts-ignore JQuery
-        const submitButton = $("#report_entry_submit");
-        submitButton.removeClass("disabled");
-        submitButton.removeClass("btn-default");
-        submitButton.removeClass("btn-warning");
-        submitButton.addClass("btn-danger");
-        // @ts-ignore JQuery
-        controlHasError($("#report_entry_add"));
+        const submitButton = document.getElementById("report_entry_submit");
+        submitButton.classList.remove("disabled");
+        submitButton.classList.remove("btn-default");
+        submitButton.classList.remove("btn-warning");
+        submitButton.classList.add("btn-danger");
+        controlHasError(document.getElementById("report_entry_add"));
         return;
     }
-    // @ts-ignore JQuery
-    const $textArea = $("#report_entry_add");
+    const textArea = document.getElementById("report_entry_add");
     // Clear the report entry
-    $textArea.val("");
-    controlHasSuccess($textArea, 1000);
+    textArea.value = "";
+    controlHasSuccess(textArea, 1000);
     // Reset the submit button and its "disabled" status
     reportEntryEdited();
 }
@@ -866,7 +846,7 @@ function toggleShowHistory() {
     }
 }
 async function editFromElement(element, jsonKey, transform) {
-    let value = element.val();
+    let value = element.value;
     if (transform != null) {
         value = transform(value);
     }
@@ -892,35 +872,6 @@ async function editFromElement(element, jsonKey, transform) {
     }
     else {
         controlHasSuccess(element, 1000);
-    }
-}
-async function editFromElementNoJQuery(element, jsonKey, transform) {
-    let value = element.value;
-    if (transform != null) {
-        value = transform(value);
-    }
-    // Build a JSON object representing the requested edits
-    const edits = {};
-    const keyPath = jsonKey.split(".");
-    const lastKey = keyPath.pop();
-    let current = edits;
-    for (const path of keyPath) {
-        const next = {};
-        current[path] = next;
-        current = next;
-    }
-    current[lastKey] = value;
-    // Location must include type
-    if (edits.location != null && typeof edits.location !== "string") {
-        edits.location.type = "garett"; // UI only supports one type
-    }
-    // Send request to server
-    const { err } = await registerSendEdits(edits);
-    if (err != null) {
-        controlHasErrorNoJQuery(element);
-    }
-    else {
-        controlHasSuccessNoJQuery(element, 1000);
     }
 }
 //
@@ -1032,13 +983,6 @@ function clearErrorMessage() {
     const errInfo = document.getElementById("error_info");
     if (errInfo) {
         errInfo.classList.add("hidden");
-    }
-}
-// Delete everything in a DOM Node. This is the pure JS equivalent of
-// JQuery's .empty() function.
-function emptyNode(node) {
-    while (node.firstChild) {
-        node.removeChild(node.firstChild);
     }
 }
 // Remove the old LocalStorage caches that IMS no longer uses, so that

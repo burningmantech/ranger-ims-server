@@ -49,7 +49,7 @@ function drawAccess() {
             .getElementsByClassName("list-group")[0]
             .getElementsByClassName("list-group-item")[0];
     }
-    emptyNode(container);
+    container.replaceChildren();
     if (accessControlList == null) {
         return;
     }
@@ -78,7 +78,7 @@ function updateEventAccess(event, mode) {
     eventAccess.getElementsByClassName("event_name")[0].textContent = event;
     eventAccess.getElementsByClassName("access_mode")[0].textContent = mode;
     const entryContainer = eventAccess.getElementsByClassName("list-group")[0];
-    emptyNode(entryContainer);
+    entryContainer.replaceChildren();
     for (const accessEntry of eventACL[mode] ?? []) {
         const entryItem = _eventsEntryTemplate.cloneNode(true);
         entryItem.append(accessEntry.expression);
@@ -101,7 +101,7 @@ async function addEvent(sender) {
         window.alert(message);
         await loadAccessControlList();
         drawAccess();
-        controlHasErrorNoJQuery(sender);
+        controlHasError(sender);
         return;
     }
     await loadAccessControlList();
@@ -109,8 +109,7 @@ async function addEvent(sender) {
     sender.value = ""; // Clear input field
 }
 async function addAccess(sender) {
-    // get the relevant ".event_access"
-    const container = sender.parentElement.parentElement.parentElement;
+    const container = sender.closest(".event_access");
     const event = container.getElementsByClassName("event_name")[0].textContent;
     const mode = container.getElementsByClassName("access_mode")[0].textContent;
     const newExpression = sender.value.trim();
@@ -151,14 +150,13 @@ async function addAccess(sender) {
         updateEventAccess(event, mode);
     }
     if (err != null) {
-        controlHasErrorNoJQuery(sender);
+        controlHasError(sender);
         return;
     }
     sender.value = ""; // Clear input field
 }
 async function removeAccess(sender) {
-    // get the relevant ".event_access"
-    const container = sender.parentElement.parentElement.parentElement;
+    const container = sender.closest(".event_access");
     const event = container.getElementsByClassName("event_name")[0].textContent;
     const mode = container.getElementsByClassName("access_mode")[0].textContent;
     const expression = sender.parentElement.getAttribute("value").trim();
@@ -185,8 +183,7 @@ async function removeAccess(sender) {
     }
 }
 async function setValidity(sender) {
-    // get the relevant ".event_access"
-    const container = sender.parentElement.parentElement.parentElement;
+    const container = sender.closest(".event_access");
     const event = container.getElementsByClassName("event_name")[0].textContent;
     const mode = container.getElementsByClassName("access_mode")[0].textContent;
     const expression = sender.parentElement.getAttribute("value").trim();
@@ -205,7 +202,7 @@ async function setValidity(sender) {
         updateEventAccess(event, mode);
     }
     if (err != null) {
-        controlHasErrorNoJQuery(sender);
+        controlHasError(sender);
         return;
     }
     sender.value = ""; // Clear input field

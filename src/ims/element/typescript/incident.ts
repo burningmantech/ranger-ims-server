@@ -35,8 +35,7 @@ async function initIncidentPage(): Promise<void> {
 
     // for a new incident, jump to summary field
     if (incident!.number == null) {
-        // @ts-ignore JQuery
-        $("#incident_summary").focus();
+        document.getElementById("incident_summary")!.focus();
     }
 
     // Warn the user if they're about to navigate away with unsaved text.
@@ -102,10 +101,8 @@ async function initIncidentPage(): Promise<void> {
         if (e.key === "a") {
             e.preventDefault();
             // Scroll to report_entry_add field
-            // @ts-ignore JQuery
-            $("html, body").animate({scrollTop: $("#report_entry_add").offset().top}, 500);
-            // @ts-ignore JQuery
-            $("#report_entry_add").focus();
+            document.getElementById("report_entry_add")!.focus();
+            document.getElementById("report_entry_add")!.scrollIntoView(true);
         }
         // h --> toggle showing system entries
         if (e.key.toLowerCase() === "h") {
@@ -122,10 +119,8 @@ async function initIncidentPage(): Promise<void> {
             $("#helpModal").modal("toggle");
         }
     });
-    // @ts-ignore JQuery
-    $("#report_entry_add")[0].addEventListener("keydown", function (e: KeyboardEvent): void {
-        // @ts-ignore JQuery
-        const submitEnabled = !$("#report_entry_submit").hasClass("disabled");
+    document.getElementById("report_entry_add")!.addEventListener("keydown", function (e: KeyboardEvent): void {
+        const submitEnabled = !document.getElementById("report_entry_submit")!.classList.contains("disabled");
         if (submitEnabled && (e.ctrlKey || e.altKey) && e.key === "Enter") {
             submitReportEntry();
         }
@@ -212,6 +207,7 @@ interface Personnel {
 }
 
 interface PersonnelMap {
+    // key is Ranger handle
     [index: string]: Personnel,
 }
 
@@ -226,15 +222,9 @@ async function loadPersonnel(): Promise<{err: string|null}> {
     const _personnel: PersonnelMap = {};
     for (const record of json) {
         // Filter inactive Rangers out
-        // FIXME: better yet: filter based on on-playa state
-        switch (record.status) {
-            case "active":
-                break;
-            default:
-                continue;
+        if (record.status === "active") {
+            _personnel[record.handle] = record;
         }
-
-        _personnel[record.handle] = record;
     }
     personnel = _personnel;
     return {err: null};
@@ -383,8 +373,7 @@ function drawIncidentFields() {
     toggleShowHistory();
     drawMergedReportEntries();
 
-    // @ts-ignore JQuery
-    $("#report_entry_add").on("input", reportEntryEdited);
+    document.getElementById("report_entry_add")!.addEventListener("input", reportEntryEdited);
 }
 
 
@@ -394,32 +383,31 @@ function drawIncidentFields() {
 
 function addLocationAddressOptions(): void {
     const hours: number[] = range(1, 13);
+    const hourElement: HTMLElement = document.getElementById("incident_location_address_radial_hour")!;
     for (const hour of hours) {
-        const hourStr = padTwo(hour);
-        // @ts-ignore JQuery
-        $("#incident_location_address_radial_hour")
-            // @ts-ignore JQuery
-            .append($("<option />", { "value": hourStr, "text": hourStr }))
-            ;
+        const hourStr: string = padTwo(hour);
+        const newOption: HTMLOptionElement = document.createElement("option");
+        newOption.value = hourStr;
+        newOption.textContent = hourStr;
+        hourElement.append(newOption);
     }
 
     const minutes: number[] = range(0, 12, 5);
+    const minuteElement: HTMLElement = document.getElementById("incident_location_address_radial_minute")!;
     for (const minute of minutes) {
         const minuteStr = padTwo(minute);
-        // @ts-ignore JQuery
-        $("#incident_location_address_radial_minute")
-            // @ts-ignore JQuery
-            .append($("<option />", { "value": minuteStr, "text": minuteStr }))
-            ;
+        const newOption: HTMLOptionElement = document.createElement("option");
+        newOption.value = minuteStr;
+        newOption.textContent = minuteStr;
+        minuteElement.append(newOption);
     }
 
+    const concentricElement: HTMLElement = document.getElementById("incident_location_address_concentric")!;
     for (const id in concentricStreetNameByID!) {
-        const name = concentricStreetNameByID[id];
-        // @ts-ignore JQuery
-        $("#incident_location_address_concentric")
-            // @ts-ignore JQuery
-            .append($("<option />", { "value": id, "text": name }))
-            ;
+        const newOption: HTMLOptionElement = document.createElement("option");
+        newOption.value = id;
+        newOption.textContent = concentricStreetNameByID[id];
+        concentricElement.append(newOption);
     }
 }
 
@@ -442,8 +430,7 @@ function drawIncidentNumber(): void {
     if (number == null) {
         number = "(new)";
     }
-    // @ts-ignore JQuery
-    $("#incident_number").text(number);
+    document.getElementById("incident_number")!.textContent = number.toString();
 }
 
 
@@ -453,8 +440,8 @@ function drawIncidentNumber(): void {
 
 function drawState(): void {
     selectOptionWithValue(
-        // @ts-ignore JQuery
-        $("#incident_state"), stateForIncident(incident)
+        document.getElementById("incident_state") as HTMLSelectElement,
+        stateForIncident(incident!)
     );
 }
 
@@ -464,15 +451,14 @@ function drawState(): void {
 //
 
 function drawCreated(): void {
-    const date = incident!.created;
+    const date: string|null = incident!.created??null;
     if (date == null) {
         return;
     }
-    const d = Date.parse(date);
-    // @ts-ignore JQuery
-    $("#created_datetime").text(`${shortDate.format(d)} ${shortTimeSec.format(d)}`);
-    // @ts-ignore JQuery
-    $("#created_datetime").attr("title", fullDateTime.format(d));
+    const d: number = Date.parse(date);
+    const createdElement: HTMLElement = document.getElementById("created_datetime")!;
+    createdElement.textContent = `${shortDate.format(d)} ${shortTimeSec.format(d)}`;
+    createdElement.setAttribute("title", fullDateTime.format(d));
 }
 
 //
@@ -480,10 +466,15 @@ function drawCreated(): void {
 //
 
 function drawPriority(): void {
+    const priorityElement = document.getElementById("incident_priority");
+    // priority is currently hidden from the incident page, so we should expect this early return
+    if (priorityElement == null) {
+        return;
+    }
     selectOptionWithValue(
-        // @ts-ignore JQuery
-        $("#incident_priority"), incident.priority
-    );
+        priorityElement as HTMLSelectElement,
+        (incident!.priority??"").toString(),
+    )
 }
 
 
@@ -492,21 +483,19 @@ function drawPriority(): void {
 //
 
 function drawIncidentSummary(): void {
+    const summaryElement = document.getElementById("incident_summary") as HTMLInputElement;
     if (incident!.summary) {
-        // @ts-ignore JQuery
-        $("#incident_summary").val(incident.summary);
-        // @ts-ignore JQuery
-        $("#incident_summary").attr("placeholder", "");
+        summaryElement.value = incident!.summary;
+        summaryElement.placeholder = "";
+        summaryElement.setAttribute("placeholder", "");
         return;
     }
 
-    // @ts-ignore JQuery
-    $("#incident_summary")[0].removeAttribute("value");
+    summaryElement.value = "";
     const summarized = summarizeIncident(incident!);
+    // only replace the placeholder if it would be nonempty
     if (summarized) {
-        // only replace the placeholder if it would be nonempty
-        // @ts-ignore JQuery
-        $("#incident_summary").attr("placeholder", summarized);
+        summaryElement.placeholder = summarized;
     }
 }
 
@@ -515,69 +504,56 @@ function drawIncidentSummary(): void {
 // Populate Rangers list
 //
 
-let _rangerItem: HTMLCollection|null = null;
+let _rangerItem: HTMLElement|null = null;
 
 function drawRangers() {
     if (_rangerItem == null) {
-        // @ts-ignore JQuery
-        _rangerItem = $("#incident_rangers_list")
-            .children(".list-group-item:first")
-            ;
+        _rangerItem = document.getElementById("incident_rangers_list")!
+            .getElementsByClassName("list-group-item")[0] as HTMLElement;
     }
 
-    const items: any[] = [];
-
-    const handles = incident!.ranger_handles??[];
+    const handles: string[] = incident!.ranger_handles??[];
     handles.sort((a, b) => a.localeCompare(b));
 
+    const rangersElement: HTMLElement = document.getElementById("incident_rangers_list")!;
+    rangersElement.replaceChildren();
     for (const handle of handles) {
-        let ranger: string|HTMLElement|null = null;
+        let ranger: string|HTMLAnchorElement|null = null;
         if (personnel?.[handle] == null) {
             ranger = textAsHTML(handle);
         } else {
             const person = personnel[handle];
-            // @ts-ignore JQuery
-            ranger = $("<a>", {
-                text: textAsHTML(rangerAsString(person)),
-                href: `${clubhousePersonURL}/${person.directory_id}`,
-            });
+            ranger = document.createElement("a");
+            ranger.innerText = textAsHTML(rangerAsString(person));
+            ranger.href = `${clubhousePersonURL}/${person.directory_id}`;
         }
-        // @ts-ignore JQuery
-        const item = _rangerItem!.clone();
-        item.append(ranger);
-        item.attr("value", textAsHTML(handle));
-        items.push(item);
+        const item = _rangerItem!.cloneNode(true) as HTMLElement;
+        item.append(ranger!);
+        item.setAttribute("value", textAsHTML(handle));
+        rangersElement.append(item);
     }
-
-    // @ts-ignore JQuery
-    const container = $("#incident_rangers_list");
-    container.empty();
-    container.append(items);
 }
 
 
 function drawRangersToAdd(): void {
-    // @ts-ignore JQuery
-    const datalist = $("#ranger_handles");
+    const datalist = document.getElementById("ranger_handles") as HTMLDataListElement;
 
-    const handles: any[] = [];
+    const handles: string[] = [];
     for (const handle in personnel) {
         handles.push(handle);
     }
-    handles.sort((a, b) => a.localeCompare(b));
+    handles.sort((a: string, b: string) => a.localeCompare(b));
 
-    datalist.empty();
-    // @ts-ignore JQuery
-    datalist.append($("<option />"));
+    datalist.replaceChildren();
+    datalist.append(document.createElement("option"));
 
     if (personnel != null) {
         for (const handle of handles) {
             const ranger = personnel[handle];
 
-            // @ts-ignore JQuery
-            const option = $("<option />");
-            option.val(handle);
-            option.text(rangerAsString(ranger));
+            const option: HTMLOptionElement = document.createElement("option");
+            option.value = handle;
+            option.text = rangerAsString(ranger);
 
             datalist.append(option);
         }
@@ -594,49 +570,36 @@ function rangerAsString(ranger: Personnel): string {
 // Populate incident types list
 //
 
-let _typesItem: HTMLCollection|null = null;
+let _typesItem: HTMLElement|null = null;
 
 function drawIncidentTypes() {
     if (_typesItem == null) {
-        // @ts-ignore JQuery
-        _typesItem = $("#incident_types_list")
-            .children(".list-group-item:first")
-            ;
+        _typesItem = document.getElementById("incident_types_list")!
+            .getElementsByClassName("list-group-item")[0] as HTMLElement;
     }
 
-    const items: any[] = [];
-
-    const incidentTypes = incident!.incident_types??[];
+    const incidentTypes: string[] = incident!.incident_types??[];
     incidentTypes.sort();
 
-    for (const incidentType of incidentTypes) {
-        // @ts-ignore JQuery
-        const item = _typesItem.clone();
-        item.attr("value", textAsHTML(incidentType));
-        item.append(textAsHTML(incidentType));
-        items.push(item);
-    }
+    const typesElement: HTMLElement = document.getElementById("incident_types_list")!;
+    typesElement.replaceChildren();
 
-    // @ts-ignore JQuery
-    const container = $("#incident_types_list");
-    container.empty();
-    container.append(items);
+    for (const incidentType of incidentTypes) {
+        const item = _typesItem!.cloneNode(true) as HTMLElement;
+        item.append(textAsHTML(incidentType));
+        item.setAttribute("value", textAsHTML(incidentType));
+        typesElement.append(item);
+    }
 }
 
 
 function drawIncidentTypesToAdd() {
-    // @ts-ignore JQuery
-    const datalist = $("#incident_types");
-
-    datalist.empty();
-    // @ts-ignore JQuery
-    datalist.append($("<option />"));
-
+    const datalist = document.getElementById("incident_types") as HTMLDataListElement;
+    datalist.replaceChildren();
+    datalist.append(document.createElement("option"));
     for (const incidentType of incidentTypes) {
-        // @ts-ignore JQuery
-        const option = $("<option />");
-        option.val(incidentType);
-
+        const option: HTMLOptionElement = document.createElement("option");
+        option.value = incidentType;
         datalist.append(option);
     }
 }
@@ -648,8 +611,8 @@ function drawIncidentTypesToAdd() {
 
 function drawLocationName() {
     if (incident!.location?.name) {
-        // @ts-ignore JQuery
-        $("#incident_location_name").val(incident.location.name);
+        const locName = document.getElementById("incident_location_name") as HTMLInputElement;
+        locName.value = incident!.location.name;
     }
 }
 
@@ -660,8 +623,8 @@ function drawLocationAddressRadialHour() {
         hour = padTwo(incident!.location.radial_hour);
     }
     selectOptionWithValue(
-        // @ts-ignore JQuery
-        $("#incident_location_address_radial_hour"), hour
+        document.getElementById("incident_location_address_radial_hour") as HTMLSelectElement,
+        hour,
     );
 }
 
@@ -672,8 +635,8 @@ function drawLocationAddressRadialMinute() {
         minute = normalizeMinute(incident!.location.radial_minute);
     }
     selectOptionWithValue(
-        // @ts-ignore JQuery
-        $("#incident_location_address_radial_minute"), minute
+        document.getElementById("incident_location_address_radial_minute") as HTMLSelectElement,
+        minute,
     );
 }
 
@@ -684,18 +647,16 @@ function drawLocationAddressConcentric() {
         concentric = incident!.location.concentric;
     }
     selectOptionWithValue(
-        // @ts-ignore JQuery
-        $("#incident_location_address_concentric"), concentric
+        document.getElementById("incident_location_address_concentric") as HTMLSelectElement,
+        concentric,
     );
 }
 
 
 function drawLocationDescription() {
     if (incident!.location?.description) {
-        // @ts-ignore JQuery
-        $("#incident_location_description")
-            .val(incident!.location.description)
-            ;
+        const description = document.getElementById("incident_location_description") as HTMLInputElement;
+        description.value = incident!.location.description;
     }
 }
 
@@ -705,16 +666,11 @@ function drawLocationDescription() {
 //
 
 function drawMergedReportEntries() {
-    const entries: ReportEntry[] = [];
-
-    if (incident!.report_entries) {
-        // @ts-ignore JQuery
-        $.merge(entries, incident.report_entries);
-    }
+    const entries: ReportEntry[] = (incident!.report_entries??[]).slice()
 
     if (attachedFieldReports) {
-        // @ts-ignore JQuery
-        if ($("#merge_reports_checkbox").is(":checked")) {
+        const mergedCheckbox = document.getElementById("merge_reports_checkbox") as HTMLInputElement;
+        if (mergedCheckbox.checked) {
             for (const report of attachedFieldReports) {
                 for (const entry of report.report_entries??[]) {
                     entry.merged = report.number;
@@ -730,75 +686,65 @@ function drawMergedReportEntries() {
 }
 
 
-let _reportsItem: HTMLCollection|null = null;
+let _reportsItem: HTMLElement|null = null;
 
 function drawAttachedFieldReports() {
     if (_reportsItem == null) {
-        // @ts-ignore JQuery
-        _reportsItem = $("#attached_field_reports")
-            .children(".list-group-item:first")
-            ;
-        if (_reportsItem == null) {
+         const elements = document.getElementById("attached_field_reports")!
+            .getElementsByClassName("list-group-item");
+        if (elements.length === 0) {
             console.error("found no reportsItem");
             return;
         }
+        _reportsItem = elements[0] as HTMLElement;
     }
-
-    const items: HTMLElement[] = [];
 
     const reports = attachedFieldReports??[];
     reports.sort();
 
-    for (const report of reports) {
-        // @ts-ignore JQuery
-        const item = _reportsItem.clone();
-        // @ts-ignore JQuery
-        const link = $("<a />");
-        link.attr("href", urlReplace(url_viewFieldReports) + report.number);
-        link.text(fieldReportAsString(report));
-        item.append(link);
-        item.data(report);
-        items.push(item);
-    }
+    const container = document.getElementById("attached_field_reports")!;
+    container.replaceChildren();
 
-    // @ts-ignore JQuery
-    const container = $("#attached_field_reports");
-    container.empty();
-    container.append(items);
+    for (const report of reports) {
+        const link: HTMLAnchorElement = document.createElement("a");
+        link.href = urlReplace(url_viewFieldReports) + report.number;
+        link.innerText = fieldReportAsString(report);
+
+        const item = _reportsItem.cloneNode(true) as HTMLElement;
+        item.append(link);
+        item.setAttribute("fr-number", report.number!.toString());
+
+        container.append(item);
+    }
 }
 
 
 function drawFieldReportsToAttach() {
-    // @ts-ignore JQuery
-    const container = $("#attached_field_report_add_container");
-    // @ts-ignore JQuery
-    const select = $("#attached_field_report_add");
+    const container = document.getElementById("attached_field_report_add_container") as HTMLDivElement;
+    const select = document.getElementById("attached_field_report_add") as HTMLSelectElement;
 
-    select.empty();
-    // @ts-ignore JQuery
-    select.append($("<option />"));
+    select.replaceChildren();
+    select.append(document.createElement("option"));
 
     if (!allFieldReports) {
-        container.addClass("hidden");
+        container.classList.add("hidden");
     } else {
-        // @ts-ignore JQuery
-        select.append($("<optgroup label=\"Unattached to any incident\">"));
+        const unattachedGroup: HTMLOptGroupElement = document.createElement("optgroup");
+        unattachedGroup.label = "Unattached to any incident";
+        select.append(unattachedGroup);
         for (const report of allFieldReports) {
             // Skip field reports that *are* attached to an incident
             if (report.incident != null) {
                 continue;
             }
-            // @ts-ignore JQuery
-            const option = $("<option />");
-            option.val(report.number);
-            option.text(fieldReportAsString(report));
-
+            const option: HTMLOptionElement = document.createElement("option");
+            option.value = report.number!.toString();
+            option.text = fieldReportAsString(report);
             select.append(option);
         }
-        // @ts-ignore JQuery
-        select.append($("</optgroup>"));
-        // @ts-ignore JQuery
-        select.append($("<optgroup label=\"Attached to another incident\">"));
+        const attachedGroup: HTMLOptGroupElement = document.createElement("optgroup");
+        attachedGroup.label = "Attached to another incident";
+        select.append(attachedGroup);
         for (const report of allFieldReports) {
             // Skip field reports that *are not* attached to an incident
             if (report.incident == null) {
@@ -808,17 +754,14 @@ function drawFieldReportsToAttach() {
             if (report.incident === incidentNumber) {
                 continue;
             }
-            // @ts-ignore JQuery
-            const option = $("<option />");
-            option.val(report.number);
-            option.text(fieldReportAsString(report));
-
+            const option: HTMLOptionElement = document.createElement("option");
+            option.value = report.number!.toString();
+            option.text = fieldReportAsString(report);
             select.append(option);
         }
-        // @ts-ignore JQuery
-        select.append($("</optgroup>"));
+        select.append(document.createElement("optgroup"));
 
-        container.removeClass("hidden");
+        container.classList.remove("hidden");
     }
 }
 
@@ -893,11 +836,12 @@ async function sendEdits(edits: Incident): Promise<{err:string|null}> {
 }
 registerSendEdits = sendEdits;
 
-async function editState() {
+async function editState(): Promise<void> {
     // @ts-ignore JQuery
-    const $state = $("#incident_state");
+    // const $state = $("#incident_state");
+    const state = document.getElementById("incident_state") as HTMLSelectElement;
 
-    if ($state.val() === "closed" && (incident!.incident_types??[]).length === 0) {
+    if (state.value === "closed" && (incident!.incident_types??[]).length === 0) {
         window.alert(
             "Closing out this incident?\n"+
             "Please add an incident type!\n\n" +
@@ -908,19 +852,19 @@ async function editState() {
         );
     }
 
-    await editFromElement($state, "state");
+    await editFromElement(state, "state");
 }
 
 
 async function editIncidentSummary(): Promise<void> {
-    // @ts-ignore JQuery
-    await editFromElement($("#incident_summary"), "summary");
+    const summaryInput = document.getElementById("incident_summary") as HTMLInputElement;
+    await editFromElement(summaryInput, "summary");
 }
 
 
 async function editLocationName(): Promise<void> {
-    // @ts-ignore JQuery
-    await editFromElement($("#incident_location_name"), "location.name");
+    const locationInput = document.getElementById("incident_location_name") as HTMLInputElement;
+    await editFromElement(locationInput, "location.name");
 }
 
 
@@ -933,51 +877,37 @@ function transformAddressInteger(value: string): number|null {
 
 
 async function editLocationAddressRadialHour(): Promise<void> {
-    await editFromElement(
-        // @ts-ignore JQuery
-        $("#incident_location_address_radial_hour"),
-        "location.radial_hour",
-        transformAddressInteger
-    );
+    const hourInput = document.getElementById("incident_location_address_radial_hour") as HTMLInputElement;
+    await editFromElement(hourInput, "location.radial_hour", transformAddressInteger);
 }
 
 
 async function editLocationAddressRadialMinute(): Promise<void> {
-    await editFromElement(
-        // @ts-ignore JQuery
-        $("#incident_location_address_radial_minute"),
-        "location.radial_minute",
-        transformAddressInteger
-    );
+    const minuteInput = document.getElementById("incident_location_address_radial_minute") as HTMLInputElement;
+    await editFromElement(minuteInput, "location.radial_minute", transformAddressInteger);
 }
 
 
 async function editLocationAddressConcentric(): Promise<void> {
-    await editFromElement(
-        // @ts-ignore JQuery
-        $("#incident_location_address_concentric"),
-        "location.concentric",
-        transformAddressInteger
-    );
+    const concentricInput = document.getElementById("incident_location_address_concentric") as HTMLSelectElement;
+    await editFromElement(concentricInput, "location.concentric", transformAddressInteger);
 }
 
 
 async function editLocationDescription(): Promise<void> {
-    // @ts-ignore JQuery
-    await editFromElement($("#incident_location_description"), "location.description");
+    const descriptionInput = document.getElementById("incident_location_description") as HTMLInputElement;
+    await editFromElement(descriptionInput, "location.description");
 }
 
 
 async function removeRanger(sender: HTMLElement): Promise<void> {
-    // @ts-ignore JQuery
-    sender = $(sender);
-    // @ts-ignore JQuery
-    const rangerHandle = sender.parent().attr("value");
+    const parent = sender.parentElement as HTMLElement;
+    const rangerHandle = parent.getAttribute("value");
 
     await sendEdits(
         {
             "ranger_handles": (incident!.ranger_handles??[]).filter(
-                function(h) { return h !== rangerHandle; }
+                function(h: string): boolean { return h !== rangerHandle; }
             ),
         },
     );
@@ -985,10 +915,8 @@ async function removeRanger(sender: HTMLElement): Promise<void> {
 
 
 async function removeIncidentType(sender: HTMLElement): Promise<void> {
-    // @ts-ignore JQuery
-    sender = $(sender);
-    // @ts-ignore JQuery
-    const incidentType = sender.parent().attr("value");
+    const parent = sender.parentElement as HTMLElement;
+    const incidentType = parent.getAttribute("value");
     await sendEdits({
         "incident_types": (incident!.incident_types??[]).filter(
             function(t) { return t !== incidentType; }
@@ -1001,10 +929,8 @@ function normalize(str: string): string {
 }
 
 async function addRanger(): Promise<void> {
-    // @ts-ignore JQuery
-    const select = $("#ranger_add");
-    // @ts-ignore JQuery
-    let handle = $(select).val();
+    const select = document.getElementById("ranger_add") as HTMLSelectElement;
+    let handle: string = select.value;
 
     // make a copy of the handles
     const handles = (incident!.ranger_handles??[]).slice();
@@ -1022,13 +948,13 @@ async function addRanger(): Promise<void> {
     }
     if (!(handle in (personnel??[]))) {
         // Not a valid handle
-        select.val("");
+        select.value = "";
         return;
     }
 
     if (handles.indexOf(handle) !== -1) {
         // Already in the list, so… move along.
-        select.val("");
+        select.value = "";
         return;
     }
 
@@ -1037,19 +963,17 @@ async function addRanger(): Promise<void> {
     const {err} = await sendEdits({"ranger_handles": handles});
     if (err !== null) {
         controlHasError(select);
-        select.val("");
+        select.value = "";
         return;
     }
-    select.val("");
+    select.value = "";
     controlHasSuccess(select, 1000);
 }
 
 
 async function addIncidentType(): Promise<void> {
-    // @ts-ignore JQuery
-    const select = $("#incident_type_add");
-    // @ts-ignore JQuery
-    let incidentType = $(select).val();
+    const select = document.getElementById("incident_type_add") as HTMLSelectElement;
+    let incidentType = select.value;
 
     // make a copy of the incident types
     const currentIncidentTypes = (incident!.incident_types??[]).slice();
@@ -1067,13 +991,13 @@ async function addIncidentType(): Promise<void> {
     }
     if (incidentTypes.indexOf(incidentType) === -1) {
         // Not a valid incident type
-        select.val("");
+        select.value = "";
         return;
     }
 
     if (currentIncidentTypes.indexOf(incidentType) !== -1) {
         // Already in the list, so… move along.
-        select.val("");
+        select.value = "";
         return;
     }
 
@@ -1082,22 +1006,20 @@ async function addIncidentType(): Promise<void> {
     const {err} = await sendEdits({"incident_types": currentIncidentTypes});
     if (err != null) {
         controlHasError(select);
-        select.val("");
+        select.value = "";
         return;
     }
-    select.val("");
+    select.value = "";
     controlHasSuccess(select, 1000);
 }
 
 
 async function detachFieldReport(sender: HTMLElement): Promise<void> {
-    // @ts-ignore JQuery
-    sender = $(sender);
-    // @ts-ignore JQuery
-    const fieldReport: FieldReport = sender.parent().data();
+    const parent: HTMLElement = sender.parentElement!;
+    const frNumber = parent.getAttribute("fr-number")!;
 
     const url = (
-        urlReplace(url_fieldReports) + fieldReport.number +
+        urlReplace(url_fieldReports) + frNumber +
         "?action=detach;incident=" + incidentNumber
     );
     let {err} = await fetchJsonNoThrow(url, {
@@ -1125,10 +1047,8 @@ async function attachFieldReport(): Promise<void> {
         }
     }
 
-    // @ts-ignore JQuery
-    const select = $("#attached_field_report_add");
-    // @ts-ignore JQuery
-    const fieldReportNumber = $(select).val();
+    const select = document.getElementById("attached_field_report_add") as HTMLSelectElement;
+    const fieldReportNumber = select.value;
 
     const url = (
         urlReplace(url_fieldReports) + fieldReportNumber +
@@ -1176,7 +1096,8 @@ async function attachFile(): Promise<void> {
         formData.append("files", f);
     }
 
-    const attachURL = urlReplace(url_incidentAttachments).replace("<incident_number>", (incidentNumber??"").toString());
+    const attachURL = urlReplace(url_incidentAttachments)
+        .replace("<incident_number>", (incidentNumber??"").toString());
     const {err} = await fetchJsonNoThrow(attachURL, {
         body: formData
     });
