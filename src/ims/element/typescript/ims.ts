@@ -24,6 +24,7 @@ declare let attachmentsAllowed: boolean|null|undefined;
 declare let clubhousePersonURL: string|null|undefined;
 declare let events: string[]|null|undefined;
 declare let canWriteIncidents: boolean|null|undefined;
+declare let pageTemplateURL: string;
 
 declare let url_acl: string;
 declare let url_eventSource: string;
@@ -101,7 +102,7 @@ interface DataTablesTable {
     row: any;
     rows: any;
     data(): DTData;
-    search(q: string, isRegex: boolean): unknown;
+    search: any;
     page: any;
     draw(): unknown;
     ajax: DTAjax;
@@ -452,12 +453,14 @@ function controlClear(element: HTMLElement) {
 //
 
 async function loadBody(): Promise<void> {
-
     detectTouchDevice();
-    const {promise, resolve} = Promise.withResolvers<undefined>();
-    // @ts-expect-error some JQuery nonsense
-    $("body").load(pageTemplateURL, resolve);
-    await promise;
+    const {resp, err} = await fetchJsonNoThrow(pageTemplateURL, null);
+    if (err != null || resp == null) {
+        console.error(err);
+        setErrorMessage(err??"null error");
+        return;
+    }
+    document.getElementsByTagName("body")[0].innerHTML = await resp.text();
 
     applyTheme();
 
@@ -855,90 +858,83 @@ function renderSummary(data: string|null, type: string, incident: Incident): str
 // Populate report entry text
 //
 
-function reportEntryElement(entry: ReportEntry): object {
+function reportEntryElement(entry: ReportEntry): HTMLDivElement {
     // Build a container for the entry
 
-    // @ts-expect-error JQuery
-    const entryContainer = $("<div />", {"class": "report_entry"});
+    const entryContainer: HTMLDivElement = document.createElement("div");
+    entryContainer.classList.add("report_entry");
 
     const strikable: boolean = !entry.system_entry;
 
     if (entry.system_entry) {
-        entryContainer.addClass("report_entry_system");
+        entryContainer.classList.add("report_entry_system");
     } else if (entry.stricken) {
-        entryContainer.addClass("report_entry_stricken");
+        entryContainer.classList.add("report_entry_stricken");
     } else {
-        entryContainer.addClass("report_entry_user");
+        entryContainer.classList.add("report_entry_user");
     }
 
     if (entry.merged) {
-        entryContainer.addClass("report_entry_merged");
+        entryContainer.classList.add("report_entry_merged");
     }
 
     // Add the timestamp and author, with a Strike/Unstrike button
 
-    // @ts-expect-error JQuery
-    const metaDataContainer = $("<p />", {"class": "report_entry_metadata"});
+    const metaDataContainer: HTMLParagraphElement = document.createElement("p");
+    metaDataContainer.classList.add("report_entry_metadata");
 
     if (strikable) {
-        let onclick = "";
-
+        const strikeContainer: HTMLButtonElement = document.createElement("button");
+        const entryId = parseInt(entry.id!);
+        const entryStricken = entry.stricken!;
         if (typeof incidentNumber !== "undefined") {
             // we're on the incident page
             if (entry.merged) {
+                const entryMerged = entry.merged;
                 // this is an entry from a field report, as shown on the incident page
-                onclick = "setStrikeFieldReportEntry(" + entry.merged + ", " + entry.id + ", " + !entry.stricken + ");";
+                strikeContainer.onclick = (_: MouseEvent): any => {
+                    setStrikeFieldReportEntry(entryMerged, entryId, !entryStricken);
+                }
             } else {
+                const incidentNum = incidentNumber!;
                 // this is an incident entry on the incident page
-                onclick = "setStrikeIncidentEntry(" + incidentNumber + ", " + entry.id + ", " + !entry.stricken + ");";
+                strikeContainer.onclick = (_: MouseEvent): any => {
+                    setStrikeIncidentEntry(incidentNum, entryId, !entryStricken);
+                }
             }
         } else if (typeof fieldReportNumber !== "undefined") {
             // we're on the field report page
-            onclick = "setStrikeFieldReportEntry(" + fieldReportNumber + ", " + entry.id + ", " + !entry.stricken + ");";
+            const fieldReportNum = fieldReportNumber!;
+            strikeContainer.onclick =  (_: MouseEvent): any => {
+                setStrikeFieldReportEntry(fieldReportNum, entryId, !entryStricken);
+            }
         }
-        // @ts-expect-error JQuery
-        const strikeContainer = $("<button />", {"onclick": onclick});
-        strikeContainer.addClass("badge btn btn-danger remove-badge float-end");
-        strikeContainer.text(entry.stricken ? "Unstrike" : "Strike");
-        // TODO: it'd be nice to have a strikethrough icon rather than the word "Strike".
-        //  The code below should almost do it, but I can't get the button to just show
-        //  the icon by itself.
-        // const iconContainer = $("<svg />", {"class": "bi"});
-        // iconContainer.append($("<use />", {"href": "#strikethrough"}));
-        // strikeContainer.append($("<span class='d-none'>Strike</span>", {"class": "d-none"}));
-        // strikeContainer.append(iconContainer);
+        strikeContainer.classList.add("badge", "btn", "btn-danger", "remove-badge", "float-end");
+        strikeContainer.textContent = entry.stricken ? "Unstrike" : "Strike";
+
         metaDataContainer.append(strikeContainer);
     }
 
     const timeStampContainer = timeElement(new Date(entry.created!));
     timeStampContainer.classList.add("report_entry_timestamp");
 
-    metaDataContainer.append([timeStampContainer, ", "]);
+    metaDataContainer.append(timeStampContainer, ", ");
 
-    let author = entry.author;
-    if (author == null) {
-        author = "(unknown)";
-    }
-    // @ts-expect-error JQuery
-    const authorContainer = $("<span />");
-    authorContainer.text(entry.author);
-    authorContainer.addClass("report_entry_author");
+    const authorContainer: HTMLSpanElement = document.createElement("span");
+    authorContainer.textContent = entry.author??"(unknown)";
+    authorContainer.classList.add("report_entry_author");
 
-    metaDataContainer.append(author);
+    metaDataContainer.append(authorContainer);
 
     if (entry.merged) {
         metaDataContainer.append(" ");
 
-        // @ts-expect-error JQuery
-        const link = $("<a />");
-        link.text("field report #" + entry.merged);
-        link.attr("href", urlReplace(url_viewFieldReports) + entry.merged);
+        const link: HTMLAnchorElement = document.createElement("a");
+        link.textContent = "field report #" + entry.merged;
+        link.href = urlReplace(url_viewFieldReports) + entry.merged;
 
-        metaDataContainer.append("(via ");
-        metaDataContainer.append(link);
-        metaDataContainer.append(")");
-
-        metaDataContainer.addClass("report_entry_source");
+        metaDataContainer.append("(via ", link, ")");
+        metaDataContainer.classList.add("report_entry_source");
     }
 
     metaDataContainer.append(":");
@@ -947,11 +943,11 @@ function reportEntryElement(entry: ReportEntry): object {
 
     // Add report text
 
-    const lines = entry.text!.split("\n");
+    const lines: string[] = entry.text!.split("\n");
     for (const line of lines) {
-        // @ts-expect-error JQuery
-        const textContainer = $("<p />", {"class": "report_entry_text"});
-        textContainer.text(line);
+        const textContainer: HTMLParagraphElement = document.createElement("p");
+        textContainer.classList.add("report_entry_text");
+        textContainer.textContent = line;
 
         entryContainer.append(textContainer);
     }
@@ -960,9 +956,9 @@ function reportEntryElement(entry: ReportEntry): object {
             .replace("<incident_number>", incidentNumber.toString())
             .replace("<attachment_number>", entry.id!.toString());
 
-        // @ts-expect-error JQuery
-        const attachmentLink = $("<a />", {"href": url});
-        attachmentLink.text("Attached file");
+        const attachmentLink: HTMLAnchorElement = document.createElement("a");
+        attachmentLink.href = url;
+        attachmentLink.textContent = "Attached file";
 
         entryContainer.append(attachmentLink);
 
@@ -970,24 +966,19 @@ function reportEntryElement(entry: ReportEntry): object {
 
     // Add a horizontal line after each entry
 
-    // @ts-expect-error JQuery
-    entryContainer.append( $("<hr />", {"class": "m-1"}) );
+    const hr: HTMLHRElement = document.createElement("hr");
+    hr.classList.add("m-1");
+    entryContainer.append(hr);
 
     return entryContainer;
 }
 
 function drawReportEntries(entries: ReportEntry[]): void {
-    // @ts-expect-error JQuery
-    const container = $("#report_entries");
-    container.empty();
+    const container: HTMLElement = document.getElementById("report_entries")!;
+    container.replaceChildren();
 
-    if (entries) {
-        for (const entry of entries) {
-            container.append(reportEntryElement(entry));
-        }
-        container.parent().parent().removeClass("hidden");
-    } else {
-        container.parent().parent().addClass("hidden");
+    for (const entry of entries) {
+        container.append(reportEntryElement(entry));
     }
 }
 
@@ -1093,13 +1084,10 @@ async function submitReportEntry(): Promise<void> {
 //
 
 function toggleShowHistory(): void {
-    // @ts-expect-error JQuery
-    if ($("#history_checkbox").is(":checked")) {
-        // @ts-expect-error JQuery
-        $("#report_entries").removeClass("hide-history");
+    if ((document.getElementById("history_checkbox") as HTMLInputElement).checked) {
+        document.getElementById("report_entries")!.classList.remove("hide-history");
     } else {
-        // @ts-expect-error JQuery
-        $("#report_entries").addClass("hide-history");
+        document.getElementById("report_entries")!.classList.add("hide-history");
     }
 }
 

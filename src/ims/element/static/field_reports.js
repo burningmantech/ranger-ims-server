@@ -200,13 +200,6 @@ function frInitDataTables() {
 // Initialize table buttons
 //
 function frInitTableButtons() {
-    // Relocate button container
-    // @ts-expect-error JQuery
-    $("#field_reports_table_wrapper")
-        .children(".row")
-        .children(".col-sm-6:first")
-        // @ts-expect-error JQuery
-        .replaceWith($("#button_container"));
     const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
     const fragmentParams = new URLSearchParams(fragment);
     // Set button defaults
@@ -219,13 +212,6 @@ function frInitTableButtons() {
 const _frSearchDelayMs = 250;
 let _frSearchDelayTimer = undefined;
 function frInitSearchField() {
-    // Relocate search container
-    // @ts-expect-error JQuery
-    $("#field_reports_table_wrapper")
-        .children(".row")
-        .children(".col-sm-6:last")
-        // @ts-expect-error JQuery
-        .replaceWith($("#search_container"));
     // Search field handling
     const searchInput = document.getElementById("search_input");
     const searchAndDraw = function () {
@@ -288,14 +274,10 @@ function frInitSearch() {
         }
         return false;
     }
-    // @ts-expect-error JQuery
-    $.fn.dataTable.ext.search.push(function (settings, rowData, rowIndex) {
+    fieldReportsTable.search.fixed("modification_date", function (searchStr, rowData, rowIndex) {
         const fieldReport = fieldReportsTable.data()[rowIndex];
-        if (_frShowModifiedAfter != null &&
-            !modifiedAfter(fieldReport, _frShowModifiedAfter)) {
-            return false;
-        }
-        return true;
+        return !(_frShowModifiedAfter != null &&
+            !modifiedAfter(fieldReport, _frShowModifiedAfter));
     });
 }
 //
@@ -307,14 +289,12 @@ const frDefaultDaysBack = "all";
 function frShowDays(daysBackToShow, replaceState) {
     const id = daysBackToShow.toString();
     _frShowDaysBack = daysBackToShow;
-    // @ts-expect-error JQuery
-    const menu = $("#show_days");
-    // @ts-expect-error JQuery
-    const item = $("#show_days_" + id);
+    const item = document.getElementById("show_days_" + id);
     // Get title from selected item
-    const selection = item.children(".name").html();
+    const selection = item.getElementsByClassName("name")[0].textContent;
     // Update menu title to reflect selected item
-    menu.children(".selection").html(selection);
+    const menu = document.getElementById("show_days");
+    menu.getElementsByClassName("selection")[0].textContent = selection;
     if (daysBackToShow === "all") {
         _frShowModifiedAfter = null;
     }
@@ -339,14 +319,12 @@ const frDefaultRows = 25;
 function frShowRows(rowsToShow, replaceState) {
     const id = rowsToShow.toString();
     _frShowRows = rowsToShow;
-    // @ts-expect-error JQuery
-    const menu = $("#show_rows");
-    // @ts-expect-error JQuery
-    const item = $("#show_rows_" + id);
+    const item = document.getElementById("show_rows_" + id);
     // Get title from selected item
-    const selection = item.children(".name").html();
+    const selection = item.getElementsByClassName("name")[0].textContent;
     // Update menu title to reflect selected item
-    menu.children(".selection").html(selection);
+    const menu = document.getElementById("show_rows");
+    menu.getElementsByClassName("selection")[0].textContent = selection;
     if (rowsToShow === "all") {
         rowsToShow = -1;
     }
