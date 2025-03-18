@@ -313,34 +313,24 @@ function initDataTables(): void {
 //
 
 function initTableButtons(): void {
-    // Relocate button container
 
-    // @ts-expect-error JQuery
-    $("#queue_table_wrapper")
-        .children(".row")
-        .children(".col-sm-6:first")
-        // @ts-expect-error JQuery
-        .replaceWith($("#button_container"));
-
-    // @ts-expect-error JQuery
-    $(document).on('click', '.dropdown-item-checkable', function(event) {
-        event.preventDefault();
-        // @ts-expect-error JQuery
-        $(this).toggleClass('dropdown-item-checked');
-        showCheckedTypes(true);
-    });
-
-    // @ts-expect-error JQuery
-    const $typeFilter = $("#ul_show_type");
+    const typeFilter = document.getElementById("ul_show_type") as HTMLUListElement;
     for (const i in allIncidentTypes) {
         const type = allIncidentTypes[i];
-        // @ts-expect-error JQuery
-        const $a = $("<a>", {
-            class: "dropdown-item dropdown-item-checkable dropdown-item-checked",
-            href:"#",
-        });
-        $a.text(type.toString());
-        $typeFilter.append($a);
+        const a: HTMLAnchorElement = document.createElement("a");
+        a.href = "#";
+        a.classList.add("dropdown-item", "dropdown-item-checkable", "dropdown-item-checked");
+        a.textContent = type.toString();
+        typeFilter.append(a);
+    }
+
+    for (const el of document.getElementsByClassName("dropdown-item-checkable")) {
+        const htmlEl = el as HTMLElement;
+        htmlEl.addEventListener("click", function (e: MouseEvent): void {
+            e.preventDefault();
+            htmlEl.classList.toggle("dropdown-item-checked");
+            showCheckedTypes(true);
+        })
     }
 
     const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
@@ -379,15 +369,6 @@ const _searchDelayMs = 250;
 let _searchDelayTimer: number|undefined = undefined;
 
 function initSearchField() {
-    // Relocate search container
-
-    // @ts-expect-error JQuery
-    $("#queue_table_wrapper")
-        .children(".row")
-        .children(".col-sm-6:last")
-        // @ts-expect-error JQuery
-        .replaceWith($("#search_container"));
-
     // Search field handling
     const searchInput = document.getElementById("search_input") as HTMLInputElement;
 
@@ -451,53 +432,54 @@ function initSearchField() {
 //
 
 function initSearch(): void {
-
-    // @ts-expect-error JQuery
-    $.fn.dataTable.ext.search.push(
-        function(settings: any, rowData: any, rowIndex: number) {
+    incidentsTable!.search.fixed("modification_date",
+        function(searchStr: string, rowData: object, rowIndex: number): boolean {
             const incident: Incident = incidentsTable!.data()[rowIndex];
-            let state;
-            if (_showState != null) {
-                switch (_showState) {
-                    case "all":
-                        break;
-                    case "active":
-                        state = stateForIncident(incident);
-                        if (state === "on_hold" || state === "closed") {
-                            return false;
-                        }
-                        break;
-                    case "open":
-                        state = stateForIncident(incident);
-                        if (state === "closed") {
-                            return false;
-                        }
-                        break;
-                }
-            }
+            return !(_showModifiedAfter != null &&
+                new Date(Date.parse(incident.last_modified!)) < _showModifiedAfter);
+        },
+    );
 
-            if (
-                _showModifiedAfter != null &&
-                new Date(Date.parse(incident.last_modified!)) < _showModifiedAfter
-            ) {
+    incidentsTable!.search.fixed("state", function(searchStr: string, rowData: object, rowIndex: number): boolean {
+        const incident: Incident = incidentsTable!.data()[rowIndex];
+        let state;
+        if (_showState != null) {
+            switch (_showState) {
+                case "all":
+                    break;
+                case "active":
+                    state = stateForIncident(incident);
+                    if (state === "on_hold" || state === "closed") {
+                        return false;
+                    }
+                    break;
+                case "open":
+                    state = stateForIncident(incident);
+                    if (state === "closed") {
+                        return false;
+                    }
+                    break;
+            }
+        }
+        return true;
+    });
+
+    incidentsTable!.search.fixed("type", function (searchStr: string, rowData: object, rowIndex: number): boolean {
+        const incident: Incident = incidentsTable!.data()[rowIndex];
+        // don't bother with filtering, which may be computationally expensive,
+        // if all types seem to be selected
+        if (!allTypesChecked()) {
+            const rowTypes = Object.values(incident.incident_types??[]) as string[];
+            const intersect = rowTypes.filter(t => _showTypes.includes(t)).length > 0;
+            const blankShow = _showBlankType && rowTypes.length === 0;
+            const otherShow = _showOtherType && rowTypes.filter(t => !(allIncidentTypes.includes(t))).length > 0;
+            if (!intersect && !blankShow && !otherShow) {
                 return false;
             }
-
-            // don't bother with filtering, which may be computationally expensive,
-            // if all types seem to be selected
-            if (!allTypesChecked()) {
-                const rowTypes = Object.values(incident.incident_types??[]) as string[];
-                const intersect = rowTypes.filter(t => _showTypes.includes(t)).length > 0;
-                const blankShow = _showBlankType && rowTypes.length === 0;
-                const otherShow = _showOtherType && rowTypes.filter(t => !(allIncidentTypes.includes(t))).length > 0;
-                if (!intersect && !blankShow && !otherShow) {
-                    return false;
-                }
-            }
-
-            return true;
         }
-    );
+
+        return true;
+    });
 }
 
 
@@ -509,16 +491,14 @@ let _showState: string|null = null;
 const defaultState = "open";
 
 function showState(stateToShow: string, replaceState: boolean) {
-    // @ts-expect-error JQuery
-    const menu = $("#show_state");
-    // @ts-expect-error JQuery
-    const item = $("#show_state_" + stateToShow);
+    const item = document.getElementById("show_state_" + stateToShow) as HTMLLIElement;
 
     // Get title from selected item
-    const selection = item.children(".name").html();
+    const selection = item.getElementsByClassName("name")[0].textContent;
 
     // Update menu title to reflect selected item
-    menu.children(".selection").html(selection);
+    const menu = document.getElementById("show_state") as HTMLButtonElement;
+    menu.getElementsByClassName("selection")[0].textContent = selection;
 
     _showState = stateToShow;
 
@@ -539,19 +519,17 @@ let _showDaysBack: number|string|null = null;
 const defaultDaysBack = "all";
 
 function showDays(daysBackToShow: number|string, replaceState: boolean): void {
-    const id = daysBackToShow.toString();
+    const id: string = daysBackToShow.toString();
     _showDaysBack = daysBackToShow;
 
-    // @ts-expect-error JQuery
-    const menu = $("#show_days");
-    // @ts-expect-error JQuery
-    const item = $("#show_days_" + id);
+    const item = document.getElementById("show_days_" + id) as HTMLLIElement;
 
     // Get title from selected item
-    const selection = item.children(".name").html();
+    const selection = item.getElementsByClassName("name")[0].textContent;
 
     // Update menu title to reflect selected item
-    menu.children(".selection").html(selection);
+    const menu = document.getElementById("show_days") as HTMLButtonElement;
+    menu.getElementsByClassName("selection")[0].textContent = selection
 
     if (daysBackToShow === "all") {
         _showModifiedAfter = null;
@@ -584,15 +562,14 @@ const _blankPlaceholder = "(blank)";
 const _otherPlaceholder = "(other)";
 
 function setCheckedTypes(types: string[], includeBlanks: boolean, includeOthers: boolean): void {
-    // @ts-expect-error JQuery
-    for (const $type of $('#ul_show_type > a')) {
-        if (types.includes($type.innerHTML) ||
-            (includeBlanks && $type.id === "show_blank_type") ||
-            (includeOthers && $type.id === "show_other_type")
+    for (const type of document.querySelectorAll('#ul_show_type > a')) {
+        if (types.includes(type.innerHTML) ||
+            (includeBlanks && type.id === "show_blank_type") ||
+            (includeOthers && type.id === "show_other_type")
         ) {
-            $type.classList.add("dropdown-item-checked");
+            type.classList.add("dropdown-item-checked");
         } else {
-            $type.classList.remove("dropdown-item-checked");
+            type.classList.remove("dropdown-item-checked");
         }
     }
 }
@@ -608,14 +585,13 @@ function toggleCheckAllTypes(): void {
 
 function readCheckedTypes(): void {
     _showTypes = [];
-    // @ts-expect-error JQuery
-    for (const $type of $('#ul_show_type > a')) {
-        if ($type.id === "show_blank_type") {
-            _showBlankType = $type.classList.contains("dropdown-item-checked");
-        } else if ($type.id === "show_other_type") {
-            _showOtherType = $type.classList.contains("dropdown-item-checked");
-        } else if ($type.classList.contains("dropdown-item-checked")) {
-            _showTypes.push($type.innerHTML);
+    for (const type of document.querySelectorAll('#ul_show_type > a')) {
+        if (type.id === "show_blank_type") {
+            _showBlankType = type.classList.contains("dropdown-item-checked");
+        } else if (type.id === "show_other_type") {
+            _showOtherType = type.classList.contains("dropdown-item-checked");
+        } else if (type.classList.contains("dropdown-item-checked")) {
+            _showTypes.push(type.innerHTML);
         }
     }
 }
@@ -649,16 +625,14 @@ function showRows(rowsToShow: number|string, replaceState: boolean): void {
     const id = rowsToShow.toString();
     _showRows = rowsToShow;
 
-    // @ts-expect-error JQuery
-    const menu = $("#show_rows");
-    // @ts-expect-error JQuery
-    const item = $("#show_rows_" + id);
+    const item = document.getElementById("show_rows_" + id) as HTMLLIElement;
 
     // Get title from selected item
-    const selection = item.children(".name").html();
+    const selection = item.getElementsByClassName("name")[0].textContent;
 
     // Update menu title to reflect selected item
-    menu.children(".selection").html(selection);
+    const menu = document.getElementById("show_rows") as HTMLButtonElement;
+    menu.getElementsByClassName("selection")[0].textContent = selection
 
     if (rowsToShow === "all") {
         rowsToShow = -1;
