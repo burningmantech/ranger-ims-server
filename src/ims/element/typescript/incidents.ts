@@ -114,7 +114,7 @@ function initIncidentsTable() {
     }
 
     // Fire-and-forget this promise, since it tries forever to acquire a lock
-    const ignoredPromise = requestEventSourceLock();
+    requestEventSourceLock();
 
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e: MessageEvent): Promise<void> {
@@ -195,7 +195,7 @@ function initDataTables(): void {
         "ajax": {
             "url": urlReplace(url_incidents + "?exclude_system_entries=true"),
             "dataSrc": dataHandler,
-            "error": function (request: XMLHttpRequest, status: object, error: string|null) {
+            "error": function (request: XMLHttpRequest, _status: object, error: string|null) {
                 // The "abort" case is a special snowflake.
                 // There are times we do two table refreshes in quick succession, and in
                 // those cases, the first call gets aborted. We don't want to set an error
@@ -285,20 +285,20 @@ function initDataTables(): void {
         "order": [
             [0, "dsc"],
         ],
-        "createdRow": function (row: HTMLElement, incident: Incident, index: number) {
-            row.addEventListener("click", function (e: MouseEvent): void {
+        "createdRow": function (row: HTMLElement, incident: Incident, _index: number) {
+            row.addEventListener("click", function (_e: MouseEvent): void {
                 // Open new context with link
                 window.open(
                     viewIncidentsURL + incident.number,
                     "Incident:" + eventID + "#" + incident.number,
                 );
             });
-            row.getElementsByClassName("incident_created")[0]
+            row.getElementsByClassName("incident_created")[0]!
                 .setAttribute(
                     "title",
                     fullDateTime.format(Date.parse(incident.created!)),
                 );
-            row.getElementsByClassName("incident_last_modified")[0]
+            row.getElementsByClassName("incident_last_modified")[0]!
                 .setAttribute(
                     "title",
                     fullDateTime.format(Date.parse(incident.last_modified!)),
@@ -315,8 +315,7 @@ function initDataTables(): void {
 function initTableButtons(): void {
 
     const typeFilter = document.getElementById("ul_show_type") as HTMLUListElement;
-    for (const i in allIncidentTypes) {
-        const type = allIncidentTypes[i];
+    for (const type of allIncidentTypes) {
         const a: HTMLAnchorElement = document.createElement("a");
         a.href = "#";
         a.classList.add("dropdown-item", "dropdown-item-checkable", "dropdown-item-checked");
@@ -433,15 +432,15 @@ function initSearchField() {
 
 function initSearch(): void {
     incidentsTable!.search.fixed("modification_date",
-        function(searchStr: string, rowData: object, rowIndex: number): boolean {
-            const incident: Incident = incidentsTable!.data()[rowIndex];
+        function(_searchStr: string, _rowData: object, rowIndex: number): boolean {
+            const incident: Incident = incidentsTable!.data()[rowIndex]!;
             return !(_showModifiedAfter != null &&
                 new Date(Date.parse(incident.last_modified!)) < _showModifiedAfter);
         },
     );
 
-    incidentsTable!.search.fixed("state", function(searchStr: string, rowData: object, rowIndex: number): boolean {
-        const incident: Incident = incidentsTable!.data()[rowIndex];
+    incidentsTable!.search.fixed("state", function(_searchStr: string, _rowData: object, rowIndex: number): boolean {
+        const incident: Incident = incidentsTable!.data()[rowIndex]!;
         let state;
         if (_showState != null) {
             switch (_showState) {
@@ -464,8 +463,8 @@ function initSearch(): void {
         return true;
     });
 
-    incidentsTable!.search.fixed("type", function (searchStr: string, rowData: object, rowIndex: number): boolean {
-        const incident: Incident = incidentsTable!.data()[rowIndex];
+    incidentsTable!.search.fixed("type", function (_searchStr: string, _rowData: object, rowIndex: number): boolean {
+        const incident: Incident = incidentsTable!.data()[rowIndex]!;
         // don't bother with filtering, which may be computationally expensive,
         // if all types seem to be selected
         if (!allTypesChecked()) {
@@ -494,11 +493,11 @@ function showState(stateToShow: string, replaceState: boolean) {
     const item = document.getElementById("show_state_" + stateToShow) as HTMLLIElement;
 
     // Get title from selected item
-    const selection = item.getElementsByClassName("name")[0].textContent;
+    const selection = item.getElementsByClassName("name")[0]!.textContent;
 
     // Update menu title to reflect selected item
     const menu = document.getElementById("show_state") as HTMLButtonElement;
-    menu.getElementsByClassName("selection")[0].textContent = selection;
+    menu.getElementsByClassName("selection")[0]!.textContent = selection;
 
     _showState = stateToShow;
 
@@ -525,11 +524,11 @@ function showDays(daysBackToShow: number|string, replaceState: boolean): void {
     const item = document.getElementById("show_days_" + id) as HTMLLIElement;
 
     // Get title from selected item
-    const selection = item.getElementsByClassName("name")[0].textContent;
+    const selection = item.getElementsByClassName("name")[0]!.textContent;
 
     // Update menu title to reflect selected item
     const menu = document.getElementById("show_days") as HTMLButtonElement;
-    menu.getElementsByClassName("selection")[0].textContent = selection
+    menu.getElementsByClassName("selection")[0]!.textContent = selection
 
     if (daysBackToShow === "all") {
         _showModifiedAfter = null;
@@ -628,11 +627,11 @@ function showRows(rowsToShow: number|string, replaceState: boolean): void {
     const item = document.getElementById("show_rows_" + id) as HTMLLIElement;
 
     // Get title from selected item
-    const selection = item.getElementsByClassName("name")[0].textContent;
+    const selection = item.getElementsByClassName("name")[0]!.textContent;
 
     // Update menu title to reflect selected item
     const menu = document.getElementById("show_rows") as HTMLButtonElement;
-    menu.getElementsByClassName("selection")[0].textContent = selection
+    menu.getElementsByClassName("selection")[0]!.textContent = selection
 
     if (rowsToShow === "all") {
         rowsToShow = -1;

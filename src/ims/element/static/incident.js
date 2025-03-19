@@ -40,7 +40,7 @@ async function initIncidentPage() {
         }
     });
     // Fire-and-forget this promise, since it tries forever to acquire a lock
-    const ignoredPromise = requestEventSourceLock();
+    requestEventSourceLock();
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e) {
         const number = e.data.incident_number;
@@ -346,7 +346,7 @@ function addLocationAddressOptions() {
     for (const id in concentricStreetNameByID) {
         const newOption = document.createElement("option");
         newOption.value = id;
-        newOption.textContent = concentricStreetNameByID[id];
+        newOption.textContent = concentricStreetNameByID[id] ?? "null";
         concentricElement.append(newOption);
     }
 }
@@ -456,6 +456,10 @@ function drawRangersToAdd() {
     if (personnel != null) {
         for (const handle of handles) {
             const ranger = personnel[handle];
+            if (ranger === undefined) {
+                console.error(`no record for personnel with handle ${handle}`);
+                continue;
+            }
             const option = document.createElement("option");
             option.value = handle;
             option.text = rangerAsString(ranger);
@@ -542,7 +546,7 @@ function drawMergedReportEntries() {
         if (mergedCheckbox.checked) {
             for (const report of attachedFieldReports) {
                 for (const entry of report.report_entries ?? []) {
-                    entry.merged = report.number;
+                    entry.merged = report.number ?? null;
                     entries.push(entry);
                 }
             }
@@ -629,10 +633,10 @@ async function sendEdits(edits) {
         // We're creating a new incident.
         // required fields are ["state", "priority"];
         if (edits.state == null) {
-            edits.state = incident.state;
+            edits.state = incident.state ?? null;
         }
         if (edits.priority == null) {
-            edits.priority = incident.priority;
+            edits.priority = incident.priority ?? null;
         }
     }
     else {

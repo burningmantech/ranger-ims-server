@@ -170,7 +170,7 @@ function applyTheme(): void {
             activeThemeIcon!.setAttribute("href", svgOfActiveBtn);
         }
         if (themeSwitcherText) {
-            const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`;
+            const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset["bsThemeValue"]})`;
             themeSwitcher.setAttribute("aria-label", themeSwitcherLabel);
         }
 
@@ -257,7 +257,7 @@ function range(start: number, end: number, step?: number|null): number[] {
     return Array(end - start)
         .join("a")
         .split("a")
-        .map(function(val, i) { return (i * step) + start;} )
+        .map(function(_val: string, i: number) { return (i * step) + start;} )
         ;
 }
 
@@ -460,7 +460,7 @@ async function loadBody(): Promise<void> {
         setErrorMessage(err??"null error");
         return;
     }
-    document.getElementsByTagName("body")[0].innerHTML = await resp.text();
+    document.getElementsByTagName("body")[0]!.innerHTML = await resp.text();
 
     applyTheme();
 
@@ -675,7 +675,7 @@ function reportTextFromIncident(incidentOrFR: Incident|FieldReport): string {
     // Incidents page loads all field reports for the event
     if (eventFieldReports != null && "field_reports" in incidentOrFR) {
         for (const reportNumber of incidentOrFR.field_reports??[]) {
-            const report = eventFieldReports[reportNumber];
+            const report = eventFieldReports[reportNumber]!;
             const reportText = reportTextFromIncident(report);
 
             texts.push(reportText);
@@ -739,7 +739,7 @@ function renderSafeSorted(strings: string[]): string {
     return copy.join(", ");
 }
 
-function renderIncidentNumber(incidentNumber: number|null, type: string, incident: any): number|null|undefined {
+function renderIncidentNumber(incidentNumber: number|null, type: string, _incident: any): number|null|undefined {
     switch (type) {
         case "display":
             return incidentNumber;
@@ -791,7 +791,7 @@ const fullDateTime: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
     // timeZone not specified; will use user's timezone
 });
 
-function renderDate(date: string, type: string, incident: any): string|number|undefined {
+function renderDate(date: string, type: string, _incident: any): string|number|undefined {
     const d = Date.parse(date);
     switch (type) {
         case "display":
@@ -823,7 +823,7 @@ function renderState(state: string, type: string, incident: Incident): string|nu
     return undefined;
 }
 
-function renderLocation(data: Location|string|null, type: string, incident: Incident): string|undefined {
+function renderLocation(data: Location|string|null, type: string, _incident: Incident): string|undefined {
     if (data == null) {
         data = "";
     }
@@ -839,7 +839,7 @@ function renderLocation(data: Location|string|null, type: string, incident: Inci
     return undefined;
 }
 
-function renderSummary(data: string|null, type: string, incident: Incident): string|undefined {
+function renderSummary(_data: string|null, type: string, incident: Incident): string|undefined {
     switch (type) {
         case "display":
             return textAsHTML(summarizeIncident(incident));
@@ -892,20 +892,20 @@ function reportEntryElement(entry: ReportEntry): HTMLDivElement {
             if (entry.merged) {
                 const entryMerged = entry.merged;
                 // this is an entry from a field report, as shown on the incident page
-                strikeContainer.onclick = (_: MouseEvent): any => {
+                strikeContainer.onclick = (_e: MouseEvent): any => {
                     setStrikeFieldReportEntry(entryMerged, entryId, !entryStricken);
                 }
             } else {
                 const incidentNum = incidentNumber!;
                 // this is an incident entry on the incident page
-                strikeContainer.onclick = (_: MouseEvent): any => {
+                strikeContainer.onclick = (_e: MouseEvent): any => {
                     setStrikeIncidentEntry(incidentNum, entryId, !entryStricken);
                 }
             }
         } else if (typeof fieldReportNumber !== "undefined") {
             // we're on the field report page
             const fieldReportNum = fieldReportNumber!;
-            strikeContainer.onclick =  (_: MouseEvent): any => {
+            strikeContainer.onclick =  (_e: MouseEvent): any => {
                 setStrikeFieldReportEntry(fieldReportNum, entryId, !entryStricken);
             }
         }
@@ -1119,8 +1119,8 @@ async function editFromElement(element: HTMLInputElement|HTMLSelectElement, json
 
     // Location must include type
 
-    if (edits.location != null && typeof edits.location !== "string") {
-        edits.location.type = "garett";  // UI only supports one type
+    if (edits["location"] != null && typeof edits["location"] !== "string") {
+        edits["location"]["type"] = "garett";  // UI only supports one type
     }
 
     // Send request to server

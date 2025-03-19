@@ -37,7 +37,7 @@ async function initFieldReportPage(): Promise<void> {
     });
 
     // Fire-and-forget this promise, since it tries forever to acquire a lock
-    const ignoredPromise = requestEventSourceLock();
+    requestEventSourceLock();
 
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = async function (e: MessageEvent): Promise<void> {
@@ -312,7 +312,7 @@ async function makeIncident(): Promise<void> {
 
     const authors: string[] = [];
     if (fieldReport.report_entries) {
-        authors.push(fieldReport.report_entries[0].author??"null");
+        authors.push(fieldReport.report_entries[0]!.author??"null");
     }
     const {resp, err} = await fetchJsonNoThrow(incidentsURL, {
         body:JSON.stringify({

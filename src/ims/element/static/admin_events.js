@@ -162,9 +162,9 @@ async function removeAccess(sender) {
     const expression = sender.parentElement.getAttribute("value").trim();
     const acl = accessControlList[event][mode].slice();
     let foundIndex = -1;
-    for (const i in acl) {
-        if (acl[i].expression === expression) {
-            foundIndex = parseInt(i);
+    for (const [i, access] of acl.entries()) {
+        if (access.expression === expression) {
+            foundIndex = i;
             break;
         }
     }

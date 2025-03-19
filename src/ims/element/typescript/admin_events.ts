@@ -61,10 +61,10 @@ let _eventsEntryTemplate : Element|null = null;
 function drawAccess(): void {
     const container: HTMLElement = document.getElementById("event_access_container")!;
     if (_accessTemplate == null) {
-        _accessTemplate = container.getElementsByClassName("event_access")[0];
+        _accessTemplate = container.getElementsByClassName("event_access")[0]!;
         _eventsEntryTemplate = _accessTemplate
-            .getElementsByClassName("list-group")[0]
-            .getElementsByClassName("list-group-item")[0]
+            .getElementsByClassName("list-group")[0]!
+            .getElementsByClassName("list-group-item")[0]!
         ;
     }
 
@@ -93,7 +93,7 @@ function updateEventAccess(event: string, mode: AccessMode): void {
     if (accessControlList == null) {
         return;
     }
-    const eventACL: EventAccess|null = accessControlList[event];
+    const eventACL: EventAccess|null|undefined = accessControlList[event];
     if (eventACL == null) {
         return;
     }
@@ -101,10 +101,10 @@ function updateEventAccess(event: string, mode: AccessMode): void {
     const eventAccess: HTMLElement = document.getElementById("event_access_" + event + "_" + mode)!;
 
     // Set displayed event name and mode
-    eventAccess.getElementsByClassName("event_name")[0].textContent = event;
-    eventAccess.getElementsByClassName("access_mode")[0].textContent = mode;
+    eventAccess.getElementsByClassName("event_name")[0]!.textContent = event;
+    eventAccess.getElementsByClassName("access_mode")[0]!.textContent = mode;
 
-    const entryContainer = eventAccess.getElementsByClassName("list-group")[0];
+    const entryContainer = eventAccess.getElementsByClassName("list-group")[0]!;
 
     entryContainer.replaceChildren();
 
@@ -145,8 +145,8 @@ async function addEvent(sender: HTMLInputElement): Promise<void> {
 
 async function addAccess(sender: HTMLInputElement): Promise<void> {
     const container: HTMLElement = sender.closest(".event_access")!;
-    const event = container.getElementsByClassName("event_name")[0].textContent!;
-    const mode = container.getElementsByClassName("access_mode")[0].textContent as AccessMode;
+    const event = container.getElementsByClassName("event_name")[0]!.textContent!;
+    const mode = container.getElementsByClassName("access_mode")[0]!.textContent as AccessMode;
     const newExpression = sender.value.trim();
 
     if (newExpression === "**") {
@@ -205,16 +205,16 @@ async function addAccess(sender: HTMLInputElement): Promise<void> {
 
 async function removeAccess(sender: HTMLButtonElement): Promise<void> {
     const container: HTMLElement = sender.closest(".event_access")!;
-    const event = container.getElementsByClassName("event_name")[0].textContent!;
-    const mode = container.getElementsByClassName("access_mode")[0].textContent! as AccessMode;
+    const event = container.getElementsByClassName("event_name")[0]!.textContent!;
+    const mode = container.getElementsByClassName("access_mode")[0]!.textContent! as AccessMode;
     const expression = sender.parentElement!.getAttribute("value")!.trim();
 
     const acl: Access[] = accessControlList![event]![mode]!.slice();
 
     let foundIndex: number = -1;
-    for (const i in acl) {
-        if (acl[i].expression === expression) {
-            foundIndex = parseInt(i);
+    for (const [i, access] of acl.entries()) {
+        if (access.expression === expression) {
+            foundIndex = i;
             break;
         }
     }
@@ -238,8 +238,8 @@ async function removeAccess(sender: HTMLButtonElement): Promise<void> {
 
 async function setValidity(sender: HTMLSelectElement): Promise<void> {
     const container: HTMLElement = sender.closest(".event_access")!;
-    const event: string = container.getElementsByClassName("event_name")[0].textContent!;
-    const mode = container.getElementsByClassName("access_mode")[0].textContent! as AccessMode;
+    const event: string = container.getElementsByClassName("event_name")[0]!.textContent!;
+    const mode = container.getElementsByClassName("access_mode")[0]!.textContent! as AccessMode;
     const expression = sender.parentElement!.getAttribute("value")!.trim();
 
     const acl: Access[] = accessControlList![event]![mode]!.slice();

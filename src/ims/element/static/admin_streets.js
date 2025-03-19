@@ -73,10 +73,10 @@ function updateEventStreets(event) {
         entryContainer.append(entryItem);
     }
 }
-function addStreet(sender) {
+function addStreet(_sender) {
     alert("Add unimplemented");
 }
-function removeStreet(sender) {
+function removeStreet(_sender) {
     alert("Remove unimplemented");
 }
 async function sendStreets(edits) {

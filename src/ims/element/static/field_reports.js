@@ -68,7 +68,7 @@ function initFieldReportsTable() {
         enableEditing();
     }
     // Fire-and-forget this promise, since it tries forever to acquire a lock
-    const ignoredPromise = requestEventSourceLock();
+    requestEventSourceLock();
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = function (e) {
         if (e.data.update_all) {
@@ -129,7 +129,7 @@ function frInitDataTables() {
             // entry to it.
             "url": urlReplace(url_fieldReports),
             "dataSrc": dataHandler,
-            "error": function (request, status, error) {
+            "error": function (request, _status, error) {
                 // The "abort" case is a special snowflake.
                 // There are times we do two table refreshes in quick succession, and in
                 // those cases, the first call gets aborted. We don't want to set an error
@@ -186,8 +186,8 @@ function frInitDataTables() {
             // creation time descending
             [1, "dsc"],
         ],
-        "createdRow": function (row, fieldReport, index) {
-            row.addEventListener("click", function (e) {
+        "createdRow": function (row, fieldReport, _index) {
+            row.addEventListener("click", function (_e) {
                 // Open new context with link
                 window.open(urlReplace(url_viewFieldReports) + fieldReport.number, "Field_Report:" + fieldReport.number);
             });
@@ -274,7 +274,7 @@ function frInitSearch() {
         }
         return false;
     }
-    fieldReportsTable.search.fixed("modification_date", function (searchStr, rowData, rowIndex) {
+    fieldReportsTable.search.fixed("modification_date", function (_searchStr, _rowData, rowIndex) {
         const fieldReport = fieldReportsTable.data()[rowIndex];
         return !(_frShowModifiedAfter != null &&
             !modifiedAfter(fieldReport, _frShowModifiedAfter));

@@ -46,7 +46,7 @@ async function initIncidentPage(): Promise<void> {
     });
 
     // Fire-and-forget this promise, since it tries forever to acquire a lock
-    const ignoredPromise = requestEventSourceLock();
+    requestEventSourceLock();
 
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e: MessageEvent): Promise<void> {
@@ -309,7 +309,7 @@ async function loadOneFieldReport(fieldReportNumber: number): Promise<{err: stri
 
     let found = false;
     for (const i in allFieldReports!) {
-        if (allFieldReports[i].number === json.number) {
+        if (allFieldReports[i]!.number === json.number) {
             allFieldReports[i] = json;
             found = true;
         }
@@ -404,7 +404,7 @@ function addLocationAddressOptions(): void {
     for (const id in concentricStreetNameByID!) {
         const newOption: HTMLOptionElement = document.createElement("option");
         newOption.value = id;
-        newOption.textContent = concentricStreetNameByID[id];
+        newOption.textContent = concentricStreetNameByID[id]??"null";
         concentricElement.append(newOption);
     }
 }
@@ -548,6 +548,10 @@ function drawRangersToAdd(): void {
     if (personnel != null) {
         for (const handle of handles) {
             const ranger = personnel[handle];
+            if (ranger === undefined) {
+                console.error(`no record for personnel with handle ${handle}`);
+                continue;
+            }
 
             const option: HTMLOptionElement = document.createElement("option");
             option.value = handle;
@@ -671,7 +675,7 @@ function drawMergedReportEntries() {
         if (mergedCheckbox.checked) {
             for (const report of attachedFieldReports) {
                 for (const entry of report.report_entries??[]) {
-                    entry.merged = report.number;
+                    entry.merged = report.number??null;
                     entries.push(entry);
                 }
             }
@@ -776,10 +780,10 @@ async function sendEdits(edits: Incident): Promise<{err:string|null}> {
         // We're creating a new incident.
         // required fields are ["state", "priority"];
         if (edits.state == null) {
-            edits.state = incident!.state;
+            edits.state = incident!.state??null;
         }
         if (edits.priority == null) {
-            edits.priority = incident!.priority;
+            edits.priority = incident!.priority??null;
         }
     } else {
         // We're editing an existing incident.
