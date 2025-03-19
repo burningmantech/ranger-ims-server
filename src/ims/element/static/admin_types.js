@@ -82,7 +82,7 @@ async function createIncidentType(sender) {
     }
     await loadAndDrawIncidentTypes();
 }
-function deleteIncidentType(sender) {
+function deleteIncidentType(_sender) {
     alert("Remove unimplemented");
 }
 async function showIncidentType(sender) {

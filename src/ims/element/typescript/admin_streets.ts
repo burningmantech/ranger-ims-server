@@ -52,7 +52,7 @@ function drawStreets() {
     if (_streetsTemplate == null) {
         _streetsTemplate = container.getElementsByClassName("event_streets")[0] as HTMLElement;
         _streetsEntryTemplate = _streetsTemplate
-            .getElementsByClassName("list-group")[0]
+            .getElementsByClassName("list-group")[0]!
             .getElementsByClassName("list-group-item")[0] as HTMLElement;
     }
 
@@ -82,9 +82,9 @@ function updateEventStreets(event: string) {
     const eventStreetsElement: HTMLElement = document.getElementById("event_streets_" + event)!;
 
     // Set displayed event name
-    eventStreetsElement.getElementsByClassName("event_name")[0].textContent = event;
+    eventStreetsElement.getElementsByClassName("event_name")[0]!.textContent = event;
 
-    const entryContainer: Element = eventStreetsElement.getElementsByClassName("list-group")[0];
+    const entryContainer: Element = eventStreetsElement.getElementsByClassName("list-group")[0]!;
 
     entryContainer.replaceChildren();
 
@@ -100,12 +100,12 @@ function updateEventStreets(event: string) {
 }
 
 
-function addStreet(sender: HTMLElement): void {
+function addStreet(_sender: HTMLElement): void {
     alert("Add unimplemented");
 }
 
 
-function removeStreet(sender: HTMLElement): void {
+function removeStreet(_sender: HTMLElement): void {
     alert("Remove unimplemented");
 }
 

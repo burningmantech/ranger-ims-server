@@ -81,7 +81,7 @@ function initFieldReportsTable() {
     }
 
     // Fire-and-forget this promise, since it tries forever to acquire a lock
-    const ignoredPromise = requestEventSourceLock();
+    requestEventSourceLock();
 
     const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
     fieldReportChannel.onmessage = function (e: MessageEvent): void {
@@ -147,7 +147,7 @@ function frInitDataTables() {
             // entry to it.
             "url": urlReplace(url_fieldReports),
             "dataSrc": dataHandler,
-            "error": function (request: XMLHttpRequest, status: object, error: string|null) {
+            "error": function (request: XMLHttpRequest, _status: object, error: string|null) {
                 // The "abort" case is a special snowflake.
                 // There are times we do two table refreshes in quick succession, and in
                 // those cases, the first call gets aborted. We don't want to set an error
@@ -202,15 +202,15 @@ function frInitDataTables() {
             // creation time descending
             [1, "dsc"],
         ],
-        "createdRow": function (row: HTMLElement, fieldReport: FieldReport, index: number) {
-            row.addEventListener("click", function (e: MouseEvent): void {
+        "createdRow": function (row: HTMLElement, fieldReport: FieldReport, _index: number) {
+            row.addEventListener("click", function (_e: MouseEvent): void {
                 // Open new context with link
                 window.open(
                     urlReplace(url_viewFieldReports) + fieldReport.number,
                     "Field_Report:" + fieldReport.number,
                 );
             });
-            row.getElementsByClassName("field_report_created")[0]
+            row.getElementsByClassName("field_report_created")[0]!
                 .setAttribute(
                     "title",
                     fullDateTime.format(Date.parse(fieldReport.created!)),
@@ -320,8 +320,8 @@ function frInitSearch() {
     }
 
     fieldReportsTable!.search.fixed("modification_date",
-        function(searchStr: string, rowData: object, rowIndex: number): boolean {
-            const fieldReport = fieldReportsTable!.data()[rowIndex];
+        function(_searchStr: string, _rowData: object, rowIndex: number): boolean {
+            const fieldReport = fieldReportsTable!.data()[rowIndex]!;
             return !(_frShowModifiedAfter != null &&
                 !modifiedAfter(fieldReport, _frShowModifiedAfter));
 
@@ -345,11 +345,11 @@ function frShowDays(daysBackToShow: number|string, replaceState: boolean): void 
     const item = document.getElementById("show_days_" + id) as HTMLLIElement;
 
     // Get title from selected item
-    const selection = item.getElementsByClassName("name")[0].textContent;
+    const selection = item.getElementsByClassName("name")[0]!.textContent;
 
     // Update menu title to reflect selected item
     const menu = document.getElementById("show_days") as HTMLButtonElement;
-    menu.getElementsByClassName("selection")[0].textContent = selection
+    menu.getElementsByClassName("selection")[0]!.textContent = selection
 
     if (daysBackToShow === "all")  {
         _frShowModifiedAfter = null;
@@ -384,11 +384,11 @@ function frShowRows(rowsToShow: number|string, replaceState: boolean) {
     const item = document.getElementById("show_rows_" + id) as HTMLLIElement;
 
     // Get title from selected item
-    const selection = item.getElementsByClassName("name")[0].textContent;
+    const selection = item.getElementsByClassName("name")[0]!.textContent;
 
     // Update menu title to reflect selected item
     const menu = document.getElementById("show_rows") as HTMLButtonElement;
-    menu.getElementsByClassName("selection")[0].textContent = selection
+    menu.getElementsByClassName("selection")[0]!.textContent = selection
 
     if (rowsToShow === "all") {
         rowsToShow = -1;

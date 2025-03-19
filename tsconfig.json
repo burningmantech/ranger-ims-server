@@ -5,9 +5,19 @@
     "outDir": "src/ims/element/static",
     "allowJs": true,
     "checkJs": true,
+
+    // Type checks
     "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "strict": true,
-    "strictNullChecks": true
   },
   "include": ["src/ims/element/typescript/*.ts"]
 }

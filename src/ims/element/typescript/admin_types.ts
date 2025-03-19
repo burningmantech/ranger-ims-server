@@ -62,11 +62,11 @@ function drawAllIncidentTypes(): void {
     const container: HTMLElement = document.getElementById("incident_types_container")!;
 
     if (_incidentTypesTemplate == null) {
-        _incidentTypesTemplate = container.getElementsByClassName("incident_types")[0];
+        _incidentTypesTemplate = container.getElementsByClassName("incident_types")[0]!;
 
         _entryTemplate = _incidentTypesTemplate!
-            .getElementsByClassName("list-group")[0]
-            .getElementsByClassName("list-group-item")[0];
+            .getElementsByClassName("list-group")[0]!
+            .getElementsByClassName("list-group-item")[0]!;
     }
 
     updateIncidentTypes();
@@ -76,7 +76,7 @@ function drawAllIncidentTypes(): void {
 function updateIncidentTypes(): void {
     const incidentTypesElement: HTMLElement = document.getElementById("incident_types")!;
 
-    const entryContainer = incidentTypesElement.getElementsByClassName("list-group")[0];
+    const entryContainer = incidentTypesElement.getElementsByClassName("list-group")[0]!;
 
     entryContainer.replaceChildren();
 
@@ -107,7 +107,7 @@ async function createIncidentType(sender: HTMLInputElement): Promise<void> {
 }
 
 
-function deleteIncidentType(sender: HTMLElement) {
+function deleteIncidentType(_sender: HTMLElement) {
     alert("Remove unimplemented");
 }
 

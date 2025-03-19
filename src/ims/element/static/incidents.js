@@ -94,7 +94,7 @@ function initIncidentsTable() {
         enableEditing();
     }
     // Fire-and-forget this promise, since it tries forever to acquire a lock
-    const ignoredPromise = requestEventSourceLock();
+    requestEventSourceLock();
     const incidentChannel = new BroadcastChannel(incidentChannelName);
     incidentChannel.onmessage = async function (e) {
         if (e.data.update_all) {
@@ -168,7 +168,7 @@ function initDataTables() {
         "ajax": {
             "url": urlReplace(url_incidents + "?exclude_system_entries=true"),
             "dataSrc": dataHandler,
-            "error": function (request, status, error) {
+            "error": function (request, _status, error) {
                 // The "abort" case is a special snowflake.
                 // There are times we do two table refreshes in quick succession, and in
                 // those cases, the first call gets aborted. We don't want to set an error
@@ -260,8 +260,8 @@ function initDataTables() {
         "order": [
             [0, "dsc"],
         ],
-        "createdRow": function (row, incident, index) {
-            row.addEventListener("click", function (e) {
+        "createdRow": function (row, incident, _index) {
+            row.addEventListener("click", function (_e) {
                 // Open new context with link
                 window.open(viewIncidentsURL + incident.number, "Incident:" + eventID + "#" + incident.number);
             });
@@ -277,8 +277,7 @@ function initDataTables() {
 //
 function initTableButtons() {
     const typeFilter = document.getElementById("ul_show_type");
-    for (const i in allIncidentTypes) {
-        const type = allIncidentTypes[i];
+    for (const type of allIncidentTypes) {
         const a = document.createElement("a");
         a.href = "#";
         a.classList.add("dropdown-item", "dropdown-item-checkable", "dropdown-item-checked");
@@ -375,12 +374,12 @@ function initSearchField() {
 // Initialize search plug-in
 //
 function initSearch() {
-    incidentsTable.search.fixed("modification_date", function (searchStr, rowData, rowIndex) {
+    incidentsTable.search.fixed("modification_date", function (_searchStr, _rowData, rowIndex) {
         const incident = incidentsTable.data()[rowIndex];
         return !(_showModifiedAfter != null &&
             new Date(Date.parse(incident.last_modified)) < _showModifiedAfter);
     });
-    incidentsTable.search.fixed("state", function (searchStr, rowData, rowIndex) {
+    incidentsTable.search.fixed("state", function (_searchStr, _rowData, rowIndex) {
         const incident = incidentsTable.data()[rowIndex];
         let state;
         if (_showState != null) {
@@ -403,7 +402,7 @@ function initSearch() {
         }
         return true;
     });
-    incidentsTable.search.fixed("type", function (searchStr, rowData, rowIndex) {
+    incidentsTable.search.fixed("type", function (_searchStr, _rowData, rowIndex) {
         const incident = incidentsTable.data()[rowIndex];
         // don't bother with filtering, which may be computationally expensive,
         // if all types seem to be selected
