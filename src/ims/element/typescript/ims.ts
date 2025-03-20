@@ -47,12 +47,13 @@ declare let viewIncidentsURL: string;
 
 type Streets = Record<string, string>;
 
-interface Location {
+interface EventLocation {
     name?: string|null;
     radial_hour?: number|null;
     radial_minute?: number|null;
     concentric?: string|null;
     description?: string|null;
+    type?: string|null;
 }
 
 interface Incident {
@@ -65,7 +66,7 @@ interface Incident {
     last_modified?: string|null;
     ranger_handles?: string[]|null;
     incident_types?: string[]|null;
-    location?: Location|null;
+    location?: EventLocation|null;
     report_entries?: ReportEntry[]|null;
     field_reports?: number[]|null;
 }
@@ -131,18 +132,14 @@ function setStoredTheme(theme: string): void {
     localStorage.setItem("theme", theme);
 }
 function getPreferredTheme(): string {
-    const storedTheme = getStoredTheme();
-    if (storedTheme) {
-        return storedTheme;
-    }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    return getStoredTheme()
+        ?? window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 function setTheme(theme: string): void {
     if (theme === "auto") {
-        document.documentElement.setAttribute("data-bs-theme", (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
-    } else {
-        document.documentElement.setAttribute("data-bs-theme", theme);
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
+    document.documentElement.setAttribute("data-bs-theme", theme);
 }
 function applyTheme(): void {
     setTheme(getPreferredTheme());
@@ -155,9 +152,9 @@ function applyTheme(): void {
         }
 
         const themeSwitcherText: Element = document.querySelector("#bd-theme-text")!;
-        const activeThemeIcon: Element = document.querySelector(".theme-icon-active use")!;
+        const activeThemeIcon = document.querySelector(".theme-icon-active use") as SVGUseElement;
         const btnToActive: HTMLButtonElement = document.querySelector(`[data-bs-theme-value="${theme}"]`)!;
-        const svgOfActiveBtn: string = btnToActive.querySelector("svg use")!.getAttribute("href")!;
+        const svgOfActiveBtn: string = (btnToActive.querySelector("svg use") as SVGUseElement).href.baseVal;
 
         document.querySelectorAll("[data-bs-theme-value]").forEach((element: Element): void => {
             element.classList.remove("active");
@@ -167,7 +164,7 @@ function applyTheme(): void {
         btnToActive.classList.add("active");
         btnToActive.setAttribute("aria-pressed", "true");
         if (svgOfActiveBtn) {
-            activeThemeIcon!.setAttribute("href", svgOfActiveBtn);
+            activeThemeIcon.href.baseVal = svgOfActiveBtn;
         }
         if (themeSwitcherText) {
             const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset["bsThemeValue"]})`;
@@ -189,7 +186,7 @@ function applyTheme(): void {
     showActiveTheme(getPreferredTheme());
 
     document.querySelectorAll("[data-bs-theme-value]").forEach((toggle: Element): void => {
-        toggle.addEventListener("click", (): void => {
+        (toggle as HTMLElement).addEventListener("click", function(_e: MouseEvent): void {
             const theme = toggle.getAttribute("data-bs-theme-value");
             if (theme) {
                 setStoredTheme(theme);
@@ -262,15 +259,15 @@ function range(start: number, end: number, step?: number|null): number[] {
 }
 
 
-function compareReportEntries(a: any, b: any): number {
-    if (a.created < b.created) { return -1; }
-    if (a.created > b.created) { return  1; }
+function compareReportEntries(a: ReportEntry, b: ReportEntry): number {
+    if (a.created! < b.created!) { return -1; }
+    if (a.created! > b.created!) { return  1; }
 
     if (a.system_entry && ! b.system_entry) { return -1; }
     if (! a.system_entry && b.system_entry) { return  1; }
 
-    if (a.text < b.text) { return -1; }
-    if (a.text > b.text) { return  1; }
+    if (a.text! < b.text!) { return -1; }
+    if (a.text! > b.text!) { return  1; }
 
     return 0;
 }
@@ -280,8 +277,8 @@ function compareReportEntries(a: any, b: any): number {
 // Request making
 //
 
-async function fetchJsonNoThrow(url: string, init: RequestInit|null):
-    Promise<{resp: Response|null, json: any|null, err: string|null}>
+async function fetchJsonNoThrow<T>(url: string, init: RequestInit|null):
+    Promise<{resp: Response|null, json: T|null, err: string|null}>
 {
     if (init == null) {
         init = {};
@@ -470,9 +467,9 @@ async function loadBody(): Promise<void> {
             eventLabel.classList.add("active-event");
         }
 
-        const activeEventIncidents: HTMLElement|null = document.getElementById("active-event-incidents");
+        const activeEventIncidents = document.getElementById("active-event-incidents") as HTMLAnchorElement|null;
         if (activeEventIncidents != null) {
-            activeEventIncidents.setAttribute("href", urlReplace(url_viewIncidents));
+            activeEventIncidents.href = urlReplace(url_viewIncidents);
             activeEventIncidents.classList.remove("hidden");
 
             if (window.location.pathname.startsWith(urlReplace(url_viewIncidents))) {
@@ -480,9 +477,9 @@ async function loadBody(): Promise<void> {
             }
         }
 
-        const activeEventFRs: HTMLElement|null = document.getElementById("active-event-field-reports");
+        const activeEventFRs = document.getElementById("active-event-field-reports") as HTMLAnchorElement|null;
         if (activeEventFRs != null) {
-            activeEventFRs.setAttribute("href", urlReplace(url_viewFieldReports));
+            activeEventFRs.href = urlReplace(url_viewFieldReports);
             activeEventFRs.classList.remove("hidden");
 
             if (window.location.pathname.startsWith(urlReplace(url_viewFieldReports))) {
@@ -687,11 +684,7 @@ function reportTextFromIncident(incidentOrFR: Incident|FieldReport): string {
 
 
 // Return a short description for a given location.
-function shortDescribeLocation(location: any|null): string|undefined {
-    if (location == null) {
-        return undefined;
-    }
-
+function shortDescribeLocation(location: EventLocation): string|undefined {
     const locationBits: string[] = [];
 
     if (location.name != null) {
@@ -710,11 +703,11 @@ function shortDescribeLocation(location: any|null): string|undefined {
         case "garett":
             if (location.radial_hour || location.radial_minute || location.concentric) {
                 locationBits.push(" (");
-                locationBits.push(padTwo(location.radial_hour));
+                locationBits.push(padTwo(location.radial_hour!));
                 locationBits.push(":");
-                locationBits.push(padTwo(location.radial_minute));
+                locationBits.push(padTwo(location.radial_minute!));
                 locationBits.push("@");
-                locationBits.push(concentricStreetFromID(location.concentric));
+                locationBits.push(concentricStreetFromID(location.concentric!));
                 locationBits.push(")");
             }
             break;
@@ -823,9 +816,9 @@ function renderState(state: string, type: string, incident: Incident): string|nu
     return undefined;
 }
 
-function renderLocation(data: Location|string|null, type: string, _incident: Incident): string|undefined {
+function renderLocation(data: EventLocation|null, type: string, _incident: Incident): string|undefined {
     if (data == null) {
-        data = "";
+        return undefined;
     }
     switch (type) {
         case "display":
@@ -1184,7 +1177,7 @@ async function requestEventSourceLock(): Promise<void>  {
 //
 // The "closed" param is a callback to notify the caller that the EventSource has
 // been closed.
-function subscribeToUpdates(closed: (value?: undefined)=>void): void {
+function subscribeToUpdates(closed: (_value?: undefined)=>void): void {
     const eventSource = new EventSource(
         url_eventSource, { withCredentials: true }
     );

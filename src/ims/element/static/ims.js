@@ -24,19 +24,14 @@ function setStoredTheme(theme) {
     localStorage.setItem("theme", theme);
 }
 function getPreferredTheme() {
-    const storedTheme = getStoredTheme();
-    if (storedTheme) {
-        return storedTheme;
-    }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    return getStoredTheme()
+        ?? window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 function setTheme(theme) {
     if (theme === "auto") {
-        document.documentElement.setAttribute("data-bs-theme", (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
-    else {
-        document.documentElement.setAttribute("data-bs-theme", theme);
-    }
+    document.documentElement.setAttribute("data-bs-theme", theme);
 }
 function applyTheme() {
     setTheme(getPreferredTheme());
@@ -48,7 +43,7 @@ function applyTheme() {
         const themeSwitcherText = document.querySelector("#bd-theme-text");
         const activeThemeIcon = document.querySelector(".theme-icon-active use");
         const btnToActive = document.querySelector(`[data-bs-theme-value="${theme}"]`);
-        const svgOfActiveBtn = btnToActive.querySelector("svg use").getAttribute("href");
+        const svgOfActiveBtn = btnToActive.querySelector("svg use").href.baseVal;
         document.querySelectorAll("[data-bs-theme-value]").forEach((element) => {
             element.classList.remove("active");
             element.setAttribute("aria-pressed", "false");
@@ -56,7 +51,7 @@ function applyTheme() {
         btnToActive.classList.add("active");
         btnToActive.setAttribute("aria-pressed", "true");
         if (svgOfActiveBtn) {
-            activeThemeIcon.setAttribute("href", svgOfActiveBtn);
+            activeThemeIcon.href.baseVal = svgOfActiveBtn;
         }
         if (themeSwitcherText) {
             const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset["bsThemeValue"]})`;
@@ -75,7 +70,7 @@ function applyTheme() {
     });
     showActiveTheme(getPreferredTheme());
     document.querySelectorAll("[data-bs-theme-value]").forEach((toggle) => {
-        toggle.addEventListener("click", () => {
+        toggle.addEventListener("click", function (_e) {
             const theme = toggle.getAttribute("data-bs-theme-value");
             if (theme) {
                 setStoredTheme(theme);
@@ -316,7 +311,7 @@ async function loadBody() {
         }
         const activeEventIncidents = document.getElementById("active-event-incidents");
         if (activeEventIncidents != null) {
-            activeEventIncidents.setAttribute("href", urlReplace(url_viewIncidents));
+            activeEventIncidents.href = urlReplace(url_viewIncidents);
             activeEventIncidents.classList.remove("hidden");
             if (window.location.pathname.startsWith(urlReplace(url_viewIncidents))) {
                 activeEventIncidents.classList.add("active");
@@ -324,7 +319,7 @@ async function loadBody() {
         }
         const activeEventFRs = document.getElementById("active-event-field-reports");
         if (activeEventFRs != null) {
-            activeEventFRs.setAttribute("href", urlReplace(url_viewFieldReports));
+            activeEventFRs.href = urlReplace(url_viewFieldReports);
             activeEventFRs.classList.remove("hidden");
             if (window.location.pathname.startsWith(urlReplace(url_viewFieldReports))) {
                 activeEventFRs.classList.add("active");
@@ -485,9 +480,6 @@ function reportTextFromIncident(incidentOrFR) {
 }
 // Return a short description for a given location.
 function shortDescribeLocation(location) {
-    if (location == null) {
-        return undefined;
-    }
     const locationBits = [];
     if (location.name != null) {
         locationBits.push(location.name);
@@ -604,7 +596,7 @@ function renderState(state, type, incident) {
 }
 function renderLocation(data, type, _incident) {
     if (data == null) {
-        data = "";
+        return undefined;
     }
     switch (type) {
         case "display":

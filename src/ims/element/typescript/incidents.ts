@@ -72,7 +72,7 @@ async function initIncidentsPage(): Promise<void> {
 
 async function loadEventFieldReports(): Promise<{err: string|null}> {
 
-    const {json, err} = await fetchJsonNoThrow(urlReplace(url_fieldReports + "?exclude_system_entries=true"), null);
+    const {json, err} = await fetchJsonNoThrow<FieldReport[]>(urlReplace(url_fieldReports + "?exclude_system_entries=true"), null);
     if (err != null) {
         const message = `Failed to load event field reports: ${err}`;
         console.error(message);
@@ -81,8 +81,8 @@ async function loadEventFieldReports(): Promise<{err: string|null}> {
     }
     const reports: FieldReportsByNumber = {};
 
-    for (const report of json) {
-        reports[report.number] = report;
+    for (const report of json!) {
+        reports[report.number!] = report;
     }
 
     eventFieldReports = reports;

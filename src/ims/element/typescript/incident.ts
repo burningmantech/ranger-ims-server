@@ -152,7 +152,7 @@ async function loadIncident(): Promise<{err: string|null}> {
             "summary": "",
         };
     } else {
-        const {json, err} = await fetchJsonNoThrow(urlReplace(url_incidents) + number, null);
+        const {json, err} = await fetchJsonNoThrow<Incident>(urlReplace(url_incidents) + number, null);
         if (err != null) {
             disableEditing();
             const message = `Failed to load Incident ${number}: ${err}`;
@@ -204,13 +204,14 @@ let personnel: PersonnelMap|null = null;
 interface Personnel {
     handle: string;
     directory_id: number;
+    status: string;
 }
 
 // key is Ranger handle
 type PersonnelMap = Record<string, Personnel>;
 
 async function loadPersonnel(): Promise<{err: string|null}> {
-    const {json, err} = await fetchJsonNoThrow(urlReplace(url_personnel + "?event_id=<event_id>"), null);
+    const {json, err} = await fetchJsonNoThrow<Personnel[]>(urlReplace(url_personnel + "?event_id=<event_id>"), null);
     if (err != null) {
         const message = `Failed to load personnel: ${err}`;
         console.error(message);
@@ -218,7 +219,7 @@ async function loadPersonnel(): Promise<{err: string|null}> {
         return {err: message};
     }
     const _personnel: PersonnelMap = {};
-    for (const record of json) {
+    for (const record of json!) {
         // Filter inactive Rangers out
         if (record.status === "active") {
             _personnel[record.handle] = record;
@@ -237,7 +238,7 @@ let incidentTypes: string[] = [];
 
 
 async function loadIncidentTypes(): Promise<{err: string|null}> {
-    const {json, err} = await fetchJsonNoThrow(url_incidentTypes, null);
+    const {json, err} = await fetchJsonNoThrow<string[]>(url_incidentTypes, null);
     if (err != null) {
         const message = `Failed to load incident types: ${err}`;
         console.error(message);
@@ -245,7 +246,7 @@ async function loadIncidentTypes(): Promise<{err: string|null}> {
         return {err: message};
     }
     const _incidentTypes: string[] = [];
-    for (const record of json) {
+    for (const record of json!) {
         _incidentTypes.push(record);
     }
     _incidentTypes.sort();
@@ -264,7 +265,7 @@ async function loadAllFieldReports(): Promise<{err: string|null}> {
         return {err: null};
     }
 
-    const {resp, json, err} = await fetchJsonNoThrow(urlReplace(url_fieldReports), null);
+    const {resp, json, err} = await fetchJsonNoThrow<FieldReport[]>(urlReplace(url_fieldReports), null);
     if (err != null) {
         if (resp != null && resp.status === 403) {
             // We're not allowed to look these up.
@@ -279,7 +280,7 @@ async function loadAllFieldReports(): Promise<{err: string|null}> {
         }
     }
     const _allFieldReports: FieldReport[] = [];
-    for (const d of json) {
+    for (const d of json!) {
         _allFieldReports.push(d);
     }
     // apply a descending sort based on the field report number,
@@ -296,7 +297,7 @@ async function loadOneFieldReport(fieldReportNumber: number): Promise<{err: stri
         return {err: null};
     }
 
-    const {resp, json, err} = await fetchJsonNoThrow(
+    const {resp, json, err} = await fetchJsonNoThrow<FieldReport>(
         urlReplace(url_fieldReport).replace("<field_report_number>", fieldReportNumber.toString()), null);
     if (err != null) {
         if (resp == null || resp.status !== 403) {
@@ -309,8 +310,8 @@ async function loadOneFieldReport(fieldReportNumber: number): Promise<{err: stri
 
     let found = false;
     for (const i in allFieldReports!) {
-        if (allFieldReports[i]!.number === json.number) {
-            allFieldReports[i] = json;
+        if (allFieldReports[i]!.number === json!.number) {
+            allFieldReports[i] = json!;
             found = true;
         }
     }
@@ -318,7 +319,7 @@ async function loadOneFieldReport(fieldReportNumber: number): Promise<{err: stri
         if (allFieldReports == null) {
             allFieldReports = [];
         }
-        allFieldReports.push(json);
+        allFieldReports.push(json!);
         // apply a descending sort based on the field report number,
         // being cautious about field report number being null
         allFieldReports.sort(function (a, b) {
