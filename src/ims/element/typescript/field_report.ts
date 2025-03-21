@@ -116,7 +116,7 @@ async function loadFieldReport(): Promise<{err: string|null}> {
             "created": null,
         };
     } else {
-        const {json, err} = await fetchJsonNoThrow(
+        const {json, err} = await fetchJsonNoThrow<FieldReport>(
             urlReplace(url_fieldReports) + number, null);
         if (err != null) {
             disableEditing();

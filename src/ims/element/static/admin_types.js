@@ -24,8 +24,8 @@ async function loadAndDrawIncidentTypes() {
     await loadAllIncidentTypes();
     drawAllIncidentTypes();
 }
-let adminIncidentTypes = [];
-let incidentTypesVisible = [];
+let adminIncidentTypes = null;
+let incidentTypesVisible = null;
 async function loadAllIncidentTypes() {
     let errOne, errTwo;
     [{ json: incidentTypesVisible, err: errOne }, { json: adminIncidentTypes, err: errTwo }] =

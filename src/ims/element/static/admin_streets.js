@@ -40,16 +40,14 @@ let _streetsEntryTemplate = null;
 function drawStreets() {
     const container = document.getElementById("event_streets_container");
     if (_streetsTemplate == null) {
-        _streetsTemplate = container.getElementsByClassName("event_streets")[0];
-        _streetsEntryTemplate = _streetsTemplate
-            .getElementsByClassName("list-group")[0]
-            .getElementsByClassName("list-group-item")[0];
+        _streetsTemplate = container.querySelectorAll(".event_streets")[0];
+        _streetsEntryTemplate = _streetsTemplate.querySelector("ul").querySelector("li");
     }
     container.replaceChildren();
     for (const event of events) {
         const eventStreets = _streetsTemplate.cloneNode(true);
         // Add an id to the element for future reference
-        eventStreets.setAttribute("id", "event_streets_" + event);
+        eventStreets.id = `event_streets_${event}`;
         // Add to container
         container.append(eventStreets);
         updateEventStreets(event);

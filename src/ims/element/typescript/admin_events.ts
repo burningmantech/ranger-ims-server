@@ -43,7 +43,7 @@ type EventsAccess = Record<string, EventAccess|null>;
 let accessControlList: EventsAccess|null = null;
 
 async function loadAccessControlList() : Promise<{err: string|null}> {
-    const {json, err} = await fetchJsonNoThrow(url_acl, null);
+    const {json, err} = await fetchJsonNoThrow<EventsAccess>(url_acl, null);
     if (err != null) {
         const message = `Failed to load access control list: ${err}`;
         console.error(message);

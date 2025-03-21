@@ -32,37 +32,35 @@ async function initAdminStreetsPage() {
 let streets: EventStreets = {};
 
 async function loadStreets(): Promise<{err:string|null}> {
-    const {json, err} = await fetchJsonNoThrow(url_streets, null);
+    const {json, err} = await fetchJsonNoThrow<EventStreets>(url_streets, null);
     if (err != null) {
         const message = `Failed to load streets: ${err}`;
         console.error(message);
         window.alert(message);
         return {err: message};
     }
-    streets = json;
+    streets = json!;
     return {err: null};
 }
 
 
-let _streetsTemplate: HTMLElement|null = null;
-let _streetsEntryTemplate: HTMLElement|null = null;
+let _streetsTemplate: HTMLDivElement|null = null;
+let _streetsEntryTemplate: HTMLLIElement |null = null;
 
-function drawStreets() {
+function drawStreets(): void {
     const container: HTMLElement = document.getElementById("event_streets_container")!;
     if (_streetsTemplate == null) {
-        _streetsTemplate = container.getElementsByClassName("event_streets")[0] as HTMLElement;
-        _streetsEntryTemplate = _streetsTemplate
-            .getElementsByClassName("list-group")[0]!
-            .getElementsByClassName("list-group-item")[0] as HTMLElement;
+        _streetsTemplate = container.querySelectorAll<HTMLDivElement>(".event_streets")[0]!;
+        _streetsEntryTemplate = _streetsTemplate.querySelector("ul")!.querySelector("li");
     }
 
     container.replaceChildren();
 
     for (const event of events!) {
-        const eventStreets = _streetsTemplate.cloneNode(true) as HTMLElement;
+        const eventStreets = _streetsTemplate.cloneNode(true) as HTMLDivElement;
 
         // Add an id to the element for future reference
-        eventStreets.setAttribute("id", "event_streets_" + event);
+        eventStreets.id = `event_streets_${event}`;
 
         // Add to container
         container.append(eventStreets);

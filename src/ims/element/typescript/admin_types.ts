@@ -31,17 +31,17 @@ async function loadAndDrawIncidentTypes(): Promise<void> {
 }
 
 
-let adminIncidentTypes: string[] = [];
-let incidentTypesVisible: string[] = [];
+let adminIncidentTypes: string[]|null = null;
+let incidentTypesVisible: string[]|null = null;
 
 async function loadAllIncidentTypes(): Promise<{err:string|null}> {
     let errOne: string|null, errTwo: string|null;
     [{json: incidentTypesVisible, err: errOne}, {json: adminIncidentTypes, err: errTwo}] =
         await Promise.all([
-            fetchJsonNoThrow(url_incidentTypes, {
+            fetchJsonNoThrow<string[]>(url_incidentTypes, {
                 headers: {"Cache-Control": "no-cache"},
             }),
-            fetchJsonNoThrow(url_incidentTypes + "?hidden=true", {
+            fetchJsonNoThrow<string[]>(url_incidentTypes + "?hidden=true", {
                 headers: {"Cache-Control": "no-cache"},
             }),
         ]);
@@ -83,7 +83,7 @@ function updateIncidentTypes(): void {
     for (const incidentType of adminIncidentTypes??[]) {
         const entryItem = _entryTemplate!.cloneNode(true) as HTMLElement;
 
-        if (incidentTypesVisible.indexOf(incidentType) === -1) {
+        if (incidentTypesVisible!.indexOf(incidentType) === -1) {
             entryItem.classList.add("item-hidden");
         } else {
             entryItem.classList.add("item-visible");
