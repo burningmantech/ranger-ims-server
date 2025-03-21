@@ -93,6 +93,22 @@ interface ReportEntry {
     has_attachment?: boolean|null;
 }
 
+type IncidentBroadcast = {
+    // fields from SSE
+    event_id?: string|null;
+    incident_number?: number|null;
+    // additional fields for use in BroadcastChannel
+    update_all?: boolean;
+}
+
+type FieldReportBroadcast = {
+    // fields from SSE
+    event_id?: string|null;
+    field_report_number?: number|null;
+    // additional fields for use in BroadcastChannel
+    update_all?: boolean
+}
+
 interface DTAjax {
     reload(): void;
 }
@@ -1126,13 +1142,31 @@ async function editFromElement(element: HTMLInputElement|HTMLSelectElement, json
     }
 }
 
+//
+// BroadcastChannel
+//
+
+// This is a simple wrapper to help with typing on BroadcastChannels. It's
+// incomplete, e.g. no "addEventListener" implementation, so it may need
+// expansion in the future.
+interface BroadcastChannelTyped<T> extends EventTarget {
+    postMessage(message: T): void;
+    onmessage: ((this: BroadcastChannel, ev: MessageEvent<T>) => any) | null;
+}
+function newIncidentChannel(): BroadcastChannelTyped<IncidentBroadcast> {
+    const incidentChannelName = "incident_update";
+    return new BroadcastChannel(incidentChannelName);
+}
+function newFieldReportChannel(): BroadcastChannelTyped<FieldReportBroadcast> {
+    const fieldReportChannelName= "field_report_update";
+    return new BroadcastChannel(fieldReportChannelName);
+}
+
 
 //
 // EventSource
 //
 
-const incidentChannelName = "incident_update";
-const fieldReportChannelName= "field_report_update";
 const reattemptMinTimeMillis = 10000;
 const lastSseIDKey = "last_sse_id";
 
@@ -1186,7 +1220,7 @@ function subscribeToUpdates(closed: (_value?: undefined)=>void): void {
         console.log("Event listener opened");
     }, true);
 
-    eventSource.addEventListener("error", function(): void {
+    eventSource.addEventListener("error", function(e: MessageEvent): void {
         if (eventSource.readyState === EventSource.CLOSED) {
             console.log("Event listener closed");
             eventSource.close();
@@ -1194,35 +1228,28 @@ function subscribeToUpdates(closed: (_value?: undefined)=>void): void {
         } else {
             // This is likely a retriable error, and EventSource will automatically
             // attempt reconnection.
-            console.log("Event listener error");
+            console.log(`Event listener error: ${e}`);
         }
     }, true);
 
-    eventSource.addEventListener("InitialEvent", function(e: MessageEvent) {
+    eventSource.addEventListener("InitialEvent", function(e: MessageEvent<string>) {
         const previousId = localStorage.getItem(lastSseIDKey);
         if (e.lastEventId === previousId) {
             return;
         }
         localStorage.setItem(lastSseIDKey, e.lastEventId);
-        const allChannels: BroadcastChannel[] = [
-            new BroadcastChannel(incidentChannelName),
-            new BroadcastChannel(fieldReportChannelName),
-        ];
-        for (const ch of allChannels) {
-            ch.postMessage({update_all: true});
-        }
+        newIncidentChannel().postMessage({update_all: true});
+        newFieldReportChannel().postMessage({update_all: true});
     });
 
-    eventSource.addEventListener("Incident", function(e: MessageEvent) {
-        const send = new BroadcastChannel(incidentChannelName);
+    eventSource.addEventListener("Incident", function(e: MessageEvent<string>) {
         localStorage.setItem(lastSseIDKey, e.lastEventId);
-        send.postMessage(JSON.parse(e.data));
+        newIncidentChannel().postMessage(JSON.parse(e.data) as IncidentBroadcast);
     }, true);
 
-    eventSource.addEventListener("FieldReport", function(e: MessageEvent) {
-        const send = new BroadcastChannel(fieldReportChannelName);
+    eventSource.addEventListener("FieldReport", function(e: MessageEvent<string>) {
         localStorage.setItem(lastSseIDKey, e.lastEventId);
-        send.postMessage(JSON.parse(e.data));
+        newFieldReportChannel().postMessage(JSON.parse(e.data) as FieldReportBroadcast);
     }, true);
 }
 

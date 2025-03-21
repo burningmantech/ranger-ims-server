@@ -853,11 +853,17 @@ async function editFromElement(element, jsonKey, transform) {
         controlHasSuccess(element, 1000);
     }
 }
+function newIncidentChannel() {
+    const incidentChannelName = "incident_update";
+    return new BroadcastChannel(incidentChannelName);
+}
+function newFieldReportChannel() {
+    const fieldReportChannelName = "field_report_update";
+    return new BroadcastChannel(fieldReportChannelName);
+}
 //
 // EventSource
 //
-const incidentChannelName = "incident_update";
-const fieldReportChannelName = "field_report_update";
 const reattemptMinTimeMillis = 10000;
 const lastSseIDKey = "last_sse_id";
 // Call this from each browsing context, so that it can queue up to become a leader
@@ -903,7 +909,7 @@ function subscribeToUpdates(closed) {
     eventSource.addEventListener("open", function () {
         console.log("Event listener opened");
     }, true);
-    eventSource.addEventListener("error", function () {
+    eventSource.addEventListener("error", function (e) {
         if (eventSource.readyState === EventSource.CLOSED) {
             console.log("Event listener closed");
             eventSource.close();
@@ -912,7 +918,7 @@ function subscribeToUpdates(closed) {
         else {
             // This is likely a retriable error, and EventSource will automatically
             // attempt reconnection.
-            console.log("Event listener error");
+            console.log(`Event listener error: ${e}`);
         }
     }, true);
     eventSource.addEventListener("InitialEvent", function (e) {
@@ -921,23 +927,16 @@ function subscribeToUpdates(closed) {
             return;
         }
         localStorage.setItem(lastSseIDKey, e.lastEventId);
-        const allChannels = [
-            new BroadcastChannel(incidentChannelName),
-            new BroadcastChannel(fieldReportChannelName),
-        ];
-        for (const ch of allChannels) {
-            ch.postMessage({ update_all: true });
-        }
+        newIncidentChannel().postMessage({ update_all: true });
+        newFieldReportChannel().postMessage({ update_all: true });
     });
     eventSource.addEventListener("Incident", function (e) {
-        const send = new BroadcastChannel(incidentChannelName);
         localStorage.setItem(lastSseIDKey, e.lastEventId);
-        send.postMessage(JSON.parse(e.data));
+        newIncidentChannel().postMessage(JSON.parse(e.data));
     }, true);
     eventSource.addEventListener("FieldReport", function (e) {
-        const send = new BroadcastChannel(fieldReportChannelName);
         localStorage.setItem(lastSseIDKey, e.lastEventId);
-        send.postMessage(JSON.parse(e.data));
+        newFieldReportChannel().postMessage(JSON.parse(e.data));
     }, true);
 }
 // Set the user-visible error information on the page to the provided string.

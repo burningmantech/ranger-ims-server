@@ -48,11 +48,10 @@ async function initIncidentPage(): Promise<void> {
     // Fire-and-forget this promise, since it tries forever to acquire a lock
     requestEventSourceLock();
 
-    const incidentChannel = new BroadcastChannel(incidentChannelName);
-    incidentChannel.onmessage = async function (e: MessageEvent): Promise<void> {
+    newIncidentChannel().onmessage = async function (e: MessageEvent<IncidentBroadcast>): Promise<void> {
         const number = e.data.incident_number;
         const event = e.data.event_id;
-        const updateAll = e.data.update_all;
+        const updateAll = e.data.update_all??false;
 
         if (updateAll || (event === eventID && number === incidentNumber)) {
             console.log("Got incident update: " + number);
@@ -62,9 +61,8 @@ async function initIncidentPage(): Promise<void> {
         }
     };
 
-    const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
-    fieldReportChannel.onmessage = async function (e: MessageEvent): Promise<void> {
-        const updateAll = e.data.update_all;
+    newFieldReportChannel().onmessage = async function (e: MessageEvent<FieldReportBroadcast>): Promise<void> {
+        const updateAll = e.data.update_all??false;
         if (updateAll) {
             console.log("Updating all field reports");
             await loadAllFieldReports();
@@ -76,7 +74,7 @@ async function initIncidentPage(): Promise<void> {
         const event = e.data.event_id;
         if (event === eventID) {
             console.log("Got field report update: " + number);
-            await loadOneFieldReport(number);
+            await loadOneFieldReport(number!);
             renderFieldReportData();
             return;
         }
