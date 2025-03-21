@@ -83,8 +83,7 @@ function initFieldReportsTable() {
     // Fire-and-forget this promise, since it tries forever to acquire a lock
     requestEventSourceLock();
 
-    const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
-    fieldReportChannel.onmessage = function (e: MessageEvent): void {
+    newFieldReportChannel().onmessage = function (e: MessageEvent<FieldReportBroadcast>): void {
         if (e.data.update_all) {
             console.log("Reloading the whole table to be cautious, as an SSE was missed");
             fieldReportsTable!.ajax.reload();

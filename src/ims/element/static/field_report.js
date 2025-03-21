@@ -32,8 +32,7 @@ async function initFieldReportPage() {
     });
     // Fire-and-forget this promise, since it tries forever to acquire a lock
     requestEventSourceLock();
-    const fieldReportChannel = new BroadcastChannel(fieldReportChannelName);
-    fieldReportChannel.onmessage = async function (e) {
+    newFieldReportChannel().onmessage = async function (e) {
         const number = e.data.field_report_number;
         const event = e.data.event_id;
         const updateAll = e.data.update_all;

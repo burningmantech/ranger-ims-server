@@ -95,8 +95,7 @@ function initIncidentsTable() {
     }
     // Fire-and-forget this promise, since it tries forever to acquire a lock
     requestEventSourceLock();
-    const incidentChannel = new BroadcastChannel(incidentChannelName);
-    incidentChannel.onmessage = async function (e) {
+    newIncidentChannel().onmessage = async function (e) {
         if (e.data.update_all) {
             console.log("Reloading the whole table to be cautious, as an SSE was missed");
             incidentsTable.ajax.reload();
@@ -108,7 +107,7 @@ function initIncidentsTable() {
         if (event !== eventID) {
             return;
         }
-        const { json, err } = await fetchJsonNoThrow(urlReplace(url_incidentNumber).replace("<incident_number>", number), null);
+        const { json, err } = await fetchJsonNoThrow(urlReplace(url_incidentNumber).replace("<incident_number>", number.toString()), null);
         if (err != null) {
             const message = `Failed to update Incident ${number}: ${err}`;
             console.error(message);
