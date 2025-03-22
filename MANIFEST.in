@@ -43,3 +43,4 @@ include tox.ini
 include tsconfig.json
 include uv.lock
 recursive-include src/ims/element *.xhtml
+recursive-exclude playwright *

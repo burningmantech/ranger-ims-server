@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es2024",
+    "target": "ESNext",
     "outDir": "src/ims/element/static",
     "allowJs": true,
     "checkJs": true,
@@ -17,7 +17,7 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "strict": true,
+    "strict": true
   },
   "include": ["src/ims/element/typescript/*.ts"]
 }
