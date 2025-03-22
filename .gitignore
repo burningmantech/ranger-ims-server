@@ -16,3 +16,4 @@ attachments/
 /htmldocs/
 /src/*.egg-info/
 /wheels/
+test-results/

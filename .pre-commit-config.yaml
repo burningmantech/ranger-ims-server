@@ -25,7 +25,7 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-json
         # TypeScript allows non-JSON syntax in its config
-        exclude: '^tsconfig.json$'
+        exclude: '\btsconfig.json$'
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
       - id: check-symlinks
