@@ -13,7 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-interface EventStreets {
+interface EventsStreets {
+    // key is event name
     [index: string]: Streets,
 }
 
@@ -29,10 +30,10 @@ async function initAdminStreetsPage() {
     }
 }
 
-let streets: EventStreets = {};
+let streets: EventsStreets = {};
 
 async function loadStreets(): Promise<{err:string|null}> {
-    const {json, err} = await fetchJsonNoThrow<EventStreets>(url_streets, null);
+    const {json, err} = await fetchJsonNoThrow<EventsStreets>(url_streets, null);
     if (err != null) {
         const message = `Failed to load streets: ${err}`;
         console.error(message);
@@ -98,21 +99,51 @@ function updateEventStreets(event: string) {
 }
 
 
-function addStreet(_sender: HTMLElement): void {
-    alert("Add unimplemented");
+async function addStreet(sender: HTMLInputElement): Promise<void> {
+    const container: HTMLElement = sender.closest(".event_streets")!;
+    const event = container.getElementsByClassName("event_name")[0]!.textContent!;
+
+    const expression = sender.value.trim();
+    const splitInd = expression.indexOf(":");
+    if (splitInd === -1) {
+        alert("Expected a ':' in the expression");
+        return;
+    }
+    // e.g. "123: Abraham Ave" becomes "123" and "Abraham Ave"
+    const id = expression.substring(0, splitInd);
+    const name = expression.substring(splitInd+1).trim();
+
+    const edits: EventsStreets = {};
+    edits[event] = {};
+    edits[event][id] = name;
+
+    const {err} = await sendStreets(edits);
+    await loadStreets();
+    updateEventStreets(event);
+    if (err != null) {
+        controlHasError(sender);
+        return;
+    } else {
+        controlHasSuccess(sender, 1000);
+    }
+    sender.value = "";
 }
 
 
-function removeStreet(_sender: HTMLElement): void {
-    alert("Remove unimplemented");
+function removeStreet(_sender: HTMLInputElement): void {
+    alert("Remove is unsupported for streets. Do this via SQL instead.");
 }
 
 
-async function sendStreets(edits: object): Promise<void> {
-    const {err} = await fetchJsonNoThrow(url_streets, edits);
+async function sendStreets(edits: EventsStreets): Promise<{err: string|null}> {
+    const {err} = await fetchJsonNoThrow(url_streets, {
+        body: JSON.stringify(edits),
+    });
     if (err != null) {
         const message = `Failed to edit streets:\n${err}`;
         console.log(message);
         window.alert(message);
+        return {err: err};
     }
+    return {err: null};
 }

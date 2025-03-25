@@ -5,6 +5,11 @@
 
 <body>
 <div t:render="container">
+  <p>
+    <strong>IMPORTANT</strong>: this page/the API does not permit editing or removing streets once they've been added. Further edits must be
+    done via SQL against the IMS database. Get it right the first time!
+  </p>
+  <p>Each new street must be added with an identifying integer. That ID dictates the order that streets are shown on the Incident page.</p>
   <div class="row" id="event_streets_container">
 
     <div class="col-sm-12 event_streets">
@@ -15,6 +20,16 @@
             <li class="list-group-item">
             </li>
           </ul>
+          <div class="card-footer">
+            <label for="street_add">Add:</label>
+            <input
+                    id="street_add"
+                    class="form-control input-sm auto-width"
+                    type="text" inputmode="verbatim"
+                    placeholder="305:3:00 Public Plaza"
+                    onchange="addStreet(this)"
+            />
+          </div>
         </div>
       </div>
     </div>

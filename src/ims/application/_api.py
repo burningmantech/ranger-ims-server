@@ -1376,6 +1376,8 @@ class APIApplication:
     ) -> KleinSynchronousRenderable:
         """
         Street list edit endpoint.
+
+        The API currently supports addition of streets, but not removal or modification.
         """
         await self.config.authProvider.authorizeRequest(
             request, None, Authorization.imsAdmin
@@ -1387,12 +1389,6 @@ class APIApplication:
             edits = objectFromJSONBytesIO(request.content)
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
-
-        for eventID in edits.keys():
-            existing = await store.concentricStreets(eventID)
-
-            for _streetID, _streetName in existing.items():
-                raise NotAuthorizedError("Removal of streets is not allowed.")
 
         for eventID, streets in edits.items():
             existing = await store.concentricStreets(eventID)
