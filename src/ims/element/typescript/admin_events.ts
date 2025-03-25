@@ -38,6 +38,7 @@ interface Access {
 const allAccessModes = ["readers", "writers", "reporters"] as const;
 type AccessMode = typeof allAccessModes[number];
 type EventAccess = Partial<Record<AccessMode, Access[]>>;
+// key is event name
 type EventsAccess = Record<string, EventAccess|null>;
 
 let accessControlList: EventsAccess|null = null;
