@@ -45,7 +45,6 @@ async function initIncidentPage(): Promise<void> {
         }
     });
 
-    // Fire-and-forget this promise, since it tries forever to acquire a lock
     requestEventSourceLock();
 
     newIncidentChannel().onmessage = async function (e: MessageEvent<IncidentBroadcast>): Promise<void> {

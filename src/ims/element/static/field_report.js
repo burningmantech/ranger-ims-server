@@ -30,7 +30,6 @@ async function initFieldReportPage() {
             e.preventDefault();
         }
     });
-    // Fire-and-forget this promise, since it tries forever to acquire a lock
     requestEventSourceLock();
     newFieldReportChannel().onmessage = async function (e) {
         const number = e.data.field_report_number;
