@@ -39,7 +39,6 @@ async function initIncidentPage() {
             e.preventDefault();
         }
     });
-    // Fire-and-forget this promise, since it tries forever to acquire a lock
     requestEventSourceLock();
     newIncidentChannel().onmessage = async function (e) {
         const number = e.data.incident_number;

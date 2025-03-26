@@ -93,7 +93,6 @@ function initIncidentsTable() {
     if (editingAllowed) {
         enableEditing();
     }
-    // Fire-and-forget this promise, since it tries forever to acquire a lock
     requestEventSourceLock();
     newIncidentChannel().onmessage = async function (e) {
         if (e.data.update_all) {

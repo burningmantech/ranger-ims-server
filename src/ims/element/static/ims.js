@@ -868,7 +868,7 @@ const reattemptMinTimeMillis = 10000;
 const lastSseIDKey = "last_sse_id";
 // Call this from each browsing context, so that it can queue up to become a leader
 // to manage the EventSource.
-async function requestEventSourceLock() {
+function requestEventSourceLock() {
     // The "navigator.locks" API is only available over secure browsing contexts.
     // Secure contexts include HTTPS as well as non-HTTPS via localhost, so this is
     // really only when you try to connect directly to another host without TLS.
@@ -883,20 +883,20 @@ async function requestEventSourceLock() {
         subscribeToUpdates(resolve);
         return promise;
     }
-    function waitBeforeRetry(timeMillis) {
-        return new Promise(r => setTimeout(r, Math.max(0, timeMillis)));
-    }
-    // Infinitely attempt to reconnect to the EventSource.
-    // This addresses the following issue for when IMS lives on AWS:
+    // Fire-and-forget this Promise to infinitely attempt to reconnect to the EventSource.
+    // This addresses the following issue for when IMS lives on AWS, and ensures the
+    // browsing context will always try to reestablish the EventSource connection.
     // https://github.com/burningmantech/ranger-ims-server/issues/1364
-    while (true) {
-        const start = Date.now();
-        // Acquire the lock, set up the EventSource, and start
-        // broadcasting events to other browsing contexts.
-        await navigator.locks.request("ims_eventsource_lock", tryAcquireLock);
-        const millisSinceStart = Date.now() - start;
-        await waitBeforeRetry(reattemptMinTimeMillis - millisSinceStart);
-    }
+    new Promise(async function () {
+        while (true) {
+            const reattempt = new Promise(res => setTimeout(res, reattemptMinTimeMillis));
+            // Acquire the lock, set up the EventSource, and start
+            // broadcasting events to other browsing contexts.
+            await navigator.locks.request("ims_eventsource_lock", tryAcquireLock);
+            await reattempt;
+        }
+    });
+    return;
 }
 // This starts the EventSource call and configures event listeners to propagate
 // updates to BroadcastChannels. The idea is that only one browsing context should
@@ -908,19 +908,18 @@ function subscribeToUpdates(closed) {
     const eventSource = new EventSource(url_eventSource, { withCredentials: true });
     eventSource.addEventListener("open", function () {
         console.log("Event listener opened");
-    }, true);
-    eventSource.addEventListener("error", function (e) {
+    });
+    eventSource.addEventListener("error", function () {
         if (eventSource.readyState === EventSource.CLOSED) {
             console.log("Event listener closed");
             eventSource.close();
             closed();
         }
         else {
-            // This is likely a retriable error, and EventSource will automatically
-            // attempt reconnection.
-            console.log(`Event listener error: ${e}`);
+            // EventSource automatically reconnects in this case.
+            console.log("Event listener error");
         }
-    }, true);
+    });
     eventSource.addEventListener("InitialEvent", function (e) {
         const previousId = localStorage.getItem(lastSseIDKey);
         if (e.lastEventId === previousId) {
@@ -933,15 +932,15 @@ function subscribeToUpdates(closed) {
     eventSource.addEventListener("Incident", function (e) {
         localStorage.setItem(lastSseIDKey, e.lastEventId);
         newIncidentChannel().postMessage(JSON.parse(e.data));
-    }, true);
+    });
     eventSource.addEventListener("FieldReport", function (e) {
         localStorage.setItem(lastSseIDKey, e.lastEventId);
         newFieldReportChannel().postMessage(JSON.parse(e.data));
-    }, true);
+    });
 }
 // Set the user-visible error information on the page to the provided string.
 function setErrorMessage(msg) {
-    msg = "Error: (Cause: " + msg + ")";
+    msg = `Error: (Cause: ${msg})`;
     const errText = document.getElementById("error_text");
     if (errText) {
         errText.textContent = msg;

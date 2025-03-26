@@ -36,7 +36,6 @@ async function initFieldReportPage(): Promise<void> {
         }
     });
 
-    // Fire-and-forget this promise, since it tries forever to acquire a lock
     requestEventSourceLock();
 
     newFieldReportChannel().onmessage = async function (e: MessageEvent<FieldReportBroadcast>): Promise<void> {

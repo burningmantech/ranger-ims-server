@@ -67,7 +67,6 @@ function initFieldReportsTable() {
     if (editingAllowed) {
         enableEditing();
     }
-    // Fire-and-forget this promise, since it tries forever to acquire a lock
     requestEventSourceLock();
     newFieldReportChannel().onmessage = function (e) {
         if (e.data.update_all) {
