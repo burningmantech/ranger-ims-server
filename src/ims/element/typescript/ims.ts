@@ -148,8 +148,11 @@ function setStoredTheme(theme: string): void {
     localStorage.setItem("theme", theme);
 }
 function getPreferredTheme(): string {
-    return getStoredTheme()
-        ?? window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    const stored = getStoredTheme();
+    if (stored != null) {
+        return stored;
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 function setTheme(theme: string): void {
     if (theme === "auto") {
@@ -190,7 +193,7 @@ function applyTheme(): void {
         if (focus) {
             themeSwitcher.focus();
         }
-    };
+    }
 
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (): void => {
         const storedTheme: string|null = getStoredTheme();

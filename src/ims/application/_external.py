@@ -681,7 +681,14 @@ class ExternalApplication:
         # Remove URL prefix
         names = requestURL.path[len(URLs.bootstrapBase.path) - 1 :]
 
-        request.setHeader(HeaderName.contentType.value, ContentType.css.value)
+        if "js" in names:
+            contentType = ContentType.javascript.value
+        elif "css" in names:
+            contentType = ContentType.css.value
+        else:
+            contentType = ContentType.text.value
+
+        request.setHeader(HeaderName.contentType.value, contentType)
         return await self.cachedZippedResource(
             request,
             self.config.externalDeps.bootstrapSourceURL,
