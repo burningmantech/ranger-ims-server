@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "ESNext",
+    "target": "esnext",
     "outDir": "src/ims/element/static",
     "allowJs": true,
     "checkJs": true,

@@ -24,8 +24,11 @@ function setStoredTheme(theme) {
     localStorage.setItem("theme", theme);
 }
 function getPreferredTheme() {
-    return getStoredTheme()
-        ?? window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    const stored = getStoredTheme();
+    if (stored != null) {
+        return stored;
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 function setTheme(theme) {
     if (theme === "auto") {
@@ -61,7 +64,6 @@ function applyTheme() {
             themeSwitcher.focus();
         }
     }
-    ;
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
         const storedTheme = getStoredTheme();
         if (storedTheme !== "light" && storedTheme !== "dark") {
