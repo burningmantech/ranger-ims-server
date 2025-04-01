@@ -13,80 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// Apply the HTML theme, light or dark or default.
-//
-// Adapted from https://getbootstrap.com/docs/5.3/customize/color-modes/#javascript
-// Under Creative Commons Attribution 3.0 Unported License
-function getStoredTheme() {
-    return localStorage.getItem("theme");
-}
-function setStoredTheme(theme) {
-    localStorage.setItem("theme", theme);
-}
-function getPreferredTheme() {
-    const stored = getStoredTheme();
-    if (stored != null) {
-        return stored;
-    }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-function setTheme(theme) {
-    if (theme === "auto") {
-        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
-    document.documentElement.setAttribute("data-bs-theme", theme);
-}
-function applyTheme() {
-    setTheme(getPreferredTheme());
-    function showActiveTheme(theme, focus = false) {
-        const themeSwitcher = document.querySelector("#bd-theme");
-        if (!themeSwitcher) {
-            return;
-        }
-        const themeSwitcherText = document.querySelector("#bd-theme-text");
-        const activeThemeIcon = document.querySelector(".theme-icon-active use");
-        const btnToActive = document.querySelector(`[data-bs-theme-value="${theme}"]`);
-        const svgOfActiveBtn = btnToActive.querySelector("svg use").href.baseVal;
-        document.querySelectorAll("[data-bs-theme-value]").forEach((element) => {
-            element.classList.remove("active");
-            element.setAttribute("aria-pressed", "false");
-        });
-        btnToActive.classList.add("active");
-        btnToActive.setAttribute("aria-pressed", "true");
-        if (svgOfActiveBtn) {
-            activeThemeIcon.href.baseVal = svgOfActiveBtn;
-        }
-        if (themeSwitcherText) {
-            const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset["bsThemeValue"]})`;
-            themeSwitcher.setAttribute("aria-label", themeSwitcherLabel);
-        }
-        if (focus) {
-            themeSwitcher.focus();
-        }
-    }
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-        const storedTheme = getStoredTheme();
-        if (storedTheme !== "light" && storedTheme !== "dark") {
-            setTheme(getPreferredTheme());
-        }
-    });
-    showActiveTheme(getPreferredTheme());
-    document.querySelectorAll("[data-bs-theme-value]").forEach((toggle) => {
-        toggle.addEventListener("click", function (_e) {
-            const theme = toggle.getAttribute("data-bs-theme-value");
-            if (theme) {
-                setStoredTheme(theme);
-                setTheme(theme);
-                showActiveTheme(theme, true);
-            }
-        });
-    });
-}
-// Set the theme immediately, before the rest of the page loads. We need to come back later
-// to invoke applyTheme(), as that will only work once the navbar has been drawn (with its
-// dropdown theme selector.
-setTheme(getPreferredTheme());
-//
 // HTML encoding
 //
 // It seems ridiculous that this isn't standard in JavaScript
@@ -305,7 +231,12 @@ async function loadBody() {
         return;
     }
     document.getElementsByTagName("body")[0].innerHTML = await resp.text();
-    applyTheme();
+    // The body has been totally reloaded, so fire another DOMContentLoaded event.
+    // We need this to make themes work on pages that use this loadBody() function.
+    window.document.dispatchEvent(new Event("DOMContentLoaded", {
+        bubbles: true,
+        cancelable: true
+    }));
     if (typeof eventID !== "undefined") {
         for (const eventLabel of document.getElementsByClassName("event-id")) {
             eventLabel.textContent = eventID;

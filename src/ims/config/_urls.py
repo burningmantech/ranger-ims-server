@@ -115,6 +115,8 @@ class URLs:
 
     imsJS: ClassVar[URL] = static.child("ims.js")
 
+    themeJS: ClassVar[URL] = static.child("theme.js")
+
     admin: ClassVar[URL] = app.child("admin").child("")
     adminJS: ClassVar[URL] = static.child("admin.js")
 

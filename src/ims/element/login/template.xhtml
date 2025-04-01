@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
-<head t:render="head" imports="ims"/>
+<head t:render="head" imports="theme,ims"/>
 
 <body>
 <div t:render="container">
@@ -38,7 +38,6 @@
 </div>
 </body>
 <script>
-    applyTheme();
     document.getElementById("username_input")?.focus();
 </script>
 </html>

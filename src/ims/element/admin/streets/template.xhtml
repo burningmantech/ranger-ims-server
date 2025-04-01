@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
 
-<head t:render="head" imports="ims,adminStreets"/>
+<head t:render="head" imports="theme,ims,adminStreets"/>
 
 <body>
 <div t:render="container">
@@ -41,7 +41,6 @@
     var events = <json t:render="events_list"/>;
 
     initAdminStreetsPage();
-    applyTheme();
 </script>
 
 </html>

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
-<head t:render="head" imports="ims"/>
+<head t:render="head" imports="theme,ims"/>
 
 <body t:render="container">
 
@@ -42,7 +42,6 @@
 </body>
 
 <script>
-  applyTheme();
   document.getElementById("login-button")?.focus();
 </script>
 </html>
