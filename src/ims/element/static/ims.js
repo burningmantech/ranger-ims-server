@@ -1,4 +1,3 @@
-"use strict";
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,20 +20,15 @@
 // will be buggy.  And this will be fast.  But still, this is weak.
 const _domTextAreaForHaxxors = document.createElement("textarea");
 // Convert text to HTML.
-function textAsHTML(text) {
+export function textAsHTML(text) {
     _domTextAreaForHaxxors.textContent = text;
     return _domTextAreaForHaxxors.innerHTML;
 }
-// Convert HTML to text.
-function htmlAsText(html) {
-    _domTextAreaForHaxxors.innerHTML = html;
-    return _domTextAreaForHaxxors.textContent;
-}
-const integerRegExp = /^\d+$/;
+export const integerRegExp = /^\d+$/;
 //
 // URL substitution
 //
-function urlReplace(url) {
+export function urlReplace(url) {
     if (eventID) {
         url = url.replace("<event_id>", eventID);
     }
@@ -44,7 +38,7 @@ function urlReplace(url) {
 // Arrays
 //
 // Build an array from a range.
-function range(start, end, step) {
+export function range(start, end, step) {
     if (step == null) {
         step = 1;
     }
@@ -56,7 +50,7 @@ function range(start, end, step) {
         .split("a")
         .map(function (_val, i) { return (i * step) + start; });
 }
-function compareReportEntries(a, b) {
+export function compareReportEntries(a, b) {
     if (a.created < b.created) {
         return -1;
     }
@@ -80,7 +74,7 @@ function compareReportEntries(a, b) {
 //
 // Request making
 //
-async function fetchJsonNoThrow(url, init) {
+export async function fetchJsonNoThrow(url, init) {
     if (init == null) {
         init = {};
     }
@@ -138,7 +132,7 @@ async function fetchJsonNoThrow(url, init) {
 // Generic string formatting
 //
 // Pad a string representing an integer to two digits.
-function padTwo(value) {
+export function padTwo(value) {
     if (value == null) {
         return "?";
     }
@@ -150,7 +144,7 @@ function padTwo(value) {
 }
 // Convert a minute (0-60) into a value used by IMS form inputs.
 // That is: round to the nearest multiple of 5 and pad to two digits.
-function normalizeMinute(minute) {
+export function normalizeMinute(minute) {
     minute = Math.round(minute / 5) * 5;
     while (minute > 60) {
         minute -= 60;
@@ -185,7 +179,7 @@ function enable(elements) {
     }
 }
 // Disable editing for an element
-function disableEditing() {
+export function disableEditing() {
     disable(document.querySelectorAll(".form-control"));
     // these forms don't actually exist
     // disable(document.querySelectorAll("#entries-form input,select,textarea,button"));
@@ -194,7 +188,7 @@ function disableEditing() {
     document.documentElement.classList.add("no-edit");
 }
 // Enable editing for an element
-function enableEditing() {
+export function enableEditing() {
     enable(document.querySelectorAll(".form-control"));
     // these forms don't actually exist
     // enable(document.querySelectorAll("#entries-form input,select,textarea,button"));
@@ -202,11 +196,11 @@ function enableEditing() {
     document.documentElement.classList.remove("no-edit");
 }
 // Add an error indication to a control
-function controlHasError(element) {
+export function controlHasError(element) {
     element.classList.add("is-invalid");
 }
 // Add a success indication to a control
-function controlHasSuccess(element, clearTimeout) {
+export function controlHasSuccess(element, clearTimeout) {
     element.classList.add("is-valid");
     if (clearTimeout != null) {
         setTimeout(() => {
@@ -222,7 +216,7 @@ function controlClear(element) {
 //
 // Load HTML body template.
 //
-async function loadBody() {
+export async function loadBody() {
     detectTouchDevice();
     const { resp, err } = await fetchJsonNoThrow(pageTemplateURL, null);
     if (err != null || resp == null) {
@@ -265,7 +259,7 @@ async function loadBody() {
 //
 // Add .touch or .no-touch class to top-level element if the browser is or is
 // not on a touch device, respectively.
-function detectTouchDevice() {
+export function detectTouchDevice() {
     if ("ontouchstart" in document.documentElement) {
         document.documentElement.classList.add("touch");
     }
@@ -277,7 +271,7 @@ function detectTouchDevice() {
 // Controls
 //
 // Select an option element with a given value from a given select element.
-function selectOptionWithValue(select, value) {
+export function selectOptionWithValue(select, value) {
     for (const opt of select.options) {
         opt.selected = (opt.value === value);
     }
@@ -324,7 +318,7 @@ function concentricStreetFromID(streetID) {
     return name;
 }
 // Return the state ID for a given incident.
-function stateForIncident(incident) {
+export function stateForIncident(incident) {
     // Data from 2014+ should have incident.state set.
     if (incident.state !== undefined) {
         return incident.state;
@@ -333,7 +327,7 @@ function stateForIncident(incident) {
     return "Unknown";
 }
 // Return a summary for a given incident.
-function summarizeIncident(incident) {
+export function summarizeIncident(incident) {
     if (incident.summary) {
         return incident.summary;
     }
@@ -370,14 +364,14 @@ function fieldReportAuthor(report) {
     return incidentAuthor(report);
 }
 // Render incident as a string
-function incidentAsString(incident) {
+export function incidentAsString(incident) {
     if (incident.number == null) {
         return "New Incident";
     }
     return `#${incident.number}: ${summarizeIncident(incident)} (${incident.event})`;
 }
 // Render field report as a string
-function fieldReportAsString(report) {
+export function fieldReportAsString(report) {
     if (report.number == null) {
         return "New Field Report";
     }
@@ -385,6 +379,9 @@ function fieldReportAsString(report) {
         `${summarizeFieldReport(report)} (${report.event})`;
 }
 let eventFieldReports = null;
+export function setEventFieldReports(reports) {
+    eventFieldReports = reports;
+}
 // Return all user-entered report text for a given incident as a single string.
 function reportTextFromIncident(incidentOrFR) {
     const texts = [];
@@ -446,12 +443,12 @@ function shortDescribeLocation(location) {
 //
 // DataTables rendering
 //
-function renderSafeSorted(strings) {
+export function renderSafeSorted(strings) {
     const safe = strings.map(s => textAsHTML(s));
     const copy = safe.toSorted((a, b) => a.localeCompare(b));
     return copy.join(", ");
 }
-function renderIncidentNumber(incidentNumber, type, _incident) {
+export function renderIncidentNumber(incidentNumber, type, _incident) {
     switch (type) {
         case "display":
             return incidentNumber;
@@ -464,7 +461,7 @@ function renderIncidentNumber(incidentNumber, type, _incident) {
     return undefined;
 }
 // e.g. "Wed, 8/28"
-const shortDate = new Intl.DateTimeFormat(undefined, {
+export const shortDate = new Intl.DateTimeFormat(undefined, {
     weekday: "short",
     month: "numeric",
     day: "2-digit",
@@ -478,7 +475,7 @@ const shortTime = new Intl.DateTimeFormat(undefined, {
     // timeZone not specified; will use user's timezone
 });
 // e.g. "19:21"
-const shortTimeSec = new Intl.DateTimeFormat(undefined, {
+export const shortTimeSec = new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
     hour12: false,
     minute: "numeric",
@@ -486,7 +483,7 @@ const shortTimeSec = new Intl.DateTimeFormat(undefined, {
     // timeZone not specified; will use user's timezone
 });
 // e.g. "Thu, Aug 29, 2024, 19:11:04 EDT"
-const fullDateTime = new Intl.DateTimeFormat(undefined, {
+export const fullDateTime = new Intl.DateTimeFormat(undefined, {
     weekday: "short",
     year: "numeric",
     month: "short",
@@ -498,7 +495,7 @@ const fullDateTime = new Intl.DateTimeFormat(undefined, {
     timeZoneName: "short",
     // timeZone not specified; will use user's timezone
 });
-function renderDate(date, type, _incident) {
+export function renderDate(date, type, _incident) {
     const d = Date.parse(date);
     switch (type) {
         case "display":
@@ -511,7 +508,7 @@ function renderDate(date, type, _incident) {
     }
     return undefined;
 }
-function renderState(state, type, incident) {
+export function renderState(state, type, incident) {
     if (state == null) {
         state = stateForIncident(incident);
     }
@@ -527,7 +524,7 @@ function renderState(state, type, incident) {
     }
     return undefined;
 }
-function renderLocation(data, type, _incident) {
+export function renderLocation(data, type, _incident) {
     if (data == null) {
         return undefined;
     }
@@ -542,7 +539,7 @@ function renderLocation(data, type, _incident) {
     }
     return undefined;
 }
-function renderSummary(_data, type, incident) {
+export function renderSummary(_data, type, incident) {
     switch (type) {
         case "display":
             return textAsHTML(summarizeIncident(incident));
@@ -650,14 +647,14 @@ function reportEntryElement(entry) {
     entryContainer.append(hr);
     return entryContainer;
 }
-function drawReportEntries(entries) {
+export function drawReportEntries(entries) {
     const container = document.getElementById("report_entries");
     container.replaceChildren();
     for (const entry of entries) {
         container.append(reportEntryElement(entry));
     }
 }
-function reportEntryEdited() {
+export function reportEntryEdited() {
     const text = document.getElementById("report_entry_add").value.trim();
     const submitButton = document.getElementById("report_entry_submit");
     submitButton.classList.remove("btn-default");
@@ -685,7 +682,10 @@ function onStrikeError(err) {
 // version, depending on the current page in scope. The ims.ts TypeScript file should
 // not depend on those files (lest there be a circular dependency), so we let those
 // files register their functions here instead.
-let registerOnStrikeSuccess = null;
+let strikeSuccessFunc = null;
+export function setOnStrikeSuccess(func) {
+    strikeSuccessFunc = func;
+}
 async function setStrikeIncidentEntry(incidentNumber, reportEntryId, strike) {
     const url = urlReplace(url_incident_reportEntry)
         .replace("<incident_number>", incidentNumber.toString())
@@ -697,7 +697,7 @@ async function setStrikeIncidentEntry(incidentNumber, reportEntryId, strike) {
         onStrikeError(err);
     }
     else {
-        registerOnStrikeSuccess();
+        await strikeSuccessFunc();
     }
 }
 async function setStrikeFieldReportEntry(fieldReportNumber, reportEntryId, strike) {
@@ -711,7 +711,7 @@ async function setStrikeFieldReportEntry(fieldReportNumber, reportEntryId, strik
         onStrikeError(err);
     }
     else {
-        registerOnStrikeSuccess();
+        await strikeSuccessFunc();
     }
 }
 // This is the function to call when edits are being sent to the server.
@@ -719,8 +719,11 @@ async function setStrikeFieldReportEntry(fieldReportNumber, reportEntryId, strik
 // version, depending on the current page in scope. The ims.ts TypeScript file should
 // not depend on those files (lest there be a circular dependency), so we let those
 // files register their functions here instead.
-let registerSendEdits = null;
-async function submitReportEntry() {
+let sendEditsFunc = null;
+export function setSendEdits(func) {
+    sendEditsFunc = func;
+}
+export async function submitReportEntry() {
     const text = document.getElementById("report_entry_add").value.trim();
     if (!text) {
         return;
@@ -729,7 +732,7 @@ async function submitReportEntry() {
     // Disable the submit button to prevent repeat submissions
     document.getElementById("report_entry_submit").classList.add("disabled");
     // send a dummy ID to appease the JSON parser in the server
-    const { err } = await registerSendEdits({ "report_entries": [{ "text": text, "id": -1 }] });
+    const { err } = await sendEditsFunc({ "report_entries": [{ "text": text, "id": -1 }] });
     if (err != null) {
         const submitButton = document.getElementById("report_entry_submit");
         submitButton.classList.remove("disabled");
@@ -749,7 +752,7 @@ async function submitReportEntry() {
 //
 // Generated history display
 //
-function toggleShowHistory() {
+export function toggleShowHistory() {
     if (document.getElementById("history_checkbox").checked) {
         document.getElementById("report_entries").classList.remove("hide-history");
     }
@@ -757,7 +760,7 @@ function toggleShowHistory() {
         document.getElementById("report_entries").classList.add("hide-history");
     }
 }
-async function editFromElement(element, jsonKey, transform) {
+export async function editFromElement(element, jsonKey, transform) {
     let value = element.value;
     if (transform != null) {
         value = transform(value);
@@ -778,7 +781,7 @@ async function editFromElement(element, jsonKey, transform) {
         edits["location"]["type"] = "garett"; // UI only supports one type
     }
     // Send request to server
-    const { err } = await registerSendEdits(edits);
+    const { err } = await sendEditsFunc(edits);
     if (err != null) {
         controlHasError(element);
     }
@@ -786,11 +789,11 @@ async function editFromElement(element, jsonKey, transform) {
         controlHasSuccess(element, 1000);
     }
 }
-function newIncidentChannel() {
+export function newIncidentChannel() {
     const incidentChannelName = "incident_update";
     return new BroadcastChannel(incidentChannelName);
 }
-function newFieldReportChannel() {
+export function newFieldReportChannel() {
     const fieldReportChannelName = "field_report_update";
     return new BroadcastChannel(fieldReportChannelName);
 }
@@ -801,7 +804,7 @@ const reattemptMinTimeMillis = 10000;
 const lastSseIDKey = "last_sse_id";
 // Call this from each browsing context, so that it can queue up to become a leader
 // to manage the EventSource.
-function requestEventSourceLock() {
+export function requestEventSourceLock() {
     // The "navigator.locks" API is only available over secure browsing contexts.
     // Secure contexts include HTTPS as well as non-HTTPS via localhost, so this is
     // really only when you try to connect directly to another host without TLS.
@@ -872,7 +875,7 @@ function subscribeToUpdates(closed) {
     });
 }
 // Set the user-visible error information on the page to the provided string.
-function setErrorMessage(msg) {
+export function setErrorMessage(msg) {
     msg = `Error: (Cause: ${msg})`;
     const errText = document.getElementById("error_text");
     if (errText) {
@@ -884,7 +887,7 @@ function setErrorMessage(msg) {
         errInfo.scrollIntoView();
     }
 }
-function clearErrorMessage() {
+export function clearErrorMessage() {
     const errText = document.getElementById("error_text");
     if (errText) {
         errText.textContent = "";

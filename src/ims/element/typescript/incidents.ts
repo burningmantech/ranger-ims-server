@@ -1,4 +1,3 @@
-///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,16 +12,51 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as ims from "./ims.ts";
+
+declare let eventID: string|null|undefined;
 declare let allIncidentTypes: string[];
+declare let editingAllowed: boolean|null|undefined;
+
+declare let url_incidents: string;
+declare let url_viewIncidents: string;
+declare let url_fieldReports: string;
+declare let url_incidentNumber: string;
+
+// This is a minimal declaration of pieces of Bootstrap code on which we depend.
+// See this repo for the full declaration:
+// https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bootstrap
+declare namespace bootstrap {
+    class Modal {
+        constructor(element: string | Element, options?: any);
+        toggle(relatedTarget?: HTMLElement): void;
+    }
+}
+
+declare global {
+    interface Window {
+        showState: (stateToShow: string, replaceState: boolean)=>void;
+        showDays: (daysBackToShow: number | string, replaceState: boolean)=>void;
+        showRows: (rowsToShow: number | string, replaceState: boolean)=>void;
+        toggleCheckAllTypes: ()=>void;
+    }
+}
 
 //
 // Initialize UI
 //
 
-async function initIncidentsPage(): Promise<void> {
-    await loadBody();
+initIncidentsPage();
 
-    disableEditing();
+async function initIncidentsPage(): Promise<void> {
+    await ims.loadBody();
+
+    window.showState = showState;
+    window.showDays = showDays;
+    window.showRows = showRows;
+    window.toggleCheckAllTypes = toggleCheckAllTypes;
+
+    ims.disableEditing();
     await loadEventFieldReports();
     initIncidentsTable();
 
@@ -72,25 +106,25 @@ async function initIncidentsPage(): Promise<void> {
 
 async function loadEventFieldReports(): Promise<{err: string|null}> {
 
-    const {json, err} = await fetchJsonNoThrow<FieldReport[]>(urlReplace(url_fieldReports + "?exclude_system_entries=true"), null);
+    const {json, err} = await ims.fetchJsonNoThrow<ims.FieldReport[]>(ims.urlReplace(url_fieldReports + "?exclude_system_entries=true"), null);
     if (err != null) {
         const message = `Failed to load event field reports: ${err}`;
         console.error(message);
-        setErrorMessage(message);
+        ims.setErrorMessage(message);
         return {err: message};
     }
-    const reports: FieldReportsByNumber = {};
+    const reports: ims.FieldReportsByNumber = {};
 
     for (const report of json!) {
         reports[report.number!] = report;
     }
 
-    eventFieldReports = reports;
+    ims.setEventFieldReports(reports);
 
     console.log("Loaded event field reports");
     if (incidentsTable != null) {
         incidentsTable.ajax.reload();
-        clearErrorMessage();
+        ims.clearErrorMessage();
     }
     return {err: null};
 }
@@ -100,26 +134,26 @@ async function loadEventFieldReports(): Promise<{err: string|null}> {
 //
 
 // The DataTables object
-let incidentsTable: DataTablesTable|null = null;
+let incidentsTable: ims.DataTablesTable|null = null;
 
 function initIncidentsTable() {
     initDataTables();
     initTableButtons();
     initSearchField();
     initSearch();
-    clearErrorMessage();
+    ims.clearErrorMessage();
 
     if (editingAllowed) {
-        enableEditing();
+        ims.enableEditing();
     }
 
-    requestEventSourceLock();
+    ims.requestEventSourceLock();
 
-    newIncidentChannel().onmessage = async function (e: MessageEvent<IncidentBroadcast>): Promise<void> {
+    ims.newIncidentChannel().onmessage = async function (e: MessageEvent<ims.IncidentBroadcast>): Promise<void> {
         if (e.data.update_all) {
             console.log("Reloading the whole table to be cautious, as an SSE was missed");
             incidentsTable!.ajax.reload();
-            clearErrorMessage();
+            ims.clearErrorMessage();
             return;
         }
 
@@ -129,14 +163,14 @@ function initIncidentsTable() {
             return;
         }
 
-        const {json, err} = await fetchJsonNoThrow(
-            urlReplace(url_incidentNumber).replace("<incident_number>", number.toString()),
+        const {json, err} = await ims.fetchJsonNoThrow(
+            ims.urlReplace(url_incidentNumber).replace("<incident_number>", number.toString()),
             null,
         );
         if (err != null) {
             const message = `Failed to update Incident ${number}: ${err}`;
             console.error(message);
-            setErrorMessage(message);
+            ims.setErrorMessage(message);
             return;
         }
         // Now update/create the relevant row. This is a change from pre-2025, in that
@@ -156,7 +190,7 @@ function initIncidentsTable() {
             console.log("Loading new Incident " + number);
             incidentsTable!.row.add(json);
         }
-        clearErrorMessage();
+        ims.clearErrorMessage();
         incidentsTable!.processing(false);
         incidentsTable!.draw();
     };
@@ -194,7 +228,7 @@ function initDataTables(): void {
         //     "details": false,
         // },
         "ajax": {
-            "url": urlReplace(url_incidents + "?exclude_system_entries=true"),
+            "url": ims.urlReplace(url_incidents + "?exclude_system_entries=true"),
             "dataSrc": dataHandler,
             "error": function (request: XMLHttpRequest, _status: object, error: string|null) {
                 // The "abort" case is a special snowflake.
@@ -212,7 +246,7 @@ function initDataTables(): void {
                 } else {
                     errMsg = "DataTables error";
                 }
-                setErrorMessage(errMsg);
+                ims.setErrorMessage(errMsg);
             },
         },
         "columns": [
@@ -229,7 +263,7 @@ function initDataTables(): void {
                 "className": "incident_created text-center",
                 "data": "created",
                 "defaultContent": null,
-                "render": renderDate,
+                "render": ims.renderDate,
                 "responsivePriority": 7,
             },
             {   // 2
@@ -237,7 +271,7 @@ function initDataTables(): void {
                 "className": "incident_state text-center",
                 "data": "state",
                 "defaultContent": null,
-                "render": renderState,
+                "render": ims.renderState,
                 "responsivePriority": 3,
             },
             {   // 3
@@ -245,7 +279,7 @@ function initDataTables(): void {
                 "className": "incident_summary all",
                 "data": "summary",
                 "defaultContent": "",
-                "render": renderSummary,
+                "render": ims.renderSummary,
                 // "all" class --> very high responsivePriority
             },
             {   // 4
@@ -253,7 +287,7 @@ function initDataTables(): void {
                 "className": "incident_types",
                 "data": "incident_types",
                 "defaultContent": "",
-                "render": renderSafeSorted,
+                "render": ims.renderSafeSorted,
                 "width": "5em",
                 "responsivePriority": 4,
             },
@@ -262,7 +296,7 @@ function initDataTables(): void {
                 "className": "incident_location",
                 "data": "location",
                 "defaultContent": "",
-                "render": renderLocation,
+                "render": ims.renderLocation,
                 "responsivePriority": 5,
             },
             {   // 6
@@ -270,7 +304,7 @@ function initDataTables(): void {
                 "className": "incident_ranger_handles",
                 "data": "ranger_handles",
                 "defaultContent": "",
-                "render": renderSafeSorted,
+                "render": ims.renderSafeSorted,
                 "width": "6em",
                 "responsivePriority": 6,
             },
@@ -279,30 +313,30 @@ function initDataTables(): void {
                 "className": "incident_last_modified text-center",
                 "data": "last_modified",
                 "defaultContent": null,
-                "render": renderDate,
+                "render": ims.renderDate,
                 "responsivePriority": 8,
             },
         ],
         "order": [
             [0, "dsc"],
         ],
-        "createdRow": function (row: HTMLElement, incident: Incident, _index: number) {
+        "createdRow": function (row: HTMLElement, incident: ims.Incident, _index: number) {
             row.addEventListener("click", function (_e: MouseEvent): void {
                 // Open new context with link
                 window.open(
-                    viewIncidentsURL + incident.number,
+                    ims.urlReplace(url_viewIncidents) + incident.number,
                     "Incident:" + eventID + "#" + incident.number,
                 );
             });
             row.getElementsByClassName("incident_created")[0]!
                 .setAttribute(
                     "title",
-                    fullDateTime.format(Date.parse(incident.created!)),
+                    ims.fullDateTime.format(Date.parse(incident.created!)),
                 );
             row.getElementsByClassName("incident_last_modified")[0]!
                 .setAttribute(
                     "title",
-                    fullDateTime.format(Date.parse(incident.last_modified!)),
+                    ims.fullDateTime.format(Date.parse(incident.last_modified!)),
                 );
         },
     });
@@ -413,10 +447,10 @@ function initSearchField() {
                 // If the value in the search box is an integer, assume it's an IMS number and go to it.
                 // This will work regardless of whether that incident is visible with the current filters.
                 const val = searchInput.value;
-                if (integerRegExp.test(val)) {
+                if (ims.integerRegExp.test(val)) {
                     // Open new context with link
                     window.open(
-                        viewIncidentsURL + val,
+                        ims.urlReplace(url_viewIncidents) + val,
                         "Incident:" + eventID + "#" + val,
                     );
                     searchInput.value = "";
@@ -434,27 +468,27 @@ function initSearchField() {
 function initSearch(): void {
     incidentsTable!.search.fixed("modification_date",
         function(_searchStr: string, _rowData: object, rowIndex: number): boolean {
-            const incident: Incident = incidentsTable!.data()[rowIndex]!;
+            const incident: ims.Incident = incidentsTable!.data()[rowIndex]!;
             return !(_showModifiedAfter != null &&
                 new Date(Date.parse(incident.last_modified!)) < _showModifiedAfter);
         },
     );
 
     incidentsTable!.search.fixed("state", function(_searchStr: string, _rowData: object, rowIndex: number): boolean {
-        const incident: Incident = incidentsTable!.data()[rowIndex]!;
+        const incident: ims.Incident = incidentsTable!.data()[rowIndex]!;
         let state;
         if (_showState != null) {
             switch (_showState) {
                 case "all":
                     break;
                 case "active":
-                    state = stateForIncident(incident);
+                    state = ims.stateForIncident(incident);
                     if (state === "on_hold" || state === "closed") {
                         return false;
                     }
                     break;
                 case "open":
-                    state = stateForIncident(incident);
+                    state = ims.stateForIncident(incident);
                     if (state === "closed") {
                         return false;
                     }
@@ -465,7 +499,7 @@ function initSearch(): void {
     });
 
     incidentsTable!.search.fixed("type", function (_searchStr: string, _rowData: object, rowIndex: number): boolean {
-        const incident: Incident = incidentsTable!.data()[rowIndex]!;
+        const incident: ims.Incident = incidentsTable!.data()[rowIndex]!;
         // don't bother with filtering, which may be computationally expensive,
         // if all types seem to be selected
         if (!allTypesChecked()) {
@@ -678,6 +712,6 @@ function replaceWindowState(): void {
         newParams.push(["rows", _showRows.toString()]);
     }
 
-    const newURL = `${viewIncidentsURL}#${new URLSearchParams(newParams).toString()}`;
+    const newURL = `${ims.urlReplace(url_viewIncidents)}#${new URLSearchParams(newParams).toString()}`;
     window.history.replaceState(null, "", newURL);
 }

@@ -1,4 +1,3 @@
-///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as ims from "./ims.ts";
 
+declare let url_incidentTypes: string;
+
+declare global {
+    interface Window {
+        createIncidentType: (el: HTMLInputElement)=>Promise<void>;
+        deleteIncidentType: (el: HTMLElement)=>void;
+        showIncidentType: (el: HTMLElement)=>Promise<void>;
+        hideIncidentType: (el: HTMLElement)=>Promise<void>;
+    }
+}
 
 //
 // Initialize UI
 //
 
+initAdminTypesPage();
+
 async function initAdminTypesPage(): Promise<void> {
-    detectTouchDevice();
+    ims.detectTouchDevice();
+
+    window.createIncidentType = createIncidentType;
+    window.deleteIncidentType = deleteIncidentType;
+    window.showIncidentType = showIncidentType;
+    window.hideIncidentType = hideIncidentType;
+
     await loadAndDrawIncidentTypes();
 }
 
@@ -38,10 +56,10 @@ async function loadAllIncidentTypes(): Promise<{err:string|null}> {
     let errOne: string|null, errTwo: string|null;
     [{json: incidentTypesVisible, err: errOne}, {json: adminIncidentTypes, err: errTwo}] =
         await Promise.all([
-            fetchJsonNoThrow<string[]>(url_incidentTypes, {
+            ims.fetchJsonNoThrow<string[]>(url_incidentTypes, {
                 headers: {"Cache-Control": "no-cache"},
             }),
-            fetchJsonNoThrow<string[]>(url_incidentTypes + "?hidden=true", {
+            ims.fetchJsonNoThrow<string[]>(url_incidentTypes + "?hidden=true", {
                 headers: {"Cache-Control": "no-cache"},
             }),
         ]);
@@ -89,7 +107,7 @@ function updateIncidentTypes(): void {
             entryItem.classList.add("item-visible");
         }
 
-        const safeIncidentType = textAsHTML(incidentType);
+        const safeIncidentType = ims.textAsHTML(incidentType);
         entryItem.append(safeIncidentType);
         entryItem.setAttribute("value", safeIncidentType);
 
@@ -132,7 +150,7 @@ interface AdminTypesEdits {
 }
 
 async function sendIncidentTypes(edits: AdminTypesEdits): Promise<{err:string|null}> {
-    const {err} = await fetchJsonNoThrow(url_incidentTypes, {
+    const {err} = await ims.fetchJsonNoThrow(url_incidentTypes, {
         body: JSON.stringify(edits),
     });
     if (err == null) {

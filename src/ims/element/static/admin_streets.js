@@ -1,5 +1,3 @@
-"use strict";
-///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +11,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import * as ims from "./ims.js";
 //
 // Initialize UI
 //
+initAdminStreetsPage();
 async function initAdminStreetsPage() {
-    detectTouchDevice();
+    ims.detectTouchDevice();
+    window.addStreet = addStreet;
+    window.removeStreet = removeStreet;
     const { err } = await loadStreets();
     if (err == null) {
         drawStreets();
@@ -25,7 +27,7 @@ async function initAdminStreetsPage() {
 }
 let streets = {};
 async function loadStreets() {
-    const { json, err } = await fetchJsonNoThrow(url_streets, null);
+    const { json, err } = await ims.fetchJsonNoThrow(url_streets, null);
     if (err != null) {
         const message = `Failed to load streets: ${err}`;
         console.error(message);
@@ -90,11 +92,11 @@ async function addStreet(sender) {
     await loadStreets();
     updateEventStreets(event);
     if (err != null) {
-        controlHasError(sender);
+        ims.controlHasError(sender);
         return;
     }
     else {
-        controlHasSuccess(sender, 1000);
+        ims.controlHasSuccess(sender, 1000);
     }
     sender.value = "";
 }
@@ -102,7 +104,7 @@ function removeStreet(_sender) {
     alert("Remove is unsupported for streets. Do this via SQL instead.");
 }
 async function sendStreets(edits) {
-    const { err } = await fetchJsonNoThrow(url_streets, {
+    const { err } = await ims.fetchJsonNoThrow(url_streets, {
         body: JSON.stringify(edits),
     });
     if (err != null) {

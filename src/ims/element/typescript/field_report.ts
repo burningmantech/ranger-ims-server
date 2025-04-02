@@ -1,4 +1,3 @@
-///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,15 +12,56 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as ims from "./ims.ts";
 
+declare let eventID: string|null|undefined;
+declare let fieldReportNumber: number|null|undefined;
+declare let editingAllowed: boolean|null|undefined;
+declare let canWriteIncidents: boolean|null|undefined;
+
+declare let url_incidents: string;
+declare let url_viewFieldReports: string;
+declare let url_fieldReports: string;
+declare let url_viewIncidentNumber: string;
+
+let fieldReport: ims.FieldReport|null = null;
+
+// This is a minimal declaration of pieces of Bootstrap code on which we depend.
+// See this repo for the full declaration:
+// https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bootstrap
+declare namespace bootstrap {
+    class Modal {
+        constructor(element: string | Element, options?: any);
+        toggle(relatedTarget?: HTMLElement): void;
+    }
+}
+
+declare global {
+    interface Window {
+        makeIncident: ()=>Promise<void>;
+        editSummary: ()=>Promise<void>;
+        toggleShowHistory: ()=>void;
+        reportEntryEdited: ()=>void;
+        submitReportEntry: ()=>Promise<void>;
+    }
+}
 
 //
 // Initialize UI
-let fieldReport: FieldReport|null = null;
+//
+
+initFieldReportPage();
 
 async function initFieldReportPage(): Promise<void> {
-    await loadBody();
-    disableEditing();
+    await ims.loadBody();
+
+    window.makeIncident = makeIncident;
+    window.editSummary = editSummary;
+    window.toggleShowHistory = ims.toggleShowHistory;
+    window.reportEntryEdited = ims.reportEntryEdited;
+    window.submitReportEntry = ims.submitReportEntry;
+
+    ims.disableEditing();
     await loadAndDisplayFieldReport();
 
     // for a new field report
@@ -36,9 +76,9 @@ async function initFieldReportPage(): Promise<void> {
         }
     });
 
-    requestEventSourceLock();
+    ims.requestEventSourceLock();
 
-    newFieldReportChannel().onmessage = async function (e: MessageEvent<FieldReportBroadcast>): Promise<void> {
+    ims.newFieldReportChannel().onmessage = async function (e: MessageEvent<ims.FieldReportBroadcast>): Promise<void> {
         const number = e.data.field_report_number;
         const event = e.data.event_id;
         const updateAll = e.data.update_all;
@@ -89,7 +129,7 @@ async function initFieldReportPage(): Promise<void> {
     document.getElementById("report_entry_add")!.addEventListener("keydown", function (e: KeyboardEvent): void {
         const submitEnabled = !document.getElementById("report_entry_submit")!.classList.contains("disabled");
         if (submitEnabled && (e.ctrlKey || e.altKey) && e.key === "Enter") {
-            submitReportEntry();
+            ims.submitReportEntry();
         }
     });
 }
@@ -114,13 +154,13 @@ async function loadFieldReport(): Promise<{err: string|null}> {
             "created": null,
         };
     } else {
-        const {json, err} = await fetchJsonNoThrow<FieldReport>(
-            urlReplace(url_fieldReports) + number, null);
+        const {json, err} = await ims.fetchJsonNoThrow<ims.FieldReport>(
+            ims.urlReplace(url_fieldReports) + number, null);
         if (err != null) {
-            disableEditing();
+            ims.disableEditing();
             const message = "Failed to load field report: " + err;
             console.error(message);
-            setErrorMessage(message);
+            ims.setErrorMessage(message);
             return {err: message};
         }
         fieldReport = json;
@@ -134,7 +174,7 @@ async function loadAndDisplayFieldReport(): Promise<void> {
     if (fieldReport == null || err != null) {
         const message = "Field report failed to load";
         console.log(message);
-        setErrorMessage(message);
+        ims.setErrorMessage(message);
         return;
     }
 
@@ -142,14 +182,14 @@ async function loadAndDisplayFieldReport(): Promise<void> {
     drawNumber();
     drawIncident();
     drawSummary();
-    toggleShowHistory();
-    drawReportEntries(fieldReport.report_entries!);
-    clearErrorMessage();
+    ims.toggleShowHistory();
+    ims.drawReportEntries(fieldReport.report_entries??[]);
+    ims.clearErrorMessage();
 
-    document.getElementById("report_entry_add")!.addEventListener("input", reportEntryEdited);
+    document.getElementById("report_entry_add")!.addEventListener("input", ims.reportEntryEdited);
 
     if (editingAllowed) {
-        enableEditing();
+        ims.enableEditing();
     }
 }
 
@@ -159,7 +199,7 @@ async function loadAndDisplayFieldReport(): Promise<void> {
 //
 
 function drawTitle(): void {
-    document.title = fieldReportAsString(fieldReport!);
+    document.title = ims.fieldReportAsString(fieldReport!);
 }
 
 
@@ -188,7 +228,7 @@ function drawIncident(): void {
     // If there's an attached Incident, then show a link to it
     const incident = fieldReport!.incident;
     if (incident != null) {
-        const incidentURL = urlReplace(url_viewIncidentNumber).replace("<number>", incident.toString());
+        const incidentURL = ims.urlReplace(url_viewIncidentNumber).replace("<number>", incident.toString());
         const link: HTMLAnchorElement = document.createElement("a");
         link.href = incidentURL;
         link.text = incident.toString();
@@ -220,7 +260,7 @@ function drawSummary(): void {
     }
 
     summaryInput.value = "";
-    const summarized = summarizeIncident(fieldReport!);
+    const summarized = ims.summarizeIncident(fieldReport!);
     if (summarized) {
         // only replace the placeholder if it would be nonempty
         summaryInput.setAttribute("placeholder", summarized);
@@ -232,12 +272,12 @@ function drawSummary(): void {
 // Editing
 //
 
-async function frSendEdits(edits: FieldReport): Promise<{err:string|null}> {
+async function frSendEdits(edits: ims.FieldReport): Promise<{err:string|null}> {
     if (fieldReport == null) {
         return {err: "fieldReport is null!"};
     }
     const number = fieldReport.number;
-    let url = urlReplace(url_fieldReports);
+    let url = ims.urlReplace(url_fieldReports);
 
     if (number == null) {
         // No fields are required for a new FR, nothing to do here
@@ -247,14 +287,14 @@ async function frSendEdits(edits: FieldReport): Promise<{err:string|null}> {
         url += number;
     }
 
-    const {resp, err} = await fetchJsonNoThrow(url, {
+    const {resp, err} = await ims.fetchJsonNoThrow(url, {
         body: JSON.stringify(edits),
     });
     if (err != null) {
         const message = `Failed to apply edit: ${err}`;
         console.log(message);
         await loadAndDisplayFieldReport();
-        setErrorMessage(message);
+        ims.setErrorMessage(message);
         return {err: message};
     }
     if (number == null) {
@@ -281,18 +321,18 @@ async function frSendEdits(edits: FieldReport): Promise<{err:string|null}> {
         drawTitle();
         window.history.pushState(
             null, document.title,
-            urlReplace(url_viewFieldReports) + newNumber
+            ims.urlReplace(url_viewFieldReports) + newNumber
         );
     }
 
     await loadAndDisplayFieldReport();
     return {err: null};
 }
-registerSendEdits = frSendEdits;
+ims.setSendEdits(frSendEdits);
 
-async function editSummary() {
+async function editSummary(): Promise<void> {
     const summaryInput = document.getElementById("field_report_summary") as HTMLInputElement;
-    await editFromElement(summaryInput, "summary");
+    await ims.editFromElement(summaryInput, "summary");
 }
 
 //
@@ -301,10 +341,10 @@ async function editSummary() {
 
 async function makeIncident(): Promise<void> {
     // Create the new incident
-    const incidentsURL = urlReplace(url_incidents);
+    const incidentsURL = ims.urlReplace(url_incidents);
 
     if (fieldReport == null) {
-        setErrorMessage("fieldReport is null!");
+        ims.setErrorMessage("fieldReport is null!");
         return;
     }
 
@@ -312,35 +352,35 @@ async function makeIncident(): Promise<void> {
     if (fieldReport.report_entries) {
         authors.push(fieldReport.report_entries[0]!.author??"null");
     }
-    const {resp, err} = await fetchJsonNoThrow(incidentsURL, {
+    const {resp, err} = await ims.fetchJsonNoThrow(incidentsURL, {
         body:JSON.stringify({
             "summary": fieldReport.summary,
             "ranger_handles": authors,
         }),
     });
     if (err != null || resp == null) {
-        disableEditing();
-        setErrorMessage(`Failed to create incident: ${err}`);
+        ims.disableEditing();
+        ims.setErrorMessage(`Failed to create incident: ${err}`);
         return;
     }
     const newNum: string|null = resp.headers.get("X-IMS-Incident-Number");
     if (newNum == null) {
-        disableEditing();
-        setErrorMessage("Failed to create incident: no IMS Incident Number provided");
+        ims.disableEditing();
+        ims.setErrorMessage("Failed to create incident: no IMS Incident Number provided");
         return;
     }
     fieldReport.incident = parseInt(newNum);
 
     // Attach this FR to that new incident
     const attachToIncidentUrl =
-        `${urlReplace(url_fieldReports)}${fieldReport.number}` +
+        `${ims.urlReplace(url_fieldReports)}${fieldReport.number}` +
         `?action=attach;incident=${fieldReport.incident}`;
-    const {err: attachErr} = await fetchJsonNoThrow(attachToIncidentUrl, {
+    const {err: attachErr} = await ims.fetchJsonNoThrow(attachToIncidentUrl, {
         body: JSON.stringify({}),
     });
     if (attachErr != null) {
-        disableEditing();
-        setErrorMessage(`Failed to attach field report: ${attachErr}`);
+        ims.disableEditing();
+        ims.setErrorMessage(`Failed to attach field report: ${attachErr}`);
         return;
     }
     console.log("Created and attached to new incident " + fieldReport.incident);
@@ -351,6 +391,6 @@ async function makeIncident(): Promise<void> {
 // The success callback for a report entry strike call.
 async function frOnStrikeSuccess(): Promise<void> {
     await loadAndDisplayFieldReport();
-    clearErrorMessage();
+    ims.clearErrorMessage();
 }
-registerOnStrikeSuccess = frOnStrikeSuccess;
+ims.setOnStrikeSuccess(frOnStrikeSuccess);

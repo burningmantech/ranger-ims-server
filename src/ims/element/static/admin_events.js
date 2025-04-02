@@ -1,5 +1,3 @@
-"use strict";
-///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +11,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import * as ims from "./ims.js";
 //
 // Initialize UI
 //
+initAdminEventsPage();
 async function initAdminEventsPage() {
-    detectTouchDevice();
+    ims.detectTouchDevice();
+    window.setValidity = setValidity;
+    window.addEvent = addEvent;
+    window.addAccess = addAccess;
+    window.removeAccess = removeAccess;
     await loadAccessControlList();
     drawAccess();
 }
@@ -29,7 +33,7 @@ var Validity;
 const allAccessModes = ["readers", "writers", "reporters"];
 let accessControlList = null;
 async function loadAccessControlList() {
-    const { json, err } = await fetchJsonNoThrow(url_acl, null);
+    const { json, err } = await ims.fetchJsonNoThrow(url_acl, null);
     if (err != null) {
         const message = `Failed to load access control list: ${err}`;
         console.error(message);
@@ -90,7 +94,7 @@ function updateEventAccess(event, mode) {
 }
 async function addEvent(sender) {
     const event = sender.value.trim();
-    const { err } = await fetchJsonNoThrow(url_events, {
+    const { err } = await ims.fetchJsonNoThrow(url_events, {
         body: JSON.stringify({
             "add": [event],
         }),
@@ -101,7 +105,7 @@ async function addEvent(sender) {
         window.alert(message);
         await loadAccessControlList();
         drawAccess();
-        controlHasError(sender);
+        ims.controlHasError(sender);
         return;
     }
     await loadAccessControlList();
@@ -150,7 +154,7 @@ async function addAccess(sender) {
         updateEventAccess(event, mode);
     }
     if (err != null) {
-        controlHasError(sender);
+        ims.controlHasError(sender);
         return;
     }
     sender.value = ""; // Clear input field
@@ -202,13 +206,13 @@ async function setValidity(sender) {
         updateEventAccess(event, mode);
     }
     if (err != null) {
-        controlHasError(sender);
+        ims.controlHasError(sender);
         return;
     }
     sender.value = ""; // Clear input field
 }
 async function sendACL(edits) {
-    const { err } = await fetchJsonNoThrow(url_acl, {
+    const { err } = await ims.fetchJsonNoThrow(url_acl, {
         body: JSON.stringify(edits),
     });
     if (err == null) {

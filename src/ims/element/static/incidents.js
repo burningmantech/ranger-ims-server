@@ -1,5 +1,3 @@
-"use strict";
-///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +11,18 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import * as ims from "./ims.js";
 //
 // Initialize UI
 //
+initIncidentsPage();
 async function initIncidentsPage() {
-    await loadBody();
-    disableEditing();
+    await ims.loadBody();
+    window.showState = showState;
+    window.showDays = showDays;
+    window.showRows = showRows;
+    window.toggleCheckAllTypes = toggleCheckAllTypes;
+    ims.disableEditing();
     await loadEventFieldReports();
     initIncidentsTable();
     const helpModal = new bootstrap.Modal(document.getElementById("helpModal"));
@@ -60,22 +64,22 @@ async function initIncidentsPage() {
 // We do this fetch in order to make incidents searchable by text in their
 // attached field reports.
 async function loadEventFieldReports() {
-    const { json, err } = await fetchJsonNoThrow(urlReplace(url_fieldReports + "?exclude_system_entries=true"), null);
+    const { json, err } = await ims.fetchJsonNoThrow(ims.urlReplace(url_fieldReports + "?exclude_system_entries=true"), null);
     if (err != null) {
         const message = `Failed to load event field reports: ${err}`;
         console.error(message);
-        setErrorMessage(message);
+        ims.setErrorMessage(message);
         return { err: message };
     }
     const reports = {};
     for (const report of json) {
         reports[report.number] = report;
     }
-    eventFieldReports = reports;
+    ims.setEventFieldReports(reports);
     console.log("Loaded event field reports");
     if (incidentsTable != null) {
         incidentsTable.ajax.reload();
-        clearErrorMessage();
+        ims.clearErrorMessage();
     }
     return { err: null };
 }
@@ -89,16 +93,16 @@ function initIncidentsTable() {
     initTableButtons();
     initSearchField();
     initSearch();
-    clearErrorMessage();
+    ims.clearErrorMessage();
     if (editingAllowed) {
-        enableEditing();
+        ims.enableEditing();
     }
-    requestEventSourceLock();
-    newIncidentChannel().onmessage = async function (e) {
+    ims.requestEventSourceLock();
+    ims.newIncidentChannel().onmessage = async function (e) {
         if (e.data.update_all) {
             console.log("Reloading the whole table to be cautious, as an SSE was missed");
             incidentsTable.ajax.reload();
-            clearErrorMessage();
+            ims.clearErrorMessage();
             return;
         }
         const number = e.data.incident_number;
@@ -106,11 +110,11 @@ function initIncidentsTable() {
         if (event !== eventID) {
             return;
         }
-        const { json, err } = await fetchJsonNoThrow(urlReplace(url_incidentNumber).replace("<incident_number>", number.toString()), null);
+        const { json, err } = await ims.fetchJsonNoThrow(ims.urlReplace(url_incidentNumber).replace("<incident_number>", number.toString()), null);
         if (err != null) {
             const message = `Failed to update Incident ${number}: ${err}`;
             console.error(message);
-            setErrorMessage(message);
+            ims.setErrorMessage(message);
             return;
         }
         // Now update/create the relevant row. This is a change from pre-2025, in that
@@ -130,7 +134,7 @@ function initIncidentsTable() {
             console.log("Loading new Incident " + number);
             incidentsTable.row.add(json);
         }
-        clearErrorMessage();
+        ims.clearErrorMessage();
         incidentsTable.processing(false);
         incidentsTable.draw();
     };
@@ -164,7 +168,7 @@ function initDataTables() {
         //     "details": false,
         // },
         "ajax": {
-            "url": urlReplace(url_incidents + "?exclude_system_entries=true"),
+            "url": ims.urlReplace(url_incidents + "?exclude_system_entries=true"),
             "dataSrc": dataHandler,
             "error": function (request, _status, error) {
                 // The "abort" case is a special snowflake.
@@ -184,7 +188,7 @@ function initDataTables() {
                 else {
                     errMsg = "DataTables error";
                 }
-                setErrorMessage(errMsg);
+                ims.setErrorMessage(errMsg);
             },
         },
         "columns": [
@@ -201,7 +205,7 @@ function initDataTables() {
                 "className": "incident_created text-center",
                 "data": "created",
                 "defaultContent": null,
-                "render": renderDate,
+                "render": ims.renderDate,
                 "responsivePriority": 7,
             },
             {
@@ -209,7 +213,7 @@ function initDataTables() {
                 "className": "incident_state text-center",
                 "data": "state",
                 "defaultContent": null,
-                "render": renderState,
+                "render": ims.renderState,
                 "responsivePriority": 3,
             },
             {
@@ -217,7 +221,7 @@ function initDataTables() {
                 "className": "incident_summary all",
                 "data": "summary",
                 "defaultContent": "",
-                "render": renderSummary,
+                "render": ims.renderSummary,
                 // "all" class --> very high responsivePriority
             },
             {
@@ -225,7 +229,7 @@ function initDataTables() {
                 "className": "incident_types",
                 "data": "incident_types",
                 "defaultContent": "",
-                "render": renderSafeSorted,
+                "render": ims.renderSafeSorted,
                 "width": "5em",
                 "responsivePriority": 4,
             },
@@ -234,7 +238,7 @@ function initDataTables() {
                 "className": "incident_location",
                 "data": "location",
                 "defaultContent": "",
-                "render": renderLocation,
+                "render": ims.renderLocation,
                 "responsivePriority": 5,
             },
             {
@@ -242,7 +246,7 @@ function initDataTables() {
                 "className": "incident_ranger_handles",
                 "data": "ranger_handles",
                 "defaultContent": "",
-                "render": renderSafeSorted,
+                "render": ims.renderSafeSorted,
                 "width": "6em",
                 "responsivePriority": 6,
             },
@@ -251,7 +255,7 @@ function initDataTables() {
                 "className": "incident_last_modified text-center",
                 "data": "last_modified",
                 "defaultContent": null,
-                "render": renderDate,
+                "render": ims.renderDate,
                 "responsivePriority": 8,
             },
         ],
@@ -261,12 +265,12 @@ function initDataTables() {
         "createdRow": function (row, incident, _index) {
             row.addEventListener("click", function (_e) {
                 // Open new context with link
-                window.open(viewIncidentsURL + incident.number, "Incident:" + eventID + "#" + incident.number);
+                window.open(ims.urlReplace(url_viewIncidents) + incident.number, "Incident:" + eventID + "#" + incident.number);
             });
             row.getElementsByClassName("incident_created")[0]
-                .setAttribute("title", fullDateTime.format(Date.parse(incident.created)));
+                .setAttribute("title", ims.fullDateTime.format(Date.parse(incident.created)));
             row.getElementsByClassName("incident_last_modified")[0]
-                .setAttribute("title", fullDateTime.format(Date.parse(incident.last_modified)));
+                .setAttribute("title", ims.fullDateTime.format(Date.parse(incident.last_modified)));
         },
     });
 }
@@ -360,9 +364,9 @@ function initSearchField() {
             // If the value in the search box is an integer, assume it's an IMS number and go to it.
             // This will work regardless of whether that incident is visible with the current filters.
             const val = searchInput.value;
-            if (integerRegExp.test(val)) {
+            if (ims.integerRegExp.test(val)) {
                 // Open new context with link
-                window.open(viewIncidentsURL + val, "Incident:" + eventID + "#" + val);
+                window.open(ims.urlReplace(url_viewIncidents) + val, "Incident:" + eventID + "#" + val);
                 searchInput.value = "";
             }
         }
@@ -385,13 +389,13 @@ function initSearch() {
                 case "all":
                     break;
                 case "active":
-                    state = stateForIncident(incident);
+                    state = ims.stateForIncident(incident);
                     if (state === "on_hold" || state === "closed") {
                         return false;
                     }
                     break;
                 case "open":
-                    state = stateForIncident(incident);
+                    state = ims.stateForIncident(incident);
                     if (state === "closed") {
                         return false;
                     }
@@ -575,6 +579,6 @@ function replaceWindowState() {
     if (_showRows != null && _showRows !== defaultRows) {
         newParams.push(["rows", _showRows.toString()]);
     }
-    const newURL = `${viewIncidentsURL}#${new URLSearchParams(newParams).toString()}`;
+    const newURL = `${ims.urlReplace(url_viewIncidents)}#${new URLSearchParams(newParams).toString()}`;
     window.history.replaceState(null, "", newURL);
 }

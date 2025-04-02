@@ -1,4 +1,3 @@
-///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,16 +12,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as ims from "./ims.ts";
+
+declare let eventID: string|null|undefined;
+declare let editingAllowed: boolean|null|undefined;
+
+declare let url_viewFieldReports: string;
+declare let url_fieldReports: string;
+
+// This is a minimal declaration of pieces of Bootstrap code on which we depend.
+// See this repo for the full declaration:
+// https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bootstrap
+declare namespace bootstrap {
+    class Modal {
+        constructor(element: string | Element, options?: any);
+        toggle(relatedTarget?: HTMLElement): void;
+    }
+}
+
+declare global {
+    interface Window {
+        frShowDays: (daysBackToShow: number | string, replaceState: boolean)=>void;
+        frShowRows: (rowsToShow: number | string, replaceState: boolean)=>void;
+    }
+}
 
 //
 // Initialize UI
 //
 
+initFieldReportsPage();
+
 async function initFieldReportsPage(): Promise<void> {
+    await ims.loadBody();
 
-    await loadBody();
+    window.frShowDays = frShowDays;
+    window.frShowRows = frShowRows;
 
-    disableEditing();
+    ims.disableEditing();
     initFieldReportsTable();
 
     const helpModal = new bootstrap.Modal(document.getElementById("helpModal")!);
@@ -67,26 +94,26 @@ async function initFieldReportsPage(): Promise<void> {
 
 
 // DataTables item
-let fieldReportsTable: DataTablesTable|null = null;
+let fieldReportsTable: ims.DataTablesTable|null = null;
 
 function initFieldReportsTable() {
     frInitDataTables();
     frInitTableButtons();
     frInitSearchField();
     frInitSearch();
-    clearErrorMessage();
+    ims.clearErrorMessage();
 
     if (editingAllowed) {
-        enableEditing();
+        ims.enableEditing();
     }
 
-    requestEventSourceLock();
+    ims.requestEventSourceLock();
 
-    newFieldReportChannel().onmessage = function (e: MessageEvent<FieldReportBroadcast>): void {
+    ims.newFieldReportChannel().onmessage = function (e: MessageEvent<ims.FieldReportBroadcast>): void {
         if (e.data.update_all) {
             console.log("Reloading the whole table to be cautious, as an SSE was missed");
             fieldReportsTable!.ajax.reload();
-            clearErrorMessage();
+            ims.clearErrorMessage();
             return;
         }
 
@@ -104,7 +131,7 @@ function initFieldReportsTable() {
         //  show up in the browser console. I'd like to find a way to avoid
         //  bringing those errors into the console constantly.
         fieldReportsTable!.ajax.reload();
-        clearErrorMessage();
+        ims.clearErrorMessage();
     };
 }
 
@@ -141,9 +168,9 @@ function frInitDataTables() {
         "ajax": {
             // don't use exclude_system_entries here, since the field reports
             // per-user authorization can exclude field reports entirely from
-            // someone who created an field report but then didn't add an
+            // someone who created a field report but then didn't add an
             // entry to it.
-            "url": urlReplace(url_fieldReports),
+            "url": ims.urlReplace(url_fieldReports),
             "dataSrc": dataHandler,
             "error": function (request: XMLHttpRequest, _status: object, error: string|null) {
                 // The "abort" case is a special snowflake.
@@ -161,7 +188,7 @@ function frInitDataTables() {
                 } else {
                     errMsg = "DataTables error";
                 }
-                setErrorMessage(errMsg);
+                ims.setErrorMessage(errMsg);
             },
         },
         "columns": [
@@ -177,41 +204,41 @@ function frInitDataTables() {
                 "className": "field_report_created text-center",
                 "data": "created",
                 "defaultContent": null,
-                "render": renderDate,
+                "render": ims.renderDate,
                 "responsivePriority": 4,
             },
             {   // 2
-                "name": "field_report_incident",
-                "className": "field_report_incident text-center",
-                "data": "incident",
-                "defaultContent": "-",
-                "render": renderIncidentNumber,
-                "responsivePriority": 3,
-            },
-            {   // 3
                 "name": "field_report_summary",
                 "className": "field_report_summary all",
                 "data": "summary",
                 "defaultContent": "",
-                "render": renderSummary,
+                "render": ims.renderSummary,
+            },
+            {   // 3
+                "name": "field_report_incident",
+                "className": "field_report_incident text-center",
+                "data": "incident",
+                "defaultContent": "-",
+                "render": ims.renderIncidentNumber,
+                "responsivePriority": 3,
             },
         ],
         "order": [
             // creation time descending
             [1, "dsc"],
         ],
-        "createdRow": function (row: HTMLElement, fieldReport: FieldReport, _index: number) {
+        "createdRow": function (row: HTMLElement, fieldReport: ims.FieldReport, _index: number) {
             row.addEventListener("click", function (_e: MouseEvent): void {
                 // Open new context with link
                 window.open(
-                    urlReplace(url_viewFieldReports) + fieldReport.number,
+                    ims.urlReplace(url_viewFieldReports) + fieldReport.number,
                     "Field_Report:" + fieldReport.number,
                 );
             });
             row.getElementsByClassName("field_report_created")[0]!
                 .setAttribute(
                     "title",
-                    fullDateTime.format(Date.parse(fieldReport.created!)),
+                    ims.fullDateTime.format(Date.parse(fieldReport.created!)),
                 );
         },
     });
@@ -285,10 +312,10 @@ function frInitSearchField(): void {
                 // If the value in the search box is an integer, assume it's an FR number and go to it.
                 // This will work regardless of whether that FR is visible with the current filters.
                 const val = searchInput.value;
-                if (integerRegExp.test(val)) {
+                if (ims.integerRegExp.test(val)) {
                     // Open new context with link
                     window.open(
-                        urlReplace(url_viewFieldReports) + val,
+                        ims.urlReplace(url_viewFieldReports) + val,
                         "Field_Report:" + val,
                     );
                     searchInput.value = "";
@@ -304,7 +331,7 @@ function frInitSearchField(): void {
 //
 
 function frInitSearch() {
-    function modifiedAfter(fieldReport: FieldReport, timestamp: Date) {
+    function modifiedAfter(fieldReport: ims.FieldReport, timestamp: Date) {
         if (timestamp < new Date(Date.parse(fieldReport.created!))) {
             return true;
         }
@@ -421,6 +448,6 @@ function frReplaceWindowState(): void {
 
     // Next step is to create search params for the other filters too
 
-    const newURL = `${urlReplace(url_viewFieldReports)}#${new URLSearchParams(newParams).toString()}`;
+    const newURL = `${ims.urlReplace(url_viewFieldReports)}#${new URLSearchParams(newParams).toString()}`;
     window.history.replaceState(null, "", newURL);
 }

@@ -99,6 +99,19 @@ class Page(Element):
             return cast("str", self.config.externalDeps.jqueryJsIntegrity)
         return None
 
+    def isESModule(self, depName: str) -> bool:
+        return depName in (
+            "ims",
+            "admin",
+            "adminEvents",
+            "adminStreets",
+            "adminIncidentTypes",
+            "viewIncident",
+            "viewIncidents",
+            "viewFieldReports",
+            "viewFieldReport",
+        )
+
     @renderer
     def title(self, request: IRequest, tag: Tag) -> IRenderable:
         """
@@ -122,6 +135,8 @@ class Page(Element):
         ).items():
             kw = {"src": url.asText()}
             integrity = self.integrityValue(name)
+            if self.isESModule(name):
+                kw["type"] = "module"
             if integrity is not None:
                 kw["integrity"] = integrity
             imports.append(tags.script(**kw))

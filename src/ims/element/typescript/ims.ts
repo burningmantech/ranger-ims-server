@@ -19,33 +19,16 @@ declare let eventID: string|null|undefined;
 declare let concentricStreetNameByID: Streets|undefined;
 declare let incidentNumber: number|null|undefined;
 declare let fieldReportNumber: number|null|undefined;
-declare let editingAllowed: boolean|null|undefined;
-declare let attachmentsAllowed: boolean|null|undefined;
-declare let clubhousePersonURL: string|null|undefined;
-declare let events: string[]|null|undefined;
-declare let canWriteIncidents: boolean|null|undefined;
 declare let pageTemplateURL: string;
 
-declare let url_acl: string;
 declare let url_eventSource: string;
-declare let url_events: string;
 declare let url_fieldReport_reportEntry: string;
 declare let url_incident_reportEntry: string;
 declare let url_incidentAttachmentNumber: string;
-declare let url_incidents: string;
 declare let url_viewIncidents: string;
 declare let url_viewFieldReports: string;
-declare let url_personnel: string;
-declare let url_incidentTypes: string;
-declare let url_fieldReports: string;
-declare let url_fieldReport: string;
-declare let url_incidentAttachments: string;
-declare let url_streets: string;
-declare let url_viewIncidentNumber: string;
-declare let url_incidentNumber: string;
-declare let viewIncidentsURL: string;
 
-type Streets = Record<string, string>;
+export type Streets = Record<string, string>;
 
 interface EventLocation {
     name?: string|null;
@@ -56,7 +39,7 @@ interface EventLocation {
     type?: string|null;
 }
 
-interface Incident {
+export interface Incident {
     number?: number|null;
     event?: string|null;
     state?: string|null;
@@ -71,7 +54,7 @@ interface Incident {
     field_reports?: number[]|null;
 }
 
-interface FieldReport {
+export interface FieldReport {
     event?: string|null;
     number?: number|null;
     created?: string|null;
@@ -80,9 +63,9 @@ interface FieldReport {
     report_entries?: ReportEntry[]|null;
 }
 
-type FieldReportsByNumber = Record<number, FieldReport>;
+export type FieldReportsByNumber = Record<number, FieldReport>;
 
-interface ReportEntry {
+export interface ReportEntry {
     id?: string|null;
     created?: string|null;
     author?: string|null;
@@ -93,7 +76,7 @@ interface ReportEntry {
     has_attachment?: boolean|null;
 }
 
-type IncidentBroadcast = {
+export type IncidentBroadcast = {
     // fields from SSE
     event_id?: string|null;
     incident_number?: number|null;
@@ -101,7 +84,7 @@ type IncidentBroadcast = {
     update_all?: boolean;
 }
 
-type FieldReportBroadcast = {
+export type FieldReportBroadcast = {
     // fields from SSE
     event_id?: string|null;
     field_report_number?: number|null;
@@ -115,7 +98,7 @@ interface DTAjax {
 
 type DTData = Record<number, object>;
 
-interface DataTablesTable {
+export interface DataTablesTable {
     row: any;
     rows: any;
     data(): DTData;
@@ -125,17 +108,6 @@ interface DataTablesTable {
     ajax: DTAjax;
     processing(b: boolean): unknown;
 }
-
-// This is a minimal declaration of pieces of Bootstrap code on which we depend.
-// See this repo for the full declaration:
-// https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bootstrap
-declare namespace bootstrap {
-    class Modal {
-        constructor(element: string | Element, options?: any);
-        toggle(relatedTarget?: HTMLElement): void;
-    }
-}
-
 
 //
 // HTML encoding
@@ -149,24 +121,18 @@ declare namespace bootstrap {
 const _domTextAreaForHaxxors: HTMLTextAreaElement = document.createElement("textarea");
 
 // Convert text to HTML.
-function textAsHTML(text: string): string {
+export function textAsHTML(text: string): string {
     _domTextAreaForHaxxors.textContent = text;
     return _domTextAreaForHaxxors.innerHTML;
 }
 
-// Convert HTML to text.
-function htmlAsText(html: string): string {
-    _domTextAreaForHaxxors.innerHTML = html;
-    return _domTextAreaForHaxxors.textContent!;
-}
-
-const integerRegExp: RegExp = /^\d+$/;
+export const integerRegExp: RegExp = /^\d+$/;
 
 
 //
 // URL substitution
 //
-function urlReplace(url: string): string {
+export function urlReplace(url: string): string {
     if (eventID) {
         url = url.replace("<event_id>", eventID);
     }
@@ -179,7 +145,7 @@ function urlReplace(url: string): string {
 //
 
 // Build an array from a range.
-function range(start: number, end: number, step?: number|null): number[] {
+export function range(start: number, end: number, step?: number|null): number[] {
     if (step == null) {
         step = 1;
     } else if (step === 0) {
@@ -194,7 +160,7 @@ function range(start: number, end: number, step?: number|null): number[] {
 }
 
 
-function compareReportEntries(a: ReportEntry, b: ReportEntry): number {
+export function compareReportEntries(a: ReportEntry, b: ReportEntry): number {
     if (a.created! < b.created!) { return -1; }
     if (a.created! > b.created!) { return  1; }
 
@@ -212,7 +178,7 @@ function compareReportEntries(a: ReportEntry, b: ReportEntry): number {
 // Request making
 //
 
-async function fetchJsonNoThrow<T>(url: string, init: RequestInit|null):
+export async function fetchJsonNoThrow<T>(url: string, init: RequestInit|null):
     Promise<{resp: Response|null, json: T|null, err: string|null}>
 {
     if (init == null) {
@@ -274,7 +240,7 @@ async function fetchJsonNoThrow<T>(url: string, init: RequestInit|null):
 //
 
 // Pad a string representing an integer to two digits.
-function padTwo(value: number|null): string {
+export function padTwo(value: number|null): string {
     if (value == null) {
         return "?";
     }
@@ -291,7 +257,7 @@ function padTwo(value: number|null): string {
 
 // Convert a minute (0-60) into a value used by IMS form inputs.
 // That is: round to the nearest multiple of 5 and pad to two digits.
-function normalizeMinute(minute: number): string {
+export function normalizeMinute(minute: number): string {
     minute = Math.round(minute / 5) * 5;
     while (minute > 60) {
         minute -= 60;
@@ -337,7 +303,7 @@ function enable(elements: Iterable<Element>) {
 
 
 // Disable editing for an element
-function disableEditing() {
+export function disableEditing() {
     disable(document.querySelectorAll(".form-control"));
     // these forms don't actually exist
     // disable(document.querySelectorAll("#entries-form input,select,textarea,button"));
@@ -348,7 +314,7 @@ function disableEditing() {
 
 
 // Enable editing for an element
-function enableEditing() {
+export function enableEditing() {
     enable(document.querySelectorAll(".form-control"));
     // these forms don't actually exist
     // enable(document.querySelectorAll("#entries-form input,select,textarea,button"));
@@ -357,13 +323,13 @@ function enableEditing() {
 }
 
 // Add an error indication to a control
-function controlHasError(element: HTMLElement) {
+export function controlHasError(element: HTMLElement) {
     element.classList.add("is-invalid");
 }
 
 
 // Add a success indication to a control
-function controlHasSuccess(element: HTMLElement, clearTimeout: number) {
+export function controlHasSuccess(element: HTMLElement, clearTimeout: number) {
     element.classList.add("is-valid");
     if (clearTimeout != null) {
         setTimeout(()=>{
@@ -384,7 +350,7 @@ function controlClear(element: HTMLElement) {
 // Load HTML body template.
 //
 
-async function loadBody(): Promise<void> {
+export async function loadBody(): Promise<void> {
     detectTouchDevice();
     const {resp, err} = await fetchJsonNoThrow(pageTemplateURL, null);
     if (err != null || resp == null) {
@@ -436,7 +402,7 @@ async function loadBody(): Promise<void> {
 
 // Add .touch or .no-touch class to top-level element if the browser is or is
 // not on a touch device, respectively.
-function detectTouchDevice(): void {
+export function detectTouchDevice(): void {
     if ("ontouchstart" in document.documentElement) {
         document.documentElement.classList.add("touch");
     } else {
@@ -450,7 +416,7 @@ function detectTouchDevice(): void {
 //
 
 // Select an option element with a given value from a given select element.
-function selectOptionWithValue(select: HTMLSelectElement, value: string|null) {
+export function selectOptionWithValue(select: HTMLSelectElement, value: string|null) {
     for (const opt of select.options) {
         opt.selected = (opt.value === value);
     }
@@ -508,7 +474,7 @@ function concentricStreetFromID(streetID: string|null): string {
 
 
 // Return the state ID for a given incident.
-function stateForIncident(incident: Incident): string {
+export function stateForIncident(incident: Incident): string {
     // Data from 2014+ should have incident.state set.
     if (incident.state !== undefined) {
         return incident.state!;
@@ -520,7 +486,7 @@ function stateForIncident(incident: Incident): string {
 
 
 // Return a summary for a given incident.
-function summarizeIncident(incident: Incident): string {
+export function summarizeIncident(incident: Incident): string {
     if (incident.summary) {
         return incident.summary;
     }
@@ -568,7 +534,7 @@ function fieldReportAuthor(report: FieldReport): string {
 
 
 // Render incident as a string
-function incidentAsString(incident: Incident): string {
+export function incidentAsString(incident: Incident): string {
     if (incident.number == null) {
         return "New Incident";
     }
@@ -577,7 +543,7 @@ function incidentAsString(incident: Incident): string {
 
 
 // Render field report as a string
-function fieldReportAsString(report: FieldReport): string {
+export function fieldReportAsString(report: FieldReport): string {
     if (report.number == null) {
         return "New Field Report";
     }
@@ -586,6 +552,10 @@ function fieldReportAsString(report: FieldReport): string {
 }
 
 let eventFieldReports: FieldReportsByNumber|null = null;
+
+export function setEventFieldReports(reports: FieldReportsByNumber): void {
+    eventFieldReports = reports;
+}
 
 // Return all user-entered report text for a given incident as a single string.
 function reportTextFromIncident(incidentOrFR: Incident|FieldReport): string {
@@ -666,13 +636,13 @@ function shortDescribeLocation(location: EventLocation): string|undefined {
 // DataTables rendering
 //
 
-function renderSafeSorted(strings: string[]): string {
+export function renderSafeSorted(strings: string[]): string {
     const safe = strings.map(s => textAsHTML(s));
     const copy = safe.toSorted((a, b) => a.localeCompare(b));
     return copy.join(", ");
 }
 
-function renderIncidentNumber(incidentNumber: number|null, type: string, _incident: any): number|null|undefined {
+export function renderIncidentNumber(incidentNumber: number|null, type: string, _incident: any): number|null|undefined {
     switch (type) {
         case "display":
             return incidentNumber;
@@ -686,7 +656,7 @@ function renderIncidentNumber(incidentNumber: number|null, type: string, _incide
 }
 
 // e.g. "Wed, 8/28"
-const shortDate: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
+export const shortDate: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
     weekday: "short",
     month: "numeric",
     day: "2-digit",
@@ -702,7 +672,7 @@ const shortTime: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
 });
 
 // e.g. "19:21"
-const shortTimeSec: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
+export const shortTimeSec: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
     hour12: false,
     minute: "numeric",
@@ -711,7 +681,7 @@ const shortTimeSec: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
 });
 
 // e.g. "Thu, Aug 29, 2024, 19:11:04 EDT"
-const fullDateTime: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
+export const fullDateTime: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
     weekday: "short",
     year: "numeric",
     month: "short",
@@ -724,7 +694,7 @@ const fullDateTime: Intl.DateTimeFormat = new Intl.DateTimeFormat(undefined, {
     // timeZone not specified; will use user's timezone
 });
 
-function renderDate(date: string, type: string, _incident: any): string|number|undefined {
+export function renderDate(date: string, type: string, _incident: any): string|number|undefined {
     const d = Date.parse(date);
     switch (type) {
         case "display":
@@ -738,7 +708,7 @@ function renderDate(date: string, type: string, _incident: any): string|number|u
     return undefined;
 }
 
-function renderState(state: string, type: string, incident: Incident): string|number|undefined {
+export function renderState(state: string, type: string, incident: Incident): string|number|undefined {
     if (state == null) {
         state = stateForIncident(incident);
     }
@@ -756,7 +726,7 @@ function renderState(state: string, type: string, incident: Incident): string|nu
     return undefined;
 }
 
-function renderLocation(data: EventLocation|null, type: string, _incident: Incident): string|undefined {
+export function renderLocation(data: EventLocation|null, type: string, _incident: Incident): string|undefined {
     if (data == null) {
         return undefined;
     }
@@ -772,7 +742,7 @@ function renderLocation(data: EventLocation|null, type: string, _incident: Incid
     return undefined;
 }
 
-function renderSummary(_data: string|null, type: string, incident: Incident): string|undefined {
+export function renderSummary(_data: string|null, type: string, incident: Incident): string|undefined {
     switch (type) {
         case "display":
             return textAsHTML(summarizeIncident(incident));
@@ -906,7 +876,7 @@ function reportEntryElement(entry: ReportEntry): HTMLDivElement {
     return entryContainer;
 }
 
-function drawReportEntries(entries: ReportEntry[]): void {
+export function drawReportEntries(entries: ReportEntry[]): void {
     const container: HTMLElement = document.getElementById("report_entries")!;
     container.replaceChildren();
 
@@ -915,7 +885,7 @@ function drawReportEntries(entries: ReportEntry[]): void {
     }
 }
 
-function reportEntryEdited(): void {
+export function reportEntryEdited(): void {
     const text = (document.getElementById("report_entry_add")! as HTMLTextAreaElement).value.trim();
     const submitButton = document.getElementById("report_entry_submit")!;
 
@@ -946,7 +916,10 @@ function onStrikeError(err: string): void {
 // version, depending on the current page in scope. The ims.ts TypeScript file should
 // not depend on those files (lest there be a circular dependency), so we let those
 // files register their functions here instead.
-let registerOnStrikeSuccess: (() => Promise<void>)|null = null;
+let strikeSuccessFunc: (() => Promise<void>)|null = null;
+export function setOnStrikeSuccess(func: (() => Promise<void>)): void {
+    strikeSuccessFunc = func;
+}
 
 async function setStrikeIncidentEntry(incidentNumber: number, reportEntryId: number, strike: boolean): Promise<void> {
     const url = urlReplace(url_incident_reportEntry)
@@ -958,7 +931,7 @@ async function setStrikeIncidentEntry(incidentNumber: number, reportEntryId: num
     if (err != null) {
         onStrikeError(err);
     } else {
-        registerOnStrikeSuccess!();
+        await strikeSuccessFunc!();
     }
 }
 
@@ -972,7 +945,7 @@ async function setStrikeFieldReportEntry(fieldReportNumber: number, reportEntryI
     if (err != null) {
         onStrikeError(err);
     } else {
-        registerOnStrikeSuccess!();
+        await strikeSuccessFunc!();
     }
 }
 
@@ -981,8 +954,12 @@ async function setStrikeFieldReportEntry(fieldReportNumber: number, reportEntryI
 // version, depending on the current page in scope. The ims.ts TypeScript file should
 // not depend on those files (lest there be a circular dependency), so we let those
 // files register their functions here instead.
-let registerSendEdits: ((edits: any)=>Promise<{err:string|null}>)|null = null;
-async function submitReportEntry(): Promise<void> {
+let sendEditsFunc: ((edits: any)=>Promise<{err:string|null}>)|null = null;
+export function setSendEdits(func: ((edits: any)=>Promise<{err:string|null}>)): void {
+    sendEditsFunc = func;
+}
+
+export async function submitReportEntry(): Promise<void> {
     const text = (document.getElementById("report_entry_add") as HTMLTextAreaElement).value.trim();
 
     if (!text) {
@@ -994,7 +971,7 @@ async function submitReportEntry(): Promise<void> {
     // Disable the submit button to prevent repeat submissions
     document.getElementById("report_entry_submit")!.classList.add("disabled");
     // send a dummy ID to appease the JSON parser in the server
-    const {err} = await registerSendEdits!({"report_entries": [{"text": text, "id": -1}]});
+    const {err} = await sendEditsFunc!({"report_entries": [{"text": text, "id": -1}]});
     if (err != null) {
         const submitButton = document.getElementById("report_entry_submit")!;
         submitButton.classList.remove("disabled");
@@ -1016,7 +993,7 @@ async function submitReportEntry(): Promise<void> {
 // Generated history display
 //
 
-function toggleShowHistory(): void {
+export function toggleShowHistory(): void {
     if ((document.getElementById("history_checkbox") as HTMLInputElement).checked) {
         document.getElementById("report_entries")!.classList.remove("hide-history");
     } else {
@@ -1028,7 +1005,7 @@ interface EditMap {
     [index: string]: EditMap|string;
 }
 
-async function editFromElement(element: HTMLInputElement|HTMLSelectElement, jsonKey: string, transform?: (v: string)=>string|null): Promise<void> {
+export async function editFromElement(element: HTMLInputElement|HTMLSelectElement, jsonKey: string, transform?: (v: string)=>string|null): Promise<void> {
     let value: string|null = element.value;
 
     if (transform != null) {
@@ -1058,7 +1035,7 @@ async function editFromElement(element: HTMLInputElement|HTMLSelectElement, json
 
     // Send request to server
 
-    const {err} = await registerSendEdits!(edits);
+    const {err} = await sendEditsFunc!(edits);
     if (err != null) {
         controlHasError(element);
     } else {
@@ -1077,11 +1054,11 @@ interface BroadcastChannelTyped<T> extends EventTarget {
     postMessage(message: T): void;
     onmessage: ((this: BroadcastChannel, ev: MessageEvent<T>) => any) | null;
 }
-function newIncidentChannel(): BroadcastChannelTyped<IncidentBroadcast> {
+export function newIncidentChannel(): BroadcastChannelTyped<IncidentBroadcast> {
     const incidentChannelName = "incident_update";
     return new BroadcastChannel(incidentChannelName);
 }
-function newFieldReportChannel(): BroadcastChannelTyped<FieldReportBroadcast> {
+export function newFieldReportChannel(): BroadcastChannelTyped<FieldReportBroadcast> {
     const fieldReportChannelName= "field_report_update";
     return new BroadcastChannel(fieldReportChannelName);
 }
@@ -1096,7 +1073,7 @@ const lastSseIDKey = "last_sse_id";
 
 // Call this from each browsing context, so that it can queue up to become a leader
 // to manage the EventSource.
-function requestEventSourceLock(): void  {
+export function requestEventSourceLock(): void  {
     // The "navigator.locks" API is only available over secure browsing contexts.
     // Secure contexts include HTTPS as well as non-HTTPS via localhost, so this is
     // really only when you try to connect directly to another host without TLS.
@@ -1177,7 +1154,7 @@ function subscribeToUpdates(closed: (_value?: undefined)=>void): void {
 }
 
 // Set the user-visible error information on the page to the provided string.
-function setErrorMessage(msg: string): void {
+export function setErrorMessage(msg: string): void {
     msg = `Error: (Cause: ${msg})`;
     const errText: HTMLElement|null = document.getElementById("error_text");
     if (errText) {
@@ -1190,7 +1167,7 @@ function setErrorMessage(msg: string): void {
     }
 }
 
-function clearErrorMessage(): void {
+export function clearErrorMessage(): void {
     const errText: HTMLElement|null = document.getElementById("error_text");
     if (errText) {
         errText.textContent = "";
