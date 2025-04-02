@@ -1,5 +1,3 @@
-"use strict";
-///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +11,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import * as ims from "./ims.js";
 //
 // Initialize UI
 //
+initAdminTypesPage();
 async function initAdminTypesPage() {
-    detectTouchDevice();
+    ims.detectTouchDevice();
+    window.createIncidentType = createIncidentType;
+    window.deleteIncidentType = deleteIncidentType;
+    window.showIncidentType = showIncidentType;
+    window.hideIncidentType = hideIncidentType;
     await loadAndDrawIncidentTypes();
 }
 async function loadAndDrawIncidentTypes() {
@@ -30,10 +34,10 @@ async function loadAllIncidentTypes() {
     let errOne, errTwo;
     [{ json: incidentTypesVisible, err: errOne }, { json: adminIncidentTypes, err: errTwo }] =
         await Promise.all([
-            fetchJsonNoThrow(url_incidentTypes, {
+            ims.fetchJsonNoThrow(url_incidentTypes, {
                 headers: { "Cache-Control": "no-cache" },
             }),
-            fetchJsonNoThrow(url_incidentTypes + "?hidden=true", {
+            ims.fetchJsonNoThrow(url_incidentTypes + "?hidden=true", {
                 headers: { "Cache-Control": "no-cache" },
             }),
         ]);
@@ -69,7 +73,7 @@ function updateIncidentTypes() {
         else {
             entryItem.classList.add("item-visible");
         }
-        const safeIncidentType = textAsHTML(incidentType);
+        const safeIncidentType = ims.textAsHTML(incidentType);
         entryItem.append(safeIncidentType);
         entryItem.setAttribute("value", safeIncidentType);
         entryContainer.append(entryItem);
@@ -98,7 +102,7 @@ async function hideIncidentType(sender) {
     await loadAndDrawIncidentTypes();
 }
 async function sendIncidentTypes(edits) {
-    const { err } = await fetchJsonNoThrow(url_incidentTypes, {
+    const { err } = await ims.fetchJsonNoThrow(url_incidentTypes, {
         body: JSON.stringify(edits),
     });
     if (err == null) {

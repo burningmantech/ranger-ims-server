@@ -1,5 +1,3 @@
-"use strict";
-///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import * as ims from "./ims.js";
 //
 // Initialize UI
 //
+initFieldReportsPage();
 async function initFieldReportsPage() {
-    await loadBody();
-    disableEditing();
+    await ims.loadBody();
+    window.frShowDays = frShowDays;
+    window.frShowRows = frShowRows;
+    ims.disableEditing();
     initFieldReportsTable();
     const helpModal = new bootstrap.Modal(document.getElementById("helpModal"));
     // Keyboard shortcuts
@@ -63,16 +65,16 @@ function initFieldReportsTable() {
     frInitTableButtons();
     frInitSearchField();
     frInitSearch();
-    clearErrorMessage();
+    ims.clearErrorMessage();
     if (editingAllowed) {
-        enableEditing();
+        ims.enableEditing();
     }
-    requestEventSourceLock();
-    newFieldReportChannel().onmessage = function (e) {
+    ims.requestEventSourceLock();
+    ims.newFieldReportChannel().onmessage = function (e) {
         if (e.data.update_all) {
             console.log("Reloading the whole table to be cautious, as an SSE was missed");
             fieldReportsTable.ajax.reload();
-            clearErrorMessage();
+            ims.clearErrorMessage();
             return;
         }
         const number = e.data.field_report_number;
@@ -89,7 +91,7 @@ function initFieldReportsTable() {
         //  show up in the browser console. I'd like to find a way to avoid
         //  bringing those errors into the console constantly.
         fieldReportsTable.ajax.reload();
-        clearErrorMessage();
+        ims.clearErrorMessage();
     };
 }
 //
@@ -123,9 +125,9 @@ function frInitDataTables() {
         "ajax": {
             // don't use exclude_system_entries here, since the field reports
             // per-user authorization can exclude field reports entirely from
-            // someone who created an field report but then didn't add an
+            // someone who created a field report but then didn't add an
             // entry to it.
-            "url": urlReplace(url_fieldReports),
+            "url": ims.urlReplace(url_fieldReports),
             "dataSrc": dataHandler,
             "error": function (request, _status, error) {
                 // The "abort" case is a special snowflake.
@@ -145,7 +147,7 @@ function frInitDataTables() {
                 else {
                     errMsg = "DataTables error";
                 }
-                setErrorMessage(errMsg);
+                ims.setErrorMessage(errMsg);
             },
         },
         "columns": [
@@ -161,23 +163,23 @@ function frInitDataTables() {
                 "className": "field_report_created text-center",
                 "data": "created",
                 "defaultContent": null,
-                "render": renderDate,
+                "render": ims.renderDate,
                 "responsivePriority": 4,
-            },
-            {
-                "name": "field_report_incident",
-                "className": "field_report_incident text-center",
-                "data": "incident",
-                "defaultContent": "-",
-                "render": renderIncidentNumber,
-                "responsivePriority": 3,
             },
             {
                 "name": "field_report_summary",
                 "className": "field_report_summary all",
                 "data": "summary",
                 "defaultContent": "",
-                "render": renderSummary,
+                "render": ims.renderSummary,
+            },
+            {
+                "name": "field_report_incident",
+                "className": "field_report_incident text-center",
+                "data": "incident",
+                "defaultContent": "-",
+                "render": ims.renderIncidentNumber,
+                "responsivePriority": 3,
             },
         ],
         "order": [
@@ -187,10 +189,10 @@ function frInitDataTables() {
         "createdRow": function (row, fieldReport, _index) {
             row.addEventListener("click", function (_e) {
                 // Open new context with link
-                window.open(urlReplace(url_viewFieldReports) + fieldReport.number, "Field_Report:" + fieldReport.number);
+                window.open(ims.urlReplace(url_viewFieldReports) + fieldReport.number, "Field_Report:" + fieldReport.number);
             });
             row.getElementsByClassName("field_report_created")[0]
-                .setAttribute("title", fullDateTime.format(Date.parse(fieldReport.created)));
+                .setAttribute("title", ims.fullDateTime.format(Date.parse(fieldReport.created)));
         },
     });
 }
@@ -248,9 +250,9 @@ function frInitSearchField() {
             // If the value in the search box is an integer, assume it's an FR number and go to it.
             // This will work regardless of whether that FR is visible with the current filters.
             const val = searchInput.value;
-            if (integerRegExp.test(val)) {
+            if (ims.integerRegExp.test(val)) {
                 // Open new context with link
-                window.open(urlReplace(url_viewFieldReports) + val, "Field_Report:" + val);
+                window.open(ims.urlReplace(url_viewFieldReports) + val, "Field_Report:" + val);
                 searchInput.value = "";
             }
         }
@@ -348,6 +350,6 @@ function frReplaceWindowState() {
         newParams.push(["rows", _frShowRows.toString()]);
     }
     // Next step is to create search params for the other filters too
-    const newURL = `${urlReplace(url_viewFieldReports)}#${new URLSearchParams(newParams).toString()}`;
+    const newURL = `${ims.urlReplace(url_viewFieldReports)}#${new URLSearchParams(newParams).toString()}`;
     window.history.replaceState(null, "", newURL);
 }

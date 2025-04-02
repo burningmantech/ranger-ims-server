@@ -1,5 +1,3 @@
-"use strict";
-///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +11,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import * as ims from "./ims.js";
+let fieldReport = null;
 //
 // Initialize UI
-let fieldReport = null;
+//
+initFieldReportPage();
 async function initFieldReportPage() {
-    await loadBody();
-    disableEditing();
+    await ims.loadBody();
+    window.makeIncident = makeIncident;
+    window.editSummary = editSummary;
+    window.toggleShowHistory = ims.toggleShowHistory;
+    window.reportEntryEdited = ims.reportEntryEdited;
+    window.submitReportEntry = ims.submitReportEntry;
+    ims.disableEditing();
     await loadAndDisplayFieldReport();
     // for a new field report
     if (fieldReport.number == null) {
@@ -30,8 +36,8 @@ async function initFieldReportPage() {
             e.preventDefault();
         }
     });
-    requestEventSourceLock();
-    newFieldReportChannel().onmessage = async function (e) {
+    ims.requestEventSourceLock();
+    ims.newFieldReportChannel().onmessage = async function (e) {
         const number = e.data.field_report_number;
         const event = e.data.event_id;
         const updateAll = e.data.update_all;
@@ -79,7 +85,7 @@ async function initFieldReportPage() {
     document.getElementById("report_entry_add").addEventListener("keydown", function (e) {
         const submitEnabled = !document.getElementById("report_entry_submit").classList.contains("disabled");
         if (submitEnabled && (e.ctrlKey || e.altKey) && e.key === "Enter") {
-            submitReportEntry();
+            ims.submitReportEntry();
         }
     });
 }
@@ -103,12 +109,12 @@ async function loadFieldReport() {
         };
     }
     else {
-        const { json, err } = await fetchJsonNoThrow(urlReplace(url_fieldReports) + number, null);
+        const { json, err } = await ims.fetchJsonNoThrow(ims.urlReplace(url_fieldReports) + number, null);
         if (err != null) {
-            disableEditing();
+            ims.disableEditing();
             const message = "Failed to load field report: " + err;
             console.error(message);
-            setErrorMessage(message);
+            ims.setErrorMessage(message);
             return { err: message };
         }
         fieldReport = json;
@@ -120,26 +126,26 @@ async function loadAndDisplayFieldReport() {
     if (fieldReport == null || err != null) {
         const message = "Field report failed to load";
         console.log(message);
-        setErrorMessage(message);
+        ims.setErrorMessage(message);
         return;
     }
     drawTitle();
     drawNumber();
     drawIncident();
     drawSummary();
-    toggleShowHistory();
-    drawReportEntries(fieldReport.report_entries);
-    clearErrorMessage();
-    document.getElementById("report_entry_add").addEventListener("input", reportEntryEdited);
+    ims.toggleShowHistory();
+    ims.drawReportEntries(fieldReport.report_entries ?? []);
+    ims.clearErrorMessage();
+    document.getElementById("report_entry_add").addEventListener("input", ims.reportEntryEdited);
     if (editingAllowed) {
-        enableEditing();
+        ims.enableEditing();
     }
 }
 //
 // Populate page title
 //
 function drawTitle() {
-    document.title = fieldReportAsString(fieldReport);
+    document.title = ims.fieldReportAsString(fieldReport);
 }
 //
 // Populate field report number
@@ -163,7 +169,7 @@ function drawIncident() {
     // If there's an attached Incident, then show a link to it
     const incident = fieldReport.incident;
     if (incident != null) {
-        const incidentURL = urlReplace(url_viewIncidentNumber).replace("<number>", incident.toString());
+        const incidentURL = ims.urlReplace(url_viewIncidentNumber).replace("<number>", incident.toString());
         const link = document.createElement("a");
         link.href = incidentURL;
         link.text = incident.toString();
@@ -191,7 +197,7 @@ function drawSummary() {
         return;
     }
     summaryInput.value = "";
-    const summarized = summarizeIncident(fieldReport);
+    const summarized = ims.summarizeIncident(fieldReport);
     if (summarized) {
         // only replace the placeholder if it would be nonempty
         summaryInput.setAttribute("placeholder", summarized);
@@ -205,7 +211,7 @@ async function frSendEdits(edits) {
         return { err: "fieldReport is null!" };
     }
     const number = fieldReport.number;
-    let url = urlReplace(url_fieldReports);
+    let url = ims.urlReplace(url_fieldReports);
     if (number == null) {
         // No fields are required for a new FR, nothing to do here
     }
@@ -214,14 +220,14 @@ async function frSendEdits(edits) {
         edits.number = number;
         url += number;
     }
-    const { resp, err } = await fetchJsonNoThrow(url, {
+    const { resp, err } = await ims.fetchJsonNoThrow(url, {
         body: JSON.stringify(edits),
     });
     if (err != null) {
         const message = `Failed to apply edit: ${err}`;
         console.log(message);
         await loadAndDisplayFieldReport();
-        setErrorMessage(message);
+        ims.setErrorMessage(message);
         return { err: message };
     }
     if (number == null) {
@@ -242,57 +248,57 @@ async function frSendEdits(edits) {
         fieldReportNumber = fieldReport.number = newAsNumber;
         // Update browser history to update URL
         drawTitle();
-        window.history.pushState(null, document.title, urlReplace(url_viewFieldReports) + newNumber);
+        window.history.pushState(null, document.title, ims.urlReplace(url_viewFieldReports) + newNumber);
     }
     await loadAndDisplayFieldReport();
     return { err: null };
 }
-registerSendEdits = frSendEdits;
+ims.setSendEdits(frSendEdits);
 async function editSummary() {
     const summaryInput = document.getElementById("field_report_summary");
-    await editFromElement(summaryInput, "summary");
+    await ims.editFromElement(summaryInput, "summary");
 }
 //
 // Make a new incident and attach this Field Report to it
 //
 async function makeIncident() {
     // Create the new incident
-    const incidentsURL = urlReplace(url_incidents);
+    const incidentsURL = ims.urlReplace(url_incidents);
     if (fieldReport == null) {
-        setErrorMessage("fieldReport is null!");
+        ims.setErrorMessage("fieldReport is null!");
         return;
     }
     const authors = [];
     if (fieldReport.report_entries) {
         authors.push(fieldReport.report_entries[0].author ?? "null");
     }
-    const { resp, err } = await fetchJsonNoThrow(incidentsURL, {
+    const { resp, err } = await ims.fetchJsonNoThrow(incidentsURL, {
         body: JSON.stringify({
             "summary": fieldReport.summary,
             "ranger_handles": authors,
         }),
     });
     if (err != null || resp == null) {
-        disableEditing();
-        setErrorMessage(`Failed to create incident: ${err}`);
+        ims.disableEditing();
+        ims.setErrorMessage(`Failed to create incident: ${err}`);
         return;
     }
     const newNum = resp.headers.get("X-IMS-Incident-Number");
     if (newNum == null) {
-        disableEditing();
-        setErrorMessage("Failed to create incident: no IMS Incident Number provided");
+        ims.disableEditing();
+        ims.setErrorMessage("Failed to create incident: no IMS Incident Number provided");
         return;
     }
     fieldReport.incident = parseInt(newNum);
     // Attach this FR to that new incident
-    const attachToIncidentUrl = `${urlReplace(url_fieldReports)}${fieldReport.number}` +
+    const attachToIncidentUrl = `${ims.urlReplace(url_fieldReports)}${fieldReport.number}` +
         `?action=attach;incident=${fieldReport.incident}`;
-    const { err: attachErr } = await fetchJsonNoThrow(attachToIncidentUrl, {
+    const { err: attachErr } = await ims.fetchJsonNoThrow(attachToIncidentUrl, {
         body: JSON.stringify({}),
     });
     if (attachErr != null) {
-        disableEditing();
-        setErrorMessage(`Failed to attach field report: ${attachErr}`);
+        ims.disableEditing();
+        ims.setErrorMessage(`Failed to attach field report: ${attachErr}`);
         return;
     }
     console.log("Created and attached to new incident " + fieldReport.incident);
@@ -301,6 +307,6 @@ async function makeIncident() {
 // The success callback for a report entry strike call.
 async function frOnStrikeSuccess() {
     await loadAndDisplayFieldReport();
-    clearErrorMessage();
+    ims.clearErrorMessage();
 }
-registerOnStrikeSuccess = frOnStrikeSuccess;
+ims.setOnStrikeSuccess(frOnStrikeSuccess);

@@ -4,6 +4,9 @@
     "outDir": "src/ims/element/static",
     "allowJs": true,
     "checkJs": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+
 
     // Type checks
     "allowUnreachableCode": false,

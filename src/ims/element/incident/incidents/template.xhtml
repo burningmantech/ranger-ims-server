@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
-<head t:render="head" imports="theme,dataTables,ims,viewIncidents"/>
+<head t:render="head" imports="theme,dataTables,viewIncidents"/>
 
 <body/>
 
@@ -10,12 +10,8 @@
   const eventID                   = <json t:render="event_id"/>;
 
   const pageTemplateURL           = url_viewIncidentsTemplate;
-  const viewIncidentsURL          = urlReplace(url_viewIncidents);
-  const viewFieldReportsURL       = urlReplace(url_viewFieldReports);
 
   const concentricStreetNameByID  = <json t:render="concentric_street_name_by_id"/>;
   const allIncidentTypes          = <json t:render="incident_types"/>;
-
-  initIncidentsPage();
 </script>
 </html>

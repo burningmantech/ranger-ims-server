@@ -1,4 +1,3 @@
-///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,17 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as ims from "./ims.ts";
+
+declare let url_streets: string;
+
+declare let events: string[]|null|undefined;
+
 interface EventsStreets {
     // key is event name
-    [index: string]: Streets,
+    [index: string]: ims.Streets,
+}
+
+declare global {
+    interface Window {
+        addStreet: (el: HTMLInputElement)=>Promise<void>;
+        removeStreet: (el: HTMLInputElement)=>void;
+    }
 }
 
 //
 // Initialize UI
 //
 
+initAdminStreetsPage();
+
 async function initAdminStreetsPage() {
-    detectTouchDevice();
+    ims.detectTouchDevice();
+
+    window.addStreet = addStreet;
+    window.removeStreet = removeStreet;
+
     const {err} = await loadStreets();
     if (err == null) {
         drawStreets();
@@ -33,7 +51,7 @@ async function initAdminStreetsPage() {
 let streets: EventsStreets = {};
 
 async function loadStreets(): Promise<{err:string|null}> {
-    const {json, err} = await fetchJsonNoThrow<EventsStreets>(url_streets, null);
+    const {json, err} = await ims.fetchJsonNoThrow<EventsStreets>(url_streets, null);
     if (err != null) {
         const message = `Failed to load streets: ${err}`;
         console.error(message);
@@ -121,10 +139,10 @@ async function addStreet(sender: HTMLInputElement): Promise<void> {
     await loadStreets();
     updateEventStreets(event);
     if (err != null) {
-        controlHasError(sender);
+        ims.controlHasError(sender);
         return;
     } else {
-        controlHasSuccess(sender, 1000);
+        ims.controlHasSuccess(sender, 1000);
     }
     sender.value = "";
 }
@@ -136,7 +154,7 @@ function removeStreet(_sender: HTMLInputElement): void {
 
 
 async function sendStreets(edits: EventsStreets): Promise<{err: string|null}> {
-    const {err} = await fetchJsonNoThrow(url_streets, {
+    const {err} = await ims.fetchJsonNoThrow(url_streets, {
         body: JSON.stringify(edits),
     });
     if (err != null) {

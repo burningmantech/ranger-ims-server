@@ -1,5 +1,3 @@
-"use strict";
-///<reference path="ims.ts"/>
 // See the file COPYRIGHT for copyright information.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +11,33 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// declare var incidentNumber: number;
+import * as ims from "./ims.js";
 //
 // Initialize UI
 //
+initIncidentPage();
 async function initIncidentPage() {
-    await loadBody();
+    await ims.loadBody();
+    window.editState = editState;
+    window.editIncidentSummary = editIncidentSummary;
+    window.editLocationName = editLocationName;
+    window.editLocationAddressRadialHour = editLocationAddressRadialHour;
+    window.editLocationAddressRadialMinute = editLocationAddressRadialMinute;
+    window.editLocationAddressConcentric = editLocationAddressConcentric;
+    window.editLocationDescription = editLocationDescription;
+    window.removeRanger = removeRanger;
+    window.removeIncidentType = removeIncidentType;
+    window.detachFieldReport = detachFieldReport;
+    window.attachFieldReport = attachFieldReport;
+    window.addRanger = addRanger;
+    window.addIncidentType = addIncidentType;
+    window.attachFile = attachFile;
+    window.drawMergedReportEntries = drawMergedReportEntries;
+    window.toggleShowHistory = ims.toggleShowHistory;
+    window.reportEntryEdited = ims.reportEntryEdited;
+    window.submitReportEntry = ims.submitReportEntry;
     addLocationAddressOptions();
-    disableEditing();
+    ims.disableEditing();
     await loadAndDisplayIncident();
     await loadPersonnel();
     drawRangers();
@@ -39,8 +56,8 @@ async function initIncidentPage() {
             e.preventDefault();
         }
     });
-    requestEventSourceLock();
-    newIncidentChannel().onmessage = async function (e) {
+    ims.requestEventSourceLock();
+    ims.newIncidentChannel().onmessage = async function (e) {
         const number = e.data.incident_number;
         const event = e.data.event_id;
         const updateAll = e.data.update_all ?? false;
@@ -51,7 +68,7 @@ async function initIncidentPage() {
             renderFieldReportData();
         }
     };
-    newFieldReportChannel().onmessage = async function (e) {
+    ims.newFieldReportChannel().onmessage = async function (e) {
         const updateAll = e.data.update_all ?? false;
         if (updateAll) {
             console.log("Updating all field reports");
@@ -107,7 +124,7 @@ async function initIncidentPage() {
     document.getElementById("report_entry_add").addEventListener("keydown", function (e) {
         const submitEnabled = !document.getElementById("report_entry_submit").classList.contains("disabled");
         if (submitEnabled && (e.ctrlKey || e.altKey) && e.key === "Enter") {
-            submitReportEntry();
+            ims.submitReportEntry();
         }
     });
 }
@@ -134,12 +151,12 @@ async function loadIncident() {
         };
     }
     else {
-        const { json, err } = await fetchJsonNoThrow(urlReplace(url_incidents) + number, null);
+        const { json, err } = await ims.fetchJsonNoThrow(ims.urlReplace(url_incidents) + number, null);
         if (err != null) {
-            disableEditing();
+            ims.disableEditing();
             const message = `Failed to load Incident ${number}: ${err}`;
             console.error(message);
-            setErrorMessage(message);
+            ims.setErrorMessage(message);
             return { err: message };
         }
         incident = json;
@@ -151,13 +168,13 @@ async function loadAndDisplayIncident() {
     if (incident == null) {
         const message = "Incident failed to load";
         console.log(message);
-        setErrorMessage(message);
+        ims.setErrorMessage(message);
         return;
     }
     drawIncidentFields();
-    clearErrorMessage();
+    ims.clearErrorMessage();
     if (editingAllowed) {
-        enableEditing();
+        ims.enableEditing();
     }
     if (attachmentsAllowed) {
         document.getElementById("attach_file").classList.remove("hidden");
@@ -175,11 +192,11 @@ function renderFieldReportData() {
 //
 let personnel = null;
 async function loadPersonnel() {
-    const { json, err } = await fetchJsonNoThrow(urlReplace(url_personnel + "?event_id=<event_id>"), null);
+    const { json, err } = await ims.fetchJsonNoThrow(ims.urlReplace(url_personnel + "?event_id=<event_id>"), null);
     if (err != null) {
         const message = `Failed to load personnel: ${err}`;
         console.error(message);
-        setErrorMessage(message);
+        ims.setErrorMessage(message);
         return { err: message };
     }
     const _personnel = {};
@@ -197,11 +214,11 @@ async function loadPersonnel() {
 //
 let incidentTypes = [];
 async function loadIncidentTypes() {
-    const { json, err } = await fetchJsonNoThrow(url_incidentTypes, null);
+    const { json, err } = await ims.fetchJsonNoThrow(url_incidentTypes, null);
     if (err != null) {
         const message = `Failed to load incident types: ${err}`;
         console.error(message);
-        setErrorMessage(message);
+        ims.setErrorMessage(message);
         return { err: message };
     }
     const _incidentTypes = [];
@@ -220,7 +237,7 @@ async function loadAllFieldReports() {
     if (allFieldReports === undefined) {
         return { err: null };
     }
-    const { resp, json, err } = await fetchJsonNoThrow(urlReplace(url_fieldReports), null);
+    const { resp, json, err } = await ims.fetchJsonNoThrow(ims.urlReplace(url_fieldReports), null);
     if (err != null) {
         if (resp != null && resp.status === 403) {
             // We're not allowed to look these up.
@@ -231,7 +248,7 @@ async function loadAllFieldReports() {
         else {
             const message = `Failed to load field reports: ${err}`;
             console.error(message);
-            setErrorMessage(message);
+            ims.setErrorMessage(message);
             return { err: message };
         }
     }
@@ -251,12 +268,12 @@ async function loadOneFieldReport(fieldReportNumber) {
     if (allFieldReports === undefined) {
         return { err: null };
     }
-    const { resp, json, err } = await fetchJsonNoThrow(urlReplace(url_fieldReport).replace("<field_report_number>", fieldReportNumber.toString()), null);
+    const { resp, json, err } = await ims.fetchJsonNoThrow(ims.urlReplace(url_fieldReport).replace("<field_report_number>", fieldReportNumber.toString()), null);
     if (err != null) {
         if (resp == null || resp.status !== 403) {
             const message = `Failed to load field report ${fieldReportNumber} ${err}`;
             console.error(message);
-            setErrorMessage(message);
+            ims.setErrorMessage(message);
             return { err: message };
         }
     }
@@ -313,27 +330,27 @@ function drawIncidentFields() {
     drawLocationAddressRadialMinute();
     drawLocationAddressConcentric();
     drawLocationDescription();
-    toggleShowHistory();
+    ims.toggleShowHistory();
     drawMergedReportEntries();
-    document.getElementById("report_entry_add").addEventListener("input", reportEntryEdited);
+    document.getElementById("report_entry_add").addEventListener("input", ims.reportEntryEdited);
 }
 //
 // Add option elements to location address select elements
 //
 function addLocationAddressOptions() {
-    const hours = range(1, 13);
+    const hours = ims.range(1, 13);
     const hourElement = document.getElementById("incident_location_address_radial_hour");
     for (const hour of hours) {
-        const hourStr = padTwo(hour);
+        const hourStr = ims.padTwo(hour);
         const newOption = document.createElement("option");
         newOption.value = hourStr;
         newOption.textContent = hourStr;
         hourElement.append(newOption);
     }
-    const minutes = range(0, 12, 5);
+    const minutes = ims.range(0, 12, 5);
     const minuteElement = document.getElementById("incident_location_address_radial_minute");
     for (const minute of minutes) {
-        const minuteStr = padTwo(minute);
+        const minuteStr = ims.padTwo(minute);
         const newOption = document.createElement("option");
         newOption.value = minuteStr;
         newOption.textContent = minuteStr;
@@ -351,7 +368,7 @@ function addLocationAddressOptions() {
 // Populate page title
 //
 function drawIncidentTitle() {
-    document.title = incidentAsString(incident);
+    document.title = ims.incidentAsString(incident);
 }
 //
 // Populate incident number
@@ -367,7 +384,7 @@ function drawIncidentNumber() {
 // Populate incident state
 //
 function drawState() {
-    selectOptionWithValue(document.getElementById("incident_state"), stateForIncident(incident));
+    ims.selectOptionWithValue(document.getElementById("incident_state"), ims.stateForIncident(incident));
 }
 //
 // Populate created datetime
@@ -379,8 +396,8 @@ function drawCreated() {
     }
     const d = Date.parse(date);
     const createdElement = document.getElementById("created_datetime");
-    createdElement.textContent = `${shortDate.format(d)} ${shortTimeSec.format(d)}`;
-    createdElement.setAttribute("title", fullDateTime.format(d));
+    createdElement.textContent = `${ims.shortDate.format(d)} ${ims.shortTimeSec.format(d)}`;
+    createdElement.setAttribute("title", ims.fullDateTime.format(d));
 }
 //
 // Populate incident priority
@@ -391,7 +408,7 @@ function drawPriority() {
     if (priorityElement == null) {
         return;
     }
-    selectOptionWithValue(priorityElement, (incident.priority ?? "").toString());
+    ims.selectOptionWithValue(priorityElement, (incident.priority ?? "").toString());
 }
 //
 // Populate incident summary
@@ -405,7 +422,7 @@ function drawIncidentSummary() {
         return;
     }
     summaryElement.value = "";
-    const summarized = summarizeIncident(incident);
+    const summarized = ims.summarizeIncident(incident);
     // only replace the placeholder if it would be nonempty
     if (summarized) {
         summaryElement.placeholder = summarized;
@@ -427,17 +444,17 @@ function drawRangers() {
     for (const handle of handles) {
         let ranger = null;
         if (personnel?.[handle] == null) {
-            ranger = textAsHTML(handle);
+            ranger = ims.textAsHTML(handle);
         }
         else {
             const person = personnel[handle];
             ranger = document.createElement("a");
-            ranger.innerText = textAsHTML(rangerAsString(person));
+            ranger.innerText = ims.textAsHTML(rangerAsString(person));
             ranger.href = `${clubhousePersonURL}/${person.directory_id}`;
         }
         const item = _rangerItem.cloneNode(true);
         item.append(ranger);
-        item.setAttribute("value", textAsHTML(handle));
+        item.setAttribute("value", ims.textAsHTML(handle));
         rangersElement.append(item);
     }
 }
@@ -482,8 +499,8 @@ function drawIncidentTypes() {
     typesElement.replaceChildren();
     for (const incidentType of incidentTypes) {
         const item = _typesItem.cloneNode(true);
-        item.append(textAsHTML(incidentType));
-        item.setAttribute("value", textAsHTML(incidentType));
+        item.append(ims.textAsHTML(incidentType));
+        item.setAttribute("value", ims.textAsHTML(incidentType));
         typesElement.append(item);
     }
 }
@@ -509,23 +526,23 @@ function drawLocationName() {
 function drawLocationAddressRadialHour() {
     let hour = null;
     if (incident.location?.radial_hour != null) {
-        hour = padTwo(incident.location.radial_hour);
+        hour = ims.padTwo(incident.location.radial_hour);
     }
-    selectOptionWithValue(document.getElementById("incident_location_address_radial_hour"), hour);
+    ims.selectOptionWithValue(document.getElementById("incident_location_address_radial_hour"), hour);
 }
 function drawLocationAddressRadialMinute() {
     let minute = null;
     if (incident.location?.radial_minute != null) {
-        minute = normalizeMinute(incident.location.radial_minute);
+        minute = ims.normalizeMinute(incident.location.radial_minute);
     }
-    selectOptionWithValue(document.getElementById("incident_location_address_radial_minute"), minute);
+    ims.selectOptionWithValue(document.getElementById("incident_location_address_radial_minute"), minute);
 }
 function drawLocationAddressConcentric() {
     let concentric = null;
     if (incident.location?.concentric) {
         concentric = incident.location.concentric;
     }
-    selectOptionWithValue(document.getElementById("incident_location_address_concentric"), concentric);
+    ims.selectOptionWithValue(document.getElementById("incident_location_address_concentric"), concentric);
 }
 function drawLocationDescription() {
     if (incident.location?.description) {
@@ -549,8 +566,8 @@ function drawMergedReportEntries() {
             }
         }
     }
-    entries.sort(compareReportEntries);
-    drawReportEntries(entries);
+    entries.sort(ims.compareReportEntries);
+    ims.drawReportEntries(entries);
 }
 let _reportsItem = null;
 function drawAttachedFieldReports() {
@@ -569,8 +586,8 @@ function drawAttachedFieldReports() {
     container.replaceChildren();
     for (const report of reports) {
         const link = document.createElement("a");
-        link.href = urlReplace(url_viewFieldReports) + report.number;
-        link.innerText = fieldReportAsString(report);
+        link.href = ims.urlReplace(url_viewFieldReports) + report.number;
+        link.innerText = ims.fieldReportAsString(report);
         const item = _reportsItem.cloneNode(true);
         item.append(link);
         item.setAttribute("fr-number", report.number.toString());
@@ -596,7 +613,7 @@ function drawFieldReportsToAttach() {
             }
             const option = document.createElement("option");
             option.value = report.number.toString();
-            option.text = fieldReportAsString(report);
+            option.text = ims.fieldReportAsString(report);
             select.append(option);
         }
         const attachedGroup = document.createElement("optgroup");
@@ -613,7 +630,7 @@ function drawFieldReportsToAttach() {
             }
             const option = document.createElement("option");
             option.value = report.number.toString();
-            option.text = fieldReportAsString(report);
+            option.text = ims.fieldReportAsString(report);
             select.append(option);
         }
         select.append(document.createElement("optgroup"));
@@ -625,7 +642,7 @@ function drawFieldReportsToAttach() {
 //
 async function sendEdits(edits) {
     const number = incident.number;
-    let url = urlReplace(url_incidents);
+    let url = ims.urlReplace(url_incidents);
     if (number == null) {
         // We're creating a new incident.
         // required fields are ["state", "priority"];
@@ -641,13 +658,13 @@ async function sendEdits(edits) {
         edits.number = number;
         url += number;
     }
-    const { resp, err } = await fetchJsonNoThrow(url, {
+    const { resp, err } = await ims.fetchJsonNoThrow(url, {
         body: JSON.stringify(edits),
     });
     if (err != null) {
         const message = `Failed to apply edit: ${err}`;
         await loadAndDisplayIncident();
-        setErrorMessage(message);
+        ims.setErrorMessage(message);
         return { err: message };
     }
     if (number == null && resp != null) {
@@ -658,26 +675,26 @@ async function sendEdits(edits) {
         // Check that we got a value back
         if (newNumber == null) {
             const msg = "No X-IMS-Incident-Number header provided.";
-            setErrorMessage(msg);
+            ims.setErrorMessage(msg);
             return { err: msg };
         }
         newNumber = parseInt(newNumber);
         // Check that the value we got back is valid
         if (isNaN(newNumber)) {
             const msg = "Non-integer X-IMS-Incident-Number header provided:" + newNumber;
-            setErrorMessage(msg);
+            ims.setErrorMessage(msg);
             return { err: msg };
         }
         // Store the new number in our incident object
         incidentNumber = incident.number = newNumber;
         // Update browser history to update URL
         drawIncidentTitle();
-        window.history.pushState(null, document.title, urlReplace(url_viewIncidents) + newNumber);
+        window.history.pushState(null, document.title, ims.urlReplace(url_viewIncidents) + newNumber);
     }
     await loadAndDisplayIncident();
     return { err: null };
 }
-registerSendEdits = sendEdits;
+ims.setSendEdits(sendEdits);
 async function editState() {
     const state = document.getElementById("incident_state");
     if (state.value === "closed" && (incident.incident_types ?? []).length === 0) {
@@ -688,15 +705,15 @@ async function editState() {
             "    Admin: for administrative information, i.e. not Incidents at all\n\n" +
             "See the Incident Types help link for more details.\n");
     }
-    await editFromElement(state, "state");
+    await ims.editFromElement(state, "state");
 }
 async function editIncidentSummary() {
     const summaryInput = document.getElementById("incident_summary");
-    await editFromElement(summaryInput, "summary");
+    await ims.editFromElement(summaryInput, "summary");
 }
 async function editLocationName() {
     const locationInput = document.getElementById("incident_location_name");
-    await editFromElement(locationInput, "location.name");
+    await ims.editFromElement(locationInput, "location.name");
 }
 function transformAddressInteger(value) {
     if (!value) {
@@ -706,19 +723,19 @@ function transformAddressInteger(value) {
 }
 async function editLocationAddressRadialHour() {
     const hourInput = document.getElementById("incident_location_address_radial_hour");
-    await editFromElement(hourInput, "location.radial_hour", transformAddressInteger);
+    await ims.editFromElement(hourInput, "location.radial_hour", transformAddressInteger);
 }
 async function editLocationAddressRadialMinute() {
     const minuteInput = document.getElementById("incident_location_address_radial_minute");
-    await editFromElement(minuteInput, "location.radial_minute", transformAddressInteger);
+    await ims.editFromElement(minuteInput, "location.radial_minute", transformAddressInteger);
 }
 async function editLocationAddressConcentric() {
     const concentricInput = document.getElementById("incident_location_address_concentric");
-    await editFromElement(concentricInput, "location.concentric", transformAddressInteger);
+    await ims.editFromElement(concentricInput, "location.concentric", transformAddressInteger);
 }
 async function editLocationDescription() {
     const descriptionInput = document.getElementById("incident_location_description");
-    await editFromElement(descriptionInput, "location.description");
+    await ims.editFromElement(descriptionInput, "location.description");
 }
 async function removeRanger(sender) {
     const parent = sender.parentElement;
@@ -766,12 +783,12 @@ async function addRanger() {
     handles.push(handle);
     const { err } = await sendEdits({ "ranger_handles": handles });
     if (err !== null) {
-        controlHasError(select);
+        ims.controlHasError(select);
         select.value = "";
         return;
     }
     select.value = "";
-    controlHasSuccess(select, 1000);
+    ims.controlHasSuccess(select, 1000);
 }
 async function addIncidentType() {
     const select = document.getElementById("incident_type_add");
@@ -802,19 +819,19 @@ async function addIncidentType() {
     currentIncidentTypes.push(incidentType);
     const { err } = await sendEdits({ "incident_types": currentIncidentTypes });
     if (err != null) {
-        controlHasError(select);
+        ims.controlHasError(select);
         select.value = "";
         return;
     }
     select.value = "";
-    controlHasSuccess(select, 1000);
+    ims.controlHasSuccess(select, 1000);
 }
 async function detachFieldReport(sender) {
     const parent = sender.parentElement;
     const frNumber = parent.getAttribute("fr-number");
-    const url = (urlReplace(url_fieldReports) + frNumber +
+    const url = (ims.urlReplace(url_fieldReports) + frNumber +
         "?action=detach;incident=" + incidentNumber);
-    const { err } = await fetchJsonNoThrow(url, {
+    const { err } = await ims.fetchJsonNoThrow(url, {
         body: JSON.stringify({}),
     });
     if (err != null) {
@@ -822,7 +839,7 @@ async function detachFieldReport(sender) {
         console.log(message);
         await loadAllFieldReports();
         renderFieldReportData();
-        setErrorMessage(message);
+        ims.setErrorMessage(message);
         return;
     }
     await loadAllFieldReports();
@@ -838,9 +855,9 @@ async function attachFieldReport() {
     }
     const select = document.getElementById("attached_field_report_add");
     const fieldReportNumber = select.value;
-    const url = (urlReplace(url_fieldReports) + fieldReportNumber +
+    const url = (ims.urlReplace(url_fieldReports) + fieldReportNumber +
         "?action=attach;incident=" + incidentNumber);
-    const { err } = await fetchJsonNoThrow(url, {
+    const { err } = await ims.fetchJsonNoThrow(url, {
         body: JSON.stringify({}),
     });
     if (err != null) {
@@ -848,22 +865,22 @@ async function attachFieldReport() {
         console.log(message);
         await loadAllFieldReports();
         renderFieldReportData();
-        setErrorMessage(message);
-        controlHasError(select);
+        ims.setErrorMessage(message);
+        ims.controlHasError(select);
         return;
     }
     await loadAllFieldReports();
     renderFieldReportData();
-    controlHasSuccess(select, 1000);
+    ims.controlHasSuccess(select, 1000);
 }
 // The success callback for a report entry strike call.
 async function onStrikeSuccess() {
     await loadAndDisplayIncident();
     await loadAllFieldReports();
     renderFieldReportData();
-    clearErrorMessage();
+    ims.clearErrorMessage();
 }
-registerOnStrikeSuccess = onStrikeSuccess;
+ims.setOnStrikeSuccess(onStrikeSuccess);
 async function attachFile() {
     if (incidentNumber == null) {
         // Incident doesn't exist yet.  Create it first.
@@ -877,17 +894,17 @@ async function attachFile() {
     for (const f of attachFile.files ?? []) {
         formData.append("files", f);
     }
-    const attachURL = urlReplace(url_incidentAttachments)
+    const attachURL = ims.urlReplace(url_incidentAttachments)
         .replace("<incident_number>", (incidentNumber ?? "").toString());
-    const { err } = await fetchJsonNoThrow(attachURL, {
+    const { err } = await ims.fetchJsonNoThrow(attachURL, {
         body: formData
     });
     if (err != null) {
         const message = `Failed to attach file: ${err}`;
-        setErrorMessage(message);
+        ims.setErrorMessage(message);
         return;
     }
-    clearErrorMessage();
+    ims.clearErrorMessage();
     attachFile.value = "";
     await loadAndDisplayIncident();
 }
