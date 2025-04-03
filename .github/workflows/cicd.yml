@@ -159,12 +159,12 @@ jobs:
 
     services:
       mysql:
-        image: mariadb:10.5.17
+        image: mariadb:10.5.27
         env:
-          MYSQL_ROOT_HOST: "%"
-          MYSQL_ROOT_PASSWORD: ims
-          MYSQL_USER: ims
-          MYSQL_PASSWORD: ims
+          MARIADB_ROOT_HOST: "%"
+          MARIADB_ROOT_PASSWORD: ims
+          MARIADB_USER: ims
+          MARIADB_PASSWORD: ims
         ports:
           - 3306
         options: >-
