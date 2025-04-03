@@ -809,7 +809,7 @@ export function requestEventSourceLock() {
     // Secure contexts include HTTPS as well as non-HTTPS via localhost, so this is
     // really only when you try to connect directly to another host without TLS.
     // https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts
-    if (!window.isSecureContext && typeof setErrorMessage !== "undefined") {
+    if (!window.isSecureContext) {
         setErrorMessage("You're connected through an insecure browsing context. " +
             "Background SSE updates will not work!");
         return;
