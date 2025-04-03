@@ -900,6 +900,12 @@ export function clearErrorMessage() {
 export function bsModal(el) {
     return new bootstrap.Modal(el);
 }
+export function windowFragmentParams() {
+    const fragment = window.location.hash.startsWith("#")
+        ? window.location.hash.substring(1)
+        : window.location.hash;
+    return new URLSearchParams(fragment);
+}
 // Remove the old LocalStorage caches that IMS no longer uses, so that
 // they can't act against the ~5 MB per-domain limit of HTML5 LocalStorage.
 // This can probably be removed after the 2025 event, when all the relevant

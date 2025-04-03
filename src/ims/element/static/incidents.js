@@ -294,8 +294,7 @@ function initTableButtons() {
             showCheckedTypes(true);
         });
     }
-    const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
-    const fragmentParams = new URLSearchParams(fragment);
+    const fragmentParams = ims.windowFragmentParams();
     // Set button defaults
     const types = fragmentParams.getAll("type");
     if (types.length > 0) {
@@ -328,7 +327,7 @@ let _searchDelayTimer = undefined;
 function initSearchField() {
     // Search field handling
     const searchInput = document.getElementById("search_input");
-    const searchAndDraw = function () {
+    function searchAndDraw() {
         replaceWindowState();
         let q = searchInput.value;
         let isRegex = false;
@@ -338,9 +337,8 @@ function initSearchField() {
         }
         incidentsTable.search(q, isRegex);
         incidentsTable.draw();
-    };
-    const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
-    const fragmentParams = new URLSearchParams(fragment);
+    }
+    const fragmentParams = ims.windowFragmentParams();
     const queryString = fragmentParams.get("q");
     if (queryString) {
         searchInput.value = queryString;
