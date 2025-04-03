@@ -1,7 +1,7 @@
 set -eu
 
 wd="$(cd "$(dirname "$0")/.." && pwd)";
-    mysql_image_name="mariadb:10.5.12";
+    mysql_image_name="mariadb:10.5.27";
 mysql_container_name="${IMS_DB_CONTAINER_NAME:-ranger-ims-db}";
           mysql_host="${IMS_DB_HOST_NAME:-host.docker.internal}";
       mysql_database="${IMS_DB_DATABASE:-ims}";
@@ -44,11 +44,11 @@ start_db_container() {
     docker run ${publish_arg}                     \
         --rm --detach                             \
         --name="${db_container_name}"             \
-        --env="MYSQL_RANDOM_ROOT_PASSWORD=yes"    \
-        --env="MYSQL_DATABASE=${mysql_database}"  \
-        --env="MYSQL_USER=${mysql_user}"          \
-        --env="MYSQL_PASSWORD=${mysql_password}"  \
-        --env="MYSQL_ROOT_HOST=%"                 \
+        --env="MARIADB_RANDOM_ROOT_PASSWORD=yes"    \
+        --env="MARIADB_DATABASE=${mysql_database}"  \
+        --env="MARIADB_USER=${mysql_user}"          \
+        --env="MARIADB_PASSWORD=${mysql_password}"  \
+        --env="MARIADB_ROOT_HOST=%"                 \
         "${mysql_image_name}"                     \
         > /dev/null;
 }
@@ -57,7 +57,7 @@ start_db_container() {
 wait_for_db() {
     started() {
         docker logs "${db_container_name}" 2>&1 \
-            | grep -e 'mysqld (mysqld .*) starting as process 1 ' \
+            | grep -e 'mysqld.sock.*port: 3306' \
             ;
     }
 

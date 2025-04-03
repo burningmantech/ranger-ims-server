@@ -244,7 +244,7 @@ class DockerizedMySQLService(MySQLService):
     imageRepository: str = "mariadb"
     # this should match the value in
     # https://github.com/burningmantech/ranger-ims-server/blob/master/docker-compose.yml
-    imageTag: str = "10.5.24"
+    imageTag: str = "10.5.27"
 
     _dockerClient: DockerClient = field(factory=DockerClient.from_env, init=False)
     _state: _State = field(factory=_State, init=False, repr=False)
