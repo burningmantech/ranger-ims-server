@@ -26,16 +26,6 @@ declare let url_viewIncidentNumber: string;
 
 let fieldReport: ims.FieldReport|null = null;
 
-// This is a minimal declaration of pieces of Bootstrap code on which we depend.
-// See this repo for the full declaration:
-// https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bootstrap
-declare namespace bootstrap {
-    class Modal {
-        constructor(element: string | Element, options?: any);
-        toggle(relatedTarget?: HTMLElement): void;
-    }
-}
-
 declare global {
     interface Window {
         makeIncident: ()=>Promise<void>;
@@ -89,7 +79,7 @@ async function initFieldReportPage(): Promise<void> {
         }
     };
 
-    const helpModal = new bootstrap.Modal(document.getElementById("helpModal")!);
+    const helpModal = ims.bsModal(document.getElementById("helpModal")!);
 
     // Keyboard shortcuts
     document.addEventListener("keydown", function(e: KeyboardEvent): void {

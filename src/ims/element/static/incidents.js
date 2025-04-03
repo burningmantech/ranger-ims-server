@@ -25,7 +25,7 @@ async function initIncidentsPage() {
     ims.disableEditing();
     await loadEventFieldReports();
     initIncidentsTable();
-    const helpModal = new bootstrap.Modal(document.getElementById("helpModal"));
+    const helpModal = ims.bsModal(document.getElementById("helpModal"));
     // Keyboard shortcuts
     document.addEventListener("keydown", function (e) {
         // No shortcuts when an input field is active

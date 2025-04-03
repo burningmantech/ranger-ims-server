@@ -222,6 +222,8 @@ h1 {
 
 #report_entry_add {
   resize: vertical;
+  min-height: 8rem;
+  field-sizing: content;
 }
 
 .item-hidden > .badge-visible {

@@ -30,16 +30,6 @@ declare let url_fieldReports: string;
 declare let url_fieldReport: string;
 declare let url_incidentAttachments: string;
 
-// This is a minimal declaration of pieces of Bootstrap code on which we depend.
-// See this repo for the full declaration:
-// https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bootstrap
-declare namespace bootstrap {
-    class Modal {
-        constructor(element: string | Element, options?: any);
-        toggle(relatedTarget?: HTMLElement): void;
-    }
-}
-
 declare global {
     interface Window {
         editState: ()=>Promise<void>;
@@ -148,7 +138,7 @@ async function initIncidentPage(): Promise<void> {
         }
     };
 
-    const helpModal = new bootstrap.Modal(document.getElementById("helpModal")!);
+    const helpModal = ims.bsModal(document.getElementById("helpModal")!);
 
     // Keyboard shortcuts
     document.addEventListener("keydown", function(e: KeyboardEvent): void {

@@ -897,6 +897,9 @@ export function clearErrorMessage() {
         errInfo.classList.add("hidden");
     }
 }
+export function bsModal(el) {
+    return new bootstrap.Modal(el);
+}
 // Remove the old LocalStorage caches that IMS no longer uses, so that
 // they can't act against the ~5 MB per-domain limit of HTML5 LocalStorage.
 // This can probably be removed after the 2025 event, when all the relevant
