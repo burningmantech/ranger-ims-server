@@ -144,7 +144,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         self.assertEqual(
             dedent(
                 """
-                Version: 11
+                Version: 12
                 CONCENTRIC_STREET:
                   1: EVENT(int) not null
                   2: ID(varchar(16)) not null
@@ -189,9 +189,10 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   2: INCIDENT_NUMBER(int) not null
                   3: INCIDENT_TYPE(int) not null
                 INCIDENT__RANGER:
-                  1: EVENT(int) not null
-                  2: INCIDENT_NUMBER(int) not null
-                  3: RANGER_HANDLE(varchar(64)) not null
+                  1: ID(int) not null
+                  2: EVENT(int) not null
+                  3: INCIDENT_NUMBER(int) not null
+                  4: RANGER_HANDLE(varchar(64)) not null
                 INCIDENT__REPORT_ENTRY:
                   1: EVENT(int) not null
                   2: INCIDENT_NUMBER(int) not null
