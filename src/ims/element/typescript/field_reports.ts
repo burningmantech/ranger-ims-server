@@ -20,16 +20,6 @@ declare let editingAllowed: boolean|null|undefined;
 declare let url_viewFieldReports: string;
 declare let url_fieldReports: string;
 
-// This is a minimal declaration of pieces of Bootstrap code on which we depend.
-// See this repo for the full declaration:
-// https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bootstrap
-declare namespace bootstrap {
-    class Modal {
-        constructor(element: string | Element, options?: any);
-        toggle(relatedTarget?: HTMLElement): void;
-    }
-}
-
 declare global {
     interface Window {
         frShowDays: (daysBackToShow: number | string, replaceState: boolean)=>void;
@@ -52,7 +42,7 @@ async function initFieldReportsPage(): Promise<void> {
     ims.disableEditing();
     initFieldReportsTable();
 
-    const helpModal = new bootstrap.Modal(document.getElementById("helpModal")!);
+    const helpModal = ims.bsModal(document.getElementById("helpModal")!);
 
     // Keyboard shortcuts
     document.addEventListener("keydown", function(e: KeyboardEvent): void {

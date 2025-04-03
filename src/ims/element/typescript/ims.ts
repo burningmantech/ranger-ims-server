@@ -109,6 +109,16 @@ export interface DataTablesTable {
     processing(b: boolean): unknown;
 }
 
+// This is a minimal declaration of pieces of Bootstrap code on which we depend.
+// See this repo for the full declaration:
+// https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bootstrap
+declare namespace bootstrap {
+    class Modal {
+        constructor(element: string | Element, options?: any);
+        toggle(relatedTarget?: HTMLElement): void;
+    }
+}
+
 //
 // HTML encoding
 //
@@ -1176,6 +1186,10 @@ export function clearErrorMessage(): void {
     if (errInfo) {
         errInfo.classList.add("hidden");
     }
+}
+
+export function bsModal(el: HTMLElement) {
+    return new bootstrap.Modal(el);
 }
 
 // Remove the old LocalStorage caches that IMS no longer uses, so that
