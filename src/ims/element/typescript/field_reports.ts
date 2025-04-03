@@ -240,8 +240,7 @@ function frInitDataTables() {
 //
 
 function frInitTableButtons() {
-    const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
-    const fragmentParams = new URLSearchParams(fragment);
+    const fragmentParams: URLSearchParams = ims.windowFragmentParams();
 
     // Set button defaults
 
@@ -261,7 +260,7 @@ function frInitSearchField(): void {
     // Search field handling
     const searchInput = document.getElementById("search_input") as HTMLInputElement;
 
-    const searchAndDraw: () => void = function (): void {
+    function searchAndDraw(): void {
         frReplaceWindowState();
         let q = searchInput.value;
         let isRegex = false;
@@ -271,10 +270,9 @@ function frInitSearchField(): void {
         }
         fieldReportsTable!.search(q, isRegex);
         fieldReportsTable!.draw();
-    };
+    }
 
-    const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
-    const fragmentParams = new URLSearchParams(fragment);
+    const fragmentParams: URLSearchParams = ims.windowFragmentParams();
     const queryString: string|null = fragmentParams.get("q");
     if (queryString) {
         searchInput.value = queryString;

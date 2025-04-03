@@ -200,8 +200,7 @@ function frInitDataTables() {
 // Initialize table buttons
 //
 function frInitTableButtons() {
-    const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
-    const fragmentParams = new URLSearchParams(fragment);
+    const fragmentParams = ims.windowFragmentParams();
     // Set button defaults
     frShowDays(fragmentParams.get("days") ?? frDefaultDaysBack, false);
     frShowRows(fragmentParams.get("rows") ?? frDefaultRows, false);
@@ -214,7 +213,7 @@ let _frSearchDelayTimer = undefined;
 function frInitSearchField() {
     // Search field handling
     const searchInput = document.getElementById("search_input");
-    const searchAndDraw = function () {
+    function searchAndDraw() {
         frReplaceWindowState();
         let q = searchInput.value;
         let isRegex = false;
@@ -224,9 +223,8 @@ function frInitSearchField() {
         }
         fieldReportsTable.search(q, isRegex);
         fieldReportsTable.draw();
-    };
-    const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
-    const fragmentParams = new URLSearchParams(fragment);
+    }
+    const fragmentParams = ims.windowFragmentParams();
     const queryString = fragmentParams.get("q");
     if (queryString) {
         searchInput.value = queryString;

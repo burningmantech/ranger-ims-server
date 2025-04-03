@@ -357,8 +357,7 @@ function initTableButtons(): void {
         })
     }
 
-    const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
-    const fragmentParams = new URLSearchParams(fragment);
+    const fragmentParams: URLSearchParams = ims.windowFragmentParams();
 
     // Set button defaults
 
@@ -396,7 +395,7 @@ function initSearchField() {
     // Search field handling
     const searchInput = document.getElementById("search_input") as HTMLInputElement;
 
-    const searchAndDraw = function () {
+    function searchAndDraw(): void {
         replaceWindowState();
         let q = searchInput.value;
         let isRegex = false;
@@ -406,10 +405,9 @@ function initSearchField() {
         }
         incidentsTable!.search(q, isRegex);
         incidentsTable!.draw();
-    };
+    }
 
-    const fragment = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
-    const fragmentParams = new URLSearchParams(fragment);
+    const fragmentParams: URLSearchParams = ims.windowFragmentParams();
     const queryString = fragmentParams.get("q");
     if (queryString) {
         searchInput.value = queryString;
