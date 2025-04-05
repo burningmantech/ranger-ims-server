@@ -61,12 +61,6 @@ class Page(Element):
             if not name or name in result:
                 return
 
-            if name == "bootstrap":
-                add("jquery")
-
-            if name == "ims":
-                add("jquery")
-
             try:
                 result[name] = getattr(urls, f"{name}JS")
             except AttributeError:
@@ -77,7 +71,8 @@ class Page(Element):
                 # Responsive is currently unused. See incidents.js as well.
                 # add("dataTablesResponsive")
 
-        # All pages use Bootstrap
+        # all pages use JQuery and Bootstrap
+        add("jquery")
         add("bootstrap")
         add("urls")
 
@@ -98,19 +93,6 @@ class Page(Element):
         if depName == "jquery":
             return cast("str", self.config.externalDeps.jqueryJsIntegrity)
         return None
-
-    def isESModule(self, depName: str) -> bool:
-        return depName in (
-            "ims",
-            "admin",
-            "adminEvents",
-            "adminStreets",
-            "adminIncidentTypes",
-            "viewIncident",
-            "viewIncidents",
-            "viewFieldReports",
-            "viewFieldReport",
-        )
 
     @renderer
     def title(self, request: IRequest, tag: Tag) -> IRenderable:
@@ -135,14 +117,26 @@ class Page(Element):
         ).items():
             kw = {"src": url.asText()}
             integrity = self.integrityValue(name)
-            if self.isESModule(name):
-                kw["type"] = "module"
             if integrity is not None:
                 kw["integrity"] = integrity
             imports.append(tags.script(**kw))
 
         if "imports" in tag.attributes:
             del tag.attributes["imports"]
+
+        # Each page can have up to one IMS module JS file, which is free
+        # to import any other IMS JS files.
+        if "module" in tag.attributes:
+            name = cast("str", tag.attributes["module"])
+            kw = {"src": getattr(urls, f"{name}JS").asText()}
+            integrity = self.integrityValue(name)
+            kw["type"] = "module"
+            if integrity is not None:
+                kw["integrity"] = integrity
+            imports.append(tags.script(**kw))
+
+        if "module" in tag.attributes:
+            del tag.attributes["module"]
 
         return tag(  # type: ignore[return-value]
             # Resource metadata
