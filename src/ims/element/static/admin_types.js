@@ -17,7 +17,7 @@ import * as ims from "./ims.js";
 //
 initAdminTypesPage();
 async function initAdminTypesPage() {
-    ims.detectTouchDevice();
+    ims.commonPageInit();
     window.createIncidentType = createIncidentType;
     window.deleteIncidentType = deleteIncidentType;
     window.showIncidentType = showIncidentType;

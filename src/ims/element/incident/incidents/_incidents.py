@@ -28,7 +28,6 @@ from ims.ext.json_ext import jsonFalse, jsonTextFromObject, jsonTrue
 from ims.model import Event
 
 from ...page import Page
-from ..incidents_template._incidents_template import title
 
 
 __all__ = ()
@@ -40,7 +39,7 @@ class IncidentsPage(Page):
     Incidents page.
     """
 
-    name: str = title
+    name: str = "Incidents"
     event: Event
 
     @renderer
@@ -54,13 +53,6 @@ class IncidentsPage(Page):
         ):
             return jsonTrue
         return jsonFalse
-
-    @renderer
-    def event_id(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        JSON string: event ID.
-        """
-        return jsonTextFromObject(self.event.id)
 
     @renderer
     async def concentric_street_name_by_id(

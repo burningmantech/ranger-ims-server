@@ -21,5 +21,5 @@ import * as ims from "./ims.ts";
 initAdminPage();
 
 function initAdminPage(): void {
-    ims.detectTouchDevice();
+    ims.commonPageInit();
 }

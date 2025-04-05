@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import * as ims from "./ims.js";
+const eventID = ims.eventID();
+let incident = null;
 //
 // Initialize UI
 //
 initIncidentPage();
 async function initIncidentPage() {
-    await ims.loadBody();
+    ims.commonPageInit();
     window.editState = editState;
     window.editIncidentSummary = editIncidentSummary;
     window.editLocationName = editLocationName;
@@ -131,7 +133,6 @@ async function initIncidentPage() {
 //
 // Load incident
 //
-let incident = null;
 async function loadIncident() {
     let number = null;
     if (incident == null) {

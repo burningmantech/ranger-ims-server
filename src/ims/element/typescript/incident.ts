@@ -14,7 +14,6 @@
 
 import * as ims from "./ims.ts";
 
-declare let eventID: string|null|undefined;
 declare let concentricStreetNameByID: ims.Streets|undefined;
 declare let incidentNumber: number|null|undefined;
 declare let editingAllowed: boolean|null|undefined;
@@ -53,6 +52,9 @@ declare global {
     }
 }
 
+const eventID = ims.eventID();
+let incident: ims.Incident|null = null;
+
 //
 // Initialize UI
 //
@@ -60,7 +62,7 @@ declare global {
 initIncidentPage();
 
 async function initIncidentPage(): Promise<void> {
-    await ims.loadBody();
+    ims.commonPageInit();
 
     window.editState = editState;
     window.editIncidentSummary = editIncidentSummary;
@@ -187,8 +189,6 @@ async function initIncidentPage(): Promise<void> {
 //
 // Load incident
 //
-
-let incident: ims.Incident|null = null;
 
 async function loadIncident(): Promise<{err: string|null}> {
     let number: number|null = null;

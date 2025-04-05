@@ -14,7 +14,6 @@
 
 import * as ims from "./ims.ts";
 
-declare let eventID: string|null|undefined;
 declare let allIncidentTypes: string[];
 declare let editingAllowed: boolean|null|undefined;
 
@@ -32,6 +31,8 @@ declare global {
     }
 }
 
+const eventID = ims.eventID();
+
 //
 // Initialize UI
 //
@@ -39,7 +40,7 @@ declare global {
 initIncidentsPage();
 
 async function initIncidentsPage(): Promise<void> {
-    await ims.loadBody();
+    ims.commonPageInit();
 
     window.showState = showState;
     window.showDays = showDays;
@@ -585,7 +586,7 @@ const _otherPlaceholder = "(other)";
 
 function setCheckedTypes(types: string[], includeBlanks: boolean, includeOthers: boolean): void {
     for (const type of document.querySelectorAll('#ul_show_type > a')) {
-        if (types.includes(type.innerHTML) ||
+        if (types.includes(type.textContent!) ||
             (includeBlanks && type.id === "show_blank_type") ||
             (includeOthers && type.id === "show_other_type")
         ) {
@@ -613,7 +614,7 @@ function readCheckedTypes(): void {
         } else if (type.id === "show_other_type") {
             _showOtherType = type.classList.contains("dropdown-item-checked");
         } else if (type.classList.contains("dropdown-item-checked")) {
-            _showTypes.push(type.innerHTML);
+            _showTypes.push(type.textContent!);
         }
     }
 }

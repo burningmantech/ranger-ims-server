@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import * as ims from "./ims.js";
+const eventID = ims.eventID();
 //
 // Initialize UI
 //
 initIncidentsPage();
 async function initIncidentsPage() {
-    await ims.loadBody();
+    ims.commonPageInit();
     window.showState = showState;
     window.showDays = showDays;
     window.showRows = showRows;
@@ -479,7 +480,7 @@ const _blankPlaceholder = "(blank)";
 const _otherPlaceholder = "(other)";
 function setCheckedTypes(types, includeBlanks, includeOthers) {
     for (const type of document.querySelectorAll('#ul_show_type > a')) {
-        if (types.includes(type.innerHTML) ||
+        if (types.includes(type.textContent) ||
             (includeBlanks && type.id === "show_blank_type") ||
             (includeOthers && type.id === "show_other_type")) {
             type.classList.add("dropdown-item-checked");
@@ -508,7 +509,7 @@ function readCheckedTypes() {
             _showOtherType = type.classList.contains("dropdown-item-checked");
         }
         else if (type.classList.contains("dropdown-item-checked")) {
-            _showTypes.push(type.innerHTML);
+            _showTypes.push(type.textContent);
         }
     }
 }

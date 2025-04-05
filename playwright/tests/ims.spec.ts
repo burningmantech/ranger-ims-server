@@ -2,6 +2,10 @@ import {test, expect, Page} from "@playwright/test";
 
 const username = "Hardware";
 
+function randomName(prefix: string): string {
+  return `${prefix}-${crypto.randomUUID()}`;
+}
+
 async function login(page: Page): Promise<void> {
   await page.goto("http://localhost:8080/ims/auth/logout");
   await page.goto("http://localhost:8080/ims/app/");
@@ -62,10 +66,29 @@ async function maybeOpenNav(page: Page): Promise<void> {
   }
 }
 
+test("themes", async ({ page }) => {
+  await page.goto("http://localhost:8080/ims/app/");
+
+  await maybeOpenNav(page);
+  await page.getByTitle("Color scheme").getByRole("button").click();
+  await page.getByRole('button', { name: 'Dark' }).click();
+  expect(await page.locator("html").getAttribute("data-bs-theme")).toEqual("dark");
+
+  await page.reload();
+  expect(await page.locator("html").getAttribute("data-bs-theme")).toEqual("dark");
+  await maybeOpenNav(page);
+  await page.getByTitle("Color scheme").getByRole("button").click();
+  await page.getByRole('button', { name: 'Light' }).click();
+  expect(await page.locator("html").getAttribute("data-bs-theme")).toEqual("light");
+
+  await page.reload();
+  expect(await page.locator("html").getAttribute("data-bs-theme")).toEqual("light");
+})
+
 test("admin_incident_types", async ({ page }) => {
   await login(page);
 
-  const incidentType: string = crypto.randomUUID();
+  const incidentType: string = randomName("type");
   await addIncidentType(page, incidentType);
 
   await incidentTypePage(page);
@@ -83,7 +106,7 @@ test("admin_incident_types", async ({ page }) => {
 test("admin_events", async ({ page }) => {
   await login(page);
 
-  const eventName: string = crypto.randomUUID();
+  const eventName: string = randomName("event");
   await addEvent(page, eventName);
   await addWriter(page, eventName, "person:SomeGuy");
 
@@ -99,12 +122,10 @@ test("incidents", async ({ page, browser }) => {
   test.slow();
 
   await login(page);
-  const eventName: string = crypto.randomUUID();
+  const eventName: string = randomName("event");
   await addEvent(page, eventName);
   await addWriter(page, eventName, "person:" + username);
   await page.close();
-
-
 
   for (let i = 0; i < 5; i++) {
     const ctx = await browser.newContext();
@@ -118,7 +139,7 @@ test("incidents", async ({ page, browser }) => {
     const incidentPage = await page1Promise;
 
     await expect(incidentPage.getByLabel("IMS #")).toHaveText("(new)");
-    const incidentSummary = `Summary - ${crypto.randomUUID()}`;
+    const incidentSummary = randomName("summary");
     await incidentPage.getByLabel('Summary').fill(incidentSummary);
     await incidentPage.getByLabel('Summary').press('Tab');
     // wait for the new incident to be persisted
@@ -168,7 +189,7 @@ test("incidents", async ({ page, browser }) => {
     await incidentPage.getByLabel('Additional location description').click();
     await incidentPage.getByLabel('Additional location description').fill('other there');
     await incidentPage.getByLabel('Additional location description').press('Tab');
-    const reportEntry = `This is some text - ${crypto.randomUUID()}`;
+    const reportEntry = `This is some text - ${randomName("text")}`;
     await incidentPage.getByLabel('New report entry text').fill(reportEntry);
     await incidentPage.getByLabel('Submit report entry').click();
 

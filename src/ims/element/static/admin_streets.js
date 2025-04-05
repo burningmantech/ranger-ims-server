@@ -17,7 +17,7 @@ import * as ims from "./ims.js";
 //
 initAdminStreetsPage();
 async function initAdminStreetsPage() {
-    ims.detectTouchDevice();
+    ims.commonPageInit();
     window.addStreet = addStreet;
     window.removeStreet = removeStreet;
     const { err } = await loadStreets();
