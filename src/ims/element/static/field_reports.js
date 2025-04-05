@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import * as ims from "./ims.js";
+const eventID = ims.eventID();
 //
 // Initialize UI
 //
 initFieldReportsPage();
 async function initFieldReportsPage() {
-    await ims.loadBody();
+    ims.commonPageInit();
     window.frShowDays = frShowDays;
     window.frShowRows = frShowRows;
     ims.disableEditing();

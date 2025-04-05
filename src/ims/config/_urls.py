@@ -133,20 +133,16 @@ class URLs:
     viewEvent: ClassVar[URL] = viewEvents.child("<event_id>").child("")
 
     viewIncidents: ClassVar[URL] = viewEvent.child("incidents").child("")
-    viewIncidentsTemplate: ClassVar[URL] = app.child("incidents.html")
     viewIncidentsJS: ClassVar[URL] = static.child("incidents.js")
     viewIncidentsRelative: ClassVar[URL] = URL.fromText("incidents").child("")
 
     viewIncidentNumber: ClassVar[URL] = viewIncidents.child("<number>")
-    viewIncidentTemplate: ClassVar[URL] = app.child("incident.html")
     viewIncidentJS: ClassVar[URL] = static.child("incident.js")
 
     viewFieldReports: ClassVar[URL] = viewEvent.child("field_reports").child("")
-    viewFieldReportsTemplate: ClassVar[URL] = app.child("field_reports.html")
     viewFieldReportsJS: ClassVar[URL] = static.child("field_reports.js")
     viewFieldReportsRelative: ClassVar[URL] = URL.fromText("field_reports").child("")
 
     viewFieldReportNew: ClassVar[URL] = viewFieldReports.child("new")
     viewFieldReportNumber: ClassVar[URL] = viewFieldReports.child("<number>")
-    viewFieldReportTemplate: ClassVar[URL] = app.child("field_report.html")
     viewFieldReportJS: ClassVar[URL] = static.child("field_report.js")

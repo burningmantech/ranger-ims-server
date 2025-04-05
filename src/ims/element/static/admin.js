@@ -17,5 +17,5 @@ import * as ims from "./ims.js";
 //
 initAdminPage();
 function initAdminPage() {
-    ims.detectTouchDevice();
+    ims.commonPageInit();
 }

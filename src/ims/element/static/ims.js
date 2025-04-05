@@ -25,12 +25,27 @@ export function textAsHTML(text) {
     return _domTextAreaForHaxxors.innerHTML;
 }
 export const integerRegExp = /^\d+$/;
+export function eventID() {
+    const splits = window.location.pathname.split("/");
+    const eventsInd = splits.indexOf("events");
+    if (eventsInd < 0) {
+        return null;
+    }
+    if (eventsInd >= splits.length - 1) {
+        return null;
+    }
+    if (splits[eventsInd + 1] === "") {
+        return null;
+    }
+    return splits[eventsInd + 1] ?? null;
+}
 //
 // URL substitution
 //
 export function urlReplace(url) {
-    if (eventID) {
-        url = url.replace("<event_id>", eventID);
+    const event = eventID();
+    if (event) {
+        url = url.replace("<event_id>", event);
     }
     return url;
 }
@@ -214,26 +229,14 @@ function controlClear(element) {
     element.classList.remove("is-valid");
 }
 //
-// Load HTML body template.
+// Initialize the page. This should be called from all pages' JS init functions.
 //
-export async function loadBody() {
+export function commonPageInit() {
     detectTouchDevice();
-    const { resp, err } = await fetchJsonNoThrow(pageTemplateURL, null);
-    if (err != null || resp == null) {
-        console.error(err);
-        setErrorMessage(err ?? "null error");
-        return;
-    }
-    document.getElementsByTagName("body")[0].innerHTML = await resp.text();
-    // The body has been totally reloaded, so fire another DOMContentLoaded event.
-    // We need this to make themes work on pages that use this loadBody() function.
-    window.document.dispatchEvent(new Event("DOMContentLoaded", {
-        bubbles: true,
-        cancelable: true
-    }));
-    if (typeof eventID !== "undefined") {
+    const event = eventID();
+    if (event) {
         for (const eventLabel of document.getElementsByClassName("event-id")) {
-            eventLabel.textContent = eventID;
+            eventLabel.textContent = event;
             eventLabel.classList.add("active-event");
         }
         const activeEventIncidents = document.getElementById("active-event-incidents");

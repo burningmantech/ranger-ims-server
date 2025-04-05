@@ -33,7 +33,7 @@ declare global {
 initAdminEventsPage();
 
 async function initAdminEventsPage(): Promise<void> {
-    ims.detectTouchDevice();
+    ims.commonPageInit();
 
     window.setValidity = setValidity;
     window.addEvent = addEvent;

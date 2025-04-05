@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import * as ims from "./ims.js";
+const eventID = ims.eventID();
 let fieldReport = null;
 //
 // Initialize UI
 //
 initFieldReportPage();
 async function initFieldReportPage() {
-    await ims.loadBody();
+    ims.commonPageInit();
     window.makeIncident = makeIncident;
     window.editSummary = editSummary;
     window.toggleShowHistory = ims.toggleShowHistory;

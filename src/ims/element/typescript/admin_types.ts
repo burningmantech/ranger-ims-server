@@ -32,7 +32,7 @@ declare global {
 initAdminTypesPage();
 
 async function initAdminTypesPage(): Promise<void> {
-    ims.detectTouchDevice();
+    ims.commonPageInit();
 
     window.createIncidentType = createIncidentType;
     window.deleteIncidentType = deleteIncidentType;

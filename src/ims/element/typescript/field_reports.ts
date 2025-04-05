@@ -14,7 +14,6 @@
 
 import * as ims from "./ims.ts";
 
-declare let eventID: string|null|undefined;
 declare let editingAllowed: boolean|null|undefined;
 
 declare let url_viewFieldReports: string;
@@ -27,6 +26,8 @@ declare global {
     }
 }
 
+const eventID = ims.eventID();
+
 //
 // Initialize UI
 //
@@ -34,7 +35,7 @@ declare global {
 initFieldReportsPage();
 
 async function initFieldReportsPage(): Promise<void> {
-    await ims.loadBody();
+    ims.commonPageInit();
 
     window.frShowDays = frShowDays;
     window.frShowRows = frShowRows;

@@ -33,13 +33,9 @@ from ims.element.admin.itypes import AdminIncidentTypesPage
 from ims.element.admin.root import AdminRootPage
 from ims.element.admin.streets import AdminStreetsPage
 from ims.element.incident.incident import IncidentPage
-from ims.element.incident.incident_template import IncidentTemplatePage
 from ims.element.incident.incidents import IncidentsPage
-from ims.element.incident.incidents_template import IncidentsTemplatePage
 from ims.element.incident.report import FieldReportPage
-from ims.element.incident.report_template import FieldReportTemplatePage
 from ims.element.incident.reports import FieldReportsPage
-from ims.element.incident.reports_template import FieldReportsTemplatePage
 from ims.element.root import RootPage
 from ims.model import Event
 from ims.store import NoSuchFieldReportError
@@ -169,13 +165,6 @@ class WebApplication:
         event = Event(id=event_id)
         return IncidentsPage(config=self.config, event=event)
 
-    @router.route(_unprefix(URLs.viewIncidentsTemplate), methods=("HEAD", "GET"))
-    def viewIncidentsTemplatePage(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for the incidents page template.
-        """
-        return IncidentsTemplatePage(config=self.config)
-
     @router.route(_unprefix(URLs.viewIncidentNumber), methods=("HEAD", "GET"))
     async def viewIncidentPage(
         self, request: IRequest, event_id: str, number: str
@@ -199,13 +188,6 @@ class WebApplication:
         event = Event(id=event_id)
         return IncidentPage(config=self.config, event=event, number=numberValue)
 
-    @router.route(_unprefix(URLs.viewIncidentTemplate), methods=("HEAD", "GET"))
-    def viewIncidentTemplatePage(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for the incident page template.
-        """
-        return IncidentTemplatePage(config=self.config)
-
     @router.route(_unprefix(URLs.viewFieldReports), methods=("HEAD", "GET"))
     async def viewFieldReportsPage(
         self, request: IRequest, event_id: str
@@ -223,13 +205,6 @@ class WebApplication:
             )
         event = Event(id=event_id)
         return FieldReportsPage(config=self.config, event=event)
-
-    @router.route(_unprefix(URLs.viewFieldReportsTemplate), methods=("HEAD", "GET"))
-    def viewFieldReportsTemplatePage(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for the field reports page template.
-        """
-        return FieldReportsTemplatePage(config=self.config)
 
     @router.route(_unprefix(URLs.viewFieldReportNumber), methods=("HEAD", "GET"))
     async def viewFieldReportPage(
@@ -269,10 +244,3 @@ class WebApplication:
 
         event = Event(id=event_id)
         return FieldReportPage(config=config, event=event, number=fieldReportNumber)
-
-    @router.route(_unprefix(URLs.viewFieldReportTemplate), methods=("HEAD", "GET"))
-    def viewFieldReportTemplatePage(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for the field report page template.
-        """
-        return FieldReportTemplatePage(config=self.config)

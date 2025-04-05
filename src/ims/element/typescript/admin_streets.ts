@@ -37,7 +37,7 @@ declare global {
 initAdminStreetsPage();
 
 async function initAdminStreetsPage() {
-    ims.detectTouchDevice();
+    ims.commonPageInit();
 
     window.addStreet = addStreet;
     window.removeStreet = removeStreet;

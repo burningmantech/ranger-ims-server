@@ -17,7 +17,7 @@ import * as ims from "./ims.js";
 //
 initAdminEventsPage();
 async function initAdminEventsPage() {
-    ims.detectTouchDevice();
+    ims.commonPageInit();
     window.setValidity = setValidity;
     window.addEvent = addEvent;
     window.addAccess = addAccess;

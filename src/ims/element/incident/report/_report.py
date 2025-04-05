@@ -28,7 +28,6 @@ from ims.ext.json_ext import jsonFalse, jsonTextFromObject, jsonTrue
 from ims.model import Event
 
 from ...page import Page
-from ..incident_template._incident_template import title
 
 
 __all__ = ()
@@ -40,7 +39,8 @@ class FieldReportPage(Page):
     Field report page.
     """
 
-    name: str = title
+    name: str = "Field Report Details"
+    hideH1: bool = True
     event: Event
     number: int | None
 
@@ -55,13 +55,6 @@ class FieldReportPage(Page):
         ):
             return jsonTrue
         return jsonFalse
-
-    @renderer
-    def event_id(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        JSON string: event ID.
-        """
-        return jsonTextFromObject(self.event.id)
 
     @renderer
     def field_report_number(self, request: IRequest, tag: Tag) -> KleinRenderable:
