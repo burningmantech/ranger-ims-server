@@ -18,7 +18,6 @@
 declare let concentricStreetNameByID: Streets|undefined;
 declare let incidentNumber: number|null|undefined;
 declare let fieldReportNumber: number|null|undefined;
-declare let pageTemplateURL: string;
 
 declare let url_eventSource: string;
 declare let url_fieldReport_reportEntry: string;
