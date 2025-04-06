@@ -24,7 +24,7 @@ from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 
 from ims.auth import Authorization
-from ims.ext.json_ext import jsonFalse, jsonTextFromObject, jsonTrue
+from ims.ext.json_ext import jsonFalse, jsonTrue
 from ims.model import Event
 
 from ...page import Page
@@ -55,13 +55,6 @@ class FieldReportPage(Page):
         ):
             return jsonTrue
         return jsonFalse
-
-    @renderer
-    def field_report_number(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        JSON integer: field report number.
-        """
-        return jsonTextFromObject(self.number)
 
     @renderer
     def can_write_incidents(self, request: IRequest, tag: Tag) -> KleinRenderable:

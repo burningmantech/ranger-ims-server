@@ -18,11 +18,6 @@ declare let url_streets: string;
 
 declare let events: string[]|null|undefined;
 
-interface EventsStreets {
-    // key is event name
-    [index: string]: ims.Streets,
-}
-
 declare global {
     interface Window {
         addStreet: (el: HTMLInputElement)=>Promise<void>;
@@ -48,10 +43,10 @@ async function initAdminStreetsPage() {
     }
 }
 
-let streets: EventsStreets = {};
+let streets: ims.EventsStreets = {};
 
 async function loadStreets(): Promise<{err:string|null}> {
-    const {json, err} = await ims.fetchJsonNoThrow<EventsStreets>(url_streets, null);
+    const {json, err} = await ims.fetchJsonNoThrow<ims.EventsStreets>(url_streets, null);
     if (err != null) {
         const message = `Failed to load streets: ${err}`;
         console.error(message);
@@ -131,7 +126,7 @@ async function addStreet(sender: HTMLInputElement): Promise<void> {
     const id = expression.substring(0, splitInd);
     const name = expression.substring(splitInd+1).trim();
 
-    const edits: EventsStreets = {};
+    const edits: ims.EventsStreets = {};
     edits[event] = {};
     edits[event][id] = name;
 
@@ -153,7 +148,7 @@ function removeStreet(_sender: HTMLInputElement): void {
 }
 
 
-async function sendStreets(edits: EventsStreets): Promise<{err: string|null}> {
+async function sendStreets(edits: ims.EventsStreets): Promise<{err: string|null}> {
     const {err} = await ims.fetchJsonNoThrow(url_streets, {
         body: JSON.stringify(edits),
     });

@@ -15,18 +15,23 @@
 //
 // Globals
 //
-declare let concentricStreetNameByID: Streets|undefined;
 declare let incidentNumber: number|null|undefined;
 declare let fieldReportNumber: number|null|undefined;
 
 declare let url_eventSource: string;
 declare let url_fieldReport_reportEntry: string;
-declare let url_incident_reportEntry: string;
 declare let url_incidentAttachmentNumber: string;
-declare let url_viewIncidents: string;
+declare let url_incidentTypes: string;
+declare let url_incident_reportEntry: string;
+declare let url_streets: string;
 declare let url_viewFieldReports: string;
+declare let url_viewIncidents: string;
 
 export type Streets = Record<string, string>;
+export interface EventsStreets {
+    // key is event name
+    [index: string]: Streets,
+}
 
 interface EventLocation {
     name?: string|null;
@@ -136,27 +141,42 @@ export function textAsHTML(text: string): string {
 
 export const integerRegExp: RegExp = /^\d+$/;
 
-
-export function eventID(): string|null {
+function idsFromPath(): {eventID: string|null, incidentNumber: number|null, fieldReportNumber: number|null} {
     const splits = window.location.pathname.split("/");
-    const eventsInd = splits.indexOf("events")
-    if (eventsInd < 0) {
-        return null;
+
+    // e.g. given splits of [dog, cat, emu] and s = "cat",
+    // this will return "emu"
+    function tokenAfter(s: string): string|null {
+        const index = splits.indexOf(s);
+        if (index < 0) {
+            return null;
+        }
+        if (index >= splits.length-1) {
+            return null;
+        }
+        if (splits[index+1] === "") {
+            return null;
+        }
+        return splits[index+1]??null;
     }
-    if (eventsInd >= splits.length-1) {
-        return null;
-    }
-    if (splits[eventsInd+1] === "") {
-        return null;
-    }
-    return splits[eventsInd+1]??null;
+    return {
+        eventID: tokenAfter("events"),
+        incidentNumber: parseInt10(tokenAfter("incidents")),
+        fieldReportNumber: parseInt10(tokenAfter("field_reports")),
+    };
 }
+
+export const pathIds: {
+    eventID: string|null,
+    incidentNumber: number|null,
+    fieldReportNumber: number|null,
+} = idsFromPath();
 
 //
 // URL substitution
 //
 export function urlReplace(url: string): string {
-    const event = eventID();
+    const event = pathIds.eventID;
     if (event) {
         url = url.replace("<event_id>", event);
     }
@@ -292,8 +312,18 @@ export function normalizeMinute(minute: number): string {
 
 // Apparently some implementations of Number.parseInt don't reliably use base
 // 10 by default (eg. when encountering leading zeroes).
-function parseInt(stringInt: string): number {
-    return Number.parseInt(stringInt, 10);
+//
+// This takes something like a string, and returns an integer if it can be parsed
+// as an integer, or null otherwise (unlike parseInt!).
+export function parseInt10(stringInt: string|null|undefined): number|null {
+    if (stringInt == null) {
+        return null;
+    }
+    const int = Number.parseInt(stringInt, 10);
+    if (isNaN(int)) {
+        return null;
+    }
+    return int;
 }
 
 
@@ -376,7 +406,7 @@ function controlClear(element: HTMLElement) {
 export function commonPageInit(): void {
     detectTouchDevice();
 
-    const event = eventID();
+    const event = pathIds.eventID;
     if (event) {
         for (const eventLabel of document.getElementsByClassName("event-id")) {
             eventLabel.textContent = event;
@@ -467,6 +497,19 @@ function stateSortKeyFromID(stateID: string): number|undefined {
     }
 }
 
+export let concentricStreetNameByID: Streets|undefined = undefined;
+
+export async function loadStreets(eventID: string|null): Promise<{err:string|null}> {
+    const {json, err} = await fetchJsonNoThrow<EventsStreets>(url_streets + "?event_id=" + eventID, null);
+    if (err != null) {
+        const message = `Failed to load streets: ${err}`;
+        console.error(message);
+        window.alert(message);
+        return {err: message};
+    }
+    concentricStreetNameByID = json![eventID!];
+    return {err: null};
+}
 
 // Look up a concentric street's name given its ID.
 function concentricStreetFromID(streetID: string|null): string {
@@ -798,7 +841,7 @@ function reportEntryElement(entry: ReportEntry): HTMLDivElement {
 
     if (strikable) {
         const strikeContainer: HTMLButtonElement = document.createElement("button");
-        const entryId = parseInt(entry.id!);
+        const entryId = parseInt10(entry.id)!;
         const entryStricken = entry.stricken!;
         if (typeof incidentNumber !== "undefined") {
             // we're on the incident page
@@ -1197,6 +1240,33 @@ export function windowFragmentParams() {
         ? window.location.hash.substring(1)
         : window.location.hash;
     return new URLSearchParams(fragment);
+}
+
+
+//
+// Load incident types
+//
+
+export async function loadIncidentTypes(): Promise<{types: string[], err: string|null}> {
+    const {json, err} = await fetchJsonNoThrow<string[]>(url_incidentTypes, null);
+    if (err != null) {
+        const message = `Failed to load incident types: ${err}`;
+        console.error(message);
+        setErrorMessage(message);
+        return {
+            types: [],
+            err: message,
+        };
+    }
+    const _incidentTypes: string[] = [];
+    for (const record of json!) {
+        _incidentTypes.push(record);
+    }
+    _incidentTypes.sort();
+    return {
+        types: _incidentTypes,
+        err: null,
+    };
 }
 
 // Remove the old LocalStorage caches that IMS no longer uses, so that

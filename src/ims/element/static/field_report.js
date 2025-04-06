@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import * as ims from "./ims.js";
-const eventID = ims.eventID();
 let fieldReport = null;
 //
 // Initialize UI
@@ -42,7 +41,7 @@ async function initFieldReportPage() {
         const number = e.data.field_report_number;
         const event = e.data.event_id;
         const updateAll = e.data.update_all;
-        if (updateAll || (event === eventID && number === fieldReportNumber)) {
+        if (updateAll || (event === ims.pathIds.eventID && number === ims.pathIds.fieldReportNumber)) {
             console.log("Got field report update: " + number);
             await loadAndDisplayFieldReport();
         }
@@ -97,7 +96,7 @@ async function loadFieldReport() {
     let number = null;
     if (fieldReport == null) {
         // First time here.  Use page JavaScript initial value.
-        number = fieldReportNumber ?? null;
+        number = ims.pathIds.fieldReportNumber ?? null;
     }
     else {
         // We have an incident already.  Use that number.
@@ -240,13 +239,13 @@ async function frSendEdits(edits) {
         if (newNumber == null) {
             return { err: "No X-IMS-Field-Report-Number header provided." };
         }
-        const newAsNumber = parseInt(newNumber);
+        const newAsNumber = ims.parseInt10(newNumber);
         // Check that the value we got back is valid
-        if (isNaN(newAsNumber)) {
+        if (newAsNumber == null) {
             return { err: "Non-integer X-IMS-Field-Report-Number header provided: " + newAsNumber };
         }
         // Store the new number in our field report object
-        fieldReportNumber = fieldReport.number = newAsNumber;
+        ims.pathIds.fieldReportNumber = fieldReport.number = newAsNumber;
         // Update browser history to update URL
         drawTitle();
         window.history.pushState(null, document.title, ims.urlReplace(url_viewFieldReports) + newNumber);
@@ -290,7 +289,7 @@ async function makeIncident() {
         ims.setErrorMessage("Failed to create incident: no IMS Incident Number provided");
         return;
     }
-    fieldReport.incident = parseInt(newNum);
+    fieldReport.incident = ims.parseInt10(newNum);
     // Attach this FR to that new incident
     const attachToIncidentUrl = `${ims.urlReplace(url_fieldReports)}${fieldReport.number}` +
         `?action=attach;incident=${fieldReport.incident}`;

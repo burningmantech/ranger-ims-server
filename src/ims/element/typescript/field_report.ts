@@ -14,7 +14,6 @@
 
 import * as ims from "./ims.ts";
 
-declare let fieldReportNumber: number|null|undefined;
 declare let editingAllowed: boolean|null|undefined;
 declare let canWriteIncidents: boolean|null|undefined;
 
@@ -33,7 +32,6 @@ declare global {
     }
 }
 
-const eventID = ims.eventID();
 let fieldReport: ims.FieldReport|null = null;
 
 //
@@ -73,7 +71,7 @@ async function initFieldReportPage(): Promise<void> {
         const event = e.data.event_id;
         const updateAll = e.data.update_all;
 
-        if (updateAll || (event === eventID && number === fieldReportNumber)) {
+        if (updateAll || (event === ims.pathIds.eventID && number === ims.pathIds.fieldReportNumber)) {
             console.log("Got field report update: " + number);
             await loadAndDisplayFieldReport();
         }
@@ -132,7 +130,7 @@ async function loadFieldReport(): Promise<{err: string|null}> {
     let number: number|null = null;
     if (fieldReport == null) {
         // First time here.  Use page JavaScript initial value.
-        number = fieldReportNumber??null;
+        number = ims.pathIds.fieldReportNumber??null;
     } else {
         // We have an incident already.  Use that number.
         number = fieldReport.number??null;
@@ -298,14 +296,14 @@ async function frSendEdits(edits: ims.FieldReport): Promise<{err:string|null}> {
             return {err: "No X-IMS-Field-Report-Number header provided."};
         }
 
-        const newAsNumber = parseInt(newNumber);
+        const newAsNumber = ims.parseInt10(newNumber);
         // Check that the value we got back is valid
-        if (isNaN(newAsNumber)) {
+        if (newAsNumber == null) {
             return {err: "Non-integer X-IMS-Field-Report-Number header provided: " + newAsNumber};
         }
 
         // Store the new number in our field report object
-        fieldReportNumber = fieldReport.number = newAsNumber;
+        ims.pathIds.fieldReportNumber = fieldReport.number = newAsNumber;
 
         // Update browser history to update URL
         drawTitle();
@@ -359,7 +357,7 @@ async function makeIncident(): Promise<void> {
         ims.setErrorMessage("Failed to create incident: no IMS Incident Number provided");
         return;
     }
-    fieldReport.incident = parseInt(newNum);
+    fieldReport.incident = ims.parseInt10(newNum);
 
     // Attach this FR to that new incident
     const attachToIncidentUrl =

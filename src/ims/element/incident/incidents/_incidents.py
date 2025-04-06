@@ -24,7 +24,7 @@ from twisted.web.iweb import IRequest
 from twisted.web.template import Tag, renderer
 
 from ims.auth import Authorization
-from ims.ext.json_ext import jsonFalse, jsonTextFromObject, jsonTrue
+from ims.ext.json_ext import jsonFalse, jsonTrue
 from ims.model import Event
 
 from ...page import Page
@@ -53,19 +53,3 @@ class IncidentsPage(Page):
         ):
             return jsonTrue
         return jsonFalse
-
-    @renderer
-    async def concentric_street_name_by_id(
-        self, request: IRequest, tag: Tag
-    ) -> KleinRenderable:
-        """
-        JSON dictionary: concentric streets by ID.
-        """
-        namesByID = await self.config.store.concentricStreets(self.event.id)
-        return jsonTextFromObject(namesByID)
-
-    @renderer
-    async def incident_types(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        types = await self.config.store.incidentTypes()
-        types = sorted(t for t in types)
-        return jsonTextFromObject(types)

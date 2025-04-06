@@ -14,7 +14,6 @@
 
 import * as ims from "./ims.ts";
 
-declare let allIncidentTypes: string[];
 declare let editingAllowed: boolean|null|undefined;
 
 declare let url_incidents: string;
@@ -31,7 +30,32 @@ declare global {
     }
 }
 
-const eventID = ims.eventID();
+// The DataTables object
+let incidentsTable: ims.DataTablesTable|null = null;
+
+const _searchDelayMs = 250;
+let _searchDelayTimer: number|undefined = undefined;
+
+let _showState: string|null = null;
+const defaultState = "open";
+
+let _showModifiedAfter: Date|null = null;
+let _showDaysBack: number|string|null = null;
+const defaultDaysBack = "all";
+
+// list of Incident Types to show, in text form
+let _showTypes: string[] = [];
+let _showBlankType = true;
+let _showOtherType = true;
+// these must match values in incidents_template/template.xhtml
+const _blankPlaceholder = "(blank)";
+const _otherPlaceholder = "(other)";
+
+let _showRows: number|string|null = null;
+const defaultRows = 25;
+
+let allIncidentTypes: string[] = [];
+
 
 //
 // Initialize UI
@@ -47,7 +71,9 @@ async function initIncidentsPage(): Promise<void> {
     window.showRows = showRows;
     window.toggleCheckAllTypes = toggleCheckAllTypes;
 
+    await ims.loadStreets(ims.pathIds.eventID);
     ims.disableEditing();
+    ({types: allIncidentTypes} = await ims.loadIncidentTypes());
     await loadEventFieldReports();
     initIncidentsTable();
 
@@ -124,9 +150,6 @@ async function loadEventFieldReports(): Promise<{err: string|null}> {
 // Dispatch queue table
 //
 
-// The DataTables object
-let incidentsTable: ims.DataTablesTable|null = null;
-
 function initIncidentsTable() {
     initDataTables();
     initTableButtons();
@@ -150,7 +173,7 @@ function initIncidentsTable() {
 
         const number = e.data.incident_number!;
         const event = e.data.event_id!;
-        if (event !== eventID) {
+        if (event !== ims.pathIds.eventID) {
             return;
         }
 
@@ -316,7 +339,7 @@ function initDataTables(): void {
                 // Open new context with link
                 window.open(
                     ims.urlReplace(url_viewIncidents) + incident.number,
-                    "Incident:" + eventID + "#" + incident.number,
+                    "Incident:" + ims.pathIds.eventID + "#" + incident.number,
                 );
             });
             row.getElementsByClassName("incident_created")[0]!
@@ -389,8 +412,6 @@ function initTableButtons(): void {
 // Initialize search field
 //
 
-const _searchDelayMs = 250;
-let _searchDelayTimer: number|undefined = undefined;
 
 function initSearchField() {
     // Search field handling
@@ -440,7 +461,7 @@ function initSearchField() {
                     // Open new context with link
                     window.open(
                         ims.urlReplace(url_viewIncidents) + val,
-                        "Incident:" + eventID + "#" + val,
+                        "Incident:" + ims.pathIds.eventID + "#" + val,
                     );
                     searchInput.value = "";
                 }
@@ -510,9 +531,6 @@ function initSearch(): void {
 // Show state button handling
 //
 
-let _showState: string|null = null;
-const defaultState = "open";
-
 function showState(stateToShow: string, replaceState: boolean) {
     const item = document.getElementById("show_state_" + stateToShow) as HTMLLIElement;
 
@@ -536,10 +554,6 @@ function showState(stateToShow: string, replaceState: boolean) {
 //
 // Show days button handling
 //
-
-let _showModifiedAfter: Date|null = null;
-let _showDaysBack: number|string|null = null;
-const defaultDaysBack = "all";
 
 function showDays(daysBackToShow: number|string, replaceState: boolean): void {
     const id: string = daysBackToShow.toString();
@@ -575,14 +589,6 @@ function showDays(daysBackToShow: number|string, replaceState: boolean): void {
 //
 // Show type button handling
 //
-
-// list of Incident Types to show, in text form
-let _showTypes: string[] = [];
-let _showBlankType = true;
-let _showOtherType = true;
-// these must match values in incidents_template/template.xhtml
-const _blankPlaceholder = "(blank)";
-const _otherPlaceholder = "(other)";
 
 function setCheckedTypes(types: string[], includeBlanks: boolean, includeOthers: boolean): void {
     for (const type of document.querySelectorAll('#ul_show_type > a')) {
@@ -640,9 +646,6 @@ function showCheckedTypes(replaceState: boolean): void {
 //
 // Show rows button handling
 //
-
-let _showRows: number|string|null = null;
-const defaultRows = 25;
 
 function showRows(rowsToShow: number|string, replaceState: boolean): void {
     const id = rowsToShow.toString();

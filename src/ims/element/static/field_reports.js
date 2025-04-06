@@ -12,7 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import * as ims from "./ims.js";
-const eventID = ims.eventID();
+let fieldReportsTable = null;
+let _frShowModifiedAfter = null;
+let _frShowDaysBack = null;
+const frDefaultDaysBack = "all";
+const _frSearchDelayMs = 250;
+let _frSearchDelayTimer = undefined;
+let _frShowRows = null;
+const frDefaultRows = 25;
 //
 // Initialize UI
 //
@@ -59,8 +66,6 @@ async function initFieldReportsPage() {
 //
 // Dispatch queue table
 //
-// DataTables item
-let fieldReportsTable = null;
 function initFieldReportsTable() {
     frInitDataTables();
     frInitTableButtons();
@@ -80,7 +85,7 @@ function initFieldReportsTable() {
         }
         const number = e.data.field_report_number;
         const event = e.data.event_id;
-        if (event !== eventID) {
+        if (event !== ims.pathIds.eventID) {
             return;
         }
         console.log("Got field report update: " + number);
@@ -209,8 +214,6 @@ function frInitTableButtons() {
 //
 // Initialize search field
 //
-const _frSearchDelayMs = 250;
-let _frSearchDelayTimer = undefined;
 function frInitSearchField() {
     // Search field handling
     const searchInput = document.getElementById("search_input");
@@ -282,9 +285,6 @@ function frInitSearch() {
 //
 // Show days button handling
 //
-let _frShowModifiedAfter = null;
-let _frShowDaysBack = null;
-const frDefaultDaysBack = "all";
 function frShowDays(daysBackToShow, replaceState) {
     const id = daysBackToShow.toString();
     _frShowDaysBack = daysBackToShow;
@@ -313,8 +313,6 @@ function frShowDays(daysBackToShow, replaceState) {
 //
 // Show rows button handling
 //
-let _frShowRows = null;
-const frDefaultRows = 25;
 function frShowRows(rowsToShow, replaceState) {
     const id = rowsToShow.toString();
     _frShowRows = rowsToShow;
