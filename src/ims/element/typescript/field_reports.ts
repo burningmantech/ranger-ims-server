@@ -209,7 +209,7 @@ function frInitDataTables() {
                 "className": "field_report_summary all",
                 "data": "summary",
                 "defaultContent": "",
-                "render": ims.renderSummary,
+                "render": renderSummary,
             },
             {   // 3
                 "name": "field_report_incident",
@@ -241,6 +241,19 @@ function frInitDataTables() {
     });
 }
 
+function renderSummary(_data: string|null, type: string, fieldReport: ims.FieldReport): string|undefined {
+    switch (type) {
+        case "display":
+            return ims.textAsHTML(ims.summarizeIncidentOrFR(fieldReport));
+        case "sort":
+            return ims.summarizeIncidentOrFR(fieldReport);
+        case "filter":
+            return ims.reportTextFromIncident(fieldReport);
+        case "type":
+            return "";
+    }
+    return undefined;
+}
 
 //
 // Initialize table buttons

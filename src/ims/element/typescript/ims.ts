@@ -15,8 +15,6 @@
 //
 // Globals
 //
-declare let incidentNumber: number|null|undefined;
-declare let fieldReportNumber: number|null|undefined;
 
 declare let url_eventSource: string;
 declare let url_fieldReport_reportEntry: string;
@@ -42,7 +40,7 @@ interface EventLocation {
     type?: string|null;
 }
 
-export interface Incident {
+export type Incident = {
     number?: number|null;
     event?: string|null;
     state?: string|null;
@@ -57,7 +55,7 @@ export interface Incident {
     field_reports?: number[]|null;
 }
 
-export interface FieldReport {
+export type FieldReport = {
     event?: string|null;
     number?: number|null;
     created?: string|null;
@@ -539,13 +537,13 @@ export function stateForIncident(incident: Incident): string {
 
 
 // Return a summary for a given incident.
-export function summarizeIncident(incident: Incident): string {
-    if (incident.summary) {
-        return incident.summary;
+export function summarizeIncidentOrFR(ifr: Incident|FieldReport): string {
+    if (ifr.summary) {
+        return ifr.summary;
     }
 
     // Get the first line of the first report entry.
-    for (const reportEntry of incident.report_entries??[]) {
+    for (const reportEntry of ifr.report_entries??[]) {
         if (reportEntry.system_entry) {
             // Don't use a system-generated entry in the summary
             continue;
@@ -564,7 +562,7 @@ export function summarizeIncident(incident: Incident): string {
 
 // Return a summary for a given field report.
 function summarizeFieldReport(report: FieldReport): string {
-    return summarizeIncident(report);
+    return summarizeIncidentOrFR(report);
 }
 
 
@@ -591,7 +589,7 @@ export function incidentAsString(incident: Incident): string {
     if (incident.number == null) {
         return "New Incident";
     }
-    return `#${incident.number}: ${summarizeIncident(incident)} (${incident.event})`;
+    return `#${incident.number}: ${summarizeIncidentOrFR(incident)} (${incident.event})`;
 }
 
 
@@ -604,14 +602,8 @@ export function fieldReportAsString(report: FieldReport): string {
         `${summarizeFieldReport(report)} (${report.event})`;
 }
 
-let eventFieldReports: FieldReportsByNumber|null = null;
-
-export function setEventFieldReports(reports: FieldReportsByNumber): void {
-    eventFieldReports = reports;
-}
-
 // Return all user-entered report text for a given incident as a single string.
-function reportTextFromIncident(incidentOrFR: Incident|FieldReport): string {
+export function reportTextFromIncident(incidentOrFR: Incident|FieldReport, eventFieldReports?: FieldReportsByNumber): string {
     const texts: string[] = [];
 
     if (incidentOrFR.summary != null) {
@@ -795,21 +787,6 @@ export function renderLocation(data: EventLocation|null, type: string, _incident
     return undefined;
 }
 
-export function renderSummary(_data: string|null, type: string, incident: Incident): string|undefined {
-    switch (type) {
-        case "display":
-            return textAsHTML(summarizeIncident(incident));
-        case "sort":
-            return summarizeIncident(incident);
-        case "filter":
-            return reportTextFromIncident(incident);
-        case "type":
-            return "";
-    }
-    return undefined;
-}
-
-
 //
 // Populate report entry text
 //
@@ -843,7 +820,7 @@ function reportEntryElement(entry: ReportEntry): HTMLDivElement {
         const strikeContainer: HTMLButtonElement = document.createElement("button");
         const entryId = parseInt10(entry.id)!;
         const entryStricken = entry.stricken!;
-        if (typeof incidentNumber !== "undefined") {
+        if (pathIds.incidentNumber != null) {
             // we're on the incident page
             if (entry.merged) {
                 const entryMerged = entry.merged;
@@ -852,15 +829,15 @@ function reportEntryElement(entry: ReportEntry): HTMLDivElement {
                     setStrikeFieldReportEntry(entryMerged, entryId, !entryStricken);
                 }
             } else {
-                const incidentNum = incidentNumber!;
+                const incidentNum = pathIds.incidentNumber;
                 // this is an incident entry on the incident page
                 strikeContainer.onclick = (_e: MouseEvent): any => {
                     setStrikeIncidentEntry(incidentNum, entryId, !entryStricken);
                 }
             }
-        } else if (typeof fieldReportNumber !== "undefined") {
+        } else if (pathIds.fieldReportNumber != null) {
             // we're on the field report page
-            const fieldReportNum = fieldReportNumber!;
+            const fieldReportNum = pathIds.fieldReportNumber;
             strikeContainer.onclick =  (_e: MouseEvent): any => {
                 setStrikeFieldReportEntry(fieldReportNum, entryId, !entryStricken);
             }
@@ -907,9 +884,9 @@ function reportEntryElement(entry: ReportEntry): HTMLDivElement {
 
         entryContainer.append(textContainer);
     }
-    if (entry.has_attachment && incidentNumber != null) {
+    if (entry.has_attachment && pathIds.incidentNumber != null) {
         const url = urlReplace(url_incidentAttachmentNumber)
-            .replace("<incident_number>", incidentNumber.toString())
+            .replace("<incident_number>", pathIds.incidentNumber.toString())
             .replace("<attachment_number>", entry.id!.toString());
 
         const attachmentLink: HTMLAnchorElement = document.createElement("a");

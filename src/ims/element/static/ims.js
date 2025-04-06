@@ -362,12 +362,12 @@ export function stateForIncident(incident) {
     return "Unknown";
 }
 // Return a summary for a given incident.
-export function summarizeIncident(incident) {
-    if (incident.summary) {
-        return incident.summary;
+export function summarizeIncidentOrFR(ifr) {
+    if (ifr.summary) {
+        return ifr.summary;
     }
     // Get the first line of the first report entry.
-    for (const reportEntry of incident.report_entries ?? []) {
+    for (const reportEntry of ifr.report_entries ?? []) {
         if (reportEntry.system_entry) {
             // Don't use a system-generated entry in the summary
             continue;
@@ -383,7 +383,7 @@ export function summarizeIncident(incident) {
 }
 // Return a summary for a given field report.
 function summarizeFieldReport(report) {
-    return summarizeIncident(report);
+    return summarizeIncidentOrFR(report);
 }
 // Get author for incident
 function incidentAuthor(incident) {
@@ -403,7 +403,7 @@ export function incidentAsString(incident) {
     if (incident.number == null) {
         return "New Incident";
     }
-    return `#${incident.number}: ${summarizeIncident(incident)} (${incident.event})`;
+    return `#${incident.number}: ${summarizeIncidentOrFR(incident)} (${incident.event})`;
 }
 // Render field report as a string
 export function fieldReportAsString(report) {
@@ -413,12 +413,8 @@ export function fieldReportAsString(report) {
     return `FR #${report.number} (${fieldReportAuthor(report)}): ` +
         `${summarizeFieldReport(report)} (${report.event})`;
 }
-let eventFieldReports = null;
-export function setEventFieldReports(reports) {
-    eventFieldReports = reports;
-}
 // Return all user-entered report text for a given incident as a single string.
-function reportTextFromIncident(incidentOrFR) {
+export function reportTextFromIncident(incidentOrFR, eventFieldReports) {
     const texts = [];
     if (incidentOrFR.summary != null) {
         texts.push(incidentOrFR.summary);
@@ -574,19 +570,6 @@ export function renderLocation(data, type, _incident) {
     }
     return undefined;
 }
-export function renderSummary(_data, type, incident) {
-    switch (type) {
-        case "display":
-            return textAsHTML(summarizeIncident(incident));
-        case "sort":
-            return summarizeIncident(incident);
-        case "filter":
-            return reportTextFromIncident(incident);
-        case "type":
-            return "";
-    }
-    return undefined;
-}
 //
 // Populate report entry text
 //
@@ -614,7 +597,7 @@ function reportEntryElement(entry) {
         const strikeContainer = document.createElement("button");
         const entryId = parseInt10(entry.id);
         const entryStricken = entry.stricken;
-        if (typeof incidentNumber !== "undefined") {
+        if (pathIds.incidentNumber != null) {
             // we're on the incident page
             if (entry.merged) {
                 const entryMerged = entry.merged;
@@ -624,16 +607,16 @@ function reportEntryElement(entry) {
                 };
             }
             else {
-                const incidentNum = incidentNumber;
+                const incidentNum = pathIds.incidentNumber;
                 // this is an incident entry on the incident page
                 strikeContainer.onclick = (_e) => {
                     setStrikeIncidentEntry(incidentNum, entryId, !entryStricken);
                 };
             }
         }
-        else if (typeof fieldReportNumber !== "undefined") {
+        else if (pathIds.fieldReportNumber != null) {
             // we're on the field report page
-            const fieldReportNum = fieldReportNumber;
+            const fieldReportNum = pathIds.fieldReportNumber;
             strikeContainer.onclick = (_e) => {
                 setStrikeFieldReportEntry(fieldReportNum, entryId, !entryStricken);
             };
@@ -667,9 +650,9 @@ function reportEntryElement(entry) {
         textContainer.textContent = line;
         entryContainer.append(textContainer);
     }
-    if (entry.has_attachment && incidentNumber != null) {
+    if (entry.has_attachment && pathIds.incidentNumber != null) {
         const url = urlReplace(url_incidentAttachmentNumber)
-            .replace("<incident_number>", incidentNumber.toString())
+            .replace("<incident_number>", pathIds.incidentNumber.toString())
             .replace("<attachment_number>", entry.id.toString());
         const attachmentLink = document.createElement("a");
         attachmentLink.href = url;
