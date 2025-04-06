@@ -405,7 +405,7 @@ function drawIncidentSummary() {
         return;
     }
     summaryElement.value = "";
-    const summarized = ims.summarizeIncident(incident);
+    const summarized = ims.summarizeIncidentOrFR(incident);
     // only replace the placeholder if it would be nonempty
     if (summarized) {
         summaryElement.placeholder = summarized;

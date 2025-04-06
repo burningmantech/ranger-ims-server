@@ -197,7 +197,7 @@ function drawSummary() {
         return;
     }
     summaryInput.value = "";
-    const summarized = ims.summarizeIncident(fieldReport);
+    const summarized = ims.summarizeIncidentOrFR(fieldReport);
     if (summarized) {
         // only replace the placeholder if it would be nonempty
         summaryInput.setAttribute("placeholder", summarized);

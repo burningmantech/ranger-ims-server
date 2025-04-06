@@ -84,6 +84,7 @@ async function initIncidentsPage() {
 // Note that nothing from these data is displayed in the incidents table.
 // We do this fetch in order to make incidents searchable by text in their
 // attached field reports.
+let eventFieldReports = undefined;
 async function loadEventFieldReports() {
     const { json, err } = await ims.fetchJsonNoThrow(ims.urlReplace(url_fieldReports + "?exclude_system_entries=true"), null);
     if (err != null) {
@@ -96,7 +97,7 @@ async function loadEventFieldReports() {
     for (const report of json) {
         reports[report.number] = report;
     }
-    ims.setEventFieldReports(reports);
+    eventFieldReports = reports;
     console.log("Loaded event field reports");
     if (incidentsTable != null) {
         incidentsTable.ajax.reload();
@@ -240,7 +241,7 @@ function initDataTables() {
                 "className": "incident_summary all",
                 "data": "summary",
                 "defaultContent": "",
-                "render": ims.renderSummary,
+                "render": renderSummary,
                 // "all" class --> very high responsivePriority
             },
             {
@@ -292,6 +293,19 @@ function initDataTables() {
                 .setAttribute("title", ims.fullDateTime.format(Date.parse(incident.last_modified)));
         },
     });
+}
+function renderSummary(_data, type, incident) {
+    switch (type) {
+        case "display":
+            return ims.textAsHTML(ims.summarizeIncidentOrFR(incident));
+        case "sort":
+            return ims.summarizeIncidentOrFR(incident);
+        case "filter":
+            return ims.reportTextFromIncident(incident, eventFieldReports);
+        case "type":
+            return "";
+    }
+    return undefined;
 }
 //
 // Initialize table buttons
