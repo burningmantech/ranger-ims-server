@@ -26,7 +26,17 @@ declare global {
     }
 }
 
-const eventID = ims.eventID();
+let fieldReportsTable: ims.DataTablesTable|null = null;
+
+let _frShowModifiedAfter: Date|null = null;
+let _frShowDaysBack: number|string|null = null;
+const frDefaultDaysBack = "all";
+
+const _frSearchDelayMs = 250;
+let _frSearchDelayTimer: number|undefined = undefined;
+
+let _frShowRows: number|string|null = null;
+const frDefaultRows = 25;
 
 //
 // Initialize UI
@@ -83,10 +93,6 @@ async function initFieldReportsPage(): Promise<void> {
 // Dispatch queue table
 //
 
-
-// DataTables item
-let fieldReportsTable: ims.DataTablesTable|null = null;
-
 function initFieldReportsTable() {
     frInitDataTables();
     frInitTableButtons();
@@ -110,7 +116,7 @@ function initFieldReportsTable() {
 
         const number = e.data.field_report_number;
         const event = e.data.event_id;
-        if (event !== eventID) {
+        if (event !== ims.pathIds.eventID) {
             return;
         }
         console.log("Got field report update: " + number);
@@ -254,9 +260,6 @@ function frInitTableButtons() {
 // Initialize search field
 //
 
-const _frSearchDelayMs = 250;
-let _frSearchDelayTimer: number|undefined = undefined;
-
 function frInitSearchField(): void {
     // Search field handling
     const searchInput = document.getElementById("search_input") as HTMLInputElement;
@@ -348,10 +351,6 @@ function frInitSearch() {
 // Show days button handling
 //
 
-let _frShowModifiedAfter: Date|null = null;
-let _frShowDaysBack: number|string|null = null;
-const frDefaultDaysBack = "all";
-
 function frShowDays(daysBackToShow: number|string, replaceState: boolean): void {
     const id: string = daysBackToShow.toString();
     _frShowDaysBack = daysBackToShow;
@@ -387,9 +386,6 @@ function frShowDays(daysBackToShow: number|string, replaceState: boolean): void 
 //
 // Show rows button handling
 //
-
-let _frShowRows: number|string|null = null;
-const frDefaultRows = 25;
 
 function frShowRows(rowsToShow: number|string, replaceState: boolean) {
     const id = rowsToShow.toString();

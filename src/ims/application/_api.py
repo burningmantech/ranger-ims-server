@@ -1347,8 +1347,12 @@ class APIApplication:
         """
         store = self.config.store
 
+        oneEventId = queryValue(request, "event_id")
+
         async def authorizedEvents() -> AsyncIterable[Event]:
             for event in await store.events():
+                if oneEventId and event.id != oneEventId:
+                    continue
                 try:
                     await self.config.authProvider.authorizeRequest(
                         request,

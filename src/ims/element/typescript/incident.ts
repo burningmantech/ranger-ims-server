@@ -14,11 +14,8 @@
 
 import * as ims from "./ims.ts";
 
-declare let concentricStreetNameByID: ims.Streets|undefined;
-declare let incidentNumber: number|null|undefined;
 declare let editingAllowed: boolean|null|undefined;
 declare let attachmentsAllowed: boolean|null|undefined;
-declare let clubhousePersonURL: string|null|undefined;
 
 declare let url_incidents: string;
 declare let url_viewIncidents: string;
@@ -52,8 +49,11 @@ declare global {
     }
 }
 
-const eventID = ims.eventID();
+const clubhousePersonURL = "https://ranger-clubhouse.burningman.org/person";
+
 let incident: ims.Incident|null = null;
+
+let incidentTypes: string[] = [];
 
 //
 // Initialize UI
@@ -83,13 +83,14 @@ async function initIncidentPage(): Promise<void> {
     window.reportEntryEdited= ims.reportEntryEdited;
     window.submitReportEntry = ims.submitReportEntry;
 
+    await ims.loadStreets(ims.pathIds.eventID);
     addLocationAddressOptions();
     ims.disableEditing();
     await loadAndDisplayIncident();
     await loadPersonnel();
     drawRangers();
     drawRangersToAdd();
-    await loadIncidentTypes();
+    ({types: incidentTypes} = await ims.loadIncidentTypes());
     drawIncidentTypesToAdd();
     await loadAllFieldReports();
     renderFieldReportData();
@@ -113,7 +114,7 @@ async function initIncidentPage(): Promise<void> {
         const event = e.data.event_id;
         const updateAll = e.data.update_all??false;
 
-        if (updateAll || (event === eventID && number === incidentNumber)) {
+        if (updateAll || (event === ims.pathIds.eventID && number === ims.pathIds.incidentNumber)) {
             console.log("Got incident update: " + number);
             await loadAndDisplayIncident();
             await loadAllFieldReports();
@@ -132,7 +133,7 @@ async function initIncidentPage(): Promise<void> {
 
         const number = e.data.field_report_number;
         const event = e.data.event_id;
-        if (event === eventID) {
+        if (event === ims.pathIds.eventID) {
             console.log("Got field report update: " + number);
             await loadOneFieldReport(number!);
             renderFieldReportData();
@@ -194,7 +195,7 @@ async function loadIncident(): Promise<{err: string|null}> {
     let number: number|null = null;
     if (incident == null) {
         // First time here.  Use page JavaScript initial value.
-        number = incidentNumber??null;
+        number = ims.pathIds.incidentNumber??null;
     } else {
         // We have an incident already.  Use that number.
         number = incident.number!;
@@ -285,31 +286,6 @@ async function loadPersonnel(): Promise<{err: string|null}> {
     return {err: null};
 }
 
-
-//
-// Load incident types
-//
-
-let incidentTypes: string[] = [];
-
-
-async function loadIncidentTypes(): Promise<{err: string|null}> {
-    const {json, err} = await ims.fetchJsonNoThrow<string[]>(url_incidentTypes, null);
-    if (err != null) {
-        const message = `Failed to load incident types: ${err}`;
-        console.error(message);
-        ims.setErrorMessage(message);
-        return {err: message};
-    }
-    const _incidentTypes: string[] = [];
-    for (const record of json!) {
-        _incidentTypes.push(record);
-    }
-    _incidentTypes.sort();
-    incidentTypes = _incidentTypes;
-    return {err: null};
-}
-
 //
 // Load all field reports
 //
@@ -394,12 +370,12 @@ async function loadOneFieldReport(fieldReportNumber: number): Promise<{err: stri
 let attachedFieldReports: ims.FieldReport[]|null = null;
 
 function loadAttachedFieldReports() {
-    if (incidentNumber == null) {
+    if (ims.pathIds.incidentNumber == null) {
         return;
     }
     const _attachedFieldReports: ims.FieldReport[] = [];
     for (const fr of allFieldReports??[]) {
-        if (fr.incident === incidentNumber) {
+        if (fr.incident === ims.pathIds.incidentNumber) {
             _attachedFieldReports.push(fr);
         }
     }
@@ -458,10 +434,10 @@ function addLocationAddressOptions(): void {
     }
 
     const concentricElement: HTMLElement = document.getElementById("incident_location_address_concentric")!;
-    for (const id in concentricStreetNameByID!) {
+    for (const id in ims.concentricStreetNameByID!) {
         const newOption: HTMLOptionElement = document.createElement("option");
         newOption.value = id;
-        newOption.textContent = concentricStreetNameByID[id]??"null";
+        newOption.textContent = ims.concentricStreetNameByID[id]??"null";
         concentricElement.append(newOption);
     }
 }
@@ -810,7 +786,7 @@ function drawFieldReportsToAttach() {
                 continue;
             }
             // Skip field reports that are already attached this incident
-            if (report.incident === incidentNumber) {
+            if (report.incident === ims.pathIds.incidentNumber) {
                 continue;
             }
             const option: HTMLOptionElement = document.createElement("option");
@@ -872,16 +848,16 @@ async function sendEdits(edits: ims.Incident): Promise<{err:string|null}> {
             return {err: msg};
         }
 
-        newNumber = parseInt(newNumber);
+        newNumber = ims.parseInt10(newNumber);
         // Check that the value we got back is valid
-        if (isNaN(newNumber)) {
+        if (newNumber == null) {
             const msg = "Non-integer X-IMS-Incident-Number header provided:" + newNumber;
             ims.setErrorMessage(msg);
             return {err: msg};
         }
 
         // Store the new number in our incident object
-        incidentNumber = incident!.number = newNumber;
+        ims.pathIds.incidentNumber = incident!.number = newNumber;
 
         // Update browser history to update URL
         drawIncidentTitle();
@@ -926,10 +902,7 @@ async function editLocationName(): Promise<void> {
 
 
 function transformAddressInteger(value: string): string|null {
-    if (!value) {
-        return null;
-    }
-    return parseInt(value).toString();
+    return ims.parseInt10(value)?.toString()??null;
 }
 
 
@@ -1077,7 +1050,7 @@ async function detachFieldReport(sender: HTMLElement): Promise<void> {
 
     const url = (
         ims.urlReplace(url_fieldReports) + frNumber +
-        "?action=detach;incident=" + incidentNumber
+        "?action=detach;incident=" + ims.pathIds.incidentNumber
     );
     const {err} = await ims.fetchJsonNoThrow(url, {
         body: JSON.stringify({}),
@@ -1096,7 +1069,7 @@ async function detachFieldReport(sender: HTMLElement): Promise<void> {
 
 
 async function attachFieldReport(): Promise<void> {
-    if (incidentNumber == null) {
+    if (ims.pathIds.incidentNumber == null) {
         // Incident doesn't exist yet. Create it first.
         const {err} = await sendEdits({});
         if (err != null) {
@@ -1109,7 +1082,7 @@ async function attachFieldReport(): Promise<void> {
 
     const url = (
         ims.urlReplace(url_fieldReports) + fieldReportNumber +
-        "?action=attach;incident=" + incidentNumber
+        "?action=attach;incident=" + ims.pathIds.incidentNumber
     );
     const {err} = await ims.fetchJsonNoThrow(url, {
         body: JSON.stringify({}),
@@ -1139,7 +1112,7 @@ async function onStrikeSuccess(): Promise<void> {
 ims.setOnStrikeSuccess(onStrikeSuccess);
 
 async function attachFile(): Promise<void> {
-    if (incidentNumber == null) {
+    if (ims.pathIds.incidentNumber == null) {
         // Incident doesn't exist yet.  Create it first.
         const {err} = await sendEdits({});
         if (err != null) {
@@ -1154,7 +1127,7 @@ async function attachFile(): Promise<void> {
     }
 
     const attachURL = ims.urlReplace(url_incidentAttachments)
-        .replace("<incident_number>", (incidentNumber??"").toString());
+        .replace("<incident_number>", (ims.pathIds.incidentNumber??"").toString());
     const {err} = await ims.fetchJsonNoThrow(attachURL, {
         body: formData
     });

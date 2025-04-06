@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import * as ims from "./ims.js";
-const eventID = ims.eventID();
+const clubhousePersonURL = "https://ranger-clubhouse.burningman.org/person";
 let incident = null;
+let incidentTypes = [];
 //
 // Initialize UI
 //
@@ -38,13 +39,14 @@ async function initIncidentPage() {
     window.toggleShowHistory = ims.toggleShowHistory;
     window.reportEntryEdited = ims.reportEntryEdited;
     window.submitReportEntry = ims.submitReportEntry;
+    await ims.loadStreets(ims.pathIds.eventID);
     addLocationAddressOptions();
     ims.disableEditing();
     await loadAndDisplayIncident();
     await loadPersonnel();
     drawRangers();
     drawRangersToAdd();
-    await loadIncidentTypes();
+    ({ types: incidentTypes } = await ims.loadIncidentTypes());
     drawIncidentTypesToAdd();
     await loadAllFieldReports();
     renderFieldReportData();
@@ -63,7 +65,7 @@ async function initIncidentPage() {
         const number = e.data.incident_number;
         const event = e.data.event_id;
         const updateAll = e.data.update_all ?? false;
-        if (updateAll || (event === eventID && number === incidentNumber)) {
+        if (updateAll || (event === ims.pathIds.eventID && number === ims.pathIds.incidentNumber)) {
             console.log("Got incident update: " + number);
             await loadAndDisplayIncident();
             await loadAllFieldReports();
@@ -80,7 +82,7 @@ async function initIncidentPage() {
         }
         const number = e.data.field_report_number;
         const event = e.data.event_id;
-        if (event === eventID) {
+        if (event === ims.pathIds.eventID) {
             console.log("Got field report update: " + number);
             await loadOneFieldReport(number);
             renderFieldReportData();
@@ -137,7 +139,7 @@ async function loadIncident() {
     let number = null;
     if (incident == null) {
         // First time here.  Use page JavaScript initial value.
-        number = incidentNumber ?? null;
+        number = ims.pathIds.incidentNumber ?? null;
     }
     else {
         // We have an incident already.  Use that number.
@@ -208,26 +210,6 @@ async function loadPersonnel() {
         }
     }
     personnel = _personnel;
-    return { err: null };
-}
-//
-// Load incident types
-//
-let incidentTypes = [];
-async function loadIncidentTypes() {
-    const { json, err } = await ims.fetchJsonNoThrow(url_incidentTypes, null);
-    if (err != null) {
-        const message = `Failed to load incident types: ${err}`;
-        console.error(message);
-        ims.setErrorMessage(message);
-        return { err: message };
-    }
-    const _incidentTypes = [];
-    for (const record of json) {
-        _incidentTypes.push(record);
-    }
-    _incidentTypes.sort();
-    incidentTypes = _incidentTypes;
     return { err: null };
 }
 //
@@ -303,12 +285,12 @@ async function loadOneFieldReport(fieldReportNumber) {
 //
 let attachedFieldReports = null;
 function loadAttachedFieldReports() {
-    if (incidentNumber == null) {
+    if (ims.pathIds.incidentNumber == null) {
         return;
     }
     const _attachedFieldReports = [];
     for (const fr of allFieldReports ?? []) {
-        if (fr.incident === incidentNumber) {
+        if (fr.incident === ims.pathIds.incidentNumber) {
             _attachedFieldReports.push(fr);
         }
     }
@@ -358,10 +340,10 @@ function addLocationAddressOptions() {
         minuteElement.append(newOption);
     }
     const concentricElement = document.getElementById("incident_location_address_concentric");
-    for (const id in concentricStreetNameByID) {
+    for (const id in ims.concentricStreetNameByID) {
         const newOption = document.createElement("option");
         newOption.value = id;
-        newOption.textContent = concentricStreetNameByID[id] ?? "null";
+        newOption.textContent = ims.concentricStreetNameByID[id] ?? "null";
         concentricElement.append(newOption);
     }
 }
@@ -626,7 +608,7 @@ function drawFieldReportsToAttach() {
                 continue;
             }
             // Skip field reports that are already attached this incident
-            if (report.incident === incidentNumber) {
+            if (report.incident === ims.pathIds.incidentNumber) {
                 continue;
             }
             const option = document.createElement("option");
@@ -679,15 +661,15 @@ async function sendEdits(edits) {
             ims.setErrorMessage(msg);
             return { err: msg };
         }
-        newNumber = parseInt(newNumber);
+        newNumber = ims.parseInt10(newNumber);
         // Check that the value we got back is valid
-        if (isNaN(newNumber)) {
+        if (newNumber == null) {
             const msg = "Non-integer X-IMS-Incident-Number header provided:" + newNumber;
             ims.setErrorMessage(msg);
             return { err: msg };
         }
         // Store the new number in our incident object
-        incidentNumber = incident.number = newNumber;
+        ims.pathIds.incidentNumber = incident.number = newNumber;
         // Update browser history to update URL
         drawIncidentTitle();
         window.history.pushState(null, document.title, ims.urlReplace(url_viewIncidents) + newNumber);
@@ -717,10 +699,7 @@ async function editLocationName() {
     await ims.editFromElement(locationInput, "location.name");
 }
 function transformAddressInteger(value) {
-    if (!value) {
-        return null;
-    }
-    return parseInt(value).toString();
+    return ims.parseInt10(value)?.toString() ?? null;
 }
 async function editLocationAddressRadialHour() {
     const hourInput = document.getElementById("incident_location_address_radial_hour");
@@ -831,7 +810,7 @@ async function detachFieldReport(sender) {
     const parent = sender.parentElement;
     const frNumber = parent.getAttribute("fr-number");
     const url = (ims.urlReplace(url_fieldReports) + frNumber +
-        "?action=detach;incident=" + incidentNumber);
+        "?action=detach;incident=" + ims.pathIds.incidentNumber);
     const { err } = await ims.fetchJsonNoThrow(url, {
         body: JSON.stringify({}),
     });
@@ -847,7 +826,7 @@ async function detachFieldReport(sender) {
     renderFieldReportData();
 }
 async function attachFieldReport() {
-    if (incidentNumber == null) {
+    if (ims.pathIds.incidentNumber == null) {
         // Incident doesn't exist yet. Create it first.
         const { err } = await sendEdits({});
         if (err != null) {
@@ -857,7 +836,7 @@ async function attachFieldReport() {
     const select = document.getElementById("attached_field_report_add");
     const fieldReportNumber = select.value;
     const url = (ims.urlReplace(url_fieldReports) + fieldReportNumber +
-        "?action=attach;incident=" + incidentNumber);
+        "?action=attach;incident=" + ims.pathIds.incidentNumber);
     const { err } = await ims.fetchJsonNoThrow(url, {
         body: JSON.stringify({}),
     });
@@ -883,7 +862,7 @@ async function onStrikeSuccess() {
 }
 ims.setOnStrikeSuccess(onStrikeSuccess);
 async function attachFile() {
-    if (incidentNumber == null) {
+    if (ims.pathIds.incidentNumber == null) {
         // Incident doesn't exist yet.  Create it first.
         const { err } = await sendEdits({});
         if (err != null) {
@@ -896,7 +875,7 @@ async function attachFile() {
         formData.append("files", f);
     }
     const attachURL = ims.urlReplace(url_incidentAttachments)
-        .replace("<incident_number>", (incidentNumber ?? "").toString());
+        .replace("<incident_number>", (ims.pathIds.incidentNumber ?? "").toString());
     const { err } = await ims.fetchJsonNoThrow(attachURL, {
         body: formData
     });

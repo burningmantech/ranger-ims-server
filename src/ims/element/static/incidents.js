@@ -12,7 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import * as ims from "./ims.js";
-const eventID = ims.eventID();
+// The DataTables object
+let incidentsTable = null;
+const _searchDelayMs = 250;
+let _searchDelayTimer = undefined;
+let _showState = null;
+const defaultState = "open";
+let _showModifiedAfter = null;
+let _showDaysBack = null;
+const defaultDaysBack = "all";
+// list of Incident Types to show, in text form
+let _showTypes = [];
+let _showBlankType = true;
+let _showOtherType = true;
+// these must match values in incidents_template/template.xhtml
+const _blankPlaceholder = "(blank)";
+const _otherPlaceholder = "(other)";
+let _showRows = null;
+const defaultRows = 25;
+let allIncidentTypes = [];
 //
 // Initialize UI
 //
@@ -23,7 +41,9 @@ async function initIncidentsPage() {
     window.showDays = showDays;
     window.showRows = showRows;
     window.toggleCheckAllTypes = toggleCheckAllTypes;
+    await ims.loadStreets(ims.pathIds.eventID);
     ims.disableEditing();
+    ({ types: allIncidentTypes } = await ims.loadIncidentTypes());
     await loadEventFieldReports();
     initIncidentsTable();
     const helpModal = ims.bsModal(document.getElementById("helpModal"));
@@ -87,8 +107,6 @@ async function loadEventFieldReports() {
 //
 // Dispatch queue table
 //
-// The DataTables object
-let incidentsTable = null;
 function initIncidentsTable() {
     initDataTables();
     initTableButtons();
@@ -108,7 +126,7 @@ function initIncidentsTable() {
         }
         const number = e.data.incident_number;
         const event = e.data.event_id;
-        if (event !== eventID) {
+        if (event !== ims.pathIds.eventID) {
             return;
         }
         const { json, err } = await ims.fetchJsonNoThrow(ims.urlReplace(url_incidentNumber).replace("<incident_number>", number.toString()), null);
@@ -266,7 +284,7 @@ function initDataTables() {
         "createdRow": function (row, incident, _index) {
             row.addEventListener("click", function (_e) {
                 // Open new context with link
-                window.open(ims.urlReplace(url_viewIncidents) + incident.number, "Incident:" + eventID + "#" + incident.number);
+                window.open(ims.urlReplace(url_viewIncidents) + incident.number, "Incident:" + ims.pathIds.eventID + "#" + incident.number);
             });
             row.getElementsByClassName("incident_created")[0]
                 .setAttribute("title", ims.fullDateTime.format(Date.parse(incident.created)));
@@ -323,8 +341,6 @@ function initTableButtons() {
 //
 // Initialize search field
 //
-const _searchDelayMs = 250;
-let _searchDelayTimer = undefined;
 function initSearchField() {
     // Search field handling
     const searchInput = document.getElementById("search_input");
@@ -365,7 +381,7 @@ function initSearchField() {
             const val = searchInput.value;
             if (ims.integerRegExp.test(val)) {
                 // Open new context with link
-                window.open(ims.urlReplace(url_viewIncidents) + val, "Incident:" + eventID + "#" + val);
+                window.open(ims.urlReplace(url_viewIncidents) + val, "Incident:" + ims.pathIds.eventID + "#" + val);
                 searchInput.value = "";
             }
         }
@@ -422,8 +438,6 @@ function initSearch() {
 //
 // Show state button handling
 //
-let _showState = null;
-const defaultState = "open";
 function showState(stateToShow, replaceState) {
     const item = document.getElementById("show_state_" + stateToShow);
     // Get title from selected item
@@ -440,9 +454,6 @@ function showState(stateToShow, replaceState) {
 //
 // Show days button handling
 //
-let _showModifiedAfter = null;
-let _showDaysBack = null;
-const defaultDaysBack = "all";
 function showDays(daysBackToShow, replaceState) {
     const id = daysBackToShow.toString();
     _showDaysBack = daysBackToShow;
@@ -471,13 +482,6 @@ function showDays(daysBackToShow, replaceState) {
 //
 // Show type button handling
 //
-// list of Incident Types to show, in text form
-let _showTypes = [];
-let _showBlankType = true;
-let _showOtherType = true;
-// these must match values in incidents_template/template.xhtml
-const _blankPlaceholder = "(blank)";
-const _otherPlaceholder = "(other)";
 function setCheckedTypes(types, includeBlanks, includeOthers) {
     for (const type of document.querySelectorAll('#ul_show_type > a')) {
         if (types.includes(type.textContent) ||
@@ -529,8 +533,6 @@ function showCheckedTypes(replaceState) {
 //
 // Show rows button handling
 //
-let _showRows = null;
-const defaultRows = 25;
 function showRows(rowsToShow, replaceState) {
     const id = rowsToShow.toString();
     _showRows = rowsToShow;
