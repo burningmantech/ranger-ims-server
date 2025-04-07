@@ -144,7 +144,7 @@ test("incidents", async ({ page, browser }) => {
     await page.goto(`http://localhost:8080/ims/app/events/${eventName}/incidents/`);
     const incidentsPage = page;
     const page1Promise = incidentsPage.waitForEvent("popup");
-    await incidentsPage.getByRole("button", { name: "New" }).click();
+    await incidentsPage.getByRole("button", {name: "New"}).click();
     const incidentPage = await page1Promise;
 
     await expect(incidentPage.getByLabel("IMS #")).toHaveText("(new)");
@@ -167,42 +167,91 @@ test("incidents", async ({ page, browser }) => {
     await incidentPage.getByLabel("State").selectOption("on_hold");
     await incidentPage.getByLabel("State").press("Tab");
 
-    async function addType(page: Page, type: string): Promise<void> {
-      await page.getByLabel("Add Incident Type").fill(type);
-      await page.getByLabel("Add Incident Type").press("Tab");
-      await expect(
-          page.locator("div.card").filter(
-              {has: page.getByText("Incident Types")}
-          ).locator("li", {hasText: type})).toBeVisible();
+    // add several incident types to the incident
+    {
+      async function addType(page: Page, type: string): Promise<void> {
+        await page.getByLabel("Add Incident Type").fill(type);
+        await page.getByLabel("Add Incident Type").press("Tab");
+        await expect(
+            page.locator("div.card").filter(
+                {has: page.getByText("Incident Types")}
+            ).locator("li", {hasText: type})).toBeVisible();
+      }
+
+      await addType(incidentPage, "Admin");
+      await addType(incidentPage, "Junk");
     }
 
-    await addType(incidentPage, "Admin");
-    await addType(incidentPage, "Junk");
+    // add several Rangers to the incident
+    {
+      async function addRanger(page: Page, rangerName: string): Promise<void> {
+        await page.getByLabel("Add Ranger Handle").fill(rangerName);
+        await page.getByLabel("Add Ranger Handle").press("Tab");
+        await expect(page.locator("li", {hasText: rangerName})).toBeVisible();
+      }
 
-    async function addRanger(page: Page, rangerName: string): Promise<void> {
-      await page.getByLabel("Add Ranger Handle").fill(rangerName);
-      await page.getByLabel("Add Ranger Handle").press("Tab");
-      await expect(page.locator("li", {hasText: rangerName})).toBeVisible();
+      await addRanger(incidentPage, "Defect");
+      await addRanger(incidentPage, "Irate");
+      await addRanger(incidentPage, "Loosy");
+      await addRanger(incidentPage, "Parenthetical");
     }
 
-    await addRanger(incidentPage, "Defect");
-    await addRanger(incidentPage, "Irate");
-    await addRanger(incidentPage, "Loosy");
-    await addRanger(incidentPage, "Parenthetical");
-
-    await incidentPage.getByLabel("Location name").click();
-    await incidentPage.getByLabel("Location name").fill("Somewhere");
-    await incidentPage.getByLabel("Location name").press("Tab");
-    await incidentPage.getByLabel("Incident location address radial hour").selectOption("03");
-    await incidentPage.getByLabel("Incident location address radial minute").selectOption("15");
-    await incidentPage.getByLabel("Additional location description").click();
-    await incidentPage.getByLabel("Additional location description").fill("other there");
-    await incidentPage.getByLabel("Additional location description").press("Tab");
+    // add location details
+    {
+      await incidentPage.getByLabel("Location name").click();
+      await incidentPage.getByLabel("Location name").fill("Somewhere");
+      await incidentPage.getByLabel("Location name").press("Tab");
+      await incidentPage.getByLabel("Incident location address radial hour").selectOption("03");
+      await incidentPage.getByLabel("Incident location address radial minute").selectOption("15");
+      await incidentPage.getByLabel("Additional location description").click();
+      await incidentPage.getByLabel("Additional location description").fill("other there");
+      await incidentPage.getByLabel("Additional location description").press("Tab");
+    }
+    // add a report entry
     const reportEntry = `This is some text - ${randomName("text")}`;
-    await incidentPage.getByLabel("New report entry text").fill(reportEntry);
-    await incidentPage.getByLabel("Submit report entry").click();
+    {
+      await incidentPage.getByLabel("New report entry text").fill(reportEntry);
+      await incidentPage.getByLabel("Submit report entry").click();
+      await expect(incidentPage.getByText(reportEntry)).toBeVisible();
+    }
+    // strike the entry, verified it's stricken
+    {
+      await incidentPage.getByText(reportEntry).hover();
+      await incidentPage.getByRole("button", {name: "Strike"}).click();
+      await expect(incidentPage.getByText(reportEntry)).toBeHidden();
+    }
+    // but the entry is shown when the right checkbox is ticked
+    {
+      await incidentPage.getByLabel("Show history and stricken").check();
+      await expect(incidentPage.getByText(reportEntry)).toBeVisible();
+    }
+    // unstrike the entry and see it return to the default view
+    {
+      await incidentPage.getByText(reportEntry).hover();
+      await incidentPage.getByRole("button", {name: "Unstrike"}).click();
+      await incidentPage.getByLabel("Show history and stricken").uncheck();
+      await expect(incidentPage.getByText(reportEntry)).toBeVisible();
+    }
 
-    await expect(incidentPage.getByText(reportEntry)).toBeVisible();
+    // try searching for the incident by its report text
+    {
+      await incidentsPage.getByRole("searchbox").fill(reportEntry);
+      await incidentsPage.getByRole("searchbox").press("Enter");
+      await expect(incidentsPage.getByText(newIncidentSummary)).toBeVisible();
+      await incidentsPage.getByRole("searchbox").fill("The wrong text!");
+      await incidentsPage.getByRole("searchbox").press("Enter");
+      await expect(incidentsPage.getByText(newIncidentSummary)).toBeHidden();
+      await incidentsPage.getByRole("searchbox").clear();
+      await incidentsPage.getByRole("searchbox").press("Enter");
+      await expect(incidentsPage.getByText(newIncidentSummary)).toBeVisible();
+    }
+
+    // close the incident and see it disappear from the default Incidents page view
+    {
+      await incidentPage.getByLabel("State").selectOption("closed");
+      await incidentPage.getByLabel("State").press("Tab");
+      await expect(incidentsPage.getByText(newIncidentSummary)).toBeHidden();
+    }
 
     await incidentPage.close();
     await incidentsPage.close();

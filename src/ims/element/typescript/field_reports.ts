@@ -297,7 +297,11 @@ function frInitSearchField(): void {
     }
 
     searchInput.addEventListener("keyup",
-        function (): void {
+        function (e: KeyboardEvent): void {
+            // No action on Enter key
+            if (e.key === "Enter") {
+                return;
+            }
             // Delay the search in case the user is still typing.
             // This reduces perceived lag, since searching can be
             // very slow, and it's super annoying for a user when
@@ -325,6 +329,9 @@ function frInitSearchField(): void {
                     );
                     searchInput.value = "";
                 }
+                // Otherwise, search immediately on Enter.
+                clearTimeout(_frSearchDelayTimer);
+                searchAndDraw();
             }
         }
     );

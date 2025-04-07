@@ -375,7 +375,11 @@ function initSearchField() {
         searchInput.value = queryString;
         searchAndDraw();
     }
-    searchInput.addEventListener("keyup", function () {
+    searchInput.addEventListener("keyup", function (e) {
+        // No action on Enter key
+        if (e.key === "Enter") {
+            return;
+        }
         // Delay the search in case the user is still typing.
         // This reduces perceived lag, since searching can be
         // very slow, and it's super annoying for a user when
@@ -398,6 +402,9 @@ function initSearchField() {
                 window.open(ims.urlReplace(url_viewIncidents) + val, "Incident:" + ims.pathIds.eventID + "#" + val);
                 searchInput.value = "";
             }
+            // Otherwise, search immediately on Enter.
+            clearTimeout(_searchDelayTimer);
+            searchAndDraw();
         }
     });
 }

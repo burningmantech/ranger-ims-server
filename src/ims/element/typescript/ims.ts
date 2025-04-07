@@ -560,12 +560,6 @@ export function summarizeIncidentOrFR(ifr: Incident|FieldReport): string {
 }
 
 
-// Return a summary for a given field report.
-function summarizeFieldReport(report: FieldReport): string {
-    return summarizeIncidentOrFR(report);
-}
-
-
 // Get author for incident
 function incidentAuthor(incident: Incident): string {
     for (const entry of incident.report_entries??[]) {
@@ -599,7 +593,7 @@ export function fieldReportAsString(report: FieldReport): string {
         return "New Field Report";
     }
     return `FR #${report.number} (${fieldReportAuthor(report)}): ` +
-        `${summarizeFieldReport(report)} (${report.event})`;
+        `${summarizeIncidentOrFR(report)} (${report.event})`;
 }
 
 // Return all user-entered report text for a given incident as a single string.
@@ -627,7 +621,7 @@ export function reportTextFromIncident(incidentOrFR: Incident|FieldReport, event
     // Incidents page loads all field reports for the event
     if (eventFieldReports != null && "field_reports" in incidentOrFR) {
         for (const reportNumber of incidentOrFR.field_reports??[]) {
-            const report = eventFieldReports[reportNumber]!;
+            const report: FieldReport = eventFieldReports[reportNumber]!;
             const reportText = reportTextFromIncident(report);
 
             texts.push(reportText);
@@ -639,7 +633,7 @@ export function reportTextFromIncident(incidentOrFR: Incident|FieldReport, event
 
 
 // Return a short description for a given location.
-function shortDescribeLocation(location: EventLocation): string|undefined {
+function shortDescribeLocation(location: EventLocation): string {
     const locationBits: string[] = [];
 
     if (location.name != null) {
