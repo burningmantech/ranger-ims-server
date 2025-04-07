@@ -381,10 +381,6 @@ export function summarizeIncidentOrFR(ifr) {
     }
     return "";
 }
-// Return a summary for a given field report.
-function summarizeFieldReport(report) {
-    return summarizeIncidentOrFR(report);
-}
 // Get author for incident
 function incidentAuthor(incident) {
     for (const entry of incident.report_entries ?? []) {
@@ -411,7 +407,7 @@ export function fieldReportAsString(report) {
         return "New Field Report";
     }
     return `FR #${report.number} (${fieldReportAuthor(report)}): ` +
-        `${summarizeFieldReport(report)} (${report.event})`;
+        `${summarizeIncidentOrFR(report)} (${report.event})`;
 }
 // Return all user-entered report text for a given incident as a single string.
 export function reportTextFromIncident(incidentOrFR, eventFieldReports) {
