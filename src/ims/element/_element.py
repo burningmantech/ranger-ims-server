@@ -18,8 +18,6 @@
 Element base classes.
 """
 
-from collections.abc import Iterable
-from functools import partial
 from typing import cast
 from unittest.mock import sentinel
 
@@ -29,9 +27,8 @@ from twisted.python.filepath import FilePath
 from twisted.python.reflect import namedModule
 from twisted.web.iweb import IRequest, ITemplateLoader
 from twisted.web.template import Element as _Element
-from twisted.web.template import Tag, XMLFile, renderer, tags
+from twisted.web.template import Tag, XMLFile, renderer
 
-from ims.auth import Authorization
 from ims.config import Configuration
 from ims.ext.json_ext import jsonFalse, jsonTextFromObject, jsonTrue
 
@@ -200,74 +197,6 @@ class Element(BaseElement):
 
         tag.attributes[attributeName] = text
         return tag
-
-    @renderer
-    async def _events(
-        self, request: IRequest, tag: Tag, reverse_order: bool = False
-    ) -> KleinRenderable:
-        if reverse_order:
-
-            def order(i: Iterable[str]) -> Iterable[str]:
-                return sorted(i, reverse=True)
-
-        else:
-
-            def order(i: Iterable[str]) -> Iterable[str]:
-                return sorted(i)
-
-        authorizationsForUser = partial(
-            self.config.authProvider.authorizationsForUser,
-            request.user,  # type: ignore[attr-defined]
-        )
-
-        relevantAuthorizations = (
-            Authorization.readIncidents | Authorization.writeFieldReports
-        )
-
-        eventIDs = order(
-            [
-                event.id
-                for event in await self.config.store.events()
-                if relevantAuthorizations & await authorizationsForUser(event.id)
-            ]
-        )
-
-        if eventIDs:
-            eventPage = self.config.urls.viewEvent.asText()
-            return (
-                tag.clone()(
-                    tags.a(
-                        eventID,
-                        href=eventPage.replace("<event_id>", eventID),
-                        Class="dropdown-item",
-                    )
-                )
-                for eventID in eventIDs
-            )
-
-        return tag("No events found.")
-
-    @renderer
-    def events(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        Repeat an element once for each event, embedding the event ID.
-        """
-        return cast("KleinRenderable", self._events(request, tag))
-
-    @renderer
-    def events_reversed(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        Repeat an element once for each event in reverse order, embedding the
-        event ID.
-        """
-        return cast("KleinRenderable", self._events(request, tag, reverse_order=True))
-
-    @renderer
-    async def events_list(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        JSON list of strings: events IDs.
-        """
-        return jsonTextFromObject(e.id for e in await self.config.store.events())
 
     @renderer
     def file_attachments_allowed(self, request: IRequest, tag: Tag) -> KleinRenderable:

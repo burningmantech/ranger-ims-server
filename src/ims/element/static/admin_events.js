@@ -24,6 +24,7 @@ async function initAdminEventsPage() {
     window.removeAccess = removeAccess;
     await loadAccessControlList();
     drawAccess();
+    ims.enableEditing();
 }
 var Validity;
 (function (Validity) {

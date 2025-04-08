@@ -16,109 +16,15 @@
 // Globals
 //
 
-declare let url_eventSource: string;
-declare let url_fieldReport_reportEntry: string;
-declare let url_incidentAttachmentNumber: string;
-declare let url_incidentTypes: string;
-declare let url_incident_reportEntry: string;
-declare let url_streets: string;
-declare let url_viewFieldReports: string;
-declare let url_viewIncidents: string;
-
-export type Streets = Record<string, string>;
-export interface EventsStreets {
-    // key is event name
-    [index: string]: Streets,
-}
-
-interface EventLocation {
-    name?: string|null;
-    radial_hour?: number|null;
-    radial_minute?: number|null;
-    concentric?: string|null;
-    description?: string|null;
-    type?: string|null;
-}
-
-export type Incident = {
-    number?: number|null;
-    event?: string|null;
-    state?: string|null;
-    priority?: number|null;
-    summary?: string|null;
-    created?: string|null;
-    last_modified?: string|null;
-    ranger_handles?: string[]|null;
-    incident_types?: string[]|null;
-    location?: EventLocation|null;
-    report_entries?: ReportEntry[]|null;
-    field_reports?: number[]|null;
-}
-
-export type FieldReport = {
-    event?: string|null;
-    number?: number|null;
-    created?: string|null;
-    summary?: string|null;
-    incident?: number|null;
-    report_entries?: ReportEntry[]|null;
-}
-
-export type FieldReportsByNumber = Record<number, FieldReport>;
-
-export interface ReportEntry {
-    id?: string|null;
-    created?: string|null;
-    author?: string|null;
-    merged?: number|null,
-    text?: string|null;
-    system_entry?: boolean|null;
-    stricken?: boolean|null;
-    has_attachment?: boolean|null;
-}
-
-export type IncidentBroadcast = {
-    // fields from SSE
-    event_id?: string|null;
-    incident_number?: number|null;
-    // additional fields for use in BroadcastChannel
-    update_all?: boolean;
-}
-
-export type FieldReportBroadcast = {
-    // fields from SSE
-    event_id?: string|null;
-    field_report_number?: number|null;
-    // additional fields for use in BroadcastChannel
-    update_all?: boolean
-}
-
-interface DTAjax {
-    reload(): void;
-}
-
-type DTData = Record<number, object>;
-
-export interface DataTablesTable {
-    row: any;
-    rows: any;
-    data(): DTData;
-    search: any;
-    page: any;
-    draw(): unknown;
-    ajax: DTAjax;
-    processing(b: boolean): unknown;
-}
-
-// This is a minimal declaration of pieces of Bootstrap code on which we depend.
-// See this repo for the full declaration:
-// https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bootstrap
-declare namespace bootstrap {
-    class Modal {
-        constructor(element: string | Element, options?: any);
-        toggle(relatedTarget?: HTMLElement): void;
-    }
-}
+export let pathIds: {
+    eventID: string|null,
+    incidentNumber: number|null,
+    fieldReportNumber: number|null,
+} = {
+    eventID: null,
+    incidentNumber: null,
+    fieldReportNumber: null,
+};
 
 //
 // HTML encoding
@@ -163,12 +69,6 @@ function idsFromPath(): {eventID: string|null, incidentNumber: number|null, fiel
         fieldReportNumber: parseInt10(tokenAfter("field_reports")),
     };
 }
-
-export const pathIds: {
-    eventID: string|null,
-    incidentNumber: number|null,
-    fieldReportNumber: number|null,
-} = idsFromPath();
 
 //
 // URL substitution
@@ -399,17 +299,45 @@ function controlClear(element: HTMLElement) {
 
 
 //
-// Initialize the page. This should be called from all pages' JS init functions.
+// Initialize the page. This should be called by each page after loading the DOM.
 //
 export function commonPageInit(): void {
     detectTouchDevice();
+    pathIds = idsFromPath();
+    drawNavBar();
+}
 
-    const event = pathIds.eventID;
-    if (event) {
-        for (const eventLabel of document.getElementsByClassName("event-id")) {
-            eventLabel.textContent = event;
-            eventLabel.classList.add("active-event");
+function drawNavBar(): void {
+    // Load all the events, to be shown as the dropdown menu.
+    fetchJsonNoThrow<EventData[]>(url_events, null).then(
+        (result) => {
+            if (result.err != null) {
+                setErrorMessage(`Failed to fetch events: ${result.err}`);
+                return;
+            }
+            if (result.err == null && result.json != null) {
+                const eventIds: string[] = result.json.map((ed) => ed.id);
+                eventIds.sort((a, b) => b.localeCompare(a));
+                const navEvents = document.getElementById("nav-events") as HTMLUListElement;
+                for (const id of eventIds) {
+                    const anchor = document.createElement("a");
+                    anchor.textContent = id;
+                    anchor.classList.add("dropdown-item");
+                    anchor.href = url_viewEvent.replace("<event_id>", id);
+                    const li = document.createElement("li");
+                    li.append(anchor);
+                    navEvents.append(li);
+                }
+            }
         }
+    );
+
+    // Set the active event in the navbar, show "Incidents" and "Field Report" buttons
+    const event = pathIds.eventID;
+    if (event != null) {
+        const eventLabel = document.getElementById("nav-event-id")!;
+        eventLabel.textContent = event;
+        eventLabel.classList.add("active-event");
 
         const activeEventIncidents = document.getElementById("active-event-incidents") as HTMLAnchorElement|null;
         if (activeEventIncidents != null) {
@@ -1025,10 +953,6 @@ export function toggleShowHistory(): void {
     }
 }
 
-interface EditMap {
-    [index: string]: EditMap|string;
-}
-
 export async function editFromElement(element: HTMLInputElement|HTMLSelectElement, jsonKey: string, transform?: (v: string)=>string|null): Promise<void> {
     let value: string|null = element.value;
 
@@ -1071,13 +995,6 @@ export async function editFromElement(element: HTMLInputElement|HTMLSelectElemen
 // BroadcastChannel
 //
 
-// This is a simple wrapper to help with typing on BroadcastChannels. It's
-// incomplete, e.g. no "addEventListener" implementation, so it may need
-// expansion in the future.
-interface BroadcastChannelTyped<T> extends EventTarget {
-    postMessage(message: T): void;
-    onmessage: ((this: BroadcastChannel, ev: MessageEvent<T>) => any) | null;
-}
 export function newIncidentChannel(): BroadcastChannelTyped<IncidentBroadcast> {
     const incidentChannelName = "incident_update";
     return new BroadcastChannel(incidentChannelName);
@@ -1255,3 +1172,131 @@ function cleanupOldCaches(): void {
     localStorage.removeItem("ims.personnel.deadline");
 }
 cleanupOldCaches();
+
+
+//
+// TypeScript declarations. These won't appear in the final JavaScript.
+//
+
+declare let url_events: string;
+declare let url_eventSource: string;
+declare let url_fieldReport_reportEntry: string;
+declare let url_incidentAttachmentNumber: string;
+declare let url_incidentTypes: string;
+declare let url_incident_reportEntry: string;
+declare let url_streets: string;
+declare let url_viewEvent: string;
+declare let url_viewFieldReports: string;
+declare let url_viewIncidents: string;
+
+export type Streets = Record<string, string>;
+export interface EventsStreets {
+    // key is event name
+    [index: string]: Streets,
+}
+
+interface EventLocation {
+    name?: string|null;
+    radial_hour?: number|null;
+    radial_minute?: number|null;
+    concentric?: string|null;
+    description?: string|null;
+    type?: string|null;
+}
+
+export type Incident = {
+    number?: number|null;
+    event?: string|null;
+    state?: string|null;
+    priority?: number|null;
+    summary?: string|null;
+    created?: string|null;
+    last_modified?: string|null;
+    ranger_handles?: string[]|null;
+    incident_types?: string[]|null;
+    location?: EventLocation|null;
+    report_entries?: ReportEntry[]|null;
+    field_reports?: number[]|null;
+}
+
+export type FieldReport = {
+    event?: string|null;
+    number?: number|null;
+    created?: string|null;
+    summary?: string|null;
+    incident?: number|null;
+    report_entries?: ReportEntry[]|null;
+}
+
+export type FieldReportsByNumber = Record<number, FieldReport>;
+
+export type EventData = {
+    id: string,
+    name: string,
+}
+
+export interface ReportEntry {
+    id?: string|null;
+    created?: string|null;
+    author?: string|null;
+    merged?: number|null,
+    text?: string|null;
+    system_entry?: boolean|null;
+    stricken?: boolean|null;
+    has_attachment?: boolean|null;
+}
+
+// This is a simple wrapper to help with typing on BroadcastChannels. It's
+// incomplete, e.g. no "addEventListener" implementation, so it may need
+// expansion in the future.
+interface BroadcastChannelTyped<T> extends EventTarget {
+    postMessage(message: T): void;
+    onmessage: ((this: BroadcastChannel, ev: MessageEvent<T>) => any) | null;
+}
+
+export type IncidentBroadcast = {
+    // fields from SSE
+    event_id?: string|null;
+    incident_number?: number|null;
+    // additional fields for use in BroadcastChannel
+    update_all?: boolean;
+}
+
+export type FieldReportBroadcast = {
+    // fields from SSE
+    event_id?: string|null;
+    field_report_number?: number|null;
+    // additional fields for use in BroadcastChannel
+    update_all?: boolean
+}
+
+interface EditMap {
+    [index: string]: EditMap|string;
+}
+
+interface DTAjax {
+    reload(): void;
+}
+
+type DTData = Record<number, object>;
+
+export interface DataTablesTable {
+    row: any;
+    rows: any;
+    data(): DTData;
+    search: any;
+    page: any;
+    draw(): unknown;
+    ajax: DTAjax;
+    processing(b: boolean): unknown;
+}
+
+// This is a minimal declaration of pieces of Bootstrap code on which we depend.
+// See this repo for the full declaration:
+// https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/bootstrap
+declare namespace bootstrap {
+    class Modal {
+        constructor(element: string | Element, options?: any);
+        toggle(relatedTarget?: HTMLElement): void;
+    }
+}

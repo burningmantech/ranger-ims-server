@@ -42,6 +42,8 @@ async function initAdminEventsPage(): Promise<void> {
 
     await loadAccessControlList();
     drawAccess();
+
+    ims.enableEditing();
 }
 
 enum Validity {
