@@ -335,10 +335,14 @@ class APIApplication:
             getattr(request, "user", None),
         )
 
+        relevantAuthorizations = (
+            Authorization.readIncidents | Authorization.writeFieldReports
+        )
+
         jsonEvents = [
             jsonObjectFromModelObject(event)
             for event in await self.config.store.events()
-            if Authorization.readIncidents & await authorizationsForUser(event.id)
+            if relevantAuthorizations & await authorizationsForUser(event.id)
         ]
 
         data = jsonTextFromObject(jsonEvents).encode("utf-8")

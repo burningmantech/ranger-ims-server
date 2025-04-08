@@ -12,6 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+// Globals
+//
+export let pathIds = {
+    eventID: null,
+    incidentNumber: null,
+    fieldReportNumber: null,
+};
+//
 // HTML encoding
 //
 // It seems ridiculous that this isn't standard in JavaScript
@@ -48,7 +56,6 @@ function idsFromPath() {
         fieldReportNumber: parseInt10(tokenAfter("field_reports")),
     };
 }
-export const pathIds = idsFromPath();
 //
 // URL substitution
 //
@@ -249,16 +256,41 @@ function controlClear(element) {
     element.classList.remove("is-valid");
 }
 //
-// Initialize the page. This should be called from all pages' JS init functions.
+// Initialize the page. This should be called by each page after loading the DOM.
 //
 export function commonPageInit() {
     detectTouchDevice();
-    const event = pathIds.eventID;
-    if (event) {
-        for (const eventLabel of document.getElementsByClassName("event-id")) {
-            eventLabel.textContent = event;
-            eventLabel.classList.add("active-event");
+    pathIds = idsFromPath();
+    drawNavBar();
+}
+function drawNavBar() {
+    // Load all the events, to be shown as the dropdown menu.
+    fetchJsonNoThrow(url_events, null).then((result) => {
+        if (result.err != null) {
+            setErrorMessage(`Failed to fetch events: ${result.err}`);
+            return;
         }
+        if (result.err == null && result.json != null) {
+            const eventIds = result.json.map((ed) => ed.id);
+            eventIds.sort((a, b) => b.localeCompare(a));
+            const navEvents = document.getElementById("nav-events");
+            for (const id of eventIds) {
+                const anchor = document.createElement("a");
+                anchor.textContent = id;
+                anchor.classList.add("dropdown-item");
+                anchor.href = url_viewEvent.replace("<event_id>", id);
+                const li = document.createElement("li");
+                li.append(anchor);
+                navEvents.append(li);
+            }
+        }
+    });
+    // Set the active event in the navbar, show "Incidents" and "Field Report" buttons
+    const event = pathIds.eventID;
+    if (event != null) {
+        const eventLabel = document.getElementById("nav-event-id");
+        eventLabel.textContent = event;
+        eventLabel.classList.add("active-event");
         const activeEventIncidents = document.getElementById("active-event-incidents");
         if (activeEventIncidents != null) {
             activeEventIncidents.href = urlReplace(url_viewIncidents);
@@ -803,6 +835,9 @@ export async function editFromElement(element, jsonKey, transform) {
         controlHasSuccess(element, 1000);
     }
 }
+//
+// BroadcastChannel
+//
 export function newIncidentChannel() {
     const incidentChannelName = "incident_update";
     return new BroadcastChannel(incidentChannelName);

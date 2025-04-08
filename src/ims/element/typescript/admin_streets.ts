@@ -14,9 +14,8 @@
 
 import * as ims from "./ims.ts";
 
+declare let url_events: string;
 declare let url_streets: string;
-
-declare let events: string[]|null|undefined;
 
 declare global {
     interface Window {
@@ -24,6 +23,8 @@ declare global {
         removeStreet: (el: HTMLInputElement)=>void;
     }
 }
+
+let eventDatas: ims.EventData[] = [];
 
 //
 // Initialize UI
@@ -34,11 +35,19 @@ initAdminStreetsPage();
 async function initAdminStreetsPage() {
     ims.commonPageInit();
 
+    const {json, err} = await ims.fetchJsonNoThrow<ims.EventData[]>(url_events, null);
+    if (err != null || json == null) {
+        console.error(`Failed to fetch events: ${err}`);
+        window.alert(`Failed to fetch events: ${err}`);
+        return;
+    }
+    eventDatas = json;
+
     window.addStreet = addStreet;
     window.removeStreet = removeStreet;
 
-    const {err} = await loadStreets();
-    if (err == null) {
+    const {err: err2} = await loadStreets();
+    if (err2 == null) {
         drawStreets();
     }
 }
@@ -70,16 +79,16 @@ function drawStreets(): void {
 
     container.replaceChildren();
 
-    for (const event of events!) {
+    for (const event of eventDatas) {
         const eventStreets = _streetsTemplate.cloneNode(true) as HTMLDivElement;
 
         // Add an id to the element for future reference
-        eventStreets.id = `event_streets_${event}`;
+        eventStreets.id = `event_streets_${event.id}`;
 
         // Add to container
         container.append(eventStreets);
 
-        updateEventStreets(event);
+        updateEventStreets(event.id);
     }
 }
 

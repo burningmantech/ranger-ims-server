@@ -18,8 +18,8 @@ import * as ims from "./ims.ts";
 // Initialize UI
 //
 
-initAdminPage();
+initBasicPage();
 
-function initAdminPage(): void {
+function initBasicPage(): void {
     ims.commonPageInit();
 }
