@@ -332,6 +332,11 @@ class AuthProvider:
             authorization = request.getHeader(HeaderName.authorization.value)
             user = self._userFromBearerAuthorization(authorization)
 
+            if user is not None:
+                sess = request.getSession()
+                if sess:
+                    sess.user = user
+
             if user is None:
                 session = request.getSession()
                 user = getattr(session, "user", None)

@@ -31,7 +31,7 @@ from enum import Enum
 from functools import partial
 from io import BytesIO
 from json import JSONDecodeError
-from typing import Any, ClassVar, cast
+from typing import Any, ClassVar, Literal, NotRequired, TypedDict, cast
 from uuid import uuid4
 
 from attrs import frozen
@@ -113,6 +113,27 @@ def _unprefix(url: URL) -> URL:
 
 def _urlToTextForBag(url: URL) -> str:
     return url.to_text().replace("<", "{").replace(">", "}")
+
+
+class FetchAuthEventAccess(TypedDict):
+    readIncidents: bool
+    writeIncidents: bool
+    writeFieldReports: bool
+    attachFiles: bool
+
+
+class FetchAuthAuthenticatedResp(TypedDict):
+    authenticated: Literal[True]
+    user: str
+    admin: bool
+    event_access: NotRequired[dict[str, FetchAuthEventAccess]]
+
+
+class FetchAuthUnauthenticatedResp(TypedDict):
+    authenticated: Literal[False]
+
+
+FetchAuthResp = FetchAuthAuthenticatedResp | FetchAuthUnauthenticatedResp
 
 
 @frozen(kw_only=True, eq=False)
@@ -223,15 +244,47 @@ class APIApplication:
             jsonTextFromObject({"status": "invalid-credentials"}).encode("utf-8"),
         )
 
+    @router.route(_unprefix(URLs.auth), methods=("HEAD", "GET"))
+    async def fetchAuthResource(self, request: IRequest) -> KleinSynchronousRenderable:
+        """
+        Endpoint for details about the current authenticated session (or lack thereof).
+
+        Response type is FetchAuthResp
+        """
+        self.config.authProvider.checkAuthentication(request)
+        user: IMSUser | None = getattr(request, "user", None)
+
+        if user is None:
+            unauth = FetchAuthUnauthenticatedResp(authenticated=False)
+            return jsonBytes(request, jsonTextFromObject(unauth).encode("utf-8"))
+
+        eventID: str | None = queryValue(request, "event_id")
+        authz = await self.config.authProvider.authorizationsForUser(user, eventID)
+        result = FetchAuthAuthenticatedResp(
+            authenticated=True,
+            user=user.shortNames[0],
+            admin=Authorization.imsAdmin in authz,
+        )
+        if eventID is not None:
+            result["event_access"] = {
+                eventID: FetchAuthEventAccess(
+                    readIncidents=Authorization.readIncidents in authz,
+                    writeIncidents=Authorization.writeIncidents in authz,
+                    writeFieldReports=Authorization.writeFieldReports in authz,
+                    attachFiles=self.config.attachmentsStoreType.lower() != "none",
+                )
+            }
+        return jsonBytes(request, jsonTextFromObject(result).encode("utf-8"))
+
     @router.route(_unprefix(URLs.personnel), methods=("HEAD", "GET"))
     @static
     async def personnelResource(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Personnel endpoint.
         """
-        eventId = queryValue(request, "event_id")
+        eventID = queryValue(request, "event_id")
         await self.config.authProvider.authorizeRequest(
-            request, eventId, Authorization.readPersonnel
+            request, eventID, Authorization.readPersonnel
         )
 
         stream, etag = await self.personnelData()
