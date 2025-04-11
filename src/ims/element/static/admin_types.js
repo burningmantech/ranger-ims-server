@@ -17,12 +17,17 @@ import * as ims from "./ims.js";
 //
 initAdminTypesPage();
 async function initAdminTypesPage() {
-    ims.commonPageInit();
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
+        return;
+    }
     window.createIncidentType = createIncidentType;
     window.deleteIncidentType = deleteIncidentType;
     window.showIncidentType = showIncidentType;
     window.hideIncidentType = hideIncidentType;
     await loadAndDrawIncidentTypes();
+    ims.enableEditing();
 }
 async function loadAndDrawIncidentTypes() {
     await loadAllIncidentTypes();

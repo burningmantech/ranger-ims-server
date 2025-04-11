@@ -26,6 +26,8 @@ export let pathIds: {
     fieldReportNumber: null,
 };
 
+export let eventAccess: AuthInfoEventAccess|null = null;
+
 //
 // HTML encoding
 //
@@ -274,6 +276,18 @@ export function enableEditing() {
     document.documentElement.classList.remove("no-edit");
 }
 
+export function hide(selector: string): void {
+    document.querySelectorAll(selector).forEach((el) => {
+        el.classList.add("hidden");
+    })
+}
+
+export function unhide(selector: string): void {
+    document.querySelectorAll(selector).forEach((el) => {
+        el.classList.remove("hidden");
+    })
+}
+
 // Add an error indication to a control
 export function controlHasError(element: HTMLElement) {
     element.classList.add("is-invalid");
@@ -301,36 +315,74 @@ function controlClear(element: HTMLElement) {
 //
 // Initialize the page. This should be called by each page after loading the DOM.
 //
-export function commonPageInit(): void {
+export async function commonPageInit(): Promise<PageInitResult> {
     detectTouchDevice();
+    let authInfo: AuthInfo|null = null;
     pathIds = idsFromPath();
-    drawNavBar();
+    {
+        const url = url_auth + (pathIds.eventID ? `?event_id=${pathIds.eventID}` : "");
+        const {json, resp, err} = await fetchJsonNoThrow<AuthInfo>(url, null);
+        if (err != null || json == null) {
+            console.log(`Failed to fetch auth info: ${err}, ${resp?.status}`);
+            setErrorMessage(`Failed to fetch auth info: ${err}, ${resp?.status}`);
+            return {
+                authInfo: {authenticated: false},
+                eventDatas: null,
+            };
+        }
+        authInfo = json;
+    }
+    let eds: EventData[]|null = null;
+    if (authInfo.authenticated) {
+        if (authInfo.event_access?.[pathIds.eventID!] != null) {
+            eventAccess = authInfo.event_access?.[pathIds.eventID!]!;
+        }
+        const {json, err} = await fetchJsonNoThrow<EventData[]>(url_events, null);
+        if (err != null) {
+            console.log(`Failed to fetch events: ${err}`);
+            // carry on to draw the navbar either way
+        }
+        eds = json;
+    }
+    renderCommonPageItems(authInfo, eds);
+    return {authInfo: authInfo, eventDatas: eds};
 }
 
-function drawNavBar(): void {
-    // Load all the events, to be shown as the dropdown menu.
-    fetchJsonNoThrow<EventData[]>(url_events, null).then(
-        (result) => {
-            if (result.err != null) {
-                setErrorMessage(`Failed to fetch events: ${result.err}`);
-                return;
-            }
-            if (result.err == null && result.json != null) {
-                const eventIds: string[] = result.json.map((ed) => ed.id);
-                eventIds.sort((a, b) => b.localeCompare(a));
-                const navEvents = document.getElementById("nav-events") as HTMLUListElement;
-                for (const id of eventIds) {
-                    const anchor = document.createElement("a");
-                    anchor.textContent = id;
-                    anchor.classList.add("dropdown-item");
-                    anchor.href = url_viewEvent.replace("<event_id>", id);
-                    const li = document.createElement("li");
-                    li.append(anchor);
-                    navEvents.append(li);
-                }
-            }
+export function redirectToLogin(): void {
+    console.log("redirecting to login page")
+    window.location.replace(`${url_login}?o=${window.location.pathname}`);
+}
+
+function renderCommonPageItems(authInfo: AuthInfo, eds: EventData[]|null): void {
+    if (authInfo.authenticated) {
+        unhide(".if-logged-in");
+        hide(".if-not-logged-in");
+        document.querySelectorAll(".logged-in-user").forEach(e => {
+            e.textContent = authInfo.user;
+        });
+        if (authInfo.admin) {
+            unhide(".if-admin");
         }
-    );
+    }
+    if (!authInfo.authenticated) {
+        hide(".if-logged-in");
+        unhide(".if-not-logged-in");
+        hide(".if-admin");
+    }
+    if (eds != null) {
+        const eventIds: string[] = eds.map((ed) => ed.id);
+        eventIds.sort((a, b) => b.localeCompare(a));
+        const navEvents = document.getElementById("nav-events") as HTMLUListElement;
+        for (const id of eventIds) {
+            const anchor = document.createElement("a");
+            anchor.textContent = id;
+            anchor.classList.add("dropdown-item");
+            anchor.href = url_viewIncidents.replace("<event_id>", id);
+            const li = document.createElement("li");
+            li.append(anchor);
+            navEvents.append(li);
+        }
+    }
 
     // Set the active event in the navbar, show "Incidents" and "Field Report" buttons
     const event = pathIds.eventID;
@@ -1096,7 +1148,7 @@ function subscribeToUpdates(closed: (_value?: undefined)=>void): void {
 
 // Set the user-visible error information on the page to the provided string.
 export function setErrorMessage(msg: string): void {
-    msg = `Error: (Cause: ${msg})`;
+    msg = `Error: ${msg}`;
     const errText: HTMLElement|null = document.getElementById("error_text");
     if (errText) {
         errText.textContent = msg;
@@ -1178,16 +1230,23 @@ cleanupOldCaches();
 // TypeScript declarations. These won't appear in the final JavaScript.
 //
 
+declare let url_auth: string;
 declare let url_events: string;
 declare let url_eventSource: string;
 declare let url_fieldReport_reportEntry: string;
 declare let url_incidentAttachmentNumber: string;
 declare let url_incidentTypes: string;
 declare let url_incident_reportEntry: string;
+declare let url_login: string;
 declare let url_streets: string;
 declare let url_viewEvent: string;
 declare let url_viewFieldReports: string;
 declare let url_viewIncidents: string;
+
+export type PageInitResult = {
+    authInfo: AuthInfo;
+    eventDatas: EventData[]|null;
+}
 
 export type Streets = Record<string, string>;
 export interface EventsStreets {
@@ -1244,6 +1303,26 @@ export interface ReportEntry {
     system_entry?: boolean|null;
     stricken?: boolean|null;
     has_attachment?: boolean|null;
+}
+
+export type UnauthenticatedAuthInfo = {
+    authenticated: false,
+}
+
+export type AuthenticatedAuthInfo = {
+    authenticated: true,
+    user: string,
+    admin: boolean,
+    event_access?: Record<string, AuthInfoEventAccess>,
+}
+
+export type AuthInfo = UnauthenticatedAuthInfo | AuthenticatedAuthInfo;
+
+export type AuthInfoEventAccess = {
+    readIncidents: boolean,
+    writeIncidents: boolean,
+    writeFieldReports: boolean,
+    attachFiles: boolean,
 }
 
 // This is a simple wrapper to help with typing on BroadcastChannels. It's

@@ -42,7 +42,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <!-- Event menu -->
-      <ul class="navbar-nav" t:render="if_logged_in">
+      <ul class="navbar-nav if-logged-in hidden">
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
              aria-expanded="false">
@@ -103,19 +103,19 @@
       </ul>
 
       <!-- Not logged in: offer to log in -->
-      <ul class="navbar-nav" t:render="if_not_logged_in">
+      <ul class="navbar-nav if-not-logged-in hidden">
         <li id="nav_login"><a t:render="url" url="login" class="nav-link">Log In</a></li>
       </ul>
 
       <!-- Logged in: show user menu -->
-      <ul class="navbar-nav" t:render="if_logged_in">
+      <ul class="navbar-nav if-logged-in hidden">
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
              aria-expanded="false">
-            <span t:render="logged_in_user"/>
+            <span class="logged-in-user"/>
           </a>
           <ul class="dropdown-menu">
-            <li t:render="if_admin"><a t:render="url" url="admin" class="dropdown-item">Admin</a></li>
+            <li class="if-admin hidden"><a t:render="url" url="admin" class="dropdown-item">Admin</a></li>
             <li><a t:render="url" url="logout" class="dropdown-item">Log out</a></li>
           </ul>
         </li>

@@ -15,7 +15,7 @@ import * as ims from "./ims.js";
 //
 // Initialize UI
 //
-initBasicPage();
-function initBasicPage() {
-    ims.commonPageInit();
+initLoginPage();
+async function initLoginPage() {
+    await ims.commonPageInit();
 }

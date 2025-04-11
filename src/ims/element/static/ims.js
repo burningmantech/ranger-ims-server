@@ -19,6 +19,7 @@ export let pathIds = {
     incidentNumber: null,
     fieldReportNumber: null,
 };
+export let eventAccess = null;
 //
 // HTML encoding
 //
@@ -237,6 +238,16 @@ export function enableEditing() {
     // enable(document.querySelectorAll("#attach-file-form :input,select,textarea,button"));
     document.documentElement.classList.remove("no-edit");
 }
+export function hide(selector) {
+    document.querySelectorAll(selector).forEach((el) => {
+        el.classList.add("hidden");
+    });
+}
+export function unhide(selector) {
+    document.querySelectorAll(selector).forEach((el) => {
+        el.classList.remove("hidden");
+    });
+}
 // Add an error indication to a control
 export function controlHasError(element) {
     element.classList.add("is-invalid");
@@ -258,33 +269,72 @@ function controlClear(element) {
 //
 // Initialize the page. This should be called by each page after loading the DOM.
 //
-export function commonPageInit() {
+export async function commonPageInit() {
     detectTouchDevice();
+    let authInfo = null;
     pathIds = idsFromPath();
-    drawNavBar();
+    {
+        const url = url_auth + (pathIds.eventID ? `?event_id=${pathIds.eventID}` : "");
+        const { json, resp, err } = await fetchJsonNoThrow(url, null);
+        if (err != null || json == null) {
+            console.log(`Failed to fetch auth info: ${err}, ${resp?.status}`);
+            setErrorMessage(`Failed to fetch auth info: ${err}, ${resp?.status}`);
+            return {
+                authInfo: { authenticated: false },
+                eventDatas: null,
+            };
+        }
+        authInfo = json;
+    }
+    let eds = null;
+    if (authInfo.authenticated) {
+        if (authInfo.event_access?.[pathIds.eventID] != null) {
+            eventAccess = authInfo.event_access?.[pathIds.eventID];
+        }
+        const { json, err } = await fetchJsonNoThrow(url_events, null);
+        if (err != null) {
+            console.log(`Failed to fetch events: ${err}`);
+            // carry on to draw the navbar either way
+        }
+        eds = json;
+    }
+    renderCommonPageItems(authInfo, eds);
+    return { authInfo: authInfo, eventDatas: eds };
 }
-function drawNavBar() {
-    // Load all the events, to be shown as the dropdown menu.
-    fetchJsonNoThrow(url_events, null).then((result) => {
-        if (result.err != null) {
-            setErrorMessage(`Failed to fetch events: ${result.err}`);
-            return;
+export function redirectToLogin() {
+    console.log("redirecting to login page");
+    window.location.replace(`${url_login}?o=${window.location.pathname}`);
+}
+function renderCommonPageItems(authInfo, eds) {
+    if (authInfo.authenticated) {
+        unhide(".if-logged-in");
+        hide(".if-not-logged-in");
+        document.querySelectorAll(".logged-in-user").forEach(e => {
+            e.textContent = authInfo.user;
+        });
+        if (authInfo.admin) {
+            unhide(".if-admin");
         }
-        if (result.err == null && result.json != null) {
-            const eventIds = result.json.map((ed) => ed.id);
-            eventIds.sort((a, b) => b.localeCompare(a));
-            const navEvents = document.getElementById("nav-events");
-            for (const id of eventIds) {
-                const anchor = document.createElement("a");
-                anchor.textContent = id;
-                anchor.classList.add("dropdown-item");
-                anchor.href = url_viewEvent.replace("<event_id>", id);
-                const li = document.createElement("li");
-                li.append(anchor);
-                navEvents.append(li);
-            }
+    }
+    if (!authInfo.authenticated) {
+        hide(".if-logged-in");
+        unhide(".if-not-logged-in");
+        hide(".if-admin");
+    }
+    if (eds != null) {
+        const eventIds = eds.map((ed) => ed.id);
+        eventIds.sort((a, b) => b.localeCompare(a));
+        const navEvents = document.getElementById("nav-events");
+        for (const id of eventIds) {
+            const anchor = document.createElement("a");
+            anchor.textContent = id;
+            anchor.classList.add("dropdown-item");
+            anchor.href = url_viewIncidents.replace("<event_id>", id);
+            const li = document.createElement("li");
+            li.append(anchor);
+            navEvents.append(li);
         }
-    });
+    }
     // Set the active event in the navbar, show "Incidents" and "Field Report" buttons
     const event = pathIds.eventID;
     if (event != null) {
@@ -925,7 +975,7 @@ function subscribeToUpdates(closed) {
 }
 // Set the user-visible error information on the page to the provided string.
 export function setErrorMessage(msg) {
-    msg = `Error: (Cause: ${msg})`;
+    msg = `Error: ${msg}`;
     const errText = document.getElementById("error_text");
     if (errText) {
         errText.textContent = msg;

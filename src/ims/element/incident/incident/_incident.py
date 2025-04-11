@@ -19,12 +19,7 @@ Incident page.
 """
 
 from attrs import mutable
-from klein import KleinRenderable
-from twisted.web.iweb import IRequest
-from twisted.web.template import Tag, renderer
 
-from ims.auth import Authorization
-from ims.ext.json_ext import jsonFalse, jsonTrue
 from ims.model import Event
 
 from ...page import Page
@@ -42,16 +37,3 @@ class IncidentPage(Page):
     name: str = "Incident Details"
     hideH1: bool = True
     event: Event
-    number: int | None
-
-    @renderer
-    def editing_allowed(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        JSON boolean, true if editing is allowed.
-        """
-        if (
-            request.authorizations  # type: ignore[attr-defined]
-            & Authorization.writeIncidents
-        ):
-            return jsonTrue
-        return jsonFalse

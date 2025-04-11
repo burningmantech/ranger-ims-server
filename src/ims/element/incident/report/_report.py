@@ -42,7 +42,6 @@ class FieldReportPage(Page):
     name: str = "Field Report Details"
     hideH1: bool = True
     event: Event
-    number: int | None
 
     @renderer
     def editing_allowed(self, request: IRequest, tag: Tag) -> KleinRenderable:

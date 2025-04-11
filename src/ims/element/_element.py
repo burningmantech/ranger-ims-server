@@ -30,7 +30,7 @@ from twisted.web.template import Element as _Element
 from twisted.web.template import Tag, XMLFile, renderer
 
 from ims.config import Configuration
-from ims.ext.json_ext import jsonFalse, jsonTextFromObject, jsonTrue
+from ims.ext.json_ext import jsonTextFromObject
 
 
 __all__ = ()
@@ -87,64 +87,6 @@ class Element(BaseElement):
     # Logged in state
     ##
 
-    def isAuthenticated(self, request: IRequest) -> bool:
-        return getattr(request, "user", None) is not None
-
-    def isAdmin(self, request: IRequest) -> bool:
-        user = getattr(request, "user", None)
-
-        if user is not None:
-            for shortName in user.shortNames:
-                if shortName in self.config.imsAdmins:
-                    return True
-
-        return False
-
-    @renderer
-    def if_logged_in(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        Render conditionally if the user is logged in.
-        """
-        if self.isAuthenticated(request):
-            return tag
-        return ""
-
-    @renderer
-    def if_not_logged_in(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        Render conditionally if the user is not logged in.
-        """
-        if self.isAuthenticated(request):
-            return ""
-        return tag
-
-    @renderer
-    def if_admin(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        Render conditionally if the user is an admin.
-        """
-        if self.isAdmin(request):
-            return tag
-        return ""
-
-    @renderer
-    def logged_in_user(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        Embed the logged in user into an element content.
-        """
-        user = getattr(request, "user", None)
-        if user is None:
-            username = "(anonymous user)"
-        else:
-            try:
-                username = user.shortNames[0]
-            except IndexError:
-                username = "* NO USER NAME *"
-
-        if tag.tagName == "text":
-            return username
-        return tag(username)
-
     @renderer
     def deployment_warning(self, request: IRequest, tag: Tag) -> KleinRenderable:
         deployment = self.config.deployment.lower()
@@ -197,14 +139,3 @@ class Element(BaseElement):
 
         tag.attributes[attributeName] = text
         return tag
-
-    @renderer
-    def file_attachments_allowed(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        Identifies if file attachment uploads are allowed by the server.
-        """
-        return (
-            jsonFalse
-            if self.config.attachmentsStoreType.lower() == "none"
-            else jsonTrue
-        )

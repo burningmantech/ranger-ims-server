@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
-<head t:render="head" imports="theme" module="basic"/>
+<head t:render="head" imports="theme" module="root"/>
 
 <body t:render="container">
 
-<p class="mt-3" t:render="if_logged_in">
+<p class="mt-3 if-logged-in hidden">
   Select an event from the pop-up above.
 </p>
-<p class="mt-3" t:render="if_logged_in">
+<p class="mt-3 if-logged-in hidden">
   <a href="https://github.com/burningmantech/ranger-ims-server/wiki/What's-New-in-IMS">See what's new in IMS for 2025.</a>
 </p>
-<p t:render="if_logged_in">
+<p class="if-logged-in hidden">
   On a shared machine? <strong>Please log out</strong> when you're done.
 </p>
 
-<p t:render="if_not_logged_in">
-  <div class="btn-group" role="group">
+  <div class="btn-group mb-3 if-not-logged-in hidden" role="group">
     <a t:render="url"
        url="login"
        id="login-button"
@@ -25,10 +24,8 @@
       Log In
     </a>
   </div>
-</p>
 
-<p t:render="if_logged_in">
-  <div class="btn-group" role="group">
+  <div class="btn-group mb-3 if-logged-in hidden" role="group">
     <a t:render="url"
        url="logout"
        role="button"
@@ -37,7 +34,6 @@
       Log Out
     </a>
   </div>
-</p>
 
 </body>
 
