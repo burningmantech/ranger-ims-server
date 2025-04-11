@@ -25,7 +25,11 @@ const frDefaultRows = 25;
 //
 initFieldReportsPage();
 async function initFieldReportsPage() {
-    ims.commonPageInit();
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
+        return;
+    }
     window.frShowDays = frShowDays;
     window.frShowRows = frShowRows;
     ims.disableEditing();
@@ -72,7 +76,7 @@ function initFieldReportsTable() {
     frInitSearchField();
     frInitSearch();
     ims.clearErrorMessage();
-    if (editingAllowed) {
+    if (ims.eventAccess?.writeFieldReports) {
         ims.enableEditing();
     }
     ims.requestEventSourceLock();

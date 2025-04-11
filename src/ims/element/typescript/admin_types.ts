@@ -32,7 +32,11 @@ declare global {
 initAdminTypesPage();
 
 async function initAdminTypesPage(): Promise<void> {
-    ims.commonPageInit();
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
+        return;
+    }
 
     window.createIncidentType = createIncidentType;
     window.deleteIncidentType = deleteIncidentType;
@@ -40,6 +44,8 @@ async function initAdminTypesPage(): Promise<void> {
     window.hideIncidentType = hideIncidentType;
 
     await loadAndDrawIncidentTypes();
+
+    ims.enableEditing();
 }
 
 

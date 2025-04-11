@@ -14,14 +14,10 @@
 
 import * as ims from "./ims.ts";
 
-declare let editingAllowed: boolean|null|undefined;
-declare let attachmentsAllowed: boolean|null|undefined;
-
 declare let url_incidents: string;
 declare let url_viewIncidents: string;
 declare let url_viewFieldReports: string;
 declare let url_personnel: string;
-declare let url_incidentTypes: string;
 declare let url_fieldReports: string;
 declare let url_fieldReport: string;
 declare let url_incidentAttachments: string;
@@ -62,7 +58,11 @@ let incidentTypes: string[] = [];
 initIncidentPage();
 
 async function initIncidentPage(): Promise<void> {
-    ims.commonPageInit();
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
+        return;
+    }
 
     window.editState = editState;
     window.editIncidentSummary = editIncidentSummary;
@@ -234,11 +234,11 @@ async function loadAndDisplayIncident(): Promise<void> {
     drawIncidentFields();
     ims.clearErrorMessage();
 
-    if (editingAllowed) {
+    if (ims.eventAccess?.writeIncidents) {
         ims.enableEditing();
     }
 
-    if (attachmentsAllowed) {
+    if (ims.eventAccess?.attachFiles) {
         (document.getElementById("attach_file") as HTMLInputElement).classList.remove("hidden");
     }
 }

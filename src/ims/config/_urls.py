@@ -80,6 +80,7 @@ class URLs:
 
     authApp: ClassVar[URL] = prefix.child("auth").child("")
     login: ClassVar[URL] = authApp.child("login")
+    loginJS: ClassVar[URL] = static.child("login.js")
     logout: ClassVar[URL] = authApp.child("logout")
 
     # External application
@@ -112,14 +113,14 @@ class URLs:
     # Web application
 
     app: ClassVar[URL] = prefix.child("app").child("")
+    rootJS: ClassVar[URL] = static.child("root.js")
 
     imsJS: ClassVar[URL] = static.child("ims.js")
-
-    basicJS: ClassVar[URL] = static.child("basic.js")
 
     themeJS: ClassVar[URL] = static.child("theme.js")
 
     admin: ClassVar[URL] = app.child("admin").child("")
+    adminRootJS: ClassVar[URL] = static.child("admin_root.js")
 
     adminEvents: ClassVar[URL] = admin.child("events")
     adminEventsJS: ClassVar[URL] = static.child("admin_events.js")

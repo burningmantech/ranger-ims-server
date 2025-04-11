@@ -17,7 +17,11 @@ import * as ims from "./ims.js";
 //
 initAdminEventsPage();
 async function initAdminEventsPage() {
-    ims.commonPageInit();
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
+        return;
+    }
     window.setValidity = setValidity;
     window.addEvent = addEvent;
     window.addAccess = addAccess;

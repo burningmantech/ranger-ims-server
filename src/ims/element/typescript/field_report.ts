@@ -14,9 +14,6 @@
 
 import * as ims from "./ims.ts";
 
-declare let editingAllowed: boolean|null|undefined;
-declare let canWriteIncidents: boolean|null|undefined;
-
 declare let url_incidents: string;
 declare let url_viewFieldReports: string;
 declare let url_fieldReports: string;
@@ -41,7 +38,11 @@ let fieldReport: ims.FieldReport|null = null;
 initFieldReportPage();
 
 async function initFieldReportPage(): Promise<void> {
-    ims.commonPageInit();
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
+        return;
+    }
 
     window.makeIncident = makeIncident;
     window.editSummary = editSummary;
@@ -176,7 +177,7 @@ async function loadAndDisplayFieldReport(): Promise<void> {
 
     document.getElementById("report_entry_add")!.addEventListener("input", ims.reportEntryEdited);
 
-    if (editingAllowed) {
+    if (ims.eventAccess?.writeFieldReports) {
         ims.enableEditing();
     }
 }
@@ -227,7 +228,7 @@ function drawIncident(): void {
     }
     // If there's no attached Incident, show a button for making
     // a new Incident
-    if (incident == null && canWriteIncidents) {
+    if (incident == null && ims.eventAccess?.writeIncidents) {
         document.getElementById("create_incident")!.classList.remove("hidden");
     } else {
         document.getElementById("create_incident")!.classList.add("hidden");

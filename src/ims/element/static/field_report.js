@@ -18,7 +18,11 @@ let fieldReport = null;
 //
 initFieldReportPage();
 async function initFieldReportPage() {
-    ims.commonPageInit();
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
+        return;
+    }
     window.makeIncident = makeIncident;
     window.editSummary = editSummary;
     window.toggleShowHistory = ims.toggleShowHistory;
@@ -137,7 +141,7 @@ async function loadAndDisplayFieldReport() {
     ims.drawReportEntries(fieldReport.report_entries ?? []);
     ims.clearErrorMessage();
     document.getElementById("report_entry_add").addEventListener("input", ims.reportEntryEdited);
-    if (editingAllowed) {
+    if (ims.eventAccess?.writeFieldReports) {
         ims.enableEditing();
     }
 }
@@ -179,7 +183,7 @@ function drawIncident() {
     }
     // If there's no attached Incident, show a button for making
     // a new Incident
-    if (incident == null && canWriteIncidents) {
+    if (incident == null && ims.eventAccess?.writeIncidents) {
         document.getElementById("create_incident").classList.remove("hidden");
     }
     else {

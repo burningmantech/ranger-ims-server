@@ -20,7 +20,11 @@ let incidentTypes = [];
 //
 initIncidentPage();
 async function initIncidentPage() {
-    ims.commonPageInit();
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
+        return;
+    }
     window.editState = editState;
     window.editIncidentSummary = editIncidentSummary;
     window.editLocationName = editLocationName;
@@ -176,10 +180,10 @@ async function loadAndDisplayIncident() {
     }
     drawIncidentFields();
     ims.clearErrorMessage();
-    if (editingAllowed) {
+    if (ims.eventAccess?.writeIncidents) {
         ims.enableEditing();
     }
-    if (attachmentsAllowed) {
+    if (ims.eventAccess?.attachFiles) {
         document.getElementById("attach_file").classList.remove("hidden");
     }
 }

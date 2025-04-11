@@ -18,8 +18,8 @@ import * as ims from "./ims.ts";
 // Initialize UI
 //
 
-initBasicPage();
+initRootPage();
 
-function initBasicPage(): void {
-    ims.commonPageInit();
+async function initRootPage(): Promise<void> {
+    await ims.commonPageInit();
 }

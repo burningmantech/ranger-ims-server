@@ -14,8 +14,6 @@
 
 import * as ims from "./ims.ts";
 
-declare let editingAllowed: boolean|null|undefined;
-
 declare let url_viewFieldReports: string;
 declare let url_fieldReports: string;
 
@@ -45,7 +43,11 @@ const frDefaultRows = 25;
 initFieldReportsPage();
 
 async function initFieldReportsPage(): Promise<void> {
-    ims.commonPageInit();
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
+        return;
+    }
 
     window.frShowDays = frShowDays;
     window.frShowRows = frShowRows;
@@ -100,7 +102,7 @@ function initFieldReportsTable() {
     frInitSearch();
     ims.clearErrorMessage();
 
-    if (editingAllowed) {
+    if (ims.eventAccess?.writeFieldReports) {
         ims.enableEditing();
     }
 

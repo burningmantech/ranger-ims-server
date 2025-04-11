@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
-<head t:render="head" imports="theme" module="basic"/>
+<head t:render="head" imports="theme" module="login"/>
 
 <body>
 <div t:render="container">
@@ -8,8 +8,8 @@
   <form method="POST" id="login_form" class="form-horizontal">
 
     <button t:render="if_authn_failed" type="button" class="btn btn-block btn-danger">Authentication Failed</button>
-    <button t:render="if_logged_in" type="button" class="btn btn-block btn-danger">You are already logged in as <span
-            t:render="logged_in_user"/></button>
+    <button type="button" class="btn btn-block btn-danger if-logged-in hidden">You are already logged in as <span
+            class="logged-in-user"/></button>
 
     <p>
       Please log in with your Ranger Secret Clubhouse credentials.

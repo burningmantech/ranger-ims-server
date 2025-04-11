@@ -33,7 +33,11 @@ declare global {
 initAdminEventsPage();
 
 async function initAdminEventsPage(): Promise<void> {
-    ims.commonPageInit();
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
+        return;
+    }
 
     window.setValidity = setValidity;
     window.addEvent = addEvent;

@@ -3,12 +3,6 @@
 
 <head t:render="head" imports="theme" module="viewIncident"/>
 
-<script>
-    <!-- FIXME: figure out how to move this to / include from incident.js -->
-    const editingAllowed            = <json t:render="editing_allowed"/>;
-    const attachmentsAllowed        = <json t:render="file_attachments_allowed"/>;
-</script>
-
 <body>
   <div xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="container">
 

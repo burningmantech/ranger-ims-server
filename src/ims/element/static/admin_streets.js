@@ -18,18 +18,20 @@ let eventDatas = [];
 //
 initAdminStreetsPage();
 async function initAdminStreetsPage() {
-    ims.commonPageInit();
-    const { json, err } = await ims.fetchJsonNoThrow(url_events, null);
-    if (err != null || json == null) {
-        console.error(`Failed to fetch events: ${err}`);
-        window.alert(`Failed to fetch events: ${err}`);
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
         return;
     }
-    eventDatas = json;
+    if (initResult.eventDatas == null) {
+        console.error(`Failed to fetch events`);
+        return;
+    }
+    eventDatas = initResult.eventDatas;
     window.addStreet = addStreet;
     window.removeStreet = removeStreet;
-    const { err: err2 } = await loadStreets();
-    if (err2 == null) {
+    const { err } = await loadStreets();
+    if (err == null) {
         drawStreets();
     }
 }

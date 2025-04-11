@@ -14,12 +14,12 @@
 
 import * as ims from "./ims.ts";
 
-declare let editingAllowed: boolean|null|undefined;
-
 declare let url_incidents: string;
 declare let url_viewIncidents: string;
 declare let url_fieldReports: string;
 declare let url_incidentNumber: string;
+declare let url_viewFieldReports: string
+declare let url_viewEvent: string;
 
 declare global {
     interface Window {
@@ -56,7 +56,6 @@ const defaultRows = 25;
 
 let allIncidentTypes: string[] = [];
 
-
 //
 // Initialize UI
 //
@@ -64,7 +63,30 @@ let allIncidentTypes: string[] = [];
 initIncidentsPage();
 
 async function initIncidentsPage(): Promise<void> {
-    ims.commonPageInit();
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
+        return;
+    }
+    if (!ims.eventAccess!.readIncidents) {
+        // This is a janky way of recreating the old server-side redirect to the Field Reports page.
+        // The idea is that if the user is coming from the IMS home page and they don't have incidents
+        // access, we should try to send them to FRs instead. If they're already within the scope of
+        // the event, we should send them to the viewIncidents page and let them see the auth error.
+        if (ims.eventAccess!.writeFieldReports && document.referrer.indexOf(ims.urlReplace(url_viewEvent)) < 0) {
+            console.log("redirecting to Field Reports");
+            window.location.replace(ims.urlReplace(url_viewFieldReports));
+            return;
+        }
+        ims.setErrorMessage(
+            "You're not currently authorized to access Incidents for this event. " +
+            "You may be able to write Field Reports though. If you need access to " +
+            "IMS Incidents while on-site, please get in touch with an on-duty " +
+            "Operator. For post-event access, reach out to the tech cadre, at " +
+            "ranger-tech-" + "" + "cadre" + "@burningman.org"
+        );
+        return;
+    }
 
     window.showState = showState;
     window.showDays = showDays;
@@ -159,7 +181,7 @@ function initIncidentsTable() {
     initSearch();
     ims.clearErrorMessage();
 
-    if (editingAllowed) {
+    if (ims.eventAccess?.writeIncidents) {
         ims.enableEditing();
     }
 
