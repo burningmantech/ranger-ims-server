@@ -20,6 +20,7 @@ export let pathIds = {
     fieldReportNumber: null,
 };
 export let eventAccess = null;
+const accessTokenKey = "access_token";
 //
 // HTML encoding
 //
@@ -113,6 +114,10 @@ export async function fetchJsonNoThrow(url, init) {
     }
     init.headers = new Headers(init.headers);
     init.headers.set("Accept", "application/json");
+    const tok = getAccessToken();
+    if (tok) {
+        init.headers.set("Authorization", "Bearer " + tok);
+    }
     if (init.body != null) {
         init.method = "POST";
         if (init.body.constructor.name === "FormData") {
@@ -1004,6 +1009,15 @@ export function windowFragmentParams() {
         ? window.location.hash.substring(1)
         : window.location.hash;
     return new URLSearchParams(fragment);
+}
+function getAccessToken() {
+    return localStorage.getItem(accessTokenKey);
+}
+export function setAccessToken(token) {
+    localStorage.setItem(accessTokenKey, token);
+}
+export function clearAccessToken() {
+    localStorage.removeItem(accessTokenKey);
 }
 //
 // Load incident types

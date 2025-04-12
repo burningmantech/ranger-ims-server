@@ -17,5 +17,11 @@ import * as ims from "./ims.js";
 //
 initRootPage();
 async function initRootPage() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("logout") != null) {
+        ims.clearAccessToken();
+        window.history.replaceState(null, "", url_app);
+    }
     await ims.commonPageInit();
+    document.getElementById("login-button")?.focus();
 }

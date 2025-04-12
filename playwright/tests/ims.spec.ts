@@ -7,13 +7,15 @@ function randomName(prefix: string): string {
 }
 
 async function login(page: Page): Promise<void> {
-  await page.goto("http://localhost:8080/ims/auth/logout");
   await page.goto("http://localhost:8080/ims/app/");
-  await page.getByRole("button", { name: "Log In" }).click();
-  await page.getByPlaceholder("name@example.com").click();
-  await page.getByPlaceholder("name@example.com").fill(username);
-  await page.getByPlaceholder("Password").fill(username);
-  await page.getByPlaceholder("Password").press("Enter");
+  if (await page.getByRole("button", { name: "Log In" }).isVisible()) {
+    await page.getByRole("button", { name: "Log In" }).click();
+    await page.getByPlaceholder("name@example.com").click();
+    await page.getByPlaceholder("name@example.com").fill(username);
+    await page.getByPlaceholder("Password").fill(username);
+    await page.getByPlaceholder("Password").press("Enter");
+  }
+  await expect(page.getByRole("button", { name: "Log Out" })).toBeVisible();
 }
 
 async function adminPage(page: Page): Promise<void> {

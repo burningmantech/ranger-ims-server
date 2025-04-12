@@ -28,6 +28,8 @@ export let pathIds: {
 
 export let eventAccess: AuthInfoEventAccess|null = null;
 
+const accessTokenKey = "access_token";
+
 //
 // HTML encoding
 //
@@ -130,6 +132,10 @@ export async function fetchJsonNoThrow<T>(url: string, init: RequestInit|null):
     }
     init.headers = new Headers(init.headers);
     init.headers.set("Accept", "application/json");
+    const tok = getAccessToken();
+    if (tok) {
+        init.headers.set("Authorization", "Bearer " + tok);
+    }
     if (init.body != null) {
         init.method = "POST";
 
@@ -1180,6 +1186,18 @@ export function windowFragmentParams() {
         ? window.location.hash.substring(1)
         : window.location.hash;
     return new URLSearchParams(fragment);
+}
+
+function getAccessToken(): string|null {
+    return localStorage.getItem(accessTokenKey);
+}
+
+export function setAccessToken(token: string): void {
+    localStorage.setItem(accessTokenKey, token);
+}
+
+export function clearAccessToken(): void {
+    localStorage.removeItem(accessTokenKey);
 }
 
 

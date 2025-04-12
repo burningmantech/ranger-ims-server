@@ -146,8 +146,9 @@ async function initIncidentsPage(): Promise<void> {
 let eventFieldReports: ims.FieldReportsByNumber|undefined = undefined;
 
 async function loadEventFieldReports(): Promise<{err: string|null}> {
-
-    const {json, err} = await ims.fetchJsonNoThrow<ims.FieldReport[]>(ims.urlReplace(url_fieldReports + "?exclude_system_entries=true"), null);
+    const {json, err} = await ims.fetchJsonNoThrow<ims.FieldReport[]>(
+        ims.urlReplace(url_fieldReports + "?exclude_system_entries=true"), null,
+    );
     if (err != null) {
         const message = `Failed to load event field reports: ${err}`;
         console.error(message);
@@ -240,10 +241,6 @@ function initIncidentsTable() {
 //
 
 function initDataTables(): void {
-    function dataHandler(incidents: object) {
-        return incidents;
-    }
-
     // @ts-expect-error JQuery
     $.fn.dataTable.ext.errMode = "none";
     // @ts-expect-error JQuery
@@ -265,27 +262,15 @@ function initDataTables(): void {
         // "responsive": {
         //     "details": false,
         // },
-        "ajax": {
-            "url": ims.urlReplace(url_incidents + "?exclude_system_entries=true"),
-            "dataSrc": dataHandler,
-            "error": function (request: XMLHttpRequest, _status: object, error: string|null) {
-                // The "abort" case is a special snowflake.
-                // There are times we do two table refreshes in quick succession, and in
-                // those cases, the first call gets aborted. We don't want to set an error
-                // message in those cases.
-                if (error === "abort") {
-                    return;
-                }
-                let errMsg = "";
-                if (error) {
-                    errMsg = error;
-                } else if (request.responseText) {
-                    errMsg = request.responseText;
-                } else {
-                    errMsg = "DataTables error";
-                }
-                ims.setErrorMessage(errMsg);
-            },
+        "ajax": async function (_data: any, callback: (resp: {data: ims.Incident[]})=>void, _settings: any): Promise<void> {
+            const {json, err} = await ims.fetchJsonNoThrow<ims.Incident[]>(
+                ims.urlReplace(url_incidents + "?exclude_system_entries=true"), null,
+            );
+            if (err != null || json == null) {
+                ims.setErrorMessage(`Failed to load table: ${err}`);
+                return;
+            }
+            callback({data: json});
         },
         "columns": [
             {   // 0

@@ -29,6 +29,7 @@ from typing import Any, ClassVar, cast
 from attrs import asdict, field, frozen
 from attrs.validators import instance_of
 from cattrs.preconf.json import make_converter as makeJSONConverter
+from jwcrypto.common import JWException
 from jwcrypto.jwk import JWK
 from jwcrypto.jws import InvalidJWSSignature
 from jwcrypto.jwt import JWT
@@ -330,7 +331,12 @@ class AuthProvider:
         """
         if getattr(request, "user", None) is None:
             authorization = request.getHeader(HeaderName.authorization.value)
-            user = self._userFromBearerAuthorization(authorization)
+            try:
+                user = self._userFromBearerAuthorization(authorization)
+            except JWException as e:
+                # log and continue if we can't authenticate by JWT
+                self._log.error("JWT error: {error}", error=e)
+                user = None
 
             if user is not None:
                 sess = request.getSession()

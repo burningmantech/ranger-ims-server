@@ -18,4 +18,31 @@ import * as ims from "./ims.js";
 initLoginPage();
 async function initLoginPage() {
     await ims.commonPageInit();
+    document.getElementById("login_form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        login();
+    });
+    document.getElementById("username_input")?.focus();
+}
+async function login() {
+    const username = document.getElementById("username_input").value;
+    const password = document.getElementById("password_input").value;
+    const { json, err } = await ims.fetchJsonNoThrow(url_auth, {
+        body: JSON.stringify({
+            "identification": username,
+            "password": password,
+        }),
+    });
+    if (err != null || json == null) {
+        ims.unhide(".if-authentication-failed");
+        return;
+    }
+    ims.setAccessToken(json.token);
+    const redirect = new URLSearchParams(window.location.search).get("o");
+    if (redirect != null) {
+        window.location.replace(redirect);
+    }
+    else {
+        window.location.replace(url_app);
+    }
 }

@@ -14,6 +14,8 @@
 
 import * as ims from "./ims.ts";
 
+declare let url_app: string;
+
 //
 // Initialize UI
 //
@@ -21,5 +23,11 @@ import * as ims from "./ims.ts";
 initRootPage();
 
 async function initRootPage(): Promise<void> {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("logout") != null) {
+        ims.clearAccessToken();
+        window.history.replaceState(null, "", url_app);
+    }
     await ims.commonPageInit();
+    document.getElementById("login-button")?.focus();
 }
