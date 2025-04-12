@@ -327,14 +327,17 @@ class AuthProvider:
     def checkAuthentication(self, request: IRequest) -> None:
         """
         Check whether the request has previously been authenticated, and if so,
-        set request.user.
+        set request.user. This function doesn't raise an exception if no user
+        can be authenticated from the request; it just leaves the request.user
+        set as None.
         """
         if getattr(request, "user", None) is None:
             authorization = request.getHeader(HeaderName.authorization.value)
             try:
                 user = self._userFromBearerAuthorization(authorization)
-            except JWException as e:
-                # log and continue if we can't authenticate by JWT
+            except (JWException, InvalidCredentialsError) as e:
+                # Log and continue if we can't authenticate by JWT, so that
+                # other authentication flows can be attempted.
                 self._log.error("JWT error: {error}", error=e)
                 user = None
 
