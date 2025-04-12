@@ -14,6 +14,15 @@
 
 import * as ims from "./ims.ts";
 
+declare let url_app: string;
+declare let url_auth: string;
+
+declare global {
+    interface Window {
+        login: ()=>void;
+    }
+}
+
 //
 // Initialize UI
 //
@@ -22,4 +31,35 @@ initLoginPage();
 
 async function initLoginPage(): Promise<void> {
     await ims.commonPageInit();
+    document.getElementById("login_form")!.addEventListener("submit", (e: SubmitEvent): void => {
+        e.preventDefault();
+        login();
+    });
+    document.getElementById("username_input")?.focus();
+}
+
+async function login(): Promise<void> {
+    const username = (document.getElementById("username_input") as HTMLInputElement).value;
+    const password = (document.getElementById("password_input") as HTMLInputElement).value;
+    const {json, err} = await ims.fetchJsonNoThrow<AuthResponse>(url_auth, {
+        body: JSON.stringify({
+            "identification": username,
+            "password": password,
+        }),
+    });
+    if (err != null || json == null) {
+        ims.unhide(".if-authentication-failed");
+        return;
+    }
+    ims.setAccessToken(json.token);
+    const redirect = new URLSearchParams(window.location.search).get("o");
+    if (redirect != null) {
+        window.location.replace(redirect);
+    } else {
+        window.location.replace(url_app);
+    }
+}
+
+type AuthResponse = {
+    token: string;
 }

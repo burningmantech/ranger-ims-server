@@ -139,10 +139,6 @@ function initFieldReportsTable() {
 //
 
 function frInitDataTables() {
-    function dataHandler(fieldReports: object) {
-        return fieldReports;
-    }
-
     // @ts-expect-error JQuery
     $.fn.dataTable.ext.errMode = "none";
     // @ts-expect-error JQuery
@@ -164,31 +160,19 @@ function frInitDataTables() {
         // "responsive": {
         //     "details": false,
         // },
-        "ajax": {
-            // don't use exclude_system_entries here, since the field reports
-            // per-user authorization can exclude field reports entirely from
-            // someone who created a field report but then didn't add an
-            // entry to it.
-            "url": ims.urlReplace(url_fieldReports),
-            "dataSrc": dataHandler,
-            "error": function (request: XMLHttpRequest, _status: object, error: string|null) {
-                // The "abort" case is a special snowflake.
-                // There are times we do two table refreshes in quick succession, and in
-                // those cases, the first call gets aborted. We don't want to set an error
-                // messages in those cases.
-                if (error === "abort") {
-                    return;
-                }
-                let errMsg = "";
-                if (error) {
-                    errMsg = error;
-                } else if (request.responseText) {
-                    errMsg = request.responseText;
-                } else {
-                    errMsg = "DataTables error";
-                }
-                ims.setErrorMessage(errMsg);
-            },
+        "ajax": async function (_data: unknown, callback: (resp: {data: ims.FieldReport[]})=>void, _settings: unknown): Promise<void> {
+            const {json, err} = await ims.fetchJsonNoThrow<ims.FieldReport[]>(
+                // don't use exclude_system_entries here, since the field reports
+                // per-user authorization can exclude field reports entirely from
+                // someone who created a field report but then didn't add an
+                // entry to it.
+                ims.urlReplace(url_fieldReports), null,
+            );
+            if (err != null || json == null) {
+                ims.setErrorMessage(`Failed to load table: ${err}`);
+                return;
+            }
+            callback({data: json});
         },
         "columns": [
             {   // 0

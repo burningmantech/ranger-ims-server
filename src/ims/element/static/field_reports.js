@@ -108,9 +108,6 @@ function initFieldReportsTable() {
 // Initialize DataTables
 //
 function frInitDataTables() {
-    function dataHandler(fieldReports) {
-        return fieldReports;
-    }
     // @ts-expect-error JQuery
     $.fn.dataTable.ext.errMode = "none";
     // @ts-expect-error JQuery
@@ -132,33 +129,18 @@ function frInitDataTables() {
         // "responsive": {
         //     "details": false,
         // },
-        "ajax": {
+        "ajax": async function (_data, callback, _settings) {
+            const { json, err } = await ims.fetchJsonNoThrow(
             // don't use exclude_system_entries here, since the field reports
             // per-user authorization can exclude field reports entirely from
             // someone who created a field report but then didn't add an
             // entry to it.
-            "url": ims.urlReplace(url_fieldReports),
-            "dataSrc": dataHandler,
-            "error": function (request, _status, error) {
-                // The "abort" case is a special snowflake.
-                // There are times we do two table refreshes in quick succession, and in
-                // those cases, the first call gets aborted. We don't want to set an error
-                // messages in those cases.
-                if (error === "abort") {
-                    return;
-                }
-                let errMsg = "";
-                if (error) {
-                    errMsg = error;
-                }
-                else if (request.responseText) {
-                    errMsg = request.responseText;
-                }
-                else {
-                    errMsg = "DataTables error";
-                }
-                ims.setErrorMessage(errMsg);
-            },
+            ims.urlReplace(url_fieldReports), null);
+            if (err != null || json == null) {
+                ims.setErrorMessage(`Failed to load table: ${err}`);
+                return;
+            }
+            callback({ data: json });
         },
         "columns": [
             {
