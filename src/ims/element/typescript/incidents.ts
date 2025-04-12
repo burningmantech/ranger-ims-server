@@ -262,15 +262,22 @@ function initDataTables(): void {
         // "responsive": {
         //     "details": false,
         // },
-        "ajax": async function (_data: any, callback: (resp: {data: ims.Incident[]})=>void, _settings: any): Promise<void> {
-            const {json, err} = await ims.fetchJsonNoThrow<ims.Incident[]>(
-                ims.urlReplace(url_incidents + "?exclude_system_entries=true"), null,
-            );
-            if (err != null || json == null) {
-                ims.setErrorMessage(`Failed to load table: ${err}`);
-                return;
+
+        // DataTables gets mad if you return a Promise from this function, so we use an inner
+        // async function instead.
+        // https://datatables.net/forums/discussion/47411/i-always-get-error-when-i-use-table-ajax-reload
+        "ajax": function (_data: any, callback: (resp: {data: ims.Incident[]})=>void, _settings: any): void {
+            async function doAjax(): Promise<void> {
+                const {json, err} = await ims.fetchJsonNoThrow<ims.Incident[]>(
+                    ims.urlReplace(url_incidents + "?exclude_system_entries=true"), null,
+                );
+                if (err != null || json == null) {
+                    ims.setErrorMessage(`Failed to load table: ${err}`);
+                    return;
+                }
+                callback({data: json});
             }
-            callback({data: json});
+            doAjax();
         },
         "columns": [
             {   // 0
