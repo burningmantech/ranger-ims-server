@@ -38,6 +38,11 @@ var Validity;
 const allAccessModes = ["readers", "writers", "reporters"];
 let accessControlList = null;
 async function loadAccessControlList() {
+    // we don't actually need the response from this API, but we want to
+    // invalidate the local HTTP cache in the admin's browser
+    ims.fetchJsonNoThrow(url_events, {
+        headers: { "Cache-Control": "no-cache" },
+    });
     const { json, err } = await ims.fetchJsonNoThrow(url_acl, null);
     if (err != null) {
         const message = `Failed to load access control list: ${err}`;

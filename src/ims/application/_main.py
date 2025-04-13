@@ -141,6 +141,7 @@ class MainApplication:
     #
 
     @router.route(URLs.urlsJS, methods=("HEAD", "GET"))
+    @static
     def urlsEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         JavaScript variables for service URLs.
