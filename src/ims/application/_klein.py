@@ -431,6 +431,7 @@ class Router(Klein):
             # This is because exposing what resources do or do not exist can
             # expose information that was not meant to be exposed.
             app.config.authProvider.authenticateRequest(request)
+            request.setHeader(HeaderName.cacheControl.value, "no-cache")
             return notFoundResponse(request)
 
         @self.handle_errors(MethodNotAllowed)
@@ -459,6 +460,7 @@ class Router(Klein):
             """
             Not authorized.
             """
+            request.setHeader(HeaderName.cacheControl.value, "no-cache")
             return friendlyNotAuthorizedResponse(request)
 
         @self.handle_errors(InvalidCredentialsError)
@@ -471,6 +473,7 @@ class Router(Klein):
             """
             Invalid credentials.
             """
+            request.setHeader(HeaderName.cacheControl.value, "no-cache")
             return forbiddenResponse(request)
 
         @self.handle_errors(NotAuthenticatedError)
@@ -485,6 +488,7 @@ class Router(Klein):
             """
             requestedWith = request.getHeader("X-Requested-With")
             if requestedWith == "XMLHttpRequest":
+                request.setHeader(HeaderName.cacheControl.value, "no-cache")
                 return forbiddenResponse(request)
 
             element = redirect(request, URLs.login, origin="o")

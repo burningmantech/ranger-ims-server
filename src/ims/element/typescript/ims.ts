@@ -132,6 +132,10 @@ export async function fetchJsonNoThrow<T>(url: string, init: RequestInit|null):
     }
     init.headers = new Headers(init.headers);
     init.headers.set("Accept", "application/json");
+    // Pretend we're using XMLHttpRequest (rather than fetch API) so that the server
+    // follows this code path:
+    // https://github.com/burningmantech/ranger-ims-server/blob/0ae6fed861c7ba9d960d7e7ef3ba3258352a79c6/src/ims/application/_klein.py#L486
+    init.headers.set("X-Requested-With", "XMLHttpRequest");
     const tok = getAccessToken();
     if (tok) {
         init.headers.set("Authorization", "Bearer " + tok);

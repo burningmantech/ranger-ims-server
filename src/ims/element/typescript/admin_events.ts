@@ -69,6 +69,11 @@ type EventsAccess = Record<string, EventAccess|null>;
 let accessControlList: EventsAccess|null = null;
 
 async function loadAccessControlList() : Promise<{err: string|null}> {
+    // we don't actually need the response from this API, but we want to
+    // invalidate the local HTTP cache in the admin's browser
+    ims.fetchJsonNoThrow<ims.EventData[]>(url_events, {
+        headers: {"Cache-Control": "no-cache"},
+    });
     const {json, err} = await ims.fetchJsonNoThrow<EventsAccess>(url_acl, null);
     if (err != null) {
         const message = `Failed to load access control list: ${err}`;

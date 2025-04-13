@@ -62,10 +62,9 @@ async function initIncidentsPage() {
     window.showDays = showDays;
     window.showRows = showRows;
     window.toggleCheckAllTypes = toggleCheckAllTypes;
-    await ims.loadStreets(ims.pathIds.eventID);
     ims.disableEditing();
+    await ims.loadStreets(ims.pathIds.eventID);
     ({ types: allIncidentTypes } = await ims.loadIncidentTypes());
-    await loadEventFieldReports();
     initIncidentsTable();
     const helpModal = ims.bsModal(document.getElementById("helpModal"));
     // Keyboard shortcuts
@@ -120,10 +119,6 @@ async function loadEventFieldReports() {
     }
     eventFieldReports = reports;
     console.log("Loaded event field reports");
-    if (incidentsTable != null) {
-        incidentsTable.ajax.reload();
-        ims.clearErrorMessage();
-    }
     return { err: null };
 }
 //
@@ -210,11 +205,19 @@ function initDataTables() {
         // https://datatables.net/forums/discussion/47411/i-always-get-error-when-i-use-table-ajax-reload
         "ajax": function (_data, callback, _settings) {
             async function doAjax() {
-                const { json, err } = await ims.fetchJsonNoThrow(ims.urlReplace(url_incidents + "?exclude_system_entries=true"), null);
-                if (err != null || json == null) {
-                    ims.setErrorMessage(`Failed to load table: ${err}`);
-                    return;
-                }
+                let json = [];
+                // concurrently fetch the data needed for the table
+                await Promise.all([
+                    loadEventFieldReports(),
+                    ims.fetchJsonNoThrow(ims.urlReplace(url_incidents + "?exclude_system_entries=true"), null).then(res => {
+                        if (res.err != null || res.json == null) {
+                            ims.setErrorMessage(`Failed to load table: ${res.err}`);
+                            return;
+                        }
+                        json = res.json;
+                    }),
+                ]);
+                // then call the callback, only once all data sources have returned
                 callback({ data: json });
             }
             doAjax();

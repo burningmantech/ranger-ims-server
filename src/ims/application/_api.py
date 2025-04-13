@@ -377,6 +377,7 @@ class APIApplication:
         return noContentResponse(request)
 
     @router.route(_unprefix(URLs.events), methods=("HEAD", "GET"))
+    @static
     async def eventsResource(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Events endpoint.
@@ -1396,6 +1397,7 @@ class APIApplication:
         return noContentResponse(request)
 
     @router.route(_unprefix(URLs.streets), methods=("HEAD", "GET"))
+    @static
     async def readStreetsResource(
         self, request: IRequest
     ) -> KleinSynchronousRenderable:
