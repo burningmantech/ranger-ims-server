@@ -85,7 +85,7 @@ from ims.model.jsons import (
     jsonObjectFromModelObject,
     modelObjectFromJSONObject,
 )
-from ims.store import NoSuchIncidentError
+from ims.store import NoSuchFieldReportError, NoSuchIncidentError
 
 from ._eventsource import DataStoreEventSourceLogObserver
 from ._klein import (
@@ -1150,9 +1150,12 @@ class APIApplication:
             return notFoundResponse(request)
         del field_report_number
 
-        fieldReport = await self.config.store.fieldReportWithNumber(
-            event_id, fieldReportNumber
-        )
+        try:
+            fieldReport = await self.config.store.fieldReportWithNumber(
+                event_id, fieldReportNumber
+            )
+        except NoSuchFieldReportError:
+            return notFoundResponse(request)
 
         await self.config.authProvider.authorizeRequestForFieldReport(
             request, fieldReport

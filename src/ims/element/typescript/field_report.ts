@@ -53,8 +53,16 @@ async function initFieldReportPage(): Promise<void> {
     ims.disableEditing();
     await loadAndDisplayFieldReport();
 
+    if (fieldReport == null) {
+        return;
+    }
+
     // for a new field report
-    if (fieldReport!.number == null) {
+    if (fieldReport.number == null) {
+        // assume that Rangers without Incident access ought to see the instructions by default
+        if (!ims.eventAccess?.readIncidents && !ims.eventAccess?.writeIncidents) {
+            document.getElementById("fr-instructions")!.click();
+        }
         document.getElementById("field_report_summary")!.focus();
     }
 
@@ -161,9 +169,8 @@ async function loadAndDisplayFieldReport(): Promise<void> {
     const {err} = await loadFieldReport();
 
     if (fieldReport == null || err != null) {
-        const message = "Field report failed to load";
-        console.log(message);
-        ims.setErrorMessage(message);
+        console.log(err);
+        ims.setErrorMessage(err??"");
         return;
     }
 
