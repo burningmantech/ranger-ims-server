@@ -47,6 +47,9 @@ async function initIncidentPage() {
     addLocationAddressOptions();
     ims.disableEditing();
     await loadAndDisplayIncident();
+    if (incident == null) {
+        return;
+    }
     await loadPersonnel();
     drawRangers();
     drawRangersToAdd();

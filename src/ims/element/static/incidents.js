@@ -308,7 +308,12 @@ function initDataTables() {
 function renderSummary(_data, type, incident) {
     switch (type) {
         case "display":
-            return ims.textAsHTML(ims.summarizeIncidentOrFR(incident));
+            const maxDisplayLength = 250;
+            let summarized = ims.summarizeIncidentOrFR(incident);
+            if (summarized.length > maxDisplayLength) {
+                summarized = summarized.substring(0, maxDisplayLength - 3) + "...";
+            }
+            return ims.textAsHTML(summarized);
         case "sort":
             return ims.summarizeIncidentOrFR(incident);
         case "filter":

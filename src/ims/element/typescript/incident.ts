@@ -87,6 +87,9 @@ async function initIncidentPage(): Promise<void> {
     addLocationAddressOptions();
     ims.disableEditing();
     await loadAndDisplayIncident();
+    if (incident == null) {
+        return;
+    }
     await loadPersonnel();
     drawRangers();
     drawRangersToAdd();
