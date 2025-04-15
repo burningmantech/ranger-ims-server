@@ -104,7 +104,9 @@ class Queries:
     incidents: Query
     incidents_reportEntries: Query
     attachRangerHandleToIncident: Query
+    detachRangerHandleFromIncident: Query
     attachIncidentTypeToIncident: Query
+    detachIncidentTypeFromIncident: Query
     createReportEntry: Query
     attachReportEntryToIncident: Query
     createIncident: Query
@@ -870,6 +872,32 @@ class DatabaseStore(IMSDataStore):
             rangerHandles=rangerHandles,
         )
 
+    def _detachRangerHandlesFromIncident(
+        self,
+        eventID: str,
+        incidentNumber: int,
+        rangerHandles: Iterable[str],
+        txn: Transaction,
+    ) -> None:
+        rangerHandles = tuple(rangerHandles)
+
+        for rangerHandle in rangerHandles:
+            txn.execute(
+                self.query.detachRangerHandleFromIncident.text,
+                {
+                    "eventID": eventID,
+                    "incidentNumber": incidentNumber,
+                    "rangerHandle": rangerHandle,
+                },
+            )
+
+        self._log.info(
+            "Detached Rangers {rangerHandles} from incident {eventID}#{incidentNumber}",
+            eventID=eventID,
+            incidentNumber=incidentNumber,
+            rangerHandles=rangerHandles,
+        )
+
     def _attachIncidentTypesToIncident(
         self,
         eventID: str,
@@ -891,6 +919,33 @@ class DatabaseStore(IMSDataStore):
 
         self._log.info(
             "Attached incident types {incidentTypes} to incident "
+            "{eventID}#{incidentNumber}",
+            eventID=eventID,
+            incidentNumber=incidentNumber,
+            incidentTypes=incidentTypes,
+        )
+
+    def _detachIncidentTypesFromIncident(
+        self,
+        eventID: str,
+        incidentNumber: int,
+        incidentTypes: Iterable[str],
+        txn: Transaction,
+    ) -> None:
+        incidentTypes = tuple(incidentTypes)
+
+        for incidentType in incidentTypes:
+            txn.execute(
+                self.query.detachIncidentTypeFromIncident.text,
+                {
+                    "eventID": eventID,
+                    "incidentNumber": incidentNumber,
+                    "incidentType": incidentType,
+                },
+            )
+
+        self._log.info(
+            "Detached incident types {incidentTypes} from incident "
             "{eventID}#{incidentNumber}",
             eventID=eventID,
             incidentNumber=incidentNumber,
@@ -1354,18 +1409,26 @@ class DatabaseStore(IMSDataStore):
         """
         rangerHandles = frozenset(rangerHandles)
 
+        params: Parameters = {"eventID": eventID, "incidentNumber": incidentNumber}
+        currentHandlesRows = await self.runQuery(self.query.incident_rangers, params)
+        currentHandles = {
+            cast("str", row["RANGER_HANDLE"]) for row in currentHandlesRows
+        }
+
+        addRangers = rangerHandles.difference(currentHandles)
+        removeRangers = currentHandles.difference(rangerHandles)
+
         autoEntry = self._automaticReportEntry(
             author, now(), "Rangers", ", ".join(rangerHandles)
         )
 
         def setIncident_rangers(txn: Transaction) -> None:
-            txn.execute(
-                self.query.clearIncidentRangers.text,
-                {"eventID": eventID, "incidentNumber": incidentNumber},
+            self._attachRangerHandlesToIncident(
+                eventID, incidentNumber, addRangers, txn
             )
 
-            self._attachRangerHandlesToIncident(
-                eventID, incidentNumber, rangerHandles, txn
+            self._detachRangerHandlesFromIncident(
+                eventID, incidentNumber, removeRangers, txn
             )
 
             # Add automatic report entry
@@ -1413,18 +1476,24 @@ class DatabaseStore(IMSDataStore):
         """
         incidentTypes = frozenset(incidentTypes)
 
+        params: Parameters = {"eventID": eventID, "incidentNumber": incidentNumber}
+        currentTypesRows = await self.runQuery(
+            self.query.incident_incidentTypes, params
+        )
+        currentTypes = {cast("str", row["NAME"]) for row in currentTypesRows}
+
+        addTypes = incidentTypes.difference(currentTypes)
+        removeTypes = currentTypes.difference(incidentTypes)
+
         autoEntry = self._automaticReportEntry(
             author, now(), "incident types", ", ".join(incidentTypes)
         )
 
         def setIncident_incidentTypes(txn: Transaction) -> None:
-            txn.execute(
-                self.query.clearIncidentIncidentTypes.text,
-                {"eventID": eventID, "incidentNumber": incidentNumber},
-            )
+            self._attachIncidentTypesToIncident(eventID, incidentNumber, addTypes, txn)
 
-            self._attachIncidentTypesToIncident(
-                eventID, incidentNumber, incidentTypes, txn
+            self._detachIncidentTypesFromIncident(
+                eventID, incidentNumber, removeTypes, txn
             )
 
             # Add automatic report entry

@@ -962,8 +962,8 @@ function normalize(str: string): string {
 }
 
 async function addRanger(): Promise<void> {
-    const select = document.getElementById("ranger_add") as HTMLSelectElement;
-    let handle: string = select.value;
+    const addRanger = document.getElementById("ranger_add") as HTMLInputElement;
+    let handle: string = addRanger.value;
 
     // make a copy of the handles
     const handles = (incident!.ranger_handles??[]).slice();
@@ -981,32 +981,35 @@ async function addRanger(): Promise<void> {
     }
     if (!(handle in (personnel??[]))) {
         // Not a valid handle
-        select.value = "";
+        addRanger.value = "";
         return;
     }
 
     if (handles.indexOf(handle) !== -1) {
         // Already in the list, so… move along.
-        select.value = "";
+        addRanger.value = "";
         return;
     }
 
     handles.push(handle);
 
+    addRanger.disabled = true;
     const {err} = await sendEdits({"ranger_handles": handles});
     if (err !== null) {
-        ims.controlHasError(select);
-        select.value = "";
+        ims.controlHasError(addRanger);
+        addRanger.value = "";
+        addRanger.disabled = false;
         return;
     }
-    select.value = "";
-    ims.controlHasSuccess(select, 1000);
+    addRanger.value = "";
+    addRanger.disabled = false;
+    ims.controlHasSuccess(addRanger, 1000);
 }
 
 
 async function addIncidentType(): Promise<void> {
-    const select = document.getElementById("incident_type_add") as HTMLSelectElement;
-    let incidentType = select.value;
+    const addType = document.getElementById("incident_type_add") as HTMLInputElement;
+    let incidentType = addType.value;
 
     // make a copy of the incident types
     const currentIncidentTypes = (incident!.incident_types??[]).slice();
@@ -1024,26 +1027,29 @@ async function addIncidentType(): Promise<void> {
     }
     if (incidentTypes.indexOf(incidentType) === -1) {
         // Not a valid incident type
-        select.value = "";
+        addType.value = "";
         return;
     }
 
     if (currentIncidentTypes.indexOf(incidentType) !== -1) {
         // Already in the list, so… move along.
-        select.value = "";
+        addType.value = "";
         return;
     }
 
     currentIncidentTypes.push(incidentType);
 
+    addType.disabled = true;
     const {err} = await sendEdits({"incident_types": currentIncidentTypes});
     if (err != null) {
-        ims.controlHasError(select);
-        select.value = "";
+        ims.controlHasError(addType);
+        addType.value = "";
+        addType.disabled = false;
         return;
     }
-    select.value = "";
-    ims.controlHasSuccess(select, 1000);
+    addType.value = "";
+    addType.disabled = false;
+    ims.controlHasSuccess(addType, 1000);
 }
 
 

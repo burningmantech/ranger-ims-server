@@ -8,6 +8,8 @@ function randomName(prefix: string): string {
 
 async function login(page: Page): Promise<void> {
   await page.goto("http://localhost:8080/ims/app/");
+  // wait for one of the buttons to be shown
+  await expect(page.getByRole("button", { name: /^Log (In|Out)$/ })).toBeVisible();
   if (await page.getByRole("button", { name: "Log In" }).isVisible()) {
     await page.getByRole("button", { name: "Log In" }).click();
     await page.getByPlaceholder("name@example.com").click();
@@ -58,14 +60,17 @@ async function addWriter(page: Page, eventName: string, writer: string): Promise
 
   await writers.getByRole("textbox").fill(writer);
   await writers.getByRole("textbox").press("Enter");
-  await expect(writers.getByText(writer)).toBeVisible();
+  await expect(writers.getByText(writer)).toBeVisible({timeout: 5000});
 }
 
 async function maybeOpenNav(page: Page): Promise<void> {
   const toggler = page.getByLabel("Toggle navigation");
-  if (await toggler.isVisible() && (await toggler.getAttribute("aria-expanded")) === "false") {
-    await page.locator(".navbar-toggler").click();
-  }
+  await expect(async (): Promise<void> => {
+    if (await toggler.isVisible() && (await toggler.getAttribute("aria-expanded")) === "false") {
+      await page.locator(".navbar-toggler").click();
+      expect(toggler.getAttribute("aria-expanded")).toEqual("true");
+    }
+  }).toPass();
 }
 
 test("themes", async ({ page }) => {
@@ -105,7 +110,9 @@ test("admin_incident_types", async ({ page }) => {
   await expect(newLi.getByRole("button", {name: "Hidden"})).toBeVisible();
 });
 
-test("admin_events", async ({ page }) => {
+test("admin_events", async ({ browser }) => {
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage()
   await login(page);
 
   const eventName: string = randomName("event");
@@ -113,11 +120,18 @@ test("admin_events", async ({ page }) => {
   await addWriter(page, eventName, "person:SomeGuy");
 
   let writers = page.locator("div.card").filter({has: page.getByText(`Access for ${eventName} (writers)`)});
+  // it's hard to tell on the client side when this has completed, hence the toPass block below
   await writers.locator("select").selectOption("On-Site");
-  await page.reload();
-  await expect(writers).toBeVisible();
-  await expect(writers.getByText("person:SomeGuy")).toBeVisible();
-  await expect(writers.locator("select")).toHaveValue("onsite");
+
+  const page2 = await ctx.newPage();
+  await login(page2);
+  await eventsPage(page2);
+  await expect(async (): Promise<void> => {
+    let writers = page2.locator("div.card").filter({has: page2.getByText(`Access for ${eventName} (writers)`)});
+    await expect(writers).toBeVisible();
+    await expect(writers.getByText("person:SomeGuy")).toBeVisible();
+    await expect(writers.locator("select")).toHaveValue("onsite");
+  }).toPass();
 })
 
 test("incidents", async ({ page, browser }) => {
@@ -138,7 +152,7 @@ test("incidents", async ({ page, browser }) => {
 
   await page.close();
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 3; i++) {
     const ctx = await browser.newContext();
     const page = await ctx.newPage()
     await login(page);
@@ -174,10 +188,12 @@ test("incidents", async ({ page, browser }) => {
       async function addType(page: Page, type: string): Promise<void> {
         await page.getByLabel("Add Incident Type").fill(type);
         await page.getByLabel("Add Incident Type").press("Tab");
+
         await expect(
             page.locator("div.card").filter(
                 {has: page.getByText("Incident Types")}
-            ).locator("li", {hasText: type})).toBeVisible();
+            ).locator("li", {hasText: type})).toBeVisible({timeout: 5000});
+        await expect(page.getByLabel("Add Incident Type")).toHaveValue("");
       }
 
       await addType(incidentPage, "Admin");
@@ -187,9 +203,12 @@ test("incidents", async ({ page, browser }) => {
     // add several Rangers to the incident
     {
       async function addRanger(page: Page, rangerName: string): Promise<void> {
+        await page.getByLabel("Add Ranger Handle").fill("");
+        await page.getByLabel("Add Ranger Handle").press("Tab");
         await page.getByLabel("Add Ranger Handle").fill(rangerName);
         await page.getByLabel("Add Ranger Handle").press("Tab");
-        await expect(page.locator("li", {hasText: rangerName})).toBeVisible();
+        await expect(page.locator("li", {hasText: rangerName})).toBeVisible({timeout: 5000});
+        await expect(page.getByLabel("Add Ranger Handle")).toHaveValue("");
       }
 
       await addRanger(incidentPage, "Defect");

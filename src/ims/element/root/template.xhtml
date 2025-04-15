@@ -14,22 +14,22 @@
   On a shared machine? <strong>Please log out</strong> when you're done.
 </p>
 
-  <div class="btn-group mb-3 if-not-logged-in hidden" role="group">
+  <div class="btn-group mb-3" role="group">
     <a t:render="url"
        url="login"
        id="login-button"
        role="button"
-       class="btn btn-md btn-default btn-primary"
+       class="btn btn-md btn-default btn-primary if-not-logged-in hidden"
     >
       Log In
     </a>
   </div>
 
-  <div class="btn-group mb-3 if-logged-in hidden" role="group">
+  <div class="btn-group mb-3" role="group">
     <a t:render="url"
        url="logout"
        role="button"
-       class="btn btn-md btn-default btn-danger"
+       class="btn btn-md btn-default btn-danger if-logged-in hidden"
     >
       Log Out
     </a>
