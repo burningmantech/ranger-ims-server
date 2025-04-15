@@ -127,6 +127,9 @@ async function addAccess(sender) {
     const event = container.getElementsByClassName("event_name")[0].textContent;
     const mode = container.getElementsByClassName("access_mode")[0].textContent;
     const newExpression = sender.value.trim();
+    if (newExpression === "") {
+        return;
+    }
     if (newExpression === "**") {
         const confirmed = confirm("Double-wildcard '**' ACLs are no longer supported, so this ACL will have " +
             "no effect.\n\n" +
@@ -149,7 +152,9 @@ async function addAccess(sender) {
             return;
         }
     }
-    const acl = accessControlList[event][mode].slice();
+    let acl = accessControlList[event][mode].slice();
+    // remove other acls for this mode for the same expression
+    acl = acl.filter((v) => { return v.expression !== newExpression; });
     const newVal = {
         "expression": newExpression,
         "validity": Validity.always,
@@ -201,7 +206,9 @@ async function setValidity(sender) {
     const event = container.getElementsByClassName("event_name")[0].textContent;
     const mode = container.getElementsByClassName("access_mode")[0].textContent;
     const expression = sender.parentElement.getAttribute("value").trim();
-    const acl = accessControlList[event][mode].slice();
+    let acl = accessControlList[event][mode].slice();
+    // remove other acls for this mode for the same expression
+    acl = acl.filter((v) => { return v.expression !== expression; });
     const newVal = {
         "expression": expression,
         "validity": sender.value === "onsite" ? Validity.onsite : Validity.always,

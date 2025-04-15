@@ -285,6 +285,16 @@ queries = Queries(
         values (({query_eventID}), %(incidentNumber)s, %(rangerHandle)s)
         """,
     ),
+    detachRangerHandleFromIncident=Query(
+        "remove Ranger from incident",
+        f"""
+        delete from INCIDENT__RANGER
+        where
+            EVENT = ({query_eventID})
+            and INCIDENT_NUMBER = %(incidentNumber)s
+            and RANGER_HANDLE = %(rangerHandle)s
+        """,
+    ),
     attachIncidentTypeToIncident=Query(
         "add incident type to incident",
         f"""
@@ -296,6 +306,18 @@ queries = Queries(
             %(incidentNumber)s,
             (select ID from INCIDENT_TYPE where NAME = %(incidentType)s)
         )
+        """,
+    ),
+    detachIncidentTypeFromIncident=Query(
+        "remove incident type from incident",
+        f"""
+        delete from INCIDENT__INCIDENT_TYPE
+        where
+            EVENT = ({query_eventID})
+            and INCIDENT_NUMBER = %(incidentNumber)s
+            and INCIDENT_TYPE = (
+                select ID from INCIDENT_TYPE where NAME = %(incidentType)s
+            )
         """,
     ),
     createReportEntry=Query(
