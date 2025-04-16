@@ -179,10 +179,8 @@ function initIncidentsTable() {
 // Initialize DataTables
 //
 function initDataTables() {
-    // @ts-expect-error JQuery
-    $.fn.dataTable.ext.errMode = "none";
-    // @ts-expect-error JQuery
-    incidentsTable = $("#queue_table").DataTable({
+    DataTable.ext.errMode = "none";
+    incidentsTable = new DataTable("#queue_table", {
         "deferRender": true,
         "paging": true,
         "lengthChange": false,

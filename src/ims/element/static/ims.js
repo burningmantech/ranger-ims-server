@@ -290,31 +290,33 @@ export async function commonPageInit() {
             setErrorMessage(`Failed to fetch auth info: ${err}, ${resp?.status}`);
             return {
                 authInfo: { authenticated: false },
-                eventDatas: null,
+                eventDatas: Promise.resolve(null),
             };
         }
         authInfo = json;
     }
-    let eds = null;
+    let eds = Promise.resolve(null);
     if (authInfo.authenticated) {
         if (authInfo.event_access?.[pathIds.eventID] != null) {
             eventAccess = authInfo.event_access?.[pathIds.eventID];
         }
-        const { json, err } = await fetchJsonNoThrow(url_events, null);
-        if (err != null) {
-            console.log(`Failed to fetch events: ${err}`);
-            // carry on to draw the navbar either way
-        }
-        eds = json;
+        eds = fetchJsonNoThrow(url_events, null).then(result => {
+            if (result.err != null || result.json == null) {
+                console.log(`Failed to fetch events: ${result.err}`);
+                return null;
+            }
+            renderNavEvents(result.json);
+            return result.json;
+        });
     }
-    renderCommonPageItems(authInfo, eds);
+    renderCommonPageItems(authInfo);
     return { authInfo: authInfo, eventDatas: eds };
 }
 export function redirectToLogin() {
     console.log("redirecting to login page");
     window.location.replace(`${url_login}?o=${window.location.pathname}`);
 }
-function renderCommonPageItems(authInfo, eds) {
+function renderCommonPageItems(authInfo) {
     if (authInfo.authenticated) {
         unhide(".if-logged-in");
         hide(".if-not-logged-in");
@@ -329,20 +331,6 @@ function renderCommonPageItems(authInfo, eds) {
         hide(".if-logged-in");
         unhide(".if-not-logged-in");
         hide(".if-admin");
-    }
-    if (eds != null) {
-        const eventIds = eds.map((ed) => ed.id);
-        eventIds.sort((a, b) => b.localeCompare(a));
-        const navEvents = document.getElementById("nav-events");
-        for (const id of eventIds) {
-            const anchor = document.createElement("a");
-            anchor.textContent = id;
-            anchor.classList.add("dropdown-item");
-            anchor.href = url_viewIncidents.replace("<event_id>", id);
-            const li = document.createElement("li");
-            li.append(anchor);
-            navEvents.append(li);
-        }
     }
     // Set the active event in the navbar, show "Incidents" and "Field Report" buttons
     const event = pathIds.eventID;
@@ -366,6 +354,20 @@ function renderCommonPageItems(authInfo, eds) {
                 activeEventFRs.classList.add("active");
             }
         }
+    }
+}
+function renderNavEvents(eds) {
+    const eventIds = eds.map((ed) => ed.id);
+    eventIds.sort((a, b) => b.localeCompare(a));
+    const navEvents = document.getElementById("nav-events");
+    for (const id of eventIds) {
+        const anchor = document.createElement("a");
+        anchor.textContent = id;
+        anchor.classList.add("dropdown-item");
+        anchor.href = url_viewIncidents.replace("<event_id>", id);
+        const li = document.createElement("li");
+        li.append(anchor);
+        navEvents.append(li);
     }
 }
 //

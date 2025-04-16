@@ -124,9 +124,7 @@ export function compareReportEntries(a: ReportEntry, b: ReportEntry): number {
 // Request making
 //
 
-export async function fetchJsonNoThrow<T>(url: string, init: RequestInit|null):
-    Promise<{resp: Response|null, json: T|null, err: string|null}>
-{
+export async function fetchJsonNoThrow<T>(url: string, init: RequestInit|null): Promise<FetchRes<T>> {
     if (init == null) {
         init = {};
     }
@@ -337,24 +335,28 @@ export async function commonPageInit(): Promise<PageInitResult> {
             setErrorMessage(`Failed to fetch auth info: ${err}, ${resp?.status}`);
             return {
                 authInfo: {authenticated: false},
-                eventDatas: null,
+                eventDatas: Promise.resolve(null),
             };
         }
         authInfo = json;
     }
-    let eds: EventData[]|null = null;
+    let eds: Promise<EventData[]|null> = Promise.resolve(null);
     if (authInfo.authenticated) {
         if (authInfo.event_access?.[pathIds.eventID!] != null) {
             eventAccess = authInfo.event_access?.[pathIds.eventID!]!;
         }
-        const {json, err} = await fetchJsonNoThrow<EventData[]>(url_events, null);
-        if (err != null) {
-            console.log(`Failed to fetch events: ${err}`);
-            // carry on to draw the navbar either way
-        }
-        eds = json;
+        eds = fetchJsonNoThrow<EventData[]>(url_events, null).then(
+            result => {
+                if (result.err != null || result.json == null) {
+                    console.log(`Failed to fetch events: ${result.err}`);
+                    return null;
+                }
+                renderNavEvents(result.json);
+                return result.json;
+            }
+        );
     }
-    renderCommonPageItems(authInfo, eds);
+    renderCommonPageItems(authInfo);
     return {authInfo: authInfo, eventDatas: eds};
 }
 
@@ -363,7 +365,7 @@ export function redirectToLogin(): void {
     window.location.replace(`${url_login}?o=${window.location.pathname}`);
 }
 
-function renderCommonPageItems(authInfo: AuthInfo, eds: EventData[]|null): void {
+function renderCommonPageItems(authInfo: AuthInfo): void {
     if (authInfo.authenticated) {
         unhide(".if-logged-in");
         hide(".if-not-logged-in");
@@ -378,20 +380,6 @@ function renderCommonPageItems(authInfo: AuthInfo, eds: EventData[]|null): void 
         hide(".if-logged-in");
         unhide(".if-not-logged-in");
         hide(".if-admin");
-    }
-    if (eds != null) {
-        const eventIds: string[] = eds.map((ed) => ed.id);
-        eventIds.sort((a, b) => b.localeCompare(a));
-        const navEvents = document.getElementById("nav-events") as HTMLUListElement;
-        for (const id of eventIds) {
-            const anchor = document.createElement("a");
-            anchor.textContent = id;
-            anchor.classList.add("dropdown-item");
-            anchor.href = url_viewIncidents.replace("<event_id>", id);
-            const li = document.createElement("li");
-            li.append(anchor);
-            navEvents.append(li);
-        }
     }
 
     // Set the active event in the navbar, show "Incidents" and "Field Report" buttons
@@ -420,6 +408,21 @@ function renderCommonPageItems(authInfo: AuthInfo, eds: EventData[]|null): void 
                 activeEventFRs.classList.add("active");
             }
         }
+    }
+}
+
+function renderNavEvents(eds: EventData[]): void {
+    const eventIds: string[] = eds.map((ed) => ed.id);
+    eventIds.sort((a, b) => b.localeCompare(a));
+    const navEvents = document.getElementById("nav-events") as HTMLUListElement;
+    for (const id of eventIds) {
+        const anchor = document.createElement("a");
+        anchor.textContent = id;
+        anchor.classList.add("dropdown-item");
+        anchor.href = url_viewIncidents.replace("<event_id>", id);
+        const li = document.createElement("li");
+        li.append(anchor);
+        navEvents.append(li);
     }
 }
 
@@ -1267,7 +1270,7 @@ declare let url_viewIncidents: string;
 
 export type PageInitResult = {
     authInfo: AuthInfo;
-    eventDatas: EventData[]|null;
+    eventDatas: Promise<EventData[]|null>;
 }
 
 export type Streets = Record<string, string>;
@@ -1373,6 +1376,12 @@ export type FieldReportBroadcast = {
 
 interface EditMap {
     [index: string]: EditMap|string;
+}
+
+export type FetchRes<T> = {
+    resp: Response|null;
+    json: T|null;
+    err: string|null;
 }
 
 interface DTAjax {

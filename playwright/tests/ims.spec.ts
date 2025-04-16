@@ -22,7 +22,6 @@ async function login(page: Page): Promise<void> {
 
 async function adminPage(page: Page): Promise<void> {
   await maybeOpenNav(page);
-  await page.getByRole("button", { name: "Event" }).click();
   await page.getByRole("button", { name: username }).click();
   await page.getByRole("link", { name: "Admin" }).click();
 }
@@ -132,6 +131,10 @@ test("admin_events", async ({ browser }) => {
     await expect(writers.getByText("person:SomeGuy")).toBeVisible();
     await expect(writers.locator("select")).toHaveValue("onsite");
   }).toPass();
+
+  await page2.close();
+  await page.close();
+  await ctx.close();
 })
 
 test("incidents", async ({ page, browser }) => {
@@ -276,5 +279,6 @@ test("incidents", async ({ page, browser }) => {
 
     await incidentPage.close();
     await incidentsPage.close();
+    await ctx.close();
   }
 })
