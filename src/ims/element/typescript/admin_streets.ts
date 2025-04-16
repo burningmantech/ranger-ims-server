@@ -37,11 +37,12 @@ async function initAdminStreetsPage(): Promise<void> {
         ims.redirectToLogin();
         return;
     }
-    if (initResult.eventDatas == null) {
+    const eds: ims.EventData[]|null = await initResult.eventDatas;
+    if (eds == null) {
         console.error(`Failed to fetch events`);
         return;
     }
-    eventDatas = initResult.eventDatas;
+    eventDatas = eds;
 
     window.addStreet = addStreet;
     window.removeStreet = removeStreet;

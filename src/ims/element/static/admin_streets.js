@@ -23,11 +23,12 @@ async function initAdminStreetsPage() {
         ims.redirectToLogin();
         return;
     }
-    if (initResult.eventDatas == null) {
+    const eds = await initResult.eventDatas;
+    if (eds == null) {
         console.error(`Failed to fetch events`);
         return;
     }
-    eventDatas = initResult.eventDatas;
+    eventDatas = eds;
     window.addStreet = addStreet;
     window.removeStreet = removeStreet;
     const { err } = await loadStreets();

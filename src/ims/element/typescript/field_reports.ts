@@ -134,15 +134,15 @@ function initFieldReportsTable() {
     };
 }
 
+declare let DataTable: any;
+
 //
 // Initialize DataTables
 //
 
 function frInitDataTables() {
-    // @ts-expect-error JQuery
-    $.fn.dataTable.ext.errMode = "none";
-    // @ts-expect-error JQuery
-    fieldReportsTable = $("#field_reports_table").DataTable({
+    DataTable.ext.errMode = "none";
+    fieldReportsTable = new DataTable("#field_reports_table", {
         "deferRender": true,
         "paging": true,
         "lengthChange": false,
