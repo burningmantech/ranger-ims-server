@@ -17,6 +17,29 @@ Each month below should look like the following, using the same ordering for the
 ### Fixed
 -->
 
+## 2025-04
+
+### Changed
+
+- Dropped all dependence on the old TWISTED_SESSION cookie, which previously is how clients authenticated with the server. Now we're using an Authorization JWT instead. The main benefit to users is that they won't be "logged out" when an IMS server restarts; they'll just be able to carry on as soon as it's back on-line (this is how Clubhouse already works). #1683 #1682 #1681 #1678 #1670
+- Got rid of the two-stage templating of Incident(s)/Field Report(s) pages. Now there's just a single template each. This is an internal cleanup that makes things much simpler. #1666
+- Upgraded to modern JavaScript ES modules, which have a bunch of benefits. #1660
+
+### Fixed
+
+- Changed some table keys to reduce chance of transaction deadlock (e.g. when multiple users are modifying any two incidents' Rangers lists at the same time). #1689 #1665 #1658
+
+## 2025-03
+
+### Changed
+
+- Upgraded all of our JavaScript to TypeScript. This makes for much safer frontend code, as well as much more pleasant development. #1628
+
+### Added
+
+- Allowed creation of Streets via the Admin Streets page. #1643
+- Added some Playwright testing, which we've since been improving. #1648
+
 ## 2025-02
 
 <!-- TODO: document keyboard shortcut updates, once they've settled down a bit -->
