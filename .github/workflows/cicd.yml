@@ -42,7 +42,7 @@ jobs:
           python-version: "3.13"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
 
       - name: Set up Tox environment
         run: uvx --with=tox-uv tox run -e lint --notest
@@ -87,7 +87,7 @@ jobs:
           python-version: "3.13"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
 
       - name: Set up Tox environment
         run: uvx --with=tox-uv tox run -e mypy --notest
@@ -126,7 +126,7 @@ jobs:
           python-version: "3.13"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
 
       - name: Set up Tox environment
         run: uvx --with=tox-uv tox run -e packaging --notest
@@ -220,7 +220,7 @@ jobs:
           f.write(f"TOX_ENV={env}\n")
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
 
       - name: Set up Tox environment
         run: uvx --with=tox-uv tox run -e "${TOX_ENV}" --notest
