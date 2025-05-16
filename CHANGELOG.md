@@ -1,5 +1,12 @@
 # Changelog
 
+## NOTE about ranger-ims-go
+
+As of May 2025, IMS development is primarily happening in https://github.com/burningmantech/ranger-ims-go.
+We expect to deprecate the Twisted Python IMS server in the not too distant future.
+
+## Changelog
+
 This is the changelog for ranger-ims-server. This is intended to summarize changes over time. It's
 probably too verbose for consumption by general users of IMS, but it might be useful for anyone
 trying to follow along with IMS's progression as a system.
