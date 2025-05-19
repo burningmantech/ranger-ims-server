@@ -2,6 +2,9 @@
 branch = True
 parallel = True
 source = ims
+omit =
+   */test/*
+   */test_*.py
 
 [paths]
 source=

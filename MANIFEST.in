@@ -1,6 +1,7 @@
 include .coveragerc
 include .docker/sample.env
 include .dockerignore
+include .jshintrc
 include .pre-commit-config.yaml
 include .python-version
 include API.md
@@ -34,9 +35,13 @@ include src/ims/element/static/*.css
 include src/ims/element/static/*.js
 include src/ims/element/static/*.png
 include src/ims/element/static/*.zip
+include src/ims/element/static/README.md
+include src/ims/element/typescript/*.ts
 include src/ims/store/file/*.txt
 include src/ims/store/mysql/schema/*.mysql
 include src/ims/store/sqlite/schema/*.sqlite
 include tox.ini
+include tsconfig.json
 include uv.lock
 recursive-include src/ims/element *.xhtml
+recursive-exclude playwright *

@@ -2,11 +2,14 @@ ci:
   skip:
     - check-manifest
 
+default_language_version:
+  python: python3.13
+
 repos:
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.9.1
+    rev: v0.11.10
     hooks:
       - id: ruff
         args: [ --fix ]
@@ -21,6 +24,8 @@ repos:
       - id: check-docstring-first
       - id: check-executables-have-shebangs
       - id: check-json
+        # TypeScript allows non-JSON syntax in its config
+        exclude: '\btsconfig.json$'
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
       - id: check-symlinks

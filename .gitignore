@@ -7,6 +7,7 @@ __pycache__/
 /.ruff_cache
 /.tox/
 /.venv/
+attachments/
 /build/
 /cached/
 /data/
@@ -15,3 +16,4 @@ __pycache__/
 /htmldocs/
 /src/*.egg-info/
 /wheels/
+test-results/

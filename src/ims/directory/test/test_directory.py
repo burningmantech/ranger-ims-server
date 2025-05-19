@@ -32,6 +32,7 @@ from ims.model.strategies import rangerHandles, rangers
 from .._directory import (
     DirectoryError,
     IMSGroupID,
+    IMSTeamID,
     IMSUser,
     RangerDirectory,
     _hash,
@@ -47,15 +48,23 @@ __all__ = ()
 @composite
 def groupIDs(draw: Callable[..., Any]) -> Iterable[IMSGroupID]:
     return cast(
-        Iterable[IMSGroupID],
+        "Iterable[IMSGroupID]",
         iterables(IMSGroupID(draw(text(min_size=1)))),
+    )
+
+
+@composite
+def teamIDs(draw: Callable[..., Any]) -> Iterable[IMSTeamID]:
+    return cast(
+        "Iterable[IMSTeamID]",
+        iterables(IMSTeamID(draw(text(min_size=1)))),
     )
 
 
 @composite
 def uniqueRangerLists(draw: Callable[..., Any]) -> RangerDirectory:
     return cast(
-        RangerDirectory,
+        "RangerDirectory",
         draw(lists(rangers(), unique_by=lambda r: r.handle)),
     )
 
@@ -65,6 +74,7 @@ def imsUsers(draw: Callable[..., Any]) -> IMSUser:
     return userFromRanger(
         ranger=draw(rangers()),
         groups=draw(groupIDs()),
+        teams=draw(teamIDs()),
     )
 
 
@@ -126,28 +136,25 @@ class DirectoryTests(TestCase):
         [
             Ranger(
                 handle="A",
-                name="A",
                 status=RangerStatus.active,
                 email="same@example.com",
-                enabled=True,
+                onsite=True,
                 directoryID="0",
                 password=None,
             ),
             Ranger(
                 handle="B",
-                name="B",
                 status=RangerStatus.active,
                 email="same@example.com",
-                enabled=True,
+                onsite=True,
                 directoryID="1",
                 password=None,
             ),
             Ranger(
                 handle="C",
-                name="C",
                 status=RangerStatus.active,
                 email="same@example.com",
-                enabled=True,
+                onsite=True,
                 directoryID="2",
                 password=None,
             ),

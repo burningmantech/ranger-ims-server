@@ -18,16 +18,18 @@
 Test strategies for model data.
 """
 
-from collections.abc import Callable, Hashable
+from collections.abc import Callable, Hashable, Sequence
 from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
+from string import ascii_letters
 from typing import Any, cast
 
 from hypothesis.strategies import (
     SearchStrategy,
     booleans,
+    characters,
     composite,
     dictionaries,
     emails,
@@ -43,6 +45,8 @@ from hypothesis.strategies import datetimes as _datetimes
 from ims.directory import hashPassword
 from ims.ext.sqlite import SQLITE_MAX_INT
 
+from ._accessentry import AccessEntry
+from ._accessvalidity import AccessValidity
 from ._address import Address, RodGarettAddress, TextOnlyAddress
 from ._entry import ReportEntry
 from ._event import Event
@@ -56,6 +60,7 @@ from ._priority import IncidentPriority
 from ._ranger import Ranger, RangerStatus
 from ._report import FieldReport
 from ._state import IncidentState
+from ._team import Team
 from ._type import IncidentType, KnownIncidentType
 
 
@@ -88,6 +93,7 @@ __all__ = (
     "rangers",
     "reportEntries",
     "rodGarettAddresses",
+    "teams",
     "textOnlyAddresses",
     "timeZones",
 )
@@ -214,6 +220,7 @@ def reportEntries(
     automatic: bool | None = None,
     beforeNow: bool = False,
     fromNow: bool = False,
+    noAttachedFile: bool = False,
 ) -> ReportEntry:
     """
     Strategy that generates :class:`ReportEntry` values.
@@ -227,10 +234,11 @@ def reportEntries(
     return ReportEntry(
         id=draw(integers(min_value=1, max_value=SQLITE_MAX_INT)),
         created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
-        author=cast(str, author),
-        automatic=cast(bool, automatic),
+        author=cast("str", author),
+        automatic=cast("bool", automatic),
         text=draw(text(min_size=1)),
         stricken=False,
+        attachedFile=None if noAttachedFile else draw(text()),
     )
 
 
@@ -244,7 +252,23 @@ def events(draw: Callable[..., Any]) -> Event:
     """
     Strategy that generates :class:`Event` values.
     """
-    return Event(id=draw(text(min_size=1)))
+    # The Event ID can consist of characters that match
+    # \w_-
+
+    allow_letters = [*list(ascii_letters), "-", "_"]
+    return Event(
+        id=draw(
+            text(
+                min_size=1,
+                alphabet=characters(
+                    # Include the digits 0-9 too
+                    min_codepoint=0x30,
+                    max_codepoint=0x39,
+                    include_characters=allow_letters,
+                ),
+            )
+        )
+    )
 
 
 @composite
@@ -260,16 +284,24 @@ def accessTexts(draw: Callable[..., Any]) -> str:
 
 
 @composite
+def accessEntries(draw: Callable[..., Any]) -> AccessEntry:
+    return AccessEntry(
+        expression=draw(accessTexts()),
+        validity=AccessValidity.always,
+    )
+
+
+@composite
 def eventAccesses(draw: Callable[..., Any]) -> EventAccess:
     """
     Strategy that generates :class:`EventAccess` values.
     """
-    readers: frozenset[str] = frozenset(draw(lists(accessTexts())))
-    writers: frozenset[str] = frozenset(
-        a for a in draw(lists(accessTexts())) if a not in readers
+    readers: Sequence[AccessEntry] = tuple(draw(lists(accessEntries())))
+    writers: Sequence[AccessEntry] = tuple(
+        a for a in draw(lists(accessEntries())) if a not in readers
     )
-    reporters: frozenset[str] = frozenset(
-        a for a in draw(lists(accessTexts())) if a not in readers and a not in writers
+    reporters: Sequence[AccessEntry] = tuple(
+        a for a in draw(lists(accessEntries())) if a not in readers and a not in writers
     )
     return EventAccess(readers=readers, writers=writers, reporters=reporters)
 
@@ -380,21 +412,23 @@ def incidents(
 
     types = [t.name for t in draw(lists(incidentTypes()))]
 
+    created = draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow))
+    entries = draw(
+        lists(reportEntries(automatic=automatic, beforeNow=beforeNow, fromNow=fromNow))
+    )
+    lastModified = max(re.created for re in entries) if entries else created
     return Incident(
         eventID=event.id,
         number=number,
-        created=draw(dateTimes(beforeNow=beforeNow, fromNow=fromNow)),
+        created=created,
+        lastModified=lastModified,
         state=draw(incidentStates()),
         priority=draw(incidentPriorities()),
         summary=draw(incidentSummaries()),
         location=draw(locations()),
         rangerHandles=draw(lists(rangerHandles())),
         incidentTypes=types,
-        reportEntries=draw(
-            lists(
-                reportEntries(automatic=automatic, beforeNow=beforeNow, fromNow=fromNow)
-            )
-        ),
+        reportEntries=entries,
         fieldReportNumbers=frozenset(),
     )
 
@@ -414,7 +448,7 @@ def incidentLists(
     if uniqueIDs:
 
         def uniqueBy(incident: Incident) -> Hashable:
-            return cast(Hashable, (incident.eventID, incident.number))
+            return cast("Hashable", (incident.eventID, incident.number))
 
     else:
         uniqueBy = None
@@ -488,10 +522,9 @@ def rangers(draw: Callable[..., Any]) -> Ranger:
     """
     return Ranger(
         handle=draw(rangerHandles()),
-        name=draw(text(min_size=1)),
         status=draw(sampled_from(RangerStatus)),
         email=draw(lists(emails())),
-        enabled=draw(booleans()),
+        onsite=draw(booleans()),
         directoryID=draw(one_of(none(), text())),
         password=draw(one_of(none(), text())),
     )
@@ -508,6 +541,20 @@ def positions(draw: Callable[..., Any]) -> Position:
     Strategy that generates :class:`Position` values.
     """
     return Position(
+        name=draw(text(min_size=1)),
+        members=frozenset(draw(lists(rangerHandles()))),
+    )
+
+
+##
+# Team
+##
+@composite
+def teams(draw: Callable[..., Any]) -> Team:
+    """
+    Strategy that generates :class:`Team` values.
+    """
+    return Team(
         name=draw(text(min_size=1)),
         members=frozenset(draw(lists(rangerHandles()))),
     )
@@ -569,7 +616,7 @@ def fieldReportLists(
     """
 
     def uniqueBy(fieldReport: FieldReport) -> Hashable:
-        return cast(Hashable, fieldReport.number)
+        return cast("Hashable", fieldReport.number)
 
     return lists(
         fieldReports(maxNumber=maxNumber),

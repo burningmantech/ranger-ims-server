@@ -1,16 +1,33 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
 
-<head t:render="head" imports="ims,adminEvents"/>
+<head t:render="head" imports="theme" module="adminEvents"/>
 
 <body>
 <div t:render="container">
+  <p>For each event, you can configure permissions for individuals, positions, or teams. For example:</p>
+  <ul>
+    <li>person:Tool</li>
+    <li>position:007</li>
+    <li>team:Council</li>
+  </ul>
+  <p>You can also choose when each permission is valid:</p>
+  <ul>
+    <li>Always: valid all year long</li>
+    <li>On-Site: valid only when a matching Ranger is marked "on-site" in Clubhouse</li>
+  </ul>
+  <p><strong>The REQUIRE_ACTIVE flag is unused</strong>, replaced by "on-site" validity.</p>
+
   <div class="row" id="event_access_container">
     <div class="col-sm-12 py-1 event_access">
       <div class="card">
         <label class="card-header">Access for <span class="event_name"/> (<span class="access_mode"/>):</label>
         <ul class="list-group list-group-small list-group-flush card-body">
           <li class="list-group-item ps-3">
+            <select class="access_validity" onchange="setValidity(this)">
+              <option value="always">Always</option>
+              <option value="onsite">On-Site</option>
+            </select>
             <button class="badge btn btn-danger remove-badge float-end" onclick="removeAccess(this)">
               X
             </button>
@@ -31,10 +48,11 @@
   </div>
   <div class="row" id="event_new_container">
     <div class="col-sm-12 event_access">
-      <label>Create New Event:</label>
+      <label for="event_add">Create New Event:</label>
       <input
               id="event_add"
               class="form-control input-sm auto-width"
+              disabled=""
               type="text" inputmode="verbatim"
               placeholder="Burn-A-Matic 3000"
               onchange="addEvent(this)"
@@ -43,12 +61,5 @@
   </div>
 </div>
 </body>
-
-<script>
-    var events = <json t:render="events_list"/>;
-
-    initPage();
-    applyTheme();
-</script>
 
 </html>

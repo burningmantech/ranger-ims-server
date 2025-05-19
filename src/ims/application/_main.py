@@ -18,14 +18,13 @@
 Incident Management System web service.
 """
 
-from typing import ClassVar, cast
+from typing import TYPE_CHECKING, ClassVar, cast
 
 from attrs import Factory, field, frozen
 from klein import KleinRenderable
 from twisted.logger import globalLogPublisher
 from twisted.python.filepath import FilePath
 from twisted.web.iweb import IRequest
-from twisted.web.resource import IResource
 from twisted.web.static import File
 
 import ims.element
@@ -39,6 +38,10 @@ from ._eventsource import DataStoreEventSourceLogObserver
 from ._external import ExternalApplication  # type: ignore[attr-defined]
 from ._klein import Router, redirect
 from ._web import WebApplication
+
+
+if TYPE_CHECKING:
+    from twisted.web.resource import IResource
 
 
 __all__ = ("MainApplication",)
@@ -110,7 +113,6 @@ class MainApplication:
     #
 
     @router.route(URLs.root, methods=("HEAD", "GET"))
-    @static
     def rootEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Server root page.
@@ -118,7 +120,6 @@ class MainApplication:
         return "IMS"
 
     @router.route(URLs.prefix, methods=("HEAD", "GET"))
-    @static
     def prefixEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         IMS root page.
@@ -160,7 +161,6 @@ class MainApplication:
     #
 
     @router.route(URLs.api, branch=True)
-    @static
     def apiApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         API application resource.
@@ -168,7 +168,6 @@ class MainApplication:
         return self.apiApplication.router.resource()
 
     @router.route(URLs.authApp, branch=True)
-    @static
     def authApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Auth application resource.
@@ -176,15 +175,13 @@ class MainApplication:
         return self.authApplication.router.resource()
 
     @router.route(URLs.external, branch=True)
-    @static
     def externalApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         External application resource.
         """
-        return cast(IResource, self.externalApplication.router.resource())
+        return cast("IResource", self.externalApplication.router.resource())
 
     @router.route(URLs.app, branch=True)
-    @static
     def webApplicationEndpoint(self, request: IRequest) -> KleinRenderable:
         """
         Web application resource.

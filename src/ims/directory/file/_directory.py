@@ -39,7 +39,7 @@ def statusFromID(strValue: str) -> RangerStatus:
     return {
         "active": RangerStatus.active,
         "inactive": RangerStatus.inactive,
-        "vintage": RangerStatus.vintage,
+        "inactiveExtension": RangerStatus.inactiveExtension,
     }.get(strValue, RangerStatus.other)
 
 
@@ -66,10 +66,6 @@ def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
     if type(handle) is not str:
         raise DirectoryError(f"Ranger handle must be text: {handle!r}")
 
-    name = mapping.get("name", "")
-    if type(name) is not str:
-        raise DirectoryError(f"Ranger name must be text: {name!r}")
-
     _status = mapping.get("status", "")
     if type(_status) is not str:
         raise DirectoryError(f"Ranger status must be text: {_status!r}")
@@ -89,9 +85,9 @@ def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
             f"Ranger email must be text or sequence of text: {_email!r}"
         )
 
-    enabled = mapping.get("enabled", None)
-    if type(enabled) is not bool:
-        raise DirectoryError(f"Ranger enabled must be boolean: {enabled!r}")
+    onsite = mapping.get("onsite", None)
+    if type(onsite) is not bool:
+        raise DirectoryError(f"Ranger onsite must be boolean: {onsite!r}")
 
     password = mapping.get("password", None)
     if password is not None and type(password) is not str:
@@ -99,10 +95,9 @@ def rangerFromMapping(mapping: Mapping[str, Any]) -> Ranger:
 
     return Ranger(
         handle=handle,
-        name=name,
         status=status,
         email=email,
-        enabled=enabled,
+        onsite=onsite,
         directoryID=None,
         password=mapping.get("password", None),
     )

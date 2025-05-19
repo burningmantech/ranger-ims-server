@@ -30,7 +30,7 @@ from ims.ext.json_ext import (
     objectFromJSONText,
 )
 from ims.model import Event, EventAccess, EventData, IMSData, IncidentType
-from ims.model.json import jsonObjectFromModelObject, modelObjectFromJSONObject
+from ims.model.jsons import jsonObjectFromModelObject, modelObjectFromJSONObject
 
 from .._abc import IMSDataStore
 
@@ -69,7 +69,9 @@ class JSONExporter:
         Export data store as JSON.
         """
         self._log.info("Exporting data store as JSON objects...")
-        return cast(Mapping[str, Any], jsonObjectFromModelObject(await self.imsData()))
+        return cast(
+            "Mapping[str, Any]", jsonObjectFromModelObject(await self.imsData())
+        )
 
     async def imsData(self) -> IMSData:
         """

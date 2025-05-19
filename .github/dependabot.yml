@@ -4,6 +4,11 @@ version: 2
 
 updates:
 
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "daily"
+
   - package-ecosystem: "pip"
     directory: "/"
     allow:

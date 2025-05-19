@@ -65,7 +65,7 @@ queries = Queries(
     eventAccess=Query(
         "look up access for event",
         f"""
-        select EXPRESSION from EVENT_ACCESS
+        select EXPRESSION, VALIDITY from EVENT_ACCESS
         where EVENT = ({query_eventID}) and MODE = %(mode)s
         """,
     ),
@@ -86,8 +86,8 @@ queries = Queries(
     addEventAccess=Query(
         "add event access",
         f"""
-        insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE)
-        values (({query_eventID}), %(expression)s, %(mode)s)
+        insert into EVENT_ACCESS (EVENT, EXPRESSION, MODE, VALIDITY)
+        values (({query_eventID}), %(expression)s, %(mode)s, %(validity)s)
         """,
     ),
     incidentTypes=Query(
@@ -191,7 +191,8 @@ queries = Queries(
     incident_reportEntries=Query(
         "look up report entries for incident",
         f"""
-        select ID, AUTHOR, TEXT, CREATED, GENERATED, STRICKEN from REPORT_ENTRY
+        select ID, AUTHOR, TEXT, CREATED, GENERATED, STRICKEN, ATTACHED_FILE
+            from REPORT_ENTRY
         where ID in (
             select REPORT_ENTRY from INCIDENT__REPORT_ENTRY
             where
@@ -265,7 +266,8 @@ queries = Queries(
             re.TEXT,
             re.CREATED,
             re.GENERATED,
-            re.STRICKEN
+            re.STRICKEN,
+            re.ATTACHED_FILE
         from
             INCIDENT__REPORT_ENTRY ire
             join REPORT_ENTRY re
@@ -283,6 +285,16 @@ queries = Queries(
         values (({query_eventID}), %(incidentNumber)s, %(rangerHandle)s)
         """,
     ),
+    detachRangerHandleFromIncident=Query(
+        "remove Ranger from incident",
+        f"""
+        delete from INCIDENT__RANGER
+        where
+            EVENT = ({query_eventID})
+            and INCIDENT_NUMBER = %(incidentNumber)s
+            and RANGER_HANDLE = %(rangerHandle)s
+        """,
+    ),
     attachIncidentTypeToIncident=Query(
         "add incident type to incident",
         f"""
@@ -296,11 +308,28 @@ queries = Queries(
         )
         """,
     ),
+    detachIncidentTypeFromIncident=Query(
+        "remove incident type from incident",
+        f"""
+        delete from INCIDENT__INCIDENT_TYPE
+        where
+            EVENT = ({query_eventID})
+            and INCIDENT_NUMBER = %(incidentNumber)s
+            and INCIDENT_TYPE = (
+                select ID from INCIDENT_TYPE where NAME = %(incidentType)s
+            )
+        """,
+    ),
     createReportEntry=Query(
         "create report entry",
         """
-        insert into REPORT_ENTRY (AUTHOR, TEXT, CREATED, GENERATED, STRICKEN)
-        values (%(author)s, %(text)s, %(created)s, %(generated)s, %(stricken)s)
+        insert into REPORT_ENTRY (
+            AUTHOR, TEXT, CREATED, GENERATED, STRICKEN, ATTACHED_FILE
+        )
+        values (
+            %(author)s, %(text)s, %(created)s, %(generated)s, %(stricken)s,
+            %(attachedFile)s
+        )
         """,
     ),
     attachReportEntryToIncident=Query(

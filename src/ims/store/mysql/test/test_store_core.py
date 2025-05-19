@@ -52,7 +52,7 @@ else:
         Logger().info("Using configured test MySQL service")
         env = environ.get
         return ExternalMySQLService(
-            host=cast(str, env("IMS_TEST_MYSQL_HOST")),
+            host=cast("str", env("IMS_TEST_MYSQL_HOST")),
             port=int(env("IMS_TEST_MYSQL_PORT", "3306")),
             user=env("IMS_TEST_MYSQL_USERNAME", "ims"),
             password=env("IMS_TEST_MYSQL_PASSWORD", ""),
@@ -144,7 +144,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
         self.assertEqual(
             dedent(
                 """
-                Version: 8
+                Version: 13
                 CONCENTRIC_STREET:
                   1: EVENT(int) not null
                   2: ID(varchar(16)) not null
@@ -153,9 +153,11 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   1: ID(int) not null
                   2: NAME(varchar(128)) not null
                 EVENT_ACCESS:
-                  1: EVENT(int) not null
-                  2: EXPRESSION(varchar(128)) not null
-                  3: MODE(enum(6)) not null
+                  1: ID(int) not null
+                  2: EVENT(int) not null
+                  3: EXPRESSION(varchar(128)) not null
+                  4: MODE(enum(6)) not null
+                  5: VALIDITY(enum(6)) not null := 'always'
                 FIELD_REPORT:
                   1: EVENT(int) not null
                   2: NUMBER(int) not null
@@ -187,9 +189,10 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   2: INCIDENT_NUMBER(int) not null
                   3: INCIDENT_TYPE(int) not null
                 INCIDENT__RANGER:
-                  1: EVENT(int) not null
-                  2: INCIDENT_NUMBER(int) not null
-                  3: RANGER_HANDLE(varchar(64)) not null
+                  1: ID(int) not null
+                  2: EVENT(int) not null
+                  3: INCIDENT_NUMBER(int) not null
+                  4: RANGER_HANDLE(varchar(64)) not null
                 INCIDENT__REPORT_ENTRY:
                   1: EVENT(int) not null
                   2: INCIDENT_NUMBER(int) not null
@@ -201,6 +204,7 @@ class DataStoreCoreTests(AsynchronousTestCase):
                   4: CREATED(double) not null
                   5: GENERATED(tinyint) not null
                   6: STRICKEN(tinyint) not null
+                  7: ATTACHED_FILE(varchar(128)) := NULL
                 SCHEMA_INFO:
                   1: VERSION(smallint) not null
                 """[1:]

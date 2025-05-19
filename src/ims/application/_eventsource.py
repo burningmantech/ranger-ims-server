@@ -158,11 +158,8 @@ class DataStoreEventSourceLogObserver:
                 "field_report_number": fieldReportNumber,
             }
         else:
-            self._log.critical(
-                "Unknown data store event class {eventClass} sent event: {event}",
-                eventClass=eventClass,
-                event=loggerEvent,
-            )
+            # It's some EventClass for which we don't notify the EventSource,
+            # so there's nothing to do.
             return None
         self._counter[0] += 1
         return Event(

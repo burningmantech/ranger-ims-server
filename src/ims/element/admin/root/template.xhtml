@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
 
-<head t:render="head" imports="ims,admin"/>
+<head t:render="head" imports="theme" module="adminRoot"/>
 
 <body>
 <div t:render="container">
@@ -24,10 +24,5 @@
   </ul>
 </div>
 </body>
-
-<script>
-    initPage();
-    applyTheme();
-</script>
 
 </html>

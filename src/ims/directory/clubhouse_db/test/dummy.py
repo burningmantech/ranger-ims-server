@@ -47,7 +47,7 @@ class DummyQuery:
         """
         Produce normalized SQL for the query.
         """
-        sql = cast(str, self.args[0])
+        sql = cast("str", self.args[0])
 
         # Collapse spaces
         return " ".join(sql.split())
@@ -71,26 +71,23 @@ class DummyConnectionPool:
         sql = query.sql()
 
         def fixPassword(
-            person: tuple[int, str, str, str, str, str, str, bool, str],
-        ) -> tuple[int, str, str, str, str, str, str, bool, str]:
+            person: tuple[int, str, str, str, bool, str],
+        ) -> tuple[int, str, str, str, bool, str]:
             return (
                 person[0],
                 person[1],
                 person[2],
                 person[3],
                 person[4],
-                person[5],
-                person[6],
-                person[7],
-                hashPassword(person[8]),
+                hashPassword(person[5]),
             )
 
         if sql == (
             "select "
-            "id, callsign, first_name, mi, last_name, "
+            "id, callsign, "
             "email, status, on_site, password "
             "from person where status in "
-            "('active', 'inactive', 'vintage', 'auditor')"
+            "('active', 'inactive', 'inactive extension', 'auditor')"
         ):
             rows = (fixPassword(p) for p in cannedPersonnel)
             return succeed(rows)  # type: ignore[arg-type]
@@ -99,6 +96,12 @@ class DummyConnectionPool:
             return succeed(())  # type: ignore[arg-type]
 
         if sql == ("select person_id, position_id from person_position"):
+            return succeed(())  # type: ignore[arg-type]
+
+        if sql == ("select id, title from team where active"):
+            return succeed(())  # type: ignore[arg-type]
+
+        if sql == ("select person_id, team_id from person_team"):
             return succeed(())  # type: ignore[arg-type]
 
         return fail(AssertionError(f"No canned response for query: {sql}"))
@@ -117,9 +120,6 @@ cannedPersonnel = (
     (
         1,
         "Easy E",
-        "Eric",
-        "P",
-        "Grant",
         "easye@example.com",
         "active",
         True,
@@ -128,9 +128,6 @@ cannedPersonnel = (
     (
         2,
         "Weso",
-        "Wes",
-        "",
-        "Johnson",
         "weso@example.com",
         "active",
         True,
@@ -139,9 +136,6 @@ cannedPersonnel = (
     (
         3,
         "SciFi",
-        "Fred",
-        "",
-        "McCord",
         "scifi@example.com",
         "active",
         True,
@@ -150,9 +144,6 @@ cannedPersonnel = (
     (
         4,
         "Slumber",
-        "Sleepy",
-        "T",
-        "Dwarf",
         "slumber@example.com",
         "inactive",
         False,
@@ -161,22 +152,16 @@ cannedPersonnel = (
     (
         5,
         "Tool",
-        "Wilfredo",
-        "",
-        "Sanchez",
         "tool@example.com",
-        "vintage",
+        "active",
         True,
         "toolpass",
     ),
     (
         6,
         "Tulsa",
-        "Curtis",
-        "",
-        "Kline",
         "tulsa@example.com",
-        "vintage",
+        "active",
         True,
         "tulsapass",
     ),

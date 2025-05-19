@@ -21,13 +21,12 @@ Run the IMS server.
 import sys
 from collections.abc import Sequence
 from sys import stdout
-from typing import ClassVar, cast
+from typing import TYPE_CHECKING, ClassVar, cast
 
 from attrs import frozen
 from twisted.application.runner._exit import ExitStatus, exit
 from twisted.application.runner._runner import Runner
 from twisted.internet.defer import Deferred, ensureDeferred
-from twisted.internet.interfaces import IReactorCore, IReactorTCP
 from twisted.logger import Logger
 from twisted.python.failure import Failure
 from twisted.python.usage import UsageError
@@ -36,7 +35,7 @@ from twisted.web.server import Session, Site
 from ims.application import Application
 from ims.config import Configuration
 from ims.directory import hashPassword, verifyPassword
-from ims.model.json import jsonObjectFromModelObject
+from ims.model.jsons import jsonObjectFromModelObject
 from ims.store import IMSDataStore, StorageError
 from ims.store.export import JSONExporter, JSONImporter
 
@@ -50,6 +49,10 @@ from ._options import (
     ServerOptions,
     VerifyPasswordOptions,
 )
+
+
+if TYPE_CHECKING:
+    from twisted.internet.interfaces import IReactorCore, IReactorTCP
 
 
 __all__ = ()
@@ -81,7 +84,7 @@ class Command:
     def stop(cls) -> None:
         from twisted.internet import reactor
 
-        cast(IReactorCore, reactor).stop()
+        cast("IReactorCore", reactor).stop()
 
     @classmethod
     async def initStore(cls, store: IMSDataStore) -> None:
@@ -111,7 +114,7 @@ class Command:
 
         from twisted.internet import reactor
 
-        cast(IReactorTCP, reactor).listenTCP(port, factory, interface=host)
+        cast("IReactorTCP", reactor).listenTCP(port, factory, interface=host)
 
     @classmethod
     async def runExport(cls, config: Configuration, options: ExportOptions) -> None:
@@ -316,7 +319,7 @@ class Command:
         from twisted.internet import reactor
 
         runner = Runner(
-            reactor=cast(IReactorCore, reactor),
+            reactor=cast("IReactorCore", reactor),
             defaultLogLevel=options.get("logLevel", options.defaultLogLevel),
             logFile=options.get("logFile", stdout),
             fileLogObserverFactory=options["fileLogObserverFactory"],

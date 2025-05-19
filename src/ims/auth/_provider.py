@@ -18,7 +18,7 @@
 Incident Management System web application authentication provider.
 """
 
-from collections.abc import Container, Mapping
+from collections.abc import Iterable, Mapping
 from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
@@ -29,6 +29,7 @@ from typing import Any, ClassVar, cast
 from attrs import asdict, field, frozen
 from attrs.validators import instance_of
 from cattrs.preconf.json import make_converter as makeJSONConverter
+from jwcrypto.common import JWException
 from jwcrypto.jwk import JWK
 from jwcrypto.jws import InvalidJWSSignature
 from jwcrypto.jwt import JWT
@@ -39,11 +40,12 @@ from ims.directory import (
     DirectoryUser,
     IMSDirectory,
     IMSGroupID,
+    IMSTeamID,
     IMSUser,
     IMSUserID,
 )
 from ims.ext.klein import HeaderName
-from ims.model import FieldReport
+from ims.model import AccessEntry, AccessValidity, FieldReport
 from ims.store import IMSDataStore
 
 from ._exceptions import (
@@ -127,6 +129,8 @@ class JSONWebTokenClaims:
     ranger_on_site: bool = field(validator=instance_of(bool))
     # positions
     ranger_positions: str = field(validator=instance_of(str))
+    # teams
+    ranger_teams: str = field(validator=instance_of(str))
 
     def validateIssuer(self, issuer: str) -> None:
         """
@@ -216,7 +220,7 @@ class JSONWebToken:
         return jsonConverter.loads(self._jwt.claims, JSONWebTokenClaims)
 
     def asText(self) -> str:
-        return cast(str, self._jwt.serialize())
+        return cast("str", self._jwt.serialize())
 
 
 @frozen(kw_only=True)
@@ -233,7 +237,6 @@ class AuthProvider:
 
     _jsonWebKey: JSONWebKey
 
-    requireActive: bool = True
     adminUsers: frozenset[str] = frozenset()
     masterKey: str = ""
 
@@ -256,8 +259,9 @@ class AuthProvider:
                 exp=int(expiration.timestamp()),
                 sub=user.uid,
                 preferred_username=user.shortNames[0],
-                ranger_on_site=user.active,
+                ranger_on_site=user.onsite,
                 ranger_positions=",".join(user.groups),
+                ranger_teams=",".join(user.teams),
             ),
             key=self._jsonWebKey,
         )
@@ -299,22 +303,54 @@ class AuthProvider:
         return DirectoryUser(
             uid=IMSUserID(claims.sub),
             shortNames=(claims.preferred_username,),
-            active=claims.ranger_on_site,
+            onsite=claims.ranger_on_site,
             groups=tuple(IMSGroupID(gid) for gid in claims.ranger_positions.split(",")),
+            teams=tuple(IMSTeamID(tid) for tid in claims.ranger_teams.split(",")),
         )
+
+    def _enhanceSessionCookie(self, request: IRequest) -> None:
+        """
+        Set some additional features on the Twisted Session cookie.
+
+        That cookie is used to authenticate the user on all requests after login, so
+        it's important to protect it as best as we can from XSRF or XSS.
+        """
+        cookies = getattr(request, "cookies", [])
+        for i in range(len(cookies)):
+            if b"TWISTED_SESSION" not in cookies[i]:
+                continue
+            if b"SameSite" not in cookies[i]:
+                cookies[i] += b"; SameSite=lax"
+            if b"HttpOnly" not in cookies[i]:
+                cookies[i] += b"; HttpOnly"
 
     def checkAuthentication(self, request: IRequest) -> None:
         """
         Check whether the request has previously been authenticated, and if so,
-        set request.user.
+        set request.user. This function doesn't raise an exception if no user
+        can be authenticated from the request; it just leaves the request.user
+        set as None.
         """
         if getattr(request, "user", None) is None:
             authorization = request.getHeader(HeaderName.authorization.value)
-            user = self._userFromBearerAuthorization(authorization)
+            try:
+                user = self._userFromBearerAuthorization(authorization)
+            except (JWException, InvalidCredentialsError) as e:
+                # Log and continue if we can't authenticate by JWT, so that
+                # other authentication flows can be attempted.
+                self._log.error("JWT error: {error}", error=e)
+                user = None
+
+            if user is not None:
+                sess = request.getSession()
+                if sess:
+                    sess.user = user
 
             if user is None:
                 session = request.getSession()
                 user = getattr(session, "user", None)
+
+            self._enhanceSessionCookie(request)
 
             request.user = user  # type: ignore[attr-defined]
 
@@ -332,17 +368,12 @@ class AuthProvider:
             self._log.debug("Authentication failed")
             raise NotAuthenticatedError("No user logged in")
 
-    def _matchACL(self, user: IMSUser | None, acl: Container[str]) -> bool:
+    def _matchACL(self, user: IMSUser | None, acl: Iterable[AccessEntry]) -> bool:
         """
         Match a user against a set of ACLs associated with an event's readers,
         writers and reporters.
 
-        An ACL of "**" will always match, even for the None user.
-
-        If the requireActive of this instance is True, all other ACLs will never
-        match a user if the user is not active.
-
-        An ACL of "*" matches all users other than the None user.
+        An ACL of "*" matches any authenticated user.
 
         An ACL of the form "person:{user}" will match a user of one of the
         user's short names equals {user}.
@@ -350,22 +381,34 @@ class AuthProvider:
         An ACL of the form "position:{group}" will match a user if the ID of
         one of the groups that the user is a member of equals {group}.
         """
-        if "**" in acl:
-            return True
+        # Temporary explainer for removed feature:
+        # '**' wildcarding was previously intended to allow access to anyone,
+        # including the None user. This permitted non-Rangers (i.e. unauthenticated
+        # users) to create Field Reports at kiosks on-site. This feature hadn't been
+        # used for years, as of 2025, and it no longer actually works anyway, due to
+        # the authorization model that developed in recent years in IMS.
 
-        if user is not None:
-            if self.requireActive and not user.active:
-                return False
+        if user is None:
+            return False
 
-            if "*" in acl:
+        for a in acl:
+            if a.validity == AccessValidity.onsite and not user.onsite:
+                # this ACL is irrelevant, because the user is offsite
+                continue
+
+            if a.expression == "*":
                 return True
 
             for shortName in user.shortNames:
-                if ("person:" + shortName) in acl:
+                if a.expression == "person:" + shortName:
                     return True
 
             for group in user.groups:
-                if ("position:" + group) in acl:
+                if a.expression == "position:" + group:
+                    return True
+
+            for team in user.teams:
+                if a.expression == "team:" + team:
                     return True
 
         return False
@@ -384,20 +427,20 @@ class AuthProvider:
                     authorizations |= Authorization.imsAdmin
 
         if eventID is not None:
-            if self._matchACL(user, frozenset(await self.store.writers(eventID))):
+            if self._matchACL(user, tuple(await self.store.writers(eventID))):
                 authorizations |= Authorization.writeIncidents
                 authorizations |= Authorization.readIncidents
                 authorizations |= Authorization.writeFieldReports
                 authorizations |= Authorization.readPersonnel
 
             else:
-                if self._matchACL(user, frozenset(await self.store.readers(eventID))):
+                if self._matchACL(user, tuple(await self.store.readers(eventID))):
                     authorizations |= Authorization.readIncidents
                     authorizations |= Authorization.readPersonnel
 
                 if self._matchACL(
                     user,
-                    frozenset(await self.store.reporters(eventID)),
+                    tuple(await self.store.reporters(eventID)),
                 ):
                     authorizations |= Authorization.writeFieldReports
 

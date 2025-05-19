@@ -25,6 +25,7 @@ from datetime import UTC
 from datetime import datetime as DateTime
 from json import loads
 from pathlib import Path
+from re import search as reSearch
 from textwrap import dedent
 from types import MappingProxyType
 from typing import Any, ClassVar, NoReturn, TypeVar, cast
@@ -33,6 +34,8 @@ from attrs import field, frozen
 from twisted.logger import Logger
 
 from ims.model import (
+    AccessEntry,
+    AccessValidity,
     Event,
     FieldReport,
     Incident,
@@ -101,7 +104,9 @@ class Queries:
     incidents: Query
     incidents_reportEntries: Query
     attachRangerHandleToIncident: Query
+    detachRangerHandleFromIncident: Query
     attachIncidentTypeToIncident: Query
+    detachIncidentTypeFromIncident: Query
     createReportEntry: Query
     attachReportEntryToIncident: Query
     createIncident: Query
@@ -216,6 +221,23 @@ class DatabaseStore(IMSDataStore):
             3: IncidentPriority.normal,
             4: IncidentPriority.low,
             5: IncidentPriority.low,
+        }[value]
+
+    @staticmethod
+    def asAccessValidityValue(accessValidity: AccessValidity) -> ParameterValue:
+        return {
+            AccessValidity.always: "always",
+            AccessValidity.onsite: "onsite",
+        }[accessValidity]
+
+    @staticmethod
+    def fromAccessValidityValue(value: ParameterValue) -> AccessValidity:
+        if not isinstance(value, str):
+            raise TypeError("Access Validity in SQLite store must be a str")
+
+        return {
+            "always": AccessValidity.always,
+            "onsite": AccessValidity.onsite,
         }[value]
 
     @staticmethod
@@ -339,7 +361,7 @@ class DatabaseStore(IMSDataStore):
         See :meth:`IMSDataStore.events`.
         """
         return (
-            Event(id=cast(str, row["NAME"]))
+            Event(id=cast("str", row["NAME"]))
             for row in await self.runQuery(self.query.events)
         )
 
@@ -347,6 +369,14 @@ class DatabaseStore(IMSDataStore):
         """
         See :meth:`IMSDataStore.createEvent`.
         """
+        # Require basic cleanliness for EventID, since it's used in IMS URLs
+        # and in filesystem directory paths.
+        eventIdPattern = r"^[\w-]+$"
+        if not reSearch(eventIdPattern, event.id):
+            raise ValueError(
+                f"wanted EventID to match '{eventIdPattern}', got '{event.id}'"
+            )
+
         await self.runOperation(self.query.createEvent, {"eventID": event.id})
 
         self._log.info(
@@ -355,35 +385,40 @@ class DatabaseStore(IMSDataStore):
             event=event,
         )
 
-    async def _eventAccess(self, eventID: str, mode: str) -> Iterable[str]:
+    async def _eventAccess(self, eventID: str, mode: str) -> Iterable[AccessEntry]:
         return (
-            cast(str, row["EXPRESSION"])
+            AccessEntry(
+                expression=cast("str", row["EXPRESSION"]),
+                validity=self.fromAccessValidityValue(row["VALIDITY"]),
+            )
             for row in await self.runQuery(
                 self.query.eventAccess, {"eventID": eventID, "mode": mode}
             )
         )
 
     async def _setEventAccess(
-        self, eventID: str, mode: str, expressions: Iterable[str]
+        self,
+        eventID: str,
+        mode: str,
+        accessEntries: Iterable[AccessEntry],
     ) -> None:
-        expressions = tuple(expressions)
-
         def setEventAccess(txn: Transaction) -> None:
             txn.execute(
                 self.query.clearEventAccessForMode.text,
                 {"eventID": eventID, "mode": mode},
             )
-            for expression in expressions:
+            for entry in accessEntries:
                 txn.execute(
                     self.query.clearEventAccessForExpression.text,
-                    {"eventID": eventID, "expression": expression},
+                    {"eventID": eventID, "expression": entry.expression},
                 )
                 txn.execute(
                     self.query.addEventAccess.text,
                     {
                         "eventID": eventID,
-                        "expression": expression,
+                        "expression": entry.expression,
                         "mode": mode,
+                        "validity": self.asAccessValidityValue(entry.validity),
                     },
                 )
 
@@ -394,54 +429,55 @@ class DatabaseStore(IMSDataStore):
                 "Unable to set {mode} access for {eventID}: {error}",
                 eventID=eventID,
                 mode=mode,
-                expressions=expressions,
                 error=e,
             )
             raise
 
         self._log.info(
-            "Set {mode} access for {eventID}: {expressions}",
+            "Set {mode} access for {eventID}: {accessEntries}",
             storeWriteClass=Event,
             eventID=eventID,
             mode=mode,
-            expressions=expressions,
+            accessEntries=accessEntries,
         )
 
-    async def readers(self, eventID: str) -> Iterable[str]:
+    async def readers(self, eventID: str) -> Iterable[AccessEntry]:
         """
         See :meth:`IMSDataStore.readers`.
         """
         return await self._eventAccess(eventID, "read")
 
-    async def setReaders(self, eventID: str, readers: Iterable[str]) -> None:
+    async def setReaders(self, eventID: str, readers: Iterable[AccessEntry]) -> None:
         """
         See :meth:`IMSDataStore.setReaders`.
         """
         await self._setEventAccess(eventID, "read", readers)
 
-    async def writers(self, eventID: str) -> Iterable[str]:
+    async def writers(self, eventID: str) -> Iterable[AccessEntry]:
         """
         See :meth:`IMSDataStore.writers`.
         """
         return await self._eventAccess(eventID, "write")
 
-    async def setWriters(self, eventID: str, writers: Iterable[str]) -> None:
+    async def setWriters(self, eventID: str, writers: Iterable[AccessEntry]) -> None:
         """
         See :meth:`IMSDataStore.setWriters`.
         """
         await self._setEventAccess(eventID, "write", writers)
 
-    async def reporters(self, eventID: str) -> Iterable[str]:
+    async def reporters(self, eventID: str) -> Iterable[AccessEntry]:
         """
         See :meth:`IMSDataStore.reporters`.
         """
         return await self._eventAccess(eventID, "report")
 
-    async def setReporters(self, eventID: str, writers: Iterable[str]) -> None:
+    async def setReporters(
+        self, eventID: str, reporters: Iterable[AccessEntry]
+    ) -> None:
         """
         See :meth:`IMSDataStore.setReporters`.
         """
-        await self._setEventAccess(eventID, "report", writers)
+        await self._setEventAccess(eventID, "report", reporters)
 
     ###
     # Incident Types
@@ -456,7 +492,7 @@ class DatabaseStore(IMSDataStore):
         else:
             query = self.query.incidentTypesNotHidden
 
-        return (cast(str, row["NAME"]) for row in await self.runQuery(query))
+        return (cast("str", row["NAME"]) for row in await self.runQuery(query))
 
     async def createIncidentType(
         self, incidentType: str, *, hidden: bool = False
@@ -525,7 +561,7 @@ class DatabaseStore(IMSDataStore):
         """
         return MappingProxyType(
             {
-                cast(str, row["ID"]): cast(str, row["NAME"])
+                cast("str", row["ID"]): cast("str", row["NAME"])
                 for row in await self.runQuery(
                     self.query.concentricStreets, {"eventID": eventID}
                 )
@@ -564,11 +600,11 @@ class DatabaseStore(IMSDataStore):
             txn.execute(self.query.detachedReportEntries.text)
             return tuple(
                 ReportEntry(
-                    id=cast(int, row["ID"]),
+                    id=cast("int", row["ID"]),
                     created=self.fromDateTimeValue(row["CREATED"]),
-                    author=cast(str, row["AUTHOR"]),
+                    author=cast("str", row["AUTHOR"]),
                     automatic=bool(row["GENERATED"]),
-                    text=cast(str, row["TEXT"]),
+                    text=cast("str", row["TEXT"]),
                     stricken=bool(row["STRICKEN"]),
                 )
                 for row in txn.fetchall()
@@ -601,15 +637,16 @@ class DatabaseStore(IMSDataStore):
         txn.execute(self.query.incidents_reportEntries.text, parameters)
         for row in txn.fetchall():
             if row["TEXT"]:
-                incidentNumber = cast(int, row["INCIDENT_NUMBER"])
+                incidentNumber = cast("int", row["INCIDENT_NUMBER"])
                 reportEntries[incidentNumber].append(
                     ReportEntry(
-                        id=cast(int, row["ID"]),
+                        id=cast("int", row["ID"]),
                         created=self.fromDateTimeValue(row["CREATED"]),
-                        author=cast(str, row["AUTHOR"]),
+                        author=cast("str", row["AUTHOR"]),
                         automatic=bool(row["GENERATED"]),
-                        text=cast(str, row["TEXT"]),
+                        text=cast("str", row["TEXT"]),
                         stricken=bool(row["STRICKEN"]),
+                        attachedFile=cast("str", row["ATTACHED_FILE"]),
                     )
                 )
 
@@ -633,32 +670,38 @@ class DatabaseStore(IMSDataStore):
                 fieldReportNumbers = [
                     int(val) for val in loads(str(row["FIELD_REPORT_NUMBERS"]))
                 ]
-            incidentNumber = cast(int, row["NUMBER"])
+            incidentNumber = cast("int", row["NUMBER"])
+
+            lastModified = self.fromDateTimeValue(row["CREATED"])
+            if reportEntries[incidentNumber]:
+                lastModified = max(re.created for re in reportEntries[incidentNumber])
+
             results.append(
                 Incident(
                     eventID=eventID,
                     number=incidentNumber,
                     created=self.fromDateTimeValue(row["CREATED"]),
+                    lastModified=lastModified,
                     state=self.fromIncidentStateValue(row["STATE"]),
                     priority=self.fromPriorityValue(row["PRIORITY"]),
-                    summary=cast(str | None, row["SUMMARY"]),
+                    summary=cast("str | None", row["SUMMARY"]),
                     location=Location(
-                        name=cast(str, row["LOCATION_NAME"]),
+                        name=cast("str", row["LOCATION_NAME"]),
                         address=RodGarettAddress(
                             concentric=concentric,
-                            radialHour=cast(int | None, row["LOCATION_RADIAL_HOUR"]),
+                            radialHour=cast("int | None", row["LOCATION_RADIAL_HOUR"]),
                             radialMinute=cast(
-                                int | None, row["LOCATION_RADIAL_MINUTE"]
+                                "int | None", row["LOCATION_RADIAL_MINUTE"]
                             ),
-                            description=cast(str | None, row["LOCATION_DESCRIPTION"]),
+                            description=cast("str | None", row["LOCATION_DESCRIPTION"]),
                         ),
                     ),
-                    rangerHandles=cast(Iterable[str], rangerHandles),
-                    incidentTypes=cast(Iterable[str], incidentTypes),
+                    rangerHandles=cast("Iterable[str]", rangerHandles),
+                    incidentTypes=cast("Iterable[str]", incidentTypes),
                     reportEntries=cast(
-                        Iterable[ReportEntry], reportEntries[incidentNumber]
+                        "Iterable[ReportEntry]", reportEntries[incidentNumber]
                     ),
-                    fieldReportNumbers=cast(Iterable[int], fieldReportNumbers),
+                    fieldReportNumbers=cast("Iterable[int]", fieldReportNumbers),
                 )
             )
         return results
@@ -683,25 +726,30 @@ class DatabaseStore(IMSDataStore):
             notFound()
 
         txn.execute(self.query.incident_rangers.text, parameters)
-        rangerHandles = (cast(str, row["RANGER_HANDLE"]) for row in txn.fetchall())
+        rangerHandles = (cast("str", row["RANGER_HANDLE"]) for row in txn.fetchall())
 
         txn.execute(self.query.incident_incidentTypes.text, parameters)
-        incidentTypes = (cast(str, row["NAME"]) for row in txn.fetchall())
+        incidentTypes = (cast("str", row["NAME"]) for row in txn.fetchall())
 
         txn.execute(self.query.incident_reportEntries.text, parameters)
 
-        reportEntries = (
+        reportEntries = tuple(
             ReportEntry(
-                id=cast(int, row["ID"]),
+                id=cast("int", row["ID"]),
                 created=self.fromDateTimeValue(row["CREATED"]),
-                author=cast(str, row["AUTHOR"]),
+                author=cast("str", row["AUTHOR"]),
                 automatic=bool(row["GENERATED"]),
-                text=cast(str, row["TEXT"]),
+                text=cast("str", row["TEXT"]),
                 stricken=bool(row["STRICKEN"]),
+                attachedFile=cast("str", row["ATTACHED_FILE"]),
             )
             for row in txn.fetchall()
             if row["TEXT"]
         )
+
+        lastModified = self.fromDateTimeValue(row["CREATED"])
+        if reportEntries:
+            lastModified = max(re.created for re in reportEntries)
 
         # FIXME: This is because schema thinks concentric is an int
         if row["LOCATION_CONCENTRIC"] is None:
@@ -717,21 +765,22 @@ class DatabaseStore(IMSDataStore):
             eventID=eventID,
             number=incidentNumber,
             created=self.fromDateTimeValue(row["CREATED"]),
+            lastModified=lastModified,
             state=self.fromIncidentStateValue(row["STATE"]),
             priority=self.fromPriorityValue(row["PRIORITY"]),
-            summary=cast(str | None, row["SUMMARY"]),
+            summary=cast("str | None", row["SUMMARY"]),
             location=Location(
-                name=cast(str, row["LOCATION_NAME"]),
+                name=cast("str", row["LOCATION_NAME"]),
                 address=RodGarettAddress(
                     concentric=concentric,
-                    radialHour=cast(int | None, row["LOCATION_RADIAL_HOUR"]),
-                    radialMinute=cast(int | None, row["LOCATION_RADIAL_MINUTE"]),
-                    description=cast(str | None, row["LOCATION_DESCRIPTION"]),
+                    radialHour=cast("int | None", row["LOCATION_RADIAL_HOUR"]),
+                    radialMinute=cast("int | None", row["LOCATION_RADIAL_MINUTE"]),
+                    description=cast("str | None", row["LOCATION_DESCRIPTION"]),
                 ),
             ),
-            rangerHandles=cast(Iterable[str], rangerHandles),
-            incidentTypes=cast(Iterable[str], incidentTypes),
-            reportEntries=cast(Iterable[ReportEntry], reportEntries),
+            rangerHandles=cast("Iterable[str]", rangerHandles),
+            incidentTypes=cast("Iterable[str]", incidentTypes),
+            reportEntries=cast("Iterable[ReportEntry]", reportEntries),
             fieldReportNumbers=fieldReportNumbers,
         )
 
@@ -740,7 +789,7 @@ class DatabaseStore(IMSDataStore):
         Look up all incident numbers for the given event.
         """
         txn.execute(self.query.incidentNumbers.text, {"eventID": eventID})
-        return (cast(int, row["NUMBER"]) for row in txn.fetchall())
+        return (cast("int", row["NUMBER"]) for row in txn.fetchall())
 
     async def incidents(
         self, eventID: str, *, excludeSystemEntries: bool = False
@@ -792,7 +841,7 @@ class DatabaseStore(IMSDataStore):
         txn.execute(self.query.maxIncidentNumber.text, {"eventID": eventID})
         row = txn.fetchone()
         assert row is not None
-        number = cast(int | None, row["max(NUMBER)"])
+        number = cast("int | None", row["max(NUMBER)"])
         if number is None:
             return 1
         return number + 1
@@ -818,6 +867,32 @@ class DatabaseStore(IMSDataStore):
 
         self._log.info(
             "Attached Rangers {rangerHandles} to incident {eventID}#{incidentNumber}",
+            eventID=eventID,
+            incidentNumber=incidentNumber,
+            rangerHandles=rangerHandles,
+        )
+
+    def _detachRangerHandlesFromIncident(
+        self,
+        eventID: str,
+        incidentNumber: int,
+        rangerHandles: Iterable[str],
+        txn: Transaction,
+    ) -> None:
+        rangerHandles = tuple(rangerHandles)
+
+        for rangerHandle in rangerHandles:
+            txn.execute(
+                self.query.detachRangerHandleFromIncident.text,
+                {
+                    "eventID": eventID,
+                    "incidentNumber": incidentNumber,
+                    "rangerHandle": rangerHandle,
+                },
+            )
+
+        self._log.info(
+            "Detached Rangers {rangerHandles} from incident {eventID}#{incidentNumber}",
             eventID=eventID,
             incidentNumber=incidentNumber,
             rangerHandles=rangerHandles,
@@ -850,6 +925,33 @@ class DatabaseStore(IMSDataStore):
             incidentTypes=incidentTypes,
         )
 
+    def _detachIncidentTypesFromIncident(
+        self,
+        eventID: str,
+        incidentNumber: int,
+        incidentTypes: Iterable[str],
+        txn: Transaction,
+    ) -> None:
+        incidentTypes = tuple(incidentTypes)
+
+        for incidentType in incidentTypes:
+            txn.execute(
+                self.query.detachIncidentTypeFromIncident.text,
+                {
+                    "eventID": eventID,
+                    "incidentNumber": incidentNumber,
+                    "incidentType": incidentType,
+                },
+            )
+
+        self._log.info(
+            "Detached incident types {incidentTypes} from incident "
+            "{eventID}#{incidentNumber}",
+            eventID=eventID,
+            incidentNumber=incidentNumber,
+            incidentTypes=incidentTypes,
+        )
+
     def _createReportEntry(self, reportEntry: ReportEntry, txn: Transaction) -> None:
         txn.execute(
             self.query.createReportEntry.text,
@@ -859,6 +961,7 @@ class DatabaseStore(IMSDataStore):
                 "author": reportEntry.author,
                 "text": reportEntry.text,
                 "stricken": reportEntry.stricken,
+                "attachedFile": reportEntry.attachedFile,
             },
         )
 
@@ -1306,18 +1409,26 @@ class DatabaseStore(IMSDataStore):
         """
         rangerHandles = frozenset(rangerHandles)
 
+        params: Parameters = {"eventID": eventID, "incidentNumber": incidentNumber}
+        currentHandlesRows = await self.runQuery(self.query.incident_rangers, params)
+        currentHandles = {
+            cast("str", row["RANGER_HANDLE"]) for row in currentHandlesRows
+        }
+
+        addRangers = rangerHandles.difference(currentHandles)
+        removeRangers = currentHandles.difference(rangerHandles)
+
         autoEntry = self._automaticReportEntry(
             author, now(), "Rangers", ", ".join(rangerHandles)
         )
 
         def setIncident_rangers(txn: Transaction) -> None:
-            txn.execute(
-                self.query.clearIncidentRangers.text,
-                {"eventID": eventID, "incidentNumber": incidentNumber},
+            self._attachRangerHandlesToIncident(
+                eventID, incidentNumber, addRangers, txn
             )
 
-            self._attachRangerHandlesToIncident(
-                eventID, incidentNumber, rangerHandles, txn
+            self._detachRangerHandlesFromIncident(
+                eventID, incidentNumber, removeRangers, txn
             )
 
             # Add automatic report entry
@@ -1365,18 +1476,24 @@ class DatabaseStore(IMSDataStore):
         """
         incidentTypes = frozenset(incidentTypes)
 
+        params: Parameters = {"eventID": eventID, "incidentNumber": incidentNumber}
+        currentTypesRows = await self.runQuery(
+            self.query.incident_incidentTypes, params
+        )
+        currentTypes = {cast("str", row["NAME"]) for row in currentTypesRows}
+
+        addTypes = incidentTypes.difference(currentTypes)
+        removeTypes = currentTypes.difference(incidentTypes)
+
         autoEntry = self._automaticReportEntry(
             author, now(), "incident types", ", ".join(incidentTypes)
         )
 
         def setIncident_incidentTypes(txn: Transaction) -> None:
-            txn.execute(
-                self.query.clearIncidentIncidentTypes.text,
-                {"eventID": eventID, "incidentNumber": incidentNumber},
-            )
+            self._attachIncidentTypesToIncident(eventID, incidentNumber, addTypes, txn)
 
-            self._attachIncidentTypesToIncident(
-                eventID, incidentNumber, incidentTypes, txn
+            self._detachIncidentTypesFromIncident(
+                eventID, incidentNumber, removeTypes, txn
             )
 
             # Add automatic report entry
@@ -1530,14 +1647,14 @@ class DatabaseStore(IMSDataStore):
         # field report number -> report entry
         reports = defaultdict[int, list[ReportEntry]](list)
         for row in txn.fetchall():
-            fieldReportNumber = cast(int, row["FIELD_REPORT_NUMBER"])
+            fieldReportNumber = cast("int", row["FIELD_REPORT_NUMBER"])
             reports[fieldReportNumber].append(
                 ReportEntry(
-                    id=cast(int, row["ID"]),
+                    id=cast("int", row["ID"]),
                     created=self.fromDateTimeValue(row["CREATED"]),
-                    author=cast(str, row["AUTHOR"]),
+                    author=cast("str", row["AUTHOR"]),
                     automatic=bool(row["GENERATED"]),
-                    text=cast(str, row["TEXT"]),
+                    text=cast("str", row["TEXT"]),
                     stricken=bool(row["STRICKEN"]),
                 ),
             )
@@ -1545,16 +1662,16 @@ class DatabaseStore(IMSDataStore):
         results = list[FieldReport]()
         txn.execute(self.query.fieldReports.text, parameters)
         for row in txn.fetchall():
-            fieldReportNumber = cast(int, row["NUMBER"])
+            fieldReportNumber = cast("int", row["NUMBER"])
             results.append(
                 FieldReport(
                     eventID=eventID,
                     number=fieldReportNumber,
                     created=self.fromDateTimeValue(row["CREATED"]),
-                    summary=cast(str | None, row["SUMMARY"]),
-                    incidentNumber=cast(int | None, row["INCIDENT_NUMBER"]),
+                    summary=cast("str | None", row["SUMMARY"]),
+                    incidentNumber=cast("int | None", row["INCIDENT_NUMBER"]),
                     reportEntries=cast(
-                        Iterable[ReportEntry], reports[fieldReportNumber]
+                        "Iterable[ReportEntry]", reports[fieldReportNumber]
                     ),
                 )
             )
@@ -1585,11 +1702,11 @@ class DatabaseStore(IMSDataStore):
 
         reportEntries = tuple(
             ReportEntry(
-                id=cast(int, row["ID"]),
+                id=cast("int", row["ID"]),
                 created=self.fromDateTimeValue(row["CREATED"]),
-                author=cast(str, row["AUTHOR"]),
+                author=cast("str", row["AUTHOR"]),
                 automatic=bool(row["GENERATED"]),
-                text=cast(str, row["TEXT"]),
+                text=cast("str", row["TEXT"]),
                 stricken=bool(row["STRICKEN"]),
             )
             for row in txn.fetchall()
@@ -1599,14 +1716,14 @@ class DatabaseStore(IMSDataStore):
             eventID=eventID,
             number=fieldReportNumber,
             created=self.fromDateTimeValue(row["CREATED"]),
-            summary=cast(str | None, row["SUMMARY"]),
-            incidentNumber=cast(int | None, row["INCIDENT_NUMBER"]),
-            reportEntries=cast(Iterable[ReportEntry], reportEntries),
+            summary=cast("str | None", row["SUMMARY"]),
+            incidentNumber=cast("int | None", row["INCIDENT_NUMBER"]),
+            reportEntries=cast("Iterable[ReportEntry]", reportEntries),
         )
 
     def _fetchFieldReportNumbers(self, txn: Transaction, eventID: str) -> Iterable[int]:
         txn.execute(self.query.fieldReportNumbers.text, {"eventID": eventID})
-        return (cast(int, row["NUMBER"]) for row in txn.fetchall())
+        return (cast("int", row["NUMBER"]) for row in txn.fetchall())
 
     async def fieldReports(
         self, eventID: str, excludeSystemEntries: bool = False
@@ -1656,7 +1773,7 @@ class DatabaseStore(IMSDataStore):
         txn.execute(self.query.maxFieldReportNumber.text, {"eventID": eventID})
         row = txn.fetchone()
         assert row is not None
-        number = cast(int | None, row["max(NUMBER)"])
+        number = cast("int | None", row["max(NUMBER)"])
         if number is None:
             return 1
         return number + 1
@@ -1834,7 +1951,6 @@ class DatabaseStore(IMSDataStore):
 
         self._log.info(
             "{author} updated field report #{fieldReportNumber}: {attribute}={value}",
-            storeWriteClass=FieldReport,
             query=query,
             eventID=eventID,
             fieldReportNumber=fieldReportNumber,
@@ -1922,7 +2038,7 @@ class DatabaseStore(IMSDataStore):
             self.query.detachedFieldReportNumbers.text,
             {"eventID": eventID},
         )
-        return (cast(int, row["NUMBER"]) for row in txn.fetchall())
+        return (cast("int", row["NUMBER"]) for row in txn.fetchall())
 
     def _fetchAttachedFieldReportNumbers(
         self, txn: Transaction, eventID: str, incidentNumber: int
@@ -1931,7 +2047,7 @@ class DatabaseStore(IMSDataStore):
             self.query.attachedFieldReportNumbers.text,
             {"eventID": eventID, "incidentNumber": incidentNumber},
         )
-        return (cast(int, row["NUMBER"]) for row in txn.fetchall())
+        return (cast("int", row["NUMBER"]) for row in txn.fetchall())
 
     async def fieldReportsAttachedToIncident(
         self, eventID: str, incidentNumber: int

@@ -47,6 +47,7 @@ class ReportEntry(ComparisonMixIn, ReplaceMixIn):
     automatic: bool
     text: str
     stricken: bool
+    attachedFile: str | None = field(default=None)
 
     def __str__(self) -> str:
         if self.automatic:

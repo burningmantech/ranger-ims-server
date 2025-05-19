@@ -22,7 +22,7 @@ from typing import cast
 
 from ims.ext.trial import TestCase
 
-from .._dms import DutyManagementSystem, fullName
+from .._dms import DutyManagementSystem
 from .dummy import DummyADBAPI, DummyConnectionPool, cannedPersonnel
 
 
@@ -77,7 +77,7 @@ class DutyManagementSystemTests(TestCase):
         L{DutyManagementSystem.dbpool} returns a DB pool.
         """
         dms = self.dms()
-        dbpool = cast(DummyConnectionPool, dms.dbpool)
+        dbpool = cast("DummyConnectionPool", dms.dbpool)
 
         self.assertIsInstance(dbpool, DummyConnectionPool)
 
@@ -99,16 +99,3 @@ class DutyManagementSystemTests(TestCase):
             [p.handle for p in personnel],
             [p[1] for p in cannedPersonnel],
         )
-
-
-class UtilTests(TestCase):
-    """
-    Tests for L{ims.directory.clubhouse_db}.
-    """
-
-    def test_fullName(self) -> None:
-        """
-        L{fullName} combines first/middle/last correctly.
-        """
-        self.assertEqual(fullName("Bob", "", "Smith"), "Bob Smith")
-        self.assertEqual(fullName("Bob", "Q", "Smith"), "Bob Q. Smith")

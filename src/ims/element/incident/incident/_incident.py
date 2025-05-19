@@ -19,16 +19,10 @@ Incident page.
 """
 
 from attrs import mutable
-from klein import KleinRenderable
-from twisted.web.iweb import IRequest
-from twisted.web.template import Tag, renderer
 
-from ims.auth import Authorization
-from ims.ext.json_ext import jsonFalse, jsonTextFromObject, jsonTrue
 from ims.model import Event
 
 from ...page import Page
-from ..incident_template._incident_template import title
 
 
 __all__ = ()
@@ -40,42 +34,6 @@ class IncidentPage(Page):
     Incident page.
     """
 
-    name: str = title
+    name: str = "Incident Details"
+    hideH1: bool = True
     event: Event
-    number: int | None
-
-    @renderer
-    def editing_allowed(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        JSON boolean, true if editing is allowed.
-        """
-        if (
-            request.authorizations  # type: ignore[attr-defined]
-            & Authorization.writeIncidents
-        ):
-            return jsonTrue
-        return jsonFalse
-
-    @renderer
-    def event_id(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        JSON string: event ID.
-        """
-        return jsonTextFromObject(self.event.id)
-
-    @renderer
-    def incident_number(self, request: IRequest, tag: Tag) -> KleinRenderable:
-        """
-        JSON integer: incident number.
-        """
-        return jsonTextFromObject(self.number)
-
-    @renderer
-    async def concentric_street_name_by_id(
-        self, request: IRequest, tag: Tag
-    ) -> KleinRenderable:
-        """
-        JSON dictionary: concentric streets by ID.
-        """
-        namesByID = await self.config.store.concentricStreets(self.event.id)
-        return jsonTextFromObject(namesByID)

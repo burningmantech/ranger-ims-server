@@ -48,7 +48,7 @@ class ReconnectingConnectionPool(ConnectionPool):
     def connect(self) -> Connection:
         connection = ConnectionPool.connect(self)
         connection.ping(reconnect=True)
-        return cast(Connection, connection)
+        return cast("Connection", connection)
 
 
 class Cursor(DictCursor):
@@ -100,7 +100,7 @@ class DataStore(DatabaseStore):
 
     _log: ClassVar[Logger] = Logger()
 
-    schemaVersion: ClassVar[int] = 8
+    schemaVersion: ClassVar[int] = 13
     schemaBasePath: ClassVar[Path] = Path(__file__).parent / "schema"
     sqlFileExtension: ClassVar[str] = "mysql"
 
@@ -191,7 +191,9 @@ class DataStore(DatabaseStore):
         **kwargs: Any,
     ) -> T:
         try:
-            return cast(T, await self._db.runInteraction(interaction, *args, **kwargs))
+            return cast(
+                "T", await self._db.runInteraction(interaction, *args, **kwargs)
+            )
         except MySQLError as e:
             self._log.critical(
                 "Interaction {interaction} failed: {error}",
@@ -206,7 +208,7 @@ class DataStore(DatabaseStore):
         """
         try:
             for row in await self._db.runQuery(self.query.schemaVersion.text):
-                return cast(int, row["VERSION"])
+                return cast("int", row["VERSION"])
             raise StorageError("Invalid schema: no version")
 
         except MySQLError as e:
@@ -252,13 +254,13 @@ class DataStore(DatabaseStore):
         lastTableName = ""
 
         for row in await self.runQuery(columnsQuery):
-            tableName = cast(str, row["TABLE_NAME"])
-            columnName = cast(str, row["COLUMN_NAME"])
-            columnType = cast(str, row["DATA_TYPE"])
-            columnNullable = cast(str, row["IS_NULLABLE"])
-            columnDefault = cast(str | None, row["COLUMN_DEFAULT"])
-            columnPosition = cast(int, row["ORDINAL_POSITION"])
-            columnMaxChars = cast(int | None, row["CHARACTER_MAXIMUM_LENGTH"])
+            tableName = cast("str", row["TABLE_NAME"])
+            columnName = cast("str", row["COLUMN_NAME"])
+            columnType = cast("str", row["DATA_TYPE"])
+            columnNullable = cast("str", row["IS_NULLABLE"])
+            columnDefault = cast("str | None", row["COLUMN_DEFAULT"])
+            columnPosition = cast("int", row["ORDINAL_POSITION"])
+            columnMaxChars = cast("int | None", row["CHARACTER_MAXIMUM_LENGTH"])
 
             if tableName != lastTableName:
                 print(f"{tableName}:", file=out)

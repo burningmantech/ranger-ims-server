@@ -21,7 +21,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.3
+        uses: step-security/harden-runner@v2.12.0
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -42,7 +42,7 @@ jobs:
           python-version: "3.13"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
 
       - name: Set up Tox environment
         run: uvx --with=tox-uv tox run -e lint --notest
@@ -66,7 +66,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.3
+        uses: step-security/harden-runner@v2.12.0
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -87,7 +87,7 @@ jobs:
           python-version: "3.13"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
 
       - name: Set up Tox environment
         run: uvx --with=tox-uv tox run -e mypy --notest
@@ -105,7 +105,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.3
+        uses: step-security/harden-runner@v2.12.0
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -126,7 +126,7 @@ jobs:
           python-version: "3.13"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
 
       - name: Set up Tox environment
         run: uvx --with=tox-uv tox run -e packaging --notest
@@ -159,12 +159,12 @@ jobs:
 
     services:
       mysql:
-        image: mariadb:10.5.17
+        image: mariadb:10.5.27
         env:
-          MYSQL_ROOT_HOST: "%"
-          MYSQL_ROOT_PASSWORD: ims
-          MYSQL_USER: ims
-          MYSQL_PASSWORD: ims
+          MARIADB_ROOT_HOST: "%"
+          MARIADB_ROOT_PASSWORD: ims
+          MARIADB_USER: ims
+          MARIADB_PASSWORD: ims
         ports:
           - 3306
         options: >-
@@ -176,7 +176,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.3
+        uses: step-security/harden-runner@v2.12.0
         with:
           disable-sudo: true
           disable-file-monitoring: true
@@ -220,7 +220,7 @@ jobs:
           f.write(f"TOX_ENV={env}\n")
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
 
       - name: Set up Tox environment
         run: uvx --with=tox-uv tox run -e "${TOX_ENV}" --notest
@@ -296,7 +296,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.3
+        uses: step-security/harden-runner@v2.12.0
         with:
           disable-sudo: true
           egress-policy: block
@@ -337,7 +337,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.3
+        uses: step-security/harden-runner@v2.12.0
         with:
           disable-sudo: true
           egress-policy: block
@@ -377,7 +377,7 @@ jobs:
 
   #   steps:
 
-  #     - uses: step-security/harden-runner@v2.10.3
+  #     - uses: step-security/harden-runner@v2.12.0
   #       with:
   #         egress-policy: audit
 
@@ -407,7 +407,7 @@ jobs:
     steps:
 
       - name: Harden CI
-        uses: step-security/harden-runner@v2.10.3
+        uses: step-security/harden-runner@v2.12.0
         with:
           disable-sudo: true
           egress-policy: block

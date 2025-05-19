@@ -19,7 +19,7 @@ Event tests for :mod:`ranger-ims-server.store`
 """
 
 from ims.ext.trial import asyncAsDeferred
-from ims.model import Event
+from ims.model import AccessEntry, AccessValidity, Event
 
 from .._exceptions import StorageError
 from .base import DataStoreTests
@@ -68,7 +68,7 @@ class DataStoreEventTests(DataStoreTests):
         """
         :meth:`IMSDataStore.createEvent` creates the given event.
         """
-        for eventName in ("Foo", "Foo Bar"):
+        for eventName in ("Foo", "Foo-Bar"):
             event = Event(id=eventName)
 
             store = await self.store()
@@ -116,11 +116,20 @@ class DataStoreEventTests(DataStoreTests):
         """
         event = Event(id="Foo")
 
-        for readers in ({"a"}, {"a", "b", "c"}):
+        accessEntries = (
+            (AccessEntry(expression="a", validity=AccessValidity.always),),
+            (
+                AccessEntry(expression="a", validity=AccessValidity.always),
+                AccessEntry(expression="b", validity=AccessValidity.always),
+                AccessEntry(expression="c", validity=AccessValidity.always),
+            ),
+        )
+
+        for readers in accessEntries:
             store = await self.store()
             await store.createEvent(event)
             await store.setReaders(event.id, readers)
-            result = frozenset(await store.readers(event.id))
+            result = tuple(await store.readers(event.id))
             self.assertEqual(result, readers)
 
     @asyncAsDeferred
@@ -148,11 +157,20 @@ class DataStoreEventTests(DataStoreTests):
         """
         event = Event(id="Foo")
 
-        for writers in ({"a"}, {"a", "b", "c"}):
+        accessEntries = (
+            (AccessEntry(expression="a", validity=AccessValidity.always),),
+            (
+                AccessEntry(expression="a", validity=AccessValidity.always),
+                AccessEntry(expression="b", validity=AccessValidity.always),
+                AccessEntry(expression="c", validity=AccessValidity.always),
+            ),
+        )
+
+        for writers in accessEntries:
             store = await self.store()
             await store.createEvent(event)
             await store.setWriters(event.id, writers)
-            result = frozenset(await store.writers(event.id))
+            result = tuple(await store.writers(event.id))
             self.assertEqual(result, writers)
 
     @asyncAsDeferred

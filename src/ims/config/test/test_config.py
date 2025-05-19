@@ -496,7 +496,7 @@ class ConfigurationTests(TestCase):
         self.assertEqual(config.dataRoot, dataRoot)
         self.assertEqual(config.cachedResourcesRoot, cached)
 
-        directory = cast(FileDirectory, config.directory)
+        directory = cast("FileDirectory", config.directory)
 
         self.assertIsInstance(directory, FileDirectory)
         self.assertEqual(
@@ -599,22 +599,6 @@ class ConfigurationTests(TestCase):
 
             self.assertEqual(config.imsAdmins, result)
 
-    def test_fromConfigFile_requireActive(self) -> None:
-        """
-        RequireActive boolean values.
-        """
-
-        def test(value: str) -> bool:
-            with testingEnvironment({"IMS_REQUIRE_ACTIVE": value}):
-                config = Configuration.fromConfigFile(None)
-            return config.requireActive
-
-        for value in ("false", "False", "FALSE", "no", "No", "NO", "0"):
-            self.assertFalse(test(value))
-
-        for value in ("true", "True", "TRUE", "yes", "Yes", "YES", "1"):
-            self.assertTrue(test(value))
-
     @given(text(alphabet=printable, min_size=1))
     def test_fromConfigFile_jwtSecret(self, secret: str) -> None:
         """
@@ -653,7 +637,7 @@ class ConfigurationTests(TestCase):
             config = Configuration.fromConfigFile(None)
 
         self.assertIsInstance(config.store, SQLiteDataStore)
-        self.assertEqual(cast(SQLiteDataStore, config.store).dbPath, path)
+        self.assertEqual(cast("SQLiteDataStore", config.store).dbPath, path)
 
     def test_store_mysql(self) -> None:
         hostName = "db_host"
@@ -674,7 +658,7 @@ class ConfigurationTests(TestCase):
         ):
             config = Configuration.fromConfigFile(None)
 
-        store = cast(MySQLDataStore, config.store)
+        store = cast("MySQLDataStore", config.store)
 
         self.assertIsInstance(store, MySQLDataStore)
         self.assertEqual(store.hostName, hostName)
@@ -705,7 +689,7 @@ class ConfigurationTests(TestCase):
         ):
             config = Configuration.fromConfigFile(None)
 
-        directory = cast(FileDirectory, config.directory)
+        directory = cast("FileDirectory", config.directory)
 
         self.assertIsInstance(directory, FileDirectory)
         self.assertEqual(directory.path, path)
@@ -727,7 +711,7 @@ class ConfigurationTests(TestCase):
         ):
             config = Configuration.fromConfigFile(None)
 
-        directory = cast(DMSDirectory, config.directory)
+        directory = cast("DMSDirectory", config.directory)
 
         self.assertIsInstance(directory, DMSDirectory)
         self.assertEqual(directory._dms.host, hostName)
@@ -772,6 +756,7 @@ class ConfigurationTests(TestCase):
             f"Core.LogLevel: {config.logLevelName}\n"
             f"Core.LogFile: {config.logFilePath}\n"
             f"Core.LogFormat: {config.logFormat}\n"
+            f"Core.AttachmentsStore: {config.attachmentsStoreType}\n"
             f"\n"
             f"DataStore: {describeFactory(config._storeFactory)}\n"
             f"Directory: {config.directory}\n",

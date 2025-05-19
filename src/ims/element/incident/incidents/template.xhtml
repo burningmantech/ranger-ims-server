@@ -1,22 +1,197 @@
 <!DOCTYPE html>
-<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root">
-<head t:render="head" imports="dataTables,ims,viewIncidents"/>
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="root" class="no-edit">
+<head t:render="head" imports="theme,dataTables" module="viewIncidents"/>
 
-<body/>
+<body>
+  <div xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1" t:render="container">
 
-<script>
-  <!-- FIXME: figure out how to move this to / include from incident.js -->
-  const editingAllowed            = <json t:render="editing_allowed"/>;
-  const eventID                   = <json t:render="event_id"/>;
+    <div id="error_info" class="hidden text-danger">
+      <p id="error_text"></p>
+    </div>
 
-  const pageTemplateURL           = url_viewIncidentsTemplate;
-  const dataURL                   = urlReplace(url_incidents + "?exclude_system_entries=true");
-  const viewIncidentsURL          = urlReplace(url_viewIncidents);
-  const viewFieldReportsURL       = urlReplace(url_viewFieldReports);
+    <!-- Help modal for incidents page -->
+    <div class="modal no-print" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <p class="modal-title fs-5" id="helpModalLabel">Incidents help</p>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+          </div>
+          <div class="modal-body">
+            <p class="mt-2 mb-0">Keyboard shortcuts</p>
+            <ul>
+              <li><code>n</code>: create (n)ew Incident <br/></li>
+              <li><code>/</code>: jump to search field <br/></li>
+            </ul>
+            <p class="mt-2 mb-0">In the search field</p>
+            <ul>
+              <li>Type an IMS number then press <code>⏎</code> to be redirected to that Incident</li>
+              <li>Search by regular expression by enclosing a pattern with slashes, e.g. <code>/r.nger/</code> or <code>/\b(dog|cat)\b/</code></li>
+              <li>All searches are case insensitive</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  const concentricStreetNameByID  = <json t:render="concentric_street_name_by_id"/>;
-  const allIncidentTypes          = <json t:render="incident_types"/>;
+    <p class="d-sm-none no-print">
+      <a href="../field_reports/">
+        → Field Reports
+      </a>
+    </p>
 
-  initIncidentsPage();
-</script>
+    <div class="row">
+      <div class="col-sm-7">
+        <div class="btn-group new_incident no-print">
+          <a href="./new" target="_blank">
+            <button
+                    id="new_incident"
+                    type="button"
+                    class="btn btn-sm btn-default btn-primary"
+            >
+              New
+            </button>
+          </a>
+        </div>
+
+        <button
+                id="show_state"
+                type="button"
+                class="btn btn-light btn-sm dropdown-toggle"
+                data-bs-toggle="dropdown"
+        >
+
+          <span class="selection">All</span>
+        </button>
+        <ul class="dropdown-menu">
+          <li id="show_state_all">
+            <a href="#" class="name dropdown-item" onclick="showState('all', true); return false;">All States</a>
+          </li>
+          <li id="show_state_open">
+            <a href="#" class="name dropdown-item" onclick="showState('open', true); return false;">Open</a>
+          </li>
+          <li id="show_state_active">
+            <a href="#" class="name dropdown-item" onclick="showState('active', true); return false;">Active</a>
+          </li>
+        </ul>
+
+        <button
+                id="show_days"
+                type="button"
+                title="Filter by last modified date"
+                class="btn btn-light btn-sm dropdown-toggle"
+                data-bs-toggle="dropdown"
+        >
+
+          <span class="selection">All Days</span>
+        </button>
+        <ul class="dropdown-menu">
+          <li id="show_days_all" onclick="showDays('all', true); return false;">
+            <a href="#" class="name dropdown-item">All Days</a>
+          </li>
+          <li id="show_days_0" onclick="showDays(0, true); return false;">
+            <a href="#" class="name dropdown-item">Today</a>
+          </li>
+          <li id="show_days_1" onclick="showDays(1, true); return false;">
+            <a href="#" class="name dropdown-item">Last 2 Days</a>
+          </li>
+          <li id="show_days_2" onclick="showDays(2, true); return false;">
+            <a href="#" class="name dropdown-item">Last 3 Days</a>
+          </li>
+          <li id="show_days_3" onclick="showDays(3, true); return false;">
+            <a href="#" class="name dropdown-item">Last 4 Days</a>
+          </li>
+        </ul>
+
+        <button
+                id="show_type"
+                type="button"
+                class="btn btn-light btn-sm dropdown-toggle"
+                data-bs-toggle="dropdown"
+                data-bs-auto-close="outside"
+        >
+          Types
+        </button>
+        <ul id="ul_show_type" class="dropdown-menu">
+          <a class="dropdown-item" href="#" onclick="toggleCheckAllTypes(); return false;">Select All</a>
+          <a id="show_blank_type" class="dropdown-item dropdown-item-checkable dropdown-item-checked" href="#">(blank)</a>
+          <a id="show_other_type" class="dropdown-item dropdown-item-checkable dropdown-item-checked" href="#">(other)</a>
+          <!-- li will be inserted here by JQuery -->
+        </ul>
+
+        <button
+                id="show_rows"
+                type="button"
+                class="btn btn-light btn-sm dropdown-toggle"
+                data-bs-toggle="dropdown"
+        >
+
+          <span class="selection">All Rows</span>
+        </button>
+        <ul class="dropdown-menu">
+          <li id="show_rows_all" onclick="showRows('all', true); return false;">
+            <a href="#" class="name dropdown-item">All Rows</a>
+          </li>
+          <li id="show_rows_25" onclick="showRows(  25, true); return false;">
+            <a href="#" class="name dropdown-item">25 Rows</a>
+          </li>
+          <li id="show_rows_50" onclick="showRows(  50, true); return false;">
+            <a href="#" class="name dropdown-item">50 Rows</a>
+          </li>
+          <li id="show_rows_100" onclick="showRows( 100, true); return false;">
+            <a href="#" class="name dropdown-item">100 Rows</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="col-sm">
+        <div id="search_container" class="form-group ms-auto">
+          <div class="flex-input-container no-print">
+            <label for="search_input" class="control-label hidden" aria-label="Search">
+              Search
+            </label>
+            <input
+                    id="search_input"
+                    type="search"
+                    class="form-control search-box"
+                    placeholder="Press &quot; ⁄ &quot; to search"
+                    inputmode="latin"
+                    autocomplete="off"
+                    aria-controls="queue_table"
+            />
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <table id="queue_table" class="table table-striped table-hover">
+      <thead>
+      <tr>
+        <th><abbr title="IMS#">#</abbr></th>
+        <th>Created</th>
+        <th>State</th>
+        <th>Summary</th>
+        <th>Types</th>
+        <th>Location</th>
+        <th>Rangers</th>
+        <th>Modified</th>
+      </tr>
+      </thead>
+      <tbody/>
+      <tfoot>
+      <tr>
+        <th><abbr title="IMS#">#</abbr></th>
+        <th>Created</th>
+        <th>State</th>
+        <th>Summary</th>
+        <th>Types</th>
+        <th>Location</th>
+        <th>Rangers</th>
+        <th>Modified</th>
+      </tr>
+      </tfoot>
+    </table>
+  </div>
+</body>
 </html>

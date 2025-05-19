@@ -169,9 +169,7 @@ def forbiddenResponse(request: IRequest) -> KleinSynchronousRenderable:
     return textResponse(request, "Permission denied")
 
 
-def friendlyNotAuthorizedResponse(
-    request: IRequest, requireActive: bool
-) -> KleinSynchronousRenderable:
+def friendlyNotAuthorizedResponse(request: IRequest) -> KleinSynchronousRenderable:
     """
     Respond with a FORBIDDEN status, informing the user what went wrong.
     """
@@ -185,29 +183,31 @@ def friendlyNotAuthorizedResponse(
     request.setResponseCode(http.FORBIDDEN)
     if user is not None:
         message = (
-            f"Hey Ranger {user.shortNames[0]}, you don't have permission to access this URI:\n"  # noqa:E501
+            f"Hey Ranger {user.shortNames[0]}, you don't have permission to access "
+            f"this IMS endpoint:\n"
+            f"\n"
             f"    {request.uri.decode('utf-8')}\n"
             f"\n"
-            f"Permissions are granted per-event via positions. These are your positions:\n"  # noqa:E501
-            f"    {user.groups}\n"
-            f"\n"
         )
-        if requireActive:
+        if not user.onsite:
             message += (
-                f"IMS is currently configured to only permit access to on-site Rangers.\n"  # noqa:E501
-                f"Your current on-site status is '{user.active}', according to Clubhouse.\n"  # noqa:E501
+                "Please note that most IMS permissions are granted to Rangers only "
+                "while they are actively working on the playa. You are currently "
+                "marked as off-site in the Clubhouse, indicating that you're done "
+                "Rangering for the year (or maybe you still need to check in at "
+                "Ranger HQ?).\n"
+                "\n"
             )
         message += (
+            "All Rangers are very much encouraged to write Field Reports while on the "
+            "playa. While you may have submitted a Field Report for an Incident, only "
+            "certain positions are authorized to view the Incident records themselves. "
+            "This policy is in place to protect participants' personal and other "
+            "related confidential information.\n"
             "\n"
-            "All Rangers are allowed (and encouraged!) to write Field Reports while\n"
-            "on playa. Only some positions need access to read and write Incidents.\n"
-            "We do this to help protect participants' PII.\n"
-            "\n"
-            "If your position is erroneously not granting you a permission you need\n"
-            "to do your work as a Ranger, then please get in touch with an Operator\n"
-            "or the Ranger Tech Oncall.\n"
-            "\n"
-            "<3 from the Ranger Tech Team\n"
+            "If you believe you need access to the full Incident records, please reach "
+            "out to an on-duty Operator for assistance. For post-event access, contact "
+            "the Ranger Tech Cadre (ranger-tech-cadre@burningman.org).\n"
         )
     else:
         message = "Permission denied"
@@ -319,7 +319,7 @@ def queryValue(request: IRequest, name: str, default: str | None = None) -> str 
         C{default} if there no such query parameter.
         If more than one value is found, return the last value found.
     """
-    values = cast(Sequence[bytes] | None, request.args.get(name.encode("utf-8")))
+    values = cast("Sequence[bytes] | None", request.args.get(name.encode("utf-8")))
 
     if values is None:
         return default
@@ -346,7 +346,7 @@ def queryValues(
     @return: The values of the query parameter specified by C{name}, or
         C{default} if there no such query parameter.
     """
-    values = cast(Sequence[bytes] | None, request.args.get(name))
+    values = cast("Sequence[bytes] | None", request.args.get(name))
 
     if values is None:
         return default
@@ -431,6 +431,7 @@ class Router(Klein):
             # This is because exposing what resources do or do not exist can
             # expose information that was not meant to be exposed.
             app.config.authProvider.authenticateRequest(request)
+            request.setHeader(HeaderName.cacheControl.value, "no-cache")
             return notFoundResponse(request)
 
         @self.handle_errors(MethodNotAllowed)
@@ -452,14 +453,15 @@ class Router(Klein):
         @self.handle_errors(NotAuthorizedError)
         @renderResponse
         def notAuthorizedError(
-            app: Any,
+            app: Any,  # noqa: ARG001
             request: IRequest,
             failure: Failure,  # noqa: ARG001
         ) -> KleinRenderable:
             """
             Not authorized.
             """
-            return friendlyNotAuthorizedResponse(request, app.config.requireActive)
+            request.setHeader(HeaderName.cacheControl.value, "no-cache")
+            return friendlyNotAuthorizedResponse(request)
 
         @self.handle_errors(InvalidCredentialsError)
         @renderResponse
@@ -471,6 +473,7 @@ class Router(Klein):
             """
             Invalid credentials.
             """
+            request.setHeader(HeaderName.cacheControl.value, "no-cache")
             return forbiddenResponse(request)
 
         @self.handle_errors(NotAuthenticatedError)
@@ -485,6 +488,7 @@ class Router(Klein):
             """
             requestedWith = request.getHeader("X-Requested-With")
             if requestedWith == "XMLHttpRequest":
+                request.setHeader(HeaderName.cacheControl.value, "no-cache")
                 return forbiddenResponse(request)
 
             element = redirect(request, URLs.login, origin="o")

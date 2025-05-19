@@ -34,7 +34,7 @@ __all__ = ()
 statusDescriptions = {
     "active": "Active Ranger",
     "inactive": "Inactive Ranger",
-    "vintage": "Vintage Ranger",
+    "inactiveExtension": "Inactive Extension Ranger",
     "other": "(Unknown Person Type)",
 }
 
@@ -49,7 +49,7 @@ class RangerStatus(Names):
 
     active = auto()
     inactive = auto()
-    vintage = auto()
+    inactiveExtension = auto()
 
     other = auto()
 
@@ -65,19 +65,20 @@ class Ranger(ReplaceMixIn):
     """
     Ranger
 
-    An Ranger contains information about a Black Rock Ranger; a person record
+    A Ranger contains information about a Black Rock Ranger; a person record
     specific to a Black Rock Ranger.
     """
 
     handle: str
-    name: str
     status: RangerStatus
+    # email is not fed out via the personnel endpoint, but we need it in the server
+    # in order to permit authentication using email address rather than handle.
     email: frozenset[str] = field(converter=freezeStrings, default=frozenset[str]())
-    enabled: bool
+    onsite: bool
     directoryID: str | None
     password: str | None = field(
         order=False, repr=lambda _p: "\N{ZIPPER-MOUTH FACE}", default=None
     )
 
     def __str__(self) -> str:
-        return f"{self.status} {self.handle} ({self.name})"
+        return f"{self.status} {self.handle}"

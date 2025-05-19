@@ -29,19 +29,31 @@ from datetime import UTC
 from datetime import datetime as DateTime
 from enum import Enum
 from functools import partial
+from io import BytesIO
 from json import JSONDecodeError
-from typing import Any, ClassVar, cast
+from typing import Any, ClassVar, Literal, NotRequired, TypedDict, cast
+from uuid import uuid4
 
 from attrs import frozen
 from hyperlink import URL
 from klein import KleinRenderable
 from klein._app import KleinSynchronousRenderable
+from multipart import (  # type: ignore[import-untyped]
+    MultipartError,
+    MultipartParser,
+    parse_options_header,
+)
+from puremagic import PureError
+from puremagic import from_stream as puremagic_from_stream
+from puremagic import from_string as puremagic_from_string
 from twisted.internet.defer import Deferred
 from twisted.internet.error import ConnectionDone
+from twisted.internet.threads import deferToThread
 from twisted.logger import Logger
 from twisted.python.failure import Failure
 from twisted.web import http
 from twisted.web.iweb import IRequest
+from twisted.web.static import Data, File
 
 from ims.auth import Authorization, NotAuthorizedError
 from ims.config import Configuration, URLs
@@ -53,6 +65,7 @@ from ims.ext.json_ext import (
 )
 from ims.ext.klein import ContentType, HeaderName, static
 from ims.model import (
+    AccessEntry,
     Event,
     FieldReport,
     Incident,
@@ -60,7 +73,7 @@ from ims.model import (
     IncidentState,
     ReportEntry,
 )
-from ims.model.json import (
+from ims.model.jsons import (
     FieldReportJSONKey,
     IncidentJSONKey,
     IncidentPriorityJSONValue,
@@ -72,7 +85,7 @@ from ims.model.json import (
     jsonObjectFromModelObject,
     modelObjectFromJSONObject,
 )
-from ims.store import NoSuchIncidentError
+from ims.store import NoSuchFieldReportError, NoSuchIncidentError
 
 from ._eventsource import DataStoreEventSourceLogObserver
 from ._klein import (
@@ -84,6 +97,7 @@ from ._klein import (
     noContentResponse,
     notFoundResponse,
     queryValue,
+    textResponse,
 )
 from ._static import buildJSONArray, jsonBytes, writeJSONStream
 
@@ -99,6 +113,27 @@ def _unprefix(url: URL) -> URL:
 
 def _urlToTextForBag(url: URL) -> str:
     return url.to_text().replace("<", "{").replace(">", "}")
+
+
+class FetchAuthEventAccess(TypedDict):
+    readIncidents: bool
+    writeIncidents: bool
+    writeFieldReports: bool
+    attachFiles: bool
+
+
+class FetchAuthAuthenticatedResp(TypedDict):
+    authenticated: Literal[True]
+    user: str
+    admin: bool
+    event_access: NotRequired[dict[str, FetchAuthEventAccess]]
+
+
+class FetchAuthUnauthenticatedResp(TypedDict):
+    authenticated: Literal[False]
+
+
+FetchAuthResp = FetchAuthAuthenticatedResp | FetchAuthUnauthenticatedResp
 
 
 @frozen(kw_only=True, eq=False)
@@ -135,7 +170,6 @@ class APIApplication:
     storeObserver: DataStoreEventSourceLogObserver
 
     @router.route(_unprefix(URLs.ping), methods=("HEAD", "GET"))
-    @static
     def pingResource(self, request: IRequest) -> KleinRenderable:
         """
         Ping (health check) endpoint.
@@ -210,14 +244,47 @@ class APIApplication:
             jsonTextFromObject({"status": "invalid-credentials"}).encode("utf-8"),
         )
 
+    @router.route(_unprefix(URLs.auth), methods=("HEAD", "GET"))
+    async def fetchAuthResource(self, request: IRequest) -> KleinSynchronousRenderable:
+        """
+        Endpoint for details about the current authenticated session (or lack thereof).
+
+        Response type is FetchAuthResp
+        """
+        self.config.authProvider.checkAuthentication(request)
+        user: IMSUser | None = getattr(request, "user", None)
+
+        if user is None:
+            unauth = FetchAuthUnauthenticatedResp(authenticated=False)
+            return jsonBytes(request, jsonTextFromObject(unauth).encode("utf-8"))
+
+        eventID: str | None = queryValue(request, "event_id")
+        authz = await self.config.authProvider.authorizationsForUser(user, eventID)
+        result = FetchAuthAuthenticatedResp(
+            authenticated=True,
+            user=user.shortNames[0],
+            admin=Authorization.imsAdmin in authz,
+        )
+        if eventID is not None:
+            result["event_access"] = {
+                eventID: FetchAuthEventAccess(
+                    readIncidents=Authorization.readIncidents in authz,
+                    writeIncidents=Authorization.writeIncidents in authz,
+                    writeFieldReports=Authorization.writeFieldReports in authz,
+                    attachFiles=self.config.attachmentsStoreType.lower() != "none",
+                )
+            }
+        return jsonBytes(request, jsonTextFromObject(result).encode("utf-8"))
+
     @router.route(_unprefix(URLs.personnel), methods=("HEAD", "GET"))
+    @static
     async def personnelResource(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Personnel endpoint.
         """
-        eventId = queryValue(request, "event_id")
+        eventID = queryValue(request, "event_id")
         await self.config.authProvider.authorizeRequest(
-            request, eventId, Authorization.readPersonnel
+            request, eventID, Authorization.readPersonnel
         )
 
         stream, etag = await self.personnelData()
@@ -243,6 +310,7 @@ class APIApplication:
         )
 
     @router.route(_unprefix(URLs.incidentTypes), methods=("HEAD", "GET"))
+    @static
     async def incidentTypesResource(
         self, request: IRequest
     ) -> KleinSynchronousRenderable:
@@ -309,6 +377,7 @@ class APIApplication:
         return noContentResponse(request)
 
     @router.route(_unprefix(URLs.events), methods=("HEAD", "GET"))
+    @static
     async def eventsResource(self, request: IRequest) -> KleinSynchronousRenderable:
         """
         Events endpoint.
@@ -320,10 +389,14 @@ class APIApplication:
             getattr(request, "user", None),
         )
 
+        relevantAuthorizations = (
+            Authorization.readIncidents | Authorization.writeFieldReports
+        )
+
         jsonEvents = [
             jsonObjectFromModelObject(event)
             for event in await self.config.store.events()
-            if Authorization.readIncidents & await authorizationsForUser(event.id)
+            if relevantAuthorizations & await authorizationsForUser(event.id)
         ]
 
         data = jsonTextFromObject(jsonEvents).encode("utf-8")
@@ -422,6 +495,7 @@ class APIApplication:
 
         json[IncidentJSONKey.number.value] = 0
         json[IncidentJSONKey.created.value] = jsonNow
+        json[IncidentJSONKey.lastModified.value] = jsonNow
 
         # If not provided, set JSON event, state to new, priority to normal
 
@@ -630,7 +704,7 @@ class APIApplication:
                     store.setIncident_locationRadialMinute,
                     store.setIncident_locationDescription,
                 ):
-                    cast(IncidentAttributeSetter, setter)(
+                    cast("IncidentAttributeSetter", setter)(
                         event_id, incidentNumber, None, author
                     )
             else:
@@ -681,6 +755,178 @@ class APIApplication:
             )
 
         return noContentResponse(request)
+
+    @router.route(_unprefix(URLs.incidentAttachments), methods=("POST",))
+    async def attachFileToIncident(
+        self,
+        request: IRequest,
+        event_id: str,
+        incident_number: str,
+    ) -> KleinSynchronousRenderable:
+        eventId = event_id
+        incidentNumber = int(incident_number)
+        del event_id
+        del incident_number
+
+        await self.config.authProvider.authorizeRequest(
+            request, eventId, Authorization.writeIncidents
+        )
+
+        _, options = parse_options_header(request.getHeader("Content-Type"))
+        p = MultipartParser(
+            request.content,
+            options.get("boundary", ""),
+            # Allow no more than one file
+            part_limit=1,
+            # Maybe move this to config
+            # Arbitrary limit of 10 MB per file
+            partsize_limit=10 * 1024 * 1024,
+        )
+
+        try:
+            parts = p.parts()
+        except MultipartError as me:
+            self._log.error("error decoding attachment: {me}", me=me)
+            request.setResponseCode(me.http_status)
+            return textResponse(request, str(me))
+        if len(parts) == 0:
+            # No files provided in request. Nothing to do
+            return noContentResponse(request)
+        if len(parts) > 1:
+            return badRequestResponse(request, "Only one file is allowed per request")
+        part = parts[0]
+
+        try:
+            extension = puremagic_from_string(part.raw, filename=part.filename)
+        except PureError:
+            self._log.info(f"failed to determine filetype for {part.filename}")
+            extension = ""
+        else:
+            self._log.info(f"detected file extension {extension} for {part.filename}")
+
+        newFilename = (
+            f"event_{eventId}_incident_{incidentNumber:05}_{uuid4()}{extension}"
+        )
+        # Safety check, since this could make for bad behavior
+        assert "/" not in newFilename
+
+        match self.config.attachmentsStoreType:
+            case "Local":
+                localDestDir = self.config.localAttachmentsRoot
+                if not localDestDir:
+                    return badRequestResponse(
+                        request, "Attachments upload is not enabled"
+                    )
+                localDestDir.mkdir(parents=True, exist_ok=True)
+                dest = localDestDir / newFilename
+                part.save_as(dest)
+            case "S3":
+                if not self.config.botoClient:
+                    return badRequestResponse(
+                        request, "Attachments upload is not enabled"
+                    )
+                await deferToThread(
+                    self.config.botoClient.upload_fileobj,
+                    Fileobj=part.file,
+                    Bucket=self.config.s3Bucket,
+                    Key=self.config.s3BucketSubPath + "/" + newFilename,
+                )
+            case _:
+                self._log.info("no attachmentsStoreType configured")
+                return badRequestResponse(request, "Attachments upload is not enabled")
+
+        user: IMSUser = request.user  # type: ignore[attr-defined]
+        author = user.shortNames[0]
+
+        entry = ReportEntry(
+            id=-1,
+            author=author,
+            text=f"{author} uploaded a file: {part.filename}",
+            created=DateTime.now(UTC),
+            automatic=False,
+            stricken=False,
+            attachedFile=newFilename,
+        )
+
+        await self.config.store.addReportEntriesToIncident(
+            eventId, incidentNumber, (entry,), author
+        )
+        return noContentResponse(request)
+
+    @router.route(_unprefix(URLs.incidentAttachmentNumber), methods=("HEAD", "GET"))
+    async def retrieveIncidentAttachment(
+        self,
+        request: IRequest,
+        event_id: str,
+        incident_number: str,
+        attachment_number: str,
+    ) -> KleinSynchronousRenderable:
+        eventId = event_id
+        incidentNumber = int(incident_number)
+        attachmentNumber = int(attachment_number)
+        del event_id
+        del incident_number
+        del attachment_number
+
+        await self.config.authProvider.authorizeRequest(
+            request, eventId, Authorization.readIncidents
+        )
+
+        incident = await self.config.store.incidentWithNumber(eventId, incidentNumber)
+
+        attachedFile: str | None = None
+        for reportEntry in incident.reportEntries:
+            if reportEntry.id == attachmentNumber:
+                attachedFile = reportEntry.attachedFile
+                break
+
+        if not attachedFile:
+            raise NotAuthorizedError("Not authorized for file")
+
+        match self.config.attachmentsStoreType:
+            case "Local":
+                if not self.config.localAttachmentsRoot:
+                    return badRequestResponse(
+                        request, "Attachments download is not enabled"
+                    )
+                self._log.info(
+                    "reading file {f}",
+                    f=str(self.config.localAttachmentsRoot / attachedFile),
+                )
+                return File(str(self.config.localAttachmentsRoot / attachedFile))
+            case "S3":
+                with BytesIO() as buffer:
+                    if not self.config.botoClient:
+                        return badRequestResponse(
+                            request, "Attachments download is not enabled"
+                        )
+                    key = self.config.s3BucketSubPath + "/" + attachedFile
+                    self._log.info(
+                        "fetching s3://{bucket}/{key}",
+                        bucket=self.config.s3Bucket,
+                        key=key,
+                    )
+                    await deferToThread(
+                        self.config.botoClient.download_fileobj,
+                        Bucket=self.config.s3Bucket,
+                        Key=key,
+                        Fileobj=buffer,
+                    )
+                    buffer.seek(0)
+                    contentType = ""
+                    try:
+                        contentType = puremagic_from_stream(
+                            buffer, mime=True, filename=attachedFile
+                        )
+                    except PureError:
+                        self._log.info(
+                            f"failed to determine MIME type for {attachedFile}"
+                        )
+                    buffer.seek(0)
+                    return Data(buffer.read(), contentType)
+            case _:
+                self._log.info("no attachmentsStoreType configured")
+                return badRequestResponse(request, "Attachments upload is not enabled")
 
     @router.route(_unprefix(URLs.incident_reportEntry), methods=("POST",))
     async def editIncidentReportEntryResource(
@@ -904,9 +1150,12 @@ class APIApplication:
             return notFoundResponse(request)
         del field_report_number
 
-        fieldReport = await self.config.store.fieldReportWithNumber(
-            event_id, fieldReportNumber
-        )
+        try:
+            fieldReport = await self.config.store.fieldReportWithNumber(
+                event_id, fieldReportNumber
+            )
+        except NoSuchFieldReportError:
+            return notFoundResponse(request)
 
         await self.config.authProvider.authorizeRequestForFieldReport(
             request, fieldReport
@@ -1102,12 +1351,15 @@ class APIApplication:
         acl = {}
         for event in await store.events():
             eventID = event.id
+            readers: Iterable[AccessEntry] = await store.readers(eventID)
+            writers: Iterable[AccessEntry] = await store.writers(eventID)
+            reporters: Iterable[AccessEntry] = await store.reporters(eventID)
             acl[eventID] = {
-                "readers": (await store.readers(eventID)),
-                "writers": (await store.writers(eventID)),
-                "reporters": (await store.reporters(eventID)),
+                "readers": [jsonObjectFromModelObject(ae) for ae in readers],
+                "writers": [jsonObjectFromModelObject(ae) for ae in writers],
+                "reporters": [jsonObjectFromModelObject(ae) for ae in reporters],
             }
-        return jsonTextFromObject(acl)
+        return jsonBytes(request, jsonTextFromObject(acl).encode("utf-8"))
 
     @router.route(_unprefix(URLs.acl), methods=("POST",))
     async def editAdminAccessResource(
@@ -1129,15 +1381,26 @@ class APIApplication:
 
         for eventID, acl in edits.items():
             if "readers" in acl:
-                await store.setReaders(eventID, acl["readers"])
+                readers = tuple(
+                    modelObjectFromJSONObject(ae, AccessEntry) for ae in acl["readers"]
+                )
+                await store.setReaders(eventID, readers)
             if "writers" in acl:
-                await store.setWriters(eventID, acl["writers"])
+                writers = tuple(
+                    modelObjectFromJSONObject(ae, AccessEntry) for ae in acl["writers"]
+                )
+                await store.setWriters(eventID, writers)
             if "reporters" in acl:
-                await store.setReporters(eventID, acl["reporters"])
+                reporters = tuple(
+                    modelObjectFromJSONObject(ae, AccessEntry)
+                    for ae in acl["reporters"]
+                )
+                await store.setReporters(eventID, reporters)
 
         return noContentResponse(request)
 
     @router.route(_unprefix(URLs.streets), methods=("HEAD", "GET"))
+    @static
     async def readStreetsResource(
         self, request: IRequest
     ) -> KleinSynchronousRenderable:
@@ -1146,11 +1409,17 @@ class APIApplication:
         """
         store = self.config.store
 
+        oneEventId = queryValue(request, "event_id")
+
         async def authorizedEvents() -> AsyncIterable[Event]:
             for event in await store.events():
+                if oneEventId and event.id != oneEventId:
+                    continue
                 try:
                     await self.config.authProvider.authorizeRequest(
-                        request, event.id, Authorization.readIncidents
+                        request,
+                        event.id,
+                        Authorization.readIncidents | Authorization.imsAdmin,
                     )
                 except NotAuthorizedError:
                     pass
@@ -1173,6 +1442,8 @@ class APIApplication:
     ) -> KleinSynchronousRenderable:
         """
         Street list edit endpoint.
+
+        The API currently supports addition of streets, but not removal or modification.
         """
         await self.config.authProvider.authorizeRequest(
             request, None, Authorization.imsAdmin
@@ -1184,12 +1455,6 @@ class APIApplication:
             edits = objectFromJSONBytesIO(request.content)
         except JSONDecodeError as e:
             return invalidJSONResponse(request, e)
-
-        for eventID in edits.keys():
-            existing = await store.concentricStreets(eventID)
-
-            for _streetID, _streetName in existing.items():
-                raise NotAuthorizedError("Removal of streets is not allowed.")
 
         for eventID, streets in edits.items():
             existing = await store.concentricStreets(eventID)

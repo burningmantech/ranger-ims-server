@@ -116,4 +116,4 @@ class AuthApplication:
         session.expire()
 
         # Redirect back to application home
-        return redirect(request, URLs.app)
+        return redirect(request, URL.fromText(URLs.app.to_text() + "?logout"))

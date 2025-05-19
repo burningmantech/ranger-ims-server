@@ -53,6 +53,7 @@ class Incident(ReplaceMixIn):
     eventID: str
     number: int
     created: DateTime = field(converter=normalizeDateTime)
+    lastModified: DateTime = field(converter=normalizeDateTime)
     state: IncidentState
     priority: IncidentPriority
     summary: str | None

@@ -15,6 +15,7 @@
 
 .navbar-brand {
   --bs-navbar-brand-font-size: 1rem;
+  --bs-navbar-brand-margin-end: 0.5rem;
   padding-bottom: 0;
 }
 
@@ -221,6 +222,8 @@ h1 {
 
 #report_entry_add {
   resize: vertical;
+  min-height: 8rem;
+  field-sizing: content;
 }
 
 .item-hidden > .badge-visible {
@@ -314,4 +317,15 @@ h1 {
 
 .hidden {
   display: none !important;
+}
+
+.dropdown-item-checkable {
+  padding: var(--bs-dropdown-item-padding-y) 1.5rem;
+}
+
+.dropdown-item-checked::before {
+  position: absolute;
+  left: .4rem;
+  content: '✓';
+  font-weight: 600;
 }

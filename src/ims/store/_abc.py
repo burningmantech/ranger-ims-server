@@ -22,6 +22,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable, Mapping
 
 from ims.model import (
+    AccessEntry,
     Event,
     FieldReport,
     Incident,
@@ -103,37 +104,37 @@ class IMSDataStore(ABC):
         """
 
     @abstractmethod
-    async def readers(self, eventID: str) -> Iterable[str]:
+    async def readers(self, eventID: str) -> Iterable[AccessEntry]:
         """
         Look up the allowed readers for the given event.
         """
 
     @abstractmethod
-    async def setReaders(self, eventID: str, readers: Iterable[str]) -> None:
+    async def setReaders(self, eventID: str, readers: Iterable[AccessEntry]) -> None:
         """
         Set the allowed readers for the given event.
         """
 
     @abstractmethod
-    async def writers(self, eventID: str) -> Iterable[str]:
+    async def writers(self, eventID: str) -> Iterable[AccessEntry]:
         """
         Look up the allowed writers for the given event.
         """
 
     @abstractmethod
-    async def setWriters(self, eventID: str, writers: Iterable[str]) -> None:
+    async def setWriters(self, eventID: str, writers: Iterable[AccessEntry]) -> None:
         """
         Set the allowed writers for the given event.
         """
 
     @abstractmethod
-    async def reporters(self, eventID: str) -> Iterable[str]:
+    async def reporters(self, eventID: str) -> Iterable[AccessEntry]:
         """
         Look up the allowed reporters for the given event.
         """
 
     @abstractmethod
-    async def setReporters(self, eventID: str, writers: Iterable[str]) -> None:
+    async def setReporters(self, eventID: str, writers: Iterable[AccessEntry]) -> None:
         """
         Set the allowed reporters for the given event.
         """

@@ -52,7 +52,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         """
         Store the given event in the test store.
         """
-        store = cast(DatabaseStore, self)
+        store = cast("DatabaseStore", self)
 
         try:
             await store.runOperation(store.query.createEvent, {"eventID": event.id})
@@ -65,12 +65,12 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         self._log.info("Stored event {event}.", event=event)
 
     def _storeIncident(self, txn: Transaction, incident: Incident) -> None:
-        store = cast(DatabaseStore, self)
+        store = cast("DatabaseStore", self)
 
         incident = self.normalizeIncidentAddress(incident)
 
         location = incident.location
-        address = cast(RodGarettAddress | None, location.address)
+        address = cast("RodGarettAddress | None", location.address)
 
         txn.execute(
             store.query.createEventOrIgnore.text,
@@ -161,7 +161,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         """
         Store the given incident in the test store.
         """
-        store = cast(DatabaseStore, self)
+        store = cast("DatabaseStore", self)
 
         try:
             await store.runInteraction(self._storeIncident, incident=incident)
@@ -176,7 +176,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         self._log.info("Stored incident {incident}.", incident=incident)
 
     def _storeFieldReport(self, txn: Transaction, fieldReport: FieldReport) -> None:
-        store = cast(DatabaseStore, self)
+        store = cast("DatabaseStore", self)
 
         txn.execute(
             store.query.createEventOrIgnore.text,
@@ -216,7 +216,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         """
         Store the given field report in the test store.
         """
-        store = cast(DatabaseStore, self)
+        store = cast("DatabaseStore", self)
 
         try:
             await store.runInteraction(self._storeFieldReport, fieldReport=fieldReport)
@@ -241,7 +241,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         streetName: str,
         ignoreDuplicates: bool = False,
     ) -> None:
-        store = cast(DatabaseStore, self)
+        store = cast("DatabaseStore", self)
 
         if ignoreDuplicates:
             query = store.query.createConcentricStreetOrIgnore
@@ -264,7 +264,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         Store a concentric street in the given event with the given ID and name
         in the test store.
         """
-        store = cast(DatabaseStore, self)
+        store = cast("DatabaseStore", self)
 
         try:
             await store.runInteraction(
@@ -299,7 +299,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
     def _storeIncidentType(
         self, txn: Transaction, incidentType: str, hidden: bool
     ) -> None:
-        store = cast(DatabaseStore, self)
+        store = cast("DatabaseStore", self)
 
         txn.execute(
             store.query.createIncidentType.text,
@@ -307,7 +307,7 @@ class TestDatabaseStoreMixIn(TestDataStoreMixIn):
         )
 
     async def storeIncidentType(self, incidentType: str, hidden: bool) -> None:
-        store = cast(DatabaseStore, self)
+        store = cast("DatabaseStore", self)
 
         try:
             await store.runInteraction(

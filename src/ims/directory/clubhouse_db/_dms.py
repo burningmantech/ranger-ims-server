@@ -64,6 +64,17 @@ class Position:
     members: set[Ranger] = field(factory=set)
 
 
+@frozen
+class Team:
+    """
+    A Ranger team.
+    """
+
+    teamID: str
+    name: str
+    members: set[Ranger] = field(factory=set)
+
+
 @frozen(kw_only=True, eq=False)
 class DutyManagementSystem:
     """
@@ -82,6 +93,7 @@ class DutyManagementSystem:
 
         _personnel: Iterable[Ranger] = field(default=(), init=False)
         _positions: Iterable[Position] = field(default=(), init=False)
+        _teams: Iterable[Team] = field(default=(), init=False)
         _personnelLastUpdated: float = field(default=0.0, init=False)
         _dbpool: adbapi.ConnectionPool | None = field(default=None, init=False)
         _busy: bool = field(default=False, init=False)
@@ -109,7 +121,7 @@ class DutyManagementSystem:
             ):
                 from .test.dummy import DummyConnectionPool
 
-                dbpool = cast(adbapi.ConnectionPool, DummyConnectionPool("Dummy"))
+                dbpool = cast("adbapi.ConnectionPool", DummyConnectionPool("Dummy"))
 
             else:
                 dbpool = adbapi.ConnectionPool(
@@ -130,47 +142,57 @@ class DutyManagementSystem:
     async def _queryPositionsByID(self) -> Mapping[str, Position]:
         self._log.info("Retrieving positions from Duty Management System...")
 
-        rows = await self.dbpool.runQuery(
-            """
-            select id, title from position where all_rangers = 0
-            """
-        )
+        sql = """
+        select id, title from position where all_rangers = 0
+        """
+        self._log.debug("EXECUTE DMS: {sql}", sql=sql)
+        rows = await self.dbpool.runQuery(sql)
 
         return {id: Position(positionID=id, name=title) for (id, title) in rows}
+
+    async def _queryTeamsByID(self) -> Mapping[str, Team]:
+        self._log.info("Retrieving teams from Duty Management System...")
+
+        sql = """
+        select id, title from team where active
+        """
+        self._log.debug("EXECUTE DMS: {sql}", sql=sql)
+        rows = await self.dbpool.runQuery(sql)
+
+        return {id: Team(teamID=id, name=title) for (id, title) in rows}
 
     async def _queryRangersByID(self) -> Mapping[str, Ranger]:
         self._log.info("Retrieving personnel from Duty Management System...")
 
-        rows = await self.dbpool.runQuery(
-            """
-            select
-                id,
-                callsign, first_name, mi, last_name, email,
-                status, on_site, password
-            from person
-            where status in ('active', 'inactive', 'vintage', 'auditor')
-            """
-        )
+        sql = """
+        select
+            id,
+            callsign,
+            email,
+            status,
+            on_site,
+            password
+        from person
+        where status in ('active', 'inactive', 'inactive extension', 'auditor')
+        """
+        self._log.debug("EXECUTE DMS: {sql}", sql=sql)
+        rows = await self.dbpool.runQuery(sql)
 
         return {
             directoryID: Ranger(
                 handle=handle,
-                name=fullName(first, middle, last),
                 status=statusFromID(status),
                 email=(email,),
-                enabled=bool(enabled),
+                onsite=bool(onsite),
                 directoryID=directoryID,
                 password=password,
             )
             for (
                 directoryID,
                 handle,
-                first,
-                middle,
-                last,
                 email,
                 status,
-                enabled,
+                onsite,
                 password,
             ) in rows
         }
@@ -181,10 +203,24 @@ class DutyManagementSystem:
         )
 
         return cast(
-            Iterable[tuple[str, str]],
+            "Iterable[tuple[str, str]]",
             await self.dbpool.runQuery(
                 """
                 select person_id, position_id from person_position
+                """
+            ),
+        )
+
+    async def _queryTeamRangerJoin(self) -> Iterable[tuple[str, str]]:
+        self._log.info(
+            "Retrieving team-personnel relations from Duty Management System..."
+        )
+
+        return cast(
+            "Iterable[tuple[str, str]]",
+            await self.dbpool.runQuery(
+                """
+                select person_id, team_id from person_team
                 """
             ),
         )
@@ -197,6 +233,13 @@ class DutyManagementSystem:
         # self._state._positions, which will have been set.
         await self.personnel()
         return self._state._positions
+
+    async def teams(self) -> Iterable[Team]:
+        """
+        Look up all teams.
+        """
+        await self.personnel()
+        return self._state._teams
 
     async def personnel(self) -> Iterable[Ranger]:
         """
@@ -211,9 +254,11 @@ class DutyManagementSystem:
                 try:
                     rangersByID = await self._queryRangersByID()
                     positionsByID = await self._queryPositionsByID()
-                    join = await self._queryPositionRangerJoin()
+                    positionJoin = await self._queryPositionRangerJoin()
+                    teamsByID = await self._queryTeamsByID()
+                    teamJoin = await self._queryTeamRangerJoin()
 
-                    for rangerID, positionID in join:
+                    for rangerID, positionID in positionJoin:
                         position = positionsByID.get(positionID, None)
                         if position is None:
                             continue
@@ -222,8 +267,18 @@ class DutyManagementSystem:
                             continue
                         position.members.add(ranger)
 
+                    for rangerID, teamID in teamJoin:
+                        team = teamsByID.get(teamID, None)
+                        if team is None:
+                            continue
+                        ranger = rangersByID.get(rangerID, None)
+                        if ranger is None:
+                            continue
+                        team.members.add(ranger)
+
                     self._state._personnel = tuple(rangersByID.values())
                     self._state._positions = tuple(positionsByID.values())
+                    self._state._teams = tuple(teamsByID.values())
                     self._state._personnelLastUpdated = time()
                     self._state._dbErrorCount = 0
 
@@ -265,18 +320,9 @@ class DutyManagementSystem:
             raise DMSError("No personnel data loaded.") from None
 
 
-def fullName(first: str, middle: str, last: str) -> str:
-    """
-    Compose parts of a name into a full name.
-    """
-    if middle:
-        return f"{first} {middle}. {last}"
-    return f"{first} {last}"
-
-
 def statusFromID(strValue: str) -> RangerStatus:
     return {
         "active": RangerStatus.active,
         "inactive": RangerStatus.inactive,
-        "vintage": RangerStatus.vintage,
+        "inactive extension": RangerStatus.inactiveExtension,
     }.get(strValue, RangerStatus.other)

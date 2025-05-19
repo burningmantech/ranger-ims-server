@@ -24,10 +24,10 @@ from typing import ClassVar
 from attrs import frozen
 from twisted.logger import Logger
 
-from ims.directory import IMSDirectory, IMSGroupID, IMSUser, userFromRanger
+from ims.directory import IMSDirectory, IMSGroupID, IMSTeamID, IMSUser, userFromRanger
 from ims.model import Ranger
 
-from ._dms import DutyManagementSystem
+from ._dms import DutyManagementSystem, Position, Team
 
 
 __all__ = ()
@@ -48,21 +48,37 @@ class DMSDirectory(IMSDirectory):
 
     async def lookupUser(self, searchTerm: str) -> IMSUser | None:
         dms = self._dms
+        # call out to a more easily testable static method
+        return DMSDirectory._lookupUser(
+            searchTerm,
+            tuple(await dms.personnel()),
+            tuple(await dms.positions()),
+            tuple(await dms.teams()),
+        )
 
-        # FIXME: a hash would be better (eg. rangersByHandle)
-        rangers = tuple(await dms.personnel())
+    @staticmethod
+    def _lookupUser(
+        searchTerm: str,
+        rangers: tuple[Ranger, ...],
+        positions: tuple[Position, ...],
+        teams: tuple[Team, ...],
+    ) -> IMSUser | None:
+        searchLower = searchTerm.lower()
 
-        for ranger in rangers:
-            if ranger.handle == searchTerm:
+        ranger = None
+
+        for r in rangers:
+            if r.handle.lower() == searchLower:
+                ranger = r
+            for email in r.email:
+                if email and email.lower() == searchLower:
+                    ranger = r
+            if ranger is not None:
                 break
         else:
-            for ranger in rangers:
-                if searchTerm in ranger.email:
-                    break
-            else:
-                return None
+            return None
 
-        positions = tuple(await dms.positions())
+        assert ranger is not None
 
         groups = tuple(
             IMSGroupID(position.name)
@@ -70,4 +86,8 @@ class DMSDirectory(IMSDirectory):
             if ranger in position.members
         )
 
-        return userFromRanger(ranger=ranger, groups=groups)
+        imsTeams = tuple(
+            IMSTeamID(team.name) for team in teams if ranger in team.members
+        )
+
+        return userFromRanger(ranger=ranger, groups=groups, teams=imsTeams)

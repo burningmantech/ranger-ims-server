@@ -11,156 +11,110 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-
-
+import * as ims from "./ims.js";
 //
 // Initialize UI
 //
-
-function initPage() {
-    detectTouchDevice();
-    loadAndDrawIncidentTypes();
-}
-
-
-function loadAndDrawIncidentTypes() {
-    function loadedIncidentTypes() {
-        drawIncidentTypes();
+initAdminTypesPage();
+async function initAdminTypesPage() {
+    const initResult = await ims.commonPageInit();
+    if (!initResult.authInfo.authenticated) {
+        ims.redirectToLogin();
+        return;
     }
-
-    loadIncidentTypes(loadedIncidentTypes);
+    window.createIncidentType = createIncidentType;
+    window.deleteIncidentType = deleteIncidentType;
+    window.showIncidentType = showIncidentType;
+    window.hideIncidentType = hideIncidentType;
+    await loadAndDrawIncidentTypes();
+    ims.enableEditing();
 }
-
-
-let incidentTypes = null;
+async function loadAndDrawIncidentTypes() {
+    await loadAllIncidentTypes();
+    drawAllIncidentTypes();
+}
+let adminIncidentTypes = null;
 let incidentTypesVisible = null;
-
-function loadIncidentTypes(success) {
-    let gotAll = false;
-    let gotVisible = false;
-
-    function ok() {
-        if (gotAll && gotVisible) {
-            if (success) {
-                success();
-            }
-        }
-    }
-
-    function okVisible(data, status, xhr) {
-        incidentTypesVisible = data;
-        gotVisible = true;
-        ok();
-    }
-
-
-    function okAll(data, status, xhr) {
-        incidentTypes = data;
-        gotAll = true;
-        ok();
-    }
-
-    function fail(error, status, xhr) {
-        const message = "Failed to load incident types:\n" + error;
+async function loadAllIncidentTypes() {
+    let errOne, errTwo;
+    [{ json: incidentTypesVisible, err: errOne }, { json: adminIncidentTypes, err: errTwo }] =
+        await Promise.all([
+            ims.fetchJsonNoThrow(url_incidentTypes, {
+                headers: { "Cache-Control": "no-cache" },
+            }),
+            ims.fetchJsonNoThrow(url_incidentTypes + "?hidden=true", {
+                headers: { "Cache-Control": "no-cache" },
+            }),
+        ]);
+    if (errOne != null || errTwo != null) {
+        const message = "Failed to load incident types:\n" + errOne + "," + errTwo;
         console.error(message);
         window.alert(message);
+        return { err: message };
     }
-
-    jsonRequest(url_incidentTypes, null, okVisible, fail);
-    jsonRequest(url_incidentTypes + "?hidden=true", null, okAll, fail);
+    return { err: null };
 }
-
-
 let _incidentTypesTemplate = null;
 let _entryTemplate = null;
-
-function drawIncidentTypes() {
-    const container = $("#incident_types_container");
-
+function drawAllIncidentTypes() {
+    const container = document.getElementById("incident_types_container");
     if (_incidentTypesTemplate == null) {
-        _incidentTypesTemplate = container.children(".incident_types:first");
-
+        _incidentTypesTemplate = container.getElementsByClassName("incident_types")[0];
         _entryTemplate = _incidentTypesTemplate
-            .find(".list-group:first")
-            .children(".list-group-item:first")
-            ;
+            .getElementsByClassName("list-group")[0]
+            .getElementsByClassName("list-group-item")[0];
     }
-
     updateIncidentTypes();
 }
-
-
 function updateIncidentTypes() {
-    const incidentTypesElement = $("#incident_types");
-
-    const entryContainer = incidentTypesElement.find(".list-group:first");
-
-    entryContainer.empty();
-
-    for (const incidentType of incidentTypes) {
-        const entryItem = _entryTemplate.clone();
-
+    const incidentTypesElement = document.getElementById("incident_types");
+    const entryContainer = incidentTypesElement.getElementsByClassName("list-group")[0];
+    entryContainer.replaceChildren();
+    for (const incidentType of adminIncidentTypes ?? []) {
+        const entryItem = _entryTemplate.cloneNode(true);
         if (incidentTypesVisible.indexOf(incidentType) === -1) {
-            entryItem.addClass("item-hidden")
-        } else {
-            entryItem.addClass("item-visible")
+            entryItem.classList.add("item-hidden");
         }
-
-        const safeIncidentType = textAsHTML(incidentType);
+        else {
+            entryItem.classList.add("item-visible");
+        }
+        const safeIncidentType = ims.textAsHTML(incidentType);
         entryItem.append(safeIncidentType);
-        entryItem.attr("value", safeIncidentType);
-
+        entryItem.setAttribute("value", safeIncidentType);
         entryContainer.append(entryItem);
     }
 }
-
-
-function addIncidentType(sender) {
-    function ok () {
+async function createIncidentType(sender) {
+    const { err } = await sendIncidentTypes({ "add": [sender.value] });
+    if (err == null) {
         sender.value = "";
-        loadAndDrawIncidentTypes();
     }
-
-    sendIncidentTypes(
-        { "add": [sender.value] },
-        ok, loadAndDrawIncidentTypes
-    );
+    await loadAndDrawIncidentTypes();
 }
-
-
-function removeIncidentType(sender) {
+function deleteIncidentType(_sender) {
     alert("Remove unimplemented");
 }
-
-
-function showIncidentType(sender) {
-    sendIncidentTypes(
-        { "show": [$(sender).parent().attr("value")] },
-        loadAndDrawIncidentTypes, loadAndDrawIncidentTypes
-    );
+async function showIncidentType(sender) {
+    await sendIncidentTypes({ "show": [
+            sender.parentElement.getAttribute("value")
+        ] });
+    await loadAndDrawIncidentTypes();
 }
-
-
-function hideIncidentType(sender) {
-    sendIncidentTypes(
-        { "hide": [$(sender).parent().attr("value")] },
-        loadAndDrawIncidentTypes, loadAndDrawIncidentTypes
-    );
+async function hideIncidentType(sender) {
+    await sendIncidentTypes({ "hide": [
+            sender.parentElement.getAttribute("value")
+        ] });
+    await loadAndDrawIncidentTypes();
 }
-
-
-function sendIncidentTypes(edits, success, error) {
-    function ok(data, status, xhr) {
-        success();
+async function sendIncidentTypes(edits) {
+    const { err } = await ims.fetchJsonNoThrow(url_incidentTypes, {
+        body: JSON.stringify(edits),
+    });
+    if (err == null) {
+        return { err: null };
     }
-
-    function fail(requestError, status, xhr) {
-        const message = "Failed to edit incident types:\n" + requestError;
-        console.log(message);
-        error();
-        window.alert(message);
-    }
-
-    jsonRequest(url_incidentTypes, edits, ok, fail);
+    const message = `Failed to edit incident types:\n${JSON.stringify(err)}`;
+    console.log(message);
+    window.alert(message);
+    return { err: err };
 }

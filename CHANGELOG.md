@@ -1,7 +1,15 @@
 # Changelog
 
-This is the changelog for ranger-ims-server. This is intended to summarize changes over time,
-for example to inform the Operator team each event of any differences to expect.
+## NOTE about ranger-ims-go
+
+As of May 2025, IMS development is primarily happening in https://github.com/burningmantech/ranger-ims-go.
+We expect to deprecate the Twisted Python IMS server in the not too distant future.
+
+## Changelog
+
+This is the changelog for ranger-ims-server. This is intended to summarize changes over time. It's
+probably too verbose for consumption by general users of IMS, but it might be useful for anyone
+trying to follow along with IMS's progression as a system.
 
 This file must use the [Common Changelog format](https://common-changelog.org/), with the variation
 that we use months rather than version numbers. We don't include dependency version upgrades in the
@@ -16,9 +24,58 @@ Each month below should look like the following, using the same ordering for the
 ### Fixed
 -->
 
-## 2025-01
+## 2025-04
+
+### Changed
+
+- Dropped all dependence on the old TWISTED_SESSION cookie, which previously is how clients authenticated with the server. Now we're using an Authorization JWT instead. The main benefit to users is that they won't be "logged out" when an IMS server restarts; they'll just be able to carry on as soon as it's back on-line (this is how Clubhouse already works). #1683 #1682 #1681 #1678 #1670
+- Got rid of the two-stage templating of Incident(s)/Field Report(s) pages. Now there's just a single template each. This is an internal cleanup that makes things much simpler. #1666
+- Upgraded to modern JavaScript ES modules, which have a bunch of benefits. #1660
+
+### Fixed
+
+- Changed some table keys to reduce chance of transaction deadlock (e.g. when multiple users are modifying any two incidents' Rangers lists at the same time). #1689 #1665 #1658
+
+## 2025-03
+
+### Changed
+
+- Upgraded all of our JavaScript to TypeScript. This makes for much safer frontend code, as well as much more pleasant development. #1628
+
+### Added
+
+- Allowed creation of Streets via the Admin Streets page. #1643
+- Added some Playwright testing, which we've since been improving. #1648
+
+## 2025-02
 
 <!-- TODO: document keyboard shortcut updates, once they've settled down a bit -->
+
+### Changed
+
+- Reordered columns on Incidents page for improved readability and mobile experience. The summary field is now much farther left. We also added a "last modified" column, which may or may not prove useful for people. https://github.com/burningmantech/ranger-ims-server/pull/1589 https://github.com/burningmantech/ranger-ims-server/pull/1595
+
+### Added
+
+- Started allowing searches using regular expressions on the Incidents and Field Reports pages, mostly to support "OR"-based queries. https://github.com/burningmantech/ranger-ims-server/issues/1570
+- Created the ability to have a search query as part of an Incidents or Field Reports page URL. This allows bookmarking. https://github.com/burningmantech/ranger-ims-server/issues/1570
+- Put all the table filters (state, type, rows, days-ago) into the URLs, making all of those bookmarkable, in addition to search. https://github.com/burningmantech/ranger-ims-server/issues/1570
+- Converted the "show incident type" dropdown into a multiselect, allowing filtering the Incidents page to any number of Incident Types. https://github.com/burningmantech/ranger-ims-server/issues/1581
+- Added "created" timestamp to Incident page, where "priority" used to be. https://github.com/burningmantech/ranger-ims-server/pull/1599
+- Added team-based access control, e.g. to allow all members of Council to have year-round access. https://github.com/burningmantech/ranger-ims-server/pull/1587
+- Created links in the navbar to the current event's Incidents and Field Reports pages. https://github.com/burningmantech/ranger-ims-server/pull/1580
+- Added popup alert when user tries to close an incident that doesn't have any incident type. https://github.com/burningmantech/ranger-ims-server/pull/1600
+
+### Removed
+
+- Dropped Incident "priority" from the UI, since almost no one was using it. https://github.com/burningmantech/ranger-ims-server/issues/1574
+- Removed the "show all" keyboard shortcut for Incidents and Field Reports pages, since the new bookmarkable filtered views make such a shortcut unnecessary. https://github.com/burningmantech/ranger-ims-server/issues/1570
+
+### Fixed
+
+- Prevented duplicate report entries from getting saved during periods of network latency. https://github.com/burningmantech/ranger-ims-server/pull/1593
+
+## 2025-01
 
 ### Changed
 
@@ -26,16 +83,29 @@ Each month below should look like the following, using the same ordering for the
 - Improved background refresh resiliency by having clients track their last received server-side event. https://github.com/burningmantech/ranger-ims-server/pull/1504
 - Created a slight pause after search field input prior to actually running the search. This will reduce perceived latency in typing/deleting in the search field. https://github.com/burningmantech/ranger-ims-server/issues/1481 https://github.com/burningmantech/ranger-ims-server/pull/1483
 - Started Field Report numbering from 1 each event, as we already did for Incidents. https://github.com/burningmantech/ranger-ims-server/pull/1506
+- Enhanced the "permission denied" error page, to make it more descriptive for when we block access for an authenticated Ranger. https://github.com/burningmantech/ranger-ims-server/pull/1530
+- Stopped showing Ranger legal names in IMS; started linking from Ranger handles into Clubhouse person pages instead. https://github.com/burningmantech/ranger-ims-server/issues/1536
+- Switched from LocalStorage caching of Incident Types and Personnel to HTTP caching. https://github.com/burningmantech/ranger-ims-server/pull/1561
 
 ### Added
 
 - Introduced "striking" of report entries. This allows a user to hide an outdated/inaccurate entry, such that it doesn't appear by default on the Incident or Field Report page. https://github.com/burningmantech/ranger-ims-server/issues/249
 - Added help modals, toggled by pressing "?", which show keyboard shortcuts for the current page. https://github.com/burningmantech/ranger-ims-server/issues/1482
 - Started publishing Field Report entity updates to the web clients (via server-sent events), and started automatically background-updating the Field Reports (table) and Field Report pages on updates. https://github.com/burningmantech/ranger-ims-server/issues/1498
+- Also started background-updating the Incident page based on Field Report updates, so that the user shouldn't ever need to reload an Incident page to pick up updates from the server. https://github.com/burningmantech/ranger-ims-server/pull/1555
+- Added a help link from the Incident page to documentation about the meaning of the many Incident Types. https://github.com/burningmantech/ranger-ims-server/pull/1512
+- Added Subresource Integrity checks to our JavaScript dependencies, improving our security against supply chain attacks. https://github.com/burningmantech/ranger-ims-server/issues/1517
+- Got rid of the "requireActive" global setting, and changed it into a "validity" property of each event permission instead. This allows us to specify which permissions should be granted all year, and which should only be available to Rangers while they are on-playa. https://github.com/burningmantech/ranger-ims-server/issues/1540
+
+### Removed
+
+- Dropped "\*\*"-style ACLs, which we didn't use and didn't actually work at all. https://github.com/burningmantech/ranger-ims-server/pull/1553
+- Dropped lscache frontend dependency. https://github.com/burningmantech/ranger-ims-server/pull/1558 https://github.com/burningmantech/ranger-ims-server/pull/1561
 
 ### Fixed
 
 - Removed confusing messaging from login screen when a user was already logged in. https://github.com/burningmantech/ranger-ims-server/pull/1511 https://github.com/burningmantech/ranger-ims-server/issues/1508
+- Made the session cookie use more secure by adding a SameSite value and setting HttpOnly. https://github.com/burningmantech/ranger-ims-server/pull/1563
 
 ## 2024-12
 

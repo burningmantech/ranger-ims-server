@@ -61,12 +61,6 @@ class Page(Element):
             if not name or name in result:
                 return
 
-            if name == "bootstrap":
-                add("jquery")
-
-            if name == "ims":
-                add("jquery")
-
             try:
                 result[name] = getattr(urls, f"{name}JS")
             except AttributeError:
@@ -74,8 +68,11 @@ class Page(Element):
 
             if name == "dataTables":
                 add("dataTablesBootstrap")
+                # Responsive is currently unused. See incidents.js as well.
+                # add("dataTablesResponsive")
 
-        # All pages use Bootstrap
+        # all pages use JQuery and Bootstrap
+        add("jquery")
         add("bootstrap")
         add("urls")
 
@@ -86,15 +83,15 @@ class Page(Element):
 
     def integrityValue(self, depName: str) -> str | None:
         if depName == "bootstrap":
-            return cast(str, self.config.externalDeps.bootstrapJsIntegrity)
+            return cast("str", self.config.externalDeps.bootstrapJsIntegrity)
         if depName == "dataTables":
-            return cast(str, self.config.externalDeps.dataTablesJsIntegrity)
+            return cast("str", self.config.externalDeps.dataTablesJsIntegrity)
         if depName == "dataTablesBootstrap":
-            return cast(str, self.config.externalDeps.dataTablesBootstrap5JsIntegrity)
+            return cast("str", self.config.externalDeps.dataTablesBootstrap5JsIntegrity)
+        if depName == "dataTablesResponsive":
+            return cast("str", self.config.externalDeps.dataTablesResponsiveJsIntegrity)
         if depName == "jquery":
-            return cast(str, self.config.externalDeps.jqueryJsIntegrity)
-        if depName == "lscache":
-            return cast(str, self.config.externalDeps.lscacheJsIntegrity)
+            return cast("str", self.config.externalDeps.jqueryJsIntegrity)
         return None
 
     @renderer
@@ -116,7 +113,7 @@ class Page(Element):
 
         imports = []
         for name, url in self.urlsFromImportSpec(
-            cast(str, tag.attributes.get("imports", ""))
+            cast("str", tag.attributes.get("imports", ""))
         ).items():
             kw = {"src": url.asText()}
             integrity = self.integrityValue(name)
@@ -126,6 +123,20 @@ class Page(Element):
 
         if "imports" in tag.attributes:
             del tag.attributes["imports"]
+
+        # Each page can have up to one IMS module JS file, which is free
+        # to import any other IMS JS files.
+        if "module" in tag.attributes:
+            name = cast("str", tag.attributes["module"])
+            kw = {"src": getattr(urls, f"{name}JS").asText()}
+            integrity = self.integrityValue(name)
+            kw["type"] = "module"
+            if integrity is not None:
+                kw["integrity"] = integrity
+            imports.append(tags.script(**kw))
+
+        if "module" in tag.attributes:
+            del tag.attributes["module"]
 
         return tag(  # type: ignore[return-value]
             # Resource metadata
@@ -145,6 +156,11 @@ class Page(Element):
                 type="text/css",
                 rel="stylesheet",
                 href=urls.dataTablesBootstrapCSS.asText(),
+            ),
+            tags.link(
+                type="text/css",
+                rel="stylesheet",
+                href=urls.dataTablesResponsiveCSS.asText(),
             ),
             tags.link(
                 type="text/css",

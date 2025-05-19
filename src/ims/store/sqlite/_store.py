@@ -56,7 +56,7 @@ class DataStore(DatabaseStore):
 
     _log: ClassVar[Logger] = Logger()
 
-    schemaVersion: ClassVar[int] = 5
+    schemaVersion: ClassVar[int] = 7
     schemaBasePath: ClassVar[Path] = Path(__file__).parent / "schema"
     sqlFileExtension: ClassVar[str] = "sqlite"
 
@@ -106,7 +106,7 @@ class DataStore(DatabaseStore):
     def _dbSchemaVersion(cls, db: Connection) -> int:
         try:
             for row in db.execute(cls.query.schemaVersion.text):
-                return cast(int, row["VERSION"])
+                return cast("int", row["VERSION"])
             raise StorageError("Invalid schema: no version")
 
         except SQLiteError as e:

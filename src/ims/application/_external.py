@@ -681,7 +681,14 @@ class ExternalApplication:
         # Remove URL prefix
         names = requestURL.path[len(URLs.bootstrapBase.path) - 1 :]
 
-        request.setHeader(HeaderName.contentType.value, ContentType.css.value)
+        if "js" in names:
+            contentType = ContentType.javascript.value
+        elif "css" in names:
+            contentType = ContentType.css.value
+        else:
+            contentType = ContentType.text.value
+
+        request.setHeader(HeaderName.contentType.value, contentType)
         return await self.cachedZippedResource(
             request,
             self.config.externalDeps.bootstrapSourceURL,
@@ -746,19 +753,6 @@ class ExternalApplication:
             ),
             self.config.externalDeps.dataTablesVersion,
             *names,
-        )
-
-    @router.route(_unprefix(URLs.lscacheJS), methods=("HEAD", "GET"))
-    @static
-    async def lscacheJSResource(self, request: IRequest) -> KleinRenderable:
-        """
-        Endpoint for lscache.
-        """
-        request.setHeader(HeaderName.contentType.value, ContentType.javascript.value)
-        return await self.cachedResource(
-            request,
-            self.config.externalDeps.lscacheJSSourceURL,
-            f"{self.config.externalDeps.lscacheVersion}.min.js",
         )
 
     async def cacheFromURL(self, url: URL, name: str) -> Path:

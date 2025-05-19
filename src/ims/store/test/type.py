@@ -53,7 +53,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
                 ("Foo", True),
             ),
         ):
-            data = cast(tuple[tuple[str, bool]], _data)
+            data = cast("tuple[tuple[str, bool]]", _data)
 
             store = await self.store()
             for name, hidden in data:
@@ -83,7 +83,7 @@ class DataStoreIncidentTypeTests(DataStoreTests):
                 ("Foo", True),
             ),
         ):
-            data = cast(tuple[tuple[str, bool]], _data)
+            data = cast("tuple[tuple[str, bool]]", _data)
 
             store = await self.store()
             for name, hidden in data:

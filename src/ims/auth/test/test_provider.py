@@ -51,6 +51,7 @@ from ims.store.sqlite import DataStore as SQLiteDataStore
 
 from ...directory import (
     IMSGroupID,
+    IMSTeamID,
     IMSUser,
     IMSUserID,
     hashPassword,
@@ -69,7 +70,7 @@ from .._provider import (
 
 __all__ = ()
 
-from ...model import Event, FieldReport, ReportEntry
+from ...model import AccessEntry, AccessValidity, Event, FieldReport, ReportEntry
 
 
 def oops(*args: Any, **kwargs: Any) -> None:  # noqa: ARG001
@@ -84,8 +85,9 @@ class TestUser(IMSUser):
 
     uid: IMSUserID
     shortNames: Sequence[str]
-    active: bool
+    onsite: bool
     groups: Sequence[IMSGroupID]
+    teams: Sequence[IMSTeamID]
     plainTextPassword: str | None
 
     @property
@@ -100,10 +102,14 @@ def testUsers(draw: Callable[..., Any]) -> TestUser:
     return TestUser(
         uid=IMSUserID(draw(text(min_size=1))),
         shortNames=tuple(draw(lists(text(min_size=1), min_size=1))),
-        active=draw(booleans()),
+        onsite=draw(booleans()),
         groups=tuple(
             IMSGroupID(g)
             for g in draw(text(min_size=1, alphabet=ascii_letters + digits + "_"))
+        ),
+        teams=tuple(
+            IMSTeamID(t)
+            for t in draw(text(min_size=1, alphabet=ascii_letters + digits + "_"))
         ),
         plainTextPassword=draw(one_of(none(), text())),
     )
@@ -133,6 +139,7 @@ class TestTests(TestCase):
         lists(text(min_size=1), min_size=1),
         booleans(),
         lists(text(min_size=1)),
+        lists(text(min_size=1)),
         text(),
     )
     def test_testUser(
@@ -141,23 +148,27 @@ class TestTests(TestCase):
         shortNames: Sequence[str],
         active: bool,
         _groups: Sequence[str],
+        _teams: Sequence[str],
         password: str,
     ) -> None:
         uid = IMSUserID(_uid)
         groups = tuple(IMSGroupID(g) for g in _groups)
+        teams = tuple(IMSTeamID(t) for t in _teams)
 
         user = TestUser(
             uid=uid,
             shortNames=shortNames,
-            active=active,
+            onsite=active,
             groups=groups,
+            teams=teams,
             plainTextPassword=password,
         )
 
         self.assertEqual(user.uid, uid)
         self.assertEqual(tuple(user.shortNames), tuple(shortNames))
-        self.assertEqual(user.active, active)
+        self.assertEqual(user.onsite, active)
         self.assertEqual(tuple(user.groups), tuple(groups))
+        self.assertEqual(tuple(user.teams), tuple(teams))
         self.assertEqual(user.plainTextPassword, password)
 
         if user.plainTextPassword is not None:
@@ -209,6 +220,7 @@ class JSONWebTokenClaimsTests(TestCase):
             "preferred_username": "some-user",
             "ranger_on_site": True,
             "ranger_positions": "some-position,another-position",
+            "ranger_teams": "some-team,another-team",
         }
         defaults.update(kwargs)
         return JSONWebTokenClaims(**defaults)
@@ -263,13 +275,15 @@ class JSONWebTokenTests(TestCase):
     #     "preferred_username": "some-user",
     #     "ranger_on_site": true,
     #     "ranger_positions": "some-position,another-position"
+    #     "ranger_teams: "some-team,another-team"
     # }
     tokenText = (
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1pc3N1ZXIiLC"
-        "JpYXQiOjEwMDAwMDAwMDAsImV4cCI6NTAwMDAwMDAwMCwic3ViIjoic29tZS11a"
-        "WQiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzb21lLXVzZXIiLCJyYW5nZXJfb25f"
-        "c2l0ZSI6dHJ1ZSwicmFuZ2VyX3Bvc2l0aW9ucyI6InNvbWUtcG9zaXRpb24sYW5"
-        "vdGhlci1wb3NpdGlvbiJ9.xFkqa5ZSejA0RGmwuPtiYwjsPyjubXwKwdqhuwOiS8w"
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjUwMDAwMDAwMDAsIml"
+        "hdCI6MTAwMDAwMDAwMCwiaXNzIjoibXktaXNzdWVyIiwicHJlZmVycmVkX3VzZXJ"
+        "uYW1lIjoic29tZS11c2VyIiwicmFuZ2VyX29uX3NpdGUiOnRydWUsInJhbmdlcl9"
+        "wb3NpdGlvbnMiOiJzb21lLXBvc2l0aW9uLGFub3RoZXItcG9zaXRpb24iLCJyYW5"
+        "nZXJfdGVhbXMiOiJzb21lLXRlYW0sYW5vdGhlci10ZWFtIiwic3ViIjoic29tZS1"
+        "1aWQifQ.ScII96a00V8Xal_JZGDTKeM6ky_1GkUfY69IL7DXOdU"
     )
     tokenSecret = "sekret"
 
@@ -289,6 +303,7 @@ class JSONWebTokenTests(TestCase):
         self.assertEqual(claims.preferred_username, "some-user")
         self.assertEqual(claims.ranger_on_site, True)
         self.assertEqual(claims.ranger_positions, "some-position,another-position")
+        self.assertEqual(claims.ranger_teams, "some-team,another-team")
 
     def test_fromClaims(self) -> None:
         """
@@ -304,8 +319,9 @@ class JSONWebTokenTests(TestCase):
                 preferred_username="some-user",
                 ranger_on_site=True,
                 ranger_positions="some-position,another-position",
+                ranger_teams="some-team,another-team",
             ),
-            key=JSONWebKey.fromSecret("blah"),
+            key=JSONWebKey.fromSecret("sekret"),
         )
         claims = jwt.claims
 
@@ -316,6 +332,7 @@ class JSONWebTokenTests(TestCase):
         self.assertEqual(claims.preferred_username, "some-user")
         self.assertEqual(claims.ranger_on_site, True)
         self.assertEqual(claims.ranger_positions, "some-position,another-position")
+        self.assertEqual(claims.ranger_teams, "some-team,another-team")
 
     def test_fromText_wrongKey(self) -> None:
         """
@@ -340,6 +357,7 @@ class JSONWebTokenTests(TestCase):
             preferred_username="some-user",
             ranger_on_site=True,
             ranger_positions="some-position,another-position",
+            ranger_teams="some-team,another-team",
         )
         key = JSONWebKey.fromSecret(self.tokenSecret)
         jwt = JSONWebToken.fromClaims(claims, key=key)
@@ -458,8 +476,9 @@ class AuthProviderTests(TestCase):
         self.assertTrue(approximateTimestamps(claims.exp, (now + duration).timestamp()))
         self.assertEqual(claims.sub, user.uid)
         self.assertEqual(claims.preferred_username, user.shortNames[0])
-        self.assertEqual(claims.ranger_on_site, user.active)
+        self.assertEqual(claims.ranger_on_site, user.onsite)
         self.assertEqual(claims.ranger_positions, ",".join(user.groups))
+        self.assertEqual(claims.ranger_teams, ",".join(user.teams))
 
     @given(
         testUsers(),
@@ -489,7 +508,7 @@ class AuthProviderTests(TestCase):
         self.assertEqual(userFromToken.uid, user.uid)
         # Only the first shortName is kept
         self.assertEqual(userFromToken.shortNames, (user.shortNames[0],))
-        self.assertEqual(userFromToken.active, user.active)
+        self.assertEqual(userFromToken.onsite, user.onsite)
         self.assertEqual(userFromToken.groups, user.groups)
         self.assertEqual(userFromToken.hashedPassword, None)
 
@@ -499,6 +518,58 @@ class AuthProviderTests(TestCase):
     test_authenticateRequest.todo = (  # type: ignore[attr-defined]
         "unimplemented"
     )
+
+    def test_enhanceSessionCookie_normal(self) -> None:
+        """
+        Test _enhanceSessionCookie case where the function does alter
+        the TWISTED_SESSION cookie.
+        """
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
+        request = MockReq(
+            None,
+            {},
+            cookies=[
+                b"TWISTED_SESSION=abc",
+            ],
+        )
+        provider._enhanceSessionCookie(request)
+        self.assertEqual(
+            request.cookies,
+            [
+                b"TWISTED_SESSION=abc; SameSite=lax; HttpOnly",
+            ],
+        )
+
+    def test_enhanceSessionCookie_unchanged(self) -> None:
+        """
+        Test _enhanceSessionCookie cases where the function will
+        leave the cookies unchanged.
+        """
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
+        request = MockReq(
+            None,
+            {},
+            cookies=[
+                b"SOME_OTHER_COOKIE=blah",
+                b"TWISTED_SESSION=abc; SameSite=none; HttpOnly=Nope",
+            ],
+        )
+        provider._enhanceSessionCookie(request)
+        self.assertEqual(
+            request.cookies,
+            [
+                b"SOME_OTHER_COOKIE=blah",
+                b"TWISTED_SESSION=abc; SameSite=none; HttpOnly=Nope",
+            ],
+        )
 
     def test_jsonWebKey(self) -> None:
         """
@@ -551,7 +622,8 @@ class AuthProviderTests(TestCase):
 
     def test_matchACL_public_noUser(self) -> None:
         """
-        AuthProvider._matchACL matches public ("**") access with None user.
+        AuthProvider._matchACL does not match public ("**") access with None user,
+        because that sort of access isn't permitted in IMS anymore.
         """
         provider = AuthProvider(
             store=self.store(),
@@ -559,20 +631,11 @@ class AuthProviderTests(TestCase):
             jsonWebKey=JSONWebKey.generate(),
         )
 
-        self.assertTrue(provider._matchACL(None, ["**"]))
-
-    @given(testUsers())
-    def test_matchACL_public_user(self, user: IMSUser) -> None:
-        """
-        AuthProvider._matchACL matches public ("**") access with a user.
-        """
-        provider = AuthProvider(
-            store=self.store(),
-            directory=self.directory(),
-            jsonWebKey=JSONWebKey.generate(),
+        self.assertFalse(
+            provider._matchACL(
+                None, (AccessEntry(expression="**", validity=AccessValidity.always),)
+            )
         )
-
-        self.assertTrue(provider._matchACL(user, ["**"]))
 
     def test_matchACL_any_noUser(self) -> None:
         """
@@ -582,10 +645,13 @@ class AuthProviderTests(TestCase):
             store=self.store(),
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
 
-        self.assertFalse(provider._matchACL(None, ["*"]))
+        self.assertFalse(
+            provider._matchACL(
+                None, (AccessEntry(expression="*", validity=AccessValidity.always),)
+            )
+        )
 
     @given(testUsers())
     def test_matchACL_any_user(self, user: IMSUser) -> None:
@@ -596,10 +662,13 @@ class AuthProviderTests(TestCase):
             store=self.store(),
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
 
-        self.assertTrue(provider._matchACL(user, ["*"]))
+        self.assertTrue(
+            provider._matchACL(
+                user, (AccessEntry(expression="*", validity=AccessValidity.always),)
+            )
+        )
 
     @given(testUsers())
     def test_matchACL_person(self, user: IMSUser) -> None:
@@ -610,11 +679,20 @@ class AuthProviderTests(TestCase):
             store=self.store(),
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
 
         for shortName in user.shortNames:
-            self.assertTrue(provider._matchACL(user, [f"person:{shortName}"]))
+            self.assertTrue(
+                provider._matchACL(
+                    user,
+                    (
+                        AccessEntry(
+                            expression=f"person:{shortName}",
+                            validity=AccessValidity.always,
+                        ),
+                    ),
+                )
+            )
 
     @given(testUsers())
     def test_matchACL_position(self, user: IMSUser) -> None:
@@ -625,11 +703,76 @@ class AuthProviderTests(TestCase):
             store=self.store(),
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
 
         for groupID in user.groups:
-            self.assertTrue(provider._matchACL(user, [f"position:{groupID}"]))
+            self.assertTrue(
+                provider._matchACL(
+                    user,
+                    (
+                        AccessEntry(
+                            expression=f"position:{groupID}",
+                            validity=AccessValidity.always,
+                        ),
+                    ),
+                )
+            )
+
+    @given(testUsers())
+    def test_matchACL_team(self, user: IMSUser) -> None:
+        """
+        AuthProvider._matchACL matches team access with a matching user.
+        """
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
+
+        for teamID in user.teams:
+            self.assertTrue(
+                provider._matchACL(
+                    user,
+                    (
+                        AccessEntry(
+                            expression=f"team:{teamID}",
+                            validity=AccessValidity.always,
+                        ),
+                    ),
+                )
+            )
+
+    def test_matchACL_person_notOnsite(self) -> None:
+        """
+        AuthProvider._matchACL won't match for off-site user if on-site required.
+        """
+        provider = AuthProvider(
+            store=self.store(),
+            directory=self.directory(),
+            jsonWebKey=JSONWebKey.generate(),
+        )
+
+        user = TestUser(
+            uid=IMSUserID("my-id"),
+            shortNames=("Slumber",),
+            onsite=False,
+            groups=(),
+            teams=(),
+            plainTextPassword="some-password",
+        )
+
+        for shortName in user.shortNames:
+            self.assertFalse(
+                provider._matchACL(
+                    user,
+                    (
+                        AccessEntry(
+                            expression=f"person:{shortName}",
+                            validity=AccessValidity.onsite,
+                        ),
+                    ),
+                )
+            )
 
     def test_authorizationsForUser(self) -> None:
         raise NotImplementedError()
@@ -645,7 +788,6 @@ class AuthProviderTests(TestCase):
             store=store,
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
         self.successResultOf(store.upgradeSchema())
         event = "2024"
@@ -653,8 +795,9 @@ class AuthProviderTests(TestCase):
         user = TestUser(
             uid=IMSUserID("my-id"),
             shortNames=("Slumber",),
-            active=True,
+            onsite=True,
             groups=(),
+            teams=(),
             plainTextPassword="some-password",
         )
         personUser = f"person:{user.shortNames[0]}"
@@ -676,7 +819,12 @@ class AuthProviderTests(TestCase):
         self.assertEqual(request.authorizations, Authorization.none)
 
         # Stage 2: the user is now a reporter
-        self.successResultOf(store.setReporters(event, (personUser,)))
+        self.successResultOf(
+            store.setReporters(
+                event,
+                (AccessEntry(expression=personUser, validity=AccessValidity.always),),
+            )
+        )
         # Now the user is able to writeFieldReports, but that's it
         self.successResultOf(
             provider.authorizeRequest(
@@ -697,7 +845,12 @@ class AuthProviderTests(TestCase):
 
         # Stage 3: the user can read incidents
         self.successResultOf(store.setReporters(event, ()))
-        self.successResultOf(store.setReaders(event, (personUser,)))
+        self.successResultOf(
+            store.setReaders(
+                event,
+                (AccessEntry(expression=personUser, validity=AccessValidity.always),),
+            )
+        )
         self.successResultOf(
             provider.authorizeRequest(
                 request=request,
@@ -712,7 +865,12 @@ class AuthProviderTests(TestCase):
 
         # Stage 4: the user can write incidents
         self.successResultOf(store.setReaders(event, ()))
-        self.successResultOf(store.setWriters(event, (personUser,)))
+        self.successResultOf(
+            store.setWriters(
+                event,
+                (AccessEntry(expression=personUser, validity=AccessValidity.always),),
+            )
+        )
         self.successResultOf(
             provider.authorizeRequest(
                 request=request,
@@ -746,7 +904,6 @@ class AuthProviderTests(TestCase):
             store=store,
             directory=self.directory(),
             jsonWebKey=JSONWebKey.generate(),
-            requireActive=False,
         )
         self.successResultOf(store.upgradeSchema())
         event = "2024"
@@ -754,8 +911,9 @@ class AuthProviderTests(TestCase):
         user = TestUser(
             uid=IMSUserID("my-id"),
             shortNames=("Slumber",),
-            active=True,
+            onsite=True,
             groups=(),
+            teams=(),
             plainTextPassword="some-password",
         )
         personUser = f"person:{user.shortNames[0]}"
@@ -813,7 +971,12 @@ class AuthProviderTests(TestCase):
         self.assertEqual(request.authorizations, Authorization.none)
 
         # Stage 2: user is a reporter
-        self.successResultOf(store.setReporters(event, (personUser,)))
+        self.successResultOf(
+            store.setReporters(
+                event,
+                (AccessEntry(expression=personUser, validity=AccessValidity.always),),
+            )
+        )
         self.successResultOf(
             provider.authorizeRequestForFieldReport(
                 request=request,
@@ -832,7 +995,12 @@ class AuthProviderTests(TestCase):
 
         # Stage 3: user is a reader
         self.successResultOf(store.setReporters(event, ()))
-        self.successResultOf(store.setReaders(event, (personUser,)))
+        self.successResultOf(
+            store.setReaders(
+                event,
+                (AccessEntry(expression=personUser, validity=AccessValidity.always),),
+            )
+        )
         self.successResultOf(
             provider.authorizeRequestForFieldReport(
                 request=request,
@@ -852,7 +1020,12 @@ class AuthProviderTests(TestCase):
 
         # Stage 4: user is a writer
         self.successResultOf(store.setReaders(event, ()))
-        self.successResultOf(store.setWriters(event, (personUser,)))
+        self.successResultOf(
+            store.setWriters(
+                event,
+                (AccessEntry(expression=personUser, validity=AccessValidity.always),),
+            )
+        )
         self.successResultOf(
             provider.authorizeRequestForFieldReport(
                 request=request,
@@ -869,11 +1042,17 @@ class AuthProviderTests(TestCase):
 
 
 class MockReq(Request):
-    def __init__(self, user: TestUser | None, headers: Mapping[str, str]) -> None:
+    def __init__(
+        self,
+        user: TestUser | None,
+        headers: Mapping[str, str],
+        cookies: list[bytes] | None = None,
+    ) -> None:
         super().__init__(DummyChannel(), False)
         self.user = user  # type: ignore[assignment]
         self.headers = headers
         self.authorizations = Authorization.none
+        self.cookies = cookies  # type: ignore[assignment]
 
     def getHeader(self, key: AnyStr) -> AnyStr | None:
         return self.headers.get(str(key))  # type: ignore[return-value]

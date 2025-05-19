@@ -104,7 +104,7 @@ class DataStoreTests(SuperDataStoreTests):
 
         self.stores.append(store)
 
-        return cast(TestDataStoreABC, store)
+        return cast("TestDataStoreABC", store)
 
 
 class DataStoreEventTests(DataStoreTests, SuperDataStoreEventTests):

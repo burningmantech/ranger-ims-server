@@ -33,17 +33,14 @@ class ExternalDeps:
     jqueryVersionNumber = "3.1.0"
     jqueryJsIntegrity = "sha512-qzrZqY/kMVCEYeu/gCm8U2800Wz++LTGK4pitW/iswpCbjwxhsmUwleL1YXaHImptCHG0vJwU7Ly7ROw3ZQoww=="  # noqa: E501
 
-    dataTablesVersionNumber = "2.1.8"
-    dataTablesJsIntegrity = "sha512-aB+KD1UH6xhwz0ZLqIGK+if/B83XzgnFzDJtf195axOEqurA7ahWCpl8wgXWVfcMslhnmYigAjYXShrJSlxgWg=="  # noqa: E501
+    dataTablesVersionNumber = "2.2.2"
+    dataTablesJsIntegrity = "sha512-iwuEh+XTZQNzwdjYrqsxyWJXyReKVclGX4D2uGYBGNIR6o0VBwIfeYQv+lQjxmye87K6C6mc7qrqJlCcaeZJhA=="  # noqa: E501
     dataTablesBootstrap5JsIntegrity = "sha512-Cwi0jz7fz7mrX990DlJ1+rmiH/D9/rjfOoEex8C9qrPRDDqwMPdWV7pJFKzhM10gAAPlufZcWhfMuPN699Ej0w=="  # noqa: E501
-
-    lscacheVersionNumber = "1.0.5"
-    lscacheJsIntegrity = "sha512-ODLwMEfU6d2VYLsGUCJPlIO8lIBGO9u/2Mi9juw6T26RBc0FygKSqYj9GDmxGLErNTOMAdIvj6PaWZo6e0znwQ=="  # noqa: E501
+    dataTablesResponsiveJsIntegrity = "sha512-tdEccTFmVlxHn4PmHcvCyztrY3X8o6UFpe7UH4UgkBD4J+WUecFGwZlDBq8xH8B6mtP5S08W+Kaz1+C7tmCVOA=="  # noqa: E501
 
     bootstrapVersion = f"bootstrap-{bootstrapVersionNumber}-dist"
     jqueryVersion = f"jquery-{jqueryVersionNumber}"
     dataTablesVersion = f"DataTables-{dataTablesVersionNumber}"
-    lscacheVersion = f"lscache-{lscacheVersionNumber}"
 
     bootstrapSourceURL = URL.fromText(
         f"https://github.com/twbs/bootstrap/releases/download/"
@@ -62,9 +59,4 @@ class ExternalDeps:
 
     dataTablesSourceURL = URL.fromText(
         f"https://datatables.net/releases/DataTables-{dataTablesVersionNumber}.zip"
-    )
-
-    lscacheJSSourceURL = URL.fromText(
-        f"https://raw.githubusercontent.com/pamelafox/lscache/"
-        f"{lscacheVersionNumber}/lscache.min.js"
     )
