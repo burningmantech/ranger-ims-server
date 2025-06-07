@@ -362,24 +362,32 @@ jobs:
         run: ./bin/test_docker
 
 
-  # Can't figure out how to keep a failed docker-trivy job from marking a build
-  # as failed in the UI and it's driving me nuts so never mind this.
+  # deploy-staging:
+  #   name: Deploy image built from master branch to the staging environment
 
-  # docker-trivy:
-
-  #   name: Trivy (security scan)
-
-  #   needs: [docker-build]
+  #   needs: [docker-test, lint, mypy, packaging, unit]
+  #   if: ${{ github.ref == 'refs/heads/master' }}
 
   #   runs-on: ubuntu-latest
   #   timeout-minutes: 10
-  #   continue-on-error: true
 
   #   steps:
 
-  #     - uses: step-security/harden-runner@v2.12.0
+  #     - name: Harden CI
+  #       uses: step-security/harden-runner@v2.12.0
   #       with:
-  #         egress-policy: audit
+  #         disable-sudo: true
+  #         egress-policy: block
+  #         allowed-endpoints: >
+  #           *.github.com:443
+  #           *.githubusercontent.com:443
+  #           655216687927.dkr.ecr.us-west-2.amazonaws.com:443
+  #           api.ecr.us-west-2.amazonaws.com:443
+  #           ecs.us-west-2.amazonaws.com:443
+  #           email-smtp.us-west-2.amazonaws.com:465
+  #           files.pythonhosted.org:443
+  #           github.com:443
+  #           pypi.org:443
 
   #     - name: Checkout source code
   #       uses: actions/checkout@v4
@@ -392,75 +400,34 @@ jobs:
   #     - name: Load Docker image
   #       run: gzip --uncompress --stdout docker_image.tgz | docker image load
 
-  #     - name: Run Trivy
-  #       run: docker run -v /var/run/docker.sock:/var/run/docker.sock --rm aquasec/trivy image --exit-code 1 --no-progress ranger-ims-server:dev
+  #     - name: Install Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.12"
 
-  deploy-staging:
-    name: Deploy image built from master branch to the staging environment
-
-    needs: [docker-test, lint, mypy, packaging, unit]
-    if: ${{ github.ref == 'refs/heads/master' }}
-
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-
-      - name: Harden CI
-        uses: step-security/harden-runner@v2.12.0
-        with:
-          disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            *.github.com:443
-            *.githubusercontent.com:443
-            655216687927.dkr.ecr.us-west-2.amazonaws.com:443
-            api.ecr.us-west-2.amazonaws.com:443
-            ecs.us-west-2.amazonaws.com:443
-            email-smtp.us-west-2.amazonaws.com:465
-            files.pythonhosted.org:443
-            github.com:443
-            pypi.org:443
-
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Download Docker image artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: docker
-
-      - name: Load Docker image
-        run: gzip --uncompress --stdout docker_image.tgz | docker image load
-
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Deploy to staging
-        run: ./bin/deploy staging
-        env:
-          # https://github.com/burningmantech/ranger-ims-server/settings/secrets
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          AWS_ECR_IMAGE_NAME: ${{ secrets.AWS_ECR_IMAGE_NAME }}
-          AWS_ECS_CLUSTER_STAGING: rangers
-          AWS_ECS_SERVICE_STAGING: ${{ secrets.AWS_ECS_SERVICE_STAGING }}
-          NOTIFY_SMTP_HOST: ${{ secrets.NOTIFY_SMTP_HOST }}
-          NOTIFY_SMTP_USER: ${{ secrets.NOTIFY_SMTP_USER }}
-          NOTIFY_SMTP_PASSWORD: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
-          NOTIFY_EMAIL_RECIPIENT: ${{ secrets.NOTIFY_EMAIL_RECIPIENT }}
-          NOTIFY_EMAIL_SENDER: ${{ secrets.NOTIFY_EMAIL_SENDER }}
-          CI: true
-          PROJECT_NAME: Ranger IMS Server
-          REPOSITORY_ID: ${{ github.repository }}
-          BUILD_NUMBER: 0
-          BUILD_URL: https://github.com/burningmantech/ranger-ims-server/commit/${{ github.sha }}/checks
-          COMMIT_ID: ${{ github.event.head_commit.id }}
-          COMMIT_URL: ${{ github.event.head_commit.url }}
-          COMMIT_AUTHOR_USER: ${{ github.event.head_commit.author.username }}
-          COMMIT_AUTHOR_NAME: ${{ github.event.head_commit.author.name }}
-          COMMIT_AUTHOR_EMAIL: ${{ github.event.head_commit.author.email }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+  #     - name: Deploy to staging
+  #       run: ./bin/deploy staging
+  #       env:
+  #         # https://github.com/burningmantech/ranger-ims-server/settings/secrets
+  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+  #         AWS_ECR_IMAGE_NAME: ${{ secrets.AWS_ECR_IMAGE_NAME }}
+  #         AWS_ECS_CLUSTER_STAGING: rangers
+  #         AWS_ECS_SERVICE_STAGING: ${{ secrets.AWS_ECS_SERVICE_STAGING }}
+  #         NOTIFY_SMTP_HOST: ${{ secrets.NOTIFY_SMTP_HOST }}
+  #         NOTIFY_SMTP_USER: ${{ secrets.NOTIFY_SMTP_USER }}
+  #         NOTIFY_SMTP_PASSWORD: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
+  #         NOTIFY_EMAIL_RECIPIENT: ${{ secrets.NOTIFY_EMAIL_RECIPIENT }}
+  #         NOTIFY_EMAIL_SENDER: ${{ secrets.NOTIFY_EMAIL_SENDER }}
+  #         CI: true
+  #         PROJECT_NAME: Ranger IMS Server
+  #         REPOSITORY_ID: ${{ github.repository }}
+  #         BUILD_NUMBER: 0
+  #         BUILD_URL: https://github.com/burningmantech/ranger-ims-server/commit/${{ github.sha }}/checks
+  #         COMMIT_ID: ${{ github.event.head_commit.id }}
+  #         COMMIT_URL: ${{ github.event.head_commit.url }}
+  #         COMMIT_AUTHOR_USER: ${{ github.event.head_commit.author.username }}
+  #         COMMIT_AUTHOR_NAME: ${{ github.event.head_commit.author.name }}
+  #         COMMIT_AUTHOR_EMAIL: ${{ github.event.head_commit.author.email }}
+  #         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
