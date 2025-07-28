@@ -4,13 +4,9 @@ Extensions to :mod:`attr`
 """
 
 from collections.abc import Iterable
-from typing import TypeVar
 
 
 __all__ = ("sorted_tuple",)
-
-
-T = TypeVar("T")
 
 
 ##
@@ -18,7 +14,7 @@ T = TypeVar("T")
 ##
 
 
-def sorted_tuple(iterable: Iterable[T]) -> tuple[T, ...]:
+def sorted_tuple[T](iterable: Iterable[T]) -> tuple[T, ...]:
     """
     Sort and convert an iterable into a tuple.
     """

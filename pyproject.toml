@@ -118,6 +118,7 @@ ignore = [
     "N815",     # Variable in class scope should not be mixedCase
     "N816",     # Variable in global scope should not be mixedCase
     "PIE796",   # Enum contains duplicate value: `str`
+    "PLC0415",  # Imports outside top-level
     "PLR0911",  # Too many return statements
     "PLR0912",  # Too many branches
     "PLR0913",  # Too many arguments in function definition
