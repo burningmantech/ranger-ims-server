@@ -175,7 +175,7 @@ unit = [
     "coverage==7.6.1",
     "docker==7.1.0",
     "hypothesis==6.112.4",
-    "mock==5.1.0",
+    "mock==5.2.0",
 ]
 mypy = [
     "mypy-zope==1.0.9",
