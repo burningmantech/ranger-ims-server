@@ -34,7 +34,7 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Python
         uses: actions/setup-python@v5
@@ -79,7 +79,7 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Python
         uses: actions/setup-python@v5
@@ -118,7 +118,7 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Python
         uses: actions/setup-python@v5
@@ -193,7 +193,7 @@ jobs:
             storage.googleapis.com:443
 
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 2
 
@@ -310,7 +310,7 @@ jobs:
             pypi.org:443
 
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Build Docker image
         run: ./bin/build
@@ -348,7 +348,7 @@ jobs:
             production.cloudflare.docker.com:443
 
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download Docker image artifacts
         uses: actions/download-artifact@v4
@@ -382,7 +382,7 @@ jobs:
   #         egress-policy: audit
 
   #     - name: Checkout source code
-  #       uses: actions/checkout@v4
+  #       uses: actions/checkout@v5
 
   #     - name: Download Docker image artifacts
   #       uses: actions/download-artifact@v4
@@ -423,7 +423,7 @@ jobs:
   #           pypi.org:443
 
   #     - name: Checkout source code
-  #       uses: actions/checkout@v4
+  #       uses: actions/checkout@v5
 
   #     - name: Download Docker image artifacts
   #       uses: actions/download-artifact@v4
