@@ -172,7 +172,7 @@ where = ["src"]
 default-groups = []
 [dependency-groups]
 unit = [
-    "coverage==7.6.1",
+    "coverage==7.10.6",
     "docker==7.1.0",
     "hypothesis==6.112.4",
     "mock==5.1.0",
