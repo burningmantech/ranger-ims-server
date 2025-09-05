@@ -1,6 +1,8 @@
 Ranger Incident Management System
 =================================
 
+**DEPRECATED**: IMS was re-written in Go in 2025, and that new project lives here: https://github.com/burningmantech/ranger-ims-go
+
 .. image:: https://github.com/burningmantech/ranger-ims-server/workflows/CI%2fCD/badge.svg
     :target: https://github.com/burningmantech/ranger-ims-server/actions
     :alt: Build Status
