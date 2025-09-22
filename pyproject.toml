@@ -180,6 +180,6 @@ unit = [
 mypy = [
     "mypy-zope==1.0.9",
     "mypy==1.13.0",
-    "types-pymysql==1.1.0.20240524",
+    "types-pymysql==1.1.0.20250916",
     "types-pyyaml==6.0.12.20240917",
 ]
