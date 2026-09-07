@@ -129,7 +129,7 @@ def deserialize(
                 f"No attribute {key.name!r} in type enum {typeEnum!r}"
             ) from e
         try:
-            return jsonDeserialize(obj.get(key.value, None), cls)
+            return jsonDeserialize(obj.get(key.value), cls)
         except Exception:
             log.error(
                 "Unable to deserialize {key} as {cls} from {json}",
